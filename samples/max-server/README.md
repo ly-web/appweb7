@@ -3,6 +3,7 @@ Maximum Config Server Sample
 
 This sample shows nearly all of the possible Appweb directives in the appweb.conf configuration file.
 You are encouraged to see the other typical appweb.conf samples:
+
 * [min-server - Minimal configuration server](../min-server/README.md)
 * [simple-server - Simple one-line embedding API](../simple-server/README.md)
 * [typical-server - Typical server](../typical-server/README.md)
@@ -26,7 +27,6 @@ The server listens on port 8080. Browse to:
 
 Code:
 ---
-* [server.c](server.c) - Main program
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [auth.conf](auth.conf) - User/Password/Role authorization file
 * [esp.conf](esp.conf) - ESP compiler rules

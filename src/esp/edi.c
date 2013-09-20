@@ -26,7 +26,7 @@ PUBLIC EdiService *ediCreateService()
         return 0;
     }
     MPR->ediService = es;
-    es->providers = mprCreateHash(0, MPR_HASH_STATIC_VALUES);
+    es->providers = mprCreateHash(0, MPR_HASH_STATIC_VALUES | MPR_HASH_STABLE);
     addValidations();
     return es;
 }
@@ -148,6 +148,13 @@ PUBLIC int ediDeleteRow(Edi *edi, cchar *tableName, cchar *key)
 }
 
 
+PUBLIC void espDumpGrid(EdiGrid *grid)
+{
+    mprLog(0, "Grid: %s\nschema: %s,\ndata: %s", grid->tableName, ediGetTableSchemaToJson(grid->edi, grid->tableName),
+        ediGridToJson(grid, MPR_JSON_PRETTY));
+}
+
+
 PUBLIC MprList *ediGetColumns(Edi *edi, cchar *tableName)
 {
     return edi->provider->getColumns(edi, tableName);
@@ -157,6 +164,56 @@ PUBLIC MprList *ediGetColumns(Edi *edi, cchar *tableName)
 PUBLIC int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid)
 {
     return edi->provider->getColumnSchema(edi, tableName, columnName, type, flags, cid);
+}
+
+
+PUBLIC cchar *ediGetTableSchemaToJson(Edi *edi, cchar *tableName)
+{
+    MprBuf      *buf;
+    MprList     *columns;
+    char        *s;
+    int         c, type, flags, cid, ncols, next;
+
+    if (tableName == 0 || *tableName == '\0') {
+        return 0;
+    }
+    buf = mprCreateBuf(0, 0);
+    ediGetTableSchema(edi, tableName, NULL, &ncols);
+    columns = ediGetColumns(edi, tableName);
+    mprPutStringToBuf(buf, "{\n    \"types\": {\n");
+    for (c = 0; c < ncols; c++) {
+        ediGetColumnSchema(edi, tableName, mprGetItem(columns, c), &type, &flags, &cid);
+        mprPutToBuf(buf, "      \"%s\": {\n        \"type\": \"%s\"\n      },\n", 
+            mprGetItem(columns, c), ediGetTypeString(type));
+    }
+    mprAdjustBufEnd(buf, -2);
+
+    mprRemoveItemAtPos(columns, 0);
+    mprPutStringToBuf(buf, "\n    },\n    \"columns\": [ ");
+    for (ITERATE_ITEMS(columns, s, next)) {
+        mprPutToBuf(buf, "\"%s\", ", s);
+    }
+    mprAdjustBufEnd(buf, -2);
+    mprPutStringToBuf(buf, " ],\n    \"headers\": [ ");
+    for (ITERATE_ITEMS(columns, s, next)) {
+        mprPutToBuf(buf, "\"%s\", ", spascal(s));
+    }
+    mprAdjustBufEnd(buf, -2);
+    mprPutStringToBuf(buf, " ]\n  }");
+    mprAddNullToBuf(buf);
+    return mprGetBufStart(buf);
+}
+
+
+PUBLIC cchar *ediGetGridSchemaToJson(EdiGrid *grid)
+{
+    return ediGetTableSchemaToJson(grid->edi, grid->tableName);
+}
+
+
+PUBLIC cchar *ediGetRecSchemaToJson(EdiRec *rec)
+{
+    return ediGetTableSchemaToJson(rec->edi, rec->tableName);
 }
 
 
@@ -281,6 +338,44 @@ PUBLIC char *ediGetTypeString(int type)
 }
 
 
+
+PUBLIC cchar *ediGridToJson(EdiGrid *grid, int flags)
+{
+    EdiRec      *rec;
+    EdiField    *fp;
+    MprBuf      *buf;
+    int         r, f;
+
+    if (grid == 0) {
+        return 0;
+    }
+    buf = mprCreateBuf(0, 0);
+    mprPutStringToBuf(buf, "[\n");
+    //  MOB - use EDI APIs
+    for (r = 0; r < grid->nrecords; r++) {
+        mprPutStringToBuf(buf, "    { ");
+        rec = grid->records[r];
+        for (f = 0; f < rec->nfields; f++) {
+            fp = &rec->fields[f];
+            mprPutToBuf(buf, "\"%s\": ", fp->name);
+            mprPutToBuf(buf, "\"%s\"", ediFormatField(NULL, fp));
+            if ((f+1) < rec->nfields) {
+                mprPutStringToBuf(buf, ", ");
+            }
+        }
+        mprPutStringToBuf(buf, " }");
+        if ((r+1) < grid->nrecords) {
+            mprPutCharToBuf(buf, ',');
+        }
+        //  MOB only for pretty
+        mprPutCharToBuf(buf, '\n');
+    }
+    mprPutStringToBuf(buf, "  ]\n");
+    mprAddNullToBuf(buf);
+    return mprGetBufStart(buf);
+}
+
+
 PUBLIC int ediLoad(Edi *edi, cchar *path)
 {
     return edi->provider->load(edi, path);
@@ -365,6 +460,36 @@ PUBLIC EdiGrid *ediReadWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar
 PUBLIC EdiGrid *ediReadTable(Edi *edi, cchar *tableName)
 {
     return edi->provider->readWhere(edi, tableName, 0, 0, 0);
+}
+
+
+/*
+    MOB - MOVE
+    MOB - add renderRec()
+    MOB - support PRETTY | PLAIN
+    MOB - remove AsJSON
+ */
+PUBLIC cchar *ediRecToJson(EdiRec *rec, int flags)
+{
+    MprBuf      *buf;
+    EdiField    *fp;
+    int         f;
+
+    buf = mprCreateBuf(0, 0);
+    //  rec == null
+    mprPutStringToBuf(buf, "  { ");
+    for (f = 0; rec && f < rec->nfields; f++) {
+        fp = &rec->fields[f];
+        mprPutToBuf(buf, "\"%s\": ", fp->name);
+        mprPutToBuf(buf, "\"%s\"", ediFormatField(NULL, fp));
+        if ((f+1) < rec->nfields) {
+            mprPutStringToBuf(buf, ", ");
+        }
+    }
+    mprPutStringToBuf(buf, " }");
+    mprPutCharToBuf(buf, '\n');
+    mprAddNullToBuf(buf);
+    return mprGetBufStart(buf);;
 }
 
 
@@ -588,7 +713,7 @@ PUBLIC EdiGrid *ediJoin(Edi *edi, ...)
     /*
         Build list of grids to join
      */
-    grids = mprCreateHash(0, 0);
+    grids = mprCreateHash(0, MPR_HASH_STABLE);
     for (;;) {
         if ((grid = va_arg(vgrids, EdiGrid*)) == 0) {
             break;
@@ -684,23 +809,17 @@ static void manageEdiGrid(EdiGrid *grid, int flags)
  */
 PUBLIC EdiGrid *ediMakeGrid(cchar *json)
 {
-    MprHash     *obj, *row;
-    MprKey      *rp, *kp;
+    MprJson     *obj, *row, *rp, *cp;
     EdiGrid     *grid;
     EdiRec      *rec;
     EdiField    *fp;
-    char        rowbuf[16];
-    int         r, nrows, nfields;
+    int         col, r, nrows, nfields;
 
-    if ((obj = mprDeserialize(json)) == 0) {
+    if ((obj = mprParseJson(json)) == 0) {
         assert(0);
         return 0;
     }
-    if (!(obj->flags & MPR_HASH_LIST)) {
-        assert(obj->flags & MPR_HASH_LIST);
-        return 0;
-    }
-    nrows = mprGetHashLength(obj);
+    nrows = (int) mprGetJsonLength(obj);
     if ((grid = ediCreateBareGrid(NULL, "", nrows)) == 0) {
         assert(0);
         return 0;
@@ -708,13 +827,8 @@ PUBLIC EdiGrid *ediMakeGrid(cchar *json)
     if (nrows <= 0) {
         return grid;
     }
-    for (r = 0; r < nrows; r++) {
-        itosbuf(rowbuf, sizeof(rowbuf), r, 10);
-        if ((rp = mprLookupKeyEntry(obj, rowbuf)) == 0) {
-            continue;
-        }
-        /* JSON objects are either char* or MprHash */
-        if (rp->type == MPR_JSON_STRING) {
+    for (ITERATE_JSON(obj, rp, r)) {
+        if (rp->type == MPR_JSON_VALUE) {
             nfields = 1;
             if ((rec = ediCreateBareRec(NULL, "", nfields)) == 0) {
                 return 0;
@@ -722,23 +836,23 @@ PUBLIC EdiGrid *ediMakeGrid(cchar *json)
             fp = rec->fields;
             fp->valid = 1;
             fp->name = sclone("value");
-            fp->value = rp->data;
+            fp->value = rp->value;
             fp->type = EDI_TYPE_STRING;
             fp->flags = 0;
         } else {
-            row = (MprHash*) rp->data;
-            nfields = mprGetHashLength(row);
+            row = rp;
+            nfields = (int) mprGetJsonLength(row);
             if ((rec = ediCreateBareRec(NULL, "", nfields)) == 0) {
                 return 0;
             }
             fp = rec->fields;
             //  MOB - need helper to create a field.
-            for (ITERATE_KEYS(row, kp)) {
+            for (ITERATE_JSON(row, cp, col)) {
                 if (fp >= &rec->fields[nfields]) {
                     break;
                 }
                 fp->valid = 1;
-                fp->name = kp->key;
+                fp->name = cp->name;
                 fp->type = EDI_TYPE_STRING;
                 fp->flags = 0;
                 fp++;
@@ -894,12 +1008,16 @@ PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value)
     if (rec == 0) {
         return 0;
     }
-    if (fieldName == 0 || value == 0) {
+    if (fieldName == 0 /* MOB || value == 0 */) {
         return 0;
     }
     for (fp = rec->fields; fp < &rec->fields[rec->nfields]; fp++) {
         if (smatch(fp->name, fieldName)) {
+if (value == 0) {
+fp->value = 0;
+} else {
             fp->value = sclone(value);
+}
             return rec;
         }
     }
@@ -907,19 +1025,19 @@ PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value)
 }
 
 
-PUBLIC EdiRec *ediSetFields(EdiRec *rec, MprHash *params)
+PUBLIC EdiRec *ediSetFields(EdiRec *rec, MprJson *params)
 {
-    MprKey  *kp;
+    MprJson     *param;
+    int         i;
 
     if (rec == 0) {
         return 0;
     }
-    for (ITERATE_KEYS(params, kp)) {
-        if (kp->type == MPR_JSON_ARRAY || kp->type == MPR_JSON_OBJ) {
-            continue;
-        }
-        if (!ediSetField(rec, kp->key, kp->data)) {
-            return 0;
+    for (ITERATE_JSON(params, param, i)) {
+        if (param->type == MPR_JSON_VALUE) {
+            if (!ediSetField(rec, param->name, param->value)) {
+                return 0;
+            }
         }
     }
     return rec;
@@ -1064,7 +1182,7 @@ PUBLIC void ediAddFieldError(EdiRec *rec, cchar *field, cchar *fmt, ...)
 
     va_start(args, fmt);
     if (rec->errors == 0) {
-        rec->errors = mprCreateHash(0, 0);
+        rec->errors = mprCreateHash(0, MPR_HASH_STABLE);
     }
     mprAddKey(rec->errors, field, sfmtv(fmt, args));
     va_end(args);
@@ -1092,6 +1210,7 @@ static void addValidations()
     EdiService  *es;
 
     es = MPR->ediService;
+    /* Thread safe */
     es->validations = mprCreateHash(0, MPR_HASH_STATIC_VALUES);
     ediDefineValidation("boolean", checkBoolean);
     ediDefineValidation("format", checkFormat);

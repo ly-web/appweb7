@@ -2,20 +2,26 @@
 .SH NAME
 authpass \- Create and manage passwords
 .SH SYNOPSIS
-.B authpass [\fI-c\fR]
-[\fI-p password\fR] 
+.B authpass 
+[\fI--cipher blowfish|md5\fR]
+[\fI--create\fR]
+[\fI--password password\fR] 
 passwordFile realm userName
 .SH OPTIONS
 .TP
-\fB\-p password\fR 
+\fB\--cipher blowfish|md5\fR 
+Specifies the cipher to use to hash the password. Default is blowfish. Blowfish is substantially more secure.
+MD5 must be used for digest authentication.
+.TP
+\fB\--password password\fR 
 Specifies a password to use to for the user.
 .TP
-\fB\-c\fR 
-Create the specified password file
+\fB\--create\fR 
+Create the specified password file.
 .PP
 .SH DESCRIPTION
 The authpass program is used to create user passwords in a nominated password configuration file.
-Appweb uses the same authorization file andeformat for Basic, Digest and Post authentication stores. This simplifies administration.
+Appweb uses the same authorization file and format for Basic, Digest and Post authentication stores. This simplifies administration.
 .SH "REPORTING BUGS"
 Report bugs to <dev@embedthis.com>.
 .SH COPYRIGHT

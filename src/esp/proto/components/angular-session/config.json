@@ -1,0 +1,4 @@
+{
+    name: "angular-session",
+    description: "Angular session state storage",
+}

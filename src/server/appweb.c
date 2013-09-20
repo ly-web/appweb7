@@ -50,7 +50,7 @@ static int createEndpoints(int argc, char **argv);
 static void usageError();
 
 #if BIT_UNIX_LIKE
-    #if defined(SIGINFO) || defined(SIGRTMIN)
+    #if defined(SIGINFO) || defined(SIGPWR) || defined(SIGRTMIN)
         static void statusCheck(void *ignored, MprSignal *sp);
         static void addSignals();
     #endif
@@ -425,6 +425,8 @@ static void addSignals()
      */
 #if defined(SIGINFO)
     app->statusCheck = mprAddSignalHandler(SIGINFO, statusCheck, 0, 0, MPR_SIGNAL_AFTER);
+#elif defined(SIGPWR)
+    app->statusCheck = mprAddSignalHandler(SIGPWR, statusCheck, 0, 0, MPR_SIGNAL_AFTER);
 #elif defined(SIGRTMIN)
     app->statusCheck = mprAddSignalHandler(SIGRTMIN, statusCheck, 0, 0, MPR_SIGNAL_AFTER);
 #endif
@@ -445,7 +447,7 @@ static void traceHandler(void *ignored, MprSignal *sp)
 
 
 /*
-    SIGINFO will dump memory stats
+    SIGINFO|SIGPWR|SIGRTMIN will dump memory stats
     For detailed memory stats, use: ./configure --set memoryCheck=true
  */
 static void statusCheck(void *ignored, MprSignal *sp)

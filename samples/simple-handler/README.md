@@ -23,7 +23,6 @@ The server listens on port 8080. Browse to:
 
 Code:
 ---
-* [server.c](server.c) - Main program
 * [simpleHandler.c](simpleHandler.c) - Simple handler
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [start.bit](start.bit) - Bit build instructions

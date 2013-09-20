@@ -143,9 +143,8 @@ ifeq ($(BIT_PACK_ESP),1)
 TARGETS            += src/server/esp.conf
 endif
 ifeq ($(BIT_PACK_ESP),1)
-TARGETS            += $(CONFIG)/bin/esp-proto
+TARGETS            += $(CONFIG)/esp
 endif
-TARGETS            += src/esp/proto/angular/client/css/all.css
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 TARGETS            += $(CONFIG)/bin/libejs.a
 endif
@@ -191,7 +190,6 @@ endif
 ifeq ($(BIT_PACK_CGI),1)
 TARGETS            += test/cgi-bin/cgiProgram
 endif
-TARGETS            += test/web/js
 
 unexport CDPATH
 
@@ -242,7 +240,7 @@ clean:
 	rm -f "$(CONFIG)/bin/esp"
 	rm -f "$(CONFIG)/bin/esp.conf"
 	rm -f "src/server/esp.conf"
-	rm -fr "$(CONFIG)/bin/esp-proto"
+	rm -fr "$(CONFIG)/esp"
 	rm -f "$(CONFIG)/bin/libejs.a"
 	rm -f "$(CONFIG)/bin/ejs"
 	rm -f "$(CONFIG)/bin/ejsc"
@@ -255,7 +253,6 @@ clean:
 	rm -f "$(CONFIG)/bin/libslink.a"
 	rm -f "$(CONFIG)/bin/appweb"
 	rm -f "$(CONFIG)/bin/testAppweb"
-	rm -fr "test/web/js"
 	rm -f "$(CONFIG)/obj/mprLib.o"
 	rm -f "$(CONFIG)/obj/mprSsl.o"
 	rm -f "$(CONFIG)/obj/manager.o"
@@ -1055,108 +1052,225 @@ ifeq ($(BIT_PACK_ESP),1)
 #
 DEPS_55 += src/esp/proto
 
-$(CONFIG)/bin/esp-proto: $(DEPS_55)
-	@echo '      [Copy] $(CONFIG)/bin/esp-proto'
-	mkdir -p "$(CONFIG)/bin/esp-proto/angular"
-	cp src/esp/proto/angular/app.conf $(CONFIG)/bin/esp-proto/angular/app.conf
-	cp src/esp/proto/angular/appweb.conf $(CONFIG)/bin/esp-proto/angular/appweb.conf
-	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/app"
-	cp src/esp/proto/angular/client/app/main.js $(CONFIG)/bin/esp-proto/angular/client/app/main.js
-	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/assets"
-	cp src/esp/proto/angular/client/assets/banner.jpg $(CONFIG)/bin/esp-proto/angular/client/assets/banner.jpg
-	cp src/esp/proto/angular/client/assets/favicon.ico $(CONFIG)/bin/esp-proto/angular/client/assets/favicon.ico
-	cp src/esp/proto/angular/client/assets/glyphicons-halflings-white.png $(CONFIG)/bin/esp-proto/angular/client/assets/glyphicons-halflings-white.png
-	cp src/esp/proto/angular/client/assets/glyphicons-halflings.png $(CONFIG)/bin/esp-proto/angular/client/assets/glyphicons-halflings.png
-	cp src/esp/proto/angular/client/assets/splash.jpg $(CONFIG)/bin/esp-proto/angular/client/assets/splash.jpg
-	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/components/Esp"
-	cp src/esp/proto/angular/client/components/Esp/Esp.js $(CONFIG)/bin/esp-proto/angular/client/components/Esp/Esp.js
-	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client"
-	cp src/esp/proto/angular/client/config.json $(CONFIG)/bin/esp-proto/angular/client/config.json
-	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/css"
-	cp src/esp/proto/angular/client/css/all.css $(CONFIG)/bin/esp-proto/angular/client/css/all.css
-	cp src/esp/proto/angular/client/css/all.less $(CONFIG)/bin/esp-proto/angular/client/css/all.less
-	cp src/esp/proto/angular/client/css/app.less $(CONFIG)/bin/esp-proto/angular/client/css/app.less
-	cp src/esp/proto/angular/client/css/bootstrap.css $(CONFIG)/bin/esp-proto/angular/client/css/bootstrap.css
-	cp src/esp/proto/angular/client/css/more.less $(CONFIG)/bin/esp-proto/angular/client/css/more.less
-	cp src/esp/proto/angular/client/css/normalize.less $(CONFIG)/bin/esp-proto/angular/client/css/normalize.less
-	cp src/esp/proto/angular/client/css/theme.less $(CONFIG)/bin/esp-proto/angular/client/css/theme.less
-	cp src/esp/proto/angular/client/index.esp $(CONFIG)/bin/esp-proto/angular/client/index.esp
-	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/lib"
-	cp src/esp/proto/angular/client/lib/all.js $(CONFIG)/bin/esp-proto/angular/client/lib/all.js
-	cp src/esp/proto/angular/client/lib/angular-bootstrap-prettify.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-bootstrap-prettify.js
-	cp src/esp/proto/angular/client/lib/angular-bootstrap-prettify.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-bootstrap-prettify.min.js
-	cp src/esp/proto/angular/client/lib/angular-bootstrap.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-bootstrap.js
-	cp src/esp/proto/angular/client/lib/angular-bootstrap.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-bootstrap.min.js
-	cp src/esp/proto/angular/client/lib/angular-cookies.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-cookies.js
-	cp src/esp/proto/angular/client/lib/angular-cookies.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-cookies.min.js
-	cp src/esp/proto/angular/client/lib/angular-loader.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-loader.js
-	cp src/esp/proto/angular/client/lib/angular-loader.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-loader.min.js
-	cp src/esp/proto/angular/client/lib/angular-mobile.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-mobile.js
-	cp src/esp/proto/angular/client/lib/angular-mobile.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-mobile.min.js
-	cp src/esp/proto/angular/client/lib/angular-mocks.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-mocks.js
-	cp src/esp/proto/angular/client/lib/angular-resource.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-resource.js
-	cp src/esp/proto/angular/client/lib/angular-resource.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-resource.min.js
-	cp src/esp/proto/angular/client/lib/angular-sanitize.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-sanitize.js
-	cp src/esp/proto/angular/client/lib/angular-sanitize.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-sanitize.min.js
-	cp src/esp/proto/angular/client/lib/angular-scenario.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular-scenario.js
-	cp src/esp/proto/angular/client/lib/angular.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular.js
-	cp src/esp/proto/angular/client/lib/angular.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/angular.min.js
-	cp src/esp/proto/angular/client/lib/html5shiv.js $(CONFIG)/bin/esp-proto/angular/client/lib/html5shiv.js
-	cp src/esp/proto/angular/client/lib/html5shiv.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/html5shiv.min.js
-	cp src/esp/proto/angular/client/lib/jquery.js $(CONFIG)/bin/esp-proto/angular/client/lib/jquery.js
-	cp src/esp/proto/angular/client/lib/jquery.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/jquery.min.js
-	cp src/esp/proto/angular/client/lib/less.js $(CONFIG)/bin/esp-proto/angular/client/lib/less.js
-	cp src/esp/proto/angular/client/lib/less.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/less.min.js
-	cp src/esp/proto/angular/client/lib/respond.js $(CONFIG)/bin/esp-proto/angular/client/lib/respond.js
-	cp src/esp/proto/angular/client/lib/respond.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/respond.min.js
-	cp src/esp/proto/angular/client/lib/ui-bootstrap-tpls.js $(CONFIG)/bin/esp-proto/angular/client/lib/ui-bootstrap-tpls.js
-	cp src/esp/proto/angular/client/lib/ui-bootstrap-tpls.min.js $(CONFIG)/bin/esp-proto/angular/client/lib/ui-bootstrap-tpls.min.js
-	mkdir -p "$(CONFIG)/bin/esp-proto/angular/client/templates"
-	cp src/esp/proto/angular/client/templates/splash.html $(CONFIG)/bin/esp-proto/angular/client/templates/splash.html
-	cp src/esp/proto/angular/start.bit $(CONFIG)/bin/esp-proto/angular/start.bit
-	mkdir -p "$(CONFIG)/bin/esp-proto/legacy"
-	cp src/esp/proto/legacy/app.conf $(CONFIG)/bin/esp-proto/legacy/app.conf
-	cp src/esp/proto/legacy/appweb.conf $(CONFIG)/bin/esp-proto/legacy/appweb.conf
-	mkdir -p "$(CONFIG)/bin/esp-proto/legacy/layouts"
-	cp src/esp/proto/legacy/layouts/default.esp $(CONFIG)/bin/esp-proto/legacy/layouts/default.esp
-	mkdir -p "$(CONFIG)/bin/esp-proto/legacy/static/css"
-	cp src/esp/proto/legacy/static/css/all.css $(CONFIG)/bin/esp-proto/legacy/static/css/all.css
-	cp src/esp/proto/legacy/static/css/all.less $(CONFIG)/bin/esp-proto/legacy/static/css/all.less
-	cp src/esp/proto/legacy/static/css/app.less $(CONFIG)/bin/esp-proto/legacy/static/css/app.less
-	cp src/esp/proto/legacy/static/css/esp.less $(CONFIG)/bin/esp-proto/legacy/static/css/esp.less
-	cp src/esp/proto/legacy/static/css/more.less $(CONFIG)/bin/esp-proto/legacy/static/css/more.less
-	cp src/esp/proto/legacy/static/css/normalize.less $(CONFIG)/bin/esp-proto/legacy/static/css/normalize.less
-	cp src/esp/proto/legacy/static/css/theme.less $(CONFIG)/bin/esp-proto/legacy/static/css/theme.less
-	mkdir -p "$(CONFIG)/bin/esp-proto/legacy/static/images"
-	cp src/esp/proto/legacy/static/images/banner.jpg $(CONFIG)/bin/esp-proto/legacy/static/images/banner.jpg
-	cp src/esp/proto/legacy/static/images/favicon.ico $(CONFIG)/bin/esp-proto/legacy/static/images/favicon.ico
-	cp src/esp/proto/legacy/static/images/splash.jpg $(CONFIG)/bin/esp-proto/legacy/static/images/splash.jpg
-	mkdir -p "$(CONFIG)/bin/esp-proto/legacy/static"
-	cp src/esp/proto/legacy/static/index.esp $(CONFIG)/bin/esp-proto/legacy/static/index.esp
-	mkdir -p "$(CONFIG)/bin/esp-proto/legacy/static/lib"
-	cp src/esp/proto/legacy/static/lib/html5shiv.js $(CONFIG)/bin/esp-proto/legacy/static/lib/html5shiv.js
-	cp src/esp/proto/legacy/static/lib/html5shiv.min.js $(CONFIG)/bin/esp-proto/legacy/static/lib/html5shiv.min.js
-	cp src/esp/proto/legacy/static/lib/jquery.esp.js $(CONFIG)/bin/esp-proto/legacy/static/lib/jquery.esp.js
-	cp src/esp/proto/legacy/static/lib/jquery.esp.min.js $(CONFIG)/bin/esp-proto/legacy/static/lib/jquery.esp.min.js
-	cp src/esp/proto/legacy/static/lib/jquery.js $(CONFIG)/bin/esp-proto/legacy/static/lib/jquery.js
-	cp src/esp/proto/legacy/static/lib/jquery.min.js $(CONFIG)/bin/esp-proto/legacy/static/lib/jquery.min.js
-	cp src/esp/proto/legacy/static/lib/jquery.simplemodal.js $(CONFIG)/bin/esp-proto/legacy/static/lib/jquery.simplemodal.js
-	cp src/esp/proto/legacy/static/lib/jquery.simplemodal.min.js $(CONFIG)/bin/esp-proto/legacy/static/lib/jquery.simplemodal.min.js
-	cp src/esp/proto/legacy/static/lib/jquery.tablesorter.js $(CONFIG)/bin/esp-proto/legacy/static/lib/jquery.tablesorter.js
-	cp src/esp/proto/legacy/static/lib/jquery.tablesorter.min.js $(CONFIG)/bin/esp-proto/legacy/static/lib/jquery.tablesorter.min.js
-	cp src/esp/proto/legacy/static/lib/less.js $(CONFIG)/bin/esp-proto/legacy/static/lib/less.js
-	cp src/esp/proto/legacy/static/lib/less.min.js $(CONFIG)/bin/esp-proto/legacy/static/lib/less.min.js
-	cp src/esp/proto/legacy/static/lib/respond.js $(CONFIG)/bin/esp-proto/legacy/static/lib/respond.js
-	cp src/esp/proto/legacy/static/lib/respond.min.js $(CONFIG)/bin/esp-proto/legacy/static/lib/respond.min.js
-	mkdir -p "$(CONFIG)/bin/esp-proto/LocalStore"
-	cp src/esp/proto/LocalStore/LocalStore.js $(CONFIG)/bin/esp-proto/LocalStore/LocalStore.js
-	mkdir -p "$(CONFIG)/bin/esp-proto/server"
-	cp src/esp/proto/server/app.conf $(CONFIG)/bin/esp-proto/server/app.conf
-	cp src/esp/proto/server/appweb.conf $(CONFIG)/bin/esp-proto/server/appweb.conf
-	mkdir -p "$(CONFIG)/bin/esp-proto/SessionStore/client/components/SessionStore"
-	cp src/esp/proto/SessionStore/client/components/SessionStore/SessionStore.js $(CONFIG)/bin/esp-proto/SessionStore/client/components/SessionStore/SessionStore.js
+$(CONFIG)/esp: $(DEPS_55)
+	@echo '      [Copy] $(CONFIG)/esp'
+	mkdir -p "$(CONFIG)/esp/components/angular/client/lib/angular"
+	cp src/esp/proto/components/angular/client/lib/angular/angular-animate.js $(CONFIG)/esp/components/angular/client/lib/angular/angular-animate.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-bootstrap-prettify.js $(CONFIG)/esp/components/angular/client/lib/angular/angular-bootstrap-prettify.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-bootstrap.js $(CONFIG)/esp/components/angular/client/lib/angular/angular-bootstrap.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-cookies.js $(CONFIG)/esp/components/angular/client/lib/angular/angular-cookies.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-loader.js $(CONFIG)/esp/components/angular/client/lib/angular/angular-loader.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-mocks.js $(CONFIG)/esp/components/angular/client/lib/angular/angular-mocks.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-resource.js $(CONFIG)/esp/components/angular/client/lib/angular/angular-resource.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-route.js $(CONFIG)/esp/components/angular/client/lib/angular/angular-route.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-sanitize.js $(CONFIG)/esp/components/angular/client/lib/angular/angular-sanitize.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-scenario.js $(CONFIG)/esp/components/angular/client/lib/angular/angular-scenario.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-touch.js $(CONFIG)/esp/components/angular/client/lib/angular/angular-touch.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular.js $(CONFIG)/esp/components/angular/client/lib/angular/angular.js
+	cp src/esp/proto/components/angular/client/lib/angular/errors.json $(CONFIG)/esp/components/angular/client/lib/angular/errors.json
+	cp src/esp/proto/components/angular/client/lib/angular/version.json $(CONFIG)/esp/components/angular/client/lib/angular/version.json
+	cp src/esp/proto/components/angular/client/lib/angular/version.txt $(CONFIG)/esp/components/angular/client/lib/angular/version.txt
+	mkdir -p "$(CONFIG)/esp/components/angular"
+	cp src/esp/proto/components/angular/config.json $(CONFIG)/esp/components/angular/config.json
+	mkdir -p "$(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext"
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input-group.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-input-group.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-input.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/Esp.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/Esp.js
+	mkdir -p "$(CONFIG)/esp/components/angular-esp"
+	cp src/esp/proto/components/angular-esp/config.json $(CONFIG)/esp/components/angular-esp/config.json
+	mkdir -p "$(CONFIG)/esp/components/angular-extras"
+	cp src/esp/proto/components/angular-extras/config.json $(CONFIG)/esp/components/angular-extras/config.json
+	cp src/esp/proto/components/angular-extras/misc.js $(CONFIG)/esp/components/angular-extras/misc.js
+	mkdir -p "$(CONFIG)/esp/components/angular-local/client/lib/angular-local/ext"
+	cp src/esp/proto/components/angular-local/client/lib/angular-local/ext/LocalStore.js $(CONFIG)/esp/components/angular-local/client/lib/angular-local/ext/LocalStore.js
+	mkdir -p "$(CONFIG)/esp/components/angular-local"
+	cp src/esp/proto/components/angular-local/config.json $(CONFIG)/esp/components/angular-local/config.json
+	mkdir -p "$(CONFIG)/esp/components/angular-mvc/client/app"
+	cp src/esp/proto/components/angular-mvc/client/app/main.js $(CONFIG)/esp/components/angular-mvc/client/app/main.js
+	mkdir -p "$(CONFIG)/esp/components/angular-mvc/client/css"
+	cp src/esp/proto/components/angular-mvc/client/css/all.css $(CONFIG)/esp/components/angular-mvc/client/css/all.css
+	cp src/esp/proto/components/angular-mvc/client/css/all.less $(CONFIG)/esp/components/angular-mvc/client/css/all.less
+	cp src/esp/proto/components/angular-mvc/client/css/app.less $(CONFIG)/esp/components/angular-mvc/client/css/app.less
+	cp src/esp/proto/components/angular-mvc/client/css/fix.css $(CONFIG)/esp/components/angular-mvc/client/css/fix.css
+	cp src/esp/proto/components/angular-mvc/client/css/old-app.less $(CONFIG)/esp/components/angular-mvc/client/css/old-app.less
+	cp src/esp/proto/components/angular-mvc/client/css/old-theme.less $(CONFIG)/esp/components/angular-mvc/client/css/old-theme.less
+	cp src/esp/proto/components/angular-mvc/client/css/theme.less $(CONFIG)/esp/components/angular-mvc/client/css/theme.less
+	mkdir -p "$(CONFIG)/esp/components/angular-mvc/client"
+	cp src/esp/proto/components/angular-mvc/client/index.esp $(CONFIG)/esp/components/angular-mvc/client/index.esp
+	mkdir -p "$(CONFIG)/esp/components/angular-mvc/client/pages"
+	cp src/esp/proto/components/angular-mvc/client/pages/splash.html $(CONFIG)/esp/components/angular-mvc/client/pages/splash.html
+	mkdir -p "$(CONFIG)/esp/components/angular-mvc"
+	cp src/esp/proto/components/angular-mvc/config.json $(CONFIG)/esp/components/angular-mvc/config.json
+	cp src/esp/proto/components/angular-mvc/start.bit $(CONFIG)/esp/components/angular-mvc/start.bit
+	mkdir -p "$(CONFIG)/esp/components/angular-session/client/lib/angular-session/ext"
+	cp src/esp/proto/components/angular-session/client/lib/angular-session/ext/SessionStore.js $(CONFIG)/esp/components/angular-session/client/lib/angular-session/ext/SessionStore.js
+	mkdir -p "$(CONFIG)/esp/components/angular-session"
+	cp src/esp/proto/components/angular-session/config.json $(CONFIG)/esp/components/angular-session/config.json
+	mkdir -p "$(CONFIG)/esp/components/angular-ui-bootstrap/client/lib/angular-ui-bootstrap"
+	cp src/esp/proto/components/angular-ui-bootstrap/client/lib/angular-ui-bootstrap/ui-bootstrap-tpls.js $(CONFIG)/esp/components/angular-ui-bootstrap/client/lib/angular-ui-bootstrap/ui-bootstrap-tpls.js
+	mkdir -p "$(CONFIG)/esp/components/angular-ui-bootstrap"
+	cp src/esp/proto/components/angular-ui-bootstrap/config.json $(CONFIG)/esp/components/angular-ui-bootstrap/config.json
+	mkdir -p "$(CONFIG)/esp/components/animate/client/css"
+	cp src/esp/proto/components/animate/client/css/animate.css $(CONFIG)/esp/components/animate/client/css/animate.css
+	mkdir -p "$(CONFIG)/esp/components/animate"
+	cp src/esp/proto/components/animate/config.json $(CONFIG)/esp/components/animate/config.json
+	mkdir -p "$(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/css"
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/css/bootstrap-theme.css $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/css/bootstrap-theme.css
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/css/bootstrap-theme.min.css $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/css/bootstrap-theme.min.css
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/css/bootstrap.css $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/css/bootstrap.css
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/css/bootstrap.min.css $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/css/bootstrap.min.css
+	mkdir -p "$(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/fonts"
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/fonts/glyphicons-halflings-regular.eot $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/fonts/glyphicons-halflings-regular.eot
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/fonts/glyphicons-halflings-regular.svg $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/fonts/glyphicons-halflings-regular.svg
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/fonts/glyphicons-halflings-regular.ttf $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/fonts/glyphicons-halflings-regular.ttf
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/fonts/glyphicons-halflings-regular.woff $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/fonts/glyphicons-halflings-regular.woff
+	mkdir -p "$(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/js"
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/js/bootstrap.js $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/js/bootstrap.js
+	mkdir -p "$(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less"
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/alerts.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/alerts.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/badges.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/badges.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/bootstrap.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/bootstrap.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/breadcrumbs.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/breadcrumbs.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/button-groups.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/button-groups.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/buttons.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/buttons.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/carousel.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/carousel.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/close.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/close.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/code.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/code.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/component-animations.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/component-animations.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/dropdowns.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/dropdowns.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/forms.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/forms.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/glyphicons.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/glyphicons.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/grid.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/grid.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/input-groups.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/input-groups.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/jumbotron.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/jumbotron.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/labels.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/labels.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/list-group.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/list-group.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/media.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/media.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/mixins.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/mixins.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/modals.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/modals.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/navbar.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/navbar.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/navs.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/navs.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/normalize.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/normalize.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/pager.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/pager.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/pagination.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/pagination.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/panels.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/panels.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/popovers.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/popovers.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/print.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/print.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/progress-bars.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/progress-bars.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/responsive-utilities.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/responsive-utilities.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/scaffolding.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/scaffolding.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/tables.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/tables.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/theme.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/theme.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/thumbnails.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/thumbnails.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/tooltip.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/tooltip.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/type.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/type.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/utilities.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/utilities.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/variables.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/variables.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/wells.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/wells.less
+	mkdir -p "$(CONFIG)/esp/components/bootstrap"
+	cp src/esp/proto/components/bootstrap/config.json $(CONFIG)/esp/components/bootstrap/config.json
+	mkdir -p "$(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/css"
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.css $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.css
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.min.css $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.min.css
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/css/font-awesome.css $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/css/font-awesome.css
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/css/font-awesome.min.css $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/css/font-awesome.min.css
+	mkdir -p "$(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/font"
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/font/fontawesome-webfont.eot $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/font/fontawesome-webfont.eot
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/font/fontawesome-webfont.svg $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/font/fontawesome-webfont.svg
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/font/fontawesome-webfont.ttf $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/font/fontawesome-webfont.ttf
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/font/fontawesome-webfont.woff $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/font/fontawesome-webfont.woff
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/font/FontAwesome.otf $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/font/FontAwesome.otf
+	mkdir -p "$(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/less"
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/less/bootstrap.less $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/less/bootstrap.less
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/less/core.less $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/less/core.less
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/less/extras.less $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/less/extras.less
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/less/font-awesome-ie7.less $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/less/font-awesome-ie7.less
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/less/font-awesome.less $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/less/font-awesome.less
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/less/icons.less $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/less/icons.less
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/less/mixins.less $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/less/mixins.less
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/less/path.less $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/less/path.less
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/less/variables.less $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/less/variables.less
+	mkdir -p "$(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/scss"
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_bootstrap.scss $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/scss/_bootstrap.scss
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_core.scss $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/scss/_core.scss
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_extras.scss $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/scss/_extras.scss
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_icons.scss $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/scss/_icons.scss
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_mixins.scss $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/scss/_mixins.scss
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_path.scss $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/scss/_path.scss
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_variables.scss $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/scss/_variables.scss
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/font-awesome-ie7.scss $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/scss/font-awesome-ie7.scss
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/font-awesome.scss $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/scss/font-awesome.scss
+	mkdir -p "$(CONFIG)/esp/components/font-awesome"
+	cp src/esp/proto/components/font-awesome/config.json $(CONFIG)/esp/components/font-awesome/config.json
+	mkdir -p "$(CONFIG)/esp/components/html5shiv/client/lib/html5shiv"
+	cp src/esp/proto/components/html5shiv/client/lib/html5shiv/html5shiv.js $(CONFIG)/esp/components/html5shiv/client/lib/html5shiv/html5shiv.js
+	mkdir -p "$(CONFIG)/esp/components/html5shiv"
+	cp src/esp/proto/components/html5shiv/config.json $(CONFIG)/esp/components/html5shiv/config.json
+	mkdir -p "$(CONFIG)/esp/components/jquery/client/lib/jquery"
+	cp src/esp/proto/components/jquery/client/lib/jquery/jquery.js $(CONFIG)/esp/components/jquery/client/lib/jquery/jquery.js
+	mkdir -p "$(CONFIG)/esp/components/jquery"
+	cp src/esp/proto/components/jquery/config.json $(CONFIG)/esp/components/jquery/config.json
+	mkdir -p "$(CONFIG)/esp/components/legacy-mvc"
+	cp src/esp/proto/components/legacy-mvc/config.json $(CONFIG)/esp/components/legacy-mvc/config.json
+	mkdir -p "$(CONFIG)/esp/components/legacy-mvc/layouts"
+	cp src/esp/proto/components/legacy-mvc/layouts/default.esp $(CONFIG)/esp/components/legacy-mvc/layouts/default.esp
+	mkdir -p "$(CONFIG)/esp/components/legacy-mvc/static/css"
+	cp src/esp/proto/components/legacy-mvc/static/css/all.css $(CONFIG)/esp/components/legacy-mvc/static/css/all.css
+	cp src/esp/proto/components/legacy-mvc/static/css/all.less $(CONFIG)/esp/components/legacy-mvc/static/css/all.less
+	cp src/esp/proto/components/legacy-mvc/static/css/app.less $(CONFIG)/esp/components/legacy-mvc/static/css/app.less
+	cp src/esp/proto/components/legacy-mvc/static/css/esp.less $(CONFIG)/esp/components/legacy-mvc/static/css/esp.less
+	cp src/esp/proto/components/legacy-mvc/static/css/more.less $(CONFIG)/esp/components/legacy-mvc/static/css/more.less
+	cp src/esp/proto/components/legacy-mvc/static/css/normalize.less $(CONFIG)/esp/components/legacy-mvc/static/css/normalize.less
+	cp src/esp/proto/components/legacy-mvc/static/css/theme.less $(CONFIG)/esp/components/legacy-mvc/static/css/theme.less
+	mkdir -p "$(CONFIG)/esp/components/legacy-mvc/static/images"
+	cp src/esp/proto/components/legacy-mvc/static/images/banner.jpg $(CONFIG)/esp/components/legacy-mvc/static/images/banner.jpg
+	cp src/esp/proto/components/legacy-mvc/static/images/favicon.ico $(CONFIG)/esp/components/legacy-mvc/static/images/favicon.ico
+	cp src/esp/proto/components/legacy-mvc/static/images/splash.jpg $(CONFIG)/esp/components/legacy-mvc/static/images/splash.jpg
+	mkdir -p "$(CONFIG)/esp/components/legacy-mvc/static"
+	cp src/esp/proto/components/legacy-mvc/static/index.esp $(CONFIG)/esp/components/legacy-mvc/static/index.esp
+	mkdir -p "$(CONFIG)/esp/components/legacy-mvc/static/lib"
+	cp src/esp/proto/components/legacy-mvc/static/lib/html5shiv.js $(CONFIG)/esp/components/legacy-mvc/static/lib/html5shiv.js
+	cp src/esp/proto/components/legacy-mvc/static/lib/jquery.esp.js $(CONFIG)/esp/components/legacy-mvc/static/lib/jquery.esp.js
+	cp src/esp/proto/components/legacy-mvc/static/lib/jquery.js $(CONFIG)/esp/components/legacy-mvc/static/lib/jquery.js
+	cp src/esp/proto/components/legacy-mvc/static/lib/jquery.simplemodal.js $(CONFIG)/esp/components/legacy-mvc/static/lib/jquery.simplemodal.js
+	cp src/esp/proto/components/legacy-mvc/static/lib/jquery.tablesorter.js $(CONFIG)/esp/components/legacy-mvc/static/lib/jquery.tablesorter.js
+	cp src/esp/proto/components/legacy-mvc/static/lib/less.js $(CONFIG)/esp/components/legacy-mvc/static/lib/less.js
+	cp src/esp/proto/components/legacy-mvc/static/lib/respond.js $(CONFIG)/esp/components/legacy-mvc/static/lib/respond.js
+	mkdir -p "$(CONFIG)/esp/components/less/client/lib/less"
+	cp src/esp/proto/components/less/client/lib/less/less.js $(CONFIG)/esp/components/less/client/lib/less/less.js
+	mkdir -p "$(CONFIG)/esp/components/less"
+	cp src/esp/proto/components/less/config.json $(CONFIG)/esp/components/less/config.json
+	mkdir -p "$(CONFIG)/esp/components/more/client/css"
+	cp src/esp/proto/components/more/client/css/more.less $(CONFIG)/esp/components/more/client/css/more.less
+	mkdir -p "$(CONFIG)/esp/components/more"
+	cp src/esp/proto/components/more/config.json $(CONFIG)/esp/components/more/config.json
+	mkdir -p "$(CONFIG)/esp/components/normalize/client/css"
+	cp src/esp/proto/components/normalize/client/css/normalize.less $(CONFIG)/esp/components/normalize/client/css/normalize.less
+	mkdir -p "$(CONFIG)/esp/components/normalize"
+	cp src/esp/proto/components/normalize/config.json $(CONFIG)/esp/components/normalize/config.json
+	mkdir -p "$(CONFIG)/esp/components/respond/client/lib/respond"
+	cp src/esp/proto/components/respond/client/lib/respond/respond.js $(CONFIG)/esp/components/respond/client/lib/respond/respond.js
+	mkdir -p "$(CONFIG)/esp/components/respond"
+	cp src/esp/proto/components/respond/config.json $(CONFIG)/esp/components/respond/config.json
+	mkdir -p "$(CONFIG)/esp/components/server"
+	cp src/esp/proto/components/server/app.conf $(CONFIG)/esp/components/server/app.conf
+	cp src/esp/proto/components/server/appweb.conf $(CONFIG)/esp/components/server/appweb.conf
+	cp src/esp/proto/components/server/config.json $(CONFIG)/esp/components/server/config.json
+	mkdir -p "$(CONFIG)/esp/templates/angular-mvc"
+	cp src/esp/proto/templates/angular-mvc/controller.c $(CONFIG)/esp/templates/angular-mvc/controller.c
+	cp src/esp/proto/templates/angular-mvc/controller.js $(CONFIG)/esp/templates/angular-mvc/controller.js
+	cp src/esp/proto/templates/angular-mvc/edit.html $(CONFIG)/esp/templates/angular-mvc/edit.html
+	cp src/esp/proto/templates/angular-mvc/list.html $(CONFIG)/esp/templates/angular-mvc/list.html
+	cp src/esp/proto/templates/angular-mvc/model.js $(CONFIG)/esp/templates/angular-mvc/model.js
+	mkdir -p "$(CONFIG)/esp/templates/legacy-mvc"
+	cp src/esp/proto/templates/legacy-mvc/controller.c $(CONFIG)/esp/templates/legacy-mvc/controller.c
+	cp src/esp/proto/templates/legacy-mvc/edit.html $(CONFIG)/esp/templates/legacy-mvc/edit.html
+	cp src/esp/proto/templates/legacy-mvc/list.html $(CONFIG)/esp/templates/legacy-mvc/list.html
+	mkdir -p "$(CONFIG)/esp/templates/server"
+	cp src/esp/proto/templates/server/app.c $(CONFIG)/esp/templates/server/app.c
+	cp src/esp/proto/templates/server/controller.c $(CONFIG)/esp/templates/server/controller.c
+	cp src/esp/proto/templates/server/migration.c $(CONFIG)/esp/templates/server/migration.c
 endif
-
 
 #
 #   ejs.h
@@ -1902,9 +2016,32 @@ ifeq ($(BIT_PACK_CGI),1)
 #
 #   test-testScript
 #
+DEPS_88 += $(CONFIG)/inc/mpr.h
 DEPS_88 += $(CONFIG)/inc/bit.h
-DEPS_88 += $(CONFIG)/obj/cgiProgram.o
-DEPS_88 += $(CONFIG)/bin/cgiProgram
+DEPS_88 += $(CONFIG)/inc/bitos.h
+DEPS_88 += $(CONFIG)/obj/mprLib.o
+DEPS_88 += $(CONFIG)/bin/libmpr.a
+DEPS_88 += $(CONFIG)/inc/pcre.h
+DEPS_88 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_88 += $(CONFIG)/bin/libpcre.a
+endif
+DEPS_88 += $(CONFIG)/inc/http.h
+DEPS_88 += $(CONFIG)/obj/httpLib.o
+DEPS_88 += $(CONFIG)/bin/libhttp.a
+DEPS_88 += $(CONFIG)/inc/appweb.h
+DEPS_88 += $(CONFIG)/inc/customize.h
+DEPS_88 += $(CONFIG)/obj/config.o
+DEPS_88 += $(CONFIG)/obj/convenience.o
+DEPS_88 += $(CONFIG)/obj/dirHandler.o
+DEPS_88 += $(CONFIG)/obj/fileHandler.o
+DEPS_88 += $(CONFIG)/obj/log.o
+DEPS_88 += $(CONFIG)/obj/server.o
+DEPS_88 += $(CONFIG)/bin/libappweb.a
+DEPS_88 += $(CONFIG)/inc/testAppweb.h
+DEPS_88 += $(CONFIG)/obj/testAppweb.o
+DEPS_88 += $(CONFIG)/obj/testHttp.o
+DEPS_88 += $(CONFIG)/bin/testAppweb
 
 test/cgi-bin/testScript: $(DEPS_88)
 	cd test; echo '#!../$(CONFIG)/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript ; cd ..
@@ -1914,6 +2051,33 @@ ifeq ($(BIT_PACK_CGI),1)
 #
 #   test-cache.cgi
 #
+DEPS_89 += $(CONFIG)/inc/mpr.h
+DEPS_89 += $(CONFIG)/inc/bit.h
+DEPS_89 += $(CONFIG)/inc/bitos.h
+DEPS_89 += $(CONFIG)/obj/mprLib.o
+DEPS_89 += $(CONFIG)/bin/libmpr.a
+DEPS_89 += $(CONFIG)/inc/pcre.h
+DEPS_89 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_89 += $(CONFIG)/bin/libpcre.a
+endif
+DEPS_89 += $(CONFIG)/inc/http.h
+DEPS_89 += $(CONFIG)/obj/httpLib.o
+DEPS_89 += $(CONFIG)/bin/libhttp.a
+DEPS_89 += $(CONFIG)/inc/appweb.h
+DEPS_89 += $(CONFIG)/inc/customize.h
+DEPS_89 += $(CONFIG)/obj/config.o
+DEPS_89 += $(CONFIG)/obj/convenience.o
+DEPS_89 += $(CONFIG)/obj/dirHandler.o
+DEPS_89 += $(CONFIG)/obj/fileHandler.o
+DEPS_89 += $(CONFIG)/obj/log.o
+DEPS_89 += $(CONFIG)/obj/server.o
+DEPS_89 += $(CONFIG)/bin/libappweb.a
+DEPS_89 += $(CONFIG)/inc/testAppweb.h
+DEPS_89 += $(CONFIG)/obj/testAppweb.o
+DEPS_89 += $(CONFIG)/obj/testHttp.o
+DEPS_89 += $(CONFIG)/bin/testAppweb
+
 test/web/caching/cache.cgi: $(DEPS_89)
 	cd test; echo "#!`type -p ejs`" >web/caching/cache.cgi ; cd ..
 	cd test; echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi ; cd ..
@@ -1924,6 +2088,33 @@ ifeq ($(BIT_PACK_CGI),1)
 #
 #   test-basic.cgi
 #
+DEPS_90 += $(CONFIG)/inc/mpr.h
+DEPS_90 += $(CONFIG)/inc/bit.h
+DEPS_90 += $(CONFIG)/inc/bitos.h
+DEPS_90 += $(CONFIG)/obj/mprLib.o
+DEPS_90 += $(CONFIG)/bin/libmpr.a
+DEPS_90 += $(CONFIG)/inc/pcre.h
+DEPS_90 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_90 += $(CONFIG)/bin/libpcre.a
+endif
+DEPS_90 += $(CONFIG)/inc/http.h
+DEPS_90 += $(CONFIG)/obj/httpLib.o
+DEPS_90 += $(CONFIG)/bin/libhttp.a
+DEPS_90 += $(CONFIG)/inc/appweb.h
+DEPS_90 += $(CONFIG)/inc/customize.h
+DEPS_90 += $(CONFIG)/obj/config.o
+DEPS_90 += $(CONFIG)/obj/convenience.o
+DEPS_90 += $(CONFIG)/obj/dirHandler.o
+DEPS_90 += $(CONFIG)/obj/fileHandler.o
+DEPS_90 += $(CONFIG)/obj/log.o
+DEPS_90 += $(CONFIG)/obj/server.o
+DEPS_90 += $(CONFIG)/bin/libappweb.a
+DEPS_90 += $(CONFIG)/inc/testAppweb.h
+DEPS_90 += $(CONFIG)/obj/testAppweb.o
+DEPS_90 += $(CONFIG)/obj/testHttp.o
+DEPS_90 += $(CONFIG)/bin/testAppweb
+
 test/web/auth/basic/basic.cgi: $(DEPS_90)
 	cd test; echo "#!`type -p ejs`" >web/auth/basic/basic.cgi ; cd ..
 	cd test; echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi ; cd ..
@@ -1946,57 +2137,19 @@ test/cgi-bin/cgiProgram: $(DEPS_91)
 	cd test; chmod +x cgi-bin/* web/cgiProgram.cgi ; cd ..
 endif
 
-#
-#   test.js
-#
-DEPS_92 += src/esp/proto/angular/client/lib
-
-test/web/js: $(DEPS_92)
-	@echo '      [Copy] test/web/js'
-	mkdir -p "test/web/js"
-	cp src/esp/proto/angular/client/lib/all.js test/web/js/all.js
-	cp src/esp/proto/angular/client/lib/angular-bootstrap-prettify.js test/web/js/angular-bootstrap-prettify.js
-	cp src/esp/proto/angular/client/lib/angular-bootstrap-prettify.min.js test/web/js/angular-bootstrap-prettify.min.js
-	cp src/esp/proto/angular/client/lib/angular-bootstrap.js test/web/js/angular-bootstrap.js
-	cp src/esp/proto/angular/client/lib/angular-bootstrap.min.js test/web/js/angular-bootstrap.min.js
-	cp src/esp/proto/angular/client/lib/angular-cookies.js test/web/js/angular-cookies.js
-	cp src/esp/proto/angular/client/lib/angular-cookies.min.js test/web/js/angular-cookies.min.js
-	cp src/esp/proto/angular/client/lib/angular-loader.js test/web/js/angular-loader.js
-	cp src/esp/proto/angular/client/lib/angular-loader.min.js test/web/js/angular-loader.min.js
-	cp src/esp/proto/angular/client/lib/angular-mobile.js test/web/js/angular-mobile.js
-	cp src/esp/proto/angular/client/lib/angular-mobile.min.js test/web/js/angular-mobile.min.js
-	cp src/esp/proto/angular/client/lib/angular-mocks.js test/web/js/angular-mocks.js
-	cp src/esp/proto/angular/client/lib/angular-resource.js test/web/js/angular-resource.js
-	cp src/esp/proto/angular/client/lib/angular-resource.min.js test/web/js/angular-resource.min.js
-	cp src/esp/proto/angular/client/lib/angular-sanitize.js test/web/js/angular-sanitize.js
-	cp src/esp/proto/angular/client/lib/angular-sanitize.min.js test/web/js/angular-sanitize.min.js
-	cp src/esp/proto/angular/client/lib/angular-scenario.js test/web/js/angular-scenario.js
-	cp src/esp/proto/angular/client/lib/angular.js test/web/js/angular.js
-	cp src/esp/proto/angular/client/lib/angular.min.js test/web/js/angular.min.js
-	cp src/esp/proto/angular/client/lib/html5shiv.js test/web/js/html5shiv.js
-	cp src/esp/proto/angular/client/lib/html5shiv.min.js test/web/js/html5shiv.min.js
-	cp src/esp/proto/angular/client/lib/jquery.js test/web/js/jquery.js
-	cp src/esp/proto/angular/client/lib/jquery.min.js test/web/js/jquery.min.js
-	cp src/esp/proto/angular/client/lib/less.js test/web/js/less.js
-	cp src/esp/proto/angular/client/lib/less.min.js test/web/js/less.min.js
-	cp src/esp/proto/angular/client/lib/respond.js test/web/js/respond.js
-	cp src/esp/proto/angular/client/lib/respond.min.js test/web/js/respond.min.js
-	cp src/esp/proto/angular/client/lib/ui-bootstrap-tpls.js test/web/js/ui-bootstrap-tpls.js
-	cp src/esp/proto/angular/client/lib/ui-bootstrap-tpls.min.js test/web/js/ui-bootstrap-tpls.min.js
-
 
 #
 #   stop
 #
-DEPS_93 += compile
+DEPS_92 += compile
 
-stop: $(DEPS_93)
+stop: $(DEPS_92)
 	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
 
 #
 #   installBinary
 #
-installBinary: $(DEPS_94)
+installBinary: $(DEPS_93)
 	mkdir -p "$(BIT_APP_PREFIX)"
 	mkdir -p "$(BIT_VAPP_PREFIX)"
 	mkdir -p "$(BIT_ETC_PREFIX)"
@@ -2041,104 +2194,222 @@ ifeq ($(BIT_PACK_PHP),1)
 	cp $(CONFIG)/bin/libphp5.so $(BIT_VAPP_PREFIX)/bin/libphp5.so
 endif
 ifeq ($(BIT_PACK_ESP),1)
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular"
-	cp src/esp/proto/angular/app.conf $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/app.conf
-	cp src/esp/proto/angular/appweb.conf $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/appweb.conf
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/app"
-	cp src/esp/proto/angular/client/app/main.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/app/main.js
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/assets"
-	cp src/esp/proto/angular/client/assets/banner.jpg $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/assets/banner.jpg
-	cp src/esp/proto/angular/client/assets/favicon.ico $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/assets/favicon.ico
-	cp src/esp/proto/angular/client/assets/glyphicons-halflings-white.png $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/assets/glyphicons-halflings-white.png
-	cp src/esp/proto/angular/client/assets/glyphicons-halflings.png $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/assets/glyphicons-halflings.png
-	cp src/esp/proto/angular/client/assets/splash.jpg $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/assets/splash.jpg
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/components/Esp"
-	cp src/esp/proto/angular/client/components/Esp/Esp.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/components/Esp/Esp.js
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client"
-	cp src/esp/proto/angular/client/config.json $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/config.json
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/css"
-	cp src/esp/proto/angular/client/css/all.css $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/css/all.css
-	cp src/esp/proto/angular/client/css/all.less $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/css/all.less
-	cp src/esp/proto/angular/client/css/app.less $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/css/app.less
-	cp src/esp/proto/angular/client/css/bootstrap.css $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/css/bootstrap.css
-	cp src/esp/proto/angular/client/css/more.less $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/css/more.less
-	cp src/esp/proto/angular/client/css/normalize.less $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/css/normalize.less
-	cp src/esp/proto/angular/client/css/theme.less $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/css/theme.less
-	cp src/esp/proto/angular/client/index.esp $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/index.esp
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib"
-	cp src/esp/proto/angular/client/lib/all.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/all.js
-	cp src/esp/proto/angular/client/lib/angular-bootstrap-prettify.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular-bootstrap-prettify.js
-	cp src/esp/proto/angular/client/lib/angular-bootstrap-prettify.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular-bootstrap-prettify.min.js
-	cp src/esp/proto/angular/client/lib/angular-bootstrap.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular-bootstrap.js
-	cp src/esp/proto/angular/client/lib/angular-bootstrap.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular-bootstrap.min.js
-	cp src/esp/proto/angular/client/lib/angular-cookies.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular-cookies.js
-	cp src/esp/proto/angular/client/lib/angular-cookies.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular-cookies.min.js
-	cp src/esp/proto/angular/client/lib/angular-loader.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular-loader.js
-	cp src/esp/proto/angular/client/lib/angular-loader.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular-loader.min.js
-	cp src/esp/proto/angular/client/lib/angular-mobile.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular-mobile.js
-	cp src/esp/proto/angular/client/lib/angular-mobile.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular-mobile.min.js
-	cp src/esp/proto/angular/client/lib/angular-mocks.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular-mocks.js
-	cp src/esp/proto/angular/client/lib/angular-resource.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular-resource.js
-	cp src/esp/proto/angular/client/lib/angular-resource.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular-resource.min.js
-	cp src/esp/proto/angular/client/lib/angular-sanitize.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular-sanitize.js
-	cp src/esp/proto/angular/client/lib/angular-sanitize.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular-sanitize.min.js
-	cp src/esp/proto/angular/client/lib/angular-scenario.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular-scenario.js
-	cp src/esp/proto/angular/client/lib/angular.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular.js
-	cp src/esp/proto/angular/client/lib/angular.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/angular.min.js
-	cp src/esp/proto/angular/client/lib/html5shiv.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/html5shiv.js
-	cp src/esp/proto/angular/client/lib/html5shiv.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/html5shiv.min.js
-	cp src/esp/proto/angular/client/lib/jquery.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/jquery.js
-	cp src/esp/proto/angular/client/lib/jquery.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/jquery.min.js
-	cp src/esp/proto/angular/client/lib/less.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/less.js
-	cp src/esp/proto/angular/client/lib/less.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/less.min.js
-	cp src/esp/proto/angular/client/lib/respond.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/respond.js
-	cp src/esp/proto/angular/client/lib/respond.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/respond.min.js
-	cp src/esp/proto/angular/client/lib/ui-bootstrap-tpls.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/ui-bootstrap-tpls.js
-	cp src/esp/proto/angular/client/lib/ui-bootstrap-tpls.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/lib/ui-bootstrap-tpls.min.js
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/templates"
-	cp src/esp/proto/angular/client/templates/splash.html $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/client/templates/splash.html
-	cp src/esp/proto/angular/start.bit $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/angular/start.bit
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy"
-	cp src/esp/proto/legacy/app.conf $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/app.conf
-	cp src/esp/proto/legacy/appweb.conf $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/appweb.conf
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/layouts"
-	cp src/esp/proto/legacy/layouts/default.esp $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/layouts/default.esp
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/css"
-	cp src/esp/proto/legacy/static/css/all.css $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/css/all.css
-	cp src/esp/proto/legacy/static/css/all.less $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/css/all.less
-	cp src/esp/proto/legacy/static/css/app.less $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/css/app.less
-	cp src/esp/proto/legacy/static/css/esp.less $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/css/esp.less
-	cp src/esp/proto/legacy/static/css/more.less $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/css/more.less
-	cp src/esp/proto/legacy/static/css/normalize.less $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/css/normalize.less
-	cp src/esp/proto/legacy/static/css/theme.less $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/css/theme.less
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/images"
-	cp src/esp/proto/legacy/static/images/banner.jpg $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/images/banner.jpg
-	cp src/esp/proto/legacy/static/images/favicon.ico $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/images/favicon.ico
-	cp src/esp/proto/legacy/static/images/splash.jpg $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/images/splash.jpg
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static"
-	cp src/esp/proto/legacy/static/index.esp $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/index.esp
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/lib"
-	cp src/esp/proto/legacy/static/lib/html5shiv.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/lib/html5shiv.js
-	cp src/esp/proto/legacy/static/lib/html5shiv.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/lib/html5shiv.min.js
-	cp src/esp/proto/legacy/static/lib/jquery.esp.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/lib/jquery.esp.js
-	cp src/esp/proto/legacy/static/lib/jquery.esp.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/lib/jquery.esp.min.js
-	cp src/esp/proto/legacy/static/lib/jquery.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/lib/jquery.js
-	cp src/esp/proto/legacy/static/lib/jquery.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/lib/jquery.min.js
-	cp src/esp/proto/legacy/static/lib/jquery.simplemodal.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/lib/jquery.simplemodal.js
-	cp src/esp/proto/legacy/static/lib/jquery.simplemodal.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/lib/jquery.simplemodal.min.js
-	cp src/esp/proto/legacy/static/lib/jquery.tablesorter.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/lib/jquery.tablesorter.js
-	cp src/esp/proto/legacy/static/lib/jquery.tablesorter.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/lib/jquery.tablesorter.min.js
-	cp src/esp/proto/legacy/static/lib/less.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/lib/less.js
-	cp src/esp/proto/legacy/static/lib/less.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/lib/less.min.js
-	cp src/esp/proto/legacy/static/lib/respond.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/lib/respond.js
-	cp src/esp/proto/legacy/static/lib/respond.min.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/legacy/static/lib/respond.min.js
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/LocalStore"
-	cp src/esp/proto/LocalStore/LocalStore.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/LocalStore/LocalStore.js
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/server"
-	cp src/esp/proto/server/app.conf $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/server/app.conf
-	cp src/esp/proto/server/appweb.conf $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/server/appweb.conf
-	mkdir -p "$(BIT_VAPP_PREFIX)/bin/esp-proto/proto/SessionStore/client/components/SessionStore"
-	cp src/esp/proto/SessionStore/client/components/SessionStore/SessionStore.js $(BIT_VAPP_PREFIX)/bin/esp-proto/proto/SessionStore/client/components/SessionStore/SessionStore.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular/client/lib/angular"
+	cp src/esp/proto/components/angular/client/lib/angular/angular-animate.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular/client/lib/angular/angular-animate.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-bootstrap-prettify.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular/client/lib/angular/angular-bootstrap-prettify.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-bootstrap.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular/client/lib/angular/angular-bootstrap.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-cookies.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular/client/lib/angular/angular-cookies.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-loader.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular/client/lib/angular/angular-loader.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-mocks.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular/client/lib/angular/angular-mocks.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-resource.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular/client/lib/angular/angular-resource.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-route.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular/client/lib/angular/angular-route.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-sanitize.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular/client/lib/angular/angular-sanitize.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-scenario.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular/client/lib/angular/angular-scenario.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular-touch.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular/client/lib/angular/angular-touch.js
+	cp src/esp/proto/components/angular/client/lib/angular/angular.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular/client/lib/angular/angular.js
+	cp src/esp/proto/components/angular/client/lib/angular/errors.json $(BIT_VAPP_PREFIX)/esp/proto/components/angular/client/lib/angular/errors.json
+	cp src/esp/proto/components/angular/client/lib/angular/version.json $(BIT_VAPP_PREFIX)/esp/proto/components/angular/client/lib/angular/version.json
+	cp src/esp/proto/components/angular/client/lib/angular/version.txt $(BIT_VAPP_PREFIX)/esp/proto/components/angular/client/lib/angular/version.txt
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular"
+	cp src/esp/proto/components/angular/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/angular/config.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/ext"
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input-group.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input-group.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/Esp.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/ext/Esp.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp"
+	cp src/esp/proto/components/angular-esp/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/config.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-extras"
+	cp src/esp/proto/components/angular-extras/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/angular-extras/config.json
+	cp src/esp/proto/components/angular-extras/misc.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-extras/misc.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-local/client/lib/angular-local/ext"
+	cp src/esp/proto/components/angular-local/client/lib/angular-local/ext/LocalStore.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-local/client/lib/angular-local/ext/LocalStore.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-local"
+	cp src/esp/proto/components/angular-local/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/angular-local/config.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/app"
+	cp src/esp/proto/components/angular-mvc/client/app/main.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/app/main.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/css"
+	cp src/esp/proto/components/angular-mvc/client/css/all.css $(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/css/all.css
+	cp src/esp/proto/components/angular-mvc/client/css/all.less $(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/css/all.less
+	cp src/esp/proto/components/angular-mvc/client/css/app.less $(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/css/app.less
+	cp src/esp/proto/components/angular-mvc/client/css/fix.css $(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/css/fix.css
+	cp src/esp/proto/components/angular-mvc/client/css/old-app.less $(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/css/old-app.less
+	cp src/esp/proto/components/angular-mvc/client/css/old-theme.less $(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/css/old-theme.less
+	cp src/esp/proto/components/angular-mvc/client/css/theme.less $(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/css/theme.less
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client"
+	cp src/esp/proto/components/angular-mvc/client/index.esp $(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/index.esp
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/pages"
+	cp src/esp/proto/components/angular-mvc/client/pages/splash.html $(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/client/pages/splash.html
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc"
+	cp src/esp/proto/components/angular-mvc/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/config.json
+	cp src/esp/proto/components/angular-mvc/start.bit $(BIT_VAPP_PREFIX)/esp/proto/components/angular-mvc/start.bit
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-session/client/lib/angular-session/ext"
+	cp src/esp/proto/components/angular-session/client/lib/angular-session/ext/SessionStore.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-session/client/lib/angular-session/ext/SessionStore.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-session"
+	cp src/esp/proto/components/angular-session/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/angular-session/config.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-ui-bootstrap/client/lib/angular-ui-bootstrap"
+	cp src/esp/proto/components/angular-ui-bootstrap/client/lib/angular-ui-bootstrap/ui-bootstrap-tpls.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-ui-bootstrap/client/lib/angular-ui-bootstrap/ui-bootstrap-tpls.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-ui-bootstrap"
+	cp src/esp/proto/components/angular-ui-bootstrap/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/angular-ui-bootstrap/config.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/animate/client/css"
+	cp src/esp/proto/components/animate/client/css/animate.css $(BIT_VAPP_PREFIX)/esp/proto/components/animate/client/css/animate.css
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/animate"
+	cp src/esp/proto/components/animate/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/animate/config.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/css"
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/css/bootstrap-theme.css $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/css/bootstrap-theme.css
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/css/bootstrap-theme.min.css $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/css/bootstrap-theme.min.css
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/css/bootstrap.css $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/css/bootstrap.css
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/css/bootstrap.min.css $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/css/bootstrap.min.css
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/fonts"
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/fonts/glyphicons-halflings-regular.eot $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/fonts/glyphicons-halflings-regular.eot
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/fonts/glyphicons-halflings-regular.svg $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/fonts/glyphicons-halflings-regular.svg
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/fonts/glyphicons-halflings-regular.ttf $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/fonts/glyphicons-halflings-regular.ttf
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/fonts/glyphicons-halflings-regular.woff $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/fonts/glyphicons-halflings-regular.woff
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/js"
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/js/bootstrap.js $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/js/bootstrap.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less"
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/alerts.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/alerts.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/badges.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/badges.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/bootstrap.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/bootstrap.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/breadcrumbs.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/breadcrumbs.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/button-groups.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/button-groups.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/buttons.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/buttons.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/carousel.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/carousel.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/close.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/close.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/code.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/code.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/component-animations.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/component-animations.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/dropdowns.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/dropdowns.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/forms.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/forms.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/glyphicons.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/glyphicons.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/grid.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/grid.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/input-groups.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/input-groups.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/jumbotron.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/jumbotron.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/labels.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/labels.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/list-group.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/list-group.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/media.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/media.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/mixins.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/mixins.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/modals.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/modals.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/navbar.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/navbar.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/navs.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/navs.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/normalize.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/normalize.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/pager.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/pager.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/pagination.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/pagination.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/panels.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/panels.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/popovers.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/popovers.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/print.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/print.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/progress-bars.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/progress-bars.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/responsive-utilities.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/responsive-utilities.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/scaffolding.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/scaffolding.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/tables.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/tables.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/theme.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/theme.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/thumbnails.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/thumbnails.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/tooltip.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/tooltip.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/type.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/type.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/utilities.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/utilities.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/variables.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/variables.less
+	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/wells.less $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/client/lib/bootstrap/less/wells.less
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap"
+	cp src/esp/proto/components/bootstrap/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/bootstrap/config.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/css"
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.css $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.css
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.min.css $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.min.css
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/css/font-awesome.css $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/css/font-awesome.css
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/css/font-awesome.min.css $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/css/font-awesome.min.css
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/font"
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/font/fontawesome-webfont.eot $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/font/fontawesome-webfont.eot
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/font/fontawesome-webfont.svg $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/font/fontawesome-webfont.svg
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/font/fontawesome-webfont.ttf $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/font/fontawesome-webfont.ttf
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/font/fontawesome-webfont.woff $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/font/fontawesome-webfont.woff
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/font/FontAwesome.otf $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/font/FontAwesome.otf
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/less"
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/less/bootstrap.less $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/less/bootstrap.less
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/less/core.less $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/less/core.less
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/less/extras.less $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/less/extras.less
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/less/font-awesome-ie7.less $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/less/font-awesome-ie7.less
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/less/font-awesome.less $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/less/font-awesome.less
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/less/icons.less $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/less/icons.less
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/less/mixins.less $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/less/mixins.less
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/less/path.less $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/less/path.less
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/less/variables.less $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/less/variables.less
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/scss"
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_bootstrap.scss $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_bootstrap.scss
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_core.scss $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_core.scss
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_extras.scss $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_extras.scss
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_icons.scss $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_icons.scss
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_mixins.scss $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_mixins.scss
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_path.scss $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_path.scss
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_variables.scss $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/scss/_variables.scss
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/font-awesome-ie7.scss $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/scss/font-awesome-ie7.scss
+	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/font-awesome.scss $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/client/lib/font-awesome/scss/font-awesome.scss
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome"
+	cp src/esp/proto/components/font-awesome/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/font-awesome/config.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/html5shiv/client/lib/html5shiv"
+	cp src/esp/proto/components/html5shiv/client/lib/html5shiv/html5shiv.js $(BIT_VAPP_PREFIX)/esp/proto/components/html5shiv/client/lib/html5shiv/html5shiv.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/html5shiv"
+	cp src/esp/proto/components/html5shiv/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/html5shiv/config.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/jquery/client/lib/jquery"
+	cp src/esp/proto/components/jquery/client/lib/jquery/jquery.js $(BIT_VAPP_PREFIX)/esp/proto/components/jquery/client/lib/jquery/jquery.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/jquery"
+	cp src/esp/proto/components/jquery/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/jquery/config.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc"
+	cp src/esp/proto/components/legacy-mvc/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/config.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/layouts"
+	cp src/esp/proto/components/legacy-mvc/layouts/default.esp $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/layouts/default.esp
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/css"
+	cp src/esp/proto/components/legacy-mvc/static/css/all.css $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/css/all.css
+	cp src/esp/proto/components/legacy-mvc/static/css/all.less $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/css/all.less
+	cp src/esp/proto/components/legacy-mvc/static/css/app.less $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/css/app.less
+	cp src/esp/proto/components/legacy-mvc/static/css/esp.less $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/css/esp.less
+	cp src/esp/proto/components/legacy-mvc/static/css/more.less $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/css/more.less
+	cp src/esp/proto/components/legacy-mvc/static/css/normalize.less $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/css/normalize.less
+	cp src/esp/proto/components/legacy-mvc/static/css/theme.less $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/css/theme.less
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/images"
+	cp src/esp/proto/components/legacy-mvc/static/images/banner.jpg $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/images/banner.jpg
+	cp src/esp/proto/components/legacy-mvc/static/images/favicon.ico $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/images/favicon.ico
+	cp src/esp/proto/components/legacy-mvc/static/images/splash.jpg $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/images/splash.jpg
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static"
+	cp src/esp/proto/components/legacy-mvc/static/index.esp $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/index.esp
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/lib"
+	cp src/esp/proto/components/legacy-mvc/static/lib/html5shiv.js $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/lib/html5shiv.js
+	cp src/esp/proto/components/legacy-mvc/static/lib/jquery.esp.js $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/lib/jquery.esp.js
+	cp src/esp/proto/components/legacy-mvc/static/lib/jquery.js $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/lib/jquery.js
+	cp src/esp/proto/components/legacy-mvc/static/lib/jquery.simplemodal.js $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/lib/jquery.simplemodal.js
+	cp src/esp/proto/components/legacy-mvc/static/lib/jquery.tablesorter.js $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/lib/jquery.tablesorter.js
+	cp src/esp/proto/components/legacy-mvc/static/lib/less.js $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/lib/less.js
+	cp src/esp/proto/components/legacy-mvc/static/lib/respond.js $(BIT_VAPP_PREFIX)/esp/proto/components/legacy-mvc/static/lib/respond.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/less/client/lib/less"
+	cp src/esp/proto/components/less/client/lib/less/less.js $(BIT_VAPP_PREFIX)/esp/proto/components/less/client/lib/less/less.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/less"
+	cp src/esp/proto/components/less/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/less/config.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/more/client/css"
+	cp src/esp/proto/components/more/client/css/more.less $(BIT_VAPP_PREFIX)/esp/proto/components/more/client/css/more.less
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/more"
+	cp src/esp/proto/components/more/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/more/config.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/normalize/client/css"
+	cp src/esp/proto/components/normalize/client/css/normalize.less $(BIT_VAPP_PREFIX)/esp/proto/components/normalize/client/css/normalize.less
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/normalize"
+	cp src/esp/proto/components/normalize/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/normalize/config.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/respond/client/lib/respond"
+	cp src/esp/proto/components/respond/client/lib/respond/respond.js $(BIT_VAPP_PREFIX)/esp/proto/components/respond/client/lib/respond/respond.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/respond"
+	cp src/esp/proto/components/respond/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/respond/config.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/server"
+	cp src/esp/proto/components/server/app.conf $(BIT_VAPP_PREFIX)/esp/proto/components/server/app.conf
+	cp src/esp/proto/components/server/appweb.conf $(BIT_VAPP_PREFIX)/esp/proto/components/server/appweb.conf
+	cp src/esp/proto/components/server/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/server/config.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/templates/angular-mvc"
+	cp src/esp/proto/templates/angular-mvc/controller.c $(BIT_VAPP_PREFIX)/esp/proto/templates/angular-mvc/controller.c
+	cp src/esp/proto/templates/angular-mvc/controller.js $(BIT_VAPP_PREFIX)/esp/proto/templates/angular-mvc/controller.js
+	cp src/esp/proto/templates/angular-mvc/edit.html $(BIT_VAPP_PREFIX)/esp/proto/templates/angular-mvc/edit.html
+	cp src/esp/proto/templates/angular-mvc/list.html $(BIT_VAPP_PREFIX)/esp/proto/templates/angular-mvc/list.html
+	cp src/esp/proto/templates/angular-mvc/model.js $(BIT_VAPP_PREFIX)/esp/proto/templates/angular-mvc/model.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/templates/legacy-mvc"
+	cp src/esp/proto/templates/legacy-mvc/controller.c $(BIT_VAPP_PREFIX)/esp/proto/templates/legacy-mvc/controller.c
+	cp src/esp/proto/templates/legacy-mvc/edit.html $(BIT_VAPP_PREFIX)/esp/proto/templates/legacy-mvc/edit.html
+	cp src/esp/proto/templates/legacy-mvc/list.html $(BIT_VAPP_PREFIX)/esp/proto/templates/legacy-mvc/list.html
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/templates/server"
+	cp src/esp/proto/templates/server/app.c $(BIT_VAPP_PREFIX)/esp/proto/templates/server/app.c
+	cp src/esp/proto/templates/server/controller.c $(BIT_VAPP_PREFIX)/esp/proto/templates/server/controller.c
+	cp src/esp/proto/templates/server/migration.c $(BIT_VAPP_PREFIX)/esp/proto/templates/server/migration.c
 endif
 ifeq ($(BIT_PACK_ESP),1)
 	cp $(CONFIG)/bin/esp.conf $(BIT_VAPP_PREFIX)/bin/esp.conf
@@ -2190,6 +2461,7 @@ ifeq ($(BIT_PACK_PHP),1)
 	cp src/server/php.ini $(BIT_ETC_PREFIX)/php.ini
 endif
 	cp src/server/appweb.conf $(BIT_ETC_PREFIX)/appweb.conf
+	cp src/server/sample.conf $(BIT_ETC_PREFIX)/sample.conf
 	cp src/server/self.crt $(BIT_ETC_PREFIX)/self.crt
 	cp src/server/self.key $(BIT_ETC_PREFIX)/self.key
 	mkdir -p "$(BIT_VAPP_PREFIX)/inc"
@@ -2277,32 +2549,32 @@ endif
 #
 #   start
 #
-DEPS_95 += compile
-DEPS_95 += stop
+DEPS_94 += compile
+DEPS_94 += stop
 
-start: $(DEPS_95)
+start: $(DEPS_94)
 	./$(CONFIG)/bin/appman install enable start
 
 #
 #   install
 #
-DEPS_96 += compile
-DEPS_96 += stop
-DEPS_96 += installBinary
-DEPS_96 += start
+DEPS_95 += compile
+DEPS_95 += stop
+DEPS_95 += installBinary
+DEPS_95 += start
 
-install: $(DEPS_96)
+install: $(DEPS_95)
 	
 
 
 #
 #   uninstall
 #
-DEPS_97 += build
-DEPS_97 += compile
-DEPS_97 += stop
+DEPS_96 += build
+DEPS_96 += compile
+DEPS_96 += stop
 
-uninstall: $(DEPS_97)
+uninstall: $(DEPS_96)
 	rm -f "$(BIT_ETC_PREFIX)/appweb.conf"
 	rm -f "$(BIT_ETC_PREFIX)/esp.conf"
 	rm -f "$(BIT_ETC_PREFIX)/mine.types"
@@ -2324,14 +2596,14 @@ uninstall: $(DEPS_97)
 #
 #   genslink
 #
-genslink: $(DEPS_98)
+genslink: $(DEPS_97)
 	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
 
 #
 #   run
 #
-DEPS_99 += compile
+DEPS_98 += compile
 
-run: $(DEPS_99)
+run: $(DEPS_98)
 	cd src/server; sudo ../../$(CONFIG)/bin/appweb -v ; cd ../..
 

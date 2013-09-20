@@ -24,9 +24,31 @@ PUBLIC void addHeader(cchar *key, cchar *fmt, ...)
 }
 
 
-PUBLIC EdiRec *createRec(cchar *tableName, MprHash *params)
+PUBLIC bool canUser(cchar *abilities, bool warn)
 {
-    return espCreateRec(getConn(), tableName, params);
+    HttpConn    *conn;
+
+    conn = getConn();
+    if (httpCanUser(conn, abilities)) {
+        return 1;
+    }
+    if (warn) {
+        feedback("error", "Access Denied. Insufficient privilege.");
+        renderResult(0);
+    }
+    return 0;
+}
+
+
+PUBLIC EdiRec *createRec(cchar *tableName, MprJson *params)
+{
+    return setRec(ediSetFields(ediCreateRec(getDatabase(), tableName), params));
+}
+
+
+PUBLIC bool createRecFromParams(cchar *table)
+{
+    return updateRec(createRec(table, params()));
 }
 
 
@@ -92,9 +114,18 @@ PUBLIC void flush()
 }
 
 
+PUBLIC cchar *getAppUri()
+{
+    return espGetTop(getConn());
+}
+
+
 PUBLIC MprList *getColumns(EdiRec *rec)
 {
-    return espGetColumns(getConn(), rec);
+    if (rec == 0) {
+        return 0;
+    }
+    return ediGetColumns(getDatabase(), rec->tableName);
 }
 
 
@@ -142,16 +173,35 @@ PUBLIC Edi *getDatabase()
 }
 
 
+PUBLIC cchar *getDocuments()
+{
+    return getConn()->rx->route->documents;
+}
+
+
+#if DEPRECATED || 1
+PUBLIC cchar *getDir()
+{
+    return getDocuments();
+}
+#endif
+
+
 PUBLIC EspRoute *getEspRoute()
 {
     return espGetEspRoute(getConn());
 }
 
 
-//  MOB - rename getDocuments. What about getHome
-PUBLIC cchar *getDir()
+PUBLIC cchar *getFeedback(cchar *kind)
 {
-    return getConn()->rx->route->documents;
+    return espGetFeedback(getConn(), kind);
+}
+
+
+PUBLIC cchar *getFlash(cchar *kind)
+{
+    return espGetFlash(getConn(), kind);
 }
 
 
@@ -176,6 +226,12 @@ PUBLIC cchar *getMethod()
 PUBLIC cchar *getQuery()
 {
     return getConn()->rx->parsedUri->query;
+}
+
+
+PUBLIC EdiRec *getRec()
+{
+    return getConn()->record;
 }
 
 
@@ -205,18 +261,6 @@ PUBLIC cchar *getSessionVar(cchar *key)
 }
 
 
-PUBLIC cchar *session(cchar *key)
-{
-    return getSessionVar(key);
-}
-
-
-PUBLIC cchar *getAppUri()
-{
-    return espGetTop(getConn());
-}
-
-
 PUBLIC MprHash *getUploads()
 {
     return espGetUploads(getConn());
@@ -226,6 +270,18 @@ PUBLIC MprHash *getUploads()
 PUBLIC cchar *getUri()
 {
     return espGetUri(getConn());
+}
+
+
+PUBLIC bool hasGrid()
+{
+    return espHasGrid(getConn());
+}
+
+
+PUBLIC bool hasRec()
+{
+    return espHasRec(getConn());
 }
 
 
@@ -249,7 +305,7 @@ PUBLIC bool isSecure()
 
 PUBLIC EdiGrid *makeGrid(cchar *contents)
 {
-    return espMakeGrid(contents);
+    return ediMakeGrid(contents);
 }
 
 
@@ -292,7 +348,7 @@ PUBLIC cchar *param(cchar *key)
 }
 
 
-PUBLIC MprHash *params()
+PUBLIC MprJson *params()
 {
     return espGetParams(getConn());
 }
@@ -330,7 +386,7 @@ PUBLIC EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operati
 
 PUBLIC EdiGrid *readTable(cchar *tableName)
 {
-    return setGrid(espReadTable(getConn(), tableName));
+    return setGrid(ediReadWhere(getDatabase(), tableName, 0, 0, 0));
 }
 
 
@@ -354,7 +410,10 @@ PUBLIC void removeCookie(cchar *name)
 
 PUBLIC bool removeRec(cchar *tableName, cchar *key)
 {
-    return espRemoveRec(getConn(), tableName, key);
+    if (ediDeleteRow(getDatabase(), tableName, key) < 0) {
+        return 0;
+    }
+    return 1;
 }
 
 
@@ -399,6 +458,12 @@ PUBLIC void renderError(int status, cchar *fmt, ...)
 PUBLIC ssize renderFile(cchar *path)
 {
     return espRenderFile(getConn(), path);
+}
+
+
+PUBLIC void renderFlash(cchar *kind, cchar *optionString)
+{
+    espRenderFlash(getConn(), kind, optionString);
 }
 
 
@@ -460,19 +525,36 @@ PUBLIC void renderSecurityToken()
 PUBLIC void scripts(cchar *patterns)
 {
     HttpConn    *conn;
-    EspReq      *req;
+    HttpRoute   *route;
+    EspRoute    *eroute;
     MprList     *files;
+    MprJson     *components, *component;
     cchar       *indent, *uri, *path;
-    int         next;
+    int         next, i;
 
     conn = getConn();
-    req = conn->data;
+    route = conn->rx->route;
+    eroute = route->eroute;
+    patterns = httpExpandRouteVars(route, patterns);
 
-    if ((files = mprGlobPathFiles(req->eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0) {
+    //  MOB - is components used?
+    if (patterns == NULL || smatch(patterns, "${COMPONENTS}/**.js")) {
+        //  MOB - should we have eroute->components?
+        if ((components = mprGetJson(eroute->config, "settings.components", 0)) != 0) {
+            for (ITERATE_JSON(components, component, i)) {
+                if (component->type == MPR_JSON_VALUE) {
+                    scripts(sfmt("%s/lib/%s/**.js", eroute->clientDir, component->value));
+                }
+            }
+        }
+    }
+
+    if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0) {
         mprError("No scripts defined for current application mode");
         return;
     }
     indent = "";
+    //  MOB - how to minify?
     for (ITERATE_ITEMS(files, path, next)) {
         uri = httpLink(conn, path, NULL);
         if (scontains(path, "-IE-") || scontains(path, "html5shiv")) {
@@ -484,6 +566,12 @@ PUBLIC void scripts(cchar *patterns)
         }
         indent = "    ";
     }
+}
+
+
+PUBLIC void securityToken()
+{
+    espSecurityToken(getConn());
 }
 
 
@@ -513,13 +601,20 @@ PUBLIC void setData(void *data)
 
 PUBLIC EdiRec *setField(EdiRec *rec, cchar *fieldName, cchar *value)
 {
-    return espSetField(rec, fieldName, value);
+    return ediSetField(rec, fieldName, value);
 }
 
 
-PUBLIC EdiRec *setFields(EdiRec *rec, MprHash *params)
+PUBLIC EdiRec *setFields(EdiRec *rec, MprJson *params)
 {
-    return espSetFields(rec, params);
+    return ediSetFields(rec, params);
+}
+
+
+PUBLIC EdiGrid *setGrid(EdiGrid *grid)
+{
+    getConn()->grid = grid;
+    return grid;
 }
 
 
@@ -535,6 +630,12 @@ PUBLIC void setHeader(cchar *key, cchar *fmt, ...)
 }
 
 
+PUBLIC void setIntParam(cchar *key, int value)
+{
+    espSetIntParam(getConn(), key, value);
+}
+
+
 PUBLIC void setNotifier(HttpNotifier notifier)
 {
     espSetNotifier(getConn(), notifier);
@@ -547,9 +648,9 @@ PUBLIC void setParam(cchar *key, cchar *value)
 }
 
 
-PUBLIC void setIntParam(cchar *key, int value)
+PUBLIC EdiRec *setRec(EdiRec *rec)
 {
-    espSetIntParam(getConn(), key, value);
+    return espSetRec(getConn(), rec);
 }
 
 
@@ -562,6 +663,12 @@ PUBLIC void setSessionVar(cchar *key, cchar *value)
 PUBLIC void setStatus(int status)
 {
     espSetStatus(getConn(), status);
+}
+
+
+PUBLIC cchar *session(cchar *key)
+{
+    return getSessionVar(key);
 }
 
 
@@ -585,19 +692,26 @@ PUBLIC void updateCache(cchar *uri, cchar *data, int lifesecs)
 
 PUBLIC bool updateField(cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
 {
-    return espUpdateField(getConn(), tableName, key, fieldName, value);
+    return ediUpdateField(getDatabase(), tableName, key, fieldName, value) == 0;
 }
 
 
-PUBLIC bool updateFields(cchar *tableName, MprHash *params)
+PUBLIC bool updateFields(cchar *tableName, MprJson *params)
 {
-    return espUpdateFields(getConn(), tableName, params);
+    EdiRec  *rec;
+    cchar   *key;
+
+    key = mprLookupJsonValue(params, "id");
+    if ((rec = ediSetFields(ediReadRec(getDatabase(), tableName, key), params)) == 0) {
+        return 0;
+    }
+    return ediUpdateRec(getDatabase(), rec) == 0;
 }
 
 
 PUBLIC bool updateRec(EdiRec *rec)
 {
-    return espUpdateRec(getConn(), rec);
+    return ediUpdateRec(getDatabase(), rec) == 0;
 }
 
 
@@ -606,14 +720,8 @@ PUBLIC bool updateRecFromParams(cchar *table)
     return updateRec(setFields(readRec(table, param("id")), params()));
 }
 
-PUBLIC bool createRecFromParams(cchar *table)
-{
-    return updateRec(createRec(table, params()));
-}
-
-
 /************************************ Deprecated ****************************/
-#if DEPRECATED || 1
+#if BIT_ESP_LEGACY
 /*
     Deprecated in 4.4
  */
@@ -769,30 +877,13 @@ PUBLIC EdiGrid *getGrid()
 }
 
 
-PUBLIC EdiRec *getRec()
-{
-    return getConn()->record;
-}
-
-
 PUBLIC cchar *getTop()
 {
     return getAppUri();
 }
 
 
-PUBLIC bool hasGrid()
-{
-    return espHasGrid(getConn());
-}
-
-
-PUBLIC bool hasRec()
-{
-    return espHasRec(getConn());
-}
-
-
+#if DEPRECATE || 1
 PUBLIC void inform(cchar *fmt, ...)
 {
     va_list     args;
@@ -801,32 +892,10 @@ PUBLIC void inform(cchar *fmt, ...)
     espSetFlashv(getConn(), "inform", fmt, args);
     va_end(args);
 }
+#endif
 
 
-PUBLIC void renderFlash(cchar *kind, cchar *optionString)
-{
-    espRenderFlash(getConn(), kind, optionString);
-}
-
-
-PUBLIC void securityToken()
-{
-    espSecurityToken(getConn());
-}
-
-
-PUBLIC EdiGrid *setGrid(EdiGrid *grid)
-{
-    getConn()->grid = grid;
-    return grid;
-}
-
-
-PUBLIC EdiRec *setRec(EdiRec *rec)
-{
-    return espSetRec(getConn(), rec);
-}
-#endif /* DEPRECATED */
+#endif /* BIT_ESP_LEGACY */
 #endif /* BIT_PACK_ESP */
 
 /*

@@ -38,6 +38,9 @@
             <ul>
                 <li><a href="#allow">Allow</a></li>
                 <li><a href="#authAutoLogin">AuthAutoLogin</a></li>
+<!-- UNUSED
+                <li><a href="#authCipher">AuthCipher</a></li>
+-->
                 <li><a href="#authDigestQop">AuthDigestQop</a></li>
                 <li><a href="#authStore">AuthStore</a></li>
                 <li><a href="#authType">AuthType</a></li>
@@ -125,6 +128,47 @@
                 </tbody>
             </table>
             
+            <!-- UNUSED
+            <a id="authCipher"></a>
+            <h2>AuthCipher</h2>
+            <table class="directive" title="directive">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Defines the cipher used to encrypt passwords</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>AuthCipher [blowfish | md5]</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>AuthCipher blowfish</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The AuthCipher directive specifies the cipher used for encryption when storing passwords 
+                            at the server. There are two choices, 
+                            <ul>
+                            <li>blowfish &mdash; for Blowfish encryption. Cannot use with Digest authentication</li>
+                            <li>md5 &mdash; for MD5 hashing. Required if using Digest authentication</li>
+                            </ul>
+                            <p>The blowfish cipher is much more secure than MD5 which can be compromised if the password
+                            file is accessible.
+                            <p>The default cipher is "md5".</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            -->
+            
             <a id="authDigestQop"></a>
             <h2>AuthDigestQop</h2>
             <table class="directive" title="directive">
@@ -163,7 +207,6 @@
                     </tr>
                 </tbody>
             </table>
-            
             <!-- DEPRECATED
             <a id="authRealm"></a>
             <h2>AuthRealm</h2>
@@ -417,13 +460,8 @@ Deny from www.myCompetitor.com
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>
-                            <p>The Require directive defines which users can access a set of resources. The directive
-                            may specify a set of users by name, or a set of abilities that users must possess
-                            before being granted access. In the absence of a require directive, any valid user
-                            will be permitted access.  The Require ability directive specifies a list of ability words.
-                            These are typically verbs such as "view", "manage", "edit", and the like. </p>
-                            <p>The <em>Require secure</em> directive specifies that access must be performed over
-                            a secure protocol using SSL/TLS.</p>
+                            <p>The Require directive defines which users can access a set of resources. The directive may specify a set of users by name, or a set of abilities that users must possess before being granted access. In the absence of a require directive, any valid user will be permitted access.  The Require ability directive specifies a list of ability words. These are typically verbs such as "view", "manage", "edit", and the like. </p>
+                            <p>The <em>Require secure</em> directive specifies that access must be performed over a secure protocol using SSL/TLS. This is achieved by emitting a <i>Strict-Transport-Security</i> response header. This instructs the browswer that all connections therafter must only request over HTTPS. This applies to the current and future browser sessions up to the specified lifespan.</p>
                             <p>The Require directive is inherited from outer hosts and blocks in the config file.</p>
                         </td>
                     </tr>

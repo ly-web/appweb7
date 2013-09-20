@@ -11,7 +11,7 @@ SYNOPSIS
 
        appweb  [--config  configFile] [--chroot directory] [--debugger] [--exe
        path] [--log logSpec] [--home directory]  [--threads  threads]  [--ver-
-       sion] [--verbose]
+       bose] [--version]
 
 DESCRIPTION
        Appweb  is  a  compact  embedded HTTP web server.  It is a fast, small-
@@ -31,6 +31,10 @@ DESCRIPTION
        the PORT component is omitted, Appweb will listen on port 80. If the IP
        address  is  omitted  and a port is supplied, Appweb will listen on all
        network interfaces.
+
+       Appweb responds to the SIGUSR2 signal and toggles the trace level  from
+       2 to 4 and vice-versa. Appweb responds to the SIGINFO|SIGPWR signal and
+       emits operational stats to the trace log.
 
 OPTIONS
        --config filename

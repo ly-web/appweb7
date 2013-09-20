@@ -12,13 +12,8 @@ Bit.load({
             sources: ['simpleHandler.c'],
             depends: ['appweb'],
         }
-        server: {
-            type:    'exe',
-            sources: 'server.c',
-            depends: ['appweb'],
-        },
         run: {
-            run: './server',
+            run: 'appweb',
         },
     },
     packDefaults: { appweb: true },

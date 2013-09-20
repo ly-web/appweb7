@@ -36678,7 +36678,7 @@ static void httpEventChange(HttpConn *conn, int event, int arg)
     Ejs         *ejs;
     EjsHttp     *hp;
     HttpTx      *tx;
-    ssize       lastWritten;
+    MprOff      lastWritten;
 
     hp = httpGetConnContext(conn);
     ejs = hp->ejs;
@@ -37874,6 +37874,8 @@ PUBLIC EjsString *ejsToJSON(Ejs *ejs, EjsAny *vp, EjsObj *options)
     return result;
 }
 
+
+//  MOB - should merge this with MPR routines
 
 PUBLIC EjsString *ejsSerializeWithOptions(Ejs *ejs, EjsAny *vp, EjsObj *options)
 {
@@ -51444,9 +51446,9 @@ static EjsNumber *ws_readyState(Ejs *ejs, EjsWebSocket *ws, int argc, EjsObj **a
 
 
 /*  
-    function send(...content): Void
+    function send(...content): Number
  */
-static EjsString *ws_send(Ejs *ejs, EjsWebSocket *ws, int argc, EjsObj **argv)
+static EjsNumber *ws_send(Ejs *ejs, EjsWebSocket *ws, int argc, EjsObj **argv)
 {
     EjsArray        *args;
     EjsByteArray    *ba;
@@ -51456,8 +51458,9 @@ static EjsString *ws_send(Ejs *ejs, EjsWebSocket *ws, int argc, EjsObj **argv)
 
     args = (EjsArray*) argv[0];
     if (ws->conn->state < HTTP_STATE_PARSED && !waitForHttpState(ws, HTTP_STATE_PARSED, -1, 1)) {
-        return 0;
+        return ESV(null);
     }
+    nbytes = 0;
     for (i = 0; i < args->length; i++) {
         if ((arg = ejsGetProperty(ejs, args, i)) != 0) {
             if (ejsIs(ejs, arg, ByteArray)) {
@@ -51468,32 +51471,41 @@ static EjsString *ws_send(Ejs *ejs, EjsWebSocket *ws, int argc, EjsObj **argv)
                 nbytes = httpSend(ws->conn, ejsToMulti(ejs, arg));
             }
             if (nbytes < 0) {
-                return 0;
+                return ESV(null);
             }
         }
     }
-    return 0;
+    return ejsCreateNumber(ejs, nbytes);
 }
 
 
 /*  
-    function sendBlock(content, options): Void
+    function sendBlock(content, options): Number
  */
-static EjsString *ws_sendBlock(Ejs *ejs, EjsWebSocket *ws, int argc, EjsObj **argv)
+static EjsNumber *ws_sendBlock(Ejs *ejs, EjsWebSocket *ws, int argc, EjsObj **argv)
 {
     EjsByteArray    *ba;
     EjsAny          *content, *vp;
     ssize           nbytes;
     cchar           *str;
-    int             more, type, flags;
+    int             last, mode, type, flags;
 
     assert(argc == 2);
 
     if (ws->conn->state < HTTP_STATE_PARSED && !waitForHttpState(ws, HTTP_STATE_PARSED, -1, 1)) {
-        return 0;
+        return ESV(null);
     }
     content = argv[0];
-    more = ejsGetPropertyByName(ejs, argv[1], EN("more")) == ESV(true);
+    last = ejsGetPropertyByName(ejs, argv[1], EN("last")) != ESV(false);
+    if ((vp = ejsGetPropertyByName(ejs, argv[1], EN("mode"))) != 0) {
+        mode = (int) ejsGetNumber(ejs, vp);
+        if (mode != HTTP_BUFFER && mode != HTTP_BLOCK && mode != HTTP_NON_BLOCK) {
+            ejsThrowArgError(ejs, "Bad message mode");
+            return 0;
+        }
+    } else {
+        mode = HTTP_BUFFER;
+    }
     if ((vp = ejsGetPropertyByName(ejs, argv[1], EN("type"))) != 0) {
         type = (int) ejsGetNumber(ejs, vp);
         if (type != WS_MSG_CONT && type != WS_MSG_TEXT && type != WS_MSG_BINARY) {
@@ -51503,8 +51515,8 @@ static EjsString *ws_sendBlock(Ejs *ejs, EjsWebSocket *ws, int argc, EjsObj **ar
     } else {
         type = WS_MSG_TEXT;
     }
-    flags = HTTP_BLOCK;
-    if (more) {
+    flags = mode;
+    if (!last) {
         flags |= HTTP_MORE;
     }
     if (ejsIs(ejs, content, ByteArray)) {
@@ -51516,9 +51528,10 @@ static EjsString *ws_sendBlock(Ejs *ejs, EjsWebSocket *ws, int argc, EjsObj **ar
         nbytes = httpSendBlock(ws->conn, type, str, slen(str), flags);
     }
     if (nbytes < 0) {
+        ejsThrowIOError(ejs, "Cannot send block");
         return 0;
     }
-    return 0;
+    return ejsCreateNumber(ejs, nbytes);
 }
 
 
@@ -64980,9 +64993,7 @@ static EjsObj *sqliteSql(Ejs *ejs, EjsSqlite *db, int argc, EjsObj **argv)
     }
     if (rc != SQLITE_OK) {
         if (rc == sqlite3_errcode(sdb)) {
-            return sqliteSql(ejs, db,  argc, argv);
-
-            // ejsThrowIOError(ejs, "SQL error: %s", sqlite3_errmsg(sdb));
+            ejsThrowIOError(ejs, "SQL error: %s", sqlite3_errmsg(sdb));
         } else {
             ejsThrowIOError(ejs, "Unspecified SQL error");
         }
@@ -66212,10 +66223,6 @@ void ejsConfigureHttpServerType(Ejs *ejs)
 
 
 
-/********************************** Forwards **********************************/
-
-static void defineParam(Ejs *ejs, EjsObj *params, cchar *key, cchar *value);
-
 /************************************* Code ***********************************/
  
 static int connOk(Ejs *ejs, EjsRequest *req, int throwException)
@@ -66227,49 +66234,6 @@ static int connOk(Ejs *ejs, EjsRequest *req, int throwException)
         return 0;
     }
     return 1;
-}
-
-
-static void defineParam(Ejs *ejs, EjsObj *params, cchar *key, cchar *svalue)
-{
-    EjsName     qname;
-    EjsAny      *value;
-    EjsObj      *vp;
-    char        *subkey, *nextkey;
-    int         slotNum;
-
-    assert(params);
-
-    value = ejsCreateStringFromAsc(ejs, svalue);
-
-    /*  
-        name.name.name
-     */
-    if (strchr(key, '.') == 0) {
-        qname = ejsName(ejs, "", key);
-        ejsSetPropertyByName(ejs, params, qname, value);
-
-    } else {
-        subkey = stok(sclone(key), ".", &nextkey);
-        while (nextkey) {
-            qname = ejsName(ejs, "", subkey);
-            vp = ejsGetPropertyByName(ejs, params, qname);
-            if (vp == 0) {
-                if (snumber(nextkey)) {
-                    vp = (EjsObj*) ejsCreateArray(ejs, 0);
-                } else {
-                    vp = ejsCreateEmptyPot(ejs);
-                }
-                slotNum = ejsSetPropertyByName(ejs, params, qname, vp);
-                vp = ejsGetProperty(ejs, params, slotNum);
-            }
-            params = vp;
-            subkey = stok(NULL, ".", &nextkey);
-        }
-        assert(params);
-        qname = ejsName(ejs, "", subkey);
-        ejsSetPropertyByName(ejs, params, qname, value);
-    }
 }
 
 
@@ -66326,19 +66290,86 @@ static EjsString *createFormData(Ejs *ejs, EjsRequest *req)
 #endif
 
 
+#if UNUSED
+/*
+    Define a parameter. Key may contain "."
+ */
+static void defineParam(Ejs *ejs, EjsObj *params, cchar *key, cchar *svalue)
+{
+    EjsName     qname;
+    EjsAny      *value;
+    EjsObj      *vp;
+    char        *subkey, *nextkey;
+    int         slotNum;
+
+    assert(params);
+    value = ejsCreateStringFromAsc(ejs, svalue);
+
+    /*  
+        name.name.name
+     */
+    if (strchr(key, '.') == 0) {
+        qname = ejsName(ejs, "", key);
+        ejsSetPropertyByName(ejs, params, qname, value);
+
+    } else {
+        subkey = stok(sclone(key), ".", &nextkey);
+        while (nextkey) {
+            qname = ejsName(ejs, "", subkey);
+            vp = ejsGetPropertyByName(ejs, params, qname);
+            if (vp == 0) {
+                if (snumber(nextkey)) {
+                    vp = (EjsObj*) ejsCreateArray(ejs, 0);
+                } else {
+                    vp = ejsCreateEmptyPot(ejs);
+                }
+                slotNum = ejsSetPropertyByName(ejs, params, qname, vp);
+                vp = ejsGetProperty(ejs, params, slotNum);
+            }
+            params = vp;
+            subkey = stok(NULL, ".", &nextkey);
+        }
+        assert(params);
+        qname = ejsName(ejs, "", subkey);
+        ejsSetPropertyByName(ejs, params, qname, value);
+    }
+}
+#endif
+
+
+static void jsonToPot(Ejs *ejs, MprJson *json, EjsObj *obj)
+{
+    MprJson     *child;
+    EjsName     qname;
+    EjsObj      *container;
+    int         i;
+
+    for (ITERATE_JSON(json, child, i)) {
+        qname = ejsName(ejs, "", child->name);
+        if (child->type == MPR_JSON_VALUE) {
+            ejsSetPropertyByName(ejs, obj, qname, ejsCreateStringFromAsc(ejs, child->value));
+        } else if (child->type == MPR_JSON_ARRAY) {
+            container = (EjsObj*) ejsCreateArray(ejs, 0);
+            ejsSetPropertyByName(ejs, obj, qname, container);
+            jsonToPot(ejs, child, container);
+        } else {
+            container = ejsCreateEmptyPot(ejs);
+            ejsSetPropertyByName(ejs, obj, qname, container);
+            jsonToPot(ejs, child, container);
+        }
+    }
+}
+
+
 static EjsObj *createParams(Ejs *ejs, EjsRequest *req)
 {
     EjsObj      *params;
-    MprHash     *hparams;
-    MprKey      *kp;
+    MprJson     *hparams;
 
     if ((params = req->params) == 0) {
         params = (EjsObj*) ejsCreateEmptyPot(ejs);
         if (req->conn && (hparams = req->conn->rx->params) != 0) {
-            kp = 0;
-            while ((kp = mprGetNextKey(hparams, kp)) != NULL) {
-                defineParam(ejs, params, kp->key, kp->data);
-            }
+            jsonToPot(ejs, hparams, params);
         }
     }
     return req->params = params;
@@ -74398,9 +74429,6 @@ static int loadClassSection(Ejs *ejs, EjsModule *mp)
     /*
         See if the type has been registered in the set of immutable types. If so, can use without creating.
      */
-    if (smatch(qname.name->value, "Sqlite")) {
-        mprBreakpoint();
-    }
     type = ejsGetPropertyByName(ejs, ejs->service->immutable, qname);
     if (type == 0) {
         if (attributes & EJS_TYPE_FIXUP) {

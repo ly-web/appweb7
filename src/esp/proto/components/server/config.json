@@ -1,0 +1,27 @@
+{
+    name: "server",
+    description: "Default ESP service-side configuration for Appweb",
+    mode: "debug",
+    modes: {
+        debug: {
+            showErrors: true,
+            keepSource: true,
+            update: true,
+            username: "admin",
+        },
+        release: {
+            map: "compressed",
+            showErrors: false,
+            update: false,
+            keepSource: false,
+            username: "",
+        },
+    },
+    settings: {
+        serverPrefix: "/server",
+        timeouts: {
+            session: 1800,
+        },
+        xsrfToken: true,
+    },
+}

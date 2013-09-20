@@ -39,10 +39,11 @@ struct HttpWebSocket;
 /********************************** Tunables **********************************/
 
 //  TODO - do all these need to have MAX some are just sizes and not maximums
+//  MOB - should have http prefixes so they can be overridden by settings.http.XXX
 //  TODO SORT
 
-#ifndef BIT_DEFAULT_METHODS
-    #define BIT_DEFAULT_METHODS     "GET,POST"          /**< Default methods for routes */
+#ifndef BIT_HTTP_DEFAULT_METHODS
+    #define BIT_HTTP_DEFAULT_METHODS "GET,POST"         /**< Default methods for routes */
 #endif
 #ifndef BIT_HTTP_PORT
     #define BIT_HTTP_PORT           80
@@ -63,7 +64,7 @@ struct HttpWebSocket;
     #define BIT_HTTP_DELAY          (2000)              /**< 2 second delay per request - while delay enforced */
 #endif
 #ifndef BIT_MAX_URI
-    #define BIT_MAX_URI             1024                /**< Reasonable URI size */
+    #define BIT_MAX_URI             512                 /**< Reasonable URI size */
 #endif
 #ifndef BIT_MAX_IOVEC
     #define BIT_MAX_IOVEC           16                  /**< Number of fragments in a single socket write */
@@ -81,25 +82,25 @@ struct HttpWebSocket;
     #define BIT_MAX_CLIENTS         32                  /**< Maximum unique client IP addresses */
 #endif
 #ifndef BIT_MAX_CONNECTIONS
-    #define BIT_MAX_CONNECTIONS     32                  /**< Maximum concurrent client endpoints */
+    #define BIT_MAX_CONNECTIONS     50                  /**< Maximum concurrent client endpoints */
 #endif
 #ifndef BIT_MAX_HEADERS
-    #define BIT_MAX_HEADERS         8192                /**< Maximum size of the headers */
+    #define BIT_MAX_HEADERS         8192                /**< Maximum size of the headers (8K) */
 #endif
 #ifndef BIT_MAX_KEEP_ALIVE
     #define BIT_MAX_KEEP_ALIVE      200                 /**< Maximum requests per connection */
 #endif
 #ifndef BIT_MAX_NUM_HEADERS
-    #define BIT_MAX_NUM_HEADERS     30                  /**< Maximum number of header lines */
+    #define BIT_MAX_NUM_HEADERS     64                  /**< Maximum number of header lines */
 #endif
 #ifndef BIT_MAX_PROCESSES
     #define BIT_MAX_PROCESSES       10                  /**< Maximum concurrent processes */
 #endif
 #ifndef BIT_MAX_RECEIVE_BODY
-    #define BIT_MAX_RECEIVE_BODY    (128 * 1024 * 1024) /**< Maximum incoming body size */
+    #define BIT_MAX_RECEIVE_BODY    (256 * 1024)        /**< Maximum incoming body size (256K) */
 #endif
 #ifndef BIT_MAX_RECEIVE_FORM
-    #define BIT_MAX_RECEIVE_FORM    (1024 * 1024)       /**< Maximum incoming form size */
+    #define BIT_MAX_RECEIVE_FORM    (256 * 1024)        /**< Maximum incoming form size (256K) */
 #endif
 #ifndef BIT_MAX_REQUESTS_PER_CLIENT
     #define BIT_MAX_REQUESTS_PER_CLIENT 20              /**< Maximum concurrent requests per client */
@@ -126,7 +127,7 @@ struct HttpWebSocket;
     #define BIT_MAX_TX_BODY         (INT_MAX)           /**< Maximum buffer for response data */
 #endif
 #ifndef BIT_MAX_UPLOAD
-    #define BIT_MAX_UPLOAD          (INT_MAX)
+    #define BIT_MAX_UPLOAD          (INT_MAX)           /**< Maximum file upload size */
 #endif
 #ifndef BIT_MAX_WSS_FRAME
     #define BIT_MAX_WSS_FRAME       (4 * 1024)          /**< Default max WebSockets message frame size */
@@ -135,23 +136,25 @@ struct HttpWebSocket;
     #define BIT_MAX_WSS_PACKET      (8 * 1024)          /**< Default size to provide to application in one packet */
 #endif
 #ifndef BIT_MAX_WSS_SOCKETS
-    #define BIT_MAX_WSS_SOCKETS     200                 /**< Default max WebSockets */
+    #define BIT_MAX_WSS_SOCKETS     25                  /**< Default max WebSockets */
 #endif
-
+#ifndef BIT_MAX_WSS_MESSAGE
+    #define BIT_MAX_WSS_MESSAGE     (2147483647)        /**< Default max WebSockets message size (2GB) */
+#endif
 #ifndef BIT_MAX_CACHE_DURATION
     #define BIT_MAX_CACHE_DURATION  (86400 * 1000)      /**< Default cache lifespan to 1 day */
 #endif
 #ifndef BIT_MAX_INACTIVITY_DURATION
-    #define BIT_MAX_INACTIVITY_DURATION (60  * 1000)    /**< Default keep connection alive between requests timeout */
+    #define BIT_MAX_INACTIVITY_DURATION (30  * 1000)    /**< Default keep connection alive between requests timeout (30 sec) */
 #endif
 #ifndef BIT_MAX_PARSE_DURATION
-    #define BIT_MAX_PARSE_DURATION  (30  * 1000)        /**< Default request parse header timeout */
+    #define BIT_MAX_PARSE_DURATION  (5  * 1000)         /**< Default request parse header timeout (5 sec) */
 #endif
 #ifndef BIT_MAX_REQUEST_DURATION
-    #define BIT_MAX_REQUEST_DURATION MAXINT             /**< Default request timeout (unlimited) */
+    #define BIT_MAX_REQUEST_DURATION (5 * 60 * 1000)    /**< Default request timeout (5 minutes) */
 #endif
 #ifndef BIT_MAX_SESSION_DURATION
-    #define BIT_MAX_SESSION_DURATION (3600 * 1000)      /**< Default session timeout (one hour) */
+    #define BIT_MAX_SESSION_DURATION (5 * 60 * 1000)    /**< Default session inactivity timeout (5 mins) */
 #endif
 #ifndef BIT_MAX_PING_DURATION
     #define BIT_MAX_PING_DURATION   (30 * 1000)         /**< WSS ping defeat Keep-Alive timeouts (30 sec) */
@@ -170,7 +173,6 @@ struct HttpWebSocket;
 #define HTTP_RETRIES                3                   /**< Default number of retries for client requests */
 #define HTTP_DATE_FORMAT            "%a, %d %b %Y %T GMT"
 #define HTTP_MAX_SECRET             16                  /**< Size of secret data for auth */
-#define HTTP_MAX_WSS_MESSAGE        (2147483647)        /**< Default max WebSockets message size (2GB) */
 #define HTTP_SMALL_HASH_SIZE        31                  /* Small hash (less than the alphabet) */
 #define HTTP_TIMER_PERIOD           1000                /**< HttpTimer checks ever 1 second */
 
@@ -320,14 +322,20 @@ PUBLIC void httpSetForkCallback(struct Http *http, MprForkCallback proc, void *a
 
 #define HTTP_MONITOR_MIN_PERIOD         (5 * 1000)
 
-/*
-    Per-counter monitoring structure
-    Note: this does not need GC marking
+/**
+    Monitoring counter
+    @ingroup HttpMonitor
+    @stability Internal
  */
 typedef struct HttpCounter {
     uint64      value;                          /**< Current counter value */
 } HttpCounter;
 
+/**
+    Monitor control structure
+    @defgroup HttpMonitor HttpMonitor
+    @stability Internal
+ */
 typedef struct HttpMonitor {
     cchar       *counterName;                   /**< Name of counter to monitor */
     int         counterIndex;                   /**< Counter item index to monitor */
@@ -339,8 +347,10 @@ typedef struct HttpMonitor {
     struct Http *http;
 } HttpMonitor;
 
-/*
+/**
     Per-IP address structure.
+    @ingroup HttpMonitor HttpMonitor
+    @stability Internal
  */
 typedef struct HttpAddress {
     MprTicks    updated;                        /**< When the address counters were last updated */
@@ -353,8 +363,19 @@ typedef struct HttpAddress {
     HttpCounter counters[1];                    /**< Counters allocated here */
 } HttpAddress;
 
+/**
+    Defense remedy callback
+    @param args Hash of configuration args for the callback
+    @ingroup HttpMonitor
+    @stability Prototype
+  */
 typedef void (*HttpRemedyProc)(MprHash *args);
 
+/**
+    Monitor defense configuration
+    @ingroup HttpMonitor
+    @stability Prototype
+ */
 typedef struct HttpDefense {
     cchar           *name;                      /**< Defense name */
     cchar           *remedy;                    /**< Remedy name to invoke */
@@ -453,12 +474,13 @@ PUBLIC uint64 httpGetNumber(cchar *value);
 /************************************ Http **********************************/
 /** 
     Http service object
-    @description The Http service is managed by a single service object.
+    @description Configuration is not thread safe and must occur at initialization time when the application is single threaded. 
+    If the configuration is modified when the application is multithreaded, all requests must be first be quiesced.
     @defgroup Http Http
     @see Http HttpConn HttpEndpoint gettGetDateString httpConfigurenamedVirtualEndpoint httpCreate
         httpDestroy httpGetContext httpGetDateString httpLookupEndpoint httpLookupStatus httpLooupHost 
         httpSetContext httpSetDefaultClientHost httpSetDefaultClientPort httpSetDefaultPort httpSetForkCallback 
-        httpSetProxy httpSetSoftware 
+        httpSetProxy httpSetSoftware httpConfigure
     @stability Internal
  */
 typedef struct Http {
@@ -552,7 +574,6 @@ typedef struct Http {
     HttpRedirectCallback redirectCallback;  /**< Redirect callback */
 } Http;
 
-
 /*
     Flags for httpCreate
  */
@@ -606,6 +627,28 @@ PUBLIC void *httpGetContext(Http *http);
     @stability Stable
  */
 PUBLIC char *httpGetDateString(MprPath *sbuf);
+
+/**
+    Callback procedure for HttpConfigure
+    @param arg User definable data. May be managed or unmanaged.
+    @ingroup Http
+    @stability Prototype
+ */
+typedef void (*HttpConfigureProc)(void *arg);
+
+/**
+    Alter the configuration by first quiescing all Http activity. This waits until there are no open connections and then
+    invokes the configuration callback while blocking further connections. When the callback completes, connections are 
+    resumed with the new configuration.
+    This callback is required because configuration of the Http engine must be done when single-threaded.
+    @param proc Function of the type HttpConfigureProc.
+    @param arg Reference argument to pass to the callback proc. Can be a managed or an unmanaged reference.
+    @param timeout Timeout in milliseconds to wait. Set to -1 to use the default inactivity timeout. Set to zero
+        to wait for ever.
+    @ingroup Http
+    @stability Prototype
+  */
+PUBLIC bool httpConfigure(HttpConfigureProc proc, void *arg, MprTicks timeout);
 
 /**
     Set the http context object
@@ -786,7 +829,8 @@ typedef struct HttpLimits {
 
     int      webSocketsMax;             /**< Maximum number of WebSockets */
     ssize    webSocketsMessageSize;     /**< Maximum total size of a WebSocket message including all frames */
-    ssize    webSocketsFrameSize;       /**< Maximum size of sent WebSocket frames. Incoming frames have no limit except message size.  */
+    ssize    webSocketsFrameSize;       /**< Maximum size of sent WebSocket frames. Incoming frames have no limit 
+                                             except message size.  */
     ssize    webSocketsPacketSize;      /**< Maximum size of a WebSocket packet exchanged with the user callback */
 } HttpLimits;
 
@@ -812,7 +856,7 @@ PUBLIC HttpLimits *httpCreateLimits(int serverSide);
 /**
     Ease the limits
     @description This increases the receive body size, transmission body size and upload size to the maximum 
-        sizes supported by the system.
+        sizes supported by the system. Client side limits are eased by default.
     @param limits Limits object. This can be either HttpHost.limits HttpConn.limits or HttpEndpoint.limits
     @ingroup HttpLimits
     @stability Evolving
@@ -1187,7 +1231,7 @@ PUBLIC HttpPacket *httpGetPacket(struct HttpQueue *q);
     @param packet Packet to examine.
     @return MprBuf reference or zero if there are not contents.
     @ingroup HttpPacket
-    @stability Prototype
+    @stability Evolving
  */
 PUBLIC ssize httpGetPacketContents(HttpPacket *packet);
 #else
@@ -1214,7 +1258,7 @@ PUBLIC ssize httpGetPacketLength(HttpPacket *packet);
     @param packet Packet to examine.
     @return A reference to the start of the packet contents.
     @ingroup HttpPacket
-    @stability Prototype
+    @stability Evolving
  */
 PUBLIC char *httpGetPacketStart(HttpPacket *packet);
 
@@ -1681,7 +1725,6 @@ PUBLIC bool httpWillNextQueueAcceptSize(HttpQueue *q, ssize size);
  */
 PUBLIC ssize httpWrite(HttpQueue *q, cchar *fmt, ...);
 
-
 #define HTTP_BUFFER     0x1    /**< Flag for httpSendBlock and httpWriteBlock to always absorb the data without blocking */
 #define HTTP_BLOCK      0x2    /**< Flag for httpSendBlock and httpWriteBlock to indicate blocking operation */
 #define HTTP_NON_BLOCK  0x4    /**< Flag for httpSendBlock and httpWriteBlock to indicate non-blocking operation */
@@ -1772,6 +1815,8 @@ typedef int (*HttpParse)(Http *http, cchar *key, char *value, void *state);
         \n\n
         Stages provide callback methods for parsing configuration, matching requests, open/close, run and the
         acceptance and service of incoming and outgoing data.
+    Configuration is not thread safe and must occur at initialization time when the application is single threaded. 
+    If the configuration is modified when the application is multithreaded, all requests must be first be quiesced.
     @defgroup HttpStage HttpStage 
     @see HttpConn HttpQueue HttpStage httpCloneStage httpCreateConnector httpCreateFilter httpCreateHandler 
         httpCreateStage httpDefaultOutgoingServiceStage httpGetStageData httpHandleOptionsTrace httpLookupStage 
@@ -2265,6 +2310,7 @@ typedef struct HttpConn {
     void            *mark;                  /**< Reference for GC marking */
     void            *data;                  /**< Custom data for request - must be a managed reference */
     void            *staticData;            /**< Custom data for request - must be an unmanaged reference */
+
 #if (DEPRECATE || 1) && !DOXYGEN
     void            *grid;                  /**< Current request database grid for MVC apps */
     void            *record;                /**< Current request database record for MVC apps */
@@ -2712,7 +2758,7 @@ PUBLIC void httpSetConnNotifier(HttpConn *conn, HttpNotifier notifier);
     @param conn HttpConn connection object created via #httpCreateConn
     @param user User object
     @ingroup HttpConn
-    @stability Prototype
+    @stability Evolving
  */
 PUBLIC void httpSetConnUser(HttpConn *conn, struct HttpUser *user);
 
@@ -2891,6 +2937,9 @@ PUBLIC void httpUseWorker(HttpConn *conn, MprDispatcher *dispatcher, MprEvent *e
 #define HTTP_ALLOW_DENY     0x1           /**< Run allow checks before deny checks */
 #define HTTP_DENY_ALLOW     0x2           /**< Run deny checks before allow checks */
 
+#define HTTP_BLOW_ROUNDS    16
+#define HTTP_BLOW_SALT      16
+
 /**
     AuthType callback to generate a response requesting the user login
     This should call httpError if such a response cannot be generated.
@@ -2995,6 +3044,7 @@ typedef struct  HttpRole {
  */
 typedef struct HttpAuth {
     struct HttpAuth *parent;                /**< Parent auth */
+    char            *cipher;                /**< Encryption cipher */
     char            *realm;                 /**< Realm of access */
     int             flags;                  /**< Authorization flags */
     MprHash         *allow;                 /**< Clients to allow */
@@ -3007,7 +3057,7 @@ typedef struct HttpAuth {
 #endif
     char            *loginPage;             /**< Web page for user login for 'post' type */
     char            *loggedIn;              /**< Target URI after logging in */
-    char            *username;              /**< Automatic login username */
+    char            *username;              /**< Automatic login username. Password not required if defined */
     char            *qop;                   /**< Quality of service */
     HttpAuthType    *type;                  /**< Authorization protocol type (basic|digest|form|custom)*/
     HttpAuthStore   *store;                 /**< Authorization password backend (system|file|custom)*/
@@ -3151,7 +3201,6 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password);
     @description This tests if there is a login session for the client
     @param conn HttpConn connection object 
     @return True if the user is authenticated and logged in
-    @stability Prototype
     @ingroup HttpAuth
     @stability Prototype
   */
@@ -3170,7 +3219,6 @@ PUBLIC void httpLogout(HttpConn *conn);
     @param auth HttpAuth object. Stored in HttpConn.rx.route.auth
     @param name Username
     @return User object
-    @stability Prototype
     @ingroup HttpAuth
     @stability Prototype
   */
@@ -3311,10 +3359,11 @@ PUBLIC int httpSetAuthType(HttpAuth *auth, cchar *proto, cchar *details);
 
 /**
     Set an automatic login username
+    @description If defined, no password is required and the user will be automatically logged in as this username.
     @param auth Auth object allocated by #httpCreateAuth.
     @param username Username to automatically login with
     @ingroup HttpAuth
-    @stability Prototype
+    @stability Evolving
  */
 PUBLIC void httpSetAuthUsername(HttpAuth *auth, cchar *username);
 
@@ -3365,6 +3414,8 @@ typedef struct HttpLang {
 
 /**
     Cache Control
+    @description Configuration is not thread safe and must occur at initialization time when the application is single threaded. 
+    If the configuration is modified when the application is multithreaded, all requests must be first be quiesced.
     @defgroup HttpCache HttpCache
     @see HttpCache httpAddCache httpUpdateCache httpWriteCache
     @stability Internal
@@ -3537,21 +3588,21 @@ PUBLIC void httpSetStreaming(struct HttpHost *host, cchar *mime, cchar *uri, boo
 #define HTTP_ROUTE_FREE_PATTERN         0x4         /**< Free Route.patternCompiled back to malloc when route is freed */
 #define HTTP_ROUTE_RAW                  0x8         /**< Don't html encode the write data */
 #define HTTP_ROUTE_STARTED              0x10        /**< Route initialized */
-#define HTTP_ROUTE_JSON                 0x20        /**< Route expects params in JSON body */
-#define HTTP_ROUTE_XSRF                 0x40        /**< Generate XSRF tokens */
-#define HTTP_ROUTE_CORS                 0x80        /**< Cross-Origin resource sharing */
-#define HTTP_ROUTE_STEALTH              0x100       /**< Stealth mode */
-#define HTTP_ROUTE_SHOW_ERRORS          0x200       /**< Show errors to the client */
-#define HTTP_ROUTE_VISIBLE_COOKIE       0x400       /**< Create cookies visible to client Javascript (not httponly) */
-#define HTTP_ROUTE_PRESERVE_FRAMES      0x800       /**< Preserve WebSocket frame boundaries */
+#define HTTP_ROUTE_XSRF                 0x20        /**< Generate XSRF tokens */
+#define HTTP_ROUTE_CORS                 0x40        /**< Cross-Origin resource sharing */
+#define HTTP_ROUTE_STEALTH              0x80        /**< Stealth mode */
+#define HTTP_ROUTE_SHOW_ERRORS          0x100       /**< Show errors to the client */
+#define HTTP_ROUTE_VISIBLE_SESSION      0x200       /**< Create a session cookie visible to client Javascript (not httponly) */
+#define HTTP_ROUTE_PRESERVE_FRAMES      0x400       /**< Preserve WebSocket frame boundaries */
 
 #if (DEPRECATED || 1) && !DOXYGEN
 #define HTTP_ROUTE_GZIP                 0x1000      /**< Support gzipped content on this route */
-#define HTTP_ROUTE_LEGACY_MVC           0x2000      /**< Legacy MVC app. Using "static" instead of "client". Deprecated in 4.4 */
 #endif
 
 /**
     Route Control
+    @description Configuration is not thread safe and must occur at initialization time when the application is single threaded. 
+    If the configuration is modified when the application is multithreaded, all requests must be first be quiesced.
     @defgroup HttpRoute HttpRoute
     @see HttpRoute httpAddRouteCondition httpAddRouteErrorDocument
         httpAddRouteFilter httpAddRouteHandler httpAddRouteHeader httpAddRouteLanguageDir httpAddRouteLanguageSuffix 
@@ -3699,11 +3750,12 @@ typedef int (HttpRouteProc)(HttpConn *conn, HttpRoute *route, HttpRouteOp *item)
     </tr>
     </table>
     @param parent Parent route from which to inherit configuration.
+    @param prefix URI prefix to append to the application prefix when constructing route URIs.
     @param resource Resource name. This should be a lower case, single word, alphabetic resource name.
     @ingroup HttpRoute
     @stability Evolving
  */
-PUBLIC void httpAddResource(HttpRoute *parent, cchar *resource);
+PUBLIC void httpAddResource(HttpRoute *parent, cchar *prefix, cchar *resource);
 
 /**
     Add routes for a group of resources
@@ -3722,11 +3774,12 @@ PUBLIC void httpAddResource(HttpRoute *parent, cchar *resource);
     </tr>
     </table>
     @param parent Parent route from which to inherit configuration.
+    @param prefix URI prefix to append to the application prefix when constructing route URIs.
     @param resource Resource name. This should be a lower case, single word, alphabetic resource name.
     @ingroup HttpRoute
     @stability Evolving
  */
-PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *resource);
+PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *prefix, cchar *resource);
 
 /**
     Add a route for the home page.
@@ -3743,28 +3796,33 @@ PUBLIC void httpAddHomeRoute(HttpRoute *parent);
 
 /**
     Add a route set package
-    @description This will add a set of routes suitable for some application paradigms.
+    @description This will add a set of routes. It will add a home route and optional routes depending on the route set.
     <table>
         <tr><td>Name</td><td>Method</td><td>Pattern</td><td>Target</td></tr>
         <tr><td>home</td><td>GET,POST,PUT</td><td>^/$</td><td>index.esp</td></tr>
-        <tr><td>static</td><td>GET</td><td>^/static(/(.)*$</td><td>$1</td></tr>
     </table>
     @param parent Parent route from which to inherit configuration.
-    @param set Route set to select. Use "simple", "mvc", "restful" or "none". 
+    @param prefix URI prefix to append to the application prefix when constructing route URIs.
+    @param set Route set to select. Use "simple", or "restful". 
         \n\n
         The "simple" pack will invoke 
-        #httpAddHomeRoute and #httpAddStaticRoute to add "home", and "static" routes. 
+        #httpAddHomeRoute and #httpAddStaticRoute to add the "home" routes. 
         \n\n
-        The "mvc" selection will add the default routes and then add the route:
-        <table>
-            <tr><td>Name</td><td>Method</td><td>Pattern</td><td>Target</td></tr>
-            <tr><td>default</td><td>*</td><td>^/{service}(~/{action}~)$</td><td>${service}-${action}</td></tr>
-        </table>
-        \n\n
+        The "restful" selection will add a set of RESTful routes for generic controllers.
     @ingroup HttpRoute
     @stability Evolving
  */
-PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *set);
+PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *prefix, cchar *set);
+
+/**
+    Add a route for the client directory
+    @param parent Parent route from which to inherit configuration.
+    @param prefix URI prefix to append to the application prefix when constructing route URIs.
+    @param name Name of the client directory
+    @ingroup HttpRoute
+    @stability Prototype
+ */
+PUBLIC void httpAddClientRoute(HttpRoute *parent, cchar *prefix, cchar *name);
 
 /**
     Add a route condition
@@ -4085,8 +4143,7 @@ PUBLIC HttpRoute *httpCreateRoute(struct HttpHost *host);
     @ingroup HttpRoute
     @stability Evolving
  */
-PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods, cchar *pattern, 
-    cchar *target, cchar *source);
+PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods, cchar *pattern, cchar *target, cchar *source);
 
 /**
     Define a route condition rule
@@ -4286,7 +4343,7 @@ PUBLIC cchar *httpLookupRouteErrorDocument(HttpRoute *route, int status);
         <ul>  
             <li>DOCUMENTS_DIR - for the default directory containing documents to serve</li>
             <li>HOME_DIR - for the directory containing the web server configuration files</li>
-            <li>BIN_DIR - for the shared library directory. E.g. /usr/lib/appweb/bin </li>
+            <li>BIN_DIR - for the shared library directory. E.g. /usr/local/lib/appweb/bin </li>
             <li>OS - for the operating system name. E.g. LINUX, MACOSX, VXWORKS, or WIN</li>
             <li>PRODUCT - for the product name</li>
             <li>VERSION - for the product version. E.g. 4.0.2</li>
@@ -4383,7 +4440,7 @@ PUBLIC int httpSetRouteConnector(HttpRoute *route, cchar *name);
     @ingroup HttpRoute
     @stability Prototype
   */
-PUBLIC void httpSetRouteCookieVisibility(HttpRoute *route, bool visible);
+PUBLIC void httpSetRouteSessionVisibility(HttpRoute *route, bool visible);
 
 /**
     Set route data
@@ -4472,7 +4529,7 @@ PUBLIC void httpSetRouteHost(HttpRoute *route, struct HttpHost *host);
     @param route Route to modify
     @param on Set to true to ignore encoding errors
     @ingroup HttpRoute
-    @stability Prototype
+    @stability Evolving
  */
 PUBLIC void httpSetRouteIgnoreEncodingErrors(HttpRoute *route, bool on);
 
@@ -4701,7 +4758,7 @@ PUBLIC void httpSetRouteVar(HttpRoute *route, cchar *token, cchar *value);
     @param route Route to modify
     @param dir Directory path
     @ingroup HttpRoute
-    @stability Prototype
+    @stability Evolving
  */
 PUBLIC void httpSetRouteUploadDir(HttpRoute *route, cchar *dir);
 
@@ -5154,7 +5211,7 @@ typedef struct HttpRx {
     char            *userAgent;             /**< User-Agent header */
 
     HttpLang        *lang;                  /**< Selected language */
-    MprHash         *params;                /**< Request params (Query and post data variables) */
+    MprJson         *params;                /**< Request params (Query and post data variables) */
     MprHash         *svars;                 /**< Server variables */
     HttpRange       *inputRange;            /**< Specified range for rx (post) data */
     char            *passwordDigest;        /**< User password digest for authentication */
@@ -5271,11 +5328,11 @@ PUBLIC cchar *httpGetParam(HttpConn *conn, cchar *var, cchar *defaultValue);
         Query data and www-url encoded form data is entered into the table after decoding.
         Use #mprLookupKey to retrieve data from the table.
     @param conn HttpConn connection object
-    @return #MprHash instance containing the form vars
+    @return MprJson JSON object instance containing the form vars
     @ingroup HttpRx
     @stability Stable
  */
-PUBLIC MprHash *httpGetParams(HttpConn *conn);
+PUBLIC MprJson *httpGetParams(HttpConn *conn);
 
 /**
     Get the request params table as a string
@@ -6528,14 +6585,17 @@ typedef struct HttpWebSocket {
     ssize           messageLength;          /**< Length of the current message */
     char            *subProtocol;           /**< Application level sub-protocol */
     HttpPacket      *currentFrame;          /**< Message frame being currently read */
-    HttpPacket      *currentMessage;        /**< Total message currently being read */
+    HttpPacket      *currentMessage;        /**< Current incoming messsage so far */
     HttpPacket      *tailMessage;           /**< Subsequent message frames */
     MprEvent        *pingEvent;             /**< Ping timer event */
     char            *closeReason;           /**< Reason for closure */
     uchar           dataMask[4];            /**< Mask for data */
+    int             currentMessageType;     /**< Current incoming messsage type */
     int             maskOffset;             /**< Offset in dataMask */
+    int             more;                   /**< More data to send in a message */
     int             preserveFrames;         /**< Do not join frames */
     int             partialUTF;             /**< Last frame had a partial UTF codepoint */ 
+    int             rxSeq;                  /**< Incoming packet number */
     int             txSeq;                  /**< Outgoing packet number */
     void            *data;                  /**< Custom data for applications (marked) */
 } HttpWebSocket;
@@ -6681,7 +6741,8 @@ PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...);
     @param conn HttpConn connection object created via #httpCreateConn
     @param type Web socket message type. Choose from WS_MSG_TEXT, WS_MSG_BINARY or WS_MSG_PING. 
         Use httpSendClose to send a close message. Do not send a WS_MSG_PONG message as it is generated internally
-        by the Web Sockets module.
+        by the Web Sockets module. If using HTTP_NON_BLOCK and the call returns having written only a portion of the data,
+        you must set the type to WS_MSG_CONT for the 
     @param msg Message data buffer to send
     @param len Length of msg
     @param flags Include the flag HTTP_BLOCK for blocking operation or HTTP_NON_BLOCK for non-blocking. Set to HTTP_BUFFER to

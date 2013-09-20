@@ -27,7 +27,6 @@ the header will be set to "missing".
 Code:
 ---
 * [spyFilter.c](spyFilter.c) - Spy Filter source code
-* [server.c](server.c) - Test web server
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [index.html](index.html) - Web page to serve
 * [start.bit](start.bit) - Bit build instructions

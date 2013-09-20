@@ -1,0 +1,4 @@
+{
+    name: "respond",
+    description: "Polyfill for CSS media queries"
+}

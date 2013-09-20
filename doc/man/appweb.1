@@ -14,8 +14,8 @@ appweb\- Embedded HTTP Web Server
 [\fI--log logSpec\fR]
 [\fI--home directory\fR] 
 [\fI--threads threads\fR]
-[\fI--version\fR]
 [\fI--verbose\fR]
+[\fI--version\fR]
 .SH DESCRIPTION
 Appweb is a compact embedded HTTP web server.  It is a fast, small-footprint, multi-threaded, standards-based, 
 portable server developed for use by embedded devices and applications.  It can run as a stand-alone 
@@ -29,6 +29,9 @@ Appweb normally reads the \fBappweb.conf\fR file for configuration directives. H
 an IP address or port number on the command line, Appweb will not read the configuration file. Rather it will
 listen for requests on the specified IP:PORT address. If the PORT component is omitted, Appweb will listen
 on port 80. If the IP address is omitted and a port is supplied, Appweb will listen on all network interfaces.
+.P
+Appweb responds to the SIGUSR2 signal and toggles the trace level from 2 to 4 and vice-versa. Appweb responds to the
+SIGINFO|SIGPWR signal and emits operational stats to the trace log.
 .SH OPTIONS
 .TP
 \fB\--config filename\fR

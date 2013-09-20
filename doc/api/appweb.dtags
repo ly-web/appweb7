@@ -62,9 +62,9 @@
     </member>
     <member kind="function">
       <type>char *</type>
-      <name>maGetNextToken</name>
+      <name>maGetNextArg</name>
       <anchorfile>group___ma_appweb.html</anchorfile>
-      <anchor>gaea685e4068bee9c8b2d115c20a3620fb</anchor>
+      <anchor>ga55e8a5ed07c0c10d79fd20d3c0e1d602</anchor>
       <arglist>(char *s, char **tok)</arglist>
     </member>
     <member kind="function">
@@ -258,8 +258,8 @@
       <type>int</type>
       <name>maRunWebClient</name>
       <anchorfile>group___ma_server.html</anchorfile>
-      <anchor>gac4eeca2a263aa924aa89f50b9dc10914</anchor>
-      <arglist>(cchar *method, cchar *uri, char **response)</arglist>
+      <anchor>ga416dbc18b44c58ceea1d0fa1662a7966</anchor>
+      <arglist>(cchar *method, cchar *uri, cchar *data, char **response, char **err)</arglist>
     </member>
     <member kind="function">
       <type>int</type>

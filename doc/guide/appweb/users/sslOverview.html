@@ -309,12 +309,9 @@ dUHzICxBVC1lnHyYGjDuAMhe396lYAn8bCld1/L4NMGBCQ==
             load the Certificate Authority certificate into the browser, enabling the browser to validate server
             certificates signed by that Certificate Authority. Doing so may be dangerous, since once loaded, the
             browser will accept all certificates signed by that Certificate Authority.</p>
-        </div><a id="sslOverview"></a>
+        <a id="sslOverview"></a>
         <h2 class="section">Secure Sockets Layer (SSL) Overview</h2>
-        <p>The Secure Sockets Layer protocols designed to support a range of choices for specific algorithms used for
-        cryptography, digests, and signatures. This allows algorithm selection for specific servers to be made based on
-        legal, export or other concerns, and also enables the protocol to take advantage of new algorithms. Choices are
-        negotiated between client and server at the start of establishing a protocol session.</p>
+        <p>The Secure Sockets Layer protocols designed to support a range of choices for specific algorithms used for cryptography, digests, and signatures. This allows algorithm selection for specific servers to be made based on legal, export or other concerns, and also enables the protocol to take advantage of new algorithms. Choices are negotiated between client and server at the start of establishing a protocol session.</p>
         <h3>Table 4: Versions of the SSL protocol</h3>
         <a id="table4"></a>
         <table title="protocols">
@@ -328,29 +325,30 @@ dUHzICxBVC1lnHyYGjDuAMhe396lYAn8bCld1/L4NMGBCQ==
             <tbody>
                 <tr>
                     <td>SSL v2.0</td>
-                    <td>Vendor Standard (from Netscape Corp.)</td>
+                    <td>Expired</td>
                     <td>First SSL protocol for which implementations exists</td>
                 </tr>
                 <tr>
                     <td>SSL v3.0</td>
-                    <td>Expired Internet Draft (from Netscape Corp.)</td>
-                    <td>Revisions to prevent specific security attacks, add non-RSA ciphers, and support for
-                    certificate chains</td>
+                    <td>Expired</td>
+                    <td>Revisions to prevent specific security attacks, add non-RSA ciphers,
+                    and support for certificate chains</td>
                 </tr>
                 <tr>
                     <td>TLS v1.0</td>
-                    <td>Internet Standard (from IETF)</td>
-                    <td>TLSv1.0 is a revision of SSL 3.0 to update the MAC layer to HMAC, add block padding for 
-                        block ciphers, message order standardization and more alert messages.</td>
+                    <td>Internet Standard</td>
+                    <td>TLSv1.0 is a revision of SSL 3.0 to update the MAC layer to HMAC,
+                    add block padding for block ciphers, message order standardization
+                    and more alert messages.</td>
                 </tr>
                 <tr>
                     <td>TLS v1.1</td>
-                    <td>Internet Standard (from IETF)</td>
+                    <td>Internet Standard</td>
                     <td>TLSv1.1 adds protection against Cipher block chaining attacks.</td>
                 </tr>
                 <tr>
                     <td>TLS v1.2</td>
-                    <td>Internet Standard (from IETF)</td>
+                    <td>Internet Standard</td>
                     <td>TLSv1.2 deprecates using MD5 as a hash and deprecates SSLv2.</td>
                 </tr>
             </tbody>
@@ -463,6 +461,7 @@ dUHzICxBVC1lnHyYGjDuAMhe396lYAn8bCld1/L4NMGBCQ==
         with one major difference: it uses the URL scheme <code>https</code> rather than <code>http</code> and a
         different server port (by default 443). Appweb as installed will use port 4443 which may be changed by editing
         the appweb.conf configuration file.</p>
+    </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
 	<div class="bottom">

@@ -81,7 +81,6 @@
     #define BREAKPOINT(mp)          breakpoint(mp)
     #define CHECK(mp)               if (mp) { mprCheckBlock((MprMem*) mp); } else
     #define CHECK_PTR(ptr)          CHECK(GET_MEM(ptr))
-    #define CHECK_YIELDED()         checkYielded()
     #define SCRIBBLE(mp)            if (heap->scribble && mp != GET_MEM(MPR)) { \
                                         memset((char*) mp + MPR_ALLOC_MIN_BLOCK, 0xFE, mp->size - MPR_ALLOC_MIN_BLOCK); \
                                     } else
@@ -97,7 +96,6 @@
     #define BREAKPOINT(mp)
     #define CHECK(mp)
     #define CHECK_PTR(mp)
-    #define CHECK_YIELDED()
     #define SCRIBBLE(mp)
     #define SCRIBBLE_RANGE(ptr, size)
     #define SET_NAME(mp, value)
@@ -179,7 +177,6 @@ static void vmfree(void *ptr, size_t size);
 #endif
 #if BIT_MPR_ALLOC_DEBUG
     static void breakpoint(MprMem *mp);
-    static void checkYielded();
     static int validBlk(MprMem *mp);
     static void freeLocation(MprMem *mp);
 #else
@@ -233,7 +230,7 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
     mprSetName(MPR, "Mpr");
     MPR->heap = heap;
 
-    heap->flags = flags | MPR_THREAD_PATTERN;
+    heap->flags = flags;
     heap->nextSeqno = 1;
     heap->regionSize = BIT_MPR_ALLOC_REGION_SIZE;
     heap->stats.maxHeap = (size_t) -1;
@@ -858,14 +855,12 @@ static void vmfree(void *ptr, size_t size)
 PUBLIC void mprStartGCService()
 {
     if (heap->enabled) {
-        if (heap->flags & MPR_SWEEP_THREAD) {
-            mprTrace(7, "DEBUG: startMemWorkers: start marker");
-            if ((heap->gc = mprCreateThread("sweeper", gc, NULL, 0)) == 0) {
-                mprError("Cannot create marker thread");
-                MPR->hasError = 1;
-            } else {
-                mprStartThread(heap->gc);
-            }
+        mprTrace(7, "DEBUG: startMemWorkers: start marker");
+        if ((heap->gc = mprCreateThread("sweeper", gc, NULL, 0)) == 0) {
+            mprError("Cannot create marker thread");
+            MPR->hasError = 1;
+        } else {
+            mprStartThread(heap->gc);
         }
     }
 }
@@ -890,11 +885,9 @@ PUBLIC void mprWakeGCService()
 
 static BIT_INLINE void triggerGC()
 {
-    if (!heap->gcRequested) {
-        if ((heap->flags & MPR_SWEEP_THREAD) && heap->gcCond) {
-            heap->gcRequested = 1;
-            mprSignalCond(heap->gcCond);
-        }
+    if (!heap->gcRequested && heap->enabled && heap->gcCond) {
+        heap->gcRequested = 1;
+        mprSignalCond(heap->gcCond);
     }
 }
 
@@ -916,6 +909,192 @@ PUBLIC void mprRequestGC(int flags)
     if (!(flags & MPR_GC_NO_BLOCK)) {
         mprYield((flags & MPR_GC_COMPLETE) ? MPR_YIELD_COMPLETE : 0);
     }
+}
+
+/*
+    Called by user code to signify the thread is ready for GC and all object references are saved.  Flags:
+
+        MPR_YIELD_DEFAULT   Yield and only if GC is required, block for GC. Otherwise return without blocking.
+        MPR_YIELD_BLOCK     Yield and wait until the next GC starts and resumes user threads, regardless of whether GC is required.
+        MPR_YIELD_COMPLETE  Yield and wait until the GC entirely complete including sweeper.
+        MPR_YIELD_STICKY    Yield and remain yielded until reset. Does not block by default.
+ */
+PUBLIC void mprYield(int flags)
+{
+    MprThreadService    *ts;
+    MprThread           *tp;
+
+    ts = MPR->threadService;
+    if (flags & MPR_YIELD_COMPLETE) {
+        flags |= MPR_YIELD_BLOCK;
+    }
+    if ((tp = mprGetCurrentThread()) == 0) {
+        mprError("Yield called from an unknown thread");
+        return;
+    }
+    assert(!tp->waiting);
+    assert(!tp->yielded);
+    assert(!tp->stickyYield);
+
+    if (flags & MPR_YIELD_STICKY) {
+        tp->stickyYield = 1;
+        tp->yielded = 1;
+    }
+    /*
+        Double test to be lock free for the common case
+     */
+    if ((heap->mustYield || (flags & MPR_YIELD_BLOCK))) {
+        tp->waitForGC = (flags & MPR_YIELD_COMPLETE) ? 1 : 0;
+
+        lock(ts->threads);
+        while ((heap->mustYield || (flags & MPR_YIELD_BLOCK))) {
+            tp->yielded = 1;
+            tp->waiting = 1;
+            unlock(ts->threads);
+
+            mprSignalCond(ts->pauseThreads);
+            
+            if (tp->stickyYield) {
+                tp->waiting = 0;
+                return;
+            }
+            mprWaitForCond(tp->cond, -1);
+
+            lock(ts->threads);
+            tp->waiting = 0;
+            if (tp->yielded && !tp->stickyYield) {
+                /*
+                    WARNING: this wait above may return without tp->yielded having been cleared. 
+                    This can happen because the cond may have already been triggered by a 
+                    previous sticky yield. i.e. it did not wait.
+                 */
+                tp->yielded = 0;
+            } else if (!tp->waitForGC) {
+                flags &= ~MPR_YIELD_BLOCK;
+            }
+        }
+        unlock(ts->threads);
+    }
+    if (!tp->stickyYield) {
+        assert(!tp->yielded);
+        assert(!heap->marking);
+    }
+}
+
+
+PUBLIC void mprResetYield()
+{
+    MprThreadService    *ts;
+    MprThread           *tp;
+
+    ts = MPR->threadService;
+    if ((tp = mprGetCurrentThread()) == 0) {
+        mprError("Yield called from an unknown thread");
+        return;
+    }
+    assert(tp->stickyYield);
+    if (tp->stickyYield) {
+        /*
+            Marking could have started again while sticky yielded. So must yield here regardless.
+         */
+        lock(ts->threads);
+        tp->stickyYield = 0;
+        if (tp->yielded && heap->mustYield) {
+            tp->yielded = 0;
+            unlock(ts->threads);
+            mprYield(0);
+            assert(!tp->yielded);
+        } else {
+            tp->yielded = 0;
+            unlock(ts->threads);
+        }
+    }
+    assert(!tp->yielded);
+}
+
+
+/*
+    Pause until all threads have yielded. Called by the GC marker only.
+    NOTE: this functions differently if parallel. If so, then it will abort waiting. If !parallel, it waits for all
+    threads to yield.
+ */
+static int pauseThreads()
+{
+    MprThreadService    *ts;
+    MprThread           *tp;
+    MprTicks            start;
+    int                 i, allYielded, timeout;
+
+    ts = MPR->threadService;
+    timeout = MPR_TIMEOUT_GC_SYNC;
+
+    mprTrace(7, "pauseThreads: wait for threads to yield, timeout %d", timeout);
+    start = mprGetTicks();
+    if (mprGetDebugMode()) {
+        timeout = timeout * 500;
+    }
+    do {
+        lock(ts->threads);
+        if (!heap->pauseGC) {
+            allYielded = 1;
+            for (i = 0; i < ts->threads->length; i++) {
+                tp = (MprThread*) mprGetItem(ts->threads, i);
+                if (!tp->yielded) {
+                    allYielded = 0;
+                    if (mprGetElapsedTicks(start) > 1000) {
+                        mprTrace(7, "Thread %s is not yielding", tp->name);
+                    }
+                    break;
+                }
+            }
+            if (allYielded) {
+                heap->marking = 1;
+                unlock(ts->threads);
+                break;
+            }
+        } else {
+            allYielded = 0;
+        }
+        unlock(ts->threads);
+        mprTrace(7, "pauseThreads: waiting for threads to yield");
+        mprWaitForCond(ts->pauseThreads, 20);
+
+    } while (!allYielded && mprGetElapsedTicks(start) < timeout);
+
+    mprTrace(7, "TIME: pauseThreads elapsed %,Ld msec %", mprGetElapsedTicks(start));
+    return (allYielded) ? 1 : 0;
+}
+
+
+static void resumeThreads(int flags)
+{
+    MprThreadService    *ts;
+    MprThread           *tp;
+    int                 i;
+
+    ts = MPR->threadService;
+    lock(ts->threads);
+    heap->mustYield = 0;
+    for (i = 0; i < ts->threads->length; i++) {
+        tp = (MprThread*) mprGetItem(ts->threads, i);
+        if (tp && tp->yielded) {
+            if (flags == WAITING_THREADS && !tp->waitForGC) {
+                continue;
+            }
+            if (flags == YIELDED_THREADS && tp->waitForGC) {
+                continue;
+            }
+            if (!tp->stickyYield) {
+                tp->yielded = 0;
+            }
+            tp->waitForGC = 0;
+            if (tp->waiting) {
+                assert(tp->stickyYield || !tp->yielded);
+                mprSignalCond(tp->cond);
+            }
+        }
+    }
+    unlock(ts->threads);
 }
 
 
@@ -998,6 +1177,24 @@ static void markAndSweep()
 }
 
 
+static void markRoots()
+{
+    void    *root;
+    int     next;
+
+#if BIT_MPR_ALLOC_STATS
+    heap->stats.markVisited = 0;
+    heap->stats.marked = 0;
+#endif
+    mprMark(heap->roots);
+    mprMark(heap->gcCond);
+
+    for (ITERATE_ITEMS(heap->roots, root, next)) {
+        mprMark(root);
+    }
+}
+
+
 static void invokeDestructors()
 {
     MprRegion   *region;
@@ -1006,6 +1203,7 @@ static void invokeDestructors()
 
     for (region = heap->regions; region; region = region->next) {
         for (mp = region->start; mp < region->end; mp = GET_NEXT(mp)) {
+            assert(mp->size > 0);
             /*
                 OPT - could optimize by requiring a separate flag for managers that implement destructors.
              */
@@ -1090,6 +1288,7 @@ static void sweep()
         joinBlocks = heap->stats.bytesFree >= heap->stats.cacheHeap;
 
         for (mp = region->start; mp < region->end; mp = next) {
+            assert(mp->size > 0);
             next = GET_NEXT(mp);
             assert(next != mp);
             CHECK(mp);
@@ -1169,24 +1368,6 @@ static void sweep()
     if (heap->printStats) {
         printMemReport();
         heap->printStats = 0;
-    }
-}
-
-
-static void markRoots()
-{
-    void    *root;
-    int     next;
-
-#if BIT_MPR_ALLOC_STATS
-    heap->stats.markVisited = 0;
-    heap->stats.marked = 0;
-#endif
-    mprMark(heap->roots);
-    mprMark(heap->gcCond);
-
-    for (ITERATE_ITEMS(heap->roots, root, next)) {
-        mprMark(root);
     }
 }
 
@@ -1283,167 +1464,7 @@ PUBLIC int mprCreateEventOutside(MprDispatcher *dispatcher, void *proc, void *da
 }
 
 
-/*
-    Called by user code to signify the thread is ready for GC and all object references are saved.  Flags:
 
-        MPR_YIELD_DEFAULT   Yield and only if GC is required, block for GC. Otherwise return without blocking.
-        MPR_YIELD_BLOCK     Yield and wait until the next GC starts and resumes user threads, regardless of whether GC is required.
-        MPR_YIELD_COMPLETE  Yield and wait until the GC entirely complete including sweeper.
-        MPR_YIELD_STICKY    Yield and remain yielded until reset. Does not block by default.
- */
-PUBLIC void mprYield(int flags)
-{
-    MprThreadService    *ts;
-    MprThread           *tp;
-
-    ts = MPR->threadService;
-    if ((tp = mprGetCurrentThread()) == 0) {
-        mprError("Yield called from an unknown thread");
-        /* Called from a non-mpr thread */
-        return;
-    }
-    tp->yielded = 1;
-    if (flags & MPR_YIELD_STICKY) {
-        tp->stickyYield = 1;
-    }
-    tp->waitForGC = (flags & MPR_YIELD_COMPLETE) ? 1 : 0;
-
-    if (flags & MPR_YIELD_COMPLETE) {
-        flags |= MPR_YIELD_BLOCK;
-    }
-    while (tp->yielded && (heap->mustYield || (flags & MPR_YIELD_BLOCK))) {
-        if (heap->flags & MPR_SWEEP_THREAD) {
-            mprSignalCond(ts->cond);
-        }
-        if (tp->stickyYield) {
-            return;
-        }
-        mprWaitForCond(tp->cond, -1);
-        if (!tp->waitForGC) {
-            flags &= ~MPR_YIELD_BLOCK;
-        }
-    }
-    if (!tp->stickyYield) {
-        tp->yielded = 0;
-        assert(!heap->marking);
-    }
-}
-
-
-PUBLIC void mprResetYield()
-{
-    MprThreadService    *ts;
-    MprThread           *tp;
-
-    ts = MPR->threadService;
-    if ((tp = mprGetCurrentThread()) != 0) {
-        tp->stickyYield = 0;
-    }
-    /*
-        May have been sticky yielded and so marking could have started again. If so, must yield here regardless.
-        If GC being requested, then do a blocking pause here.
-     */
-    lock(ts->threads);
-    if (heap->mustYield && (heap->marking || (heap->sweeping && !BIT_MPR_ALLOC_PARALLEL))) {
-        unlock(ts->threads);
-        mprYield(0);
-    } else {
-        if (tp) {
-            tp->yielded = 0;
-        }
-        unlock(ts->threads);
-    }
-}
-
-
-/*
-    Pause until all threads have yielded. Called by the GC marker only.
-    NOTE: this functions differently if parallel. If so, then it will abort waiting. If !parallel, it waits for all
-    threads to yield.
- */
-static int pauseThreads()
-{
-    MprThreadService    *ts;
-    MprThread           *tp;
-    MprTicks            start;
-    int                 i, allYielded, timeout;
-
-#if BIT_MPR_TRACING
-    uint64  hticks = mprGetHiResTicks();
-#endif
-    ts = MPR->threadService;
-    timeout = MPR_TIMEOUT_GC_SYNC;
-
-    mprTrace(7, "pauseThreads: wait for threads to yield, timeout %d", timeout);
-    start = mprGetTicks();
-    if (mprGetDebugMode()) {
-        timeout = timeout * 500;
-    }
-    do {
-        lock(ts->threads);
-        if (!heap->pauseGC) {
-            allYielded = 1;
-            for (i = 0; i < ts->threads->length; i++) {
-                tp = (MprThread*) mprGetItem(ts->threads, i);
-                if (!tp->yielded) {
-                    allYielded = 0;
-                    if (mprGetElapsedTicks(start) > 1000) {
-                        mprTrace(7, "Thread %s is not yielding", tp->name);
-                    }
-                    break;
-                }
-            }
-            if (allYielded) {
-                heap->marking = 1;
-                unlock(ts->threads);
-                break;
-            }
-        } else {
-            allYielded = 0;
-        }
-        unlock(ts->threads);
-        mprTrace(7, "pauseThreads: waiting for threads to yield");
-        mprWaitForCond(ts->cond, 20);
-
-    } while (!allYielded && mprGetElapsedTicks(start) < timeout);
-
-#if BIT_MPR_TRACING
-    mprTrace(7, "TIME: pauseThreads elapsed %,Ld msec, %,Ld hticks", mprGetElapsedTicks(start), mprGetHiResTicks() - hticks);
-#endif
-    if (allYielded) {
-        CHECK_YIELDED();
-    }
-    return (allYielded) ? 1 : 0;
-}
-
-
-static void resumeThreads(int flags)
-{
-    MprThreadService    *ts;
-    MprThread           *tp;
-    int                 i;
-
-    ts = MPR->threadService;
-    lock(ts->threads);
-    heap->mustYield = 0;
-    for (i = 0; i < ts->threads->length; i++) {
-        tp = (MprThread*) mprGetItem(ts->threads, i);
-        if (tp && tp->yielded) {
-            if (flags == WAITING_THREADS && !tp->waitForGC) {
-                continue;
-            }
-            if (flags == YIELDED_THREADS && tp->waitForGC) {
-                continue;
-            }
-            if (!tp->stickyYield) {
-                tp->yielded = 0;
-            }
-            tp->waitForGC = 0;
-            mprSignalCond(tp->cond);
-        }
-    }
-    unlock(ts->threads);
-}
 
 
 PUBLIC bool mprEnableGC(bool on)
@@ -1552,6 +1573,7 @@ static void printGCStats()
         empty = 1;
 
         for (mp = region->start; mp < region->end; mp = GET_NEXT(mp)) {
+            assert(mp->size > 0);
             if (mp->free) {
                 freeBytes += mp->size;
                 freeCount++;
@@ -2261,24 +2283,6 @@ PUBLIC void *mprSetManager(void *ptr, MprManager manager)
 }
 
 
-#if BIT_MPR_ALLOC_DEBUG
-static void checkYielded()
-{
-    MprThreadService    *ts;
-    MprThread           *tp;
-    int                 i;
-
-    ts = MPR->threadService;
-    lock(ts->threads);
-    for (i = 0; i < ts->threads->length; i++) {
-        tp = (MprThread*) mprGetItem(ts->threads, i);
-        assert(tp->yielded);
-    }
-    unlock(ts->threads);
-}
-#endif
-
-
 #if BIT_MPR_ALLOC_STACK
 static void monitorStack()
 {
@@ -2532,7 +2536,6 @@ PUBLIC void mprDestroy(int how)
         }
         exit(0);
     }
-    mprYield(MPR_YIELD_STICKY);
     if (MPR->state < MPR_STOPPING) {
         mprTerminate(how, -1);
     }
@@ -3714,6 +3717,22 @@ PUBLIC char *mprCloneBufMem(MprBuf *bp)
 }
 
 
+PUBLIC char *mprCloneBufAsString(MprBuf *bp)
+{
+    char    *result;
+    ssize   len;
+
+    mprAddNullToBuf(bp);
+    len = slen(bp->start);
+    if ((result = mprAlloc(len + 1)) == 0) {
+        return 0;
+    }
+    memcpy(result, mprGetBufStart(bp), len);
+    result[len] = 0;
+    return result;
+}
+
+
 /*
     Set the current buffer size and maximum size limit.
  */
@@ -3999,7 +4018,7 @@ PUBLIC ssize mprPutBlockToBuf(MprBuf *bp, cchar *str, ssize size)
         size -= thisLen;
         bytes += thisLen;
     }
-    if (bp->end < bp->endbuf) {
+    if (bp && bp->end < bp->endbuf) {
         *((char*) bp->end) = (char) '\0';
     }
     return bytes;
@@ -5811,7 +5830,7 @@ static int blendEnv(MprCmd *cmd, cchar **env, int flags)
 
     cmd->env = 0;
 
-    if ((cmd->env = mprCreateList(128, MPR_LIST_STATIC_VALUES)) == 0) {
+    if ((cmd->env = mprCreateList(128, MPR_LIST_STATIC_VALUES | MPR_LIST_STABLE)) == 0) {
         return MPR_ERR_MEMORY;
     }
 #if !VXWORKS
@@ -6561,7 +6580,6 @@ PUBLIC int mprWaitForCond(MprCond *cp, MprTicks timeout)
     struct timeval      current;
     int                 usec;
 #endif
-
     /*
         Avoid doing a mprGetTicks() if timeout is < 0
      */
@@ -6621,15 +6639,17 @@ PUBLIC int mprWaitForCond(MprCond *cp, MprTicks timeout)
 
 #elif BIT_UNIX_LIKE
         /*
-            NOTE: pthread_cond_timedwait can return 0 (MAC OS X and Linux). The pthread_cond_wait routines will 
-            atomically unlock the mutex before sleeping and will relock on awakening.
+            The pthread_cond_wait routines will atomically unlock the mutex before sleeping and will relock on awakening.
+            WARNING: pthreads may do spurious wakeups without being triggered
          */
         if (!cp->triggered) {
-            if (now) {
-                rc = pthread_cond_timedwait(&cp->cv, &cp->mutex->cs,  &waitTill);
-            } else {
-                rc = pthread_cond_wait(&cp->cv, &cp->mutex->cs);
-            }
+            do {
+                if (now) {
+                    rc = pthread_cond_timedwait(&cp->cv, &cp->mutex->cs,  &waitTill);
+                } else {
+                    rc = pthread_cond_wait(&cp->cv, &cp->mutex->cs);
+                }
+            } while ((rc == 0 || rc == EAGAIN) && !cp->triggered);
             if (rc == ETIMEDOUT) {
                 rc = MPR_ERR_TIMEOUT;
             } else if (rc == EAGAIN) {
@@ -7947,6 +7967,9 @@ PUBLIC char *mprCryptPassword(cchar *password, cchar *salt, int rounds)
     ssize           len, limit;
     int             i, j;
 
+    if (slen(password) > BIT_MPR_MAX_PASSWORD) {
+        return 0;
+    }
     key = sfmt("%s:%s", salt, password);
     binit(&bf, (uchar*) key, slen(key));
     len = sizeof(cipherText);
@@ -7995,6 +8018,9 @@ PUBLIC char *mprMakePassword(cchar *password, int saltLength, int rounds)
 {
     cchar   *salt;
 
+    if (slen(password) > BIT_MPR_MAX_PASSWORD) {
+        return 0;
+    }
     if (saltLength <= 0) {
         saltLength = BLOWFISH_SALT_LENGTH;
     }
@@ -8012,6 +8038,9 @@ PUBLIC bool mprCheckPassword(cchar *plainTextPassword, cchar *passwordHash)
     char    *tok, *hash;
     ssize   match;
 
+    if (slen(plainTextPassword) > BIT_MPR_MAX_PASSWORD) {
+        return 0;
+    }
     stok(sclone(passwordHash), ":", &tok);
     rounds = stok(NULL, ":", &tok);
     salt = stok(NULL, ":", &tok);
@@ -11180,7 +11209,7 @@ PUBLIC MprHash *mprCreateHash(int hashSize, int flags)
     hash->flags = flags | MPR_OBJ_HASH;
     hash->size = hashSize;
     hash->length = 0;
-    if (!(flags & MPR_HASH_OWN)) {
+    if (!(flags & MPR_HASH_STABLE)) {
         hash->mutex = mprCreateLock();
     } else {
         hash->mutex = 0;
@@ -11237,9 +11266,9 @@ static void manageHashTable(MprHash *hash, int flags)
 }
 
 
+//  MOB - rename mprSetKey
 /*
-    Insert an entry into the hash hash. If the entry already exists, update its value. 
-    Order of insertion is not preserved.
+    Insert an entry into the hash hash. If the entry already exists, update its value.  Order of insertion is not preserved.
  */
 PUBLIC MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
 {
@@ -11285,6 +11314,8 @@ PUBLIC MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
     return sp;
 }
 
+
+//  MOB - rename mprSetKeyWithType
 
 PUBLIC MprKey *mprAddKeyWithType(MprHash *hash, cvoid *key, cvoid *ptr, int type)
 {
@@ -11343,6 +11374,7 @@ PUBLIC MprKey *mprAddDuplicateKey(MprHash *hash, cvoid *key, cvoid *ptr)
 }
 
 
+//  MOB - better if it returned the old value
 PUBLIC int mprRemoveKey(MprHash *hash, cvoid *key)
 {
     MprKey      *sp, *prevSp;
@@ -11665,7 +11697,7 @@ PUBLIC char *mprHashKeysToString(MprHash *hash, cchar *join)
 /************************************************************************/
 
 /**
-    json.c - A JSON parser and serializer. 
+    json.c - A JSON parser, serializer and query language.
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -11673,288 +11705,522 @@ PUBLIC char *mprHashKeysToString(MprHash *hash, cchar *join)
 
 
 
+/*********************************** Locals ***********************************/
+/*
+    JSON parse tokens
+ */
+#define JTOK_LBRACE     1
+#define JTOK_RBRACE     2
+#define JTOK_LBRACKET   3
+#define JTOK_RBRACKET   4
+#define JTOK_COMMA      5
+#define JTOK_COLON      6
+#define JTOK_STRING     7
+#define JTOK_EOF        8
+#define JTOK_ERR        9
+
 /****************************** Forward Declarations **************************/
 
-static MprObj *deserialize(MprJson *jp, MprObj *obj);
-static char advanceToken(MprJson *jp);
-static cchar *findEndKeyword(MprJson *jp, cchar *str);
-static cchar *findQuote(cchar *tok, int quote);
-static MprObj *makeObj(MprJson *jp, bool list);
-static cchar *parseComment(MprJson *jp);
-static void jsonParseError(MprJson *jp, cchar *msg);
-static cchar *parseName(MprJson *jp);
-static cchar *parseValue(MprJson *jp);
-static int setValue(MprJson *jp, MprObj *obj, int index, cchar *name, cchar *value, int type);
+static int setProperty(MprJson *obj, cchar *name, MprJson *child, int flags);
+static int checkBlockCallback(MprJsonParser *parser, cchar *name, bool leave);
+static void formatValue(MprBuf *buf, MprJson *obj, int flags);
+static int gettok(MprJsonParser *parser);
+static MprJson *jsonParse(MprJsonParser *parser, MprJson *obj);
+static void jsonErrorCallback(MprJsonParser *parser, cchar *msg);
+static int peektok(MprJsonParser *parser);
+static void puttok(MprJsonParser *parser);
+static void removeChild(MprJson *obj, MprJson *child);
+static int setValueCallback(MprJsonParser *parser, MprJson *obj, cchar *name, MprJson *child);
+static void spaces(MprBuf *buf, int count);
 
 /************************************ Code ************************************/
 
-PUBLIC MprObj *mprDeserializeCustom(cchar *str, MprJsonCallback callback, void *data, MprObj *obj)
+static void manageJson(MprJson *obj, int flags)
 {
-    MprJson     jp;
+    if (flags & MPR_MANAGE_MARK) {
+        mprMark(obj->name);
+        mprMark(obj->prev);
+        mprMark(obj->next);
+        mprMark(obj->children);
+        mprMark(obj->value);
+    }
+}
 
-    /*
-        There is no need for GC management as this routine does not yield
-     */
-    memset(&jp, 0, sizeof(jp));
-    jp.lineNumber = 1;
-    jp.tok = str;
-    jp.callback = callback;
-    jp.data = data;
-    return deserialize(&jp, obj);
+
+static MprJson *createJsonValue(cchar *value)
+{
+    MprJson  *obj;
+
+    if ((obj = mprAllocObj(MprJson, manageJson)) == 0) {
+        return 0;
+    }
+    obj->value = sclone(value);
+    obj->type = MPR_JSON_VALUE;
+    return obj;
+}
+
+
+PUBLIC MprJson *mprCreateJson(int type)
+{
+    MprJson  *obj;
+
+    if ((obj = mprAllocObj(MprJson, manageJson)) == 0) {
+        return 0;
+    }
+    obj->type = type ? type : MPR_JSON_OBJ;
+    return obj;
+}
+
+
+static MprJson *createObjCallback(MprJsonParser *parser, int type)
+{
+    return mprCreateJson(type);
+}
+
+
+static void manageJsonParser(MprJsonParser *parser, int flags)
+{
+    if (flags & MPR_MANAGE_MARK) {
+        mprMark(parser->token);
+        mprMark(parser->putback);
+        mprMark(parser->path);
+        mprMark(parser->buf);
+        mprMark(parser->errorMsg);
+    }
 }
 
 
 /*
-    Deserialize a JSON string into an MprHash object. Objects and lists "[]" are stored in hashes. 
+    Extended parse. The str and data args are unmanged.
  */
-PUBLIC MprObj *mprDeserialize(cchar *str)
+PUBLIC MprJson *mprParseJsonEx(cchar *str, MprJsonCallback *callback, void *data, MprJson *obj)
 {
-    return mprDeserializeInto(str, NULL);
-}
+    MprJsonParser   *parser;
+    MprJson         *result, *child, *next;
+    int             i;
 
-
-PUBLIC MprObj *mprDeserializeInto(cchar *str, MprObj *obj)
-{
-    MprJsonCallback cb;
-
-    if (!str || !(*str == '[' || *str == '{')) {
-        assert(str && (*str == '[' || *str == '{'));
+    if ((parser = mprAllocObj(MprJsonParser, manageJsonParser)) == 0) {
         return 0;
     }
-    cb.checkState = 0;
-    cb.makeObj = makeObj;
-    cb.parseError = jsonParseError;
-    cb.setValue = setValue;
-    return mprDeserializeCustom(str, cb, NULL, obj); 
+    parser->input = str ? str : "";
+    if (callback) {
+        parser->callback = *callback;
+    }
+    if (parser->callback.checkBlock == 0) {
+        parser->callback.checkBlock = checkBlockCallback;
+    }
+    if (parser->callback.createObj == 0) {
+        parser->callback.createObj = createObjCallback;
+    }
+    if (parser->callback.parseError == 0) {
+        parser->callback.parseError = jsonErrorCallback;
+    }
+    if (parser->callback.setValue == 0) {
+        parser->callback.setValue = setValueCallback;
+    }
+    parser->data = data;
+    parser->state = MPR_JSON_STATE_VALUE;
+    parser->tolerant = 1;
+    parser->buf = mprCreateBuf(128, 0); 
+
+    if ((result = jsonParse(parser, 0)) == 0) {
+        return 0;
+    }
+    if (obj) {
+        for (i = 0, child = result->children; child && i < result->length; child = next, i++) {
+            next = child->next;
+            setProperty(obj, child->name, child, 0);
+        }
+    } else {
+        obj = result;
+    }
+    return obj;
 }
 
 
-static MprObj *deserialize(MprJson *jp, MprObj *obj)
+PUBLIC MprJson *mprParseJsonInto(cchar *str, MprJson *obj)
 {
-    cvoid   *value;
-    cchar   *name;
-    int     token, rc, index, valueType;
+    return mprParseJsonEx(str, 0, 0, obj);
+}
 
-    if ((token = advanceToken(jp)) == '[') {
-        if (!obj) {
-            obj = jp->callback.makeObj(jp, 1);
-        }
-        index = 0;
-    } else if (token == '{') {
-        if (!obj) {
-            obj = jp->callback.makeObj(jp, 0);
-        }
-        index = -1;
-    } else {
-        return (MprObj*) parseValue(jp);
-    }
-    jp->tok++;
 
-    while (*jp->tok) {
-        switch (advanceToken(jp)) {
-        case '\0':
-            break;
+PUBLIC MprJson *mprParseJson(cchar *str)
+{
+    return mprParseJsonEx(str, 0, 0, 0);
+}
 
-        case ',':
-            if (index >= 0) {
-                index++;
-            }
-            jp->tok++;
-            continue;
 
-        case '/':
-            if (jp->tok[1] == '/' || jp->tok[1] == '*') {
-                jp->tok = parseComment(jp);
-            } else {
-                mprJsonParseError(jp, "Unexpected character '%c'", *jp->tok);
-                return 0;
-            }
-            continue;
+/*
+    Inner parse routine. This is called recursively.
+ */
+static MprJson *jsonParse(MprJsonParser *parser, MprJson *obj)
+{
+    MprJson      *child;
+    cchar       *name;
+    int         tokid;
 
-        case '}':
-        case ']':
-            /* End of object or array */
-            if (jp->callback.checkState && jp->callback.checkState(jp, NULL) < 0) {
-                return 0;
-            }
-            jp->tok++;
+    name = 0;
+    while (1) {
+        tokid = gettok(parser);
+        switch (parser->state) {
+        case MPR_JSON_STATE_ERR:
+            return 0;
+
+        case MPR_JSON_STATE_EOF:
             return obj;
 
-        default:
-            /*
-                Value: String, "{" or "]"
-             */
-            value = 0;
-            valueType = MPR_JSON_STRING;
-            if (index < 0) {
-                if ((name = parseName(jp)) == 0) {
-                    return 0;
-                }
-                if ((token = advanceToken(jp)) != ':') {
-                    if (token == ',' || token == '}' || token == ']') {
-                        valueType = MPR_JSON_STRING;
-                        value = name;
-                    } else {
-                        mprJsonParseError(jp, "Bad separator '%c'", *jp->tok);
-                        return 0;
-                    }
-                }
-                jp->tok++;
-            } else {
-                name = 0;
-            }
-            if (!value) {
-                advanceToken(jp);
-                if (jp->callback.checkState && jp->callback.checkState(jp, name) < 0) {
-                    return 0;
-                }
-                if (*jp->tok == '{') {
-                    value = deserialize(jp, NULL);
-                    valueType = MPR_JSON_OBJ;
-
-                } else if (*jp->tok == '[') {
-                    value = deserialize(jp, NULL);
-                    valueType = MPR_JSON_ARRAY;
-
-                } else {
-                    value = parseValue(jp);
-                    valueType = MPR_JSON_STRING;
-                }
-                if (!value) {
-                    /* Error already reported */
-                    return 0;
-                }
-            }
-            if ((rc = jp->callback.setValue(jp, obj, index, name, value, valueType)) < 0) {
+        case MPR_JSON_STATE_NAME:
+            if (tokid == JTOK_RBRACE) {
+                puttok(parser);
+                return obj;
+            } else if (tokid != JTOK_STRING) {
+                mprSetJsonError(parser, "Expected property name");
                 return 0;
             }
+            name = sclone(parser->token);
+            if (gettok(parser) != JTOK_COLON) {
+                mprSetJsonError(parser, "Expected colon");
+                return 0;
+            }
+            parser->state = MPR_JSON_STATE_VALUE;
+            break;
+
+        case MPR_JSON_STATE_VALUE:
+            if (tokid == JTOK_STRING) {
+                child = createJsonValue(parser->token);
+
+            } else if (tokid == JTOK_LBRACE) {
+                parser->state = MPR_JSON_STATE_NAME;
+                if (name && parser->callback.checkBlock(parser, name, 0) < 0) {
+                    return 0;
+                }
+                child = jsonParse(parser, parser->callback.createObj(parser, MPR_JSON_OBJ));
+                if (gettok(parser) != JTOK_RBRACE) {
+                    mprSetJsonError(parser, "Missing closing brace");
+                    return 0;
+                }
+                if (name && parser->callback.checkBlock(parser, name, 1) < 0) {
+                    return 0;
+                }
+
+            } else if (tokid == JTOK_LBRACKET) {
+                if (parser->callback.checkBlock(parser, name, 0) < 0) {
+                    return 0;
+                }
+                child = jsonParse(parser, parser->callback.createObj(parser, MPR_JSON_ARRAY));
+                if (gettok(parser) != JTOK_RBRACKET) {
+                    mprSetJsonError(parser, "Missing closing bracket");
+                    return 0;
+                }
+                if (parser->callback.checkBlock(parser, name, 1) < 0) {
+                    return 0;
+                }
+
+            } else if (tokid == JTOK_RBRACKET || tokid == JTOK_RBRACE) {
+                puttok(parser);
+                return obj;
+
+            } else if (tokid == JTOK_EOF) {
+                return obj;
+
+            } else {
+                mprSetJsonError(parser, "Unexpected input");
+                return 0;
+            }
+            if (obj) {
+                if (parser->callback.setValue(parser, obj, name, child) < 0) {
+                    return 0;
+                }
+            } else {
+                /* Becomes root object */
+                obj = child;
+            }
+            tokid = peektok(parser);
+            if (tokid == JTOK_COMMA) {
+                gettok(parser);
+                if (parser->tolerant) {
+                    tokid = peektok(parser); 
+                    if (tokid == JTOK_RBRACE || parser->tokid == JTOK_RBRACKET) {
+                        return obj;
+                    }
+                }
+                if (obj->type == MPR_JSON_OBJ) {
+                    parser->state = MPR_JSON_STATE_NAME;
+                }
+            } else if (tokid == JTOK_RBRACE || parser->tokid == JTOK_RBRACKET || tokid == JTOK_EOF) {
+                return obj;
+            } else {
+                mprSetJsonError(parser, "Unexpected input. Missing comma.");
+            }
+            break;
         }
     }
     return obj;
 }
 
 
-static cchar *parseComment(MprJson *jp)
-{
-    cchar   *tok;
-
-    tok = jp->tok;
-    if (*tok == '/') {
-        for (tok++; *tok && *tok != '\n'; tok++) ;
-
-    } else if (*jp->tok == '*') {
-        tok++;
-        for (tok++; tok[0] && (tok[0] != '*' || tok[1] != '/'); tok++) {
-            if (*tok == '\n') {
-                jp->lineNumber++;
-            }
-        }
-    }
-    return tok - 1;
-}
-
-
-static cchar *parseQuotedName(MprJson *jp)
-{
-    cchar    *etok, *name;
-    int      quote;
-
-    quote = *jp->tok;
-    if ((etok = findQuote(++jp->tok, quote)) == 0) {
-        mprJsonParseError(jp, "Missing closing quote");
-        return 0;
-    }
-    name = snclone(jp->tok, etok - jp->tok);
-    jp->tok = ++etok;
-    return name;
-}
-
-
-static cchar *parseUnquotedName(MprJson *jp)
-{
-    cchar    *etok, *name;
-
-    etok = findEndKeyword(jp, jp->tok);
-    name = snclone(jp->tok, etok - jp->tok);
-    jp->tok = etok;
-    return name;
-}
-
-
-static cchar *parseName(MprJson *jp)
-{
-    char    token;
-
-    token = advanceToken(jp);
-    if (token == '"' || token == '\'') {
-        return parseQuotedName(jp);
-    } else {
-        return parseUnquotedName(jp);
-    }
-}
-
-
-static cchar *parseValue(MprJson *jp)
-{
-    cchar   *etok, *value;
-    int     quote;
-
-    value = 0;
-    if (*jp->tok == '"' || *jp->tok == '\'') {
-        quote = *jp->tok;
-        if ((etok = findQuote(++jp->tok, quote)) == 0) {
-            mprJsonParseError(jp, "Missing closing quote");
-            return 0;
-        }
-        value = snclone(jp->tok, etok - jp->tok);
-        jp->tok = etok + 1;
-
-    } else {
-        etok = findEndKeyword(jp, jp->tok);
-        value = snclone(jp->tok, etok - jp->tok);
-        jp->tok = etok;
-    }
-    return value;
-}
-
-
-static int setValue(MprJson *jp, MprObj *obj, int index, cchar *key, cchar *value, int type)
-{
-    MprKey  *kp;
-    char    keybuf[32];
-
-    if (index >= 0) {
-        itosbuf(keybuf, sizeof(keybuf), index, 10);
-        key = keybuf;
-    }
-    if ((kp = mprAddKey(obj, key, value)) == 0) {
-        return MPR_ERR_MEMORY;
-    }
-    kp->type = type;
-    return 0;
-}
-
-
-static MprObj *makeObj(MprJson *jp, bool list)
-{
-    MprHash     *hash;
-
-    if ((hash = mprCreateHash(0, 0)) == 0) {
-        return 0;
-    }
-    if (list) {
-        hash->flags |= MPR_HASH_LIST;
-    }
-    return hash;
-}
-
-
-static void quoteValue(MprBuf *buf, cchar *str)
+static void eatRestOfComment(MprJsonParser *parser)
 {
     cchar   *cp;
 
+    cp = parser->input;
+    if (*cp == '/') {
+        for (cp++; *cp && *cp != '\n'; cp++) {}
+
+    } else if (*cp == '*') {
+        for (cp++; cp[0] && (cp[0] != '*' || cp[1] != '/'); cp++) {
+            if (*cp == '\n') {
+                parser->lineNumber++;
+            }
+        }
+        cp += 2;
+    }
+    parser->input = cp;
+}
+
+
+/*
+    Peek at the next token without consuming it
+ */
+static int peektok(MprJsonParser *parser)
+{
+    int     tokid;
+
+    tokid = gettok(parser);
+    puttok(parser);
+    return tokid;
+}
+
+
+/*
+    Put back the token so it can be refetched via gettok
+ */
+static void puttok(MprJsonParser *parser)
+{
+    parser->putid = parser->tokid;
+    parser->putback = sclone(parser->token);
+}
+
+
+/*
+    Get the next token. Returns the token ID and also stores it in parser->tokid.
+    Residuals: parser->token set to the token text. parser->errorMsg for parse error diagnostics.
+    Note: parser->token is a reference into the parse buffer and will be overwritten on the next call to gettok.
+ */
+static int gettok(MprJsonParser *parser)
+{
+    cchar   *cp;
+    ssize   len;
+    int     c;
+
+    assert(parser);
+    assert(parser->input);
+    mprFlushBuf(parser->buf);
+
+    if (parser->state == MPR_JSON_STATE_EOF || parser->state == MPR_JSON_STATE_ERR) {
+        return parser->tokid = JTOK_EOF;
+    }
+    if (parser->putid) {
+        parser->tokid = parser->putid;
+        parser->putid = 0;
+        mprPutStringToBuf(parser->buf, parser->putback);
+
+    } else {
+        for (parser->tokid = 0; !parser->tokid; ) {
+            c = *parser->input++;
+            switch (c) {
+            case '\0':
+                parser->state = MPR_JSON_STATE_EOF;
+                parser->tokid = JTOK_EOF;
+                parser->input--;
+                break;
+            case ' ':
+            case '\t':
+                break;
+            case '\n':
+                parser->lineNumber++;
+                break;
+            case '{':
+                parser->tokid = JTOK_LBRACE;
+                mprPutCharToBuf(parser->buf, c);
+                break;
+            case '}':
+                parser->tokid = JTOK_RBRACE;
+                mprPutCharToBuf(parser->buf, c);
+                break;
+            case '[':
+                 parser->tokid = JTOK_LBRACKET;
+                mprPutCharToBuf(parser->buf, c);
+                 break;
+            case ']':
+                parser->tokid = JTOK_RBRACKET;
+                mprPutCharToBuf(parser->buf, c);
+                break;
+            case ',':
+                parser->tokid = JTOK_COMMA;
+                mprPutCharToBuf(parser->buf, c);
+                break;
+            case ':':
+                parser->tokid = JTOK_COLON;
+                mprPutCharToBuf(parser->buf, c);
+                break;
+            case '/':
+                c = *parser->input;
+                if (c == '*' || c == '/') {
+                    eatRestOfComment(parser);
+                } else {
+                    mprSetJsonError(parser, "Unexpected input");
+                }
+                break;
+
+            case '\\':
+                mprSetJsonError(parser, "Bad input state");
+                break;
+
+            case '"':
+            case '\'':
+                if (parser->state == MPR_JSON_STATE_NAME || parser->state == MPR_JSON_STATE_VALUE) {
+                    for (cp = parser->input; *cp; cp++) {
+                        if (*cp == c && (cp == parser->input || *cp != '\\')) {
+                            mprPutBlockToBuf(parser->buf, parser->input, cp - parser->input);
+                            parser->tokid = JTOK_STRING;
+                            parser->input = cp + 1;
+                            break;
+                        }
+                    }
+                    if (*cp != c) {
+                        mprSetJsonError(parser, "Missing closing quote");
+                    }
+                } else {
+                    mprSetJsonError(parser, "Unexpected quote");
+                }
+                break;
+
+            default:
+                parser->input--;
+                if (parser->state == MPR_JSON_STATE_NAME) {
+                    if (parser->tolerant) {
+                        /* Allow unquoted names */
+                        for (cp = parser->input; *cp; cp++) {
+                            c = *cp;
+                            if (c == '\\') {
+                                if (isxdigit((uchar) cp[1]) && isxdigit((uchar) cp[2]) && isxdigit((uchar) cp[3]) && isxdigit((uchar) cp[4])) {
+                                    c = (int) stoiradix(cp, 16, NULL);
+                                    cp += 3;
+                                }
+                            }
+                            if ((isspace((uchar) c) || c == ':') && (cp == parser->input || *cp != '\\')) {
+                                break;
+                            }
+                            mprPutCharToBuf(parser->buf, c);
+                        }
+                        parser->tokid = JTOK_STRING;
+                        parser->input = cp;
+                    }
+
+                } else if (parser->state == MPR_JSON_STATE_VALUE) {
+                    if ((cp = strpbrk(parser->input, " \t\n\r:,}]")) == 0) {
+                        cp = &parser->input[slen(parser->input)];
+                    }
+                    len = cp - parser->input;
+                    mprPutBlockToBuf(parser->buf, parser->input, len);
+                    parser->tokid = JTOK_STRING;
+                    parser->input += len;
+
+                } else {
+                    mprSetJsonError(parser, "Unexpected input");
+                }
+                break;
+            }
+        }
+    }
+    mprAddNullToBuf(parser->buf);
+    parser->token = mprGetBufStart(parser->buf);
+    return parser->tokid;
+}
+
+
+/*
+    Supports hashes where properties are strings or hashes of strings. N-level nest is supported.
+ */
+static char *objToString(MprBuf *buf, MprJson *obj, int indent, int flags)
+{
+    MprJson  *child;
+    int     quotes, pretty, index;
+
+    pretty = flags & MPR_JSON_PRETTY;
+    quotes = flags & MPR_JSON_QUOTES;
+
+    if (obj->type == MPR_JSON_ARRAY) {
+        mprPutCharToBuf(buf, '[');
+        indent++;
+        if (pretty) mprPutCharToBuf(buf, '\n');
+
+        for (ITERATE_JSON(obj, child, index)) {
+            if (pretty) spaces(buf, indent);
+            objToString(buf, child, indent, flags);
+            if (child->next != obj->children) {
+                mprPutCharToBuf(buf, ',');
+            }
+            if (pretty) mprPutCharToBuf(buf, '\n');
+        }
+        if (pretty) spaces(buf, --indent);
+        mprPutCharToBuf(buf, ']');
+
+    } else if (obj->type == MPR_JSON_OBJ) {
+        mprPutCharToBuf(buf, '{');
+        indent++;
+        if (pretty) mprPutCharToBuf(buf, '\n');
+        for (ITERATE_JSON(obj, child, index)) {
+            if (pretty) spaces(buf, indent);
+            if (quotes) mprPutCharToBuf(buf, '"');
+            mprPutStringToBuf(buf, child->name);
+            if (quotes) mprPutCharToBuf(buf, '"');
+            if (pretty) {
+                mprPutStringToBuf(buf, ": ");
+            } else {
+                mprPutCharToBuf(buf, ':');
+            }
+            objToString(buf, child, indent, flags);
+            if (child->next != obj->children) {
+                mprPutCharToBuf(buf, ',');
+            }
+            if (pretty) mprPutCharToBuf(buf, '\n');
+        }
+        if (pretty) spaces(buf, --indent);
+        mprPutCharToBuf(buf, '}');
+        
+    } else {
+        formatValue(buf, obj, flags);
+    }
+    return sclone(mprGetBufStart(buf));
+}
+
+
+/*
+    Serialize into JSON format.
+ */
+PUBLIC char *mprJsonToString(MprJson *obj, int flags)
+{
+    if (!obj) {
+        return 0;
+    }
+    return objToString(mprCreateBuf(0, 0), obj, 0, flags);
+}
+
+
+static void formatValue(MprBuf *buf, MprJson *obj, int flags)
+{
+    cchar   *cp;
+
+    if (!(flags & MPR_JSON_STRINGS)) {
+        if (sfnumber(obj->value) || smatch(obj->value, "null") || smatch(obj->value, "true") || smatch(obj->value, "false")) {
+            mprPutStringToBuf(buf, obj->value);
+            return;
+        }
+    }
     mprPutCharToBuf(buf, '"');
-    for (cp = str; *cp; cp++) {
+    for (cp = obj->value; *cp; cp++) {
         if (*cp == '\'') {
             mprPutCharToBuf(buf, '\\');
         }
@@ -11964,199 +12230,733 @@ static void quoteValue(MprBuf *buf, cchar *str)
 }
 
 
-/*
-    Supports hashes where properties are strings or hashes of strings. N-level nest is supported.
- */
-static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int flags)
+static void spaces(MprBuf *buf, int count)
 {
-    MprKey  *kp;
-    char    numbuf[32];
-    int     i, len, quotes, pretty;
+    int     i;
 
-    pretty = flags & MPR_JSON_PRETTY;
-    quotes = flags & MPR_JSON_QUOTES;
+    for (i = 0; i < count; i++) {
+        mprPutStringToBuf(buf, "    ");
+    }
+}
 
-    if (type == MPR_JSON_ARRAY) {
-        mprPutCharToBuf(buf, '[');
-        if (pretty) mprPutCharToBuf(buf, '\n');
-        len = mprGetHashLength(obj);
-        for (i = 0; i < len; i++) {
-            itosbuf(numbuf, sizeof(numbuf), i, 10);
-            if (pretty) mprPutStringToBuf(buf, "    ");
-            if ((kp = mprLookupKeyEntry(obj, numbuf)) == 0) {
-                assert(kp);
-                continue;
-            }
-            if (kp->type == MPR_JSON_ARRAY || kp->type == MPR_JSON_OBJ) {
-                objToString(buf, (MprObj*) kp->data, kp->type, flags);
-            } else {
-                quoteValue(buf, kp->data);
-            }
-            if ((i+1) < len) {
-                mprPutCharToBuf(buf, ',');
-            }
-            if (pretty) mprPutCharToBuf(buf, '\n');
+
+static void jsonErrorCallback(MprJsonParser *parser, cchar *msg)
+{
+    if (!parser->errorMsg) {
+        if (parser->path) {
+            parser->errorMsg = sfmt("JSON Parse Error: %s\nIn file '%s' at line %d. Token \"%s\"",
+                msg, parser->path, parser->lineNumber + 1, parser->token);
+        } else {
+            parser->errorMsg = sfmt("JSON Parse Error: %s\nAt line %d. Token \"%s\"",
+                msg, parser->lineNumber + 1, parser->token);
         }
-        mprPutCharToBuf(buf, ']');
-
-    } else if (type == MPR_JSON_OBJ) {
-        mprPutCharToBuf(buf, '{');
-        if (pretty) mprPutCharToBuf(buf, '\n');
-        for (kp = mprGetFirstKey(obj); kp; ) {
-            if (kp->key == 0 || kp->data == 0) continue;
-            if (pretty) mprPutStringToBuf(buf, "    ");
-            if (quotes) mprPutCharToBuf(buf, '"');
-            mprPutStringToBuf(buf, kp->key);
-            if (quotes) mprPutCharToBuf(buf, '"');
-            if (pretty) {
-                mprPutStringToBuf(buf, ": ");
-            } else {
-                mprPutCharToBuf(buf, ':');
-            }
-            if (kp->type == MPR_JSON_ARRAY || kp->type == MPR_JSON_OBJ) {
-                objToString(buf, (MprObj*) kp->data, kp->type, flags);
-            } else {
-                quoteValue(buf, kp->data);
-            }
-            kp = mprGetNextKey(obj, kp);
-            if (kp) {
-                mprPutCharToBuf(buf, ',');
-            }
-            if (pretty) mprPutCharToBuf(buf, '\n');
-        }
-        mprPutCharToBuf(buf, '}');
-    }
-    if (pretty) mprPutCharToBuf(buf, '\n');
-    return sclone(mprGetBufStart(buf));
-}
-
-
-/*
-    Serialize into JSON format.
- */
-PUBLIC cchar *mprSerialize(MprObj *obj, int flags)
-{
-    MprBuf  *buf;
-
-    if ((buf = mprCreateBuf(0, 0)) == 0) {
-        return 0;
-    }
-    objToString(buf, obj, MPR_JSON_OBJ, flags);
-    return mprGetBuf(buf);
-}
-
-
-static char advanceToken(MprJson *jp)
-{
-    while (isspace((uchar) *jp->tok)) {
-        if (*jp->tok == '\n') {
-            jp->lineNumber++;
-        }
-        jp->tok++;
-    }
-    return *jp->tok;
-}
-
-
-static cchar *findQuote(cchar *tok, int quote)
-{
-    cchar   *cp;
-
-    assert(tok);
-    for (cp = tok; *cp; cp++) {
-        if (*cp == quote && (cp == tok || *cp != '\\')) {
-            return cp;
-        }
-    }
-    return 0;
-}
-
-
-static cchar *findEndKeyword(MprJson *jp, cchar *str)
-{
-    cchar   *cp, *etok;
-
-    assert(str);
-    for (cp = jp->tok; *cp; cp++) {
-        if ((etok = strpbrk(cp, " \t\n\r:,}]")) != 0) {
-            if (etok == jp->tok || *etok != '\\') {
-                return etok;
-            }
-        }
-    }
-    return &str[strlen(str)];
-}
-
-
-static void jsonParseError(MprJson *jp, cchar *msg)
-{
-    if (jp->path) {
-        mprTrace(4, "%s\nIn file '%s' at line %d", msg, jp->path, jp->lineNumber);
-    } else {
-        mprTrace(4, "%s\nAt line %d", msg, jp->lineNumber);
+        mprTrace(4, "%s", parser->errorMsg);
     }
 }
 
 
-PUBLIC void mprJsonParseError(MprJson *jp, cchar *fmt, ...)
+PUBLIC void mprSetJsonError(MprJsonParser *parser, cchar *fmt, ...)
 {
     va_list     args;
     cchar       *msg;
 
     va_start(args, fmt);
     msg = sfmtv(fmt, args);
-    (jp->callback.parseError)(jp, msg);
+    (parser->callback.parseError)(parser, msg);
     va_end(args);
+    parser->state = MPR_JSON_STATE_ERR;
+    parser->tokid = JTOK_ERR;
 }
 
 
 /*
-    Currently only works for MprHash implementations
+ **************** JSON object query API -- only works for MprJson implementations *****************
  */
-PUBLIC cchar *mprQueryJsonString(MprHash *obj, cchar *key)
-{
-    MprKey  *kp;
-    char    *property, *tok;
 
-    for (property = stok(sclone(key), ".", &tok); property; property = stok(0, ".", &tok)) {
-        if ((kp = mprLookupKeyEntry(obj, property)) == 0) {
-            return 0;
+PUBLIC int mprBlendJson(MprJson *obj, MprJson *other, int flags)
+{
+    MprJson      *dp, *sp;
+    int         si, di;
+
+    if (other == 0) {
+        return 0;
+    }
+    if (obj == 0) {
+        obj = mprCreateJson(MPR_JSON_OBJ);
+    }
+    for (ITERATE_JSON(other, sp, si)) {
+        if (sp->type == MPR_JSON_VALUE) {
+            if (obj->type == MPR_JSON_ARRAY) {
+                for (ITERATE_JSON(obj, dp, di)) {
+                    if (smatch(dp->value, sp->value)) {
+                        /* Already present in array */
+                        break;
+                    }
+                }
+                if (di == obj->length) {
+                    /* Not present */
+                    setProperty(obj, sp->name, mprCloneJson(sp), 0);
+                }
+            } else {
+                /* This overwrite if already existing */
+                setProperty(obj, sp->name, mprCloneJson(sp), 0);
+            }
+
+        } else {
+            if ((dp = mprLookupJson(obj, sp->name)) == 0) {
+                dp = mprCreateJson(sp->type);
+                setProperty(obj, sp->name, dp, 0);
+            }
+            mprBlendJson(dp, sp, flags);
         }
-        if (tok == 0) {
-            return (kp->type == MPR_JSON_STRING) ? kp->data : NULL;
-        }
-        if (kp->type != MPR_JSON_OBJ) {
-            return 0;
-        }
-        obj = (MprHash*) kp->data;
     }
     return 0;
 }
 
 
 /*
-    Currently only works for MprHash implementations
+    Simple one-level lookup. Returns the actual JSON object and not a clone.
  */
-PUBLIC void *mprQueryJsonValue(MprHash *obj, cchar *key, int type)
+PUBLIC MprJson *mprLookupJson(MprJson *obj, cchar *name)
 {
-    MprKey  *kp;
-    char    *property, *tok;
+    MprJson      *child;
+    int         i, index;
 
-    for (property = stok(sclone(key), ".", &tok); property; property = stok(0, ".", &tok)) {
-        if ((kp = mprLookupKeyEntry(obj, property)) == 0) {
-            return 0;
+    if (!obj || !name) {
+        return 0;
+    }
+    if (obj->type == MPR_JSON_OBJ) {
+        for (ITERATE_JSON(obj, child, i)) {
+            if (smatch(child->name, name)) {
+                return child;
+            }
         }
-        if (tok == 0) {
-            return (void*) ((kp->type == type) ? kp->data : NULL);
+    } else if (obj->type == MPR_JSON_ARRAY) {
+        index = (int) stoi(name);
+        for (ITERATE_JSON(obj, child, i)) {
+            if (i == index) {
+                return child;
+            }
         }
-        if (kp->type != MPR_JSON_OBJ) {
-            return 0;
-        }
-        obj = (MprHash*) kp->data;
     }
     return 0;
 }
 
+
+PUBLIC cchar *mprLookupJsonValue(MprJson *obj, cchar *name)
+{
+    MprJson     *item;
+
+    if ((item = mprLookupJson(obj, name)) != 0 && item->type == MPR_JSON_VALUE) {
+        return item->value;
+    }
+    return 0;
+}
+
+
+/*
+    JSON expression operators
+ */
+#define JSON_OP_EQ          1
+#define JSON_OP_NE          2
+#define JSON_OP_LT          3
+#define JSON_OP_LE          4
+#define JSON_OP_GT          5
+#define JSON_OP_GE          6
+#define JSON_OP_MATCH       7
+#define JSON_OP_NMATCH      8
+
+#define JSON_PROP_ELIPSIS   0x1         /* Current property was after elipsis:  ...name */
+#define JSON_PROP_ARRAY     0x2         /* Current property is array:  name[] */
+
+/*
+    Split a mulitpart property string and extract the deliminator, next property and remaining portion.
+    Format expected is: [delimitor] property [delimitor2] rest
+    Delimitor characters are: . . [ ]
+    Returns the next property.
+ */
+PUBLIC char *getNextTerm(char *str, char **rest, int *flags)
+{
+    char    *start, *end, *seps;
+    ssize   i;
+
+    if (flags) {
+        *flags = 0;
+    }
+    seps = ".[]";
+    start = (str || !rest) ? str : *rest;
+    if (start == 0) {
+        if (rest) {
+            *rest = 0;
+        }
+        return 0;
+    }
+    while (isspace((int) *start)) start++;
+    if (flags && sstarts(start, "..")) {
+        *flags |= JSON_PROP_ELIPSIS;
+    }
+    if ((i = strspn(start, seps)) > 0) {
+        start += i;
+    }
+    if (*start == '\0') {
+        if (rest) {
+            *rest = 0;
+        }
+        return 0;
+    }
+    if ((end = strpbrk(start, seps)) != 0) {
+        if (*end == '[') {
+            *flags |= JSON_PROP_ARRAY;
+        }
+        *end++ = '\0';
+        if (!sstarts(end, "..")) {
+            i = strspn(end, seps);
+            end += i;
+            if (*end == '\0') {
+                end = 0;
+            }
+        }
+    }
+    *rest = end;
+    return start;
+}
+
+
+#define JSON_EXPR_CHARS "<>=!~"
+
+static char *splitExpression(char *property, int *operator, char **value)
+{
+    char    *seps, *op, *end, *vp;
+    ssize   i;
+
+    seps = JSON_EXPR_CHARS " \t";
+    if ((op = spbrk(property, seps)) == 0) {
+        return 0;
+    }
+    end = op;
+    while (isspace((int) *op)) op++;
+    if (end < op) {
+        *end = '\0';
+    }
+    switch (op[0]) {
+    case '<':
+        *operator = (op[1] == '=') ? JSON_OP_LE: JSON_OP_LT;
+        break;
+    case '>':
+        *operator = (op[1] == '=') ? JSON_OP_GE: JSON_OP_GT;
+        break;
+    case '=':
+        *operator = JSON_OP_EQ;
+        break;
+    case '!':
+        if (op[1] == '~') {
+            *operator = JSON_OP_NMATCH;
+        } else if (op[1] == '=') {
+            *operator = JSON_OP_NE;
+        } else {
+            *operator = 0;
+            return 0;
+        }
+        break;
+    case '~':
+        *operator = JSON_OP_MATCH;
+        break;
+    default:
+        *operator = 0;
+        return 0;
+    }
+    if ((vp = spbrk(op, "<>=! \t")) != 0) {
+        *vp++ = '\0';
+        i = sspn(vp, seps);
+        vp += i;
+        if (*vp == '\'' || *vp == '"') {
+            for (end = &vp[1]; *end; end++) {
+                if (*end == *vp && (end == &vp[1] || *end != '\\')) {
+                    *end = '\0';
+                    vp++;
+                }
+            }
+        }
+        *value = vp;
+    }
+    return property;
+}
+
+
+/*
+    Note: value is modified
+ */
+static bool matchExpression(MprJson *obj, int operator, char *value)
+{
+    if (obj->type != MPR_JSON_VALUE) {
+        return 0;
+    }
+    value = stok(value, "'\"", NULL);
+    switch (operator) {
+    case JSON_OP_EQ:
+        return smatch(obj->value, value);
+    case JSON_OP_NE:
+        return !smatch(obj->value, value);
+    case JSON_OP_LT:
+        return scmp(obj->value, value) < 0;
+    case JSON_OP_LE:
+        return scmp(obj->value, value) <= 0;
+    case JSON_OP_GT:
+        return scmp(obj->value, value) > 0;
+    case JSON_OP_GE:
+        return scmp(obj->value, value) >= 0;
+    case JSON_OP_MATCH:
+        return scontains(obj->value, value) != 0;
+    case JSON_OP_NMATCH:
+        return scontains(obj->value, value) == 0;
+    default:
+        return 0;
+    }
+}
+
+
+static void appendItem(MprJson *obj, MprJson *child, int flags)
+{
+    setProperty(obj, child->name, mprCloneJson(child), flags);
+}
+
+
+static void appendItems(MprJson *obj, MprJson *items, int flags)
+{
+    MprJson  *child;
+    int     index;
+
+    for (ITERATE_JSON(items, child, index)) {
+        appendItem(obj, child, flags);
+    }
+}
+
+
+/*
+    Query a JSON object for a property key path and execute the given command.
+    The object may be a string, array or object.
+    The path is a multipart property. Examples are:
+        user.name
+        user['name']
+        users[2]
+        users[2:4]
+        users[-4:-1]                //  Range from end of array
+        users[name == 'john']
+        users[age >= 50]
+        users[phone ~ ^206]         //  Starts with 206
+        colors[@ != 'red']          //  Array element not 'red'
+        people..[name == 'john']
+
+    If a value is provided, the property described by the keyPath is set to the value.
+    If flags includes MPR_JSON_REMOVE, the property described by the keyPath is removed.
+    If flags includes MPR_JSON_SIMPLE, the property is not parsed for expressions.
+    Otherwise the the properties described by the keyPath are cloned and returned as a children of a container object.
+ */
+static MprJson *jsonQuery(MprJson *obj, cchar *keyPath, MprJson *value, int flags)
+{
+    MprJson      *result, *child, *np;
+    char        *property, *rest, *v, *s, *e, *subkey, *key;
+    ssize       start, end;
+    int         termType, operator, index;
+
+    result = mprCreateJson(MPR_JSON_ARRAY);
+    if (keyPath == 0 || *keyPath == '\0' || !obj || obj->type == MPR_JSON_VALUE) {
+        appendItem(result, obj, flags);
+        return result;
+    }
+    key = sclone(keyPath);
+    for (property = getNextTerm(key, &rest, &termType); property; property = getNextTerm(0, &rest, &termType)) {
+
+        if (!(flags & MPR_JSON_SIMPLE)) {
+            if (termType & JSON_PROP_ELIPSIS) {
+                /*
+                    Search all descendants
+                 */
+                for (ITERATE_JSON(obj, child, index)) {
+                    if (smatch(child->name, property)) {
+                        appendItems(result, jsonQuery(child, rest, value, flags), flags);
+                    } else {
+                        if (child->type != MPR_JSON_OBJ && child->type != MPR_JSON_ARRAY) {
+                            continue;
+                        }
+                        if (rest) {
+                            subkey = sjoin("...", property, ".", rest, NULL);
+                        } else {
+                            subkey = sjoin("...", property, NULL);
+                        }
+                        appendItems(result, jsonQuery(child, subkey, value, flags), flags);
+                    }
+                }
+                return result;
+
+            } else if (*property == '*' && obj->type == MPR_JSON_ARRAY) {
+                /*
+                    Append value
+                 */
+                if (!value) {
+                    /* Property deemed to have matched */
+                    break;
+                }
+                if (rest) {
+                    child = mprCreateJson(MPR_JSON_OBJ);
+                    setProperty(obj, 0, child, flags);
+                    /* Keep going to match rest */
+                } else {
+                    appendItem(obj, value, flags);
+                    return result;
+                }
+
+            } else if (*property == '@' && obj->type == MPR_JSON_ARRAY) {
+                /*
+                    Search array values
+                 */
+                if (splitExpression(property, &operator, &v) == 0) {
+                    /* Expression does not parse and so does not match */
+                    break;
+                }
+                for (ITERATE_JSON(obj, child, index)) {
+                    if (matchExpression(child, operator, v)) {
+                        appendItems(result, jsonQuery(child, rest, value, flags), flags);
+                    }
+                }
+                return result;
+
+            } else if (strchr(property, ':') && obj->type == MPR_JSON_ARRAY) {
+                /*
+                    Select range of array elements
+                 */
+                s = stok(property, ": \t", &e);
+                start = (ssize) stoi(s);
+                end = (ssize) stoi(e);
+                if (start < 0) {
+                    start = obj->length + start;
+                }
+                if (end < 0) {
+                    end = obj->length + end;
+                }
+                for (ITERATE_JSON(obj, child, index)) {
+                    if (index < start) continue;
+                    if (index > end) break;
+                    appendItems(result, jsonQuery(child, rest, value, flags), flags);
+                }
+                return result;
+
+            } else if (spbrk(property, JSON_EXPR_CHARS)) {
+                /*
+                    Pattern match
+                 */
+                if ((property = splitExpression(property, &operator, &v)) == 0) {
+                    /* Expression does not parse and so does not match */
+                    break;
+                }
+                if (obj->type == MPR_JSON_ARRAY) {
+                    for (ITERATE_JSON(obj, child, index)) {
+                        if (child->type == MPR_JSON_OBJ) {
+                            for (np = child->children; np && np->next != child->children; np = np->next) {
+                                if (matchExpression(np, operator, v)) {
+                                    appendItems(result, jsonQuery(child, rest, value, flags), flags);
+                                }
+                            }
+                        }
+                    }
+                } else if (obj->type == MPR_JSON_OBJ) {
+                    for (ITERATE_JSON(obj, child, index)) {
+                        if (smatch(child->name, property)) {
+                            if (matchExpression(child, operator, v)) {
+                                appendItems(result, jsonQuery(child, rest, value, flags), flags);
+                            }
+                        }
+                    }
+                }
+                return result;
+            }
+            /* No expression */
+        }
+
+        /*
+            Simple lookup for property
+         */
+        if ((child = mprLookupJson(obj, property)) != 0) {
+            /* Found */
+            if (rest == 0) {
+                if (flags & MPR_JSON_REMOVE) {
+                    /* Remove */
+                    removeChild(obj, child);
+                }
+                appendItem(result, child, flags);
+                return result;
+            } 
+            if (child->type == MPR_JSON_VALUE) {
+                break;
+            }
+            
+        } else {
+            /* Not found */
+            if (value) {
+                /* Create */
+                if (rest == 0) {
+                    setProperty(obj, sclone(property), mprCloneJson(value), flags);
+                    appendItem(result, value, flags);
+                    return result;
+                }
+                /* Intermediate property to create */
+                child = mprCreateJson(termType & JSON_PROP_ARRAY ? MPR_JSON_ARRAY : MPR_JSON_OBJ);
+                setProperty(obj, sclone(property), child, flags);
+
+            } else {
+                break;
+            }
+        }
+        obj = (MprJson*) child;
+    }
+    return result;
+}
+
+
+PUBLIC MprJson *mprQueryJson(MprJson *obj, cchar *key, int flags)
+{
+    return jsonQuery(obj, key, 0, flags);
+}
+
+
+PUBLIC MprJson *mprGetJson(MprJson *obj, cchar *key, int flags)
+{
+    MprJson      *result;
+
+    if (flags & MPR_JSON_TOP) {
+        return mprLookupJson(obj, key);
+    }
+    if ((result = jsonQuery(obj, key, 0, flags)) != 0) {
+        return (result->children) ? result->children : 0;
+    }
+    return 0;
+}
+
+
+PUBLIC cchar *mprGetJsonValue(MprJson *obj, cchar *key, int flags)
+{
+    MprJson      *result;
+
+    if (flags & MPR_JSON_TOP) {
+        return mprLookupJsonValue(obj, key);
+    }
+    if ((result = mprGetJson(obj, key, flags)) != 0) {
+        if (result->type == MPR_JSON_VALUE) {
+            return result->value;
+        }
+    }
+    return 0;
+}
+
+
+PUBLIC int mprSetJson(MprJson *obj, cchar *key, MprJson *value, int flags)
+{
+    MprJson     *result;
+
+    if (flags & MPR_JSON_TOP) {
+        return setProperty(obj, sclone(key), value, flags);
+    }
+    result = jsonQuery(obj, key, value, flags);
+    return (result && result->children) ? 0 : MPR_ERR_CANT_WRITE;
+}
+
+
+PUBLIC int mprSetJsonValue(MprJson *obj, cchar *key, cchar *value, int flags)
+{
+    if (flags & MPR_JSON_TOP) {
+        return setProperty(obj, sclone(key), createJsonValue(value), flags);
+    }
+    return mprSetJson(obj, key, createJsonValue(value), flags);
+}
+
+
+PUBLIC MprJson *mprRemoveJson(MprJson *obj, cchar *key)
+{
+    return jsonQuery(obj, key, 0, MPR_JSON_REMOVE);
+}
+
+
+MprJson *mprLoadJson(cchar *path)
+{
+    char    *str;
+
+    if ((str = mprReadPathContents(path, NULL)) != 0) {
+        return mprParseJson(str);
+    }
+    return 0;
+}
+
+
+PUBLIC int mprSaveJson(MprJson *obj, cchar *path)
+{
+    if (mprWritePathContents(path, mprJsonToString(obj, MPR_JSON_PRETTY | MPR_JSON_QUOTES), -1, 0664) < 0) {
+        return MPR_ERR_CANT_WRITE;
+    }
+    return 0;
+}
+
+
+PUBLIC void mprTraceJson(int level, MprJson *obj)
+{
+    mprTrace(level, mprJsonToString(obj, MPR_JSON_PRETTY));
+}
+
+
+/*
+    Add the child as property in the given object. The child is not cloned and is dedicated to this object.
+ */
+static int setProperty(MprJson *obj, cchar *name, MprJson *child, int flags)
+{
+    MprJson      *prior, *existing;
+
+    if (!obj || !child) {
+        return MPR_ERR_BAD_STATE;
+    }
+    if (!(flags & MPR_JSON_DUPLICATE) && (existing = mprLookupJson(obj, name)) != 0) {
+        existing->value = child->value;
+        existing->children = child->children;
+        existing->type = child->type;
+        existing->length = child->length;
+        return 0;
+    } 
+    if (obj->children) {
+        prior = obj->children->prev;
+        child->next = obj->children;
+        child->prev = prior;
+        prior->next->prev = child;
+        prior->next = child;
+    } else {
+        child->next = child->prev = child;
+        obj->children = child;
+    }
+    child->name = name;
+    obj->length++;
+    return 0;
+}
+
+
+static int checkBlockCallback(MprJsonParser *parser, cchar *name, bool leave)
+{
+    return 0;
+}
+
+
+/*  
+    Note: name is allocated 
+ */
+static int setValueCallback(MprJsonParser *parser, MprJson *obj, cchar *name, MprJson *child)
+{
+    return setProperty(obj, name, child, 0);
+}
+
+
+static void removeChild(MprJson *obj, MprJson *child)
+{
+    MprJson      *dep;
+    int         index;
+
+    for (ITERATE_JSON(obj, dep, index)) {
+        if (dep == child) {
+            dep->prev->next = dep->next;
+            dep->next->prev = dep->prev;
+            child->next = child->prev = 0;
+            if (--obj->length == 0) {
+                obj->children = 0;
+            }
+        }
+    }
+}
+
+
+/*
+    Deep copy of an object
+ */
+PUBLIC MprJson *mprCloneJson(MprJson *obj) 
+{
+    MprJson      *result, *child;
+    int         index;
+
+    result = mprCreateJson(obj->type);
+    result->name = obj->name;
+    result->value = obj->value;
+    result->type = obj->type;
+    for (ITERATE_JSON(obj, child, index)) {
+        setProperty(result, child->name, mprCloneJson(child), 0);
+    }
+    return result;
+}
+
+
+PUBLIC ssize mprGetJsonLength(MprJson *obj)
+{
+    if (!obj) {
+        return 0;
+    }
+    return obj->length;
+}
+
+
+PUBLIC MprHash *mprDeserializeInto(cchar *str, MprHash *hash)
+{
+    MprJson     *obj, *child;
+    int         index;
+
+    obj = mprParseJson(str);
+    for (ITERATE_JSON(obj, child, index)) {
+        if (child->type == MPR_JSON_VALUE) {
+            mprAddKey(hash, child->name, child->value);
+        }
+    }
+    return hash;
+}
+
+
+PUBLIC MprHash *mprDeserialize(cchar *str)
+{
+    return mprDeserializeInto(str, mprCreateHash(0, 0));
+}
+
+
+PUBLIC char *mprSerialize(MprHash *hash, int flags)
+{
+    MprJson  *obj;
+    MprKey   *kp;
+
+    obj = mprCreateJson(MPR_JSON_OBJ);
+    for (ITERATE_KEYS(hash, kp)) {
+        setProperty(obj, kp->key, createJsonValue(kp->data), 1);
+    }
+    return mprJsonToString(obj, flags);
+}
+
+
+PUBLIC MprJson *mprHashToJson(MprHash *hash)
+{
+    MprJson     *obj;
+    MprKey      *kp;
+
+    obj = mprCreateJson(0);
+    for (ITERATE_KEYS(hash, kp)) {
+        setProperty(obj, kp->key, createJsonValue(kp->data), 0);
+    }
+    return obj;
+}
+
+
+PUBLIC MprHash *mprJsonToHash(MprJson *json)
+{
+    MprHash     *hash;
+    MprJson     *obj;
+    int         index;
+
+    hash = mprCreateHash(0, 0);
+    for (ITERATE_JSON(json, obj, index)) {
+        if (obj->type == MPR_JSON_VALUE) {
+            mprAddKey(hash, obj->name, obj->value);
+        }
+    }
+    return hash;
+}
 
 /*
     @copy   default
@@ -12164,7 +12964,7 @@ PUBLIC void *mprQueryJsonValue(MprHash *obj, cchar *key, int type)
     Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the Embedthis Open Source license or you may acquire a 
+    You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
@@ -13014,11 +13814,11 @@ PUBLIC void *mprGetNextStableItem(MprList *lp, int *next)
 
     assert(next);
     assert(*next >= 0);
-    assert(lp->flags & MPR_LIST_STABLE);
 
     if (lp == 0) {
         return 0;
     }
+    assert(lp->flags & MPR_LIST_STABLE);
     index = *next;
     if (index < lp->length) {
         item = lp->items[index];
@@ -13944,6 +14744,19 @@ PUBLIC void mprError(cchar *fmt, ...)
 }
 
 
+PUBLIC void mprFatal(cchar *fmt, ...)
+{
+    va_list     args;
+    char        buf[BIT_MAX_LOGLINE];
+
+    va_start(args, fmt);
+    fmtv(buf, sizeof(buf), fmt, args);
+    va_end(args);
+    logOutput(MPR_ERROR_MSG | MPR_ERROR, 0, buf);
+    exit(2);
+}
+
+
 PUBLIC void mprInfo(cchar *fmt, ...)
 {
     va_list     args;
@@ -13997,19 +14810,6 @@ PUBLIC void mprUserError(cchar *fmt, ...)
 }
 
 
-PUBLIC void mprFatalError(cchar *fmt, ...)
-{
-    va_list     args;
-    char        buf[BIT_MAX_LOGLINE];
-
-    va_start(args, fmt);
-    fmtv(buf, sizeof(buf), fmt, args);
-    va_end(args);
-    logOutput(MPR_USER_MSG | MPR_FATAL_MSG, 0, buf);
-    exit(2);
-}
-
-
 PUBLIC void mprStaticError(cchar *fmt, ...)
 {
     va_list     args;
@@ -14045,9 +14845,9 @@ PUBLIC void mprAssert(cchar *loc, cchar *msg)
     }
     mprTrace(0, "%s", buf);
     mprBreakpoint();
-#if WATSON_PAUSE
-    printf("Stop for WATSON\n");
-    mprNap(60 * 1000);
+#if BIT_DEBUG_WATSON
+    fprintf(stderr, "Pause for debugger to attach\n");
+    mprSleep(24 * 3600 * 1000);
 #endif
 #endif
 }
@@ -14398,6 +15198,7 @@ static char *standardMimeTypes[] = {
     "tiff",  "image/tiff",
     "txt",   "text/plain",
     "wav",   "audio/x-wav",
+    "woff",  "application/font-woff",
     "xls",   "application/vnd.ms-excel",
     "zip",   "application/zip",
     0,       0,
@@ -15247,7 +16048,7 @@ PUBLIC cchar *mprGetModuleSearchPath()
  */
 PUBLIC int mprLoadModule(MprModule *mp)
 {
-#if BIT_HAS_DYN_LOAD
+#if BIT_HAS_DYN_LOAD && !BIT_STATIC
     assert(mp);
 
     if (mprLoadNativeModule(mp) < 0) {
@@ -15268,7 +16069,7 @@ PUBLIC int mprUnloadModule(MprModule *mp)
     if (mprStopModule(mp) < 0) {
         return MPR_ERR_NOT_READY;
     }
-#if BIT_HAS_DYN_LOAD
+#if BIT_HAS_DYN_LOAD && !BIT_STATIC
     if (mp->handle) {
         if (mprUnloadNativeModule(mp) != 0) {
             mprError("Cannot unload module %s", mp->name);
@@ -16266,6 +17067,12 @@ static int globMatch(MprFileSystem *fs, cchar *s, cchar *pat, int isDir, int fla
 }
 
 
+/*
+    path    - Directory to search
+    pattern - Search pattern with optional wildcards
+    base    - Return filenames relative to this directory base. May be "".
+    exclude - Exclusion pattern for filename basenames.
+ */
 static MprList *globPath(MprFileSystem *fs, MprList *results, cchar *path, cchar *base, cchar *pattern, cchar *exclude, int flags)
 {
     MprDirEntry     *dp;
@@ -16332,8 +17139,17 @@ PUBLIC MprList *mprGlobPathFiles(cchar *path, cchar *patterns, int flags)
                     for (pattern = special; pattern > start && !strchr(fs->separators, *pattern); pattern--) { }
                     if (pattern > start) {
                         *pattern++ = '\0';
+#if UNUSED
                         path = mprJoinPath(path, start);
                         base = start;
+#else
+                        if (flags & MPR_PATH_RELATIVE) {
+                            base = mprGetRelPath(start, path);
+                        } else {
+                            base = start;
+                        }
+                        path = start;
+#endif
                     }
                 }
             } else {
@@ -16629,6 +17445,8 @@ PUBLIC bool mprIsParentPathOf(cchar *dir, cchar *path)
     ssize   len;
     char    *base;
 
+    dir = mprGetAbsPath(dir);
+    path = mprGetAbsPath(path);
     len = slen(dir);
     if (len <= slen(path)) {
         base = sclone(path);
@@ -17019,7 +17837,18 @@ PUBLIC int mprRenamePath(cchar *from, cchar *to)
 
 PUBLIC char *mprReplacePathExt(cchar *path, cchar *ext)
 {
-    return mprJoinPathExt(mprTrimPathExt(path), ext);
+    if (ext == NULL || *ext == '\0') {
+        return sclone(path);
+    }
+    path = mprTrimPathExt(path);
+    /*
+        Don't use mprJoinPathExt incase path has an embedded "."
+     */
+    if (ext[0] == '.') {
+        return sjoin(path, ext, NULL);
+    } else {
+        return sjoin(path, ".", ext, NULL);
+    }
 }
 
 
@@ -17407,7 +18236,7 @@ PUBLIC int mprGetRandomBytes(char *buf, ssize length, bool block)
 }
 
 
-#if BIT_HAS_DYN_LOAD
+#if BIT_HAS_DYN_LOAD && !BIT_STATIC
 PUBLIC int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
@@ -18146,14 +18975,6 @@ PUBLIC char *mprPrintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
 
             case 'X':
                 fmt.flags |= SPRINTF_UPPER_CASE;
-#if UNUSED
-#if BIT_64
-                fmt.flags &= ~(SPRINTF_SHORT|SPRINTF_LONG);
-                fmt.flags |= SPRINTF_INT64;
-#else
-                fmt.flags &= ~(SPRINTF_INT64);
-#endif
-#endif
                 /*  Fall through  */
             case 'o':
             case 'x':
@@ -22046,6 +22867,12 @@ PUBLIC bool snumber(cchar *s)
 } 
 
 
+PUBLIC bool sfnumber(cchar *s)
+{
+    return s && *s && strspn(s, "1234567890.") == strlen(s);
+} 
+
+
 PUBLIC char *stitle(cchar *str)
 {
     char    *ptr;
@@ -22416,10 +23243,11 @@ PUBLIC char *supper(cchar *str)
 /*
     Expand ${token} references in a path or string.
  */
-PUBLIC char *stemplate(cchar *str, MprHash *keys)
+static char *stemplateInner(cchar *str, void *keys, int json)
 {
     MprBuf      *buf;
-    char        *src, *result, *cp, *tok, *value;
+    cchar       *value;
+    char        *src, *result, *cp, *tok;
 
     if (str) {
         if (schr(str, '$') == 0) {
@@ -22435,7 +23263,12 @@ PUBLIC char *stemplate(cchar *str, MprHash *keys)
                     for (cp = src; *cp && (isalnum((uchar) *cp) || *cp == '_'); cp++) ;
                     tok = snclone(src, cp - src);
                 }
-                if ((value = mprLookupKey(keys, tok)) != 0) {
+                if (json) {
+                    value = mprLookupJsonValue(keys, tok);
+                } else {
+                    value = mprLookupKey(keys, tok);
+                }
+                if (value != 0) {
                     mprPutStringToBuf(buf, value);
                     if (src > str && src[-1] == '{') {
                         src = cp + 1;
@@ -22462,8 +23295,20 @@ PUBLIC char *stemplate(cchar *str, MprHash *keys)
 }
 
 
+PUBLIC char *stemplate(cchar *str, MprHash *keys)
+{
+    return stemplateInner(str, keys, 0);
+}
+
+PUBLIC char *stemplateJson(cchar *str, MprJson *obj)
+{
+    return stemplateInner(str, obj, 1);
+}
+
+
 /*
     String to list. This parses the string into space separated arguments. Single and double quotes are supported.
+    This returns a stable list.
  */
 PUBLIC MprList *stolist(cchar *src)
 {
@@ -22471,7 +23316,7 @@ PUBLIC MprList *stolist(cchar *src)
     cchar       *start;
     int         quote;
 
-    list = mprCreateList(0, 0);
+    list = mprCreateList(0, MPR_LIST_STABLE);
     while (src && *src != '\0') {
         while (isspace((uchar) *src)) {
             src++;
@@ -22536,6 +23381,7 @@ PUBLIC MprList *stolist(cchar *src)
 
 
 
+#if BIT_MPR_TEST
 /***************************** Forward Declarations ***************************/
 
 static void     adjustFailedCount(int adj);
@@ -23526,6 +24372,7 @@ static int setLogging(char *logSpec)
     return 0;
 }
 
+#endif /* BIT_MPR_TEST */
 
 /*
     @copy   default
@@ -23587,7 +24434,7 @@ PUBLIC MprThreadService *mprCreateThreadService()
     if ((ts = mprAllocObj(MprThreadService, manageThreadService)) == 0) {
         return 0;
     }
-    if ((ts->cond = mprCreateCond()) == 0) {
+    if ((ts->pauseThreads = mprCreateCond()) == 0) {
         return 0;
     }
     if ((ts->threads = mprCreateList(-1, 0)) == 0) {
@@ -23618,7 +24465,7 @@ static void manageThreadService(MprThreadService *ts, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ts->threads);
         mprMark(ts->mainThread);
-        mprMark(ts->cond);
+        mprMark(ts->pauseThreads);
 
     } else if (flags & MPR_MANAGE_FREE) {
         mprStopThreadService();
@@ -24363,7 +25210,7 @@ static void pruneWorkers(MprWorkerService *ws, MprEvent *timer)
     lock(ws);
     pruned = 0;
     for (index = 0; index < ws->idleThreads->length; index++) {
-        if (ws->numThreads <= ws->minThreads) {
+        if ((ws->numThreads - pruned) <= ws->minThreads) {
             break;
         }
         worker = mprGetItem(ws->idleThreads, index);
@@ -24789,7 +25636,7 @@ PUBLIC int mprCreateTimeService()
     TimeToken           *tt;
 
     mpr = MPR;
-    mpr->timeTokens = mprCreateHash(59, MPR_HASH_STATIC_KEYS | MPR_HASH_STATIC_VALUES);
+    mpr->timeTokens = mprCreateHash(59, MPR_HASH_STATIC_KEYS | MPR_HASH_STATIC_VALUES | MPR_HASH_STABLE);
     for (tt = days; tt->name; tt++) {
         mprAddKey(mpr->timeTokens, tt->name, (void*) tt);
     }
@@ -26002,6 +26849,9 @@ PUBLIC int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct 
     int             kind, hour, min, negate, value1, value2, value3, alpha, alpha2, alpha3;
     int             dateSep, offset, zoneOffset, explicitZone, fullYear;
 
+    if (!dateString) {
+        dateString = "";
+    }
     offset = 0;
     zoneOffset = 0;
     explicitZone = 0;
@@ -26429,6 +27279,7 @@ PUBLIC int mprGetRandomBytes(char *buf, int length, bool block)
 }
 
 
+#if !BIT_STATIC
 PUBLIC int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
@@ -26495,6 +27346,7 @@ PUBLIC int mprUnloadNativeModule(MprModule *mp)
     unldByModuleId((MODULE_ID) mp->handle, 0);
     return 0;
 }
+#endif /* !BIT_STATIC */
 
 
 PUBLIC void mprNap(MprTicks milliseconds)
@@ -28090,6 +28942,7 @@ PUBLIC int mprGetRandomBytes(char *buf, ssize length, bool block)
 }
 
 
+#if !BIT_STATIC
 PUBLIC int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
@@ -28147,6 +29000,7 @@ PUBLIC int mprUnloadNativeModule(MprModule *mp)
     }
     return 0;
 }
+#endif /* !BIT_STATIC */
 
 
 PUBLIC void mprSetInst(HINSTANCE inst)
@@ -28187,7 +29041,7 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
     void        *event;
     long        errorType;
     ulong       exists;
-    char        buf[BIT_MAX_PATH], logName[BIT_MAX_PATH], *cp, *value;
+    char        buf[BIT_MAX_BUFFER], logName[BIT_MAX_BUFFER], *cp, *value;
     wchar       *lines[9];
     int         type;
     static int  once = 0;

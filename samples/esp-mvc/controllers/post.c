@@ -1,7 +1,7 @@
 /*
     Blog post controller
  */
- #include "esp-app.h"
+ #include "esp.h"
 
 /*
     Create a post
@@ -23,7 +23,7 @@ static void destroy() {
 }
 
 static void edit() { 
-    readRec("post");
+    readRec("post", param("id"));
 }
 
 static void list() { }
@@ -34,7 +34,7 @@ static void init() {
 }
 
 static void show() { 
-    readRec("post");
+    readRec("post", param("id"));
     renderView("post-edit");
 }
 

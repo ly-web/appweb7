@@ -10,7 +10,7 @@ APPWEB(1)                        User Commands                       APPWEB(1)
 
        <B>appweb  </B>[<I>--config  configFile</I>] [<I>--chroot directory</I>] [<I>--debugger</I>] [<I>--exe</I>
        <I>path</I>] [<I>--log logSpec</I>] [<I>--home directory</I>]  [<I>--threads  threads</I>]  [<I>--ver-</I>
-       <I>sion</I>] [<I>--verbose</I>]
+       <I>bose</I>] [<I>--version</I>]
 
 <B>DESCRIPTION</B>
        Appweb  is  a  compact  embedded HTTP web server.  It is a fast, small-
@@ -30,6 +30,10 @@ APPWEB(1)                        User Commands                       APPWEB(1)
        the PORT component is omitted, Appweb will listen on port 80. If the IP
        address  is  omitted  and a port is supplied, Appweb will listen on all
        network interfaces.
+
+       Appweb responds to the SIGUSR2 signal and toggles the trace level  from
+       2 to 4 and vice-versa. Appweb responds to the SIGINFO|SIGPWR signal and
+       emits operational stats to the trace log.
 
 <B>OPTIONS</B>
        <B>--config filename</B>

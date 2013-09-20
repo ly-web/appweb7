@@ -28,7 +28,6 @@ The server listens on port 8080. Browse to:
 Code:
 ---
 * [appweb.conf](appweb.conf) - Appweb server configuration file
-* [server.c](server.c) - Web server program
 * [web/upload/upload-form.html](web/upload/upload-form.html) - File upload form
 * [web/upload/upload.esp](web/upload/upload.esp) - ESP page to receive the uploaded file
 * [start.bit](start.bit) - Bit build instructions

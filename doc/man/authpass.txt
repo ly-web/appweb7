@@ -6,19 +6,26 @@ NAME
        authpass - Create and manage passwords
 
 SYNOPSIS
-       authpass [-c] [-p password] passwordFile realm userName
+       authpass [--cipher blowfish|md5] [--create] [--password password] pass-
+       wordFile realm userName
 
 OPTIONS
-       -p password
+       --cipher blowfish|md5
+              Specifies the cipher to use to hash  the  password.  Default  is
+              blowfish.  Blowfish  is  substantially more secure.  MD5 must be
+              used for digest authentication.
+
+       --password password
               Specifies a password to use to for the user.
 
-       -c     Create the specified password file
+       --create
+              Create the specified password file.
 
 
 DESCRIPTION
-       The  authpass  program  is used to create user passwords in a nominated
-       password configuration file.  Appweb uses the same  authorization  file
-       andeformat  for Basic, Digest and Post authentication stores. This sim-
+       The authpass program is used to create user passwords  in  a  nominated
+       password  configuration  file.  Appweb uses the same authorization file
+       and format for Basic, Digest and Post authentication stores. This  sim-
        plifies administration.
 
 REPORTING BUGS

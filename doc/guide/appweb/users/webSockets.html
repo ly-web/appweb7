@@ -75,7 +75,6 @@
             client. It also manages the framing and encoding/decoding of message data.</p>
             <p>The WebSock filter is configured into the pipeline using the 
             <a href="dir/route.html#addInputFilter">AddInputFilter</a> directive.</p>
-
             <h2>WebSocket Handshake</h2>
             <p>A WebSocket connection begins life as a normal HTTP request and is upgraded to the WebSocket protocol. 
             The WebSocketFilter is activated by a set of WebSocket HTTP headers from the client that describes 
@@ -127,7 +126,6 @@ X-Request-Timeout: 600
             are not subject to this limit. The WebSockets filter will aggregate message frames into complete messages
             before passing to the user callback. There are APIs provided to preserve farme boundaries if you wish to 
             manage frame boundaries manually.</p>
-
             <p>The <a href="dir/sandbox.html#limitWebSocketsPacket">LimitWebSocketsPacket</a> directive defines what 
             is the largest packet size that will be passed to the user callback receiving incoming WebSocket 
             messages. If this is set to a value as large as the largest message, then complete messages will be passed
@@ -136,14 +134,16 @@ X-Request-Timeout: 600
             correspond to frame boundaries.</p>
             <p>Frame boundaries can be preserved by setting PreserveFrames directive or by calling
             the 
-            <a href="file:///Users/mob/git/appweb/doc/api/http.html#group___http_web_socket_1ga31d43df04a526af4103c41d0deecedc1">
+            <a href="../../../api/http.html#group___http_web_socket_1ga31d43df04a526af4103c41d0deecedc1">
                 httpSetWebSocketPreserveFrames</a> API. If enabled, each frame is passed as-is to the user callback without
             splitting or aggregating with other frames. Note that if enabled, some text messages may not have their UTF-8
             fully validated if UTF codepoints span message frames.</p>
             <h3>Close Message</h3>
             <p>Ordinarily, WebSocket communications are terminated by sending a <i>Close</i> message. The close
             message includes a status code and an optional <i>reason</i> string to explain why the connection is being closed. The
-            <i>reason</i> string must be less than 124 bytes in length so as to fit into a single WebSocket frame.</p>
+            <i>reason</i> string must be less than 124 bytes in length so as to fit into a single WebSocket frame. When the
+            server receives a close message, it responds with a close meesage to the peer. This happens internally in the
+            WebSockFilter.</p>
             <h3>Ping/Pong Messages</h3>
             <p>To keep a communications channel alive, it is sometimes necessary to send regular messages to indicate
             the channel is still being used. Some servers, browsers or proxies may close an
@@ -165,8 +165,8 @@ X-Request-Timeout: 600
             maximum time a WebSocket connection may be completely idle. Note that ping/pong messages will reset an 
             inactivity timeout.</p>
             <h2>Configuration</h2>
-            <p>It is necessary to create a dedicated <a href="dir/route.html#route">Route</a> for WebSockets communications. 
-            This will define a unique URI prefix for WebSocket communications and configure the WebSocket filter.
+            <p>It is typically necessary to create a dedicated <a href="dir/route.html#route">Route</a> for WebSockets communications. 
+            Such a route should define a unique URI prefix for WebSocket communications and configure the WebSocket filter.
             Any number of WebSocket routes can be defined. For example:</p>
 <pre>
 &lt;Route ^/websock/{controller}$&gt;
@@ -216,18 +216,15 @@ X-Request-Timeout: 600
                         the web socket peer</td></tr>
                     <tr><td><a href="../../../api/http.html#http_8h_1adb22d418a67109b699890888ca66053a">httpSendClose</a></td><td>Send a close message to the web 
                         socket peer</td></tr>
-
                     <tr><td><a href="../../../api/http.html#group___http_conn_1ga6c39eab8e8b50e632f7e5620fce05318">httpSetConnNotifier</a></td><td>Define a connection callback notifier function</td></tr>
-
                     <tr><td><a
                                 href="../../../api/http.html#group___http_web_socket_1ga31d43df04a526af4103c41d0deecedc1 ">httpSetWebSocketPreserveFrames</a></td><td>Preserve
                             frame boundaries and do not split or aggregate frames. </td></tr>
                     <tr><td><a href="../../../api/http.html#http_8h_1a96f8cb3db541d8a1340caf0d2afbbb1f">httpSetWebSocketProtocols</a></td><td>Set the list of 
                         application-level protocols supported by the client. This is a client-only API. </td></tr>
                     <tr><td><a href="../../../api/http.html#http_8h_1acb7184072bfb15ebf2c95f9ef6d0ba8c">httpWebSocketOrderlyClosed</a></td><td>Test if a close was orderly</td></tr>
-                    <tr><td><a href="file:///Users/mob/git/appweb/doc/api/esp.html#group___esp_req_1ga0ea346bbee09c401e90f0b908e7476ba">
+                    <tr><td><a href="../../../api/esp.html#group___esp_req_1ga0ea346bbee09c401e90f0b908e7476ba">
                             espSetNotifier</a></td><td>Define a connection callback notifier function for ESP applications.</td></tr>
-
                 </tbody>
             </table>
             <h2>Using WebSockets API with ESP</h2>
@@ -242,7 +239,6 @@ static void testCallback(HttpConn *conn, int event, int arg)
 {
     if (event == <b>HTTP_EVENT_READABLE</b>) {
         HttpPacket *packet = <b>httpGetPacket</b>(conn-&gt;readq);
-        mprAddNullToBuf(packet-&gt;content);
         printf("Message %s\n", mprGetBufStart(packet-&gt;content));
         /* Send a reply message */
         <b>httpSend</b>(conn, "Reply message at %s", mprGetDate(0));
@@ -266,6 +262,101 @@ ESP_EXPORT int esp_controller_websock(HttpRoute *route, MprModule *module) {
     return 0;
 }
 </pre>
+            <h3>Reading Messages</h3>
+            <p>WebSocket messages are received by reading data from the packet read queue in response to an
+            HTTP_EVENT_READABLE event. WebSocket messages are composed of one or more frames. Each packet typically 
+            contains one frame, provided the frame is smaller than the configured maximum packet size (LimitWebSocketsPacket).
+            
+            <p>The packet is retrieved via the
+            <a href="../../../api/http.html#group___http_queue_1ga289893521c40788edc06280530167a85">
+                httpGetPacket</a> API. This removes the first packet from the given read queue.</p>
+            <pre>HttpPacket *packet = httpGetPacket(conn->readq);</pre>
+            <p>The packet contains information about the message and the message contents. Packet fields of interest are:
+            <ul>
+                <li>packet->type &mdash; WebSocket message type</li>
+                <li>packet->last &mdash; True if this packet corresponds to the last frame in a message</li>
+                <li>packet->content &mdash; WebSocket message content. Instance of MprBuf.</li>
+            </ul>
+            <p>The WebSocket frame types are:</p>
+            <ul>
+                <li> WS_MSG_CONT     &mdash; Continuation frame</li>
+                <li> WS_MSG_TEXT     &mdash; UTF-8 text message</li>
+                <li> WS_MSG_BINARY   &mdash; Binary message</li>
+                <li> WS_MSG_CLOSE    &mdash; Close message</li>
+                <li> WS_MSG_PING     &mdash; Ping message</li>
+                <li> WS_MSG_PONG     &mdash; Pong message</li>
+            </ul>
+            <p>The message contents is stored in the packet->content buffer. This is an instance of the 
+            <a href="../../../api/mpr.html#group___mpr_buf">MprBuf</a> buffer object. A pointer to
+            the start of the message can be retrieved via:</p>
+            <pre><a href="../../../api/mpr.html#group___mpr_buf_1gac982291efef3d49cce4bc2ecec6566e5"
+                >mprGetBufStart(packet->content)</a></pre>
+            <p>The length of the message can be determined via:</p>
+            <pre><a href="../../../api/mpr.html#group___mpr_buf_1gaa543b610b67691faf917b4b79229fc34"
+                >mprGetBufLength(packet->content)</a></pre>
+            <p>Note TEXT messages are null terminated and you can use the start reference as a c-string reference.</p>
+            <h3>Sending Messages</h3>
+            <p>Appweb provides two APIs for sending messages:
+            <ul>
+                <li>httpSend &mdash; for simple formatted text messages</li>
+                <li>httpSendBlock &mdash; a lower-level API for maximal control over message transmission</li>
+            </ul>
+            <p>To send messages of type TEXT, Appweb provides a simple API: 
+            <a href="../../../api/http.html#group___http_web_socket_1ga038d5c42a1ef5bce910dc617987a222c">httpSend</a>.</p>
+            <pre>ssize httpSend (HttpConn *conn, cchar *fmt, ...)</pre>
+            <p>This API sends UTF-8 messages to the client. Messages are fully buffered, i.e. the call will always accept the
+            given data. The call returns the number of bytes accepted. For example:</p>
+            <pre>httpSend(conn, "The temperature today is: %d", temp);</pre>
+            <h4>httpSendBlock</h4>
+            <p>The WebSockFilter also provides a lower-level and more powerful API: 
+                <a href="file:///Users/mob/git/appweb/doc/api/http.html#group___http_web_socket_1ga01475cb98667018a573c4347c847217f"
+                    >httpSendBlock</a> for sending messages.</p>
+            <pre>ssize httpSendBlock(HttpConn *conn, int type, cchar *msg, ssize len, int flags)</a></pre>
+            <p>This API can send messages and can control how messages are framed, buffered or whether the API should wait
+            for completion.</p>
+            <h4>Modes</h4>
+            <p>The httpSendBlock API supports several modes for sending data that can be controlled via the httpSendBlock
+            flags:</p>
+            <ul>
+                <li>Buffered &mdash; HTTP_BUFFER</li>
+                <li>Blocking &mdash; HTTP_BLOCK</li>
+                <li>Non-blocking &mdash; HTTP_NON_BLOCK</li>
+            </ul>
+            <h4>Buffered Mode</h4>
+            <p>In buffered mode, the entire message provided to httpSendBlock is accepted and buffered in the Appweb pipeline. 
+            The call will never return having written less than requested. If the message is very large, this will consume 
+            memory sufficient to buffer the message. This mode is simple and fast, but may increase the memory footprint of
+            Appweb. It is ideal for smaller messages.</p>
+            <pre>
+char *msg;
+msg = sfmt("The temperature today is: %d", temp);
+httpSendBlock(conn, WS_MSG_BINARY, msg, slen(msg), HTTP_BUFFER);</pre>
+            <h4>Blocking Mode</h4>
+            <p>In blocking mode, the message is not buffered, but rather the call blocks until the entire message has been sent 
+            down the Appweb pipeline. This call will consume a thread while the call blocks. This mode is simple, uses minimal 
+            memory, but will consume a thread. This mode is suitable for small messages, or occasional use for larger
+            messages on lower-volume web sites. In this mode, the call may block for up to the inactivity timeout defined by
+            the InactivityTimeout directive.</p>
+            <pre>
+char buf[1000 * 1000];
+memset(buf, 0x10, sizeof(buf));
+httpSendBlock(conn, WS_MSG_BINARY, buf, sizeof(buf), HTTP_BLOCK);</pre>
+            <h4>Non-Blocking Mode</h4>
+            <p>In non-blocking mode, the httpSendBlock call will only accept data that can be absorbed by the pipeline
+            without exceeding the queue buffer limits. The call may return "short" having written less than
+            requested. It is then the callers responsibility to resend the remaining portion of data at a later time. 
+            If this occurs the next call to httpSendBlock should set the message type to WS_MSG_CONT to indicate a continued 
+            message. This is the highest performance mode and consumes minimal memory. However it is more complex when the
+            all returns having written less than requested. There is a sample that demonstrates this at:</p>
+            
+            <pre><a href="https://github.com/embedthis/appweb-4/tree/master/samples/websockets-output"
+                    >https://github.com/embedthis/appweb-4/tree/master/samples/websockets-output</a></pre>
+            </p>
+            <h4>Message Framing</h4>
+            <p>The WebSockFilter may split the message into frames such that no frame is larger than the limits specified by
+            the LimitWebSocketsFrame directive. However, if the HTTP_MORE flag is specified to indicate there is more data to
+            complete the current message, the data provided will not be split into frames and will not be aggregated with
+            previous or subsequent messages.  i.e. frame boundaries will be presserved and sent as-is to the peer.</p>
             <h2>WebSocket Samples</h2>
             <p>See the Appweb samples for some specific WebSockets samples</p>
             <pre><a href="https://github.com/embedthis/appweb-4/tree/dev/samples">https://github.com/embedthis/appweb-4/tree/dev/samples</a></pre>

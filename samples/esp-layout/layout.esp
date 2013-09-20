@@ -14,7 +14,7 @@
         <h1><% label("ESP Layout Sample", "{data-click: '~'}"); %></h1>
     </div>
     <div id="logo">Appweb&trade;</div>
-    <% flash("all", NULL); %>
+    <% renderFlash("all", NULL); %>
     <div class="content">
         <%@ content %>
     </div>

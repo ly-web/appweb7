@@ -17,13 +17,12 @@ To run:
 ---
     bit run
 
-The server listens on port 8080. Browse to: 
+Appweb listens on port 8080. Browse to: 
  
      http://localhost:8080/
 
 Code:
 ---
-* [server.c](server.c) - Main program
 * [cppHandler.c](cppHandler.c) - Simple handler
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [start.bit](start.bit) - Bit build instructions

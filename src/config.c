@@ -78,12 +78,13 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
         server->state = 0;
         return MPR_ERR_BAD_SYNTAX;
     }
+    httpFinalizeRoute(state->route);
+    server->state = 0;
+
     if (!maValidateServer(server)) {
         server->state = 0;
         return MPR_ERR_BAD_ARGS;
     }
-    httpFinalizeRoute(state->route);
-    server->state = 0;
     if (mprHasMemError()) {
         mprError("Memory allocation error when initializing");
         return MPR_ERR_MEMORY;
@@ -160,6 +161,34 @@ static int parseFileInner(MaState *state, cchar *path)
 }
 
 
+#if KEEP
+static int parseLine(MaState *state, cchar *line)
+{
+    MaDirective *directive;
+    char        *key, *value;
+
+    key = getDirective(sclone(line), &value);
+    if (!state->enabled) {
+        if (key[0] != '<') {
+            mprTrace(8, "Skip: %s %s", key, value);
+            return 0;
+        }
+    }
+    if ((directive = mprLookupKey(state->appweb->directives, key)) == 0) {
+        mprError("Unknown directive \"%s\"\nAt line %d in %s\n\n", key, state->lineNumber, state->filename);
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    state->key = key;
+    mprTrace(8, "Line %d, Parse %s %s", state->lineNumber, key, value ? value : "");
+    if ((*directive)(state, key, value) < 0) {
+        mprError("Error with directive \"%s\"\nAt line %d in %s\n\n", key, state->lineNumber, state->filename);
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    return 0;
+}
+#endif
+
+
 #if !BIT_ROM
 /*
     AccessLog path
@@ -176,7 +205,7 @@ static int accessLogDirective(MaState *state, cchar *key, cchar *value)
     flags = 0;
     path = 0;
     
-    for (option = maGetNextToken(sclone(value), &tok); option; option = maGetNextToken(tok, &tok)) {
+    for (option = maGetNextArg(sclone(value), &tok); option; option = maGetNextArg(tok, &tok)) {
         if (!path) {
             path = sclone(option);
         } else {
@@ -484,7 +513,7 @@ static int authUserFileDirective(MaState *state, cchar *key, cchar *value)
 /*
     AuthAutoLogin username
  */
-static int authAutoLogin(MaState *state, cchar *key, cchar *value)
+static int authAutoLoginDirective(MaState *state, cchar *key, cchar *value)
 {
     cchar   *username;
 
@@ -707,7 +736,7 @@ static int crossOriginDirective(MaState *state, cchar *key, cchar *value)
 
     route = state->route;
     tok = sclone(value);
-    while ((option = maGetNextToken(tok, &tok)) != 0) {
+    while ((option = maGetNextArg(tok, &tok)) != 0) {
         option = stok(option, " =\t,", &ovalue);
         ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
         if (scaselessmatch(option, "origin")) {
@@ -742,9 +771,21 @@ static int crossOriginDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-
 /*
-    Defense name [Token=Value]...
+    Defense name [Arg=Value]...
+
+    Remedies: ban, cmd, delay, email, http, log
+    Args: CMD, DELAY, FROM, IP, MESSAGE, PERIOD, STATUS, SUBJECT, TO, METHOD, URI
+    Examples:
+    Examples:
+        Defense block REMEDY=ban PERIOD=30mins
+        Defense report REMEDY=http URI=http://example.com/report
+        Defense alarm REMEDY=cmd CMD="afplay klaxon.mp3"
+        Defense slow REMEDY=delay PERIOD=10mins DELAY=1sec
+        Defense fix REMEDY=cmd CMD="${MESSAGE} | sendmail admin@example.com"
+        Defense notify REMEDY=email TO=info@example.com
+        Defense firewall REMEDY=cmd CMD="iptables -A INPUT -s ${IP} -j DROP"
+        Defense reboot REMEDY=restart 
  */
 static int defenseDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -874,7 +915,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
     path = 0;
     flags = 0;
 
-    for (option = maGetNextToken(sclone(value), &tok); option; option = maGetNextToken(tok, &tok)) {
+    for (option = maGetNextArg(sclone(value), &tok); option; option = maGetNextArg(tok, &tok)) {
         if (!path) {
             path = mprJoinPath(httpGetRouteVar(state->route, "LOG_DIR"), httpExpandRouteVars(state->route, option));
         } else {
@@ -959,7 +1000,7 @@ static int headerDirective(MaState *state, cchar *key, cchar *value)
     char    *cmd, *header, *hvalue;
     int     op;
 
-    if (!maTokenize(state, value, "%S %S %*", &cmd, &header, &hvalue)) {
+    if (!maTokenize(state, value, "%S %S ?*", &cmd, &header, &hvalue)) {
         return MPR_ERR_BAD_SYNTAX;
     }
     if (scaselessmatch(cmd, "add")) {
@@ -1643,7 +1684,7 @@ static int minWorkersDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    Monitor Expression Period Defenses
+    Monitor Expression Period Defenses ....
  */
 static int monitorDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1807,7 +1848,8 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
     target = (path) ? sfmt("%d %s", status, path) : code;
     httpSetRouteTarget(alias, "redirect", target);
     if (smatch(value, "secure")) {
-        httpAddRouteCondition(alias, "secure", 0, HTTP_ROUTE_NOT);
+        /* Redirect for one year */
+        httpAddRouteCondition(alias, "secure", "31536000000", HTTP_ROUTE_NOT);
     }
     httpFinalizeRoute(alias);
     return 0;
@@ -2022,7 +2064,7 @@ static int serverNameDirective(MaState *state, cchar *key, cchar *value)
  */
 static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
 {
-    httpSetRouteCookieVisibility(state->route, scaselessmatch(value, "visible"));
+    httpSetRouteSessionVisibility(state->route, scaselessmatch(value, "visible"));
     return 0;
 }
 
@@ -2455,7 +2497,7 @@ PUBLIC bool maValidateServer(MaServer *server)
     for (nextHost = 0; (host = mprGetNextItem(http->hosts, &nextHost)) != 0; ) {
         for (nextRoute = 0; (route = mprGetNextItem(host->routes, &nextRoute)) != 0; ) {
             if (!mprLookupKey(route->extensions, "")) {
-                mprError("Route %s in host %s is missing a catch-all handler\n"
+                mprLog(3, "Route %s in host %s is missing a catch-all handler. "
                     "Adding: AddHandler fileHandler \"\"", route->name, host->name);
                 httpAddRouteHandler(route, "fileHandler", "");
             }
@@ -2573,11 +2615,11 @@ PUBLIC bool maTokenize(MaState *state, cchar *line, cchar *fmt, ...)
 }
 
 
-static int addCondition(MaState *state, cchar *name, cchar *condition, int flags)
+static int addCondition(MaState *state, cchar *name, cchar *details, int flags)
 {
-    if (httpAddRouteCondition(state->route, name, condition, flags) < 0) {
+    if (httpAddRouteCondition(state->route, name, details, flags) < 0) {
         mprError("Bad \"%s\" directive at line %d in %s\nLine: %s %s\n", 
-            state->key, state->lineNumber, state->filename, state->key, condition);
+            state->key, state->lineNumber, state->filename, state->key, details);
         return MPR_ERR_BAD_SYNTAX;
     }
     return 0;
@@ -2768,34 +2810,46 @@ static char *getDirective(char *line, char **valuep)
 }
 
 
-/*
-    Break into tokens separated by spaces or commas. Supports quoted args and backquotes.
- */
-PUBLIC char *maGetNextToken(char *s, char **tok)
+PUBLIC char *maGetNextArg(char *s, char **tok)
 {
     char    *etok;
-    int     quote;
+    int     quoted;
 
     if (s == 0) {
         return 0;
     }
-    for (; isspace((uchar) *s); s++);  
+    for (; isspace((uchar) *s); s++) {}
+
+    for (quoted = 0, etok = s; *etok; etok++) {
+        if (*etok == '\'' || *etok == '"') {
+            quoted = !quoted;
+        } else if (isspace((uchar) *etok) && !quoted && (etok > s && etok[-1] != '\\')) {
+            break;
+        }
+    }
     if (*s == '\'' || *s == '"') {
-        quote = *s++;
-        for (etok = s; *etok && !(*etok == quote && etok[-1] != '\\'); etok++) ;
-    } else {
-        for (etok = s; *etok && !(isspace((uchar) *etok) || *etok == ','); etok++) ;
+        s++;
+        if (etok > s && (etok[-1] == '\'' || etok[-1] == '"')) {
+            etok--;
+        }
     }
     if (*etok == '\0') {
-        *tok = NULL;
         etok = NULL;
     } else {
         *etok++ = '\0';
-        for (; isspace((uchar) *etok); etok++);  
+        for (; isspace((uchar) *etok); etok++) {}  
     }
     *tok = etok;
     return s;
 }
+
+
+#if DEPRECATE || 1
+PUBLIC char *maGetNextToken(char *s, char **tok)
+{
+    return maGetNextArg(s, tok);
+}
+#endif
 
 
 PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path)
@@ -2843,7 +2897,7 @@ PUBLIC void maAddDirective(MaAppweb *appweb, cchar *directive, MaDirective proc)
 
 PUBLIC int maParseInit(MaAppweb *appweb)
 {
-    if ((appweb->directives = mprCreateHash(-1, MPR_HASH_STATIC_VALUES | MPR_HASH_CASELESS)) == 0) {
+    if ((appweb->directives = mprCreateHash(-1, MPR_HASH_STATIC_VALUES | MPR_HASH_CASELESS | MPR_HASH_STABLE)) == 0) {
         return MPR_ERR_MEMORY;
     }
     maAddDirective(appweb, "AddLanguageSuffix", addLanguageSuffixDirective);
@@ -2855,7 +2909,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "AddType", addTypeDirective);
     maAddDirective(appweb, "Alias", aliasDirective);
     maAddDirective(appweb, "Allow", allowDirective);
-    maAddDirective(appweb, "AuthAutoLogin", authAutoLogin);
+    maAddDirective(appweb, "AuthAutoLogin", authAutoLoginDirective);
     maAddDirective(appweb, "AuthDigestQop", authDigestQopDirective);
     maAddDirective(appweb, "AuthType", authTypeDirective);
     maAddDirective(appweb, "AuthRealm", authRealmDirective);
@@ -2880,9 +2934,9 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Home", homeDirective);
     maAddDirective(appweb, "<If", ifDirective);
     maAddDirective(appweb, "</If", closeDirective);
+    maAddDirective(appweb, "IgnoreEncodingErrors", ignoreEncodingErrorsDirective);
     maAddDirective(appweb, "InactivityTimeout", inactivityTimeoutDirective);
     maAddDirective(appweb, "Include", includeDirective);
-
     maAddDirective(appweb, "LimitBuffer", limitBufferDirective);
     maAddDirective(appweb, "LimitCache", limitCacheDirective);
     maAddDirective(appweb, "LimitCacheItem", limitCacheItemDirective);
@@ -2902,6 +2956,10 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "LimitSessions", limitSessionDirective);
     maAddDirective(appweb, "LimitUri", limitUriDirective);
     maAddDirective(appweb, "LimitUpload", limitUploadDirective);
+    maAddDirective(appweb, "LimitWebSockets", limitWebSocketsDirective);
+    maAddDirective(appweb, "LimitWebSocketsMessage", limitWebSocketsMessageDirective);
+    maAddDirective(appweb, "LimitWebSocketsFrame", limitWebSocketsFrameDirective);
+    maAddDirective(appweb, "LimitWebSocketsPacket", limitWebSocketsPacketDirective);
     maAddDirective(appweb, "LimitWorkers", limitWorkersDirective);
     maAddDirective(appweb, "Listen", listenDirective);
     maAddDirective(appweb, "ListenSecure", listenSecureDirective);
@@ -2912,12 +2970,14 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Map", mapDirective);
     maAddDirective(appweb, "MemoryPolicy", memoryPolicyDirective);
     maAddDirective(appweb, "Methods", methodsDirective);
+    maAddDirective(appweb, "MinWorkers", minWorkersDirective);
     maAddDirective(appweb, "Monitor", monitorDirective);
     maAddDirective(appweb, "Name", nameDirective);
     maAddDirective(appweb, "NameVirtualHost", nameVirtualHostDirective);
     maAddDirective(appweb, "Order", orderDirective);
     maAddDirective(appweb, "Param", paramDirective);
     maAddDirective(appweb, "Prefix", prefixDirective);
+    maAddDirective(appweb, "PreserveFrames", preserveFramesDirective);
     maAddDirective(appweb, "Protocol", protocolDirective);
     maAddDirective(appweb, "Redirect", redirectDirective);
     maAddDirective(appweb, "RequestHeader", requestHeaderDirective);
@@ -2926,7 +2986,6 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Require", requireDirective);
     maAddDirective(appweb, "Reset", resetDirective);
     maAddDirective(appweb, "Role", roleDirective);
-
     maAddDirective(appweb, "<Route", routeDirective);
     maAddDirective(appweb, "</Route", closeDirective);
     maAddDirective(appweb, "ServerName", serverNameDirective);
@@ -2939,11 +2998,8 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Source", sourceDirective);
     maAddDirective(appweb, "Stealth", stealthDirective);
     maAddDirective(appweb, "StreamInput", streamInputDirective);
-
-    maAddDirective(appweb, "MinWorkers", minWorkersDirective);
     maAddDirective(appweb, "Target", targetDirective);
     maAddDirective(appweb, "Template", templateDirective);
-
     maAddDirective(appweb, "ThreadStack", threadStackDirective);
     maAddDirective(appweb, "TypesConfig", typesConfigDirective);
     maAddDirective(appweb, "Update", updateDirective);
@@ -2952,17 +3008,8 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "UploadDir", uploadDirDirective);
     maAddDirective(appweb, "User", userDirective);
     maAddDirective(appweb, "UserAccount", userAccountDirective);
-
     maAddDirective(appweb, "<VirtualHost", virtualHostDirective);
     maAddDirective(appweb, "</VirtualHost", closeVirtualHostDirective);
-
-    maAddDirective(appweb, "IgnoreEncodingErrors", ignoreEncodingErrorsDirective);
-    maAddDirective(appweb, "PreserveFrames", preserveFramesDirective);
-
-    maAddDirective(appweb, "LimitWebSockets", limitWebSocketsDirective);
-    maAddDirective(appweb, "LimitWebSocketsMessage", limitWebSocketsMessageDirective);
-    maAddDirective(appweb, "LimitWebSocketsFrame", limitWebSocketsFrameDirective);
-    maAddDirective(appweb, "LimitWebSocketsPacket", limitWebSocketsPacketDirective);
     maAddDirective(appweb, "WebSocketsProtocol", webSocketsProtocolDirective);
     maAddDirective(appweb, "WebSocketsPing", webSocketsPingDirective);
 

@@ -335,6 +335,7 @@ PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documen
     @description Create a web server configuration based on the supplied config file. This routine provides 
         a one-line embedding of Appweb. If you don't want to use a config file, try the #maRunSimpleWebServer 
         instead.
+    @param method HTTP method to invoke
     @param uri URI to request
     @param data Optional data to send with request. Set to null for GET requests.
     @param response Output parameter to receive the HTTP request response.
@@ -569,15 +570,19 @@ PUBLIC bool maTokenize(MaState *state, cchar *str, cchar *fmt, ...);
 
 
 /**
-    Get the next token in a string.
-    @description Break into tokens separated by spaces or commas. Supports quoted args and backquotes.
+    Get the argument in a directive
+    @description Break into arguments. Args may be quoted. An outer quoting of the entire arg is removed.
     @param s String to examine
     @param tok Next token reference
     @return Reference to the next token. (Not allocate
     @ingroup MaAppweb
     @stability Prototype
 */
+PUBLIC char *maGetNextArg(char *s, char **tok);
+
+#if DEPRECATE || 1
 PUBLIC char *maGetNextToken(char *s, char **tok);
+#endif
 
 #ifdef __cplusplus
 } /* extern C */

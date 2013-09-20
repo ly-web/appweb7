@@ -66,26 +66,45 @@ ESP(1)                           User Commands                          ESP(1)
 
        Esp will also create some files which have the following meaning:
 
-             app.config                - Appweb configuration file for hosting
-            app
-             appweb.config             - Stand-alone Appweb configuration file
-             index.esp                 - Home web page
-             start.bit                 - Bit build file
+             app.config     - Appweb configuration file for hosting app
+             appweb.config  - Stand-alone Appweb configuration file
+             index.esp      - Home web page
+             start.bit      - Bit build file
 
        The  esp command can generate various components by specifying the com-
        ponents on the command line.
 
              <B>esp generate app NAME components</B>
 
-       The first component is the primary component and specifies the style of
-       application  to  generate.  Supported styles are "angular" for an Angu-
-       larjs client and "server" for  a  server-side  only  application.   The
-       default is "angular".
+       Components are modules of  functionality  for  generated  applications.
+       Components  are  described  by  their  config.json file. Components may
+       depend on other components so that generating the top  level  component
+       may  generate  other  required  components. For example: generating the
+       "angular-mvc" components will generate the components angular, angular-
+       esp, angular-local etc.
 
        Other components are:
 
-             SessionStore  - Client-side session state store for Angular
-             LocalStore    - Client-side local file system store for Angular
+             angular               - Angular client-side framework
+             angular-esp           - Angular support for Embedthis ESP
+             angular-local         - Angular local storage service
+             angular-mvc           - Angular ESP MVC application skeleton
+             angular-session       - Angular session state storage
+             angular-ui-bootstrap  - Angular UI Bootstrap support
+             animate               - Animate.css CSS animations
+             bootstrap             - Bootstrap client-side web styles
+             font-awesome          - Icon font for Bootstrap
+             html5shiv             - Javascript polyfill for IE 8 and before
+             jquery                 -  Client-side  Javascript library for DOM
+            manipulation
+             less                  - CSS pre-processor for the Less stylesheet
+            language
+             more                   - Collection of CSS polyfills for emerging
+            HTML5 elements
+             normalize             - Normalize base styles for browsers
+             respond               - Polyfill for CSS media queries
+             server                - Default  ESP  service-side  configuration
+            for Appweb
 
 <B>GENERATING MIGRATIONS</B>
        Migrations are generated code modules that manage portions of the data-

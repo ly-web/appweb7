@@ -1,0 +1,35 @@
+{
+    name: "angular-mvc",
+    description: "Angular ESP MVC application skeleton",
+    depends: [
+        'angular', 
+        'angular-local', 
+        'angular-session', 
+        'angular-esp', 
+        'bootstrap', 
+        'angular-ui-bootstrap', 
+        'html5shiv', 
+        'font-awesome', 
+        'less', 
+        'more', 
+        'respond'
+    ],
+    settings: {
+        redirect: "secure",
+        sendJson: true,
+    },
+    server: {
+        authStore: "app",
+        database: "${DATABASE}://${NAME}.${DATABASE}",
+    },
+    generate: {
+        top: "angular-mvc",
+        scaffold: true,
+        clientModel: true,
+        clientController: true,
+        clientView: true,
+        controller: true,
+        migration: true,
+        view: false,
+    },
+}

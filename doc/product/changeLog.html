@@ -79,7 +79,7 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/213">[issue 213]</a></li>
                 <li>Add Angularjs support in ESP.
                     <a href="https://github.com/embedthis/appweb-4/issues/196">[issue 196]</a></li>
-                <li>Enhance "esp" generator application to generate Angular applications.
+                <li>Enhance "esp" generator application to generate application components including Angular applications.
                     <a href="https://github.com/embedthis/appweb-4/issues/197">[issue 197]</a></li>
                 <li>Change password hashing algorithm to use Blowfish encryption
                     <a href="https://github.com/embedthis/appweb-4/issues/198">[issue 198]</a></li>
@@ -129,6 +129,10 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/217">[issue 217]</a></li>
                 <li>Add palloc APIs for permanent memory allocations
                     <a href="https://github.com/embedthis/appweb-4/issues/226">[issue 226]</a></li>
+                <li>Add JSON query API
+                    <a href="https://github.com/embedthis/appweb-4/issues/230">[issue 230]</a></li>
+                <li>Enhance esp generator to generate applications using different client-side frameworks.
+                    <a href="https://github.com/embedthis/appweb-4/issues/231">[issue 231]</a></li>
             </ul>
             <h3>Fixes</h3>
             <ul>
@@ -154,22 +158,55 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/214">[issue 214]</a></li>
                 <li>Fix Source directive to be relative to route home rather than route documents.
                     <a href="https://github.com/embedthis/appweb-4/issues/219">[issue 219]</a></li>
+                <li>Fix for windows when time goes backwards
+                    <a href="https://github.com/embedthis/appweb-4/issues/227">[issue 227]</a></li>
+                <li>Fix esp recompiling on windows
+                    <a href="https://github.com/embedthis/appweb-4/issues/228">[issue 228]</a></li>
+                <li>Modify ESP cache module naming to include the appname as an ingredient into the MD5 name.
+                    This is necessary to support multiple applications with controllers of the same name.
+                    <a href="https://github.com/embedthis/appweb-4/issues/234">[issue 234]</a></li>
             </ul>
             <h3>Incompatible Changes</h3>
             <ul>
-                <li>The Header directive is renamed RequestHeader</li>
-                <li>The Compress directive is present but deprecated. Use "Map compressed" instead.</li>
+                <li>The ESP HTML control generators are deprecated. The recommended approach is to use a client-side framework 
+                    like Angular for HTML controls.</li>
                 <li>The EspApp directive now has a new format. See the ESP documentation for details. The old format 
                     is enabled but deprecated.</li>
                 <li>The ESP flash mechanism now preserves flash messages into the next controller and they are then erased before
-                    the view after that. Flash should not be used for feedback into the view.</li>
-                <li>The ESP setFlash() function is renamed flash()</li>
-                <li>The ESP flash() function is renamed renderFlash()</li>
+                the view after that. Flash should not be used for feedback into the view. </li>
+                <li>The ESP setFlash() function is now renamed flash(). </li> <li>The ESP flash() function is renamed
+                    renderFlash().  This is to be consistent with other render methods. </li>
                 <li>The ESP espGetFlashMessage() function is renamed espGetFlash()</li>
+                <li>ESP controller module initialization functions have a new naming convention: esp_controller_APP_NAME
+                    instead of esp_module_NAME. This permits multiple applications with controllers of the same name.</li>
                 <li>The ESP src/*.c files must now be named src/app.c</li>
-                <li>The pattern in a route directive now looks for an existing route pattern. Previously it interpreted
-                    the pattern as a route name.</li>
+                <li>ESP cache modules names are different and now include the app name as an ingredient in the MD5 name.</li>
+                <li>The ESP function stylesheet() now generates by default a reference to "static/css/all.css" instead of
+                    "layout.css" and "theme/default.css". This is to support the use of Less and SCCS which aggregate style
+                    sheets.</li>
+                <li>If a Route directive uses the same pattern as a previously created route, it will open and modify the
+                    previous route.</li>
+                <li>The Header directive is renamed RequestHeader. Use SetHeader to set response headers.</li>
+                <li>The Compress directive is present but deprecated. Use "Map compressed" instead. Map is a more generalized
+                    facility that embraces compression.</li>
                 <li>The httpHandleOptionsTrace() function is deprecated. The API is present but deprecated.</li>
+                <li>LimitRequestBody does not file upload size. Use LimitUpload to limit file upload size.</li>
+                <li>Changed the field HttpRoute.dir to HttpRoute.documents. This is to avoid confusion with HttpRoute.home.</li>
+                <li>The Appweb default configuration is now secure-by-default. The security sandbox limits are set fairly
+                low and the default responses now include headers to limit cross-site-scripting vulnerabilities.
+                See <a href="../guide/appweb/users/security.html#securedefaults">Security Defaults</a> for more
+                information.</li>
+                <li>The httpAddResourceGroup, httpAddResource, httpAddClientRoute and httpAddRouteSet have changed signatures
+                    to accomodate a URI prefix for server-side controller URIs.</li>
+            </ul>
+            <a id="r4.3.6"></a>
+            <h2 class="section">Changes in 4.3.6</h2>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Add yield points to reduce memory footprint for back-to-back requests.
+                    <a href="https://github.com/embedthis/appweb-4/issues/232">[issue 232]</a></li>
+                <li>Fix route templates if a route has a trailing $.
+                    <a href="https://github.com/embedthis/appweb-4/issues/233">[issue 233]</a></li>
             </ul>
             <a id="r4.3.5"></a>
             <h2 class="section">Changes in 4.3.5</h2>
@@ -180,10 +217,16 @@
                 <li>Fix SSL write blocking with OpenSSL. Caused increased memory consumption for 
                     large file downloads over SSL.
                     <a href="https://github.com/embedthis/appweb-4/issues/195">[issue 195]</a></li>
-                <li>Fix Content-Range. End byte value was +1.
+                <li>Content-Range end byte is one too big.
                     <a href="https://github.com/embedthis/appweb-4/issues/178">[issue 178]</a></li>
                 <li>Fix parsing range header.
                     <a href="https://github.com/embedthis/appweb-4/issues/209">[issue 209]</a></li>
+                <li>Fix WebSocket compliance with continuation frames
+                    <a href="https://github.com/embedthis/appweb-4/issues/209">[issue 223]</a></li>
+                <li>Fix mprYield and GC deadlock
+                    <a href="https://github.com/embedthis/appweb-4/issues/209">[issue 221]</a></li>
+                <li>Update License.md
+                    <a href="https://github.com/embedthis/appweb-4/issues/209">[issue 222]</a></li>
             </ul>
             <a id="r4.3.4"></a>
             <h2 class="section">Changes in 4.3.4</h2>

@@ -22,11 +22,10 @@ To run:
 
 You will see trace in the console for the custom directive:
 
-    CustomConfig = color=red
+    Key CustomConfig = red
 
 Code:
 ---
-* [server.c](server.c) - Main program
 * [cppModule.c](cppModule.c) - Simple module
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [start.bit](start.bit) - Bit build instructions

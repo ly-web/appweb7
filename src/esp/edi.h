@@ -379,6 +379,14 @@ PUBLIC int ediDelete(Edi *edi, cchar *path);
 PUBLIC int ediDeleteRow(Edi *edi, cchar *tableName, cchar *key);
 
 /**
+    Display the grid to the debug log
+    @param grid EDI grid
+    @ingroup Edi
+    @stability Prototype
+ */
+PUBLIC void espDumpGrid(EdiGrid *grid);
+
+/**
     Get a list of column names.
     @param edi Database handle
     @param tableName Database table name
@@ -415,6 +423,16 @@ PUBLIC int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int
     @stability Evolving
  */
 PUBLIC MprList *ediGetTables(Edi *edi);
+
+/**
+    Convert an EDI database grid into a JSON string.
+    @param grid EDI grid
+    @param flags Reserved. Set to zero.
+    @return JSON string 
+    @ingroup Edi
+    @stability Prototype
+  */
+PUBLIC cchar *ediGridToJson(EdiGrid *grid, int flags);
 
 /**
     Join grids
@@ -576,6 +594,16 @@ PUBLIC EdiGrid *ediReadWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar
 PUBLIC EdiGrid *ediReadTable(Edi *edi, cchar *tableName);
 
 /**
+    Convert an EDI database record into a JSON string.
+    @param rec EDI record
+    @param flags Reserved. Set to zero.
+    @return JSON string 
+    @ingroup Edi
+    @stability Prototype
+  */
+PUBLIC cchar *ediRecToJson(EdiRec *rec, int flags);
+
+/**
     Remove a column from a table.
     @param edi Database handle
     @param tableName Database table name
@@ -655,21 +683,22 @@ PUBLIC int ediSave(Edi *edi);
  */
 PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value);
 
+//  MOB - should this be mprJsonParse?
 /**
     Set record fields without writing to the database.
     @description This routine updates the record object with the given values. The "data' argument supplies 
-        a hash of fieldNames and values. The data hash may come from the request #params() or it can be manually
+        a hash of fieldNames and values. The data hash may come from the request params() or it can be manually
         created via #ediMakeHash to convert a JSON string into an options hash.
-        For example: ediSetFields(rec, ediMakeHash("{ name: '%s', address: '%s' }", name, address))
+        For example: ediSetFields(rec, mprJsonParse("{ name: '%s', address: '%s' }", name, address))
         The record will not be written
         to the database. To write to the database, use #ediUpdateRec.
     @param rec Record to update
-    @param data Hash of field names and values to use for the update
+    @param data Json object of field to use for the update
     @return The record instance if successful, otherwise NULL.
     @ingroup Edi
     @stability Evolving
  */
-PUBLIC EdiRec *ediSetFields(EdiRec *rec, MprHash *data);
+PUBLIC EdiRec *ediSetFields(EdiRec *rec, MprJson *data);
 
 /**
     Get table schema information.
@@ -703,7 +732,7 @@ PUBLIC int ediUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldNa
 /**
     Write field values to a database row.
     @description This routine updates a database row with the given values.  The "data' argument supplies 
-        a hash of fieldNames and values. The data hash may come from the request #params() or it can be manually
+        a hash of fieldNames and values. The data hash may come from the request params() or it can be manually
         created via #ediMakeHash to convert a JSON string into an options hash.
         For example: ediUpdateFields(rec, params());
         Note: field validations are not run.
@@ -931,6 +960,12 @@ PUBLIC EdiGrid *ediPivotGrid(EdiGrid *grid, int flags);
     @internal
   */
 PUBLIC EdiGrid *ediSortGrid(EdiGrid *grid, cchar *sortColumn, int sortOrder);
+
+
+//  MOB DOC
+PUBLIC cchar *ediGetTableSchemaToJson(Edi *edi, cchar *tableName);
+PUBLIC cchar *ediGetGridSchemaToJson(EdiGrid *grid);
+PUBLIC cchar *ediGetRecSchemaToJson(EdiRec *rec);
 
 #if BIT_PACK_MDB
 PUBLIC void mdbInit();

@@ -214,7 +214,7 @@ Bit.load({
 
             },{
                 from:       ['src/esp/proto'],
-                to:         '${abin}/esp-proto',
+                to:         '${abin}/../esp',
                 set:        'esp',
                 packs:      'esp',
 
@@ -263,6 +263,11 @@ Bit.load({
                 to:         '${etc}/appweb.conf',
                 set:        'core',
                 enable:     "!Path('src/server/appweb.local').exists"
+
+            },{
+                from:       'src/server/sample.conf', 
+                to:         '${etc}/sample.conf',
+                set:        'core',
 
             },{
                 from:       [ 'src/server/self.crt', 'src/server/self.key' ], 

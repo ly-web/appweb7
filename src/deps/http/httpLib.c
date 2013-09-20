@@ -117,11 +117,11 @@ PUBLIC int httpOpenActionHandler(Http *http)
 
 #undef  GRADUATE_HASH
 #define GRADUATE_HASH(auth, field) \
-    if (1) { \
+    if (!auth->field) { \
         if (auth->parent && auth->field && auth->field == auth->parent->field) { \
             auth->field = mprCloneHash(auth->parent->field); \
         } else { \
-            auth->field = mprCreateHash(0, 0); \
+            auth->field = mprCreateHash(0, MPR_HASH_STABLE); \
         } \
     }
 
@@ -239,8 +239,10 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
         mprError("No AuthStore verification routine defined");
         return 0;
     }
-    if (auth->username) {
+    if (auth->username && *auth->username) {
+        /* If using auto-login, replace the username */
         username = auth->username;
+        password = 0;
     }
     if (!(auth->store->verifyUser)(conn, username, password)) {
         return 0;
@@ -669,6 +671,9 @@ PUBLIC int httpSetAuthType(HttpAuth *auth, cchar *type, cchar *details)
 }
 
 
+/*
+    This implements auto-loging without requiring a password
+ */
 PUBLIC void httpSetAuthUsername(HttpAuth *auth, cchar *username)
 {
     auth->username = sclone(username);
@@ -872,6 +877,7 @@ static bool fileVerifyUser(HttpConn *conn, cchar *username, cchar *password)
     HttpRx      *rx;
     HttpAuth    *auth;
     bool        success;
+    char        *requiredPassword;
 
     rx = conn->rx;
     auth = rx->route->auth;
@@ -880,15 +886,18 @@ static bool fileVerifyUser(HttpConn *conn, cchar *username, cchar *password)
         return 0;
     }
     if (password) {
-        if (!conn->encoded) {
-            password = mprGetMD5(sfmt("%s:%s:%s", username, auth->realm, password));
-            conn->encoded = 1;
-        }
-        if (rx->passwordDigest) {
-            /* Digest authentication computes a digest using the password as one ingredient */
-            success = smatch(password, rx->passwordDigest);
+        requiredPassword = (rx->passwordDigest) ? rx->passwordDigest : conn->user->password;
+        if (sncmp(requiredPassword, "BF", 2) == 0 && slen(requiredPassword) > 4 && isdigit(requiredPassword[2]) && 
+                requiredPassword[3] == ':') {
+            /* Blowifsh */
+            success = mprCheckPassword(sfmt("%s:%s:%s", username, auth->realm, password), conn->user->password);
+
         } else {
-            success = smatch(password, conn->user->password);
+            if (!conn->encoded) {
+                password = mprGetMD5(sfmt("%s:%s:%s", username, auth->realm, password));
+                conn->encoded = 1;
+            }
+            success = smatch(password, requiredPassword);
         }
         if (success) {
             mprLog(5, "User \"%s\" authenticated for route %s", username, rx->route->name);
@@ -1472,10 +1481,10 @@ PUBLIC void httpAddCache(HttpRoute *route, cchar *methods, cchar *uris, cchar *e
         }
         httpAddRouteHandler(route, "cacheHandler", NULL);
         httpAddRouteFilter(route, "cacheFilter", "", HTTP_STAGE_TX);
-        route->caching = mprCreateList(0, 0);
+        route->caching = mprCreateList(0, MPR_LIST_STABLE);
 
     } else if (flags & HTTP_CACHE_RESET) {
-        route->caching = mprCreateList(0, 0);
+        route->caching = mprCreateList(0, MPR_LIST_STABLE);
 
     } else if (route->parent && route->caching == route->parent->caching) {
         route->caching = mprCloneList(route->parent->caching);
@@ -1484,7 +1493,7 @@ PUBLIC void httpAddCache(HttpRoute *route, cchar *methods, cchar *uris, cchar *e
         return;
     }
     if (extensions) {
-        cache->extensions = mprCreateHash(0, 0);
+        cache->extensions = mprCreateHash(0, MPR_HASH_STABLE);
         for (item = stok(sclone(extensions), " \t,", &tok); item; item = stok(0, " \t,", &tok)) {
             if (smatch(item, "*")) {
                 extensions = 0;
@@ -1493,7 +1502,7 @@ PUBLIC void httpAddCache(HttpRoute *route, cchar *methods, cchar *uris, cchar *e
             }
         }
     } else if (types) {
-        cache->types = mprCreateHash(0, 0);
+        cache->types = mprCreateHash(0, MPR_HASH_STABLE);
         for (item = stok(sclone(types), " \t,", &tok); item; item = stok(0, " \t,", &tok)) {
             if (smatch(item, "*")) {
                 extensions = 0;
@@ -1503,7 +1512,7 @@ PUBLIC void httpAddCache(HttpRoute *route, cchar *methods, cchar *uris, cchar *e
         }
     }
     if (methods) {
-        cache->methods = mprCreateHash(0, MPR_HASH_CASELESS);
+        cache->methods = mprCreateHash(0, MPR_HASH_CASELESS | MPR_HASH_STABLE);
         for (item = stok(sclone(methods), " \t,", &tok); item; item = stok(0, " \t,", &tok)) {
             if (smatch(item, "*")) {
                 methods = 0;
@@ -1513,7 +1522,7 @@ PUBLIC void httpAddCache(HttpRoute *route, cchar *methods, cchar *uris, cchar *e
         }
     }
     if (uris) {
-        cache->uris = mprCreateHash(0, 0);
+        cache->uris = mprCreateHash(0, MPR_HASH_STABLE);
         for (item = stok(sclone(uris), " \t,", &tok); item; item = stok(0, " \t,", &tok)) {
             if (flags & HTTP_CACHE_ONLY && route->prefix && !scontains(item, sfmt("prefix=%s", route->prefix))) {
                 /*
@@ -3595,7 +3604,7 @@ PUBLIC HttpEndpoint *httpCreateEndpoint(cchar *ip, int port, MprDispatcher *disp
     endpoint->port = port;
     endpoint->ip = sclone(ip);
     endpoint->dispatcher = dispatcher;
-    endpoint->hosts = mprCreateList(-1, 0);
+    endpoint->hosts = mprCreateList(-1, MPR_LIST_STABLE);
     endpoint->mutex = mprCreateLock();
     httpAddEndpoint(http, endpoint);
     return endpoint;
@@ -4338,10 +4347,10 @@ PUBLIC HttpHost *httpCreateHost()
     mprSetCacheLimits(host->responseCache, 0, BIT_MAX_CACHE_DURATION, 0, 0);
 
     host->mutex = mprCreateLock();
-    host->routes = mprCreateList(-1, 0);
+    host->routes = mprCreateList(-1, MPR_LIST_STABLE);
     host->flags = HTTP_HOST_NO_TRACE;
     host->protocol = sclone("HTTP/1.1");
-    host->streams = mprCreateHash(HTTP_SMALL_HASH_SIZE, 0);
+    host->streams = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_STABLE);
     httpSetStreaming(host, "application/x-www-form-urlencoded", NULL, 0);
     httpSetStreaming(host, "application/json", NULL, 0);
     httpAddHost(http, host);
@@ -4635,7 +4644,7 @@ PUBLIC HttpRoute *httpLookupRouteByPattern(HttpHost *host, cchar *pattern)
 
 PUBLIC void httpResetRoutes(HttpHost *host)
 {
-    host->routes = mprCreateList(-1, 0);
+    host->routes = mprCreateList(-1, MPR_LIST_STABLE);
 }
 
 
@@ -4834,11 +4843,11 @@ PUBLIC Http *httpCreate(int flags)
     http->software = sclone(BIT_HTTP_SOFTWARE);
     http->protocol = sclone("HTTP/1.1");
     http->mutex = mprCreateLock();
-    http->stages = mprCreateHash(-1, 0);
-    http->hosts = mprCreateList(-1, MPR_LIST_STATIC_VALUES);
+    http->stages = mprCreateHash(-1, MPR_HASH_STABLE);
+    http->hosts = mprCreateList(-1, MPR_LIST_STATIC_VALUES | MPR_LIST_STABLE);
     http->connections = mprCreateList(-1, MPR_LIST_STATIC_VALUES);
-    http->authTypes = mprCreateHash(-1, MPR_HASH_CASELESS | MPR_HASH_UNIQUE);
-    http->authStores = mprCreateHash(-1, MPR_HASH_CASELESS | MPR_HASH_UNIQUE);
+    http->authTypes = mprCreateHash(-1, MPR_HASH_CASELESS | MPR_HASH_UNIQUE | MPR_HASH_STABLE);
+    http->authStores = mprCreateHash(-1, MPR_HASH_CASELESS | MPR_HASH_UNIQUE | MPR_HASH_STABLE);
     http->booted = mprGetTime();
     http->flags = flags;
     http->monitorMaxPeriod = 0;
@@ -4846,7 +4855,7 @@ PUBLIC Http *httpCreate(int flags)
     http->secret = mprGetRandomString(HTTP_MAX_SECRET);
 
     updateCurrentDate(http);
-    http->statusCodes = mprCreateHash(41, MPR_HASH_STATIC_VALUES | MPR_HASH_STATIC_KEYS);
+    http->statusCodes = mprCreateHash(41, MPR_HASH_STATIC_VALUES | MPR_HASH_STATIC_KEYS | MPR_HASH_STABLE);
     for (code = HttpStatusCodes; code->code; code++) {
         mprAddKey(http->statusCodes, code->codeString, code);
     }
@@ -4863,16 +4872,16 @@ PUBLIC Http *httpCreate(int flags)
     mprAddTerminator(terminateHttp);
 
     if (flags & HTTP_SERVER_SIDE) {
-        http->endpoints = mprCreateList(-1, MPR_LIST_STATIC_VALUES);
-        http->routeTargets = mprCreateHash(-1, MPR_HASH_STATIC_VALUES);
-        http->routeConditions = mprCreateHash(-1, MPR_HASH_STATIC_VALUES);
-        http->routeUpdates = mprCreateHash(-1, MPR_HASH_STATIC_VALUES);
-        http->sessionCache = mprCreateCache(MPR_CACHE_SHARED);
-        http->counters = mprCreateList(-1, 0);
-        http->monitors = mprCreateList(-1, 0);
-        http->addresses = mprCreateHash(-1, 0);
-        http->defenses = mprCreateHash(-1, 0);
-        http->remedies = mprCreateHash(-1, MPR_HASH_CASELESS | MPR_HASH_STATIC_VALUES);
+        http->endpoints = mprCreateList(-1, MPR_LIST_STATIC_VALUES | MPR_LIST_STABLE);
+        http->counters = mprCreateList(-1, MPR_LIST_STABLE);
+        http->monitors = mprCreateList(-1, MPR_LIST_STABLE);
+        http->routeTargets = mprCreateHash(-1, MPR_HASH_STATIC_VALUES | MPR_HASH_STABLE);
+        http->routeConditions = mprCreateHash(-1, MPR_HASH_STATIC_VALUES | MPR_HASH_STABLE);
+        http->routeUpdates = mprCreateHash(-1, MPR_HASH_STATIC_VALUES | MPR_HASH_STABLE);
+        http->sessionCache = mprCreateCache(MPR_CACHE_SHARED | MPR_HASH_STABLE);
+        http->addresses = mprCreateHash(-1, MPR_HASH_STABLE);
+        http->defenses = mprCreateHash(-1, MPR_HASH_STABLE);
+        http->remedies = mprCreateHash(-1, MPR_HASH_CASELESS | MPR_HASH_STATIC_VALUES | MPR_HASH_STABLE);
         httpOpenUploadFilter(http);
         httpOpenCacheHandler(http);
         httpOpenPassHandler(http);
@@ -5044,13 +5053,9 @@ PUBLIC void httpInitLimits(HttpLimits *limits, bool serverSide)
     limits->headerMax = BIT_MAX_NUM_HEADERS;
     limits->headerSize = BIT_MAX_HEADERS;
     limits->keepAliveMax = BIT_MAX_KEEP_ALIVE;
-    limits->receiveFormSize = BIT_MAX_RECEIVE_FORM;
-    limits->receiveBodySize = BIT_MAX_RECEIVE_BODY;
     limits->processMax = BIT_MAX_PROCESSES;
     limits->requestsPerClientMax = BIT_MAX_REQUESTS_PER_CLIENT;
     limits->sessionMax = BIT_MAX_SESSIONS;
-    limits->transmissionBodySize = BIT_MAX_TX_BODY;
-    limits->uploadSize = BIT_MAX_UPLOAD;
     limits->uriSize = BIT_MAX_URI;
 
     limits->inactivityTimeout = BIT_MAX_INACTIVITY_DURATION;
@@ -5059,10 +5064,22 @@ PUBLIC void httpInitLimits(HttpLimits *limits, bool serverSide)
     limits->sessionTimeout = BIT_MAX_SESSION_DURATION;
 
     limits->webSocketsMax = BIT_MAX_WSS_SOCKETS;
-    limits->webSocketsMessageSize = HTTP_MAX_WSS_MESSAGE;
+    limits->webSocketsMessageSize = BIT_MAX_WSS_MESSAGE;
     limits->webSocketsFrameSize = BIT_MAX_WSS_FRAME;
     limits->webSocketsPacketSize = BIT_MAX_WSS_PACKET;
     limits->webSocketsPing = BIT_MAX_PING_DURATION;
+
+    if (serverSide) {
+        limits->receiveFormSize = BIT_MAX_RECEIVE_FORM;
+        limits->receiveBodySize = BIT_MAX_RECEIVE_BODY;
+        limits->transmissionBodySize = BIT_MAX_TX_BODY;
+        limits->uploadSize = BIT_MAX_UPLOAD;
+    } else {
+        limits->receiveFormSize = MAXOFF;
+        limits->receiveBodySize = MAXOFF;
+        limits->transmissionBodySize = MAXOFF;
+        limits->uploadSize = MAXOFF;
+    }
 
 #if FUTURE
     mprSetMaxSocketClients(endpoint, atoi(value));
@@ -5509,6 +5526,31 @@ PUBLIC char *httpStatsReport(int flags)
     return sclone(mprGetBufStart(buf));
 }
 
+
+PUBLIC bool httpConfigure(HttpConfigureProc proc, void *data, MprTicks timeout)
+{
+    Http        *http;
+    MprTicks    mark;
+
+    http = MPR->httpService;
+    mark = mprGetTicks();
+    if (timeout <= 0) {
+        timeout = MAXINT;
+    }
+    do {
+        lock(http->connections);
+        /* Own request will count as 1 */
+        if (mprGetListLength(http->connections) == 0) {
+            (proc)(data);
+            unlock(http->connections);
+            return 1;
+        }
+        unlock(http->connections);
+        mprSleep(10);
+        /* Defaults to 10 secs */
+    } while (mprGetRemainingTicks(mark, timeout) > 0);
+    return 0;
+}
 
 
 /*
@@ -5998,7 +6040,7 @@ PUBLIC int httpAddMonitor(cchar *counterName, cchar *expr, uint64 limit, MprTick
     if ((monitor = mprAllocObj(HttpMonitor, manageMonitor)) == 0) {
         return MPR_ERR_MEMORY;
     }
-    if ((defenseList = mprCreateList(0, -1)) == 0) {
+    if ((defenseList = mprCreateList(-1, MPR_LIST_STABLE)) == 0) {
         return MPR_ERR_MEMORY;
     }
     tok = sclone(defenses);
@@ -6150,7 +6192,7 @@ static HttpDefense *createDefense(cchar *name, cchar *remedy, MprHash *args)
 
 
 /*
-    Remedy can be set via REMEDY= in the remedyArgs
+    Remedy can also be set via REMEDY= in the remedyArgs
  */
 PUBLIC int httpAddDefense(cchar *name, cchar *remedy, cchar *remedyArgs)
 {
@@ -6163,7 +6205,7 @@ PUBLIC int httpAddDefense(cchar *name, cchar *remedy, cchar *remedyArgs)
     assert(name && *name);
 
     http = MPR->httpService;
-    args = mprCreateHash(0, 0);
+    args = mprCreateHash(0, MPR_HASH_STABLE);
     list = stolist(remedyArgs);
     for (ITERATE_ITEMS(list, arg, next)) {
         key = stok(arg, "=", &value);
@@ -6984,7 +7026,6 @@ PUBLIC void httpJoinPacketForService(HttpQueue *q, HttpPacket *packet, bool serv
         }
         q->count += httpGetPacketLength(packet);
     }
-    VERIFY_QUEUE(q);
     if (serviceQ && !(q->flags & HTTP_QUEUE_SUSPENDED))  {
         httpScheduleQueue(q);
     }
@@ -7627,7 +7668,7 @@ PUBLIC void httpCreateTxPipeline(HttpConn *conn, HttpRoute *route)
     rx = conn->rx;
     tx = conn->tx;
 
-    tx->outputPipeline = mprCreateList(-1, 0);
+    tx->outputPipeline = mprCreateList(-1, MPR_LIST_STABLE);
     if (conn->endpoint) {
         if (tx->handler == 0 || tx->finalized) {
             tx->handler = http->passHandler;
@@ -7703,7 +7744,7 @@ PUBLIC void httpCreateRxPipeline(HttpConn *conn, HttpRoute *route)
 
     rx = conn->rx;
     tx = conn->tx;
-    rx->inputPipeline = mprCreateList(-1, 0);
+    rx->inputPipeline = mprCreateList(-1, MPR_LIST_STABLE);
     if (route) {
         for (next = 0; (filter = mprGetNextItem(route->inputStages, &next)) != 0; ) {
             if (matchFilter(conn, filter, route, HTTP_STAGE_RX) == HTTP_ROUTE_OK) {
@@ -8295,7 +8336,6 @@ PUBLIC ssize httpRead(HttpConn *conn, char *buf, ssize size)
     q = conn->readq;
     assert(q->count >= 0);
     assert(size >= 0);
-    VERIFY_QUEUE(q);
 
     while (q->count <= 0 && !conn->async && !conn->error && conn->sock && (conn->state <= HTTP_STATE_CONTENT)) {
         httpServiceQueues(conn);
@@ -9055,7 +9095,7 @@ static void manageLang(HttpLang *lang, int flags);
 static void manageRouteOp(HttpRouteOp *op, int flags);
 static int matchRequestUri(HttpConn *conn, HttpRoute *route);
 static int matchRoute(HttpConn *conn, HttpRoute *route);
-static char *qualifyName(HttpRoute *route, cchar *service, cchar *name);
+static char *qualifyName(HttpRoute *route, cchar *controller, cchar *name);
 static int selectHandler(HttpConn *conn, HttpRoute *route);
 static int testCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *condition);
 static char *trimQuotes(char *str);
@@ -9077,23 +9117,39 @@ PUBLIC HttpRoute *httpCreateRoute(HttpHost *host)
     route->auth = httpCreateAuth();
     route->defaultLanguage = sclone("en");
     route->home = route->documents = mprGetCurrentPath(".");
-    route->extensions = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_CASELESS);
-    route->flags = BIT_DEBUG ? HTTP_ROUTE_SHOW_ERRORS : 0;
-    route->handlers = mprCreateList(-1, MPR_LIST_STABLE);
+    route->flags = HTTP_ROUTE_STEALTH;
+    if (BIT_DEBUG) {
+        route->flags |= HTTP_ROUTE_SHOW_ERRORS;
+    }
     route->host = host;
     route->http = MPR->httpService;
-    route->errorDocuments = mprCreateHash(HTTP_SMALL_HASH_SIZE, 0);
-    route->indicies = mprCreateList(-1, 0);
-    route->inputStages = mprCreateList(-1, 0);
     route->lifespan = BIT_MAX_CACHE_DURATION;
-    route->methods = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_STATIC_VALUES);
-    route->outputStages = mprCreateList(-1, 0);
-    route->vars = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_CASELESS);
     route->pattern = MPR->emptyString;
     route->targetRule = sclone("run");
     route->autoDelete = 1;
     route->workers = -1;
+
+    route->headers = mprCreateList(-1, MPR_LIST_STABLE);
+    route->handlers = mprCreateList(-1, MPR_LIST_STABLE);
+    route->indicies = mprCreateList(-1, MPR_LIST_STABLE);
+    route->inputStages = mprCreateList(-1, MPR_LIST_STABLE);
+    route->outputStages = mprCreateList(-1, MPR_LIST_STABLE);
+
+    route->extensions = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_CASELESS | MPR_HASH_STABLE);
+    route->errorDocuments = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_STABLE);
+    route->methods = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_STATIC_VALUES | MPR_HASH_STABLE);
+    route->vars = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_CASELESS | MPR_HASH_STABLE);
+
     httpAddRouteMethods(route, NULL);
+    httpAddRouteFilter(route, http->rangeFilter->name, NULL, HTTP_STAGE_TX);
+    httpAddRouteFilter(route, http->chunkFilter->name, NULL, HTTP_STAGE_RX | HTTP_STAGE_TX);
+
+#if FUTURE
+    httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "Content-Security-Policy", "default-src 'self'");
+#endif
+    httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-XSS-Protection", "1; mode=block");
+    httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-Frame-Options", "SAMEORIGIN");
+    httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-Content-Type-Options", "nosniff");
 
     if (MPR->httpService) {
         route->limits = mprMemdup(http->serverLimits ? http->serverLimits : http->clientLimits, sizeof(HttpLimits));
@@ -9288,8 +9344,6 @@ PUBLIC HttpRoute *httpCreateConfiguredRoute(HttpHost *host, int serverSide)
      */
     route = httpCreateRoute(host);
     http = route->http;
-    httpAddRouteFilter(route, http->rangeFilter->name, NULL, HTTP_STAGE_TX);
-    httpAddRouteFilter(route, http->chunkFilter->name, NULL, HTTP_STAGE_RX | HTTP_STAGE_TX);
 #if BIT_HTTP_WEB_SOCKETS
     httpAddRouteFilter(route, http->webSocketFilter->name, NULL, HTTP_STAGE_RX | HTTP_STAGE_TX);
 #endif
@@ -9386,27 +9440,30 @@ PUBLIC void httpRouteRequest(HttpConn *conn)
         tx->handler = conn->http->passHandler;
         route = rx->route = conn->host->defaultRoute;
 
-    } else for (next = rewrites = 0; rewrites < BIT_MAX_REWRITE; ) {
-        if (next >= conn->host->routes->length) {
-            break;
-        }
-        route = conn->host->routes->items[next++];
-        if (route->startSegment && strncmp(rx->pathInfo, route->startSegment, route->startSegmentLen) != 0) {
-            /* Failed to match the first URI segment, skip to the next group */
-            assert(next <= route->nextGroup);
-            next = route->nextGroup;
+    } else {
+        for (next = rewrites = 0; rewrites < BIT_MAX_REWRITE; ) {
+            if (next >= conn->host->routes->length) {
+                break;
+            }
+            route = conn->host->routes->items[next++];
+            if (route->startSegment && strncmp(rx->pathInfo, route->startSegment, route->startSegmentLen) != 0) {
+                /* Failed to match the first URI segment, skip to the next group */
+                if (next < route->nextGroup) {
+                    next = route->nextGroup;
+                }
 
-        } else if (route->startWith && strncmp(rx->pathInfo, route->startWith, route->startWithLen) != 0) {
-            /* Failed to match starting literal segment of the route pattern, advance to test the next route */
-            continue;
+            } else if (route->startWith && strncmp(rx->pathInfo, route->startWith, route->startWithLen) != 0) {
+                /* Failed to match starting literal segment of the route pattern, advance to test the next route */
+                continue;
 
-        } else if ((match = matchRoute(conn, route)) == HTTP_ROUTE_REROUTE) {
-            next = 0;
-            route = 0;
-            rewrites++;
+            } else if ((match = matchRoute(conn, route)) == HTTP_ROUTE_REROUTE) {
+                next = 0;
+                route = 0;
+                rewrites++;
 
-        } else if (match == HTTP_ROUTE_OK) {
-            break;
+            } else if (match == HTTP_ROUTE_OK) {
+                break;
+            }
         }
     }
     if (route == 0 || tx->handler == 0) {
@@ -9691,6 +9748,7 @@ PUBLIC void httpMapFile(HttpConn *conn, HttpRoute *route)
     if (route->map) {
         if (route->mappings && (mapped = mprLookupKey(route->mappings, tx->filename)) != 0) {
             tx->filename = mapped;
+            mprLog(4, "Mapping content to %s", tx->filename);
         } else if ((extensions = mprLookupKey(route->map, tx->ext)) != 0) {
             acceptGzip = scontains(rx->acceptEncoding, "gzip") != 0;
             for (ITERATE_ITEMS(extensions, ext, next)) {
@@ -9701,6 +9759,7 @@ PUBLIC void httpMapFile(HttpConn *conn, HttpRoute *route)
                 path = mprReplacePathExt(tx->filename, ext);
                 if (mprGetPathInfo(path, info) == 0) {
                     tx->filename = path;
+                    mprLog(4, "Mapping content to %s", tx->filename);
                     mprAddKey(route->mappings, tx->filename, path);
                     if (zipped) {
                         httpSetHeader(conn, "Content-Encoding", "gzip");
@@ -9790,10 +9849,16 @@ PUBLIC int httpAddRouteFilter(HttpRoute *route, cchar *name, cchar *extensions, 
     HttpStage   *stage;
     HttpStage   *filter;
     char        *extlist, *word, *tok;
-    int         pos;
+    int         pos, next;
 
     assert(route);
 
+    for (ITERATE_ITEMS(route->outputStages, stage, next)) {
+        if (smatch(stage->name, name)) {
+            mprError("Stage \"%s\" is already configured for the route \"%s\". Ignoring.", name, route->name); 
+            return 0;
+        }
+    }
     stage = httpLookupStage(route->http, name);
     if (stage == 0) {
         mprError("Cannot find filter %s", name); 
@@ -9805,7 +9870,7 @@ PUBLIC int httpAddRouteFilter(HttpRoute *route, cchar *name, cchar *extensions, 
     filter = httpCloneStage(route->http, stage);
 
     if (extensions && *extensions) {
-        filter->extensions = mprCreateHash(0, MPR_HASH_CASELESS);
+        filter->extensions = mprCreateHash(0, MPR_HASH_CASELESS | MPR_HASH_STABLE);
         extlist = sclone(extensions);
         word = stok(extlist, " \t\r\n", &tok);
         while (word) {
@@ -9921,16 +9986,16 @@ PUBLIC void httpAddRouteMapping(HttpRoute *route, cchar *extensions, cchar *mapp
     char        *etok, *mtok;
 
     if (!route->mappings) {
-        route->mappings = mprCreateHash(BIT_MAX_ROUTE_MAP_HASH, 0);
+        route->mappings = mprCreateHash(BIT_MAX_ROUTE_MAP_HASH, MPR_HASH_STABLE);
     }
     if (!route->map) {
-        route->map = mprCreateHash(BIT_MAX_ROUTE_MAP_HASH, 0);
+        route->map = mprCreateHash(BIT_MAX_ROUTE_MAP_HASH, MPR_HASH_STABLE);
     }
     for (ext = stok(sclone(extensions), ", \t", &etok); ext; ext = stok(NULL, ", \t", &etok)) {
         if (*ext == '.') {
             ext++;
         }
-        mapList = mprCreateList(0, 0);
+        mapList = mprCreateList(0, MPR_LIST_STABLE);
         for (map = stok(sclone(mappings), ", \t", &mtok); map; map = stok(NULL, ", \t", &mtok)) {
             mprAddItem(mapList, sreplace(map, "${1}", ext));
         }
@@ -9990,15 +10055,28 @@ PUBLIC void httpAddRouteRequestHeaderCheck(HttpRoute *route, cchar *header, ccha
 
 
 /*
-    ResponseHeader [add|append|remove|set] header value
+    Header [add|append|remove|set] header [value]
  */
 PUBLIC void httpAddRouteResponseHeader(HttpRoute *route, int cmd, cchar *header, cchar *value)
 {
+    MprKeyValue     *pair;
+    int             next;
+
     assert(route);
     assert(header && *header);
-    assert(value && *value);
 
     GRADUATE_LIST(route, headers);
+    if (cmd == HTTP_ROUTE_REMOVE_HEADER) {
+        /*
+            Remove existing route headers, but keep the remove record so that user headers will be removed too
+         */
+        for (ITERATE_ITEMS(route->headers, pair, next)) {
+            if (smatch(pair->key, header)) {
+                mprRemoveItem(route->headers, pair);
+                next--;
+            }
+        }
+    }
     mprAddItem(route->headers, mprCreateKeyPair(header, value, cmd));
 }
 
@@ -10047,10 +10125,10 @@ PUBLIC void httpClearRouteStages(HttpRoute *route, int direction)
     assert(route);
 
     if (direction & HTTP_STAGE_RX) {
-        route->inputStages = mprCreateList(-1, 0);
+        route->inputStages = mprCreateList(-1, MPR_LIST_STABLE);
     }
     if (direction & HTTP_STAGE_TX) {
-        route->outputStages = mprCreateList(-1, 0);
+        route->outputStages = mprCreateList(-1, MPR_LIST_STABLE);
     }
 }
 
@@ -10120,22 +10198,66 @@ PUBLIC void httpResetRoutePipeline(HttpRoute *route)
 {
     assert(route);
 
-    if (route->parent == 0) {
-        route->errorDocuments = mprCreateHash(HTTP_SMALL_HASH_SIZE, 0);
+    if (!route->parent || route->caching != route->parent->caching) {
         route->caching = 0;
-        route->extensions = 0;
-        route->handlers = mprCreateList(-1, 0);
-        route->inputStages = mprCreateList(-1, 0);
-        route->indicies = mprCreateList(-1, 0);
     }
-    route->outputStages = mprCreateList(-1, 0);
+    if (!route->parent || route->errorDocuments != route->parent->errorDocuments) {
+        route->errorDocuments = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_STABLE);
+    }
+    if (!route->parent || route->extensions != route->parent->extensions) {
+        route->extensions = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_CASELESS | MPR_HASH_STABLE);
+    }
+    if (!route->parent || route->handlers != route->parent->handlers) {
+        route->handlers = mprCreateList(-1, MPR_LIST_STABLE);
+    }
+    if (!route->parent || route->inputStages != route->parent->inputStages) {
+        route->inputStages = mprCreateList(-1, MPR_LIST_STABLE);
+    }
+    if (!route->parent || route->indicies != route->parent->indicies) {
+        route->indicies = mprCreateList(-1, MPR_LIST_STABLE);
+    }
+    if (!route->parent || route->outputStages != route->parent->outputStages) {
+        route->outputStages = mprCreateList(-1, MPR_LIST_STABLE);
+    }
+    if (!route->parent || route->methods != route->parent->methods) {
+        route->methods = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_STATIC_VALUES | MPR_HASH_STABLE);
+        httpAddRouteMethods(route, NULL);
+    }
+    if (!route->parent || route->requestHeaders != route->parent->requestHeaders) {
+        route->requestHeaders = 0;
+    }
+    if (!route->parent || route->params != route->parent->params) {
+        route->params = 0;
+    }
+    if (!route->parent || route->updates != route->parent->updates) {
+        route->updates = 0;
+    }
+    if (!route->parent || route->conditions != route->parent->conditions) {
+        route->conditions = 0;
+    }
+    if (!route->parent || route->map != route->parent->map) {
+        route->map = 0;
+    }
+    if (!route->parent || route->mappings != route->parent->mappings) {
+        route->mappings = 0;
+    }
+    if (!route->parent || route->languages != route->parent->languages) {
+        route->languages = 0;
+    }
+    if (!route->parent || route->headers != route->parent->headers) {
+        route->headers = 0;
+        httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "Content-Security-Policy", "default-src 'self'");
+        httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-XSS-Protection", "1; mode=block");
+        httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-Frame-Options", "SAMEORIGIN");
+        httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-Content-Type-Options", "nosniff");
+    }
 }
 
 
 PUBLIC void httpResetHandlers(HttpRoute *route)
 {
     assert(route);
-    route->handlers = mprCreateList(-1, 0);
+    route->handlers = mprCreateList(-1, MPR_LIST_STABLE);
 }
 
 
@@ -10179,11 +10301,11 @@ PUBLIC int httpSetRouteConnector(HttpRoute *route, cchar *name)
 }
 
 
-PUBLIC void httpSetRouteCookieVisibility(HttpRoute *route, bool visible)
+PUBLIC void httpSetRouteSessionVisibility(HttpRoute *route, bool visible)
 {
-    route->flags &= ~HTTP_ROUTE_VISIBLE_COOKIE;
+    route->flags &= ~HTTP_ROUTE_VISIBLE_SESSION;
     if (visible) {
-        route->flags |= HTTP_ROUTE_VISIBLE_COOKIE;
+        route->flags |= HTTP_ROUTE_VISIBLE_SESSION;
     }
 }
 
@@ -10306,7 +10428,7 @@ PUBLIC void httpAddRouteMethods(HttpRoute *route, cchar *methods)
     assert(route);
 
     if (methods == NULL || *methods == '\0') {
-        methods = BIT_DEFAULT_METHODS;
+        methods = BIT_HTTP_DEFAULT_METHODS;
     } else if (scaselessmatch(methods, "ALL")) {
        methods = "*";
     }
@@ -10333,7 +10455,7 @@ PUBLIC void httpRemoveRouteMethods(HttpRoute *route, cchar *methods)
 
 PUBLIC void httpSetRouteMethods(HttpRoute *route, cchar *methods)
 {
-    route->methods = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_STATIC_VALUES);
+    route->methods = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_STATIC_VALUES | MPR_HASH_STABLE);
     httpAddRouteMethods(route, methods);
 }
 
@@ -10442,7 +10564,7 @@ PUBLIC void httpSetRouteStealth(HttpRoute *route, bool on)
         Target close
         Target redirect status [URI]
         Target run ${DOCUMENTS}/${request:uri}.gz
-        Target run ${service}-${action} 
+        Target run ${controller}-${action} 
         Target write [-r] status "Hello World\r\n"
  */
 PUBLIC int httpSetRouteTarget(HttpRoute *route, cchar *rule, cchar *details)
@@ -10551,7 +10673,7 @@ static void finalizePattern(HttpRoute *route)
     int         column;
 
     assert(route);
-    route->tokens = mprCreateList(-1, 0);
+    route->tokens = mprCreateList(-1, MPR_LIST_STABLE);
     pattern = mprCreateBuf(-1, -1);
     startPattern = route->pattern[0] == '^' ? &route->pattern[1] : route->pattern;
 
@@ -10754,9 +10876,7 @@ static char *finalizeTemplate(HttpRoute *route)
             mprPutCharToBuf(buf, *sp);
             break;
         case '$':
-            if (sp[1] == '\0') {
-                sp++;
-            } else {
+            if (sp[1]) {
                 mprPutCharToBuf(buf, *sp);
             }
             break;
@@ -10846,12 +10966,12 @@ PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
     HttpRoute       *route, *lroute;
     HttpRx          *rx;
     HttpUri         *uri;
-    cchar           *routeName, *action, *service, *originalAction, *tplate;
+    cchar           *routeName, *action, *controller, *originalAction, *tplate;
     char            *rest;
 
     rx = conn->rx;
     route = rx->route;
-    service = 0;
+    controller = 0;
 
     if (target == 0) {
         target = "";
@@ -10869,9 +10989,9 @@ PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
         }
         /*
             Prep the action. Forms are:
-                . @action               # Use the current service
-                . @service/             # Use "index" as the action
-                . @service/action
+                . @action               # Use the current controller
+                . @controller/          # Use "index" as the action
+                . @controller/action
          */
         if ((action = httpGetOption(options, "action", 0)) != 0) {
             originalAction = action;
@@ -10879,21 +10999,14 @@ PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
                 action = &action[1];
             }
             if (strchr(action, '/')) {
-                service = stok((char*) action, "/", (char**) &action);
+                controller = stok((char*) action, "/", (char**) &action);
                 action = stok((char*) action, "/", &rest);
             }
-            if (service) {
-                httpSetOption(options, "service", service);
+            if (controller) {
+                httpSetOption(options, "controller", controller);
             } else {
-                service = httpGetParam(conn, "service", 0);
+                controller = httpGetParam(conn, "controller", 0);
             }
-#if DEPRECATE || 1
-            if (service) {
-                httpSetOption(options, "controller", service);
-            } else {
-                service = httpGetParam(conn, "controller", 0);
-            }
-#endif
             if (action == 0 || *action == '\0') {
                 action = "list";
             }
@@ -10907,9 +11020,9 @@ PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
                 . options.route.template
                 . options.action mapped to a route.template, via:
                 . /app/STAR/action
-                . /app/service/action
+                . /app/controller/action
                 . /app/STAR/default
-                . /app/service/default
+                . /app/controller/default
          */
         if ((tplate = httpGetOption(options, "template", 0)) == 0) {
             if ((routeName = httpGetOption(options, "route", 0)) != 0) {
@@ -10919,10 +11032,10 @@ PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
                 lroute = 0;
             }
             if (lroute == 0) {
-                if ((lroute = httpLookupRoute(conn->host, qualifyName(route, service, action))) == 0) {
-                    if ((lroute = httpLookupRoute(conn->host, qualifyName(route, "{service}", action))) == 0) {
-                        if ((lroute = httpLookupRoute(conn->host, qualifyName(route, service, "default"))) == 0) {
-                            lroute = httpLookupRoute(conn->host, qualifyName(route, "{service}", "default"));
+                if ((lroute = httpLookupRoute(conn->host, qualifyName(route, controller, action))) == 0) {
+                    if ((lroute = httpLookupRoute(conn->host, qualifyName(route, "{controller}", action))) == 0) {
+                        if ((lroute = httpLookupRoute(conn->host, qualifyName(route, controller, "default"))) == 0) {
+                            lroute = httpLookupRoute(conn->host, qualifyName(route, "{controller}", "default"));
                         }
                     }
                 }
@@ -10965,17 +11078,19 @@ static cchar *expandRouteName(HttpConn *conn, cchar *routeName)
 
 
 /*
-    Expect a template with embedded tokens of the form: "/${service}/${action}/${other}"
+    Expect a template with embedded tokens of the form: "/${controller}/${action}/${other}"
     The options is a hash of token values.
  */
 PUBLIC char *httpTemplate(HttpConn *conn, cchar *template, MprHash *options)
 {
     MprBuf      *buf;
+    HttpRx      *rx;
     HttpRoute   *route;
     cchar       *cp, *ep, *value;
     char        key[BIT_MAX_BUFFER];
 
-    route = conn->rx->route;
+    rx = conn->rx;
+    route = rx->route;
     if (template == 0 || *template == '\0') {
         return MPR->emptyString;
     }
@@ -10994,7 +11109,8 @@ PUBLIC char *httpTemplate(HttpConn *conn, cchar *template, MprHash *options)
                 sncopy(key, sizeof(key), cp, ep - cp);
                 if (options && (value = httpGetOption(options, key, 0)) != 0) {
                     mprPutStringToBuf(buf, value);
-                } else if ((value = mprLookupKey(conn->rx->params, key)) != 0) {
+
+                } else if ((value = mprLookupJsonValue(rx->params, key)) != 0) {
                     mprPutStringToBuf(buf, value);
                 }
                 if (value == 0) {
@@ -11077,7 +11193,7 @@ PUBLIC int httpAddRouteLanguageSuffix(HttpRoute *route, cchar *language, cchar *
     assert(suffix && *suffix);
 
     if (route->languages == 0) {
-        route->languages = mprCreateHash(-1, 0);
+        route->languages = mprCreateHash(-1, MPR_HASH_STABLE);
     } else {
         GRADUATE_HASH(route, languages);
     }
@@ -11100,7 +11216,7 @@ PUBLIC int httpAddRouteLanguageDir(HttpRoute *route, cchar *language, cchar *pat
     assert(path && *path);
 
     if (route->languages == 0) {
-        route->languages = mprCreateHash(-1, 0);
+        route->languages = mprCreateHash(-1, MPR_HASH_STABLE);
     } else {
         GRADUATE_HASH(route, languages);
     }
@@ -11493,13 +11609,17 @@ PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods
 {
     HttpRoute   *route;
 
+#if UNUSED
     if (name == NULL || *name == '\0') {
         name = "/";
     }
+#endif
     if ((route = httpCreateInheritedRoute(parent)) == 0) {
         return 0;
     }
-    httpSetRouteName(route, name);
+    if (name) {
+        httpSetRouteName(route, name);
+    }
     httpSetRoutePattern(route, pattern, 0);
     if (methods) {
         httpSetRouteMethods(route, methods);
@@ -11514,19 +11634,19 @@ PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods
 
 
 /*
-    Calculate a qualified route name. The form is: /{app}/{service}/action
+    Calculate a qualified route name. The form is: /{app}/{controller}/action
  */
-static char *qualifyName(HttpRoute *route, cchar *service, cchar *action)
+static char *qualifyName(HttpRoute *route, cchar *controller, cchar *action)
 {
-    cchar   *prefix, *servicePrefix;
+    cchar   *prefix, *controllerPrefix;
 
     prefix = route->prefix ? route->prefix : "";
     if (action == 0 || *action == '\0') {
         action = "default";
     }
-    if (service) {
-        servicePrefix = (service && smatch(service, "{service}")) ? "*" : service;
-        return sjoin(prefix, "/", servicePrefix, "/", action, NULL);
+    if (controller) {
+        controllerPrefix = (controller && smatch(controller, "{controller}")) ? "*" : controller;
+        return sjoin(prefix, "/", controllerPrefix, "/", action, NULL);
     } else {
         return sjoin(prefix, "/", action, NULL);
     }
@@ -11536,39 +11656,19 @@ static char *qualifyName(HttpRoute *route, cchar *service, cchar *action)
 /*
     Add a restful route. The parent route may supply a route prefix. If defined, the route name will prepend the prefix.
  */
-static HttpRoute *addRestful(HttpRoute *parent, cchar *action, cchar *methods, cchar *pattern, cchar *target, 
+static HttpRoute *addRestful(HttpRoute *parent, cchar *prefix, cchar *action, cchar *methods, cchar *pattern, cchar *target, 
         cchar *resource)
 {
-    cchar       *name, *nameResource, *prefix, *source, *token;
+    cchar       *name, *nameResource, *source, *routePrefix;
 
-    token = (parent->flags & HTTP_ROUTE_LEGACY_MVC) ? "{controller}" : "{service}";
-    nameResource = smatch(resource, token) ? "*" : resource;
-
-    if (!(parent->flags & HTTP_ROUTE_LEGACY_MVC)) {
-        prefix = parent->prefix ? sfmt("%s/service", parent->prefix) : "/service";
-        name = sfmt("%s/%s/%s", prefix, nameResource, action);
-        if (*resource == '{') {
-            pattern = sfmt("^%s/%s%s", prefix, resource, pattern);
-        } else {
-            pattern = sfmt("^%s/{service=%s}%s", prefix, resource, pattern);
-        }
-#if DEPRECATED || 1
+    routePrefix = parent->prefix ? parent->prefix : "";
+    prefix = prefix ? prefix : "";
+    nameResource = smatch(resource, "{controller}") ? "*" : resource;
+    name = sfmt("%s%s/%s/%s", routePrefix, prefix, nameResource, action);
+    if (*resource == '{') {
+        pattern = sfmt("^%s%s/%s%s", routePrefix, prefix, resource, pattern);
     } else {
-        /*
-            Deprecated in 4.4
-         */
-        if (parent->prefix) {
-            name = sfmt("%s/%s/%s", parent->prefix, nameResource, action);
-            pattern = sfmt("^%s/%s%s", parent->prefix, resource, pattern);
-        } else {
-            name = sfmt("/%s/%s", nameResource, action);
-            if (*resource == '{') {
-                pattern = sfmt("^/%s%s", resource, pattern);
-            } else {
-                pattern = sfmt("^/{controller=%s}%s", resource, pattern);
-            }
-        }
-#endif
+        pattern = sfmt("^%s%s/{controller=%s}%s", routePrefix, prefix, resource, pattern);
     }
     if (*resource == '{') {
         target = sfmt("$%s-%s", resource, target);
@@ -11581,61 +11681,61 @@ static HttpRoute *addRestful(HttpRoute *parent, cchar *action, cchar *methods, c
 }
 
 
-PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *resource)
+PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *prefix, cchar *resource)
 {
-    addRestful(parent, "create",    "POST",    "(/)*$",                   "create",          resource);
-    addRestful(parent, "edit",      "GET",     "/{id=[0-9]+}/edit$",      "edit",            resource);
-    addRestful(parent, "get",       "GET",     "/{id=[0-9]+}$",           "get",             resource);
-    addRestful(parent, "list",      "GET",     "/list$",                  "list",            resource);
-    addRestful(parent, "init",      "GET",     "/init$",                  "init",            resource);
-    addRestful(parent, "remove",    "DELETE",  "/{id=[0-9]+}$",           "remove",          resource);
-    addRestful(parent, "update",    "POST",    "/{id=[0-9]+}$",           "update",          resource);
-    addRestful(parent, "action",    "GET,POST","/{id=[0-9]+}/{action}$",  "${action}",       resource);
-    addRestful(parent, "default",   "GET,POST","/{action}$",              "cmd-${action}",   resource);
+    addRestful(parent, prefix, "create",    "POST",    "(/)*$",                   "create",          resource);
+    addRestful(parent, prefix, "edit",      "GET",     "/{id=[0-9]+}/edit$",      "edit",            resource);
+    addRestful(parent, prefix, "get",       "GET",     "/{id=[0-9]+}$",           "get",             resource);
+    addRestful(parent, prefix, "init",      "GET",     "/init$",                  "init",            resource);
+    addRestful(parent, prefix, "list",      "GET",     "/list$",                  "list",            resource);
+    addRestful(parent, prefix, "remove",    "DELETE",  "/{id=[0-9]+}$",           "remove",          resource);
+    addRestful(parent, prefix, "update",    "POST",    "/{id=[0-9]+}$",           "update",          resource);
+    addRestful(parent, prefix, "action",    "GET,POST","/{id=[0-9]+}/{action}$",  "${action}",       resource);
+    addRestful(parent, prefix, "default",   "GET,POST","/{action}$",              "cmd-${action}",   resource);
 }
 
 
-PUBLIC void httpAddResource(HttpRoute *parent, cchar *resource)
+PUBLIC void httpAddResource(HttpRoute *parent, cchar *prefix, cchar *resource)
 {
-    addRestful(parent, "create",    "POST",    "(/)*$",        "create",     resource);
-    addRestful(parent, "edit",      "GET",     "/edit$",       "edit",       resource);
-    addRestful(parent, "get",       "GET",     "(/)*$",        "get",        resource);
-    addRestful(parent, "init",      "GET",     "/init$",       "init",       resource);
-    addRestful(parent, "update",    "POST",    "(/)*$",        "update",     resource);
-    addRestful(parent, "remove",    "DELETE",  "(/)*$",        "remove",     resource);
-    addRestful(parent, "default",   "GET,POST","/{action}$",   "${action}",  resource);
+    addRestful(parent, prefix, "create",    "POST",    "(/)*$",        "create",     resource);
+    addRestful(parent, prefix, "edit",      "GET",     "/edit$",       "edit",       resource);
+    addRestful(parent, prefix, "get",       "GET",     "(/)*$",        "get",        resource);
+    addRestful(parent, prefix, "init",      "GET",     "/init$",       "init",       resource);
+    addRestful(parent, prefix, "update",    "POST",    "(/)*$",        "update",     resource);
+    addRestful(parent, prefix, "remove",    "DELETE",  "(/)*$",        "remove",     resource);
+    addRestful(parent, prefix, "default",   "GET,POST","/{action}$",   "${action}",  resource);
 }
 
 
-#if DEPRECATED || 1
-/*
-    Deprecated in 4.4.0
- */
-PUBLIC void httpAddLegacyResourceGroup(HttpRoute *parent, cchar *resource)
+PUBLIC void httpAddClientRoute(HttpRoute *parent, cchar *prefix, cchar *name)
 {
-    addRestful(parent, "list",      "GET",     "(/)*$",                   "list",          resource);
-    addRestful(parent, "init",      "GET",     "/init$",                  "init",          resource);
-    addRestful(parent, "create",    "POST",    "(/)*$",                   "create",        resource);
-    addRestful(parent, "edit",      "GET",     "/{id=[0-9]+}/edit$",      "edit",          resource);
-    addRestful(parent, "show",      "GET",     "/{id=[0-9]+}$",           "show",          resource);
-    addRestful(parent, "update",    "PUT",     "/{id=[0-9]+}$",           "update",        resource);
-    addRestful(parent, "destroy",   "DELETE",  "/{id=[0-9]+}$",           "destroy",       resource);
-    addRestful(parent, "action",    "POST",    "/{action}/{id=[0-9]+}$",  "${action}",     resource);
-    addRestful(parent, "default",   "GET,POST","/{action}$",              "cmd-${action}", resource);
+    HttpRoute   *route;
+    cchar       *path, *pattern;
+
+    if (parent->prefix) {
+        prefix = sjoin(parent->prefix, prefix, NULL);
+        name = sjoin(parent->prefix, name, NULL);
+    }
+    pattern = sfmt("^%s(/.*)", prefix);
+    path = stemplate("${CLIENT_DIR}/$1", parent->vars);
+    route = httpDefineRoute(parent, name, "GET", pattern, path, parent->sourceName);
+    httpAddRouteHandler(route, "fileHandler", "");
 }
 
 
-PUBLIC void httpAddLegacyResource(HttpRoute *parent, cchar *resource)
+PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *prefix, cchar *set)
 {
-    addRestful(parent, "init",      "GET",     "/init$",       "init",          resource);
-    addRestful(parent, "create",    "POST",    "(/)*$",        "create",        resource);
-    addRestful(parent, "edit",      "GET",     "/edit$",       "edit",          resource);
-    addRestful(parent, "show",      "GET",     "(/)*$",        "show",          resource);
-    addRestful(parent, "update",    "PUT",     "(/)*$",        "update",        resource);
-    addRestful(parent, "destroy",   "DELETE",  "(/)*$",        "destroy",       resource);
-    addRestful(parent, "default",   "GET,POST","/{action}$",   "cmd-${action}", resource);
+    if (scaselessmatch(set, "simple")) {
+        httpAddHomeRoute(parent);
+    }
+    if (scaselessmatch(set, "restful")) {
+        httpAddResourceGroup(parent, prefix, "{controller}");
+        httpAddClientRoute(parent, "", "/client");
+
+    } else if (!scaselessmatch(set, "none")) {
+        mprError("Unknown route set %s", set);
+    }
 }
-#endif
 
 
 PUBLIC void httpAddHomeRoute(HttpRoute *parent)
@@ -11648,62 +11748,6 @@ PUBLIC void httpAddHomeRoute(HttpRoute *parent)
     path = stemplate("${CLIENT_DIR}/index.esp", parent->vars);
     pattern = sfmt("^%s(/)$", prefix);
     httpDefineRoute(parent, name, "GET,POST", pattern, path, source);
-}
-
-
-PUBLIC void httpAddClientRoute(HttpRoute *parent, cchar *name, cchar *prefix)
-{
-    HttpRoute   *route;
-    cchar       *path, *pattern;
-
-    if (parent->prefix) {
-        prefix = sjoin(parent->prefix, prefix, NULL);
-        name = sjoin(parent->prefix, name, NULL);
-    }
-    pattern = sfmt("^%s/(.*)", prefix);
-    path = stemplate("${CLIENT_DIR}/$1", parent->vars);
-    route = httpDefineRoute(parent, name, "GET", pattern, path, parent->sourceName);
-    httpAddRouteHandler(route, "fileHandler", "");
-}
-
-
-PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *set)
-{
-    if (scaselessmatch(set, "simple")) {
-        httpAddHomeRoute(parent);
-    }
-    if (!(parent->flags & HTTP_ROUTE_LEGACY_MVC)) {
-        if (scaselessmatch(set, "restful")) {
-            httpAddResourceGroup(parent, "{service}");
-            httpAddClientRoute(parent, "/client", "");
-
-        } else if (!scaselessmatch(set, "none")) {
-            mprError("Unknown route set %s", set);
-        }
-#if DEPRECATE || 1
-    } else {
-        /*
-            Deprecated in 4.4
-         */
-        if (scaselessmatch(set, "mvc")) {
-            httpAddHomeRoute(parent);
-            httpAddClientRoute(parent, "/static", "/static");
-
-        } else if (scaselessmatch(set, "mvc-fixed")) {
-            httpAddHomeRoute(parent);
-            httpAddClientRoute(parent, "/static", "/static");
-            httpDefineRoute(parent, "default", NULL, "^/{controller}(~/{action}~)", "${controller}-${action}", "${controller}.c");
-
-        } else if (scaselessmatch(set, "restful")) {
-            httpAddHomeRoute(parent);
-            httpAddClientRoute(parent, "/static", "/static");
-            httpAddLegacyResourceGroup(parent, "{controller}");
-
-        } else if (!scaselessmatch(set, "none")) {
-            mprError("Unknown route set %s", set);
-        }
-#endif
-    }
 }
 
 
@@ -11809,8 +11853,9 @@ static void definePathVars(HttpRoute *route)
     mprAddKey(route->vars, "VERSION", sclone(BIT_VERSION));
     mprAddKey(route->vars, "PLATFORM", sclone(BIT_PLATFORM));
     mprAddKey(route->vars, "BIN_DIR", mprGetAppDir());
-    //  DEPRECATED
+#if DEPRECATE || 1
     mprAddKey(route->vars, "LIBDIR", mprGetAppDir());
+#endif
     if (route->host) {
         defineHostVars(route);
     }
@@ -12301,7 +12346,7 @@ static char *trimQuotes(char *str)
 PUBLIC MprHash *httpGetOptions(cchar *options)
 {
     if (options == 0) {
-        return mprCreateHash(-1, 0);
+        return mprCreateHash(-1, MPR_HASH_STABLE);
     }
     if (*options == '@') {
         /* Allow embedded URIs as options */
@@ -12341,9 +12386,11 @@ PUBLIC MprHash *httpGetOptionHash(MprHash *options, cchar *field)
     if ((kp = mprLookupKeyEntry(options, field)) == 0) {
         return 0;
     }
+#if UNUSED
     if (kp->type != MPR_JSON_ARRAY && kp->type != MPR_JSON_OBJ) {
         return 0;
     }
+#endif
     return (MprHash*) kp->data;
 }
 
@@ -12364,7 +12411,9 @@ PUBLIC void httpInsertOption(MprHash *options, cchar *field, cchar *value)
     } else {
         kp = mprAddKey(options, field, value);
     }
+#if UNUSED
     kp->type = MPR_JSON_STRING;
+#endif
 }
 
 
@@ -12381,7 +12430,9 @@ PUBLIC void httpAddOption(MprHash *options, cchar *field, cchar *value)
     } else {
         kp = mprAddKey(options, field, value);
     }
+#if UNUSED
     kp->type = MPR_JSON_STRING;
+#endif
 }
 
 
@@ -12413,7 +12464,9 @@ PUBLIC void httpSetOption(MprHash *options, cchar *field, cchar *value)
         return;
     }
     if ((kp = mprAddKey(options, field, value)) != 0) {
+#if UNUSED
         kp->type = MPR_JSON_STRING;
+#endif
     }
 }
 
@@ -12534,7 +12587,7 @@ PUBLIC HttpRx *httpCreateRx(HttpConn *conn)
     rx->pathInfo = sclone("/");
     rx->scriptName = mprEmptyString();
     rx->needInputPipeline = !conn->endpoint;
-    rx->headers = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_CASELESS);
+    rx->headers = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_CASELESS | MPR_HASH_STABLE);
     rx->chunkState = HTTP_CHUNK_UNCHUNKED;
     rx->traceLevel = -1;
     return rx;
@@ -12899,7 +12952,7 @@ static bool parseRequestLine(HttpConn *conn, HttpPacket *packet)
     if (conn->endpoint && !conn->activeRequest) {
         conn->activeRequest = 1;
         if (httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_REQUESTS, 1) >= limits->requestsPerClientMax) {
-            httpError(conn, HTTP_ABORT | HTTP_CODE_SERVICE_UNAVAILABLE, "Too many concurrent requests");
+            httpError(conn, HTTP_ABORT | HTTP_CODE_SERVICE_UNAVAILABLE, "Too many concurrent requests for client: %s", conn->ip);
             return 0;
         }
         httpMonitorEvent(conn, HTTP_COUNTER_REQUESTS, 1);
@@ -13124,7 +13177,7 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
                         }
                     }
                 }
-                if (start < 0 || end < 0 || size < 0 || end <= start) {
+                if (start < 0 || end < 0 || size < 0 || end < start) {
                     httpBadRequestError(conn, HTTP_CLOSE | HTTP_CODE_RANGE_NOT_SATISFIABLE, "Bad content range");
                     break;
                 }
@@ -13457,11 +13510,11 @@ static ssize filterPacket(HttpConn *conn, HttpPacket *packet, int *more)
     size = rx->bytesRead - rx->bytesUploaded;
     if (size >= conn->limits->receiveBodySize) {
         httpLimitError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
-            "Request body of %,Ld bytes (sofar) is too big. Limit %,Ld", size, conn->limits->receiveBodySize);
+            "Receive body of %,Ld bytes (sofar) is too big. Limit %,Ld", size, conn->limits->receiveBodySize);
 
     } else if (rx->form && size >= conn->limits->receiveFormSize) {
         httpLimitError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
-            "Request form of %,Ld bytes (sofar) is too big. Limit %,Ld", size, conn->limits->receiveFormSize);
+            "Receive form of %,Ld bytes (sofar) is too big. Limit %,Ld", size, conn->limits->receiveFormSize);
     }
     if (httpShouldTrace(conn, HTTP_TRACE_RX, HTTP_TRACE_BODY, tx->ext) >= 0) {
         httpTraceContent(conn, HTTP_TRACE_RX, HTTP_TRACE_BODY, packet, nbytes, rx->bytesRead);
@@ -14103,7 +14156,7 @@ static void addMatchEtag(HttpConn *conn, char *etag)
 
     rx = conn->rx;
     if (rx->etags == 0) {
-        rx->etags = mprCreateList(-1, 0);
+        rx->etags = mprCreateList(-1, MPR_LIST_STABLE);
     }
     mprAddItem(rx->etags, sclone(etag));
 }
@@ -14363,7 +14416,7 @@ PUBLIC HttpLang *httpGetLanguage(HttpConn *conn, MprHash *spoken, cchar *default
     if (spoken == 0) {
         return 0;
     }
-    list = mprCreateList(-1, 0);
+    list = mprCreateList(-1, MPR_LIST_STABLE);
     if ((accept = httpGetHeader(conn, "Accept-Language")) != 0) {
         for (tok = stok(sclone(accept), ",", &nextTok); tok; tok = stok(nextTok, ",", &nextTok)) {
             language = stok(tok, ";", &quality);
@@ -14970,7 +15023,7 @@ PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create)
                 NOTE: the session state for this ID may already exist if data has been written to the session.
              */
             if ((rx->session = createSession(conn)) != 0) {
-                flags = (rx->route->flags & HTTP_ROUTE_VISIBLE_COOKIE) ? 0 : HTTP_COOKIE_HTTP;
+                flags = (rx->route->flags & HTTP_ROUTE_VISIBLE_SESSION) ? 0 : HTTP_COOKIE_HTTP;
                 httpSetCookie(conn, HTTP_SESSION_COOKIE, rx->session->id, "/", NULL, rx->session->lifespan, flags);
             }
         }
@@ -15178,9 +15231,6 @@ PUBLIC int httpRenderSecurityToken(HttpConn *conn)
     cchar   *securityToken;
 
     securityToken = httpGetSecurityToken(conn);
-    /*
-        This cookie must be visible to Angular - so don't use HTTP_COOKIE_HTTP for "httponly".
-     */
     httpSetCookie(conn, BIT_XSRF_COOKIE, securityToken, "/", NULL,  0, 0);
     httpSetHeader(conn, BIT_XSRF_HEADER, securityToken);
     return 0;
@@ -15442,7 +15492,7 @@ PUBLIC void httpSetRouteTraceFilter(HttpRoute *route, int dir, int levels[HTTP_T
         trace->levels[i] = levels[i];
     }
     if (include && strcmp(include, "*") != 0) {
-        trace->include = mprCreateHash(0, 0);
+        trace->include = mprCreateHash(0, MPR_HASH_STABLE);
         line = sclone(include);
         word = stok(line, ", \t\r\n", &tok);
         while (word) {
@@ -15454,7 +15504,7 @@ PUBLIC void httpSetRouteTraceFilter(HttpRoute *route, int dir, int levels[HTTP_T
         }
     }
     if (exclude) {
-        trace->exclude = mprCreateHash(0, 0);
+        trace->exclude = mprCreateHash(0, MPR_HASH_STABLE);
         line = sclone(exclude);
         word = stok(line, ", \t\r\n", &tok);
         while (word) {
@@ -15676,7 +15726,7 @@ PUBLIC HttpTx *httpCreateTx(HttpConn *conn, MprHash *headers)
     if (headers) {
         tx->headers = headers;
     } else {
-        tx->headers = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_CASELESS);
+        tx->headers = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_CASELESS | MPR_HASH_STABLE);
         if (!conn->endpoint) {
             httpAddHeaderString(conn, "User-Agent", sclone(BIT_HTTP_SOFTWARE));
         }
@@ -16337,7 +16387,7 @@ static void setHeaders(HttpConn *conn, HttpPacket *packet)
             setCorsHeaders(conn);
         }
         /* 
-            Apply response headers
+            Apply route headers
          */
         for (ITERATE_ITEMS(route->headers, item, next)) {
             if (item->flags == HTTP_ROUTE_ADD_HEADER) {
@@ -17970,7 +18020,8 @@ PUBLIC void httpCreateCGIParams(HttpConn *conn)
     HttpHost        *host;
     HttpUploadFile  *up;
     MprSocket       *sock;
-    MprHash         *vars, *svars;
+    MprHash         *svars;
+    MprJson         *params;
     MprKey          *kp;
     int             index;
 
@@ -17979,7 +18030,7 @@ PUBLIC void httpCreateCGIParams(HttpConn *conn)
         /* Do only once */
         return;
     }
-    svars = rx->svars = mprCreateHash(HTTP_VAR_HASH_SIZE, 0);
+    svars = rx->svars = mprCreateHash(HTTP_VAR_HASH_SIZE, MPR_HASH_STABLE);
     tx = conn->tx;
     host = conn->host;
     sock = conn->sock;
@@ -18030,17 +18081,17 @@ PUBLIC void httpCreateCGIParams(HttpConn *conn)
         assert(rx->extraPath[0] == '/');
         mprAddKey(svars, "PATH_TRANSLATED", mprNormalizePath(sfmt("%s%s", rx->route->documents, rx->extraPath)));
     }
-
     if (rx->files) {
-        vars = httpGetParams(conn);
-        assert(vars);
-        for (index = 0, kp = 0; (kp = mprGetNextKey(conn->rx->files, kp)) != 0; index++) {
+        params = httpGetParams(conn);
+        assert(params);
+        for (index = 0, kp = 0; (kp = mprGetNextKey(rx->files, kp)) != 0; index++) {
             up = (HttpUploadFile*) kp->data;
-            mprAddKey(vars, sfmt("FILE_%d_FILENAME", index), up->filename);
-            mprAddKey(vars, sfmt("FILE_%d_CLIENT_FILENAME", index), up->clientFilename);
-            mprAddKey(vars, sfmt("FILE_%d_CONTENT_TYPE", index), up->contentType);
-            mprAddKey(vars, sfmt("FILE_%d_NAME", index), kp->key);
-            mprAddKeyFmt(vars, sfmt("FILE_%d_SIZE", index), "%d", up->size);
+            //  MOB - should these be N-Level in json?
+            mprSetJsonValue(params, sfmt("FILE_%d_FILENAME", index), up->filename, MPR_JSON_SIMPLE);
+            mprSetJsonValue(params, sfmt("FILE_%d_CLIENT_FILENAME", index), up->clientFilename, MPR_JSON_SIMPLE);
+            mprSetJsonValue(params, sfmt("FILE_%d_CONTENT_TYPE", index), up->contentType, MPR_JSON_SIMPLE);
+            mprSetJsonValue(params, sfmt("FILE_%d_NAME", index), kp->key, MPR_JSON_SIMPLE);
+            mprSetJsonValue(params, sfmt("FILE_%d_SIZE", index), sfmt("%d", up->size), MPR_JSON_SIMPLE);
         }
     }
     if (conn->http->envCallback) {
@@ -18050,18 +18101,17 @@ PUBLIC void httpCreateCGIParams(HttpConn *conn)
 
 
 /*
-    Add variables to the vars environment store. This comes from the query string and urlencoded post data.
+    Add variables to the params. This comes from the query string and urlencoded post data.
     Make variables for each keyword in a query string. The buffer must be url encoded (ie. key=value&key2=value2..., 
     spaces converted to '+' and all else should be %HEX encoded).
  */
 static void addParamsFromBuf(HttpConn *conn, cchar *buf, ssize len)
 {
-    MprHash     *vars;
-    cchar       *oldValue;
+    MprJson     *params, *prior;
     char        *newValue, *decoded, *keyword, *value, *tok;
 
     assert(conn);
-    vars = httpGetParams(conn);
+    params = httpGetParams(conn);
     decoded = mprAlloc(len + 1);
     decoded[len] = '\0';
     memcpy(decoded, buf, len);
@@ -18075,20 +18125,18 @@ static void addParamsFromBuf(HttpConn *conn, cchar *buf, ssize len)
             value = MPR->emptyString;
         }
         keyword = mprUriDecode(keyword);
-
         if (*keyword) {
             /*
                 Append to existing keywords
              */
-            oldValue = mprLookupKey(vars, keyword);
-            if (oldValue != 0 && *oldValue) {
+            prior = mprLookupJson(params, keyword);
+            if (prior && prior->type == MPR_JSON_VALUE) {
                 if (*value) {
-                    newValue = sjoin(oldValue, " ", value, NULL);
-                    mprAddKey(vars, keyword, newValue);
+                    newValue = sjoin(prior->value, " ", value, NULL);
+                    mprSetJsonValue(params, keyword, newValue, MPR_JSON_SIMPLE);
                 }
             } else {
-                /* No need to clone value as mprUriDecode already does this */
-                mprAddKey(vars, keyword, value);
+                mprSetJsonValue(params, keyword, value, MPR_JSON_SIMPLE);
             }
         }
         keyword = stok(0, "&", &tok);
@@ -18103,7 +18151,7 @@ static void addParamsFromBuf(HttpConn *conn, cchar *buf, ssize len)
 static void addParamsFromBufInsitu(HttpConn *conn, char *buf, ssize len)
 {
     MprHash     *vars;
-    cchar       *oldValue;
+    cchar       *prior;
     char        *newValue, *keyword, *value, *tok;
 
     assert(conn);
@@ -18123,10 +18171,10 @@ static void addParamsFromBufInsitu(HttpConn *conn, char *buf, ssize len)
             /*
                 Append to existing keywords
              */
-            oldValue = mprLookupKey(vars, keyword);
-            if (oldValue != 0 && *oldValue) {
+            prior = mprLookupKey(vars, keyword);
+            if (prior != 0 && *prior) {
                 if (*value) {
-                    newValue = sjoin(oldValue, " ", value, NULL);
+                    newValue = sjoin(prior, " ", value, NULL);
                     mprAddKey(vars, keyword, newValue);
                 }
             } else {
@@ -18172,7 +18220,7 @@ PUBLIC void httpAddBodyParams(HttpConn *conn)
                 addParamsFromBuf(conn, mprGetBufStart(content), mprGetBufLength(content));
 
             } else if (sstarts(rx->mimeType, "application/json")) {
-                mprDeserializeInto(httpGetBodyInput(conn), httpGetParams(conn));
+                mprParseJsonInto(httpGetBodyInput(conn), httpGetParams(conn));
             }
         }
         rx->flags |= HTTP_ADDED_BODY_PARAMS;
@@ -18187,17 +18235,17 @@ PUBLIC void httpAddJsonParams(HttpConn *conn)
     rx = conn->rx;
     if (rx->eof && sstarts(rx->mimeType, "application/json")) {
         if (!(rx->flags & HTTP_ADDED_BODY_PARAMS)) {
-            mprDeserializeInto(httpGetBodyInput(conn), httpGetParams(conn));
+            mprParseJsonInto(httpGetBodyInput(conn), httpGetParams(conn));
             rx->flags |= HTTP_ADDED_BODY_PARAMS;
         }
     }
 }
 
 
-PUBLIC MprHash *httpGetParams(HttpConn *conn)
+PUBLIC MprJson *httpGetParams(HttpConn *conn)
 { 
     if (conn->rx->params == 0) {
-        conn->rx->params = mprCreateHash(HTTP_VAR_HASH_SIZE, 0);
+        conn->rx->params = mprCreateJson(MPR_JSON_OBJ);
     }
     return conn->rx->params;
 }
@@ -18205,39 +18253,34 @@ PUBLIC MprHash *httpGetParams(HttpConn *conn)
 
 PUBLIC int httpTestParam(HttpConn *conn, cchar *var)
 {
-    MprHash    *vars;
-
-    vars = httpGetParams(conn);
-    return vars && mprLookupKey(vars, var) != 0;
+    return mprLookupJson(httpGetParams(conn), var) != 0;
 }
 
 
 PUBLIC cchar *httpGetParam(HttpConn *conn, cchar *var, cchar *defaultValue)
 {
-    MprHash     *vars;
     cchar       *value;
 
-    vars = httpGetParams(conn);
-    value = mprLookupKey(vars, var);
+    value = mprLookupJsonValue(httpGetParams(conn), var);
     return (value) ? value : defaultValue;
 }
 
 
 PUBLIC int httpGetIntParam(HttpConn *conn, cchar *var, int defaultValue)
 {
-    MprHash     *vars;
     cchar       *value;
 
-    vars = httpGetParams(conn);
-    value = mprLookupKey(vars, var);
+    value = mprLookupJsonValue(httpGetParams(conn), var);
     return (value) ? (int) stoi(value) : defaultValue;
 }
 
 
+#if UNUSED
 static int sortParam(MprKey **h1, MprKey **h2)
 {
     return scmp((*h1)->key, (*h2)->key);
 }
+#endif
 
 
 /*
@@ -18247,20 +18290,24 @@ static int sortParam(MprKey **h1, MprKey **h2)
 PUBLIC char *httpGetParamsString(HttpConn *conn)
 {
     HttpRx      *rx;
-    MprHash     *params;
-    MprKey      *kp;
+
+#if UNUSED
     MprList     *list;
+    int         next;
+    MprKey      *kp;
+    MprJson     *params;
     char        *buf, *cp;
     ssize       len;
-    int         next;
+#endif
 
     assert(conn);
 
     rx = conn->rx;
 
     if (rx->paramString == 0) {
+#if UNUSED
         if ((params = conn->rx->params) != 0) {
-            if ((list = mprCreateList(mprGetHashLength(params), 0)) != 0) {
+            if ((list = mprCreateList(mprGetHashLength(params), MPR_LIST_STABLE)) != 0) {
                 len = 0;
                 for (kp = 0; (kp = mprGetNextKey(params, kp)) != NULL; ) {
                     mprAddItem(list, kp);
@@ -18280,6 +18327,9 @@ PUBLIC char *httpGetParamsString(HttpConn *conn)
                 }
             }
         }
+#else
+        rx->paramString = mprJsonToString(rx->params, 0);
+#endif
     }
     return rx->paramString;
 }
@@ -18287,28 +18337,19 @@ PUBLIC char *httpGetParamsString(HttpConn *conn)
 
 PUBLIC void httpSetParam(HttpConn *conn, cchar *var, cchar *value) 
 {
-    MprHash     *vars;
-
-    vars = httpGetParams(conn);
-    mprAddKey(vars, var, sclone(value));
+    mprSetJsonValue(httpGetParams(conn), var, value, MPR_JSON_SIMPLE);
 }
 
 
 PUBLIC void httpSetIntParam(HttpConn *conn, cchar *var, int value) 
 {
-    MprHash     *vars;
-
-    vars = httpGetParams(conn);
-    mprAddKey(vars, var, sfmt("%d", value));
+    mprSetJsonValue(httpGetParams(conn), var, sfmt("%d", value), MPR_JSON_SIMPLE);
 }
 
 
 PUBLIC bool httpMatchParam(HttpConn *conn, cchar *var, cchar *value)
 {
-    if (strcmp(value, httpGetParam(conn, var, " __UNDEF__ ")) == 0) {
-        return 1;
-    }
-    return 0;
+    return smatch(value, httpGetParam(conn, var, " __UNDEF__ "));
 }
 
 
@@ -18318,7 +18359,7 @@ PUBLIC void httpAddUploadFile(HttpConn *conn, cchar *id, HttpUploadFile *upfile)
 
     rx = conn->rx;
     if (rx->files == 0) {
-        rx->files = mprCreateHash(-1, 0);
+        rx->files = mprCreateHash(-1, MPR_HASH_STABLE);
     }
     mprAddKey(rx->files, id, upfile);
 }
@@ -18701,7 +18742,6 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
     ws = conn->rx->webSocket;
     assert(ws);
     limits = conn->limits;
-    VERIFY_QUEUE(q);
 
     if (packet->flags & HTTP_PACKET_DATA) {
         /*
@@ -18747,26 +18787,31 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             fp = content->start;
             if (GET_RSV(*fp) != 0) {
                 error = WS_STATUS_PROTOCOL_ERROR;
+                mprLog(2, "WebSockets protocol error: bad reserved field");
                 break;
             }
             packet->last = GET_FIN(*fp);
             opcode = GET_CODE(*fp);
             if (opcode == WS_MSG_CONT) {
-                if (!ws->currentMessage) {
+                if (!ws->currentMessageType) {
+                    mprLog(2, "WebSockets protocol error: continuation frame but not prior message");
                     error = WS_STATUS_PROTOCOL_ERROR;
                     break;
                 }
-            } else if (opcode < WS_MSG_CONTROL && ws->currentMessage) {
+            } else if (opcode < WS_MSG_CONTROL && ws->currentMessageType) {
+                mprLog(2, "WebSockets protocol error: data frame received but expected a continuation frame");
                 error = WS_STATUS_PROTOCOL_ERROR;
                 break;
             }
             if (opcode > WS_MSG_PONG) {
+                mprLog(2, "WebSockets protocol error: bad frame opcode");
                 error = WS_STATUS_PROTOCOL_ERROR;
                 break;
             }
             packet->type = opcode;
             if (opcode >= WS_MSG_CONTROL && !packet->last) {
                 /* Control frame, must not be fragmented */
+                mprLog(2, "WebSockets protocol error: fragmented control frame");
                 error = WS_STATUS_PROTOCOL_ERROR;
                 break;
             }
@@ -18793,6 +18838,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             }
             if (packet->type >= WS_MSG_CONTROL && len > WS_MAX_CONTROL) {
                 /* Too big */
+                mprLog(2, "WebSockets protocol error: control frame too big");
                 error = WS_STATUS_PROTOCOL_ERROR;
                 break;
             }
@@ -18849,9 +18895,10 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
                 packet = ws->currentFrame;
                 content = packet->content;
             }
+#if UNUSED
             if (packet->type == WS_MSG_TEXT) {
                 /*
-                    Validate the frame for fast-fail provided the last frame does not have a partial codepoint.
+                    Validate the frame for fast-fail, provided the last frame does not have a partial codepoint.
                  */
                 if (!ws->partialUTF) {
                     if (!validateText(conn, packet)) {
@@ -18861,6 +18908,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
                     ws->partialUTF = 0;
                 }
             }
+#endif
             frameLen = httpGetPacketLength(packet);
             assert(frameLen <= ws->frameLength);
             if (frameLen == ws->frameLength) {
@@ -18882,6 +18930,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             break;
 
         default:
+            mprLog(2, "WebSockets protocol error: unknown frame state");
             error = WS_STATUS_PROTOCOL_ERROR;
             break;
         }
@@ -18926,42 +18975,43 @@ static int processFrame(HttpQueue *q, HttpPacket *packet)
 
     if (3 <= MPR->logLevel) {
         mprAddNullToBuf(content);
-        mprLog(3, "webSocketFilter: receive \"%s\" (%d) frame, last %d, length %d", 
-            codetxt[packet->type], packet->type, packet->last, mprGetBufLength(content));
+        mprLog(3, "WebSocket: %d: receive \"%s\" (%d) frame, last %d, length %d",
+             ws->rxSeq++, codetxt[packet->type], packet->type, packet->last, mprGetBufLength(content));
     }
+    validated = 0;
+
     switch (packet->type) {
-    case WS_MSG_CONT:
-        if (ws->currentMessage) {
-            packet->type = ws->currentMessage->type;
-        } else {
-            mprError("webSocketFilter: Bad continuation packet");
-            return WS_STATUS_PROTOCOL_ERROR;
-        }
-        /* Fall through */
-    case WS_MSG_BINARY:
     case WS_MSG_TEXT:
+        mprLog(4, "webSocketFilter: Receive text \"%s\"", content->start);
+
+        /* Fall through */
+
+    case WS_MSG_BINARY:
+        ws->messageLength = 0;
+        ws->currentMessageType = packet->type;
+        /* Fall through */
+
+    case WS_MSG_CONT:
         if (ws->closing) {
             break;
         }
-        validated = 0;
-        if (packet->type == WS_MSG_TEXT) {
-            mprLog(4, "webSocketFilter: Receive text \"%s\"", content->start);
-            /*
-                Validate this frame if we don't have a partial codepoint from a prior frame.
-             */
-            if (!ws->partialUTF) {
-                if (!validateText(conn, packet)) {
-                    return WS_STATUS_INVALID_UTF8;
-                }
-                validated++;
-            }
-        }
-        if (ws->currentMessage) {
-            if (packet->type != ws->currentMessage->type) {
-                mprError("webSocketFilter: Bad message type in multipart message");
+        if (packet->type == WS_MSG_CONT) {
+            if (!ws->currentMessageType) {
+                mprError("webSocketFilter: Bad continuation packet");
                 return WS_STATUS_PROTOCOL_ERROR;
             }
-            assert(!ws->preserveFrames);
+            packet->type = ws->currentMessageType;
+        }
+        /*
+            Validate this frame if we don't have a partial codepoint from a prior frame.
+         */
+        if (packet->type == WS_MSG_TEXT && !ws->partialUTF) {
+            if (!validateText(conn, packet)) {
+                return WS_STATUS_INVALID_UTF8;
+            }
+            validated++;
+        }
+        if (ws->currentMessage && !ws->preserveFrames) {
             httpJoinPacket(ws->currentMessage, packet);
             ws->currentMessage->last = packet->last;
             packet = ws->currentMessage;
@@ -18984,6 +19034,9 @@ static int processFrame(HttpQueue *q, HttpPacket *packet)
             if (packet->last || ws->tailMessage || ws->preserveFrames) {
                 packet->flags |= HTTP_PACKET_SOLO;
                 ws->messageLength += httpGetPacketLength(packet);
+                if (packet->type == WS_MSG_TEXT) {
+                    mprAddNullToBuf(packet->content);
+                }
                 /*
                     WARNING: this can run GC due to ejs script from httpNotify. So must retain tailMessage.
                  */
@@ -18992,6 +19045,9 @@ static int processFrame(HttpQueue *q, HttpPacket *packet)
             } else {
                 ws->currentMessage = packet;
                 break;
+            }
+            if (packet->last) {
+                ws->currentMessageType = 0;
             }
             mprYield(0);
         } 
@@ -19080,15 +19136,14 @@ PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...)
 
 
 /*
-    Send a block of data with the specified message type. Set flags to HTTP_MORE to indicate there is more data for this
-    message. WARNING: this absorbs all data. The caller should ensure they don't write too much by checking conn->writeq->count.
+    Send a block of data with the specified message type. Set flags to HTTP_MORE to indicate there is more data for this message.
  */
 PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int flags)
 {
     HttpWebSocket   *ws;
     HttpPacket      *packet;
     HttpQueue       *q;
-    ssize           thisWrite, totalWritten;
+    ssize           room, thisWrite, totalWritten;
 
     assert(conn);
     assert(buf);
@@ -19120,7 +19175,6 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
         mprError("webSocketFilter: Outgoing message is too large %d/%d", len, conn->limits->webSocketsMessageSize);
         return MPR_ERR_WONT_FIT;
     }
-
     totalWritten = 0;
     do {
         /*
@@ -19133,30 +19187,6 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
             thisWrite = min(len, conn->limits->webSocketsFrameSize);
         }
         thisWrite = min(thisWrite, q->packetSize);
-        if (flags & (HTTP_BLOCK | HTTP_NON_BLOCK)) {
-            thisWrite = min(thisWrite, q->max - q->count);
-        }
-        if ((packet = httpCreateDataPacket(thisWrite)) == 0) {
-            return MPR_ERR_MEMORY;
-        }
-        /*
-            Spec requires type to be set only on the first frame
-         */
-        packet->type = type;
-        type = 0;
-        if (ws->preserveFrames || (flags & HTTP_MORE)) {
-            packet->flags |= HTTP_PACKET_SOLO;
-        }
-        if (thisWrite > 0) {
-            if (mprPutBlockToBuf(packet->content, buf, thisWrite) != thisWrite) {
-                return MPR_ERR_MEMORY;
-            }
-            len -= thisWrite;
-            buf += thisWrite;
-            totalWritten += thisWrite;
-        }
-        packet->last = (len > 0) ? 0 : !(flags & HTTP_MORE);
-        httpPutForService(q, packet, HTTP_SCHEDULE_QUEUE);
 
         if (q->count >= q->max) {
             httpFlushQueue(q, 0);
@@ -19166,13 +19196,55 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
                 } else if (flags & HTTP_BLOCK) {
                     while (q->count >= q->max) {
                         assert(conn->limits->inactivityTimeout > 10);
+                        httpServiceQueues(conn);
+                        if (conn->tx->writeBlocked) {
+                            httpEnableConnEvents(q->conn);
+                        }
                         mprWaitForEvent(conn->dispatcher, conn->limits->inactivityTimeout);
                     }
                 }
             }
         }
+        if ((room = q->max - q->count) == 0) {
+            if (flags & HTTP_NON_BLOCK) {
+                break;
+            }
+        }
+        if (flags & (HTTP_BLOCK | HTTP_NON_BLOCK)) {
+            thisWrite = min(thisWrite, room);
+        }
+        if ((packet = httpCreateDataPacket(thisWrite)) == 0) {
+            return MPR_ERR_MEMORY;
+        }
+        /*
+            Spec requires type to be set only on the first frame
+         */
+        if (ws->more) {
+            type = 0;
+        }
+        packet->type = type;
+        type = 0;
+        if (ws->preserveFrames || (flags & HTTP_MORE)) {
+            packet->flags |= HTTP_PACKET_SOLO;
+        }
+        if (thisWrite > 0) {
+            if (mprPutBlockToBuf(packet->content, buf, thisWrite) != thisWrite) {
+                return MPR_ERR_MEMORY;
+            }
+        }
+        len -= thisWrite;
+        buf += thisWrite;
+        totalWritten += thisWrite;
+        packet->last = (len > 0) ? 0 : !(flags & HTTP_MORE);
+        ws->more = !packet->last;
+        httpPutForService(q, packet, HTTP_SCHEDULE_QUEUE);
+
     } while (len > 0);
+
     httpServiceQueues(conn);
+    if (conn->tx->writeBlocked) {
+        httpEnableConnEvents(q->conn);
+    }
     return totalWritten;
 }
 
@@ -19285,8 +19357,11 @@ static void outgoingWebSockService(HttpQueue *q)
             }
             *prefix = '\0';
             mprAdjustBufEnd(packet->prefix, prefix - packet->prefix->start);
-            mprLog(3, "webSocketFilter: %d: send \"%s\" (%d) frame, last %d, length %d",
+            mprLog(3, "WebSocket: %d: send \"%s\" (%d) frame, last %d, length %d",
                 ws->txSeq++, codetxt[packet->type], packet->type, packet->last, httpGetPacketLength(packet));
+            if (packet->type == WS_MSG_TEXT && packet->content) {
+                mprLog(4, "webSocketFilter: Send text \"%s\"", packet->content->start);
+            }
         }
         httpPutPacketToNext(q, packet);
         mprYield(0);
@@ -19421,7 +19496,7 @@ static int validUTF8(cchar *str, ssize len)
          */
         state = utfTable[256 + (state * 16) + type];
         if (state == UTF8_REJECT) {
-            mprTrace(0, "Invalid UTF8 at offset %d", cp - (uchar*) str);
+            mprLog(0, "Invalid UTF8 at offset %d", cp - (uchar*) str);
             break;
         }
     }
@@ -19430,7 +19505,8 @@ static int validUTF8(cchar *str, ssize len)
 
 
 /*
-    Validate a UTF8 packet. Return false if an invalid codepoint is found.
+    Validate the UTF8 in a packet. Return false if an invalid codepoint is found.
+    If the packet is not the last packet, we alloc incomplete codepoints.
     Set ws->partialUTF if the last codepoint was incomplete.
  */
 static bool validateText(HttpConn *conn, HttpPacket *packet)

@@ -34,6 +34,14 @@
 
 /*********************************** Defines **********************************/
 
+#if DOXYGEN
+    /** Argument for sockets */
+    typedef int Socket;
+
+    /** Unsigned integral type. Equivalent in size to void* */
+    typedef long size_t;
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -51,6 +59,8 @@ struct  MprFile;
 struct  MprFileSystem;
 struct  MprHash;
 struct  MprHeap;
+struct  MprJson;
+struct  MprJsonParser;
 struct  MprList;
 struct  MprKey;
 struct  MprModule;
@@ -78,6 +88,13 @@ struct  MprXml;
     #else
         #define BIT_MPR_TRACING 0
     #endif
+#endif
+#ifndef BIT_MPR_TEST
+    #define BIT_MPR_TEST 1
+#endif
+
+#ifndef BIT_MPR_MAX_PASSWORD
+    #define BIT_MPR_MAX_PASSWORD    256   /**< Max password length */
 #endif
 
 #if DEPRECATED || 1
@@ -705,7 +722,7 @@ PUBLIC void mprGlobalUnlock();
 /**
     Open and initialize the atomic subystem
     @ingroup MprSynch
-    @stability Prototype.
+    @stability Evolving.
  */
 PUBLIC void mprAtomicOpen();
 
@@ -755,17 +772,6 @@ PUBLIC void mprAtomicAdd(volatile int *target, int value);
     @stability Evolving.
  */
 PUBLIC void mprAtomicAdd64(volatile int64 *target, int64 value);
-
-#if UNUSED
-/**
-    Exchange the target and a value
-    @param target Address of the target word to exchange
-    @param value Value to store to the target
-    @ingroup MprSynch
-    @stability Evolving.
- */
-PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
-#endif
 
 /********************************* Memory Allocator ***************************/
 /*
@@ -1072,12 +1078,12 @@ typedef void (*MprManager)(void *ptr, int flags);
     The location stats table tracks the source code location responsible for each allocation
     Very costly. Don't use except for debug.
  */
-#define MPR_TRACK_HASH        2053          /* Size of location name hash */
-#define MPR_TRACK_NAMES       8             /* Length of collision chain */
+#define MPR_TRACK_HASH        2053              /* Size of location name hash */
+#define MPR_TRACK_NAMES       8                 /* Length of collision chain */
 
 typedef struct MprLocationStats {
-    size_t          count;                  /* Total allocations for this manager */
-    cchar           *names[MPR_TRACK_NAMES];/* Manager names */
+    size_t          count;                      /* Total allocations for this manager */
+    cchar           *names[MPR_TRACK_NAMES];    /* Manager names */
 } MprLocationStats;
 #endif
 
@@ -1727,7 +1733,7 @@ PUBLIC char *itos(int64 value);
     @param radix The base radix to use when encoding the number
     @return An allocated string with the converted number.
     @ingroup MprString
-    @stability Evolving
+    @stability Stable
  */
 PUBLIC char *itosradix(int64 value, int radix);
 
@@ -1741,7 +1747,7 @@ PUBLIC char *itosradix(int64 value, int radix);
     @param radix The base radix to use when encoding the number
     @return Returns a reference to the string.
     @ingroup MprString
-    @stability Evolving
+    @stability Stable
  */
 PUBLIC char *itosbuf(char *buf, ssize size, int64 value, int radix);
 
@@ -1753,7 +1759,7 @@ PUBLIC char *itosbuf(char *buf, ssize size, int64 value, int radix);
     @return Returns zero if the strings are equivalent, < 0 if s1 sorts lower than s2 in the collating sequence 
         or > 0 if it sorts higher.
     @ingroup MprString
-    @stability Evolving
+    @stability Stable
  */
 PUBLIC int scaselesscmp(cchar *s1, cchar *s2);
 
@@ -1764,7 +1770,7 @@ PUBLIC int scaselesscmp(cchar *s1, cchar *s2);
     @param s2 Second string to compare. 
     @return Returns true if the strings are equivalent, otherwise false.
     @ingroup MprString
-    @stability Evolving
+    @stability Stable
  */
 PUBLIC bool scaselessmatch(cchar *s1, cchar *s2);
 
@@ -2025,6 +2031,14 @@ PUBLIC ssize sncopy(char *dest, ssize destMax, cchar *src, ssize len);
  */
 PUBLIC bool snumber(cchar *s);
 
+/*
+    Test if a string is a floating point number
+    @return true if all characters are digits or '.'
+    @ingroup MprString
+    @stability Stable
+ */
+PUBLIC bool sfnumber(cchar *s);
+
 /**
     Create a Title Case version of the string
     @description Copy a string into a newly allocated block and make the first character upper case
@@ -2098,11 +2112,10 @@ PUBLIC char *sreplace(cchar *str, cchar *pattern, cchar *replacement);
 
 /**
     Find the end of a spanning prefix
-    @description This scans the given string for characters from the set and returns a reference to the 
-    first character not in the set.
+    @description This scans the given string for characters from the set and returns an index to the first character not in the set.
     @param str String to examine
     @param set Set of characters to span
-    @return Returns a reference to the first character after the spanning set.
+    @return Returns an index to the first character after the spanning set.
     @ingroup MprString
     @stability Stable
   */
@@ -2125,8 +2138,20 @@ PUBLIC bool sstarts(cchar *str, cchar *prefix);
     @return An expanded string. May return the original string if no "$" references are present.
     @ingroup MprString
     @stability Stable
+    @see stemplateJson
   */
 PUBLIC char *stemplate(cchar *str, struct MprHash *tokens);
+
+/**
+    Replace template tokens in a string with values from a lookup table. Tokens are ${variable} references. 
+    @param str String to expand
+    @param tokens Json object of token values to use
+    @return An expanded string. May return the original string if no "$" references are present.
+    @ingroup MprString
+    @stability Stable
+    @see stemplate
+  */
+PUBLIC char *stemplateJson(cchar *str, struct MprJson *tokens);
 
 /**
     Convert a string to an integer.
@@ -2607,12 +2632,20 @@ PUBLIC MprBuf *mprCreateBuf(ssize initialSize, ssize maxSize);
 PUBLIC MprBuf *mprCloneBuf(MprBuf *orig);
 
 /**
-    Clone a buffer and return a memory block
+    Clone a buffer contents
     @param bp Buffer to copy
     @return Returns a newly allocated memory block containing the buffer contents.
-    @stability Prototype.
+    @stability Evolving.
  */
 PUBLIC char *mprCloneBufMem(MprBuf *bp);
+
+/**
+    Clone a buffer contents
+    @param bp Buffer to copy
+    @return Returns a string containing the buffer contents.
+    @stability Evolving.
+ */
+PUBLIC char *mprCloneBufAsString(MprBuf *bp);
 
 /**
     Compact the buffer contents
@@ -3249,7 +3282,7 @@ PUBLIC int mprGetTimeZoneOffset(MprTime when);
  */
 #define MPR_OBJ_LIST            0x1     /**< Object is a hash */
 #define MPR_LIST_STATIC_VALUES  0x20    /**< Flag for #mprCreateList when values are permanent */
-#define MPR_LIST_STABLE         0x40    /**< For own use. Not thread safe */
+#define MPR_LIST_STABLE         0x40    /**< Contents are stable or only accessed by one thread. Does not need thread locking */
 #if DEPRECATED || 1
 #define MPR_LIST_OWN MPR_LIST_STABLE
 #endif
@@ -3429,6 +3462,7 @@ PUBLIC void *mprGetNextItem(MprList *list, int *lastIndex);
 
 /**
     Get the next item in a stable list.
+    This is an optimized version of mprGetNextItem.
     @description Returns the value of the next item in the list. Before calling
         this routine, mprGetFirstItem must be called to initialize the traversal of the list.
     @param list List pointer returned from mprCreateList.
@@ -3479,11 +3513,11 @@ PUBLIC void mprInitList(MprList *list, int flags);
 PUBLIC int mprInsertItemAtPos(MprList *list, int index, cvoid *item);
 
 /**
-    Convert a list of strings to a single string
+    Convert a list of strings to a single string. This uses the specified join string between the elements.
     @param list List pointer returned from mprCreateList.
-    @param join String to use as the element join string.
+    @param join String to use as the element join string. May be null.
     @ingroup MprList
-    @stability Prototype.
+    @stability Evolving.
  */
 PUBLIC char *mprListToString(MprList *list, cchar *join);
 
@@ -3671,8 +3705,8 @@ PUBLIC void *mprPopItem(MprList *list);
 PUBLIC int mprPushItem(MprList *list, cvoid *item);
 
 #define MPR_GET_ITEM(list, index) list->items[index]
-#define ITERATE_ITEMS(list, item, next) next = 0, item = 0; list && (item = mprGetNextItem(list, &next)) != 0; 
-#define ITERATE_STABLE_ITEMS(list, item, next) next = 0, item = 0; list && (item = mprGetNextStableItem(list, &next)) != 0; 
+#define ITERATE_ITEMS(list, item, next) next = 0; (item = mprGetNextItem(list, &next)) != 0; 
+#define ITERATE_STABLE_ITEMS(list, item, next) next = 0; (item = mprGetNextStableItem(list, &next)) != 0; 
 #define mprGetListLength(lp) ((lp) ? (lp)->length : 0)
 
 /********************************** Logging ***********************************/
@@ -3707,7 +3741,7 @@ typedef void (*MprLogHandler)(int flags, int level, cchar *msg);
         parameter.
     @param msg Simple string message to output
     @ingroup MprLog
-    @stability Evolving
+    @stability Stable
  */
 PUBLIC void mprAssert(cchar *loc, cchar *msg);
 
@@ -3739,7 +3773,6 @@ PUBLIC int mprBackupLog(cchar *path, int count);
  */
 PUBLIC void mprError(cchar *fmt, ...);
 
-#if DEPRECATED
 /**
     Log a fatal error message and exit.
     @description Send a fatal error message to the MPR debug logging subsystem and then exit the application by
@@ -3751,16 +3784,13 @@ PUBLIC void mprError(cchar *fmt, ...);
     @stability Stable
  */
 PUBLIC void mprFatal(cchar *fmt, ...);
-#else
-#define mprFatalError mprFatal
-#endif
 
 /**
     Get the log file object
     @description Returns the MprFile object used for logging
     @returns An MprFile object for logging
     @ingroup MprLog
-    @stability Evolving
+    @stability Stable
  */
 PUBLIC struct MprFile *mprGetLogFile();
 
@@ -3769,7 +3799,7 @@ PUBLIC struct MprFile *mprGetLogFile();
     @description Get the log handler defined via #mprSetLogHandler
     @returns A function of the signature #MprLogHandler
     @ingroup MprLog
-    @stability Evolving
+    @stability Stable
  */
 PUBLIC MprLogHandler mprGetLogHandler();
 
@@ -3959,7 +3989,6 @@ PUBLIC void mprWarn(cchar *fmt, ...);
 
 #if DEPRECATED
     #define LOG mprTrace
-    #define mprFatalError mprError
     #define mprUserError mprError
     #define mprMemoryError mprError
     #define mprPrintfError mprEprintf
@@ -4003,10 +4032,13 @@ typedef uint (*MprHashProc)(cvoid *name, ssize len);
 #define MPR_HASH_UNICODE        0x20    /**< Hash keys are unicode strings */
 #define MPR_HASH_STATIC_KEYS    0x40    /**< Keys are permanent - don't dup or mark */
 #define MPR_HASH_STATIC_VALUES  0x80    /**< Values are permanent - don't mark */
-#define MPR_HASH_LIST           0x100   /**< Hash keys are numeric indicies */
 #define MPR_HASH_UNIQUE         0x200   /**< Add to existing will fail */
-#define MPR_HASH_OWN            0x400   /**< For own use. Not thread safe */
+#define MPR_HASH_STABLE         0x400   /**< Contents are stable or only accessed by one thread. Does not need thread locking */
 #define MPR_HASH_STATIC_ALL     (MPR_HASH_STATIC_KEYS | MPR_HASH_STATIC_VALUES)
+
+#if DEPRECATED || 1
+#define MPR_HASH_OWN MPR_HASH_STABLE
+#endif
 
 /**
     Hash table control structure
@@ -4025,9 +4057,8 @@ typedef struct MprHash {
 /*
     Macros
  */
-#define ITERATE_KEYS(table, key) key = 0; table && (key = mprGetNextKey(table, key)) != 0; 
-#define ITERATE_KEY_DATA(table, key, item) \
-        key = 0; table && (key = mprGetNextKey(table, key)) != 0 && ((item = (void*) ((key)->data)) != 0 || 1);
+#define ITERATE_KEYS(table, key) key = 0; (key = mprGetNextKey(table, key)) != 0; 
+#define ITERATE_KEY_DATA(table, key, item) key = 0; (key = mprGetNextKey(table, key)) != 0 && ((item = (void*) ((key)->data)) != 0 || 1);
 
 /**
     Add a duplicate symbol value into the hash table
@@ -4061,10 +4092,10 @@ PUBLIC MprKey *mprAddKey(MprHash *table, cvoid *key, cvoid *ptr);
     @param table Symbol table returned via mprCreateSymbolTable.
     @param key String key of the symbole entry to delete.
     @param ptr Arbitrary pointer to associate with the key in the table.
-    @param type Type of value. Set to MPR_JSON_STRING, MPR_JSON_OBJ.
+    @param type Type of value. 
     @return Added MprKey reference.
     @ingroup MprHash
-    @stability Prototype.
+    @stability internal.
  */
 PUBLIC MprKey *mprAddKeyWithType(MprHash *table, cvoid *key, cvoid *ptr, int type);
 
@@ -4098,7 +4129,7 @@ PUBLIC MprHash *mprCloneHash(MprHash *table);
     @param flags Table control flags. Use MPR_HASH_CASELESS for case insensitive comparisions, MPR_HASH_UNICODE
         if the hash keys are unicode strings, MPR_HASH_STATIC_KEYS if the keys are permanent and should not be
         managed for Garbage collection, and MPR_HASH_STATIC_VALUES if the values are permanent.
-        MPR_HASH_OWN to create an optimized list for private use that is not thread-safe.
+        MPR_HASH_STABLE to create an optimized list when the contents are stable or only accessed by one thread.
     @return Returns a pointer to the allocated symbol table.
     @ingroup MprHash
     @stability Stable.
@@ -4199,7 +4230,7 @@ PUBLIC MprHash *mprBlendHash(MprHash *target, MprHash *other);
     @param join String to use as the element join string.
     @return String consisting of the joined hash values
     @ingroup MprHash
-    @stability Prototype.
+    @stability Evolving.
 */
 PUBLIC char *mprHashToString(MprHash *hash, cchar *join);
 
@@ -4209,7 +4240,7 @@ PUBLIC char *mprHashToString(MprHash *hash, cchar *join);
     @param join String to use as the element join string.
     @return String consisting of the joined hash keys
     @ingroup MprHash
-    @stability Prototype.
+    @stability Evolving.
 */
 PUBLIC char *mprHashKeysToString(MprHash *hash, cchar *join);
 
@@ -5010,7 +5041,7 @@ PUBLIC char *mprGetWinPath(cchar *path);
     @param path Path name to examine
     @returns True if directory is a parent of the path or is the same as the given path.
     @ingroup MprPath
-    @stability Prototype
+    @stability Evolving
  */ 
 PUBLIC bool mprIsParentPathOf(cchar *dir, cchar *path);
 
@@ -5061,6 +5092,8 @@ PUBLIC bool mprIsPathSeparator(cchar *path, cchar c);
     @stability Stable
  */
 PUBLIC char *mprJoinPath(cchar *base, cchar *path);
+
+//  MOB - need mprJoinPaths(base, ....);
 
 /**
     Join an extension to a path
@@ -5140,6 +5173,7 @@ PUBLIC bool mprPathExists(cchar *path, int omode);
     @param lenp Optional pointer to a ssize integer to contain the length of the returns data string. Set to NULL if not
         required.
     @return An allocated string containing the file contents and return the data length in lenp.
+        Returns null if the fail cannot be opened or read.
     @ingroup MprPath
     @stability Stable
  */
@@ -5308,8 +5342,8 @@ PUBLIC void mprStopOsService();
     @stability Internal
  */
 typedef struct MprModuleService {
-    MprList         *modules;               /**< List of defined modules */
-    char            *searchPath;            /**< Module search path to locate modules */
+    MprList     *modules;               /**< List of defined modules */
+    char        *searchPath;            /**< Module search path to locate modules */
     struct MprMutex *mutex;
 } MprModuleService;
 
@@ -5429,7 +5463,7 @@ PUBLIC cchar *mprGetModuleSearchPath();
  */
 PUBLIC int mprLoadModule(MprModule *mp);
 
-#if BIT_HAS_DYN_LOAD || DOXYGEN
+#if (BIT_HAS_DYN_LOAD && !BIT_STATIC) || DOXYGEN
 /**
     Load a native module
     @param mp Module object created via #mprCreateModule.
@@ -5711,7 +5745,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout);
     Wake the event service
     @description Used to wake the event service if an event is queued for service.
     @ingroup MprDispatcher
-    @stability Prototype
+    @stability Evolving
  */
 PUBLIC void mprWakeEventService();
 
@@ -6018,155 +6052,415 @@ PUBLIC void mprXmlSetParserHandler(MprXml *xp, MprXmlHandler h);
 
 /******************************** JSON ****************************************/
 /*
-    Flags for mprSerialize
+    Flags for mprJsonToString
  */
-#define MPR_JSON_PRETTY     0x1         /**< Serialize output in a more human readable, multiline "pretty" format */
-#define MPR_JSON_QUOTES     0x2         /**< Serialize output quoting keys */
+#define MPR_JSON_PRETTY         0x1         /**< Serialize output in a more human readable, multiline "pretty" format */
+#define MPR_JSON_QUOTES         0x2         /**< Serialize output quoting keys */
+#define MPR_JSON_STRINGS        0x4         /**< Emit all values as quoted strings */
+
+/*
+    Flags for mprAddJson
+ */
+#define MPR_JSON_APPEND         0x1         /**< Append property to object. Permits multiple properties of the same name */
+#define MPR_JSON_REPLACE        0x2         /**< Replace existing properties of the same name (default) */
+
+/*
+    Flags for mprQueryJson
+ */
+#define MPR_JSON_REMOVE         0x1         /**< Remove matching properties */
+#define MPR_JSON_SIMPLE         0x2         /**< Simple property names without query expressions */
+#define MPR_JSON_TOP            0x4         /**< Query top level properties only */
+#define MPR_JSON_DUPLICATE      0x8         /**< Permit duplicate properties of the same name */
 
 /*
     Data types for obj property values (must fit into MprKey.type)
  */
-#define MPR_JSON_UNKNOWN     0          /**< The type of a property is unknown */
-#define MPR_JSON_STRING      1          /**< The property is a string (char*) */
-#define MPR_JSON_OBJ         2          /**< The property is an object (MprHash) */
-#define MPR_JSON_ARRAY       3          /**< The property is an array (MprHash with numeric keys) */
+#define MPR_JSON_OBJ            1           /**< The property is an object */
+#define MPR_JSON_ARRAY          2           /**< The property is an array */
+#define MPR_JSON_VALUE          3           /**< The property is a value */
 
-struct MprJson;
+#define MPR_JSON_STATE_EOF      1           /* End of input */
+#define MPR_JSON_STATE_ERR      2           /* Some parse error */
+#define MPR_JSON_STATE_NAME     3           /* Expecting a name: */
+#define MPR_JSON_STATE_VALUE    4           /* Expecting a value */
 
-/**
-    Object container for JSON parse trees.
-    @internal
+/*
+    mprQueryJson flags
  */
-typedef void MprObj;
+#define MPR_JSON_QUERY_REMOVE   0x1         /* Remove matching properties */
+
+#define ITERATE_JSON(obj, child, index) \
+    index = 0, child = obj ? obj->children: 0; obj && index < obj->length; child = child->next, index++
 
 /**
-    JSON callbacks
+    JSON Object
+    @defgroup MprJson MprJson
+    @stability Prototype
+    @see mprBlendJson mprGetJson mprGetJsonValue mprGetJsonLength mprLoadJson mprParseJson mprSetJsonError 
+        mprParseJsonEx mprParseJsonInto mprQueryJson mprRemoveJson mprSetJson mprSetJsonValue mprJsonToString mprTraceJson
+ */
+typedef struct MprJson {
+    cchar           *name;              /**< Property name for this object */
+    cchar           *value;             /**< Property value - always strings */
+    int             type;               /**< Property type. Object, Array or value */
+    int             length;             /**< Number of child properties */
+    struct MprJson  *next;              /**< Next sibling */
+    struct MprJson  *prev;              /**< Previous sibling */
+    struct MprJson  *children;          /**< Children properties */
+} MprJson;
+
+/**
+    JSON parsing callbacks
     @ingroup MprJson
     @stability Internal
  */
 typedef struct MprJsonCallback {
     /**
-        Check state callback for JSON deserialization. This function is called at the conclusion of object levels when
-        a "}" or "]" is encountered in the input stream. It is also invoked after each "name:" is parsed.
+        Check state callback for JSON deserialization. This function is called at the entry and exit of object levels 
+        for arrays and objects.
      */
-    int (*checkState)(struct MprJson *jp, cchar *name);
+    int (*checkBlock)(struct MprJsonParser *parser, cchar *name, bool leave);
 
     /**
         MakeObject callback for JSON deserialization. This function is called to construct an object for each level 
         in the object tree. Objects will be either arrays or objects.
      */
-    MprObj *(*makeObj)(struct MprJson *jp, bool list);
+    MprJson *(*createObj)(struct MprJsonParser *parser, int type);
 
     /**
-        Handle a parse error. This function is called from mprJsonParseError to handle error reporting.
+        Handle a parse error. This function is called from mprSetJsonError to handle error reporting.
      */
-    void (*parseError)(struct MprJson *jp, cchar *msg);
+    void (*parseError)(struct MprJsonParser *parser, cchar *msg);
 
     /**
-        SetValue callback for JSON deserialization. This function is called to a property value in an object.
+        Set a property value in an object.
      */
-    int (*setValue)(struct MprJson *jp, MprObj *obj, int index, cchar *name, cchar *value, int valueType);
+    int (*setValue)(struct MprJsonParser *parser, MprJson *obj, cchar *name, MprJson *child);
+
+    /**
+        Pattern matching callback
+     */
+    bool (*match)(struct MprJsonParser *parser, cchar *str, cchar *pattern);
 } MprJsonCallback;
 
 
 /**
     JSON parser
-    @see MprObj MprCheckState MprSetValue MprMakeObj mprSerialize mprDeserialize mprJsonParseError
-    @defgroup MprJson MprJson
+    @ingroup MprJson
     @stability Internal
  */
-typedef struct MprJson {
-    cchar           *path;          /* Optional JSON filename */
-    cchar           *tok;           /* Current parse token */
+typedef struct MprJsonParser {
+    cchar           *input;         /* Current input (unmanaged) */
+    cchar           *token;         /* Current parse token */
+    int             tokid;          /* Current tokend ID */
+    cchar           *putback;       /* Putback parse token */
+    MprBuf          *buf;           /* Token buffer */
+    int             putid;          /* Putback token id */
+    cchar           *errorMsg;      /* Parse error message */
     int             lineNumber;     /* Current line number in path */
-    MprJsonCallback callback;       /* JSON callbacks */
-    int             state;          /* Custom extended state */
-    void            *data;          /* Custom data handle */
-} MprJson;
+    MprJsonCallback callback;       /* JSON parser callbacks */
+    int             state;          /* Parse state */
+    void            *data;          /* Custom data handle (unmanaged) */
+    cchar           *path;          /* Optional JSON filename */
+    int             tolerant;       /* Tolerant parsing: unquoted names, comma before last property of object */
+} MprJsonParser;
 
 /**
-    Serialize a JSON object tree into a string
-    @description Serializes a top level JSON object created via mprDeserialize into a characters string in JSON format.
-    @param obj Object returned via #mprDeserialize
-    @param flags Serialization flags. Supported flags include MPR_JSON_PRETTY.
-    @return Returns a serialized JSON character string.
-    @ingroup MprJson
-    @stability Stable
- */
-PUBLIC cchar *mprSerialize(MprObj *obj, int flags);
-
-/**
-    Custom deserialization from a JSON string into an object tree.
-    @description Serializes a top level JSON object created via mprDeserialize into a characters string in JSON format.
-        This extended deserialization API takes callback functions to control how the object tree is constructed. 
-    @param str JSON string to deserialize.
-    @param callback Callback functions. This is an instance of the #MprJsonCallback structure.
-    @param data Opaque object to pass to the given callbacks
-    @param obj Object to serialize into.
-    @return Returns a serialized JSON character string.
-    @ingroup MprJson
-    @stability Internal
-    @internal
- */
-PUBLIC MprObj *mprDeserializeCustom(cchar *str, MprJsonCallback callback, void *data, MprObj *obj);
-
-/**
-    Deserialize a JSON string into an object tree.
-    @description Deserializes a JSON string created into an object.
-    @param str JSON string to deserialize.
-    @return Returns a tree of objects. Each object represents a level in the JSON input stream. Each object is a 
-        hash table (MprHash). The hash table key entry will store the property type in the MprKey.type field. This will
-        be set to MPR_JSON_STRING, MPR_JSON_OBJ or MPR_JSON_ARRAY.
-    @ingroup MprJson
-    @stability Stable
- */
-PUBLIC MprObj *mprDeserialize(cchar *str);
-
-/**
-    Deserialize a JSON string into an existing object
-    @description Deserializes a JSON string created into an existing object.
-    @param str JSON string to deserialize.
-    @param obj Existing object to serialize into.
-    @return Returns a tree of objects. Each object represents a level in the JSON input stream. Each object is a 
-        hash table (MprHash). The hash table key entry will store the property type in the MprKey.type field. This will
-        be set to MPR_JSON_STRING, MPR_JSON_OBJ or MPR_JSON_ARRAY.
-    @ingroup MprJson
-    @stability Stable
- */
-PUBLIC MprObj *mprDeserializeInto(cchar *str, MprObj *obj);
-
-/**
-    Signal a parse error in the JSON input stream.
-    @description JSON callback functions will invoke mprJsonParseError when JSON parse or data semantic errors are 
-        encountered.
-    @param jp JSON control structure
-    @param fmt Printf style format string
-    @ingroup MprJson
-    @stability Evolving
- */
-PUBLIC void mprJsonParseError(MprJson *jp, cchar *fmt, ...);
-
-/**
-    Lookup a parsed JSON object for a string key value
-    @description This routine is useful to querying leaf property values in a JSON object.
-    @param obj Parsed JSON object returned by mprDeserialize or mprDeserializeInto.
-    @param key Property name to search for. This may include ".". For example: "settings.mode".
-    @return A string property value or NULL if not found or not a string property type.
+    Blend two JSON objects
+    @description This performs an N-level deep clone of the JSON object to be blended into the target object 
+    @param dest Parsed JSON object. This is the destination object. The "other" object will be blended into this object.
+    @param other Parsed JSON object returned by mprJsonParser
+    @param flags Reserved. Must set to zero.
+    @return Zero if successful.
     @ingroup MprJson
     @stability Prototype
  */
-PUBLIC cchar *mprQueryJsonString(MprHash *obj, cchar *key);
+PUBLIC int mprBlendJson(MprJson *dest, MprJson *other, int flags);
+
+/**
+    Clone a JSON object
+    @description This does a deep copy of a JSON object tree. This copies all properties and their sub-properties.
+    @return A new JSON object that replices the input object.
+    @ingroup MprJson
+    @stability Prototype
+ */
+PUBLIC MprJson *mprCloneJson(MprJson *obj);
+
+/**
+    Create a JSON object
+    @param type Set JSON object type to MPR_JSON_OBJ for an object, MPR_JSON_ARRAY for an array or MPR_JSON_VALUE
+        for a value. Note: all values are stored as strings.
+    @return JSON object
+    @ingroup MprJson
+    @stability Prototype
+ */
+PUBLIC MprJson *mprCreateJson(int type);
+
+/**
+    Deserialize a simple JSON string and return a hash of properties
+    @param str JSON string. This must be an object with one-level of properties
+    @return Hash of property values if successful, otherwise null.
+    @ingroup MprJson
+    @stability Evolving
+ */
+PUBLIC MprHash *mprDeserialize(cchar *str);
+
+/**
+    Deserialize a simple JSON string into the given hash object
+    @param str JSON string. This must be an object with one-level of properties
+    @param hash Destination MprHash object 
+    @return The supplied hash if successful. Otherwise null is returned.
+    @ingroup MprJson
+    @stability Evolving
+ */
+PUBLIC MprHash *mprDeserializeInto(cchar *str, MprHash *hash);
 
 /**
     Lookup a parsed JSON object for a key value
-    @param obj Parsed JSON object returned by mprDeserialize or mprDeserializeInto.
+    @param obj Parsed JSON object returned by mprJsonParser
     @param key Property name to search for. This may include ".". For example: "settings.mode".
-    @param type Expected property type.
+        See mprJsonQuery for a full description of key formats.
+    @param flags Include MPR_JSON_SIMPLE for simple property names without embedded query expressions.
+        Include MPR_JSON_TOP for properties at the top level (without embedded ".").
     @return Returns the property value otherwise NULL if not found or not the correct type.
     @ingroup MprJson
     @stability Prototype
  */
-PUBLIC void *mprQueryJsonValue(MprHash *obj, cchar *key, int type);
+PUBLIC MprJson *mprGetJson(MprJson *obj, cchar *key, int flags);
+
+/**
+    Lookup a JSON object tree for a string key value
+    @description This routine is useful to querying leaf property values in a JSON object.
+    @param obj Parsed JSON object returned by mprParseJson
+    @param key Property name to search for. This may include ".". For example: "settings.mode".
+        See mprJsonQuery for a full description of key formats.
+    @param flags Include MPR_JSON_SIMPLE for simple property names without embedded query expressions.
+        Include MPR_JSON_TOP for properties at the top level (without embedded ".").
+    @return A string property value or NULL if not found or not a string property type.
+    @ingroup MprJson
+    @stability Prototype
+ */
+PUBLIC cchar *mprGetJsonValue(MprJson *obj, cchar *key, int flags);
+
+/**
+    Get the number of child properties in a JSON object
+    @param obj Parsed JSON object returned by mprParseJson
+    @return The number of direct dependent child properties
+    @ingroup MprJson
+    @stability Prototype
+ */
+PUBLIC ssize mprGetJsonLength(MprJson *obj);
+
+/**
+    Convert a hash object into a JSON object
+    @param hash MprHash object
+    @return An MprJson instance
+    @ingroup MprJson
+    @stability Prototype
+ */
+PUBLIC MprJson *mprHashToJson(MprHash *hash);
+
+/**
+    Convert a JSON object into a Hash object
+    @param json JSON object tree
+    @return An MprHash instance
+    @ingroup MprJson
+    @stability Prototype
+ */
+PUBLIC MprHash *mprJsonToHash(MprJson *json);
+
+/**
+    Serialize a JSON object into a string
+    @description Serializes a top level JSON object created via mprParseJson into a characters string in JSON format.
+    @param obj Object returned via #mprParseJson
+    @param flags Serialization flags. Supported flags include MPR_JSON_PRETTY for a human-readable multiline format.
+    MPR_JSON_QUOTES to wrap property names in quotes. Use MPR_JSON_STRINGS to emit all property values as quoted strings.
+    @return Returns a serialized JSON character string.
+    @ingroup MprJson
+    @stability Stable
+ */
+PUBLIC char *mprJsonToString(MprJson *obj, int flags);
+
+/**
+    Load a JSON object from a filename
+    @param path Filename path containing a JSON string to load
+    @return JSON object tree
+    @ingroup MprJson
+    @stability Prototype
+ */
+PUBLIC MprJson *mprLoadJson(cchar *path);
+
+/**
+    Lookup a JSON object
+    @description This is a low-level simple JSON property lookup routine. This does a one-level property lookup and 
+    returns the actual JSON object and not a clone. Be careful with this API. Objects returned by this API cannot be 
+    modified or inserted into another JSON object with corrupting the original JSON object. Use mprQueryJson or 
+    mprGetJson to lookup properties and return a clone of the object.
+    @param obj Parsed JSON object returned by mprParseJson
+    @param name Name of the property to lookup. 
+    @return The matching JSON object. Returns NULL if a matching property is not found.
+    @ingroup MprJson
+    @stability prototype
+ */
+PUBLIC MprJson *mprLookupJson(MprJson *obj, cchar *name);
+
+
+/**
+    Lookup a JSON object
+    @description This is a low-level simple JSON property lookup routine. It does a one-level property lookup. 
+    Use mprQueryJson or mprGetJson to lookup properties that are not direct properties at the top level of the given object
+    @param obj Parsed JSON object returned by mprParseJson
+    @param name Name of the property to lookup. 
+    @return The property value as a string. Returns NULL if a matching property is not found.
+    @ingroup MprJson
+    @stability prototype
+ */
+PUBLIC cchar *mprLookupJsonValue(MprJson *obj, cchar *name);
+
+/**
+    Parse a JSON string into an object tree.
+    @description Deserializes a JSON string created into an object.
+        The top level of the JSON string must be an object, array, string, number or boolean value.
+    @param str JSON string to deserialize.
+    @return Returns a tree of MprJson objects. Each object represents a level in the JSON input stream. 
+    @ingroup MprJson
+    @stability Stable
+ */
+PUBLIC MprJson *mprParseJson(cchar *str);
+
+/**
+    Extended JSON parsing from a JSON string into an object tree.
+    @description Parses a string into a tree of JSON objects 
+        This extended deserialization API takes callback functions to control how the object tree is constructed. 
+        The top level of the JSON string must be an object, array, string, number or boolean value.
+    @param str JSON string to deserialize. This is an unmanaged reference. i.e. it will not be marked by the garbage
+        collector.
+    @param callback Callback functions. This is an instance of the #MprJsonCallback structure.
+    @param data Opaque object to pass to the given callbacks. This is an unmanaged reference.
+    @param obj Optional object to serialize into.
+    @return Returns JSON object tree.
+    @ingroup MprJson
+    @stability Internal
+    @internal
+ */
+PUBLIC MprJson *mprParseJsonEx(cchar *str, MprJsonCallback *callback, void *data, MprJson *obj);
+
+/**
+    Parse a JSON string into an existing object
+    @description Deserializes a JSON string created into an object.
+        The top level of the JSON string must be an object, array, string, number or boolean value.
+    @param str JSON string to deserialize.
+    @param obj JSON object to store parsed properties from str.
+    @return Returns the object passed in via "obj". This permits chaining.
+    @ingroup MprJson
+    @stability Stable
+ */
+PUBLIC MprJson *mprParseJsonInto(cchar *str, MprJson *obj);
+
+/**
+    Query a parsed JSON object for a key value
+    @param obj Parsed JSON object returned by mprParseJson
+    @param key Property name to search for. The property key may be a multipart property and may include
+    . [] and ... substrings. For example: "settings.mode", "colors[2], users...name". The "." and "[]" operator
+    reference sub-properties. The "..." elipsis operator spans zero or more objects levels. 
+    \n\
+    Inside the [] operator, you may include an expression to select qualifying properties. The expression is of the form:
+        field OP value, where field is the name of the property, OP is ==, !=, <=, >= or ~. The latter being a simple
+        string pattern match (contains). To compare the field iself, use "@". This is useful to compare array element
+        values. For example: colors[@ == 'red']
+    @param flags Include MPR_JSON_SIMPLE for simple property names without embedded query expressions.
+        Include MPR_JSON_TOP for properties at the top level (without embedded "."). Include MPR_JSON_DUPLICATE to permit
+        duplicate values with the same property name.
+    @return Returns a JSON list of matching properties.
+    @ingroup MprJson
+    @stability Prototype
+ */
+PUBLIC MprJson *mprQueryJson(MprJson *obj, cchar *key, int flags);
+
+/**
+    Remove a property from a JSON object
+    @param obj Parsed JSON object returned by mprParseJson
+    @param key Property name to remove for. This may include ".". For example: "settings.mode".
+        See mprJsonQuery for a full description of key formats.
+    @return Returns a JSON object list of all removed properties
+    @ingroup MprJson
+    @stability Prototype
+ */
+PUBLIC MprJson *mprRemoveJson(MprJson *obj, cchar *key);
+
+/**
+    Save a JSON object to a filename
+    @param obj Parsed JSON object returned by mprParseJson
+    @param path Filename path to contain the saved JSON string
+    @return Zero if successful, otherwise a negative MPR error code.
+    @ingroup MprJson
+    @stability Prototype
+ */
+PUBLIC int mprSaveJson(MprJson *obj, cchar *path);
+
+/**
+    Serialize a hash of properties as a JSON string
+    @param hash Hash of properties to examine
+    @param flags Serialization flags. Supported flags include MPR_JSON_PRETTY for a human-readable multiline format.
+    MPR_JSON_QUOTES to wrap property names in quotes. Use MPR_JSON_STRINGS to emit all property values as quoted strings.
+    @return JSON string
+    @ingroup MprJson
+    @stability Evolving
+ */
+PUBLIC char *mprSerialize(MprHash *hash, int flags);
+
+/**
+    Signal a parse error in the JSON input stream.
+    @description JSON callback functions will invoke mprSetJsonError when JSON parse or data semantic errors are 
+        encountered. This routine may be called by the user JSON parse callback to emit a custom parse error notification.
+    @param jp JSON control structure
+    @param fmt Printf style format string
+    @param ... Printf arguments
+    @ingroup MprJson
+    @stability Evolving
+ */
+PUBLIC void mprSetJsonError(MprJsonParser *jp, cchar *fmt, ...);
+
+/**
+    Update a property in the JSON object
+    @description This call takes a multipart property name and will operate at any level of depth in the JSON object.
+    @param obj Parsed JSON object returned by mprParseJson
+    @param key Property name to add/update. This may include ".". For example: "settings.mode".
+        See mprJsonQuery for a full description of key formats.
+    @param value Property value to set.
+    @param flags Include MPR_JSON_SIMPLE for simple property names without embedded query expressions.
+        Include MPR_JSON_TOP for properties at the top level (without embedded "."). Include MPR_JSON_DUPLICATE to permit
+        duplicate values with the same property name.
+    @return Zero if updated successfully.
+    @ingroup MprJson
+    @stability Prototype
+ */
+PUBLIC int mprSetJson(MprJson *obj, cchar *key, MprJson *value, int flags);
+
+/**
+    Update a key/value in the JSON object with a string value
+    @description This call takes a multipart property name and will operate at any level of depth in the JSON object.
+    @param obj Parsed JSON object returned by mprParseJson
+    @param key Property name to add/update. This may include ".". For example: "settings.mode".
+        See mprJsonQuery for a full description of key formats.
+    @param flags Include MPR_JSON_SIMPLE for simple property names without embedded query expressions.
+        Include MPR_JSON_TOP for properties at the top level (without embedded "."). Include MPR_JSON_DUPLICATE to permit
+        duplicate values with the same property name.
+    @param value Character string value.
+    @return Zero if updated successfully.
+    @ingroup MprJson
+    @stability Prototype
+ */
+PUBLIC int mprSetJsonValue(MprJson *obj, cchar *key, cchar *value, int flags);
+
+/**
+    Trace the JSON object to the debug log 
+    @param level Debug trace level
+    @param obj Object to trace
+    @ingroup MprJson
+    @stability Prototype
+ */
+PUBLIC void mprTraceJson(int level, MprJson *obj);
 
 /********************************* Threads ************************************/
 /**
@@ -6178,7 +6472,7 @@ typedef struct MprThreadService {
     MprList          *threads;              /**< List of all threads */
     struct MprThread *mainThread;           /**< Main application thread */
     struct MprThread *eventsThread;         /**< Event service thread */
-    MprCond          *cond;                 /**< Multi-thread sync */
+    MprCond          *pauseThreads;         /**< Waiting for threads to yield */
     ssize            stackSize;             /**< Default thread stack size */
 } MprThreadService;
 
@@ -6230,6 +6524,7 @@ typedef struct MprThread {
     int             stickyYield;        /**< Yielded does not auto-clear after GC */
     int             yielded;            /**< Thread has yielded to GC */
     int             waitForGC;          /**< Yield untill sweeper is complete */
+    int             waiting;            /**< Waiting in mprYield */
 } MprThread;
 
 
@@ -6244,7 +6539,7 @@ typedef struct MprThreadLocal {
 #elif BIT_WIN_LIKE
     DWORD           key;
 #else
-    MprHash         *store;
+    MprHash         *store;             /**< Thread local data store */
 #endif
 } MprThreadLocal;
 
@@ -6835,7 +7130,7 @@ typedef struct MprIOVec {
 /**
     Accept an incoming connection
     @param listen Listening server socket
-    @returns A new socket connection
+    @returns A new socket connection. Windows can return NULL with error set to EAGAIN.
     @ingroup MprSocket
     @stability Stable
  */
@@ -7157,7 +7452,7 @@ PUBLIC int mprSetSocketBlockingMode(MprSocket *sp, bool on);
     @param sp Socket object returned from #mprCreateSocket
     @param dispatcher Dispatcher object reference
     @ingroup MprSocket
-    @stability Prototype
+    @stability Evolving
  */
 PUBLIC void mprSetSocketDispatcher(MprSocket *sp, MprDispatcher *dispatcher);
 
@@ -8744,10 +9039,8 @@ PUBLIC void mprNop(void *ptr);
 #endif
 
 #define MPR_DISABLE_GC          0x1         /**< Disable GC */
-#define MPR_SWEEP_THREAD        0x2         /**< Start a dedicated sweeper thread for garbage collection (unsupported) */
-#define MPR_USER_EVENTS_THREAD  0x4         /**< User will explicitly manage own mprServiceEvents calls */
-#define MPR_NO_WINDOW           0x8         /**< Don't create a windows Window */
-#define MPR_THREAD_PATTERN      (MPR_SWEEP_THREAD)
+#define MPR_USER_EVENTS_THREAD  0x2         /**< User will explicitly manage own mprServiceEvents calls */
+#define MPR_NO_WINDOW           0x4         /**< Don't create a windows Window */
 
 /**
     Add a terminator callback
@@ -8926,7 +9219,7 @@ PUBLIC int mprGetRandomBytes(char *buf, ssize size, bool block);
     Get some random data in ascii
     @param size Size of the random data string
     @ingroup Mpr
-    @stability Prototype.
+    @stability Evolving.
   */
 PUBLIC char *mprGetRandomString(ssize size);
 

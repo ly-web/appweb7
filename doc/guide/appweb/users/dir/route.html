@@ -44,13 +44,16 @@
                 <li><a href="#alias">Alias</a></li>
                 <li><a href="#cache">Cache</a></li>
                 <li><a href="#condition">Condition</a></li>
+                <li><a href="#crossOrigin">CrossOrigin</a></li>
                 <li><a href="#defaultLanguage">DefaultLanguage</a></li>
+                <li><a href="#defense">Defense</a></li>
                 <li><a href="#documentRoot">DocumentRoot</a></li>
                 <li><a href="#errorDocument">ErrorDocument</a></li>
                 <li><a href="#header">Header</a></li>
                 <li><a href="#logRoutes">LogRoutes</a></li>
                 <li><a href="#map">Map</a></li>
                 <li><a href="#methods">Methods</a></li>
+                <li><a href="#monitor">Monitor</a></li>
                 <li><a href="#name">Name</a></li>
                 <li><a href="#param">Param</a></li>
                 <li><a href="#prefix">Prefix</a></li>
@@ -493,6 +496,135 @@
                 </tbody>
             </table>
             
+            <a id="crossOrigin"></a>
+            <h2>CrossOrigin</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Directive to control cross-origin resource sharing.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>CrossOrigin origin=[client|all|*|NAME] <br/>
+                            &nbsp; &nbsp; &nbsp;[credentials=[yes|no]] [headers=HDR,...] [age=NN]</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>CrossOrigin origin=*<br />
+                            CrossOrigin origin=http://www.google.com credentials=yes age=3000
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The CrossOrigin directive configures exceptions to permit cross-origin sharing. 
+                            
+                            The normal browser sharing model only permits XMLHttp requests to the same server that 
+                            originated the request. Use of this directive
+                            instructs Appweb to emit relevant CORS headers to permit cross-origin sharing. It also
+                            configures Appweb to appropriately respond to the client's pre-flight sharing test requests.</p>
+                            <p>See <a href="http://www.html5rocks.com/en/tutorials/cors/">Using CORS</a> for examples of
+                            how to create a CORS client request.</p> 
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <a id="defense"></a>
+            <h2>Defense</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Define a defensive policy to respond to attacks.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>Defense [tokens=value]</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Examples</td>
+                        <td>Defense deny REMEDY=ban STATUS=406 PERIOD=10mins<br/>
+Defense block REMEDY=ban PERIOD=30mins<br/>
+Defense report REMEDY=http URI=http://example.com/report<br/>
+Defense alarm REMEDY=cmd CMD="afplay klaxon.mp3"<br/>
+Defense slow REMEDY=delay PERIOD=10mins DELAY=1sec<br/>
+Defense fix REMEDY=cmd CMD="${MESSAGE} | sendmail admin@example.com"<br/>
+Defense notify REMEDY=email TO=info@example.com<br/>
+Defense firewall REMEDY=cmd CMD="iptables -A INPUT -s ${IP} -j DROP"<br/>
+Defense reboot REMEDY=restart 
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The Defense directive defines a policy to invoke when the server is under attack.
+                            Defenses invoke remedies which are predefined actions. Supported remedies are:
+                            <ul>
+                                <li>ban &mdash; Ban the offending client</li>
+                                <li>cmd &mdash; Run an external command to implement the remedy</li>
+                                <li>delay &mdash; Delay responding to the client, but do not ban</li>
+                                <li>email &mdash; Send an email alert</li>
+                                <li>http &mdash; Invoke an HTTP URL</li>
+                                <li>log &mdash; Log information about the defense</li>
+                                <li>restart &mdash; Restart the server</li>
+                            </ul>
+                            <p>Remedies can be passed arguments in the form of "key=value" pairs. These key
+                            values are available for any defines, but some are only utilized for specific
+                            remedies. 
+                            <h4>Cmd Arguments</h4>
+                            <ul>
+                                <li>CMD &mdash; The command to run</li>
+                                <li>MESSAGE &mdash; Descriptive message about the event</li>
+                            </ul>
+                            <p>CMD strings may include a single pipe symbol "|" to provide input to a commands
+                            standard input. The string to the left of the pipe symbol is sent to the command.</p> 
+                            <h4>Ban Arguments</h4>
+                            <ul>
+                                <li>PERIOD &mdash; Time period to ban the client </li>
+                            </ul>
+                            <h4>Delay Arguments</h4>
+                            <ul>
+                                <li>DELAY &mdash; Time period to delay each request."</li>
+                                <li>PERIOD &mdash; Time period to delay the client the client </li>
+                            </ul>
+                            <h4>Email Arguments</h4>
+                            <ul>
+                                <li>MESSAGE &mdash; Descriptive message about the event</li>
+                                <li>FROM &mdash; Whom the email should be from</li>
+                                <li>SUBJECT &mdash; Email subject</li>
+                                <li>TO &mdash; Where to send the email</li>
+                            </ul>
+                            <h4>Http Arguments</h4>
+                            <ul>
+                                <li>METHOD &mdash; HTTP method verb to use. Defaults to "POST". 
+                                    The request post body is set to the MESSAGES. </li>
+                                <li>MESSAGE &mdash; Descriptive message about the event</li>
+                                <li>URI &mdash; URI to invoke</li>
+                            </ul>
+                            <h4>Other Keyword Tokens</h4>
+                            <ul>
+                                <li>IP &mdash; IP address of the offending client</li>
+                                <li>STATUS &mdash; HTTP status to return to the attacking client. If not defined,
+                                    the client is silently disconnected. </li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>            
             <a id="defaultLanguage"></a>
             <h2>DefaultLanguage</h2>
             <table class="directive" title="details">
@@ -590,7 +722,7 @@
                     </tr>
                 </tbody>
             </table>
-            <a id="Header"></a>
+            <a id="header"></a>
             <h2>Header</h2>
             <table class="directive" title="details">
                 <thead>
@@ -803,6 +935,67 @@
                     </tr>
                 </tbody>
             </table>
+            <a id="monitor"></a>
+            <h2>Monitor</h2>
+            <table class="directive" title="details">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Monitor server resources for attacks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>Monitor Expression Period Defenses ...</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Examples</td>
+                        <td>Monitor "NotFoundErrors > 190" 5sec deny log email<br/>
+Monitor "RequestsPerClient > 200" 5sec deny</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The Monitor directive instructs the server to monitor specified server resources
+                            for unusual behaviour that may represent an attack on the server.</p>
+                            <p>Monitors evaluate conditional expressions and if true, invoke 
+                            <a href="#defense">Defenses</a> to remedy or protect the server.</p>
+                            <h3>Expressions</h3>
+                            <p>Monitor expressions are of the form: "Counter Operation Number". The quotes are required. There are two classes of counters: per-client counters and system-wide counters. Counters represent the number of events that occurred over the period specified by the Montior.</p>
+                            <p>The Operation is either "<" or ">".</p>
+                            <h4>Per-Client Counters</h4>
+                            <ul> 
+                                <li>BadRequestErrors &mdash; </li>
+                                <li>Errors &mdash; </li>
+                                <li>LimitErrors &mdash; The request violated an Appweb sandbox limit</li>
+                                <li>NetworkIO &mdash; The request had a network I/O error</li>
+                                <li>NotFoundErrors &mdash; The request accessed a missing URI. This may indicated probing of the server by an attacker.</li>
+                                <li>Requests &mdash; Number of requests by the client.</li>
+                                <li>SSLErrors &mdash; Number of SSL errors </li>
+                            </ul>
+                            <h4>System-Wide Counters</h4>
+                            <p>System-wide counters are the current value of the counter when the monitor is run.
+                            <ul>
+                                <li>ActiveClients &mdash; The number of clients accessing the server over the
+                                    Monitor period.</li>
+                                <li>ActiveConnections &mdash; The number of network connections accessing the server of the Monitor period.</li>
+                                <li>ActiveRequests &mdash; The number of active requests pending completion.</li>
+                                <li>ActiveProcesses &mdash; The number of CGI processes pending completion.</li>
+                                <li>Memory &mdash; The current Appweb memory size.</li>
+                            </ul>
+                            <h3>Monitor Periods</h3>
+                            <p>The monitor is invoked at the period specified. If the Counter is a per-client counter, it is evaluated for each active client.</p>
+                            <h3>Defenses</h3>
+                            <p>One or more defenses may be specified to be invoked if the monitor condition is true. Defenses are defined via the <a href="#defense">Defense</a> directive.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
             
             <a id="name"></a>
             <h2>Name</h2>
@@ -1001,7 +1194,8 @@
                         <td class="pivot">Example</td>
                         <td>Redirect temp /pressRelease.html /fixedPressRelease.html<br />
                         Redirect permanent /acme.html http://www.coyote.com/acme.html<br />
-                        Redirect 410 /membersOnly</td>
+                        Redirect 410 /membersOnly<br/>
+                        Redirect secure</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -1017,11 +1211,9 @@
                                 <li>gone &mdash; resource has been remove. HTTP code 410. The newURI argument is
                                 ignored.</li>
                             </ul>
-                            <p>The new URI may be local to the system, in which case it will begin with a "/"
-                            character. Or it may be on another system, in which case it will begin with "http://". In
-                            both cases, the user will receive a HTTP redirection response informing them of the new
-                            location of the document. The new URI may be omitted for non-3XX status arguments, in which
-                            case, a default response page will be generated by Appweb.</p>
+                            <p>The new URI may be local to the system, in which case it will begin with a "/" character. Or it may be on another system, in which case it will begin with "http://". In both cases, the user will receive a HTTP redirection response informing them of the new location of the document. The new URI may be omitted for non-3XX status arguments, in which case, a default response page will be generated by Appweb.</p>
+                            <p>The <i>Redirect secure</i> directive redirects all HTTP traffic over a configured HTTPS transport. This performs an immediate redirect of a current request and also emits a <i>Strict-Transport-Security</i> response header. This instructs the browswer that all connections therafter must only request over HTTPS. This applies to the current and future browser sessions for up to 365 days. If you need a different lifespan for the redirect, use the 
+                            <a href="auth.html#require">Require secure</a> directive for more control.</p>
                         </td>
                     </tr>
                 </tbody>

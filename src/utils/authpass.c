@@ -33,7 +33,7 @@ PUBLIC int main(int argc, char *argv[])
     MaAppweb    *appweb;
     MaServer    *server;
     HttpAuth    *auth;
-    char        *password, *authFile, *username, *encodedPassword, *realm, *cp, *roles;
+    char        *password, *authFile, *username, *encodedPassword, *realm, *cp, *roles, *cipher;
     int         i, errflg, create, nextArg;
 
     mpr = mprCreate(argc, argv, 0);
@@ -43,17 +43,32 @@ PUBLIC int main(int argc, char *argv[])
     username = 0;
     create = errflg = 0;
     password = 0;
+    cipher = "blowfish";
 
     for (i = 1; i < argc && !errflg; i++) {
         if (argv[i][0] != '-') {
             break;
         }
         for (cp = &argv[i][1]; *cp && !errflg; cp++) {
-
-            if (*cp == 'c') {
+            if (*cp == '-') {
+                cp++;
+            }
+            if (smatch(cp, "create") || smatch(cp, "c")) {
                 create++;
+                break;
 
-            } else if (*cp == 'p') {
+            } else if (smatch(cp, "cipher")) {
+                if (++i == argc) {
+                    errflg++;
+                } else {
+                    cipher = argv[i];
+                    if (!smatch(cipher, "md5") && !smatch(cipher, "blowfish")) {
+                        mprError("Unknown cipher \"%s\". Use \"md5\" or \"blowfish\".", cipher);
+                    }
+                    break;
+                }
+
+            } else if (smatch(cp, "password") || smatch(cp, "p")) {
                 if (++i == argc) {
                     errflg++;
                 } else {
@@ -107,8 +122,12 @@ PUBLIC int main(int argc, char *argv[])
     if (!password && (password = getPassword()) == 0) {
         exit(1);
     }
-    encodedPassword = mprGetMD5(sfmt("%s:%s:%s", username, realm, password));
-
+    if (smatch(cipher, "md5")) {
+        encodedPassword = mprGetMD5(sfmt("%s:%s:%s", username, realm, password));
+    } else {
+        /* This uses the more secure blowfish cipher */
+        encodedPassword = mprMakePassword(sfmt("%s:%s:%s", username, realm, password), 16, 128);
+    }
     httpRemoveUser(auth, username);
     if (httpAddUser(auth, username, encodedPassword, roles) < 0) {
         exit(7);
@@ -185,18 +204,14 @@ static char *getpass(char *prompt)
 
 #endif /* BIT_WIN_LIKE */
  
-/*
-    Display the usage
- */
-
 static void printUsage(cchar *programName)
 {
-    mprEprintf("usage: %s [-c] [-p password] authFile realm user roles...\n"
+    mprEprintf("usage: %s [--create] [--password password] authFile realm user roles...\n"
         "Options:\n"
-        "    -c              Create the password file\n"
-        "    -p passWord     Use the specified password\n"
-        "    -e              Enable (default)\n"
-        "    -d              Disable\n", programName);
+        "    --cipher md5|blowfish Select the encryption cipher. Defaults to md5\n"
+        "    --create              Create the password file\n"
+        "    --passwordp password  Use the specified password\n"
+        "\n", programName);
 }
 
 
