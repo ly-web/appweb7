@@ -1670,8 +1670,8 @@ static void migrate(int argc, char **argv)
     EdiRec      *mig;
     HttpRoute   *route;
     cchar       *command, *file;
-    int         next, onlyOne, backward, found, i;
     uint64      seq, targetSeq, lastMigration, v;
+    int         next, onlyOne, backward, found, i, rc;
 
     if (app->error) {
         return;
@@ -1691,18 +1691,20 @@ static void migrate(int argc, char **argv)
         mprDeletePath(edi->path);
         if ((app->eroute->edi = ediOpen(edi->path, edi->provider->name, edi->flags | EDI_CREATE)) == 0) {
             fail("Cannot open database %s", edi->path);
+            return;
         }
     }
     /*
         Each database has a _EspMigrations table which has a record for each migration applied
      */
     if ((app->migrations = ediReadTable(edi, ESP_MIGRATIONS)) == 0) {
-        //  MOB - rc
-        //  MOB - autosave is on
-        //  MOB - must unlink if either of these fail
-        ediAddTable(edi, ESP_MIGRATIONS);
-        ediAddColumn(edi, ESP_MIGRATIONS, "id", EDI_TYPE_INT, EDI_AUTO_INC | EDI_INDEX | EDI_KEY);
-        ediAddColumn(edi, ESP_MIGRATIONS, "version", EDI_TYPE_STRING, 0);
+        rc = ediAddTable(edi, ESP_MIGRATIONS);
+        rc += ediAddColumn(edi, ESP_MIGRATIONS, "id", EDI_TYPE_INT, EDI_AUTO_INC | EDI_INDEX | EDI_KEY);
+        rc += ediAddColumn(edi, ESP_MIGRATIONS, "version", EDI_TYPE_STRING, 0);
+        if (rc < 0) {
+            fail("Cannot add migration");
+            return;
+        }
         app->migrations = ediReadTable(edi, ESP_MIGRATIONS);
     }
     if (app->migrations->nrecords > 0) {
@@ -1790,21 +1792,27 @@ static void migrate(int argc, char **argv)
             }
             if (backward) {
                 trace("Migrate", "Reverse %s", app->base);
-                //  MOB RC
-                edi->back(edi);
+                if (edi->back(edi) < 0) {
+                    fail("Cannot reverse migration");
+                    return;
+                }
             } else {
                 trace("Migrate", "Apply %s ", app->base);
-                //  MOB RC
-                edi->forw(edi);
+                if (edi->forw(edi) < 0) {
+                    fail("Cannot apply migration");
+                    return;
+                }
             }
             if (backward) {
                 assert(mig);
-                ediDeleteRow(edi, ESP_MIGRATIONS, ediGetFieldValue(mig, "id"));
+                ediRemoveRec(edi, ESP_MIGRATIONS, ediGetFieldValue(mig, "id"));
             } else {
-                //  MOB - must test return codes
                 mig = ediCreateRec(edi, ESP_MIGRATIONS);
                 ediSetField(mig, "version", itos(seq));
-                ediUpdateRec(edi, mig);
+                if (ediUpdateRec(edi, mig) < 0) {
+                    fail("Cannot update migrations table");
+                    return;
+                }
             }
             mprUnloadModule(mp);
             if (onlyOne) {
@@ -1825,6 +1833,7 @@ static void migrate(int argc, char **argv)
 static void fixupFile(cchar *path)
 {
     HttpRoute   *route;
+    MprHash     *tokens;
     ssize       len;
     char        *data, *tmp;
 
@@ -1833,7 +1842,11 @@ static void fixupFile(cchar *path)
         return;
     }
     route = app->route;
-    //  MOB - Use stemplate and tokens.
+
+    //  DEPRECATE ROUTESET and DIR
+    tokens = mprDeserialize(sfmt("{ NAME: '%s', TITLE: '%s', DATABASE: '%s', HOME: '%s', DOCUMENTS: '%s', LISTEN: '%s', BINDIR: '%s', ROUTESET: '%s', DIR: '%s' }", 
+        app->appName, spascal(app->appName), app->database, route->home, route->documents, app->listen, app->binDir, app->routeSet, route->documents));
+#if UNUSED
     data = sreplace(data, "${NAME}", app->appName);
     data = sreplace(data, "${TITLE}", spascal(app->appName));
     data = sreplace(data, "${DATABASE}", app->database);
@@ -1841,10 +1854,11 @@ static void fixupFile(cchar *path)
     data = sreplace(data, "${DOCUMENTS}", route->documents);
     data = sreplace(data, "${LISTEN}", app->listen);
     data = sreplace(data, "${BINDIR}", app->binDir);
-#if DEPRECATE || 1
+    //  DEPRECATE
     data = sreplace(data, "${ROUTESET}", app->routeSet);
     data = sreplace(data, "${DIR}", route->documents);
 #endif
+    data = stemplate(data, tokens);
     tmp = mprGetTempPath(route->documents);
     if (mprWritePathContents(tmp, data, slen(data), 0644) < 0) {
         fail("Cannot write %s", path);
@@ -2095,9 +2109,6 @@ static void usageError()
     "\n"
     "  Components: (for esp generate app)\n%s\n"
     "", name, components);
-#if UNUSED && KEEP
-    "    --static               # Compile static content into C code\n"
-#endif
     app->error = 1;
 }
 

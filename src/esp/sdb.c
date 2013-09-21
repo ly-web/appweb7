@@ -31,7 +31,7 @@ typedef struct Sdb {
 static int sqliteInitialized;
 static void initSqlite();
 
-#if UNUSED && KEEP
+#if KEEP
 static char *DataTypeToSqlType[] = {
     "binary":       "blob",
     "boolean":      "tinyint",
@@ -78,7 +78,7 @@ static int sdbChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int ty
 static void sdbClose(Edi *edi);
 static EdiRec *sdbCreateRec(Edi *edi, cchar *tableName);
 static int sdbDelete(cchar *path);
-static int sdbDeleteRow(Edi *edi, cchar *tableName, cchar *key);
+static int sdbRemoveRec(Edi *edi, cchar *tableName, cchar *key);
 static MprList *sdbGetColumns(Edi *edi, cchar *tableName);
 static int sdbGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid);
 static MprList *sdbGetTables(Edi *edi);
@@ -103,8 +103,8 @@ static bool validateField(Sdb *sdb, EdiRec *rec, cchar *tableName, cchar *column
 static EdiProvider SdbProvider = {
     "sdb",
     sdbAddColumn, sdbAddIndex, sdbAddTable, sdbAddValidation, sdbChangeColumn, sdbClose, sdbCreateRec, sdbDelete, 
-    sdbDeleteRow, sdbGetColumns, sdbGetColumnSchema, sdbGetTables, sdbGetTableSchema, NULL, sdbLookupField, 
-    sdbOpen, sdbQuery, sdbReadField, sdbReadRec, sdbReadWhere, sdbRemoveColumn, sdbRemoveIndex, sdbRemoveTable, 
+    sdbGetColumns, sdbGetColumnSchema, sdbGetTables, sdbGetTableSchema, NULL, sdbLookupField, sdbOpen, sdbQuery, 
+    sdbReadField, sdbReadRec, sdbReadWhere, sdbRemoveColumn, sdbRemoveIndex, sdbRemoveRec, sdbRemoveTable, 
     sdbRenameTable, sdbRenameColumn, sdbSave, sdbUpdateField, sdbUpdateRec, sdbValidateRec,
 };
 
@@ -139,8 +139,11 @@ static void manageSdb(Sdb *sdb, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(sdb->edi.path);
+        mprMark(sdb->edi.schemaCache);
+        mprMark(sdb->edi.errMsg);
         mprMark(sdb->schemas);
         mprMark(sdb->validations);
+
     } else if (flags & MPR_MANAGE_FREE) {
         sdbClose((Edi*) sdb);
     }
@@ -192,9 +195,6 @@ static EdiRec *getSchema(Edi *edi, cchar *tableName)
         fp->name = rec->fields[1].value;
         fp->type = mapToEdiType(rec->fields[2].value);
         if (rec->fields[5].value && rec->fields[5].value[0] == '1') {
-            //  MOB - NOT_NULL, AUTO_INC ...
-            //  MOB - should have separeate field for ID
-            //  MOB - is ID always first?
             fp->flags = EDI_KEY;
         }
     }
@@ -269,7 +269,6 @@ static int sdbAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type,
     /*
         The field types are used for the SQLite column affinity settings
      */
-    //  MOB - what about autinc, notnul, index, foreign flags?
     if (query(edi, sfmt("ALTER TABLE %s ADD %s %s", tableName, columnName, mapToSqlType(type))) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
@@ -339,16 +338,6 @@ static int sdbChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int ty
 {
     mprError("SDB does not support changing columns");
     return MPR_ERR_BAD_STATE;
-}
-
-
-static int sdbDeleteRow(Edi *edi, cchar *tableName, cchar *key)
-{
-    assert(edi);
-    assert(tableName && *tableName);
-    assert(key && *key);
-
-    return query(edi, sfmt("DELETE FROM %s WHERE id = '%s';", tableName, key)) != 0;
 }
 
 
@@ -537,12 +526,10 @@ static EdiGrid *query(Edi *edi, cchar *cmd)
                     value = (cchar*) sqlite3_column_text(stmt, i);
                     type = sqlite3_column_type(stmt, i);
                     if (tableName && strcmp(tableName, defaultTableName) != 0) {
-                        //  MOB - is this required?
                         len = strlen(tableName) + 1;
                         tableName = sjoin("_", tableName, colName, NULL);
                         tableName[len] = toupper((uchar) tableName[len]);
                     }
-                    //  MOB - what about flags
                     rec->fields[i] = makeRecField(value, colName, mapQueryToEdiType(type));
                     if (smatch(colName, "id")) {
                         rec->fields[i].flags |= EDI_KEY;
@@ -652,6 +639,16 @@ static int sdbRemoveIndex(Edi *edi, cchar *tableName, cchar *indexName)
 }
 
 
+static int sdbRemoveRec(Edi *edi, cchar *tableName, cchar *key)
+{
+    assert(edi);
+    assert(tableName && *tableName);
+    assert(key && *key);
+
+    return query(edi, sfmt("DELETE FROM %s WHERE id = '%s';", tableName, key)) != 0;
+}
+
+
 static int sdbRemoveTable(Edi *edi, cchar *tableName)
 {
     return query(edi, sfmt("DROP TABLE IF EXISTS %s;", tableName)) != 0;
@@ -710,7 +707,6 @@ static int sdbUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldNa
 
 static cchar *prepareValue(EdiField *fp) 
 {
-    //  MOB -- 
 #if FUTURE
     switch (f.type) {
     case EDI_TYPE_BINARY:
@@ -763,7 +759,6 @@ static int sdbUpdateRec(Edi *edi, EdiRec *rec)
         mprPutCharToBuf(buf, ')');
     }
     if (rec->id == 0) {
-        //  MOB - Is this used anywhere?
         mprPutStringToBuf(buf, "; SELECT last_insert_rowid();");
     }
     if (query(edi, mprGetBufStart(buf)) == 0) {

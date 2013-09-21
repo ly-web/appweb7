@@ -7,9 +7,9 @@
 app.controller('${TITLE}Control', function ($rootScope, $scope, $location, $routeParams, ${TITLE}) {
     if ($routeParams.id) {
         ${TITLE}.get({id: $routeParams.id}, function(response) {
-            $scope.data = response.data;
+            // $scope.data = response.data;
             $scope.schema = response.schema;
-            $scope.${NAME} = $scope.data;
+            $scope.${NAME} = response.data;
             $scope.action = "Edit";
         });
     } else if ($location.path() == "${SERVICE}/${NAME}/") {

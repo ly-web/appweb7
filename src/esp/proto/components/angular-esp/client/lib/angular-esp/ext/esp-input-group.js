@@ -19,7 +19,6 @@ app.directive('espInputGroup', function($rootScope, $compile, Esp) {
             scope.$watch('schema', function (val) {
                 if (scope.schema) {
                     if (element.children().length == 0) {
-//  MOB - where should this grid col come from
                         var attributes = "";
                         angular.forEach(attrs.$attr, function(value, key){
                             if (value == 'ng-model') return;
@@ -42,7 +41,6 @@ app.directive('espInputGroup', function($rootScope, $compile, Esp) {
                             controls = attrs.controls.split(',');
                         }
                         angular.forEach(columns, function(field, key) {
-                            //  MOB labels attribute
                             var label = labels ? labels[0 + key] : Esp.titlecase(field);
                             var style = classes ? classes[0 + key] : '';
                             var control = controls ? ('control="' + controls[0 + key] + '"') : '';

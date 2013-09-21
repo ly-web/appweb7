@@ -75,9 +75,7 @@ typedef cchar *(*EdiValidationProc)(struct EdiValidation *vp, struct EdiRec *rec
 typedef struct EdiValidation {
     cchar               *name;          /**< Validation name */
     EdiValidationProc   vfn;            /**< Validation callback procedure */
-
-    //  MOB - why non-gc?
-    cvoid               *mdata;         /**< Non-GC (malloc) data */
+    cvoid               *mdata;         /**< Non-GC (malloc) data. Used for pcre. */
     cvoid               *data;          /**< Allocated data that must be marked for GC */
 } EdiValidation;
 
@@ -107,8 +105,6 @@ PUBLIC void ediAddFieldError(struct EdiRec *rec, cchar *field, cchar *fmt, ...);
 #define EDI_TYPE_BOOL       2           /**< Boolean true|false value */
 #define EDI_TYPE_DATE       3           /**< Date type */
 #define EDI_TYPE_FLOAT      4           /**< Floating point number */
-
-//  MOB - consistency. TYPE_INTEGER?
 #define EDI_TYPE_INT        5           /**< Integer number */
 #define EDI_TYPE_STRING     6           /**< String */
 #define EDI_TYPE_TEXT       7           /**< Multi-line text */
@@ -117,13 +113,12 @@ PUBLIC void ediAddFieldError(struct EdiRec *rec, cchar *field, cchar *fmt, ...);
 
 /*
     Field flags
-    MOB - need a separate flag for EDI_ID?
-    MOB - what about NOT_NULL
  */
 #define EDI_AUTO_INC        0x1         /**< Field flag -- Automatic increments on new row */
-#define EDI_KEY             0x2         /**< Field flag -- Column is the key */
+#define EDI_KEY             0x2         /**< Field flag -- Column is the ID key */
 #define EDI_INDEX           0x4         /**< Field flag -- Column is indexed */
 #define EDI_FOREIGN         0x8         /**< Field flag -- Column is a foreign key */
+#define EDI_NOT_NULL        0x8         /**< Field flag -- Column must not be null (not implemented) */
  
 /**
     EDI Record field structure
@@ -180,7 +175,7 @@ typedef struct EdiGrid {
 #define EDI_LITERAL         0x8         /**< Literal schema in ediOpen source parameter */
 #define EDI_SUPPRESS_SAVE   0x10        /**< Temporarily suppress auto-save */
 
-#if UNUSED && KEEP
+#if KEEP
 /*
     Database flags
  */
@@ -211,6 +206,7 @@ PUBLIC void ediDefineMigration(struct Edi *edi, EdiMigration forw, EdiMigration 
   */
 typedef struct Edi {
     struct EdiProvider *provider;       /**< Database provider */
+    MprHash         *schemaCache;       /**< Cache of table schema in JSON */
     cchar           *path;              /**< Database path */
     int             flags;              /**< Database flags */
     EdiMigration    forw;               /**< Forward migration callback */
@@ -232,7 +228,6 @@ typedef struct EdiProvider {
     void      (*close)(Edi *edi);
     EdiRec    *(*createRec)(Edi *edi, cchar *tableName);
     int       (*deleteDatabase)(cchar *path);
-    int       (*deleteRow)(Edi *edi, cchar *tableName, cchar *key);
     MprList   *(*getColumns)(Edi *edi, cchar *tableName);
     int       (*getColumnSchema)(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid);
     MprList   *(*getTables)(Edi *edi);
@@ -246,6 +241,7 @@ typedef struct EdiProvider {
     EdiGrid   *(*readWhere)(Edi *edi, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
     int       (*removeColumn)(Edi *edi, cchar *tableName, cchar *columnName);
     int       (*removeIndex)(Edi *edi, cchar *tableName, cchar *indexName);
+    int       (*removeRec)(Edi *edi, cchar *tableName, cchar *key);
     int       (*removeTable)(Edi *edi, cchar *tableName);
     int       (*renameTable)(Edi *edi, cchar *tableName, cchar *newTableName);
     int       (*renameColumn)(Edi *edi, cchar *tableName, cchar *columnName, cchar *newColumnName);
@@ -338,7 +334,13 @@ PUBLIC int ediChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int ty
  */
 PUBLIC void ediClose(Edi *edi);
 
-//  MOB - DOC
+/**
+    Clone a grid
+    @param grid to clone
+    @return A complete copy of a grid
+    @ingroup Edi
+    @stability Prototype
+ */
 PUBLIC EdiGrid *ediCloneGrid(EdiGrid *grid);
 
 /**
@@ -354,7 +356,6 @@ PUBLIC EdiGrid *ediCloneGrid(EdiGrid *grid);
  */
 PUBLIC EdiRec *ediCreateRec(Edi *edi, cchar *tableName);
 
-
 /**
     Delete the database at the given path.
     @param edi Database handle. This is required to identify the database provider. The database should be closed before
@@ -365,18 +366,6 @@ PUBLIC EdiRec *ediCreateRec(Edi *edi, cchar *tableName);
     @stability Evolving
  */
 PUBLIC int ediDelete(Edi *edi, cchar *path);
-
-//  MOB - should this be DeleteRec? RemoveRec
-/**
-    Delete a row in a database table
-    @param edi Database handle
-    @param tableName Database table name
-    @param key Row key column value to delete.
-    @return Zero if successful. Otherwise a negative MPR error code.
-    @ingroup Edi
-    @stability Evolving
- */
-PUBLIC int ediDeleteRow(Edi *edi, cchar *tableName, cchar *key);
 
 /**
     Display the grid to the debug log
@@ -416,6 +405,23 @@ PUBLIC MprList *ediGetColumns(Edi *edi, cchar *tableName);
 PUBLIC int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid);
 
 /**
+    Get the schema for a record and format as JSON
+    @param rec
+    @ingroup EdiRec
+    @stability Prototype
+ */
+PUBLIC cchar *ediGetRecSchemaAsJson(EdiRec *rec);
+
+/**
+    Get a table schema and format as JSON
+    @param edi Database handle
+    @param grid Grid to examine
+    @ingroup Edi
+    @stability Prototype
+ */
+PUBLIC cchar *ediGetTableSchemaAsJson(Edi *edi, cchar *tableName);
+
+/**
     Get a list of database tables.
     @param edi Database handle
     @return An MprList of table names in the database.
@@ -432,7 +438,7 @@ PUBLIC MprList *ediGetTables(Edi *edi);
     @ingroup Edi
     @stability Prototype
   */
-PUBLIC cchar *ediGridToJson(EdiGrid *grid, int flags);
+PUBLIC cchar *ediGridAsJson(EdiGrid *grid, int flags);
 
 /**
     Join grids
@@ -445,24 +451,21 @@ PUBLIC cchar *ediGridToJson(EdiGrid *grid, int flags);
 PUBLIC EdiGrid *ediJoin(Edi *edi, ...);
 
 /**
-    MOB - remove this API
     Load the database file.
     @param edi Database handle
     @param path Database path name
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
     @stability Evolving
-    @internal
  */
 PUBLIC int ediLoad(Edi *edi, cchar *path);
 
-//  MOB - should this be LookupColumn?
 /**
-    Lookup a field by name.
+    Lookup a column field by name.
     @param edi Database handle
     @param tableName Database table name
-    @param fieldName Database column name
-    @return The ordinal field (column) index in the table.
+    @param fieldName Database column field name
+    @return The ordinal column index in the table if the column field is found. Otherwise returns a negative MPR error code.
     @ingroup Edi
     @stability Evolving
  */
@@ -471,7 +474,7 @@ PUBLIC int ediLookupField(Edi *edi, cchar *tableName, cchar *fieldName);
 /**
     Lookup an EDI provider name
     @param providerName Name of the EDI provider
-    @return The EDI provider object
+    @return The EDI provider object. Returns null if the provider cannot be found.
     @ingroup Edi
     @stability Evolving
     @internal
@@ -495,12 +498,11 @@ PUBLIC EdiProvider *ediLookupProvider(cchar *providerName);
  */
 PUBLIC Edi *ediOpen(cchar *source, cchar *provider, int flags);
 
-//  MOB - Should have an cchar *err argument.
 /**
     Run a query.
     @description This runs a provider dependant query. For the SQLite provider, this runs an SQL statement.
     The "mdb" provider does not implement this API. To do queries using the "mdb" provider, use:
-        #ediReadRec, #ediReadOneWhere, #ediReadWhere, #ediReadField and #ediReadTable.
+        #ediReadRec, #ediReadRecWhere, #ediReadWhere, #ediReadField and #ediReadTable.
     @param edi Database handle
     @param cmd Query command to execute.
     @return If succesful, returns tabular data in the form of an EgiGrid structure. Returns NULL on errors.
@@ -510,7 +512,7 @@ PUBLIC Edi *ediOpen(cchar *source, cchar *provider, int flags);
 PUBLIC EdiGrid *ediQuery(Edi *edi, cchar *cmd);
 
 /**
-    Read a field from the database and format the result.
+    Read a formatted field from the database
     @description This reads a field from the database and formats the result using an optional format string.
         If the field has a null or empty value, the supplied defaultValue will be returned.
     @param edi Database handle
@@ -523,9 +525,21 @@ PUBLIC EdiGrid *ediQuery(Edi *edi, cchar *cmd);
     @ingroup Edi
     @stability Evolving
  */
-PUBLIC cchar *ediReadField(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, cchar *fieldName, cchar *defaultValue);
+PUBLIC cchar *ediRead(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, cchar *fieldName, cchar *defaultValue);
 
-//  MOB - rename ReadRecWhere
+/**
+    Read a field from the database.
+    @description This reads a field from the database.
+    @param edi Database handle
+    @param tableName Database table name
+    @param key Row key column value to read.
+    @param fieldName Column name to read
+    @return Field value or null if the no record is found. May return null or empty if the field is null or empty.
+    @ingroup Edi
+    @stability Evolving
+ */
+PUBLIC EdiField ediReadField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName);
+
 /**
     Read one record.
     @description This runs a simple query on the database and selects the first matching record. The query selects
@@ -539,20 +553,7 @@ PUBLIC cchar *ediReadField(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, c
     @ingroup Edi
     @stability Evolving
  */
-PUBLIC EdiRec *ediReadOneWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
-
-/**
-    Read a field from the database.
-    @description This reads a field from the database.
-    @param edi Database handle
-    @param tableName Database table name
-    @param key Row key column value to read.
-    @param fieldName Column name to read
-    @return Field value or null if the no record is found. May return null or empty if the field is null or empty.
-    @ingroup Edi
-    @stability Evolving
- */
-PUBLIC EdiField ediReadRawField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName);
+PUBLIC EdiRec *ediReadRecWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
 
 /**
     Read a record.
@@ -566,7 +567,6 @@ PUBLIC EdiField ediReadRawField(Edi *edi, cchar *tableName, cchar *key, cchar *f
  */
 PUBLIC EdiRec *ediReadRec(Edi *edi, cchar *tableName, cchar *key);
 
-//  MOB - rename ReadGridWhere
 /**
     Read matching records.
     @description This runs a simple query on the database and returns matching records in a grid. The query selects
@@ -587,7 +587,7 @@ PUBLIC EdiGrid *ediReadWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar
     @description This reads all the records in a table and returns a grid containing the results.
     @param edi Database handle
     @param tableName Database table name
-    @return A grid containing all records. Returns NULL if no matching records.
+    @return A grid containing all records in the table. Returns NULL if no matching records.
     @ingroup Edi
     @stability Evolving
  */
@@ -601,7 +601,7 @@ PUBLIC EdiGrid *ediReadTable(Edi *edi, cchar *tableName);
     @ingroup Edi
     @stability Prototype
   */
-PUBLIC cchar *ediRecToJson(EdiRec *rec, int flags);
+PUBLIC cchar *ediRecAsJson(EdiRec *rec, int flags);
 
 /**
     Remove a column from a table.
@@ -624,6 +624,17 @@ PUBLIC int edRemoveColumn(Edi *edi, cchar *tableName, cchar *columnName);
     @stability Evolving
  */
 PUBLIC int ediRemoveIndex(Edi *edi, cchar *tableName, cchar *indexName);
+
+/**
+    Delete a row in a database table
+    @param edi Database handle
+    @param tableName Database table name
+    @param key Row key column value to delete.
+    @return Zero if successful. Otherwise a negative MPR error code.
+    @ingroup Edi
+    @stability Evolving
+ */
+PUBLIC int ediRemoveRec(Edi *edi, cchar *tableName, cchar *key);
 
 /**
     Remove a table from the database.
@@ -683,7 +694,6 @@ PUBLIC int ediSave(Edi *edi);
  */
 PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value);
 
-//  MOB - should this be mprJsonParse?
 /**
     Set record fields without writing to the database.
     @description This routine updates the record object with the given values. The "data' argument supplies 
@@ -772,6 +782,30 @@ PUBLIC bool ediValidateRec(EdiRec *rec);
 
 /**************************** Convenience Routines ****************************/
 /**
+    Create a bare grid.
+    @description This creates an empty grid based on the given table's schema.
+    @param edi Database handle
+    @param tableName Database table name
+    @param nrows Number of rows to reserve in the grid
+    @return EdiGrid instance
+    @ingroup Edi
+    @stability Evolving
+ */
+PUBLIC EdiGrid *ediCreateBareGrid(Edi *edi, cchar *tableName, int nrows);
+
+/**
+    Create a bare record.
+    @description This creates an empty record based on the given table's schema.
+    @param edi Database handle
+    @param tableName Database table name
+    @param nfields Number of fields to reserve in the record
+    @return EdiGrid instance
+    @ingroup Edi
+    @stability Evolving
+ */
+PUBLIC EdiRec *ediCreateBareRec(Edi *edi, cchar *tableName, int nfields);
+
+/**
     Format a field value.
     @param fmt Printf style format string
     @param fp Field whoes value will be formatted
@@ -781,9 +815,6 @@ PUBLIC bool ediValidateRec(EdiRec *rec);
  */
 PUBLIC cchar *ediFormatField(cchar *fmt, EdiField *fp);
 
-//  MOB - DOC
-PUBLIC EdiField *ediGetField(EdiRec *rec, cchar *fieldName);
-
 /**
     Get a record field
     @param rec Database record
@@ -792,19 +823,9 @@ PUBLIC EdiField *ediGetField(EdiRec *rec, cchar *fieldName);
     @ingroup Edi
     @stability Evolving
  */
-PUBLIC cchar *ediGetFieldValue(EdiRec *rec, cchar *fieldName);
+PUBLIC EdiField *ediGetField(EdiRec *rec, cchar *fieldName);
 
-/**
-    Get and format a record field value.
-    @param fmt Record field value
-    @param rec Record to examine
-    @param fieldName Record field to examine
-    @return String value of the field
-    @ingroup Edi
-    @stability Evolving
- */
-PUBLIC cchar *ediGetFieldFmt(cchar *fmt, EdiRec *rec, cchar *fieldName);
-
+#if UNUSED
 /**
     Get the record field schema.
     @description This returns the actual EdiField which contains the field name, type, value and flags.
@@ -815,6 +836,30 @@ PUBLIC cchar *ediGetFieldFmt(cchar *fmt, EdiRec *rec, cchar *fieldName);
     @stability Evolving
  */
 PUBLIC EdiField ediGetFieldSchema(EdiRec *rec, cchar *fieldName);
+#endif
+
+/**
+    Get a field value 
+    @param rec Database record
+    @param fieldName Field in the record to extract
+    @return A field value as a string. Returns ZZ
+    @ingroup Edi
+    @stability Evolving
+ */
+PUBLIC cchar *ediGetFieldValue(EdiRec *rec, cchar *fieldName);
+
+#if UNUSED
+/**
+    Get and format a record field value.
+    @param fmt Record field value
+    @param rec Record to examine
+    @param fieldName Record field to examine
+    @return String value of the field
+    @ingroup Edi
+    @stability Evolving
+ */
+PUBLIC cchar *ediGetFormattedField(cchar *fmt, EdiRec *rec, cchar *fieldName);
+#endif
 
 /**
     Get the data type of a record field.
@@ -828,6 +873,23 @@ PUBLIC EdiField ediGetFieldSchema(EdiRec *rec, cchar *fieldName);
 PUBLIC int ediGetFieldType(EdiRec *rec, cchar *fieldName);
 
 /**
+    Get a list of grid column names.
+    @param grid Database grid
+    @return An MprList of column names in the given grid.
+    @ingroup Edi
+    @stability Evolving
+ */
+PUBLIC MprList *ediGetGridColumns(EdiGrid *grid);
+
+/**
+    Get the schema for a grid and format as JSON
+    @param grid Grid to examine
+    @ingroup EdiGrid
+    @stability Prototype
+ */
+PUBLIC cchar *ediGetGridSchemaAsJson(EdiGrid *grid);
+
+/**
     Get record validation errors.
     @param rec Database record
     @return A hash of validation errors. If validation passed, then this call returns NULL.
@@ -837,13 +899,14 @@ PUBLIC int ediGetFieldType(EdiRec *rec, cchar *fieldName);
 PUBLIC MprHash *ediGetRecErrors(EdiRec *rec);
 
 /**
-    Get a list of grid column names.
-    @param grid Database grid
-    @return An MprList of column names in the given grid.
+    Convert an EDI type to a string.
+    @param type Column data type. Set to one of EDI_TYPE_BINARY, EDI_TYPE_BOOL, EDI_TYPE_DATE
+        EDI_TYPE_FLOAT, EDI_TYPE_INT, EDI_TYPE_STRING, EDI_TYPE_TEXT 
+    @return Type string. This will be set to one of: "binary", "bool", "date", "float", "int", "string" or "text".
     @ingroup Edi
     @stability Evolving
  */
-PUBLIC MprList *ediGetGridColumns(EdiGrid *grid);
+PUBLIC char *ediGetTypeString(int type);
 
 /**
     Make a hash container of property values.
@@ -886,38 +949,14 @@ PUBLIC EdiGrid *ediMakeGrid(cchar *content);
 PUBLIC EdiRec *ediMakeRec(cchar *content);
 
 /**
-    Create a bare grid.
-    @description This creates an empty grid based on the given table's schema.
-    @param edi Database handle
-    @param tableName Database table name
-    @param nrows Number of rows to reserve in the grid
-    @return EdiGrid instance
+    Manage an EdiRec instance for garbage collection.
+    @param rec Record instance
+    @param flags GC management flag
     @ingroup Edi
     @stability Evolving
+    @internal
  */
-PUBLIC EdiGrid *ediCreateBareGrid(Edi *edi, cchar *tableName, int nrows);
-
-/**
-    Create a bare record.
-    @description This creates an empty record based on the given table's schema.
-    @param edi Database handle
-    @param tableName Database table name
-    @param nfields Number of fields to reserve in the record
-    @return EdiGrid instance
-    @ingroup Edi
-    @stability Evolving
- */
-PUBLIC EdiRec *ediCreateBareRec(Edi *edi, cchar *tableName, int nfields);
-
-/**
-    Convert an EDI type to a string.
-    @param type Column data type. Set to one of EDI_TYPE_BINARY, EDI_TYPE_BOOL, EDI_TYPE_DATE
-        EDI_TYPE_FLOAT, EDI_TYPE_INT, EDI_TYPE_STRING, EDI_TYPE_TEXT 
-    @return Type string. This will be set to one of: "binary", "bool", "date", "float", "int", "string" or "text".
-    @ingroup Edi
-    @stability Evolving
- */
-PUBLIC char *ediGetTypeString(int type);
+PUBLIC void ediManageEdiRec(EdiRec *rec, int flags);
 
 /**
     Parse an EDI type string.
@@ -928,16 +967,6 @@ PUBLIC char *ediGetTypeString(int type);
     @stability Evolving
  */
 PUBLIC int ediParseTypeString(cchar *type);
-
-/**
-    Manage an EdiRec instance for garbage collection.
-    @param rec Record instance
-    @param flags GC management flag
-    @ingroup Edi
-    @stability Evolving
-    @internal
- */
-PUBLIC void ediManageEdiRec(EdiRec *rec, int flags);
 
 #if UNUSED
 /*
@@ -960,12 +989,6 @@ PUBLIC EdiGrid *ediPivotGrid(EdiGrid *grid, int flags);
     @internal
   */
 PUBLIC EdiGrid *ediSortGrid(EdiGrid *grid, cchar *sortColumn, int sortOrder);
-
-
-//  MOB DOC
-PUBLIC cchar *ediGetTableSchemaToJson(Edi *edi, cchar *tableName);
-PUBLIC cchar *ediGetGridSchemaToJson(EdiGrid *grid);
-PUBLIC cchar *ediGetRecSchemaToJson(EdiRec *rec);
 
 #if BIT_PACK_MDB
 PUBLIC void mdbInit();

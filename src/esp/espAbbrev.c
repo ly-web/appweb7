@@ -317,7 +317,7 @@ PUBLIC MprHash *makeHash(cchar *fmt, ...)
     va_start(args, fmt);
     str = sfmtv(fmt, args);
     va_end(args);
-    return espMakeHash("%s", str);
+    return ediMakeHash("%s", str);
 }
 
 
@@ -362,7 +362,7 @@ PUBLIC ssize receive(char *buf, ssize len)
 
 PUBLIC EdiRec *readRecWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
 {
-    return setRec(ediReadOneWhere(getDatabase(), tableName, fieldName, operation, value));
+    return setRec(ediReadRecWhere(getDatabase(), tableName, fieldName, operation, value));
 }
 
 
@@ -410,7 +410,7 @@ PUBLIC void removeCookie(cchar *name)
 
 PUBLIC bool removeRec(cchar *tableName, cchar *key)
 {
-    if (ediDeleteRow(getDatabase(), tableName, key) < 0) {
+    if (ediRemoveRec(getDatabase(), tableName, key) < 0) {
         return 0;
     }
     return 1;
@@ -537,9 +537,8 @@ PUBLIC void scripts(cchar *patterns)
     eroute = route->eroute;
     patterns = httpExpandRouteVars(route, patterns);
 
-    //  MOB - is components used?
-    if (patterns == NULL || smatch(patterns, "${COMPONENTS}/**.js")) {
-        //  MOB - should we have eroute->components?
+    //UNUSED if (patterns == NULL || smatch(patterns, "${COMPONENTS}/**.js")
+    if (patterns == NULL) {
         if ((components = mprGetJson(eroute->config, "settings.components", 0)) != 0) {
             for (ITERATE_JSON(components, component, i)) {
                 if (component->type == MPR_JSON_VALUE) {
@@ -554,9 +553,8 @@ PUBLIC void scripts(cchar *patterns)
         return;
     }
     indent = "";
-    //  MOB - how to minify?
     for (ITERATE_ITEMS(files, path, next)) {
-        uri = httpLink(conn, path, NULL);
+        uri = httpUri(conn, path, NULL);
         if (scontains(path, "-IE-") || scontains(path, "html5shiv")) {
             espRender(conn, "%s<!-- [if lt IE 9]>\n", indent);
             espRender(conn, "%s<script src='%s' type='text/javascript'></script>\n", indent, uri);

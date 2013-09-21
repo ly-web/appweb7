@@ -781,21 +781,28 @@ PUBLIC void httpAddLegacyResource(HttpRoute *parent, cchar *prefix, cchar *resou
 #endif
 
 
+PUBLIC void espAddEspRoute(HttpRoute *parent)
+{
+    HttpRoute   *route;
+    EspRoute    *eroute;
+    char        *prefix;
+
+    prefix = parent->prefix ? parent->prefix : "";
+    if ((route = httpDefineRoute(parent, sfmt("%s/esp", prefix), "GET", sfmt("^%s/esp/{action}$", prefix), "esp-$1", ".")) != 0) {
+        eroute = cloneEspRoute(route, parent->eroute);
+        eroute->update = 0;
+        espDefineAction(route, "esp-config", espRenderConfig);
+    }
+}
+
+
 PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
 {
     EspRoute    *eroute;
-    HttpRoute   *rp;
-    char        *prefix;
 
     eroute = route->eroute;
     if (!eroute->legacy) {
-        prefix = route->prefix ? route->prefix : "";
-        //  MOB - functionalize to create a restful esp route.
-        if ((rp = httpDefineRoute(route, sfmt("%s/esp", prefix), "GET", sfmt("^%s/esp/{action}$", prefix), "esp-$1", ".")) != 0) {
-            eroute = cloneEspRoute(rp, route->eroute);
-            eroute->update = 0;
-            espDefineAction(rp, "esp-config", espRenderConfig);
-        }
+        espAddEspRoute(route);
         httpAddRouteSet(route, eroute->serverPrefix, set);
 #if DEPRECATE || 1
     } else {
