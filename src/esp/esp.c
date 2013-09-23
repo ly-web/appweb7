@@ -532,10 +532,12 @@ static MprList *getRoutes()
         fail("Cannot find a suitable route");
     }
     eroute = app->eroute = app->route->eroute;
-    assert(eroute); 
-    app->topComponent = mprGetJsonValue(eroute->config, "generate.top", 0);
-    app->appName = eroute->appName;
-    app->topComponent = mprGetJsonValue(eroute->config, "generate.top", 0);
+    assert(eroute);
+    if (eroute->config) {
+        app->topComponent = mprGetJsonValue(eroute->config, "generate.top", 0);
+        app->appName = eroute->appName;
+        app->topComponent = mprGetJsonValue(eroute->config, "generate.top", 0);
+    }
     return routes;
 }
 
@@ -578,6 +580,12 @@ static bool findHostingConfig()
         }
     }
     app->serverRoot = mprGetAbsPath(mprGetPathDir(app->configFile));
+    if (!userPath) {
+        if (chdir(mprGetPathDir(app->configFile)) < 0) {
+            fail("Cannot change directory to %s", mprGetPathDir(app->configFile));
+            return 0;
+        }
+    }
     return 1;
 }
 

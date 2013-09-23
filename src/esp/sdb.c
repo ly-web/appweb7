@@ -470,7 +470,8 @@ static EdiGrid *query(Edi *edi, cchar *cmd)
     sqlite3         *db;
     sqlite3_stmt    *stmt;
     EdiGrid         *grid;
-    EdiRec          *rec;
+    EdiRec          *rec, *schema;
+    EdiField        *fp;
     MprList         *result;
     char            *tableName;
     cchar           *tail, *colName, *value, *defaultTableName;
@@ -523,19 +524,18 @@ static EdiGrid *query(Edi *edi, cchar *cmd)
                 for (i = 0; i < ncol; i++) {
                     colName = sqlite3_column_name(stmt, i);
                     value = (cchar*) sqlite3_column_text(stmt, i);
-//              type = sqlite3_column_type(stmt, i);
                     if (tableName && strcmp(tableName, defaultTableName) != 0) {
                         len = strlen(tableName) + 1;
                         tableName = sjoin("_", tableName, colName, NULL);
                         tableName[len] = toupper((uchar) tableName[len]);
                     }
-EdiField    *fp;
-EdiRec *schema = getSchema(edi, tableName);
-assert(schema);
 #if UNUSED
+                    type = sqlite3_column_type(stmt, i);
                     rec->fields[i] = makeRecField(value, colName, mapQueryToEdiType(type));
 #else
-                    rec->fields[i] = makeRecField(value, colName, schema->fields[i].type);
+                    if ((schema = getSchema(edi, tableName)) != 0) {
+                        rec->fields[i] = makeRecField(value, colName, schema->fields[i].type);
+                    }
 #endif
                     if (smatch(colName, "id")) {
                         rec->fields[i].flags |= EDI_KEY;
