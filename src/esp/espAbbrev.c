@@ -461,9 +461,9 @@ PUBLIC ssize renderFile(cchar *path)
 }
 
 
-PUBLIC void renderFlash(cchar *kind, cchar *optionString)
+PUBLIC void renderFlash(cchar *kind)
 {
-    espRenderFlash(getConn(), kind, optionString);
+    espRenderFlash(getConn(), kind);
 }
 
 

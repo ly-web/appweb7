@@ -1121,12 +1121,11 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path);
         See #espSetFlash for how to define flash messages. 
     @param conn Http connection object
     @param kinds Space separated list of flash messages types. Typical types are: "error", "inform", "warning".
-    @param options Reserved. Set to "".
     @ingroup EspControl
     @stability Deprecated
     @internal
  */
-PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *options);
+PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds);
 
 /**
     Render an EDI database record as a JSON string
@@ -2269,11 +2268,10 @@ PUBLIC void renderFeedback(cchar *kinds, cchar *options);
     @description Flash notices are one-time messages that are passed to the newt request (only).
         See #espSetFlash and #flash for how to define flash messages. 
     @param kinds Space separated list of flash messages types. Typical types are: "error", "inform", "warning".
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
     @stability Prototype
  */
-PUBLIC void renderFlash(cchar *kinds, cchar *options);
+PUBLIC void renderFlash(cchar *kinds);
 
 /**
     Render a file back to the client

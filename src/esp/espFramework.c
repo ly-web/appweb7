@@ -691,7 +691,7 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path)
 }
 
 
-PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *optionString)
+PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds)
 {
     EspReq      *req;
     MprKey      *kp;

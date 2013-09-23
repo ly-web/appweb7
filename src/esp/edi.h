@@ -417,7 +417,7 @@ PUBLIC cchar *ediGetRecSchemaAsJson(EdiRec *rec);
 /**
     Get a table schema and format as JSON
     @param edi Database handle
-    @param grid Grid to examine
+    @param tableName Name of table to examine
     @ingroup Edi
     @stability Prototype
  */
