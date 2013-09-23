@@ -96,12 +96,54 @@
             <p>The supported components are:
             <ul>
                 <li>angular &mdash; The <a href="http://www.angularjs.org">AngularJS Client Framework</a></li>
-                <li>polymer &mdash; The <a href="http://www.polymer-project.org">Polymer Project Framework</a></li>
+<li>angular-esp &mdash; Angular support for Embedthis ESP</li>
+<li>angular-extras &mdash; Angular extra utility routines</li>
+<li>angular-local &mdash; Angular local storage service</li>
+<li>angular-mvc &mdash; Angular ESP MVC application skeleton</li>
+<li>angular-session &mdash; Angular session state storage</li>
+<li>angular-ui-bootstrap &mdash; The <a href="http://angular-ui.github.io/bootstrap/">Angular UI Bootstrap</a> support</li>
+<li>animate &mdash; The <a href="http://daneden.me/animate/">Animate.css</a> library for CSS animations</li>
+<li>bootstrap &mdash; The <a href="http://getbootstrap.com">Bootstrap</a> client-side CSS framework</li>
+<li>font-awesome &mdash; The <a href="http://fortawesome.github.io/Font-Awesome/">Font-Awesome</a> Icon font</li>
+<li>html5shiv &mdash; The <a href="https://github.com/aFarkas/html5shiv">Html5Shiv</a> Javascript polyfill for IE 8 and before</li>
+<li>jquery &mdash; The <a href="http://jquery.com">JQuery</a> Client-side Javascript library for DOM manipulation</li>
+<li>legacy-mvc &mdash; Legacy ESP MVC application skeleton</li>
+<li>less &mdash; The <a href="http://lesscss.org">Less</a> CSS pre-processor</li>
+<li>more &mdash; Collection of CSS polyfills for emerging HTML5 elements</li>
+<li>normalize &mdash; Normalize base styles for browsers</li>
+<li>respond &mdash; Polyfill for CSS media queries</li>
+<li>server &mdash; Default ESP service-side configuration for Appweb</li>
             </ul>
             <p> For example:</p>
             <pre>
-esp generate app blog angular
+$ <b>esp generate app blog angular-mvc</b>
+    [Create] Directory: blog
+  [Generate] Component: server
+  [Generate] Component: angular-mvc
+  [Generate] Component: angular
+  [Generate] Component: angular-local
+  [Generate] Component: angular-session
+  [Generate] Component: angular-esp
+  [Generate] Component: bootstrap
+  [Generate] Component: html5shiv
+  [Generate] Component: angular-ui-bootstrap
+  [Generate] Component: font-awesome
+  [Generate] Component: less
+  [Generate] Component: more
+  [Generate] Component: respond
+    [Create] Directory: blog/src
+    [Create] blog/src/app.c
+    [Create] Directory: blog/db
+      [Task] Complete
 </pre>
+
+            <h3>Component Dependencies</h3>
+            <p>Components may depend on other components. The <em>esp</em> generator will resolve these dependencies 
+            and generate all the required components. For example: the <em>angular-mvc</em> component
+            depends on: angular, angular-local, angular-session, angular-esp, bootstrap, angular-ui-bootstrap, html5shiv,
+            font-awesome, less, more and respond. After generating, the component dependencies are listed in the
+            generated <em>config.json</em> file as the <em>settings.components</em> property.</p>
+
             <h3>Overwriting</h3>
             <p>The <em>esp</em> command will create directories and generate configuration and source code 
             files which can then be manually edited as required. The <em>esp</em> command is intelligent and will 
@@ -126,8 +168,9 @@ esp generate app blog angular
                     </tr>
                     <tr>
                         <td>client</td>
-                        <td>The <em>client directory is the document root for the application. In other words, this is the
-                            top level web content directory that is public to all clients.</td>
+                        <td>The <em>client</em> directory is the document root for the application. 
+                            In other words, this is the top-level web content directory that is public to all clients.
+                            Directories and files outside the <em>client</em> directory are not visible to the client.</td>
                     </tr>
                     <tr>
                         <td>client/app</td>
@@ -146,12 +189,8 @@ esp generate app blog angular
                         <td>Client side Javascript libraries</td>
                     </tr>
                     <tr>
-                        <td>client/components</td>
-                        <td>Client side extension components</td>
-                    </tr>
-                    <tr>
-                        <td>client/templates</td>
-                        <td>Client side template web pages </td>
+                        <td>client/pages</td>
+                        <td>Client side web pages </td>
                     </tr>
                     <tr>
                         <td>controllers</td>
@@ -168,10 +207,6 @@ esp generate app blog angular
                     <tr>
                         <td>views</td>
                         <td>View source files</td>
-                    </tr>
-                    <tr>
-                        <td>static/themes</td>
-                        <td>Application HTML themes</td>
                     </tr>
                 </tbody>
             </table>
@@ -194,7 +229,7 @@ esp generate app blog angular
                     </tr>
                     <tr>
                         <td>client/index.esp</td>
-                        <td>Application home page</td>
+                        <td>Application home web page</td>
                     </tr>
                 </tbody>
             </table>
@@ -223,6 +258,7 @@ static void edit() {}
 static void login() {}
 static void logout() {}
 static void command() {}
+
 ESP_EXPORT int esp_module_admin(HttpRoute *route) {
     espDefineAction(route, "admin-cmd-edit", edit);
     espDefineAction(route, "admin-cmd-login", login);
@@ -274,11 +310,11 @@ esp generate migration description MODEL [field:type ...]
             Generating a scaffold will create a database table, controller and a set of views that provide
             add, edit and list functionality for a database table. Scaffolds are useful to quickly generate prototype
             web pages and actions for managing a database table. </p>
-            <p>Generating scaffolds is available if you are using the <em>angular</em> component &mdash; as the view
+            <p>Generating scaffolds is available if you are using the <em>angular-mvc</em> component &mdash; as the view
             scaffold depends on the Angular libraries.</p>
             <p>To generate a scaffold:</p>
             <pre>
-esp generate app blog angular
+esp generate app blog angular-mvc
 cd blog
 <b>esp generate scaffold NAME [field:type ...]</b>
 </pre>
