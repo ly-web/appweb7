@@ -1114,6 +1114,10 @@ PUBLIC HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool l
  */
 PUBLIC char *httpUri(struct HttpConn *conn, cchar *target, MprHash *options);
 
+#if DEPRECATE || 1
+PUBLIC char *httpLink(struct HttpConn *conn, cchar *target, MprHash *options);
+#endif
+
 /** 
     Convert a Uri to a string.
     @description Convert the given Uri to a string, optionally completing missing parts such as the host, port and path.
