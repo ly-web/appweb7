@@ -3,7 +3,7 @@
     <thead><tr><th ng-repeat="header in ${NAME}s.schema.headers" ng-click="click($index)">{{header}}</th></tr></thead>
     <tbody>
         <tr ng-repeat="${NAME} in ${NAME}s.data" ng-click="click($index)">
-            <td ng-repeat="column in ${NAME}s.schema.columns">{{${NAME}[column]}}</td>
+            <td ng-repeat="column in ${NAME}s.schema.columns">{{${NAME}[column]  | format:${NAME}s.schema:column}}</td>
         </tr>
     </tbody>
 </table>

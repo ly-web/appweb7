@@ -1,27 +1,27 @@
 {
-    "name": "angular-mvc",
-    "server": {
-        "database": "mdb://angular.mdb",
-        "authStore": "app"
+    name: "angular-mvc",
+    server: {
+        database: "mdb://angular.mdb",
+        authStore: "app"
     },
-    "description": "Angular ESP MVC application skeleton",
-    "mode": "debug",
-    "modes": {
-        "release": {
-            "keepSource": false,
-            "username": "",
-            "showErrors": false,
-            "map": "compressed",
-            "update": false
+    description: "Angular ESP MVC application skeleton",
+    mode: "debug",
+    modes: {
+        release: {
+            keepSource: false,
+            username: "",
+            showErrors: false,
+            map: "compressed",
+            update: false
         },
-        "debug": {
-            "keepSource": true,
-            "username": "admin",
-            "showErrors": true,
-            "update": true
+        debug: {
+            keepSource: true,
+            username: "admin",
+            showErrors: true,
+            update: true
         }
     },
-    "depends": [
+    depends: [
         "bootstrap",
         "html5shiv",
         "respond",
@@ -34,18 +34,18 @@
         "angular-esp",
         "more"
     ],
-    "generate": {
-        "view": false,
-        "clientController": true,
-        "scaffold": true,
-        "migration": true,
-        "clientView": true,
-        "clientModel": true,
-        "top": "angular-mvc",
-        "controller": true
+    generate: {
+        view: false,
+        clientController: true,
+        scaffold: true,
+        migration: true,
+        clientView: true,
+        clientModel: true,
+        top: "angular-mvc",
+        controller: true
     },
-    "settings": {
-        "components": [
+    settings: {
+        components: [
             "server",
             "angular",
             "angular-local",
@@ -60,12 +60,12 @@
             "respond",
             "angular-mvc"
         ],
-        "redirect": "secure",
-        "sendJson": true,
-        "serverPrefix": "/service",
-        "timeouts": {
-            "session": 1800
+        redirect: "secure",
+        sendJson: true,
+        serverPrefix: "/service",
+        timeouts: {
+            session: 1800
         },
-        "xsrfToken": true,
+        xsrfToken: true,
     }
 }

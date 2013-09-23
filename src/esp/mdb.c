@@ -1203,19 +1203,19 @@ static int mdbSave(Edi *edi)
             type = ediGetTypeString(col->type);
             mprWriteFileFmt(out, "            '%s': { type: '%s'", col->name, type);
             if (col->flags & EDI_AUTO_INC) {
-                mprWriteFileString(out, ", autoinc: 'true'");
+                mprWriteFileString(out, ", autoinc: true");
             }
             if (col->flags & EDI_INDEX) {
-                mprWriteFileString(out, ", index: 'true'");
+                mprWriteFileString(out, ", index: true");
             }
             if (col->flags & EDI_KEY) {
-                mprWriteFileString(out, ", key: 'true'");
+                mprWriteFileString(out, ", key: true");
             }
             if (col->flags & EDI_FOREIGN) {
-                mprWriteFileString(out, ", foreign: 'true'");
+                mprWriteFileString(out, ", foreign: true");
             }
             if (col->flags & EDI_NOT_NULL) {
-                mprWriteFileString(out, ", notnull: 'true'");
+                mprWriteFileString(out, ", notnull: true");
             }
             mprWriteFileString(out, " },\n");
         }
@@ -1232,7 +1232,13 @@ static int mdbSave(Edi *edi)
                 if (value == 0 && col->flags & EDI_AUTO_INC) {
                     row->fields[col->cid] = itos(++col->lastValue);
                 }
-                mprWriteFileFmt(out, "'%s', ", value);
+                if (value == 0) {
+                    mprWriteFileFmt(out, "null, ");
+                } else if (col->type == EDI_TYPE_STRING || col->type == EDI_TYPE_TEXT) {
+                    mprWriteFileFmt(out, "'%s', ", value);
+                } else {
+                    mprWriteFileFmt(out, "%s, ", value);
+                }
             }
             mprWriteFileString(out, "],\n");
         }
@@ -1454,6 +1460,33 @@ static MdbRow *getRow(MdbTable *table, int rid)
 
 /********************************* Field Operations ************************/
 
+static cchar *mapMdbValue(cchar *value, int type)
+{
+    MprTime     time;
+
+    if (value == 0) {
+        return value;
+    }
+    switch (type) {
+    case EDI_TYPE_DATE:
+        if (!snumber(value)) {
+            mprParseTime(&time, value, MPR_UTC_TIMEZONE, 0);
+            value = itos(time);
+        }
+        break;
+
+    case EDI_TYPE_BINARY:
+    case EDI_TYPE_BOOL:
+    case EDI_TYPE_FLOAT:
+    case EDI_TYPE_INT:
+    case EDI_TYPE_STRING:
+    case EDI_TYPE_TEXT:
+    default:
+        break;
+    }
+    return sclone(value);
+}
+
 static int updateFieldValue(MdbRow *row, MdbCol *col, cchar *value)
 {
     MdbTable    *table;
@@ -1478,7 +1511,7 @@ static int updateFieldValue(MdbRow *row, MdbCol *col, cchar *value)
             col->lastValue = max(col->lastValue, (int64) stoi(value));
         }
     } else {
-        row->fields[col->cid] = sclone(value);
+        row->fields[col->cid] = mapMdbValue(value, col->type);
     }
     if (col->flags & EDI_INDEX && value) {
         mprAddKey(table->index, value, LTOP(row->rid));

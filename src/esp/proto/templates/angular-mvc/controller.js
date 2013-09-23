@@ -7,14 +7,15 @@
 app.controller('${TITLE}Control', function ($rootScope, $scope, $location, $routeParams, ${TITLE}) {
     if ($routeParams.id) {
         ${TITLE}.get({id: $routeParams.id}, function(response) {
-            // $scope.data = response.data;
             $scope.schema = response.schema;
+            $scope.data = response.data;
             $scope.${NAME} = response.data;
             $scope.action = "Edit";
         });
     } else if ($location.path() == "${SERVICE}/${NAME}/") {
         $scope.action = "Create";
         $scope.${NAME} = new ${TITLE}();
+        $scope.data = $scope.${NAME};
         ${TITLE}.init({id: $routeParams.id}, function(response) {
             $scope.schema = response.schema;
         });

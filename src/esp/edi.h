@@ -108,8 +108,10 @@ PUBLIC void ediAddFieldError(struct EdiRec *rec, cchar *field, cchar *fmt, ...);
 #define EDI_TYPE_INT        5           /**< Integer number */
 #define EDI_TYPE_STRING     6           /**< String */
 #define EDI_TYPE_TEXT       7           /**< Multi-line text */
+#if UNUSED
 #define EDI_TYPE_NULL       8           /**< No value */
-#define EDI_TYPE_MAX        9           /**< Max type + 1 */
+#endif
+#define EDI_TYPE_MAX        8           /**< Max type + 1 */
 
 /*
     Field flags
@@ -525,7 +527,7 @@ PUBLIC EdiGrid *ediQuery(Edi *edi, cchar *cmd);
     @ingroup Edi
     @stability Evolving
  */
-PUBLIC cchar *ediRead(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, cchar *fieldName, cchar *defaultValue);
+PUBLIC cchar *ediReadFieldValue(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, cchar *fieldName, cchar *defaultValue);
 
 /**
     Read a field from the database.
@@ -738,24 +740,6 @@ PUBLIC int ediGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numC
  */
 PUBLIC int ediUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName, cchar *value);
 
-#if UNUSED
-/**
-    Write field values to a database row.
-    @description This routine updates a database row with the given values.  The "data' argument supplies 
-        a hash of fieldNames and values. The data hash may come from the request params() or it can be manually
-        created via #ediMakeHash to convert a JSON string into an options hash.
-        For example: ediUpdateFields(rec, params());
-        Note: field validations are not run.
-    @param edi Database handle
-    @param tableName Database table name
-    @param data Hash of field names and values to use for the update
-    @return Zero if successful. Otherwise a negative MPR error code.
-    @ingroup Edi
-    @stability Evolving
- */
-PUBLIC int ediUpdateFields(Edi *edi, cchar *tableName, MprHash *data);
-#endif
-
 /**
     Write a record to the database.
     @description If the record is a new record and the "id" column is EDI_AUTO_INC, then the "id" will be assigned
@@ -825,19 +809,6 @@ PUBLIC cchar *ediFormatField(cchar *fmt, EdiField *fp);
  */
 PUBLIC EdiField *ediGetField(EdiRec *rec, cchar *fieldName);
 
-#if UNUSED
-/**
-    Get the record field schema.
-    @description This returns the actual EdiField which contains the field name, type, value and flags.
-    @param rec Database record
-    @param fieldName Field in the record to extract
-    @return An EdiField structure containing the record field value and details.
-    @ingroup Edi
-    @stability Evolving
- */
-PUBLIC EdiField ediGetFieldSchema(EdiRec *rec, cchar *fieldName);
-#endif
-
 /**
     Get a field value 
     @param rec Database record
@@ -847,19 +818,6 @@ PUBLIC EdiField ediGetFieldSchema(EdiRec *rec, cchar *fieldName);
     @stability Evolving
  */
 PUBLIC cchar *ediGetFieldValue(EdiRec *rec, cchar *fieldName);
-
-#if UNUSED
-/**
-    Get and format a record field value.
-    @param fmt Record field value
-    @param rec Record to examine
-    @param fieldName Record field to examine
-    @return String value of the field
-    @ingroup Edi
-    @stability Evolving
- */
-PUBLIC cchar *ediGetFormattedField(cchar *fmt, EdiRec *rec, cchar *fieldName);
-#endif
 
 /**
     Get the data type of a record field.
@@ -968,13 +926,6 @@ PUBLIC void ediManageEdiRec(EdiRec *rec, int flags);
  */
 PUBLIC int ediParseTypeString(cchar *type);
 
-#if UNUSED
-/*
-    Flags for ediPivotGrid
- */
-#define EDI_PIVOT_FIELD_NAMES 0x1       /**< Use field names as first column of data in pivot table */
-#endif
-    
 /**
     Pivot a grid swapping rows for columns
     @param grid Source grid

@@ -66,7 +66,6 @@ static char *dataTypeToSqlType[] = {
 static EdiRec *createBareRec(Edi *edi, cchar *tableName, int nfields);
 static EdiField makeRecField(cchar *value, cchar *name, int type);
 static void manageSdb(Sdb *sdb, int flags);
-static int mapQueryToEdiType(int type);
 static cchar *mapToSqlType(int type);
 static int mapToEdiType(cchar *type);
 static EdiGrid *query(Edi *edi, cchar *cmd);
@@ -524,13 +523,20 @@ static EdiGrid *query(Edi *edi, cchar *cmd)
                 for (i = 0; i < ncol; i++) {
                     colName = sqlite3_column_name(stmt, i);
                     value = (cchar*) sqlite3_column_text(stmt, i);
-                    type = sqlite3_column_type(stmt, i);
+//              type = sqlite3_column_type(stmt, i);
                     if (tableName && strcmp(tableName, defaultTableName) != 0) {
                         len = strlen(tableName) + 1;
                         tableName = sjoin("_", tableName, colName, NULL);
                         tableName[len] = toupper((uchar) tableName[len]);
                     }
+EdiField    *fp;
+EdiRec *schema = getSchema(edi, tableName);
+assert(schema);
+#if UNUSED
                     rec->fields[i] = makeRecField(value, colName, mapQueryToEdiType(type));
+#else
+                    rec->fields[i] = makeRecField(value, colName, schema->fields[i].type);
+#endif
                     if (smatch(colName, "id")) {
                         rec->fields[i].flags |= EDI_KEY;
                         rec->id = rec->fields[i].value;
@@ -699,28 +705,49 @@ static bool sdbValidateRec(Edi *edi, EdiRec *rec)
 }
 
 
-static int sdbUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
+/*
+    Map values before storing in the database
+    While not required, it is prefereable to normalize the storage of some values.
+    For example: dates are stored as numbers
+ */
+static cchar *mapSdbValue(cchar *value, int type)
 {
-    return query(edi, sfmt("UPDATE %s SET %s TO %s WHERE 'id' = '%s';", tableName, fieldName, value, key)) != 0;
-}
+    MprTime     time;
 
+    if (value == 0) {
+        return value;
+    }
+    switch (type) {
+    case EDI_TYPE_DATE:
+        if (!snumber(value)) {
+            mprParseTime(&time, value, MPR_UTC_TIMEZONE, 0);
+            value = itos(time);
+        }
+        break;
 
-static cchar *prepareValue(EdiField *fp) 
-{
-#if FUTURE
-    switch (f.type) {
     case EDI_TYPE_BINARY:
     case EDI_TYPE_BOOL:
-    case EDI_TYPE_DATE:
     case EDI_TYPE_FLOAT:
     case EDI_TYPE_INT:
     case EDI_TYPE_STRING:
-        return f.
     case EDI_TYPE_TEXT:
     default:
+        break;
     }
-#endif
-    return fp->value;
+    return value;
+}
+
+
+static int sdbUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
+{
+    int     type;
+
+    sdbGetColumnSchema(edi, tableName, fieldName, &type, 0, 0);
+    value = mapSdbValue(value, type);
+    if (type == EDI_TYPE_INT || type == EDI_TYPE_FLOAT || type == EDI_TYPE_DATE) {
+        return query(edi, sfmt("UPDATE %s SET %s TO %s WHERE 'id' = %s;", tableName, fieldName, value, key)) != 0;
+    }
+    return query(edi, sfmt("UPDATE %s SET %s TO %s WHERE 'id' = '%s';", tableName, fieldName, value, key)) != 0;
 }
 
 
@@ -738,7 +765,7 @@ static int sdbUpdateRec(Edi *edi, EdiRec *rec)
         mprPutToBuf(buf, "UPDATE %s SET ", rec->tableName);
         for (f = 0; f < rec->nfields; f++) {
             fp = &rec->fields[f];
-            mprPutToBuf(buf, "%s = '%s'", fp->name, prepareValue(fp));
+            mprPutToBuf(buf, "%s = '%s'", fp->name, mapSdbValue(fp->value, fp->type));
             mprPutStringToBuf(buf, ", ");
         }
         mprAdjustBufEnd(buf, -2);
@@ -753,7 +780,7 @@ static int sdbUpdateRec(Edi *edi, EdiRec *rec)
         mprPutStringToBuf(buf, ") VALUES (");
         for (f = 1; f < rec->nfields; f++) {
             fp = &rec->fields[f];
-            mprPutToBuf(buf, "'%s',", prepareValue(fp));
+            mprPutToBuf(buf, "'%s',", mapSdbValue(fp->value, fp->type));
         }
         mprAdjustBufEnd(buf, -1);
         mprPutCharToBuf(buf, ')');
@@ -911,6 +938,7 @@ static int mapToEdiType(cchar *type)
 }
 
 
+#if UNUSED
 static int mapQueryToEdiType(int type) 
 {
     if (type == SQLITE_INTEGER) {
@@ -928,6 +956,7 @@ static int mapQueryToEdiType(int type)
     assert(0);
     return 0;
 }
+#endif
 
 /*********************************** Factory *******************************/
 

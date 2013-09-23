@@ -620,12 +620,14 @@ PUBLIC ssize espRenderCached(HttpConn *conn)
 PUBLIC void espRenderConfig(HttpConn *conn)
 {
     EspRoute    *eroute;
+    MprJson     *settings;
 
     eroute = conn->rx->route->eroute;
-    if (eroute->config) {
+    settings = mprLookupJson(eroute->config, "settings");
+    if (settings) {
         renderString(mprJsonToString(eroute->config, MPR_JSON_QUOTES));
     } else {
-        renderError(HTTP_CODE_NOT_FOUND, "Cannot find config");
+        renderError(HTTP_CODE_NOT_FOUND, "Cannot find config.settings to send to client");
     }
     finalize();
 }
@@ -845,7 +847,7 @@ PUBLIC int espSaveConfig(HttpRoute *route)
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    return mprSaveJson(eroute->config, mprJoinPath(route->documents, "config.json"));
+    return mprSaveJson(eroute->config, mprJoinPath(route->documents, "config.json"), MPR_JSON_PRETTY);
 }
 
 

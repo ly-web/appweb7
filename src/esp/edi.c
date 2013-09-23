@@ -13,6 +13,7 @@
 /************************************* Local **********************************/
 
 static void addValidations();
+static void formatFieldForJson(MprBuf *buf, EdiField *fp);
 static void manageEdiService(EdiService *es, int flags);
 static void manageEdiGrid(EdiGrid *grid, int flags);
 
@@ -261,8 +262,12 @@ PUBLIC cchar *ediGetFieldValue(EdiRec *rec, cchar *fieldName)
     }
     for (fp = rec->fields; fp < &rec->fields[rec->nfields]; fp++) {
         if (smatch(fp->name, fieldName)) {
+#if UNUSED
             return ediFormatField(0, fp);
-        }
+#else
+            return fp->value;
+#endif
+}
     }
     return 0;
 }
@@ -277,34 +282,6 @@ PUBLIC int ediGetFieldType(EdiRec *rec, cchar *fieldName)
     }
     return type;
 }
-
-
-#if UNUSED
-PUBLIC cchar *ediGetFormattedField(cchar *fmt, EdiRec *rec, cchar *fieldName)
-{
-    EdiField    field;
-
-    field = ediGetFieldSchema(rec, fieldName);
-    if (!field.valid) {
-        return "";
-    }
-    return ediFormatField(fmt, &field);
-}
-
-
-PUBLIC EdiField ediGetFieldSchema(EdiRec *rec, cchar *fieldName)
-{
-    EdiField    err, *fp;
-
-    for (fp = rec->fields; fp < &rec->fields[rec->nfields]; fp++) {
-        if (smatch(fp->name, fieldName)) {
-            return *fp;
-        }
-    }
-    err.valid = 0;
-    return err;
-}
-#endif
 
 
 PUBLIC MprList *ediGetTables(Edi *edi)
@@ -341,7 +318,6 @@ PUBLIC char *ediGetTypeString(int type)
 }
 
 
-
 PUBLIC cchar *ediGridAsJson(EdiGrid *grid, int flags)
 {
     EdiRec      *rec;
@@ -361,13 +337,13 @@ PUBLIC cchar *ediGridAsJson(EdiGrid *grid, int flags)
             rec = grid->records[r];
             for (f = 0; f < rec->nfields; f++) {
                 fp = &rec->fields[f];
-                mprPutToBuf(buf, "\"%s\"");
+                mprPutToBuf(buf, "\"%s\"", fp->name);
                 if (pretty) {
                     mprPutStringToBuf(buf, ": ");
                 } else {
                     mprPutCharToBuf(buf, ':');
                 }
-                mprPutToBuf(buf, "\"%s\"", ediFormatField(0, fp));
+                formatFieldForJson(buf, fp);
                 if ((f+1) < rec->nfields) {
                     mprPutStringToBuf(buf, ",");
                 }
@@ -422,7 +398,7 @@ PUBLIC EdiGrid *ediQuery(Edi *edi, cchar *cmd)
 }
 
 
-PUBLIC cchar *ediRead(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, cchar *columnName, cchar *defaultValue)
+PUBLIC cchar *ediReadFieldValue(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, cchar *columnName, cchar *defaultValue)
 {
     EdiField    field;
 
@@ -430,7 +406,11 @@ PUBLIC cchar *ediRead(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, cchar 
     if (!field.valid) {
         return defaultValue;
     }
+#if UNUSED
     return ediFormatField(fmt, &field);
+#else
+    return field.value;
+#endif
 }
 
 
@@ -492,7 +472,7 @@ PUBLIC cchar *ediRecAsJson(EdiRec *rec, int flags)
             } else {
                 mprPutCharToBuf(buf, ':');
             }
-            mprPutToBuf(buf, "\"%s\"", ediFormatField(NULL, fp));
+            formatFieldForJson(buf, fp);
             if ((f+1) < rec->nfields) {
                 mprPutStringToBuf(buf, ",");
             }
@@ -616,6 +596,9 @@ PUBLIC cchar *ediFormatField(cchar *fmt, EdiField *fp)
 {
     MprTime     when;
 
+    if (fp->value == 0) {
+        return "null";
+    }
     switch (fp->type) {
     case EDI_TYPE_BINARY:
     case EDI_TYPE_BOOL:
@@ -625,7 +608,7 @@ PUBLIC cchar *ediFormatField(cchar *fmt, EdiField *fp)
         if (fmt == 0) {
             fmt = MPR_DEFAULT_DATE;
         }
-        if (mprParseTime(&when, fp->value, MPR_LOCAL_TIMEZONE, 0) == 0) {
+        if (mprParseTime(&when, fp->value, MPR_UTC_TIMEZONE, 0) == 0) {
             return mprFormatLocalTime(fmt, when);
         }
         return fp->value;
@@ -638,12 +621,13 @@ PUBLIC cchar *ediFormatField(cchar *fmt, EdiField *fp)
 
     case EDI_TYPE_INT:
         if (fmt == 0) {
-            fmt = "%Ld";
+            return fp->value;
         }
         return sfmt(fmt, stoi(fp->value));
 
     case EDI_TYPE_STRING:
     case EDI_TYPE_TEXT:
+        //  MOB - should this return "" if fp->value is null
         if (fmt == 0) {
             return fp->value;
         }
@@ -653,6 +637,46 @@ PUBLIC cchar *ediFormatField(cchar *fmt, EdiField *fp)
         mprError("Unknown field type %d", fp->type);
     }
     return 0;
+}
+
+
+static void formatFieldForJson(MprBuf *buf, EdiField *fp)
+{
+    MprTime     when;
+    cchar       *value;
+
+    value = fp->value;
+
+    if (value == 0) {
+        mprPutStringToBuf(buf, "null");
+        return;
+    } 
+    switch (fp->type) {
+    case EDI_TYPE_BINARY:
+    case EDI_TYPE_STRING:
+    case EDI_TYPE_TEXT:
+        //  MOB - how to handle binary
+        mprPutToBuf(buf, "\"%s\"", fp->value);
+        return;
+
+    case EDI_TYPE_BOOL:
+    case EDI_TYPE_FLOAT:
+    case EDI_TYPE_INT:
+        mprPutStringToBuf(buf, fp->value);
+        return;
+
+    case EDI_TYPE_DATE:
+        if (mprParseTime(&when, fp->value, MPR_UTC_TIMEZONE, 0) == 0) {
+            mprPutToBuf(buf, "\"%s\"", mprFormatUniversalTime(MPR_RFC822_DATE, when));
+        } else {
+            mprPutToBuf(buf, "\"%s\"", value);
+        }
+        return;
+
+    default:
+        mprError("Unknown field type %d", fp->type);
+        mprPutStringToBuf(buf, "null");
+    }
 }
 
 
@@ -1030,6 +1054,34 @@ PUBLIC EdiGrid *ediCloneGrid(EdiGrid *grid)
 }
 
 
+static cchar *mapEdiValue(cchar *value, int type)
+{
+    MprTime     time;
+
+    if (value == 0) {
+        return value;
+    }
+    switch (type) {
+    case EDI_TYPE_DATE:
+        if (!snumber(value)) {
+            mprParseTime(&time, value, MPR_UTC_TIMEZONE, 0);
+            value = itos(time);
+        }
+        break;
+
+    case EDI_TYPE_BINARY:
+    case EDI_TYPE_BOOL:
+    case EDI_TYPE_FLOAT:
+    case EDI_TYPE_INT:
+    case EDI_TYPE_STRING:
+    case EDI_TYPE_TEXT:
+    default:
+        break;
+    }
+    return sclone(value);
+}
+
+
 PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value)
 {
     EdiField    *fp;
@@ -1037,16 +1089,12 @@ PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value)
     if (rec == 0) {
         return 0;
     }
-    if (fieldName == 0 /* MOB NULL || value == 0 */) {
+    if (fieldName == 0) {
         return 0;
     }
     for (fp = rec->fields; fp < &rec->fields[rec->nfields]; fp++) {
         if (smatch(fp->name, fieldName)) {
-if (value == 0) {
-fp->value = 0;
-} else {
-            fp->value = sclone(value);
-}
+            fp->value = mapEdiValue(value, fp->type);
             return rec;
         }
     }
@@ -1063,7 +1111,7 @@ PUBLIC EdiRec *ediSetFields(EdiRec *rec, MprJson *params)
         return 0;
     }
     for (ITERATE_JSON(params, param, i)) {
-        if (param->type == MPR_JSON_VALUE) {
+        if (param->type & MPR_JSON_VALUE) {
             if (!ediSetField(rec, param->name, param->value)) {
                 return 0;
             }
@@ -1126,7 +1174,7 @@ PUBLIC EdiGrid *ediSortGrid(EdiGrid *grid, cchar *sortColumn, int sortOrder)
 static cchar *checkBoolean(EdiValidation *vp, EdiRec *rec, cchar *fieldName, cchar *value)
 {
     if (value && *value) {
-        if (strcmp(value, "true") == 0 || strcmp(value, "false") == 0) {
+        if (scaselessmatch(value, "true") || scaselessmatch(value, "false")) {
             return 0;
         }
     }
@@ -1139,7 +1187,7 @@ static cchar *checkDate(EdiValidation *vp, EdiRec *rec, cchar *fieldName, cchar 
     MprTime     time;
 
     if (value && *value) {
-        if (mprParseTime(&time, value, MPR_LOCAL_TIMEZONE, NULL) < 0) {
+        if (mprParseTime(&time, value, MPR_UTC_TIMEZONE, NULL) < 0) {
             return 0;
         }
     }
