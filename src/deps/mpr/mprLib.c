@@ -12237,12 +12237,14 @@ static void formatValue(MprBuf *buf, MprJson *obj, int flags)
     cchar   *cp;
 
     if (!(obj->type & MPR_JSON_STRING) && !(flags & MPR_JSON_STRINGS)) {
-        if (obj->type & MPR_JSON_REGEXP) {
-            mprPutToBuf(buf, "/%s/", obj->value);
+        if (obj->value == 0) {
+            mprPutStringToBuf(buf, "null");
+        } else if (obj->type & MPR_JSON_REGEXP) {
+            mprPutToBuf(buf, "\"/%s/\"", obj->value);
         } else {
             mprPutStringToBuf(buf, obj->value);
-            return;
         }
+        return;
     }
     mprPutCharToBuf(buf, '"');
     for (cp = obj->value; *cp; cp++) {
@@ -12585,7 +12587,10 @@ static MprJson *jsonQuery(MprJson *obj, cchar *keyPath, MprJson *value, int flag
     int         termType, operator, index;
 
     result = mprCreateJson(MPR_JSON_ARRAY);
-    if (keyPath == 0 || *keyPath == '\0' || !obj || obj->type & MPR_JSON_VALUE) {
+    if (!obj) {
+        return result;
+    }
+    if (keyPath == 0 || *keyPath == '\0' || obj->type & MPR_JSON_VALUE) {
         appendItem(result, obj, flags);
         return result;
     }
