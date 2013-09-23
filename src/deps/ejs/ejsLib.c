@@ -66346,9 +66346,9 @@ static void jsonToPot(Ejs *ejs, MprJson *json, EjsObj *obj)
 
     for (ITERATE_JSON(json, child, i)) {
         qname = ejsName(ejs, "", child->name);
-        if (child->type == MPR_JSON_VALUE) {
+        if (child->type & MPR_JSON_VALUE) {
             ejsSetPropertyByName(ejs, obj, qname, ejsCreateStringFromAsc(ejs, child->value));
-        } else if (child->type == MPR_JSON_ARRAY) {
+        } else if (child->type & MPR_JSON_ARRAY) {
             container = (EjsObj*) ejsCreateArray(ejs, 0);
             ejsSetPropertyByName(ejs, obj, qname, container);
             jsonToPot(ejs, child, container);
