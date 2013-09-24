@@ -148,7 +148,7 @@ ediUpdateRec(db, product);</b>
 /* Get the number of rows and columns in the table */
 <b>ediGetTableSchema(db, "product", &amp;numRows, &amp;numCols);</b>
 /* Remove the product with id == 1 */ 
-<b>ediDeleteRow(db, "product", "1");</b>
+<b>ediRemoveRec(db, "product", "1");</b>
 </pre>
             
             <a id="types"></a>
@@ -256,8 +256,8 @@ product = ediReadRecWhere(db, "product", "price", "&lt;", "5.0");
 </pre>
             <a id="update"></a>
             <h3>Updating a Record</h3>
-            <p>To update a record, first read it using one of the <em>find</em> methods. Then update any of the object
-            properties. Finally, call the <em>save</em> method to save the changes to the database.</p>
+            <p>To update a record, first read it using one of the <em>ediReadRec</em> methods. Then update any of the object
+            properties. Finally, call the <em>ediUpdateRec</em> method to save the changes to the database.</p>
             <pre>
 product = ediReadRecWhere(db, "product", "name", "==", "Ferarri");
 ediSetField(product, "description", "458 Spider");
@@ -266,10 +266,9 @@ ediSetField(product, "description", "458 Spider");
             
             <a id="delete"></a>
             <h3>Deleting a Record</h3>
-            <p>Records have a static method <em>remove</em> which will remove the record with the given primary key
-            id.</p>
+            <p>To delete a record, use ediRemoveRec:</p>
             <pre>
-<b>ediDeleteRow(db, "product", "1");</b>
+<b>ediRemoveRec(db, "product", "1");</b>
 </pre>
             <a id="accessing"></a>
             <h2 class="section">Accessing Records from Web Pages</h2>
@@ -307,7 +306,7 @@ ediSetField(product, "description", "458 Spider");
             that field. The standard ESP View Controls intelligently use these error messages to highlight errors 
             in input forms.</p>
             
-            <img src="../../../images/esp/tour/validate.png" class="screen" alt="validate" />
+            <img src="../../../images/esp/mvc-tour/validate.png" class="bare-screen" alt="validate" />
             <h3>Validation Methods</h3>
             <p>Validations are typically defined by the 
             <a href="../../../api/esp.html#group___edi_1ga64cb0410a70843250c9826e8d12e3944"><em>ediAddValidation</em></a> 

@@ -197,6 +197,20 @@
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
+      <type>cchar *</type>
+      <name>espCreateSession</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>gafa8b3b579ec913aa905ec9c173571059</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>espDestroySession</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>gaf6d82157def054f3c2c38b96f15872ce</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>espFinalize</name>
       <anchorfile>group___esp_req.html</anchorfile>
@@ -370,6 +384,13 @@
       <anchorfile>group___esp_req.html</anchorfile>
       <anchor>gae84ca6c41153894754c0bb48a8ce865d</anchor>
       <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>cchar *</type>
+      <name>espGetSessionID</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>ga63a13780299e2781dca728d4087165bb</anchor>
+      <arglist>(HttpConn *conn, int create)</arglist>
     </member>
     <member kind="function">
       <type>int</type>

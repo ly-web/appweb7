@@ -72,7 +72,7 @@
             without compromising speed or memory footprint.</p>
             <a id="embedded"></a>
             <h2 class="section">Embedded C Code </h2>
-            <p>ESP pages are in essence HTML pages with embedded "C" code that are parsed into pure "C"
+            <p>ESP pages are in essence, HTML pages with embedded "C" code. They are parsed into pure "C"
             code and then compiled into native machine binary for exceptionally fast execution. </p>
             
             <pre>
@@ -104,7 +104,7 @@
             for managing ESP and Appweb memory. This makes working with ESP pages 
             and embedded "C" code simpler and more secure. Any memory allocated by Appweb or ESP APIs is automatically
             managed by the Appweb garbage collector. You do not need to free such memory. You can still use the normal
-            malloc and free APIs if you wish.</p>
+            malloc and free APIs if you wish. Just don't mix the two kinds of memory.</p>
             <p>The use of garbage collection enables the use of decorator patterns and API chaining where the outputs of one
             function can be used as arguments to others. If you need to manually free memory, this style of programming
             is often quite difficult, ... but with ESP, it is much easier. For example:</p>
@@ -321,6 +321,12 @@ Today is &lt;%= mprGetDate(0); %&gt;&lt;
             vulnerabilities.</li>
                 <li><a href="../../../api/esp.html#group___esp_abbrev_1gaa1e37f244a0e0796df494dfb756472a8">renderFile</a> to send
             the contents of a file back to the client.</li>
+                <li><a href="../../../api/esp.html#group___esp_req_1ga2789d2aa7add24367274c035f7eee6e0">renderGrid</a> to send
+                    a database table grid as JSON.</li>
+                <li><a href="../../../api/esp.html#group___esp_req_1gafe76fa3befab7774fab9c274d10000a5">renderRec</a> to send
+                    a database record as JSON.</li>
+                <li><a href="../../../api/esp.html#group___esp_req_1ga32581f3ba31472f878c2442cbcaa0567">renderResult</a> to send
+                    a status result with feedback as JSON.</li>
             </ul>
             <h3>Redirecting</h3>
             <p>To redirect the client to a new URL, use the 
@@ -356,7 +362,7 @@ Today is &lt;%= mprGetDate(0); %&gt;&lt;
             ESP believes strongly in the DRY principle: <em>"Don't Repeat Yourself"</em>. </p>
             
             <img src="../../../images/esp/template/layout.jpeg" alt="layout" />
-            <p>For example: if the page below is a layout page called "<em>layouts/default.ejs</em>", it will
+            <p>For example: if the page below is a layout page called "<em>layouts/default.esp</em>", it will
             define the top level HTML content for content pages. It has a banner image and division tags that 
             structure the page:</p>
             <pre>

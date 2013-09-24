@@ -216,26 +216,21 @@ home/blog&gt; <b>esp generate scaffold post title:string body:text</b>
             rendered on the client from the client/app/post/post-edit.html template. Behind the scenes, the 
             browser asks for the <em>/server/post/init</em> URI to determine what are the required input fields 
             for a post.</p>
-
             <img src= "../../../images/esp/mvc-tour/create.png" alt="createPost" class="bare-screen" />
             <p>Fill in the input fields and click OK to add the new blog post.</p>
             
             <img src= "../../../images/esp/mvc-tour/post-list-2.png" alt="postList" class="bare-screen" />
             <p>The home page is now updated with the first post.  You can click on the post title or body
             to edit its contents. This will run the same post-edit.html template that was used to create the post.</p>
-
             <h2 class=section>On the Server</h2>
-
             <p>When <em>OK</em> button is clicked to create a post, the browser invokes the
             <em>/server/post</em> URI with the HTTP "POST" method to create the blog post. The Appweb server
             parses this URI and and selects the appropriate request route and handler for the request. It 
             then identifies <em>post</em> as the name of the server-side controller invokes the <em>createPost</em>
             action routine to service the request. The controller is automatically compiled and loaded if required.
-
             <p>A controller file typically defines many such C functions called actions, that are bound to specific URIs
             via Appweb routes. Actions are defined using the <em>espDefineAction</em> API in the initialization 
             function of the controller.</p>
-
             <p>A minimal post controller file looks like this:</p>
             <pre>
 #include "esp.h"
@@ -310,20 +305,18 @@ ESP_EXPORT int esp_controller_post(EspRoute *eroute, MprModule *module)
             <p>Other validation types include: checkNumber, checkBoolean, checkDate and checkFormat.
             You can also define new validation types by calling 
             <a href="../../../api/edi.html#group___edi_service_1ga889df64bdd239f71c66b4fa920be8f46">ediDefineValidation</a>.
-
             <a id="homePage"></a>
             <h2>Edit the Home Page</h2>
             <p>ESP applications based on Angular use a single home page that applies different view templates to modify
             the content. Consequently, the index.esp home page is typically also the master application layout page. 
             Modifying index.esp will modify all the views presented to the client.</p>
-
             <a id="learn"></a>
             <h2 class="section">Learn More ...</h2>
             <p>That concludes the a quick tour through some of the capabilities of the ESP web framework.</p>
             <p>To learn more, please read:
             <ul>
                 <li><a href="index.html">ESP Documentation</a></li>
-                <li><a href="tour.html">ESP Web Framework Tour</a></li>
+                <li><a href="pages-tour.html">ESP Pages Tour</a></li>
                 <li><a href="../../../ref/esp/espArchitecture.html">ESP Web Framework Architecture</a></li>
             </ul>
             <p>You may also like to ask questions at the <a href="http://www.ejscript.org/forum/">ESP Support Forum</a>.</p>

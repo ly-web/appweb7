@@ -65,15 +65,15 @@
         <div class="contentLeft">
         <h1>Controllers and Actions</h1>
         <p>ESP <em>controllers</em> are the conductors of the application and they orchestrate the application's 
-        responses. Via <em>action</em> functions, they receive client requests and generate appropriate responses, 
-        mutating the applications data model as required.</p>
+        logic and responses to client requests. Via <em>action</em> functions, they receive client requests and 
+        generate appropriate responses, mutating the applications data model as required.</p>
         <p>An ESP controller is a "C" source file that contains action functions to receive to incoming client 
         requests and manage the applications response. The controller may be part of an ESP MVC application or it
         may be a stand-alone controller.</p>
         <a id="example"></a>
         <h2 class="section">Example of a Controller</h2>
         <p>So what does a controller look like? Here is a partial example called <em>greeting.c</em>
-        that has one action to day "Hello World":</p>
+        that has one action to say "Hello World".</p>
         <pre>
 #include "esp.h"
 static void hello() { 
@@ -87,7 +87,7 @@ ESP_EXPORT int esp_controller_greeting(HttpRoute *route)
 </pre>
         <p>If the client browser issues a request for:</p>
         <pre>http://localhost/greeting/hello</pre>
-        <p>Given suitable configuration, ESP will then compile and load the greeting.c controller and 
+        <p>ESP will compile and load the greeting.c controller and 
         run the <em>hello</em> function which will respond to the client with "Hello World\n".</p>
         <a id="config"></a>
         <h2 class="section">Configuring Controllers</h2>
@@ -97,7 +97,7 @@ ESP_EXPORT int esp_controller_greeting(HttpRoute *route)
             <li>As part of an ESP MVC application</li>
         </ul>
         <h3>Stand-Alone Controllers</h3>
-        <p>A stand-alone controller is not part of a broader ESP MVC application. It is complete unto iself. 
+        <p>A stand-alone controller is not part of a broader ESP MVC application. It is complete unto itself. 
         Such controllers are very useful for web services and for discrete interfaces to server-side functions.</p>
         <p>To define a controller, you create an Appweb route using appweb.conf directives that specifies
             the route URI, the controller source file and the target mapping from URI to controller action. For example</p>
@@ -216,7 +216,7 @@ static FUNCTION() {
 /*
     Controller module initialzation routine
  */
-ESP_EXPORT int esp_controller_NAME(HttpRoute *route) 
+ESP_EXPORT int esp_controller_APP_NAME(HttpRoute *route) 
 {
     espDefineAction(route, "NAME-ACTION", FUNCTION);
     return 0;

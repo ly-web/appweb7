@@ -144,12 +144,12 @@
             <p>There is no additional configuration require to support ESP pages, other than configuring the ESP module
             and handler as described above. For stand-alone ESP pages, layout pages are not used by default unless a 
             <em>&lt;% layout "filename" %&gt;</em> directive is included at
-            the top of the page. For ESP MVC applications, the <em>layouts/default.esp</em> layout is used unless a
-            <em>&lt;% layout "" %&gt;</em> directive instructs ESP to not use any layout.</p>
+            the top of the page. For ESP MVC applications, the <em>layouts/default.esp</em> layout is used if present,
+            unless a <em>&lt;% layout "" %&gt;</em> directive instructs ESP to not use any layout.</p>
             <a id="controllers"></a>
             <h2>ESP Controllers</h2>
-            <p>ESP Controllers may be used as part of an ESP MVC application or stand-alone controllers may be 
-            created. A stand-alone controller must define a route that specifies the desired URI, the source file
+            <p>ESP Controllers may be used as part of an ESP MVC application or they may be used stand-alone outside
+            an MVC app. A stand-alone controller must define a route that specifies the desired URI, the source file
             containing the controller and the format of the URI to action mapping. For example:</p>
             <pre>
 &lt;Route ^/greetings/{action}$&gt;
@@ -180,18 +180,16 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
             <pre>esp compile greetings.c</pre>
             <a id="mvc"></a>
             <h2 class="section">ESP MVC Applications</h2>
-            <p>ESP MVC applications typically require a little more configuration, but the ESP defaults make this fairly
-            painless.</p>
+            <p>ESP MVC applications typically require a little more configuration, but the ESP configuration
+            defaults make this fairly painless.</p>
             <p>If your MVC application uses RESTful routes and follows the ESP defaults, the one-liner 
             <a href="../../appweb/users/dir/esp.html#espApp">EspApp</a>
             directive is typically all you need. This directive takes the following arguments:</p>
-            <pre>Esp prefix="URI" dir="Directory" routes="set" database="spec"</pre>
+            <pre>Esp name="NAME" prefix="URI" dir="Directory"</pre>
             <p>This defines an ESP application at the given directory that will receive all
             requests that begin with specified URI prefix. This will define a new Route block, inheriting the existing
-            configuration. For example, a "blog" application stored in the "./blog" directory using RESTful routes and
-            storing data in a SQLite database could be configured via:</p>
-            <pre>EspApp prefix="/myblog" dir="./blog" routes="restful" 
-&nbsp; &rarr; database="sqlite://blog/blog.sdb"</pre>
+            configuration. For example, a "blog" application stored in the "./blog" directory using RESTful routes.</p>
+            <pre>EspApp prefix="/myblog" dir="./blog" routes="restful"</pre>
             <p>With this configuration, Appweb will send client requests begin with the URI <em>/myblog</em> 
             to this ESP application at "./blog".</p>
             <p>The EspApp directive is really a convenience
@@ -204,7 +202,6 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
     AddHandler espHandler
     EspDir mvc
     EspRouteSet restful                                                                                
-    EspDb sqlite://blog.mdb
 &lt;/Route&gt;  
 </pre>
             <h3>Separate Config</h3>
@@ -213,6 +210,30 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
             on Windows, the <em>Embedthis Appweb/apps</em> directory. When Appweb is started or restarted, it will
             parse all the config files under the <em>apps</em>. Installing or removing a config file for each 
             application under the <em>apps</em> directory is a simple way to add/remove an application.</p>
+            <h3>Config.json</h3>
+            <p>ESP MVC applications use a <em>config.json</em> configuration file to define applications-specific
+            configuration data. This file is a JSON property file that is made available to server-side controllers and
+            portions to client-side scripts. For example:</p>
+            <pre>
+{
+  server: {
+    authStore: "app",
+    database: "sdb://blog.sdb"
+  }
+  settings: {
+    timeouts: {
+      session: 1800
+    },
+    formats: {
+      date: "yyyy-MM-dd",
+      float: 2,
+      int: 0
+    },
+    redirect: "secure"
+  },
+}</pre>
+            <p>The client only receives the "settings" collection. Other collections such as the "server" collection
+            are not passed to the client.</p>
             <h2 class="section">ESP Routing</h2>
             <p>So far, we've covered the basics, but ESP provides very powerful routing and directives 
                 that can be utilized to custom configure ESP applications. 
@@ -257,7 +278,8 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
             
             <a id="database"></a>
             <h2 class="section">Databases</h2>
-            <p>Databases can be specified and pre-opened via the <em>EspDb</em> directive. Pre-opening a
+            <p>Databases can be specified and pre-opened via the <em>EspDb</em> directive or via the 
+                <em>server.database</em> property in the <em>config.json</em> for ESP MVC applications. Pre-opening a
             database connection for an ESP application or route within an application eliminates the run-time delay 
             connecting to the database. </p>
             <p>ESP supports multiple database engines through a single Embedded Database Interface. Support is included for
