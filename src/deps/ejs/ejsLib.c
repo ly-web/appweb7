@@ -51475,7 +51475,7 @@ static EjsNumber *ws_send(Ejs *ejs, EjsWebSocket *ws, int argc, EjsObj **argv)
             }
         }
     }
-    return ejsCreateNumber(ejs, nbytes);
+    return ejsCreateNumber(ejs, (MprNumber) nbytes);
 }
 
 
@@ -51531,7 +51531,7 @@ static EjsNumber *ws_sendBlock(Ejs *ejs, EjsWebSocket *ws, int argc, EjsObj **ar
         ejsThrowIOError(ejs, "Cannot send block");
         return 0;
     }
-    return ejsCreateNumber(ejs, nbytes);
+    return ejsCreateNumber(ejs, (MprNumber) nbytes);
 }
 
 

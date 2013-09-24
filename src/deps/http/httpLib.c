@@ -13139,8 +13139,11 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
             if (strcasecmp(key, "keep-alive") == 0) {
                 if ((tok = scontains(value, "max=")) != 0) {
                     conn->keepAliveCount = atoi(&tok[4]);
-                    if (conn->keepAliveCount < 0 || conn->keepAliveCount > BIT_MAX_KEEP_ALIVE) {
+                    if (conn->keepAliveCount < 0) {
                         conn->keepAliveCount = 0;
+                    }
+                    if (conn->keepAliveCount > BIT_MAX_KEEP_ALIVE) {
+                        conn->keepAliveCount = BIT_MAX_KEEP_ALIVE;
                     }
                     /*
                         IMPORTANT: Deliberately close client connections one request early. This encourages a client-led 
