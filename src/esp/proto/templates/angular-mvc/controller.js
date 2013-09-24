@@ -28,8 +28,13 @@ app.controller('${TITLE}Control', function ($rootScope, $scope, $location, $rout
 
     $scope.remove = function() {
         ${TITLE}.remove({id: $scope.${NAME}.id}, function(response) {
-            $location.path("/");
             $rootScope.feedback = response.feedback;
+            if (!response.error) {
+                $rootScope.feedback.inform = "Deleted ${TITLE}";
+                $location.path("/");
+            } else {
+                $rootScope.feedback.error = $rootScope.feedback.error || "Cannot Delete ${TITLE}";
+            }
         });
     };
 

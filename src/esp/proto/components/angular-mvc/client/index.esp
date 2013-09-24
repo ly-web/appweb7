@@ -28,7 +28,7 @@
             </section>
         </section>
         <div ng-repeat="(field, msg) in feedback">
-            <h1 class="ng-hide-remove" ng-class="'feedback-' + field" ng-show="feedback" ng-cloak>{{msg}}</h1>       
+            <h1 class="ng-hide-remove" ng-class="'feedback-' + field" ng-cloak>{{msg}}</h1>       
         </div> 
     </main>
     <% if (modeIs("debug")) { %>
