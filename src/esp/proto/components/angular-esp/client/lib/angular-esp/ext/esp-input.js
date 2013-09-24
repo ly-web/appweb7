@@ -63,11 +63,12 @@ app.directive('espInput', function($filter, $rootScope, $compile) {
                     if (type == 'checkbox') {
                         astr = astr.replace(/form-control/, '');
                     }
-                    input = '<' + tag + ' type="' + type + '"' + astr + '>';
+                    astr += " ng-class='{\"field-error\": fieldErrors." + field + "}'";
+                    var html = '<' + tag + ' type="' + type + '"' + astr + '>';
                     if (type == 'checkbox') {
-                        input = '<label class="checkbox">' + input + '</label>';
+                        html = '<label class="checkbox">' + html + '</label>';
                     }
-                    var newelt = angular.element(input);
+                    var newelt = angular.element(html);
                     element.replaceWith(newelt);
                     $compile(newelt)(scope);
                 }

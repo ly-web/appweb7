@@ -29,13 +29,19 @@ app.controller('${TITLE}Control', function ($rootScope, $scope, $location, $rout
     $scope.remove = function() {
         ${TITLE}.remove({id: $scope.${NAME}.id}, function(response) {
             $location.path("/");
+            $rootScope.feedback = response.feedback;
         });
     };
 
     $scope.save = function() {
         ${TITLE}.save($scope.${NAME}, function(response) {
+            $rootScope.feedback = response.feedback;
             if (!response.error) {
+                $rootScope.feedback.inform = $scope.routeParams.id ? "Updated ${TITLE}" : "Created New ${TITLE}";
                 $location.path('/');
+            } else {
+                $scope.fieldErrors = response.fieldErrors;
+                $rootScope.feedback.error = $rootScope.feedback.error || "Cannot Save ${TITLE}";
             }
         });
     };

@@ -1,5 +1,6 @@
 <h3>{{action}} ${TITLE}</h3>
 <form name="${NAME}Form" ng-controller='${TITLE}Control' class="form-horizontal">
+    <esp-field-errors ng-model="${NAME}"></esp-field-errors>
     <esp-input-group class="form-control" ng-model="${NAME}"></esp-input-group>
     <div class="form-group">
         <div class="col-md-offset-2 col-md-10">

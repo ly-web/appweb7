@@ -56,7 +56,7 @@
 		          <li><a href="../../../guide/esp/users/config.html">ESP Configuration Directives</a></li>
 		          <li><a href="../../../guide/esp/users/controllers.html">ESP Controllers and Actions</a></li>
 		          <li><a href="../../../guide/esp/users/mvc.html">ESP MVC</a></li>
-		          <li><a href="../../../guide/esp/users/pagesTour.html">ESP Page Tour</a></li>
+		          <li><a href="../../../guide/esp/users/pages-tour.html">ESP Page Tour</a></li>
 		          <li><a href="../../../guide/esp/users/generator.html">ESP Generator</a></li>
 		          <li><a href="../../../guide/esp/users/database.html">ESP Database Interface</a></li>
 		          <li><a href="../../../guide/appweb/users/caching.html">Caching Responses</a></li>
@@ -136,14 +136,12 @@ $ <b>esp generate app blog angular-mvc</b>
     [Create] Directory: blog/db
       [Task] Complete
 </pre>
-
             <h3>Component Dependencies</h3>
             <p>Components may depend on other components. The <em>esp</em> generator will resolve these dependencies 
             and generate all the required components. For example: the <em>angular-mvc</em> component
             depends on: angular, angular-local, angular-session, angular-esp, bootstrap, angular-ui-bootstrap, html5shiv,
             font-awesome, less, more and respond. After generating, the component dependencies are listed in the
             generated <em>config.json</em> file as the <em>settings.components</em> property.</p>
-
             <h3>Overwriting</h3>
             <p>The <em>esp</em> command will create directories and generate configuration and source code 
             files which can then be manually edited as required. The <em>esp</em> command is intelligent and will 
@@ -258,7 +256,6 @@ static void edit() {}
 static void login() {}
 static void logout() {}
 static void command() {}
-
 ESP_EXPORT int esp_module_admin(HttpRoute *route) {
     espDefineAction(route, "admin-cmd-edit", edit);
     espDefineAction(route, "admin-cmd-login", login);

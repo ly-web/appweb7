@@ -1601,19 +1601,19 @@ static void generateScaffold(int argc, char **argv)
     if (!espTestConfig(app->route, "generate.scaffold", "true")) {
         return;
     }
-    if (espTestConfig(app->route, "generate.clientModel", "true")) {
-        generateClientModel(argc, argv);
+    if (espTestConfig(app->route, "generate.controller", "true")) {
+        generateScaffoldController(argc, argv);
     }
     if (espTestConfig(app->route, "generate.clientController", "true")) {
         generateClientController(argc, argv);
     }
+    generateScaffoldViews(argc, argv);
+    if (espTestConfig(app->route, "generate.clientModel", "true")) {
+        generateClientModel(argc, argv);
+    }
     if (espTestConfig(app->route, "generate.migration", "true")) {
         generateScaffoldMigration(argc, argv);
     }
-    if (espTestConfig(app->route, "generate.controller", "true")) {
-        generateScaffoldController(argc, argv);
-    }
-    generateScaffoldViews(argc, argv);
     migrate(0, 0);
 }
 
