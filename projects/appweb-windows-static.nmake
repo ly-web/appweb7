@@ -1137,6 +1137,7 @@ $(CONFIG)\esp: $(DEPS_57)
 	if not exist "$(CONFIG)\esp\components\angular" md "$(CONFIG)\esp\components\angular"
 	copy /Y src\esp\proto\components\angular\config.json $(CONFIG)\esp\components\angular\config.json
 	if not exist "$(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext" md "$(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext"
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-field-errors.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp-field-errors.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-format.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp-format.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input-group.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp-input-group.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp-input.js
@@ -1153,12 +1154,9 @@ $(CONFIG)\esp: $(DEPS_57)
 	if not exist "$(CONFIG)\esp\components\angular-mvc\client\app" md "$(CONFIG)\esp\components\angular-mvc\client\app"
 	copy /Y src\esp\proto\components\angular-mvc\client\app\main.js $(CONFIG)\esp\components\angular-mvc\client\app\main.js
 	if not exist "$(CONFIG)\esp\components\angular-mvc\client\css" md "$(CONFIG)\esp\components\angular-mvc\client\css"
-	copy /Y src\esp\proto\components\angular-mvc\client\css\all.css $(CONFIG)\esp\components\angular-mvc\client\css\all.css
 	copy /Y src\esp\proto\components\angular-mvc\client\css\all.less $(CONFIG)\esp\components\angular-mvc\client\css\all.less
 	copy /Y src\esp\proto\components\angular-mvc\client\css\app.less $(CONFIG)\esp\components\angular-mvc\client\css\app.less
 	copy /Y src\esp\proto\components\angular-mvc\client\css\fix.css $(CONFIG)\esp\components\angular-mvc\client\css\fix.css
-	copy /Y src\esp\proto\components\angular-mvc\client\css\old-app.less $(CONFIG)\esp\components\angular-mvc\client\css\old-app.less
-	copy /Y src\esp\proto\components\angular-mvc\client\css\old-theme.less $(CONFIG)\esp\components\angular-mvc\client\css\old-theme.less
 	copy /Y src\esp\proto\components\angular-mvc\client\css\theme.less $(CONFIG)\esp\components\angular-mvc\client\css\theme.less
 	if not exist "$(CONFIG)\esp\components\angular-mvc\client" md "$(CONFIG)\esp\components\angular-mvc\client"
 	copy /Y src\esp\proto\components\angular-mvc\client\index.esp $(CONFIG)\esp\components\angular-mvc\client\index.esp
@@ -2338,6 +2336,7 @@ installBinary: $(DEPS_101)
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular"
 	copy /Y src\esp\proto\components\angular\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\config.json"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext"
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-field-errors.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-field-errors.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-format.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-format.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input-group.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input-group.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input.js"
@@ -2354,12 +2353,9 @@ installBinary: $(DEPS_101)
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\app" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\app"
 	copy /Y src\esp\proto\components\angular-mvc\client\app\main.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\app\main.js"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css"
-	copy /Y src\esp\proto\components\angular-mvc\client\css\all.css "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css\all.css"
 	copy /Y src\esp\proto\components\angular-mvc\client\css\all.less "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css\all.less"
 	copy /Y src\esp\proto\components\angular-mvc\client\css\app.less "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css\app.less"
 	copy /Y src\esp\proto\components\angular-mvc\client\css\fix.css "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css\fix.css"
-	copy /Y src\esp\proto\components\angular-mvc\client\css\old-app.less "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css\old-app.less"
-	copy /Y src\esp\proto\components\angular-mvc\client\css\old-theme.less "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css\old-theme.less"
 	copy /Y src\esp\proto\components\angular-mvc\client\css\theme.less "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\css\theme.less"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client"
 	copy /Y src\esp\proto\components\angular-mvc\client\index.esp "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-mvc\client\index.esp"
