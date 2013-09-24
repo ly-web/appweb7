@@ -44,10 +44,15 @@ http.close()
 //  GET /session/login
 http.setCookie(cookie)
 http.get(HTTP + "/session/login")
+try {
 if (http.status != 200) {
     print("STATUS", http.status)
     dump("HEADERS", http.headers)
     print("RESPONSE: \"" + http.response + "\"")
+}
+} catch (e) {
+    print("CATCH", e)
+    throw(e)
 }
 assert(http.status == 200)
 assert(http.response.contains("Logged in"))
