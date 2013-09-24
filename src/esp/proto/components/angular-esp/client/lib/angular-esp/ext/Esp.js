@@ -112,7 +112,6 @@ app.config(function($httpProvider, $routeProvider) {
         function success(response) {
             return response;
         }
-        //  MOB - should keep a queue of outstanding requests to retry
         function error(response) {
             if (response.status === 401) {
                 $location.path($routeProvider.login);
@@ -133,8 +132,6 @@ app.config(function($httpProvider, $routeProvider) {
     $httpProvider.responseInterceptors.push(interceptor);
 });
 
-
-//  MOB - why is this a global function?
 
 /*
     Route resolve function for routes to verify the user's defined abilities
