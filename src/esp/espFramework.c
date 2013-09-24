@@ -98,6 +98,17 @@ PUBLIC bool espCheckSecurityToken(HttpConn *conn)
 }
 
 
+PUBLIC cchar *espCreateSession(HttpConn *conn)
+{
+    HttpSession *session;
+
+    if ((session = httpCreateSession(getConn())) != 0) {
+        return session->id;
+    }
+    return 0;
+}
+
+
 PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *action)
 {
     EspRoute    *eroute;
@@ -150,6 +161,12 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *view)
     esp = MPR->espService;
     path = mprGetPortablePath(mprJoinPath(route->documents, path));
     mprAddKey(esp->views, path, view);
+}
+
+
+PUBLIC void espDestroySession(HttpConn *conn)
+{
+    httpDestroySession(conn);
 }
 
 
@@ -363,6 +380,17 @@ PUBLIC Edi *espGetRouteDatabase(HttpRoute *route)
 PUBLIC cchar *espGetSecurityToken(HttpConn *conn)
 {
     return httpGetSecurityToken(conn);
+}
+
+
+PUBLIC cchar *espGetSessionID(HttpConn *conn, int create)
+{
+    HttpSession *session;
+
+    if ((session = httpGetSession(getConn(), create)) != 0) {
+        return session->id;
+    }
+    return 0;
 }
 
 
