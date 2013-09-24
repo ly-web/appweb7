@@ -53,16 +53,11 @@ PUBLIC bool createRecFromParams(cchar *table)
 
 
 /*
-    Create a new session. Always returns with a fresh session
+    Return the session ID
  */
 PUBLIC cchar *createSession()
 {
-    HttpSession *session;
-
-    if ((session = httpCreateSession(getConn())) != 0) {
-        return session->id;
-    }
-    return 0;
+    return espCreateSession(getConn());
 }
 
 
@@ -246,12 +241,7 @@ PUBLIC cchar *getReferrer()
  */
 PUBLIC cchar *getSessionID()
 {
-    HttpSession *session;
-
-    if ((session = httpGetSession(getConn(), 1)) != 0) {
-        return session->id;
-    }
-    return 0;
+    return espGetSessionID(getConn(), 1);
 }
 
 
@@ -537,7 +527,6 @@ PUBLIC void scripts(cchar *patterns)
     eroute = route->eroute;
     patterns = httpExpandRouteVars(route, patterns);
 
-    //UNUSED if (patterns == NULL || smatch(patterns, "${COMPONENTS}/**.js")
     if (patterns == NULL) {
         if ((components = mprGetJson(eroute->config, "settings.components", 0)) != 0) {
             for (ITERATE_JSON(components, component, i)) {

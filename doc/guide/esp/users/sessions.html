@@ -38,6 +38,7 @@
             <ul class="nav">
                 <li><a href="#sample">Sample Code</a></li>
                 <li><a href="#apis">ESP APIs</a></li>
+                <li><a href="#feedback">Client Feedback</a></li>
                 <li><a href="#flash">Flash Storage</a></li>
                 <li><a href="#configuring">Configuring</a></li>
                 <li><a href="#performance">Performance</a></li>
@@ -67,7 +68,7 @@
 <!-- EndDsi -->
         </div>
         <div class="contentLeft">
-            <h1>Session and Flash Storage</h1>
+            <h1>Session Storage</h1>
             <p>Session storage is a limited, semi-permanent store for keeping state information across web requests.
             The HTTP protocol by design, encourages stateless implementations and so Session state storage provides an
             essential context for a series of requests by a specific client.</p>
@@ -109,25 +110,54 @@ setSessionVar("Name", "John");
                 <li><a href="../../../api/esp.html#group___esp_abbrev_1ga241f0cd4f5d49f8a137f1024415b2674">getSessionVar</a></li>
                 <li><a href="../../../api/esp.html#group___esp_abbrev_1gadb4f7bc3020ab9c481f1ebcaf1ed3f2a">setSessionVar</a></li>
             </ul>
-            <a id="flash"></a>
-            <h2 class="section">Flash Storage</h2>
-            <p>ESP provides a layer over session storage called "flash" storage that is useful for passing
-            information to the view and into the next requst action. Thereafter, the flash information is automatically removed.
-            Using session state for this is problematic as the message can easily propagate to requests and web pages ther than the
-            immediate next request. Flash messages will be automatically removed message after the next controller action and before
-            its view page. To be crystal-clear: flash messages are available in the view page after a controller action and
-            into the immediate next controller action.</p>
-            <h3>Flash Types</h3>
-            <p>Flash messages are divided into different types:</p>
+            <a id="feedback"></a>
+            <h2 class="section">Client Feedback</h2>
+            <p>Controllers often need to provide out-of-band feedback to the client. This may be a simple notification that
+            a record has been updated or deleted. Or it may be details of an error condition. ESP provides a simple 
+            feedback API to send such messages to the client.</p>
+            <h3>Feedback Types</h3>
+            <p>Feedback messages are divided into different types:</p>
             <ul>
                 <li>Errors &mdash; An error occurred and the operation failed.</li>
                 <li>Warnings &mdash; A warning has been issued, but the operation succeeded.</li>
                 <li>Informational &mdash; The operation succeeded and this is just for feedback.</li>
                 <li>Other &mdash; Any other kind of message.</li>
             </ul>
-            <p>When ESP generates flash messages in a web page, it emits a CSS style corresponding to the message type.
+            <p>When ESP generates feedback messages in a web page, it emits a CSS style corresponding to the message type.
                 This permits all errors to be flagged to the user using an "error" style. Similarly, for warnings and
                 informational errors.
+            <h3>Defining Feedback Messages</h3>
+            <p>To issue a flash message for the next web page, use the
+            <a href="../../../api/esp.html#group___esp_abbrev_1ga360dc386da496f54f3131da667f7926b">feedback</a>
+            API.</p>
+<pre>
+feedback("inform", Document saved");
+feedback("warn", "Session is about to expire in %d seconds", seconds);
+feedback("error", "Could not save document");
+feedback("custom", "Error code %d", code);
+</pre>
+            <p>To read a feedback message, use 
+            <a href="../../../api/esp.html#group___esp_abbrev_1gaaef4ca7c60c2fd04b5c34fdc72f047d3">getFlash</a>:</p>
+            <pre>char *msg = getFeedback("inform");</pre>
+            
+            <p>If you need to pass a message from the controller into the next controller, use the flash messsage
+            facility below.</p>
+            <h3>Displaying Feedback Messages</h3>
+            <p>To display feedback messages in a web page, use the 
+            <a href="../../../api/esp.html#group___esp_abbrev_1ga8953966bf16fa8134e011a2b60bd0f4b">renderFeedback</a> API.
+<pre>
+&lt;% renderFeedback("all"); %&gt;
+</pre>
+            <p>This will display all feedback messages.</p>
+            
+            <a id="flash"></a>
+            <h2 class="section">Flash Storage</h2>
+            <p>ESP also provides a layer over session storage called "flash" storage that is useful for passing
+            information into the next controller and request action. Thereafter, the flash information is automatically removed.
+            Using bare session state for this is problematic as the message can easily propagate to subsequent requests 
+            other than the immediate next request. Flash messages will be automatically removed message after the next 
+            controller action and before its view page. To be crystal-clear: flash messages are available in the view page 
+            after a controller action and into the immediate next controller action.</p>
             <h3>Defining Flash Messages</h3>
             <p>To issue a flash message for the next web page, use the
             <a href="../../../api/esp.html#group___esp_abbrev_1ga71d13cb7c477077d3fa31d855442deff">flash</a>
@@ -142,15 +172,8 @@ flash("custom", "Error code %d", code);
             <a href="../../../api/esp.html#group___esp_abbrev_1ga99b145381ebe019cea05e3405d51c684">getFlash</a>:</p>
             <pre>char *msg = getFlash("inform");</pre>
             
-            <p>If you only need to pass a message from the controller into the view page, then feedback messages below
-            are a better choice. Use flash if you need to pass a message into the next request.</p>
-            <h3>Displaying Feedback Messages</h3>
-            <p>To display feedback messages in a web page, use the 
-            <a href="../../../api/esp.html#group___esp_abbrev_1ga8953966bf16fa8134e011a2b60bd0f4b">renderFeedback</a> API.
-<pre>
-&lt;% renderFeedback("all"); %&gt;
-</pre>
-            <p>This will display all feedback messages.</p>
+            <p>If you only need to pass a message from the controller into the view page, then feedback messages above
+            are a better choice.</p>
             
             <a id="configuring"></a>
             <h2 class="section">Configuring Session</h2>
@@ -169,6 +192,10 @@ flash("custom", "Error code %d", code);
             <h3>Minimize Session Data Reads and Writes</h3>
             <p>It is important not to read from the session store repeatedly. During one request, try to read 
             session data once and keep a reference to the data for the duration of that request.</p>
+            <h3>Session Expiry Callbacks</h3>
+            <p>Because session data may be stored remotely, ESP does not offer a callback when session state expires.
+            Rather, you can test if session state has expired by calling 
+            <a href="../../../api/esp.html#group___esp_req_1ga63a13780299e2781dca728d4087165bb">espGetSessionID</a>.</p>
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->

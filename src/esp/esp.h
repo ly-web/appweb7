@@ -612,6 +612,29 @@ PUBLIC void espAutoFinalize(HttpConn *conn);
 PUBLIC bool espCheckSecurityToken(HttpConn *conn);
 
 /**
+    Create a session state object. 
+    @description The session state object can be used to share state between requests.
+    If a session has not already been created, this call will create a new session.
+    It will create a response cookie containing a session ID that will be sent to the client 
+    with the response. Note: Objects are stored in the session state using JSON serialization.
+    @param conn HttpConn connection object
+    @return Session ID string
+    @ingroup EspReq
+    @stability Prototype
+ */
+PUBLIC cchar *espCreateSession(HttpConn *conn);
+
+/**
+    Destroy a session state object. 
+    @description This will destroy the server-side session state and 
+        emit an expired cookie to the client to force it to erase the session cookie.
+    @param conn HttpConn connection object
+    @ingroup EspReq
+    @stability Prototype
+ */
+PUBLIC void espDestroySession(HttpConn *conn);
+
+/**
     Finalize processing of the http request.
     @description Finalize the response by writing buffered HTTP data and by writing the final chunk trailer if required. If
     using chunked transfers, a null chunk trailer is required to signify the end of write data.
@@ -875,6 +898,19 @@ PUBLIC Edi *espGetRouteDatabase(HttpRoute *route);
     @stability Evolving
  */
 PUBLIC cchar *espGetSecurityToken(HttpConn *conn);
+
+/**
+    Get the session state ID. 
+    @description This will get the session and return the session ID. This will create a new session state storage area if
+        create is true and one does not already exist. This can be used to test if the session state exists for this 
+        connection.
+    @param conn HttpConn connection object
+    @param create Set to true to create a new session if one does not already exist.
+    @return The session state identifier string.
+    @ingroup EspReq
+    @stability Prototype
+ */
+PUBLIC cchar *espGetSessionID(HttpConn *conn, int create);
 
 /**
     Get the response status.

@@ -98,6 +98,17 @@ PUBLIC bool espCheckSecurityToken(HttpConn *conn)
 }
 
 
+PUBLIC cchar *espCreateSession(HttpConn *conn)
+{
+    HttpSession *session;
+
+    if ((session = httpCreateSession(getConn())) != 0) {
+        return session->id;
+    }
+    return 0;
+}
+
+
 PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *action)
 {
     EspRoute    *eroute;
@@ -150,6 +161,12 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *view)
     esp = MPR->espService;
     path = mprGetPortablePath(mprJoinPath(route->documents, path));
     mprAddKey(esp->views, path, view);
+}
+
+
+PUBLIC void espDestroySession(HttpConn *conn)
+{
+    httpDestroySession(conn);
 }
 
 
@@ -366,6 +383,17 @@ PUBLIC cchar *espGetSecurityToken(HttpConn *conn)
 }
 
 
+PUBLIC cchar *espGetSessionID(HttpConn *conn, int create)
+{
+    HttpSession *session;
+
+    if ((session = httpGetSession(getConn(), create)) != 0) {
+        return session->id;
+    }
+    return 0;
+}
+
+
 PUBLIC int espGetStatus(HttpConn *conn)
 {
     return httpGetStatus(conn);
@@ -573,11 +601,7 @@ PUBLIC ssize espReceive(HttpConn *conn, char *buf, ssize len)
 
 PUBLIC void espRedirect(HttpConn *conn, int status, cchar *target)
 {
-#if UNUSED
-    httpRedirect(conn, status, httpUri(conn, target, NULL));
-#else
     httpRedirect(conn, status, target);
-#endif
 }
 
 
@@ -1027,59 +1051,6 @@ PUBLIC void espSetStatus(HttpConn *conn, int status)
 }
 
 
-#if UNUSED
-/*
-    Convert queue data in key / value pairs
- */
-static int getParams(char ***keys, char *buf, int len)
-{
-    char**  keyList;
-    char    *eq, *cp, *pp, *tok;
-    int     i, keyCount;
-
-    *keys = 0;
-
-    /*
-        Change all plus signs back to spaces
-     */
-    keyCount = (len > 0) ? 1 : 0;
-    for (cp = buf; cp < &buf[len]; cp++) {
-        if (*cp == '+') {
-            *cp = ' ';
-        } else if (*cp == '&' && (cp > buf && cp < &buf[len - 1])) {
-            keyCount++;
-        }
-    }
-    if (keyCount == 0) {
-        return 0;
-    }
-
-    /*
-        Crack the input into name/value pairs 
-     */
-    keyList = mprAlloc((keyCount * 2) * sizeof(char**));
-    i = 0;
-    tok = 0;
-    for (pp = stok(buf, "&", &tok); pp; pp = stok(0, "&", &tok)) {
-        if ((eq = strchr(pp, '=')) != 0) {
-            *eq++ = '\0';
-            pp = mprUriDecode(pp);
-            eq = mprUriDecode(eq);
-        } else {
-            pp = mprUriDecode(pp);
-            eq = 0;
-        }
-        if (i < (keyCount * 2)) {
-            keyList[i++] = pp;
-            keyList[i++] = eq;
-        }
-    }
-    *keys = keyList;
-    return keyCount;
-}
-#endif
-
-
 PUBLIC void espShowRequest(HttpConn *conn)
 {
     MprHash     *env;
@@ -1097,23 +1068,10 @@ PUBLIC void espShowRequest(HttpConn *conn)
     /*
         Query
      */
-#if UNUSED
-    if ((query = espGetQueryString(conn)) != 0) {
-        scopy(qbuf, sizeof(qbuf), query);
-        if ((numKeys = getParams(&keys, qbuf, (int) strlen(qbuf))) > 0) {
-            for (i = 0; i < (numKeys * 2); i += 2) {
-                value = keys[i+1];
-                espRender(conn, "QUERY %s=%s\r\n", keys[i], value ? value: "null");
-            }
-        }
-        espRender(conn, "\r\n");
-    }
-#else
     for (ITERATE_JSON(rx->params, jkey, i)) {
         espRender(conn, "PARAMS %s=%s\r\n", jkey->name, jkey->value ? jkey->value : "null");
     }
     espRender(conn, "\r\n");
-#endif
 
     /*
         Http Headers
@@ -1142,7 +1100,7 @@ PUBLIC void espShowRequest(HttpConn *conn)
         espRender(conn, "\r\n");
     }
 
-#if UNUSED
+#if KEEP
     /*
         Body
      */

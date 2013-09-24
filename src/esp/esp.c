@@ -1853,19 +1853,8 @@ static void fixupFile(cchar *path)
 
     //  DEPRECATE ROUTESET and DIR
     tokens = mprDeserialize(sfmt("{ NAME: '%s', TITLE: '%s', DATABASE: '%s', HOME: '%s', DOCUMENTS: '%s', LISTEN: '%s', BINDIR: '%s', ROUTESET: '%s', DIR: '%s' }", 
-        app->appName, spascal(app->appName), app->database, route->home, route->documents, app->listen, app->binDir, app->routeSet, route->documents));
-#if UNUSED
-    data = sreplace(data, "${NAME}", app->appName);
-    data = sreplace(data, "${TITLE}", spascal(app->appName));
-    data = sreplace(data, "${DATABASE}", app->database);
-    data = sreplace(data, "${HOME}", route->home);
-    data = sreplace(data, "${DOCUMENTS}", route->documents);
-    data = sreplace(data, "${LISTEN}", app->listen);
-    data = sreplace(data, "${BINDIR}", app->binDir);
-    //  DEPRECATE
-    data = sreplace(data, "${ROUTESET}", app->routeSet);
-    data = sreplace(data, "${DIR}", route->documents);
-#endif
+        app->appName, spascal(app->appName), app->database, route->home, route->documents, app->listen, 
+        app->binDir, app->routeSet, route->documents));
     data = stemplate(data, tokens);
     tmp = mprGetTempPath(route->documents);
     if (mprWritePathContents(tmp, data, slen(data), 0644) < 0) {

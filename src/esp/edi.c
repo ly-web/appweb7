@@ -262,12 +262,8 @@ PUBLIC cchar *ediGetFieldValue(EdiRec *rec, cchar *fieldName)
     }
     for (fp = rec->fields; fp < &rec->fields[rec->nfields]; fp++) {
         if (smatch(fp->name, fieldName)) {
-#if UNUSED
-            return ediFormatField(0, fp);
-#else
             return fp->value;
-#endif
-}
+        }
     }
     return 0;
 }
@@ -406,11 +402,7 @@ PUBLIC cchar *ediReadFieldValue(Edi *edi, cchar *fmt, cchar *tableName, cchar *k
     if (!field.valid) {
         return defaultValue;
     }
-#if UNUSED
-    return ediFormatField(fmt, &field);
-#else
     return field.value;
-#endif
 }
 
 
@@ -627,7 +619,6 @@ PUBLIC cchar *ediFormatField(cchar *fmt, EdiField *fp)
 
     case EDI_TYPE_STRING:
     case EDI_TYPE_TEXT:
-        //  MOB - should this return "" if fp->value is null
         if (fmt == 0) {
             return fp->value;
         }
@@ -653,9 +644,11 @@ static void formatFieldForJson(MprBuf *buf, EdiField *fp)
     } 
     switch (fp->type) {
     case EDI_TYPE_BINARY:
+        mprPutToBuf(buf, "-binary-");
+        return;
+
     case EDI_TYPE_STRING:
     case EDI_TYPE_TEXT:
-        //  MOB - how to handle binary
         mprPutToBuf(buf, "\"%s\"", fp->value);
         return;
 
