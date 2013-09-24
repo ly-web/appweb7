@@ -108,9 +108,6 @@ PUBLIC void ediAddFieldError(struct EdiRec *rec, cchar *field, cchar *fmt, ...);
 #define EDI_TYPE_INT        5           /**< Integer number */
 #define EDI_TYPE_STRING     6           /**< String */
 #define EDI_TYPE_TEXT       7           /**< Multi-line text */
-#if UNUSED
-#define EDI_TYPE_NULL       8           /**< No value */
-#endif
 #define EDI_TYPE_MAX        8           /**< Max type + 1 */
 
 /*

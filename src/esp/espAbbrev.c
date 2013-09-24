@@ -537,7 +537,6 @@ PUBLIC void scripts(cchar *patterns)
     eroute = route->eroute;
     patterns = httpExpandRouteVars(route, patterns);
 
-    //UNUSED if (patterns == NULL || smatch(patterns, "${COMPONENTS}/**.js")
     if (patterns == NULL) {
         if ((components = mprGetJson(eroute->config, "settings.components", 0)) != 0) {
             for (ITERATE_JSON(components, component, i)) {
