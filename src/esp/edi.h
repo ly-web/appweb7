@@ -234,7 +234,7 @@ typedef struct EdiProvider {
     int       (*load)(Edi *edi, cchar *path);
     int       (*lookupField)(Edi *edi, cchar *tableName, cchar *fieldName);
     Edi       *(*open)(cchar *path, int flags);
-    EdiGrid   *(*query)(Edi *edi, cchar *cmd);
+    EdiGrid   *(*query)(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list vargs);
     EdiField  (*readField)(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName);
     EdiRec    *(*readRec)(Edi *edi, cchar *tableName, cchar *key);
     EdiGrid   *(*readWhere)(Edi *edi, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
@@ -499,16 +499,21 @@ PUBLIC Edi *ediOpen(cchar *source, cchar *provider, int flags);
 
 /**
     Run a query.
-    @description This runs a provider dependant query. For the SQLite provider, this runs an SQL statement.
+    @description This runs a provider dependant query. For the SDB SQLite provider, this runs an SQL statement.
     The "mdb" provider does not implement this API. To do queries using the "mdb" provider, use:
         #ediReadRec, #ediReadRecWhere, #ediReadWhere, #ediReadField and #ediReadTable.
+    The query may contain positional parameters via argc/argv or via a va_list. These are recommended to mitigate
+    SQL injection risk.
     @param edi Database handle
     @param cmd Query command to execute.
+    @param argc Number of query parameters in argv
+    @param argv Query parameter arguments
+    @param vargs Query parameters supplied in a NULL terminated va_list.
     @return If succesful, returns tabular data in the form of an EgiGrid structure. Returns NULL on errors.
     @ingroup Edi
     @stability Evolving
  */
-PUBLIC EdiGrid *ediQuery(Edi *edi, cchar *cmd);
+PUBLIC EdiGrid *ediQuery(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list vargs);
 
 /**
     Read a formatted field from the database

@@ -388,9 +388,9 @@ PUBLIC Edi *ediOpen(cchar *path, cchar *providerName, int flags)
 }
 
 
-PUBLIC EdiGrid *ediQuery(Edi *edi, cchar *cmd)
+PUBLIC EdiGrid *ediQuery(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list vargs)
 {
-    return edi->provider->query(edi, cmd);
+    return edi->provider->query(edi, cmd, argc, argv, vargs);
 }
 
 

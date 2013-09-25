@@ -73,7 +73,7 @@ static int mdbLoad(Edi *edi, cchar *path);
 static int mdbLoadFromString(Edi *edi, cchar *string);
 static int mdbLookupField(Edi *edi, cchar *tableName, cchar *fieldName);
 static Edi *mdbOpen(cchar *path, int flags);
-static EdiGrid *mdbQuery(Edi *edi, cchar *cmd);
+static EdiGrid *mdbQuery(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list vargs);
 static EdiField mdbReadField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName);
 static EdiRec *mdbReadRec(Edi *edi, cchar *tableName, cchar *key);
 static EdiGrid *mdbReadWhere(Edi *edi, cchar *tableName, cchar *columnName, cchar *operation, cchar *value);
@@ -548,10 +548,9 @@ static int mdbLookupField(Edi *edi, cchar *tableName, cchar *fieldName)
 }
 
 
-static EdiGrid *mdbQuery(Edi *edi, cchar *cmd)
+static EdiGrid *mdbQuery(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list vargs)
 {
-    //  TODO
-    assert(0);
+    mprError("MDB does not implement ediQuery");
     return 0;
 }
 

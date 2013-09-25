@@ -9585,7 +9585,7 @@ PUBLIC char *mprUriDecodeInSitu(char *inbuf)
 /*
     Escape a shell command. Not really Http, but useful anyway for CGI
  */
-PUBLIC char *mprEscapeCmd(cchar *cmd, int escChar)
+PUBLIC char *mprEscapeCmd(cchar *cmd, int esc)
 {
     uchar   c;
     cchar   *ip;
@@ -9606,20 +9606,19 @@ PUBLIC char *mprEscapeCmd(cchar *cmd, int escChar)
         return 0;
     }
 
-    if (escChar == 0) {
-        escChar = '\\';
+    if (esc == 0) {
+        esc = '\\';
     }
     op = result;
     while ((c = (uchar) *cmd++) != 0) {
 #if BIT_WIN_LIKE
-        //  TODO - should use fs->newline
         if ((c == '\r' || c == '\n') && *cmd != '\0') {
             c = ' ';
             continue;
         }
 #endif
         if (charMatch[c] & MPR_ENCODE_SHELL) {
-            *op++ = escChar;
+            *op++ = esc;
         }
         *op++ = c;
     }
@@ -9687,6 +9686,40 @@ PUBLIC char *mprEscapeHtml(cchar *html)
         } else {
             *op++ = *html++;
         }
+    }
+    assert(op < &result[len]);
+    *op = '\0';
+    return result;
+}
+
+
+PUBLIC char *mprEscapeSQL(cchar *cmd)
+{
+    uchar   c;
+    cchar   *ip;
+    char    *result, *op;
+    int     len, esc;
+
+    assert(cmd);
+
+    if (!cmd) {
+        return MPR->emptyString;
+    }
+    for (len = 1, ip = cmd; *ip; ip++, len++) {
+        if (charMatch[(uchar) *ip] & MPR_ENCODE_SQL) {
+            len++;
+        }
+    }
+    if ((result = mprAlloc(len)) == 0) {
+        return 0;
+    }
+    esc = '\\';
+    op = result;
+    while ((c = (uchar) *cmd++) != 0) {
+        if (charMatch[c] & MPR_ENCODE_SQL) {
+            *op++ = esc;
+        }
+        *op++ = c;
     }
     assert(op < &result[len]);
     *op = '\0';
