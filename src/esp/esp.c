@@ -1901,6 +1901,8 @@ static void generateAppFiles()
         if (mprPathExists(config, R_OK)) {
             if ((newConfig = mprLoadJson(config)) != 0) {
                 mprBlendJson(eroute->config, newConfig, 0);
+                mprSetJsonValue(eroute->config, "name", app->appName, 0);
+                mprRemoveJson(eroute->config, "description");
             }
         }
     }

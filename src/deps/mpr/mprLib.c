@@ -12712,8 +12712,13 @@ static MprJson *jsonQuery(MprJson *obj, cchar *keyPath, MprJson *value, int flag
                 if (flags & MPR_JSON_REMOVE) {
                     /* Remove */
                     removeChild(obj, child);
+                    appendItem(result, child, flags);
+                } else if (value) {
+                    setProperty(obj, sclone(property), mprCloneJson(value), flags);
+                    appendItem(result, value, flags);
+                } else {
+                    appendItem(result, child, flags);
                 }
-                appendItem(result, child, flags);
                 return result;
             } 
             if (child->type & MPR_JSON_VALUE) {
@@ -12896,6 +12901,7 @@ static void removeChild(MprJson *obj, MprJson *child)
             if (--obj->length == 0) {
                 obj->children = 0;
             }
+            break;
         }
     }
 }
@@ -20380,7 +20386,7 @@ PUBLIC void mprAddStandardSignals()
 #if SIGXFSZ
     mprAddItem(ssp->standard, mprAddSignalHandler(SIGXFSZ, standardSignalHandler, 0, 0, MPR_SIGNAL_AFTER));
 #endif
-#if MACOSX && BIT_DEBUG
+#if MACOSX && BIT_DEBUG && KEEP
     mprAddItem(ssp->standard, mprAddSignalHandler(SIGBUS, standardSignalHandler, 0, 0, MPR_SIGNAL_AFTER));
     mprAddItem(ssp->standard, mprAddSignalHandler(SIGSEGV, standardSignalHandler, 0, 0, MPR_SIGNAL_AFTER));
 #endif
@@ -20408,12 +20414,14 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
     } else if (sp->signo == SIGPIPE || sp->signo == SIGXFSZ) {
         /* Ignore */
 
+#if KEEP
     } else if (sp->signo == SIGSEGV || sp->signo == SIGBUS) {
-#if EMBEDTHIS
+#if EMBEDTHIS && UNUSED
         printf("PAUSED for watson to debug\n");
         sleep(120);
 #else
         exit(255);
+#endif
 #endif
 
     } else {
