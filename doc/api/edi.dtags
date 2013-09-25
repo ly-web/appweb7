@@ -330,8 +330,8 @@
       <type>EdiGrid *</type>
       <name>ediQuery</name>
       <anchorfile>group___edi.html</anchorfile>
-      <anchor>gaecc4d8a08a88424aec01aec08a9da73b</anchor>
-      <arglist>(Edi *edi, cchar *cmd)</arglist>
+      <anchor>ga26a2a774e3058ebbce96b515d1aaf6b4</anchor>
+      <arglist>(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list vargs)</arglist>
     </member>
     <member kind="function">
       <type>EdiField</type>

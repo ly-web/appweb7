@@ -69,7 +69,6 @@
             uploaded file to the request handler for processing.</p>
             <p>File upload uses multi-part mime encoding to transport files over HTTP POST requests. This is specified in
             the IETF standard <a href="http://www.ietf.org/rfc/rfc2388.txt">RFC 2388</a>. </p>
-
             <a id="overview"></a>
             <h2>Overview</h2>
             <p>Because uploaded files can be very large, Appweb uses specialized handling for the receipt, storage and
@@ -79,7 +78,6 @@
             file.
             Appweb expects that the handler will process, copy or move the temporary file before completing the request.
             Once the handler has completed, Appweb will remove any remaining upload temporary files.</p>
-
             <a id="enabling"></a>
             <h2>Enabling File Upload</h2>
             <p>To enable the upload filter, you need to add it to the request pipeline via the
@@ -93,7 +91,6 @@
 </pre>
             <p>It is good practice to define the uploadFilter within a qualifying route. This minimizes the
             security attack surface.</p>
-
             <a id="directives"></a>
             <h2>Appweb Upload Directives</h2>
             <p>There are three other appweb.conf directives that relate specifically to upload filter.</p>
@@ -106,7 +103,6 @@
                     uploaded files should be automatically deleted from the upload directory after the handler has
                     completed processing the request.</li>
             </ul>
-
             <a id="details"></a>
             <h2>Upload File Details</h2>
             <p>Once a file is uploaded, the Appweb handler responsible for processing the request will receive details about
@@ -145,7 +141,6 @@ for (ITERATE_KEY_DATA(conn-&gt;rx-&gt;files, kp, file)) {
                     href="http://www.ejscript.org/products/ejs/doc-2/api/ejscript/ejs.web-Request.html">request.files</a></em> property. Files is an object hash
             of files indexed by the HTML ID. Each file is represented by an instance of the 
             <a href="http://www.ejscript.org/products/ejs/doc-2/api/ejscript/ejs.web-UploadFile.html">UploadFile</a> class.
-
             <a id="post"></a>
             <h2>Alternative Upload Technique</h2>
             <p>File upload using POST requests is one way to upload files. Another is to use the HTTP PUT method.

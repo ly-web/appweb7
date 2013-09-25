@@ -291,7 +291,6 @@ chmod 755  . lib logs
             <h3>Cipher Selection</h3>
             <p>It is important to select a sufficiently long key length and strong cipher to protect SSL communications. It is recommended to use the AES cipher and avoid the older RC4 cipher suite. See the section below regarding 
             <a href="#threats">Common Security Threats</a> for threats against the RC4 ciphers. </p>
-
             <h3>SSL Forms</h3>
             <p>A common practice is to use HTTP for regular communications and to post login forms using SSL. However, this approach is flawed. The web form itself must be served using SSL as well as the URL receiving the login information. This prevents attackers injecting code into the form and hijacking login credentials.</p>
             <p>For more information regarding SSL, please read: </p>
@@ -305,13 +304,11 @@ chmod 755  . lib logs
             <p>Appweb includes the blowfish cipher as an alternative that is more secure than MD5. The <a href="http://en.wikipedia.org/wiki/Blowfish_(cipher)">Blowfish</a> cipher is especially well suited for password hashing partly. Partly because it is slow, it does not easily succumb to brute-force cracking. </p>
             <p>If you wish to use the Digest authentication scheme, unfortunately you cannot use blowfish as the browser uses MD5 to encrypt the password before transmitting over the wire. This and other shortcomings of Digest authentication should encourage you to select other schemes. A better alternative is Basic authentication over SSL using blowfish to encrypt the passwords. Alternatively, use web form authentication with blowfish for password storage.</p> 
             <p>If using a web page for users to submit their credentials, it is strongly recommended that you use SSL for both the web form page and for the request validating the user credentials.</p>
-
             <a id="logFiles"></a>
             <h2 class="section">Log Files</h2>
             <p>Appweb will log satisfied requests to the access log (usually logs/access.log) and errors to the error
             log (usually logs/error.log). It is recommended that you regularly review these logs for suspicious
             activity.</p>
-
             <a id="threats"></a>
             <h2 class="section">Common Security Threats</h2>
             <p>This section details some common security threats and issues and the steps you can take to mitigate them.</p>

@@ -99,7 +99,6 @@ Monitor "Errors &gt; 20" 1min report
             They take the form:</p>
             <pre>"Counter [&lt;|&gt;] Limit"</pre>
             <p>Although a monitor can only access one counter, multiple monitors can be created. </p>
-
             <a id="counters"></a>
             <h2 class="section">Counters</h2>
             <p>Counters are metrics defined and maintained by Appweb for monitoring purposes.</p>
@@ -163,7 +162,6 @@ Monitor "Errors &gt; 20" 1min report
             BadRequestErrors or NotFoundErrors may indicate hacking activity. Similarly, too many SSLErrors may be an indication that
             someone is probing the SSL implementation.</p>
             <p>The <i>Errors</i> counter is an aggregation of all request errors regardless of classification.</p>
-
             <a id="defenses"></a>
             <h2>Defenses</h2>
             <p>Monitors specify one or more <i>Defenses</i> to be invoked when the monitor is triggered. Defenses invoke remedies
@@ -181,7 +179,6 @@ KEYWORD=VALUE
             <p>The VALUE string may embed other keyword values by using the form: "${KEYWORD}". This will substitute the value 
             of the keyword. For example:</p>
             <pre>REMDY=ban PERIOD=10mins</pre>
-
             <a id="remedies"></a>
             <h2>Remedies</h2>
             <p>Appweb provides a suite of remedies for Defenses to invoke to mitigate security threats. The remedy names are used in Defense
@@ -267,7 +264,6 @@ KEYWORD=VALUE
                     <tr><td>VALUE</td><td>Counter value</td></tr>
                 </tbody>
             </table>
-
             <a id="examples"></a>
             <h2>Examples</h2>
             <pre>
@@ -282,7 +278,6 @@ Monitor "NetworkIO &gt; 50MB" 1min block
 Monitor "ActiveConnections &gt; 10" 1min block
 Monitor "ActiveRequests &gt; 10" 1min block
 </pre>
-
             <a id="apis"></a>
             <h2>APIs</h2>
             <p>You can define Monitors and Defenses via the appweb.conf file, or via the Appweb APIs:

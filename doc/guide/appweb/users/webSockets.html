@@ -303,7 +303,6 @@ ESP_EXPORT int esp_controller_websock(HttpRoute *route, MprModule *module) {
             </ul>
             <p>To send messages of type TEXT, Appweb provides a simple API: 
             <a href="../../../api/http.html#group___http_web_socket_1ga038d5c42a1ef5bce910dc617987a222c">httpSend</a>.</p>
-
             <pre>ssize httpSend (HttpConn *conn, cchar *fmt, ...)</pre>
             <p>This API sends UTF-8 messages to the client. Messages are fully buffered, i.e. the call will always accept the
             given data. The call returns the number of bytes accepted. For example:</p>
