@@ -403,12 +403,6 @@ static bool similarRoute(HttpRoute *r1, HttpRoute *r2)
     if (!smatch(r1->home, r2->home)) {
         return 0;
     }
-    if (!smatch(r1->sourceName, r2->sourceName)) {
-        return 0;
-    }
-    if (!smatch(r1->sourceName, r2->sourceName)) {
-        return 0;
-    }
     if (!smatch(e1->appDir, e2->appDir)) {
         return 0;
     }
@@ -426,6 +420,11 @@ static bool similarRoute(HttpRoute *r1, HttpRoute *r2)
     }
     if (!smatch(e1->viewsDir, e2->viewsDir)) {
         return 0;
+    }
+    if (scontains(r1->sourceName, "${") == 0 && scontains(r2->sourceName, "${") == 0) {
+        if (r2->sourceName && r2->sourceName) {
+            return smatch(r1->sourceName, r2->sourceName);
+        }
     }
     return 1;
 }
