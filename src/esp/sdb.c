@@ -128,6 +128,7 @@ static Sdb *sdbCreate(cchar *path, int flags)
     sdb->edi.flags = flags;
     sdb->edi.provider = &SdbProvider;
     sdb->edi.path = sclone(path);
+    sdb->edi.schemaCache = mprCreateHash(0, 0);
     sdb->schemas = mprCreateHash(0, MPR_HASH_STABLE);
     sdb->validations = mprCreateHash(0, MPR_HASH_STABLE);
     return sdb;
@@ -471,12 +472,11 @@ static EdiGrid *query(Edi *edi, cchar *cmd)
     sqlite3_stmt    *stmt;
     EdiGrid         *grid;
     EdiRec          *rec, *schema;
-    EdiField        *fp;
     MprList         *result;
     char            *tableName;
     cchar           *tail, *colName, *value, *defaultTableName;
     ssize           len;
-    int             r, nrows, i, ncol, rc, retries, type;
+    int             r, nrows, i, ncol, rc, retries;
 
     assert(edi);
     assert(cmd && *cmd);
