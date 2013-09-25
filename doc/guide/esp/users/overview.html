@@ -87,13 +87,15 @@
             extensive programming API.</p>
             <p>This document describes the ESP web framework and how to use ESP. Note that ESP is integrated 
             into Appweb and is not a separate product.</p>
+
+            <a id="patterns"></a>
             <h2 class="section">ESP Patterns</h2>
             <p>ESP supports several design patterns:</p>
             <ul>
                 <li>Stand-alone ESP web pages</li>
                 <li>Web Services via ESP Controllers</li>
                 <li>ESP Model-View-Controller applications 
-                    (<a href="http://en.wikipedia.org/wiki/Model–view–controller">MVC</a>)</li>
+                    (<a href="http://en.wikipedia.org/wiki/Model-view-controller">MVC</a>)</li>
                 <li>Single Page Applications 
                     (<a href="http://en.wikipedia.org/wiki/Single-page_application">SPA</a>)</li>
             </ul>
@@ -102,9 +104,9 @@
             <a name="standalone"></a>
             <h3>Stand-alone Pages</h3>
             <p>An ESP page is a standard HTML web page with embedded "C" code that executes at run-time to create a dynamic
-            client response. The pages typically have a "<em>.esp</em>"" extension and may use ESP layout pages to
+            client response. The pages typically have a "<em>.esp</em>" extension and may use ESP layout pages to
             define the look and feel of the application in one place.</p>
-            <p>The C code is embedded between <em>&lt;% and %&gt</em> tags. For example:
+            <p>The C code is embedded between <em>&lt;% and %&gt;</em> tags. For example:
 <pre>&lt;h1&gt;Hello World&lt;/h1&gt;
 &lt;p&gt;<b>&lt;% render("A random number %d", rand(0)); %&gt;</b>&lt;/p&gt;</pre>
             <p>When the web page is requested, the code inside the ESP tags is executed and the <em>render</em> call 
@@ -155,7 +157,8 @@ ESP_EXPORT int esp_module_greeting(HttpRoute *route, MprModule *module) {
             <p>ESP includes support for the <a href="http://angularjs.org">Angular</a> SPA client framework.
             The <em>esp</em> application generator can generate Angular application skeletons and client-side scaffolds. </p>
             <p>Appweb and ESP include WebSockets which can be used in single page applications to efficiently provide 
-            continuous data updates for guages and dynamic user interface controls.</p>
+            continuous data updates for gauges and dynamic user interface controls.</p>
+
             <h2 class="section">ESP Web Framework</h2>
             <img src="../../../images/espArchitecture.jpg" alt="ESP Web Framework Architecture" />
             <p>The main components of the ESP Web Framework are:</p>
@@ -226,7 +229,7 @@ AddHandler espHandler esp</pre>
 </pre>
             <p>The <b>&lt;%@ content %&gt;</b> directive instructs the Template Engine to insert the content page at
             this location. </p>
-            <p>Here is a simple content page. Note that this is missing the &lt;html&gt; and &ltbody&gt; tags:</p>
+            <p>Here is a simple content page. Note that this is missing the &lt;html&gt; and &lt;body&gt; tags:</p>
             <pre>
 &lt;h1&gt;Hello World&lt;/h1&gt;
 &lt;p&gt;Today is &lt;%= mprGetDate(0) %&gt;
@@ -255,8 +258,8 @@ AddHandler espHandler esp</pre>
             to write data back to the client at this position in the web page.</p>
             <p>The &lt;%= "C" expression %&gt; directive will evaluate the expression and substitute the resulting
             string value into the web page. A printf format specifier can be used to specify a different variable type.
-            For example, if <em>i</em> is an integer:</p>
-            <pre>&lt;%= %d i %&gt;</pre>
+            For example, if <em>ivar</em> is an integer:</p>
+            <pre>&lt;%= %d ivar %&gt;</pre>
             <p>The @!variable directive is a shortcut for &lt;%= expression %&gt;.</p>
             <p>The @@param directive substitutes the value of a request parameter or session variable of the same 
                 name after HTML escaping the value.</p>
@@ -346,7 +349,7 @@ static void update() {
             <pre>esp compile</pre>
             <h3>Cross Compilation</h3>
             <p>If your target system is of a different architecture to your development system, you will need to 
-            cross-compile your ESP appliation for the target.
+            cross-compile your ESP application for the target.
             When cross-compiling, prepare a version of the appweb.conf and esp.conf configuration files for your 
             target. Then invoke the following to cross compile the ESP pages and controllers.</p>
             <pre>esp --config cross.conf compile ...</pre>
@@ -370,7 +373,7 @@ static void update() {
             <p>The <em>esp</em> program creates the application directory and populates it with the necessary
             directories, configuration files and stubs to begin the application.</p>
             <p>When you run Appweb, ESP will automatically compile and components as required. </p>
-            <p>To create a more featured MVC demo application with suport for the Angular client framwork, use:</p>
+            <p>To create a more featured MVC demo application with support for the Angular client framework, use:</p>
             <pre>esp generate app demo angular-mvc</pre>
             <a id="api"></a>
             <h2 class="section">ESP API</h2>

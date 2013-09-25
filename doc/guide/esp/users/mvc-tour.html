@@ -38,13 +38,9 @@
                 <li><a href="#blog">Blog App</a></li>
                 <li><a href="#create">Creating a New App</a></li>
                 <li><a href="#run">Run the App</a></li>
-                <li><a href="#hello">Hello World</a></li>
-                <li><a href="#layout">Layout Pages</a></li>
-                <li><a href="#dynamic">Dynamic Content</a></li>
                 <li><a href="#scaffolds">Scaffolds</a></li>
                 <li><a href="#newPosts">Create New Posts</a></li>
                 <li><a href="#homePage">Edit the Home Page</a></li>
-                <li><a href="#layout">Changing the Layout</a></li>
                 <li><a href="#validations">Validations</a></li>
                 <li><a href="#learn">Learn More</a></li>
             </ul>
@@ -69,7 +65,7 @@
             Model-View-Controller applications. The generated application will use the 
             <a href="http://angularjs.org">AngularJS</a> client-side library.</p>
             <p>Before starting, first make sure you have read the <a href="../../appweb/users/quickStart.html">Quick Start</a>,
-            and the <a href="pagesTour.html">ESP Pages Tour</a> and that you have ESP installed on your system so you
+            and the <a href="pages-tour.html">ESP Pages Tour</a> and that you have ESP installed on your system so you
             can type along as you go. This tour uses the <em><a href="generator.html">esp</a></em> application
             generator.</p>
             <a id="blog"></a>
@@ -102,7 +98,7 @@ home&gt; <b>esp generate app blog angular-mvc</b>
             the application, and then created subdirectories for various parts of the application. Initially, some of
             these directories are empty, but they will be used as your application grows.</p>
             <p>The command created two configuration files that control how your application will run. The first, 
-            <em>appweb.conf</em> configures Appweb to host your application. The seoncd, <em>config.json</em> is the
+            <em>appweb.conf</em> configures Appweb to host your application. The second, <em>config.json</em> is the
             ESP configuration file for your application. </p>
             <h2>Conventions</h2>
             <p>The ESP web framework follows the <i>"convention over
@@ -272,7 +268,7 @@ appweb: 2: Error: Cannot run command clang -c -DBIT_DEBUG -g -Wall -DPIC \
             <a id="validations">
             </a>
             <h2 class="section">Validations</h2>
-            <p>Complete validation of all user entered data is essentail for a robust and secure application. The 
+            <p>Complete validation of all user entered data is essential for a robust and secure application. The 
             validation may be performed at the client, but must also always be fully implemented on the server incase
             the client or network connection is compromised. ESP provides flexible validation methods to help 
             ensure the data you save at the server is correct.</p>
@@ -317,7 +313,6 @@ ESP_EXPORT int esp_controller_post(EspRoute *eroute, MprModule *module)
             <ul>
                 <li><a href="index.html">ESP Documentation</a></li>
                 <li><a href="pages-tour.html">ESP Pages Tour</a></li>
-                <li><a href="../../../ref/esp/espArchitecture.html">ESP Web Framework Architecture</a></li>
             </ul>
             <p>You may also like to ask questions at the <a href="http://www.ejscript.org/forum/">ESP Support Forum</a>.</p>
         </div>

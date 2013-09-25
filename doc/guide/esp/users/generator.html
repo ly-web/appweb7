@@ -83,7 +83,7 @@
 [Create] File: blog/config.json
 [Create] Directory: blog/src
 [Create] blog/src/app.c
-  [Task] Comple</pre>
+  [Task] Compile</pre>
             <p>This generates the bare minimum application without additional components. The appweb.conf file
             is an Appweb configuration file. This defines the Appweb and ESP configuration when you run your application.
             Alternatively, you can use the app.conf file that is suitable when hosting the application from an 
@@ -92,8 +92,8 @@
             <p>The format of the "esp generate app" command is:</p>
             <pre>esp generate app NAME [COMPONENTS...]</pre>
             <p>The given NAME is the name of the application and also the name of the directory into which esp will
-            generate the application. The COMPONENTS are optional extensions for the generated application. 
-            <p>The supported components are:
+            generate the application. The COMPONENTS are optional extensions for the generated application.
+            The supported components are:</p>
             <ul>
                 <li>angular &mdash; The <a href="http://www.angularjs.org">AngularJS Client Framework</a></li>
 <li>angular-esp &mdash; Angular support for Embedthis ESP</li>
@@ -273,7 +273,8 @@ esp generate table NAME [field:type ...]
 </pre>
             <p>If <em>field:type</em> values are supplied, the database will be updated for each specified field of 
             the requested type. The valid database types are: binary, boolean, date,
-            datetime, decimal, float, integer, number, string, text, time, timestamp. 
+            datetime, decimal, float, integer, number, string, text, time, timestamp. </p>
+
             <a id="migrations"></a>
             <h2 class="section">Generating Migrations</h2>
             <p>Database migrations are mini programs which modify the database schema or content. You can create database
@@ -283,7 +284,7 @@ esp generate table NAME [field:type ...]
 esp generate migration description MODEL [field:type ...]
 </pre>
             <p>This will create a migration script under the db/migrations directory. Migration scripts filenames are
-            timestamped and use the description as part of the filename for the migration script (so keep it short and
+            time stamped and use the description as part of the filename for the migration script (so keep it short and
             sweet and don't use spaces!).</p>
             <p>For each specified <em>field:type</em> pair, esp will generate add column code in the migration
             script. If the --reverse switch is specified, then remove column code will be generated. To change the type
@@ -297,10 +298,10 @@ esp generate migration description MODEL [field:type ...]
             backward</em>" will reverse the last applied migration. You can also use "<em>esp migrate NNN</em>" to
             migrate forward or backward to a specific migration. NNN is the migration sequence number which is the
             number at the start of the migration script file name.</p>
-            <p>Migrations are often underused. They are much more important than most people realize. Being able
+            <p>Migrations are often under used. They are much more important than most people realize. Being able
             to effectively create and manage database test data greatly simplifies this aspect of development and testing.</p>
             
-            <a id="scaffolds"></a></p>
+            <a id="scaffolds"></a>
             <h2 class="section">Generating Scaffolds</h2>
             <p>Scaffolds enable you to quickly create sections of your application. A scaffold provides CRUD 
             functionality (create, read, update and delete) for a database table. 
@@ -349,7 +350,7 @@ esp compile
             Appweb configuration file. </p>
             <h3>Filtering</h3>
             <p>If "<em>esp compile</em>" is invoked with one or more paths on the command line, these paths will act as 
-            filters such that only the designated paths will be compiled. For example:
+            filters such that only the designated paths will be compiled. For example:</p>
             <pre>
 esp compile web/test.esp
 esp compile myapp
@@ -372,7 +373,8 @@ esp compile /directory/of/apps
             <h3>Compile Application as One Module</h3>
             <p>For deployment in a production environment, it can be useful to compile the entire application including
             all controllers, views and web pages into a single module file. Use the <em>--flat</em> esp option to
-            achieve this:</p> <pre>
+            achieve this:</p> 
+            <pre>
 esp --flat compile
 </pre>
             <p>If you compile flat, you will need to add an <em>EspLoad</em> directive to the appweb.conf. This tells
@@ -382,7 +384,7 @@ esp --flat compile
             ESP pages or invoking ESP controllers. However, if you are using static linking, you need to manually
             call these ESP initializers. You can generate the necessary initialization calls via the esp <em>--genlink
                 slink.c</em> switch. The generated code should be linked with your appweb main program replacing the default
-            slink.c file.
+            slink.c file.</p>
             <pre>
 esp --flat --static --genlink slink.c
 </pre>
@@ -394,7 +396,7 @@ esp --flat --static --genlink slink.c
             If cross-compiling, the configuration for the target host specified via the Appweb configure program is
             utilized.</p>
             <p>The <em>esp</em> command can select alternate compile and link configurations via the 
-            <em>--platform</em> switch. For example:
+            <em>--platform</em> switch. For example:</p>
             <pre>
 esp --platform vxworks-arm-debug
 </pre>
@@ -423,7 +425,7 @@ esp clean
 </pre>
             <a id="options"></a>
             <h2 class="section">Command Options</h2>
-            <p>To see the <em>esp</em> command options, run <em>esp</em> with no options. This produces:
+            <p>To see the <em>esp</em> command options, run <em>esp</em> with no options. This produces:</p>
             <pre>
 ESP Usage:
   esp [options] [commands]

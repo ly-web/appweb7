@@ -35,7 +35,12 @@
         <div class="contentRight">
             <h1>Quick Nav</h1>
             <ul class="nav">
-                <li><a href="#updates">Updates</a></li>
+                <li><a href="#monitors">Monitors</a></li>
+                <li><a href="#counters">Counters</a></li>
+                <li><a href="#defenses">Defenses</a></li>
+                <li><a href="#remedies">Remedies</a></li>
+                <li><a href="#examples">examples</a></li>
+                <li><a href="#apis">APIs</a></li>
             </ul>
 <!-- BeginDsi "dsi/usersGuideSeeAlso.html" -->
             <h1>See Also</h1>
@@ -71,11 +76,11 @@
             <p>Embedded devices typically have a well defined, understood and anticipated work load. Unlike their enterprise cousins, 
             which have highly variable work loads, embedded systems usually serve a specific purpose with known
             clients that follow a more predictable access pattern. This allows an embedded system to define a range
-            of operation that is considered "normal" and to tigger alerts and defenses if access is outside of this 
+            of operation that is considered "normal" and to trigger alerts and defenses if access is outside of this 
             "normal" operation.</p>
             <p>For example: an embedded system may expect to be accessed by at most 1 or 2 clients at a time. Appweb can then be
             configured to regard it as threat if the system is accessed by more than 2 clients.</p>
-            <a id="Monitors"></a>
+            <a id="monitors"></a>
             <h2 class="section">Monitors</h2>
             <p>Monitors are defined in the <i>appweb.conf</i> configuration file via the <a href="">Monitor</a> directive.
             The monitor directive takes the form:</p>
@@ -85,16 +90,17 @@ Monitor Expression Period List-of-Defenses...
             <p>The monitor directive defines an expression to be regularly tested. The Period defines how often it will
             be tested. If the expression is true, the list of defenses will be invoked to address the threat. For example:</p>
             <pre>
-Monitor "Errors > 20" 1min report
+Monitor "Errors &gt; 20" 1min report
 </pre>
-            <p>This will test each minute if any client has more than 20 errors in the preceeding period. If any are found, 
+            <p>This will test each minute if any client has more than 20 errors in the preceding period. If any are found, 
             the "report" defense will be invoked.
             <h3>Monitor Expressions</h3>
-            <p>Monitor expressions are simple comparisions between a server Counter and a limit wrapped in quotes. 
+            <p>Monitor expressions are simple comparisons between a server Counter and a limit wrapped in quotes. 
             They take the form:</p>
-            <pre>"Counter [<|>] Limit"</pre>
-            <p>Although a monitor can only access one counter, multiple monitors can be created. </p
-            <a id="Counters"></a>
+            <pre>"Counter [&lt;|&gt;] Limit"</pre>
+            <p>Although a monitor can only access one counter, multiple monitors can be created. </p>
+
+            <a id="counters"></a>
             <h2 class="section">Counters</h2>
             <p>Counters are metrics defined and maintained by Appweb for monitoring purposes.</p>
             <p>Appweb provides three classes of of counters:</p>
@@ -109,7 +115,7 @@ Monitor "Errors > 20" 1min report
             <h3>Server-Wide Counters</h3>
             <p>The server-wide counters are accumulated for the entire Appweb server and not per-client IP address.
             The value examined by Monitors is the current value of the counter.</p>
-            <table>
+            <table title="monitors">
                 <thead>
                     <tr><th>Name</th><th>Description</th><th>Notes</th></tr>
                 </thead>
@@ -122,7 +128,7 @@ Monitor "Errors > 20" 1min report
                 </tr>
                 <tr>
                     <td>ActiveProcesses</td>
-                    <td>Count of CGI processess actively running.</td>
+                    <td>Count of CGI processes actively running.</td>
                     <td></td>
                 </tr>
                 <tr>
@@ -137,7 +143,7 @@ Monitor "Errors > 20" 1min report
             <p>All the per-client counters are accumulated for each client IP address. For all counters except ActiveConnections and
             ActiveRequests, the value examined by Monitors is the <i>change</i> in the value over the monitor period. ActiveConnections and 
             ActiveRequests are instantaneous values.</p>
-            <table>
+            <table title="counters">
                 <thead>
                     <tr><th>Name</th><th>Description</th></tr>
                 </thead>
@@ -157,6 +163,8 @@ Monitor "Errors > 20" 1min report
             BadRequestErrors or NotFoundErrors may indicate hacking activity. Similarly, too many SSLErrors may be an indication that
             someone is probing the SSL implementation.</p>
             <p>The <i>Errors</i> counter is an aggregation of all request errors regardless of classification.</p>
+
+            <a id="defenses"></a>
             <h2>Defenses</h2>
             <p>Monitors specify one or more <i>Defenses</i> to be invoked when the monitor is triggered. Defenses invoke remedies
             to mitigate the threat.</p>
@@ -173,16 +181,18 @@ KEYWORD=VALUE
             <p>The VALUE string may embed other keyword values by using the form: "${KEYWORD}". This will substitute the value 
             of the keyword. For example:</p>
             <pre>REMDY=ban PERIOD=10mins</pre>
+
+            <a id="remedies"></a>
             <h2>Remedies</h2>
             <p>Appweb provides a suite of remedies for Defenses to invoke to mitigate security threats. The remedy names are used in Defense
             directives.</p>
-            <table>
+            <table title="remedies">
                 <thead>
                     <tr><th>Name</th><th>Description</th></tr>
                 </thead>
                 <tbody>
                     <tr><td>ban</td><td>Ban the client IP address.</td></tr>
-                    <tr><td>cmd</td><td>Run an extenal command.</td></tr>
+                    <tr><td>cmd</td><td>Run an external command.</td></tr>
                     <tr><td>delay</td><td>Delay requests from a client IP address.</td></tr>
                     <tr><td>email</td><td>Send an email message.</td></tr>
                     <tr><td>http</td><td>Invoke a HTTP request.</td></tr>
@@ -240,9 +250,9 @@ KEYWORD=VALUE
             <p>The reboot remedy will immediately reboot Appweb. This may be useful if the Memory utilization exceeds the
             defined limit. This should not be used in production as any memory growth should be diagnosed and eliminated. </p>
             
-            <h3>Generatel Notes</h3>
+            <h3>Generate Notes</h3>
             <p>All remedies have access the following KEYWORDS. These are also used in the message:</p>
-            <table>
+            <table title="keywords">
                 <thead>
                     <tr><th>Name</th><th>Description</th></tr>
                 </thead>
@@ -257,6 +267,8 @@ KEYWORD=VALUE
                     <tr><td>VALUE</td><td>Counter value</td></tr>
                 </tbody>
             </table>
+
+            <a id="examples"></a>
             <h2>Examples</h2>
             <pre>
 Defense block REMEDY=ban PERIOD=30mins
@@ -264,17 +276,19 @@ Defense alarm REMEDY=cmd CMD="afplay klaxon.mp3"
 Defense goslow REMEDY=delay PERIOD=10mins DELAY=1sec
 Defense report REMEDY=http URI=http://example.com/report
 Defense notify REMEDY=email TO=info@example.com
-Monitor "NotFoundErrors > 20" 1min block
-Monitor "Errors > 100" 1min block
-Monitor "NetworkIO > 50MB" 1min block
-Monitor "ActiveConnections > 10" 1min block
-Monitor "ActiveRequests > 10" 1min block
+Monitor "NotFoundErrors &gt; 20" 1min block
+Monitor "Errors &gt; 100" 1min block
+Monitor "NetworkIO &gt; 50MB" 1min block
+Monitor "ActiveConnections &gt; 10" 1min block
+Monitor "ActiveRequests &gt; 10" 1min block
 </pre>
+
+            <a id="apis"></a>
             <h2>APIs</h2>
             <p>You can define Monitors and Defenses via the appweb.conf file, or via the Appweb APIs:
-                httpAddDefense() and httpAddMonitor(). Via the API, you can also define remedies
-                using httpAddRemedy().</p>
-</pre>
+                <a href="../../../api/http.html#group___http_monitor_1gab63bf01d19bbbeda83109cbb8a240b8d">httpAddDefense</a> and 
+                <a href="../../../api/http.html#group___http_monitor_1ga931db10ade516aff29d2fd827b4450bb">httpAddMonitor</a>. Via the API, you can also define remedies
+                using <a href="../../../api/http.html#group___http_monitor_1ga511486e477c76397a37a3f0eeda236d2">httpAddRemedy</a>.</p>
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->

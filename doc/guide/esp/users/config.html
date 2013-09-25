@@ -39,11 +39,10 @@
                 <li><a href="#module">ESP Module</a></li>
                 <li><a href="#handler">ESP Handler</a></li>
                 <li><a href="#errors">Error Handling</a></li>
-                <li><a href="#dir">Directories</a></li>
                 <li><a href="#reload">Reloading</a></li>
                 <li><a href="#keep">Keep Source</a></li>
                 <li><a href="#mvc">MVC Applications</a></li>
-                <li><a href="#routes">Routes</a></li>
+                <li><a href="#routing">ESP Routes</a></li>
                 <li><a href="#database">Databases</a></li>
                 <li><a href="#compilation">Compilation</a></li>
                 <li><a href="#directives">Directives</a></li>
@@ -85,7 +84,8 @@
                 <li>Database access and binding</li>
             </ul>
             <p>This document will cover the various ESP directives and the steps to configure ESP applications.</p>
-            <a id="handler"></a>
+
+            <a id="module"></a>
             <h2 class="section">ESP Module</h2>
             <p>Before ESP can be used, the ESP web framework including the ESP handler must be loaded. ESP is packaged as 
             as an Appweb module called "<em>libmod_esp</em>". This is loaded into Appweb via the <em>LoadModule</em>
@@ -93,6 +93,8 @@
 <pre>LoadModule espHandler libmod_esp</pre>
             <p>This loads the <em>libmod_esp</em> module and invokes the ESP module initialization routine that registers
             ESP with Appweb.</p>
+
+            <a id="handler"></a>
             <h2>ESP Handler</h2>
             <p>For ESP to receive incoming client requests, the Appweb router must be told what requests to send to ESP.
             The <em>AddHandler</em> directive below achieves this. It tells Appweb that the <em>espHandler</em> will service
@@ -110,6 +112,7 @@
             directive to appweb.conf.</p>
 <pre>ShowErrors on</pre>
             <p>This will display errors to the browser in addition to sending the errors to the Appweb log.</p>
+
             <a id="reload"></a>
             <h3>Reloading</h3>
             <p>ESP supports an "edit-and-continue" development style where you can make modifications to ESP controllers
@@ -234,6 +237,8 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
 }</pre>
             <p>The client only receives the "settings" collection. Other collections such as the "server" collection
             are not passed to the client.</p>
+
+            <a id="routing"></a>
             <h2 class="section">ESP Routing</h2>
             <p>So far, we've covered the basics, but ESP provides very powerful routing and directives 
                 that can be utilized to custom configure ESP applications. 

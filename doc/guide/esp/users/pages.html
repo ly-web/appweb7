@@ -36,13 +36,9 @@
             <h1>Quick Nav</h1>
             <ul class="nav">
                 <li><a href="#embedded">Embedded C Code</a></li>
-                <li><a href="#configuration">Configuration</a></li>
-                <li><a href="#layouts">Layouts</a></li>
-                <li><a href="#paradigms">Paradigms</a></li>
-                <li><a href="#dir">Directories</a></li>
                 <li><a href="#directives">Directives</a></li>
                 <li><a href="#context">Request Context</a></li>
-                <li><a href="#compilation">Compilation</a></li>
+                <li><a href="#layouts">Layouts</a></li>
                 <li><a href="#debugging">Debugging</a></li>
             </ul>
 <!-- BeginDsi "dsi/espSeeAlso.html" -->
@@ -243,19 +239,19 @@ Today is &lt;%= mprGetDate(0); %&gt;&lt;
             <a href="../../../api/esp.html#group___esp_session_1ga60a5effb2a9ef53fdb02dbe865bf6093">espGetSession</a>
             APIs. However,
             the <em>@@variable</em> directive provides an easier way. With this directive, the params and session data
-            are examined (in that order) for the given variable name.
+            are examined (in that order) for the given variable name.</p>
             <p>In this example below if the URI: <em>http://example.com/test.esp?name=John</em> was used the following ESP
-            template could be used to access the "<em>name</em>" query value.
+            template could be used to access the "<em>name</em>" query value.</p>
             <pre>
 &lt;h2&gt;My name is <b>@@name</b>&lt;/h2&gt;
 </pre>
             <p>This directive is very useful for accessing any request, form, query or session data.</p>
             <h3>@!variables</h3>
-            <p>ESP provides a shorthand for accessing C string variables inline.
+            <p>ESP provides a shorthand for accessing C string variables inline.</p>
 <pre>
-<%^start
+&lt;%^start
     char *weather = "fine";
-%>
+%&gt;
 &lt;h2&gt;Current weather is <b>@!fine</b>&lt;/h2&gt;
 </pre>
             <p>This is equivalent to:</p>
@@ -265,15 +261,15 @@ Today is &lt;%= mprGetDate(0); %&gt;&lt;
             <h3>@#field</h3>
             <p>ESP provides a shorthand for accessing field data in the current database record. Controllers will
             often setup the environment for a view by defining a "current" database record.
-            The <em>@#field</em> directive provides an easy way to access any field in the current record. 
+            The <em>@#field</em> directive provides an easy way to access any field in the current record. </p>
             <p>If a controller defined a current "<em>user</em>" record, this example below would extract the 
-            "<em>name</em>" field for display.
+            "<em>name</em>" field for display.</p>
             <pre>
 &lt;h2&gt;My name is <b>@#name</b>&lt;/h2&gt;
 </pre>
         <a id="context"></a>
         <h2 class="section">Request Context </h2>
-            <p>The full HTTP request context is provided by a set of objects. These include:
+            <p>The full HTTP request context is provided by a set of objects. These include:</p>
             <ul>
                 <li>Request 
                     <a href="../../../api/esp.html#group___esp_abbrev_1gad638c34898123293ebc120c1f9396a9c">Params</a> &mdash; Request query and form data</li>
@@ -287,15 +283,15 @@ Today is &lt;%= mprGetDate(0); %&gt;&lt;
                 <li><a href="../../../api/esp.html#group___esp_req">EspReq</a> &mdash; Additional ESP specific request state</li>
             </ul>
             <p>The Rx, Tx, Host, Route, EspRoute and EspReq objects are all addressable from the HttpConn object. 
-            <p>Here is a collection of especially useful context items:</p>
+            Here is a collection of especially useful context items:</p>
             <table title="items">
                 <tr><td>getConn()</td><td>Get the current HttpConn object. Can be used inside controllers and 
                     template web pages</td></tr>
                 <tr><td>conn-&gt;rx</td><td>Request object</td>
                 <tr><td>conn-&gt;tx</td><td>Transmit object</td>
                 <tr><td>conn-&gt;host</td><td>Host object</td>
-                <tr><td>conn-&gt;rx->route</td><td>Route object</td>
-                <tr><td nowrap="nowrap">conn-&gt;rx->route->eroute</td><td>ESP Extended Route object</td>
+                <tr><td>conn-&gt;rx-&gt;route</td><td>Route object</td>
+                <tr><td class="nowrap">conn-&gt;rx-&gt;route-&gt;eroute</td><td>ESP Extended Route object</td>
                 <tr><td>rx-&gt;method</td><td>HTTP method string</td>
                 <tr><td>rx-&gt;uri</td><td>Request URI</td>
                 <tr><td>rx-&gt;pathInfo</td><td>Request path information after the scriptName</td>
@@ -306,14 +302,16 @@ Today is &lt;%= mprGetDate(0); %&gt;&lt;
                 <tr><td>route-&gt;documents</td><td>Document root directory for the route</td>
                 <tr><td>route-&gt;home</td><td>Route home directory</td>
             </table>
+
             <p>See the <a href="../../../api/native.html">Native APIs</a> document for more details about the available
             APIs. See the <a href="generator.html">ESP Generator</a> documentation for full details.</p>
+            
             <h2 class="section">Common Tasks</h2>
             <h3>Writing Data</h3>
             <p>ESP provides a set of rendering APIs to send formatted and unformatted data in the response.
             The most common is <a href="../../../api/esp.html#group___esp_abbrev_1gaf89154adc3cbf6d6a6a32c6b4457c593">render</a>
-            which uses printf style formatting before sending the data to the client. For example:
-            <pre>render("Today, the temp is %d", temp);</pre></p>
+            which uses printf style formatting before sending the data to the client. For example:</p>
+            <pre>render("Today, the temp is %d", temp);</pre>
             <p>Other useful render routines include:</p>
             <ul>
                 <li><a href="../../../api/esp.html#group___esp_abbrev_1ga40445cbba9d5b3a5baec51e59e3d6340">renderSafe</a> which
@@ -337,7 +335,7 @@ Today is &lt;%= mprGetDate(0); %&gt;&lt;
             <a href="../../../api/esp.html#group___esp_req_1ga2b1dc5b4a688fc1062395d6420e85ef9">espRedirect</a> API. For 
             example:</p>
             <pre>espRedirect(getConn(), 302, "checkout.html");</pre>
-            <h3>Setting the HTTP Resposne Code</h3>
+            <h3>Setting the HTTP Response Code</h3>
             <p>Use the 
             <a href="../../../api/esp.html#group___esp_abbrev_1ga63470999d986c7d2d064dc44cdc2fcac">setStatus</a> API to
             set the HTTP status response code. For example:</p>

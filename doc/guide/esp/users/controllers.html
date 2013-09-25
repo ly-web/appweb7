@@ -111,7 +111,7 @@ ESP_EXPORT int esp_controller_greeting(HttpRoute *route)
         <p>This set of directives will create a route that will invoke the controller <em>controllers/greeting.c</em>.
         If the <em>/greeting/hello</em> URI is invoked, the <em>hello</em> action function will be invoked.
         The Target directive defines how the action function name to invoke. You can optionally use the
-        <a href="../appweb/users/dir/route.html#methods">Methods</a> directive to specify the support HTTP method verbs.</p>
+        <a href="../../appweb/users/dir/route.html#methods">Methods</a> directive to specify the support HTTP method verbs.</p>
         <h3>ESP MVC Applications</h3>
         <p>The Model-view-controller (MVC) architecture is a well-proven organization for web applications. 
         A key reason is that MVC apps separate the logic (<em>controllers</em>), from the presentation (<em>views</em>) 
@@ -119,7 +119,7 @@ ESP_EXPORT int esp_controller_greeting(HttpRoute *route)
         create maintainable applications.</p>
         <p>In an ESP MVC application, there are typically many <em>controllers</em> located by default 
         in the <em>controllers</em> directory.
-        <p>ESP MVC applications and thier controllers can be easily created via the 
+        <p>ESP MVC applications and their controllers can be easily created via the 
         <a href="generator.html">esp</a> generator command. The <em>esp</em> command is used to create a bare ESP 
         MVC application with a directory for controllers, views, databases and other necessary configuration files. 
         For example:</p> 
@@ -214,7 +214,7 @@ static FUNCTION() {
     ...
 }
 /*
-    Controller module initialzation routine
+    Controller module initialization routine
  */
 ESP_EXPORT int esp_controller_APP_NAME(HttpRoute *route) 
 {
@@ -223,7 +223,7 @@ ESP_EXPORT int esp_controller_APP_NAME(HttpRoute *route)
 }
 </pre>
             <h3></h3>
-            <p>If you want to programatically bind a C function to a URI without creating a loadable module and without
+            <p>If you want to programmatically bind a C function to a URI without creating a loadable module and without
             defining an appweb.conf route, 
             you can call the <a href="../../../api/esp.html#group___esp_route_1ga0d812aed0ff96f0ffa281860270e8910">espBindProc</a>
             API. This will create a new route by inheriting settings from an existing route and then define an action
