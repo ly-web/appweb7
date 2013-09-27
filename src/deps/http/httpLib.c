@@ -2642,7 +2642,7 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
         return 0;
     }
     if (mprGetHashLength(http->addresses) > conn->limits->clientMax) {
-        mprError("Too many concurrent clients %d/%d", mprGetHashLength(http->addresses), conn->limits->connectionsMax);
+        mprError("Too many concurrent clients %d/%d", mprGetHashLength(http->addresses), conn->limits->clientMax);
         httpDestroyConn(conn);
         return 0;
     }
@@ -5472,7 +5472,7 @@ PUBLIC void httpGetStats(HttpStats *sp)
     lock(http->addresses);
     for (ITERATE_KEY_DATA(http->addresses, kp, address)) {
         sp->activeRequests += (int) address->counters[HTTP_COUNTER_ACTIVE_REQUESTS].value;
-        sp->activeClients += (int) address->counters[HTTP_COUNTER_ACTIVE_CLIENTS].value;
+        sp->activeClients++;
     }
     unlock(http->addresses);
     sp->totalRequests = http->totalRequests;
