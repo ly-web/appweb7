@@ -14,8 +14,7 @@ app.controller('${TITLE}Control', function ($rootScope, $scope, $location, $rout
         });
     } else if ($location.path() == "${SERVICE}/${NAME}/") {
         $scope.action = "Create";
-        $scope.${NAME} = new ${TITLE}();
-        $scope.data = $scope.${NAME};
+        $scope.data = $scope.${NAME} = {};
         ${TITLE}.init({id: $routeParams.id}, function(response) {
             $scope.schema = response.schema;
         });
