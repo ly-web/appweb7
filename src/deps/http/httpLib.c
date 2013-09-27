@@ -5184,7 +5184,10 @@ static void httpTimer(Http *http, MprEvent *event)
     HttpConn    *conn;
     HttpStage   *stage;
     HttpLimits  *limits;
+    HttpAddress *address;
     MprModule   *module;
+    MprKey      *kp;
+    int         removed;
     int         next, active, abort;
 
     assert(event);
@@ -5238,6 +5241,23 @@ static void httpTimer(Http *http, MprEvent *event)
             }
         }
     }
+
+    /*
+        Expire old client addresses
+     */
+    lock(http->addresses);
+    do {
+        removed = 0;
+        for (ITERATE_KEY_DATA(http->addresses, kp, address)) {
+            if ((address->updated + http->monitorMaxPeriod) < http->now) {
+                mprRemoveKey(http->addresses, kp->key);
+                removed = 1;
+                break;
+            }
+        }
+    } while (removed);
+    unlock(http->addresses);
+
     if (active == 0) {
         mprRemoveEvent(event);
         http->timer = 0;
