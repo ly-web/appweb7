@@ -91,7 +91,7 @@ model/iges igs iges
 model/mesh msh mesh silo
 model/vrml wrl vrml
 text/css css less
-text/html html htm esp egi
+text/html html htm ejs esp egi
 text/plain asc txt
 text/richtext rtx
 text/rtf rtf
