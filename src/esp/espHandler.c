@@ -268,8 +268,7 @@ static int runAction(HttpConn *conn)
             if (espModuleIsStale(req->controllerPath, req->module, &recompile)) {
                 mprLog(4, "ESP controller %s is newer than module %s, recompiling ...", source, req->controllerPath, req->module);
                 /*  WARNING: GC yield here */
-                if (recompile && 
-                        !espCompile(route, conn->dispatcher, req->controllerPath, req->module, req->cacheName, 0, &errMsg)) {
+                if (recompile && !espCompile(route, conn->dispatcher, req->controllerPath, req->module, req->cacheName, 0, &errMsg)) {
                     httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, errMsg);
                     unlock(req->esp);
                     return 0;
@@ -427,8 +426,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
             }
             if (recompile) {
                 /* WARNING: this will allow GC */
-                if (recompile &&
-                        !espCompile(rx->route, conn->dispatcher, req->source, req->module, req->cacheName, 1, &errMsg)) {
+                if (recompile && !espCompile(rx->route, conn->dispatcher, req->source, req->module, req->cacheName, 1, &errMsg)) {
                     httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, errMsg);
                     unlock(req->esp);
                     return;

@@ -278,8 +278,7 @@ static int runCommand(HttpRoute *route, MprDispatcher *dispatcher, cchar *comman
 
     WARNING: this routine blocks and runs GC. All parameters must be retained.
  */
-PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *source, cchar *module, cchar *cacheName, 
-    int isView, char **errMsg)
+PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *source, cchar *module, cchar *cacheName, int isView, char **errMsg)
 {
     MprFile     *fp;
     EspRoute    *eroute;
@@ -303,7 +302,7 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
             layout = mprJoinPath(eroute->layoutsDir, "default.esp");
         }
         if ((script = espBuildScript(route, page, source, cacheName, layout, NULL, &err)) == 0) {
-            *errMsg = sfmt("Cannot build %s, error %s", source, err);
+            *errMsg = sfmt("Cannot build: %s, error: %s", source, err);
             return 0;
         }
         csource = mprJoinPathExt(mprTrimPathExt(module), ".c");
