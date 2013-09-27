@@ -2501,6 +2501,7 @@ PUBLIC void httpConnTimeout(HttpConn *conn)
         }
     }
     httpDisconnect(conn);
+    httpSetupWaitHandler(conn, MPR_READABLE);
 }
 
 
