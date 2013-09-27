@@ -2500,8 +2500,12 @@ PUBLIC void httpConnTimeout(HttpConn *conn)
             }
         }
     }
-    httpDisconnect(conn);
-    httpSetupWaitHandler(conn, MPR_READABLE);
+    if (!conn->sock || conn->sock->fd == INVALID_SOCKET) {
+        httpDestroyConn(conn);
+    } else {
+        httpSetupWaitHandler(conn, MPR_READABLE);
+        httpDisconnect(conn);
+    }
 }
 
 
