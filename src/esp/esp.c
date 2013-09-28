@@ -780,7 +780,7 @@ static int runEspCommand(HttpRoute *route, cchar *command, cchar *csource, cchar
 static void compileFile(HttpRoute *route, cchar *source, int kind)
 {
     EspRoute    *eroute;
-    cchar       *canonical, *defaultLayout, *page, *layout, *data, *prefix, *lpath;
+    cchar       *canonical, *defaultLayout, *page, *layout, *data, *prefix, *lpath, *appName;
     char        *err, *quote, *script;
     ssize       len;
     int         recompile;
@@ -800,7 +800,8 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
         prefix = "view_";
     }
     canonical = mprGetPortablePath(mprGetRelPath(source, route->documents));
-    app->cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", eroute->appName, canonical), -1, prefix);
+    appName = eroute->appName ? eroute->appName : route->host->name;
+    app->cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", appName, canonical), -1, prefix);
     app->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, app->cacheName, BIT_SHOBJ));
     defaultLayout = (eroute->layoutsDir) ? mprJoinPath(eroute->layoutsDir, "default.esp") : 0;
     mprMakeDir(eroute->cacheDir, 0755, -1, -1, 1);

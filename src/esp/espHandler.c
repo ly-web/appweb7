@@ -346,6 +346,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     EspRoute    *eroute;
     EspReq      *req;
     EspViewProc view;
+    cchar       *appName;
     
     rx = conn->rx;
     req = conn->data;
@@ -380,7 +381,8 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         source = mprTrimPathDrive(source);
 #endif
         canonical = mprGetPortablePath(mprGetRelPath(source, req->route->documents));
-        req->cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", eroute->appName, canonical), -1, "view_");
+        appName = eroute->appName ? eroute->appName : route->host->name;
+        req->cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", appName, canonical), -1, "view_");
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
         if (!mprPathExists(req->source, R_OK)) {
@@ -485,7 +487,7 @@ static char *getControllerEntry(cchar *appName, cchar *controllerName)
 static int loadApp(HttpRoute *route, MprDispatcher *dispatcher)
 {
     EspRoute    *eroute;
-    cchar       *canonical, *source, *cacheName;
+    cchar       *canonical, *source, *cacheName, *appName;
 
     eroute = route->eroute;
     if (!eroute->appName) {
@@ -496,7 +498,8 @@ static int loadApp(HttpRoute *route, MprDispatcher *dispatcher)
         return 0;
     };
     canonical = mprGetPortablePath(mprGetRelPath(source, route->documents));
-    cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", eroute->appName, canonical), -1, "app_");
+    appName = eroute->appName ? eroute->appName : route->host->name;
+    cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", appName, canonical), -1, "app_");
     eroute->appModulePath = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, cacheName, BIT_SHOBJ));
 
 #if !BIT_STATIC
