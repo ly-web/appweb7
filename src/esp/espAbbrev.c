@@ -307,7 +307,19 @@ PUBLIC MprHash *makeHash(cchar *fmt, ...)
     va_start(args, fmt);
     str = sfmtv(fmt, args);
     va_end(args);
-    return ediMakeHash("%s", str);
+    return mprDeserialize(str);
+}
+
+
+PUBLIC MprJson *makeJson(cchar *fmt, ...)
+{
+    va_list     args;
+    cchar       *str;
+
+    va_start(args, fmt);
+    str = sfmtv(fmt, args);
+    va_end(args);
+    return mprParseJson(str);
 }
 
 

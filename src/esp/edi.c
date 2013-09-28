@@ -209,13 +209,19 @@ PUBLIC cchar *ediGetTableSchemaAsJson(Edi *edi, cchar *tableName)
 
 PUBLIC cchar *ediGetGridSchemaAsJson(EdiGrid *grid)
 {
-    return ediGetTableSchemaAsJson(grid->edi, grid->tableName);
+    if (grid) {
+        return ediGetTableSchemaAsJson(grid->edi, grid->tableName);
+    }
+    return 0;
 }
 
 
 PUBLIC cchar *ediGetRecSchemaAsJson(EdiRec *rec)
 {
-    return ediGetTableSchemaAsJson(rec->edi, rec->tableName);
+    if (rec) {
+        return ediGetTableSchemaAsJson(rec->edi, rec->tableName);
+    }
+    return 0;
 }
 
 
@@ -921,6 +927,18 @@ PUBLIC MprHash *ediMakeHash(cchar *fmt, ...)
 
     va_start(args, fmt);
     obj = mprDeserialize(sfmtv(fmt, args));
+    va_end(args);
+    return obj;
+}
+
+
+PUBLIC MprJson *ediMakeJson(cchar *fmt, ...)
+{
+    MprJson     *obj;
+    va_list     args;
+
+    va_start(args, fmt);
+    obj = mprParseJson(sfmtv(fmt, args));
     va_end(args);
     return obj;
 }
