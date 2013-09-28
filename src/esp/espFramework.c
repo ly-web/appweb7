@@ -493,14 +493,14 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             if ((msettings = mprGetJson(eroute->config, sfmt("modes.%s", eroute->mode), 0)) != 0) {
                 mprBlendJson(mprLookupJson(eroute->config, "settings"), msettings, 0);
             }
-            if (espTestConfig(route, "settings.showErrors", "true")) {
-                httpSetRouteShowErrors(route, 1);
+            if ((value = espGetConfig(route, "settings.showErrors", 0)) != 0) {
+                httpSetRouteShowErrors(route, smatch(value, "true"));
             }
-            if (espTestConfig(route, "settings.update", "true")) {
-                eroute->update = 1;
+            if ((value = espGetConfig(route, "settings.update", 0)) != 0) {
+                eroute->update = smatch(value, "true");
             }
-            if (espTestConfig(route, "settings.keepSource", "true")) {
-                eroute->keepSource = 1;
+            if ((value = espGetConfig(route, "settings.keepSource", 0)) != 0) {
+                eroute->keepSource = smatch(value, "true");
             }
             if ((eroute->serverPrefix = espGetConfig(route, "settings.serverPrefix", 0)) == 0) {
                 eroute->serverPrefix = sclone(BIT_ESP_SERVER_PREFIX);
@@ -509,11 +509,11 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 /* Automatic login as this user. Password not required */
                 httpSetAuthUsername(route->auth, value);
             }
-            if (espTestConfig(route, "settings.xsrfToken", "true")) {
-                httpSetRouteXsrf(route, 1);
+            if ((value = espGetConfig(route, "settings.xsrfToken", 0)) != 0) {
+                httpSetRouteXsrf(route, smatch(value, "true"));
             }
-            if (espTestConfig(route, "settings.sendJson", "true")) {
-                eroute->json = 1;
+            if ((value = espGetConfig(route, "settings.sendJson", 0)) != 0) {
+                eroute->json = smatch(value, "true");
             }
             if (espTestConfig(route, "settings.map", "compressed")) {
                 httpAddRouteMapping(route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
