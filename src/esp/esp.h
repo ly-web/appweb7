@@ -2025,6 +2025,17 @@ PUBLIC bool isSecure();
 PUBLIC MprHash *makeHash(cchar *fmt, ...);
 
 /**
+    Make a JSON object container of property values
+    @description This routine formats the given arguments, parses the result into a JSON object.
+    @param fmt Printf style format string
+    @param ... arguments
+    @return MprJson instance
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC MprJson *makeJson(cchar *fmt, ...);
+
+/**
     Make a record
     @description This call makes a free-standing data record based on the JSON format content string.
         The record is not saved to the database.

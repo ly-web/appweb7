@@ -703,7 +703,7 @@ PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value);
     @description This routine updates the record object with the given values. The "data' argument supplies 
         a hash of fieldNames and values. The data hash may come from the request params() or it can be manually
         created via #ediMakeHash to convert a JSON string into an options hash.
-        For example: ediSetFields(rec, mprJsonParse("{ name: '%s', address: '%s' }", name, address))
+        For example: ediSetFields(rec, mprParseJson("{ name: '%s', address: '%s' }", name, address))
         The record will not be written
         to the database. To write to the database, use #ediUpdateRec.
     @param rec Record to update
@@ -871,8 +871,7 @@ PUBLIC char *ediGetTypeString(int type);
 /**
     Make a hash container of property values.
     @description This routine formats the given arguments, parses the result as a JSON string and returns an 
-        equivalent hash of property values. The result after formatting should be of the form:
-        ediMakeHash("{ key: 'value', key2: 'value', key3: 'value' }");
+        equivalent hash of property values. 
     @param fmt Printf style format string
     @param ... arguments
     @return MprHash instance
@@ -880,6 +879,17 @@ PUBLIC char *ediGetTypeString(int type);
     @stability Evolving
  */
 PUBLIC MprHash *ediMakeHash(cchar *fmt, ...);
+
+/**
+    Make a JSON container of property values.
+    @description This routine formats the given arguments, parses the result into a JSON object.
+    @param fmt Printf style format string
+    @param ... arguments
+    @return MprJson instance
+    @ingroup Edi
+    @stability Evolving
+ */
+PUBLIC MprJson *ediMakeJson(cchar *fmt, ...);
 
 /**
     Make a grid.
