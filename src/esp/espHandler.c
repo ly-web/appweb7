@@ -1211,14 +1211,16 @@ PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *rout
  */
 static int espResourceDirective(MaState *state, cchar *key, cchar *value)
 {
-    char    *name, *next;
+    EspRoute    *eroute;
+    char        *name, *next;
 
+    eroute = state->route->eroute;
     if (value == 0 || *value == '\0') {
-        httpAddResource(state->route, "", "{controller}");
+        httpAddResource(state->route, eroute->serverPrefix, "{controller}");
     } else {
         name = stok(sclone(value), ", \t\r\n", &next);
         while (name) {
-            httpAddResource(state->route, "", name);
+            httpAddResource(state->route, eroute->serverPrefix, name);
             name = stok(NULL, ", \t\r\n", &next);
         }
     }
@@ -1231,14 +1233,16 @@ static int espResourceDirective(MaState *state, cchar *key, cchar *value)
  */
 static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
 {
-    char    *name, *next;
+    EspRoute    *eroute;
+    char        *name, *next;
 
+    eroute = state->route->eroute;
     if (value == 0 || *value == '\0') {
-        httpAddResourceGroup(state->route, "", "{controller}");
+        httpAddResourceGroup(state->route, eroute->serverPrefix, "{controller}");
     } else {
         name = stok(sclone(value), ", \t\r\n", &next);
         while (name) {
-            httpAddResourceGroup(state->route, "", name);
+            httpAddResourceGroup(state->route, eroute->serverPrefix, name);
             name = stok(NULL, ", \t\r\n", &next);
         }
     }

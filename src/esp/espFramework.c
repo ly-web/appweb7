@@ -505,7 +505,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             if ((eroute->serverPrefix = espGetConfig(route, "settings.serverPrefix", 0)) == 0) {
                 eroute->serverPrefix = sclone(BIT_ESP_SERVER_PREFIX);
             }
-            if ((value = espGetConfig(route, "settings.username", 0)) != 0) {
+            if ((value = espGetConfig(route, "settings.login.name", 0)) != 0) {
                 /* Automatic login as this user. Password not required */
                 httpSetAuthUsername(route->auth, value);
             }

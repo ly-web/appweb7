@@ -7,14 +7,19 @@
             showErrors: true,
             keepSource: true,
             update: true,
-            username: "admin",
+            login: {
+                name: "",
+                abilities: {
+                    edit: true,
+                    view: true,
+                },
+            },
         },
         release: {
             map: "compressed",
             showErrors: false,
             update: false,
             keepSource: false,
-            username: "",
         },
     },
     settings: {
