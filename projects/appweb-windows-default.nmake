@@ -3,7 +3,7 @@
 #
 
 PRODUCT            = appweb
-VERSION            = 4.4.0
+VERSION            = 4.4.1
 BUILD_NUMBER       = 0
 PROFILE            = default
 PA                 = $(PROCESSOR_ARCHITECTURE)
@@ -387,7 +387,7 @@ clean:
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.4.0-0
+	@echo 4.4.1-0
 
 #
 #   bit.h

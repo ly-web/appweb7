@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{c62b9e06-2db0-4186-a1f4-bcde0778635b}</ProjectGuid>
+    <ProjectGuid>{1bf6fe79-5f07-4944-8520-9375700c1714}</ProjectGuid>
     <RootNamespace />
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -97,7 +97,7 @@
 
 <ItemGroup>
   <ProjectReference Include="testAppweb.vcxproj">
-  <Project>7316f140-3a06-4125-a34a-f39d11bb56ef</Project>
+  <Project>125c9085-1d6d-401a-b829-5845ad1f4d7f</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>
