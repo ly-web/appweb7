@@ -132,7 +132,7 @@ PUBLIC void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *option
     MprHash     *options;
 
     options = httpGetOptions(optionString);
-    httpSetOption(options, EDATA("click"), httpLink(conn, uri, NULL));
+    httpSetOption(options, EDATA("click"), httpUri(conn, uri, NULL));
     espRender(conn, "<button%s>%s</button>", map(conn, options), text);
 }
 
@@ -205,7 +205,7 @@ PUBLIC void espForm(HttpConn *conn, EdiRec *record, cchar *optionString)
     if ((action = httpGetOption(options, "action", 0)) == 0) {
         action = (recid) ? "@update" : "@create";
     }
-    uri = httpLink(conn, action, NULL);
+    uri = httpUri(conn, action, NULL);
     if (smatch(httpGetOption(options, "remote", 0), "true")) {
         espRender(conn, "<form method='%s' " EDATA("remote") "='%s'%s >\r\n", method, uri, map(conn, options));
     } else {
@@ -236,7 +236,7 @@ PUBLIC void espIcon(HttpConn *conn, cchar *uri, cchar *optionString)
     } else if (*uri == 0) {
         uri = sjoin("~/", mprGetPathBase(eroute->clientDir), "/images/favicon.ico", NULL);
     }
-    espRender(conn, "<link href='%s' rel='shortcut icon'%s />", httpLink(conn, uri, NULL), map(conn, options));
+    espRender(conn, "<link href='%s' rel='shortcut icon'%s />", httpUri(conn, uri, NULL), map(conn, options));
 }
 
 
@@ -245,7 +245,7 @@ PUBLIC void espImage(HttpConn *conn, cchar *uri, cchar *optionString)
     MprHash     *options;
 
     options = httpGetOptions(optionString);
-    espRender(conn, "<img src='%s'%s />", httpLink(conn, uri, NULL), map(conn, options));
+    espRender(conn, "<img src='%s'%s />", httpUri(conn, uri, NULL), map(conn, options));
 }
 
 
@@ -403,7 +403,7 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
     eroute = conn->rx->route->eroute;
     options = httpGetOptions(optionString);
     if (uri) {
-        espRender(conn, "<script src='%s' type='text/javascript'></script>", httpLink(conn, uri, NULL));
+        espRender(conn, "<script src='%s' type='text/javascript'></script>", httpUri(conn, uri, NULL));
     } else {
         minified = smatch(httpGetOption(options, "minified", 0), "true");
         indent = "";
@@ -415,7 +415,7 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
                 espRender(conn, "%s<!-- [if lt IE 9]>\n", indent);
             }
             path = sjoin("~/", mprGetPathBase(eroute->clientDir), sp->name, minified ? ".min.js" : ".js", NULL);
-            uri = httpLink(conn, path, NULL);
+            uri = httpUri(conn, path, NULL);
             newline = sp[1].name ? "\r\n" :  "";
             espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
             if (sp->flags & SCRIPT_IE) {
@@ -437,14 +437,14 @@ PUBLIC void espStylesheet(HttpConn *conn, cchar *uri, cchar *optionString)
    
     eroute = conn->rx->route->eroute;
     if (uri) {
-        espRender(conn, "<link rel='stylesheet' type='text/css' href='%s' />", httpLink(conn, uri, NULL));
+        espRender(conn, "<link rel='stylesheet' type='text/css' href='%s' />", httpUri(conn, uri, NULL));
     } else {
         indent = "";
         options = httpGetOptions(optionString);
         less = smatch(httpGetOption(options, "type", "css"), "less");
         up = less ? defaultLess : defaultCss;
         for (; *up; up++) {
-            uri = httpLink(conn, sjoin("~/", mprGetPathBase(eroute->clientDir), *up, NULL), NULL);
+            uri = httpUri(conn, sjoin("~/", mprGetPathBase(eroute->clientDir), *up, NULL), NULL);
             newline = up[1] ? "\r\n" :  "";
             espRender(conn, "%s<link rel='stylesheet%s' type='text/css' href='%s' />%s", indent, less ? "/less" : "", uri, newline);
             indent = "    ";
@@ -469,12 +469,6 @@ static void filterCols(EdiGrid *grid, MprHash *options, MprHash *colOptions)
     gridCols = ediGetGridColumns(grid);
 
     if (colOptions) {
-#if UNUSED
-        if (!(colOptions->flags & MPR_HASH_LIST)) {
-            mprError("Grid columns must be an array");
-            return;
-        }
-#endif
         /*
             Sort grid record columns into the order specified by the column options
          */
@@ -829,7 +823,7 @@ PUBLIC void espTabs(HttpConn *conn, EdiGrid *grid, cchar *optionString)
         rec = grid->records[r];
         name = ediGetFieldValue(rec, "name");
         uri = ediGetFieldValue(rec, "uri");
-        uri = toggle ? uri : httpLink(conn, uri, 0);
+        uri = toggle ? uri : httpUri(conn, uri, 0);
         if ((r == 0 && toggle) || smatch(uri, conn->rx->pathInfo)) {
             klass = smatch(uri, conn->rx->pathInfo) ? " class='esp-selected'" : "";
         } else {
@@ -945,20 +939,6 @@ static cchar *getValue(HttpConn *conn, cchar *fieldName, MprHash *options)
 }
 
 
-#if UNUSED
-PUBLIC MprHash *makeParams(cchar *fmt, ...)
-{
-    va_list     args;
-    MprHash     *hash;
-
-    va_start(args, fmt);
-    hash = mprDeserialize(sfmtv(fmt, args));
-    va_end(args);
-    return hash;
-}
-#endif
-
-
 /*
     Map options to an attribute string. Remove all internal control specific options and transparently handle URI link options.
     WARNING: this returns a non-cloned reference and relies on no GC yield until the returned value is used or cloned.
@@ -991,7 +971,7 @@ static cchar *map(HttpConn *conn, MprHash *options)
                 Support link template resolution for these options
              */
             if (smatch(kp->key, EDATA("click")) || smatch(kp->key, EDATA("remote")) || smatch(kp->key, EDATA("refresh"))) {
-                value = httpLink(conn, value, options);
+                value = httpUri(conn, value, options);
                 if ((params = httpGetOptionHash(options, "params")) != 0) {
                     pstr = (char*) "";
                     for (kp = 0; (kp = mprGetNextKey(params, kp)) != 0; ) {

@@ -31,7 +31,7 @@ typedef struct Sdb {
 static int sqliteInitialized;
 static void initSqlite();
 
-#if UNUSED && KEEP
+#if KEEP
 static char *DataTypeToSqlType[] = {
     "binary":       "blob",
     "boolean":      "tinyint",
@@ -66,10 +66,11 @@ static char *dataTypeToSqlType[] = {
 static EdiRec *createBareRec(Edi *edi, cchar *tableName, int nfields);
 static EdiField makeRecField(cchar *value, cchar *name, int type);
 static void manageSdb(Sdb *sdb, int flags);
-static int mapQueryToEdiType(int type);
+static int mapSqliteTypeToEdiType(int type);
 static cchar *mapToSqlType(int type);
 static int mapToEdiType(cchar *type);
-static EdiGrid *query(Edi *edi, cchar *cmd);
+static EdiGrid *query(Edi *edi, cchar *cmd, ...);
+static EdiGrid *queryv(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list args);
 static int sdbAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags);
 static int sdbAddIndex(Edi *edi, cchar *tableName, cchar *columnName, cchar *indexName);
 static int sdbAddTable(Edi *edi, cchar *tableName);
@@ -78,14 +79,15 @@ static int sdbChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int ty
 static void sdbClose(Edi *edi);
 static EdiRec *sdbCreateRec(Edi *edi, cchar *tableName);
 static int sdbDelete(cchar *path);
-static int sdbDeleteRow(Edi *edi, cchar *tableName, cchar *key);
+static void sdbError(Edi *edi, cchar *fmt, ...);
+static int sdbRemoveRec(Edi *edi, cchar *tableName, cchar *key);
 static MprList *sdbGetColumns(Edi *edi, cchar *tableName);
 static int sdbGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid);
 static MprList *sdbGetTables(Edi *edi);
 static int sdbGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numCols);
 static int sdbLookupField(Edi *edi, cchar *tableName, cchar *fieldName);
 static Edi *sdbOpen(cchar *path, int flags);
-static EdiGrid *sdbQuery(Edi *edi, cchar *cmd);
+PUBLIC EdiGrid *sdbQuery(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list vargs);
 static EdiField sdbReadField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName);
 static EdiRec *sdbReadRec(Edi *edi, cchar *tableName, cchar *key);
 static EdiGrid *sdbReadWhere(Edi *edi, cchar *tableName, cchar *columnName, cchar *operation, cchar *value);
@@ -95,16 +97,18 @@ static int sdbRemoveTable(Edi *edi, cchar *tableName);
 static int sdbRenameTable(Edi *edi, cchar *tableName, cchar *newTableName);
 static int sdbRenameColumn(Edi *edi, cchar *tableName, cchar *columnName, cchar *newColumnName);
 static int sdbSave(Edi *edi);
+static void sdbTrace(Edi *edi, int level, cchar *fmt, ...);
 static int sdbUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName, cchar *value);
 static int sdbUpdateRec(Edi *edi, EdiRec *rec);
 static bool sdbValidateRec(Edi *edi, EdiRec *rec);
 static bool validateField(Sdb *sdb, EdiRec *rec, cchar *tableName, cchar *columnName, cchar *value);
+static bool validName(cchar *str);
 
 static EdiProvider SdbProvider = {
     "sdb",
     sdbAddColumn, sdbAddIndex, sdbAddTable, sdbAddValidation, sdbChangeColumn, sdbClose, sdbCreateRec, sdbDelete, 
-    sdbDeleteRow, sdbGetColumns, sdbGetColumnSchema, sdbGetTables, sdbGetTableSchema, NULL, sdbLookupField, 
-    sdbOpen, sdbQuery, sdbReadField, sdbReadRec, sdbReadWhere, sdbRemoveColumn, sdbRemoveIndex, sdbRemoveTable, 
+    sdbGetColumns, sdbGetColumnSchema, sdbGetTables, sdbGetTableSchema, NULL, sdbLookupField, sdbOpen, sdbQuery, 
+    sdbReadField, sdbReadRec, sdbReadWhere, sdbRemoveColumn, sdbRemoveIndex, sdbRemoveRec, sdbRemoveTable, 
     sdbRenameTable, sdbRenameColumn, sdbSave, sdbUpdateField, sdbUpdateRec, sdbValidateRec,
 };
 
@@ -129,6 +133,7 @@ static Sdb *sdbCreate(cchar *path, int flags)
     sdb->edi.flags = flags;
     sdb->edi.provider = &SdbProvider;
     sdb->edi.path = sclone(path);
+    sdb->edi.schemaCache = mprCreateHash(0, 0);
     sdb->schemas = mprCreateHash(0, MPR_HASH_STABLE);
     sdb->validations = mprCreateHash(0, MPR_HASH_STABLE);
     return sdb;
@@ -139,8 +144,11 @@ static void manageSdb(Sdb *sdb, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(sdb->edi.path);
+        mprMark(sdb->edi.schemaCache);
+        mprMark(sdb->edi.errMsg);
         mprMark(sdb->schemas);
         mprMark(sdb->validations);
+
     } else if (flags & MPR_MANAGE_FREE) {
         sdbClose((Edi*) sdb);
     }
@@ -176,13 +184,16 @@ static EdiRec *getSchema(Edi *edi, cchar *tableName)
     int         r;
 
     sdb = (Sdb*) edi;
+    if (!validName(tableName)) {
+        return 0;
+    }
     if ((schema = mprLookupKey(sdb->schemas, tableName)) != 0) {
         return schema;
     }
     /*
         Each result row represents an EDI column: CID, Name, Type, NotNull, Dflt_value, PK
      */
-    if ((grid = sdbQuery(edi, sfmt("PRAGMA table_info(\"%s\");", tableName))) == 0) {
+    if ((grid = query(edi, sfmt("PRAGMA table_info(%s);", tableName), NULL)) == 0) {
         return 0;
     }
     schema = createBareRec(edi, tableName, grid->nrecords);
@@ -192,9 +203,6 @@ static EdiRec *getSchema(Edi *edi, cchar *tableName)
         fp->name = rec->fields[1].value;
         fp->type = mapToEdiType(rec->fields[2].value);
         if (rec->fields[5].value && rec->fields[5].value[0] == '1') {
-            //  MOB - NOT_NULL, AUTO_INC ...
-            //  MOB - should have separeate field for ID
-            //  MOB - is ID always first?
             fp->flags = EDI_KEY;
         }
     }
@@ -261,6 +269,9 @@ static int sdbAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type,
     assert(columnName && *columnName);
     assert(type > 0);
 
+    if (!validName(tableName) || !validName(columnName)) {
+        return MPR_ERR_BAD_ARGS;
+    }
     if (sdbLookupField(edi, tableName, columnName) >= 0) {
         /* Already exists */
         return 0;
@@ -269,8 +280,7 @@ static int sdbAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type,
     /*
         The field types are used for the SQLite column affinity settings
      */
-    //  MOB - what about autinc, notnul, index, foreign flags?
-    if (query(edi, sfmt("ALTER TABLE %s ADD %s %s", tableName, columnName, mapToSqlType(type))) == 0) {
+    if (query(edi, sfmt("ALTER TABLE %s ADD %s %s", tableName, columnName, mapToSqlType(type)), NULL) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     return 0;
@@ -284,7 +294,10 @@ static int sdbAddIndex(Edi *edi, cchar *tableName, cchar *columnName, cchar *ind
     assert(columnName && *columnName);
     assert(indexName && *indexName);
 
-    return query(edi, sfmt("CREATE INDEX %s ON %s (%s);", indexName, tableName, columnName)) != 0;
+    if (!validName(tableName) || !validName(columnName) || !validName(indexName)) {
+        return MPR_ERR_BAD_ARGS;
+    }
+    return query(edi, sfmt("CREATE INDEX %s ON %s (%s);", indexName, tableName, columnName), NULL) != 0;
 }
 
 
@@ -293,6 +306,9 @@ static int sdbAddTable(Edi *edi, cchar *tableName)
     assert(edi);
     assert(tableName && *tableName);
 
+    if (!validName(tableName)) {
+        return MPR_ERR_BAD_ARGS;
+    }
     if (query(edi, sfmt("DROP TABLE IF EXISTS %s;", tableName)) == 0) {
         return MPR_ERR_CANT_DELETE;
     }
@@ -300,7 +316,8 @@ static int sdbAddTable(Edi *edi, cchar *tableName)
         SQLite cannot add a primary key after the table is created
      */
     removeSchema(edi, tableName);
-    return query(edi, sfmt("CREATE TABLE %s (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL);", tableName)) != 0;
+    return query(edi, sfmt("CREATE TABLE %s (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL);", tableName), NULL) != 0;
+
 }
 
 
@@ -339,16 +356,6 @@ static int sdbChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int ty
 {
     mprError("SDB does not support changing columns");
     return MPR_ERR_BAD_STATE;
-}
-
-
-static int sdbDeleteRow(Edi *edi, cchar *tableName, cchar *key)
-{
-    assert(edi);
-    assert(tableName && *tableName);
-    assert(key && *key);
-
-    return query(edi, sfmt("DELETE FROM %s WHERE id = '%s';", tableName, key)) != 0;
 }
 
 
@@ -413,7 +420,7 @@ static MprList *sdbGetTables(Edi *edi)
 
     assert(edi);
 
-    if ((grid = sdbQuery(edi, "SELECT name from sqlite_master WHERE type = 'table' order by NAME;")) == 0) {
+    if ((grid = query(edi, "SELECT name from sqlite_master WHERE type = 'table' order by NAME;", NULL)) == 0) {
         return 0;
     }
     if ((result = mprCreateList(0, MPR_LIST_STABLE)) == 0) {
@@ -438,8 +445,11 @@ static int sdbGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numC
     assert(edi);
     assert(tableName && *tableName);
 
+    if (!validName(tableName)) {
+        return MPR_ERR_BAD_ARGS;
+    }
     if (numRows) {
-        if ((grid = sdbQuery(edi, "SELECT COUNT(*) FROM ' + table + ';")) == 0) { 
+        if ((grid = query(edi, sfmt("SELECT COUNT(*) FROM %s;", tableName), NULL)) == 0) { 
             return MPR_ERR_BAD_STATE;
         }
         *numRows = grid->nrecords;
@@ -476,124 +486,22 @@ static int sdbLookupField(Edi *edi, cchar *tableName, cchar *fieldName)
 }
 
 
-static EdiGrid *query(Edi *edi, cchar *cmd)
+PUBLIC EdiGrid *sdbQuery(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list vargs)
 {
-    Sdb             *sdb;
-    sqlite3         *db;
-    sqlite3_stmt    *stmt;
-    EdiGrid         *grid;
-    EdiRec          *rec;
-    MprList         *result;
-    char            *tableName;
-    cchar           *tail, *colName, *value, *defaultTableName;
-    ssize           len;
-    int             r, nrows, i, ncol, rc, retries, type;
-
-    assert(edi);
-    assert(cmd && *cmd);
-
-    sdb = (Sdb*) edi;
-    retries = 0;
-    sdb->edi.errMsg = 0;
-
-    if ((db = sdb->db) == 0) {
-        sdb->edi.errMsg = sfmt("Database '%s' is closed", sdb->edi.path);
-        mprError(sdb->edi.errMsg);
-        return 0;
-    }
-    if ((result = mprCreateList(0, MPR_LIST_STABLE)) == 0) {
-        return 0;
-    }
-    defaultTableName = 0;
-    rc = SQLITE_OK;
-    nrows = 0;
-
-    while (cmd && *cmd && (rc == SQLITE_OK || (rc == SQLITE_SCHEMA && ++retries < 2))) {
-        stmt = 0;
-        mprLog(2, "SQL: %s", cmd);
-        rc = sqlite3_prepare_v2(db, cmd, -1, &stmt, &tail);
-        if (rc != SQLITE_OK) {
-            continue;
-        }
-        if (stmt == 0) {
-            /* Comment or white space */
-            cmd = tail;
-            continue;
-        }
-        ncol = sqlite3_column_count(stmt);
-        for (nrows = 0; ; nrows++) {
-            if (sqlite3_step(stmt) == SQLITE_ROW) {
-                tableName = (char*) sqlite3_column_table_name(stmt, 0);
-                if ((rec = createBareRec(edi, tableName, ncol)) == 0) {
-                    sqlite3_finalize(stmt);
-                    return 0;
-                }
-                if (defaultTableName == 0) {
-                    defaultTableName = rec->tableName;
-                }
-                mprAddItem(result, rec);
-                for (i = 0; i < ncol; i++) {
-                    colName = sqlite3_column_name(stmt, i);
-                    value = (cchar*) sqlite3_column_text(stmt, i);
-                    type = sqlite3_column_type(stmt, i);
-                    if (tableName && strcmp(tableName, defaultTableName) != 0) {
-                        //  MOB - is this required?
-                        len = strlen(tableName) + 1;
-                        tableName = sjoin("_", tableName, colName, NULL);
-                        tableName[len] = toupper((uchar) tableName[len]);
-                    }
-                    //  MOB - what about flags
-                    rec->fields[i] = makeRecField(value, colName, mapQueryToEdiType(type));
-                    if (smatch(colName, "id")) {
-                        rec->fields[i].flags |= EDI_KEY;
-                        rec->id = rec->fields[i].value;
-                    }
-                }
-            } else {
-                rc = sqlite3_finalize(stmt);
-                stmt = 0;
-                if (rc != SQLITE_SCHEMA) {
-                    retries = 0;
-                    for (cmd = tail; isspace((uchar) *cmd); cmd++) {}
-                }
-                break;
-            }
-        }
-    }
-    if (stmt) {
-        rc = sqlite3_finalize(stmt);
-    }
-    if (rc != SQLITE_OK) {
-        if (rc == sqlite3_errcode(db)) {
-            sdb->edi.errMsg = (char*) sqlite3_errmsg(db);
-        } else {
-            sdb->edi.errMsg = sclone("Unspecified SQL error");
-        }
-        mprLog(1, "SQL error: %s", sdb->edi.errMsg);
-        return 0;
-    }
-    if ((grid = ediCreateBareGrid(edi, defaultTableName, nrows)) == 0) {
-        return 0;
-    }
-    for (r = 0; r < nrows; r++) {
-        grid->records[r] = mprGetItem(result, r);
-    }
-    return grid;
-}
-
-
-static EdiGrid *sdbQuery(Edi *edi, cchar *cmd)
-{
-    return query(edi, cmd);
+    return queryv(edi, cmd, argc, argv, vargs);
 }
 
 
 static EdiField sdbReadField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName)
 {
+    EdiField    err;
     EdiGrid     *grid;
 
-    if ((grid = query(edi, sfmt("SELECT %s FROM %s WHERE 'id' = %s;", fieldName, tableName, key))) == 0) {
-        EdiField    err;
+    if (!validName(tableName) || !validName(fieldName)) {
+        err.valid = 0;
+        return err;
+    }
+    if ((grid = query(edi, sfmt("SELECT %s FROM %s WHERE 'id' = ?;", fieldName, tableName), key, NULL)) == 0) {
         err.valid = 0;
         return err;
     }
@@ -605,7 +513,10 @@ static EdiRec *sdbReadRec(Edi *edi, cchar *tableName, cchar *key)
 {
     EdiGrid     *grid;
 
-    if ((grid = query(edi, sfmt("SELECT * FROM %s WHERE id = %s;", tableName, key))) == 0) {
+    if (!validName(tableName)) {
+        return 0;
+    }
+    if ((grid = query(edi, sfmt("SELECT * FROM %s WHERE id = ?;", tableName), key, NULL)) == 0) {
         return 0;
     }
     return grid->records[0];
@@ -627,13 +538,19 @@ static EdiGrid *sdbReadWhere(Edi *edi, cchar *tableName, cchar *columnName, ccha
     
     assert(tableName && *tableName);
 
+    if (!validName(tableName)) {
+        return 0;
+    }
     if (columnName) {
+        if (!validName(columnName)) {
+            return 0;
+        }
         assert(columnName && *columnName);
         assert(operation && *operation);
         assert(value);
-        grid = query(edi, sfmt("SELECT * FROM %s WHERE %s %s '%s';", tableName, columnName, operation, value));
+        grid = query(edi, sfmt("SELECT * FROM %s WHERE %s %s ?;", tableName, columnName, operation), value, NULL);
     } else {
-        grid = query(edi, sfmt("SELECT * FROM %s;", tableName));
+        grid = query(edi, sfmt("SELECT * FROM %s;", tableName), NULL);
     }
     return setTableName(grid, tableName);
 }
@@ -648,21 +565,43 @@ static int sdbRemoveColumn(Edi *edi, cchar *tableName, cchar *columnName)
 
 static int sdbRemoveIndex(Edi *edi, cchar *tableName, cchar *indexName)
 {
-    return query(edi, sfmt("DROP INDEX %s;", indexName)) != 0;
+    if (!validName(tableName) || !validName(indexName)) {
+        return 0;
+    }
+    return query(edi, sfmt("DROP INDEX %s;", indexName), NULL) != 0;
+}
+
+
+static int sdbRemoveRec(Edi *edi, cchar *tableName, cchar *key)
+{
+    assert(edi);
+    assert(tableName && *tableName);
+    assert(key && *key);
+
+    if (!validName(tableName)) {
+        return 0;
+    }
+    return query(edi, sfmt("DELETE FROM %s WHERE id = ?;", tableName), key, NULL) != 0;
 }
 
 
 static int sdbRemoveTable(Edi *edi, cchar *tableName)
 {
-    return query(edi, sfmt("DROP TABLE IF EXISTS %s;", tableName)) != 0;
+    if (!validName(tableName)) {
+        return 0;
+    }
+    return query(edi, sfmt("DROP TABLE IF EXISTS %s;", tableName), NULL) != 0;
 }
 
 
 static int sdbRenameTable(Edi *edi, cchar *tableName, cchar *newTableName)
 {
+    if (!validName(tableName) || !validName(newTableName)) {
+        return 0;
+    }
     removeSchema(edi, tableName);
     removeSchema(edi, newTableName);
-    return query(edi, sfmt("ALTER TABLE %s RENAME TO %s;", tableName, newTableName)) != 0;
+    return query(edi, sfmt("ALTER TABLE %s RENAME TO %s;", tableName, newTableName), NULL) != 0;
 }
 
 
@@ -702,51 +641,82 @@ static bool sdbValidateRec(Edi *edi, EdiRec *rec)
 }
 
 
-static int sdbUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
+/*
+    Map values before storing in the database
+    While not required, it is prefereable to normalize the storage of some values.
+    For example: dates are stored as numbers
+ */
+static cchar *mapSdbValue(cchar *value, int type)
 {
-    return query(edi, sfmt("UPDATE %s SET %s TO %s WHERE 'id' = '%s';", tableName, fieldName, value, key)) != 0;
-}
+    MprTime     time;
 
+    if (value == 0) {
+        return value;
+    }
+    switch (type) {
+    case EDI_TYPE_DATE:
+        if (!snumber(value)) {
+            mprParseTime(&time, value, MPR_UTC_TIMEZONE, 0);
+            value = itos(time);
+        }
+        break;
 
-static cchar *prepareValue(EdiField *fp) 
-{
-    //  MOB -- 
-#if FUTURE
-    switch (f.type) {
     case EDI_TYPE_BINARY:
     case EDI_TYPE_BOOL:
-    case EDI_TYPE_DATE:
     case EDI_TYPE_FLOAT:
     case EDI_TYPE_INT:
     case EDI_TYPE_STRING:
-        return f.
     case EDI_TYPE_TEXT:
     default:
+        break;
     }
-#endif
-    return fp->value;
+    return value;
 }
 
 
+static int sdbUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
+{
+    int     type;
+
+    if (!validName(tableName) || !validName(fieldName)) {
+        return 0;
+    }
+    sdbGetColumnSchema(edi, tableName, fieldName, &type, 0, 0);
+    value = mapSdbValue(value, type);
+    return query(edi, sfmt("UPDATE %s SET %s TO ? WHERE 'id' = ?;", tableName, fieldName), value, key, NULL) != 0;
+}
+
+
+/*
+    Use parameterized queries to reduce the risk of SQL injection
+ */
 static int sdbUpdateRec(Edi *edi, EdiRec *rec)
 {
     MprBuf      *buf;
     EdiField    *fp;
-    int         f;
+    cchar       **argv;
+    int         argc, f;
 
     if (!sdbValidateRec(edi, rec)) {
         return MPR_ERR_CANT_WRITE;
     }
+    if ((argv = mprAlloc(((rec->nfields * 2) + 2) * sizeof(cchar*))) == 0) {
+        return MPR_ERR_MEMORY;
+    }
+    argc = 0;
+
     buf = mprCreateBuf(0, 0);
     if (rec->id) {
         mprPutToBuf(buf, "UPDATE %s SET ", rec->tableName);
         for (f = 0; f < rec->nfields; f++) {
             fp = &rec->fields[f];
-            mprPutToBuf(buf, "%s = '%s'", fp->name, prepareValue(fp));
-            mprPutStringToBuf(buf, ", ");
+            mprPutToBuf(buf, "%s = ?, ", fp->name);
+            argv[argc++] = mapSdbValue(fp->value, fp->type);
         }
         mprAdjustBufEnd(buf, -2);
-        mprPutToBuf(buf, " WHERE id = %s;", rec->id);
+        mprPutStringToBuf(buf, " WHERE id = ?;");
+        argv[argc++] = rec->id;
+
     } else {
         mprPutToBuf(buf, "INSERT INTO %s (", rec->tableName);
         for (f = 1; f < rec->nfields; f++) {
@@ -756,17 +726,16 @@ static int sdbUpdateRec(Edi *edi, EdiRec *rec)
         mprAdjustBufEnd(buf, -1);
         mprPutStringToBuf(buf, ") VALUES (");
         for (f = 1; f < rec->nfields; f++) {
+            mprPutStringToBuf(buf, "?,");
             fp = &rec->fields[f];
-            mprPutToBuf(buf, "'%s',", prepareValue(fp));
+            argv[argc++] = mapSdbValue(fp->value, fp->type);
         }
         mprAdjustBufEnd(buf, -1);
         mprPutCharToBuf(buf, ')');
     }
-    if (rec->id == 0) {
-        //  MOB - Is this used anywhere?
-        mprPutStringToBuf(buf, "; SELECT last_insert_rowid();");
-    }
-    if (query(edi, mprGetBufStart(buf)) == 0) {
+    argv[argc] = NULL;
+
+    if (queryv(edi, mprGetBufStart(buf), argc, argv, NULL) == 0) {
         return MPR_ERR_CANT_WRITE;
     }
     return 0;
@@ -780,6 +749,144 @@ PUBLIC cchar *sdbGetLastError(Edi *edi)
 
 
 /*********************************** Support *******************************/
+
+static EdiGrid *query(Edi *edi, cchar *cmd, ...)
+{
+    EdiGrid     *grid;
+    va_list     args;
+
+    va_start(args, cmd);
+    grid = queryv(edi, cmd, 0, NULL, args);
+    va_end(args);
+    return grid;
+}
+
+
+/*
+    This function supports parameterized queries. Provide parameters for query via either argc+argv or vargs.
+    Strongly recommended to use parameterized queries to lessen SQL injection risk.
+ */
+static EdiGrid *queryv(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list vargs)
+{
+    Sdb             *sdb;
+    sqlite3         *db;
+    sqlite3_stmt    *stmt;
+    EdiGrid         *grid;
+    EdiRec          *rec, *schema;
+    MprList         *result;
+    char            *tableName;
+    cchar           *tail, *colName, *value, *defaultTableName, *arg;
+    ssize           len;
+    int             r, nrows, i, ncol, rc, retries, index, type;
+
+    assert(edi);
+    assert(cmd && *cmd);
+
+    sdb = (Sdb*) edi;
+    retries = 0;
+    sdb->edi.errMsg = 0;
+
+    if ((db = sdb->db) == 0) {
+        sdbError(edi, "Database '%s' is closed", sdb->edi.path);
+        return 0;
+    }
+    if ((result = mprCreateList(0, MPR_LIST_STABLE)) == 0) {
+        return 0;
+    }
+    defaultTableName = 0;
+    rc = SQLITE_OK;
+    nrows = 0;
+
+    while (cmd && *cmd && (rc == SQLITE_OK || (rc == SQLITE_SCHEMA && ++retries < 2))) {
+        stmt = 0;
+        mprLog(2, "SQL: %s", cmd);
+        rc = sqlite3_prepare_v2(db, cmd, -1, &stmt, &tail);
+        if (rc != SQLITE_OK) {
+            sdbTrace(edi, 2, "SDB: cannot prepare command: %s, error: %s", cmd, sqlite3_errmsg(db));
+            continue;
+        }
+        if (stmt == 0) {
+            /* Comment or white space */
+            cmd = tail;
+            continue;
+        }
+        if (vargs) {
+            for (index = 0; (arg = va_arg(vargs, cchar*)) != 0; index++) {
+                if (sqlite3_bind_text(stmt, index + 1, arg, -1, 0) != SQLITE_OK) {
+                    sdbError(edi, "SDB: cannot bind to arg: %d, %s, error: %s", index + 1, arg, sqlite3_errmsg(db));
+                    return 0;
+                }
+            }
+        } else if (argv) {
+            for (index = 0; index < argc; index++) {
+                if (sqlite3_bind_text(stmt, index + 1, argv[index], -1, 0) != SQLITE_OK) {
+                    sdbError(edi, "SDB: cannot bind to arg: %d, %s, error: %s", index + 1, argv[index], sqlite3_errmsg(db));
+                    return 0;
+                }
+            } 
+        }
+        ncol = sqlite3_column_count(stmt);
+        for (nrows = 0; ; nrows++) {
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                tableName = (char*) sqlite3_column_table_name(stmt, 0);
+                if ((rec = createBareRec(edi, tableName, ncol)) == 0) {
+                    sqlite3_finalize(stmt);
+                    return 0;
+                }
+                if (defaultTableName == 0) {
+                    defaultTableName = rec->tableName;
+                }
+                mprAddItem(result, rec);
+                for (i = 0; i < ncol; i++) {
+                    colName = sqlite3_column_name(stmt, i);
+                    value = (cchar*) sqlite3_column_text(stmt, i);
+                    if (tableName && strcmp(tableName, defaultTableName) != 0) {
+                        len = strlen(tableName) + 1;
+                        tableName = sjoin("_", tableName, colName, NULL);
+                        tableName[len] = toupper((uchar) tableName[len]);
+                    }
+                    if (tableName && ((schema = getSchema(edi, tableName)) != 0)) {
+                        rec->fields[i] = makeRecField(value, colName, schema->fields[i].type);
+                    } else {
+                        type = sqlite3_column_type(stmt, i);
+                        rec->fields[i] = makeRecField(value, colName, mapSqliteTypeToEdiType(type));
+                    }
+                    if (smatch(colName, "id")) {
+                        rec->fields[i].flags |= EDI_KEY;
+                        rec->id = rec->fields[i].value;
+                    }
+                }
+            } else {
+                rc = sqlite3_finalize(stmt);
+                stmt = 0;
+                if (rc != SQLITE_SCHEMA) {
+                    retries = 0;
+                    for (cmd = tail; isspace((uchar) *cmd); cmd++) {}
+                }
+                break;
+            }
+        }
+    }
+    if (stmt) {
+        rc = sqlite3_finalize(stmt);
+    }
+    if (rc != SQLITE_OK) {
+        if (rc == sqlite3_errcode(db)) {
+            sdbError(edi, "SDB: cannot run query: %s, error: %s", cmd, sqlite3_errmsg(db));
+        } else {
+            sdbError(edi, "SDB: unspecified SQL error for: %s", cmd);
+        }
+        return 0;
+    }
+    if ((grid = ediCreateBareGrid(edi, defaultTableName, nrows)) == 0) {
+        return 0;
+    }
+    for (r = 0; r < nrows; r++) {
+        grid->records[r] = mprGetItem(result, r);
+    }
+    return grid;
+}
+
 
 static bool validateField(Sdb *sdb, EdiRec *rec, cchar *tableName, cchar *columnName, cchar *value)
 {
@@ -916,7 +1023,7 @@ static int mapToEdiType(cchar *type)
 }
 
 
-static int mapQueryToEdiType(int type) 
+static int mapSqliteTypeToEdiType(int type) 
 {
     if (type == SQLITE_INTEGER) {
         return EDI_TYPE_INT;
@@ -927,12 +1034,50 @@ static int mapQueryToEdiType(int type)
     } else if (type == SQLITE_BLOB) {
         return EDI_TYPE_BINARY;
     } else if (type == SQLITE_NULL) {
-        return EDI_TYPE_NULL;
+        return EDI_TYPE_TEXT;
     }
     mprError("SDB: Cannot find query type %d", type);
     assert(0);
     return 0;
 }
+
+
+static bool validName(cchar *str)
+{
+    cchar   *cp;
+
+    if (!str) {
+        return 0;
+    }
+    if (!isalpha(*str) && *str != '_') {
+        return 0;
+    }
+    for (cp = &str[1]; *cp && (isalnum((uchar) *cp) || *cp == '_' || *cp == '$'); cp++) {}
+    return (*cp == '\0');
+}
+
+
+static void sdbError(Edi *edi, cchar *fmt, ...)
+{
+    va_list     args;
+
+    va_start(args, fmt);
+    edi->errMsg = sfmtv(fmt, args);
+    va_end(args);
+    mprError(edi->errMsg);
+}
+
+
+static void sdbTrace(Edi *edi, int level, cchar *fmt, ...)
+{
+    va_list     args;
+
+    va_start(args, fmt);
+    edi->errMsg = sfmtv(fmt, args);
+    va_end(args);
+    mprTrace(level, edi->errMsg);
+}
+
 
 /*********************************** Factory *******************************/
 

@@ -150,8 +150,8 @@ typedef struct MyBlock
     void    *privateMalloc;
 } MyBlock;
 MyBlock *blk = mprAllocObj(MyBlock, manageBlock);
-blk->managedString = sclone("Hello World");
-blk->privateMalloc = malloc(1024);
+blk-&gt;managedString = sclone("Hello World");
+blk-&gt;privateMalloc = malloc(1024);
 </pre>
             <p>This will allocate a new structure and define manageBlock as the manager function for the structure. 
             If you need to keep the allocated structure, you must ensure the <em>blk</em> reference will be marked
@@ -173,7 +173,7 @@ blk->privateMalloc = malloc(1024);
 void manageBlock(MyBlock *blk, int flags) 
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(blk->managedString);
+        mprMark(blk-&gt;managedString);
         /* Don't mark privateMalloc */
     } else if (flags & MPR_MANAGE_FREE) {
         /* Custom code when the block is freed */
@@ -185,13 +185,13 @@ void manageBlock(MyBlock *blk, int flags)
             <h2>Convenient References</h2>
             <p>Appweb defines two empty fields that can be used by request handlers to hold managed references. The
             <em>HttpConn.data</em> field is marked by the HttpConn manager. A handler can store a managed-memory reference
-            in this field. The HttpConn manager will then call mprMark(conn->data) to mark the reference as active and 
+            in this field. The HttpConn manager will then call mprMark(conn-&gt;data) to mark the reference as active and 
             required.</p>
             <p>Similarly, <em>HttpQueue.queueData</em> field is marked by the HttpQueue manager. A queue stage 
             (filter or handler) can store a managed-memory reference
-            in this field. The HttpQueue manager will then call mprMark(q->queueData) to mark the reference as active and 
+            in this field. The HttpQueue manager will then call mprMark(q-&gt;queueData) to mark the reference as active and 
             required.</p>
-            <p>Appweb defines two fields that can be used to store unmanaged memory references: HttpConn.staticData and HttpQueue.staticData. Use these to store references to memory allocated by malloc.</p>
+            <p>Appweb defines two fields that can be used to store un-managed memory references: HttpConn.staticData and HttpQueue.staticData. Use these to store references to memory allocated by malloc.</p>
             <p>Another common technique it to define a top level application structure which will be the root memory block
             for the entire application. Store top level managed references in this block and call mprAddRoot to define
             it as a root block.</p>
@@ -202,11 +202,10 @@ void manageBlock(MyBlock *blk, int flags)
             <h3>Don't Mix Memory</h3>
             <p>You must not mix MPR allocated memory and non-managed memory. This means don't mark un-managed memory
             that has been allocated via malloc(). And you must not call free() on managed memory allocated from
-            the MPR.</h3>
+            the MPR.</p>
             <h3>Define a Manager</h3>
             <p>If you allocate a managed structure that has references to managed memory, you should define a manager
             function that invokes mprMark on the structure elements that are managed references.</p>
-            </ul>
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->

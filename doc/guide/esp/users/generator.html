@@ -56,7 +56,7 @@
 		          <li><a href="../../../guide/esp/users/config.html">ESP Configuration Directives</a></li>
 		          <li><a href="../../../guide/esp/users/controllers.html">ESP Controllers and Actions</a></li>
 		          <li><a href="../../../guide/esp/users/mvc.html">ESP MVC</a></li>
-		          <li><a href="../../../guide/esp/users/pagesTour.html">ESP Page Tour</a></li>
+		          <li><a href="../../../guide/esp/users/pages-tour.html">ESP Page Tour</a></li>
 		          <li><a href="../../../guide/esp/users/generator.html">ESP Generator</a></li>
 		          <li><a href="../../../guide/esp/users/database.html">ESP Database Interface</a></li>
 		          <li><a href="../../../guide/appweb/users/caching.html">Caching Responses</a></li>
@@ -83,7 +83,7 @@
 [Create] File: blog/config.json
 [Create] Directory: blog/src
 [Create] blog/src/app.c
-  [Task] Comple</pre>
+  [Task] Compile</pre>
             <p>This generates the bare minimum application without additional components. The appweb.conf file
             is an Appweb configuration file. This defines the Appweb and ESP configuration when you run your application.
             Alternatively, you can use the app.conf file that is suitable when hosting the application from an 
@@ -92,16 +92,56 @@
             <p>The format of the "esp generate app" command is:</p>
             <pre>esp generate app NAME [COMPONENTS...]</pre>
             <p>The given NAME is the name of the application and also the name of the directory into which esp will
-            generate the application. The COMPONENTS are optional extensions for the generated application. 
-            <p>The supported components are:
+            generate the application. The COMPONENTS are optional extensions for the generated application.
+            The supported components are:</p>
             <ul>
                 <li>angular &mdash; The <a href="http://www.angularjs.org">AngularJS Client Framework</a></li>
-                <li>polymer &mdash; The <a href="http://www.polymer-project.org">Polymer Project Framework</a></li>
+<li>angular-esp &mdash; Angular support for Embedthis ESP</li>
+<li>angular-extras &mdash; Angular extra utility routines</li>
+<li>angular-local &mdash; Angular local storage service</li>
+<li>angular-mvc &mdash; Angular ESP MVC application skeleton</li>
+<li>angular-session &mdash; Angular session state storage</li>
+<li>angular-ui-bootstrap &mdash; The <a href="http://angular-ui.github.io/bootstrap/">Angular UI Bootstrap</a> support</li>
+<li>animate &mdash; The <a href="http://daneden.me/animate/">Animate.css</a> library for CSS animations</li>
+<li>bootstrap &mdash; The <a href="http://getbootstrap.com">Bootstrap</a> client-side CSS framework</li>
+<li>font-awesome &mdash; The <a href="http://fortawesome.github.io/Font-Awesome/">Font-Awesome</a> Icon font</li>
+<li>html5shiv &mdash; The <a href="https://github.com/aFarkas/html5shiv">Html5Shiv</a> Javascript polyfill for IE 8 and before</li>
+<li>jquery &mdash; The <a href="http://jquery.com">JQuery</a> Client-side Javascript library for DOM manipulation</li>
+<li>legacy-mvc &mdash; Legacy ESP MVC application skeleton</li>
+<li>less &mdash; The <a href="http://lesscss.org">Less</a> CSS pre-processor</li>
+<li>more &mdash; Collection of CSS polyfills for emerging HTML5 elements</li>
+<li>normalize &mdash; Normalize base styles for browsers</li>
+<li>respond &mdash; Polyfill for CSS media queries</li>
+<li>server &mdash; Default ESP service-side configuration for Appweb</li>
             </ul>
             <p> For example:</p>
             <pre>
-esp generate app blog angular
+$ <b>esp generate app blog angular-mvc</b>
+    [Create] Directory: blog
+  [Generate] Component: server
+  [Generate] Component: angular-mvc
+  [Generate] Component: angular
+  [Generate] Component: angular-local
+  [Generate] Component: angular-session
+  [Generate] Component: angular-esp
+  [Generate] Component: bootstrap
+  [Generate] Component: html5shiv
+  [Generate] Component: angular-ui-bootstrap
+  [Generate] Component: font-awesome
+  [Generate] Component: less
+  [Generate] Component: more
+  [Generate] Component: respond
+    [Create] Directory: blog/src
+    [Create] blog/src/app.c
+    [Create] Directory: blog/db
+      [Task] Complete
 </pre>
+            <h3>Component Dependencies</h3>
+            <p>Components may depend on other components. The <em>esp</em> generator will resolve these dependencies 
+            and generate all the required components. For example: the <em>angular-mvc</em> component
+            depends on: angular, angular-local, angular-session, angular-esp, bootstrap, angular-ui-bootstrap, html5shiv,
+            font-awesome, less, more and respond. After generating, the component dependencies are listed in the
+            generated <em>config.json</em> file as the <em>settings.components</em> property.</p>
             <h3>Overwriting</h3>
             <p>The <em>esp</em> command will create directories and generate configuration and source code 
             files which can then be manually edited as required. The <em>esp</em> command is intelligent and will 
@@ -126,8 +166,9 @@ esp generate app blog angular
                     </tr>
                     <tr>
                         <td>client</td>
-                        <td>The <em>client directory is the document root for the application. In other words, this is the
-                            top level web content directory that is public to all clients.</td>
+                        <td>The <em>client</em> directory is the document root for the application. 
+                            In other words, this is the top-level web content directory that is public to all clients.
+                            Directories and files outside the <em>client</em> directory are not visible to the client.</td>
                     </tr>
                     <tr>
                         <td>client/app</td>
@@ -146,12 +187,8 @@ esp generate app blog angular
                         <td>Client side Javascript libraries</td>
                     </tr>
                     <tr>
-                        <td>client/components</td>
-                        <td>Client side extension components</td>
-                    </tr>
-                    <tr>
-                        <td>client/templates</td>
-                        <td>Client side template web pages </td>
+                        <td>client/pages</td>
+                        <td>Client side web pages </td>
                     </tr>
                     <tr>
                         <td>controllers</td>
@@ -168,10 +205,6 @@ esp generate app blog angular
                     <tr>
                         <td>views</td>
                         <td>View source files</td>
-                    </tr>
-                    <tr>
-                        <td>static/themes</td>
-                        <td>Application HTML themes</td>
                     </tr>
                 </tbody>
             </table>
@@ -194,7 +227,7 @@ esp generate app blog angular
                     </tr>
                     <tr>
                         <td>client/index.esp</td>
-                        <td>Application home page</td>
+                        <td>Application home web page</td>
                     </tr>
                 </tbody>
             </table>
@@ -240,7 +273,7 @@ esp generate table NAME [field:type ...]
 </pre>
             <p>If <em>field:type</em> values are supplied, the database will be updated for each specified field of 
             the requested type. The valid database types are: binary, boolean, date,
-            datetime, decimal, float, integer, number, string, text, time, timestamp. 
+            datetime, decimal, float, integer, number, string, text, time, timestamp. </p>
             <a id="migrations"></a>
             <h2 class="section">Generating Migrations</h2>
             <p>Database migrations are mini programs which modify the database schema or content. You can create database
@@ -250,7 +283,7 @@ esp generate table NAME [field:type ...]
 esp generate migration description MODEL [field:type ...]
 </pre>
             <p>This will create a migration script under the db/migrations directory. Migration scripts filenames are
-            timestamped and use the description as part of the filename for the migration script (so keep it short and
+            time stamped and use the description as part of the filename for the migration script (so keep it short and
             sweet and don't use spaces!).</p>
             <p>For each specified <em>field:type</em> pair, esp will generate add column code in the migration
             script. If the --reverse switch is specified, then remove column code will be generated. To change the type
@@ -264,21 +297,21 @@ esp generate migration description MODEL [field:type ...]
             backward</em>" will reverse the last applied migration. You can also use "<em>esp migrate NNN</em>" to
             migrate forward or backward to a specific migration. NNN is the migration sequence number which is the
             number at the start of the migration script file name.</p>
-            <p>Migrations are often underused. They are much more important than most people realize. Being able
+            <p>Migrations are often under used. They are much more important than most people realize. Being able
             to effectively create and manage database test data greatly simplifies this aspect of development and testing.</p>
             
-            <a id="scaffolds"></a></p>
+            <a id="scaffolds"></a>
             <h2 class="section">Generating Scaffolds</h2>
             <p>Scaffolds enable you to quickly create sections of your application. A scaffold provides CRUD 
             functionality (create, read, update and delete) for a database table. 
             Generating a scaffold will create a database table, controller and a set of views that provide
             add, edit and list functionality for a database table. Scaffolds are useful to quickly generate prototype
             web pages and actions for managing a database table. </p>
-            <p>Generating scaffolds is available if you are using the <em>angular</em> component &mdash; as the view
+            <p>Generating scaffolds is available if you are using the <em>angular-mvc</em> component &mdash; as the view
             scaffold depends on the Angular libraries.</p>
             <p>To generate a scaffold:</p>
             <pre>
-esp generate app blog angular
+esp generate app blog angular-mvc
 cd blog
 <b>esp generate scaffold NAME [field:type ...]</b>
 </pre>
@@ -316,7 +349,7 @@ esp compile
             Appweb configuration file. </p>
             <h3>Filtering</h3>
             <p>If "<em>esp compile</em>" is invoked with one or more paths on the command line, these paths will act as 
-            filters such that only the designated paths will be compiled. For example:
+            filters such that only the designated paths will be compiled. For example:</p>
             <pre>
 esp compile web/test.esp
 esp compile myapp
@@ -339,7 +372,8 @@ esp compile /directory/of/apps
             <h3>Compile Application as One Module</h3>
             <p>For deployment in a production environment, it can be useful to compile the entire application including
             all controllers, views and web pages into a single module file. Use the <em>--flat</em> esp option to
-            achieve this:</p> <pre>
+            achieve this:</p> 
+            <pre>
 esp --flat compile
 </pre>
             <p>If you compile flat, you will need to add an <em>EspLoad</em> directive to the appweb.conf. This tells
@@ -349,7 +383,7 @@ esp --flat compile
             ESP pages or invoking ESP controllers. However, if you are using static linking, you need to manually
             call these ESP initializers. You can generate the necessary initialization calls via the esp <em>--genlink
                 slink.c</em> switch. The generated code should be linked with your appweb main program replacing the default
-            slink.c file.
+            slink.c file.</p>
             <pre>
 esp --flat --static --genlink slink.c
 </pre>
@@ -361,7 +395,7 @@ esp --flat --static --genlink slink.c
             If cross-compiling, the configuration for the target host specified via the Appweb configure program is
             utilized.</p>
             <p>The <em>esp</em> command can select alternate compile and link configurations via the 
-            <em>--platform</em> switch. For example:
+            <em>--platform</em> switch. For example:</p>
             <pre>
 esp --platform vxworks-arm-debug
 </pre>
@@ -390,7 +424,7 @@ esp clean
 </pre>
             <a id="options"></a>
             <h2 class="section">Command Options</h2>
-            <p>To see the <em>esp</em> command options, run <em>esp</em> with no options. This produces:
+            <p>To see the <em>esp</em> command options, run <em>esp</em> with no options. This produces:</p>
             <pre>
 ESP Usage:
   esp [options] [commands]

@@ -585,6 +585,7 @@ Name          Method   Pattern                                   Target
 /user/update  POST     ^/{controller=user}/{id=[0-9]+}$          user-update   
 /user/action  GET,POST ^/{controller=user}/{id=[0-9]+}/{action}$ user-$3       
 /user/default GET,POST ^/{controller=user}/{action}$             user-cmd-$2 
+</b>
 </pre>
                         </td>
                     </tr>
@@ -632,7 +633,7 @@ Name          Method   Pattern                                   Target
   <a href="route.html#target">Target</a> run "TARGET"
 &lt;/Route&gt;
 </pre>
-                            <p>If the target is not specified, it defaults to "$&" which represents the entire URI prefix.
+                            <p>If the target is not specified, it defaults to "$&amp;" which represents the entire URI prefix.
                             If the methods are not specified, they default to all HTTP methods. If the source is not, it
                             is assumed that the controller and action are statically linked into the application.</p>
                         </td>

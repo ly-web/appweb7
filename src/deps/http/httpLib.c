@@ -532,7 +532,11 @@ static void loginServiceProc(HttpConn *conn)
             if (auth->loggedIn) {
                 httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, auth->loggedIn);
             } else {
-                httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, httpLink(conn, "~", 0));
+#if UNUSED
+                httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, httpUri(conn, "~", 0));
+#else
+                httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, "~");
+#endif
             }
         }
     } else {
@@ -2496,7 +2500,12 @@ PUBLIC void httpConnTimeout(HttpConn *conn)
             }
         }
     }
-    httpDisconnect(conn);
+    if (!conn->sock || conn->sock->fd == INVALID_SOCKET) {
+        httpDestroyConn(conn);
+    } else {
+        httpSetupWaitHandler(conn, MPR_READABLE);
+        httpDisconnect(conn);
+    }
 }
 
 
@@ -2607,6 +2616,7 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
     HttpConn    *conn;
     HttpAddress *address;
     MprSocket   *sock;
+    int64       value;
     int         level;
 
     assert(event);
@@ -2631,13 +2641,13 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
     conn->port = sock->port;
     conn->ip = sclone(sock->ip);
 
-    if (httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_CONNECTIONS, 1) > conn->limits->connectionsMax) {
-        mprError("Too many concurrent connections");
+    if ((value = httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_CONNECTIONS, 1)) > conn->limits->connectionsMax) {
+        mprError("Too many concurrent connections %d/%d", (int) value, conn->limits->connectionsMax);
         httpDestroyConn(conn);
         return 0;
     }
     if (mprGetHashLength(http->addresses) > conn->limits->clientMax) {
-        mprError("Too many concurrent clients");
+        mprError("Too many concurrent clients %d/%d", mprGetHashLength(http->addresses), conn->limits->clientMax);
         httpDestroyConn(conn);
         return 0;
     }
@@ -4161,6 +4171,7 @@ static void makeAltBody(HttpConn *conn, int status)
     if (rx && scmp(rx->accept, "text/plain") == 0) {
         tx->altBody = sfmt("Access Error: %d -- %s\r\n%s\r\n", status, statusMsg, msg);
     } else {
+        httpSetContentType(conn, "text/html");
         tx->altBody = sfmt("<!DOCTYPE html>\r\n"
             "<head>\r\n"
             "    <title>%s</title>\r\n"
@@ -5179,8 +5190,10 @@ static void httpTimer(Http *http, MprEvent *event)
     HttpConn    *conn;
     HttpStage   *stage;
     HttpLimits  *limits;
+    HttpAddress *address;
     MprModule   *module;
-    int         next, active, abort;
+    MprKey      *kp;
+    int         removed, next, active, abort, period;
 
     assert(event);
 
@@ -5233,6 +5246,25 @@ static void httpTimer(Http *http, MprEvent *event)
             }
         }
     }
+
+    /*
+        Expire old client addresses. This is done in checkMonitor if monitors exist.
+        Do here just to cleanup old addresses
+     */
+    period = (int) max(http->monitorMaxPeriod, 60 * 1000);
+    lock(http->addresses);
+    do {
+        removed = 0;
+        for (ITERATE_KEY_DATA(http->addresses, kp, address)) {
+            if ((address->updated + period) < http->now) {
+                mprRemoveKey(http->addresses, kp->key);
+                removed = 1;
+                break;
+            }
+        }
+    } while (removed);
+    unlock(http->addresses);
+
     if (active == 0) {
         mprRemoveEvent(event);
         http->timer = 0;
@@ -5467,7 +5499,7 @@ PUBLIC void httpGetStats(HttpStats *sp)
     lock(http->addresses);
     for (ITERATE_KEY_DATA(http->addresses, kp, address)) {
         sp->activeRequests += (int) address->counters[HTTP_COUNTER_ACTIVE_REQUESTS].value;
-        sp->activeClients += (int) address->counters[HTTP_COUNTER_ACTIVE_CLIENTS].value;
+        sp->activeClients++;
     }
     unlock(http->addresses);
     sp->totalRequests = http->totalRequests;
@@ -9085,7 +9117,6 @@ static void defineHostVars(HttpRoute *route);
 static char *expandTokens(HttpConn *conn, cchar *path);
 static char *expandPatternTokens(cchar *str, cchar *replacement, int *matches, int matchCount);
 static char *expandRequestTokens(HttpConn *conn, char *targetKey);
-static cchar *expandRouteName(HttpConn *conn, cchar *routeName);
 static void finalizePattern(HttpRoute *route);
 static char *finalizeReplacement(HttpRoute *route, cchar *str);
 static char *finalizeTemplate(HttpRoute *route);
@@ -9095,7 +9126,6 @@ static void manageLang(HttpLang *lang, int flags);
 static void manageRouteOp(HttpRouteOp *op, int flags);
 static int matchRequestUri(HttpConn *conn, HttpRoute *route);
 static int matchRoute(HttpConn *conn, HttpRoute *route);
-static char *qualifyName(HttpRoute *route, cchar *controller, cchar *name);
 static int selectHandler(HttpConn *conn, HttpRoute *route);
 static int testCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *condition);
 static char *trimQuotes(char *str);
@@ -10955,128 +10985,6 @@ PUBLIC void httpFinalizeRoute(HttpRoute *route)
 }
 
 
-/********************************* Path and URI Expansion *****************************/
-/*
-    Create and resolve a URI link given a set of options.
-
-    TODO - consider rename httpUri() and move to uri.c
- */
-PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
-{
-    HttpRoute       *route, *lroute;
-    HttpRx          *rx;
-    HttpUri         *uri;
-    cchar           *routeName, *action, *controller, *originalAction, *tplate;
-    char            *rest;
-
-    rx = conn->rx;
-    route = rx->route;
-    controller = 0;
-
-    if (target == 0) {
-        target = "";
-    }
-    if (*target == '@') {
-        target = sjoin("{action: '", target, "'}", NULL);
-    } 
-    if (*target != '{') {
-        target = httpTemplate(conn, target, 0);
-    } else  {
-        if (options) {
-            options = mprBlendHash(httpGetOptions(target), options);
-        } else {
-            options = httpGetOptions(target);
-        }
-        /*
-            Prep the action. Forms are:
-                . @action               # Use the current controller
-                . @controller/          # Use "index" as the action
-                . @controller/action
-         */
-        if ((action = httpGetOption(options, "action", 0)) != 0) {
-            originalAction = action;
-            if (*action == '@') {
-                action = &action[1];
-            }
-            if (strchr(action, '/')) {
-                controller = stok((char*) action, "/", (char**) &action);
-                action = stok((char*) action, "/", &rest);
-            }
-            if (controller) {
-                httpSetOption(options, "controller", controller);
-            } else {
-                controller = httpGetParam(conn, "controller", 0);
-            }
-            if (action == 0 || *action == '\0') {
-                action = "list";
-            }
-            if (action != originalAction) {
-                httpSetOption(options, "action", action);
-            }
-        }
-        /*
-            Find the template to use. Strategy is this order:
-                . options.template
-                . options.route.template
-                . options.action mapped to a route.template, via:
-                . /app/STAR/action
-                . /app/controller/action
-                . /app/STAR/default
-                . /app/controller/default
-         */
-        if ((tplate = httpGetOption(options, "template", 0)) == 0) {
-            if ((routeName = httpGetOption(options, "route", 0)) != 0) {
-                routeName = expandRouteName(conn, routeName);
-                lroute = httpLookupRoute(conn->host, routeName);
-            } else {
-                lroute = 0;
-            }
-            if (lroute == 0) {
-                if ((lroute = httpLookupRoute(conn->host, qualifyName(route, controller, action))) == 0) {
-                    if ((lroute = httpLookupRoute(conn->host, qualifyName(route, "{controller}", action))) == 0) {
-                        if ((lroute = httpLookupRoute(conn->host, qualifyName(route, controller, "default"))) == 0) {
-                            lroute = httpLookupRoute(conn->host, qualifyName(route, "{controller}", "default"));
-                        }
-                    }
-                }
-            }
-            if (lroute) {
-                tplate = lroute->tplate;
-            }
-        }
-        if (tplate) {
-            target = httpTemplate(conn, tplate, options);
-        } else {
-            mprError("Cannot find template for URI %s", target);
-            target = "/";
-        }
-    }
-    //  OPT
-    uri = httpCreateUri(target, 0);
-    uri = httpResolveUri(httpCreateUri(rx->uri, 0), 1, &uri, 0);
-    httpNormalizeUri(uri);
-    return httpUriToString(uri, 0);
-}
-
-
-/*
-    Limited expansion of route names. Support ~/ and ${app} at the start of the route name
- */
-static cchar *expandRouteName(HttpConn *conn, cchar *routeName)
-{
-    HttpRoute   *route;
-
-    route = conn->rx->route;
-    if (routeName[0] == '~') {
-        return sjoin(route->prefix, &routeName[1], NULL);
-    }
-    if (sstarts(routeName, "${app}")) {
-        return sjoin(route->prefix, &routeName[6], NULL);
-    }
-    return routeName;
-}
-
-
 /*
     Expect a template with embedded tokens of the form: "/${controller}/${action}/${other}"
     The options is a hash of token values.
@@ -11634,26 +11542,6 @@ PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods
 
 
 /*
-    Calculate a qualified route name. The form is: /{app}/{controller}/action
- */
-static char *qualifyName(HttpRoute *route, cchar *controller, cchar *action)
-{
-    cchar   *prefix, *controllerPrefix;
-
-    prefix = route->prefix ? route->prefix : "";
-    if (action == 0 || *action == '\0') {
-        action = "default";
-    }
-    if (controller) {
-        controllerPrefix = (controller && smatch(controller, "{controller}")) ? "*" : controller;
-        return sjoin(prefix, "/", controllerPrefix, "/", action, NULL);
-    } else {
-        return sjoin(prefix, "/", action, NULL);
-    }
-}
-
-
-/*
     Add a restful route. The parent route may supply a route prefix. If defined, the route name will prepend the prefix.
  */
 static HttpRoute *addRestful(HttpRoute *parent, cchar *prefix, cchar *action, cchar *methods, cchar *pattern, cchar *target, 
@@ -11744,7 +11632,7 @@ PUBLIC void httpAddHomeRoute(HttpRoute *parent)
 
     prefix = parent->prefix ? parent->prefix : "";
     source = parent->sourceName;
-    name = qualifyName(parent, NULL, "home");
+    name = sjoin(prefix, "/home", NULL);
     path = stemplate("${CLIENT_DIR}/index.esp", parent->vars);
     pattern = sfmt("^%s(/)$", prefix);
     httpDefineRoute(parent, name, "GET,POST", pattern, path, source);
@@ -13279,8 +13167,11 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
             if (strcasecmp(key, "keep-alive") == 0) {
                 if ((tok = scontains(value, "max=")) != 0) {
                     conn->keepAliveCount = atoi(&tok[4]);
-                    if (conn->keepAliveCount < 0 || conn->keepAliveCount > BIT_MAX_KEEP_ALIVE) {
+                    if (conn->keepAliveCount < 0) {
                         conn->keepAliveCount = 0;
+                    }
+                    if (conn->keepAliveCount > BIT_MAX_KEEP_ALIVE) {
+                        conn->keepAliveCount = BIT_MAX_KEEP_ALIVE;
                     }
                     /*
                         IMPORTANT: Deliberately close client connections one request early. This encourages a client-led 
@@ -13938,6 +13829,44 @@ PUBLIC cchar *httpGetCookies(HttpConn *conn)
         return 0;
     }
     return conn->rx->cookie;
+}
+
+
+PUBLIC cchar *httpGetCookie(HttpConn *conn, cchar *name)
+{
+    HttpRx  *rx;
+    cchar   *cookie;
+    char    *cp, *value;
+    int     quoted;
+
+    assert(conn);
+    rx = conn->rx;
+    assert(rx);
+
+    for (cookie = rx->cookie; cookie && (value = strstr(cookie, name)) != 0; cookie = value) {
+        value += strlen(name);
+        while (isspace((uchar) *value) || *value == '=') {
+            value++;
+        }
+        quoted = 0;
+        if (*value == '"') {
+            value++;
+            quoted++;
+        }
+        for (cp = value; *cp; cp++) {
+            if (quoted) {
+                if (*cp == '"' && cp[-1] != '\\') {
+                    break;
+                }
+            } else {
+                if ((*cp == ',' || *cp == ';') && cp[-1] != '\\') {
+                    break;
+                }
+            }
+        }
+        return snclone(value, cp - value);
+    }
+    return 0;
 }
 
 
@@ -14973,9 +14902,6 @@ PUBLIC HttpSession *httpCreateSession(HttpConn *conn)
 }
 
 
-/*
-    Destroy the session
- */
 PUBLIC void httpDestroySession(HttpConn *conn)
 {
     Http        *http;
@@ -15005,7 +14931,7 @@ static void manageSession(HttpSession *sp, int flags)
 
 
 /*
-    Get the session. Optionally create if "create" is true. Will not re-create.
+    Optionally create if "create" is true. Will not re-create.
  */
 PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create)
 {
@@ -15142,12 +15068,9 @@ PUBLIC int httpWriteSession(HttpConn *conn)
 }
 
 
-PUBLIC char *httpGetSessionID(HttpConn *conn)
+PUBLIC cchar *httpGetSessionID(HttpConn *conn)
 {
     HttpRx  *rx;
-    cchar   *cookie;
-    char    *cp, *value;
-    int     quoted;
 
     assert(conn);
     rx = conn->rx;
@@ -15160,30 +15083,7 @@ PUBLIC char *httpGetSessionID(HttpConn *conn)
         return 0;
     }
     rx->sessionProbed = 1;
-    for (cookie = rx->cookie; cookie && (value = strstr(cookie, HTTP_SESSION_COOKIE)) != 0; cookie = value) {
-        value += strlen(HTTP_SESSION_COOKIE);
-        while (isspace((uchar) *value) || *value == '=') {
-            value++;
-        }
-        quoted = 0;
-        if (*value == '"') {
-            value++;
-            quoted++;
-        }
-        for (cp = value; *cp; cp++) {
-            if (quoted) {
-                if (*cp == '"' && cp[-1] != '\\') {
-                    break;
-                }
-            } else {
-                if ((*cp == ',' || *cp == ';') && cp[-1] != '\\') {
-                    break;
-                }
-            }
-        }
-        return snclone(value, cp - value);
-    }
-    return 0;
+    return httpGetCookie(conn, HTTP_SESSION_COOKIE);
 }
 
 
@@ -16139,6 +16039,7 @@ PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
     }
     tx->status = status;
 
+    targetUri = httpUri(conn, targetUri, 0);
     if (schr(targetUri, '$')) {
         targetUri = httpExpandUri(conn, targetUri);
     }
@@ -17230,10 +17131,12 @@ static char *getBoundary(void *buf, ssize bufLen, void *boundary, ssize boundary
 
 /********************************** Forwards **********************************/
 
+static cchar *expandRouteName(HttpConn *conn, cchar *routeName);
 static int getPort(HttpUri *uri);
 static int getDefaultPort(cchar *scheme);
 static void manageUri(HttpUri *uri, int flags);
 static void trimPathToDirname(HttpUri *uri);
+static char *actionRoute(HttpRoute *route, cchar *controller, cchar *action);
 
 /************************************ Code ************************************/
 /*
@@ -17784,6 +17687,11 @@ PUBLIC HttpUri *httpJoinUri(HttpUri *uri, int argc, HttpUri **others)
 }
 
 
+/*
+    Create and resolve a URI link given a set of options.
+
+    TODO - consider rename httpUri() and move to uri.c
+ */
 PUBLIC HttpUri *httpMakeUriLocal(HttpUri *uri)
 {
     if (uri) {
@@ -17924,6 +17832,112 @@ PUBLIC HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool l
 }
 
 
+PUBLIC char *httpUri(HttpConn *conn, cchar *target, MprHash *options)
+{
+    HttpRoute       *route, *lroute;
+    HttpRx          *rx;
+    HttpUri         *uri;
+    cchar           *routeName, *action, *controller, *originalAction, *tplate;
+    char            *rest;
+
+    rx = conn->rx;
+    route = rx->route;
+    controller = 0;
+
+    if (target == 0) {
+        target = "";
+    }
+    if (*target == '@') {
+        target = sjoin("{action: '", target, "'}", NULL);
+    } 
+    if (*target != '{') {
+        target = httpTemplate(conn, target, 0);
+    } else  {
+        if (options) {
+            options = mprBlendHash(httpGetOptions(target), options);
+        } else {
+            options = httpGetOptions(target);
+        }
+        /*
+            Prep the action. Forms are:
+                . @action               # Use the current controller
+                . @controller/          # Use "index" as the action
+                . @controller/action
+         */
+        if ((action = httpGetOption(options, "action", 0)) != 0) {
+            originalAction = action;
+            if (*action == '@') {
+                action = &action[1];
+            }
+            if (strchr(action, '/')) {
+                controller = stok((char*) action, "/", (char**) &action);
+                action = stok((char*) action, "/", &rest);
+            }
+            if (controller) {
+                httpSetOption(options, "controller", controller);
+            } else {
+                controller = httpGetParam(conn, "controller", 0);
+            }
+            if (action == 0 || *action == '\0') {
+                action = "list";
+            }
+            if (action != originalAction) {
+                httpSetOption(options, "action", action);
+            }
+        }
+        /*
+            Find the template to use. Strategy is this order:
+                . options.template
+                . options.route.template
+                . options.action mapped to a route.template, via:
+                . /app/STAR/action
+                . /app/controller/action
+                . /app/STAR/default
+                . /app/controller/default
+         */
+        if ((tplate = httpGetOption(options, "template", 0)) == 0) {
+            if ((routeName = httpGetOption(options, "route", 0)) != 0) {
+                routeName = expandRouteName(conn, routeName);
+                lroute = httpLookupRoute(conn->host, routeName);
+            } else {
+                lroute = 0;
+            }
+            if (lroute == 0) {
+                if ((lroute = httpLookupRoute(conn->host, actionRoute(route, controller, action))) == 0) {
+                    if ((lroute = httpLookupRoute(conn->host, actionRoute(route, "{controller}", action))) == 0) {
+                        if ((lroute = httpLookupRoute(conn->host, actionRoute(route, controller, "default"))) == 0) {
+                            lroute = httpLookupRoute(conn->host, actionRoute(route, "{controller}", "default"));
+                        }
+                    }
+                }
+            }
+            if (lroute) {
+                tplate = lroute->tplate;
+            }
+        }
+        if (tplate) {
+            target = httpTemplate(conn, tplate, options);
+        } else {
+            mprError("Cannot find template for URI %s", target);
+            target = "/";
+        }
+    }
+    //  OPT
+    uri = httpCreateUri(target, 0);
+    uri = httpResolveUri(httpCreateUri(rx->uri, 0), 1, &uri, 0);
+    httpNormalizeUri(uri);
+    return httpUriToString(uri, 0);
+}
+
+
+#if DEPRECATE || 1
+PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
+{
+    return httpUri(conn, target, options);
+}
+#endif
+
+
 PUBLIC char *httpUriToString(HttpUri *uri, int flags)
 {
     return httpFormatUri(uri->scheme, uri->host, uri->port, uri->path, uri->reference, uri->query, flags);
@@ -17966,6 +17980,44 @@ static void trimPathToDirname(HttpUri *uri)
         } else if (*path) {
             path[0] = '\0';
         }
+    }
+}
+
+
+/*
+    Limited expansion of route names. Support ~/ and ${app} at the start of the route name
+ */
+static cchar *expandRouteName(HttpConn *conn, cchar *routeName)
+{
+    HttpRoute   *route;
+
+    route = conn->rx->route;
+    if (routeName[0] == '~') {
+        return sjoin(route->prefix, &routeName[1], NULL);
+    }
+    if (sstarts(routeName, "${app}")) {
+        return sjoin(route->prefix, &routeName[6], NULL);
+    }
+    return routeName;
+}
+
+
+/*
+    Calculate a qualified route name. The form is: /{app}/{controller}/action
+ */
+static char *actionRoute(HttpRoute *route, cchar *controller, cchar *action)
+{
+    cchar   *prefix, *controllerPrefix;
+
+    prefix = route->prefix ? route->prefix : "";
+    if (action == 0 || *action == '\0') {
+        action = "default";
+    }
+    if (controller) {
+        controllerPrefix = (controller && smatch(controller, "{controller}")) ? "*" : controller;
+        return sjoin(prefix, "/", controllerPrefix, "/", action, NULL);
+    } else {
+        return sjoin(prefix, "/", action, NULL);
     }
 }
 
@@ -18086,7 +18138,6 @@ PUBLIC void httpCreateCGIParams(HttpConn *conn)
         assert(params);
         for (index = 0, kp = 0; (kp = mprGetNextKey(rx->files, kp)) != 0; index++) {
             up = (HttpUploadFile*) kp->data;
-            //  MOB - should these be N-Level in json?
             mprSetJsonValue(params, sfmt("FILE_%d_FILENAME", index), up->filename, MPR_JSON_SIMPLE);
             mprSetJsonValue(params, sfmt("FILE_%d_CLIENT_FILENAME", index), up->clientFilename, MPR_JSON_SIMPLE);
             mprSetJsonValue(params, sfmt("FILE_%d_CONTENT_TYPE", index), up->contentType, MPR_JSON_SIMPLE);
@@ -18102,8 +18153,8 @@ PUBLIC void httpCreateCGIParams(HttpConn *conn)
 
 /*
     Add variables to the params. This comes from the query string and urlencoded post data.
-    Make variables for each keyword in a query string. The buffer must be url encoded (ie. key=value&key2=value2..., 
-    spaces converted to '+' and all else should be %HEX encoded).
+    Make variables for each keyword in a query string. The buffer must be url encoded 
+    (ie. key=value&key2=value2..., spaces converted to '+' and all else should be %HEX encoded).
  */
 static void addParamsFromBuf(HttpConn *conn, cchar *buf, ssize len)
 {
@@ -18142,51 +18193,6 @@ static void addParamsFromBuf(HttpConn *conn, cchar *buf, ssize len)
         keyword = stok(0, "&", &tok);
     }
 }
-
-
-#if KEEP
-/*
-    This operates without copying the buffer. It modifies the buffer.
- */
-static void addParamsFromBufInsitu(HttpConn *conn, char *buf, ssize len)
-{
-    MprHash     *vars;
-    cchar       *prior;
-    char        *newValue, *keyword, *value, *tok;
-
-    assert(conn);
-    vars = httpGetParams(conn);
-
-    keyword = stok(buf, "&", &tok);
-    while (keyword != 0) {
-        if ((value = strchr(keyword, '=')) != 0) {
-            *value++ = '\0';
-            mprUriDecodeBuf(value);
-        } else {
-            value = MPR->emptyString;
-        }
-        mprUriDecode(keyword);
-
-        if (*keyword) {
-            /*
-                Append to existing keywords
-             */
-            prior = mprLookupKey(vars, keyword);
-            if (prior != 0 && *prior) {
-                if (*value) {
-                    newValue = sjoin(prior, " ", value, NULL);
-                    mprAddKey(vars, keyword, newValue);
-                }
-            } else {
-                mprAddKey(vars, keyword, sclone(value));
-            }
-        }
-        keyword = stok(0, "&", &tok);
-    }
-}
-#endif
-
-
 
 
 PUBLIC void httpAddQueryParams(HttpConn *conn) 

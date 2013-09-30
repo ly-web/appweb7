@@ -308,7 +308,9 @@ static void registerServerVars(zval *track_vars_array TSRMLS_DC)
     HttpRx      *rx;
     MaPhp       *php;
     MprKey      *kp;
+    MprJson     *param;
     char        *key;
+    int         index;
 
     conn = (HttpConn*) SG(server_context);
     if (conn == 0) {
@@ -344,11 +346,9 @@ static void registerServerVars(zval *track_vars_array TSRMLS_DC)
         }
     }
     if (rx->params) {
-        for (ITERATE_KEYS(rx->params, kp)) {
-            if (kp->data) {
-                php_register_variable(supper(kp->key), (char*) kp->data, php->var_array TSRMLS_CC);
-                mprTrace(4, "php: form var %s = %s", kp->key, kp->data);
-            }
+        for (ITERATE_JSON(rx->params, param, index)) {
+            php_register_variable(supper(param->name), (char*) param->value, php->var_array TSRMLS_CC);
+            mprTrace(4, "php: form var %s = %s", param->name, param->value);
         }
     }
     if (SG(request_info).request_uri) {

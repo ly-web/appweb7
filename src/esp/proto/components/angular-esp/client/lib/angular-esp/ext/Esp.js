@@ -70,6 +70,9 @@ app.factory('Esp', function($document, $rootScope, $location, SessionStore) {
     };
 
     Esp.titlecase = function (str) {
+        if (!str) {
+            return str;
+        }
         var words = str.split(/[ \.]/g);
         for (var i = 0; i < words.length; i++) {
             words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1);
@@ -158,10 +161,11 @@ function checkAuth($q, $location, $rootScope, $route, Esp) {
     return true;
 }
 
-
+/*
 app.filter('titlecase', function(Esp) {
     var titlecaseFilter = function(str) {
         return Esp.titlecase(str);
     };
     return titlecaseFilter;
 });
+*/

@@ -268,8 +268,7 @@ static int runAction(HttpConn *conn)
             if (espModuleIsStale(req->controllerPath, req->module, &recompile)) {
                 mprLog(4, "ESP controller %s is newer than module %s, recompiling ...", source, req->controllerPath, req->module);
                 /*  WARNING: GC yield here */
-                if (recompile && 
-                        !espCompile(route, conn->dispatcher, req->controllerPath, req->module, req->cacheName, 0, &errMsg)) {
+                if (recompile && !espCompile(route, conn->dispatcher, req->controllerPath, req->module, req->cacheName, 0, &errMsg)) {
                     httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, errMsg);
                     unlock(req->esp);
                     return 0;
@@ -347,6 +346,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     EspRoute    *eroute;
     EspReq      *req;
     EspViewProc view;
+    cchar       *appName;
     
     rx = conn->rx;
     req = conn->data;
@@ -381,7 +381,8 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         source = mprTrimPathDrive(source);
 #endif
         canonical = mprGetPortablePath(mprGetRelPath(source, req->route->documents));
-        req->cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", eroute->appName, canonical), -1, "view_");
+        appName = eroute->appName ? eroute->appName : route->host->name;
+        req->cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", appName, canonical), -1, "view_");
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
 
         if (!mprPathExists(req->source, R_OK)) {
@@ -427,8 +428,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
             }
             if (recompile) {
                 /* WARNING: this will allow GC */
-                if (recompile &&
-                        !espCompile(rx->route, conn->dispatcher, req->source, req->module, req->cacheName, 1, &errMsg)) {
+                if (recompile && !espCompile(rx->route, conn->dispatcher, req->source, req->module, req->cacheName, 1, &errMsg)) {
                     httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, errMsg);
                     unlock(req->esp);
                     return;
@@ -487,7 +487,7 @@ static char *getControllerEntry(cchar *appName, cchar *controllerName)
 static int loadApp(HttpRoute *route, MprDispatcher *dispatcher)
 {
     EspRoute    *eroute;
-    cchar       *canonical, *source, *cacheName;
+    cchar       *canonical, *source, *cacheName, *appName;
 
     eroute = route->eroute;
     if (!eroute->appName) {
@@ -498,7 +498,8 @@ static int loadApp(HttpRoute *route, MprDispatcher *dispatcher)
         return 0;
     };
     canonical = mprGetPortablePath(mprGetRelPath(source, route->documents));
-    cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", eroute->appName, canonical), -1, "app_");
+    appName = eroute->appName ? eroute->appName : route->host->name;
+    cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", appName, canonical), -1, "app_");
     eroute->appModulePath = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, cacheName, BIT_SHOBJ));
 
 #if !BIT_STATIC
@@ -781,21 +782,28 @@ PUBLIC void httpAddLegacyResource(HttpRoute *parent, cchar *prefix, cchar *resou
 #endif
 
 
+PUBLIC void espAddEspRoute(HttpRoute *parent)
+{
+    HttpRoute   *route;
+    EspRoute    *eroute;
+    char        *prefix;
+
+    prefix = parent->prefix ? parent->prefix : "";
+    if ((route = httpDefineRoute(parent, sfmt("%s/esp", prefix), "GET", sfmt("^%s/esp/{action}$", prefix), "esp-$1", ".")) != 0) {
+        eroute = cloneEspRoute(route, parent->eroute);
+        eroute->update = 0;
+        espDefineAction(route, "esp-config", espRenderConfig);
+    }
+}
+
+
 PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
 {
     EspRoute    *eroute;
-    HttpRoute   *rp;
-    char        *prefix;
 
     eroute = route->eroute;
     if (!eroute->legacy) {
-        prefix = route->prefix ? route->prefix : "";
-        //  MOB - functionalize to create a restful esp route.
-        if ((rp = httpDefineRoute(route, sfmt("%s/esp", prefix), "GET", sfmt("^%s/esp/{action}$", prefix), "esp-$1", ".")) != 0) {
-            eroute = cloneEspRoute(rp, route->eroute);
-            eroute->update = 0;
-            espDefineAction(rp, "esp-config", espRenderConfig);
-        }
+        espAddEspRoute(route);
         httpAddRouteSet(route, eroute->serverPrefix, set);
 #if DEPRECATE || 1
     } else {
@@ -1203,14 +1211,16 @@ PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *rout
  */
 static int espResourceDirective(MaState *state, cchar *key, cchar *value)
 {
-    char    *name, *next;
+    EspRoute    *eroute;
+    char        *name, *next;
 
+    eroute = state->route->eroute;
     if (value == 0 || *value == '\0') {
-        httpAddResource(state->route, "", "{controller}");
+        httpAddResource(state->route, eroute->serverPrefix, "{controller}");
     } else {
         name = stok(sclone(value), ", \t\r\n", &next);
         while (name) {
-            httpAddResource(state->route, "", name);
+            httpAddResource(state->route, eroute->serverPrefix, name);
             name = stok(NULL, ", \t\r\n", &next);
         }
     }
@@ -1223,14 +1233,16 @@ static int espResourceDirective(MaState *state, cchar *key, cchar *value)
  */
 static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
 {
-    char    *name, *next;
+    EspRoute    *eroute;
+    char        *name, *next;
 
+    eroute = state->route->eroute;
     if (value == 0 || *value == '\0') {
-        httpAddResourceGroup(state->route, "", "{controller}");
+        httpAddResourceGroup(state->route, eroute->serverPrefix, "{controller}");
     } else {
         name = stok(sclone(value), ", \t\r\n", &next);
         while (name) {
-            httpAddResourceGroup(state->route, "", name);
+            httpAddResourceGroup(state->route, eroute->serverPrefix, name);
             name = stok(NULL, ", \t\r\n", &next);
         }
     }

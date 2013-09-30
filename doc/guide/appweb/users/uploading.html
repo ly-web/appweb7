@@ -35,12 +35,11 @@
         <div class="contentRight">
             <h1>Quick Nav</h1>
             <ul class="nav">
-                <li><a href="#comparison">Comparison</a></li>
-                <li><a href="#esp">ESP Framework</a></li>
-                <li><a href="#ejs">Ejscript Framework</a></li>
-                <li><a href="#php">PHP Framework</a></li>
-                <li><a href="#cgi">CGI Programs</a></li>
-                <li><a href="#summary">Summary</a></li>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#enabling">Enabling</a></li>
+                <li><a href="#directives">Directives</a></li>
+                <li><a href="#details">File Details</a></li>
+                <li><a href="#post">POST Upload</a></li>
             </ul>
 <!-- BeginDsi "dsi/usersGuideSeeAlso.html" -->
             <h1>See Also</h1>
@@ -70,6 +69,7 @@
             uploaded file to the request handler for processing.</p>
             <p>File upload uses multi-part mime encoding to transport files over HTTP POST requests. This is specified in
             the IETF standard <a href="http://www.ietf.org/rfc/rfc2388.txt">RFC 2388</a>. </p>
+            <a id="overview"></a>
             <h2>Overview</h2>
             <p>Because uploaded files can be very large, Appweb uses specialized handling for the receipt, storage and
             processing of uploaded files. When an upload request is received, Appweb will accept and store the 
@@ -78,6 +78,7 @@
             file.
             Appweb expects that the handler will process, copy or move the temporary file before completing the request.
             Once the handler has completed, Appweb will remove any remaining upload temporary files.</p>
+            <a id="enabling"></a>
             <h2>Enabling File Upload</h2>
             <p>To enable the upload filter, you need to add it to the request pipeline via the
             <a href="dir/route.html#addInputFilter">AddInputFiler</a> directive. For example:
@@ -90,6 +91,7 @@
 </pre>
             <p>It is good practice to define the uploadFilter within a qualifying route. This minimizes the
             security attack surface.</p>
+            <a id="directives"></a>
             <h2>Appweb Upload Directives</h2>
             <p>There are three other appweb.conf directives that relate specifically to upload filter.</p>
             <ul>
@@ -101,6 +103,7 @@
                     uploaded files should be automatically deleted from the upload directory after the handler has
                     completed processing the request.</li>
             </ul>
+            <a id="details"></a>
             <h2>Upload File Details</h2>
             <p>Once a file is uploaded, the Appweb handler responsible for processing the request will receive details about
             uploaded files via the request parameters. 
@@ -126,11 +129,11 @@ HttpConn        *conn;
 HttpUploadFile  *file;
 MprKey          *kp;
 conn = getConn();
-for (ITERATE_KEY_DATA(conn->rx->files, kp, file)) {
-    render("FILENAME %s\n", file->filename);
-    render("CLIENT_NAME %s\n", file->clientFilename);
-    render("TYPE %s\n", file->contentType);
-    render("SIZE %d\n", file->size);
+for (ITERATE_KEY_DATA(conn-&gt;rx-&gt;files, kp, file)) {
+    render("FILENAME %s\n", file-&gt;filename);
+    render("CLIENT_NAME %s\n", file-&gt;clientFilename);
+    render("TYPE %s\n", file-&gt;contentType);
+    render("SIZE %d\n", file-&gt;size);
 }
 </pre>
             <h3>Ejscript Uploads</h3>
@@ -138,6 +141,7 @@ for (ITERATE_KEY_DATA(conn->rx->files, kp, file)) {
                     href="http://www.ejscript.org/products/ejs/doc-2/api/ejscript/ejs.web-Request.html">request.files</a></em> property. Files is an object hash
             of files indexed by the HTML ID. Each file is represented by an instance of the 
             <a href="http://www.ejscript.org/products/ejs/doc-2/api/ejscript/ejs.web-UploadFile.html">UploadFile</a> class.
+            <a id="post"></a>
             <h2>Alternative Upload Technique</h2>
             <p>File upload using POST requests is one way to upload files. Another is to use the HTTP PUT method.
             This uploads a file without encoding and can offer higher performance. The HTTP DELETE method can then

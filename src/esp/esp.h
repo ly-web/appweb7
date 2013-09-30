@@ -175,9 +175,6 @@ typedef struct EspRoute {
     cchar           *mode;                  /**< Application run mode (debug|release) */
 
     cchar           *database;              /**< Name of database for route */
-#if UNUSED
-    cchar           *login;                 /**< Automatic login name - bypass login dialog */
-#endif
     cchar           *serverPrefix;          /**< Server controllers URI prefix */
     int             flat;                   /**< Compile the application flat */
     int             keepSource;             /**< Preserve generated source */
@@ -199,6 +196,15 @@ typedef struct EspRoute {
     @stability Prototype
  */
 PUBLIC void espAddComponent(HttpRoute *route, cchar *name);
+
+/**
+    Add a route for the ESP controller
+    @description This is an ESP control route for framework specific actions.
+    @param parent Route from which to inherit settings
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC void espAddEspRoute(HttpRoute *parent);
 
 /**
     Add a route set package
@@ -606,6 +612,29 @@ PUBLIC void espAutoFinalize(HttpConn *conn);
 PUBLIC bool espCheckSecurityToken(HttpConn *conn);
 
 /**
+    Create a session state object. 
+    @description The session state object can be used to share state between requests.
+    If a session has not already been created, this call will create a new session.
+    It will create a response cookie containing a session ID that will be sent to the client 
+    with the response. Note: Objects are stored in the session state using JSON serialization.
+    @param conn HttpConn connection object
+    @return Session ID string
+    @ingroup EspReq
+    @stability Prototype
+ */
+PUBLIC cchar *espCreateSession(HttpConn *conn);
+
+/**
+    Destroy a session state object. 
+    @description This will destroy the server-side session state and 
+        emit an expired cookie to the client to force it to erase the session cookie.
+    @param conn HttpConn connection object
+    @ingroup EspReq
+    @stability Prototype
+ */
+PUBLIC void espDestroySession(HttpConn *conn);
+
+/**
     Finalize processing of the http request.
     @description Finalize the response by writing buffered HTTP data and by writing the final chunk trailer if required. If
     using chunked transfers, a null chunk trailer is required to signify the end of write data.
@@ -655,8 +684,21 @@ PUBLIC MprOff espGetContentLength(HttpConn *conn);
 PUBLIC cchar *espGetContentType(HttpConn *conn);
 
 /**
+    Get a request cookie.
+    @description Get the cookie for the given name. 
+    @param conn HttpConn connection object
+    @param name Cookie name to retrieve
+    @return Return the cookie value
+        Return null if the cookie is not defined.
+    @ingroup EspReq
+    @stability Prototype
+ */
+PUBLIC cchar *espGetCookie(HttpConn *conn, cchar *name);
+
+/**
     Get the request cookies.
-    @description Get the cookies defined in the current request
+    @description Get the cookies defined in the current request. This returns the HTTP cookies header with all
+        cookies in one string.
     @param conn HttpConn connection object
     @return Return a string containing the cookies sent in the Http header of the last request
     @ingroup EspReq
@@ -858,6 +900,19 @@ PUBLIC Edi *espGetRouteDatabase(HttpRoute *route);
 PUBLIC cchar *espGetSecurityToken(HttpConn *conn);
 
 /**
+    Get the session state ID. 
+    @description This will get the session and return the session ID. This will create a new session state storage area if
+        create is true and one does not already exist. This can be used to test if the session state exists for this 
+        connection.
+    @param conn HttpConn connection object
+    @param create Set to true to create a new session if one does not already exist.
+    @return The session state identifier string.
+    @ingroup EspReq
+    @stability Prototype
+ */
+PUBLIC cchar *espGetSessionID(HttpConn *conn, int create);
+
+/**
     Get the response status.
     @param conn HttpConn connection object
     @return An integer Http response code. Typically 200 is success.
@@ -956,21 +1011,6 @@ PUBLIC bool espIsSecure(HttpConn *conn);
  */
 PUBLIC bool espIsFinalized(HttpConn *conn);
 
-//  MOB - should this be ediMakeHash
-/**
-    Make a hash table container of property values.
-    @description This routine formats the given arguments, parses the result as a JSON string and returns an 
-        equivalent hash of property values. The result after formatting should be of the form:
-        hash("{ key: 'value', key2: 'value', key3: 'value' }");
-    @param fmt Printf style format string
-    @param ... arguments
-    @return MprHash instance
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC MprHash *espMakeHash(cchar *fmt, ...);
-
-//  MOB - reconsider API
 /**
     Match a request parameter with an expected value.
     @description Compare a request parameter and return "true" if it exists and its value matches.
@@ -1117,12 +1157,11 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path);
         See #espSetFlash for how to define flash messages. 
     @param conn Http connection object
     @param kinds Space separated list of flash messages types. Typical types are: "error", "inform", "warning".
-    @param options Reserved. Set to "".
     @ingroup EspControl
     @stability Deprecated
     @internal
  */
-PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *options);
+PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds);
 
 /**
     Render an EDI database record as a JSON string
@@ -1148,7 +1187,6 @@ PUBLIC ssize espRenderRec(HttpConn *conn, EdiRec *rec, int flags);
   */
 PUBLIC ssize espRenderGrid(HttpConn *conn, EdiGrid *grid, int flags);
 
-
 /**
     Read a table from the current database
     @param conn HttpConn connection object
@@ -1173,9 +1211,11 @@ PUBLIC void espRenderFeedback(HttpConn *conn, cchar *kinds, cchar *options);
 
 /**
     Render a JSON response result
-    @description This renders a JSON response. The status is rendered as part of an enclosing 
-    "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
-    The messages are created via the espSetFeedback API. Field errors are created by ESP validations.
+    @description This renders a JSON response including the request success status, feedback message and field errors. 
+    The field errors apply to the current EDI record.
+    The format of the response is:
+        "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
+    The feedback messages are created via the espSetFeedback API. Field errors are created by ESP validations.
     @param conn HttpConn connection object
     @param success True if the operation was a success.
     @ingroup EspReq
@@ -1626,6 +1666,7 @@ PUBLIC bool canUser(cchar *abilities, bool warn);
     Create a record and initialize field values 
     @description This will call #ediCreateRec to create a record based on the given table's schema. It will then
         call #ediSetFields to update the record with the given data.
+    The record is remembered for this request as the "current" record and can be retrieved via: getRec().
     @param tableName Database table name
     @param data Json object with field values
     @return EdRec instance
@@ -1637,6 +1678,7 @@ PUBLIC EdiRec *createRec(cchar *tableName, MprJson *data);
 /**
     Create a record from the request parameters
     @description A new record is created with the request parameters in the specified table.
+    The record is remembered for this request as the "current" record and can be retrieved via: getRec().
     @param table Database table to update
     @return True if the update is successful.
     @ingroup EspAbbrev
@@ -1969,7 +2011,6 @@ PUBLIC bool isFinalized();
  */
 PUBLIC bool isSecure();
 
-#if UNUSED
 /**
     Make a hash table container of property values
     @description This routine formats the given arguments, parses the result as a JSON string and returns an 
@@ -1982,7 +2023,17 @@ PUBLIC bool isSecure();
     @stability Evolving
  */
 PUBLIC MprHash *makeHash(cchar *fmt, ...);
-#endif
+
+/**
+    Make a JSON object container of property values
+    @description This routine formats the given arguments, parses the result into a JSON object.
+    @param fmt Printf style format string
+    @param ... arguments
+    @return MprJson instance
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC MprJson *makeJson(cchar *fmt, ...);
 
 /**
     Make a record
@@ -2098,6 +2149,7 @@ PUBLIC MprJson *params();
 /**
     Read the identified record 
     @description Read the record identified by the request param("id") from the nominated table.
+    The record is remembered for this request as the "current" record and can be retrieved via: getRec().
     @param tableName Database table name
     @param key Key value of the record to read 
     @return The identified record. Returns NULL if the table or record cannot be found.
@@ -2110,6 +2162,7 @@ PUBLIC EdiRec *readRec(cchar *tableName, cchar *key);
     Read matching records
     @description This runs a simple query on the database and returns matching records in a grid. The query selects
         all rows that have a "field" that matches the given "value".
+    The grid of records is remembered for this request as the "current" grid and can be retrieved via: getGrid().
     @param tableName Database table name
     @param fieldName Database field name to evaluate
     @param operation Comparison operation. Set to "==", "!=", "<", ">", "<=" or ">=".
@@ -2124,6 +2177,7 @@ PUBLIC EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operati
     Read one record
     @description This runs a simple query on the database and selects the first matching record. The query selects
         a row that has a "field" that matches the given "value".
+    The record is remembered for this request as the "current" record and can be retrieved via: getRec().
     @param tableName Database table name
     @param fieldName Database field name to evaluate
     @param operation Comparison operation. Set to "==", "!=", "<", ">", "<=" or ">=".
@@ -2137,6 +2191,7 @@ PUBLIC EdiRec *readRecWhere(cchar *tableName, cchar *fieldName, cchar *operation
 /**
     Read a record identified by key value
     @description Read a record from the given table as identified by the key value.
+    The record is remembered for this request as the "current" record and can be retrieved via: getRec().
     @param tableName Database table name
     @param key Key value of the record to read 
     @return Record instance of EdiRec.
@@ -2148,6 +2203,7 @@ PUBLIC EdiRec *readRecByKey(cchar *tableName, cchar *key);
 /**
     Read all the records in table from the database
     @description This reads a table and returns a grid containing the table data.
+    The grid of records is remembered for this request as the "current" grid and can be retrieved via: getGrid().
     @param tableName Database table name
     @return A grid containing all table rows. Returns NULL if the table cannot be found.
     @ingroup EspAbbrev
@@ -2259,11 +2315,10 @@ PUBLIC void renderFeedback(cchar *kinds, cchar *options);
     @description Flash notices are one-time messages that are passed to the newt request (only).
         See #espSetFlash and #flash for how to define flash messages. 
     @param kinds Space separated list of flash messages types. Typical types are: "error", "inform", "warning".
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
     @stability Prototype
  */
-PUBLIC void renderFlash(cchar *kinds, cchar *options);
+PUBLIC void renderFlash(cchar *kinds);
 
 /**
     Render a file back to the client
@@ -2299,9 +2354,11 @@ PUBLIC ssize renderRec(EdiRec *rec);
 
 /**
     Render a JSON response result
-    @description This renders a JSON response. The status is rendered as part of an enclosing 
-    "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
-    The messages are created via the espSetFeedback API. Field errors are created by ESP validations.
+    @description This renders a JSON response including the request success status, feedback message and field errors. 
+    The field errors apply to the current EDI record.
+    The format of the response is:
+        "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
+    The feedback messages are created via the espSetFeedback API. Field errors are created by ESP validations.
     @param status Request success status.
     @ingroup EspReq
     @stability Prototype

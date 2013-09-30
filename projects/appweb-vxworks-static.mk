@@ -1080,8 +1080,11 @@ $(CONFIG)/esp: $(DEPS_55)
 	mkdir -p "$(CONFIG)/esp/components/angular"
 	cp src/esp/proto/components/angular/config.json $(CONFIG)/esp/components/angular/config.json
 	mkdir -p "$(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext"
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-field-errors.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-field-errors.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-format.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-format.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input-group.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-input-group.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-input.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-titlecase.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-titlecase.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/Esp.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/Esp.js
 	mkdir -p "$(CONFIG)/esp/components/angular-esp"
 	cp src/esp/proto/components/angular-esp/config.json $(CONFIG)/esp/components/angular-esp/config.json
@@ -1095,12 +1098,9 @@ $(CONFIG)/esp: $(DEPS_55)
 	mkdir -p "$(CONFIG)/esp/components/angular-mvc/client/app"
 	cp src/esp/proto/components/angular-mvc/client/app/main.js $(CONFIG)/esp/components/angular-mvc/client/app/main.js
 	mkdir -p "$(CONFIG)/esp/components/angular-mvc/client/css"
-	cp src/esp/proto/components/angular-mvc/client/css/all.css $(CONFIG)/esp/components/angular-mvc/client/css/all.css
 	cp src/esp/proto/components/angular-mvc/client/css/all.less $(CONFIG)/esp/components/angular-mvc/client/css/all.less
 	cp src/esp/proto/components/angular-mvc/client/css/app.less $(CONFIG)/esp/components/angular-mvc/client/css/app.less
 	cp src/esp/proto/components/angular-mvc/client/css/fix.css $(CONFIG)/esp/components/angular-mvc/client/css/fix.css
-	cp src/esp/proto/components/angular-mvc/client/css/old-app.less $(CONFIG)/esp/components/angular-mvc/client/css/old-app.less
-	cp src/esp/proto/components/angular-mvc/client/css/old-theme.less $(CONFIG)/esp/components/angular-mvc/client/css/old-theme.less
 	cp src/esp/proto/components/angular-mvc/client/css/theme.less $(CONFIG)/esp/components/angular-mvc/client/css/theme.less
 	mkdir -p "$(CONFIG)/esp/components/angular-mvc/client"
 	cp src/esp/proto/components/angular-mvc/client/index.esp $(CONFIG)/esp/components/angular-mvc/client/index.esp

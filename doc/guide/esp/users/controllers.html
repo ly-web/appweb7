@@ -51,7 +51,7 @@
 		          <li><a href="../../../guide/esp/users/config.html">ESP Configuration Directives</a></li>
 		          <li><a href="../../../guide/esp/users/controllers.html">ESP Controllers and Actions</a></li>
 		          <li><a href="../../../guide/esp/users/mvc.html">ESP MVC</a></li>
-		          <li><a href="../../../guide/esp/users/pagesTour.html">ESP Page Tour</a></li>
+		          <li><a href="../../../guide/esp/users/pages-tour.html">ESP Page Tour</a></li>
 		          <li><a href="../../../guide/esp/users/generator.html">ESP Generator</a></li>
 		          <li><a href="../../../guide/esp/users/database.html">ESP Database Interface</a></li>
 		          <li><a href="../../../guide/appweb/users/caching.html">Caching Responses</a></li>
@@ -65,15 +65,15 @@
         <div class="contentLeft">
         <h1>Controllers and Actions</h1>
         <p>ESP <em>controllers</em> are the conductors of the application and they orchestrate the application's 
-        responses. Via <em>action</em> functions, they receive client requests and generate appropriate responses, 
-        mutating the applications data model as required.</p>
+        logic and responses to client requests. Via <em>action</em> functions, they receive client requests and 
+        generate appropriate responses, mutating the applications data model as required.</p>
         <p>An ESP controller is a "C" source file that contains action functions to receive to incoming client 
         requests and manage the applications response. The controller may be part of an ESP MVC application or it
         may be a stand-alone controller.</p>
         <a id="example"></a>
         <h2 class="section">Example of a Controller</h2>
         <p>So what does a controller look like? Here is a partial example called <em>greeting.c</em>
-        that has one action to day "Hello World":</p>
+        that has one action to say "Hello World".</p>
         <pre>
 #include "esp.h"
 static void hello() { 
@@ -87,7 +87,7 @@ ESP_EXPORT int esp_controller_greeting(HttpRoute *route)
 </pre>
         <p>If the client browser issues a request for:</p>
         <pre>http://localhost/greeting/hello</pre>
-        <p>Given suitable configuration, ESP will then compile and load the greeting.c controller and 
+        <p>ESP will compile and load the greeting.c controller and 
         run the <em>hello</em> function which will respond to the client with "Hello World\n".</p>
         <a id="config"></a>
         <h2 class="section">Configuring Controllers</h2>
@@ -97,7 +97,7 @@ ESP_EXPORT int esp_controller_greeting(HttpRoute *route)
             <li>As part of an ESP MVC application</li>
         </ul>
         <h3>Stand-Alone Controllers</h3>
-        <p>A stand-alone controller is not part of a broader ESP MVC application. It is complete unto iself. 
+        <p>A stand-alone controller is not part of a broader ESP MVC application. It is complete unto itself. 
         Such controllers are very useful for web services and for discrete interfaces to server-side functions.</p>
         <p>To define a controller, you create an Appweb route using appweb.conf directives that specifies
             the route URI, the controller source file and the target mapping from URI to controller action. For example</p>
@@ -111,7 +111,7 @@ ESP_EXPORT int esp_controller_greeting(HttpRoute *route)
         <p>This set of directives will create a route that will invoke the controller <em>controllers/greeting.c</em>.
         If the <em>/greeting/hello</em> URI is invoked, the <em>hello</em> action function will be invoked.
         The Target directive defines how the action function name to invoke. You can optionally use the
-        <a href="../appweb/users/dir/route.html#methods">Methods</a> directive to specify the support HTTP method verbs.</p>
+        <a href="../../appweb/users/dir/route.html#methods">Methods</a> directive to specify the support HTTP method verbs.</p>
         <h3>ESP MVC Applications</h3>
         <p>The Model-view-controller (MVC) architecture is a well-proven organization for web applications. 
         A key reason is that MVC apps separate the logic (<em>controllers</em>), from the presentation (<em>views</em>) 
@@ -119,7 +119,7 @@ ESP_EXPORT int esp_controller_greeting(HttpRoute *route)
         create maintainable applications.</p>
         <p>In an ESP MVC application, there are typically many <em>controllers</em> located by default 
         in the <em>controllers</em> directory.
-        <p>ESP MVC applications and thier controllers can be easily created via the 
+        <p>ESP MVC applications and their controllers can be easily created via the 
         <a href="generator.html">esp</a> generator command. The <em>esp</em> command is used to create a bare ESP 
         MVC application with a directory for controllers, views, databases and other necessary configuration files. 
         For example:</p> 
@@ -214,16 +214,16 @@ static FUNCTION() {
     ...
 }
 /*
-    Controller module initialzation routine
+    Controller module initialization routine
  */
-ESP_EXPORT int esp_controller_NAME(HttpRoute *route) 
+ESP_EXPORT int esp_controller_APP_NAME(HttpRoute *route) 
 {
     espDefineAction(route, "NAME-ACTION", FUNCTION);
     return 0;
 }
 </pre>
             <h3></h3>
-            <p>If you want to programatically bind a C function to a URI without creating a loadable module and without
+            <p>If you want to programmatically bind a C function to a URI without creating a loadable module and without
             defining an appweb.conf route, 
             you can call the <a href="../../../api/esp.html#group___esp_route_1ga0d812aed0ff96f0ffa281860270e8910">espBindProc</a>
             API. This will create a new route by inheriting settings from an existing route and then define an action

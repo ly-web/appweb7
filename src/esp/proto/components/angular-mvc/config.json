@@ -15,6 +15,11 @@
         'respond'
     ],
     settings: {
+        formats: {
+            date: 'yyyy-MM-dd',
+            float: 2,                                                                                                  
+            int: 0
+        },
         redirect: "secure",
         sendJson: true,
     },

@@ -403,12 +403,6 @@ static bool similarRoute(HttpRoute *r1, HttpRoute *r2)
     if (!smatch(r1->home, r2->home)) {
         return 0;
     }
-    if (!smatch(r1->sourceName, r2->sourceName)) {
-        return 0;
-    }
-    if (!smatch(r1->sourceName, r2->sourceName)) {
-        return 0;
-    }
     if (!smatch(e1->appDir, e2->appDir)) {
         return 0;
     }
@@ -426,6 +420,11 @@ static bool similarRoute(HttpRoute *r1, HttpRoute *r2)
     }
     if (!smatch(e1->viewsDir, e2->viewsDir)) {
         return 0;
+    }
+    if (scontains(r1->sourceName, "${") == 0 && scontains(r2->sourceName, "${") == 0) {
+        if (r2->sourceName && r2->sourceName) {
+            return smatch(r1->sourceName, r2->sourceName);
+        }
     }
     return 1;
 }
@@ -532,10 +531,12 @@ static MprList *getRoutes()
         fail("Cannot find a suitable route");
     }
     eroute = app->eroute = app->route->eroute;
-    assert(eroute); 
-    app->topComponent = mprGetJsonValue(eroute->config, "generate.top", 0);
-    app->appName = eroute->appName;
-    app->topComponent = mprGetJsonValue(eroute->config, "generate.top", 0);
+    assert(eroute);
+    if (eroute->config) {
+        app->topComponent = mprGetJsonValue(eroute->config, "generate.top", 0);
+        app->appName = eroute->appName;
+        app->topComponent = mprGetJsonValue(eroute->config, "generate.top", 0);
+    }
     return routes;
 }
 
@@ -578,6 +579,12 @@ static bool findHostingConfig()
         }
     }
     app->serverRoot = mprGetAbsPath(mprGetPathDir(app->configFile));
+    if (!userPath) {
+        if (chdir(mprGetPathDir(app->configFile)) < 0) {
+            fail("Cannot change directory to %s", mprGetPathDir(app->configFile));
+            return 0;
+        }
+    }
     return 1;
 }
 
@@ -773,7 +780,7 @@ static int runEspCommand(HttpRoute *route, cchar *command, cchar *csource, cchar
 static void compileFile(HttpRoute *route, cchar *source, int kind)
 {
     EspRoute    *eroute;
-    cchar       *canonical, *defaultLayout, *page, *layout, *data, *prefix, *lpath;
+    cchar       *canonical, *defaultLayout, *page, *layout, *data, *prefix, *lpath, *appName;
     char        *err, *quote, *script;
     ssize       len;
     int         recompile;
@@ -793,7 +800,8 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
         prefix = "view_";
     }
     canonical = mprGetPortablePath(mprGetRelPath(source, route->documents));
-    app->cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", eroute->appName, canonical), -1, prefix);
+    appName = eroute->appName ? eroute->appName : route->host->name;
+    app->cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", appName, canonical), -1, prefix);
     app->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, app->cacheName, BIT_SHOBJ));
     defaultLayout = (eroute->layoutsDir) ? mprJoinPath(eroute->layoutsDir, "default.esp") : 0;
     mprMakeDir(eroute->cacheDir, 0755, -1, -1, 1);
@@ -1593,19 +1601,19 @@ static void generateScaffold(int argc, char **argv)
     if (!espTestConfig(app->route, "generate.scaffold", "true")) {
         return;
     }
-    if (espTestConfig(app->route, "generate.clientModel", "true")) {
-        generateClientModel(argc, argv);
+    if (espTestConfig(app->route, "generate.controller", "true")) {
+        generateScaffoldController(argc, argv);
     }
     if (espTestConfig(app->route, "generate.clientController", "true")) {
         generateClientController(argc, argv);
     }
+    generateScaffoldViews(argc, argv);
+    if (espTestConfig(app->route, "generate.clientModel", "true")) {
+        generateClientModel(argc, argv);
+    }
     if (espTestConfig(app->route, "generate.migration", "true")) {
         generateScaffoldMigration(argc, argv);
     }
-    if (espTestConfig(app->route, "generate.controller", "true")) {
-        generateScaffoldController(argc, argv);
-    }
-    generateScaffoldViews(argc, argv);
     migrate(0, 0);
 }
 
@@ -1670,8 +1678,8 @@ static void migrate(int argc, char **argv)
     EdiRec      *mig;
     HttpRoute   *route;
     cchar       *command, *file;
-    int         next, onlyOne, backward, found, i;
     uint64      seq, targetSeq, lastMigration, v;
+    int         next, onlyOne, backward, found, i, rc;
 
     if (app->error) {
         return;
@@ -1691,18 +1699,20 @@ static void migrate(int argc, char **argv)
         mprDeletePath(edi->path);
         if ((app->eroute->edi = ediOpen(edi->path, edi->provider->name, edi->flags | EDI_CREATE)) == 0) {
             fail("Cannot open database %s", edi->path);
+            return;
         }
     }
     /*
         Each database has a _EspMigrations table which has a record for each migration applied
      */
     if ((app->migrations = ediReadTable(edi, ESP_MIGRATIONS)) == 0) {
-        //  MOB - rc
-        //  MOB - autosave is on
-        //  MOB - must unlink if either of these fail
-        ediAddTable(edi, ESP_MIGRATIONS);
-        ediAddColumn(edi, ESP_MIGRATIONS, "id", EDI_TYPE_INT, EDI_AUTO_INC | EDI_INDEX | EDI_KEY);
-        ediAddColumn(edi, ESP_MIGRATIONS, "version", EDI_TYPE_STRING, 0);
+        rc = ediAddTable(edi, ESP_MIGRATIONS);
+        rc += ediAddColumn(edi, ESP_MIGRATIONS, "id", EDI_TYPE_INT, EDI_AUTO_INC | EDI_INDEX | EDI_KEY);
+        rc += ediAddColumn(edi, ESP_MIGRATIONS, "version", EDI_TYPE_STRING, 0);
+        if (rc < 0) {
+            fail("Cannot add migration");
+            return;
+        }
         app->migrations = ediReadTable(edi, ESP_MIGRATIONS);
     }
     if (app->migrations->nrecords > 0) {
@@ -1790,21 +1800,27 @@ static void migrate(int argc, char **argv)
             }
             if (backward) {
                 trace("Migrate", "Reverse %s", app->base);
-                //  MOB RC
-                edi->back(edi);
+                if (edi->back(edi) < 0) {
+                    fail("Cannot reverse migration");
+                    return;
+                }
             } else {
                 trace("Migrate", "Apply %s ", app->base);
-                //  MOB RC
-                edi->forw(edi);
+                if (edi->forw(edi) < 0) {
+                    fail("Cannot apply migration");
+                    return;
+                }
             }
             if (backward) {
                 assert(mig);
-                ediDeleteRow(edi, ESP_MIGRATIONS, ediGetFieldValue(mig, "id"));
+                ediRemoveRec(edi, ESP_MIGRATIONS, ediGetFieldValue(mig, "id"));
             } else {
-                //  MOB - must test return codes
                 mig = ediCreateRec(edi, ESP_MIGRATIONS);
                 ediSetField(mig, "version", itos(seq));
-                ediUpdateRec(edi, mig);
+                if (ediUpdateRec(edi, mig) < 0) {
+                    fail("Cannot update migrations table");
+                    return;
+                }
             }
             mprUnloadModule(mp);
             if (onlyOne) {
@@ -1825,6 +1841,7 @@ static void migrate(int argc, char **argv)
 static void fixupFile(cchar *path)
 {
     HttpRoute   *route;
+    MprHash     *tokens;
     ssize       len;
     char        *data, *tmp;
 
@@ -1833,18 +1850,12 @@ static void fixupFile(cchar *path)
         return;
     }
     route = app->route;
-    //  MOB - Use stemplate and tokens.
-    data = sreplace(data, "${NAME}", app->appName);
-    data = sreplace(data, "${TITLE}", spascal(app->appName));
-    data = sreplace(data, "${DATABASE}", app->database);
-    data = sreplace(data, "${HOME}", route->home);
-    data = sreplace(data, "${DOCUMENTS}", route->documents);
-    data = sreplace(data, "${LISTEN}", app->listen);
-    data = sreplace(data, "${BINDIR}", app->binDir);
-#if DEPRECATE || 1
-    data = sreplace(data, "${ROUTESET}", app->routeSet);
-    data = sreplace(data, "${DIR}", route->documents);
-#endif
+
+    //  DEPRECATE ROUTESET and DIR
+    tokens = mprDeserialize(sfmt("{ NAME: '%s', TITLE: '%s', DATABASE: '%s', HOME: '%s', DOCUMENTS: '%s', LISTEN: '%s', BINDIR: '%s', ROUTESET: '%s', DIR: '%s' }", 
+        app->appName, spascal(app->appName), app->database, route->home, route->documents, app->listen, 
+        app->binDir, app->routeSet, route->documents));
+    data = stemplate(data, tokens);
     tmp = mprGetTempPath(route->documents);
     if (mprWritePathContents(tmp, data, slen(data), 0644) < 0) {
         fail("Cannot write %s", path);
@@ -1890,6 +1901,8 @@ static void generateAppFiles()
         if (mprPathExists(config, R_OK)) {
             if ((newConfig = mprLoadJson(config)) != 0) {
                 mprBlendJson(eroute->config, newConfig, 0);
+                mprSetJsonValue(eroute->config, "name", app->appName, 0);
+                mprRemoveJson(eroute->config, "description");
             }
         }
     }
@@ -2095,9 +2108,6 @@ static void usageError()
     "\n"
     "  Components: (for esp generate app)\n%s\n"
     "", name, components);
-#if UNUSED && KEEP
-    "    --static               # Compile static content into C code\n"
-#endif
     app->error = 1;
 }
 

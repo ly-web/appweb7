@@ -363,12 +363,12 @@ mprCreateEvent(q-&gt;conn-&gt;dispatcher, "deviceEvent", 0, doMoreOutput, q, 0);
         <p>Sometimes a handler needs to store state information. 
             Appweb defines two empty fields that can be used by handlers to hold managed references. The HttpConn.data 
             field is available for use by handlers and can store a managed-memory reference. Managed-memory is memory allocated
-            by the MPR layer APIs. See
-            <a href="../../../ref/appweb/memory.html"</a> for details about memory allocation</a>. 
+            by the MPR layer APIs. See:
+            <a href="../../../ref/appweb/memory.html">Appweb Memory</a> for details about memory allocation. </p>
             <p>Similarly, HttpQueue.queueData field available for queue stages. This field is available for use by
                 either handlers or filters. Both these fields must only be used for managed memory and not for 
                 memory allocated by malloc. </p>
-            <p>Appweb defines two fields that can be used to store unmanaged memory references: HttpConn.staticData and
+            <p>Appweb defines two fields that can be used to store un-managed memory references: HttpConn.staticData and
                 HttpQueue.staticData. Use these to store references to memory allocated by malloc.</p>
         <a id="defining"></a>
         <h2>Defining a Handler</h2>
@@ -425,8 +425,8 @@ int maMyModuleInit(Http *http, MprModule *mp)
             <a id="more"></a>
             <h2>More Info</h2>
             <p>See the <a
-                href="https://github.com/embedthis/appweb-4/tree/master/src/samples/c/simpleHandler">simpleHandler for a
-                working handler example.</a></p>
+                href="https://github.com/embedthis/appweb-4/tree/master/samples/simple-handler">simple-handler</a> for a
+                working handler example.</p>
             <p>Here are links to some of the Appweb supplied handlers: </p>
             <ul>
                 <li><a href="https://github.com/embedthis/appweb-4/blob/master/src/dirHandler.c">Dir Handler</a></li>

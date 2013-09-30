@@ -4,9 +4,7 @@
 #include "esp.h"
 
 static void create${TITLE}() { 
-    EdiRec *rec;
-    rec = createRec("${NAME}", params());
-    renderResult(updateRec(rec));
+    renderResult(updateRec(createRec("${NAME}", params())));
 }
 
 static void get${TITLE}() { 
@@ -26,9 +24,7 @@ static void remove${TITLE}() {
 }
 
 static void update${TITLE}() { 
-    EdiRec *rec;
-    rec = setFields(readRec("${NAME}", param("id")), params());
-    renderResult(updateRec(rec));
+    renderResult(updateRec(setFields(readRec("${NAME}", param("id")), params())));
 }
 
 ESP_EXPORT int esp_controller_${APP}_${NAME}(HttpRoute *route, MprModule *module) {

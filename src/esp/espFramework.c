@@ -98,6 +98,17 @@ PUBLIC bool espCheckSecurityToken(HttpConn *conn)
 }
 
 
+PUBLIC cchar *espCreateSession(HttpConn *conn)
+{
+    HttpSession *session;
+
+    if ((session = httpCreateSession(getConn())) != 0) {
+        return session->id;
+    }
+    return 0;
+}
+
+
 PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *action)
 {
     EspRoute    *eroute;
@@ -153,6 +164,12 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *view)
 }
 
 
+PUBLIC void espDestroySession(HttpConn *conn)
+{
+    httpDestroySession(conn);
+}
+
+
 PUBLIC void espFinalize(HttpConn *conn) 
 {
     httpFinalize(conn);
@@ -190,7 +207,12 @@ PUBLIC cchar *espGetContentType(HttpConn *conn)
 }
 
 
-//  MOB - need an API to parse these into a hash
+PUBLIC cchar *espGetCookie(HttpConn *conn, cchar *name)
+{
+    return httpGetCookie(conn, name);
+}
+
+
 PUBLIC cchar *espGetCookies(HttpConn *conn) 
 {
     return httpGetCookies(conn);
@@ -361,6 +383,17 @@ PUBLIC cchar *espGetSecurityToken(HttpConn *conn)
 }
 
 
+PUBLIC cchar *espGetSessionID(HttpConn *conn, int create)
+{
+    HttpSession *session;
+
+    if ((session = httpGetSession(getConn(), create)) != 0) {
+        return session->id;
+    }
+    return 0;
+}
+
+
 PUBLIC int espGetStatus(HttpConn *conn)
 {
     return httpGetStatus(conn);
@@ -375,7 +408,7 @@ PUBLIC char *espGetStatusMessage(HttpConn *conn)
 
 PUBLIC char *espGetTop(HttpConn *conn)
 {
-    return httpLink(conn, "~", NULL);
+    return httpUri(conn, "~", NULL);
 }
 
 
@@ -460,27 +493,27 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             if ((msettings = mprGetJson(eroute->config, sfmt("modes.%s", eroute->mode), 0)) != 0) {
                 mprBlendJson(mprLookupJson(eroute->config, "settings"), msettings, 0);
             }
-            if (espTestConfig(route, "settings.showErrors", "true")) {
-                httpSetRouteShowErrors(route, 1);
+            if ((value = espGetConfig(route, "settings.showErrors", 0)) != 0) {
+                httpSetRouteShowErrors(route, smatch(value, "true"));
             }
-            if (espTestConfig(route, "settings.update", "true")) {
-                eroute->update = 1;
+            if ((value = espGetConfig(route, "settings.update", 0)) != 0) {
+                eroute->update = smatch(value, "true");
             }
-            if (espTestConfig(route, "settings.keepSource", "true")) {
-                eroute->keepSource = 1;
+            if ((value = espGetConfig(route, "settings.keepSource", 0)) != 0) {
+                eroute->keepSource = smatch(value, "true");
             }
             if ((eroute->serverPrefix = espGetConfig(route, "settings.serverPrefix", 0)) == 0) {
                 eroute->serverPrefix = sclone(BIT_ESP_SERVER_PREFIX);
             }
-            if ((value = espGetConfig(route, "settings.username", 0)) != 0) {
+            if ((value = espGetConfig(route, "settings.login.name", 0)) != 0) {
                 /* Automatic login as this user. Password not required */
                 httpSetAuthUsername(route->auth, value);
             }
-            if (espTestConfig(route, "settings.xsrfToken", "true")) {
-                httpSetRouteXsrf(route, 1);
+            if ((value = espGetConfig(route, "settings.xsrfToken", 0)) != 0) {
+                httpSetRouteXsrf(route, smatch(value, "true"));
             }
-            if (espTestConfig(route, "settings.sendJson", "true")) {
-                eroute->json = 1;
+            if ((value = espGetConfig(route, "settings.sendJson", 0)) != 0) {
+                eroute->json = smatch(value, "true");
             }
             if (espTestConfig(route, "settings.map", "compressed")) {
                 httpAddRouteMapping(route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
@@ -507,19 +540,6 @@ PUBLIC int espLoadConfig(HttpRoute *route)
 }
 
 
-PUBLIC MprHash *espMakeHash(cchar *fmt, ...)
-{
-    va_list     args;
-    cchar       *str;
-
-    va_start(args, fmt);
-    str = sfmtv(fmt, args);
-    va_end(args);
-    return mprDeserialize(str);
-}
-
-
-//  MOB - reconsider API
 PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value)
 {
     return httpMatchParam(conn, var, value);
@@ -581,8 +601,7 @@ PUBLIC ssize espReceive(HttpConn *conn, char *buf, ssize len)
 
 PUBLIC void espRedirect(HttpConn *conn, int status, cchar *target)
 {
-    //  MOB - should this httpLink be pushed into httpRedirect?
-    httpRedirect(conn, status, httpLink(conn, target, NULL));
+    httpRedirect(conn, status, target);
 }
 
 
@@ -616,24 +635,23 @@ PUBLIC ssize espRenderBlock(HttpConn *conn, cchar *buf, ssize size)
 }
 
 
-//  MOB - need a renderCached(), updateCache()
 PUBLIC ssize espRenderCached(HttpConn *conn)
 {
     return httpWriteCached(conn);
 }
 
 
-
 PUBLIC void espRenderConfig(HttpConn *conn)
 {
     EspRoute    *eroute;
+    MprJson     *settings;
 
     eroute = conn->rx->route->eroute;
-    if (eroute->config) {
-        //  MOB - remove pretty
-        renderString(mprJsonToString(eroute->config, MPR_JSON_QUOTES | MPR_JSON_PRETTY));
+    settings = mprLookupJson(eroute->config, "settings");
+    if (settings) {
+        renderString(mprJsonToString(eroute->config, MPR_JSON_QUOTES));
     } else {
-        renderError(HTTP_CODE_NOT_FOUND, "Cannot find config");
+        renderError(HTTP_CODE_NOT_FOUND, "Cannot find config.settings to send to client");
     }
     finalize();
 }
@@ -697,7 +715,7 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path)
 }
 
 
-PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds, cchar *optionString)
+PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds)
 {
     EspReq      *req;
     MprKey      *kp;
@@ -760,22 +778,17 @@ PUBLIC void espSetNotifier(HttpConn *conn, HttpNotifier notifier)
     }
 }
 
-
-/*
-    MOB - support PRETTY, QUOTES PLAIN flag
-    MOB - support flags to ask or not for the schema
- */
 PUBLIC ssize espRenderGrid(HttpConn *conn, EdiGrid *grid, int flags)
 {
     httpAddHeaderString(conn, "Content-Type", "application/json");
-    return espRender(conn, "{\n  \"schema\": %s,\n  \"data\": %s}\n", ediGetGridSchemaToJson(grid), ediGridToJson(grid, flags));
+    return espRender(conn, "{\n  \"schema\": %s,\n  \"data\": %s}\n", ediGetGridSchemaAsJson(grid), ediGridAsJson(grid, flags));
 }
 
 
 PUBLIC ssize espRenderRec(HttpConn *conn, EdiRec *rec, int flags)
 {
     httpAddHeaderString(conn, "Content-Type", "application/json");
-    return espRender(conn, "{\"data\": %s, \"schema\": %s}", ediRecToJson(rec, flags), ediGetRecSchemaToJson(rec));
+    return espRender(conn, "{\"data\": %s, \"schema\": %s}", ediRecAsJson(rec, flags), ediGetRecSchemaAsJson(rec));
 }
 
 
@@ -804,14 +817,12 @@ PUBLIC ssize espRenderString(HttpConn *conn, cchar *s)
 }
 
 
-//  MOB - need more flexibility in setting feedback directly with this API
 PUBLIC void espRenderResult(HttpConn *conn, bool success)
 {
     EspReq      *req;
     EdiRec      *rec;
 
     req = conn->data;
-    //  MOB getRec is problematic
     rec = getRec();
     if (rec && rec->errors) {
         espRender(conn, "{\"error\": %d, \"feedback\": %s, \"fieldErrors\": %s}", !success, 
@@ -822,7 +833,6 @@ PUBLIC void espRenderResult(HttpConn *conn, bool success)
             req->feedback ? mprSerialize(req->feedback, MPR_JSON_QUOTES) : "{}");
     }
     espFinalize(conn);
-
 }
 
 
@@ -861,7 +871,7 @@ PUBLIC int espSaveConfig(HttpRoute *route)
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    return mprSaveJson(eroute->config, mprJoinPath(route->documents, "config.json"));
+    return mprSaveJson(eroute->config, mprJoinPath(route->documents, "config.json"), MPR_JSON_PRETTY);
 }
 
 
@@ -1041,69 +1051,14 @@ PUBLIC void espSetStatus(HttpConn *conn, int status)
 }
 
 
-/*
-    Convert queue data in key / value pairs
-    MOB - should be able to remove this and use standard form parsing
- */
-static int getParams(char ***keys, char *buf, int len)
-{
-    char**  keyList;
-    char    *eq, *cp, *pp, *tok;
-    int     i, keyCount;
-
-    *keys = 0;
-
-    /*
-        Change all plus signs back to spaces
-     */
-    keyCount = (len > 0) ? 1 : 0;
-    for (cp = buf; cp < &buf[len]; cp++) {
-        if (*cp == '+') {
-            *cp = ' ';
-        } else if (*cp == '&' && (cp > buf && cp < &buf[len - 1])) {
-            keyCount++;
-        }
-    }
-    if (keyCount == 0) {
-        return 0;
-    }
-
-    /*
-        Crack the input into name/value pairs 
-     */
-    keyList = mprAlloc((keyCount * 2) * sizeof(char**));
-    i = 0;
-    tok = 0;
-    for (pp = stok(buf, "&", &tok); pp; pp = stok(0, "&", &tok)) {
-        if ((eq = strchr(pp, '=')) != 0) {
-            *eq++ = '\0';
-            pp = mprUriDecode(pp);
-            eq = mprUriDecode(eq);
-        } else {
-            pp = mprUriDecode(pp);
-            eq = 0;
-        }
-        if (i < (keyCount * 2)) {
-            keyList[i++] = pp;
-            keyList[i++] = eq;
-        }
-    }
-    *keys = keyList;
-    return keyCount;
-}
-
-
 PUBLIC void espShowRequest(HttpConn *conn)
 {
     MprHash     *env;
     MprJson     *params, *param;
     MprKey      *kp;
-    MprBuf      *buf;
+    MprJson     *jkey;
     HttpRx      *rx;
-    HttpQueue   *q;
-    cchar       *query;
-    char        qbuf[BIT_MAX_URI], **keys, *value;
-    int         i, numKeys;
+    int         i;
 
     rx = conn->rx;
     httpAddHeaderString(conn, "Cache-Control", "no-cache");
@@ -1113,16 +1068,10 @@ PUBLIC void espShowRequest(HttpConn *conn)
     /*
         Query
      */
-    if ((query = espGetQueryString(conn)) != 0) {
-        scopy(qbuf, sizeof(qbuf), query);
-        if ((numKeys = getParams(&keys, qbuf, (int) strlen(qbuf))) > 0) {
-            for (i = 0; i < (numKeys * 2); i += 2) {
-                value = keys[i+1];
-                espRender(conn, "QUERY %s=%s\r\n", keys[i], value ? value: "null");
-            }
-        }
-        espRender(conn, "\r\n");
+    for (ITERATE_JSON(rx->params, jkey, i)) {
+        espRender(conn, "PARAMS %s=%s\r\n", jkey->name, jkey->value ? jkey->value : "null");
     }
+    espRender(conn, "\r\n");
 
     /*
         Http Headers
@@ -1151,6 +1100,7 @@ PUBLIC void espShowRequest(HttpConn *conn)
         espRender(conn, "\r\n");
     }
 
+#if KEEP
     /*
         Body
      */
@@ -1166,6 +1116,7 @@ PUBLIC void espShowRequest(HttpConn *conn)
         }
         espRender(conn, "\r\n");
     }
+#endif
 }
 
 
@@ -1219,7 +1170,7 @@ PUBLIC void espUpdateCache(HttpConn *conn, cchar *uri, cchar *data, int lifesecs
 
 PUBLIC cchar *espUri(HttpConn *conn, cchar *target)
 {
-    return httpLink(conn, target, 0);
+    return httpUri(conn, target, 0);
 }
 
 

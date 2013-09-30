@@ -15,6 +15,6 @@ SECRET: @@secret
 <% checkbox("Admin", "true", NULL); %>
 <% division("<p>Hello</p>", "{ class: 'blue', width: '70%', special: 'high' }"); %>
 
-<% renderFlash("all", NULL); %>
+<% renderFlash("all"); %>
 <% form(NULL, NULL); %>
 <% endform(); %>

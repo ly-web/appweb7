@@ -278,8 +278,7 @@ static int runCommand(HttpRoute *route, MprDispatcher *dispatcher, cchar *comman
 
     WARNING: this routine blocks and runs GC. All parameters must be retained.
  */
-PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *source, cchar *module, cchar *cacheName, 
-    int isView, char **errMsg)
+PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *source, cchar *module, cchar *cacheName, int isView, char **errMsg)
 {
     MprFile     *fp;
     EspRoute    *eroute;
@@ -303,7 +302,7 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
             layout = mprJoinPath(eroute->layoutsDir, "default.esp");
         }
         if ((script = espBuildScript(route, page, source, cacheName, layout, NULL, &err)) == 0) {
-            *errMsg = sfmt("Cannot build %s, error %s", source, err);
+            *errMsg = sfmt("Cannot build: %s, error: %s", source, err);
             return 0;
         }
         csource = mprJoinPathExt(mprTrimPathExt(module), ".c");
@@ -364,7 +363,6 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
     {
         /*
             Windows leaves intermediate object in the current directory
-            MOB - Could use -Fo to prevent this
          */
         cchar   *path;
         path = mprReplacePathExt(mprGetPathBase(csource), "obj");
@@ -380,7 +378,6 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
 }
 
 
-/* MOB - could this be merged with joinLine */
 static char *fixMultiStrings(cchar *str)
 {
     cchar   *cp;
@@ -460,8 +457,6 @@ static char *joinLine(cchar *str, ssize *lenp)
 /*
     Convert an ESP web page into C code
     Directives:
-        MOB - should support <@ .... @>
-
         <%@ include "file"  Include an esp file
         <%@ layout "file"   Specify a layout page to use. Use layout "" to disable layout management
         <%@ content         Mark the location to substitute content in a layout page
@@ -608,7 +603,6 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             }
             break;
 
-        //  MOB - DEPRECATED as we now don't have a current field
         case ESP_TOK_FIELD:
             /* @#field -- field in the current record */
             token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
