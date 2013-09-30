@@ -1141,6 +1141,7 @@ $(CONFIG)\esp: $(DEPS_57)
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-format.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp-format.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input-group.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp-input-group.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp-input.js
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-titlecase.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp-titlecase.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\Esp.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\Esp.js
 	if not exist "$(CONFIG)\esp\components\angular-esp" md "$(CONFIG)\esp\components\angular-esp"
 	copy /Y src\esp\proto\components\angular-esp\config.json $(CONFIG)\esp\components\angular-esp\config.json
@@ -2340,6 +2341,7 @@ installBinary: $(DEPS_101)
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-format.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-format.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input-group.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input-group.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input.js"
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-titlecase.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-titlecase.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\Esp.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\Esp.js"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp"
 	copy /Y src\esp\proto\components\angular-esp\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\config.json"

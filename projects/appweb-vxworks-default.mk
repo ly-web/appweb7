@@ -1051,6 +1051,7 @@ $(CONFIG)/esp: $(DEPS_55)
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-format.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-format.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input-group.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-input-group.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-input.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-titlecase.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-titlecase.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/Esp.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/Esp.js
 	mkdir -p "$(CONFIG)/esp/components/angular-esp"
 	cp src/esp/proto/components/angular-esp/config.json $(CONFIG)/esp/components/angular-esp/config.json
