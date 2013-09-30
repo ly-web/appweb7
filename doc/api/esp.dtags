@@ -1091,6 +1091,13 @@
       <arglist>(cchar *fmt,...)</arglist>
     </member>
     <member kind="function">
+      <type>MprJson *</type>
+      <name>makeJson</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga3e4e27c82fe15a0e658412b26747e0d4</anchor>
+      <arglist>(cchar *fmt,...)</arglist>
+    </member>
+    <member kind="function">
       <type>EdiRec *</type>
       <name>makeRec</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>

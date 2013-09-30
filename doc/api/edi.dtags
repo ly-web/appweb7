@@ -299,6 +299,13 @@
       <arglist>(cchar *fmt,...)</arglist>
     </member>
     <member kind="function">
+      <type>MprJson *</type>
+      <name>ediMakeJson</name>
+      <anchorfile>group___edi.html</anchorfile>
+      <anchor>ga5ed0a53407a3c91bc90c7d05d8ed7144</anchor>
+      <arglist>(cchar *fmt,...)</arglist>
+    </member>
+    <member kind="function">
       <type>EdiRec *</type>
       <name>ediMakeRec</name>
       <anchorfile>group___edi.html</anchorfile>
