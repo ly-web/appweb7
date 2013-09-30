@@ -534,6 +534,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
         }
         if (espHasComponent(route, "legacy-mvc")) {
             eroute->legacy = 1;
+            eroute->serverPrefix = "";
         }
     }
     return 0;
