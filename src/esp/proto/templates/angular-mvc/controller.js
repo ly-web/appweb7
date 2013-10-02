@@ -21,12 +21,8 @@ app.controller('${TITLE}Control', function (Esp, $rootScope, $scope, $location, 
 
     $scope.remove = function() {
         ${TITLE}.remove($scope.${NAME}, function(response) {
-            if (response.error) {
-                Esp.error("Cannot Delete ${TITLE}");
-            } else {
-                Esp.inform("Deleted ${TITLE}");
-                $location.path("/");
-            }
+            Esp.inform("Deleted ${TITLE}");
+            $location.path("/");
         });
     };
 

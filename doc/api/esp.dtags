@@ -1140,13 +1140,6 @@
       <arglist>(cchar *tableName, cchar *key)</arglist>
     </member>
     <member kind="function">
-      <type>EdiGrid *</type>
-      <name>readRecsWhere</name>
-      <anchorfile>group___esp_abbrev.html</anchorfile>
-      <anchor>ga0709c70065cc9048a1a7a5ac6e294d16</anchor>
-      <arglist>(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)</arglist>
-    </member>
-    <member kind="function">
       <type>EdiRec *</type>
       <name>readRecWhere</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
@@ -1159,6 +1152,13 @@
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>ga550c1016448c47c8ef7b78612a67ccd2</anchor>
       <arglist>(cchar *tableName)</arglist>
+    </member>
+    <member kind="function">
+      <type>EdiGrid *</type>
+      <name>readWhere</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>gaf240f97d3c1081236e74be34c03305c7</anchor>
+      <arglist>(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>

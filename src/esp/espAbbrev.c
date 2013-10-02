@@ -380,7 +380,7 @@ PUBLIC EdiRec *readRecByKey(cchar *tableName, cchar *key)
 }
 
 
-PUBLIC EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
+PUBLIC EdiGrid *readWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
 {
     return setGrid(ediReadWhere(getDatabase(), tableName, fieldName, operation, value));
 }

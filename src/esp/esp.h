@@ -2172,7 +2172,7 @@ PUBLIC EdiRec *readRec(cchar *tableName, cchar *key);
     @ingroup EspAbbrev
     @stability Evolving
  */
-PUBLIC EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
+PUBLIC EdiGrid *readWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
 
 /**
     Read one record
