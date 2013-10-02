@@ -1194,12 +1194,14 @@ $(CONFIG)\esp: $(DEPS_57)
 	if not exist "$(CONFIG)\esp\components\angular" md "$(CONFIG)\esp\components\angular"
 	copy /Y src\esp\proto\components\angular\config.json $(CONFIG)\esp\components\angular\config.json
 	if not exist "$(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext" md "$(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext"
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-click.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp-click.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-field-errors.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp-field-errors.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-format.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp-format.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input-group.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp-input-group.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp-input.js
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-resource.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp-resource.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-titlecase.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp-titlecase.js
-	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\Esp.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\Esp.js
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\ext\esp.js
 	if not exist "$(CONFIG)\esp\components\angular-esp" md "$(CONFIG)\esp\components\angular-esp"
 	copy /Y src\esp\proto\components\angular-esp\config.json $(CONFIG)\esp\components\angular-esp\config.json
 	if not exist "$(CONFIG)\esp\components\angular-extras" md "$(CONFIG)\esp\components\angular-extras"
@@ -2372,12 +2374,14 @@ installBinary: $(DEPS_101)
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular"
 	copy /Y src\esp\proto\components\angular\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular\config.json"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext"
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-click.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-click.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-field-errors.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-field-errors.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-format.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-format.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input-group.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input-group.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-input.js"
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-resource.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-resource.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-titlecase.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp-titlecase.js"
-	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\Esp.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\Esp.js"
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp.js "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\client\lib\angular-esp\ext\esp.js"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp"
 	copy /Y src\esp\proto\components\angular-esp\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-esp\config.json"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-extras" md "$(BIT_VAPP_PREFIX)\esp\proto\components\angular-extras"

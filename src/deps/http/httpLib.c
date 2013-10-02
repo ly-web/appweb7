@@ -11595,6 +11595,9 @@ PUBLIC void httpAddResource(HttpRoute *parent, cchar *prefix, cchar *resource)
 }
 
 
+/*
+    Add routes for a permanent resource. Cannot create or remove.
+ */
 PUBLIC void httpAddPermResource(HttpRoute *parent, cchar *prefix, cchar *resource)
 {
     addRestful(parent, prefix, "get",       "GET",     "(/)*$",        "get",        resource);

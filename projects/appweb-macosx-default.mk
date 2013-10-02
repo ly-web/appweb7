@@ -1088,12 +1088,14 @@ $(CONFIG)/esp: $(DEPS_55)
 	mkdir -p "$(CONFIG)/esp/components/angular"
 	cp src/esp/proto/components/angular/config.json $(CONFIG)/esp/components/angular/config.json
 	mkdir -p "$(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext"
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-click.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-click.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-field-errors.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-field-errors.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-format.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-format.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input-group.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-input-group.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-input.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-resource.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-resource.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-titlecase.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-titlecase.js
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/Esp.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/Esp.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp.js
 	mkdir -p "$(CONFIG)/esp/components/angular-esp"
 	cp src/esp/proto/components/angular-esp/config.json $(CONFIG)/esp/components/angular-esp/config.json
 	mkdir -p "$(CONFIG)/esp/components/angular-extras"
@@ -2198,12 +2200,14 @@ ifeq ($(BIT_PACK_ESP),1)
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular"
 	cp src/esp/proto/components/angular/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/angular/config.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/ext"
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-click.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-click.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-field-errors.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-field-errors.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-format.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-format.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input-group.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input-group.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-resource.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-resource.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-titlecase.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-titlecase.js
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/Esp.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/ext/Esp.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp.js $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp"
 	cp src/esp/proto/components/angular-esp/config.json $(BIT_VAPP_PREFIX)/esp/proto/components/angular-esp/config.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/proto/components/angular-extras"
