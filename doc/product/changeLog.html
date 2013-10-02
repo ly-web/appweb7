@@ -35,12 +35,7 @@
         <div class="contentRight">
             <h1>Quick Nav</h1>
             <ul>
-                <li><a href="#r4.4.0">Release 4.4.0</a></li>
-                <li><a href="#r4.3.5">Release 4.3.5</a></li>
-                <li><a href="#r4.3.4">Release 4.3.4</a></li>
-                <li><a href="#r4.3.3">Release 4.3.3</a></li>
-                <li><a href="#r4.3.2">Release 4.3.2</a></li>
-                <li><a href="#r4.3.0">Release 4.3.0</a></li>
+                <li><a href="#r4.4.1">Release 4.4.1</a></li>
                 <li><a href="#r3.4.1">Release 3.4.1</a></li>
                 <li><a href="#r2.4.4">Release 2.4.4</a></li>
             </ul>
@@ -69,6 +64,31 @@
             Please see the <a href="http://github.com/embedthis/appweb-4/issues">Appweb Issue Database</a> 
             for the official product issue list and for comprehensive CVE dispositions.</p>
         
+            <a id="r4.4.1"></a>
+            <h2 class="section">Changes in 4.4.1</h2>
+            <h3>Minor Features</h3>
+            <ul>
+                <li>Optimize generated ESP angular-mvc apps
+                    <a href="https://github.com/embedthis/appweb-4/issues/237">[issue 237]</a>.
+                    Changes include:
+                    <ul>
+                    <li>Rename Esp.js to esp.js</li>
+                    <li>Simplify generated client-side controllers</li>
+                    <li>Remap generated JSON structure to simplify Angular consumption of JSON responses</li>
+                    <li>Add routePrefix to config.json and update esp.js to automatically parse and include in all routes</li>
+                    <li>Add esp-click attribute for elements without hrefs</li>
+                    <li>Add esp-resource to wrap $resource</li>
+                    </ul>
+                </li>
+            </ul>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Installation location of esp generator component files
+                    <a href="https://github.com/embedthis/appweb-4/issues/235">[issue 235]</a></li>
+                <li>Rename readRecsWhere to readWhere to be consistent with EDI API.
+                    <a href="https://github.com/embedthis/appweb-4/issues/236">[issue 236]</a></li>
+            </ul>
+
             <a id="r4.4.0"></a>
             <h2 class="section">Changes in 4.4.0</h2>
             <h3>Major Features</h3>
@@ -199,6 +219,8 @@
                 <li>The httpAddResourceGroup, httpAddResource, httpAddClientRoute and httpAddRouteSet have changed signatures
                     to accommodate a URI prefix for server-side controller URIs.</li>
             </ul>
+
+
             <a id="r4.3.6"></a>
             <h2 class="section">Changes in 4.3.6</h2>
             <h3>Fixes</h3>
