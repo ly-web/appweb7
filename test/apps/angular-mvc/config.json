@@ -62,7 +62,7 @@
         ],
         redirect: "secure",
         sendJson: true,
-        serverPrefix: "/service",
+        routePrefix: "/service",
         timeouts: {
             session: 1800
         },

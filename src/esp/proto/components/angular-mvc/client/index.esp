@@ -18,7 +18,7 @@
 <body>
     <nav class="navbar navbar-inverse navbar-static-top">
         <div class="navbar-header">
-            <a class="navbar-brand" href="#">${TITLE}</a>
+            <a class="navbar-brand ng-cloak" href="#">${TITLE}</a>
         </div>
     </nav>
     <main class="home">
@@ -28,7 +28,7 @@
             </section>
         </section>
         <div ng-repeat="(field, msg) in feedback">
-            <h1 class="ng-hide-remove" ng-class="'feedback-' + field" ng-cloak>{{msg}}</h1>       
+            <span class="ng-hide-remove" ng-class="'feedback-' + field" ng-cloak>{{msg}}</span>       
         </div> 
     </main>
     <% if (modeIs("debug")) { %>

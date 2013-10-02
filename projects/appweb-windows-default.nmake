@@ -1378,6 +1378,7 @@ $(CONFIG)\esp: $(DEPS_57)
 	copy /Y src\esp\proto\components\server\appweb.conf $(CONFIG)\esp\components\server\appweb.conf
 	copy /Y src\esp\proto\components\server\config.json $(CONFIG)\esp\components\server\config.json
 	if not exist "$(CONFIG)\esp\templates\angular-mvc" md "$(CONFIG)\esp\templates\angular-mvc"
+	copy /Y src\esp\proto\templates\angular-mvc\controller-singleton.c $(CONFIG)\esp\templates\angular-mvc\controller-singleton.c
 	copy /Y src\esp\proto\templates\angular-mvc\controller.c $(CONFIG)\esp\templates\angular-mvc\controller.c
 	copy /Y src\esp\proto\templates\angular-mvc\controller.js $(CONFIG)\esp\templates\angular-mvc\controller.js
 	copy /Y src\esp\proto\templates\angular-mvc\edit.html $(CONFIG)\esp\templates\angular-mvc\edit.html
@@ -2555,6 +2556,7 @@ installBinary: $(DEPS_101)
 	copy /Y src\esp\proto\components\server\appweb.conf "$(BIT_VAPP_PREFIX)\esp\proto\components\server\appweb.conf"
 	copy /Y src\esp\proto\components\server\config.json "$(BIT_VAPP_PREFIX)\esp\proto\components\server\config.json"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\proto\templates\angular-mvc" md "$(BIT_VAPP_PREFIX)\esp\proto\templates\angular-mvc"
+	copy /Y src\esp\proto\templates\angular-mvc\controller-singleton.c "$(BIT_VAPP_PREFIX)\esp\proto\templates\angular-mvc\controller-singleton.c"
 	copy /Y src\esp\proto\templates\angular-mvc\controller.c "$(BIT_VAPP_PREFIX)\esp\proto\templates\angular-mvc\controller.c"
 	copy /Y src\esp\proto\templates\angular-mvc\controller.js "$(BIT_VAPP_PREFIX)\esp\proto\templates\angular-mvc\controller.js"
 	copy /Y src\esp\proto\templates\angular-mvc\edit.html "$(BIT_VAPP_PREFIX)\esp\proto\templates\angular-mvc\edit.html"

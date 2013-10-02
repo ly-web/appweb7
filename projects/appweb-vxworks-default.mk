@@ -1231,6 +1231,7 @@ $(CONFIG)/esp: $(DEPS_55)
 	cp src/esp/proto/components/server/appweb.conf $(CONFIG)/esp/components/server/appweb.conf
 	cp src/esp/proto/components/server/config.json $(CONFIG)/esp/components/server/config.json
 	mkdir -p "$(CONFIG)/esp/templates/angular-mvc"
+	cp src/esp/proto/templates/angular-mvc/controller-singleton.c $(CONFIG)/esp/templates/angular-mvc/controller-singleton.c
 	cp src/esp/proto/templates/angular-mvc/controller.c $(CONFIG)/esp/templates/angular-mvc/controller.c
 	cp src/esp/proto/templates/angular-mvc/controller.js $(CONFIG)/esp/templates/angular-mvc/controller.js
 	cp src/esp/proto/templates/angular-mvc/edit.html $(CONFIG)/esp/templates/angular-mvc/edit.html

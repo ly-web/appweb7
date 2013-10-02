@@ -4,54 +4,42 @@
 
 'use strict';
 
-app.controller('${TITLE}Control', function ($rootScope, $scope, $location, $routeParams, ${TITLE}) {
+app.controller('${TITLE}Control', function (Esp, $rootScope, $scope, $location, $routeParams, ${TITLE}) {
     if ($routeParams.id) {
-        ${TITLE}.get({id: $routeParams.id}, function(response) {
-            $scope.schema = response.schema;
-            $scope.data = response.data;
-            $scope.${NAME} = response.data;
-            $scope.action = "Edit";
+        $scope.${NAME} = ${TITLE}.get({id: $routeParams.id}, function(response) {
+            angular.extend($scope, response, {action: "Edit"});
         });
-    } else if ($location.path() == "${SERVICE}/${NAME}/") {
-        $scope.action = "Create";
-        $scope.data = $scope.${NAME} = {};
-        ${TITLE}.init({id: $routeParams.id}, function(response) {
-            $scope.schema = response.schema;
+    } else if ($location.path() == "/${NAME}/") {
+        $scope.${NAME} = ${TITLE}.init({}, function(response) {
+            angular.extend($scope, response, {action: "Create"});
         });
     } else {
-        $scope.list = ${TITLE}.list({}, function(response) {
-            $scope.${NAME}s = response;
+        $scope.${TABLE} = ${TITLE}.list({}, function(response) {
+            angular.extend($scope, response);
         });
     }
-    $scope.routeParams = $routeParams;
 
     $scope.remove = function() {
-        ${TITLE}.remove({id: $scope.${NAME}.id}, function(response) {
-            $rootScope.feedback = response.feedback;
-            if (!response.error) {
-                $rootScope.feedback.inform = "Deleted ${TITLE}";
-                $location.path("/");
+        ${TITLE}.remove($scope.${NAME}, function(response) {
+            if (response.error) {
+                Esp.error("Cannot Delete ${TITLE}");
             } else {
-                $rootScope.feedback.error = $rootScope.feedback.error || "Cannot Delete ${TITLE}";
+                Esp.inform("Deleted ${TITLE}");
+                $location.path("/");
             }
         });
     };
 
     $scope.save = function() {
         ${TITLE}.save($scope.${NAME}, function(response) {
-            $rootScope.feedback = response.feedback;
-            if (!response.error) {
-                $rootScope.feedback.inform = $scope.routeParams.id ? "Updated ${TITLE}" : "Created New ${TITLE}";
-                $location.path('/');
-            } else {
+            if (response.error) {
                 $scope.fieldErrors = response.fieldErrors;
-                $rootScope.feedback.error = $rootScope.feedback.error || "Cannot Save ${TITLE}";
+                Esp.error("Cannot Save ${TITLE}");
+            } else {
+                Esp.inform($routeParams.id ? "Updated ${TITLE}" : "Created New ${TITLE}");
+                $location.path('/');
             }
         });
-    };
-
-    $scope.click = function(index) {
-        $location.path('${SERVICE}/${NAME}/' + $scope.${NAME}s.data[index].id);
     };
 });
 
@@ -59,9 +47,11 @@ app.config(function($routeProvider) {
     $routeProvider.when('/', {
         templateUrl: '/app/${NAME}/${NAME}-list.html',
         controller: '${TITLE}Control',
+        resolve: { action: 'Esp' },
     });
-    $routeProvider.when('${SERVICE}/${NAME}/:id', {
+    $routeProvider.when('/${NAME}/:id', {
         templateUrl: '/app/${NAME}/${NAME}-edit.html',
         controller: '${TITLE}Control',
+        resolve: { action: 'Esp' },
     });
 });

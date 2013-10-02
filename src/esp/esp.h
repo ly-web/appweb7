@@ -175,7 +175,8 @@ typedef struct EspRoute {
     cchar           *mode;                  /**< Application run mode (debug|release) */
 
     cchar           *database;              /**< Name of database for route */
-    cchar           *serverPrefix;          /**< Server controllers URI prefix */
+    cchar           *routePrefix;           /**< Route prefix */
+    cchar           *routeSet;              /**< Route prefix */
     int             flat;                   /**< Compile the application flat */
     int             keepSource;             /**< Preserve generated source */
     int             update;                 /**< Auto-update modified ESP source */
@@ -521,7 +522,7 @@ typedef struct EspReq {
     void            *data;                  /**< Custom data for request - must be a managed reference */
     void            *staticData;            /**< Custom data for request - must be an unmanaged reference */
     char            *cacheName;             /**< Base name of intermediate compiled file */
-    char            *controllerName;        /**< Controller name */
+    char            *controllerFile;        /**< Controller filename */
     char            *controllerPath;        /**< Path to controller source */
     char            *module;                /**< Name of compiled module */
     char            *source;                /**< Name of ESP source */

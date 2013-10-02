@@ -8,30 +8,25 @@ static void create${TITLE}() {
 }
 
 static void get${TITLE}() { 
-    renderRec(readRec("${TABLE}", param("id")));
+    renderRec(readRec("${TABLE}", "1"));
 }
 
 static void init${TITLE}() { 
     renderRec(createRec("${TABLE}", 0));
 }
 
-static void list${TITLE}() {
-    renderGrid(readTable("${TABLE}"));
-}
-
 static void remove${TITLE}() { 
-    renderResult(removeRec("${TABLE}", param("id")));
+    renderResult(removeRec("${TABLE}", "1"));
 }
 
 static void update${TITLE}() { 
-    renderResult(updateRec(setFields(readRec("${TABLE}", param("id")), params())));
+    renderResult(updateRec(setFields(readRec("${TABLE}", "1"), params())));
 }
 
 ESP_EXPORT int esp_controller_${APP}_${NAME}(HttpRoute *route, MprModule *module) {
     espDefineAction(route, "${NAME}-create", create${TITLE});
     espDefineAction(route, "${NAME}-get", get${TITLE});
     espDefineAction(route, "${NAME}-init", init${TITLE});
-    espDefineAction(route, "${NAME}-list", list${TITLE});
     espDefineAction(route, "${NAME}-remove", remove${TITLE});
     espDefineAction(route, "${NAME}-update", update${TITLE});
 ${DEFINE_ACTIONS}    return 0;

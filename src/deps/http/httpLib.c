@@ -11571,27 +11571,35 @@ static HttpRoute *addRestful(HttpRoute *parent, cchar *prefix, cchar *action, cc
 
 PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *prefix, cchar *resource)
 {
-    addRestful(parent, prefix, "create",    "POST",    "(/)*$",                   "create",          resource);
-    addRestful(parent, prefix, "edit",      "GET",     "/{id=[0-9]+}/edit$",      "edit",            resource);
-    addRestful(parent, prefix, "get",       "GET",     "/{id=[0-9]+}$",           "get",             resource);
-    addRestful(parent, prefix, "init",      "GET",     "/init$",                  "init",            resource);
-    addRestful(parent, prefix, "list",      "GET",     "/list$",                  "list",            resource);
-    addRestful(parent, prefix, "remove",    "DELETE",  "/{id=[0-9]+}$",           "remove",          resource);
-    addRestful(parent, prefix, "update",    "POST",    "/{id=[0-9]+}$",           "update",          resource);
-    addRestful(parent, prefix, "action",    "GET,POST","/{id=[0-9]+}/{action}$",  "${action}",       resource);
-    addRestful(parent, prefix, "default",   "GET,POST","/{action}$",              "cmd-${action}",   resource);
+    addRestful(parent, prefix, "create",    "POST",    "(/)*$",                     "create",          resource);
+    addRestful(parent, prefix, "edit",      "GET",     "/{id=[0-9]+}/edit$",        "edit",            resource);
+    addRestful(parent, prefix, "get",       "GET",     "/{id=[0-9]+}$",             "get",             resource);
+    addRestful(parent, prefix, "init",      "GET",     "/init$",                    "init",            resource);
+    addRestful(parent, prefix, "list",      "GET",     "/list$",                    "list",            resource);
+    addRestful(parent, prefix, "remove",    "DELETE",  "/{id=[0-9]+}$",             "remove",          resource);
+    addRestful(parent, prefix, "update",    "POST",    "/{id=[0-9]+}$",             "update",          resource);
+    addRestful(parent, prefix, "action",    "GET,POST","/{id=[0-9]+}/{action}(/)*$","${action}",       resource);
+    addRestful(parent, prefix, "default",   "GET,POST","/{action}(/)*$",            "cmd-${action}",   resource);
 }
 
 
 PUBLIC void httpAddResource(HttpRoute *parent, cchar *prefix, cchar *resource)
 {
-    addRestful(parent, prefix, "create",    "POST",    "(/)*$",        "create",     resource);
-    addRestful(parent, prefix, "edit",      "GET",     "/edit$",       "edit",       resource);
+    addRestful(parent, prefix, "create",    "POST",    "(/)*$",          "create",     resource);
+    addRestful(parent, prefix, "edit",      "GET",     "/edit$",         "edit",       resource);
+    addRestful(parent, prefix, "get",       "GET",     "(/)*$",          "get",        resource);
+    addRestful(parent, prefix, "init",      "GET",     "/init$",         "init",       resource);
+    addRestful(parent, prefix, "update",    "POST",    "(/)*$",          "update",     resource);
+    addRestful(parent, prefix, "remove",    "DELETE",  "(/)*$",          "remove",     resource);
+    addRestful(parent, prefix, "default",   "GET,POST","/{action}(/)*$", "${action}",  resource);
+}
+
+
+PUBLIC void httpAddPermResource(HttpRoute *parent, cchar *prefix, cchar *resource)
+{
     addRestful(parent, prefix, "get",       "GET",     "(/)*$",        "get",        resource);
-    addRestful(parent, prefix, "init",      "GET",     "/init$",       "init",       resource);
     addRestful(parent, prefix, "update",    "POST",    "(/)*$",        "update",     resource);
-    addRestful(parent, prefix, "remove",    "DELETE",  "(/)*$",        "remove",     resource);
-    addRestful(parent, prefix, "default",   "GET,POST","/{action}$",   "${action}",  resource);
+    addRestful(parent, prefix, "default",   "GET,POST","/{action}(/)*$",   "${action}",  resource);
 }
 
 

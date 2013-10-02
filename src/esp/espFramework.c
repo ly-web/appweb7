@@ -502,8 +502,14 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             if ((value = espGetConfig(route, "settings.keepSource", 0)) != 0) {
                 eroute->keepSource = smatch(value, "true");
             }
-            if ((eroute->serverPrefix = espGetConfig(route, "settings.serverPrefix", 0)) == 0) {
-                eroute->serverPrefix = sclone(BIT_ESP_SERVER_PREFIX);
+#if DEPRECATE
+            /* Deprecated in 4.4.1 */
+            if ((value = espGetConfig(route, "settings.serverPrefix", 0)) != 0) {
+                eroute->routePrefix = value;
+            }
+#endif
+            if ((value = espGetConfig(route, "settings.routePrefix", 0)) != 0) {
+                eroute->routePrefix = value;
             }
             if ((value = espGetConfig(route, "settings.login.name", 0)) != 0) {
                 /* Automatic login as this user. Password not required */
@@ -534,7 +540,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
         }
         if (espHasComponent(route, "legacy-mvc")) {
             eroute->legacy = 1;
-            eroute->serverPrefix = "";
+            eroute->routePrefix = "";
         }
     }
     return 0;
@@ -782,14 +788,25 @@ PUBLIC void espSetNotifier(HttpConn *conn, HttpNotifier notifier)
 PUBLIC ssize espRenderGrid(HttpConn *conn, EdiGrid *grid, int flags)
 {
     httpAddHeaderString(conn, "Content-Type", "application/json");
-    return espRender(conn, "{\n  \"schema\": %s,\n  \"data\": %s}\n", ediGetGridSchemaAsJson(grid), ediGridAsJson(grid, flags));
+    if (grid) {
+        return espRender(conn, "{\n  \"name\": \"%s\", \"%s\": %s, \"schema\": %s}\n",
+            grid->tableName, grid->tableName, ediGridAsJson(grid, flags), ediGetGridSchemaAsJson(grid));
+    }
+    return espRender(conn, "{}");
 }
 
 
 PUBLIC ssize espRenderRec(HttpConn *conn, EdiRec *rec, int flags)
 {
+    cchar   *controller;
+
     httpAddHeaderString(conn, "Content-Type", "application/json");
-    return espRender(conn, "{\"data\": %s, \"schema\": %s}", ediRecAsJson(rec, flags), ediGetRecSchemaAsJson(rec));
+    if (rec) {
+        controller = param("controller");
+        return espRender(conn, "{\n  \"name\": \"%s\", \"%s\": %s, \"schema\": %s}\n",
+            controller, controller, ediRecAsJson(rec, flags), ediGetRecSchemaAsJson(rec)); 
+    }
+    return espRender(conn, "{}");
 }
 
 
@@ -1193,7 +1210,8 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->layoutsDir);
         mprMark(eroute->link);
         mprMark(eroute->searchPath);
-        mprMark(eroute->serverPrefix);
+        mprMark(eroute->routePrefix);
+        mprMark(eroute->routeSet);
         mprMark(eroute->srcDir);
         mprMark(eroute->viewsDir);
     }

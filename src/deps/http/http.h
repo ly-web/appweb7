@@ -3831,6 +3831,10 @@ typedef int (HttpRouteProc)(HttpConn *conn, HttpRoute *route, HttpRouteOp *item)
  */
 PUBLIC void httpAddResource(HttpRoute *parent, cchar *prefix, cchar *resource);
 
+//  MOB DOC
+PUBLIC void httpAddPermResource(HttpRoute *parent, cchar *prefix, cchar *resource);
+
+
 /**
     Add routes for a group of resources
     @description This routing adds a set of RESTful routes for a resource group. It will add the following routes:

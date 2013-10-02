@@ -8,26 +8,26 @@ ESP(1)                           User Commands                          ESP(1)
        <B>esp  </B>[<I>--apply]</I>]  [<I>--chdir dir]</I>] [<I>--config configFile]</I>] [<I>--database DB]</I>]
        [<I>--flat</I>] [<I>--genlink slink.c</I>] [<I>--keep</I>] [<I>--listen [ip:]port</I>] [<I>--log  log-</I>
        <I>File:level</I>] [<I>--overwrite</I>] [<I>--quiet</I>] [<I>--platform [path/]os-arch-profile</I>]
-       [<I>--rebuild</I>]  [<I>--static</I>]  [<I>--routeName  name</I>]   [<I>--routePrefix   prefix</I>]
-       [<I>--verbose</I>] [<I>--why</I>] commands ...
+       [<I>--rebuild</I>] [<I>--routeName name</I>] [<I>--routePrefix prefix</I>] [<I>--static</I>] [<I>--ta-</I>
+       <I>ble name</I>] [<I>--verbose</I>] [<I>--why</I>] commands ...
 
        <B>Commands:</B>
         esp clean
         esp compile
         esp compile [pathFilters...]
         esp generate app name [components]
+        esp generate controller name [action [, action] ...]
         esp  generate  migration  description model [field:type [, field:type]
        ...]
         esp generate scaffold model [field:type [, field:type] ...]
-        esp generate service name [action [, action] ...]
         esp generate table name model [field:type [, field:type] ...]
         esp migrate [forward|backward|NNN]
         esp run
 
 <B>DESCRIPTION</B>
        The <B>esp </B>command generates, manages and runs ESP web  applications.   It
-       can generate ESP web applications, services, database tables, and scaf-
-       folds.
+       can  generate  ESP  web applications, controllers, database tables, and
+       scaffolds.
 
        The esp command will create directories and generate configuration  and
        source code files that can then be manually edited as required.  Esp is
@@ -57,7 +57,7 @@ ESP(1)                           User Commands                          ESP(1)
        Other directories will be created as needed:
              cache          - Cache directory for compiled content
              db/migrations  - Databases migration modules
-             services       - Server side service controllers
+             controllers    - Server side controllers
              src            - Server side main source code
 
        Most  of  these  directories  are initially empty, but may be used over
@@ -100,7 +100,7 @@ ESP(1)                           User Commands                          ESP(1)
              more                  - Collection of CSS polyfills
              normalize             - Normalize base styles for browsers
              respond               - Polyfill for CSS media queries
-             server                - Default ESP service-side configuration
+             server                - Default ESP server-side configuration
 
 <B>GENERATING MIGRATIONS</B>
        Migrations are generated code modules that manage portions of the data-
@@ -128,52 +128,60 @@ ESP(1)                           User Commands                          ESP(1)
 
              <B>esp generate table TABLE [field:type ...]</B>
 
-<B>GENERATING SERVICES</B>
-       Services are the primary mechanism for responding to client requests. A
-       service  is a server-side controller in the MVC paradigm. To generate a
-       service, run:
+<B>GENERATING CONTROLLERS</B>
+       Controllers  are  the  primary  mechanism  for  responding  to   client
+       requests.  To generate a controller, run:
 
-             <B>esp generate service NAME [actions...]</B>
+             <B>esp generate controller NAME [actions...]</B>
 
-       This will create a service of the requested name. It will create a ser-
-       vice  source  file  in  the  <B>services  </B>directory.  If  action names are
-       requested, the service source will define an  action  method  for  each
-       name.  You  can edit the service source to meet your needs. It will not
-       be overwritten unless you specify the --overwrite switch.
+       This  will  create a controller of the requested name. It will create a
+       controller source file in the <B>controllers </B>directory.  If  action  names
+       are  requested,  the controller source will define an action method for
+       each name. You can edit the controller source to meet  your  needs.  It
+       will not be overwritten unless you specify the --overwrite switch.
 
 <B>GENERATING SCAFFOLDS</B>
-       A scaffold is a generated service, database migration, client-side con-
-       troller and set of views that provides add, edit and list functionality
-       for the database table.   Scaffolds  are  useful  to  quickly  generate
-       chunks  of the application and prototype web pages and actions for man-
+       A  scaffold  is a generated controller, database migration, client-side
+       controller and set of views that provides add, edit and list  function-
+       ality for the database table.  Scaffolds are useful to quickly generate
+       chunks of the application and prototype web pages and actions for  man-
        aging a database table.  To generate a scaffold:
 
-             <B>esp generate scaffold TABLE [field:type ...]</B>
+             <B>esp generate scaffold MODEL [field:type ...]</B>
 
-       This will create a scaffold for the specified database table  and  will
-       generate a service of the same name.
+       This  will  create a scaffold for the specified database table and will
+       generate a controller of the same name.
 
        If field:type values are supplied, a database migration will be created
-       with code to create a column for each specified field of the  requested
-       type.  The  valid database types are: blob, boolean, date, float, inte-
-       ger, string, and text. The migration will use  the  name  "create_scaf-
-       fold_TABLE" and will be created under the <B>db/migrations </B>direcvtory.
+       with  code to create a column for each specified field of the requested
+       type. The valid database types are: blob, boolean, date,  float,  inte-
+       ger,  string,  and  text. The migration will use the name "create_scaf-
+       fold_MODEL" and will be created under the <B>db/migrations </B>direcvtory.
 
-       The  scaffold  will  include an edit action and view page that provides
+       The scaffold will include an edit action and view  page  that  provides
        add and edit capability. The list action and view, provides the ability
        to list the table rows and select an entry to edit.
 
+       If the MODEL includes a plural suffix, for example: "posts-s",  then  a
+       scaffold will be created for a group of resources.  This means that the
+       suffix will be added when creating the  database  table  and  the  con-
+       troller  will include a "list" action to return a list of resources. If
+       a plural suffix is not specified, a singleton resource scaffold will be
+       generated. This will have a singular database name which is the same as
+       the model name. Also, a "list" action will not be generated.  An  empty
+       plural suffix can be specified by appending "-" to the model name.
+
 <B>COMPILING</B>
-       Esp compiles services and ESP pages native code shared libraries. These
-       are then loaded and run by ESP in response to incoming client requests.
-       Code  is compiled only once but can be run many times to service incom-
-       ing requests.
+       Esp  compiles  controllers  and ESP pages native code shared libraries.
+       These are then loaded and run by ESP in  response  to  incoming  client
+       requests.  Code is compiled only once but can be run many times to ser-
+       vice incoming requests.
 
        In development mode, ESP will automatically compile the  relevant  por-
        tions  of the application if the source code is modified. It can intel-
-       ligently recompile services and ESP pages. However, you can also expli-
-       cilty  recompile  portions  or the complete appliction via the esp com-
-       mand.
+       ligently recompile controllers and ESP pages.  However,  you  can  also
+       explicilty  recompile  portions  or the complete appliction via the esp
+       command.
 
        Esp can recompile everything via:
 
@@ -182,8 +190,8 @@ ESP(1)                           User Commands                          ESP(1)
        This will re-compile all ESP pages  and  MVC  applications  for  routes
        defined in the appweb.conf file.
 
-       Esp  also provides options for you to individually compile services and
-       ESP pages. To recompile named pages or services:
+       Esp  also  provides options for you to individually compile controllers
+       and ESP pages. To recompile named pages or controllers:
 
              <B>esp compile path/*.esp...</B>.
 
@@ -230,10 +238,10 @@ ESP(1)                           User Commands                          ESP(1)
 
              esp clean
              esp compile
-             esp compile service name
+             esp compile controllers name
              esp compile path/*.esp
              esp generate app name
-             esp generate service name [action [, action] ...]
+             esp generate controllers name [action [, action] ...]
              esp generate scaffold model [field:type [, field:type] ...]
              esp generate table name model [field:type [, field:type] ...]
              esp run
@@ -312,6 +320,13 @@ ESP(1)                           User Commands                          ESP(1)
        <B>--static</B>
              Use  static linking when building ESP components. This causes esp
              to create archive libraries instead of shared libraries.
+
+       <B>--table name</B>
+             Override the database table name when generating  tables,  migra-
+             tions or scaffolds. This is useful to request a plural version of
+             the model name. Alternatively, specify the model name when gener-
+             ating  the  scaffold,  table or migration with the desired plural
+             suffix. For example: "-s" or "-ies".
 
        <B>--verbose </B>or <B>-v</B>
              Run in verbose mode and trace actions to the console.

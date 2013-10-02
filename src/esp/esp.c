@@ -48,13 +48,13 @@ typedef struct App {
     cchar       *cacheName;             /* MD5 name of cached component */
     cchar       *csource;               /* Name of "C" source for page or controller */
     cchar       *genlink;               /* Static link resolution file */
-    cchar       *routeName;             /* Name of route to use for ESP configuration */
-    cchar       *routePrefix;           /* Route prefix to use for ESP configuration */
+    cchar       *filterRouteName;       /* Name of route to use for ESP configuration */
+    cchar       *filterRoutePrefix;     /* Prefix of route to use for ESP configuration */
     cchar       *routeSet;              /* Desired route set package */
     cchar       *module;                /* Compiled module name */
     cchar       *base;                  /* Base filename */
     cchar       *entry;                 /* Module entry point */
-    cchar       *serverPrefix;          /* Prefix to talk to the server */
+    cchar       *table;                 /* Override table name for migrations, tables */
 
     int         error;                  /* Any processing error */
     int         flat;                   /* Combine all inputs into one, flat output */ 
@@ -64,6 +64,7 @@ typedef struct App {
     int         rebuild;                /* Force a rebuild */
     int         reverse;                /* Reverse migrations */
     int         show;                   /* Show compilation commands */
+    int         singleton;              /* Generate a singleton resource controller */
     int         staticLink;             /* Use static linking */
     int         verbose;                /* Verbose mode */
     int         why;                    /* Why rebuild */
@@ -246,14 +247,14 @@ PUBLIC int main(int argc, char **argv)
             if (argind >= argc) {
                 usageError();
             } else {
-                app->routeName = sclone(argv[++argind]);
+                app->filterRouteName = sclone(argv[++argind]);
             }
 
         } else if (smatch(argp, "routePrefix")) {
             if (argind >= argc) {
                 usageError();
             } else {
-                app->routePrefix = sclone(argv[++argind]);
+                app->filterRoutePrefix = sclone(argv[++argind]);
             }
 
         } else if (smatch(argp, "show") || smatch(argp, "s")) {
@@ -261,6 +262,13 @@ PUBLIC int main(int argc, char **argv)
 
         } else if (smatch(argp, "static")) {
             app->staticLink = 1;
+
+        } else if (smatch(argp, "table")) {
+            if (argind >= argc) {
+                usageError();
+            } else {
+                app->table = sclone(argv[++argind]);
+            }
 
         } else if (smatch(argp, "verbose") || smatch(argp, "v")) {
             logSpec = "stderr:2";
@@ -315,6 +323,8 @@ static void manageApp(App *app, int flags)
         mprMark(app->currentDir);
         mprMark(app->database);
         mprMark(app->files);
+        mprMark(app->filterRouteName);
+        mprMark(app->filterRoutePrefix);
         mprMark(app->flatFile);
         mprMark(app->flatItems);
         mprMark(app->flatPath);
@@ -334,12 +344,11 @@ static void manageApp(App *app, int flags)
         mprMark(app->build);
         mprMark(app->slink);
         mprMark(app->routes);
-        mprMark(app->routeName);
-        mprMark(app->routePrefix);
         mprMark(app->routeSet);
         mprMark(app->server);
         mprMark(app->serverRoot);
         mprMark(app->targets);
+        mprMark(app->table);
     }
 }
 
@@ -437,7 +446,7 @@ static MprList *getRoutes()
     EspRoute    *eroute;
     MprList     *routes;
     MprKey      *kp;
-    cchar       *routeName, *routePrefix;
+    cchar       *filterRouteName, *filterRoutePrefix;
     int         prev, nextRoute;
 
     if (app->error) {
@@ -447,8 +456,8 @@ static MprList *getRoutes()
         fail("Cannot find default host");
         return 0;
     }
-    routeName = app->routeName;
-    routePrefix = app->routePrefix ? app->routePrefix : 0;
+    filterRouteName = app->filterRouteName;
+    filterRoutePrefix = app->filterRoutePrefix ? app->filterRoutePrefix : 0;
     routes = mprCreateList(0, MPR_LIST_STABLE);
 
     /*
@@ -459,14 +468,14 @@ static MprList *getRoutes()
             /* No ESP configuration for compiling */
             continue;
         }
-        if (routeName) {
-            mprTrace(3, "Check route name %s, prefix %s with %s", route->name, route->startWith, routeName);
-            if (!smatch(routeName, route->name)) {
+        if (filterRouteName) {
+            mprTrace(3, "Check route name %s, prefix %s with %s", route->name, route->startWith, filterRouteName);
+            if (!smatch(filterRouteName, route->name)) {
                 continue;
             }
-        } else if (routePrefix) {
-            mprTrace(3, "Check route name %s, prefix %s with %s", route->name, route->startWith, routePrefix);
-            if (!smatch(routePrefix, route->prefix) && !smatch(routePrefix, route->startWith)) {
+        } else if (filterRoutePrefix) {
+            mprTrace(3, "Check route name %s, prefix %s with %s", route->name, route->startWith, filterRoutePrefix);
+            if (!smatch(filterRoutePrefix, route->prefix) && !smatch(filterRoutePrefix, route->startWith)) {
                 continue;
             }
         } else {
@@ -502,10 +511,10 @@ static MprList *getRoutes()
         }
     }
     if (mprGetListLength(routes) == 0) {
-        if (routeName) {
-            fail("Cannot find usable ESP configuration in %s for route %s", app->configFile, routeName);
-        } else if (routePrefix) {
-            fail("Cannot find usable ESP configuration in %s for route prefix %s", app->configFile, routePrefix);
+        if (filterRouteName) {
+            fail("Cannot find usable ESP configuration in %s for route %s", app->configFile, filterRouteName);
+        } else if (filterRoutePrefix) {
+            fail("Cannot find usable ESP configuration in %s for route prefix %s", app->configFile, filterRoutePrefix);
         } else {
             kp = mprGetFirstKey(app->targets);
             if (kp) {
@@ -1320,7 +1329,7 @@ static void generateApp(int argc, char **argv)
 
 
 /*
-    esp migration description table [field:type [, field:type] ...]
+    esp migration description model [field:type [, field:type] ...]
 
     The description is used to name the migration
  */
@@ -1334,7 +1343,7 @@ static void generateMigration(int argc, char **argv)
     if (app->error) {
         return;
     }
-    table = sclone(argv[1]);
+    table = app->table ? app->table : sclone(argv[1]);
     stem = sfmt("Migration %s", argv[0]);
     /* Migration name used in the filename and in the exported load symbol */
     name = sreplace(slower(stem), " ", "_");
@@ -1375,7 +1384,8 @@ static void createMigration(cchar *name, cchar *table, cchar *comment, int field
     makeEspDir(dir);
 
     path = sfmt("%s/%s_%s.c", dir, seq, name, ".c");
-    tokens = mprDeserialize(sfmt("{ NAME: '%s', COMMENT: '%s', FORWARD: '%s', BACKWARD: '%s' }", name, comment, forward, backward));
+    tokens = mprDeserialize(sfmt("{ NAME: '%s', TABLE: '%s', COMMENT: '%s', FORWARD: '%s', BACKWARD: '%s' }", 
+        name, table, comment, forward, backward));
     data = getTemplate("server/migration.c", tokens);
 
     files = mprGetPathFiles("db/migrations", MPR_PATH_RELATIVE);
@@ -1428,69 +1438,67 @@ static void generateController(int argc, char **argv)
 }
 
 
-static void generateScaffoldController(int argc, char **argv)
+static void generateScaffoldController(cchar *name, cchar *table, int argc, char **argv)
 {
     MprHash     *tokens;
-    cchar       *defines, *name, *path, *data, *title;
+    cchar       *defines, *path, *data;
 
     if (app->error) {
         return;
     }
-    name = sclone(argv[0]);
-    title = spascal(name);
-
     defines = sclone("");
-    tokens = mprDeserialize(sfmt("{ APP: '%s', NAME: '%s', TITLE: '%s', DEFINE_ACTIONS: '%s' }", app->appName, name, title, defines));
-    data = getTemplate(mprJoinPath(app->topComponent, "controller.c"), tokens);
+    tokens = mprDeserialize(sfmt("{ APP: '%s', NAME: '%s', TABLE: '%s', TITLE: '%s', DEFINE_ACTIONS: '%s' }", 
+        app->appName, name, table, spascal(name), defines));
+    if (app->singleton) {
+        data = getTemplate(mprJoinPath(app->topComponent, "controller-singleton.c"), tokens);
+    } else {
+        data = getTemplate(mprJoinPath(app->topComponent, "controller.c"), tokens);
+    }
     path = mprJoinPathExt(mprJoinPath(app->eroute->controllersDir, name), ".c");
     makeEspFile(path, data, "Scaffold");
 }
 
 
-static void generateClientController(int argc, char **argv)
+static void generateClientController(cchar *name, cchar *table, int argc, char **argv)
 {
     MprHash     *tokens;
-    cchar       *defines, *name, *path, *data, *title;
+    cchar       *defines, *path, *data, *title;
 
     if (app->error) {
         return;
     }
-    name = sclone(argv[0]);
     title = spascal(name);
-
     path = mprJoinPathExt(mprJoinPath(app->eroute->appDir, sfmt("%s/%sControl", name, title)), "js");
     defines = sclone("");
-    tokens = mprDeserialize(sfmt("{ APPDIR: '%s', NAME: '%s', TITLE: '%s', DEFINE_ACTIONS: '%s', SERVICE: '%s' }",
-        app->eroute->appDir, name, title, defines, app->eroute->serverPrefix));
+    tokens = mprDeserialize(sfmt("{ APPDIR: '%s', NAME: '%s', TABLE: '%s', TITLE: '%s', DEFINE_ACTIONS: '%s', SERVICE: '%s' }",
+        app->eroute->appDir, name, table, title, defines, app->eroute->routePrefix));
     data = getTemplate(mprJoinPath(app->topComponent, "controller.js"), tokens);
     makeEspFile(path, data, "Controller Scaffold");
 }
 
 
-static void generateClientModel(int argc, char **argv)
+static void generateClientModel(cchar *name, int argc, char **argv)
 {
     MprHash     *tokens;
-    cchar       *title, *name, *path, *data;
+    cchar       *title, *path, *data;
 
     if (app->error) {
         return;
     }
-    name = sclone(argv[0]);
     title = spascal(name);
-
     path = sfmt("%s/%s/%s.js", app->eroute->appDir, name, title);
-    tokens = mprDeserialize(sfmt("{ NAME: '%s', SERVICE: '%s', TITLE: '%s'}", name, app->eroute->serverPrefix, title));
+    tokens = mprDeserialize(sfmt("{ NAME: '%s', SERVICE: '%s', TITLE: '%s'}", name, app->eroute->routePrefix, title));
     data = getTemplate(mprJoinPath(app->topComponent, "model.js"), tokens);
     makeEspFile(path, data, "Scaffold Model");
 }
 
 
 /*
-    Called with args: table [field:type [, field:type] ...]
+    Called with args: model [field:type [, field:type] ...]
  */
-static void generateScaffoldMigration(int argc, char **argv)
+static void generateScaffoldMigration(cchar *name, cchar *table, int argc, char **argv)
 {
-    cchar       *comment, *table;
+    cchar       *comment;
 
     if (argc < 2) {
         fail("Bad migration command line");
@@ -1498,8 +1506,7 @@ static void generateScaffoldMigration(int argc, char **argv)
     if (app->error) {
         return;
     }
-    table = sclone(argv[0]);
-    comment = sfmt("Create Scaffold %s", spascal(table));
+    comment = sfmt("Create Scaffold %s", spascal(name));
     createMigration(sfmt("create_scaffold_%s", table), table, comment, argc - 1, &argv[1]);
 }
 
@@ -1510,25 +1517,25 @@ static void generateScaffoldMigration(int argc, char **argv)
 static void generateTable(int argc, char **argv)
 {
     Edi         *edi;
-    cchar       *tableName, *field;
+    cchar       *table, *field;
     char        *typeString;
     int         rc, i, type;
 
     if (app->error) {
         return;
     }
-    tableName = sclone(argv[0]);
+    table = app->table ? app->table : sclone(argv[0]);
     if ((edi = app->eroute->edi) == 0) {
         fail("Database not open. Check appweb.conf");
         return;
     }
     edi->flags |= EDI_SUPPRESS_SAVE;
-    if ((rc = ediAddTable(edi, tableName)) < 0) {
+    if ((rc = ediAddTable(edi, table)) < 0) {
         if (rc != MPR_ERR_ALREADY_EXISTS) {
-            fail("Cannot add table '%s'", tableName);
+            fail("Cannot add table '%s'", table);
         }
     } else {
-        if ((rc = ediAddColumn(edi, tableName, "id", EDI_TYPE_INT, EDI_AUTO_INC | EDI_INDEX | EDI_KEY)) != 0) {
+        if ((rc = ediAddColumn(edi, table, "id", EDI_TYPE_INT, EDI_AUTO_INC | EDI_INDEX | EDI_KEY)) != 0) {
             fail("Cannot add column 'id'");
         }
     }
@@ -1538,12 +1545,12 @@ static void generateTable(int argc, char **argv)
             fail("Unknown type '%s' for field '%s'", typeString, field);
             break;
         }
-        if ((rc = ediAddColumn(edi, tableName, field, type, 0)) != 0) {
+        if ((rc = ediAddColumn(edi, table, field, type, 0)) != 0) {
             if (rc != MPR_ERR_ALREADY_EXISTS) {
                 fail("Cannot add column '%s'", field);
                 break;
             } else {
-                ediChangeColumn(edi, tableName, field, type, 0);
+                ediChangeColumn(edi, table, field, type, 0);
             }
         }
     }
@@ -1556,17 +1563,16 @@ static void generateTable(int argc, char **argv)
 /*
     Called with args: name [field:type [, field:type] ...]
  */
-static void generateScaffoldViews(int argc, char **argv)
+static void generateScaffoldViews(cchar *name, cchar *table, int argc, char **argv)
 {
     MprHash     *tokens;
-    cchar       *title, *name, *path, *data;
+    cchar       *path, *data;
 
     if (app->error) {
         return;
     }
-    name = sclone(argv[0]);
-    title = spascal(name);
-    tokens = mprDeserialize(sfmt("{ NAME: '%s', TITLE: '%s', SERVICE: '%s'}", name, title, app->eroute->serverPrefix));
+    tokens = mprDeserialize(sfmt("{ NAME: '%s', TABLE: '%s', TITLE: '%s', SERVICE: '%s'}", 
+        name, table, spascal(name), app->eroute->routePrefix));
 
     if (espTestConfig(app->route, "generate.clientView", "true")) {
         path = sfmt("%s/%s/%s-list.html", app->eroute->appDir, name, name);
@@ -1591,6 +1597,9 @@ static void generateScaffoldViews(int argc, char **argv)
  */
 static void generateScaffold(int argc, char **argv)
 {
+    char    *name, *plural;
+    cchar   *table;
+
     if (argc < 1) {
         usageError();
         return;
@@ -1601,18 +1610,26 @@ static void generateScaffold(int argc, char **argv)
     if (!espTestConfig(app->route, "generate.scaffold", "true")) {
         return;
     }
+    name = sclone(argv[0]);
+    stok(name, "-", &plural);
+    if (plural) {
+        table = sjoin(name, plural, NULL);
+    } else {
+        table = app->table ? app->table : name;
+        app->singleton = 1;
+    }
     if (espTestConfig(app->route, "generate.controller", "true")) {
-        generateScaffoldController(argc, argv);
+        generateScaffoldController(name, table, argc, argv);
     }
     if (espTestConfig(app->route, "generate.clientController", "true")) {
-        generateClientController(argc, argv);
+        generateClientController(name, table, argc, argv);
     }
-    generateScaffoldViews(argc, argv);
+    generateScaffoldViews(name, table, argc, argv);
     if (espTestConfig(app->route, "generate.clientModel", "true")) {
-        generateClientModel(argc, argv);
+        generateClientModel(name, argc, argv);
     }
     if (espTestConfig(app->route, "generate.migration", "true")) {
-        generateScaffoldMigration(argc, argv);
+        generateScaffoldMigration(name, table, argc, argv);
     }
     migrate(0, 0);
 }
@@ -2087,10 +2104,11 @@ static void usageError()
     "    --platform os-arch-profile # Target platform\n"
     "    --rebuild                  # Force a rebuild\n"
     "    --reverse                  # Reverse migrations\n"
-    "    --routeName name           # Route name in appweb.conf to use \n"
-    "    --routePrefix prefix       # Route prefix in appweb.conf to use \n"
+    "    --routeName name           # Name of route to select\n"
+    "    --routePrefix prefix       # Prefix of route to select\n"
     "    --show                     # Show compile commands\n"
     "    --static                   # Use static linking\n"
+    "    --table name               # Override table name if plural required\n"
     "    --verbose                  # Emit more verbose trace \n"
     "    --why                      # Why compile or skip building\n"
     "\n"

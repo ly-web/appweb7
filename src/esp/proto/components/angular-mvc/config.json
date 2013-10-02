@@ -21,6 +21,7 @@
             int: 0
         },
         redirect: "secure",
+        routePrefix: "/server",
         sendJson: true,
     },
     server: {
