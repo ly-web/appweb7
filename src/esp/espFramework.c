@@ -509,7 +509,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             }
 #endif
             if ((value = espGetConfig(route, "settings.routePrefix", 0)) != 0) {
-                eroute->routePrefix = value;
+                eroute->routePrefix = sclone(value);
             }
             if ((value = espGetConfig(route, "settings.login.name", 0)) != 0) {
                 /* Automatic login as this user. Password not required */
@@ -540,7 +540,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
         }
         if (espHasComponent(route, "legacy-mvc")) {
             eroute->legacy = 1;
-            eroute->routePrefix = "";
+            eroute->routePrefix = MPR->emptyString;
         }
     }
     return 0;
