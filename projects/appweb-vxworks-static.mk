@@ -3,7 +3,7 @@
 #
 
 PRODUCT            := appweb
-VERSION            := 4.4.0
+VERSION            := 4.4.1
 BUILD_NUMBER       := 0
 PROFILE            := static
 ARCH               := $(shell echo $(WIND_HOST_TYPE) | sed 's/-.*//')
@@ -308,7 +308,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.4.0-0
+	@echo 4.4.1-0
 
 #
 #   mpr.h
