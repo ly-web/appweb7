@@ -38,7 +38,7 @@ Bit.load({
         product: 'appweb',
         title: 'Embedthis Appweb',
         company: 'Embedthis',
-        version: '4.4.0',
+        version: '4.4.1',
         buildNumber: '0',
         bit: '0.8.7',
 
