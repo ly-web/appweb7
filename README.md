@@ -11,7 +11,7 @@ The repository has three main branches:
 * master - Somewhat stable snapshots of the dev branch. Should be suitable for ongoing development.
 * dev - Current ongoing development. Least stable and may not be suitable for development.
  
-
+Licensing
 ---
 See LICENSE.md for details.
 
