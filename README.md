@@ -13,7 +13,7 @@ The repository has three main branches:
  
 Licensing
 ---
-See [LICENSE.md]](LICENSE.md) for details.
+See [LICENSE.md](LICENSE.md) for details.
 
 ### To read documentation:
 
