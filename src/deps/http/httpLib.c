@@ -532,11 +532,7 @@ static void loginServiceProc(HttpConn *conn)
             if (auth->loggedIn) {
                 httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, auth->loggedIn);
             } else {
-#if UNUSED
-                httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, httpUri(conn, "~", 0));
-#else
                 httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, "~");
-#endif
             }
         }
     } else {
@@ -11395,7 +11391,7 @@ static int cmdUpdate(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
 
     command = expandTokens(conn, op->details);
     cmd = mprCreateCmd(conn->dispatcher);
-    if ((status = mprRunCmd(cmd, command, NULL, &out, &err, -1, 0)) != 0) {
+    if ((status = mprRunCmd(cmd, command, NULL, NULL, &out, &err, -1, 0)) != 0) {
         /* Don't call httpError, just set errorMsg which can be retrieved via: ${request:error} */
         conn->errorMsg = sfmt("Command failed: %s\nStatus: %d\n%s\n%s", command, status, out, err);
         mprError("%s", conn->errorMsg);
@@ -17647,6 +17643,7 @@ PUBLIC HttpUri *httpGetRelativeUri(HttpUri *base, HttpUri *target, int clone)
 }
 
 
+//  MOB - rethink API, makes chaining hard if result must be supplied
 /*
     result = base.join(other)
  */
