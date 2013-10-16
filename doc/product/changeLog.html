@@ -78,6 +78,7 @@
                     <li>Add routePrefix to config.json and update esp.js to automatically parse and include in all routes</li>
                     <li>Add esp-click attribute for elements without hrefs</li>
                     <li>Add esp-resource to wrap $resource</li>
+                    <li>Add esp-confirm for modal confirmations</li>
                     </ul>
                 </li>
             </ul>
@@ -87,6 +88,13 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/236">[issue 236]</a></li>
                 <li>Add Reroute directive. Revert Route directive to not open previously defined routes.
                     <a href="https://github.com/embedthis/appweb-4/issues/238">[issue 238]</a></li>
+                <li>Add BIT_MPR_SSL_RENEGOTIATE option (config: mpr.ssl.renegotiate) to control SSL renegotiation.
+                    Disabled by default. <a href="https://github.com/embedthis/appweb-4/issues/240">[issue 240]</a></li>
+            </ul>
+            <h3>Incompatible Changes</h3>
+            <ul>
+                <li>Add body argument to mprRunCmd to write data to spawned command.
+                    <a href="https://github.com/embedthis/appweb-4/issues/239">[issue 239]</a></li>
             </ul>
 
             <a id="r4.4.1"></a>
