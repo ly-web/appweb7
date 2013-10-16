@@ -129,7 +129,7 @@
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Prevent saving to disk.</td></tr>
 <tr class="apiDef">
-<td>#define</td><td><a href="#edi_8h_1af1eaf78875be29a2bf00cf732dec04ea" class="nameRef">EDI_NOT_NULL</a>&nbsp;&nbsp;&nbsp;0x8</td>
+<td>#define</td><td><a href="#edi_8h_1af1eaf78875be29a2bf00cf732dec04ea" class="nameRef">EDI_NOT_NULL</a>&nbsp;&nbsp;&nbsp;0x10</td>
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Field flag <ndash/> Column must not be null (not implemented).</td></tr>
 <tr class="apiDef">
@@ -259,7 +259,7 @@ Cache of table schema in JSON.
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">edi</td><td>Database handle.</td>
-    <tr><td class="param">tableName</td><td>Database table name.</td>
+    <tr><td class="param">tableName</td><td>Database table name. Table names should be singular. Certain routines like ediJoin rely on being able to map foreign key fields of the form NameId by converting the Name to a database table.</td>
     </table></dd></dl>
     <dl><dt>Returns:</dt><dd>Zero if successful. Otherwise a negative MPR error code.</dd></dl>
     <dl><dt><b>API</b> Stability:</dt><dd>Evolving.</dd></dl>

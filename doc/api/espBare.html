@@ -1225,7 +1225,7 @@
   </div>
   <div class="apiDetail">
 <p>Remove a record from a database table.</p>
-    <dl><dt><b>Description</b>:</dt><dd>Remove the record identified by the key value from the given table.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>Remove the record identified by the key value from the given table. If the removal succeeds, the feedback message {inform: &quot;Deleted Record&quot;} will be created. If the removal fails, a feedback message {error: &quot;Cannot delete Record&quot;} will be created.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">tableName</td><td>Database table name.</td>
@@ -1901,7 +1901,7 @@ This wraps httpSetConnNotifier and calls espSetConn before invoking the notifier
   </div>
   <div class="apiDetail">
 <p>Write a record to the database.</p>
-    <dl><dt><b>Description</b>:</dt><dd>The record will be saved to the database after running any field validations. If any field validations fail to pass, the record will not be written and error details can be retrieved via <a class="ref" href="#group___edi_1ga653dfa35de74e1c3049b3ba9191215e0" external="edi.dtags">ediGetRecErrors</a>. If the record is a new record and the &quot;id&quot; column is EDI_AUTO_INC, then the &quot;id&quot; will be assigned prior to saving the record.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>The record will be saved to the database after running any field validations. If any field validations fail to pass, the record will not be written and error details can be retrieved via <a class="ref" href="#group___edi_1ga653dfa35de74e1c3049b3ba9191215e0" external="edi.dtags">ediGetRecErrors</a>. If the record is a new record and the &quot;id&quot; column is EDI_AUTO_INC, then the &quot;id&quot; will be assigned prior to saving the record. If the update succeeds, the feedback message {inform: &quot;Saved Record&quot;} will be created. If the update fails, a feedback message {error: &quot;Cannot save Record&quot;} will be created.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">rec</td><td>Record to write to the database.</td>

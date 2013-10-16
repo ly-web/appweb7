@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+   <title>Class Esp</title>
+
+   <link rel="stylesheet" type="text/css" href="doc.css" />
+</head>
+
+<body>
+<div class='body'>
+
+<div class="content">
+
+<a name='top'></a>
+<h1 class='className'>Esp</h1>
+<div class='classBlock'>
+<table class='classHead' summary='Esp'>
+   <tr><td><strong>Module</strong></td><td>esp.angular</td></tr>
+   <tr><td><strong>Definition</strong></td><td> class Esp</td></tr>
+   <tr><td><strong>Inheritance</strong></td><td>Esp <img src='images/inherit.gif' alt='inherit'/> <a href='Object.html'>Object</a><tr><td><strong>Stability</strong></td><td>Prototype.</td></tr>
+       </td></tr>
+</table>
+
+<p class='classBrief'>Esp Angular service object.</p>
+
+<p class='classDescription'>As an Angular service, there is only one instance of "Esp".
+The Esp service is typically defined via the angular injector. It is also aliased in $rootScope.Esp.</p>
+
+</div>
+
+
+<hr />
+<a name='Properties'></a>
+<h2 class='classSection'>Properties</h2>
+<table class='itemTable' summary='properties'>
+   <tr><th>Qualifiers</th><th>Property</th><th>Type</th><th width='95%'>Description</th></tr>
+<a name='user'></a>
+   <tr><td nowrap align='center'> static </td><td>user</td><td><a href='Object.html'>Object</a></td><td>Authenticated user information. </td></tr>
+</table>
+
+<p class='inheritedLink'><a href='Object.html#Properties'><i>Inherited Properties</i></a></p>
+
+<hr />
+<a name='ClassMethods'></a>
+<h2 class='classSection'>Esp Class Methods</h2>
+<table class='apiIndex' summary='methods'>
+   <tr><th>Qualifiers</th><th width='95%'>Method</th></tr>
+   <tr class='apiDef'><td class='apiType'> static </td><td><a href='#can'><b>can</b></a>(task: <a href='String.html'>String</a>): <a href='Boolean.html'>Boolean</a></tr><tr class='apiBrief'><td>&nbsp;</td><td>Determine if the user authorized to perform the given task.</td></tr>
+   <tr class='apiDef'><td class='apiType'> static </td><td><a href='#canClass'><b>canClass</b></a>(task: <a href='String.html'>String</a>): <a href='String.html'>String</a></tr><tr class='apiBrief'><td>&nbsp;</td><td>Get a CSS class suitable for displaying or hiding UI components based on the user's abilities.</td></tr>
+   <tr class='apiDef'><td class='apiType'> static </td><td><a href='#error'><b>error</b></a>(msg: <a href='String.html'>String</a>): <a href='Void.html'>Void</a></tr><tr class='apiBrief'><td>&nbsp;</td><td>Set an error feedback message.</td></tr>
+   <tr class='apiDef'><td class='apiType'> static </td><td><a href='#getLoginState'><b>getLoginState</b></a>(): <a href='String.html'>String</a></tr><tr class='apiBrief'><td>&nbsp;</td><td>Determine the user's current login state.</td></tr>
+   <tr class='apiDef'><td class='apiType'> static </td><td><a href='#inform'><b>inform</b></a>(msg: <a href='String.html'>String</a>): <a href='Void.html'>Void</a></tr><tr class='apiBrief'><td>&nbsp;</td><td>Set an information feedback message.</td></tr>
+   <tr class='apiDef'><td class='apiType'> static </td><td><a href='#navClass'><b>navClass</b></a>(uri: <a href='String.html'>String</a>, ability: <a href='String.html'>String</a>): <a href='String.html'>String</a></tr><tr class='apiBrief'><td>&nbsp;</td><td>Determine if the user is authorized to access a UI element.</td></tr>
+   <tr class='apiDef'><td class='apiType'> static </td><td><a href='#titlecase'><b>titlecase</b></a>(str: <a href='String.html'>String</a>): <a href='String.html'>String</a></tr><tr class='apiBrief'><td>&nbsp;</td><td>Map a string to TitleCase.</td></tr>
+</table>
+
+<p class='inheritedLink'><a href='Object.html#InstanceMethods'><i>Inherited Methods</i></a></p>
+
+<hr />
+<a name='InstanceMethods'></a>
+<h2 class='classSection'>Esp Instance Methods</h2>
+<table class='apiIndex' summary='methods'>
+   <tr><th>Qualifiers</th><th width='95%'>Method</th></tr>
+   <p>(No own instance methods defined)</p></table>
+
+<p class='inheritedLink'><a href='Object.html#InstanceMethods'><i>Inherited Methods</i></a></p>
+
+<hr />
+<h2>Method Detail</h2>
+<a name='can'></a>
+<div class='api'>
+<div class='apiSig'>static     can(task: <a href='String.html'>String</a>): <a href='Boolean.html'>Boolean</a>
+</div>
+<div class='apiDetail'>
+<dl><dt>Description</dt></dd><dd>Determine if the user authorized to perform the given task. The user's abilities are defined by the server and passed to the client when the user logs in.</dd></dl>
+<dl><dt>Parameters</dt>
+<dd><table class='parameters' summary ='parameters'>
+<tr class='param'><td class='param'>task: <a href='String.html'>String</a> </td><td>Required task string.</td></tr></table></dd>
+</dl><dl><dt>Returns</dt>
+<dd>True if the user has the ability to perform the requested task.</dd></dl>
+</div>
+</div>
+<hr />
+<a name='canClass'></a>
+<div class='api'>
+<div class='apiSig'>static     canClass(task: <a href='String.html'>String</a>): <a href='String.html'>String</a>
+</div>
+<div class='apiDetail'>
+<dl><dt>Description</dt></dd><dd>Get a CSS class suitable for displaying or hiding UI components based on the user's abilities. Return enabled|disabled depending on if the user is authorized for a given task.</dd></dl>
+<dl><dt>Parameters</dt>
+<dd><table class='parameters' summary ='parameters'>
+<tr class='param'><td class='param'>task: <a href='String.html'>String</a> </td><td>Required task string.</td></tr></table></dd>
+</dl><dl><dt>Returns</dt>
+<dd>"enabled" if the user has the ability to perform the requested task. Otherwise return "disabled".</dd></dl>
+</div>
+</div>
+<hr />
+<a name='error'></a>
+<div class='api'>
+<div class='apiSig'>static     error(msg: <a href='String.html'>String</a>): <a href='Void.html'>Void</a>
+</div>
+<div class='apiDetail'>
+<dl><dt>Description</dt></dd><dd>Set an error feedback message. The application may define how it displays feedback messages. By default, error messages are 
+persistent and are only cleared when the user performs a new operation in the application.</dd></dl>
+<dl><dt>Parameters</dt>
+<dd><table class='parameters' summary ='parameters'>
+<tr class='param'><td class='param'>msg: <a href='String.html'>String</a> </td><td>Message to display.</td></tr></table></dd>
+</dl></div>
+</div>
+<hr />
+<a name='getLoginState'></a>
+<div class='api'>
+<div class='apiSig'>static     getLoginState(): <a href='String.html'>String</a>
+</div>
+<div class='apiDetail'>
+<dl><dt>Description</dt></dd><dd>Determine the user's current login state. </dd></dl>
+<dl><dt>Returns</dt>
+<dd>"Login" if the user is logged out. Return "logout" if the user is logged out.</dd></dl>
+</div>
+</div>
+<hr />
+<a name='inform'></a>
+<div class='api'>
+<div class='apiSig'>static     inform(msg: <a href='String.html'>String</a>): <a href='Void.html'>Void</a>
+</div>
+<div class='apiDetail'>
+<dl><dt>Description</dt></dd><dd>Set an information feedback message. The application may define how it displays feedback messages. By default, informational messages are 
+cleared wherenver a user clicks or navigates in the application.</dd></dl>
+<dl><dt>Parameters</dt>
+<dd><table class='parameters' summary ='parameters'>
+<tr class='param'><td class='param'>msg: <a href='String.html'>String</a> </td><td>Message to display.</td></tr></table></dd>
+</dl></div>
+</div>
+<hr />
+<a name='navClass'></a>
+<div class='api'>
+<div class='apiSig'>static     navClass(uri: <a href='String.html'>String</a>, ability: <a href='String.html'>String</a>): <a href='String.html'>String</a>
+</div>
+<div class='apiDetail'>
+<dl><dt>Description</dt></dd><dd>Determine if the user is authorized to access a UI element. </dd></dl>
+<dl><dt>Parameters</dt>
+<dd><table class='parameters' summary ='parameters'>
+<tr class='param'><td class='param'>uri: <a href='String.html'>String</a> </td><td>Name of URI to test for access.</td></tr><tr class='param'><td class='param'>ability: <a href='String.html'>String</a> </td><td>Required ability to access the uri.</td></tr></table></dd>
+</dl><dl><dt>Returns</dt>
+<dd>CSS classes describing the user's ability to access the URI element. If the user can access the URI, the class "enabled" will be returned, otherwise "disabled" will be returned. If the URI is the current  application URI, then "active" will also be returned regardless of whether the user is authorized for the URI or not. Return "active" if the user is authorized for the specified tab.</dd></dl>
+</div>
+</div>
+<hr />
+<a name='titlecase'></a>
+<div class='api'>
+<div class='apiSig'>static     titlecase(str: <a href='String.html'>String</a>): <a href='String.html'>String</a>
+</div>
+<div class='apiDetail'>
+<dl><dt>Description</dt></dd><dd>Map a string to TitleCase. </dd></dl>
+<dl><dt>Parameters</dt>
+<dd><table class='parameters' summary ='parameters'>
+<tr class='param'><td class='param'>str: <a href='String.html'>String</a> </td><td>String to convert.</td></tr></table></dd>
+</dl><dl><dt>Returns</dt>
+<dd>A titlecase string where the first letter of each word is capitalized.</dd></dl>
+</div>
+</div>
+<hr />
+<div class="terms">
+   <p class="terms">
+       <a href="http://embedthis.com/">       Embedthis Software LLC, 2003-2013. All rights reserved. Embedthis is a trademark of Embedthis Software LLC.</a>
+   </p>
+</div></div>
+</div>
+</body>
+</html>

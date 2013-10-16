@@ -39,8 +39,16 @@ Bit.load({
                                            replace(/external=\"mpr.dtags\"/g, '').
                                            replace(/external=\"http.dtags\"/g, ''))
                 }
+                if (Cmd.locate('ejsc')) {
+                    Cmd('ejsc --doc ../src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/*.es')
+                    Cmd('ejsmod --html api/esp-angular esp.angular.mod')
+                    Path('api/esp-angular/masters/__overview-page.html').copy('api/esp-angular/__overview-page.html')
+                    Path('api/esp-angular/masters/title.html').copy('api/esp-angular/title.html')
+                    Path('api/esp-angular/masters/banner.jpg').copy('api/esp-angular/images/banner.jpg')
+                    Path('esp.angular.mod').remove()
+                }
             ",
-        }, 
+        },
 
         tidy: {
             action: "

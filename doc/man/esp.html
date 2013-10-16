@@ -8,8 +8,8 @@ ESP(1)                           User Commands                          ESP(1)
        <B>esp  </B>[<I>--apply]</I>]  [<I>--chdir dir]</I>] [<I>--config configFile]</I>] [<I>--database DB]</I>]
        [<I>--flat</I>] [<I>--genlink slink.c</I>] [<I>--keep</I>] [<I>--listen [ip:]port</I>] [<I>--log  log-</I>
        <I>File:level</I>] [<I>--overwrite</I>] [<I>--quiet</I>] [<I>--platform [path/]os-arch-profile</I>]
-       [<I>--rebuild</I>] [<I>--routeName name</I>] [<I>--routePrefix prefix</I>] [<I>--static</I>] [<I>--ta-</I>
-       <I>ble name</I>] [<I>--verbose</I>] [<I>--why</I>] commands ...
+       [<I>--rebuild</I>]  [<I>--routeName  name</I>]  [<I>--routePrefix   prefix</I>]   [<I>--single</I>]
+       [<I>--static</I>] [<I>--table name</I>] [<I>--verbose</I>] [<I>--why</I>] commands ...
 
        <B>Commands:</B>
         esp clean
@@ -162,14 +162,8 @@ ESP(1)                           User Commands                          ESP(1)
        add and edit capability. The list action and view, provides the ability
        to list the table rows and select an entry to edit.
 
-       If the MODEL includes a plural suffix, for example: "posts-s",  then  a
-       scaffold will be created for a group of resources.  This means that the
-       suffix will be added when creating the  database  table  and  the  con-
-       troller  will include a "list" action to return a list of resources. If
-       a plural suffix is not specified, a singleton resource scaffold will be
-       generated. This will have a singular database name which is the same as
-       the model name. Also, a "list" action will not be generated.  An  empty
-       plural suffix can be specified by appending "-" to the model name.
+       If the --singleton switch is ues, the controller will be generated  for
+       a singleton resource and will not have a list action.
 
 <B>COMPILING</B>
        Esp  compiles  controllers  and ESP pages native code shared libraries.
@@ -317,15 +311,19 @@ ESP(1)                           User Commands                          ESP(1)
              match, the first portion of the route pattern is  tested  against
              the requested prefix.
 
+       <B>--single</B>
+             Generate a controller for a singleton resource instead of a group
+             of resources. A singleton controller omits a list action.
+
        <B>--static</B>
-             Use  static linking when building ESP components. This causes esp
+             Use static linking when building ESP components. This causes  esp
              to create archive libraries instead of shared libraries.
 
        <B>--table name</B>
-             Override the database table name when generating  tables,  migra-
+             Override  the  database table name when generating tables, migra-
              tions or scaffolds. This is useful to request a plural version of
              the model name. Alternatively, specify the model name when gener-
-             ating  the  scaffold,  table or migration with the desired plural
+             ating the scaffold, table or migration with  the  desired  plural
              suffix. For example: "-s" or "-ies".
 
        <B>--verbose </B>or <B>-v</B>
@@ -338,7 +336,7 @@ ESP(1)                           User Commands                          ESP(1)
        Report bugs to dev@embedthis.com.
 
 <B>COPYRIGHT</B>
-       Copyright (C) 2004-2013 Embedthis Software.   ESP  is  a  trademark  of
+       Copyright  (C)  2004-2013  Embedthis  Software.   ESP is a trademark of
        Embedthis Software.
 
 <B>SEE ALSO</B>

@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.4.1 Documentation</title>
+    <title>Embedthis Appweb 4.4.2 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.4.1</div>
+                <div class="version">Embedthis Appweb 4.4.2</div>
             </div>
         </div>
         <div class="crumbs">
@@ -35,7 +35,7 @@
         <div class="contentRight">
             <h1>Quick Nav</h1>
             <ul>
-                <li><a href="#r4.4.1">Release 4.4.1</a></li>
+                <li><a href="#r4.4.2">Release 4.4.2</a></li>
                 <li><a href="#r3.4.1">Release 3.4.1</a></li>
                 <li><a href="#r2.4.4">Release 2.4.4</a></li>
             </ul>
@@ -64,8 +64,8 @@
             Please see the <a href="http://github.com/embedthis/appweb-4/issues">Appweb Issue Database</a> 
             for the official product issue list and for comprehensive CVE dispositions.</p>
         
-            <a id="r4.4.1"></a>
-            <h2 class="section">Changes in 4.4.1</h2>
+            <a id="r4.4.2"></a>
+            <h2 class="section">Changes in 4.4.2</h2>
             <h3>Minor Features</h3>
             <ul>
                 <li>Optimize generated ESP angular-mvc apps
@@ -83,10 +83,18 @@
             </ul>
             <h3>Fixes</h3>
             <ul>
-                <li>Installation location of esp generator component files
-                    <a href="https://github.com/embedthis/appweb-4/issues/235">[issue 235]</a></li>
                 <li>Rename readRecsWhere to readWhere to be consistent with EDI API.
                     <a href="https://github.com/embedthis/appweb-4/issues/236">[issue 236]</a></li>
+                <li>Add Reroute directive. Revert Route directive to not open previously defined routes.
+                    <a href="https://github.com/embedthis/appweb-4/issues/238">[issue 238]</a></li>
+            </ul>
+
+            <a id="r4.4.1"></a>
+            <h2 class="section">Changes in 4.4.1</h2>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Installation location of esp generator component files
+                    <a href="https://github.com/embedthis/appweb-4/issues/235">[issue 235]</a></li>
             </ul>
 
             <a id="r4.4.0"></a>
@@ -219,8 +227,6 @@
                 <li>The httpAddResourceGroup, httpAddResource, httpAddClientRoute and httpAddRouteSet have changed signatures
                     to accommodate a URI prefix for server-side controller URIs.</li>
             </ul>
-
-
             <a id="r4.3.6"></a>
             <h2 class="section">Changes in 4.3.6</h2>
             <h3>Fixes</h3>
