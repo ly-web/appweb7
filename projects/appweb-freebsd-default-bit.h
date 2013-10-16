@@ -136,6 +136,9 @@
 #ifndef BIT_MPR_MANAGER
     #define BIT_MPR_MANAGER "appman"
 #endif
+#ifndef BIT_MPR_SSL_RENEGOTIATE
+    #define BIT_MPR_SSL_RENEGOTIATE 0
+#endif
 #ifndef BIT_PACKS
     #define BIT_PACKS "bits/packs"
 #endif
@@ -167,7 +170,7 @@
     #define BIT_TUNE "size"
 #endif
 #ifndef BIT_VERSION
-    #define BIT_VERSION "4.4.1"
+    #define BIT_VERSION "4.4.2"
 #endif
 #ifndef BIT_WARN64TO32
     #define BIT_WARN64TO32 0
@@ -196,7 +199,7 @@
     #define BIT_APP_PREFIX "/usr/local/lib/appweb"
 #endif
 #ifndef BIT_VAPP_PREFIX
-    #define BIT_VAPP_PREFIX "/usr/local/lib/appweb/4.4.1"
+    #define BIT_VAPP_PREFIX "/usr/local/lib/appweb/4.4.2"
 #endif
 #ifndef BIT_BIN_PREFIX
     #define BIT_BIN_PREFIX "/usr/local/bin"
@@ -229,7 +232,7 @@
     #define BIT_CACHE_PREFIX "/var/spool/appweb/cache"
 #endif
 #ifndef BIT_SRC_PREFIX
-    #define BIT_SRC_PREFIX "appweb-4.4.1"
+    #define BIT_SRC_PREFIX "appweb-4.4.2"
 #endif
 
 /* Suffixes */
@@ -271,10 +274,10 @@
     #define BIT_MINOR_VERSION 4
 #endif
 #ifndef BIT_PATCH_VERSION
-    #define BIT_PATCH_VERSION 1
+    #define BIT_PATCH_VERSION 2
 #endif
 #ifndef BIT_VNUM
-    #define BIT_VNUM 400040001
+    #define BIT_VNUM 400040002
 #endif
 
 /* Packs */
