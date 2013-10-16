@@ -11,7 +11,7 @@ app.filter('format', function($filter, Esp) {
         try {
             if (schema) {
                 var dataType = schema.types[field].type;
-                var fmt = Esp.config.settings.formats[dataType];
+                var fmt = Esp.config.formats[dataType];
                 if (fmt != null) {
                     if (dataType == 'date') {
                         value = Date.parse(value);

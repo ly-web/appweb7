@@ -7,8 +7,7 @@
  */
 
 app.filter('titlecase', function(Esp) {
-    var titlecaseFilter = function(str) {
-        return Esp.titlecase(str);
+    return function(str) {
+        return str ? Esp.titlecase(str) : '';
     };
-    return titlecaseFilter;
 });

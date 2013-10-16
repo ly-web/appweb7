@@ -4,5 +4,5 @@
 'use strict';
 
 app.factory('${TITLE}', function (EspResource) {
-    return EspResource.resourceGroup("${NAME}");
+    return EspResource.group("${NAME}");
 });

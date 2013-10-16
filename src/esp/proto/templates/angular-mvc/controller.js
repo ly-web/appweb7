@@ -4,35 +4,32 @@
 
 'use strict';
 
-app.controller('${TITLE}Control', function (Esp, $rootScope, $scope, $location, $routeParams, ${TITLE}) {
-    if ($routeParams.id) {
-        $scope.${NAME} = ${TITLE}.get({id: $routeParams.id}, function(response) {
-            angular.extend($scope, response, {action: "Edit"});
-        });
+app.controller('${TITLE}Control', function (Esp, ${TITLE}, $location, $routeParams, $scope) {
+    angular.extend($scope, $routeParams);
+    /*
+        Resource calling sequence:
+            Resource.action(input-params, [output], [response-mappings], [success-callback], [failure-callback]);
+            Resources will set results to [output] and update $rootScope.feedback as appropriate.
+     */
+    if ($scope.id) {
+        ${TITLE}.get({id: $scope.id}, $scope);
+
     } else if ($location.path() == "/${NAME}/") {
-        $scope.${NAME} = ${TITLE}.init({}, function(response) {
-            angular.extend($scope, response, {action: "Create"});
-        });
+        ${TITLE}.init(null, $scope);
+
     } else {
-        $scope.${TABLE} = ${TITLE}.list({}, function(response) {
-            angular.extend($scope, response);
-        });
+        ${TITLE}.list(null, $scope, {${LIST}: "data"});
     }
 
     $scope.remove = function() {
-        ${TITLE}.remove($scope.${NAME}, function(response) {
-            Esp.inform("Deleted ${TITLE}");
+        ${TITLE}.remove({id: $scope.id}, function(response) {
             $location.path("/");
         });
     };
 
     $scope.save = function() {
-        ${TITLE}.save($scope.${NAME}, function(response) {
-            if (response.error) {
-                $scope.fieldErrors = response.fieldErrors;
-                Esp.error("Cannot Save ${TITLE}");
-            } else {
-                Esp.inform($routeParams.id ? "Updated ${TITLE}" : "Created New ${TITLE}");
+        ${TITLE}.update($scope.${NAME}, $scope, function(response) {
+            if (!response.error) {
                 $location.path('/');
             }
         });
@@ -40,14 +37,10 @@ app.controller('${TITLE}Control', function (Esp, $rootScope, $scope, $location, 
 });
 
 app.config(function($routeProvider) {
-    $routeProvider.when('/', {
-        templateUrl: '/app/${NAME}/${NAME}-list.html',
+    var Default = {
         controller: '${TITLE}Control',
         resolve: { action: 'Esp' },
-    });
-    $routeProvider.when('/${NAME}/:id', {
-        templateUrl: '/app/${NAME}/${NAME}-edit.html',
-        controller: '${TITLE}Control',
-        resolve: { action: 'Esp' },
-    });
+    };
+    $routeProvider.when('/', angular.extend({}, Default, {templateUrl: '/app/${NAME}/${NAME}-list.html'}));
+    $routeProvider.when('/${NAME}/:id', angular.extend({}, Default, {templateUrl: '/app/${NAME}/${NAME}-edit.html'}));
 });

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="${TITLE}">
+<html lang="en">
 <head>
     <title>${TITLE}</title>
     <meta charset="utf-8" />
@@ -21,10 +21,10 @@
             <a class="navbar-brand ng-cloak" href="#">${TITLE}</a>
         </div>
     </nav>
-    <main class="home">
+    <main class="home ng-cloak">
         <section class="row container">
             <section class="col-md-10 content">
-                <div ng-view></div>
+                <div ng-view class="ng-cloak"></div>
             </section>
         </section>
         <div ng-repeat="(field, msg) in feedback">

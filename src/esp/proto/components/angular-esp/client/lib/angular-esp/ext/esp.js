@@ -8,42 +8,50 @@
     It places a "Esp" object on the $rootScope that is inherited by all $scopes.
     Alternatively, injecting the Esp service provides direct access using the Esp service object.
  */
-app.factory('Esp', function($document, $http, $rootScope, $location, SessionStore) {
-    var Esp = $http.get('/esp/config').success(function(data) {
-        Esp.config = data;
-        /* Fix for Angular. ng-click is looking for Esp.then and not finding Esp.$$v */
-        Esp.then = undefined;
-        $rootScope.Esp = Esp;
-    }).error(function() {
-        console.log("Cannot fetch configuration");
-    });
+app.factory('Esp', function(SessionStore, $document, $http, $location, $rootScope, $timeout) {
+
+    var Esp = {};
+    $rootScope.Esp = Esp;
 
     /*
         Is this user authorized to perform the given task
         Note: this is advisory only to provide hints in the UI. It is the server's repsonsibility to
-        restrict user abilities as appropriate. We allow !user because auto-login will not set these.
+        restrict user abilities as appropriate.
      */
     Esp.can = function(task) {
         var user = Esp.user
-        return !user || (user.abilities && user.abilities[task]);
+        return (user && user.abilities && user.abilities[task]);
     };
 
     /*
         Return enabled|disabled depending on if the user is authorized for a given task
+        MOB - rename 
+        MOB - who uses this ... tabs below
      */
     Esp.canClass = function(task) {
         return Esp.can(task) ? "enabled" : "disabled";
     };
 
-    /*
-        Determine the current login state
-     */
-    Esp.getLoginState = function() {
-        return (Esp.user && Esp.user.name) ? "Logout" : "Login";
+    Esp.login = function(user) {
+        if (user) {
+            Esp.user = user;
+            Esp.user.lastAccess = Date.now();
+            if (user.remember) {
+                SessionStore.put('user', Esp.user);
+            } else {
+                SessionStore.remove('user');
+            }
+        }
+    };
+
+    Esp.logout = function() {
+        SessionStore.remove('user');
+        Esp.user = null;
     };
 
     /*
         Return "active" if the user is authorized for the specified tab
+        MOB - who is using this
      */
     Esp.navClass = function(tab, ability) {
         var classes = [];
@@ -88,46 +96,79 @@ app.factory('Esp', function($document, $http, $rootScope, $location, SessionStor
         Whenever the user clicks something, clear the feedback
      */
     $document.bind("click", function(event){
-        $rootScope.feedback = {};
+        delete $rootScope.feedback;
         return true;
     });
 
     /*
+        Initialize Esp configuration from config.json
+     */
+    Esp.config = app.config;
+
+    /*
         Recover the user session information. The server still validates incase this is stale.
      */
-    Esp.user = SessionStore.get('user');
+    if (Esp.config.login && Esp.config.login.name) {
+        Esp.login(Esp.config.login);
+        Esp.user.auto = true;
+    } else {
+        Esp.user = SessionStore.get('user') || null;
+    }
+    if (Esp.user.length == 0) {
+        Esp.user = null;
+    }
+
+    /*
+        Login session timeout
+     */
+    $timeout(function sessionTimeout() {
+        var timeout = Esp.config.timeouts.session * 1000;
+        if (Esp.user && Esp.user.lastAccess && !Esp.user.auto) {
+            if ((Date.now() - Esp.user.lastAccess) > timeout) {
+                $rootScope.feedback = { error: "Login Session Expired"};
+                $scope.logout();
+            } else if ((Date.now() - Esp.user.lastAccess) > (timeout - (60 * 1000))) {
+                $rootScope.feedback = { warning: "Session Will Soon Expire"};
+            }
+            console.log("Session time remaining: ", (timeout - ((Date.now() - Esp.user.lastAccess))) / 1000, "secs");
+            $timeout(sessionTimeout, 60 * 1000, true);
+        }
+    }, 60 * 1000, true);
+
     return Esp;
 });
 
 
 /*
     Define an Http interceptor to redirect 401 responses to the login page
+    MOB - routeProvider not needed
  */
 app.config(function($httpProvider, $routeProvider) {
-    var interceptor = ['$location', '$q', '$rootScope', '$window', function($location, $q, $rootScope, $window) {
-        function success(response) {
-            if (response.feedback) {
-                $rootScope.feedback = response.feedback;
+    $httpProvider.interceptors.push(function($location, $q, $rootScope, $window) {
+        return {
+            response: function (response) {
+                if (response.feedback) {
+                    $rootScope.feedback = response.feedback;
+                }
+                return response;
+            },
+            responseError: function (response) {
+                if (response <= 0 || response.status >= 500) {
+                    $rootScope.feedback = { warning: "Server Error. Please Retry." };
+                } else if (response.status === 401) {
+                    if (app.config.loginRequired) {
+                        $rootScope.Esp.user = null;
+                        $location.path(app.config.loginRequired);
+                    }
+                } else if (response.status >= 400) {
+                    $rootScope.feedback = { warning: "Request Error: " + response.status + ", for " + response.config.url};
+                } else if (response.feedback) {
+                    $rootScope.feedback = response.feedback;
+                }
+                return $q.reject(response);
             }
-            return response;
-        }
-        function error(response) {
-            if (response <= 0 || response.status >= 500) {
-                $rootScope.feedback = { warning: "Server Error. Please Retry." };
-            } else if (response.status === 401) {
-                $location.path($routeProvider.login);
-            } else if (response.status >= 400) {
-                $rootScope.feedback = { warning: "Request Error: " + response.status + ", for " + response.config.url};
-            } else if (response.feedback) {
-                $rootScope.feedback = response.feedback;
-            }
-            return $q.reject(response);
-        }
-        return function(promise) {
-            return promise.then(success, error);
-        }
-    }];
-    $httpProvider.responseInterceptors.push(interceptor);
+        };
+    });
 });
 
 

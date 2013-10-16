@@ -81,7 +81,7 @@ Bit.load({
                     'client/lib/angular-session/SessionStore.min.js',
                     'client/lib/angular-esp/Esp.min.js',
                 ]
-                list += Path('client').files('lib/*/ext/**.min.js', {exclude: /main.min.js/})
+                list += Path('client').files('lib/*/ext/**.min.js')
                 list += Path('client').files('app/**.min.js', {exclude: /main.min.js/})
                 let all = Path('client/all.min.js')
                 strace('Files', list.join('\n'))
