@@ -1703,6 +1703,16 @@ static int monitorDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    Name routeName
+ */
+static int nameDirective(MaState *state, cchar *key, cchar *value)
+{
+    httpSetRouteName(state->route, value);
+    return 0;
+}
+
+
+/*
     NameVirtualHost ip[:port]
  */
 static int nameVirtualHostDirective(MaState *state, cchar *key, cchar *value)
@@ -1937,6 +1947,38 @@ static int requireDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    <Reroute pattern>
+    Open an existing route
+ */
+static int rerouteDirective(MaState *state, cchar *key, cchar *value)
+{
+    HttpRoute   *route;
+    cchar       *pattern;
+    int         not;
+
+    state = maPushState(state);
+    if (state->enabled) {
+        if (!maTokenize(state, value, "%!%S", &not, &pattern)) {
+            return MPR_ERR_BAD_SYNTAX;
+        }
+        if (strstr(pattern, "${")) {
+            pattern = sreplace(pattern, "${inherit}", state->route->pattern);
+        }
+        pattern = httpExpandRouteVars(state->route, pattern);
+        if ((route = httpLookupRouteByPattern(state->host, pattern)) != 0) {
+            state->route = route;
+        } else {
+            mprError("Cannot open route %s", pattern);
+            return MPR_ERR_CANT_OPEN;
+        }
+        /* Routes are added when the route block is closed (see closeDirective) */
+        state->auth = state->route->auth;
+    }
+    return 0;
+}
+
+
+/*
     Reset routes
     Reset pipeline
  */
@@ -1995,8 +2037,7 @@ static int roleDirective(MaState *state, cchar *key, cchar *value)
  */
 static int routeDirective(MaState *state, cchar *key, cchar *value)
 {
-    HttpRoute   *route;
-    char        *pattern;
+    cchar       *pattern;
     int         not;
 
     state = maPushState(state);
@@ -2007,26 +2048,13 @@ static int routeDirective(MaState *state, cchar *key, cchar *value)
         if (strstr(pattern, "${")) {
             pattern = sreplace(pattern, "${inherit}", state->route->pattern);
         }
-        if ((route = httpLookupRouteByPattern(state->host, pattern)) != 0) {
-            state->route = route;
-        } else {
-            state->route = httpCreateInheritedRoute(state->route);
-            httpSetRoutePattern(state->route, pattern, not ? HTTP_ROUTE_NOT : 0);
-            httpSetRouteHost(state->route, state->host);
-        }
+        pattern = httpExpandRouteVars(state->route, pattern);
+        state->route = httpCreateInheritedRoute(state->route);
+        httpSetRoutePattern(state->route, pattern, not ? HTTP_ROUTE_NOT : 0);
+        httpSetRouteHost(state->route, state->host);
         /* Routes are added when the route block is closed (see closeDirective) */
         state->auth = state->route->auth;
     }
-    return 0;
-}
-
-
-/*
-    Name routeName
- */
-static int nameDirective(MaState *state, cchar *key, cchar *value)
-{
-    httpSetRouteName(state->route, value);
     return 0;
 }
 
@@ -2984,6 +3012,8 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "RequestParseTimeout", requestParseTimeoutDirective);
     maAddDirective(appweb, "RequestTimeout", requestTimeoutDirective);
     maAddDirective(appweb, "Require", requireDirective);
+    maAddDirective(appweb, "<Reroute", rerouteDirective);
+    maAddDirective(appweb, "</Reroute", closeDirective);
     maAddDirective(appweb, "Reset", resetDirective);
     maAddDirective(appweb, "Role", roleDirective);
     maAddDirective(appweb, "<Route", routeDirective);
