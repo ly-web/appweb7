@@ -170,6 +170,13 @@
     </member>
     <member kind="function">
       <type>void</type>
+      <name>espAddParam</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>ga9e1210b2a79fcbf13a85d2f78ccdb0bd</anchor>
+      <arglist>(HttpConn *conn, cchar *var, cchar *value)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
       <name>espAppendHeader</name>
       <anchorfile>group___esp_req.html</anchorfile>
       <anchor>gaa50588be6fe69e04738fc0276d7afbbb</anchor>
@@ -554,13 +561,6 @@
       <arglist>(HttpConn *conn, int status, cchar *fmt,...)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
-      <name>espRenderFeedback</name>
-      <anchorfile>group___esp_req.html</anchorfile>
-      <anchor>ga7397c97c1aa71d15d26e5d49e77b37cf</anchor>
-      <arglist>(HttpConn *conn, cchar *kinds, cchar *options)</arglist>
-    </member>
-    <member kind="function">
       <type>ssize</type>
       <name>espRenderFile</name>
       <anchorfile>group___esp_req.html</anchorfile>
@@ -825,6 +825,13 @@
       <arglist>(cchar *key, cchar *fmt,...)</arglist>
     </member>
     <member kind="function">
+      <type>void</type>
+      <name>addParam</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>gade12fd081c2a017ad6068cc9e77f3977</anchor>
+      <arglist>(cchar *name, cchar *value)</arglist>
+    </member>
+    <member kind="function">
       <type>bool</type>
       <name>canUser</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
@@ -874,10 +881,10 @@
       <arglist>(HttpConn *conn, void *data)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
+      <type>bool</type>
       <name>feedback</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
-      <anchor>ga360dc386da496f54f3131da667f7926b</anchor>
+      <anchor>ga63881d9f310a306933e09607c91205d1</anchor>
       <arglist>(cchar *kind, cchar *fmt,...)</arglist>
     </member>
     <member kind="function">
@@ -1222,13 +1229,6 @@
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>ga5c6a2717cd75e9e0069b206507e5207e</anchor>
       <arglist>(int status, cchar *fmt,...)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>renderFeedback</name>
-      <anchorfile>group___esp_abbrev.html</anchorfile>
-      <anchor>ga8953966bf16fa8134e011a2b60bd0f4b</anchor>
-      <arglist>(cchar *kinds, cchar *options)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
