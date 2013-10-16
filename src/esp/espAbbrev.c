@@ -24,6 +24,14 @@ PUBLIC void addHeader(cchar *key, cchar *fmt, ...)
 }
 
 
+PUBLIC void addParam(cchar *key, cchar *value)
+{
+    if (!param(key)) {
+        setParam(key, value);
+    }
+}
+
+
 PUBLIC bool canUser(cchar *abilities, bool warn)
 {
     HttpConn    *conn;
@@ -33,8 +41,7 @@ PUBLIC bool canUser(cchar *abilities, bool warn)
         return 1;
     }
     if (warn) {
-        feedback("error", "Access Denied. Insufficient privilege.");
-        renderResult(0);
+        renderResult(feedback("error", "Access Denied. Insufficient privilege."));
     }
     return 0;
 }
@@ -77,13 +84,17 @@ PUBLIC void dontAutoFinalize()
 }
 
 
-PUBLIC void feedback(cchar *kind, cchar *fmt, ...)
+PUBLIC bool feedback(cchar *kind, cchar *fmt, ...)
 {
     va_list     args;
 
     va_start(args, fmt);
     espSetFeedbackv(getConn(), kind, fmt, args);
     va_end(args);
+    /*
+        Return true if there is not an error feedback message
+     */
+    return getFeedback("error") != 0;
 }
 
 
@@ -350,6 +361,13 @@ PUBLIC cchar *param(cchar *key)
 }
 
 
+//  MOB DOC
+PUBLIC cchar *id()
+{
+    return espGetParam(getConn(), "id", 0);
+}
+
+
 PUBLIC MprJson *params()
 {
     return espGetParams(getConn());
@@ -370,6 +388,9 @@ PUBLIC EdiRec *readRecWhere(cchar *tableName, cchar *fieldName, cchar *operation
 
 PUBLIC EdiRec *readRec(cchar *tableName, cchar *key)
 {
+    if (key == 0 || *key == 0) {
+        key = "1";
+    }
     return setRec(ediReadRec(getDatabase(), tableName, key));
 }
 
@@ -384,6 +405,15 @@ PUBLIC EdiGrid *readWhere(cchar *tableName, cchar *fieldName, cchar *operation, 
 {
     return setGrid(ediReadWhere(getDatabase(), tableName, fieldName, operation, value));
 }
+
+
+#if DEPRECATE || 1
+/* Deprecated in 4.4.1 */
+PUBLIC EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
+{
+    return readWhere(tableName, fieldName, operation, value);
+}
+#endif
 
 
 PUBLIC EdiGrid *readTable(cchar *tableName)
@@ -413,8 +443,10 @@ PUBLIC void removeCookie(cchar *name)
 PUBLIC bool removeRec(cchar *tableName, cchar *key)
 {
     if (ediRemoveRec(getDatabase(), tableName, key) < 0) {
+        feedback("error", "Cannot delete %s", spascal(tableName));
         return 0;
     }
+    feedback("inform", "Deleted %s", spascal(tableName));
     return 1;
 }
 
@@ -457,6 +489,26 @@ PUBLIC void renderError(int status, cchar *fmt, ...)
 }
 
 
+#if UNUSED
+//  MOB - need espRenderFeedback
+//  MOB - doc
+PUBLIC void renderFeedback(int status, cchar *kind, ...)
+{
+    va_list     args;
+    cchar       *fmt, *msg;
+
+    if (kind) {
+        va_start(args, kind);
+        fmt = va_arg(args, cchar *);
+        msg = sfmt(fmt, args);
+        espSetFeedbackv(getConn(), kind, fmt, args);
+        va_end(args);
+    }
+    renderResult(status);
+}
+#endif
+
+
 PUBLIC ssize renderFile(cchar *path)
 {
     return espRenderFile(getConn(), path);
@@ -480,6 +532,8 @@ PUBLIC ssize renderRec(EdiRec *rec)
     return espRenderRec(getConn(), rec, 0);
 }
 
+
+//  MOB - change this to renderStatus?
 
 PUBLIC void renderResult(int status)
 {
@@ -704,13 +758,18 @@ PUBLIC bool updateFields(cchar *tableName, MprJson *params)
     if ((rec = ediSetFields(ediReadRec(getDatabase(), tableName, key), params)) == 0) {
         return 0;
     }
-    return ediUpdateRec(getDatabase(), rec) == 0;
+    return updateRec(rec);
 }
 
 
 PUBLIC bool updateRec(EdiRec *rec)
 {
-    return ediUpdateRec(getDatabase(), rec) == 0;
+    if (ediUpdateRec(getDatabase(), rec) < 0) {
+        feedback("error", "Cannot save %s", spascal(rec->tableName));
+        return 0;
+    }
+    feedback("inform", "Saved %s", spascal(rec->tableName));
+    return 1;
 }
 
 

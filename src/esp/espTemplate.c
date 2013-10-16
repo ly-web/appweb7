@@ -249,7 +249,7 @@ static int runCommand(HttpRoute *route, MprDispatcher *dispatcher, cchar *comman
         WARNING: GC will run here
      */
     mprHold((void*) commandLine);
-    rc = mprRunCmd(cmd, commandLine, env, &out, &err, -1, 0);
+    rc = mprRunCmd(cmd, commandLine, env, NULL, &out, &err, -1, 0);
     mprRelease((void*) commandLine);
 
     if (rc != 0) {

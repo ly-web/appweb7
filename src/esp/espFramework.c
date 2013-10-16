@@ -47,6 +47,14 @@ PUBLIC void espAddHeaderString(HttpConn *conn, cchar *key, cchar *value)
 }
 
 
+PUBLIC void espAddParam(HttpConn *conn, cchar *var, cchar *value) 
+{
+    if (!httpGetParam(conn, var, 0)) {
+        httpSetParam(conn, var, value);
+    }
+}
+
+
 /* 
    Append a header. If already defined, the value is catenated to the pre-existing value after a ", " separator.
    As per the HTTP/1.1 spec.
@@ -472,7 +480,7 @@ PUBLIC bool espIsSecure(HttpConn *conn)
 PUBLIC int espLoadConfig(HttpRoute *route)
 {
     EspRoute    *eroute;
-    MprJson     *msettings;
+    MprJson     *msettings, *settings;
     MprPath     cinfo;
     cchar       *cpath, *value;
 
@@ -491,7 +499,9 @@ PUBLIC int espLoadConfig(HttpRoute *route)
              */
             eroute->mode = mprGetJsonValue(eroute->config, "mode", 0);
             if ((msettings = mprGetJson(eroute->config, sfmt("modes.%s", eroute->mode), 0)) != 0) {
-                mprBlendJson(mprLookupJson(eroute->config, "settings"), msettings, 0);
+                settings = mprLookupJson(eroute->config, "settings");
+                mprBlendJson(settings, msettings, 0);
+                mprSetJsonValue(settings, "mode", eroute->mode, 0);
             }
             if ((value = espGetConfig(route, "settings.showErrors", 0)) != 0) {
                 httpSetRouteShowErrors(route, smatch(value, "true"));
@@ -506,10 +516,12 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             /* Deprecated in 4.4.1 */
             if ((value = espGetConfig(route, "settings.serverPrefix", 0)) != 0) {
                 eroute->routePrefix = value;
+                httpSetRouteVar(route, "ESP_SERVER_PREFIX", eroute->routePrefix);
             }
 #endif
             if ((value = espGetConfig(route, "settings.routePrefix", 0)) != 0) {
                 eroute->routePrefix = sclone(value);
+                httpSetRouteVar(route, "ESP_SERVER_PREFIX", eroute->routePrefix);
             }
             if ((value = espGetConfig(route, "settings.login.name", 0)) != 0) {
                 /* Automatic login as this user. Password not required */
@@ -656,7 +668,7 @@ PUBLIC void espRenderConfig(HttpConn *conn)
     eroute = conn->rx->route->eroute;
     settings = mprLookupJson(eroute->config, "settings");
     if (settings) {
-        renderString(mprJsonToString(eroute->config, MPR_JSON_QUOTES));
+        renderString(mprJsonToString(settings, MPR_JSON_QUOTES));
     } else {
         renderError(HTTP_CODE_NOT_FOUND, "Cannot find config.settings to send to client");
     }
@@ -785,12 +797,12 @@ PUBLIC void espSetNotifier(HttpConn *conn, HttpNotifier notifier)
     }
 }
 
+
 PUBLIC ssize espRenderGrid(HttpConn *conn, EdiGrid *grid, int flags)
 {
     httpAddHeaderString(conn, "Content-Type", "application/json");
     if (grid) {
-        return espRender(conn, "{\n  \"name\": \"%s\", \"%s\": %s, \"schema\": %s}\n",
-            grid->tableName, grid->tableName, ediGridAsJson(grid, flags), ediGetGridSchemaAsJson(grid));
+        return espRender(conn, "{\n  \"data\": %s, \"schema\": %s}\n", ediGridAsJson(grid, flags), ediGetGridSchemaAsJson(grid));
     }
     return espRender(conn, "{}");
 }
@@ -798,13 +810,9 @@ PUBLIC ssize espRenderGrid(HttpConn *conn, EdiGrid *grid, int flags)
 
 PUBLIC ssize espRenderRec(HttpConn *conn, EdiRec *rec, int flags)
 {
-    cchar   *controller;
-
     httpAddHeaderString(conn, "Content-Type", "application/json");
     if (rec) {
-        controller = param("controller");
-        return espRender(conn, "{\n  \"name\": \"%s\", \"%s\": %s, \"schema\": %s}\n",
-            controller, controller, ediRecAsJson(rec, flags), ediGetRecSchemaAsJson(rec)); 
+        return espRender(conn, "{\n  \"data\": %s, \"schema\": %s}\n", ediRecAsJson(rec, flags), ediGetRecSchemaAsJson(rec)); 
     }
     return espRender(conn, "{}");
 }
@@ -1044,7 +1052,6 @@ PUBLIC void espSetParam(HttpConn *conn, cchar *var, cchar *value)
 }
 
 
-
 PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec)
 {
     return conn->record = rec;
@@ -1218,6 +1225,82 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
 }
 
 
+PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprTime date, cchar *mime, cchar *message, MprList *files)
+{
+    MprList         *lines;
+    MprCmd          *cmd;
+    cchar           *body, *boundary, *contents, *encoded, *file;
+    char            *out, *err;
+    ssize           length;
+    int             i, next, status;
+
+    if (!from || !*from) {
+        from = "anonymous";
+    }
+    if (!subject || !*subject) {
+        subject = "Mail message";
+    }
+    if (!mime || !*mime) {
+        mime = "text/plain";
+    }
+    if (!date) {
+        date = mprGetTime();
+    }
+    boundary = sjoin("esp.mail=", mprGetMD5("BOUNDARY"), NULL);
+    lines = mprCreateList(0, 0);
+
+    mprAddItem(lines, sfmt("To: %s", to));
+    mprAddItem(lines, sfmt("From: %s", from));
+    mprAddItem(lines, sfmt("Date: %s", mprFormatLocalTime(0, date)));
+    mprAddItem(lines, sfmt("Subject: %s", subject));
+    mprAddItem(lines, "MIME-Version: 1.0");
+    mprAddItem(lines, sfmt("Content-Type: multipart/mixed; boundary=%s", boundary));
+    mprAddItem(lines, "");
+
+    boundary = sjoin("--", boundary, NULL);
+
+    mprAddItem(lines, boundary);
+    mprAddItem(lines, sfmt("Content-Type: %s", mime));
+    mprAddItem(lines, "");
+    mprAddItem(lines, "");
+    mprAddItem(lines, message);
+
+    for (ITERATE_ITEMS(files, file, next)) {
+        mprAddItem(lines, boundary);
+        if ((mime = mprLookupMime(NULL, file)) == 0) {
+            mime = "application/octet-stream";
+        }
+        mprAddItem(lines, "Content-Transfer-Encoding: base64");
+        mprAddItem(lines, sfmt("Content-Disposition: inline; filename=\%s\"", mprGetPathBase(file)));
+        mprAddItem(lines, sfmt("Content-Type: %s; name=\"%s\"", mime, mprGetPathBase(file)));
+        mprAddItem(lines, "");
+        contents = mprReadPathContents(file, &length);
+        encoded = mprEncode64Block(contents, length);
+        for (i = 0; i < length; i += 76) {
+            mprAddItem(lines, snclone(&encoded[i], i + 76));
+        }
+    }
+    mprAddItem(lines, sfmt("%s--", boundary));
+
+    body = mprListToString(lines, "\n");
+    mprTrace(4, "Password reset message:\n%s\n", body);
+
+    cmd = mprCreateCmd(conn->dispatcher);
+    if (mprRunCmd(cmd, "sendmail -t", NULL, body, &out, &err, 0, 0) < 0) {
+        return MPR_ERR_CANT_OPEN;
+    }
+    if (mprWaitForCmd(cmd, BIT_ESP_EMAIL_TIMEOUT) < 0) {
+        mprError("Timeout %d msec waiting for command to complete: %s", BIT_ESP_EMAIL_TIMEOUT, cmd->argv[0]);
+        return MPR_ERR_CANT_COMPLETE;
+        return 0;
+    }
+    if ((status = mprGetCmdExitStatus(cmd)) != 0) {
+        mprError("Send mail failed status %d, error %s", status, err);
+        return MPR_ERR_CANT_WRITE;
+    }
+    return 0;
+}
+   
 
 #endif /* BIT_PACK_ESP */
 /*

@@ -29,6 +29,9 @@ extern "C" {
 #ifndef BIT_ESP_SERVER_PREFIX
     #define BIT_ESP_SERVER_PREFIX "/server"             /**< URI prefix for server controllers */
 #endif
+#ifndef BIT_ESP_EMAIL_TIMEOUT
+    #define BIT_ESP_EMAIL_TIMEOUT (60 * 1000)           /**< Timeout for sending email */
+#endif
 #define ESP_TOK_INCR        1024                        /**< Growth increment for ESP tokens */
 #define ESP_LISTEN          "4000"                      /**< Default listening endpoint for the esp program */
 #define ESP_UNLOAD_TIMEOUT  (10)                        /**< Very short timeout for reloading */
@@ -563,6 +566,16 @@ PUBLIC void espAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
 PUBLIC void espAddHeaderString(HttpConn *conn, cchar *key, cchar *value);
 
 /**
+    Add a request parameter value if it is not already defined.
+    @param conn HttpConn connection object
+    @param var Name of the request parameter to set
+    @param value Value to set.
+    @ingroup EspReq
+    @stability Prototype
+ */
+PUBLIC void espAddParam(HttpConn *conn, cchar *var, cchar *value);
+
+/**
     Append a transmission header.
     @description Set the header if it does not already exist. Append with a ", " separator if the header already exists.
     @param conn HttpConn connection object
@@ -634,6 +647,21 @@ PUBLIC cchar *espCreateSession(HttpConn *conn);
     @stability Prototype
  */
 PUBLIC void espDestroySession(HttpConn *conn);
+
+/**
+    Send mail using sendmail
+    @param conn HttpConn connection object
+    @param to Message recipient
+    @param from Message sender
+    @param subject Message subject
+    @param date Message creation date. Set to null to use the current date/time.
+    @param mime Message mime type. Set to null for text/plain.
+    @param message Message body
+    @param files MprList of files to send with the message.
+    @return Zero if the email is successfully sent.
+    @stability Prototype
+ */
+PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprTime date, cchar *mime, cchar *message, MprList *files);
 
 /**
     Finalize processing of the http request.
@@ -1198,6 +1226,7 @@ PUBLIC ssize espRenderGrid(HttpConn *conn, EdiGrid *grid, int flags);
   */
 PUBLIC EdiGrid *espReadTable(HttpConn *conn, cchar *tableName);
 
+#if UNUSED
 /**
     Render feedback messages.
     @description Feedback messages are additional state messages that are sent with a JSON response. See the 
@@ -1209,6 +1238,7 @@ PUBLIC EdiGrid *espReadTable(HttpConn *conn, cchar *tableName);
     @stability Prototype
  */
 PUBLIC void espRenderFeedback(HttpConn *conn, cchar *kinds, cchar *options);
+#endif
 
 /**
     Render a JSON response result
@@ -1492,6 +1522,19 @@ PUBLIC void espSetNotifier(HttpConn *conn, HttpNotifier notifier);
 PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec);
 
 /**
+    Set a request parameter value
+    @description Set the value of a named request parameter to a string value. Parameters are defined via
+        requeset POST data or request URI queries. This API permits these initial request parameters to be set or
+        modified.
+    @param conn HttpConn connection object
+    @param var Name of the request parameter to set
+    @param value Value to set.
+    @ingroup EspReq
+    @stability Evolving
+ */
+PUBLIC void espSetParam(HttpConn *conn, cchar *var, cchar *value);
+
+/**
     Set a Http response status.
     @description Set the Http response status for the request. This defaults to 200 (OK).
     @param conn HttpConn connection object
@@ -1500,18 +1543,6 @@ PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec);
     @stability Evolving
  */
 PUBLIC void espSetStatus(HttpConn *conn, int status);
-
-/**
-    Set a request parameter value
-    @description Set the value of a named request parameter to a string value. Form variables are defined via
-        www-urlencoded query or post data contained in the request.
-    @param conn HttpConn connection object
-    @param var Name of the request parameter to set
-    @param value Value to set.
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC void espSetParam(HttpConn *conn, cchar *var, cchar *value);
 
 /**
     Set a session variable.
@@ -1653,6 +1684,15 @@ typedef struct EspAbbrev { int dummy; } EspAbbrev;
 PUBLIC void addHeader(cchar *key, cchar *fmt, ...);
 
 /**
+    Add a request parameter value if not already defined.
+    @param name Name of the request parameter to set
+    @param value Value to set.
+    @ingroup EspAbbrev
+    @stability Prototype
+ */
+PUBLIC void addParam(cchar *name, cchar *value);
+
+/**
     Test if a user has the required abilities
     @param abilities Comma separated list of abilities to test for. If null, then use the required abilities defined
         for the current request route.
@@ -1743,10 +1783,13 @@ PUBLIC void flash(cchar *kind, cchar *fmt, ...);
         Feedback messages are removed at the completion of the request.
     @param kind Kind of feedback message
     @param fmt Printf style formatted string to use as the message
+    @return True if the request has been successful so far, i.e. there is not an error feedback message defined. 
+        Return false if there is an error feedback defined.
+        This permits feedback to be chained as: renderResult(feedback("error", ...));
     @ingroup EspAbbrev
     @stability Prototype
  */
-PUBLIC void feedback(cchar *kind, cchar *fmt, ...);
+PUBLIC bool feedback(cchar *kind, cchar *fmt, ...);
 
 /**
     Flush transmit data. 
@@ -2135,6 +2178,9 @@ PUBLIC bool modeIs(cchar *check);
  */
 PUBLIC cchar *param(cchar *name);
 
+//  MOB DOC
+PUBLIC cchar *id();
+
 /**
     Get the request parameter hash table
     @description This call gets the params hash table for the current request.
@@ -2173,6 +2219,11 @@ PUBLIC EdiRec *readRec(cchar *tableName, cchar *key);
     @stability Evolving
  */
 PUBLIC EdiGrid *readWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
+
+/* Deprecated in 4.4.1 */
+#if DEPRECATE || 1
+PUBLIC EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
+#endif
 
 /**
     Read one record
@@ -2252,6 +2303,8 @@ PUBLIC void removeCookie(cchar *name);
 /**
     Remove a record from a database table
     @description Remove the record identified by the key value from the given table.
+        If the removal succeeds, the feedback message {inform: "Deleted Record"} will be created. If the removal fails,
+        a feedback message {error: "Cannot delete Record"} will be created.
     @param tableName Database table name
     @param key Key value of the record to remove 
     @return Record instance of EdiRec.
@@ -2300,17 +2353,20 @@ PUBLIC ssize renderCached();
  */
 PUBLIC void renderError(int status, cchar *fmt, ...);
 
+#if UNUSED
 /**
     Render feedback messages.
     @description Feedback messages are additional state messages that are sent with a JSON response. See the 
         espSetFeedback API to define feedback messages.
-    @param kinds Space separated list of feedback messages types. Typical types are: "error", "inform", "warning".
-    @param options Reserved. Set to "".
+    @param status Request success status. Note: this is not the HTTP response status code.
+    @param kind Kind of feedback message
     @ingroup EspAbbrev
     @stability Prototype
  */
-PUBLIC void renderFeedback(cchar *kinds, cchar *options);
+PUBLIC void renderFeedback(int status, cchar *kind, ...);
+#endif
 
+//  MOB - is this used?
 /**
     Render flash messages.
     @description Flash notices are one-time messages that are passed to the newt request (only).
@@ -2360,7 +2416,7 @@ PUBLIC ssize renderRec(EdiRec *rec);
     The format of the response is:
         "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
     The feedback messages are created via the espSetFeedback API. Field errors are created by ESP validations.
-    @param status Request success status.
+    @param status Request success status. Note: this is not the HTTP response status code.
     @ingroup EspReq
     @stability Prototype
   */
@@ -2568,8 +2624,9 @@ PUBLIC void setNotifier(HttpNotifier notifier);
 
 /**
     Set a request parameter value
-    @description Set the value of a named request parameter to a string value. Form variables are defined via
-        www-urlencoded query or post data contained in the request.
+    @description Set the value of a named request parameter to a string value. Parameters are defined via
+        requeset POST data or request URI queries. This API permits these initial request parameters to be set or
+        modified.
     @param name Name of the request parameter to set
     @param value Value to set.
     @ingroup EspAbbrev
@@ -2670,6 +2727,8 @@ PUBLIC bool updateFields(cchar *tableName, MprJson *data);
         fail to pass, the record will not be written and error details can be retrieved via #ediGetRecErrors.
         If the record is a new record and the "id" column is EDI_AUTO_INC, then the "id" will be assigned
         prior to saving the record.
+        If the update succeeds, the feedback message {inform: "Saved Record"} will be created. If the update fails,
+        a feedback message {error: "Cannot save Record"} will be created.
     @param rec Record to write to the database.
     @return "true" if the record can be successfully written.
     @ingroup EspAbbrev

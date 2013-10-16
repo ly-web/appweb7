@@ -117,7 +117,7 @@ PUBLIC void ediAddFieldError(struct EdiRec *rec, cchar *field, cchar *fmt, ...);
 #define EDI_KEY             0x2         /**< Field flag -- Column is the ID key */
 #define EDI_INDEX           0x4         /**< Field flag -- Column is indexed */
 #define EDI_FOREIGN         0x8         /**< Field flag -- Column is a foreign key */
-#define EDI_NOT_NULL        0x8         /**< Field flag -- Column must not be null (not implemented) */
+#define EDI_NOT_NULL        0x10        /**< Field flag -- Column must not be null (not implemented) */
  
 /**
     EDI Record field structure
@@ -160,8 +160,8 @@ typedef struct EdiRec {
 typedef struct EdiGrid {
     struct Edi      *edi;               /**< Database handle */
     cchar           *tableName;         /**< Base table name for grid */
-    int             nrecords;           /**< Number of records in grid */
     int             flags;              /**< Grid flags */
+    int             nrecords;           /**< Number of records in grid */
     EdiRec          *records[ARRAY_FLEX];/**< Grid records */
 } EdiGrid;
 
@@ -281,7 +281,8 @@ PUBLIC int ediAddIndex(Edi *edi, cchar *tableName, cchar *columnName, cchar *ind
 /**
     Add a table to a database
     @param edi Database handle
-    @param tableName Database table name
+    @param tableName Database table name. Table names should be singular. Certain routines like ediJoin rely on being
+    able to map foreign key fields of the form NameId by converting the Name to a database table.
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
     @stability Evolving
@@ -714,6 +715,7 @@ PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value);
  */
 PUBLIC EdiRec *ediSetFields(EdiRec *rec, MprJson *data);
 
+//  MOB - rename. This is not a schema.
 /**
     Get table schema information.
     @param edi Database handle
@@ -790,6 +792,10 @@ PUBLIC EdiGrid *ediCreateBareGrid(Edi *edi, cchar *tableName, int nrows);
     @stability Evolving
  */
 PUBLIC EdiRec *ediCreateBareRec(Edi *edi, cchar *tableName, int nfields);
+
+//  MOB DOC 
+PUBLIC EdiGrid *ediFilterGridFields(EdiGrid *grid, cchar *fields);
+PUBLIC EdiRec *ediFilterRecFields(EdiRec *rec, cchar *fields);
 
 /**
     Format a field value.

@@ -145,10 +145,66 @@ PUBLIC int ediDelete(Edi *edi, cchar *path)
 }
 
 
+//  MOB - rename edi
 PUBLIC void espDumpGrid(EdiGrid *grid)
 {
     mprLog(0, "Grid: %s\nschema: %s,\ndata: %s", grid->tableName, ediGetTableSchemaAsJson(grid->edi, grid->tableName),
         ediGridAsJson(grid, MPR_JSON_PRETTY));
+}
+
+
+PUBLIC EdiGrid *ediFilterGridFields(EdiGrid *grid, cchar *fields)
+{
+    EdiRec      *first, *rec;
+    MprList     *fieldList;
+    int         f, r;
+
+    if (!grid || grid->nrecords == 0) {
+        return grid;
+    }
+    first = grid->records[0];
+    fieldList = mprCreateListFromWords(fields);
+    for (f = 0; f < first->nfields; f++) {
+        if (mprLookupStringItem(fieldList, first->fields[f].name) >= 0) {
+            continue;
+        }
+        for (r = 0; r < grid->nrecords; r++) {
+            rec = grid->records[r];
+            memmove(&rec->fields[f], &rec->fields[f+1], (rec->nfields - f - 1) * sizeof(EdiField));
+            rec->nfields--;
+            /*
+                Ensure never saved to database
+            */
+            rec->id = 0;
+        }
+        f--;
+    }
+    return grid;
+}
+
+
+//  MOB or ediSelectRecFields
+
+PUBLIC EdiRec *ediFilterRecFields(EdiRec *rec, cchar *fields)
+{
+    EdiField    *fp;
+    MprList     *fieldList;
+
+    if (rec == 0 || rec->nfields == 0) {
+        return rec;
+    }
+    fieldList = mprCreateListFromWords(fields);
+    for (fp = rec->fields; fp < &rec->fields[rec->nfields]; fp++) {
+        if (mprLookupStringItem(fieldList, fp->name) < 0) {
+            fp[0] = fp[1];
+            rec->nfields--;
+        }
+    }
+    /*
+        Ensure never saved to database
+     */
+    rec->id = 0;
+    return rec;
 }
 
 

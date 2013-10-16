@@ -269,7 +269,7 @@ static int runAction(HttpConn *conn)
                 mprLog(4, "ESP controller %s is newer than module %s, recompiling ...", source, req->controllerPath, req->module);
                 /*  WARNING: GC yield here */
                 if (recompile && !espCompile(route, conn->dispatcher, req->controllerPath, req->module, req->cacheName, 0, &errMsg)) {
-                    httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, errMsg);
+                    httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "%s", errMsg);
                     unlock(req->esp);
                     return 0;
                 }
@@ -575,11 +575,7 @@ static EspRoute *allocEspRoute(HttpRoute *route)
     eroute->update = BIT_DEBUG;
     eroute->keepSource = BIT_DEBUG;
     eroute->lifespan = 0;
-#if UNUSED
-    eroute->routePrefix = sclone(BIT_ESP_SERVER_PREFIX);
-#else
     eroute->routePrefix = MPR->emptyString;
-#endif
     route->eroute = eroute;
     route->flags |= HTTP_ROUTE_XSRF;
     return eroute;
@@ -669,6 +665,7 @@ static void manageReq(EspReq *req, int flags)
         mprMark(req->controllerPath);
         mprMark(req->entry);
         mprMark(req->flash);
+        mprMark(req->feedback);
         mprMark(req->module);
         mprMark(req->record);
         mprMark(req->route);
@@ -793,12 +790,6 @@ PUBLIC void espAddEspRoute(HttpRoute *parent)
     char        *prefix;
 
     prefix = parent->prefix ? parent->prefix : "";
-#if UNUSED
-    peroute = parent->eroute;
-    if (peroute) {
-        prefix = sjoin(parent->prefix, peroute->routePrefix, NULL);
-    }
-    #endif
     if ((route = httpDefineRoute(parent, sfmt("%s/esp", prefix), "GET", sfmt("^%s/esp/{action}$", prefix), "esp-$1", ".")) != 0) {
         eroute = cloneEspRoute(route, parent->eroute);
         eroute->update = 0;
@@ -930,9 +921,6 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     if (routeSet) {
         eroute->routeSet = sclone(routeSet);
     }
-#if UNUSED
-    state = maPushState(state);
-#endif
     state->route = route;
 
     espSetDirs(route);
@@ -1348,7 +1336,10 @@ static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-//  MOB - document
+/*
+    EspRoutePrefix /server
+    Sets the route prefix to use for routes to talk to the server
+ */
 static int espRoutePrefixDirective(MaState *state, cchar *key, cchar *value)
 {
     EspRoute    *eroute;
@@ -1356,7 +1347,10 @@ static int espRoutePrefixDirective(MaState *state, cchar *key, cchar *value)
     if ((eroute = getEroute(state->route)) == 0) {
         return MPR_ERR_MEMORY;
     }
+    //  MOB - check name
     eroute->routePrefix = value;
+    //  MOB - check name
+    httpSetRouteVar(state->route, "ESP_SERVER_PREFIX", eroute->routePrefix);
     return 0;
 }
 
@@ -1561,7 +1555,6 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     maAddDirective(appweb, "EspEnv", espEnvDirective);
     maAddDirective(appweb, "EspKeepSource", espKeepSourceDirective);
     maAddDirective(appweb, "EspLink", espLinkDirective);
-    //  MOB DOC
     maAddDirective(appweb, "EspPermResource", espPermResourceDirective);
     maAddDirective(appweb, "EspResource", espResourceDirective);
     maAddDirective(appweb, "EspResourceGroup", espResourceGroupDirective);

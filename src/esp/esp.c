@@ -260,6 +260,9 @@ PUBLIC int main(int argc, char **argv)
         } else if (smatch(argp, "show") || smatch(argp, "s")) {
             app->show = 1;
 
+        } else if (smatch(argp, "singleton") || smatch(argp, "single")) {
+            app->singleton = 1;
+
         } else if (smatch(argp, "static")) {
             app->staticLink = 1;
 
@@ -719,7 +722,7 @@ static void run(int argc, char **argv)
     }
     cmd = mprCreateCmd(0);
     trace("Run", "appweb -v");
-    if (mprRunCmd(cmd, "appweb -v", NULL, NULL, NULL, -1, MPR_CMD_DETACH) != 0) {
+    if (mprRunCmd(cmd, "appweb -v", NULL, NULL, NULL, NULL, -1, MPR_CMD_DETACH) != 0) {
         fail("Cannot run command: appweb -v");
         return;
     }
@@ -760,7 +763,7 @@ static int runEspCommand(HttpRoute *route, cchar *command, cchar *csource, cchar
         trace("Run", app->command);
     }
     //  WARNING: GC will run here
-    if (mprRunCmd(cmd, app->command, env, &out, &err, -1, 0) != 0) {
+    if (mprRunCmd(cmd, app->command, env, NULL, &out, &err, -1, 0) != 0) {
         if (err == 0 || *err == '\0') {
             /* Windows puts errors to stdout Ugh! */
             err = out;
@@ -1462,16 +1465,17 @@ static void generateScaffoldController(cchar *name, cchar *table, int argc, char
 static void generateClientController(cchar *name, cchar *table, int argc, char **argv)
 {
     MprHash     *tokens;
-    cchar       *defines, *path, *data, *title;
+    cchar       *defines, *path, *data, *list, *title;
 
     if (app->error) {
         return;
     }
     title = spascal(name);
+    list = smatch(name, table) ? sfmt("%ss", name) : table; 
     path = mprJoinPathExt(mprJoinPath(app->eroute->appDir, sfmt("%s/%sControl", name, title)), "js");
     defines = sclone("");
-    tokens = mprDeserialize(sfmt("{ APPDIR: '%s', NAME: '%s', TABLE: '%s', TITLE: '%s', DEFINE_ACTIONS: '%s', SERVICE: '%s' }",
-        app->eroute->appDir, name, table, title, defines, app->eroute->routePrefix));
+    tokens = mprDeserialize(sfmt("{ APPDIR: '%s', NAME: '%s', LIST: '%s', TABLE: '%s', TITLE: '%s', DEFINE_ACTIONS: '%s', SERVICE: '%s' }",
+        app->eroute->appDir, name, list, table, title, defines, app->eroute->routePrefix));
     data = getTemplate(mprJoinPath(app->topComponent, "controller.js"), tokens);
     makeEspFile(path, data, "Controller Scaffold");
 }
@@ -1566,13 +1570,14 @@ static void generateTable(int argc, char **argv)
 static void generateScaffoldViews(cchar *name, cchar *table, int argc, char **argv)
 {
     MprHash     *tokens;
-    cchar       *path, *data;
+    cchar       *path, *data, *list;
 
     if (app->error) {
         return;
     }
-    tokens = mprDeserialize(sfmt("{ NAME: '%s', TABLE: '%s', TITLE: '%s', SERVICE: '%s'}", 
-        name, table, spascal(name), app->eroute->routePrefix));
+    list = smatch(name, table) ? sfmt("%ss", name) : table; 
+    tokens = mprDeserialize(sfmt("{ NAME: '%s', LIST: '%s', TABLE: '%s', TITLE: '%s', SERVICE: '%s'}", 
+        name, list, table, spascal(name), app->eroute->routePrefix));
 
     if (espTestConfig(app->route, "generate.clientView", "true")) {
         path = sfmt("%s/%s/%s-list.html", app->eroute->appDir, name, name);
@@ -1611,12 +1616,15 @@ static void generateScaffold(int argc, char **argv)
         return;
     }
     name = sclone(argv[0]);
+    /*
+        This feature is undocumented.
+        Having plural database table names greatly complicates things and ejsJoin is not able to follow foreign fields: NameId.
+     */
     stok(name, "-", &plural);
     if (plural) {
         table = sjoin(name, plural, NULL);
     } else {
         table = app->table ? app->table : name;
-        app->singleton = 1;
     }
     if (espTestConfig(app->route, "generate.controller", "true")) {
         generateScaffoldController(name, table, argc, argv);

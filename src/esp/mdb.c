@@ -344,10 +344,12 @@ static int mdbAddValidation(Edi *edi, cchar *tableName, cchar *columnName, EdiVa
     lock(mdb);
     if ((table = lookupTable(mdb, tableName)) == 0) {
         unlock(mdb);
+        mprError("Cannot find table \"%s\" for validation \"%s\"", tableName, vp->name);
         return MPR_ERR_CANT_FIND;
     }
     if ((col = lookupField(table, columnName)) == 0) {
         unlock(mdb);
+        mprError("Cannot find column \"%s\" for validation \"%s\"", tableName, vp->name);
         return MPR_ERR_CANT_FIND;
     }
     if (col->validations == 0) {
