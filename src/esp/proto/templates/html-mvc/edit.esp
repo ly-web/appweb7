@@ -1,0 +1,23 @@
+<h1><%= id() ? "Edit" : "Create" %> ${TITLE}</h1>
+
+<form name="${NAME}Form" class="form-horizontal" action="/service/${NAME}/@@id() %>">
+    <% { for (int f = 1; f < getRec()->nfields; f++) { %>
+        <div class="form-group">
+            <label class="control-label col-xs-2">@@uname</label>
+            <div class="controls col-xs-6 ${STYLE}">
+                <% input(rec->fields[f]); %>
+            </div>
+        </div>
+    <% } %>
+
+    <div class="form-group">
+        <div class="col-xs-offset-2 col-xs-10">
+            <button type="submit" class="btn btn-primary">OK</button>
+            <a class="btn" href="/">Cancel</a>
+            <% if (id()) %>
+<!-- MOB - need delete route -->
+                <a class="btn" href="/service/${NAME}/@@id()/delete">Delete</button>
+            <% } %>
+        </div>
+    </div>
+</form>

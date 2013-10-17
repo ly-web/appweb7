@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>${TITLE}</title>
+    <meta charset="utf-8" />
+    <% securityToken(); %>
+    <link href='http://data/x-icon;,' rel='shortcut icon' />
+    <!-- [if lt IE 9]>
+        <script src='lib/html5shiv.js'></script>
+    <![endif]-->
+    <link rel='stylesheet' type='text/css' href='css/fix.css' />
+    <% if (modeIs("debug")) { %>
+        <link rel='stylesheet/less' type='text/css' href='css/all.less' />
+    <% } else { %> 
+        <link rel='stylesheet' type='text/css' href='css/all.min.css.gz' />
+    <% } %>
+</head>
+<body>
+    <nav class="navbar navbar-inverse navbar-static-top">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">${TITLE}</a>
+        </div>
+    </nav>
+    <main class="home">
+        <section class="row container">
+            <section class="col-md-10 content">
+                <%@ content %>
+            </section>
+        </section>
+        <!-- MOB renderFeedback 
+        <% renderFeedback() %>
+        <div ng-repeat="(field, msg) in feedback">
+            <span class="ng-hide-remove" ng-class="'feedback-' + field">{{msg}}</span>       
+        </div> 
+        -->
+    </main>
+    <% if (modeIs("debug")) { %>
+        <script src='lib/less/less.js'></script>
+        <script src='app/main.js'></script>
+    <%  scripts("lib/*/ext/**.js,app/*/**.js");
+    } else { %> 
+        <script src='all.min.js.gz'></script>
+    <% } %>
+</body>
+</html>
