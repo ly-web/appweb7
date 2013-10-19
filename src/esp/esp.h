@@ -195,11 +195,12 @@ typedef struct EspRoute {
     Add the specified component to the config.json components list.
     @param route HttpRoute defining the ESP application
     @param name Desired component name. For example: "angular-mvc"
+    @param details Component details. JSON object with optional script property. Set to NULL if no details.
     @returns Zero if successful, otherwise a negative MPR error code.
     @ingroup EspRoute
     @stability Prototype
  */
-PUBLIC void espAddComponent(HttpRoute *route, cchar *name);
+PUBLIC void espAddComponent(HttpRoute *route, cchar *name, MprJson *details);
 
 /**
     Add a route for the ESP controller
@@ -298,7 +299,7 @@ PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
 
 /**
     Compile an ESP page, controller or view
-    @description This compiles ESP components into loadable, cached modules
+    @description This compiles ESP resources into loadable, cached modules
     @param route HttpRoute object
     @param dispatcher Optional dispatcher to use when waiting for the compilation command.
     @param source ESP source file name
@@ -419,7 +420,7 @@ PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue);
 
 /**
     Test if the ESP application includes the specified component
-    @description This tests the settings.components[] list for the specified component.
+    @description This tests the settings.components for the specified component.
     @param route HttpRoute defining the ESP application
     @param name Desired component name. For example: "angular-mvc"
     @returns True if the specified component is supported
@@ -2488,6 +2489,8 @@ PUBLIC void renderView(cchar *view);
     @stability Prototype
  */
 PUBLIC void scripts(cchar *patterns);
+//  MOB
+PUBLIC void stylesheets(cchar *patterns);
 
 /**
     Render a security token.

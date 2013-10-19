@@ -584,25 +584,36 @@ PUBLIC void scripts(cchar *patterns)
     HttpRoute   *route;
     EspRoute    *eroute;
     MprList     *files;
-    MprJson     *components, *component;
+    MprJson     *components, *component, *componentScripts, *file;
     cchar       *indent, *uri, *path;
-    int         next, i;
+    int         next, ci, fi;
 
     conn = getConn();
     route = conn->rx->route;
     eroute = route->eroute;
     patterns = httpExpandRouteVars(route, patterns);
 
-    if (patterns == NULL) {
-        if ((components = mprGetJson(eroute->config, "settings.components", 0)) != 0) {
-            for (ITERATE_JSON(components, component, i)) {
-                if (component->type == MPR_JSON_VALUE) {
-                    scripts(sfmt("%s/lib/%s/**.js", eroute->clientDir, component->value));
+    if (!patterns || !*patterns) {
+        if (modeIs("release")) {
+            scripts("all.min.js");
+        } else {
+            if ((components = mprGetJson(eroute->config, "settings.components", 0)) != 0) {
+                for (ITERATE_JSON(components, component, ci)) {
+                    if ((componentScripts = mprGetJson(component, "scripts", 0)) != 0) {
+                        for (ITERATE_JSON(componentScripts, file, fi)) {
+                            if (smatch(file->value, "*")) {
+                                scripts(sfmt("lib/%s/**.js", component->name));
+                            } else {
+                                scripts(sfmt("lib/%s/%s", component->name, file->value));
+                            }
+                        }
+                    }
                 }
             }
+            scripts("app/main.js");
+            scripts("app/*/**.js");
         }
     }
-
     if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0) {
         mprError("No scripts defined for current application mode");
         return;
@@ -611,11 +622,11 @@ PUBLIC void scripts(cchar *patterns)
     for (ITERATE_ITEMS(files, path, next)) {
         uri = httpUri(conn, path, NULL);
         if (scontains(path, "-IE-") || scontains(path, "html5shiv")) {
-            espRender(conn, "%s<!-- [if lt IE 9]>\n", indent);
-            espRender(conn, "%s<script src='%s' type='text/javascript'></script>\n", indent, uri);
-            espRender(conn, "%s<![endif]-->\n", indent);
+            espRender(conn, "    <!-- [if lt IE 9]>\n");
+            espRender(conn, "        <script src='%s' type='text/javascript'></script>\n", uri);
+            espRender(conn, "    <![endif]-->\n");
         } else {
-            espRender(conn, "%s<script src='%s' type='text/javascript'></script>\n", indent, uri);
+            espRender(conn, "    <script src='%s' type='text/javascript'></script>\n", uri);
         }
         indent = "    ";
     }
@@ -734,6 +745,45 @@ PUBLIC void setTimeout(void *proc, MprTicks timeout, void *data)
 PUBLIC void showRequest()
 {
     espShowRequest(getConn());
+}
+
+
+/*
+    <% stylesheets(patterns); %>
+
+    Where patterns may contain *, ** and !pattern for exclusion
+ */
+PUBLIC void stylesheets(cchar *patterns)
+{
+    HttpConn    *conn;
+    HttpRoute   *route;
+    EspRoute    *eroute;
+    MprList     *files;
+    cchar       *uri, *path, *kind;
+    int         next;
+
+    conn = getConn();
+    route = conn->rx->route;
+    eroute = route->eroute;
+    patterns = httpExpandRouteVars(route, patterns);
+
+    if (!patterns || !*patterns) {
+        if (modeIs("release")) {
+            stylesheets("all.min.css");
+        } else {
+            stylesheets("css/fix.css");
+            stylesheets("css/all.less");
+        }
+    }
+    if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0) {
+        mprError("No scripts defined for current application mode");
+        return;
+    }
+    for (ITERATE_ITEMS(files, path, next)) {
+        uri = httpUri(conn, path, NULL);
+        kind = mprGetPathExt(path);
+        espRender(conn, "    <link rel='stylesheet/%s' type='text/css' href='%s' />\n", kind, uri);
+    }
 }
 
 

@@ -1236,23 +1236,9 @@ static void compileFlat(HttpRoute *route)
 }
 
 
-/*
-    Initialize the application components from the command line
-  */
-static void addComponents(int argc, char **argv)
-{
-    int     i;
-
-    espAddComponent(app->route, "server");
-    for (i = 0; i < argc; i++) {
-        espAddComponent(app->route, argv[i]);
-    }
-}
-
-
 static void addDeps(cchar *component)
 {
-    MprJson     *config, *depends, *dep;
+    MprJson     *config, *depends, *dep, *details;
     cchar       *path, *cpath;
     int         i;
 
@@ -1274,14 +1260,30 @@ static void addDeps(cchar *component)
                 }
             }
         }
-    }
-    if (!espHasComponent(app->route, component)) {
-        mprTrace(4, "Add component %s", component);
-        espAddComponent(app->route, component);
+        details = mprGetJson(config, sfmt("settings.components.%s", component), 0);
+        if (!espHasComponent(app->route, component)) {
+            mprTrace(4, "Add component %s", component);
+            espAddComponent(app->route, component, details);
+        }
     }
 }
 
 
+/*
+    Initialize the application components from the command line
+  */
+static void addComponents(int argc, char **argv)
+{
+    int     i;
+
+    addDeps("server");
+    for (i = 0; i < argc; i++) {
+        addDeps(argv[i]);
+    }
+}
+
+
+#if UNUSED
 static void addComponentDeps()
 {
     MprJson     *components, *component;
@@ -1293,6 +1295,7 @@ static void addComponentDeps()
         addDeps(component->value);
     }
 }
+#endif
 
 
 /*
@@ -1306,7 +1309,6 @@ static void generateApp(int argc, char **argv)
     app->route = createRoute(name);
     app->eroute = app->route->eroute;
     addComponents(argc - 1, &argv[1]);
-    addComponentDeps();
     if (app->error) {
         return;
     }
@@ -1910,7 +1912,7 @@ static void generateAppFiles()
     app->routeSet = sclone("restful");
     components = mprGetJson(eroute->config, "settings.components", 0);
     for (ITERATE_JSON(components, component, i)) {
-        name = component->value;
+        name = component->name;
         path = mprJoinPath(app->componentsDir, name);
         if (!mprPathExists(path, X_OK)) {
             fail("Cannot find component \"%s\"", name);
@@ -1931,6 +1933,11 @@ static void generateAppFiles()
             }
         }
     }
+    /*
+        Remove depends and generate
+     */
+    mprRemoveJson(eroute->config, "depends");
+
     fixupFile(mprJoinPath(eroute->clientDir, "index.esp"));
     fixupFile(mprJoinPath(eroute->appDir, "main.js"));
     fixupFile(mprJoinPath(eroute->layoutsDir, "default.esp"));

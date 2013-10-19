@@ -1134,7 +1134,7 @@ static int mdbLoadFromString(Edi *edi, cchar *str)
     cb.checkBlock = checkMdbState;
     cb.setValue = setMdbValue;
 
-    obj = mprParseJsonEx(str, &cb, mdb, NULL);
+    obj = mprParseJsonEx(str, &cb, mdb, 0, 0);
     mdb->edi.flags &= ~MDB_LOADING;
     mdb->edi.flags &= ~EDI_SUPPRESS_SAVE;
     mdb->loadStack = 0;

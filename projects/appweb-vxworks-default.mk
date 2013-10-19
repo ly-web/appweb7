@@ -1046,27 +1046,22 @@ $(CONFIG)/esp: $(DEPS_55)
 	cp src/esp/proto/components/angular/client/lib/angular/version.txt $(CONFIG)/esp/components/angular/client/lib/angular/version.txt
 	mkdir -p "$(CONFIG)/esp/components/angular"
 	cp src/esp/proto/components/angular/config.json $(CONFIG)/esp/components/angular/config.json
-	mkdir -p "$(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext"
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-click.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-click.js
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-confirm.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-confirm.js
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-doc.es $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-doc.es
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-field-errors.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-field-errors.js
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-format.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-format.js
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input-group.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-input-group.js
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-input.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-input.js
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-modal.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-modal.js
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-resource.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-resource.js
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp-titlecase.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp-titlecase.js
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/ext/esp.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/ext/esp.js
+	mkdir -p "$(CONFIG)/esp/components/angular-esp/client/lib/angular-esp"
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-click.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-click.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-confirm.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-confirm.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-doc.es $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-doc.es
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-field-errors.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-field-errors.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-format.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-format.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-input-group.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-input-group.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-input.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-input.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-local.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-local.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-modal.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-modal.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-resource.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-resource.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-session.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-session.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-titlecase.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-titlecase.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp.js
 	mkdir -p "$(CONFIG)/esp/components/angular-esp"
 	cp src/esp/proto/components/angular-esp/config.json $(CONFIG)/esp/components/angular-esp/config.json
-	mkdir -p "$(CONFIG)/esp/components/angular-extras"
-	cp src/esp/proto/components/angular-extras/config.json $(CONFIG)/esp/components/angular-extras/config.json
-	cp src/esp/proto/components/angular-extras/misc.js $(CONFIG)/esp/components/angular-extras/misc.js
-	mkdir -p "$(CONFIG)/esp/components/angular-local/client/lib/angular-local/ext"
-	cp src/esp/proto/components/angular-local/client/lib/angular-local/ext/LocalStore.js $(CONFIG)/esp/components/angular-local/client/lib/angular-local/ext/LocalStore.js
-	mkdir -p "$(CONFIG)/esp/components/angular-local"
-	cp src/esp/proto/components/angular-local/config.json $(CONFIG)/esp/components/angular-local/config.json
 	mkdir -p "$(CONFIG)/esp/components/angular-mvc/client/app"
 	cp src/esp/proto/components/angular-mvc/client/app/main.js $(CONFIG)/esp/components/angular-mvc/client/app/main.js
 	mkdir -p "$(CONFIG)/esp/components/angular-mvc/client/css"
@@ -1081,10 +1076,6 @@ $(CONFIG)/esp: $(DEPS_55)
 	mkdir -p "$(CONFIG)/esp/components/angular-mvc"
 	cp src/esp/proto/components/angular-mvc/config.json $(CONFIG)/esp/components/angular-mvc/config.json
 	cp src/esp/proto/components/angular-mvc/start.bit $(CONFIG)/esp/components/angular-mvc/start.bit
-	mkdir -p "$(CONFIG)/esp/components/angular-session/client/lib/angular-session/ext"
-	cp src/esp/proto/components/angular-session/client/lib/angular-session/ext/SessionStore.js $(CONFIG)/esp/components/angular-session/client/lib/angular-session/ext/SessionStore.js
-	mkdir -p "$(CONFIG)/esp/components/angular-session"
-	cp src/esp/proto/components/angular-session/config.json $(CONFIG)/esp/components/angular-session/config.json
 	mkdir -p "$(CONFIG)/esp/components/angular-ui-bootstrap/client/lib/angular-ui-bootstrap"
 	cp src/esp/proto/components/angular-ui-bootstrap/client/lib/angular-ui-bootstrap/ui-bootstrap-tpls.js $(CONFIG)/esp/components/angular-ui-bootstrap/client/lib/angular-ui-bootstrap/ui-bootstrap-tpls.js
 	mkdir -p "$(CONFIG)/esp/components/angular-ui-bootstrap"
@@ -1148,6 +1139,31 @@ $(CONFIG)/esp: $(DEPS_55)
 	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/wells.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/wells.less
 	mkdir -p "$(CONFIG)/esp/components/bootstrap"
 	cp src/esp/proto/components/bootstrap/config.json $(CONFIG)/esp/components/bootstrap/config.json
+	mkdir -p "$(CONFIG)/esp/components/d3/client/lib/d3"
+	cp src/esp/proto/components/d3/client/lib/d3/d3.v3.js $(CONFIG)/esp/components/d3/client/lib/d3/d3.v3.js
+	mkdir -p "$(CONFIG)/esp/components/d3"
+	cp src/esp/proto/components/d3/config.json $(CONFIG)/esp/components/d3/config.json
+	mkdir -p "$(CONFIG)/esp/components/flot/client/lib/flot"
+	cp src/esp/proto/components/flot/client/lib/flot/excanvas.js $(CONFIG)/esp/components/flot/client/lib/flot/excanvas.js
+	cp src/esp/proto/components/flot/client/lib/flot/jquery.colorhelpers.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.colorhelpers.js
+	cp src/esp/proto/components/flot/client/lib/flot/jquery.flot.canvas.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.flot.canvas.js
+	cp src/esp/proto/components/flot/client/lib/flot/jquery.flot.categories.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.flot.categories.js
+	cp src/esp/proto/components/flot/client/lib/flot/jquery.flot.crosshair.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.flot.crosshair.js
+	cp src/esp/proto/components/flot/client/lib/flot/jquery.flot.errorbars.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.flot.errorbars.js
+	cp src/esp/proto/components/flot/client/lib/flot/jquery.flot.fillbetween.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.flot.fillbetween.js
+	cp src/esp/proto/components/flot/client/lib/flot/jquery.flot.image.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.flot.image.js
+	cp src/esp/proto/components/flot/client/lib/flot/jquery.flot.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.flot.js
+	cp src/esp/proto/components/flot/client/lib/flot/jquery.flot.navigate.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.flot.navigate.js
+	cp src/esp/proto/components/flot/client/lib/flot/jquery.flot.pie.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.flot.pie.js
+	cp src/esp/proto/components/flot/client/lib/flot/jquery.flot.resize.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.flot.resize.js
+	cp src/esp/proto/components/flot/client/lib/flot/jquery.flot.selection.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.flot.selection.js
+	cp src/esp/proto/components/flot/client/lib/flot/jquery.flot.stack.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.flot.stack.js
+	cp src/esp/proto/components/flot/client/lib/flot/jquery.flot.symbol.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.flot.symbol.js
+	cp src/esp/proto/components/flot/client/lib/flot/jquery.flot.threshold.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.flot.threshold.js
+	cp src/esp/proto/components/flot/client/lib/flot/jquery.flot.time.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.flot.time.js
+	cp src/esp/proto/components/flot/client/lib/flot/jquery.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.js
+	mkdir -p "$(CONFIG)/esp/components/flot"
+	cp src/esp/proto/components/flot/config.json $(CONFIG)/esp/components/flot/config.json
 	mkdir -p "$(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/css"
 	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.css $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.css
 	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.min.css $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.min.css
@@ -1241,6 +1257,12 @@ $(CONFIG)/esp: $(DEPS_55)
 	cp src/esp/proto/components/normalize/client/css/normalize.less $(CONFIG)/esp/components/normalize/client/css/normalize.less
 	mkdir -p "$(CONFIG)/esp/components/normalize"
 	cp src/esp/proto/components/normalize/config.json $(CONFIG)/esp/components/normalize/config.json
+	mkdir -p "$(CONFIG)/esp/components/nvd3/client/lib/nvd3"
+	cp src/esp/proto/components/nvd3/client/lib/nvd3/nv.d3.css $(CONFIG)/esp/components/nvd3/client/lib/nvd3/nv.d3.css
+	cp src/esp/proto/components/nvd3/client/lib/nvd3/nv.d3.js $(CONFIG)/esp/components/nvd3/client/lib/nvd3/nv.d3.js
+	cp src/esp/proto/components/nvd3/client/lib/nvd3/nv.d3.min.css $(CONFIG)/esp/components/nvd3/client/lib/nvd3/nv.d3.min.css
+	mkdir -p "$(CONFIG)/esp/components/nvd3"
+	cp src/esp/proto/components/nvd3/config.json $(CONFIG)/esp/components/nvd3/config.json
 	mkdir -p "$(CONFIG)/esp/components/respond/client/lib/respond"
 	cp src/esp/proto/components/respond/client/lib/respond/respond.js $(CONFIG)/esp/components/respond/client/lib/respond/respond.js
 	mkdir -p "$(CONFIG)/esp/components/respond"
@@ -1249,6 +1271,12 @@ $(CONFIG)/esp: $(DEPS_55)
 	cp src/esp/proto/components/server/app.conf $(CONFIG)/esp/components/server/app.conf
 	cp src/esp/proto/components/server/appweb.conf $(CONFIG)/esp/components/server/appweb.conf
 	cp src/esp/proto/components/server/config.json $(CONFIG)/esp/components/server/config.json
+	mkdir -p "$(CONFIG)/esp/components/xcharts/client/lib/xcharts"
+	cp src/esp/proto/components/xcharts/client/lib/xcharts/xcharts.css $(CONFIG)/esp/components/xcharts/client/lib/xcharts/xcharts.css
+	cp src/esp/proto/components/xcharts/client/lib/xcharts/xcharts.js $(CONFIG)/esp/components/xcharts/client/lib/xcharts/xcharts.js
+	cp src/esp/proto/components/xcharts/client/lib/xcharts/xcharts.min.css $(CONFIG)/esp/components/xcharts/client/lib/xcharts/xcharts.min.css
+	mkdir -p "$(CONFIG)/esp/components/xcharts"
+	cp src/esp/proto/components/xcharts/config.json $(CONFIG)/esp/components/xcharts/config.json
 	mkdir -p "$(CONFIG)/esp/templates/angular-mvc"
 	cp src/esp/proto/templates/angular-mvc/controller-singleton.c $(CONFIG)/esp/templates/angular-mvc/controller-singleton.c
 	cp src/esp/proto/templates/angular-mvc/controller.c $(CONFIG)/esp/templates/angular-mvc/controller.c

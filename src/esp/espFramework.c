@@ -11,14 +11,15 @@
 #if BIT_PACK_ESP
 /************************************* Code ***********************************/
 
-PUBLIC void espAddComponent(HttpRoute *route, cchar *name)
+PUBLIC void espAddComponent(HttpRoute *route, cchar *name, MprJson *details)
 {
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    if (!mprGetJsonValue(eroute->config, sfmt("settings.components[@ = %s]", name), 0)) {
-        mprSetJsonValue(eroute->config, "settings.components[*]", name, 0);
+    if (!details) {
+        details = mprCreateJson(0);
     }
+    mprSetJson(eroute->config, sfmt("settings.components.%s", name), details, 0);
 }
 
 
@@ -482,7 +483,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
     EspRoute    *eroute;
     MprJson     *msettings, *settings;
     MprPath     cinfo;
-    cchar       *cpath, *value;
+    cchar       *cdata, *cpath, *value, *errorMsg;
 
     eroute = route->eroute;
     cpath = mprJoinPath(route->documents, "config.json");
@@ -493,7 +494,22 @@ PUBLIC int espLoadConfig(HttpRoute *route)
         eroute->configLoaded = cinfo.mtime;
     }
     if (!eroute->config) {
-        if ((eroute->config = mprLoadJson(cpath)) != 0) {
+        //  DEPRECATED
+        if (!mprPathExists(cpath, R_OK)) {
+            eroute->config = mprCreateJson(MPR_JSON_OBJ);
+            espAddComponent(route, "legacy-mvc", 0);
+            eroute->legacy = 1;
+            eroute->routePrefix = MPR->emptyString;
+
+        } else {
+            if ((cdata = mprReadPathContents(cpath, NULL)) == 0) {
+                mprError("Cannot read config.json at %s", cpath);
+                return MPR_ERR_CANT_READ;
+            }
+            if ((eroute->config = mprParseJsonEx(cdata, 0, 0, 0, &errorMsg)) == 0) {
+                mprError("Cannot parse %s: error %s", cpath, errorMsg);
+                return 0;
+            }
             /*
                 Blend the mode properties into settings
              */
@@ -512,13 +528,13 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             if ((value = espGetConfig(route, "settings.keepSource", 0)) != 0) {
                 eroute->keepSource = smatch(value, "true");
             }
-#if DEPRECATE
+    #if DEPRECATE
             /* Deprecated in 4.4.1 */
             if ((value = espGetConfig(route, "settings.serverPrefix", 0)) != 0) {
                 eroute->routePrefix = value;
                 httpSetRouteVar(route, "ESP_SERVER_PREFIX", eroute->routePrefix);
             }
-#endif
+    #endif
             if ((value = espGetConfig(route, "settings.routePrefix", 0)) != 0) {
                 eroute->routePrefix = sclone(value);
                 httpSetRouteVar(route, "ESP_SERVER_PREFIX", eroute->routePrefix);
@@ -546,13 +562,10 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 }
             }
             eroute->json = espTestConfig(route, "settings.json", "1");
-        } else {
-            eroute->config = mprCreateJson(MPR_JSON_OBJ);
-            espAddComponent(route, "legacy-mvc");
-        }
-        if (espHasComponent(route, "legacy-mvc")) {
-            eroute->legacy = 1;
-            eroute->routePrefix = MPR->emptyString;
+            if (espHasComponent(route, "legacy-mvc")) {
+                eroute->legacy = 1;
+                eroute->routePrefix = MPR->emptyString;
+            }
         }
     }
     return 0;
@@ -668,7 +681,7 @@ PUBLIC void espRenderConfig(HttpConn *conn)
     eroute = conn->rx->route->eroute;
     settings = mprLookupJson(eroute->config, "settings");
     if (settings) {
-        renderString(mprJsonToString(settings, MPR_JSON_QUOTES));
+        renderString(mprJsonToString(settings, MPR_JSON_QUOTES | MPR_JSON_PRETTY));
     } else {
         renderError(HTTP_CODE_NOT_FOUND, "Cannot find config.settings to send to client");
     }

@@ -20,8 +20,8 @@
       <type>void</type>
       <name>espAddComponent</name>
       <anchorfile>group___esp_route.html</anchorfile>
-      <anchor>gadacba4fab16ac8891a89f313134ae707</anchor>
-      <arglist>(HttpRoute *route, cchar *name)</arglist>
+      <anchor>ga01d14fd7709ae8ce828eea289f98a2ff</anchor>
+      <arglist>(HttpRoute *route, cchar *name, MprJson *details)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
