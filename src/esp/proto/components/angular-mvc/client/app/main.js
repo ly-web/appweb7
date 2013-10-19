@@ -3,7 +3,7 @@
 */
 'use strict';
 
-var app = angular.module('${TITLE}', ['ngAnimate', 'ngResource', 'ngRoute', 'ui.bootstrap']);
+var app = angular.module('${TITLE}', ['ngAnimate', 'ngResource', 'ngRoute', 'ui.bootstrap', 'esp']);
 
 /*
     Request routes
@@ -16,16 +16,20 @@ app.config(function($routeProvider) {
 });
 
 
+/*
+    Load ESP configuration once the app is fully loaded
+    Use explicit bootstrap rather than ng-app in index.esp so that ESP can retrieve the config.json first.
+ */
 angular.element(document).ready(function() {
     var http = new XMLHttpRequest();
     http.onload = function() {
         try {
-            app.config = JSON.parse(this.responseText);
+            angular.module('esp').config = JSON.parse(this.responseText);
         } catch(e) {
             console.log("Cannot parse ESP config", this.responseText)
         }
         angular.bootstrap(document, ['${TITLE}']);
     };
-    http.open("get", "/esp/config", true);
+    http.open("GET", "/esp/config", true);
     http.send();
 });

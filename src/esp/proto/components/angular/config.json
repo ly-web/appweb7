@@ -1,4 +1,17 @@
 {
     name: "angular",
     description: "Angular client-side framework",
+    settings: {
+        components: {
+            angular: {
+                scripts: [
+                    "angular.js",
+                    "angular-animate.js",
+                    "angular-bootstrap.js",
+                    "angular-resource.js",
+                    "angular-route.js",
+                ],
+            },
+        },
+    },
 }

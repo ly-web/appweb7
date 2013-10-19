@@ -1,4 +1,9 @@
 {
     name: "less",
     description: "CSS pre-processor for the Less stylesheet language",
+    settings: {
+        components: {
+            less: {scripts: ['*']},
+        },
+    },
 }

@@ -4,7 +4,7 @@
 
 'use strict';
 
-app.controller('${TITLE}Control', function (Esp, ${TITLE}, $location, $routeParams, $scope) {
+angular.module('${TITLE}').controller('${TITLE}Control', function (Esp, ${TITLE}, $location, $routeParams, $scope) {
     angular.extend($scope, $routeParams);
     /*
         Resource calling sequence:
@@ -36,7 +36,7 @@ app.controller('${TITLE}Control', function (Esp, ${TITLE}, $location, $routePara
     };
 });
 
-app.config(function($routeProvider) {
+angular.module('${TITLE}').config(function($routeProvider) {
     var Default = {
         controller: '${TITLE}Control',
         resolve: { action: 'Esp' },

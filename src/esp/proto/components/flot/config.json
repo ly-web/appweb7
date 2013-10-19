@@ -1,0 +1,12 @@
+{
+    name: "flot",
+    description: "Flot jQuery graphics library",
+    depends: [
+        'jquery',
+    ],
+    settings: {
+        components: {
+            flot: {scripts: ['*']},
+        },
+    },
+}

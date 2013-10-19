@@ -1,0 +1,12 @@
+{
+    name: "xcharts",
+    description: "Xcharts Javascript graphics library",
+    depends: [
+        'd3',
+    ],
+    settings: {
+        components: {
+            xcharts: {scripts: ['*']},
+        },
+    },
+}

@@ -1,0 +1,9 @@
+{
+    name: "d3",
+    description: "D3 Javascript graphics library",
+    settings: {
+        components: {
+            d3: {scripts: ['*']},
+        },
+    },
+}

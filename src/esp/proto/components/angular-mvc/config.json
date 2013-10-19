@@ -3,8 +3,6 @@
     description: "Angular ESP MVC application skeleton",
     depends: [
         'angular', 
-        'angular-local', 
-        'angular-session', 
         'angular-esp', 
         'bootstrap', 
         'angular-ui-bootstrap', 

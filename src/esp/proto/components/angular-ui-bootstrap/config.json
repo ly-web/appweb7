@@ -1,5 +1,10 @@
 {
     name: "angular-ui-bootstrap",
     description: "Angular UI Bootstrap support",
-    depends: ['bootstrap', 'html5shiv']
+    depends: ['bootstrap', 'html5shiv'],
+    settings: {
+        components: {
+            "angular-ui-bootstrap": {scripts: ["*"]},
+        },
+    }
 }

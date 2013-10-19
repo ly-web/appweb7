@@ -1,4 +1,9 @@
 {
     name: "respond",
-    description: "Polyfill for CSS media queries"
+    description: "Polyfill for CSS media queries",
+    settings: {
+        components: {
+            respond: {scripts: ['*']},
+        },
+    },
 }

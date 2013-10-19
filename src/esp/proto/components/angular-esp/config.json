@@ -1,4 +1,9 @@
 {
     name: "angular-esp",
-    description: "Angular support for Embedthis ESP" 
+    description: "Angular support for Embedthis ESP",
+    settings: {
+        components: {
+            "angular-esp": {scripts: ["*"]},
+        },
+    },
 }

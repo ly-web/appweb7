@@ -68,20 +68,18 @@ Bit.load({
                     }
                 }
                 rm('client/all.min.js.gz')
-                let list = [
-                    'client/lib/angular/angular.min.js',
-                    'client/lib/angular/angular-route.min.js',
-                    'client/lib/angular/angular-animate.min.js',
-                    'client/lib/angular/angular-resource.min.js',
-                    'client/lib/angular/angular-bootstrap.min.js',
-                    'client/lib/angular-ui-bootstrap/ui-bootstrap-tpls.min.js',
-                    'client/lib/less/less.min.js',
-                    'client/app/main.min.js',
-                    'client/lib/angular-local/LocalStore.min.js',
-                    'client/lib/angular-session/SessionStore.min.js',
-                    'client/lib/angular-esp/Esp.min.js',
-                ]
-                list += Path('client').files('lib/*/ext/**.min.js')
+                let list = []
+                let config = Path('config.json').readJSON();
+                for (let [component,details] in config.settings.components) {
+                    for each (file in details.scripts) {
+                        if (file == '*') {
+                            list += Path('client/lib').join(component).files('*.min.js')
+                        } else {
+                            list.push(Path('client/lib').join(component, file))
+                        }
+                    }
+                }
+                list += ['client/app/main.min.js']
                 list += Path('client').files('app/**.min.js', {exclude: /main.min.js/})
                 let all = Path('client/all.min.js')
                 strace('Files', list.join('\n'))
