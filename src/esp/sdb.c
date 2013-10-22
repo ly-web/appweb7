@@ -309,7 +309,7 @@ static int sdbAddTable(Edi *edi, cchar *tableName)
     if (!validName(tableName)) {
         return MPR_ERR_BAD_ARGS;
     }
-    if (query(edi, sfmt("DROP TABLE IF EXISTS %s;", tableName)) == 0) {
+    if (query(edi, sfmt("DROP TABLE IF EXISTS %s;", tableName), NULL) == 0) {
         return MPR_ERR_CANT_DELETE;
     }
     /*
@@ -872,9 +872,9 @@ static EdiGrid *queryv(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list var
     }
     if (rc != SQLITE_OK) {
         if (rc == sqlite3_errcode(db)) {
-            sdbError(edi, "SDB: cannot run query: %s, error: %s", cmd, sqlite3_errmsg(db));
+            sdbTrace(edi, 2, "SDB: cannot run query: %s, error: %s", cmd, sqlite3_errmsg(db));
         } else {
-            sdbError(edi, "SDB: unspecified SQL error for: %s", cmd);
+            sdbTrace(edi, 2, "SDB: unspecified SQL error for: %s", cmd);
         }
         return 0;
     }
