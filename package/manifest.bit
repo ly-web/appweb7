@@ -141,7 +141,7 @@ Bit.load({
                 packs:      'est',
                 enable:     "!bit.settings.static",
 
-            },{ from:       '${BIN}/libsqlite3${SHOBJ}',
+            },{ from:       '${BIN}/libsql${SHOBJ}',
                 to:         '${abin}/',
                 set:        'libs',
                 packs:      'sqlite'

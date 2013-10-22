@@ -5,7 +5,7 @@
 Bit.load({
 
     targets: {
-        libsqlite3: {
+        libsql: {
             type: 'lib',
             headers: [ '*.h' ],
             sources: [ 'sqlite3.c' ],
@@ -29,7 +29,7 @@ Bit.load({
             path: "${BIN}/sqlite${EXE}",
             type: 'exe'
             sources: [ 'sqlite.c' ],
-            depends: [ 'libsqlite3' ],
+            depends: [ 'libsql' ],
             platforms: [ 'local' ],
             packs: 'sqlite',
         },

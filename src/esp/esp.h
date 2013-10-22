@@ -2421,7 +2421,7 @@ PUBLIC ssize renderRec(EdiRec *rec);
     @ingroup EspReq
     @stability Prototype
   */
-PUBLIC void renderResult(int status);
+PUBLIC void renderResult(bool status);
 
 /**
     Render a formatted string after HTML escaping
