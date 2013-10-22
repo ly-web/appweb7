@@ -41,6 +41,7 @@ PUBLIC bool canUser(cchar *abilities, bool warn)
         return 1;
     }
     if (warn) {
+        setStatus(HTTP_CODE_UNAUTHORIZED);
         renderResult(feedback("error", "Access Denied. Insufficient privilege."));
     }
     return 0;
@@ -94,7 +95,7 @@ PUBLIC bool feedback(cchar *kind, cchar *fmt, ...)
     /*
         Return true if there is not an error feedback message
      */
-    return getFeedback("error") != 0;
+    return getFeedback("error") == 0;
 }
 
 
@@ -535,7 +536,7 @@ PUBLIC ssize renderRec(EdiRec *rec)
 
 //  MOB - change this to renderStatus?
 
-PUBLIC void renderResult(int status)
+PUBLIC void renderResult(bool status)
 {
     espRenderResult(getConn(), status);
 }
@@ -585,7 +586,7 @@ PUBLIC void scripts(cchar *patterns)
     EspRoute    *eroute;
     MprList     *files;
     MprJson     *components, *component, *componentScripts, *file;
-    cchar       *indent, *uri, *path;
+    cchar       *uri, *path;
     int         next, ci, fi;
 
     conn = getConn();
@@ -614,21 +615,25 @@ PUBLIC void scripts(cchar *patterns)
             scripts("app/*/**.js");
         }
     }
-    if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0) {
-        mprError("No scripts defined for current application mode");
-        return;
-    }
-    indent = "";
-    for (ITERATE_ITEMS(files, path, next)) {
-        uri = httpUri(conn, path, NULL);
-        if (scontains(path, "-IE-") || scontains(path, "html5shiv")) {
-            espRender(conn, "    <!-- [if lt IE 9]>\n");
-            espRender(conn, "        <script src='%s' type='text/javascript'></script>\n", uri);
-            espRender(conn, "    <![endif]-->\n");
-        } else {
-            espRender(conn, "    <script src='%s' type='text/javascript'></script>\n", uri);
+    if (patterns && *patterns) {
+        if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0) {
+            mprError("No scripts defined for current application mode");
+            return;
         }
-        indent = "    ";
+        if (mprGetListLength(files) == 0) {
+            mprError("No scripts found for ESP scripts(%s)", patterns);
+            return;
+        }
+        for (ITERATE_ITEMS(files, path, next)) {
+            uri = httpUri(conn, path, NULL);
+            if (scontains(path, "-IE-") || scontains(path, "html5shiv")) {
+                espRender(conn, "    <!-- [if lt IE 9]>\n");
+                espRender(conn, "        <script src='%s' type='text/javascript'></script>\n", uri);
+                espRender(conn, "    <![endif]-->\n");
+            } else {
+                espRender(conn, "    <script src='%s' type='text/javascript'></script>\n", uri);
+            }
+        }
     }
 }
 
