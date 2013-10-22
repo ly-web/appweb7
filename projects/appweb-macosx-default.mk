@@ -2211,7 +2211,7 @@ ifeq ($(BIT_PACK_EST),1)
 	cp $(CONFIG)/bin/libest.dylib $(BIT_VAPP_PREFIX)/bin/libest.dylib
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-	cp $(CONFIG)/bin/libsqlite3.dylib $(BIT_VAPP_PREFIX)/bin/libsqlite3.dylib
+	cp $(CONFIG)/bin/libsql.dylib $(BIT_VAPP_PREFIX)/bin/libsql.dylib
 endif
 ifeq ($(BIT_PACK_ESP),1)
 	cp $(CONFIG)/bin/libmod_esp.dylib $(BIT_VAPP_PREFIX)/bin/libmod_esp.dylib

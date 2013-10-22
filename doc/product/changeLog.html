@@ -91,12 +91,23 @@
                 <li>Add BIT_MPR_SSL_RENEGOTIATE option (config: mpr.ssl.renegotiate) to control SSL renegotiation.
                     Renegotiation is enabled by default. 
                     <a href="https://github.com/embedthis/appweb-4/issues/240">[issue 240]</a></li>
+                <li>Rename libsqlite3 to libsql to avoid clashing with existing SQLite libraries.
+                    <a href="https://github.com/embedthis/appweb-4/issues/242">[issue 242]</a></li>
             </ul>
             <h3>Incompatible Changes</h3>
             <ul>
                 <li>Add body argument to mprRunCmd to write data to spawned command.
                     <a href="https://github.com/embedthis/appweb-4/issues/239">[issue 239]</a></li>
             </ul>
+
+            <a id="r4.4.2"></a>
+            <h2 class="section">Changes in 4.4.2</h2>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Fix esp migrations with SDB/SQLITE.
+                    <a href="https://github.com/embedthis/appweb-4/issues/241">[issue 241]</a></li>
+            </ul>
+
             <a id="r4.4.1"></a>
             <h2 class="section">Changes in 4.4.1</h2>
             <h3>Fixes</h3>
@@ -104,6 +115,7 @@
                 <li>Installation location of esp generator component files
                     <a href="https://github.com/embedthis/appweb-4/issues/235">[issue 235]</a></li>
             </ul>
+
             <a id="r4.4.0"></a>
             <h2 class="section">Changes in 4.4.0</h2>
             <h3>Major Features</h3>

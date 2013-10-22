@@ -2377,7 +2377,7 @@ installBinary: $(DEPS_101)
 	copy /Y $(CONFIG)\bin\libest.dll "$(BIT_VAPP_PREFIX)\bin\libest.dll"
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-	copy /Y $(CONFIG)\bin\libsqlite3.dll "$(BIT_VAPP_PREFIX)\bin\libsqlite3.dll"
+	copy /Y $(CONFIG)\bin\libsql.dll "$(BIT_VAPP_PREFIX)\bin\libsql.dll"
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
 	copy /Y $(CONFIG)\bin\libmod_esp.dll "$(BIT_VAPP_PREFIX)\bin\libmod_esp.dll"
