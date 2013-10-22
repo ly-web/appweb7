@@ -3,7 +3,7 @@
 #
 
 PRODUCT            := appweb
-VERSION            := 4.4.2
+VERSION            := 4.4.3
 BUILD_NUMBER       := 0
 PROFILE            := default
 ARCH               := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
@@ -124,7 +124,7 @@ endif
 TARGETS            += $(CONFIG)/bin/libhttp.dylib
 TARGETS            += $(CONFIG)/bin/http
 ifeq ($(BIT_PACK_SQLITE),1)
-TARGETS            += $(CONFIG)/bin/libsqlite3.dylib
+TARGETS            += $(CONFIG)/bin/libsql.dylib
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
 TARGETS            += $(CONFIG)/bin/sqlite
@@ -233,7 +233,7 @@ clean:
 	rm -f "$(CONFIG)/bin/libpcre.dylib"
 	rm -f "$(CONFIG)/bin/libhttp.dylib"
 	rm -f "$(CONFIG)/bin/http"
-	rm -f "$(CONFIG)/bin/libsqlite3.dylib"
+	rm -f "$(CONFIG)/bin/libsql.dylib"
 	rm -f "$(CONFIG)/bin/sqlite"
 	rm -f "$(CONFIG)/bin/libappweb.dylib"
 	rm -f "$(CONFIG)/bin/libmod_esp.dylib"
@@ -301,7 +301,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.4.2-0
+	@echo 4.4.3-0
 
 #
 #   mpr.h
@@ -349,7 +349,7 @@ DEPS_6 += $(CONFIG)/obj/mprLib.o
 
 $(CONFIG)/bin/libmpr.dylib: $(DEPS_6)
 	@echo '      [Link] $(CONFIG)/bin/libmpr.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmpr.dylib -compatibility_version 4.4.2 -current_version 4.4.2 "$(CONFIG)/obj/mprLib.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmpr.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/mprLib.o" $(LIBS) 
 
 #
 #   est.h
@@ -382,7 +382,7 @@ DEPS_9 += $(CONFIG)/obj/estLib.o
 
 $(CONFIG)/bin/libest.dylib: $(DEPS_9)
 	@echo '      [Link] $(CONFIG)/bin/libest.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libest.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libest.dylib -compatibility_version 4.4.2 -current_version 4.4.2 "$(CONFIG)/obj/estLib.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libest.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libest.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/estLib.o" $(LIBS) 
 endif
 
 #
@@ -435,7 +435,7 @@ endif
 
 $(CONFIG)/bin/libmprssl.dylib: $(DEPS_11)
 	@echo '      [Link] $(CONFIG)/bin/libmprssl.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmprssl.dylib -compatibility_version 4.4.2 -current_version 4.4.2 "$(CONFIG)/obj/mprSsl.o" $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmprssl.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/mprSsl.o" $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS) 
 
 #
 #   manager.o
@@ -530,7 +530,7 @@ DEPS_19 += $(CONFIG)/obj/pcre.o
 
 $(CONFIG)/bin/libpcre.dylib: $(DEPS_19)
 	@echo '      [Link] $(CONFIG)/bin/libpcre.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libpcre.dylib -arch $(CC_ARCH) $(LDFLAGS) -compatibility_version 4.4.2 -current_version 4.4.2 $(LIBPATHS) -install_name @rpath/libpcre.dylib -compatibility_version 4.4.2 -current_version 4.4.2 "$(CONFIG)/obj/pcre.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libpcre.dylib -arch $(CC_ARCH) $(LDFLAGS) -compatibility_version 4.4.3 -current_version 4.4.3 $(LIBPATHS) -install_name @rpath/libpcre.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/pcre.o" $(LIBS) 
 endif
 
 #
@@ -576,7 +576,7 @@ endif
 
 $(CONFIG)/bin/libhttp.dylib: $(DEPS_22)
 	@echo '      [Link] $(CONFIG)/bin/libhttp.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libhttp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libhttp.dylib -compatibility_version 4.4.2 -current_version 4.4.2 "$(CONFIG)/obj/httpLib.o" $(LIBPATHS_22) $(LIBS_22) $(LIBS_22) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libhttp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libhttp.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/httpLib.o" $(LIBPATHS_22) $(LIBS_22) $(LIBS_22) $(LIBS) -lpam 
 
 #
 #   http.o
@@ -638,15 +638,15 @@ $(CONFIG)/obj/sqlite3.o: \
 
 ifeq ($(BIT_PACK_SQLITE),1)
 #
-#   libsqlite3
+#   libsql
 #
 DEPS_27 += $(CONFIG)/inc/sqlite3.h
 DEPS_27 += $(CONFIG)/inc/bit.h
 DEPS_27 += $(CONFIG)/obj/sqlite3.o
 
-$(CONFIG)/bin/libsqlite3.dylib: $(DEPS_27)
-	@echo '      [Link] $(CONFIG)/bin/libsqlite3.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libsqlite3.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libsqlite3.dylib -compatibility_version 4.4.2 -current_version 4.4.2 "$(CONFIG)/obj/sqlite3.o" $(LIBS) 
+$(CONFIG)/bin/libsql.dylib: $(DEPS_27)
+	@echo '      [Link] $(CONFIG)/bin/libsql.dylib'
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libsql.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libsql.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/sqlite3.o" $(LIBS) 
 endif
 
 #
@@ -667,10 +667,10 @@ ifeq ($(BIT_PACK_SQLITE),1)
 DEPS_29 += $(CONFIG)/inc/sqlite3.h
 DEPS_29 += $(CONFIG)/inc/bit.h
 DEPS_29 += $(CONFIG)/obj/sqlite3.o
-DEPS_29 += $(CONFIG)/bin/libsqlite3.dylib
+DEPS_29 += $(CONFIG)/bin/libsql.dylib
 DEPS_29 += $(CONFIG)/obj/sqlite.o
 
-LIBS_29 += -lsqlite3
+LIBS_29 += -lsql
 
 $(CONFIG)/bin/sqlite: $(DEPS_29)
 	@echo '      [Link] $(CONFIG)/bin/sqlite'
@@ -796,7 +796,7 @@ endif
 
 $(CONFIG)/bin/libappweb.dylib: $(DEPS_38)
 	@echo '      [Link] $(CONFIG)/bin/libappweb.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libappweb.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 4.4.2 -current_version 4.4.2 "$(CONFIG)/obj/config.o" "$(CONFIG)/obj/convenience.o" "$(CONFIG)/obj/dirHandler.o" "$(CONFIG)/obj/fileHandler.o" "$(CONFIG)/obj/log.o" "$(CONFIG)/obj/server.o" $(LIBPATHS_38) $(LIBS_38) $(LIBS_38) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libappweb.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/config.o" "$(CONFIG)/obj/convenience.o" "$(CONFIG)/obj/dirHandler.o" "$(CONFIG)/obj/fileHandler.o" "$(CONFIG)/obj/log.o" "$(CONFIG)/obj/server.o" $(LIBPATHS_38) $(LIBS_38) $(LIBS_38) $(LIBS) -lpam 
 
 #
 #   edi.h
@@ -962,12 +962,12 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_50 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_50 += -lsqlite3
+    LIBS_50 += -lsql
 endif
 
 $(CONFIG)/bin/libmod_esp.dylib: $(DEPS_50)
 	@echo '      [Link] $(CONFIG)/bin/libmod_esp.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_esp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 4.4.2 -current_version 4.4.2 "$(CONFIG)/obj/edi.o" "$(CONFIG)/obj/espAbbrev.o" "$(CONFIG)/obj/espFramework.o" "$(CONFIG)/obj/espHandler.o" "$(CONFIG)/obj/espHtml.o" "$(CONFIG)/obj/espTemplate.o" "$(CONFIG)/obj/mdb.o" "$(CONFIG)/obj/sdb.o" $(LIBPATHS_50) $(LIBS_50) $(LIBS_50) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_esp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/edi.o" "$(CONFIG)/obj/espAbbrev.o" "$(CONFIG)/obj/espFramework.o" "$(CONFIG)/obj/espHandler.o" "$(CONFIG)/obj/espHtml.o" "$(CONFIG)/obj/espTemplate.o" "$(CONFIG)/obj/mdb.o" "$(CONFIG)/obj/sdb.o" $(LIBPATHS_50) $(LIBS_50) $(LIBS_50) $(LIBS) -lpam 
 endif
 
 #
@@ -1028,7 +1028,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_52 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_52 += -lsqlite3
+    LIBS_52 += -lsql
 endif
 LIBS_52 += -lmod_esp
 
@@ -1407,12 +1407,12 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_60 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_60 += -lsqlite3
+    LIBS_60 += -lsql
 endif
 
 $(CONFIG)/bin/libejs.dylib: $(DEPS_60)
 	@echo '      [Link] $(CONFIG)/bin/libejs.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 4.4.2 -current_version 4.4.2 "$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_60) $(LIBS_60) $(LIBS_60) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_60) $(LIBS_60) $(LIBS_60) $(LIBS) -lpam 
 endif
 
 #
@@ -1457,7 +1457,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_62 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_62 += -lsqlite3
+    LIBS_62 += -lsql
 endif
 
 $(CONFIG)/bin/ejs: $(DEPS_62)
@@ -1507,7 +1507,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_64 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_64 += -lsqlite3
+    LIBS_64 += -lsql
 endif
 
 $(CONFIG)/bin/ejsc: $(DEPS_64)
@@ -1593,7 +1593,7 @@ endif
 
 $(CONFIG)/bin/libmod_cgi.dylib: $(DEPS_67)
 	@echo '      [Link] $(CONFIG)/bin/libmod_cgi.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 4.4.2 -current_version 4.4.2 "$(CONFIG)/obj/cgiHandler.o" $(LIBPATHS_67) $(LIBS_67) $(LIBS_67) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/cgiHandler.o" $(LIBPATHS_67) $(LIBS_67) $(LIBS_67) $(LIBS) -lpam 
 endif
 
 #
@@ -1648,12 +1648,12 @@ ifeq ($(BIT_PACK_PCRE),1)
 endif
 LIBS_69 += -lejs
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_69 += -lsqlite3
+    LIBS_69 += -lsql
 endif
 
 $(CONFIG)/bin/libmod_ejs.dylib: $(DEPS_69)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ejs.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 4.4.2 -current_version 4.4.2 "$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_69) $(LIBS_69) $(LIBS_69) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_69) $(LIBS_69) $(LIBS_69) $(LIBS) -lpam 
 endif
 
 #
@@ -1706,7 +1706,7 @@ LIBPATHS_71 += -L$(BIT_PACK_PHP_PATH)/libs
 
 $(CONFIG)/bin/libmod_php.dylib: $(DEPS_71)
 	@echo '      [Link] $(CONFIG)/bin/libmod_php.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_php.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmod_php.dylib -compatibility_version 4.4.2 -current_version 4.4.2 "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_php.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmod_php.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS) -lpam 
 endif
 
 #
@@ -1784,7 +1784,7 @@ endif
 
 $(CONFIG)/bin/libmod_ssl.dylib: $(DEPS_73)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ssl.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmod_ssl.dylib -compatibility_version 4.4.2 -current_version 4.4.2 "$(CONFIG)/obj/sslModule.o" $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmod_ssl.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/sslModule.o" $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) -lpam 
 endif
 
 #
@@ -1885,7 +1885,7 @@ DEPS_80 += $(CONFIG)/obj/slink.o
 
 $(CONFIG)/bin/libslink.dylib: $(DEPS_80)
 	@echo '      [Link] $(CONFIG)/bin/libslink.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libslink.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 4.4.2 -current_version 4.4.2 "$(CONFIG)/obj/slink.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libslink.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/slink.o" $(LIBS) 
 
 #
 #   appweb.o
@@ -2168,7 +2168,7 @@ installBinary: $(DEPS_93)
 	mkdir -p "$(BIT_CACHE_PREFIX)"
 	mkdir -p "$(BIT_APP_PREFIX)"
 	rm -f "$(BIT_APP_PREFIX)/latest"
-	ln -s "4.4.2" "$(BIT_APP_PREFIX)/latest"
+	ln -s "4.4.3" "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_LOG_PREFIX)"
 	chmod 755 "$(BIT_LOG_PREFIX)"
 	[ `id -u` = 0 ] && chown $(WEB_USER):$(WEB_GROUP) "$(BIT_LOG_PREFIX)"; true

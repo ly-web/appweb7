@@ -3,7 +3,7 @@
 #
 
 PRODUCT            := appweb
-VERSION            := 4.4.2
+VERSION            := 4.4.3
 BUILD_NUMBER       := 0
 PROFILE            := default
 ARCH               := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
@@ -124,7 +124,7 @@ endif
 TARGETS            += $(CONFIG)/bin/libhttp.so
 TARGETS            += $(CONFIG)/bin/http
 ifeq ($(BIT_PACK_SQLITE),1)
-TARGETS            += $(CONFIG)/bin/libsqlite3.so
+TARGETS            += $(CONFIG)/bin/libsql.so
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
 TARGETS            += $(CONFIG)/bin/sqlite
@@ -233,7 +233,7 @@ clean:
 	rm -f "$(CONFIG)/bin/libpcre.so"
 	rm -f "$(CONFIG)/bin/libhttp.so"
 	rm -f "$(CONFIG)/bin/http"
-	rm -f "$(CONFIG)/bin/libsqlite3.so"
+	rm -f "$(CONFIG)/bin/libsql.so"
 	rm -f "$(CONFIG)/bin/sqlite"
 	rm -f "$(CONFIG)/bin/libappweb.so"
 	rm -f "$(CONFIG)/bin/libmod_esp.so"
@@ -301,7 +301,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.4.2-0
+	@echo 4.4.3-0
 
 #
 #   mpr.h
@@ -638,15 +638,15 @@ $(CONFIG)/obj/sqlite3.o: \
 
 ifeq ($(BIT_PACK_SQLITE),1)
 #
-#   libsqlite3
+#   libsql
 #
 DEPS_27 += $(CONFIG)/inc/sqlite3.h
 DEPS_27 += $(CONFIG)/inc/bit.h
 DEPS_27 += $(CONFIG)/obj/sqlite3.o
 
-$(CONFIG)/bin/libsqlite3.so: $(DEPS_27)
-	@echo '      [Link] $(CONFIG)/bin/libsqlite3.so'
-	$(CC) -shared -o $(CONFIG)/bin/libsqlite3.so $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/sqlite3.o" $(LIBS) 
+$(CONFIG)/bin/libsql.so: $(DEPS_27)
+	@echo '      [Link] $(CONFIG)/bin/libsql.so'
+	$(CC) -shared -o $(CONFIG)/bin/libsql.so $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/sqlite3.o" $(LIBS) 
 endif
 
 #
@@ -667,10 +667,10 @@ ifeq ($(BIT_PACK_SQLITE),1)
 DEPS_29 += $(CONFIG)/inc/sqlite3.h
 DEPS_29 += $(CONFIG)/inc/bit.h
 DEPS_29 += $(CONFIG)/obj/sqlite3.o
-DEPS_29 += $(CONFIG)/bin/libsqlite3.so
+DEPS_29 += $(CONFIG)/bin/libsql.so
 DEPS_29 += $(CONFIG)/obj/sqlite.o
 
-LIBS_29 += -lsqlite3
+LIBS_29 += -lsql
 
 $(CONFIG)/bin/sqlite: $(DEPS_29)
 	@echo '      [Link] $(CONFIG)/bin/sqlite'
@@ -962,7 +962,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_50 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_50 += -lsqlite3
+    LIBS_50 += -lsql
 endif
 
 $(CONFIG)/bin/libmod_esp.so: $(DEPS_50)
@@ -1028,7 +1028,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_52 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_52 += -lsqlite3
+    LIBS_52 += -lsql
 endif
 LIBS_52 += -lmod_esp
 
@@ -1407,7 +1407,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_60 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_60 += -lsqlite3
+    LIBS_60 += -lsql
 endif
 
 $(CONFIG)/bin/libejs.so: $(DEPS_60)
@@ -1457,7 +1457,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_62 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_62 += -lsqlite3
+    LIBS_62 += -lsql
 endif
 
 $(CONFIG)/bin/ejs: $(DEPS_62)
@@ -1507,7 +1507,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_64 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_64 += -lsqlite3
+    LIBS_64 += -lsql
 endif
 
 $(CONFIG)/bin/ejsc: $(DEPS_64)
@@ -1648,7 +1648,7 @@ ifeq ($(BIT_PACK_PCRE),1)
 endif
 LIBS_69 += -lejs
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_69 += -lsqlite3
+    LIBS_69 += -lsql
 endif
 
 $(CONFIG)/bin/libmod_ejs.so: $(DEPS_69)
@@ -2168,7 +2168,7 @@ installBinary: $(DEPS_93)
 	mkdir -p "$(BIT_CACHE_PREFIX)"
 	mkdir -p "$(BIT_APP_PREFIX)"
 	rm -f "$(BIT_APP_PREFIX)/latest"
-	ln -s "4.4.2" "$(BIT_APP_PREFIX)/latest"
+	ln -s "4.4.3" "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_LOG_PREFIX)"
 	chmod 755 "$(BIT_LOG_PREFIX)"
 	[ `id -u` = 0 ] && chown $(WEB_USER):$(WEB_GROUP) "$(BIT_LOG_PREFIX)"; true

@@ -809,8 +809,8 @@
       <type>void</type>
       <name>renderResult</name>
       <anchorfile>group___esp_req.html</anchorfile>
-      <anchor>ga32581f3ba31472f878c2442cbcaa0567</anchor>
-      <arglist>(int status)</arglist>
+      <anchor>gaa2b3f5fa75787b7ec4d7515c28fb680c</anchor>
+      <arglist>(bool status)</arglist>
     </member>
   </compound>
   <compound kind="group">

@@ -3,7 +3,7 @@
 #
 
 PRODUCT            := appweb
-VERSION            := 4.4.2
+VERSION            := 4.4.3
 BUILD_NUMBER       := 0
 PROFILE            := static
 ARCH               := $(shell echo $(WIND_HOST_TYPE) | sed 's/-.*//')
@@ -128,7 +128,7 @@ endif
 TARGETS            += $(CONFIG)/bin/libhttp.a
 TARGETS            += $(CONFIG)/bin/http.out
 ifeq ($(BIT_PACK_SQLITE),1)
-TARGETS            += $(CONFIG)/bin/libsqlite3.a
+TARGETS            += $(CONFIG)/bin/libsql.a
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
 TARGETS            += $(CONFIG)/bin/sqlite.out
@@ -240,7 +240,7 @@ clean:
 	rm -f "$(CONFIG)/bin/libpcre.a"
 	rm -f "$(CONFIG)/bin/libhttp.a"
 	rm -f "$(CONFIG)/bin/http.out"
-	rm -f "$(CONFIG)/bin/libsqlite3.a"
+	rm -f "$(CONFIG)/bin/libsql.a"
 	rm -f "$(CONFIG)/bin/sqlite.out"
 	rm -f "$(CONFIG)/bin/libappweb.a"
 	rm -f "$(CONFIG)/bin/libmod_esp.a"
@@ -308,7 +308,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.4.2-0
+	@echo 4.4.3-0
 
 #
 #   mpr.h
@@ -646,15 +646,15 @@ $(CONFIG)/obj/sqlite3.o: \
 
 ifeq ($(BIT_PACK_SQLITE),1)
 #
-#   libsqlite3
+#   libsql
 #
 DEPS_27 += $(CONFIG)/inc/sqlite3.h
 DEPS_27 += $(CONFIG)/inc/bit.h
 DEPS_27 += $(CONFIG)/obj/sqlite3.o
 
-$(CONFIG)/bin/libsqlite3.a: $(DEPS_27)
-	@echo '      [Link] $(CONFIG)/bin/libsqlite3.a'
-	ar -cr $(CONFIG)/bin/libsqlite3.a "$(CONFIG)/obj/sqlite3.o"
+$(CONFIG)/bin/libsql.a: $(DEPS_27)
+	@echo '      [Link] $(CONFIG)/bin/libsql.a'
+	ar -cr $(CONFIG)/bin/libsql.a "$(CONFIG)/obj/sqlite3.o"
 endif
 
 #
@@ -675,10 +675,10 @@ ifeq ($(BIT_PACK_SQLITE),1)
 DEPS_29 += $(CONFIG)/inc/sqlite3.h
 DEPS_29 += $(CONFIG)/inc/bit.h
 DEPS_29 += $(CONFIG)/obj/sqlite3.o
-DEPS_29 += $(CONFIG)/bin/libsqlite3.a
+DEPS_29 += $(CONFIG)/bin/libsql.a
 DEPS_29 += $(CONFIG)/obj/sqlite.o
 
-LIBS_29 += -lsqlite3
+LIBS_29 += -lsql
 
 $(CONFIG)/bin/sqlite.out: $(DEPS_29)
 	@echo '      [Link] $(CONFIG)/bin/sqlite.out'
@@ -1020,7 +1020,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_52 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_52 += -lsqlite3
+    LIBS_52 += -lsql
 endif
 LIBS_52 += -lmod_esp
 
@@ -1440,7 +1440,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_62 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_62 += -lsqlite3
+    LIBS_62 += -lsql
 endif
 
 $(CONFIG)/bin/ejs.out: $(DEPS_62)
@@ -1490,7 +1490,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_64 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_64 += -lsqlite3
+    LIBS_64 += -lsql
 endif
 
 $(CONFIG)/bin/ejsc.out: $(DEPS_64)
@@ -1947,7 +1947,7 @@ ifeq ($(BIT_PACK_ESP),1)
     LIBS_82 += -lmod_esp
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_82 += -lsqlite3
+    LIBS_82 += -lsql
 endif
 ifeq ($(BIT_PACK_SSL),1)
     LIBS_82 += -lmod_ssl

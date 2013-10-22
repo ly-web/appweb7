@@ -3,7 +3,7 @@
 #
 
 PRODUCT            := appweb
-VERSION            := 4.4.2
+VERSION            := 4.4.3
 BUILD_NUMBER       := 0
 PROFILE            := default
 ARCH               := $(shell echo $(WIND_HOST_TYPE) | sed 's/-.*//')
@@ -128,7 +128,7 @@ endif
 TARGETS            += $(CONFIG)/bin/libhttp.out
 TARGETS            += $(CONFIG)/bin/http.out
 ifeq ($(BIT_PACK_SQLITE),1)
-TARGETS            += $(CONFIG)/bin/libsqlite3.out
+TARGETS            += $(CONFIG)/bin/libsql.out
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
 TARGETS            += $(CONFIG)/bin/sqlite.out
@@ -240,7 +240,7 @@ clean:
 	rm -f "$(CONFIG)/bin/libpcre.out"
 	rm -f "$(CONFIG)/bin/libhttp.out"
 	rm -f "$(CONFIG)/bin/http.out"
-	rm -f "$(CONFIG)/bin/libsqlite3.out"
+	rm -f "$(CONFIG)/bin/libsql.out"
 	rm -f "$(CONFIG)/bin/sqlite.out"
 	rm -f "$(CONFIG)/bin/libappweb.out"
 	rm -f "$(CONFIG)/bin/libmod_esp.out"
@@ -308,7 +308,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.4.2-0
+	@echo 4.4.3-0
 
 #
 #   mpr.h
@@ -626,15 +626,15 @@ $(CONFIG)/obj/sqlite3.o: \
 
 ifeq ($(BIT_PACK_SQLITE),1)
 #
-#   libsqlite3
+#   libsql
 #
 DEPS_27 += $(CONFIG)/inc/sqlite3.h
 DEPS_27 += $(CONFIG)/inc/bit.h
 DEPS_27 += $(CONFIG)/obj/sqlite3.o
 
-$(CONFIG)/bin/libsqlite3.out: $(DEPS_27)
-	@echo '      [Link] $(CONFIG)/bin/libsqlite3.out'
-	$(CC) -r -o $(CONFIG)/bin/libsqlite3.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/sqlite3.o" $(LIBS) 
+$(CONFIG)/bin/libsql.out: $(DEPS_27)
+	@echo '      [Link] $(CONFIG)/bin/libsql.out'
+	$(CC) -r -o $(CONFIG)/bin/libsql.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/sqlite3.o" $(LIBS) 
 endif
 
 #
@@ -655,7 +655,7 @@ ifeq ($(BIT_PACK_SQLITE),1)
 DEPS_29 += $(CONFIG)/inc/sqlite3.h
 DEPS_29 += $(CONFIG)/inc/bit.h
 DEPS_29 += $(CONFIG)/obj/sqlite3.o
-DEPS_29 += $(CONFIG)/bin/libsqlite3.out
+DEPS_29 += $(CONFIG)/bin/libsql.out
 DEPS_29 += $(CONFIG)/obj/sqlite.o
 
 $(CONFIG)/bin/sqlite.out: $(DEPS_29)
