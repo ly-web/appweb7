@@ -3,7 +3,7 @@
 #
 
 PRODUCT            := appweb
-VERSION            := 4.4.1
+VERSION            := 4.4.2
 BUILD_NUMBER       := 0
 PROFILE            := static
 ARCH               := $(shell echo $(WIND_HOST_TYPE) | sed 's/-.*//')
@@ -308,7 +308,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.4.1-0
+	@echo 4.4.2-0
 
 #
 #   mpr.h
@@ -1020,7 +1020,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_52 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_52 += -lsqlite3
+    LIBS_52 += -lsql
 endif
 LIBS_52 += -lmod_esp
 
@@ -1388,7 +1388,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_62 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_62 += -lsqlite3
+    LIBS_62 += -lsql
 endif
 
 $(CONFIG)/bin/ejs.out: $(DEPS_62)
@@ -1438,7 +1438,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_64 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_64 += -lsqlite3
+    LIBS_64 += -lsql
 endif
 
 $(CONFIG)/bin/ejsc.out: $(DEPS_64)
@@ -1895,7 +1895,7 @@ ifeq ($(BIT_PACK_ESP),1)
     LIBS_82 += -lmod_esp
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_82 += -lsqlite3
+    LIBS_82 += -lsql
 endif
 ifeq ($(BIT_PACK_SSL),1)
     LIBS_82 += -lmod_ssl

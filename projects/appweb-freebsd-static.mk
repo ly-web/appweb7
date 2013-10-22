@@ -3,7 +3,7 @@
 #
 
 PRODUCT            := appweb
-VERSION            := 4.4.1
+VERSION            := 4.4.2
 BUILD_NUMBER       := 0
 PROFILE            := static
 ARCH               := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
@@ -301,7 +301,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.4.1-0
+	@echo 4.4.2-0
 
 #
 #   mpr.h
@@ -1013,7 +1013,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_52 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_52 += -lsqlite3
+    LIBS_52 += -lsql
 endif
 LIBS_52 += -lmod_esp
 
@@ -1381,7 +1381,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_62 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_62 += -lsqlite3
+    LIBS_62 += -lsql
 endif
 
 $(CONFIG)/bin/ejs: $(DEPS_62)
@@ -1431,7 +1431,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_64 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_64 += -lsqlite3
+    LIBS_64 += -lsql
 endif
 
 $(CONFIG)/bin/ejsc: $(DEPS_64)
@@ -1888,7 +1888,7 @@ ifeq ($(BIT_PACK_ESP),1)
     LIBS_82 += -lmod_esp
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_82 += -lsqlite3
+    LIBS_82 += -lsql
 endif
 ifeq ($(BIT_PACK_SSL),1)
     LIBS_82 += -lmod_ssl
@@ -2160,7 +2160,7 @@ installBinary: $(DEPS_93)
 	mkdir -p "$(BIT_CACHE_PREFIX)"
 	mkdir -p "$(BIT_APP_PREFIX)"
 	rm -f "$(BIT_APP_PREFIX)/latest"
-	ln -s "4.4.1" "$(BIT_APP_PREFIX)/latest"
+	ln -s "4.4.2" "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_LOG_PREFIX)"
 	chmod 755 "$(BIT_LOG_PREFIX)"
 	[ `id -u` = 0 ] && chown $(WEB_USER):$(WEB_GROUP) "$(BIT_LOG_PREFIX)"; true

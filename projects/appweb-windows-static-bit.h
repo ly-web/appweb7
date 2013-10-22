@@ -158,7 +158,7 @@
     #define BIT_TUNE "size"
 #endif
 #ifndef BIT_VERSION
-    #define BIT_VERSION "4.4.1"
+    #define BIT_VERSION "4.4.2"
 #endif
 #ifndef BIT_WITHOUT_ALL
     #define BIT_WITHOUT_ALL "cgi,dir,doxygen,dsi,ejscript,esp,man,man2html,pmaker,php,sqlite,ssl"
@@ -259,10 +259,10 @@
     #define BIT_MINOR_VERSION 4
 #endif
 #ifndef BIT_PATCH_VERSION
-    #define BIT_PATCH_VERSION 1
+    #define BIT_PATCH_VERSION 2
 #endif
 #ifndef BIT_VNUM
-    #define BIT_VNUM 400040001
+    #define BIT_VNUM 400040002
 #endif
 
 /* Packs */
