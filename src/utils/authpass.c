@@ -129,7 +129,7 @@ PUBLIC int main(int argc, char *argv[])
         encodedPassword = mprMakePassword(sfmt("%s:%s:%s", username, realm, password), 16, 128);
     }
     httpRemoveUser(auth, username);
-    if (httpAddUser(auth, username, encodedPassword, roles) < 0) {
+    if (httpAddUser(auth, username, encodedPassword, roles) == 0) {
         exit(7);
     }
     if (maWriteAuthFile(auth, authFile) < 0) {

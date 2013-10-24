@@ -2363,7 +2363,7 @@ static int userDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S %S ?*", &name, &password, &abilities)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (httpAddUser(state->auth, name, password, abilities) < 0) {
+    if (httpAddUser(state->auth, name, password, abilities) == 0) {
         mprError("Cannot add user %s", name);
         return MPR_ERR_BAD_SYNTAX;
     }
