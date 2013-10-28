@@ -494,8 +494,8 @@ PUBLIC int espLoadConfig(HttpRoute *route)
         eroute->configLoaded = cinfo.mtime;
     }
     if (!eroute->config) {
-        //  DEPRECATED
         if (!mprPathExists(cpath, R_OK)) {
+            //  DEPRECATED
             eroute->config = mprCreateJson(MPR_JSON_OBJ);
             espAddComponent(route, "legacy-mvc", 0);
             eroute->legacy = 1;

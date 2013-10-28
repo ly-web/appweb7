@@ -42,7 +42,7 @@ PUBLIC bool canUser(cchar *abilities, bool warn)
     }
     if (warn) {
         setStatus(HTTP_CODE_UNAUTHORIZED);
-        renderResult(feedback("error", "Access Denied. Insufficient privilege."));
+        renderResult(feedback("error", "Access Denied. Insufficient Privilege."));
     }
     return 0;
 }
