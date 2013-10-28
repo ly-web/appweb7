@@ -167,7 +167,7 @@
     #define BIT_TUNE "size"
 #endif
 #ifndef BIT_VERSION
-    #define BIT_VERSION "4.4.2"
+    #define BIT_VERSION "4.4.3"
 #endif
 #ifndef BIT_WARN64TO32
     #define BIT_WARN64TO32 0
@@ -229,7 +229,7 @@
     #define BIT_VAPP_PREFIX "deploy"
 #endif
 #ifndef BIT_SRC_PREFIX
-    #define BIT_SRC_PREFIX "/usr/src/appweb-4.4.2"
+    #define BIT_SRC_PREFIX "/usr/src/appweb-4.4.3"
 #endif
 
 /* Suffixes */
@@ -271,10 +271,10 @@
     #define BIT_MINOR_VERSION 4
 #endif
 #ifndef BIT_PATCH_VERSION
-    #define BIT_PATCH_VERSION 2
+    #define BIT_PATCH_VERSION 3
 #endif
 #ifndef BIT_VNUM
-    #define BIT_VNUM 400040002
+    #define BIT_VNUM 400040003
 #endif
 
 /* Packs */
