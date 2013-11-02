@@ -1324,15 +1324,11 @@ static void cacheAtClient(HttpConn *conn)
             }
         } else {
             httpAddHeader(conn, "Cache-Control", "public, max-age=%d", cache->clientLifespan / MPR_TICKS_PER_SEC);
+            /* 
+                Old HTTP/1.0 clients don't understand Cache-Control 
+             */
+            httpAddHeader(conn, "Expires", "%s", mprFormatUniversalTime(MPR_HTTP_DATE, mprGetTime() + cache->clientLifespan));
         }
-#if KEEP
-        {
-            /* Old HTTP/1.0 clients don't understand Cache-Control */
-            struct tm   tm;
-            mprDecodeUniversalTime(&tm, conn->http->now + (expires * MPR_TICKS_PER_SEC));
-            httpAddHeader(conn, "Expires", "%s", mprFormatTime(MPR_HTTP_DATE, &tm));
-        }
-#endif
     }
 }
 
@@ -9809,6 +9805,7 @@ PUBLIC void httpMapFile(HttpConn *conn, HttpRoute *route)
     }
 #endif
     if (info->valid) {
+        //  OPT - inodes mean this is harder to cache when served from multiple servers.
         tx->etag = sfmt("\"%Lx-%Lx-%Lx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
     }
     mprTrace(7, "mapFile uri \"%s\", filename: \"%s\", extension: \"%s\"", rx->uri, tx->filename, tx->ext);
@@ -16174,7 +16171,9 @@ PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path
      */
     httpAppendHeader(conn, "Set-Cookie", 
         sjoin(name, "=", value, "; path=", path, domainAtt, domain, expiresAtt, expires, secure, httponly, NULL));
-    httpAppendHeader(conn, "Cache-Control", "no-cache=\"set-cookie\"");
+    if ((cp = mprLookupKey(conn->tx->headers, "Cache-Control")) == 0 || !scontains(cp, "no-cache")) {
+        httpAppendHeader(conn, "Cache-Control", "no-cache=\"set-cookie\"");
+    }
 }
 
 
