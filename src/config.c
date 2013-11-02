@@ -1768,6 +1768,7 @@ static int paramDirective(MaState *state, cchar *key, cchar *value)
 static int prefixDirective(MaState *state, cchar *key, cchar *value)
 {
     httpSetRoutePrefix(state->route, value);
+    httpSetRouteVar(state->route, "PREFIX", value);
     return 0;
 }
 
