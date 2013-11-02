@@ -84,7 +84,7 @@ static int sdbRemoveRec(Edi *edi, cchar *tableName, cchar *key);
 static MprList *sdbGetColumns(Edi *edi, cchar *tableName);
 static int sdbGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid);
 static MprList *sdbGetTables(Edi *edi);
-static int sdbGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numCols);
+static int sdbGetTableDimensions(Edi *edi, cchar *tableName, int *numRows, int *numCols);
 static int sdbLookupField(Edi *edi, cchar *tableName, cchar *fieldName);
 static Edi *sdbOpen(cchar *path, int flags);
 PUBLIC EdiGrid *sdbQuery(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list vargs);
@@ -107,7 +107,7 @@ static bool validName(cchar *str);
 static EdiProvider SdbProvider = {
     "sdb",
     sdbAddColumn, sdbAddIndex, sdbAddTable, sdbAddValidation, sdbChangeColumn, sdbClose, sdbCreateRec, sdbDelete, 
-    sdbGetColumns, sdbGetColumnSchema, sdbGetTables, sdbGetTableSchema, NULL, sdbLookupField, sdbOpen, sdbQuery, 
+    sdbGetColumns, sdbGetColumnSchema, sdbGetTables, sdbGetTableDimensions, NULL, sdbLookupField, sdbOpen, sdbQuery, 
     sdbReadField, sdbReadRec, sdbReadWhere, sdbRemoveColumn, sdbRemoveIndex, sdbRemoveRec, sdbRemoveTable, 
     sdbRenameTable, sdbRenameColumn, sdbSave, sdbUpdateField, sdbUpdateRec, sdbValidateRec,
 };
@@ -437,7 +437,7 @@ static MprList *sdbGetTables(Edi *edi)
 }
 
 
-static int sdbGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numCols)
+static int sdbGetTableDimensions(Edi *edi, cchar *tableName, int *numRows, int *numCols)
 {
     EdiGrid     *grid;
     EdiRec      *schema;

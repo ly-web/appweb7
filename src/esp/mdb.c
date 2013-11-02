@@ -68,7 +68,7 @@ static int mdbDelete(cchar *path);
 static MprList *mdbGetColumns(Edi *edi, cchar *tableName);
 static int mdbGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid);
 static MprList *mdbGetTables(Edi *edi);
-static int mdbGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numCols);
+static int mdbGetTableDimensions(Edi *edi, cchar *tableName, int *numRows, int *numCols);
 static int mdbLoad(Edi *edi, cchar *path);
 static int mdbLoadFromString(Edi *edi, cchar *string);
 static int mdbLookupField(Edi *edi, cchar *tableName, cchar *fieldName);
@@ -91,7 +91,7 @@ static bool mdbValidateRec(Edi *edi, EdiRec *rec);
 static EdiProvider MdbProvider = {
     "mdb",
     mdbAddColumn, mdbAddIndex, mdbAddTable, mdbAddValidation, mdbChangeColumn, mdbClose, mdbCreateRec, mdbDelete, 
-    mdbGetColumns, mdbGetColumnSchema, mdbGetTables, mdbGetTableSchema, mdbLoad, mdbLookupField, mdbOpen, mdbQuery, 
+    mdbGetColumns, mdbGetColumnSchema, mdbGetTables, mdbGetTableDimensions, mdbLoad, mdbLookupField, mdbOpen, mdbQuery, 
     mdbReadField, mdbReadRec, mdbReadWhere, mdbRemoveColumn, mdbRemoveIndex, mdbRemoveRec, mdbRemoveTable, 
     mdbRenameTable, mdbRenameColumn, mdbSave, mdbUpdateField, mdbUpdateRec, mdbValidateRec, 
 };
@@ -495,7 +495,7 @@ static MprList *mdbGetTables(Edi *edi)
 }
 
 
-static int mdbGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numCols)
+static int mdbGetTableDimensions(Edi *edi, cchar *tableName, int *numRows, int *numCols)
 {
     Mdb         *mdb;
     MdbTable    *table;
@@ -1151,6 +1151,9 @@ static void autoSave(Mdb *mdb, MdbTable *table)
 {
     assert(mdb);
 
+    if (mdb->edi.flags & EDI_NO_SAVE) {
+        return;
+    }
     if (mdb->edi.flags & EDI_AUTO_SAVE && !(mdb->edi.flags & EDI_SUPPRESS_SAVE)) {
         if (mdbSave((Edi*) mdb) < 0) {
             mprError("Cannot save database %s", mdb->edi.path);
