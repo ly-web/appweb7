@@ -995,14 +995,16 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     state->route = route;
 
     espSetDirs(route);
+    /*
+        Load the config.json here before creating routes. This allows config.json to override settings.
+     */
     if (espLoadConfig(route) < 0) {
         return MPR_ERR_CANT_LOAD;
     }
     if (prefix == 0 || *prefix == 0) {
         prefix = espGetConfig(route, "settings.appPrefix", 0);
-    } else {
-        espSetConfig(route, "settings.appPrefix", prefix);
     }
+    espSetConfig(route, "settings.appPrefix", prefix);
     espSetConfig(route, "settings.prefix", sjoin(prefix, eroute->serverPrefix, NULL));
 #if DEPRECATE || 1
     if (eroute->legacy) {

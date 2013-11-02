@@ -12262,6 +12262,9 @@ PUBLIC char *mprJsonToString(MprJson *obj, int flags)
 
 static void setValue(MprJson *obj, cchar *value)
 {
+    if (value == 0) {
+        value = "";
+    }
     obj->type = MPR_JSON_VALUE;
     if (scaselessmatch(value, "false")) {
         obj->type |= MPR_JSON_FALSE;

@@ -527,6 +527,9 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                     mprError("The %s AuthStore is not available on this platform", value);
                 }
             }
+            if ((value = espGetConfig(route, "settings.flat", 0)) != 0) {
+                eroute->flat = smatch(value, "true");
+            }
             if ((value = espGetConfig(route, "server.redirect", 0)) != 0) {
                 HttpRoute *alias = httpCreateAliasRoute(route, "/", 0, 0);
                 httpSetRouteTarget(alias, "redirect", "0 https://");
