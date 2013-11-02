@@ -234,7 +234,7 @@ PUBLIC cchar *ediGetTableSchemaAsJson(Edi *edi, cchar *tableName)
         return schema;
     }
     buf = mprCreateBuf(0, 0);
-    ediGetTableSchema(edi, tableName, NULL, &ncols);
+    ediGetTableDimensions(edi, tableName, NULL, &ncols);
     columns = ediGetColumns(edi, tableName);
     mprPutStringToBuf(buf, "{\n    \"types\": {\n");
     for (c = 0; c < ncols; c++) {
@@ -348,9 +348,9 @@ PUBLIC MprList *ediGetTables(Edi *edi)
 }
 
 
-PUBLIC int ediGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numCols)
+PUBLIC int ediGetTableDimensions(Edi *edi, cchar *tableName, int *numRows, int *numCols)
 {
-    return edi->provider->getTableSchema(edi, tableName, numRows, numCols);
+    return edi->provider->getTableDimensions(edi, tableName, numRows, numCols);
 }
 
 
@@ -447,6 +447,15 @@ PUBLIC Edi *ediOpen(cchar *path, cchar *providerName, int flags)
         return 0;
     }
     return provider->open(path, flags);
+}
+
+
+PUBLIC Edi *ediClone(Edi *edi)
+{
+    if (!edi) {
+        return 0;
+    }
+    return ediOpen(edi->path, edi->provider->name, edi->flags);
 }
 
 
@@ -1345,6 +1354,24 @@ PUBLIC void ediDefineMigration(Edi *edi, EdiMigration forw, EdiMigration back)
 {
     edi->forw = forw;
     edi->back = back;
+}
+
+
+PUBLIC void ediSetPrivate(Edi *edi, bool on)
+{
+    edi->flags &= ~EDI_PRIVATE;
+    if (on) {
+        edi->flags |= EDI_PRIVATE;
+    }
+}
+
+
+PUBLIC void ediSetReadonly(Edi *edi, bool on)
+{
+    edi->flags &= ~EDI_NO_SAVE;
+    if (on) {
+        edi->flags |= EDI_NO_SAVE;
+    }
 }
 
 

@@ -173,13 +173,7 @@ typedef struct EdiGrid {
 #define EDI_NO_SAVE         0x4         /**< Prevent saving to disk */
 #define EDI_LITERAL         0x8         /**< Literal schema in ediOpen source parameter */
 #define EDI_SUPPRESS_SAVE   0x10        /**< Temporarily suppress auto-save */
-
-#if KEEP
-/*
-    Database flags
- */
-#define EDI_NOSAVE      0x1             /**< ediOpen flag -- Don't save the database on modifications */
-#endif
+#define EDI_PRIVATE         0x20        /**< Create private clone of the database */
 
 typedef int (*EdiMigration)(struct Edi *db);
 
@@ -230,7 +224,7 @@ typedef struct EdiProvider {
     MprList   *(*getColumns)(Edi *edi, cchar *tableName);
     int       (*getColumnSchema)(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid);
     MprList   *(*getTables)(Edi *edi);
-    int       (*getTableSchema)(Edi *edi, cchar *tableName, int *numRows, int *numCols);
+    int       (*getTableDimensions)(Edi *edi, cchar *tableName, int *numRows, int *numCols);
     int       (*load)(Edi *edi, cchar *path);
     int       (*lookupField)(Edi *edi, cchar *tableName, cchar *fieldName);
     Edi       *(*open)(cchar *path, int flags);
@@ -413,6 +407,20 @@ PUBLIC int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int
 PUBLIC cchar *ediGetRecSchemaAsJson(EdiRec *rec);
 
 /**
+    Get table dimensions information.
+    @param edi Database handle
+    @param tableName Database table name
+    @param numRows Output parameter to receive the number of rows in the table
+        Set to null if this data is not required.
+    @param numCols Output parameter to receive the number of columns in the table
+        Set to null if this data is not required.
+    @return Zero if successful. Otherwise a negative MPR error code.
+    @ingroup Edi
+    @stability Evolving
+ */
+PUBLIC int ediGetTableDimensions(Edi *edi, cchar *tableName, int *numRows, int *numCols);
+
+/**
     Get a table schema and format as JSON
     @param edi Database handle
     @param tableName Name of table to examine
@@ -497,6 +505,9 @@ PUBLIC EdiProvider *ediLookupProvider(cchar *providerName);
     @stability Evolving
  */
 PUBLIC Edi *ediOpen(cchar *source, cchar *provider, int flags);
+
+//  MOB
+PUBLIC Edi *ediClone(Edi *edi);
 
 /**
     Run a query.
@@ -715,20 +726,9 @@ PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value);
  */
 PUBLIC EdiRec *ediSetFields(EdiRec *rec, MprJson *data);
 
-//  MOB - rename. This is not a schema.
-/**
-    Get table schema information.
-    @param edi Database handle
-    @param tableName Database table name
-    @param numRows Output parameter to receive the number of rows in the table
-        Set to null if this data is not required.
-    @param numCols Output parameter to receive the number of columns in the table
-        Set to null if this data is not required.
-    @return Zero if successful. Otherwise a negative MPR error code.
-    @ingroup Edi
-    @stability Evolving
- */
-PUBLIC int ediGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numCols);
+//MOB
+PUBLIC void ediSetReadonly(Edi *edi, bool on);
+PUBLIC void ediSetPrivate(Edi *edi, bool on);
 
 /**
     Write a value to a database table field
