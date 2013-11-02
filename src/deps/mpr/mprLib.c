@@ -4444,7 +4444,7 @@ PUBLIC char *mprReadCache(MprCache *cache, cchar *key, MprTime *modified, int64 
     char        *result;
 
     assert(cache);
-    assert(key && *key);
+    assert(key);
 
     if (cache->shared) {
         cache = cache->shared;
