@@ -270,7 +270,7 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
 PUBLIC void httpLogout(HttpConn *conn) 
 {
     conn->rx->authenticated = 0;
-    httpRemoveSessionVar(conn, HTTP_SESSION_USERNAME);
+    httpDestroySession(conn);
 }
 
 
@@ -10267,7 +10267,9 @@ PUBLIC void httpResetRoutePipeline(HttpRoute *route)
     }
     if (!route->parent || route->headers != route->parent->headers) {
         route->headers = 0;
+#if FUTURE
         httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "Content-Security-Policy", "default-src 'self'");
+#endif
         httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-XSS-Protection", "1; mode=block");
         httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-Frame-Options", "SAMEORIGIN");
         httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-Content-Type-Options", "nosniff");
@@ -14883,6 +14885,15 @@ static HttpSession *createSession(HttpConn *conn)
 }
 
 
+PUBLIC bool httpLookupSessionID(cchar *id)
+{
+    Http    *http;
+
+    http = MPR->httpService;
+    return mprReadCache(http->sessionCache, id, 0, 0) != 0;
+}
+
+
 static HttpSession *lookupSession(HttpConn *conn)
 {
     cchar   *data, *id;
@@ -15082,6 +15093,8 @@ PUBLIC cchar *httpGetSessionID(HttpConn *conn)
     assert(rx);
 
     if (rx->session) {
+        assert(rx->session->id);
+        assert(*rx->session->id);
         return rx->session->id;
     }
     if (rx->sessionProbed) {
