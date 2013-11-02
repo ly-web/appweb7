@@ -362,11 +362,13 @@ PUBLIC cchar *param(cchar *key)
 }
 
 
+#if UNUSED
 //  MOB DOC
 PUBLIC cchar *id()
 {
     return espGetParam(getConn(), "id", 0);
 }
+#endif
 
 
 PUBLIC MprJson *params()
@@ -596,7 +598,7 @@ PUBLIC void scripts(cchar *patterns)
 
     if (!patterns || !*patterns) {
         if (modeIs("release")) {
-            scripts("all.min.js");
+            scripts("all.min.js.gz");
         } else {
             if ((components = mprGetJson(eroute->config, "settings.components", 0)) != 0) {
                 for (ITERATE_JSON(components, component, ci)) {
@@ -625,6 +627,7 @@ PUBLIC void scripts(cchar *patterns)
             return;
         }
         for (ITERATE_ITEMS(files, path, next)) {
+            path = strim(path, ".gz", MPR_TRIM_END);
             uri = httpUri(conn, path, NULL);
             if (scontains(path, "-IE-") || scontains(path, "html5shiv")) {
                 espRender(conn, "    <!-- [if lt IE 9]>\n");
@@ -774,20 +777,24 @@ PUBLIC void stylesheets(cchar *patterns)
 
     if (!patterns || !*patterns) {
         if (modeIs("release")) {
-            stylesheets("all.min.css");
+            stylesheets("css/all.min.css.gz");
         } else {
-            stylesheets("css/fix.css");
             stylesheets("css/all.less");
         }
     }
     if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0) {
-        mprError("No scripts defined for current application mode");
+        mprError("No stylesheets defined for current application mode");
         return;
     }
     for (ITERATE_ITEMS(files, path, next)) {
+        path = strim(path, ".gz", MPR_TRIM_END);
         uri = httpUri(conn, path, NULL);
         kind = mprGetPathExt(path);
-        espRender(conn, "    <link rel='stylesheet/%s' type='text/css' href='%s' />\n", kind, uri);
+        if (smatch(kind, "css")) {
+            espRender(conn, "    <link rel='stylesheet' type='text/css' href='%s' />\n", uri);
+        } else {
+            espRender(conn, "    <link rel='stylesheet/%s' type='text/css' href='%s' />\n", kind, uri);
+        }
     }
 }
 

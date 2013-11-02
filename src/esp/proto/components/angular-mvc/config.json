@@ -19,7 +19,7 @@
             int: 0
         },
         redirect: "secure",
-        routePrefix: "/server",
+        serverPrefix: "/server",
         sendJson: true,
     },
     server: {

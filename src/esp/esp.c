@@ -865,7 +865,9 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
                 return;
             }
             mprWriteFileFmt(app->flatFile, "\n\n");
-            if (eroute->appName && *eroute->appName) {
+            if (kind & ESP_SRC) {
+                mprAddItem(app->flatItems, sfmt("esp_app_%s", eroute->appName));
+            } else if (eroute->appName && *eroute->appName) {
                 mprAddItem(app->flatItems, sfmt("esp_controller_%s_%s", eroute->appName, mprTrimPathExt(mprGetPathBase(source))));
             } else {
                 mprAddItem(app->flatItems, sfmt("esp_controller_%s", mprTrimPathExt(mprGetPathBase(source))));
@@ -1155,6 +1157,10 @@ static void compileFlat(HttpRoute *route)
     app->flatPath = mprJoinPath(eroute->cacheDir, sjoin(name, ".c", NULL));
 
     app->build = mprCreateList(0, MPR_LIST_STABLE);
+    path = mprJoinPath(app->eroute->srcDir, "app.c");
+    if (mprPathExists(path, R_OK)) {
+        mprAddItem(app->build, mprCreateKeyPair(path, "src", 0));
+    }
     if (eroute->controllersDir) {
         app->files = mprGetPathFiles(eroute->controllersDir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
@@ -1198,7 +1204,9 @@ static void compileFlat(HttpRoute *route)
         mprWriteFileFmt(app->flatFile, "#include \"esp.h\"\n\n");
 
         for (ITERATE_ITEMS(app->build, kp, next)) {
-            if (smatch(kp->value, "controller")) {
+            if (smatch(kp->value, "src")) {
+                kind = ESP_SRC;
+            } else if (smatch(kp->value, "controller")) {
                 kind = ESP_CONTROlLER;
             } else if (smatch(kp->value, "page")) {
                 kind = ESP_VIEW;
@@ -1210,7 +1218,7 @@ static void compileFlat(HttpRoute *route)
         if (app->slink) {
             mprAddItem(app->slink, route);
         }
-        mprWriteFileFmt(app->flatFile, "\nESP_EXPORT int esp_app_%s(HttpRoute *route, MprModule *module) {\n", name);
+        mprWriteFileFmt(app->flatFile, "\nESP_EXPORT int esp_app_%s_flat(HttpRoute *route, MprModule *module) {\n", name);
         for (next = 0; (line = mprGetNextItem(app->flatItems, &next)) != 0; ) {
             mprWriteFileFmt(app->flatFile, "    %s(route, module);\n", line);
         }
@@ -1477,7 +1485,7 @@ static void generateClientController(cchar *name, cchar *table, int argc, char *
     path = mprJoinPathExt(mprJoinPath(app->eroute->appDir, sfmt("%s/%sControl", name, title)), "js");
     defines = sclone("");
     tokens = mprDeserialize(sfmt("{ APPDIR: '%s', NAME: '%s', LIST: '%s', TABLE: '%s', TITLE: '%s', DEFINE_ACTIONS: '%s', SERVICE: '%s' }",
-        app->eroute->appDir, name, list, table, title, defines, app->eroute->routePrefix));
+        app->eroute->appDir, name, list, table, title, defines, app->eroute->serverPrefix));
     data = getTemplate(mprJoinPath(app->topComponent, "controller.js"), tokens);
     makeEspFile(path, data, "Controller Scaffold");
 }
@@ -1493,7 +1501,7 @@ static void generateClientModel(cchar *name, int argc, char **argv)
     }
     title = spascal(name);
     path = sfmt("%s/%s/%s.js", app->eroute->appDir, name, title);
-    tokens = mprDeserialize(sfmt("{ NAME: '%s', SERVICE: '%s', TITLE: '%s'}", name, app->eroute->routePrefix, title));
+    tokens = mprDeserialize(sfmt("{ NAME: '%s', SERVICE: '%s', TITLE: '%s'}", name, app->eroute->serverPrefix, title));
     data = getTemplate(mprJoinPath(app->topComponent, "model.js"), tokens);
     makeEspFile(path, data, "Scaffold Model");
 }
@@ -1579,7 +1587,7 @@ static void generateScaffoldViews(cchar *name, cchar *table, int argc, char **ar
     }
     list = smatch(name, table) ? sfmt("%ss", name) : table; 
     tokens = mprDeserialize(sfmt("{ NAME: '%s', LIST: '%s', TABLE: '%s', TITLE: '%s', SERVICE: '%s'}", 
-        name, list, table, spascal(name), app->eroute->routePrefix));
+        name, list, table, spascal(name), app->eroute->serverPrefix));
 
     if (espTestConfig(app->route, "generate.clientView", "true")) {
         path = sfmt("%s/%s/%s-list.html", app->eroute->appDir, name, name);
@@ -2129,7 +2137,6 @@ static void usageError()
     "\n"
     "  Commands:\n"
     "    esp clean\n"
-    "    esp compile\n"
     "    esp compile [pathFilters ...]\n"
     "    esp migrate [forward|backward|NNN]\n"
     "    esp generate app name [components...]\n"

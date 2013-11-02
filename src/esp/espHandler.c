@@ -190,6 +190,58 @@ static void startEsp(HttpQueue *q)
 }
 
 
+/*
+    Create a per user session database clone. Used for demos so one users updates to not change anothers view of the database
+ */
+static void pruneDatabases(Esp *esp)
+{
+    MprKey      *kp;
+
+    lock(esp);
+    for (ITERATE_KEYS(esp->databases, kp)) {
+        if (!httpLookupSessionID(kp->key)) {
+            mprRemoveKey(esp->databases, kp->key);
+            /* Restart scan */
+            kp = 0;
+        }
+    }
+    unlock(esp);
+}
+
+static int cloneDatabase(HttpConn *conn)
+{
+    Esp         *esp;
+    EspRoute    *eroute;
+    EspReq      *req;
+    cchar       *id;
+
+    req = conn->data;
+    eroute = conn->rx->route->eroute;
+    assert(eroute->edi);
+    assert(eroute->edi->flags & EDI_PRIVATE);
+
+    esp = req->esp;
+    if (!esp->databases) {
+        lock(esp);
+        if (!esp->databases) {
+            esp->databases = mprCreateHash(0, 0);
+            esp->databasesTimer = mprCreateTimerEvent(NULL, "esp-databases", 60 * 1000, pruneDatabases, esp, 0);
+        }
+        unlock(esp);
+    }
+    httpGetSession(conn, 1);
+    id = httpGetSessionID(conn);
+    if ((req->edi = mprLookupKey(esp->databases, id)) == 0) {
+        if ((req->edi = ediClone(eroute->edi)) == 0) {
+            mprError("Cannot clone database: %s", eroute->edi->path);
+            return MPR_ERR_CANT_OPEN;
+        }
+        mprAddKey(esp->databases, id, req->edi);
+    }
+    return 0;
+}
+
+
 static int runAction(HttpConn *conn)
 {
     HttpRx      *rx;
@@ -205,6 +257,9 @@ static int runAction(HttpConn *conn)
     eroute = route->eroute;
     assert(eroute);
 
+    if (eroute->edi && eroute->edi->flags & EDI_PRIVATE) {
+        cloneDatabase(conn);
+    }
     if (route->sourceName == 0 || *route->sourceName == '\0') {
         if (eroute->commonController) {
             (eroute->commonController)(conn);
@@ -323,6 +378,7 @@ static int runAction(HttpConn *conn)
             return 0;
         }
     }
+
     if (action) {
         controllerName = stok(sclone(rx->target), "-", &actionName);
         httpSetParam(conn, "controller", controllerName);
@@ -416,9 +472,8 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
                     }
                     if (recompile) {
                         mprLog(4, "ESP layout %s is newer than module %s, recompiling ...", layout, req->module);
-                        if (mprLookupModule(req->source) != 0 && !espUnloadModule(req->source, 0)) {
-                            mprError("Cannot unload module %s. Connections still open. Continue using old version.", 
-                                req->source);        
+                        if (mprLookupModule(req->source) != 0 && !espUnloadModule(req->source, BIT_ESP_RELOAD_TIMEOUT)) {
+                            mprError("Cannot unload module %s. Connections still open. Continue using old version.", req->source);        
                             recompile = 0;
                         }
                     }
@@ -493,30 +548,42 @@ static int loadApp(HttpRoute *route, MprDispatcher *dispatcher)
     if (!eroute->appName) {
         return 0;
     }
-    source = mprJoinPath(eroute->srcDir, "app.c");
-    if (!mprPathExists(source, R_OK)) {
-        return 0;
-    };
-    canonical = mprGetPortablePath(mprGetRelPath(source, route->documents));
     appName = eroute->appName ? eroute->appName : route->host->name;
-    cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", appName, canonical), -1, "app_");
-    eroute->appModulePath = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, cacheName, BIT_SHOBJ));
+
+    if (eroute->flat) {
+        source = mprJoinPath(eroute->cacheDir, sfmt("%s.c", eroute->appName));
+        eroute->appModulePath = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, eroute->appName, BIT_SHOBJ));
+        cacheName = 0;
+    } else {
+        source = mprJoinPath(eroute->srcDir, "app.c");
+        if (!mprPathExists(source, R_OK)) {
+            mprError("Cannot find %s", source);
+            return 0;
+        }
+        canonical = mprGetPortablePath(mprGetRelPath(source, route->documents));
+        cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", appName, canonical), -1, "app_");
+        eroute->appModulePath = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, cacheName, BIT_SHOBJ));
+    }
 
 #if !BIT_STATIC
     {
         MprModule   *mp;
         char        *errMsg, *entry;
         int         recompile;
-        if (espModuleIsStale(source, eroute->appModulePath, &recompile)) {
+        if (!eroute->flat && eroute->update && espModuleIsStale(source, eroute->appModulePath, &recompile)) {
             mprLog(4, "ESP application %s is newer than module %s, recompiling ...", source, eroute->appModulePath);
             /*  WARNING: GC yield here */
             if (recompile && !espCompile(route, dispatcher, source, eroute->appModulePath, cacheName, 0, &errMsg)) {
-                mprError("Cannot compile %s/app.c", eroute->srcDir);
+                mprError("Cannot compile %s", source);
                 return MPR_ERR_CANT_INITIALIZE;
             }
         }
         if ((mp = mprLookupModule(eroute->appName)) == 0) {
-            entry = sfmt("esp_app_%s", eroute->appName);
+            if (eroute->flat) {
+                entry = sfmt("esp_app_%s_flat", eroute->appName);
+            } else {
+                entry = sfmt("esp_app_%s", eroute->appName);
+            }
             if ((mp = mprCreateModule(eroute->appName, eroute->appModulePath, entry, route)) == 0) {
                 mprError("Cannot find module %s", eroute->appModulePath);
                 return MPR_ERR_CANT_FIND;
@@ -575,7 +642,7 @@ static EspRoute *allocEspRoute(HttpRoute *route)
     eroute->update = BIT_DEBUG;
     eroute->keepSource = BIT_DEBUG;
     eroute->lifespan = 0;
-    eroute->routePrefix = MPR->emptyString;
+    eroute->serverPrefix = MPR->emptyString;
     route->eroute = eroute;
     route->flags |= HTTP_ROUTE_XSRF;
     return eroute;
@@ -620,7 +687,7 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
     eroute->srcDir = parent->srcDir;
     eroute->controllersDir = parent->controllersDir;
     eroute->viewsDir = parent->viewsDir;
-    eroute->routePrefix = parent->routePrefix;
+    eroute->serverPrefix = parent->serverPrefix;
     route->eroute = eroute;
     return eroute;
 }
@@ -672,6 +739,7 @@ static void manageReq(EspReq *req, int flags)
         mprMark(req->source);
         mprMark(req->view);
         mprMark(req->data);
+        mprMark(req->edi);
     }
 }
 
@@ -683,6 +751,8 @@ static void manageEsp(Esp *esp, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(esp->actions);
+        mprMark(esp->databases);
+        mprMark(esp->databasesTimer);
         mprMark(esp->ediService);
 #if BIT_ESP_LEGACY || DEPRECATE
         mprMark(esp->internalOptions);
@@ -804,7 +874,7 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
 
     eroute = route->eroute;
     if (!eroute->legacy) {
-        httpAddRouteSet(route, eroute->routePrefix, set);
+        httpAddRouteSet(route, eroute->serverPrefix, set);
 #if DEPRECATE || 1
     } else {
         /*
@@ -918,6 +988,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     eroute->top = eroute;
     eroute->flat = scaselessmatch(flat, "true") || smatch(flat, "1");
     eroute->appName = sclone(name);
+    httpSetRouteVar(route, "APP_NAME", name);
     if (routeSet) {
         eroute->routeSet = sclone(routeSet);
     }
@@ -927,6 +998,12 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     if (espLoadConfig(route) < 0) {
         return MPR_ERR_CANT_LOAD;
     }
+    if (prefix == 0 || *prefix == 0) {
+        prefix = espGetConfig(route, "settings.appPrefix", 0);
+    } else {
+        espSetConfig(route, "settings.appPrefix", prefix);
+    }
+    espSetConfig(route, "settings.prefix", sjoin(prefix, eroute->serverPrefix, NULL));
 #if DEPRECATE || 1
     if (eroute->legacy) {
         eroute->clientDir = mprJoinPath(route->documents, "static");
@@ -951,6 +1028,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     } else {
         httpSetRouteName(route, sfmt("/%s", name));
     }
+    httpSetRouteVar(route, "PREFIX", prefix);
     httpSetRouteTarget(route, "run", "$&");
     httpAddRouteHandler(route, "espHandler", "");
     httpAddRouteHandler(route, "espHandler", "esp");
@@ -1277,11 +1355,11 @@ static int espPermResourceDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_MEMORY;
     }
     if (value == 0 || *value == '\0') {
-        httpAddPermResource(state->route, eroute->routePrefix, "{controller}");
+        httpAddPermResource(state->route, eroute->serverPrefix, "{controller}");
     } else {
         name = stok(sclone(value), ", \t\r\n", &next);
         while (name) {
-            httpAddPermResource(state->route, eroute->routePrefix, name);
+            httpAddPermResource(state->route, eroute->serverPrefix, name);
             name = stok(NULL, ", \t\r\n", &next);
         }
     }
@@ -1300,11 +1378,11 @@ static int espResourceDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_MEMORY;
     }
     if (value == 0 || *value == '\0') {
-        httpAddResource(state->route, eroute->routePrefix, "{controller}");
+        httpAddResource(state->route, eroute->serverPrefix, "{controller}");
     } else {
         name = stok(sclone(value), ", \t\r\n", &next);
         while (name) {
-            httpAddResource(state->route, eroute->routePrefix, name);
+            httpAddResource(state->route, eroute->serverPrefix, name);
             name = stok(NULL, ", \t\r\n", &next);
         }
     }
@@ -1324,11 +1402,11 @@ static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_MEMORY;
     }
     if (value == 0 || *value == '\0') {
-        httpAddResourceGroup(state->route, eroute->routePrefix, "{controller}");
+        httpAddResourceGroup(state->route, eroute->serverPrefix, "{controller}");
     } else {
         name = stok(sclone(value), ", \t\r\n", &next);
         while (name) {
-            httpAddResourceGroup(state->route, eroute->routePrefix, name);
+            httpAddResourceGroup(state->route, eroute->serverPrefix, name);
             name = stok(NULL, ", \t\r\n", &next);
         }
     }
@@ -1347,10 +1425,8 @@ static int espRoutePrefixDirective(MaState *state, cchar *key, cchar *value)
     if ((eroute = getEroute(state->route)) == 0) {
         return MPR_ERR_MEMORY;
     }
-    //  MOB - check name
-    eroute->routePrefix = value;
-    //  MOB - check name
-    httpSetRouteVar(state->route, "ESP_SERVER_PREFIX", eroute->routePrefix);
+    eroute->serverPrefix = value;
+    httpSetRouteVar(state->route, "ESP_SERVER_PREFIX", eroute->serverPrefix);
     return 0;
 }
 

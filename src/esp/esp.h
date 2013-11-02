@@ -32,6 +32,9 @@ extern "C" {
 #ifndef BIT_ESP_EMAIL_TIMEOUT
     #define BIT_ESP_EMAIL_TIMEOUT (60 * 1000)           /**< Timeout for sending email */
 #endif
+#ifndef BIT_ESP_RELOAD_TIMEOUT
+    #define BIT_ESP_RELOAD_TIMEOUT (5 * 1000)           /**< Timeout for reloading esp modules */
+#endif
 #define ESP_TOK_INCR        1024                        /**< Growth increment for ESP tokens */
 #define ESP_LISTEN          "4000"                      /**< Default listening endpoint for the esp program */
 #define ESP_UNLOAD_TIMEOUT  (10)                        /**< Very short timeout for reloading */
@@ -110,12 +113,15 @@ typedef struct EspState {
  */
 typedef struct Esp {
     MprHash         *actions;               /**< Table of actions */
+    MprHash         *databases;             /**< Cloned databases */
+    MprEvent        *databasesTimer;        /**< Database prune timer */ 
     MprHash         *views;                 /**< Table of views */
     MprHash         *internalOptions;       /**< Table of internal HTML control options  */
     MprThreadLocal  *local;                 /**< Thread local data */
     MprMutex        *mutex;                 /**< Multithread lock */
     EdiService      *ediService;            /**< Database service */
     int             inUse;                  /**< Active ESP request counter */
+    int             reloading;              /**< Reloading ESP and modules */
 } Esp;
 
 /**
@@ -178,8 +184,8 @@ typedef struct EspRoute {
     cchar           *mode;                  /**< Application run mode (debug|release) */
 
     cchar           *database;              /**< Name of database for route */
-    cchar           *routePrefix;           /**< Route prefix */
-    cchar           *routeSet;              /**< Route prefix */
+    cchar           *serverPrefix;          /**< Route prefix for server side routes */
+    cchar           *routeSet;              /**< Route set to use */
     int             flat;                   /**< Compile the application flat */
     int             keepSource;             /**< Preserve generated source */
     int             update;                 /**< Auto-update modified ESP source */
@@ -537,6 +543,7 @@ typedef struct EspReq {
     int             sessionProbed;          /**< Already probed for session store */
     int             lastDomID;              /**< Last generated DOM ID */
     EdiRec          *record;                /**< Current data record */
+    Edi             *edi;                   /**< Database for this request */
 } EspReq;
 
 /**
@@ -2179,8 +2186,10 @@ PUBLIC bool modeIs(cchar *check);
  */
 PUBLIC cchar *param(cchar *name);
 
+#if UNUSED
 //  MOB DOC
 PUBLIC cchar *id();
+#endif
 
 /**
     Get the request parameter hash table

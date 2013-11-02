@@ -239,14 +239,14 @@ PUBLIC void *espGetData(HttpConn *conn)
 
 PUBLIC Edi *espGetDatabase(HttpConn *conn)
 {
-    EspRoute    *eroute;
+    EspReq    *req;
 
-    eroute = conn->rx->route->eroute;
-    if (eroute == 0 || eroute->edi == 0) {
+    req = conn->data;
+    if (req == 0) {
         httpError(conn, 0, "Cannot get database instance");
         return 0;
     }
-    return eroute->edi;
+    return req->edi;
 }
 
 
@@ -496,10 +496,13 @@ PUBLIC int espLoadConfig(HttpRoute *route)
     if (!eroute->config) {
         if (!mprPathExists(cpath, R_OK)) {
             //  DEPRECATED
+            if (eroute->appName) {
+                mprLog(0, "App %s is missing %s, switching to legacy-mvc mode", eroute->appName, cpath);
+            }
             eroute->config = mprCreateJson(MPR_JSON_OBJ);
             espAddComponent(route, "legacy-mvc", 0);
             eroute->legacy = 1;
-            eroute->routePrefix = MPR->emptyString;
+            eroute->serverPrefix = MPR->emptyString;
 
         } else {
             if ((cdata = mprReadPathContents(cpath, NULL)) == 0) {
@@ -519,6 +522,17 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 mprBlendJson(settings, msettings, 0);
                 mprSetJsonValue(settings, "mode", eroute->mode, 0);
             }
+            if ((value = espGetConfig(route, "server.auth", 0)) != 0) {
+                if (httpSetAuthStore(route->auth, value) < 0) {
+                    mprError("The %s AuthStore is not available on this platform", value);
+                }
+            }
+            if ((value = espGetConfig(route, "server.redirect", 0)) != 0) {
+                HttpRoute *alias = httpCreateAliasRoute(route, "/", 0, 0);
+                httpSetRouteTarget(alias, "redirect", "0 https://");
+                httpAddRouteCondition(alias, "secure", "31536000000", HTTP_ROUTE_NOT);
+                httpFinalizeRoute(alias);
+            }
             if ((value = espGetConfig(route, "settings.showErrors", 0)) != 0) {
                 httpSetRouteShowErrors(route, smatch(value, "true"));
             }
@@ -528,17 +542,17 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             if ((value = espGetConfig(route, "settings.keepSource", 0)) != 0) {
                 eroute->keepSource = smatch(value, "true");
             }
-    #if DEPRECATE
-            /* Deprecated in 4.4.1 */
             if ((value = espGetConfig(route, "settings.serverPrefix", 0)) != 0) {
-                eroute->routePrefix = value;
-                httpSetRouteVar(route, "ESP_SERVER_PREFIX", eroute->routePrefix);
+                eroute->serverPrefix = value;
+                httpSetRouteVar(route, "ESP_SERVER_PREFIX", eroute->serverPrefix);
             }
-    #endif
+#if DEPRECATE || 1
+            /* Deprecated in 4.4.4 */
             if ((value = espGetConfig(route, "settings.routePrefix", 0)) != 0) {
-                eroute->routePrefix = sclone(value);
-                httpSetRouteVar(route, "ESP_SERVER_PREFIX", eroute->routePrefix);
+                eroute->serverPrefix = sclone(value);
+                httpSetRouteVar(route, "ESP_SERVER_PREFIX", eroute->serverPrefix);
             }
+#endif
             if ((value = espGetConfig(route, "settings.login.name", 0)) != 0) {
                 /* Automatic login as this user. Password not required */
                 httpSetAuthUsername(route->auth, value);
@@ -546,8 +560,12 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             if ((value = espGetConfig(route, "settings.xsrfToken", 0)) != 0) {
                 httpSetRouteXsrf(route, smatch(value, "true"));
             }
+            //  MOB - should this default to true for non-legacy
             if ((value = espGetConfig(route, "settings.sendJson", 0)) != 0) {
                 eroute->json = smatch(value, "true");
+            }
+            if ((value = espGetConfig(route, "settings.timeouts.session", 0)) != 0) {
+                route->limits->sessionTimeout = stoi(value) * 1000;
             }
             if (espTestConfig(route, "settings.map", "compressed")) {
                 httpAddRouteMapping(route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
@@ -564,7 +582,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             eroute->json = espTestConfig(route, "settings.json", "1");
             if (espHasComponent(route, "legacy-mvc")) {
                 eroute->legacy = 1;
-                eroute->routePrefix = MPR->emptyString;
+                eroute->serverPrefix = MPR->emptyString;
             }
         }
     }
@@ -680,6 +698,7 @@ PUBLIC void espRenderConfig(HttpConn *conn)
 
     eroute = conn->rx->route->eroute;
     settings = mprLookupJson(eroute->config, "settings");
+    httpSetContentType(conn, "application/json");
     if (settings) {
         renderString(mprJsonToString(settings, MPR_JSON_QUOTES | MPR_JSON_PRETTY));
     } else {
@@ -1183,18 +1202,21 @@ PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout)
     if ((mp = mprLookupModule(module)) != 0) {
         esp = MPR->espService;
         mark = mprGetTicks();
+        esp->reloading = 1;
         do {
             lock(esp);
             /* Own request will count as 1 */
             if (esp->inUse <= 1) {
                 mprUnloadModule(mp);
+                esp->reloading = 0;
                 unlock(esp);
                 return 1;
             }
             unlock(esp);
             mprSleep(10);
-            /* Defaults to 10 secs */
+
         } while (mprGetRemainingTicks(mark, timeout) > 0);
+        esp->reloading = 0;
     }
     return 0;
 }
@@ -1230,7 +1252,7 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->layoutsDir);
         mprMark(eroute->link);
         mprMark(eroute->searchPath);
-        mprMark(eroute->routePrefix);
+        mprMark(eroute->serverPrefix);
         mprMark(eroute->routeSet);
         mprMark(eroute->srcDir);
         mprMark(eroute->viewsDir);
