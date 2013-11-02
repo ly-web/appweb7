@@ -259,6 +259,8 @@ static int runAction(HttpConn *conn)
 
     if (eroute->edi && eroute->edi->flags & EDI_PRIVATE) {
         cloneDatabase(conn);
+    } else {
+        req->edi = eroute->edi;
     }
     if (route->sourceName == 0 || *route->sourceName == '\0') {
         if (eroute->commonController) {
