@@ -403,7 +403,7 @@ DEPS_3 = $(DEPS_3) $(CONFIG)\inc\bit.h
 $(CONFIG)\obj\removeFiles.obj: \
     package\windows\removeFiles.c $(DEPS_3)
 	@echo '   [Compile] $(CONFIG)/obj/removeFiles.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\removeFiles.obj -Fd$(CONFIG)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" package\windows\removeFiles.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\removeFiles.obj -Fd$(CONFIG)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) package\windows\removeFiles.c
 
 #
 #   removeFiles
@@ -443,7 +443,7 @@ DEPS_7 = $(DEPS_7) $(CONFIG)\inc\bitos.h
 $(CONFIG)\obj\mprLib.obj: \
     src\deps\mpr\mprLib.c $(DEPS_7)
 	@echo '   [Compile] $(CONFIG)/obj/mprLib.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\mprLib.obj -Fd$(CONFIG)\obj\mprLib.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\mpr\mprLib.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mprLib.obj -Fd$(CONFIG)\obj\mprLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\mprLib.c
 
 #
 #   libmpr
@@ -475,7 +475,7 @@ DEPS_10 = $(DEPS_10) $(CONFIG)\inc\bitos.h
 $(CONFIG)\obj\estLib.obj: \
     src\deps\est\estLib.c $(DEPS_10)
 	@echo '   [Compile] $(CONFIG)/obj/estLib.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\estLib.obj -Fd$(CONFIG)\obj\estLib.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\est\estLib.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\estLib.obj -Fd$(CONFIG)\obj\estLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\est\estLib.c
 
 !IF "$(BIT_PACK_EST)" == "1"
 #
@@ -501,7 +501,7 @@ DEPS_12 = $(DEPS_12) $(CONFIG)\inc\est.h
 $(CONFIG)\obj\mprSsl.obj: \
     src\deps\mpr\mprSsl.c $(DEPS_12)
 	@echo '   [Compile] $(CONFIG)/obj/mprSsl.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)\src" "-I$(BIT_PACK_OPENSSL_PATH)\include" src\deps\mpr\mprSsl.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)\src" "-I$(BIT_PACK_OPENSSL_PATH)\include" src\deps\mpr\mprSsl.c
 
 #
 #   libmprssl
@@ -552,7 +552,7 @@ DEPS_14 = $(DEPS_14) $(CONFIG)\inc\mpr.h
 $(CONFIG)\obj\manager.obj: \
     src\deps\mpr\manager.c $(DEPS_14)
 	@echo '   [Compile] $(CONFIG)/obj/manager.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\manager.obj -Fd$(CONFIG)\obj\manager.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\mpr\manager.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\manager.obj -Fd$(CONFIG)\obj\manager.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\manager.c
 
 #
 #   manager
@@ -579,7 +579,7 @@ DEPS_16 = $(DEPS_16) $(CONFIG)\inc\mpr.h
 $(CONFIG)\obj\makerom.obj: \
     src\deps\mpr\makerom.c $(DEPS_16)
 	@echo '   [Compile] $(CONFIG)/obj/makerom.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\makerom.obj -Fd$(CONFIG)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\mpr\makerom.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\makerom.obj -Fd$(CONFIG)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\makerom.c
 
 #
 #   makerom
@@ -624,7 +624,7 @@ DEPS_20 = $(DEPS_20) $(CONFIG)\inc\pcre.h
 $(CONFIG)\obj\pcre.obj: \
     src\deps\pcre\pcre.c $(DEPS_20)
 	@echo '   [Compile] $(CONFIG)/obj/pcre.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\pcre.obj -Fd$(CONFIG)\obj\pcre.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\pcre\pcre.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\pcre.obj -Fd$(CONFIG)\obj\pcre.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\pcre\pcre.c
 
 !IF "$(BIT_PACK_PCRE)" == "1"
 #
@@ -657,7 +657,7 @@ DEPS_23 = $(DEPS_23) $(CONFIG)\inc\mpr.h
 $(CONFIG)\obj\httpLib.obj: \
     src\deps\http\httpLib.c $(DEPS_23)
 	@echo '   [Compile] $(CONFIG)/obj/httpLib.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\httpLib.obj -Fd$(CONFIG)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\http\httpLib.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\httpLib.obj -Fd$(CONFIG)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\http\httpLib.c
 
 #
 #   libhttp
@@ -693,7 +693,7 @@ DEPS_25 = $(DEPS_25) $(CONFIG)\inc\http.h
 $(CONFIG)\obj\http.obj: \
     src\deps\http\http.c $(DEPS_25)
 	@echo '   [Compile] $(CONFIG)/obj/http.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\http.obj -Fd$(CONFIG)\obj\http.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\http\http.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\http.obj -Fd$(CONFIG)\obj\http.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\http\http.c
 
 #
 #   http
@@ -740,7 +740,7 @@ DEPS_28 = $(DEPS_28) $(CONFIG)\inc\sqlite3.h
 $(CONFIG)\obj\sqlite3.obj: \
     src\deps\sqlite\sqlite3.c $(DEPS_28)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite3.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite3.obj -Fd$(CONFIG)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\sqlite\sqlite3.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite3.obj -Fd$(CONFIG)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\sqlite\sqlite3.c
 
 !IF "$(BIT_PACK_SQLITE)" == "1"
 #
@@ -764,7 +764,7 @@ DEPS_30 = $(DEPS_30) $(CONFIG)\inc\sqlite3.h
 $(CONFIG)\obj\sqlite.obj: \
     src\deps\sqlite\sqlite.c $(DEPS_30)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite.obj -Fd$(CONFIG)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\sqlite\sqlite.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite.obj -Fd$(CONFIG)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\sqlite\sqlite.c
 
 !IF "$(BIT_PACK_SQLITE)" == "1"
 #
@@ -812,7 +812,7 @@ DEPS_34 = $(DEPS_34) $(CONFIG)\inc\customize.h
 $(CONFIG)\obj\config.obj: \
     src\config.c $(DEPS_34)
 	@echo '   [Compile] $(CONFIG)/obj/config.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\config.obj -Fd$(CONFIG)\obj\config.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\config.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\config.obj -Fd$(CONFIG)\obj\config.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\config.c
 
 #
 #   convenience.obj
@@ -823,7 +823,7 @@ DEPS_35 = $(DEPS_35) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\convenience.obj: \
     src\convenience.c $(DEPS_35)
 	@echo '   [Compile] $(CONFIG)/obj/convenience.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\convenience.obj -Fd$(CONFIG)\obj\convenience.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\convenience.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\convenience.obj -Fd$(CONFIG)\obj\convenience.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\convenience.c
 
 #
 #   dirHandler.obj
@@ -834,7 +834,7 @@ DEPS_36 = $(DEPS_36) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\dirHandler.obj: \
     src\dirHandler.c $(DEPS_36)
 	@echo '   [Compile] $(CONFIG)/obj/dirHandler.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\dirHandler.obj -Fd$(CONFIG)\obj\dirHandler.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\dirHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\dirHandler.obj -Fd$(CONFIG)\obj\dirHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\dirHandler.c
 
 #
 #   fileHandler.obj
@@ -845,7 +845,7 @@ DEPS_37 = $(DEPS_37) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\fileHandler.obj: \
     src\fileHandler.c $(DEPS_37)
 	@echo '   [Compile] $(CONFIG)/obj/fileHandler.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\fileHandler.obj -Fd$(CONFIG)\obj\fileHandler.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\fileHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\fileHandler.obj -Fd$(CONFIG)\obj\fileHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\fileHandler.c
 
 #
 #   log.obj
@@ -856,7 +856,7 @@ DEPS_38 = $(DEPS_38) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\log.obj: \
     src\log.c $(DEPS_38)
 	@echo '   [Compile] $(CONFIG)/obj/log.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\log.obj -Fd$(CONFIG)\obj\log.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\log.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\log.obj -Fd$(CONFIG)\obj\log.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\log.c
 
 #
 #   server.obj
@@ -867,7 +867,7 @@ DEPS_39 = $(DEPS_39) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\server.obj: \
     src\server.c $(DEPS_39)
 	@echo '   [Compile] $(CONFIG)/obj/server.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\server.obj -Fd$(CONFIG)\obj\server.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\server.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\server.obj -Fd$(CONFIG)\obj\server.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server.c
 
 #
 #   libappweb
@@ -938,7 +938,7 @@ DEPS_44 = $(DEPS_44) $(CONFIG)\inc\pcre.h
 $(CONFIG)\obj\edi.obj: \
     src\esp\edi.c $(DEPS_44)
 	@echo '   [Compile] $(CONFIG)/obj/edi.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\edi.obj -Fd$(CONFIG)\obj\edi.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\esp\edi.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\edi.obj -Fd$(CONFIG)\obj\edi.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\edi.c
 
 #
 #   espAbbrev.obj
@@ -949,7 +949,7 @@ DEPS_45 = $(DEPS_45) $(CONFIG)\inc\esp.h
 $(CONFIG)\obj\espAbbrev.obj: \
     src\esp\espAbbrev.c $(DEPS_45)
 	@echo '   [Compile] $(CONFIG)/obj/espAbbrev.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\espAbbrev.obj -Fd$(CONFIG)\obj\espAbbrev.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\esp\espAbbrev.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\espAbbrev.obj -Fd$(CONFIG)\obj\espAbbrev.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espAbbrev.c
 
 #
 #   espFramework.obj
@@ -960,7 +960,7 @@ DEPS_46 = $(DEPS_46) $(CONFIG)\inc\esp.h
 $(CONFIG)\obj\espFramework.obj: \
     src\esp\espFramework.c $(DEPS_46)
 	@echo '   [Compile] $(CONFIG)/obj/espFramework.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\espFramework.obj -Fd$(CONFIG)\obj\espFramework.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\esp\espFramework.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\espFramework.obj -Fd$(CONFIG)\obj\espFramework.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espFramework.c
 
 #
 #   espHandler.obj
@@ -973,7 +973,7 @@ DEPS_47 = $(DEPS_47) $(CONFIG)\inc\edi.h
 $(CONFIG)\obj\espHandler.obj: \
     src\esp\espHandler.c $(DEPS_47)
 	@echo '   [Compile] $(CONFIG)/obj/espHandler.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\espHandler.obj -Fd$(CONFIG)\obj\espHandler.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\esp\espHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\espHandler.obj -Fd$(CONFIG)\obj\espHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espHandler.c
 
 #
 #   espHtml.obj
@@ -985,7 +985,7 @@ DEPS_48 = $(DEPS_48) $(CONFIG)\inc\edi.h
 $(CONFIG)\obj\espHtml.obj: \
     src\esp\espHtml.c $(DEPS_48)
 	@echo '   [Compile] $(CONFIG)/obj/espHtml.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\espHtml.obj -Fd$(CONFIG)\obj\espHtml.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\esp\espHtml.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\espHtml.obj -Fd$(CONFIG)\obj\espHtml.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espHtml.c
 
 #
 #   espTemplate.obj
@@ -996,7 +996,7 @@ DEPS_49 = $(DEPS_49) $(CONFIG)\inc\esp.h
 $(CONFIG)\obj\espTemplate.obj: \
     src\esp\espTemplate.c $(DEPS_49)
 	@echo '   [Compile] $(CONFIG)/obj/espTemplate.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\espTemplate.obj -Fd$(CONFIG)\obj\espTemplate.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\esp\espTemplate.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\espTemplate.obj -Fd$(CONFIG)\obj\espTemplate.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espTemplate.c
 
 #
 #   mdb.obj
@@ -1010,7 +1010,7 @@ DEPS_50 = $(DEPS_50) $(CONFIG)\inc\pcre.h
 $(CONFIG)\obj\mdb.obj: \
     src\esp\mdb.c $(DEPS_50)
 	@echo '   [Compile] $(CONFIG)/obj/mdb.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\mdb.obj -Fd$(CONFIG)\obj\mdb.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\esp\mdb.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mdb.obj -Fd$(CONFIG)\obj\mdb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\mdb.c
 
 #
 #   sdb.obj
@@ -1021,7 +1021,7 @@ DEPS_51 = $(DEPS_51) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\sdb.obj: \
     src\esp\sdb.c $(DEPS_51)
 	@echo '   [Compile] $(CONFIG)/obj/sdb.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\sdb.obj -Fd$(CONFIG)\obj\sdb.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\esp\sdb.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\sdb.obj -Fd$(CONFIG)\obj\sdb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\sdb.c
 
 !IF "$(BIT_PACK_ESP)" == "1"
 #
@@ -1085,7 +1085,7 @@ DEPS_53 = $(DEPS_53) $(CONFIG)\inc\esp.h
 $(CONFIG)\obj\esp.obj: \
     src\esp\esp.c $(DEPS_53)
 	@echo '   [Compile] $(CONFIG)/obj/esp.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\esp.obj -Fd$(CONFIG)\obj\esp.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\esp\esp.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\esp.obj -Fd$(CONFIG)\obj\esp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\esp.c
 
 !IF "$(BIT_PACK_ESP)" == "1"
 #
@@ -1483,7 +1483,7 @@ DEPS_61 = $(DEPS_61) $(CONFIG)\inc\ejs.slots.h
 $(CONFIG)\obj\ejsLib.obj: \
     src\deps\ejs\ejsLib.c $(DEPS_61)
 	@echo '   [Compile] $(CONFIG)/obj/ejsLib.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\ejsLib.obj -Fd$(CONFIG)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\ejs\ejsLib.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejsLib.obj -Fd$(CONFIG)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\ejs\ejsLib.c
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 #
@@ -1530,7 +1530,7 @@ DEPS_63 = $(DEPS_63) $(CONFIG)\inc\ejs.h
 $(CONFIG)\obj\ejs.obj: \
     src\deps\ejs\ejs.c $(DEPS_63)
 	@echo '   [Compile] $(CONFIG)/obj/ejs.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\ejs.obj -Fd$(CONFIG)\obj\ejs.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\ejs\ejs.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejs.obj -Fd$(CONFIG)\obj\ejs.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\ejs\ejs.c
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 #
@@ -1580,7 +1580,7 @@ DEPS_65 = $(DEPS_65) $(CONFIG)\inc\ejs.h
 $(CONFIG)\obj\ejsc.obj: \
     src\deps\ejs\ejsc.c $(DEPS_65)
 	@echo '   [Compile] $(CONFIG)/obj/ejsc.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\ejsc.obj -Fd$(CONFIG)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\ejs\ejsc.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejsc.obj -Fd$(CONFIG)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\ejs\ejsc.c
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 #
@@ -1660,7 +1660,7 @@ DEPS_68 = $(DEPS_68) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\cgiHandler.obj: \
     src\modules\cgiHandler.c $(DEPS_68)
 	@echo '   [Compile] $(CONFIG)/obj/cgiHandler.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\cgiHandler.obj -Fd$(CONFIG)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\modules\cgiHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\cgiHandler.obj -Fd$(CONFIG)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\cgiHandler.c
 
 !IF "$(BIT_PACK_CGI)" == "1"
 #
@@ -1711,7 +1711,7 @@ DEPS_70 = $(DEPS_70) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\ejsHandler.obj: \
     src\modules\ejsHandler.c $(DEPS_70)
 	@echo '   [Compile] $(CONFIG)/obj/ejsHandler.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\ejsHandler.obj -Fd$(CONFIG)\obj\ejsHandler.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\modules\ejsHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejsHandler.obj -Fd$(CONFIG)\obj\ejsHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\ejsHandler.c
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 #
@@ -1771,7 +1771,7 @@ DEPS_72 = $(DEPS_72) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\phpHandler.obj: \
     src\modules\phpHandler.c $(DEPS_72)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\phpHandler.obj -Fd$(CONFIG)\obj\phpHandler.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)\main" "-I$(BIT_PACK_PHP_PATH)\Zend" "-I$(BIT_PACK_PHP_PATH)\TSRM" src\modules\phpHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\phpHandler.obj -Fd$(CONFIG)\obj\phpHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)\main" "-I$(BIT_PACK_PHP_PATH)\Zend" "-I$(BIT_PACK_PHP_PATH)\TSRM" src\modules\phpHandler.c
 
 !IF "$(BIT_PACK_PHP)" == "1"
 #
@@ -1824,7 +1824,7 @@ DEPS_74 = $(DEPS_74) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\sslModule.obj: \
     src\modules\sslModule.c $(DEPS_74)
 	@echo '   [Compile] $(CONFIG)/obj/sslModule.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\sslModule.obj -Fd$(CONFIG)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)\src" "-I$(BIT_PACK_OPENSSL_PATH)\include" src\modules\sslModule.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\sslModule.obj -Fd$(CONFIG)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)\src" "-I$(BIT_PACK_OPENSSL_PATH)\include" src\modules\sslModule.c
 
 !IF "$(BIT_PACK_SSL)" == "1"
 #
@@ -1902,7 +1902,7 @@ DEPS_76 = $(DEPS_76) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\authpass.obj: \
     src\utils\authpass.c $(DEPS_76)
 	@echo '   [Compile] $(CONFIG)/obj/authpass.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\authpass.obj -Fd$(CONFIG)\obj\authpass.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\utils\authpass.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\authpass.obj -Fd$(CONFIG)\obj\authpass.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\authpass.c
 
 #
 #   authpass
@@ -1950,7 +1950,7 @@ DEPS_78 = $(DEPS_78) $(CONFIG)\inc\bit.h
 $(CONFIG)\obj\cgiProgram.obj: \
     src\utils\cgiProgram.c $(DEPS_78)
 	@echo '   [Compile] $(CONFIG)/obj/cgiProgram.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\cgiProgram.obj -Fd$(CONFIG)\obj\cgiProgram.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\utils\cgiProgram.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\cgiProgram.obj -Fd$(CONFIG)\obj\cgiProgram.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\cgiProgram.c
 
 !IF "$(BIT_PACK_CGI)" == "1"
 #
@@ -1981,7 +1981,7 @@ DEPS_81 = $(DEPS_81) $(CONFIG)\inc\esp.h
 $(CONFIG)\obj\slink.obj: \
     src\server\slink.c $(DEPS_81)
 	@echo '   [Compile] $(CONFIG)/obj/slink.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\slink.obj -Fd$(CONFIG)\obj\slink.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\server\slink.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\slink.obj -Fd$(CONFIG)\obj\slink.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\slink.c
 
 #
 #   libslink
@@ -2005,7 +2005,7 @@ DEPS_83 = $(DEPS_83) $(CONFIG)\inc\esp.h
 $(CONFIG)\obj\appweb.obj: \
     src\server\appweb.c $(DEPS_83)
 	@echo '   [Compile] $(CONFIG)/obj/appweb.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\appweb.obj -Fd$(CONFIG)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\server\appweb.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\appweb.obj -Fd$(CONFIG)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\appweb.c
 
 #
 #   appweb
@@ -2083,7 +2083,7 @@ DEPS_88 = $(DEPS_88) $(CONFIG)\inc\mpr.h
 $(CONFIG)\obj\appwebMonitor.obj: \
     src\server\windows\appwebMonitor.c $(DEPS_88)
 	@echo '   [Compile] $(CONFIG)/obj/appwebMonitor.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\appwebMonitor.obj -Fd$(CONFIG)\obj\appwebMonitor.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\server\windows\appwebMonitor.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\appwebMonitor.obj -Fd$(CONFIG)\obj\appwebMonitor.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\windows\appwebMonitor.c
 
 #
 #   appwebMonitor
@@ -2163,7 +2163,7 @@ DEPS_93 = $(DEPS_93) $(CONFIG)\inc\http.h
 $(CONFIG)\obj\testAppweb.obj: \
     test\src\testAppweb.c $(DEPS_93)
 	@echo '   [Compile] $(CONFIG)/obj/testAppweb.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\testAppweb.obj -Fd$(CONFIG)\obj\testAppweb.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test\src\testAppweb.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testAppweb.obj -Fd$(CONFIG)\obj\testAppweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\src\testAppweb.c
 
 #
 #   testHttp.obj
@@ -2174,7 +2174,7 @@ DEPS_94 = $(DEPS_94) $(CONFIG)\inc\testAppweb.h
 $(CONFIG)\obj\testHttp.obj: \
     test\src\testHttp.c $(DEPS_94)
 	@echo '   [Compile] $(CONFIG)/obj/testHttp.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\testHttp.obj -Fd$(CONFIG)\obj\testHttp.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test\src\testHttp.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testHttp.obj -Fd$(CONFIG)\obj\testHttp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\src\testHttp.c
 
 #
 #   testAppweb
@@ -2346,8 +2346,8 @@ stop: $(DEPS_100)
 #   installBinary
 #
 installBinary: $(DEPS_101)
-	if not exist "$(BIT_VAPP_PREFIX)\log" md "$(BIT_VAPP_PREFIX)\log"
-	if not exist "$(BIT_VAPP_PREFIX)\cache" md "$(BIT_VAPP_PREFIX)\cache"
+	if not exist "${log}" md "${log}"
+	if not exist "${cache}" md "${cache}"
 	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
 	copy /Y $(CONFIG)\bin\appweb.exe "$(BIT_VAPP_PREFIX)\bin\appweb.exe"
 	copy /Y $(CONFIG)\bin\appman.exe "$(BIT_VAPP_PREFIX)\bin\appman.exe"
@@ -2676,77 +2676,77 @@ installBinary: $(DEPS_101)
 !IF "$(BIT_PACK_ESP)" == "1"
 	copy /Y $(CONFIG)\bin\esp.conf "$(BIT_VAPP_PREFIX)\bin\esp.conf"
 !ENDIF
-	if not exist "$(BIT_VAPP_PREFIX)\web\bench" md "$(BIT_VAPP_PREFIX)\web\bench"
-	copy /Y src\server\web\bench\1b.html "$(BIT_VAPP_PREFIX)\web\bench\1b.html"
-	copy /Y src\server\web\bench\4k.html "$(BIT_VAPP_PREFIX)\web\bench\4k.html"
-	copy /Y src\server\web\bench\64k.html "$(BIT_VAPP_PREFIX)\web\bench\64k.html"
-	if not exist "$(BIT_VAPP_PREFIX)\web" md "$(BIT_VAPP_PREFIX)\web"
-	copy /Y src\server\web\favicon.ico "$(BIT_VAPP_PREFIX)\web\favicon.ico"
-	if not exist "$(BIT_VAPP_PREFIX)\web\icons" md "$(BIT_VAPP_PREFIX)\web\icons"
-	copy /Y src\server\web\icons\back.gif "$(BIT_VAPP_PREFIX)\web\icons\back.gif"
-	copy /Y src\server\web\icons\blank.gif "$(BIT_VAPP_PREFIX)\web\icons\blank.gif"
-	copy /Y src\server\web\icons\compressed.gif "$(BIT_VAPP_PREFIX)\web\icons\compressed.gif"
-	copy /Y src\server\web\icons\folder.gif "$(BIT_VAPP_PREFIX)\web\icons\folder.gif"
-	copy /Y src\server\web\icons\parent.gif "$(BIT_VAPP_PREFIX)\web\icons\parent.gif"
-	copy /Y src\server\web\icons\space.gif "$(BIT_VAPP_PREFIX)\web\icons\space.gif"
-	copy /Y src\server\web\icons\text.gif "$(BIT_VAPP_PREFIX)\web\icons\text.gif"
-	copy /Y src\server\web\iehacks.css "$(BIT_VAPP_PREFIX)\web\iehacks.css"
-	if not exist "$(BIT_VAPP_PREFIX)\web\images" md "$(BIT_VAPP_PREFIX)\web\images"
-	copy /Y src\server\web\images\banner.jpg "$(BIT_VAPP_PREFIX)\web\images\banner.jpg"
-	copy /Y src\server\web\images\bottomShadow.jpg "$(BIT_VAPP_PREFIX)\web\images\bottomShadow.jpg"
-	copy /Y src\server\web\images\shadow.jpg "$(BIT_VAPP_PREFIX)\web\images\shadow.jpg"
-	copy /Y src\server\web\index.html "$(BIT_VAPP_PREFIX)\web\index.html"
-	copy /Y src\server\web\min-index.html "$(BIT_VAPP_PREFIX)\web\min-index.html"
-	copy /Y src\server\web\print.css "$(BIT_VAPP_PREFIX)\web\print.css"
-	copy /Y src\server\web\screen.css "$(BIT_VAPP_PREFIX)\web\screen.css"
-	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
-	copy /Y src\server\web\test\bench.html "$(BIT_VAPP_PREFIX)\web\test\bench.html"
-	copy /Y src\server\web\test\test.cgi "$(BIT_VAPP_PREFIX)\web\test\test.cgi"
-	copy /Y src\server\web\test\test.ejs "$(BIT_VAPP_PREFIX)\web\test\test.ejs"
-	copy /Y src\server\web\test\test.esp "$(BIT_VAPP_PREFIX)\web\test\test.esp"
-	copy /Y src\server\web\test\test.html "$(BIT_VAPP_PREFIX)\web\test\test.html"
-	copy /Y src\server\web\test\test.php "$(BIT_VAPP_PREFIX)\web\test\test.php"
-	copy /Y src\server\web\test\test.pl "$(BIT_VAPP_PREFIX)\web\test\test.pl"
-	copy /Y src\server\web\test\test.py "$(BIT_VAPP_PREFIX)\web\test\test.py"
-	if not exist "$(BIT_VAPP_PREFIX)\web\test" md "$(BIT_VAPP_PREFIX)\web\test"
-	copy /Y src\server\web\test\test.cgi "$(BIT_VAPP_PREFIX)\web\test\test.cgi"
-	copy /Y src\server\web\test\test.pl "$(BIT_VAPP_PREFIX)\web\test\test.pl"
-	copy /Y src\server\web\test\test.py "$(BIT_VAPP_PREFIX)\web\test\test.py"
-	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
-	copy /Y src\server\mime.types "$(BIT_VAPP_PREFIX)\mime.types"
-	copy /Y src\server\self.crt "$(BIT_VAPP_PREFIX)\self.crt"
-	copy /Y src\server\self.key "$(BIT_VAPP_PREFIX)\self.key"
+	if not exist "${web}\bench" md "${web}\bench"
+	copy /Y src\server\web\bench\1b.html ${web}\bench\1b.html
+	copy /Y src\server\web\bench\4k.html ${web}\bench\4k.html
+	copy /Y src\server\web\bench\64k.html ${web}\bench\64k.html
+	if not exist "${web}" md "${web}"
+	copy /Y src\server\web\favicon.ico ${web}\favicon.ico
+	if not exist "${web}\icons" md "${web}\icons"
+	copy /Y src\server\web\icons\back.gif ${web}\icons\back.gif
+	copy /Y src\server\web\icons\blank.gif ${web}\icons\blank.gif
+	copy /Y src\server\web\icons\compressed.gif ${web}\icons\compressed.gif
+	copy /Y src\server\web\icons\folder.gif ${web}\icons\folder.gif
+	copy /Y src\server\web\icons\parent.gif ${web}\icons\parent.gif
+	copy /Y src\server\web\icons\space.gif ${web}\icons\space.gif
+	copy /Y src\server\web\icons\text.gif ${web}\icons\text.gif
+	copy /Y src\server\web\iehacks.css ${web}\iehacks.css
+	if not exist "${web}\images" md "${web}\images"
+	copy /Y src\server\web\images\banner.jpg ${web}\images\banner.jpg
+	copy /Y src\server\web\images\bottomShadow.jpg ${web}\images\bottomShadow.jpg
+	copy /Y src\server\web\images\shadow.jpg ${web}\images\shadow.jpg
+	copy /Y src\server\web\index.html ${web}\index.html
+	copy /Y src\server\web\min-index.html ${web}\min-index.html
+	copy /Y src\server\web\print.css ${web}\print.css
+	copy /Y src\server\web\screen.css ${web}\screen.css
+	if not exist "${web}\test" md "${web}\test"
+	copy /Y src\server\web\test\bench.html ${web}\test\bench.html
+	copy /Y src\server\web\test\test.cgi ${web}\test\test.cgi
+	copy /Y src\server\web\test\test.ejs ${web}\test\test.ejs
+	copy /Y src\server\web\test\test.esp ${web}\test\test.esp
+	copy /Y src\server\web\test\test.html ${web}\test\test.html
+	copy /Y src\server\web\test\test.php ${web}\test\test.php
+	copy /Y src\server\web\test\test.pl ${web}\test\test.pl
+	copy /Y src\server\web\test\test.py ${web}\test\test.py
+	if not exist "${web}\test" md "${web}\test"
+	copy /Y src\server\web\test\test.cgi ${web}\test\test.cgi
+	copy /Y src\server\web\test\test.pl ${web}\test\test.pl
+	copy /Y src\server\web\test\test.py ${web}\test\test.py
+	if not exist "${etc}" md "${etc}"
+	copy /Y src\server\mime.types ${etc}\mime.types
+	copy /Y src\server\self.crt ${etc}\self.crt
+	copy /Y src\server\self.key ${etc}\self.key
 !IF "$(BIT_PACK_PHP)" == "1"
-	copy /Y src\server\php.ini "$(BIT_VAPP_PREFIX)\php.ini"
+	copy /Y src\server\php.ini ${etc}\php.ini
 !ENDIF
-	copy /Y src\server\appweb.conf "$(BIT_VAPP_PREFIX)\appweb.conf"
-	copy /Y src\server\sample.conf "$(BIT_VAPP_PREFIX)\sample.conf"
-	copy /Y src\server\self.crt "$(BIT_VAPP_PREFIX)\self.crt"
-	copy /Y src\server\self.key "$(BIT_VAPP_PREFIX)\self.key"
-	if not exist "$(BIT_VAPP_PREFIX)\inc" md "$(BIT_VAPP_PREFIX)\inc"
-	copy /Y $(CONFIG)\inc\bit.h "$(BIT_VAPP_PREFIX)\inc\bit.h"
-	copy /Y src\bitos.h "$(BIT_VAPP_PREFIX)\inc\bitos.h"
-	copy /Y src\appweb.h "$(BIT_VAPP_PREFIX)\inc\appweb.h"
-	copy /Y src\customize.h "$(BIT_VAPP_PREFIX)\inc\customize.h"
-	copy /Y src\deps\est\est.h "$(BIT_VAPP_PREFIX)\inc\est.h"
-	copy /Y src\deps\http\http.h "$(BIT_VAPP_PREFIX)\inc\http.h"
-	copy /Y src\deps\mpr\mpr.h "$(BIT_VAPP_PREFIX)\inc\mpr.h"
-	copy /Y src\deps\pcre\pcre.h "$(BIT_VAPP_PREFIX)\inc\pcre.h"
-	copy /Y src\deps\sqlite\sqlite3.h "$(BIT_VAPP_PREFIX)\inc\sqlite3.h"
+	copy /Y src\server\appweb.conf ${etc}\appweb.conf
+	copy /Y src\server\sample.conf ${etc}\sample.conf
+	copy /Y src\server\self.crt ${etc}\self.crt
+	copy /Y src\server\self.key ${etc}\self.key
+	if not exist "${vapp}\inc" md "${vapp}\inc"
+	copy /Y $(CONFIG)\inc\bit.h ${vapp}\inc\bit.h
+	copy /Y src\bitos.h ${vapp}\inc\bitos.h
+	copy /Y src\appweb.h ${vapp}\inc\appweb.h
+	copy /Y src\customize.h ${vapp}\inc\customize.h
+	copy /Y src\deps\est\est.h ${vapp}\inc\est.h
+	copy /Y src\deps\http\http.h ${vapp}\inc\http.h
+	copy /Y src\deps\mpr\mpr.h ${vapp}\inc\mpr.h
+	copy /Y src\deps\pcre\pcre.h ${vapp}\inc\pcre.h
+	copy /Y src\deps\sqlite\sqlite3.h ${vapp}\inc\sqlite3.h
 !IF "$(BIT_PACK_ESP)" == "1"
-	copy /Y src\esp\edi.h "$(BIT_VAPP_PREFIX)\inc\edi.h"
-	copy /Y src\esp\esp.h "$(BIT_VAPP_PREFIX)\inc\esp.h"
-	copy /Y src\esp\mdb.h "$(BIT_VAPP_PREFIX)\inc\mdb.h"
+	copy /Y src\esp\edi.h ${vapp}\inc\edi.h
+	copy /Y src\esp\esp.h ${vapp}\inc\esp.h
+	copy /Y src\esp\mdb.h ${vapp}\inc\mdb.h
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-	copy /Y src\deps\ejs\ejs.h "$(BIT_VAPP_PREFIX)\inc\ejs.h"
-	copy /Y src\deps\ejs\ejs.slots.h "$(BIT_VAPP_PREFIX)\inc\ejs.slots.h"
-	copy /Y src\deps\ejs\ejsByteGoto.h "$(BIT_VAPP_PREFIX)\inc\ejsByteGoto.h"
+	copy /Y src\deps\ejs\ejs.h ${vapp}\inc\ejs.h
+	copy /Y src\deps\ejs\ejs.slots.h ${vapp}\inc\ejs.slots.h
+	copy /Y src\deps\ejs\ejsByteGoto.h ${vapp}\inc\ejsByteGoto.h
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 	copy /Y $(CONFIG)\bin\ejs.mod "$(BIT_VAPP_PREFIX)\bin\ejs.mod"
 !ENDIF
-	echo 'set LOG_DIR "$(BIT_VAPP_PREFIX)/log"\nset CACHE_DIR "$(BIT_VAPP_PREFIX)/cache"\nDocuments "$(BIT_VAPP_PREFIX)/web\nListen 80\nListenSecure 443\n' >$(BIT_VAPP_PREFIX)/install.conf
+	echo 'set LOG_DIR "$(BIT_VAPP_PREFIX)/log"\nset CACHE_DIR "$(BIT_VAPP_PREFIX)/cache"\nDocuments "$(BIT_VAPP_PREFIX)/web\nListen 80\nListenSecure 443\n' >${etc}/install.conf
 
 #
 #   start
