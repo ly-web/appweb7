@@ -25,8 +25,8 @@ angular.module('esp.resource', [])
     };
     var DefaultParams = {
         prefix: function() {
-            if (Esp.config && Esp.config.routePrefix) {
-                return Esp.config.routePrefix.slice(1);
+            if (Esp.config && Esp.config.prefix) {
+                return Esp.config.prefix.slice(1);
             }
             return "service";
         },          

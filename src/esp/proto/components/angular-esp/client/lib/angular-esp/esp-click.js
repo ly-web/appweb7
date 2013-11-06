@@ -4,20 +4,21 @@
 'use strict';
 
 angular.module('esp.click', [])
-.directive('espClick', function ($location) {
+.directive('espClick', function (Esp, $location, $rootScope, $timeout) {
     return {
         restrict: 'A',
         link: function (scope, element, attrs) {
             attrs.$observe('esp-click', function(val) {
                 element.on('click', function() {
                     scope.$apply(function() {
-                        $location.path(attrs.espClick);
-                            /* MOB
-                        if (Esp.can('edit')) {
+                        if (!Esp.config.auth || Esp.can('edit')) {
+                            $location.path(attrs.espClick);
                         } else {
-                            $rootScope.feedback = { warning: "Insufficient Privilege" };
+                            /* Delay so that the feedback clear won't immediately erase */
+                            $timeout(function() {
+                                $rootScope.feedback = { error: "Insufficient Privilege" };
+                            }, 0, true);
                         }
-                        */
                     });
                 });
             });

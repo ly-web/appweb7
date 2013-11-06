@@ -9,7 +9,6 @@
         'html5shiv', 
         'font-awesome', 
         'less', 
-        'more', 
         'respond'
     ],
     settings: {
@@ -18,12 +17,16 @@
             float: 2,                                                                                                  
             int: 0
         },
+        loginRequired: "",
         redirect: "secure",
         serverPrefix: "/server",
         sendJson: true,
+        timeouts: {
+            session: 300,
+        },
+        xsrfToken: true,
     },
     server: {
-        authStore: "app",
         database: "${DATABASE}://${NAME}.${DATABASE}",
     },
     generate: {

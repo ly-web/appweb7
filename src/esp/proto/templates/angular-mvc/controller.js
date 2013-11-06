@@ -4,7 +4,7 @@
 
 'use strict';
 
-angular.module('${TITLE}').controller('${TITLE}Control', function (Esp, ${TITLE}, $location, $routeParams, $scope) {
+angular.module('app').controller('${TITLE}Control', function (Esp, ${TITLE}, $location, $routeParams, $scope) {
     angular.extend($scope, $routeParams);
     /*
         Resource calling sequence:
@@ -36,11 +36,12 @@ angular.module('${TITLE}').controller('${TITLE}Control', function (Esp, ${TITLE}
     };
 });
 
-angular.module('${TITLE}').config(function($routeProvider) {
+angular.module('app').config(function($routeProvider) {
+    var esp = angular.module('esp');
     var Default = {
         controller: '${TITLE}Control',
         resolve: { action: 'Esp' },
     };
-    $routeProvider.when('/', angular.extend({}, Default, {templateUrl: '/app/${NAME}/${NAME}-list.html'}));
-    $routeProvider.when('/${NAME}/:id', angular.extend({}, Default, {templateUrl: '/app/${NAME}/${NAME}-edit.html'}));
+    $routeProvider.when('/', angular.extend({}, Default, {templateUrl: esp.url('/app/${NAME}/${NAME}-list.html')}));
+    $routeProvider.when('/${NAME}/:id', angular.extend({}, Default, {templateUrl: esp.url('/app/${NAME}/${NAME}-edit.html')}));
 });

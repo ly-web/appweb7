@@ -60,7 +60,7 @@ angular.module('esp.input-group', [])
                         angular.forEach(columns, function(field, key) {
                             var i = 0 + key;
                             var label = (labels && labels[i]) ? ('label="' + labels[i] + '"') : Esp.titlecase(field);
-                            var style = (classes && classes[i]) ? classes[i] : '';
+                            var style = (classes && classes[i]) ? ('class=' + classes[i]) : '';
                             var type = (types && types[i]) ? ('type="' + types[i] + '"') : '';
                             var filter = (filters && filters[i]) ? ('filter="' + filters[i] + '"') : '';
                             var width = (widths && widths[i]) ? ('width="' + widths[i] + '"') : '';

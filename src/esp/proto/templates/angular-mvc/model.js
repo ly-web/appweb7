@@ -3,6 +3,6 @@
  */
 'use strict';
 
-angular.module('${TITLE}').factory('${TITLE}', function (EspResource) {
+angular.module('app').factory('${TITLE}', function (EspResource) {
     return EspResource.group("${NAME}");
 });

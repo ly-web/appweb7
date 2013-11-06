@@ -4,6 +4,7 @@
     mode: "debug",
     modes: {
         debug: {
+            flat: false,
             showErrors: true,
             keepSource: true,
             update: true,
@@ -16,13 +17,25 @@
             },
         },
         release: {
+            flat: true,
             map: "compressed",
             showErrors: false,
             update: false,
             keepSource: false,
+            login: {
+                name: "",
+                abilities: {
+                    edit: true,
+                    view: true,
+                },
+            },
         },
     },
     settings: {
+        loginRequired: "",
+        refresh: 1000,
+        serverPrefix: "/server",
+        sendJson: false,
         timeouts: {
             session: 1800,
         },

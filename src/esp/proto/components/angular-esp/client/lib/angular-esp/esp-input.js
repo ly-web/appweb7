@@ -8,6 +8,7 @@
         labelWidth="style"
         width="style"
         filter="Filter"
+        value="Value"       # Use instead of model
 
     Expands to a datatype specific input element. This directive expects a $scope.schema to describe the datatype.
     <esp-input type="radio" ng-model="post.title" ...>
@@ -37,10 +38,14 @@ angular.module('esp.input', [])
         replace: true,
         link: function (scope, element, attrs) {
             var name = attrs.ngModel;
-            var parts = name.split('.');
-            var model = parts[0];
-            var field = parts[1];
-
+            var value, model, field;
+            if (name) {
+                var parts = name.split('.');
+                model = parts[0];
+                field = parts[1];
+            }
+            value = attrs.value;
+        
             function title(str) {
                 str = str.replace(/[A-Z][a-zA-Z0-9$_]*/g, ' $&');
                 var words = str.split(/[ \.]/g);
@@ -123,7 +128,9 @@ angular.module('esp.input', [])
                     element.removeAttr('readonly');
                     $compile(newelt)(scope);
 
-                    var value = scope[model][field];
+                    if (!value) {
+                        value = scope[model][field];
+                    }
                     if (attrs.filter) {
                         var filterParts = attrs.filter.split(':');
                         var kind = filterParts[0];

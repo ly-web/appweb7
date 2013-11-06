@@ -10,6 +10,7 @@
         'respond'
     ],
     settings: {
+        auth: "app",
         formats: {
             date: 'yyyy-MM-dd',
             float: 2,                                                                                                  
@@ -20,7 +21,6 @@
         sendJson: true,
     },
     server: {
-        authStore: "app",
         database: "${DATABASE}://${NAME}.${DATABASE}",
     },
     generate: {

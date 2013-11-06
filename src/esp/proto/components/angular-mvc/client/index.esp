@@ -1,49 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-csp>
 <head>
     <title>${TITLE}</title>
     <meta charset="utf-8" />
+    <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
+    <% stylesheets(NULL); %>
     <% securityToken(); %>
-    <link href='http://data/x-icon;,' rel='shortcut icon' />
-    <!-- [if lt IE 9]>
-    <script src='lib/html5shiv.js'></script>
-    <![endif]-->
-    <link rel='stylesheet' type='text/css' href='css/fix.css' />
-    <% if (modeIs("debug")) { %>
-    <link rel='stylesheet/less' type='text/css' href='css/all.less' />
-    <% } else {
-    %> <link rel='stylesheet' type='text/css' href='css/all.min.css.gz' />
-    <% } %>
 </head>
-<body>
+<body data-config='<% renderConfig(); id='body' %>'>
     <nav class="navbar navbar-inverse navbar-static-top">
         <div class="navbar-header">
             <a class="navbar-brand ng-cloak" href="#">${TITLE}</a>
         </div>
     </nav>
-    <main class="home ng-cloak">
-        <section class="row container">
-            <section class="col-md-10 content">
-                <div ng-view class="ng-cloak"></div>
-            </section>
+    <main class="container ng-cloak">
+        <section class="col-md-10 content">
+            <div ng-view class="ng-cloak"></div>
         </section>
-        <div ng-repeat="(field, msg) in feedback">
-            <span class="ng-hide-remove" ng-class="'feedback-' + field" ng-cloak>{{msg}}</span>       
-        </div> 
     </main>
-    <% if (modeIs("debug")) { %>
-        <script src='lib/angular/angular.js'></script>
-        <script src='lib/angular/angular-route.js'></script>
-        <script src='lib/angular/angular-animate.js'></script>
-        <script src='lib/angular/angular-resource.js'></script>
-        <script src='lib/angular/angular-bootstrap.js'></script>
-        <script src='lib/angular-ui-bootstrap/ui-bootstrap-tpls.js'></script>
-        <script src='lib/less/less.js'></script>
-        <script src='app/main.js'></script>
-    <%
-    scripts("lib/*/ext/**.js,app/*/**.js");
-    } else {
-    %> <script src='all.min.js.gz'></script>
-    <% } %>
+    <div ng-repeat="(field, msg) in feedback">
+        <span class="ng-hide-remove" ng-class="'feedback-' + field" ng-cloak>{{msg}}</span>       
+    </div> 
+    <% scripts(NULL); %>
 </body>
 </html>
