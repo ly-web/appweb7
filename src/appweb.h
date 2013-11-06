@@ -47,7 +47,7 @@ typedef struct MaAppweb {
     cchar               *group;                 /**< O/S application group name */
     cchar               *localPlatform;         /**< Local (dev) platform os-arch-profile (lower case) */
     cchar               *platform;              /**< Target platform os-arch-profile (lower case) */
-    cchar               *platformDir;           /**< Path to platform */
+    cchar               *platformDir;           /**< Path to platform directory containing binaries */
     cchar               *user;                  /**< O/S application user name */
     int                 uid;                    /**< User Id */
     int                 gid;                    /**< Group Id */

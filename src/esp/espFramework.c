@@ -522,7 +522,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 mprBlendJson(settings, msettings, 0);
                 mprSetJsonValue(settings, "mode", eroute->mode, 0);
             }
-            if ((value = espGetConfig(route, "server.auth", 0)) != 0) {
+            if ((value = espGetConfig(route, "auth", 0)) != 0) {
                 if (httpSetAuthStore(route->auth, value) < 0) {
                     mprError("The %s AuthStore is not available on this platform", value);
                 }
@@ -571,8 +571,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 route->limits->sessionTimeout = stoi(value) * 1000;
             }
             if (espTestConfig(route, "settings.map", "compressed")) {
-                httpAddRouteMapping(route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
-                httpAddRouteMapping(route, "html,xml", "${1}.gz");
+                httpAddRouteMapping(route, "css,html,js,less,xml", "min.${1}.gz, min.${1}, ${1}.gz");
             }
             if (!eroute->database) {
                 if ((eroute->database = espGetConfig(route, "server.database", 0)) != 0) {
@@ -694,6 +693,7 @@ PUBLIC ssize espRenderCached(HttpConn *conn)
 }
 
 
+#if UNUSED
 PUBLIC void espRenderConfig(HttpConn *conn)
 {
     EspRoute    *eroute;
@@ -703,12 +703,13 @@ PUBLIC void espRenderConfig(HttpConn *conn)
     settings = mprLookupJson(eroute->config, "settings");
     httpSetContentType(conn, "application/json");
     if (settings) {
-        renderString(mprJsonToString(settings, MPR_JSON_QUOTES | MPR_JSON_PRETTY));
+        renderString(mprJsonToString(settings, MPR_JSON_QUOTES));
     } else {
         renderError(HTTP_CODE_NOT_FOUND, "Cannot find config.settings to send to client");
     }
     finalize();
 }
+#endif
 
 
 PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)

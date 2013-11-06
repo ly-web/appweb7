@@ -855,6 +855,23 @@ PUBLIC void httpAddLegacyResource(HttpRoute *parent, cchar *prefix, cchar *resou
 #endif
 
 
+static void configAction(HttpConn *conn)
+{
+    EspRoute    *eroute;
+    MprJson     *settings;
+
+    eroute = conn->rx->route->eroute;
+    settings = mprLookupJson(eroute->config, "settings");
+    httpSetContentType(conn, "application/json");
+    if (settings) {
+        renderString(mprJsonToString(settings, MPR_JSON_QUOTES));
+    } else {
+        renderError(HTTP_CODE_NOT_FOUND, "Cannot find config.settings to send to client");
+    }
+    finalize();
+}
+
+
 PUBLIC void espAddEspRoute(HttpRoute *parent)
 {
     HttpRoute   *route;
@@ -865,7 +882,7 @@ PUBLIC void espAddEspRoute(HttpRoute *parent)
     if ((route = httpDefineRoute(parent, sfmt("%s/esp", prefix), "GET", sfmt("^%s/esp/{action}$", prefix), "esp-$1", ".")) != 0) {
         eroute = cloneEspRoute(route, parent->eroute);
         eroute->update = 0;
-        espDefineAction(route, "esp-config", espRenderConfig);
+        espDefineAction(route, "esp-config", configAction);
     }
 }
 

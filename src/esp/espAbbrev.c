@@ -479,6 +479,21 @@ PUBLIC ssize renderCached()
     return espRenderCached(getConn());;
 }
 
+PUBLIC ssize renderConfig()
+{
+    HttpConn    *conn;
+    EspRoute    *eroute;
+    MprJson     *settings;
+
+    conn = getConn();
+    eroute = conn->rx->route->eroute;
+    settings = mprLookupJson(eroute->config, "settings");
+    if (settings) {
+        return renderString(mprJsonToString(settings, MPR_JSON_QUOTES));
+    }
+    return 0;
+}
+
 
 PUBLIC void renderError(int status, cchar *fmt, ...)
 {
@@ -598,7 +613,8 @@ PUBLIC void scripts(cchar *patterns)
 
     if (!patterns || !*patterns) {
         if (modeIs("release")) {
-            scripts("all.min.js.gz");
+            //  MOB - angular specific
+            scripts(sfmt("all-%s.min.js", espGetConfig(route, "version", "0")));
         } else {
             if ((components = mprGetJson(eroute->config, "settings.components", 0)) != 0) {
                 for (ITERATE_JSON(components, component, ci)) {
@@ -613,18 +629,18 @@ PUBLIC void scripts(cchar *patterns)
                     }
                 }
             }
+            //  MOB - angular specific
             scripts("app/main.js");
             scripts("app/*/**.js");
         }
+        return;
     }
     if (patterns && *patterns) {
-        if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0) {
-            mprError("No scripts defined for current application mode");
-            return;
-        }
-        if (mprGetListLength(files) == 0) {
-            mprError("No scripts found for ESP scripts(%s)", patterns);
-            return;
+        if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0 || mprGetListLength(files) == 0) {
+            if (!scontains(patterns, "*")) {
+                files = mprCreateList(0, 0);
+                mprAddItem(files, patterns);
+            }
         }
         for (ITERATE_ITEMS(files, path, next)) {
             path = strim(path, ".gz", MPR_TRIM_END);
@@ -776,15 +792,17 @@ PUBLIC void stylesheets(cchar *patterns)
     patterns = httpExpandRouteVars(route, patterns);
 
     if (!patterns || !*patterns) {
+        //  MOB - angular specific
         if (modeIs("release")) {
-            stylesheets("css/all.min.css.gz");
+            stylesheets(sfmt("css/all-%s.min.css", espGetConfig(route, "version", "0")));
         } else {
             stylesheets("css/all.less");
         }
-    }
-    if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0) {
-        mprError("No stylesheets defined for current application mode");
         return;
+    }
+    if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0 || mprGetListLength(files) == 0) {
+        files = mprCreateList(0, 0);
+        mprAddItem(files, patterns);
     }
     for (ITERATE_ITEMS(files, path, next)) {
         path = strim(path, ".gz", MPR_TRIM_END);
