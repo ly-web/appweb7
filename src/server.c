@@ -325,7 +325,7 @@ PUBLIC int maSetPlatform(cchar *platformPath)
 {
     MaAppweb        *appweb;
     MprDirEntry     *dp;
-    cchar           *platform, *dir, *junk, *appwebExe;
+    cchar           *platform, *dir, *junk, *appwebExe, *path;
     int             next, i, notrace;
 
     appweb = MPR->appwebService;
@@ -337,7 +337,7 @@ PUBLIC int maSetPlatform(cchar *platformPath)
     
     platform = mprGetPathBase(platformPath);
 
-    if (mprPathExists(platformPath, X_OK) && mprIsPathDir(platformPath)) {
+    if (mprPathExists(mprJoinPath(platformPath, "appweb" BIT_EXE), X_OK)) {
         appweb->platform = platform;
         appweb->platformDir = sclone(platformPath);
 
@@ -371,9 +371,12 @@ PUBLIC int maSetPlatform(cchar *platformPath)
         for (i = 0; !mprSamePath(dir, "/") && i < 64; i++) {
             for (ITERATE_ITEMS(mprGetPathFiles(dir, 0), dp, next)) {
                 if (dp->isDir && sstarts(mprGetPathBase(dp->name), platform)) {
-                    appweb->platform = mprGetPathBase(dp->name);
-                    appweb->platformDir = mprJoinPath(dir, dp->name);
-                    break;
+                    path = mprJoinPath(dir, dp->name);
+                    if (mprPathExists(mprJoinPath(path, "appweb" BIT_EXE), X_OK)) {
+                        appweb->platform = mprGetPathBase(dp->name);
+                        appweb->platformDir = mprJoinPath(dir, dp->name);
+                        break;
+                    }
                 }
             }
             dir = mprGetPathParent(dir);

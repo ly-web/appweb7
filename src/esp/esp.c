@@ -469,6 +469,7 @@ static MprList *getRoutes()
     for (prev = -1; (route = mprGetPrevItem(host->routes, &prev)) != 0; ) {
         if ((eroute = route->eroute) == 0 || !eroute->compile) {
             /* No ESP configuration for compiling */
+            mprTrace(3, "Skip route name %s - no esp configuration", route->name);
             continue;
         }
         if (filterRouteName) {
