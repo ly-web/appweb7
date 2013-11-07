@@ -1625,12 +1625,16 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     if (module) {
         mprSetModuleFinalizer(module, unloadEsp);
     }
-#if BIT_ESP_LEGACY || DEPRECATE
+#if BIT_ESP_LEGACY || DEPRECATE || 1
     /* Thread-safe */
     if ((esp->internalOptions = mprCreateHash(-1, MPR_HASH_STATIC_VALUES)) == 0) {
         return 0;
     }
     espInitHtmlOptions(esp);
+    //  MOB
+#if BIT_PACK_ESP && BIT_ESP_LEGACY
+    espInitHtmlOptions2(esp);
+#endif
 #endif
     /* Thread-safe */
     if ((esp->views = mprCreateHash(-1, MPR_HASH_STATIC_VALUES)) == 0) {

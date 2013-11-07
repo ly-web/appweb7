@@ -538,7 +538,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         case ESP_TOK_CONTROL:
             control = stok(token, " \t\r\n", &token);
             if (scmp(control, "content") == 0) {
-                mprPutStringToBuf(body, CONTENT_MARKER);
+                mprPutStringToBuf(body, ESP_CONTENT_MARKER);
 
             } else if (scmp(control, "include") == 0) {
                 if (token == 0) {
@@ -642,12 +642,12 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             return 0;
         }
 #if BIT_DEBUG
-        if (!scontains(layoutCode, CONTENT_MARKER)) {
+        if (!scontains(layoutCode, ESP_CONTENT_MARKER)) {
             *err = sfmt("Layout page is missing content marker: %s", layout);
             return 0;
         }
 #endif
-        bodyCode = sreplace(layoutCode, CONTENT_MARKER, mprGetBufStart(body));
+        bodyCode = sreplace(layoutCode, ESP_CONTENT_MARKER, mprGetBufStart(body));
     } else {
         bodyCode = mprGetBufStart(body);
     }

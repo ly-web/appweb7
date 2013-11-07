@@ -5,7 +5,7 @@
     int     r, f;
 %>
 <h1>${TITLE} List</h1>
-<table class="table table-striped table-bordered table-hover table-condensed">
+<table class='table table-striped table-bordered table-hover table-condensed'>
     <thead>
         <tr><%
             rec = grid->records[0];
@@ -14,17 +14,17 @@
             } %>
         </tr>
     </thead>
-    <tbody><% { 
+    <tbody><%
         for (r = 0; r < grid->nrecords; r++) {
             rec = grid->records[r];
             render("<tr onclick='document.location=\"/${NAME}/%d\"'\n", rec->id);
             for (f = 0; f < rec->nfields; f++) {
 //  MOB - need abbrev API
-                value = ediFormatField(0, rec->fields[f].value);
-                render(<td>%s</td>\n", value;
+                value = ediFormatField(0, &rec->fields[f]);
+                render("<td>%s</td>\n", value);
             }
             render("</tr>\n");
         } %>
     </tbody>
 </table>
-<a class="btn btn-primary" esp-click="/${NAME}/">New ${TITLE}</a>
+<a class='btn btn-primary' esp-click='/${NAME}/'>New ${TITLE}</a>

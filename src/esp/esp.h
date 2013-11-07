@@ -54,7 +54,7 @@ extern "C" {
  */
 typedef void (*EspProc)(HttpConn *conn);
 
-#define CONTENT_MARKER  "${_ESP_CONTENT_MARKER_}"       /* Layout content marker */
+#define ESP_CONTENT_MARKER  "${_ESP_CONTENT_MARKER_}"       /* Layout content marker */
 
 #if BIT_WIN_LIKE
     #define ESP_EXPORT __declspec(dllexport)
@@ -151,6 +151,9 @@ PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *rout
     @internal
  */
 PUBLIC void espInitHtmlOptions(Esp *esp);
+
+//  MOB
+PUBLIC void espInitHtmlOptions2(Esp *esp);
 
 /********************************** EspRoutes *********************************/
 /**
@@ -2757,6 +2760,9 @@ PUBLIC bool updateRec(EdiRec *rec);
 */ 
 PUBLIC bool updateRecFromParams(cchar *table);
 
+/////////////////////////// /////////////////////////// /////////////////////////// ///////////////////////////
+/////////////////////////// /////////////////////////// /////////////////////////// ///////////////////////////
+
 /**
     Suite of high-level controls that generate HTML5.
     @description There are two forms of the ESP control APIs.
@@ -2859,7 +2865,134 @@ typedef struct EspControl {
     int dummy;  /**< Unused */
 } EspControl;
 
-#if DEPRECATED || 1
+/**
+    Signify the end of an HTML form. 
+    @description This emits a HTML closing form tag.
+    @ingroup EspControl
+    @stability Deprecated
+    @internal
+ */
+PUBLIC void endform();
+
+/**
+    TODO - should this refer to the espForm doc?
+    Render an HTML form 
+    @description This will render an HTML form tag and optionally associate the given record as the current record for
+        the request. Abbreviated controls (see \l EspAbbrev \el) use the current record to supply form data fields and values.
+        The espForm control can be used without a record. In this case, nested ESP controls may have to provide 
+        values via an Options.value field.
+    @param record Record to use by default to supply form field names and values. If NULL, use the default record.
+    @param options Extra options. See \l EspControl \el for a list of the standard options.
+    @arg hideErrors -- Don't display database record errors. Records retain error diagnostics from the previous
+        failed write. Setting this option will prevent the display of such errors.
+    @arg modal -- Make the form a modal dialog. This will block all other HTML controls except the form.
+    @arg insecure -- Don't generate a security token for the form.
+    @arg securityToken -- String Override CSRF security token to include when the form is submitted. A default 
+        security token will always be generated unless options.insecure is defined to be true.
+        Security tokens are used by ESP to mitigate cross site scripting errors.
+    @ingroup EspAbbrev
+    @stability Deprecated
+    @internal
+ */
+PUBLIC void form(EdiRec *record, cchar *options);
+
+/**
+    Get the current database record
+    @return EdiRec instance
+    @ingroup EspAbbrev
+    @stability Deprecated
+    @internal
+ */
+PUBLIC EdiRec *getRec();
+
+/**
+    Render an input field as part of a form. This is a smart input control that will call the appropriate
+        input control based on the database record field data type.
+    @param field Name for the input field. This defines the HTML element name and provides the source 
+        of the initial value to display. The field should be a property of the form current record. 
+        If this call is used without a form control record, the actual data value should be supplied via the 
+        options.value property.
+    @param options Extra options. See \l EspControl \el for a list of the standard options.
+    @ingroup EspAbbrev
+    @stability Deprecated
+    @internal
+ */
+PUBLIC void input(cchar *field, cchar *options);
+
+/////////////////////////// /////////////////////////// /////////////////////////// ///////////////////////////
+/////////////////////////// /////////////////////////// /////////////////////////// ///////////////////////////
+
+#if BIT_PACK_ESP && BIT_ESP_LEGACY
+/**
+    Suite of high-level controls that generate HTML5.
+    @description There are two forms of the ESP control APIs.
+    The "full" form and the "abbreviated" form. The "full" form API takes a
+    HttpConn request connection object as the first parameter and the function names are prefixed with "esp". 
+    The "abbreviated" form APIs are shorter and more convenient. They do not have a connection argument and 
+    determine the request connection using Thread-Local storage. They do not have any function prefix. Ocassionally,
+    an ESP control name may clash with a function name in another library. 
+    \n\n
+    ESP Controls are grouped into two families: input form controls and general output controls. Input controls
+    are typically located inside a form/endform control pair that defines a current database record from which data
+    will be utilized. Output controls can be used anywhere on a page outside a form/endform group.
+    \n\n
+    Input controls are generally of the form: function(field, options) where field is the name of the property
+    in the current record that contains the data to display. The options is an object hash that controls and modifies
+    how the control will render. The options hash is a JSON string, which is interpreted as a set of property values.
+    \n\n
+    Various controls have custom options, but most share the following common set of option properties:
+    @arg action String Action to invoke. This can be a URI string or a controller/Action pair of the form
+        \@controller/action. If only the controller is provided (\@controller/), the "list" action assumed.
+    @arg apply String Client JQuery selector identifying the element to apply the remote update.
+        Typically "div.ID" where ID is the DOM ID for the element.
+    @arg background String Background color. This is a CSS RGB color specification. For example "FF0000" for red.
+    @arg click (Boolean|Uri|String) URI to invoke if the control is clicked.
+    @arg color String Foreground color. This is a CSS RGB color specification. For example "FF0000" for red.
+    @arg confirm String Message to prompt the user to request confirmation before submitting a form or request.
+    @arg controller controller owning the action to invoke when clicked. Defaults to the current controller.
+    @arg data-* All data-* names are passed through to the HTML unmodified.
+    @arg domid String Client-side DOM-ID to use for the control
+    @arg effects String Transition effects to apply when updating a control. Select from: "fadein", "fadeout", "highlight".
+    @arg escape Boolean Escape the text before rendering. This converts HTML reserved tags and delimiters into an encoded form.
+    @arg height (Number|String) Height of the control. Can be a number of pixels or a percentage string. 
+        Defaults to unlimited.
+    @arg key Array List of fields to set as the key values to uniquely identify the clicked or edited element. 
+        The key will be rendered as a "data-key" HTML attribute and will be passed to the receiving controller 
+        when the entry is clicked or edited. Each entry of the key option can be a simple
+        string field name or it can be an Object with a single property, where the property name is a simple
+        string field name and the property value is the mapped field name to use as the actual key name. This 
+        supports using custom key names. NOTE: this option cannot be used if using cell clicks or edits. In that
+        case, set click/edit to a callback function and explicitly construct the required URI and parameters.
+    @arg keyFormat String Define how the keys will be handled for click and edit URIs. 
+        Set to one of the set: ["params", "path", "query"]. Default is "path".
+        Set to "query" to add the key/value pairs to the request URI. Each pair is separated using "&" and the
+            key and value are formatted as "key=value".
+        Set to "params" to add the key/value pair to the request body parameters. 
+        Set to "path" to add the key values in order to the request URI. Each value is separated using "/". This
+            provides "pretty" URIs that can be easily tokenized by router templates.
+        If you require more complex key management, set click or edit to a callback function and format the 
+        URI and params manually.
+    @arg id Number Numeric database ID for the record that originated the data for the view element.
+    @arg method String HTTP method to invoke.
+    @arg pass String attributes to pass through unaltered to the client
+    @arg params Request parameters to include with a click or remote request
+    @arg period Number Period in milliseconds to invoke the #refresh URI to update the control data. If period
+        is zero (or undefined), then refresh will be done using a perisistent connection.
+    @arg query URI query string to add to click URIs.
+    @arg rel String HTML rel attribute. Can be used to generate "rel=nofollow" on links.
+    @arg remote (String|URI|Object) Perform the request in the background without changing the browser location.
+    @arg refresh (String|URI|Object) URI to invoke in the background to refresh the control's data every period.
+        milliseconds. If period is undefined or zero, a persistent connection may be used to refresh data.
+        The refresh option may use the "\@controller/action" form.
+    @arg size (Number|String) Size of the element.
+    @arg style String CSS Style to use for the element.
+    @arg value Object Override value to display if used without a form control record.
+    @arg width (Number|String) Width of the control. Can be a number of pixels or a percentage string. Defaults to unlimited.
+    @stability Deprecated
+    @defgroup EspControl EspControl
+    @internal
+  */
+
 /**
     Display a popup alert message in the client's browser when the web page is displayed.
     @param conn Http connection object
@@ -2912,7 +3045,6 @@ PUBLIC void espButton(HttpConn *conn, cchar *text, cchar *value, cchar *options)
     @internal
  */
 PUBLIC void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *options);
-#endif
 
 /**
     Render an input checkbox. 
@@ -2930,7 +3062,6 @@ PUBLIC void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *option
  */
 PUBLIC void espCheckbox(HttpConn *conn, cchar *name, cchar *checkedValue, cchar *options);
 
-#if DEPRECATED || 1
 /**
     Render an HTML division
     @description This creates an HTML element with the required options. It is useful to generate a dynamically 
@@ -2943,41 +3074,9 @@ PUBLIC void espCheckbox(HttpConn *conn, cchar *name, cchar *checkedValue, cchar 
     @internal
  */
 PUBLIC void espDivision(HttpConn *conn, cchar *body, cchar *options);
-#endif
 
-/**
-    Signify the end of an HTML form. 
-    @description This emits a HTML closing form tag.
-    @param conn Http connection object
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espEndform(HttpConn *conn);
-
-/**
-    Render an HTML form
-    @description This will render an HTML form tag and optionally associate the given record as the current record for
-        the request. Abbreviated controls (see \l EspAbbrev \el) use the current record to supply form data fields and
-        values.  The espForm control can be used without a record. In this case, nested ESP controls may have to provide 
-        values via an Options.value field.
-    @param conn Http connection object
-    @param record Record to use by default to supply form field names and values.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @arg hideErrors -- Don't display database record errors. Records retain error diagnostics from the previous
-        failed write. Setting this option will prevent the display of such errors.
-    @arg modal -- Make the form a modal dialog. This will block all other HTML controls except the form.
-    @arg nosecurity -- Don't generate a security token for the form.
-    @arg securityToken -- String Override CSRF security token to include when the form is submitted. A default 
-        security token will always be generated unless options.nosecurity is defined to be true.
-        Security tokens are used by ESP to mitigate cross-site scripting errors.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
 PUBLIC void espForm(HttpConn *conn, EdiRec *record, cchar *options);
 
-#if DEPRECATED || 1
 /**
     Render an HTML icon.
     @param conn Http connection object
@@ -2999,24 +3098,7 @@ PUBLIC void espIcon(HttpConn *conn, cchar *uri, cchar *options);
     @internal
  */
 PUBLIC void espImage(HttpConn *conn, cchar *uri, cchar *options);
-#endif
 
-/**
-    Render an input field as part of a form. This is a smart input control that will call the appropriate
-        input control based on the database record field data type.
-    @param conn Http connection object
-    @param field Name for the input field. This defines the HTML element name and provides the source 
-        of the initial value to display. The field should be a property of the form current record. 
-        If this call is used without a form control record, the actual data value should be supplied via the 
-        options.value property.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espInput(HttpConn *conn, cchar *field, cchar *options);
-
-#if DEPRECATED || 1
 /**
     Render a text label field. This renders an output-only text field. Use espText() for input fields.
     @param conn Http connection object
@@ -3027,9 +3109,7 @@ PUBLIC void espInput(HttpConn *conn, cchar *field, cchar *options);
     @internal
  */
 PUBLIC void espLabel(HttpConn *conn, cchar *text, cchar *options);
-#endif
 
-//  TODO - rename select?
 /**
     Render a selection list.
     @param conn Http connection object
@@ -3049,7 +3129,6 @@ PUBLIC void espLabel(HttpConn *conn, cchar *text, cchar *options);
  */
 PUBLIC void espDropdown(HttpConn *conn, cchar *field, EdiGrid *choices, cchar *options);
 
-#if DEPRECATED || 1
 /**
     Render a mail link.
     @param conn Http connection object
@@ -3072,7 +3151,6 @@ PUBLIC void espMail(HttpConn *conn, cchar *name, cchar *address, cchar *options)
     @internal
  */
 PUBLIC void espProgress(HttpConn *conn, cchar *progress, cchar *options);
-#endif
 
 /**
     Render a radio button. This creates a radio button suitable for use within an input form. 
@@ -3090,7 +3168,6 @@ PUBLIC void espProgress(HttpConn *conn, cchar *progress, cchar *options);
  */
 PUBLIC void espRadio(HttpConn *conn, cchar *field, cchar *choices, cchar *options);
 
-#if DEPRECATED || 1
 /**
     Control the refresh of web page dynamic elements.
     @param conn Http connection object
@@ -3128,10 +3205,8 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *options);
     @internal
  */
 PUBLIC void espStylesheet(HttpConn *conn, cchar *uri, cchar *options);
-#endif
 
 /**
-    TODO - simplify, may not need
     Render a table.
     @description The table control can display static or dynamic tabular data. The client table control 
         manages sorting by column, dynamic data refreshes, and clicking on rows or cells.
@@ -3171,7 +3246,6 @@ PUBLIC void espStylesheet(HttpConn *conn, cchar *uri, cchar *options);
  */
 PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *options);
 
-#if DEPRECATED || 1
 /**
     Render a tab control. 
     The tab control can manage a set of panes and will selectively show and hide or invoke the selected panes. 
@@ -3193,7 +3267,6 @@ PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *options);
     @internal
  */
 PUBLIC void espTabs(HttpConn *conn, EdiGrid *grid, cchar *options);
-#endif
 
 /**
     Render a text input field as part of a form.
@@ -3214,7 +3287,6 @@ PUBLIC void espTabs(HttpConn *conn, EdiGrid *grid, cchar *options);
  */
 PUBLIC void espText(HttpConn *conn, cchar *field, cchar *options);
 
-#if DEPRECATED || 1
 /**
     Display a popup alert message in the client's browser when the web page is displayed.
     @param text Alert text to display
@@ -3281,7 +3353,6 @@ PUBLIC void buttonLink(cchar *text, cchar *uri, cchar *options);
     @internal
  */
 PUBLIC void chart(EdiGrid *grid, cchar *options);
-#endif
 
 /**
     Render an input checkbox. 
@@ -3298,7 +3369,6 @@ PUBLIC void chart(EdiGrid *grid, cchar *options);
  */
 PUBLIC void checkbox(cchar *field, cchar *checkedValue, cchar *options);
 
-#if DEPRECATED || 1
 /**
     Render an HTML division
     @description This creates an HTML element with the required options.It is useful to generate a dynamically 
@@ -3310,7 +3380,6 @@ PUBLIC void checkbox(cchar *field, cchar *checkedValue, cchar *options);
     @internal
  */
 PUBLIC void division(cchar *body, cchar *options);
-#endif
 
 /**
     Render a dropdown selection list
@@ -3331,54 +3400,12 @@ PUBLIC void division(cchar *body, cchar *options);
 PUBLIC void dropdown(cchar *field, EdiGrid *choices, cchar *options);
 
 /**
-    Signify the end of an HTML form. 
-    @description This emits a HTML closing form tag.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void endform();
-
-/**
-    TODO - should this refer to the espForm doc?
-    Render an HTML form 
-    @description This will render an HTML form tag and optionally associate the given record as the current record for
-        the request. Abbreviated controls (see \l EspAbbrev \el) use the current record to supply form data fields and values.
-        The espForm control can be used without a record. In this case, nested ESP controls may have to provide 
-        values via an Options.value field.
-    @param record Record to use by default to supply form field names and values. If NULL, use the default record.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @arg hideErrors -- Don't display database record errors. Records retain error diagnostics from the previous
-        failed write. Setting this option will prevent the display of such errors.
-    @arg modal -- Make the form a modal dialog. This will block all other HTML controls except the form.
-    @arg insecure -- Don't generate a security token for the form.
-    @arg securityToken -- String Override CSRF security token to include when the form is submitted. A default 
-        security token will always be generated unless options.insecure is defined to be true.
-        Security tokens are used by ESP to mitigate cross site scripting errors.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void form(void *record, cchar *options);
-
-/**
-    Get the current database record
-    @return EdiRec instance
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC EdiRec *getRec();
-
-/**
-    TODO - do we need this?
     Get a URI for the top of the application
     @ingroup EspAbbrev
     @stability deprecated
  */
 PUBLIC cchar *getTop();
 
-#if DEPRECATED || 1
 /**
     Render an HTML icon
     @param uri URI reference for the icon resource
@@ -3408,23 +3435,7 @@ PUBLIC void image(cchar *uri, cchar *options);
     @stability Evolving
  */
 PUBLIC void inform(cchar *fmt, ...);
-#endif
 
-/**
-    Render an input field as part of a form. This is a smart input control that will call the appropriate
-        input control based on the database record field data type.
-    @param field Name for the input field. This defines the HTML element name and provides the source 
-        of the initial value to display. The field should be a property of the form current record. 
-        If this call is used without a form control record, the actual data value should be supplied via the 
-        options.value property.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void input(cchar *field, cchar *options);
-
-#if DEPRECATED || 1
 /**
     Render a text label field. This renders an output-only text field. Use espText() for input fields.
     @param text Label text to display.
@@ -3455,7 +3466,6 @@ PUBLIC void mail(cchar *name, cchar *address, cchar *options);
     @internal
  */
 PUBLIC void progress(cchar *progress, cchar *options);
-#endif
 
 /**
     Render a radio button. This creates a radio button suitable for use within an input form. 
@@ -3472,7 +3482,6 @@ PUBLIC void progress(cchar *progress, cchar *options);
  */
 PUBLIC void radio(cchar *field, void *choices, cchar *options);
 
-#if DEPRECATED || 1
 /**
     Control the refresh of web page dynamic elements
     @param on URI to invoke when turning "on" refresh
@@ -3506,10 +3515,8 @@ PUBLIC void script(cchar *uri, cchar *options);
     @internal
  */
 PUBLIC void stylesheet(cchar *uri, cchar *options);
-#endif
 
 /**
-    TODO - should refer to the espTable doc
     Render a table.
     @description The table control can display static or dynamic tabular data. The client table control 
         manages sorting by column, dynamic data refreshes and clicking on rows or cells.
@@ -3549,7 +3556,6 @@ PUBLIC void stylesheet(cchar *uri, cchar *options);
 */
 PUBLIC void table(EdiGrid *grid, cchar *options);
 
-#if DEPRECATED || 1
 /**
     Render a tab control. 
     The tab control can manage a set of panes and will selectively show and hide or invoke the selected panes. 
@@ -3588,7 +3594,7 @@ PUBLIC void tabs(EdiGrid *grid, cchar *options);
     @internal
  */
 PUBLIC void text(cchar *field, cchar *options);
-#endif
+#endif /* BIT_PACK_ESP && BIT_ESP_LEGACY */
 
 #ifdef __cplusplus
 } /* extern C */

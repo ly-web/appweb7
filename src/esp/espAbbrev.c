@@ -218,6 +218,12 @@ PUBLIC cchar *getField(EdiRec *rec, cchar *field)
 }
 
 
+PUBLIC EdiGrid *getGrid()
+{
+    return getConn()->grid;
+}
+
+
 PUBLIC cchar *getHeader(cchar *key)
 {
     return espGetHeader(getConn(), key);
@@ -261,6 +267,14 @@ PUBLIC cchar *getSessionVar(cchar *key)
 {
     return httpGetSessionVar(getConn(), key, 0);
 }
+
+
+#if DEPRECATE || 1
+PUBLIC cchar *getTop()
+{
+    return getAppUri();
+}
+#endif
 
 
 PUBLIC MprHash *getUploads()
@@ -360,15 +374,6 @@ PUBLIC cchar *param(cchar *key)
 {
     return espGetParam(getConn(), key, 0);
 }
-
-
-#if UNUSED
-//  MOB DOC
-PUBLIC cchar *id()
-{
-    return espGetParam(getConn(), "id", 0);
-}
-#endif
 
 
 PUBLIC MprJson *params()
@@ -629,8 +634,9 @@ PUBLIC void scripts(cchar *patterns)
                     }
                 }
             }
-            //  MOB - angular specific
-            scripts("app/main.js");
+            if (mprPathExists(mprJoinPath(eroute->clientDir, "app/main.js"), R_OK)) {
+                scripts("app/main.js");
+            }
             scripts("app/*/**.js");
         }
         return;
@@ -792,7 +798,6 @@ PUBLIC void stylesheets(cchar *patterns)
     patterns = httpExpandRouteVars(route, patterns);
 
     if (!patterns || !*patterns) {
-        //  MOB - angular specific
         if (modeIs("release")) {
             stylesheets(sfmt("css/all-%s.min.css", espGetConfig(route, "version", "1.0.0")));
         } else {
@@ -858,182 +863,7 @@ PUBLIC bool updateRecFromParams(cchar *table)
     return updateRec(setFields(readRec(table, param("id")), params()));
 }
 
-/************************************ Deprecated ****************************/
-#if BIT_ESP_LEGACY
-/*
-    Deprecated in 4.4
- */
 
-PUBLIC void alert(cchar *text, cchar *optionString)
-{
-    espAlert(getConn(), text, optionString);
-}
-
-
-PUBLIC void anchor(cchar *text, cchar *uri, cchar *optionString) 
-{
-    espAnchor(getConn(), text, uri, optionString);
-}
-
-
-PUBLIC void button(cchar *name, cchar *value, cchar *optionString)
-{
-    espButton(getConn(), name, value, optionString);
-}
-
-
-PUBLIC void buttonLink(cchar *text, cchar *uri, cchar *optionString)
-{
-    espButtonLink(getConn(), text, uri, optionString);
-}
-
-
-PUBLIC void checkbox(cchar *field, cchar *checkedValue, cchar *optionString) 
-{
-    espCheckbox(getConn(), field, checkedValue, optionString);
-}
-
-
-PUBLIC void division(cchar *body, cchar *optionString) 
-{
-    espDivision(getConn(), body, optionString);
-}
-
-
-PUBLIC void endform() 
-{
-    espEndform(getConn());
-}
-
-
-PUBLIC void form(void *record, cchar *optionString)
-{
-    HttpConn    *conn;
-
-    conn = getConn();
-    if (record == 0) {
-        record = conn->record;
-    }
-    espForm(conn, record, optionString); 
-}
-
-
-PUBLIC void icon(cchar *uri, cchar *optionString)
-{
-    espIcon(getConn(), uri, optionString);
-}
-
-
-PUBLIC void image(cchar *src, cchar *optionString)
-{
-    espImage(getConn(), src, optionString);
-}
-
-
-PUBLIC void input(cchar *name, cchar *optionString)
-{
-    espInput(getConn(), name, optionString);
-}
-
-
-PUBLIC void label(cchar *text, cchar *optionString)
-{
-    espLabel(getConn(), text, optionString);
-}
-
-
-PUBLIC void dropdown(cchar *name, EdiGrid *choices, cchar *optionString) 
-{
-    espDropdown(getConn(), name, choices, optionString);
-}
-
-
-PUBLIC void mail(cchar *name, cchar *address, cchar *optionString) 
-{
-    espMail(getConn(), name, address, optionString);
-}
-
-
-PUBLIC void progress(cchar *data, cchar *optionString)
-{
-    espProgress(getConn(), data, optionString);
-}
-
-
-/*
-    radio("priority", "{low: 0, med: 1, high: 2}", NULL)
-    radio("priority", "{low: 0, med: 1, high: 2}", "{value:'2'}")
- */
-PUBLIC void radio(cchar *name, void *choices, cchar *optionString)
-{
-    espRadio(getConn(), name, choices, optionString);
-}
-
-
-PUBLIC void refresh(cchar *on, cchar *off, cchar *optionString)
-{
-    espRefresh(getConn(), on, off, optionString);
-}
-
-
-PUBLIC void script(cchar *uri, cchar *optionString)
-{
-    espScript(getConn(), uri, optionString);
-}
-
-
-PUBLIC void stylesheet(cchar *uri, cchar *optionString) 
-{
-    espStylesheet(getConn(), uri, optionString);
-}
-
-
-PUBLIC void table(EdiGrid *grid, cchar *optionString)
-{
-    if (grid == 0) {
-        grid = getGrid();
-    }
-    espTable(getConn(), grid, optionString);
-}
-
-
-PUBLIC void tabs(EdiGrid *grid, cchar *optionString)
-{
-    espTabs(getConn(), grid, optionString);
-}
-
-
-PUBLIC void text(cchar *field, cchar *optionString)
-{
-    espText(getConn(), field, optionString);
-}
-
-
-PUBLIC EdiGrid *getGrid()
-{
-    return getConn()->grid;
-}
-
-
-PUBLIC cchar *getTop()
-{
-    return getAppUri();
-}
-
-
-#if DEPRECATE || 1
-PUBLIC void inform(cchar *fmt, ...)
-{
-    va_list     args;
-
-    va_start(args, fmt);
-    espSetFlashv(getConn(), "inform", fmt, args);
-    va_end(args);
-}
-#endif
-
-
-#endif /* BIT_ESP_LEGACY */
 #endif /* BIT_PACK_ESP */
 
 /*

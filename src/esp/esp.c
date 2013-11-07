@@ -1109,6 +1109,12 @@ static void compileItems(HttpRoute *route)
         app->files = mprGetPathFiles(eroute->clientDir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
+            if (sstarts(path, eroute->layoutsDir)) {
+                continue;
+            }
+            if (sstarts(path, eroute->viewsDir)) {
+                continue;
+            }
             if (selectResource(path, "esp")) {
                 compileFile(route, path, ESP_PAGE);
             }
@@ -1592,18 +1598,20 @@ static void generateScaffoldViews(cchar *name, cchar *table, int argc, char **ar
 
     if (espTestConfig(app->route, "generate.clientView", "true")) {
         path = sfmt("%s/%s/%s-list.html", app->eroute->appDir, name, name);
+        data = getTemplate(mprJoinPath(app->topComponent, "list.html"), tokens);
     } else {
         path = sfmt("%s/%s-list.esp", app->eroute->viewsDir, name);
+        data = getTemplate(mprJoinPath(app->topComponent, "list.esp"), tokens);
     }
-    data = getTemplate(mprJoinPath(app->topComponent, "list.html"), tokens);
     makeEspFile(path, data, "Scaffold List View");
 
     if (espTestConfig(app->route, "generate.clientView", "true")) {
         path = sfmt("%s/%s/%s-edit.html", app->eroute->appDir, name, name);
+        data = getTemplate(mprJoinPath(app->topComponent, "edit.html"), tokens);
     } else {
         path = sfmt("%s/%s-edit.esp", app->eroute->viewsDir, name);
+        data = getTemplate(mprJoinPath(app->topComponent, "edit.esp"), tokens);
     }
-    data = getTemplate(mprJoinPath(app->topComponent, "edit.html"), tokens);
     makeEspFile(path, data, "Scaffold Edit View");
 }
 
