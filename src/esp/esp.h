@@ -2178,7 +2178,7 @@ PUBLIC bool modeIs(cchar *check);
 PUBLIC cchar *param(cchar *name);
 
 #if UNUSED
-//  MOB DOC
+//  TODO DOC
 PUBLIC cchar *id();
 #endif
 
@@ -2375,7 +2375,7 @@ PUBLIC void renderError(int status, cchar *fmt, ...);
 PUBLIC void renderFeedback(int status, cchar *kind, ...);
 #endif
 
-//  MOB - is this used?
+//  TODO - is this used?
 /**
     Render flash messages.
     @description Flash notices are one-time messages that are passed to the newt request (only).
@@ -2497,7 +2497,7 @@ PUBLIC void renderView(cchar *view);
     @stability Prototype
  */
 PUBLIC void scripts(cchar *patterns);
-//  MOB
+//  TODO
 PUBLIC void stylesheets(cchar *patterns);
 
 /**
@@ -2757,10 +2757,8 @@ PUBLIC bool updateRec(EdiRec *rec);
 */ 
 PUBLIC bool updateRecFromParams(cchar *table);
 
-/* ******************************** DEPRECATED ****************************** */
-#if (DEPRECATE || 1) && !DOXYGEN
 /**
-    Suite of high-level controls that generate dynamic HTML5.
+    Suite of high-level controls that generate HTML5.
     @description There are two forms of the ESP control APIs.
     The "full" form and the "abbreviated" form. The "full" form API takes a
     HttpConn request connection object as the first parameter and the function names are prefixed with "esp". 
@@ -2779,21 +2777,37 @@ PUBLIC bool updateRecFromParams(cchar *table);
     Various controls have custom options, but most share the following common set of option properties:
     @arg action String Action to invoke. This can be a URI string or a controller/Action pair of the form
         \@controller/action. If only the controller is provided (\@controller/), the "list" action assumed.
+
+//???
     @arg apply String Client JQuery selector identifying the element to apply the remote update.
         Typically "div.ID" where ID is the DOM ID for the element.
+
+//???
     @arg background String Background color. This is a CSS RGB color specification. For example "FF0000" for red.
+
+//???
     @arg click (Boolean|Uri|String) URI to invoke if the control is clicked.
+//???
     @arg color String Foreground color. This is a CSS RGB color specification. For example "FF0000" for red.
+//???
     @arg confirm String Message to prompt the user to request confirmation before submitting a form or request.
+//???
     @arg controller controller owning the action to invoke when clicked. Defaults to the current controller.
+
+//OK
     @arg data-* All data-* names are passed through to the HTML unmodified.
+//OK
     @arg domid String Client-side DOM-ID to use for the control
+//???
     @arg effects String Transition effects to apply when updating a control. Select from: "fadein", "fadeout",
         "highlight".
+//OK
     @arg escape Boolean Escape the text before rendering. This converts HTML reserved tags and delimiters into
         an encoded form.
+//??
     @arg height (Number|String) Height of the control. Can be a number of pixels or a percentage string. 
         Defaults to unlimited.
+//??
     @arg key Array List of fields to set as the key values to uniquely identify the clicked or edited element. 
         The key will be rendered as a "data-key" HTML attribute and will be passed to the receiving controller 
         when the entry is clicked or edited. Each entry of the key option can be a simple
@@ -2801,6 +2815,7 @@ PUBLIC bool updateRecFromParams(cchar *table);
         string field name and the property value is the mapped field name to use as the actual key name. This 
         supports using custom key names. NOTE: this option cannot be used if using cell clicks or edits. In that
         case, set click/edit to a callback function and explicitly construct the required URI and parameters.
+//??
     @arg keyFormat String Define how the keys will be handled for click and edit URIs. 
         Set to one of the set: ["params", "path", "query"]. Default is "path".
         Set to "query" to add the key/value pairs to the request URI. Each pair is separated using "&" and the
@@ -2810,28 +2825,33 @@ PUBLIC bool updateRecFromParams(cchar *table);
             provides "pretty" URIs that can be easily tokenized by router templates.
         If you require more complex key management, set click or edit to a callback function and format the 
         URI and params manually.
+//OK
     @arg id Number Numeric database ID for the record that originated the data for the view element.
+//OK
     @arg method String HTTP method to invoke.
+//??? is this used 
     @arg pass String attributes to pass through unaltered to the client
+
     @arg params Request parameters to include with a click or remote request
+//  NO
     @arg period Number Period in milliseconds to invoke the #refresh URI to update the control data. If period
         is zero (or undefined), then refresh will be done using a perisistent connection.
     @arg query URI query string to add to click URIs.
     @arg rel String HTML rel attribute. Can be used to generate "rel=nofollow" on links.
+//  NO
     @arg remote (String|URI|Object) Perform the request in the background without changing the browser location.
+//  NO
     @arg refresh (String|URI|Object) URI to invoke in the background to refresh the control's data every period.
         milliseconds. If period is undefined or zero, a persistent connection may be used to refresh data.
         The refresh option may use the "\@controller/action" form.
+//  NO
     @arg size (Number|String) Size of the element.
     @arg style String CSS Style to use for the element.
     @arg value Object Override value to display if used without a form control record.
+//  NO
     @arg width (Number|String) Width of the control. Can be a number of pixels or a percentage string. Defaults to
         unlimited.
-    <h4>Dynamic Data</h4>
-    <p>Most controls can perform background updates of their data after the initial presentation. This is done via
-    the refresh and period options.</p>
-    @stability Deprecated
-    @see espAlert espAnchor
+    @stability Evolving
     @defgroup EspControl EspControl
     @internal
   */
@@ -2839,6 +2859,7 @@ typedef struct EspControl {
     int dummy;  /**< Unused */
 } EspControl;
 
+#if DEPRECATED || 1
 /**
     Display a popup alert message in the client's browser when the web page is displayed.
     @param conn Http connection object
@@ -2891,6 +2912,7 @@ PUBLIC void espButton(HttpConn *conn, cchar *text, cchar *value, cchar *options)
     @internal
  */
 PUBLIC void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *options);
+#endif
 
 /**
     Render an input checkbox. 
@@ -2908,6 +2930,7 @@ PUBLIC void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *option
  */
 PUBLIC void espCheckbox(HttpConn *conn, cchar *name, cchar *checkedValue, cchar *options);
 
+#if DEPRECATED || 1
 /**
     Render an HTML division
     @description This creates an HTML element with the required options. It is useful to generate a dynamically 
@@ -2920,6 +2943,7 @@ PUBLIC void espCheckbox(HttpConn *conn, cchar *name, cchar *checkedValue, cchar 
     @internal
  */
 PUBLIC void espDivision(HttpConn *conn, cchar *body, cchar *options);
+#endif
 
 /**
     Signify the end of an HTML form. 
@@ -2953,6 +2977,7 @@ PUBLIC void espEndform(HttpConn *conn);
  */
 PUBLIC void espForm(HttpConn *conn, EdiRec *record, cchar *options);
 
+#if DEPRECATED || 1
 /**
     Render an HTML icon.
     @param conn Http connection object
@@ -2974,6 +2999,7 @@ PUBLIC void espIcon(HttpConn *conn, cchar *uri, cchar *options);
     @internal
  */
 PUBLIC void espImage(HttpConn *conn, cchar *uri, cchar *options);
+#endif
 
 /**
     Render an input field as part of a form. This is a smart input control that will call the appropriate
@@ -2990,6 +3016,7 @@ PUBLIC void espImage(HttpConn *conn, cchar *uri, cchar *options);
  */
 PUBLIC void espInput(HttpConn *conn, cchar *field, cchar *options);
 
+#if DEPRECATED || 1
 /**
     Render a text label field. This renders an output-only text field. Use espText() for input fields.
     @param conn Http connection object
@@ -3000,7 +3027,9 @@ PUBLIC void espInput(HttpConn *conn, cchar *field, cchar *options);
     @internal
  */
 PUBLIC void espLabel(HttpConn *conn, cchar *text, cchar *options);
+#endif
 
+//  TODO - rename select?
 /**
     Render a selection list.
     @param conn Http connection object
@@ -3020,6 +3049,7 @@ PUBLIC void espLabel(HttpConn *conn, cchar *text, cchar *options);
  */
 PUBLIC void espDropdown(HttpConn *conn, cchar *field, EdiGrid *choices, cchar *options);
 
+#if DEPRECATED || 1
 /**
     Render a mail link.
     @param conn Http connection object
@@ -3042,6 +3072,7 @@ PUBLIC void espMail(HttpConn *conn, cchar *name, cchar *address, cchar *options)
     @internal
  */
 PUBLIC void espProgress(HttpConn *conn, cchar *progress, cchar *options);
+#endif
 
 /**
     Render a radio button. This creates a radio button suitable for use within an input form. 
@@ -3059,6 +3090,7 @@ PUBLIC void espProgress(HttpConn *conn, cchar *progress, cchar *options);
  */
 PUBLIC void espRadio(HttpConn *conn, cchar *field, cchar *choices, cchar *options);
 
+#if DEPRECATED || 1
 /**
     Control the refresh of web page dynamic elements.
     @param conn Http connection object
@@ -3096,8 +3128,10 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *options);
     @internal
  */
 PUBLIC void espStylesheet(HttpConn *conn, cchar *uri, cchar *options);
+#endif
 
 /**
+    TODO - simplify, may not need
     Render a table.
     @description The table control can display static or dynamic tabular data. The client table control 
         manages sorting by column, dynamic data refreshes, and clicking on rows or cells.
@@ -3137,6 +3171,7 @@ PUBLIC void espStylesheet(HttpConn *conn, cchar *uri, cchar *options);
  */
 PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *options);
 
+#if DEPRECATED || 1
 /**
     Render a tab control. 
     The tab control can manage a set of panes and will selectively show and hide or invoke the selected panes. 
@@ -3158,6 +3193,7 @@ PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *options);
     @internal
  */
 PUBLIC void espTabs(HttpConn *conn, EdiGrid *grid, cchar *options);
+#endif
 
 /**
     Render a text input field as part of a form.
@@ -3178,6 +3214,7 @@ PUBLIC void espTabs(HttpConn *conn, EdiGrid *grid, cchar *options);
  */
 PUBLIC void espText(HttpConn *conn, cchar *field, cchar *options);
 
+#if DEPRECATED || 1
 /**
     Display a popup alert message in the client's browser when the web page is displayed.
     @param text Alert text to display
@@ -3244,6 +3281,7 @@ PUBLIC void buttonLink(cchar *text, cchar *uri, cchar *options);
     @internal
  */
 PUBLIC void chart(EdiGrid *grid, cchar *options);
+#endif
 
 /**
     Render an input checkbox. 
@@ -3260,6 +3298,7 @@ PUBLIC void chart(EdiGrid *grid, cchar *options);
  */
 PUBLIC void checkbox(cchar *field, cchar *checkedValue, cchar *options);
 
+#if DEPRECATED || 1
 /**
     Render an HTML division
     @description This creates an HTML element with the required options.It is useful to generate a dynamically 
@@ -3271,6 +3310,7 @@ PUBLIC void checkbox(cchar *field, cchar *checkedValue, cchar *options);
     @internal
  */
 PUBLIC void division(cchar *body, cchar *options);
+#endif
 
 /**
     Render a dropdown selection list
@@ -3300,6 +3340,7 @@ PUBLIC void dropdown(cchar *field, EdiGrid *choices, cchar *options);
 PUBLIC void endform();
 
 /**
+    TODO - should this refer to the espForm doc?
     Render an HTML form 
     @description This will render an HTML form tag and optionally associate the given record as the current record for
         the request. Abbreviated controls (see \l EspAbbrev \el) use the current record to supply form data fields and values.
@@ -3330,12 +3371,14 @@ PUBLIC void form(void *record, cchar *options);
 PUBLIC EdiRec *getRec();
 
 /**
+    TODO - do we need this?
     Get a URI for the top of the application
     @ingroup EspAbbrev
     @stability deprecated
  */
 PUBLIC cchar *getTop();
 
+#if DEPRECATED || 1
 /**
     Render an HTML icon
     @param uri URI reference for the icon resource
@@ -3365,6 +3408,7 @@ PUBLIC void image(cchar *uri, cchar *options);
     @stability Evolving
  */
 PUBLIC void inform(cchar *fmt, ...);
+#endif
 
 /**
     Render an input field as part of a form. This is a smart input control that will call the appropriate
@@ -3380,6 +3424,7 @@ PUBLIC void inform(cchar *fmt, ...);
  */
 PUBLIC void input(cchar *field, cchar *options);
 
+#if DEPRECATED || 1
 /**
     Render a text label field. This renders an output-only text field. Use espText() for input fields.
     @param text Label text to display.
@@ -3410,6 +3455,7 @@ PUBLIC void mail(cchar *name, cchar *address, cchar *options);
     @internal
  */
 PUBLIC void progress(cchar *progress, cchar *options);
+#endif
 
 /**
     Render a radio button. This creates a radio button suitable for use within an input form. 
@@ -3426,6 +3472,7 @@ PUBLIC void progress(cchar *progress, cchar *options);
  */
 PUBLIC void radio(cchar *field, void *choices, cchar *options);
 
+#if DEPRECATED || 1
 /**
     Control the refresh of web page dynamic elements
     @param on URI to invoke when turning "on" refresh
@@ -3459,8 +3506,10 @@ PUBLIC void script(cchar *uri, cchar *options);
     @internal
  */
 PUBLIC void stylesheet(cchar *uri, cchar *options);
+#endif
 
 /**
+    TODO - should refer to the espTable doc
     Render a table.
     @description The table control can display static or dynamic tabular data. The client table control 
         manages sorting by column, dynamic data refreshes and clicking on rows or cells.
@@ -3500,6 +3549,7 @@ PUBLIC void stylesheet(cchar *uri, cchar *options);
 */
 PUBLIC void table(EdiGrid *grid, cchar *options);
 
+#if DEPRECATED || 1
 /**
     Render a tab control. 
     The tab control can manage a set of panes and will selectively show and hide or invoke the selected panes. 
@@ -3538,8 +3588,7 @@ PUBLIC void tabs(EdiGrid *grid, cchar *options);
     @internal
  */
 PUBLIC void text(cchar *field, cchar *options);
-
-#endif /* (DEPRECATE || 1) && !DOXYGEN */
+#endif
 
 #ifdef __cplusplus
 } /* extern C */

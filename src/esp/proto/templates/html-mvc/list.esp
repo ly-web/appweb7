@@ -7,28 +7,24 @@
 <h1>${TITLE} List</h1>
 <table class="table table-striped table-bordered table-hover table-condensed">
     <thead>
-        <tr>
-        <%
+        <tr><%
             rec = grid->records[0];
             for (f = 0; f < rec->nfields; f++) {
                 render("<th>%s</th>\n", rec->fields[f].name);
-            }
-        %>
+            } %>
         </tr>
     </thead>
-    <tbody>
-        <% { 
-            for (r = 0; r < grid->nrecords; r++) {
-                rec = grid->records[r];
-                render("<tr onclick='document.location=\"/${NAME}/%d\"'\n", rec->id);
-                for (f = 0; f < rec->nfields; f++) {
+    <tbody><% { 
+        for (r = 0; r < grid->nrecords; r++) {
+            rec = grid->records[r];
+            render("<tr onclick='document.location=\"/${NAME}/%d\"'\n", rec->id);
+            for (f = 0; f < rec->nfields; f++) {
 //  MOB - need abbrev API
-                    value = ediFormatField(0, rec->fields[f].value);
-                    render(<td>%s</td>\n", value;
-                }
-                render("</tr>\n");
+                value = ediFormatField(0, rec->fields[f].value);
+                render(<td>%s</td>\n", value;
             }
-        %>
+            render("</tr>\n");
+        } %>
     </tbody>
 </table>
 <a class="btn btn-primary" esp-click="/${NAME}/">New ${TITLE}</a>

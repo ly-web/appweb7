@@ -3,7 +3,10 @@
  */
 #include "esp.h"
 
-static void create() { 
+/*
+    Create a new resource in the database
+ */ 
+static void create${TITLE}() { 
     if (updateRec(createRec("${NAME}", params()))) {
         feedback("inform", "New ${NAME} created");
         renderView("${NAME}-list");
@@ -12,32 +15,51 @@ static void create() {
     }
 }
 
-static void destroy() { 
+/*
+    Prepare a template for editing a resource
+ */
+static void edit${TITLE}() { 
+    readRec("${NAME}", param("id"));
+}
+
+/*
+    Get a resource
+ */ 
+static void get${TITLE}() { 
+    readRec("${NAME}", param("id"));
+    renderView("${NAME}-edit");
+}
+
+/*
+    Initialize a new resource for the client to complete
+ */
+static void init${TITLE}() { 
+    createRec("${NAME}", 0);
+    renderView("${NAME}-edit");
+}
+
+/*
+    List the resources in this group
+ */ 
+static void list${TITLE}() { 
+    renderView("${NAME}-list");
+}
+
+/*
+    Remove a resource identified by the "id" parameter
+ */
+static void remove${TITLE}() { 
     if (removeRec("${NAME}", param("id"))) {
         feedback("inform", "${TITLE} removed");
     }
     renderView("${NAME}-list");
 }
 
-static void edit() { 
-    readRec("${NAME}", param("id"));
-}
-
-static void list() { 
-    renderView("${NAME}-list");
-}
-
-static void init() { 
-    createRec("${NAME}", 0);
-    renderView("${NAME}-edit");
-}
-
-static void show() { 
-    readRec("${NAME}", param("id"));
-    renderView("${NAME}-edit");
-}
-
-static void update() { 
+/*
+    Update an existing resource in the database
+    If "id" is not defined, this is the same as a create
+ */
+static void update${TITLE}() { 
     if (updateFields("${NAME}", params())) {
         feedback("inform", "${TITLE} updated successfully.");
         renderView("${NAME}-list");
@@ -46,13 +68,16 @@ static void update() {
     }
 }
 
+/*
+    Dynamic module initialization
+ */
 ESP_EXPORT int esp_controller_${APP}_${NAME}(HttpRoute *route, MprModule *module) {
-    espDefineAction(route, "${NAME}-create", create);
-    espDefineAction(route, "${NAME}-destroy", destroy);
-    espDefineAction(route, "${NAME}-edit", edit);
-    espDefineAction(route, "${NAME}-init", init);
-    espDefineAction(route, "${NAME}-list", list);
-    espDefineAction(route, "${NAME}-show", show);
-    espDefineAction(route, "${NAME}-update", update);
+    espDefineAction(route, "${NAME}-create", create${TITLE});
+    espDefineAction(route, "${NAME}-remove", remove${TITLE});
+    espDefineAction(route, "${NAME}-edit", edit${TITLE});
+    espDefineAction(route, "${NAME}-get", get${TITLE});
+    espDefineAction(route, "${NAME}-init", init${TITLE});
+    espDefineAction(route, "${NAME}-list", list${TITLE});
+    espDefineAction(route, "${NAME}-update", update${TITLE});
 ${DEFINE_ACTIONS}    return 0;
 }

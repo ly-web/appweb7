@@ -1,5 +1,7 @@
 /*
-    esp-click.js - The esp-click attribute for elements without href
+    esp-click.js - The esp-click attribute to conditionally redirect to URLs if the user has the required abilities.
+
+    <tag esp-click="URL" ... />
  */
 'use strict';
 

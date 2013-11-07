@@ -86,7 +86,9 @@ angular.module('esp', ['esp.click', 'esp.confirm', 'esp.field-errors', 'esp.form
             Esp.scriptCache = {};
         }
         if (Esp.scriptCache[url]) {
-            callback();
+            if (callback) {
+                callback();
+            }
             return;
         }
         console.log("LoadScript ", url);
@@ -95,8 +97,9 @@ angular.module('esp', ['esp.click', 'esp.confirm', 'esp.field-errors', 'esp.form
             script.type = 'text/javascript';
             script.src = url;
             document.body.appendChild(script);
-            // document.body.removeChild(document.body.lastChild);
-            callback();
+            if (callback) {
+                callback();
+            }
         }).error(function(data, status, headers, config) {
             console.log("ERROR");
 
@@ -162,15 +165,11 @@ angular.module('esp', ['esp.click', 'esp.confirm', 'esp.field-errors', 'esp.form
     if (Esp.user.length == 0) {
         Esp.user = null;
     }
-    if (Esp.config.mode == 'debug' && Esp.config.update) {
-        // less.watch();
-    }
-
     /*
         Remember the referrer in route changes
      */
     $rootScope.$on("$routeChangeSuccess", function(scope, current, previous) {
-        $rootScope.referrer = previous;
+        Esp.referrer = previous;
     });
 
     /*

@@ -1088,11 +1088,12 @@ $(CONFIG)/esp: $(DEPS_55)
 	mkdir -p "$(CONFIG)/esp/components/angular"
 	cp src/esp/proto/components/angular/config.json $(CONFIG)/esp/components/angular/config.json
 	mkdir -p "$(CONFIG)/esp/components/angular-esp/client/lib/angular-esp"
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-click.es $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-click.es
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-click.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-click.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-confirm.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-confirm.js
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-doc.es $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-doc.es
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-field-errors.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-field-errors.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-format.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-format.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-gauge.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-gauge.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-input-group.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-input-group.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-input.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-input.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-local.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-local.js
@@ -1100,15 +1101,20 @@ $(CONFIG)/esp: $(DEPS_55)
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-resource.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-resource.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-session.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-session.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-titlecase.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-titlecase.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp.es $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp.es
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp.js
 	mkdir -p "$(CONFIG)/esp/components/angular-esp"
 	cp src/esp/proto/components/angular-esp/config.json $(CONFIG)/esp/components/angular-esp/config.json
+	mkdir -p "$(CONFIG)/esp/components/angular-esp-extras/client/lib/angular-esp-extras"
+	cp src/esp/proto/components/angular-esp-extras/client/lib/angular-esp-extras/esp-svg-gauge.js $(CONFIG)/esp/components/angular-esp-extras/client/lib/angular-esp-extras/esp-svg-gauge.js
+	mkdir -p "$(CONFIG)/esp/components/angular-esp-extras"
+	cp src/esp/proto/components/angular-esp-extras/config.json $(CONFIG)/esp/components/angular-esp-extras/config.json
 	mkdir -p "$(CONFIG)/esp/components/angular-mvc/client/app"
 	cp src/esp/proto/components/angular-mvc/client/app/main.js $(CONFIG)/esp/components/angular-mvc/client/app/main.js
 	mkdir -p "$(CONFIG)/esp/components/angular-mvc/client/css"
 	cp src/esp/proto/components/angular-mvc/client/css/all.less $(CONFIG)/esp/components/angular-mvc/client/css/all.less
 	cp src/esp/proto/components/angular-mvc/client/css/app.less $(CONFIG)/esp/components/angular-mvc/client/css/app.less
-	cp src/esp/proto/components/angular-mvc/client/css/fix.css $(CONFIG)/esp/components/angular-mvc/client/css/fix.css
+	cp src/esp/proto/components/angular-mvc/client/css/fix.less $(CONFIG)/esp/components/angular-mvc/client/css/fix.less
 	cp src/esp/proto/components/angular-mvc/client/css/theme.less $(CONFIG)/esp/components/angular-mvc/client/css/theme.less
 	mkdir -p "$(CONFIG)/esp/components/angular-mvc/client"
 	cp src/esp/proto/components/angular-mvc/client/index.esp $(CONFIG)/esp/components/angular-mvc/client/index.esp
@@ -1326,6 +1332,7 @@ $(CONFIG)/esp: $(DEPS_55)
 	cp src/esp/proto/templates/angular-mvc/list.html $(CONFIG)/esp/templates/angular-mvc/list.html
 	cp src/esp/proto/templates/angular-mvc/model.js $(CONFIG)/esp/templates/angular-mvc/model.js
 	mkdir -p "$(CONFIG)/esp/templates/html-mvc"
+	cp src/esp/proto/templates/html-mvc/controller-singleton.c $(CONFIG)/esp/templates/html-mvc/controller-singleton.c
 	cp src/esp/proto/templates/html-mvc/controller.c $(CONFIG)/esp/templates/html-mvc/controller.c
 	cp src/esp/proto/templates/html-mvc/edit.esp $(CONFIG)/esp/templates/html-mvc/edit.esp
 	cp src/esp/proto/templates/html-mvc/list.esp $(CONFIG)/esp/templates/html-mvc/list.esp
@@ -2241,11 +2248,12 @@ ifeq ($(BIT_PACK_ESP),1)
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular"
 	cp src/esp/proto/components/angular/config.json $(BIT_VAPP_PREFIX)/esp/components/angular/config.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp"
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-click.es $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-click.es
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-click.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-click.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-confirm.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-confirm.js
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-doc.es $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-doc.es
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-field-errors.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-field-errors.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-format.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-format.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-gauge.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-gauge.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-input-group.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-input-group.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-input.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-input.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-local.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-local.js
@@ -2253,15 +2261,20 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-resource.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-resource.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-session.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-session.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-titlecase.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-titlecase.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp.es $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp.es
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular-esp"
 	cp src/esp/proto/components/angular-esp/config.json $(BIT_VAPP_PREFIX)/esp/components/angular-esp/config.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular-esp-extras/client/lib/angular-esp-extras"
+	cp src/esp/proto/components/angular-esp-extras/client/lib/angular-esp-extras/esp-svg-gauge.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp-extras/client/lib/angular-esp-extras/esp-svg-gauge.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular-esp-extras"
+	cp src/esp/proto/components/angular-esp-extras/config.json $(BIT_VAPP_PREFIX)/esp/components/angular-esp-extras/config.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular-mvc/client/app"
 	cp src/esp/proto/components/angular-mvc/client/app/main.js $(BIT_VAPP_PREFIX)/esp/components/angular-mvc/client/app/main.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular-mvc/client/css"
 	cp src/esp/proto/components/angular-mvc/client/css/all.less $(BIT_VAPP_PREFIX)/esp/components/angular-mvc/client/css/all.less
 	cp src/esp/proto/components/angular-mvc/client/css/app.less $(BIT_VAPP_PREFIX)/esp/components/angular-mvc/client/css/app.less
-	cp src/esp/proto/components/angular-mvc/client/css/fix.css $(BIT_VAPP_PREFIX)/esp/components/angular-mvc/client/css/fix.css
+	cp src/esp/proto/components/angular-mvc/client/css/fix.less $(BIT_VAPP_PREFIX)/esp/components/angular-mvc/client/css/fix.less
 	cp src/esp/proto/components/angular-mvc/client/css/theme.less $(BIT_VAPP_PREFIX)/esp/components/angular-mvc/client/css/theme.less
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular-mvc/client"
 	cp src/esp/proto/components/angular-mvc/client/index.esp $(BIT_VAPP_PREFIX)/esp/components/angular-mvc/client/index.esp
@@ -2479,6 +2492,7 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/proto/templates/angular-mvc/list.html $(BIT_VAPP_PREFIX)/esp/templates/angular-mvc/list.html
 	cp src/esp/proto/templates/angular-mvc/model.js $(BIT_VAPP_PREFIX)/esp/templates/angular-mvc/model.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/templates/html-mvc"
+	cp src/esp/proto/templates/html-mvc/controller-singleton.c $(BIT_VAPP_PREFIX)/esp/templates/html-mvc/controller-singleton.c
 	cp src/esp/proto/templates/html-mvc/controller.c $(BIT_VAPP_PREFIX)/esp/templates/html-mvc/controller.c
 	cp src/esp/proto/templates/html-mvc/edit.esp $(BIT_VAPP_PREFIX)/esp/templates/html-mvc/edit.esp
 	cp src/esp/proto/templates/html-mvc/list.esp $(BIT_VAPP_PREFIX)/esp/templates/html-mvc/list.esp

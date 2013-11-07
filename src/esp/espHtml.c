@@ -10,10 +10,6 @@
 #include    "edi.h"
 
 #if BIT_PACK_ESP
-#if BIT_ESP_LEGACY
-/*
-    DEPRECATE in 4.4
- */
 /************************************* Local **********************************/
 
 #define EDATA(s)        "data-esp-" s           /* Prefix for data attributes */
@@ -1005,7 +1001,6 @@ PUBLIC void espInitHtmlOptions(Esp *esp)
     }
 }
 
-#endif /* DEPRECATE */
 #endif /* BIT_PACK_ESP */
 /*
     @copy   default

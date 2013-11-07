@@ -614,7 +614,7 @@ PUBLIC void scripts(cchar *patterns)
     if (!patterns || !*patterns) {
         if (modeIs("release")) {
             //  MOB - angular specific
-            scripts(sfmt("all-%s.min.js", espGetConfig(route, "version", "0")));
+            scripts(sfmt("all-%s.min.js", espGetConfig(route, "version", "1.0.0")));
         } else {
             if ((components = mprGetJson(eroute->config, "settings.components", 0)) != 0) {
                 for (ITERATE_JSON(components, component, ci)) {
@@ -794,7 +794,7 @@ PUBLIC void stylesheets(cchar *patterns)
     if (!patterns || !*patterns) {
         //  MOB - angular specific
         if (modeIs("release")) {
-            stylesheets(sfmt("css/all-%s.min.css", espGetConfig(route, "version", "0")));
+            stylesheets(sfmt("css/all-%s.min.css", espGetConfig(route, "version", "1.0.0")));
         } else {
             stylesheets("css/all.less");
         }

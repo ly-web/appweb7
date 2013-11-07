@@ -547,13 +547,6 @@
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
-      <name>espRenderConfig</name>
-      <anchorfile>group___esp_req.html</anchorfile>
-      <anchor>gae63af370c292f940b0433b9b3f9f511d</anchor>
-      <arglist>(HttpConn *conn)</arglist>
-    </member>
-    <member kind="function">
       <type>ssize</type>
       <name>espRenderError</name>
       <anchorfile>group___esp_req.html</anchorfile>
@@ -1224,6 +1217,13 @@
       <arglist>()</arglist>
     </member>
     <member kind="function">
+      <type>ssize</type>
+      <name>renderConfig</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga680e8d96388553f684b29b6007e2411a</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>renderError</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
@@ -1459,6 +1459,20 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
+      <type>MprHash *</type>
+      <name>databases</name>
+      <anchorfile>struct_esp.html</anchorfile>
+      <anchor>a93e48bc1faa4176b8c58b6a9acd12784</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>MprEvent *</type>
+      <name>databasesTimer</name>
+      <anchorfile>struct_esp.html</anchorfile>
+      <anchor>a9d422109e627ce806a6e4a2aa380602a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>EdiService *</type>
       <name>ediService</name>
       <anchorfile>struct_esp.html</anchorfile>
@@ -1491,6 +1505,13 @@
       <name>mutex</name>
       <anchorfile>struct_esp.html</anchorfile>
       <anchor>a71156c2af5c1018ffa495d97fc21c6ec</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>int</type>
+      <name>reloading</name>
+      <anchorfile>struct_esp.html</anchorfile>
+      <anchor>a233d2ab68047501248e6e9dae7363dee</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">

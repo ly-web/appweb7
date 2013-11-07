@@ -6,7 +6,6 @@
         'html5shiv', 
         'font-awesome', 
         'less', 
-        'more', 
         'respond'
     ],
     settings: {

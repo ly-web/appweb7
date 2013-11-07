@@ -4,12 +4,16 @@
 
 'use strict';
 
+/*
+    Specify the ${TITLE} controller and its dependencies.
+ */
 angular.module('app').controller('${TITLE}Control', function (Esp, ${TITLE}, $location, $routeParams, $scope) {
     angular.extend($scope, $routeParams);
+
     /*
-        Resource calling sequence:
-            Resource.action(input-params, [output], [response-mappings], [success-callback], [failure-callback]);
-            Resources will set results to [output] and update $rootScope.feedback as appropriate.
+        Model calling sequence:
+            ${TITLE}.action(input-params, [output], [response-mappings], [success-callback], [failure-callback]);
+            ${TITLE} will set results to [output] and update $rootScope.feedback as appropriate.
      */
     if ($scope.id) {
         ${TITLE}.get({id: $scope.id}, $scope);
@@ -36,6 +40,9 @@ angular.module('app').controller('${TITLE}Control', function (Esp, ${TITLE}, $lo
     };
 });
 
+/*
+    Setup ${TITLE} routes
+ */
 angular.module('app').config(function($routeProvider) {
     var esp = angular.module('esp');
     var Default = {

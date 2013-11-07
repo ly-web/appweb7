@@ -522,7 +522,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 mprBlendJson(settings, msettings, 0);
                 mprSetJsonValue(settings, "mode", eroute->mode, 0);
             }
-            if ((value = espGetConfig(route, "auth", 0)) != 0) {
+            if ((value = espGetConfig(route, "settings.auth", 0)) != 0) {
                 if (httpSetAuthStore(route->auth, value) < 0) {
                     mprError("The %s AuthStore is not available on this platform", value);
                 }
