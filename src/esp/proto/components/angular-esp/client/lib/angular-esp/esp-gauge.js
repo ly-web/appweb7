@@ -155,7 +155,6 @@ angular.module('esp.gauge', [])
                     scope.low = 0;
                     scope.high = 100;
                 }
-                // console.log("WATCH", value, "PRIOR", scope.prior);
                 if (scope.prior == value) {
                     return;
                 }
@@ -173,7 +172,6 @@ angular.module('esp.gauge', [])
                 var inc = (value - scope.current) / steps;
 
                 function animate() {
-                    // console.log("ANIMATE VALUE ", scope.value, "CURRENT", scope.current, "INC", inc, "STEPS", steps, "PERIOD", period);
                     if (scope.timeout) {
                         $timeout.cancel(scope.timeout);
                     }
@@ -190,3 +188,4 @@ angular.module('esp.gauge', [])
         },
     };
 });
+

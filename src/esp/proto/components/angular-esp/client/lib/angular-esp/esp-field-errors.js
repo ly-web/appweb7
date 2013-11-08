@@ -1,5 +1,7 @@
 /*
     esp-field-errors.js - ESP esp-field-errors directive
+
+    <esp-field-errors></esp-field-errors>
  */
 angular.module('esp.field-errors', [])
 .directive('espFieldErrors', function() {
