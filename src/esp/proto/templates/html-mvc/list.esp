@@ -8,9 +8,11 @@
 <table class='table table-striped table-bordered table-hover table-condensed'>
     <thead>
         <tr><%
-            rec = grid->records[0];
-            for (f = 0; f < rec->nfields; f++) {
-                render("<th>%s</th>\n", rec->fields[f].name);
+            if (grid->nrecords) {
+                rec = grid->records[0];
+                for (f = 0; f < rec->nfields; f++) {
+                    render("<th>%s</th>\n", rec->fields[f].name);
+                }
             } %>
         </tr>
     </thead>

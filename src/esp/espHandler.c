@@ -855,6 +855,7 @@ PUBLIC void httpAddLegacyResource(HttpRoute *parent, cchar *prefix, cchar *resou
 #endif
 
 
+#if UNUSED
 static void configAction(HttpConn *conn)
 {
     EspRoute    *eroute;
@@ -885,6 +886,7 @@ PUBLIC void espAddEspRoute(HttpRoute *parent)
         espDefineAction(route, "esp-config", configAction);
     }
 }
+#endif
 
 
 PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
@@ -1078,7 +1080,9 @@ static int finishEspAppDirective(MaState *state, cchar *key, cchar *value)
     route = state->route;
     eroute = route->eroute;
     if (eroute->routeSet) {
+#if UNUSED
         espAddEspRoute(route);
+#endif
         espAddRouteSet(route, eroute->routeSet);
     }
     if (route != state->prev->route) {

@@ -1,0 +1,26 @@
+{
+  "name": "appweb",
+  "version": "4.4.0",
+  "homepage": "https://github.com/embedthis/appweb-4",
+  "authors": [
+    "Embedthis Software <dev@embedthis.com>"
+  ],
+  "description": "Embedthis Appweb embedded web server",
+  "main": "main.bit",
+  "keywords": [
+    "appweb",
+    "http",
+    "webserver"
+  ],
+  "license": "GPL",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "*-debug",
+    "*-release",
+    "releases"
+  ]
+}

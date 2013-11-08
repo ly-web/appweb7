@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>esp-confirm Directive</title>
+   <link rel="stylesheet" type="text/css" href="doc.css" />
+   <link rel="stylesheet" type="text/css" href="api.css" />
+</head>
+
+<body>
+<div class='body'>
+	<div class="content">
+		<a name='top'></a>
+		<h1 class='className'>Directive: esp-confirm</h1>
+		<div class='api'>
+			<div class='prototype'>
+				&lt;esp-confirm ...&gt;
+			</div>
+			<div class='apiDetail'>
+				<dl>
+					<dt>Synopsis</dt>
+				    <dd>&lt;esp-confirm header="Header" body="Body?" ok="Button"&gt;</dd>
+				</dl>
+				<dl>
+					<dt>Description</dt>
+					<dd><p>
+						The esp-confirm directive displays a modal dialog and awaits user input.
+					</dd>
+				</dl>
+				<dl>
+					<dt>Attributes</dt>
+					<dd>
+						<table class='parameters' summary ='parameters'>
+					    	<tr class='param'><td class='param'>body: String </td><td>Confirmation dialog body text.</td></tr>
+					    	<tr class='param'><td class='param'>header: String </td><td>Dialog header text.</td></tr>
+					    	<tr class='param'><td class='param'>ok: String </td><td>Dialog accept button text.</td></tr>
+					    </table>
+				    </dd>
+				</dl>
+				<dl>
+					<dt>Example</dt>
+					<dd>&lt;esp-confirm header="Are you sure?" body="Do you want to remove user: {{user.username}}?" ok="Delete User"&gt;</dd>
+				</dl>
+			</div>
+		</div>
+		<div class="terms">
+		   <p class="terms">
+		       <a href="http://embedthis.com/">Embedthis Software LLC, 2003-2013. 
+		       	All rights reserved. Embedthis is a trademark of Embedthis Software LLC.</a>
+		   </p>
+		</div>
+	</div>
+</div>
+</body>
+</html>

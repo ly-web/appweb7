@@ -101,6 +101,10 @@ Bit.load({
             zlib: true,
         },
 
+        esp: {
+            legacy: false,
+        },
+
         /*
             EST SSL stack configuration
          */

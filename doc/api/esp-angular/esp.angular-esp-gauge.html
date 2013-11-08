@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>esp-gauge Directive</title>
+   <link rel="stylesheet" type="text/css" href="doc.css" />
+   <link rel="stylesheet" type="text/css" href="api.css" />
+</head>
+
+<body>
+<div class='body'>
+	<div class="content">
+		<a name='top'></a>
+		<h1 class='className'>Directive: esp-gauge</h1>
+		<div class='api'>
+			<div class='prototype'>
+				&lt;esp-gauge ...&gt;
+			</div>
+			<div class='apiDetail'>
+				<dl>
+					<dt>Synopsis</dt>
+				    <dd>&lt;esp-gauge value="{{sales.total}}" title="Total Sales" range="0-1000000"&gt;</dd>
+				</dl>
+				<dl>
+					<dt>Description</dt>
+					<dd><p>The esp-gauge directive renders numeric data in the form of a
+					simple gauge. If the value to display is data bound and is updated, the gauge will also be updated.</p>
+
+					<p>The gauge may be configured via HTML attributes or via similar named properties on the $scope.
+					Style defaults are set by the .gauge style for font-size, background and foreground colors.</p>
+					</dd>
+				</dl>
+				<dl>
+					<dt>Attributes</dt>
+					<dd>
+						<table class='parameters' summary ='parameters'>
+						    <tr class='param'><td class='param'>color: String </td><td>Text and arrow color.</td></tr>
+						    <tr class='param'><td class='param'>height: String </td><td>Gauge height in pixels.</td></tr>
+						    <tr class='param'><td class='param'>highlight: String </td><td>Background color of the gauge sweep area.</td></tr>
+						    <tr class='param'><td class='param'>range: String </td><td>Min-Max values.</td></tr>
+						    <tr class='param'><td class='param'>title: String </td><td>Gauge title.</td></tr>
+						    <tr class='param'><td class='param'>value: String </td><td>Gauge current value to display.</td></tr>
+						    <tr class='param'><td class='param'>width: String </td><td>Gauge width in pixels.</td></tr>
+					    </table>
+				    </dd>
+				</dl>
+				<dl>
+					<dt>Example</dt>
+					<dd>&lt;esp-gauge value="{{ports.active}}" title="Active Ports" range='0-16'&gt;&lt;/esp-gauge&gt;</dd>
+				</dl>
+			</div>
+		</div>
+		<div class="terms">
+	   		<p class="terms">
+	       		<a href="http://embedthis.com/">Embedthis Software LLC, 2003-2013. 
+	       			All rights reserved. Embedthis is a trademark of Embedthis Software LLC.</a>
+	   		</p>
+		</div>
+	</div>
+</div>
+</body>
+</html>

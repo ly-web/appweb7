@@ -39,29 +39,18 @@ Bit.load({
                                            replace(/external=\"mpr.dtags\"/g, '').
                                            replace(/external=\"http.dtags\"/g, ''))
                 }
-                if (Cmd.locate('ejsc')) {
-                    for each (path in Path('../src/esp/proto/components/angular-esp/client/lib/angular-esp').files('*.es')) {
-                        run('ejsc --doc ' + path)
-                    }
-                    run('ejsmod --html api/esp-angular ' + Path('.').files('*.mod').join(' '))
-                    Path('api/esp-angular/masters/__overview-page.html').copy('api/esp-angular/__overview-page.html')
-                    Path('api/esp-angular/masters/title.html').copy('api/esp-angular/title.html')
-                    Path('api/esp-angular/masters/banner.jpg').copy('api/esp-angular/images/banner.jpg')
-                    for each (path in Path('.').files('*.mod')) {
-                        path.remove()
-                    }
-                }
             ",
         },
         'esp-doc': {
             action: "
                 if (Cmd.locate('ejsc')) {
-                    for each (path in Path('../src/esp/proto/components/angular-esp/client/lib/angular-esp').files('*.es')) {
-                        run('ejsc --doc ' + path)
+                    let list = Path('../src/esp/proto/components/angular-esp/client/lib/angular-esp').files('*.es')
+                        run('ejsc --doc '  + list.join(' '))
                     }
                     run('ejsmod --html api/esp-angular ' + Path('.').files('*.mod').join(' '))
-                    Path('api/esp-angular/masters/__overview-page.html').copy('api/esp-angular/__overview-page.html')
-                    Path('api/esp-angular/masters/title.html').copy('api/esp-angular/title.html')
+                    for each (path in Path('api/esp-angular/masters').files(['*.html', '*.css'])) {
+                        path.copy('api/esp-angular/' + path.basename)
+                    }
                     Path('api/esp-angular/masters/banner.jpg').copy('api/esp-angular/images/banner.jpg')
                     for each (path in Path('.').files('*.mod')) {
                         path.remove()

@@ -6,6 +6,7 @@
         'html5shiv', 
         'font-awesome', 
         'less', 
+        'more', 
         'respond'
     ],
     settings: {
@@ -16,8 +17,8 @@
             int: 0
         },
         redirect: "secure",
-        serverPrefix: "/server",
-        sendJson: true,
+        serverPrefix: "",
+        sendJson: false,
     },
     server: {
         database: "${DATABASE}://${NAME}.${DATABASE}",
