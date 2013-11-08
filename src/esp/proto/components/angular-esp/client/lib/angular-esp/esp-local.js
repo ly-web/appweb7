@@ -12,7 +12,7 @@ angular.module('esp.local', [])
         put: function (key, value) {
             localStorage.setItem(key, JSON.stringify(value));
         },
-        remove: function (key, value) {
+        remove: function (key) {
             localStorage.removeItem(key);
         }
     };

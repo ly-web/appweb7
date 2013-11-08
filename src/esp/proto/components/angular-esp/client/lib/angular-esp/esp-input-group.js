@@ -2,14 +2,14 @@
     esp-input-group.js - ESP esp-input-group directive
 
     Attributes:
-        ng-model="MODEL"                Angular model object
+        classes="Class,Class,..."       Ordered list of CSS classes for the outer division wrapping the esp-input
         fields="Title,Title,..."        Ordered list of fields to render. Default to all fields of schema.
         filters="filter,filter,..."     Ordered list of field filters.
+        inputClasses="Class,Class,..."  Ordered list of input field CSS classes
         labels="Name,Name,..."          Ordered list of input field labels
-        labelWidths="Style,Style,..."   Ordered list of input field label width styles
-        widths="Style,style,..."        Ordered list of input field width styles
-        classes="Class,Class,..."       Ordered list of input field classes for the division wrapping the esp-input
-        types="type,type,..."           Ordered list of input control types (checkbox,radiobox)
+        labelClasses="Class,Class,..."  Ordered list of input field label CSS classes
+        ng-model="MODEL"                Angular model object name
+        types="type,type,..."           Ordered list of input control types (checkbox,radiobox,text,textarea, ...)
 
     Emits esp-input elements for each field in the schema
  */
@@ -28,10 +28,9 @@ angular.module('esp.input-group', [])
                             if (value == 'ng-model') return;
                             attributes += ' ' + value + '="' + attrs[key] + '"';
                         });
-                        var columns = scope.schema.columns;
-                        //  MOB - should this be fields or columns
+                        var fields = scope.schema.columns;
                         if (attrs.fields) {
-                            columns = attrs.fields.split(',');
+                            fields = attrs.fields.split(',');
                         }
                         var labels;
                         if (attrs.labels) {
@@ -49,25 +48,25 @@ angular.module('esp.input-group', [])
                         if (attrs.filters) {
                             filters = attrs.filters.split(',');
                         }
-                        var widths;
-                        if (attrs.widths) {
-                            widths = attrs.widths.split(',');
+                        var inputClasses;
+                        if (attrs.inputClasses) {
+                            inputClasses = attrs.inputClasses.split(',');
                         }
-                        var labelWidths;
-                        if (attrs.labelWidths) {
-                            labelWidths = attrs.labelWidths.split(',');
+                        var labelClasses;
+                        if (attrs.labelClasses) {
+                            labelClasses = attrs.labelClasses.split(',');
                         }
-                        angular.forEach(columns, function(field, key) {
+                        angular.forEach(fields, function(field, key) {
                             var i = 0 + key;
                             var label = (labels && labels[i]) ? ('label="' + labels[i] + '"') : Esp.titlecase(field);
-                            var style = (classes && classes[i]) ? ('class=' + classes[i]) : '';
+                            var klass = (classes && classes[i]) ? ('class=' + classes[i]) : '';
                             var type = (types && types[i]) ? ('type="' + types[i] + '"') : '';
                             var filter = (filters && filters[i]) ? ('filter="' + filters[i] + '"') : '';
-                            var width = (widths && widths[i]) ? ('width="' + widths[i] + '"') : '';
-                            var labelWidth = (labelWidths && labelWidths[i]) ? ('labelWidth="' + labelWidths[i] + '"') : '';
+                            var inputClass = (inputClasses && inputClasses[i]) ? ('inputClass="' + inputClasses[i] + '"') : '';
+                            var labelClass = (labelClasses && labelClasses[i]) ? ('labelClass="' + labelClasses[i] + '"') : '';
                             var thisAtt = attributes + ' ng-model="' + model + '.' + field + '"';
-                            var html = '<esp-input' + thisAtt + ' ' + type + ' ' + label + ' ' + labelWidth + ' ' +
-                                filter + ' ' + style + '>\n';
+                            var html = '<esp-input' + thisAtt + ' ' + type + ' ' + label + ' ' + labelClass + ' ' +
+                                filter + ' ' + klass + '>\n';
                             var newelt = angular.element(html);
                             element.append(newelt);
                             $compile(newelt)(scope);

@@ -1,7 +1,8 @@
 /*
-    esp-modal.js - 
+    esp-modal.js - Display a modal dialog
 
     <esp-modal close="" show="">
+        body
     </esp-modal>
  */
 'use strict';

@@ -5,8 +5,8 @@
         ng-model="MODEL.FIELD"  Angular model field object
         type="type"       Input control type to render (checkbox, text, textarea, date, email, tel, url, search, color, number, range)
         label="Text"
-        labelWidth="style"
-        width="style"
+        labelClass="Class"
+        inputClass="Class"
         filter="Filter"
         value="Value"       # Use instead of model
 
@@ -58,10 +58,10 @@ angular.module('esp.input', [])
             scope.$watch('schema', function (val) {
                 if (scope.schema && element.parent().length && element.children().length == 0) {
                     var dataType = scope.schema.types[field].type;
-                    var bodyWidth = (attrs.width) ? attrs.width : 'col-xs-8';
+                    var inputClass = (attrs.inputClass) ? attrs.inputClass : 'col-xs-8';
                     var errorHighlight = " ng-class='{\"has-error\": fieldErrors." + field + "}'";
                     var label = attrs.label ? attrs.label : title(field);
-                    var labelWidth = (attrs.labelWidth) ? attrs.labelWidth : 'col-xs-3';
+                    var labelClass = (attrs.labelClass) ? attrs.labelClass : 'col-xs-3';
                     var tag, type;
                     if (attrs.type) {
                         type = attrs.type;
@@ -115,8 +115,8 @@ angular.module('esp.input', [])
                         html = '<' + tag + ' type="' + type + '"' + astr + '>';
                     }
                     html = '<div class="form-group">' +
-                                '<label class="control-label ' + labelWidth + '">' + label + '</label>' +
-                                '<div class="input-group ' + bodyWidth + '"' + errorHighlight + '>' + 
+                                '<label class="control-label ' + labelClass + '">' + label + '</label>' +
+                                '<div class="input-group ' + inputClass + '"' + errorHighlight + '>' + 
                                     html + 
                                     '<span class="input-group-addon" ng-show="fieldErrors.' + field + '">{{fieldErrors.' + field + '}}</span>' +
                                 '</div>' +
