@@ -1403,7 +1403,6 @@
 				8835A6E48835BCEC0000014F /* bit.h */,
 				8835A6E48835BCEC00000150 /* mpr.h */,
 				8835A6E48835BCEC00000152 /* est.h */,
-				8835A6E48835BCEC00000151 /* bitos.h */,
 				8835A6E48835BCEC00000055 /* mprSsl.c */,
 			);
             name = "libmprssl";

@@ -1209,7 +1209,6 @@ $(CONFIG)\esp: $(DEPS_58)
 	if not exist "$(CONFIG)\esp\components\angular" md "$(CONFIG)\esp\components\angular"
 	copy /Y src\esp\proto\components\angular\config.json $(CONFIG)\esp\components\angular\config.json
 	if not exist "$(CONFIG)\esp\components\angular-esp\client\lib\angular-esp" md "$(CONFIG)\esp\components\angular-esp\client\lib\angular-esp"
-	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-click.es $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-click.es
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-click.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-click.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-confirm.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-confirm.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-field-errors.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-field-errors.js
@@ -1217,9 +1216,11 @@ $(CONFIG)\esp: $(DEPS_58)
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-gauge.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-gauge.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-input-group.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-input-group.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-input.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-input.js
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-local.es $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-local.es
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-local.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-local.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-modal.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-modal.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-resource.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-resource.js
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-session.es $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-session.es
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-session.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-session.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-titlecase.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-titlecase.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp.es $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp.es
@@ -1365,19 +1366,17 @@ $(CONFIG)\esp: $(DEPS_58)
 	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\font-awesome.scss $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\scss\font-awesome.scss
 	if not exist "$(CONFIG)\esp\components\font-awesome" md "$(CONFIG)\esp\components\font-awesome"
 	copy /Y src\esp\proto\components\font-awesome\config.json $(CONFIG)\esp\components\font-awesome\config.json
-	if not exist "$(CONFIG)\esp\components\html-mvc\client\app" md "$(CONFIG)\esp\components\html-mvc\client\app"
-	copy /Y src\esp\proto\components\html-mvc\client\app\main.js $(CONFIG)\esp\components\html-mvc\client\app\main.js
 	if not exist "$(CONFIG)\esp\components\html-mvc\client\css" md "$(CONFIG)\esp\components\html-mvc\client\css"
 	copy /Y src\esp\proto\components\html-mvc\client\css\all.less $(CONFIG)\esp\components\html-mvc\client\css\all.less
 	copy /Y src\esp\proto\components\html-mvc\client\css\app.less $(CONFIG)\esp\components\html-mvc\client\css\app.less
-	copy /Y src\esp\proto\components\html-mvc\client\css\fix.css $(CONFIG)\esp\components\html-mvc\client\css\fix.css
+	copy /Y src\esp\proto\components\html-mvc\client\css\fix.less $(CONFIG)\esp\components\html-mvc\client\css\fix.less
 	copy /Y src\esp\proto\components\html-mvc\client\css\theme.less $(CONFIG)\esp\components\html-mvc\client\css\theme.less
 	if not exist "$(CONFIG)\esp\components\html-mvc\client" md "$(CONFIG)\esp\components\html-mvc\client"
 	copy /Y src\esp\proto\components\html-mvc\client\index.esp $(CONFIG)\esp\components\html-mvc\client\index.esp
-	if not exist "$(CONFIG)\esp\components\html-mvc\client\layouts" md "$(CONFIG)\esp\components\html-mvc\client\layouts"
-	copy /Y src\esp\proto\components\html-mvc\client\layouts\default.esp $(CONFIG)\esp\components\html-mvc\client\layouts\default.esp
 	if not exist "$(CONFIG)\esp\components\html-mvc" md "$(CONFIG)\esp\components\html-mvc"
 	copy /Y src\esp\proto\components\html-mvc\config.json $(CONFIG)\esp\components\html-mvc\config.json
+	if not exist "$(CONFIG)\esp\components\html-mvc\layouts" md "$(CONFIG)\esp\components\html-mvc\layouts"
+	copy /Y src\esp\proto\components\html-mvc\layouts\default.esp $(CONFIG)\esp\components\html-mvc\layouts\default.esp
 	copy /Y src\esp\proto\components\html-mvc\start.bit $(CONFIG)\esp\components\html-mvc\start.bit
 	if not exist "$(CONFIG)\esp\components\html5shiv\client\lib\html5shiv" md "$(CONFIG)\esp\components\html5shiv\client\lib\html5shiv"
 	copy /Y src\esp\proto\components\html5shiv\client\lib\html5shiv\html5shiv.js $(CONFIG)\esp\components\html5shiv\client\lib\html5shiv\html5shiv.js
@@ -2445,7 +2444,6 @@ installBinary: $(DEPS_102)
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\angular" md "$(BIT_VAPP_PREFIX)\esp\components\angular"
 	copy /Y src\esp\proto\components\angular\config.json "$(BIT_VAPP_PREFIX)\esp\components\angular\config.json"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp" md "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp"
-	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-click.es "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-click.es"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-click.js "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-click.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-confirm.js "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-confirm.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-field-errors.js "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-field-errors.js"
@@ -2453,9 +2451,11 @@ installBinary: $(DEPS_102)
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-gauge.js "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-gauge.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-input-group.js "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-input-group.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-input.js "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-input.js"
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-local.es "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-local.es"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-local.js "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-local.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-modal.js "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-modal.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-resource.js "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-resource.js"
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-session.es "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-session.es"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-session.js "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-session.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-titlecase.js "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-titlecase.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp.es "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp.es"
@@ -2601,19 +2601,17 @@ installBinary: $(DEPS_102)
 	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\font-awesome.scss "$(BIT_VAPP_PREFIX)\esp\components\font-awesome\client\lib\font-awesome\scss\font-awesome.scss"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\font-awesome" md "$(BIT_VAPP_PREFIX)\esp\components\font-awesome"
 	copy /Y src\esp\proto\components\font-awesome\config.json "$(BIT_VAPP_PREFIX)\esp\components\font-awesome\config.json"
-	if not exist "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\app" md "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\app"
-	copy /Y src\esp\proto\components\html-mvc\client\app\main.js "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\app\main.js"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\css" md "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\css"
 	copy /Y src\esp\proto\components\html-mvc\client\css\all.less "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\css\all.less"
 	copy /Y src\esp\proto\components\html-mvc\client\css\app.less "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\css\app.less"
-	copy /Y src\esp\proto\components\html-mvc\client\css\fix.css "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\css\fix.css"
+	copy /Y src\esp\proto\components\html-mvc\client\css\fix.less "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\css\fix.less"
 	copy /Y src\esp\proto\components\html-mvc\client\css\theme.less "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\css\theme.less"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client" md "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client"
 	copy /Y src\esp\proto\components\html-mvc\client\index.esp "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\index.esp"
-	if not exist "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\layouts" md "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\layouts"
-	copy /Y src\esp\proto\components\html-mvc\client\layouts\default.esp "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\layouts\default.esp"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\html-mvc" md "$(BIT_VAPP_PREFIX)\esp\components\html-mvc"
 	copy /Y src\esp\proto\components\html-mvc\config.json "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\layouts" md "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\layouts"
+	copy /Y src\esp\proto\components\html-mvc\layouts\default.esp "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\layouts\default.esp"
 	copy /Y src\esp\proto\components\html-mvc\start.bit "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\start.bit"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\html5shiv\client\lib\html5shiv" md "$(BIT_VAPP_PREFIX)\esp\components\html5shiv\client\lib\html5shiv"
 	copy /Y src\esp\proto\components\html5shiv\client\lib\html5shiv\html5shiv.js "$(BIT_VAPP_PREFIX)\esp\components\html5shiv\client\lib\html5shiv\html5shiv.js"

@@ -1095,7 +1095,6 @@ $(CONFIG)/esp: $(DEPS_56)
 	mkdir -p "$(CONFIG)/esp/components/angular"
 	cp src/esp/proto/components/angular/config.json $(CONFIG)/esp/components/angular/config.json
 	mkdir -p "$(CONFIG)/esp/components/angular-esp/client/lib/angular-esp"
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-click.es $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-click.es
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-click.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-click.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-confirm.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-confirm.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-field-errors.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-field-errors.js
@@ -1103,9 +1102,11 @@ $(CONFIG)/esp: $(DEPS_56)
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-gauge.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-gauge.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-input-group.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-input-group.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-input.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-input.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-local.es $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-local.es
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-local.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-local.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-modal.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-modal.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-resource.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-resource.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-session.es $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-session.es
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-session.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-session.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-titlecase.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-titlecase.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp.es $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp.es
@@ -1251,19 +1252,17 @@ $(CONFIG)/esp: $(DEPS_56)
 	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/font-awesome.scss $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/scss/font-awesome.scss
 	mkdir -p "$(CONFIG)/esp/components/font-awesome"
 	cp src/esp/proto/components/font-awesome/config.json $(CONFIG)/esp/components/font-awesome/config.json
-	mkdir -p "$(CONFIG)/esp/components/html-mvc/client/app"
-	cp src/esp/proto/components/html-mvc/client/app/main.js $(CONFIG)/esp/components/html-mvc/client/app/main.js
 	mkdir -p "$(CONFIG)/esp/components/html-mvc/client/css"
 	cp src/esp/proto/components/html-mvc/client/css/all.less $(CONFIG)/esp/components/html-mvc/client/css/all.less
 	cp src/esp/proto/components/html-mvc/client/css/app.less $(CONFIG)/esp/components/html-mvc/client/css/app.less
-	cp src/esp/proto/components/html-mvc/client/css/fix.css $(CONFIG)/esp/components/html-mvc/client/css/fix.css
+	cp src/esp/proto/components/html-mvc/client/css/fix.less $(CONFIG)/esp/components/html-mvc/client/css/fix.less
 	cp src/esp/proto/components/html-mvc/client/css/theme.less $(CONFIG)/esp/components/html-mvc/client/css/theme.less
 	mkdir -p "$(CONFIG)/esp/components/html-mvc/client"
 	cp src/esp/proto/components/html-mvc/client/index.esp $(CONFIG)/esp/components/html-mvc/client/index.esp
-	mkdir -p "$(CONFIG)/esp/components/html-mvc/client/layouts"
-	cp src/esp/proto/components/html-mvc/client/layouts/default.esp $(CONFIG)/esp/components/html-mvc/client/layouts/default.esp
 	mkdir -p "$(CONFIG)/esp/components/html-mvc"
 	cp src/esp/proto/components/html-mvc/config.json $(CONFIG)/esp/components/html-mvc/config.json
+	mkdir -p "$(CONFIG)/esp/components/html-mvc/layouts"
+	cp src/esp/proto/components/html-mvc/layouts/default.esp $(CONFIG)/esp/components/html-mvc/layouts/default.esp
 	cp src/esp/proto/components/html-mvc/start.bit $(CONFIG)/esp/components/html-mvc/start.bit
 	mkdir -p "$(CONFIG)/esp/components/html5shiv/client/lib/html5shiv"
 	cp src/esp/proto/components/html5shiv/client/lib/html5shiv/html5shiv.js $(CONFIG)/esp/components/html5shiv/client/lib/html5shiv/html5shiv.js

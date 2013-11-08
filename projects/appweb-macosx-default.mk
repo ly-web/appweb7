@@ -392,7 +392,6 @@ endif
 DEPS_10 += $(CONFIG)/inc/bit.h
 DEPS_10 += $(CONFIG)/inc/mpr.h
 DEPS_10 += $(CONFIG)/inc/est.h
-DEPS_10 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c $(DEPS_10)
@@ -1104,7 +1103,6 @@ $(CONFIG)/esp: $(DEPS_56)
 	mkdir -p "$(CONFIG)/esp/components/angular"
 	cp src/esp/proto/components/angular/config.json $(CONFIG)/esp/components/angular/config.json
 	mkdir -p "$(CONFIG)/esp/components/angular-esp/client/lib/angular-esp"
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-click.es $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-click.es
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-click.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-click.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-confirm.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-confirm.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-field-errors.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-field-errors.js
@@ -1112,9 +1110,11 @@ $(CONFIG)/esp: $(DEPS_56)
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-gauge.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-gauge.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-input-group.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-input-group.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-input.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-input.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-local.es $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-local.es
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-local.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-local.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-modal.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-modal.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-resource.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-resource.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-session.es $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-session.es
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-session.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-session.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-titlecase.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-titlecase.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp.es $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp.es
@@ -1260,19 +1260,17 @@ $(CONFIG)/esp: $(DEPS_56)
 	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/font-awesome.scss $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/scss/font-awesome.scss
 	mkdir -p "$(CONFIG)/esp/components/font-awesome"
 	cp src/esp/proto/components/font-awesome/config.json $(CONFIG)/esp/components/font-awesome/config.json
-	mkdir -p "$(CONFIG)/esp/components/html-mvc/client/app"
-	cp src/esp/proto/components/html-mvc/client/app/main.js $(CONFIG)/esp/components/html-mvc/client/app/main.js
 	mkdir -p "$(CONFIG)/esp/components/html-mvc/client/css"
 	cp src/esp/proto/components/html-mvc/client/css/all.less $(CONFIG)/esp/components/html-mvc/client/css/all.less
 	cp src/esp/proto/components/html-mvc/client/css/app.less $(CONFIG)/esp/components/html-mvc/client/css/app.less
-	cp src/esp/proto/components/html-mvc/client/css/fix.css $(CONFIG)/esp/components/html-mvc/client/css/fix.css
+	cp src/esp/proto/components/html-mvc/client/css/fix.less $(CONFIG)/esp/components/html-mvc/client/css/fix.less
 	cp src/esp/proto/components/html-mvc/client/css/theme.less $(CONFIG)/esp/components/html-mvc/client/css/theme.less
 	mkdir -p "$(CONFIG)/esp/components/html-mvc/client"
 	cp src/esp/proto/components/html-mvc/client/index.esp $(CONFIG)/esp/components/html-mvc/client/index.esp
-	mkdir -p "$(CONFIG)/esp/components/html-mvc/client/layouts"
-	cp src/esp/proto/components/html-mvc/client/layouts/default.esp $(CONFIG)/esp/components/html-mvc/client/layouts/default.esp
 	mkdir -p "$(CONFIG)/esp/components/html-mvc"
 	cp src/esp/proto/components/html-mvc/config.json $(CONFIG)/esp/components/html-mvc/config.json
+	mkdir -p "$(CONFIG)/esp/components/html-mvc/layouts"
+	cp src/esp/proto/components/html-mvc/layouts/default.esp $(CONFIG)/esp/components/html-mvc/layouts/default.esp
 	cp src/esp/proto/components/html-mvc/start.bit $(CONFIG)/esp/components/html-mvc/start.bit
 	mkdir -p "$(CONFIG)/esp/components/html5shiv/client/lib/html5shiv"
 	cp src/esp/proto/components/html5shiv/client/lib/html5shiv/html5shiv.js $(CONFIG)/esp/components/html5shiv/client/lib/html5shiv/html5shiv.js
@@ -2264,7 +2262,6 @@ ifeq ($(BIT_PACK_ESP),1)
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular"
 	cp src/esp/proto/components/angular/config.json $(BIT_VAPP_PREFIX)/esp/components/angular/config.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp"
-	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-click.es $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-click.es
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-click.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-click.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-confirm.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-confirm.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-field-errors.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-field-errors.js
@@ -2272,9 +2269,11 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-gauge.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-gauge.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-input-group.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-input-group.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-input.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-input.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-local.es $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-local.es
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-local.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-local.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-modal.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-modal.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-resource.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-resource.js
+	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-session.es $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-session.es
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-session.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-session.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-titlecase.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-titlecase.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp.es $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp.es
@@ -2420,19 +2419,17 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/font-awesome.scss $(BIT_VAPP_PREFIX)/esp/components/font-awesome/client/lib/font-awesome/scss/font-awesome.scss
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/font-awesome"
 	cp src/esp/proto/components/font-awesome/config.json $(BIT_VAPP_PREFIX)/esp/components/font-awesome/config.json
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/app"
-	cp src/esp/proto/components/html-mvc/client/app/main.js $(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/app/main.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/css"
 	cp src/esp/proto/components/html-mvc/client/css/all.less $(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/css/all.less
 	cp src/esp/proto/components/html-mvc/client/css/app.less $(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/css/app.less
-	cp src/esp/proto/components/html-mvc/client/css/fix.css $(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/css/fix.css
+	cp src/esp/proto/components/html-mvc/client/css/fix.less $(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/css/fix.less
 	cp src/esp/proto/components/html-mvc/client/css/theme.less $(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/css/theme.less
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/html-mvc/client"
 	cp src/esp/proto/components/html-mvc/client/index.esp $(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/index.esp
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/layouts"
-	cp src/esp/proto/components/html-mvc/client/layouts/default.esp $(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/layouts/default.esp
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/html-mvc"
 	cp src/esp/proto/components/html-mvc/config.json $(BIT_VAPP_PREFIX)/esp/components/html-mvc/config.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/html-mvc/layouts"
+	cp src/esp/proto/components/html-mvc/layouts/default.esp $(BIT_VAPP_PREFIX)/esp/components/html-mvc/layouts/default.esp
 	cp src/esp/proto/components/html-mvc/start.bit $(BIT_VAPP_PREFIX)/esp/components/html-mvc/start.bit
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/html5shiv/client/lib/html5shiv"
 	cp src/esp/proto/components/html5shiv/client/lib/html5shiv/html5shiv.js $(BIT_VAPP_PREFIX)/esp/components/html5shiv/client/lib/html5shiv/html5shiv.js
