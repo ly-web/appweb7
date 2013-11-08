@@ -571,7 +571,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 route->limits->sessionTimeout = stoi(value) * 1000;
             }
             if (espTestConfig(route, "settings.map", "compressed")) {
-                httpAddRouteMapping(route, "css,html,js,less,xml", "min.${1}.gz, min.${1}, ${1}.gz");
+                httpAddRouteMapping(route, "css,html,js,less,txt,xml", "min.${1}.gz, min.${1}, ${1}.gz");
             }
             if (!eroute->database) {
                 if ((eroute->database = espGetConfig(route, "server.database", 0)) != 0) {

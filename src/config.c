@@ -1612,7 +1612,7 @@ static int mapDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (smatch(extensions, "compressed")) {
-        httpAddRouteMapping(state->route, "css,html,js,less,xml", "min.${1}.gz, min.${1}, ${1}.gz");
+        httpAddRouteMapping(state->route, "css,html,js,less,txt,xml", "min.${1}.gz, min.${1}, ${1}.gz");
     } else {
         httpAddRouteMapping(state->route, extensions, mappings);
     }
