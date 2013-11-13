@@ -410,11 +410,11 @@ static int writeHeader(sapi_header_struct *sapiHeader, sapi_headers_struct *sapi
 #if PHP_MAJOR_VERSION >=5 && PHP_MINOR_VERSION >= 3
     switch(op) {
         case SAPI_HEADER_DELETE_ALL:
-            //  TODO - not supported
+            //  FUTURE - not supported
             return 0;
 
         case SAPI_HEADER_DELETE:
-            //  TODO - not supported
+            //  FUTURE - not supported
             return 0;
 
         case SAPI_HEADER_REPLACE:

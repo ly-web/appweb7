@@ -463,7 +463,7 @@ static void readFromCgi(Cgi *cgi, int channel)
             mprAdjustBufEnd(packet->content, nbytes);
         }
         if (channel == MPR_CMD_STDERR) {
-            //  MOB - should be an option to keep going despite stderr output
+            //  FUTURE - should be an option to keep going despite stderr output
             mprError("CGI: Error for \"%s\"\n\n%s", conn->rx->uri, mprGetBufStart(packet->content));
             httpSetStatus(conn, HTTP_CODE_SERVICE_UNAVAILABLE);
             cgi->seenHeader = 1;
@@ -743,7 +743,7 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
     /*
         ISINDEX queries. Only valid if there is not a "=" in the query. If this is so, then we must not
         have these args in the query env also?
-        TODO - should query vars be set in the env?
+        FUTURE - should query vars be set in the env?
      */
     if (indexQuery) {
         indexQuery = sclone(indexQuery);
@@ -958,7 +958,7 @@ static int copyVars(cchar **envv, int index, MprHash *vars, cchar *prefix)
 }
 
 
-//  MOB - rethink. duplicates copyVars
+//  FUTURE - rethink. duplicates copyVars
 static int copyParams(cchar **envv, int index, MprJson *params, cchar *prefix)
 {
     MprJson     *param;

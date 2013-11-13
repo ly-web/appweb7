@@ -19,7 +19,7 @@
     Handler configuration
  */
 typedef struct Dir {
-#if FUTURE
+#if KEEP
     MprList         *dirList;
     cchar           *defaultIcon;
     MprList         *extList;
@@ -513,7 +513,7 @@ static int matchDirPattern(cchar *pattern, cchar *file)
 }
 
 
-#if FUTURE
+#if KEEP
 static int addIconDirective(MaState *state, cchar *key, cchar *value)
 {
     if (!maTokenize(state, value, "%S %W", &path, &dir->extList)) {
@@ -615,7 +615,7 @@ static int optionsDirective(MaState *state, cchar *key, cchar *value)
 static void manageDir(Dir *dir, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-#if FUTURE
+#if KEEP
         mprMark(dir->dirList);
         mprMark(dir->defaultIcon);
         mprMark(dir->extList);

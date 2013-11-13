@@ -45,7 +45,7 @@ static void openEjs(HttpQueue *q)
         return;
     }
     /*
-        TODO OPT - check this pool is usable over all routes
+        FUTURE OPT - check this pool is usable over all routes
      */
     if (!route->context) {
         if (route->script == 0 && route->scriptPath == 0) {
