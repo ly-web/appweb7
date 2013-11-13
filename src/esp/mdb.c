@@ -633,7 +633,7 @@ static bool matchRow(MdbCol *col, cchar *existing, int op, cchar *value)
             return 1;
         }
         break;
-#if TODO
+#if FUTURE
     case OP_LT:
     case OP_GT:
     case OP_LTE:

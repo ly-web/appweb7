@@ -145,7 +145,7 @@ PUBLIC int ediDelete(Edi *edi, cchar *path)
 }
 
 
-//  MOB - rename edi
+//  FUTURE - rename edi
 PUBLIC void espDumpGrid(EdiGrid *grid)
 {
     mprLog(0, "Grid: %s\nschema: %s,\ndata: %s", grid->tableName, ediGetTableSchemaAsJson(grid->edi, grid->tableName),
@@ -183,7 +183,7 @@ PUBLIC EdiGrid *ediFilterGridFields(EdiGrid *grid, cchar *fields)
 }
 
 
-//  MOB or ediSelectRecFields
+//  FUTURE or ediSelectRecFields
 
 PUBLIC EdiRec *ediFilterRecFields(EdiRec *rec, cchar *fields)
 {
@@ -769,7 +769,7 @@ static MprList *joinColumns(MprList *cols, EdiGrid *grid, MprHash *grids, int jo
     }
     rec = grid->records[0];
     for (fp = rec->fields; fp < &rec->fields[rec->nfields]; fp++) {
-#if FUTURE
+#if KEEP
         if (fp->flags & EDI_FOREIGN && follow)
 #else
         if (sends(fp->name, "Id") && follow) 
