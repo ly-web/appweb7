@@ -527,7 +527,7 @@ typedef struct MprSpin {
     #elif BIT_WIN_LIKE
         CRITICAL_SECTION        cs;            /**< Internal mutex critical section */
     #elif VXWORKS
-        #if FUTURE && SPIN_LOCK_TASK_INIT
+        #if KEEP && SPIN_LOCK_TASK_INIT
             spinlockTask_t      cs;
         #else
             SEM_ID              cs;
@@ -5121,7 +5121,7 @@ PUBLIC bool mprIsPathSeparator(cchar *path, cchar c);
  */
 PUBLIC char *mprJoinPath(cchar *base, cchar *path);
 
-//  MOB - need mprJoinPaths(base, ....);
+//  FUTURE - need mprJoinPaths(base, ....);
 
 /**
     Join an extension to a path
@@ -8941,7 +8941,7 @@ PUBLIC MprHash *mprCreateMimeTypes(cchar *path);
  */
 PUBLIC cchar *mprGetMimeProgram(MprHash *table, cchar *mimeType);
 
-//  MOB - rename mprGetMime
+//  FUTURE - rename mprGetMime
 /** 
     Get the mime type for an extension.
     This call will return the mime type from a limited internal set of mime types for the given path or extension.

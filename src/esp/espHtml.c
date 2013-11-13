@@ -16,7 +16,7 @@
 
 /************************************* Local **********************************/
 
-//  MOB - review
+//  FUTURE - review
 static char *internalOptions[] = {
     "action",                       /* Service/Action to invoke */
     "cell",                         /* table(): If set, table clicks apply to the cell and not to the row */
@@ -229,7 +229,7 @@ PUBLIC void input(cchar *field, cchar *optionString)
 
 /**************************************** Support *************************************/ 
 
-//  MOB - update to be like has-errors
+//  FUTURE - update to be like has-errors
 
 static void emitFormErrors(HttpConn *conn, EdiRec *rec, MprHash *options)
 {
@@ -276,7 +276,7 @@ static cchar *map(HttpConn *conn, MprHash *options)
         return MPR->emptyString;
     }
     req = conn->data;
-    //  MOB - remove refresh
+    //  FUTURE - remove refresh
     if (httpGetOption(options, EDATA("refresh"), 0) && !httpGetOption(options, "id", 0)) {
         httpAddOption(options, "id", sfmt("id_%d", req->lastDomID++));
     }

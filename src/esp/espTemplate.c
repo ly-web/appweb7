@@ -509,7 +509,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
 
     while (tid != ESP_TOK_EOF) {
         token = mprGetBufStart(parse.token);
-#if FUTURE
+#if KEEP
         if (state->lineNumber != lastLine) {
             mprPutToBuf(script, "\n# %d \"%s\"\n", state->lineNumber, path);
         }

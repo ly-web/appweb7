@@ -545,7 +545,9 @@ typedef struct EspReq {
     int             autoFinalize;           /**< Request is or will be auto-finalized */
     int             sessionProbed;          /**< Already probed for session store */
     int             lastDomID;              /**< Last generated DOM ID */
+#if UNUSED
     EdiRec          *record;                /**< Current data record */
+#endif
     Edi             *edi;                   /**< Database for this request */
 } EspReq;
 
@@ -2759,6 +2761,10 @@ PUBLIC bool updateRec(EdiRec *rec);
     @stability Prototype
 */ 
 PUBLIC bool updateRecFromParams(cchar *table);
+
+
+//  MOB DOC
+PUBLIC cchar *uri(cchar *target, ...);
 
 /////////////////////////// /////////////////////////// /////////////////////////// ///////////////////////////
 /////////////////////////// /////////////////////////// /////////////////////////// ///////////////////////////

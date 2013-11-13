@@ -1635,7 +1635,7 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
         return 0;
     }
     espInitHtmlOptions(esp);
-    //  MOB
+    //  FUTURE
 #if BIT_PACK_ESP && BIT_ESP_LEGACY
     espInitHtmlOptions2(esp);
 #endif

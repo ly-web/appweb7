@@ -121,6 +121,7 @@ PUBLIC void flush()
 }
 
 
+//  FUTURE - getTop is easier
 PUBLIC cchar *getAppUri()
 {
     return espGetTop(getConn());
@@ -513,8 +514,8 @@ PUBLIC void renderError(int status, cchar *fmt, ...)
 
 
 #if UNUSED
-//  MOB - need espRenderFeedback
-//  MOB - doc
+//  FUTURE - need espRenderFeedback
+//  FUTURE - doc
 PUBLIC void renderFeedback(int status, cchar *kind, ...)
 {
     va_list     args;
@@ -556,7 +557,7 @@ PUBLIC ssize renderRec(EdiRec *rec)
 }
 
 
-//  MOB - change this to renderStatus?
+//  FUTURE - change this to renderStatus?
 
 PUBLIC void renderResult(bool status)
 {

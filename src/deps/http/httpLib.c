@@ -5084,7 +5084,7 @@ PUBLIC void httpInitLimits(HttpLimits *limits, bool serverSide)
         limits->uploadSize = MAXOFF;
     }
 
-#if FUTURE
+#if KEEP
     mprSetMaxSocketClients(endpoint, atoi(value));
 
     if (scaselesscmp(key, "LimitClients") == 0) {
@@ -9161,7 +9161,7 @@ PUBLIC HttpRoute *httpCreateRoute(HttpHost *host)
     httpAddRouteFilter(route, http->rangeFilter->name, NULL, HTTP_STAGE_TX);
     httpAddRouteFilter(route, http->chunkFilter->name, NULL, HTTP_STAGE_RX | HTTP_STAGE_TX);
 
-#if FUTURE
+#if KEEP
     httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "Content-Security-Policy", "default-src 'self'");
 #endif
     httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-XSS-Protection", "1; mode=block");
@@ -9981,7 +9981,7 @@ PUBLIC int httpAddRouteHandler(HttpRoute *route, cchar *name, cchar *extensions)
 }
 
 
-#if FUTURE && KEEP
+#if KEEP
 PUBLIC void httpAddRouteLoad(HttpRoute *route, cchar *module, cchar *path)
 {
     HttpRouteOp     *op;
@@ -11507,11 +11507,6 @@ PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods
 {
     HttpRoute   *route;
 
-#if UNUSED
-    if (name == NULL || *name == '\0') {
-        name = "/";
-    }
-#endif
     if ((route = httpCreateInheritedRoute(parent)) == 0) {
         return 0;
     }
@@ -12275,11 +12270,6 @@ PUBLIC MprHash *httpGetOptionHash(MprHash *options, cchar *field)
     if ((kp = mprLookupKeyEntry(options, field)) == 0) {
         return 0;
     }
-#if UNUSED
-    if (kp->type != MPR_JSON_ARRAY && kp->type != MPR_JSON_OBJ) {
-        return 0;
-    }
-#endif
     return (MprHash*) kp->data;
 }
 
@@ -12300,9 +12290,6 @@ PUBLIC void httpInsertOption(MprHash *options, cchar *field, cchar *value)
     } else {
         kp = mprAddKey(options, field, value);
     }
-#if UNUSED
-    kp->type = MPR_JSON_STRING;
-#endif
 }
 
 
@@ -12319,9 +12306,6 @@ PUBLIC void httpAddOption(MprHash *options, cchar *field, cchar *value)
     } else {
         kp = mprAddKey(options, field, value);
     }
-#if UNUSED
-    kp->type = MPR_JSON_STRING;
-#endif
 }
 
 
@@ -12343,8 +12327,6 @@ PUBLIC bool httpOption(MprHash *hash, cchar *field, cchar *value, int useDefault
 
 PUBLIC void httpSetOption(MprHash *options, cchar *field, cchar *value)
 {
-    MprKey  *kp;
-
     if (value == 0) {
         return;
     }
@@ -12352,11 +12334,7 @@ PUBLIC void httpSetOption(MprHash *options, cchar *field, cchar *value)
         assert(options);
         return;
     }
-    if ((kp = mprAddKey(options, field, value)) != 0) {
-#if UNUSED
-        kp->type = MPR_JSON_STRING;
-#endif
-    }
+    mprAddKey(options, field, value);
 }
 
 
@@ -14326,7 +14304,7 @@ PUBLIC char *httpGetExt(HttpConn *conn)
 }
 
 
-//  TODO - can this just use the default compare
+//  FUTURE - can this just use the default compare
 static int compareLang(char **s1, char **s2)
 {
     return scmp(*s1, *s2);
@@ -17653,7 +17631,7 @@ PUBLIC HttpUri *httpGetRelativeUri(HttpUri *base, HttpUri *target, int clone)
 }
 
 
-//  MOB - rethink API, makes chaining hard if result must be supplied
+//  FUTURE - rethink API, makes chaining hard if result must be supplied
 /*
     result = base.join(other)
  */
@@ -17707,8 +17685,6 @@ PUBLIC HttpUri *httpJoinUri(HttpUri *uri, int argc, HttpUri **others)
 
 /*
     Create and resolve a URI link given a set of options.
-
-    TODO - consider rename httpUri() and move to uri.c
  */
 PUBLIC HttpUri *httpMakeUriLocal(HttpUri *uri)
 {

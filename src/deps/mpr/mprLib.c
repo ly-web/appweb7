@@ -1359,7 +1359,7 @@ static void sweep()
             prior = region;
         }
     }
-#if (BIT_MPR_ALLOC_STATS && BIT_MPR_ALLOC_DEBUG) && UNUSED
+#if (BIT_MPR_ALLOC_STATS && BIT_MPR_ALLOC_DEBUG) && KEEP
     printf("GC: Marked %lld / %lld, Swept %lld / %lld, freed %lld, bytesFree %lld (prior %lld)\n"
                  "    WeightedCount %d / %d, allocated blocks %lld allocated bytes %lld\n"
                  "    Unpins %lld, Collections %lld\n",
@@ -3441,7 +3441,7 @@ PUBLIC void mprAtomicBarrier()
     #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_PPC)
         asm volatile ("sync" : : : "memory");
 
-    #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_ARM) && FUTURE
+    #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_ARM) && KEEP
         asm volatile ("isync" : : : "memory");
 
     #else
@@ -3489,7 +3489,7 @@ PUBLIC int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
               "0" (expected));
             return expected == prev;
 
-    #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_ARM) && FUTURE
+    #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_ARM) && KEEP
 
     #else
         mprSpinLock(atomicSpin);
@@ -3576,7 +3576,7 @@ PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int64 value)
 }
 
 
-#if UNUSED
+#if KEEP
 PUBLIC void *mprAtomicExchange(void *volatile *addr, cvoid *value)
 {
     #if MACOSX
@@ -4192,7 +4192,7 @@ PUBLIC char *mprBufToString(MprBuf *bp)
 }
 
 
-#if BIT_CHAR_LEN > 1 && UNUSED
+#if BIT_CHAR_LEN > 1 && KEEP
 PUBLIC void mprAddNullToWideBuf(MprBuf *bp)
 {
     ssize      space;
@@ -5766,7 +5766,7 @@ PUBLIC bool mprIsCmdRunning(MprCmd *cmd)
 }
 
 
-/* FUTURE - not yet supported */
+/* KEEP - not yet supported */
 
 PUBLIC void mprSetCmdTimeout(MprCmd *cmd, MprTicks timeout)
 {
@@ -6071,7 +6071,7 @@ static int startProcess(MprCmd *cmd)
 
 
 #if WINCE
-//  FUTURE - merge this with WIN
+//  KEEP - merge this with WIN
 static int makeChannel(MprCmd *cmd, int index)
 {
     SECURITY_ATTRIBUTES clientAtt, serverAtt, *att;
@@ -7905,7 +7905,7 @@ static void bencrypt(MprBlowfish *bp, uint *xl, uint *xr)
 }
 
 
-#if UNUSED && KEEP
+#if KEEP
 static void bdecrypt(MprBlowfish *bp, uint *xl, uint *xr) 
 {
     uint    Xl, Xr, temp;
@@ -8135,7 +8135,7 @@ static void manageDiskFile(MprFile *file, int flags);
 static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info);
 
 /************************************ Code ************************************/
-#if FUTURE
+#if KEEP
 /*
     Open a file with support for cygwin paths. Tries windows path first then under /cygwin.
  */
@@ -8273,7 +8273,7 @@ static MprOff seekFile(MprFile *file, int seekType, MprOff distance)
 
 static bool accessPath(MprDiskFileSystem *fs, cchar *path, int omode)
 {
-#if BIT_WIN && FUTURE
+#if BIT_WIN && KEEP
     if (access(path, omode) < 0) {
         if (*path == '/') {
             path = sjoin(fs->cygwin, path, NULL);
@@ -8402,7 +8402,7 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
         path = strim(path, "/", MPR_TRIM_END);
     }
     if (_stat64(path, &s) < 0) {
-#if BIT_WIN && FUTURE
+#if BIT_WIN && KEEP
         /*
             Try under /cygwin
          */
@@ -8548,7 +8548,7 @@ static char *getPathLink(MprDiskFileSystem *fs, cchar *path)
 static int truncateFile(MprDiskFileSystem *fs, cchar *path, MprOff size)
 {
     if (!mprPathExists(path, F_OK)) {
-#if BIT_WIN_LIKE && FUTURE
+#if BIT_WIN_LIKE && KEEP
         /*
             Try under /cygwin
          */
@@ -8573,7 +8573,7 @@ static int truncateFile(MprDiskFileSystem *fs, cchar *path, MprOff size)
 }
 #elif VXWORKS
 {
-#if FUTURE
+#if KEEP
     int     fd;
 
     fd = open(path, O_WRONLY, 0664);
@@ -11322,7 +11322,7 @@ static void manageHashTable(MprHash *hash, int flags)
 }
 
 
-//  MOB - rename mprSetKey
+//  FUTURE - rename mprSetKey
 /*
     Insert an entry into the hash hash. If the entry already exists, update its value.  Order of insertion is not preserved.
  */
@@ -11371,7 +11371,7 @@ PUBLIC MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
 }
 
 
-//  MOB - rename mprSetKeyWithType
+//  FUTURE - rename mprSetKeyWithType
 
 PUBLIC MprKey *mprAddKeyWithType(MprHash *hash, cvoid *key, cvoid *ptr, int type)
 {
@@ -11430,7 +11430,7 @@ PUBLIC MprKey *mprAddDuplicateKey(MprHash *hash, cvoid *key, cvoid *ptr)
 }
 
 
-//  MOB - better if it returned the old value
+//  FUTURE - better if it returned the old value
 PUBLIC int mprRemoveKey(MprHash *hash, cvoid *key)
 {
     MprKey      *sp, *prevSp;
@@ -13773,7 +13773,7 @@ PUBLIC int mprRemoveItemAtPos(MprList *lp, int index)
     }
     lock(lp);
     items = lp->items;
-#if FUTURE
+#if KEEP
     void    **ip;
     if (index == (lp->length - 1)) {
         /* Scan backwards to find last non-null item */
@@ -14460,7 +14460,7 @@ PUBLIC MprSpin *mprInitSpinLock(MprSpin *lock)
 #elif BIT_WIN_LIKE
     InitializeCriticalSectionAndSpinCount(&lock->cs, 5000);
 #elif VXWORKS
-    #if FUTURE
+    #if KEEP
         spinLockTaskInit(&lock->cs, 0);
     #else
         /* Removed SEM_INVERSION_SAFE */
@@ -16950,7 +16950,7 @@ static MprList *getDirFiles(cchar *dir)
         dp->isDir = (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
         dp->isLink = 0;
 
-#if FUTURE_64_BIT
+#if KEEP_64_BIT
         if (findData.nFileSizeLow < 0) {
             dp->size = (((uint64) findData.nFileSizeHigh) * INT64(4294967296)) + (4294967296L - 
                 (uint64) findData.nFileSizeLow);
@@ -17257,17 +17257,12 @@ PUBLIC MprList *mprGlobPathFiles(cchar *path, cchar *patterns, int flags)
                     for (pattern = special; pattern > start && !strchr(fs->separators, *pattern); pattern--) { }
                     if (pattern > start) {
                         *pattern++ = '\0';
-#if UNUSED
-                        path = mprJoinPath(path, start);
-                        base = start;
-#else
                         if (flags & MPR_PATH_RELATIVE) {
                             base = mprGetRelPath(start, path);
                         } else {
                             base = start;
                         }
                         path = start;
-#endif
                     }
                 }
             } else {
@@ -18032,7 +18027,7 @@ PUBLIC int mprSamePath(cchar *path1, cchar *path2)
 
     /*
         Convert to absolute (normalized) paths to compare. 
-        TODO - resolve symlinks.
+        FUTURE - resolve symlinks.
      */
     if (!isFullPath(fs, path1)) {
         path1 = mprGetAbsPath(path1);
@@ -18073,7 +18068,7 @@ PUBLIC int mprSamePathCount(cchar *path1, cchar *path2, ssize len)
 
     /*
         Convert to absolute paths to compare. 
-        TODO - resolve symlinks.
+        FUTURE - resolve symlinks.
      */
     if (!isFullPath(fs, path1)) {
         path1 = mprGetAbsPath(path1);
@@ -20495,7 +20490,7 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
 
 #if KEEP
     } else if (sp->signo == SIGSEGV || sp->signo == SIGBUS) {
-#if EMBEDTHIS && UNUSED
+#if EMBEDTHIS && KEEP
         printf("PAUSED for watson to debug\n");
         sleep(120);
 #else
@@ -20975,7 +20970,7 @@ PUBLIC void mprHiddenSocketData(MprSocket *sp, ssize len, int dir)
 }
 
 
-//  TODO rename to mprWaitOnSocket
+//  FUTURE rename to mprWaitOnSocket
 
 PUBLIC void mprEnableSocketEvents(MprSocket *sp, int mask)
 {
@@ -22336,7 +22331,7 @@ PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     }
     mprLog(4, "Using SSL provider: %s", ssl->providerName);
     sp->provider = ssl->provider;
-#if FUTURE
+#if KEEP
     /* session resumption can cause problems with Nagle. However, appweb opens sockets with nodelay by default */
     sp->flags |= MPR_SOCKET_NODELAY;
     mprSetSocketNoDelay(sp, 1);
@@ -27895,7 +27890,7 @@ PUBLIC void mprDoWaitRecall(MprWaitService *ws)
 
 
 #if BIT_CHAR_LEN > 1
-#if UNUSED
+#if KEEP
 /************************************ Code ************************************/
 /*
     Format a number as a string. Support radix 10 and 16.
@@ -28618,7 +28613,7 @@ PUBLIC char *wupper(wchar *str)
     }
     return str;
 }
-#endif /* UNUSED */
+#endif /* KEEP */
 
 /*********************************** Conversions *******************************/
 /*
@@ -28720,7 +28715,7 @@ PUBLIC wchar *amtow(cchar *src, ssize *lenp)
 }
 
 
-//  FUTURE UNICODE - need a version that can supply a length
+//  KEEP UNICODE - need a version that can supply a length
 
 PUBLIC char *awtom(wchar *src, ssize *lenp)
 {
@@ -28741,7 +28736,7 @@ PUBLIC char *awtom(wchar *src, ssize *lenp)
 }
 
 
-#if FUTURE
+#if KEEP
 
 #define BOM_MSB_FIRST       0xFEFF
 #define BOM_LSB_FIRST       0xFFFE
@@ -28959,7 +28954,7 @@ PUBLIC ssize xwtom(char *dest, ssize destMax, wchar *src, ssize len)
 }
 
 
-#endif /* FUTURE */
+#endif /* KEEP */
 
 #else /* BIT_CHAR_LEN == 1 */
 

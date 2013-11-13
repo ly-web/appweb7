@@ -38,10 +38,6 @@ struct HttpWebSocket;
 
 /********************************** Tunables **********************************/
 
-//  TODO - do all these need to have MAX some are just sizes and not maximums
-//  MOB - should have http prefixes so they can be overridden by settings.http.XXX
-//  TODO SORT
-
 #ifndef BIT_HTTP_DEFAULT_METHODS
     #define BIT_HTTP_DEFAULT_METHODS "GET,POST"         /**< Default methods for routes */
 #endif
@@ -2395,7 +2391,6 @@ typedef struct HttpConn {
     char            *protocol;              /**< HTTP protocol */
     char            *protocols;             /**< Supported WebSocket protocols (clients) */
 
-    //  TODO - bit field
     int             async;                  /**< Connection is in async mode (non-blocking) */
     int             delay;                  /**< Delay servicing request due to defense strategy */
     int             followRedirects;        /**< Follow redirects for client requests */
@@ -5135,7 +5130,6 @@ PUBLIC void httpRemoveUploadFile(HttpConn *conn, cchar *id);
 /********************************** HttpRx *********************************/
 /* 
     Rx flags
-    TODO - inconsistent with HTTP_TX_. Should these have HTTP_RX prefix
  */
 #define HTTP_DELETE             0x1         /**< DELETE method  */
 #define HTTP_GET                0x2         /**< GET method  */
@@ -5218,7 +5212,6 @@ typedef struct HttpRx {
 
     /* 
         Header values
-        TODO OPT - eliminate some of these
      */
     char            *accept;                /**< Accept header */
     char            *acceptCharset;         /**< Accept-Charset header */
@@ -5250,7 +5243,6 @@ typedef struct HttpRx {
 
     /*  
         Upload details
-        TODO - move to an upload structure
      */
     MprHash         *files;                 /**< Uploaded files. Managed by the upload filter */
     char            *uploadDir;             /**< Upload directory */
@@ -6925,7 +6917,6 @@ PUBLIC MprHash *httpGetOptionHash(MprHash *options, cchar *field);
  */
 PUBLIC MprHash *httpGetOptions(cchar *options);
 
-//  TODO - Deprecate? inconsistent with httpGetOption
 /**
     Test a field value from an option string. 
     @param options Option string of the form: "field='value' field='value'..."
