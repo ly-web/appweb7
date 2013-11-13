@@ -2400,6 +2400,7 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
     fs = mprCreateFileSystem("/");
     mprAddFileSystem(fs);
     mprCreateLogService();
+    mprCreateCacheService();
 
     if (argv) {
 #if BIT_WIN_LIKE
@@ -4332,6 +4333,13 @@ static void pruneCache(MprCache *cache, MprEvent *event);
 static void removeItem(MprCache *cache, CacheItem *item);
 
 /************************************* Code ***********************************/
+
+PUBLIC int mprCreateCacheService()
+{
+    shared = 0;
+    return 0;
+}
+
 
 PUBLIC MprCache *mprCreateCache(int options)
 {

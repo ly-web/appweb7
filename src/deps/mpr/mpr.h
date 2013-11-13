@@ -8777,6 +8777,13 @@ typedef struct MprCache {
 PUBLIC MprCache *mprCreateCache(int options);
 
 /**
+    Initialize the cache service on startup. Should only be called by the MPR init on startup.
+    @return Zero if successful.
+    @stability Internal
+ */
+PUBLIC int mprCreateCacheService();
+
+/**
     Destroy a new cache object
     @param cache The cache instance object returned from #mprCreateCache.
     @ingroup MprCache
