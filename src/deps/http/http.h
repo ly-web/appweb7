@@ -1125,6 +1125,15 @@ PUBLIC char *httpLink(struct HttpConn *conn, cchar *target, MprHash *options);
  */
 PUBLIC char *httpUriToString(HttpUri *uri, int flags);
 
+/**
+    Test if a URI is using only valid characters
+    Note this does not test if the URI is fully legal. Some components of the URI have restricted character sets 
+    that this routine does not test.
+    @param uri Uri to test
+    @return True if the URI string is comprised of legal URI characters.
+  */
+PUBLIC bool httpValidUriChars(cchar *uri);
+
 /************************************* Range **********************************/
 /** 
     Content range structure
