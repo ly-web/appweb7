@@ -203,10 +203,12 @@ struct  MprXml;
  */
 #if MACOSX || SOLARIS
     #define MPR_EVENT_KQUEUE    1
-#elif LINUX || BIT_BSD_LIKE
-    #define MPR_EVENT_EPOLL     1
 #elif WINDOWS
     #define MPR_EVENT_ASYNC     1
+#elif VXWORKS
+    #define MPR_EVENT_SELECT    1
+#elif (LINUX || BIT_BSD_LIKE) && (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0))
+    #define MPR_EVENT_EPOLL     1
 #else
     #define MPR_EVENT_SELECT    1
 #endif
@@ -215,7 +217,7 @@ struct  MprXml;
     Maximum number of notifier events
  */
 #ifndef BIT_MAX_EVENTS
-#define BIT_MAX_EVENTS          32
+    #define BIT_MAX_EVENTS      32
 #endif
 
 /*
