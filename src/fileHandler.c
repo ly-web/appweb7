@@ -35,7 +35,7 @@ static int rewriteFileHandler(HttpConn *conn)
     tx = conn->tx;
     info = &tx->fileInfo;
 
-    httpMapFile(conn, rx->route);
+    httpMapRequest(conn);
     assert(info->checked);
 
     if (rx->flags & (HTTP_DELETE | HTTP_PUT)) {
@@ -356,7 +356,7 @@ static void handlePutRequest(HttpQueue *q)
     HttpConn    *conn;
     HttpTx      *tx;
     MprFile     *file;
-    char        *path;
+    cchar       *path;
 
     assert(q->pair->queueData == 0);
 
