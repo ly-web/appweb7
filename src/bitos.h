@@ -413,11 +413,12 @@
     #include    "sys/cygwin.h"
 #endif
 #if LINUX
-    #if defined(__NR_epoll_create) || defined(__NR_epoll_create1)
+    #include <linux/version.h>
+    #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
         #include    <sys/epoll.h>
-#endif
+    #endif
     #include    <sys/prctl.h>
-    #if defined(__NR_eventfd)
+    #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22)
         #include    <sys/eventfd.h>
     #endif
     #if !__UCLIBC__
