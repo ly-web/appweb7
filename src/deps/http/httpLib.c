@@ -13964,6 +13964,9 @@ PUBLIC int httpSetUri(HttpConn *conn, cchar *uri)
     char        *pathInfo;
 
     rx = conn->rx;
+    if (!httpValidUriChars(uri)) {
+        return MPR_ERR_BAD_ARGS;
+    }
     if ((rx->parsedUri = httpCreateUri(uri, 0)) == 0) {
         return MPR_ERR_BAD_ARGS;
     }
@@ -17935,6 +17938,15 @@ PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
 PUBLIC char *httpUriToString(HttpUri *uri, int flags)
 {
     return httpFormatUri(uri->scheme, uri->host, uri->port, uri->path, uri->reference, uri->query, flags);
+}
+
+
+PUBLIC bool httpValidUriChars(cchar *uri)
+{
+    if (uri == 0 || *uri == 0) {
+        return 0;
+    }
+    return strspn(uri, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=") == slen(uri);
 }
 
 
