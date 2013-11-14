@@ -4209,6 +4209,7 @@ static void errorv(HttpConn *conn, int flags, cchar *fmt, va_list args)
         }
     }
     if (!conn->error) {
+        //  FUTURE - if aborting, could abbreviate some of this
         conn->error = 1;
         httpOmitBody(conn);
         conn->errorMsg = formatErrorv(conn, status, fmt, args);
@@ -9826,9 +9827,9 @@ PUBLIC void httpMapFile(HttpConn *conn, cchar *filename)
 
     tx = conn->tx;
     info = &tx->fileInfo;
-    assert(!info->valid);
-    mprGetPathInfo(tx->filename, info);
 
+    tx->filename = sclone(filename);
+    mprGetPathInfo(tx->filename, info);
     tx->ext = httpGetExt(conn);
     if (info->valid) {
         //  OPT - inodes mean this is harder to cache when served from multiple servers.
@@ -12678,7 +12679,9 @@ static bool parseIncoming(HttpConn *conn, HttpPacket *packet)
     }
     if (conn->endpoint) {
         httpMatchHost(conn);
-        setParsedUri(conn);
+        if (setParsedUri(conn) < 0) {
+            return 0;
+        }
 
     } else if (rx->status != HTTP_CODE_CONTINUE) {
         /* 
