@@ -420,7 +420,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         req->source = mprJoinPathExt(req->view, ".esp");
 
     } else {
-        httpMapFile(conn, rx->route);
+        httpMapRequest(conn);
         req->view = conn->tx->filename;
         req->source = req->view;
     }

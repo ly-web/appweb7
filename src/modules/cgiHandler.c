@@ -73,7 +73,7 @@ static void openCgi(HttpQueue *q)
         return;
     }
     httpTrimExtraPath(conn);
-    httpMapFile(conn, rx->route);
+    httpMapRequest(conn);
     httpCreateCGIParams(conn);
     if ((cgi = mprAllocObj(Cgi, manageCgi)) == 0) {
         return;
@@ -621,8 +621,8 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
     HttpRx      *rx;
     HttpTx      *tx;
     char        **argv;
-    char        *fileName, *indexQuery, *cp, *tok;
-    cchar       *actionProgram;
+    char        *indexQuery, *cp, *tok;
+    cchar       *actionProgram, *fileName;
     size_t      len;
     int         argc, argind, i;
 

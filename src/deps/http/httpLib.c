@@ -9731,45 +9731,54 @@ static int selectHandler(HttpConn *conn, HttpRoute *route)
 }
 
 
+PUBLIC void httpSetHandler(HttpConn *conn, HttpStage *handler)
+{
+    conn->tx->handler = handler;
+}
+
+
 /*
     Map the target to physical storage. Sets tx->filename and tx->ext.
  */
-PUBLIC void httpMapFile(HttpConn *conn, HttpRoute *route)
+PUBLIC void httpMapRequest(HttpConn *conn)
 {
-    HttpRx      *rx;
-    HttpTx      *tx;
     HttpLang    *lang;
-    MprPath     *info;
+    HttpRoute   *route;
+    HttpTx      *tx;
+    HttpRx      *rx;
     MprList     *extensions;
-    char        *mapped, *ext, *path;
-    int         next;
+    MprPath     *info;
+    cchar       *ext, *filename, *mapped, *path;
     bool        acceptGzip, zipped;
-
-    assert(conn);
-    assert(route);
+    int         next;
 
     rx = conn->rx;
     tx = conn->tx;
+    route = rx->route;
+    filename = rx->target;
     lang = rx->lang;
-
-    assert(rx->target);
-    tx->filename = rx->target;
     info = &tx->fileInfo;
 
     if (lang && lang->path) {
-        tx->filename = mprJoinPath(lang->path, tx->filename);
+        filename = mprJoinPath(lang->path, filename);
     }
-    tx->filename = mprJoinPath(route->documents, tx->filename);
+    filename = mprJoinPath(route->documents, filename);
 #if BIT_ROM
-    tx->filename = mprGetRelPath(tx->filename, NULL);
+    filename = mprGetRelPath(filename, NULL);
+#endif
+#if BIT_WIN_LIKE || BIT_EXTRA_SECURITY
+    if (!mprIsParentPathOf(route->documents, filename)) {
+        httpError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Bad URL");
+        return;
+    }
 #endif
     /*
         Change the filename if using mapping. Typically used to prefer compressed or minified content.
      */
     if (route->map) {
-        if (route->mappings && (mapped = mprLookupKey(route->mappings, tx->filename)) != 0) {
-            tx->filename = mapped;
-            mprLog(3, "Mapping content to %s", tx->filename);
+        if (route->mappings && (mapped = mprLookupKey(route->mappings, filename)) != 0) {
+            filename = mapped;
+            mprLog(3, "Mapping content to %s", filename);
         } else if ((extensions = mprLookupKey(route->map, tx->ext)) != 0) {
             acceptGzip = scontains(rx->acceptEncoding, "gzip") != 0;
             for (ITERATE_ITEMS(extensions, ext, next)) {
@@ -9777,11 +9786,11 @@ PUBLIC void httpMapFile(HttpConn *conn, HttpRoute *route)
                 if (zipped && !acceptGzip) {
                     continue;
                 }
-                path = mprReplacePathExt(tx->filename, ext);
+                path = mprReplacePathExt(filename, ext);
                 if (mprGetPathInfo(path, info) == 0) {
-                    tx->filename = path;
-                    mprLog(3, "Mapping content to %s", tx->filename);
-                    mprAddKey(route->mappings, tx->filename, path);
+                    filename = path;
+                    mprLog(3, "Mapping content to %s", filename);
+                    mprAddKey(route->mappings, filename, path);
                     if (zipped) {
                         httpSetHeader(conn, "Content-Encoding", "gzip");
                     }
@@ -9789,15 +9798,11 @@ PUBLIC void httpMapFile(HttpConn *conn, HttpRoute *route)
                 }
             }
             if (!ext) {
-                mprAddKey(route->mappings, tx->filename, tx->filename);
+                mprAddKey(route->mappings, filename, filename);
             }
         } else {
-            mprAddKey(route->mappings, tx->filename, tx->filename);
+            mprAddKey(route->mappings, filename, filename);
         }
-    }
-    tx->ext = httpGetExt(conn);
-    if (!info->valid) {
-        mprGetPathInfo(tx->filename, info);
     }
 #if DEPRECATE || 1
     /* Deprecated in 4.4 */
@@ -9808,11 +9813,28 @@ PUBLIC void httpMapFile(HttpConn *conn, HttpRoute *route)
         }
     }
 #endif
+    httpMapFile(conn, filename);
+}
+
+
+PUBLIC void httpMapFile(HttpConn *conn, cchar *filename)
+{
+    HttpTx      *tx;
+    MprPath     *info;
+
+    assert(conn);
+
+    tx = conn->tx;
+    info = &tx->fileInfo;
+    assert(!info->valid);
+    mprGetPathInfo(tx->filename, info);
+
+    tx->ext = httpGetExt(conn);
     if (info->valid) {
         //  OPT - inodes mean this is harder to cache when served from multiple servers.
         tx->etag = sfmt("\"%Lx-%Lx-%Lx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
     }
-    mprTrace(7, "mapFile uri \"%s\", filename: \"%s\", extension: \"%s\"", rx->uri, tx->filename, tx->ext);
+    mprTrace(7, "mapFile uri \"%s\", filename: \"%s\", extension: \"%s\"", conn->rx->uri, tx->filename, tx->ext);
 }
 
 
@@ -11300,7 +11322,7 @@ static int directoryCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
         Must have tx->filename set when expanding op->details, so map target now 
      */
     tx = conn->tx;
-    httpMapFile(conn, route);
+    httpMapRequest(conn);
     path = mprJoinPath(route->documents, expandTokens(conn, op->details));
     tx->ext = tx->filename = 0;
     mprGetPathInfo(path, &info);
@@ -11327,7 +11349,7 @@ static int existsCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
         Must have tx->filename set when expanding op->details, so map target now 
      */
     tx = conn->tx;
-    httpMapFile(conn, route);
+    httpMapRequest(conn);
     path = mprJoinPath(route->documents, expandTokens(conn, op->details));
     tx->ext = tx->filename = 0;
     if (mprPathExists(path, R_OK)) {
