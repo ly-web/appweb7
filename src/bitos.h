@@ -883,9 +883,17 @@ typedef int64 Ticks;
 /*
     Old VxWorks can't do array[]
  */
-#define ARRAY_FLEX 0
+    #define ARRAY_FLEX 0
 #else
-#define ARRAY_FLEX
+    #define ARRAY_FLEX
+#endif
+
+#ifdef __GNUC__
+    #define DEPRECATE(fn) fn __attribute__ ((deprecated))
+#elif defined(_MSC_VER)
+    #define DEPRECATE(fn) __declspec(deprecated) fn
+#else
+    #define DEPRECATE(fn) fn
 #endif
 
 /********************************** Tunables *********************************/
