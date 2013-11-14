@@ -178,16 +178,18 @@ typedef struct EspRoute {
     cchar           *clientDir;             /**< Directory for client-side public web content */
     cchar           *controllersDir;        /**< Directory for controllers */
     cchar           *dbDir;                 /**< Directory for databases */
-    char            *layoutsDir;            /**< Directory for view layouts */
+    cchar           *layoutsDir;            /**< Directory for view layouts */
     cchar           *srcDir;                /**< Directory for server-side source */
-    char            *viewsDir;              /**< Directory for server-side views */
+    cchar           *viewsDir;              /**< Directory for server-side views */
 
     cchar           *compile;               /**< Compile template */
     cchar           *link;                  /**< Link template */
     cchar           *mode;                  /**< Application run mode (debug|release) */
 
     cchar           *database;              /**< Name of database for route */
+#if UNUSED
     cchar           *serverPrefix;          /**< Route prefix for server side routes */
+#endif
     cchar           *routeSet;              /**< Route set to use */
     int             flat;                   /**< Compile the application flat */
     int             keepSource;             /**< Preserve generated source */
@@ -211,6 +213,7 @@ typedef struct EspRoute {
  */
 PUBLIC void espAddComponent(HttpRoute *route, cchar *name, MprJson *details);
 
+#if UNUSED
 /**
     Add a route for the ESP controller
     @description This is an ESP control route for framework specific actions.
@@ -219,6 +222,20 @@ PUBLIC void espAddComponent(HttpRoute *route, cchar *name, MprJson *details);
     @stability Prototype
  */
 PUBLIC void espAddEspRoute(HttpRoute *parent);
+#endif
+
+/**
+    Add a route for the home page.
+    @description This will add a home page to route ESP applications. This will add the following route:
+    <table>
+        <tr><td>Name</td><td>Method</td><td>Pattern</td><td>Target</td></tr>
+        <tr><td>home</td><td>GET,POST,PUT</td><td>^/$</td><td>index.esp</td></tr>
+    </table>
+    @param parent Parent route from which to inherit configuration.
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC void espAddHomeRoute(HttpRoute *parent);
 
 /**
     Add a route set package
@@ -498,7 +515,7 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags);
 PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile);
 PUBLIC int espOpenDatabase(HttpRoute *route, cchar *spec);
 PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout);
-PUBLIC void espSetDirs(HttpRoute *route);
+PUBLIC void espSetDefaultDirs(HttpRoute *route);
 
 /********************************** Requests **********************************/
 /**
@@ -534,14 +551,14 @@ typedef struct EspReq {
     HttpNotifier    notifier;               /**< Connection Http state change notification callback */
     void            *data;                  /**< Custom data for request - must be a managed reference */
     void            *staticData;            /**< Custom data for request - must be an unmanaged reference */
-    char            *cacheName;             /**< Base name of intermediate compiled file */
-    char            *controllerFile;        /**< Controller filename */
-    char            *controllerPath;        /**< Path to controller source */
-    char            *module;                /**< Name of compiled module */
-    char            *source;                /**< Name of ESP source */
-    char            *view;                  /**< Path to view */
-    char            *entry;                 /**< Module entry point */
-    char            *commandLine;           /**< Command line for compile/link */
+    cchar           *cacheName;             /**< Base name of intermediate compiled file */
+    cchar           *controllerFile;        /**< Controller filename */
+    cchar           *controllerPath;        /**< Path to controller source */
+    cchar           *module;                /**< Name of compiled module */
+    cchar           *source;                /**< Name of ESP source */
+    cchar           *view;                  /**< Path to view */
+    cchar           *entry;                 /**< Module entry point */
+    cchar           *commandLine;           /**< Command line for compile/link */
     int             autoFinalize;           /**< Request is or will be auto-finalized */
     int             sessionProbed;          /**< Already probed for session store */
     int             lastDomID;              /**< Last generated DOM ID */
@@ -2928,7 +2945,7 @@ PUBLIC void input(cchar *field, cchar *options);
 /////////////////////////// /////////////////////////// /////////////////////////// ///////////////////////////
 /////////////////////////// /////////////////////////// /////////////////////////// ///////////////////////////
 
-#if BIT_PACK_ESP && BIT_ESP_LEGACY
+#if (BIT_PACK_ESP && BIT_ESP_LEGACY) || 1
 /**
     Suite of high-level controls that generate HTML5.
     @description There are two forms of the ESP control APIs.

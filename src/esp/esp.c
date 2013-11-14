@@ -373,7 +373,7 @@ static HttpRoute *createRoute(cchar *dir)
     eroute->config = mprCreateJson(0);
     route->eroute = eroute;
     httpSetRouteDocuments(route, dir);
-    espSetDirs(route);
+    espSetDefaultDirs(route);
     return route;
 }
 
@@ -1492,7 +1492,7 @@ static void generateClientController(cchar *name, cchar *table, int argc, char *
     path = mprJoinPathExt(mprJoinPath(app->eroute->appDir, sfmt("%s/%sControl", name, title)), "js");
     defines = sclone("");
     tokens = mprDeserialize(sfmt("{ APPDIR: '%s', NAME: '%s', LIST: '%s', TABLE: '%s', TITLE: '%s', DEFINE_ACTIONS: '%s', SERVICE: '%s' }",
-        app->eroute->appDir, name, list, table, title, defines, app->eroute->serverPrefix));
+        app->eroute->appDir, name, list, table, title, defines, app->route->serverPrefix));
     data = getTemplate(mprJoinPath(app->topComponent, "controller.js"), tokens);
     makeEspFile(path, data, "Controller Scaffold");
 }
@@ -1508,7 +1508,7 @@ static void generateClientModel(cchar *name, int argc, char **argv)
     }
     title = spascal(name);
     path = sfmt("%s/%s/%s.js", app->eroute->appDir, name, title);
-    tokens = mprDeserialize(sfmt("{ NAME: '%s', SERVICE: '%s', TITLE: '%s'}", name, app->eroute->serverPrefix, title));
+    tokens = mprDeserialize(sfmt("{ NAME: '%s', SERVICE: '%s', TITLE: '%s'}", name, app->route->serverPrefix, title));
     data = getTemplate(mprJoinPath(app->topComponent, "model.js"), tokens);
     makeEspFile(path, data, "Scaffold Model");
 }
@@ -1594,7 +1594,7 @@ static void generateScaffoldViews(cchar *name, cchar *table, int argc, char **ar
     }
     list = smatch(name, table) ? sfmt("%ss", name) : table; 
     tokens = mprDeserialize(sfmt("{ NAME: '%s', LIST: '%s', TABLE: '%s', TITLE: '%s', SERVICE: '%s'}", 
-        name, list, table, spascal(name), app->eroute->serverPrefix));
+        name, list, table, spascal(name), app->route->serverPrefix));
 
     if (espTestConfig(app->route, "generate.clientView", "true")) {
         path = sfmt("%s/%s/%s-list.html", app->eroute->appDir, name, name);

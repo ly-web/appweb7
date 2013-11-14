@@ -1042,11 +1042,11 @@ PUBLIC HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool l
 
 
 /** 
-    Create a URI link. 
-    @description Create a URI link by expansions tokens based on the current request and route state.
-    The target parameter may contain partial or complete URI information. The missing parts 
+    Create a URI. 
+    @description Create a URI link based on a given target an expanding embedded tokens based on the current request and 
+        route state. The target URI parameter may contain partial or complete URI information. The missing parts 
     are supplied using the current request and route tables. The resulting URI is a normalized, server-local 
-    URI (that begins with "/"). The URI will include any defined route prefix, but will not include scheme, host or 
+    URI (that begins with "/"). The URI will include a required application route prefix, but will not include scheme, host or 
     port components.
     @param [in] conn HttpConn connection object 
     @param target The URI target. The target parameter can be a URI string or JSON style set of options. 
@@ -1085,7 +1085,7 @@ PUBLIC HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool l
                 {AT}Service/action.</li>
             <li>route String Route name to use for the URI template</li>
         </ul>
-    @param options Hash of option values for embedded tokens.
+    @param options Hash of option values for embedded tokens. This hash is blended with the route variables.
     @return A normalized, server-local Uri string.
     @ingroup HttpUri
     @stability Evolving
@@ -3663,6 +3663,7 @@ PUBLIC void httpSetStreaming(struct HttpHost *host, cchar *mime, cchar *uri, boo
 #define HTTP_ROUTE_SHOW_ERRORS          0x100       /**< Show errors to the client */
 #define HTTP_ROUTE_VISIBLE_SESSION      0x200       /**< Create a session cookie visible to client Javascript (not httponly) */
 #define HTTP_ROUTE_PRESERVE_FRAMES      0x400       /**< Preserve WebSocket frame boundaries */
+#define HTTP_ROUTE_DISABLED             0x800       /**< Don't use this route in route tables. */
 
 #if (DEPRECATED || 1) && !DOXYGEN
 #define HTTP_ROUTE_GZIP                 0x1000      /**< Support gzipped content on this route */
@@ -3695,6 +3696,7 @@ typedef struct HttpRoute {
     char            *startWith;             /**< Starting literal segment of pattern (includes prefix) */
     char            *optimizedPattern;      /**< Processed pattern (excludes prefix) */
     char            *prefix;                /**< Application scriptName prefix. Set to NULL for "/" */
+    char            *serverPrefix;          /**< Prefix for the server-side. Does not include prefix. Set to NULL for "/" */
     char            *tplate;                /**< URI template for forming links based on this route (includes prefix) */
     char            *targetRule;            /**< Target rule */
     char            *target;                /**< Route target details */
@@ -3868,38 +3870,10 @@ PUBLIC void httpAddPermResource(HttpRoute *parent, cchar *prefix, cchar *resourc
  */
 PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *prefix, cchar *resource);
 
-/**
-    Add a route for the home page.
-    @description This will add a home page to route ESP applications. This will add the following route:
-    <table>
-        <tr><td>Name</td><td>Method</td><td>Pattern</td><td>Target</td></tr>
-        <tr><td>home</td><td>GET,POST,PUT</td><td>^/$</td><td>index.esp</td></tr>
-    </table>
-    @param parent Parent route from which to inherit configuration.
-    @ingroup HttpRoute
-    @stability Evolving
- */
-PUBLIC void httpAddHomeRoute(HttpRoute *parent);
-
-/**
-    Add a route set package
-    @description This will add a set of routes. It will add a home route and optional routes depending on the route set.
-    <table>
-        <tr><td>Name</td><td>Method</td><td>Pattern</td><td>Target</td></tr>
-        <tr><td>home</td><td>GET,POST,PUT</td><td>^/$</td><td>index.esp</td></tr>
-    </table>
-    @param parent Parent route from which to inherit configuration.
-    @param prefix URI prefix to append to the application prefix when constructing route URIs.
-    @param set Route set to select. Use "simple", or "restful". 
-        \n\n
-        The "simple" pack will invoke 
-        #httpAddHomeRoute and #httpAddStaticRoute to add the "home" routes. 
-        \n\n
-        The "restful" selection will add a set of RESTful routes for generic controllers.
-    @ingroup HttpRoute
-    @stability Evolving
- */
-PUBLIC void httpAddRouteSet(HttpRoute *parent, cchar *prefix, cchar *set);
+#if DEPRECATED || 1
+#define httpAddHomeRoute espAddHomeRoute
+#define httpAddRouteSet espAddRouteSet
+#endif
 
 /**
     Add a route for the client directory
@@ -4231,6 +4205,25 @@ PUBLIC HttpRoute *httpCreateRoute(struct HttpHost *host);
     @stability Evolving
  */
 PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods, cchar *pattern, cchar *target, cchar *source);
+
+/**
+    Define a RESTful route
+    @description This creates a restful route and then configures it using the given parameters. The route is finalized and
+        added to the parent host.
+    @param parent Parent route from which to inherit configuration.
+    @param prefix URI prefix to use after the route prefix.
+    @param action Controller action name
+    @param methods Http methods for which this route is active
+    @param pattern Matching URI pattern for which this route will qualify
+    @param target Route target string expression. This is used by handlers to determine the physical or virtual resource
+        to serve.
+    @param resource Resource basename to use when constructing a source file name.
+    @return Created route.
+    @ingroup HttpRoute
+    @stability Prototype
+ */
+PUBLIC HttpRoute *httpAddRestfulRoute(HttpRoute *parent, cchar *prefix, cchar *action, cchar *methods, cchar *pattern, 
+    cchar * target, cchar *resource);
 
 /**
     Define a route condition rule
@@ -4575,7 +4568,7 @@ PUBLIC void httpSetRouteName(HttpRoute *route, cchar *name);
     Set the route pattern
     @description This call defines the route regular expression pattern that is used to match against the request URI.
         The route pattern is an enhanced JavaScript-compatibile regular expression. It is enhanced by optionally 
-        embedding braced tokens "{name}" in the patter. During request URI matching, these tokens are extracted and
+        embedding braced tokens "{name}" in the pattern. During request URI matching, these tokens are extracted and
         defined in the request params and are available to the request. The normal regular expression repeat syntax 
         also uses "{}". To use the traditional (uncommon) repeat syntax, back quote with "\\".
         Sub-expressions and token expressions are also available in various rules as numbered tokens "$1". For example:
@@ -4598,6 +4591,17 @@ PUBLIC void httpSetRoutePattern(HttpRoute *route, cchar *pattern, int flags);
     @stability Evolving
  */
 PUBLIC void httpSetRoutePrefix(HttpRoute *route, cchar *prefix);
+
+/**
+    Set the route prefix for server-side URIs
+    @description The server-side route prefix is appended to the route prefix to create the complete prefix
+    to issue server-side requests. The prefix is made available as the "${request:serverPrefix}" token.
+    @param route Route to modify
+    @param prefix URI prefix to define for server-side routes.
+    @ingroup HttpRoute
+    @stability Prototype
+ */
+PUBLIC void httpSetRouteServerPrefix(HttpRoute *route, cchar *prefix);
 
 /**
     Set the route to preserve WebSocket frames boundaries
@@ -4803,6 +4807,7 @@ PUBLIC void httpSetRouteXsrf(HttpRoute *route, bool enable);
 /**
     Expand a template string using given options
     @description This expands a string with embedded tokens of the form "${token}" using values from the given options.
+    This routine also understands the leading aliases: "~" for the route prefix and "^" for the top server URL (prefix+serverPrefix).
     @param conn HttpConn connection object created via #httpCreateConn
     @param tplate Template string to process
     @param options Hash of option values for embedded tokens.
@@ -5665,7 +5670,7 @@ typedef struct HttpTx {
     int             pendingFinalize;        /**< Call httpFinalize again once the Tx pipeline is created */
     int             finalizedConnector;     /**< Connector has finished sending the response */
     int             finalizedOutput;        /**< Handler or surrogate has finished writing output response */
-    char            *filename;              /**< Name of a real file being served (typically pathInfo mapped) */
+    cchar           *filename;              /**< Name of a real file being served (typically pathInfo mapped) */
     int             flags;                  /**< Response flags */
     int             status;                 /**< HTTP response status */
     int             responded;              /**< The request has started to respond. Some output has been initiated. */

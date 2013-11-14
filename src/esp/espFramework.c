@@ -502,7 +502,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             eroute->config = mprCreateJson(MPR_JSON_OBJ);
             espAddComponent(route, "legacy-mvc", 0);
             eroute->legacy = 1;
-            eroute->serverPrefix = MPR->emptyString;
+            httpSetRouteServerPrefix(route, "");
 
         } else {
             if ((cdata = mprReadPathContents(cpath, NULL)) == 0) {
@@ -546,14 +546,14 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 eroute->keepSource = smatch(value, "true");
             }
             if ((value = espGetConfig(route, "settings.serverPrefix", 0)) != 0) {
-                eroute->serverPrefix = value;
-                httpSetRouteVar(route, "ESP_SERVER_PREFIX", eroute->serverPrefix);
+                httpSetRouteServerPrefix(route, value);
+                httpSetRouteVar(route, "SERVER_PREFIX", sjoin(route->prefix ? route->prefix: "", route->serverPrefix, 0));
             }
 #if DEPRECATE || 1
             /* Deprecated in 4.4.4 */
             if ((value = espGetConfig(route, "settings.routePrefix", 0)) != 0) {
-                eroute->serverPrefix = sclone(value);
-                httpSetRouteVar(route, "ESP_SERVER_PREFIX", eroute->serverPrefix);
+                httpSetRouteServerPrefix(route, value);
+                httpSetRouteVar(route, "SERVER_PREFIX", sjoin(route->prefix ? route->prefix: "", route->serverPrefix, 0));
             }
 #endif
             if ((value = espGetConfig(route, "settings.login.name", 0)) != 0) {
@@ -563,7 +563,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             if ((value = espGetConfig(route, "settings.xsrfToken", 0)) != 0) {
                 httpSetRouteXsrf(route, smatch(value, "true"));
             }
-            //  MOB - should this default to true for non-legacy
+            //  FUTURE - should this default to true for non-legacy
             if ((value = espGetConfig(route, "settings.sendJson", 0)) != 0) {
                 eroute->json = smatch(value, "true");
             }
@@ -584,7 +584,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             eroute->json = espTestConfig(route, "settings.json", "1");
             if (espHasComponent(route, "legacy-mvc")) {
                 eroute->legacy = 1;
-                eroute->serverPrefix = MPR->emptyString;
+                httpSetRouteServerPrefix(route, "");
             }
         }
     }
@@ -1256,7 +1256,6 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->layoutsDir);
         mprMark(eroute->link);
         mprMark(eroute->searchPath);
-        mprMark(eroute->serverPrefix);
         mprMark(eroute->routeSet);
         mprMark(eroute->srcDir);
         mprMark(eroute->viewsDir);

@@ -20,9 +20,11 @@
 #define ESP_TOK_PARAM           2            /* @@param */
 #define ESP_TOK_FIELD           3            /* @#field */
 #define ESP_TOK_VAR             4            /* @!var */
-#define ESP_TOK_LITERAL         5            /* literal HTML */
-#define ESP_TOK_EXPR            6            /* <%= expression %> */
-#define ESP_TOK_CONTROL         7            /* <%@ control */
+#define ESP_TOK_HOME            5            /* @~ Home ULR */
+#define ESP_TOK_SERVER          6            /* @^ Server URL  */
+#define ESP_TOK_LITERAL         7            /* literal HTML */
+#define ESP_TOK_EXPR            8            /* <%= expression %> */
+#define ESP_TOK_CONTROL         9            /* <%@ control */
 
 /**
     ESP page parser structure
@@ -472,8 +474,11 @@ static char *joinLine(cchar *str, ssize *lenp)
         %>                  End esp section
         -%>                 End esp section and trim trailing newline
 
-        @@var               Substitue the value of a variable. Var can also be simple expressions (without spaces)
+        @@var               Substitue the value of a parameter. 
+        @!var               Substitue the value of a variable. Var can also be simple expressions (without spaces)
         @#field             Lookup the current record for the value of the field.
+        @~                  Home URL for the application
+        @^                  Top level server side URL
 
  */
 PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
@@ -619,6 +624,16 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             /* @!var -- string variable */
             token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
             mprPutToBuf(body, "  espRenderString(conn, %s);\n", token);
+            break;
+
+        case ESP_TOK_HOME:
+            /* @~ Home URL */
+            mprPutToBuf(body, "  espRenderString(conn, conn->rx->route->prefix);");
+            break;
+
+        case ESP_TOK_SERVER:
+            /* @^ Server URL */
+            mprPutToBuf(body, "  espRenderString(conn, sjoin(conn->rx->route->prefix ? conn->rx->route->prefix : \"\", conn->rx->route->serverPrefix, NULL));");
             break;
 
         case ESP_TOK_LITERAL:
@@ -791,7 +806,33 @@ static int getEspToken(EspParse *parse)
         case '@':
             if ((next == start) || next[-1] != '\\') {
                 t = next[1];
-                if (t == '@' || t == '#' || t == '!') {
+                if (t == '~') {
+                    next += 2;
+                    if (mprGetBufLength(parse->token) > 0) {
+                        next -= 3;
+                    } else {
+                        tid = ESP_TOK_HOME;
+                        if (!addChar(parse, c)) {
+                            return ESP_TOK_ERR;
+                        }
+                        next--;
+                    }
+                    done++;
+
+                } else if (t == '^') {
+                    next += 2;
+                    if (mprGetBufLength(parse->token) > 0) {
+                        next -= 3;
+                    } else {
+                        tid = ESP_TOK_SERVER;
+                        if (!addChar(parse, c)) {
+                            return ESP_TOK_ERR;
+                        }
+                        next--;
+                    }
+                    done++;
+
+                } else if (t == '@' || t == '#' || t == '!') {
                     next += 2;
                     if (mprGetBufLength(parse->token) > 0) {
                         next -= 3;

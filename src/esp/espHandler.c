@@ -300,8 +300,9 @@ static int runAction(HttpConn *conn)
 #endif
 #if !BIT_STATIC
     if (!eroute->flat && (eroute->update || !mprLookupKey(esp->actions, key))) {
-        char        *canonical, *source, *errMsg;
-        int         recompile = 0;
+        cchar   *source;
+        char    *canonical, *errMsg;
+        int     recompile = 0;
 
         /* Trim the drive for VxWorks where simulated host drives only exist on the target */
         source = req->controllerPath;
@@ -441,6 +442,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         appName = eroute->appName ? eroute->appName : route->host->name;
         req->cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", appName, canonical), -1, "view_");
         req->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, req->cacheName, BIT_SHOBJ));
+        mprLog(3, "Select view: %s", req->source);
 
         if (!mprPathExists(req->source, R_OK)) {
             mprLog(3, "Cannot find ESP source %s", req->source);
@@ -644,7 +646,6 @@ static EspRoute *allocEspRoute(HttpRoute *route)
     eroute->update = BIT_DEBUG;
     eroute->keepSource = BIT_DEBUG;
     eroute->lifespan = 0;
-    eroute->serverPrefix = MPR->emptyString;
     route->eroute = eroute;
     route->flags |= HTTP_ROUTE_XSRF;
     return eroute;
@@ -689,13 +690,12 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
     eroute->srcDir = parent->srcDir;
     eroute->controllersDir = parent->controllersDir;
     eroute->viewsDir = parent->viewsDir;
-    eroute->serverPrefix = parent->serverPrefix;
     route->eroute = eroute;
     return eroute;
 }
 
 
-PUBLIC void espSetDirs(HttpRoute *route)
+PUBLIC void espSetDefaultDirs(HttpRoute *route)
 {
     EspRoute    *eroute;
     char        *dir;
@@ -709,9 +709,14 @@ PUBLIC void espSetDirs(HttpRoute *route)
     eroute->controllersDir = mprJoinPath(dir, "controllers");
     eroute->srcDir      = mprJoinPath(dir, "src");
     eroute->appDir      = mprJoinPath(dir, "client/app");
-    eroute->layoutsDir  = mprJoinPath(dir, "layouts");
-    eroute->viewsDir    = mprJoinPath(dir, "views");
-
+    //  DEPRECATED
+    if (eroute->legacy) {
+        eroute->layoutsDir  = mprJoinPath(dir, "layouts");
+        eroute->viewsDir    = mprJoinPath(dir, "views");
+    } else {
+        eroute->layoutsDir  = mprJoinPath(eroute->appDir, "layouts");
+        eroute->viewsDir    = eroute->appDir;
+    }
     httpSetRouteVar(route, "CACHE_DIR", eroute->cacheDir);
     httpSetRouteVar(route, "CLIENT_DIR", eroute->clientDir);
     httpSetRouteVar(route, "CONTROLLERS_DIR", eroute->controllersDir);
@@ -736,7 +741,9 @@ static void manageReq(EspReq *req, int flags)
         mprMark(req->flash);
         mprMark(req->feedback);
         mprMark(req->module);
+#if UNUSED
         mprMark(req->record);
+#endif
         mprMark(req->route);
         mprMark(req->source);
         mprMark(req->view);
@@ -756,7 +763,8 @@ static void manageEsp(Esp *esp, int flags)
         mprMark(esp->databases);
         mprMark(esp->databasesTimer);
         mprMark(esp->ediService);
-#if BIT_ESP_LEGACY || DEPRECATE
+        //FUTURE
+#if (BIT_ESP_LEGACY || DEPRECATE) || 1
         mprMark(esp->internalOptions);
 #endif
         mprMark(esp->local);
@@ -889,35 +897,64 @@ PUBLIC void espAddEspRoute(HttpRoute *parent)
 #endif
 
 
+PUBLIC void espAddHomeRoute(HttpRoute *parent)
+{
+    cchar   *source, *name, *path, *pattern, *prefix;
+
+    prefix = parent->prefix ? parent->prefix : "";
+    source = parent->sourceName;
+    name = sjoin(prefix, "/home", NULL);
+    path = stemplate("${CLIENT_DIR}/index.esp", parent->vars);
+    pattern = sfmt("^%s(/)$", prefix);
+    httpDefineRoute(parent, name, "GET,POST", pattern, path, source);
+}
+
+
 PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
 {
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    if (!eroute->legacy) {
-        httpAddRouteSet(route, eroute->serverPrefix, set);
+    if (scaselessmatch(set, "angular-mvc")) {
+        httpAddResourceGroup(route, route->serverPrefix, "{controller}");
+        httpAddClientRoute(route, "", "/public");
+        route->name = sclone("unused");
+        eroute->viewsDir = eroute->appDir;
+        eroute->layoutsDir = mprJoinPath(eroute->clientDir, "layouts");
+
+    } else if (scaselessmatch(set, "html-mvc")) {
+        httpAddRestfulRoute(route, route->serverPrefix, "delete", "POST", "/{id=[0-9]+}/delete$", "delete", "{controller}");
+        httpAddResourceGroup(route, route->serverPrefix, "{controller}");
+        httpAddClientRoute(route, "", "/public");
+        route->name = sclone("unused");
+        eroute->viewsDir = eroute->appDir;
+        eroute->layoutsDir = mprJoinPath(eroute->clientDir, "layouts");
+
 #if DEPRECATE || 1
-    } else {
-        /*
-            Deprecated in 4.4
-         */
-        if (scaselessmatch(set, "mvc")) {
-            httpAddHomeRoute(route);
-            httpAddClientRoute(route, "/static", "/static");
+    /*
+        Deprecated in 4.4
+     */
+    } else if (scaselessmatch(set, "mvc")) {
+        espAddHomeRoute(route);
+        httpAddClientRoute(route, "/static", "/static");
 
-        } else if (scaselessmatch(set, "mvc-fixed")) {
-            httpAddHomeRoute(route);
-            httpAddClientRoute(route, "/static", "/static");
-            httpDefineRoute(route, "default", NULL, "^/{controller}(~/{action}~)", "${controller}-${action}", "${controller}.c");
+    } else if (scaselessmatch(set, "mvc-fixed")) {
+        espAddHomeRoute(route);
+        httpAddClientRoute(route, "/static", "/static");
+        httpDefineRoute(route, "default", NULL, "^/{controller}(~/{action}~)", "${controller}-${action}", "${controller}.c");
 
-        } else if (scaselessmatch(set, "restful")) {
-            httpAddHomeRoute(route);
+    } else if (scaselessmatch(set, "restful")) {
+        if (eroute->legacy) {
+            espAddHomeRoute(route);
             httpAddClientRoute(route, "/static", "/static");
             httpAddLegacyResourceGroup(route, "", "{controller}");
-
-        } else if (!scaselessmatch(set, "none")) {
-            mprError("Unknown route set %s", set);
+        } else {
+            httpAddResourceGroup(route, route->serverPrefix, "{controller}");
+            httpAddClientRoute(route, "", "/client");
         }
+
+    } else if (!scaselessmatch(set, "none")) {
+        mprError("Unknown route set %s", set);
     }
 #endif
 }
@@ -945,7 +982,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     char        *option, *ovalue, *tok;
 
     dir = ".";
-    routeSet = "restful";
+    routeSet = 0;
     flat = "false";
     prefix = 0;
     database = 0;
@@ -990,10 +1027,10 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
         name = "app";
 #endif
     }
-    if (smatch(prefix, "/")) {
+    if (smatch(prefix, "/") || smatch(prefix, "")) {
         prefix = 0;
     }
-    if (smatch(prefix, state->route->prefix) && mprSamePath(state->route->documents, dir)) {
+    if (/* FUTURE smatch(prefix, state->route->prefix) && */ mprSamePath(state->route->documents, dir)) {
         /* 
             Can use existing route as it has the same prefix and documents directory. 
          */
@@ -1001,6 +1038,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     } else {
         route = httpCreateInheritedRoute(state->route);
     }
+    state->route = route;
     httpSetRouteDocuments(route, dir);
     
     if ((eroute = getEroute(route)) == 0) {
@@ -1013,32 +1051,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     if (routeSet) {
         eroute->routeSet = sclone(routeSet);
     }
-    state->route = route;
-
-    espSetDirs(route);
-    /*
-        Load the config.json here before creating routes. This allows config.json to override settings.
-     */
-    if (espLoadConfig(route) < 0) {
-        return MPR_ERR_CANT_LOAD;
-    }
-    if (prefix == 0 || *prefix == 0) {
-        prefix = espGetConfig(route, "settings.appPrefix", 0);
-    }
-    espSetConfig(route, "settings.appPrefix", prefix);
-    espSetConfig(route, "settings.prefix", sjoin(prefix, eroute->serverPrefix, NULL));
-#if DEPRECATE || 1
-    if (eroute->legacy) {
-        eroute->clientDir = mprJoinPath(route->documents, "static");
-        httpSetRouteVar(route, "CLIENT_DIR", eroute->clientDir);
-    }
-#endif
-    if (auth) {
-        if (httpSetAuthStore(route->auth, auth) < 0) {
-            mprError("The %s AuthStore is not available on this platform", auth);
-            return MPR_ERR_BAD_STATE;
-        }
-    }
+    espSetDefaultDirs(route);
     if (prefix) {
         if (*prefix != '/') {
             mprError("Prefix name should start with a \"/\"");
@@ -1052,6 +1065,30 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
         httpSetRouteName(route, sfmt("/%s", name));
     }
     httpSetRouteVar(route, "PREFIX", prefix);
+    /*
+        Load the config.json here before creating routes. This allows config.json to override settings.
+     */
+    if (espLoadConfig(route) < 0) {
+        return MPR_ERR_CANT_LOAD;
+    }
+    espSetConfig(route, "settings.appPrefix", prefix);
+    espSetConfig(route, "settings.prefix", sjoin(prefix ? prefix : "", route->serverPrefix, NULL));
+#if DEPRECATE || 1
+    if (eroute->legacy) {
+        if (!routeSet) {
+            routeSet = "restful";
+        }
+        eroute->clientDir = mprJoinPath(route->documents, "static");
+        httpSetRouteVar(route, "CLIENT_DIR", eroute->clientDir);
+    }
+#endif
+    if (auth) {
+        if (httpSetAuthStore(route->auth, auth) < 0) {
+            mprError("The %s AuthStore is not available on this platform", auth);
+            return MPR_ERR_BAD_STATE;
+        }
+    }
+
     httpSetRouteTarget(route, "run", "$&");
     httpAddRouteHandler(route, "espHandler", "");
     httpAddRouteHandler(route, "espHandler", "esp");
@@ -1080,9 +1117,6 @@ static int finishEspAppDirective(MaState *state, cchar *key, cchar *value)
     route = state->route;
     eroute = route->eroute;
     if (eroute->routeSet) {
-#if UNUSED
-        espAddEspRoute(route);
-#endif
         espAddRouteSet(route, eroute->routeSet);
     }
     if (route != state->prev->route) {
@@ -1207,7 +1241,7 @@ static int espDirDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (smatch(name, "mvc")) {
-        espSetDirs(state->route);
+        espSetDefaultDirs(state->route);
     } else {
         path = stemplate(path, state->route->vars);
         path = stemplate(mprJoinPath(state->route->home, path), state->route->vars);
@@ -1373,18 +1407,14 @@ PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *rout
  */
 static int espPermResourceDirective(MaState *state, cchar *key, cchar *value)
 {
-    EspRoute    *eroute;
     char        *name, *next;
 
-    if ((eroute = getEroute(state->route)) == 0) {
-        return MPR_ERR_MEMORY;
-    }
     if (value == 0 || *value == '\0') {
-        httpAddPermResource(state->route, eroute->serverPrefix, "{controller}");
+        httpAddPermResource(state->route, state->route->serverPrefix, "{controller}");
     } else {
         name = stok(sclone(value), ", \t\r\n", &next);
         while (name) {
-            httpAddPermResource(state->route, eroute->serverPrefix, name);
+            httpAddPermResource(state->route, state->route->serverPrefix, name);
             name = stok(NULL, ", \t\r\n", &next);
         }
     }
@@ -1396,18 +1426,14 @@ static int espPermResourceDirective(MaState *state, cchar *key, cchar *value)
  */
 static int espResourceDirective(MaState *state, cchar *key, cchar *value)
 {
-    EspRoute    *eroute;
     char        *name, *next;
 
-    if ((eroute = getEroute(state->route)) == 0) {
-        return MPR_ERR_MEMORY;
-    }
     if (value == 0 || *value == '\0') {
-        httpAddResource(state->route, eroute->serverPrefix, "{controller}");
+        httpAddResource(state->route, state->route->serverPrefix, "{controller}");
     } else {
         name = stok(sclone(value), ", \t\r\n", &next);
         while (name) {
-            httpAddResource(state->route, eroute->serverPrefix, name);
+            httpAddResource(state->route, state->route->serverPrefix, name);
             name = stok(NULL, ", \t\r\n", &next);
         }
     }
@@ -1420,18 +1446,14 @@ static int espResourceDirective(MaState *state, cchar *key, cchar *value)
  */
 static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
 {
-    EspRoute    *eroute;
     char        *name, *next;
 
-    if ((eroute = getEroute(state->route)) == 0) {
-        return MPR_ERR_MEMORY;
-    }
     if (value == 0 || *value == '\0') {
-        httpAddResourceGroup(state->route, eroute->serverPrefix, "{controller}");
+        httpAddResourceGroup(state->route, state->route->serverPrefix, "{controller}");
     } else {
         name = stok(sclone(value), ", \t\r\n", &next);
         while (name) {
-            httpAddResourceGroup(state->route, eroute->serverPrefix, name);
+            httpAddResourceGroup(state->route, state->route->serverPrefix, name);
             name = stok(NULL, ", \t\r\n", &next);
         }
     }
@@ -1445,13 +1467,8 @@ static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
  */
 static int espRoutePrefixDirective(MaState *state, cchar *key, cchar *value)
 {
-    EspRoute    *eroute;
-
-    if ((eroute = getEroute(state->route)) == 0) {
-        return MPR_ERR_MEMORY;
-    }
-    eroute->serverPrefix = value;
-    httpSetRouteVar(state->route, "ESP_SERVER_PREFIX", eroute->serverPrefix);
+    httpSetRouteServerPrefix(state->route, value);
+    httpSetRouteVar(state->route, "SERVER_PREFIX", sjoin(state->route->prefix ? state->route->prefix: "", state->route->serverPrefix, NULL));
     return 0;
 }
 

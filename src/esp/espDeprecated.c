@@ -11,7 +11,8 @@
 #include    "esp.h"
 #include    "edi.h"
 
-#if BIT_PACK_ESP && BIT_ESP_LEGACY
+//  FUTURE
+#if (BIT_PACK_ESP && BIT_ESP_LEGACY) || 1
 /************************************* Local **********************************/
 
 #define EDATA(s)        "data-esp-" s           /* Prefix for data attributes */
@@ -922,7 +923,7 @@ static cchar *getValue(HttpConn *conn, cchar *fieldName, MprHash *options)
     cchar       *value, *msg;
 
     req = conn->data;
-    record = req->record;
+    record = conn->record;
     value = 0;
 
     if (record) {

@@ -145,6 +145,7 @@ typedef struct EdiRec {
     cchar           *tableName;         /**< Base table name for record */
     cchar           *id;                /**< Record key ID */
     int             nfields;            /**< Number of fields in record */
+    int             index;              /**< Grid index for iteration */
     EdiField        fields[ARRAY_FLEX]; /**< Field records */
 } EdiRec;
 
@@ -405,6 +406,10 @@ PUBLIC int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int
     @stability Prototype
  */
 PUBLIC cchar *ediGetRecSchemaAsJson(EdiRec *rec);
+
+//  MOB 
+PUBLIC EdiField *ediGetNextField(EdiRec *rec, EdiField *fp);
+PUBLIC EdiRec *ediGetNextRec(EdiGrid *grid, EdiRec *rec);
 
 /**
     Get table dimensions information.

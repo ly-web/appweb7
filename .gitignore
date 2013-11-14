@@ -220,3 +220,5 @@ test/web/huge.txt
 test/web/setup.esp
 src/legacy
 samples/zzzz
+*.bak
+test/kick.conf

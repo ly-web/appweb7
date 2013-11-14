@@ -609,7 +609,7 @@ PUBLIC void scripts(cchar *patterns)
     EspRoute    *eroute;
     MprList     *files;
     MprJson     *components, *component, *componentScripts, *file;
-    cchar       *uri, *path;
+    cchar       *name, *uri, *path;
     int         next, ci, fi;
 
     conn = getConn();
@@ -619,8 +619,8 @@ PUBLIC void scripts(cchar *patterns)
 
     if (!patterns || !*patterns) {
         if (modeIs("release")) {
-            //  MOB - angular specific
-            scripts(sfmt("all-%s.min.js", espGetConfig(route, "version", "1.0.0")));
+            name = sfmt("all-%s.min.js", espGetConfig(route, "version", "1.0.0"));
+            scripts(name);
         } else {
             if ((components = mprGetJson(eroute->config, "settings.components", 0)) != 0) {
                 for (ITERATE_JSON(components, component, ci)) {
@@ -650,7 +650,7 @@ PUBLIC void scripts(cchar *patterns)
             }
         }
         for (ITERATE_ITEMS(files, path, next)) {
-            path = strim(path, ".gz", MPR_TRIM_END);
+            path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
             uri = httpUri(conn, path, NULL);
             if (scontains(path, "-IE-") || scontains(path, "html5shiv")) {
                 espRender(conn, "    <!-- [if lt IE 9]>\n");
@@ -811,7 +811,7 @@ PUBLIC void stylesheets(cchar *patterns)
         mprAddItem(files, patterns);
     }
     for (ITERATE_ITEMS(files, path, next)) {
-        path = strim(path, ".gz", MPR_TRIM_END);
+        path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
         uri = httpUri(conn, path, NULL);
         kind = mprGetPathExt(path);
         if (smatch(kind, "css")) {
@@ -862,6 +862,18 @@ PUBLIC bool updateRec(EdiRec *rec)
 PUBLIC bool updateRecFromParams(cchar *table)
 {
     return updateRec(setFields(readRec(table, param("id")), params()));
+}
+
+
+PUBLIC cchar *uri(cchar *target, ...)
+{
+    va_list     args;
+    cchar       *uri;
+
+    va_start(args, target);
+    uri = sfmtv(target, args);
+    va_end(args);
+    return httpUri(getConn(), uri, NULL);
 }
 
 

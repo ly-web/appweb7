@@ -220,6 +220,44 @@ PUBLIC int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int
 }
 
 
+PUBLIC EdiField *ediGetNextField(EdiRec *rec, EdiField *fp) 
+{
+    if (rec->nfields <= 0) {
+        return 0;
+    }
+    if (fp == 0) {
+        fp = rec->fields;
+    } else {
+        if (++fp >= &rec->fields[rec->nfields]) {
+            fp = 0;  
+        }
+    }
+    return fp;
+}
+
+PUBLIC EdiRec *ediGetNextRec(EdiGrid *grid, EdiRec *rec) 
+{
+    int     index;
+
+    if (grid->nrecords <= 0) {
+        return 0;
+    }
+    if (rec == 0) {
+        rec = grid->records[0];
+        rec->index = 0;
+    } else {
+        index = rec->index + 1;
+        if (index >= grid->nrecords) {
+            rec = 0;  
+        } else {
+            rec = grid->records[index];
+            rec->index = index;
+        }
+    }
+    return rec;
+}
+
+
 PUBLIC cchar *ediGetTableSchemaAsJson(Edi *edi, cchar *tableName)
 {
     MprBuf      *buf;

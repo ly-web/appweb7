@@ -96,7 +96,7 @@ PUBLIC void form(EdiRec *record, cchar *optionString)
         If record provided, get the record id. Can be overridden using options.recid
      */
     if (record) {
-        req->record = record;
+        conn->record = record;
         if (record->id && !httpGetOption(options, "recid", 0)) {
             httpAddOption(options, "recid", record->id);
         }
@@ -140,8 +140,8 @@ static cchar *getValue(HttpConn *conn, cchar *fieldName, MprHash *options)
     cchar       *value, *msg;
 
     req = conn->data;
+    record = conn->record;
     value = 0;
-    record = req->record;
     if (record) {
         value = ediGetFieldValue(record, fieldName);
         if (record->errors) {
@@ -172,38 +172,39 @@ PUBLIC void input(cchar *field, cchar *optionString)
     MprKey      *kp;
     EspReq      *req;
     EdiRec      *rec;
-    cchar       *rows, *cols, *etype, *value, *checked;
+    cchar       *rows, *cols, *etype, *value, *checked, *style;
     int         type, flags;
 
     conn = getConn();
     req = conn->data;
-    rec = req->record;
+    rec = conn->record;
     if (ediGetColumnSchema(rec->edi, rec->tableName, field, &type, &flags, NULL) < 0) {
         type = -1;
     }
+    options = httpGetOptions(optionString);
+    style = httpGetOption(options, "class", "");
+
     switch (type) {
     case EDI_TYPE_BOOL:
         choices = httpGetOptions("{off: 0, on: 1}");
-        options = httpGetOptions(optionString);
         value = getValue(conn, field, options);
         for (kp = 0; (kp = mprGetNextKey(choices, kp)) != 0; ) {
             checked = (smatch(kp->data, value)) ? " checked" : "";
-            espRender(conn, "%s <input type='radio' name='%s' value='%s'%s%s />\r\n",
-                spascal(kp->key), field, kp->data, checked, map(conn, options));
+            espRender(conn, "%s <input type='radio' name='%s' value='%s'%s%s class='%s'/>\r\n",
+                spascal(kp->key), field, kp->data, checked, map(conn, options), style);
         }
         break;
-    case EDI_TYPE_FLOAT:
-    case EDI_TYPE_INT:
         /* Fall through */
     case EDI_TYPE_BINARY:
     default:
         httpError(conn, 0, "espInput: unknown field type %d", type);
         /* Fall through */
+    case EDI_TYPE_FLOAT:
+    case EDI_TYPE_INT:
     case EDI_TYPE_DATE:
     case EDI_TYPE_STRING:
     case EDI_TYPE_TEXT:
-        options = httpGetOptions(optionString);
-        if (!httpGetOption(options, "rows", 0)) {
+        if (type == EDI_TYPE_TEXT && !httpGetOption(options, "rows", 0)) {
             httpSetOption(options, "rows", "10");
         }
         etype = "text";
@@ -218,10 +219,11 @@ PUBLIC void input(cchar *field, cchar *optionString)
         }
         if ((rows = httpGetOption(options, "rows", 0)) != 0) {
             cols = httpGetOption(options, "cols", "60");
-            espRender(conn, "<textarea name='%s' type='%s' cols='%s' rows='%s'%s>%s</textarea>", field, etype,
-                cols, rows, map(conn, options), value);
+            espRender(conn, "<textarea name='%s' type='%s' cols='%s' rows='%s'%s class='%s'>%s</textarea>", 
+                field, etype, cols, rows, map(conn, options), style, value);
         } else {
-              espRender(conn, "<input name='%s' type='%s' value='%s'%s />", field, etype, value, map(conn, options));
+            espRender(conn, "<input name='%s' type='%s' value='%s'%s class='%s'/>", field, etype, value, 
+                map(conn, options), style);
         }
         break;
     }
