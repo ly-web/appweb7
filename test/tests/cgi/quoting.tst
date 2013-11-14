@@ -26,20 +26,14 @@ match(http, "QUERY_STRING", "a%20a=1%201&b%20b=2%202")
 match(http, "QVAR a a", "1 1")
 match(http, "QVAR b b", "2 2")
 
-http.get(HTTP + "/cgi-bin/testScript?a|b+c>d+e?f+g>h+i'j+k\"l+m%20n")
-match(http, "ARG.2.", "a\\|b")
-match(http, "ARG.3.", "c\\>d")
+http.get(HTTP + "/cgi-bin/testScript?a,b+c#d+e?f+g#h+i'j+kl+m%20n")
+match(http, "ARG.2.", "a,b")
+match(http, "ARG.3.", "c#d")
 match(http, "ARG.4.", "e\\?f")
-match(http, "ARG.5.", "g\\>h")
+match(http, "ARG.5.", "g#h")
 match(http, "ARG.6.", "i\\'j")
-
-if (Config.OS == "windows" || Config.OS == "cygwin") {
-    //  TODO - fix. Windows is eating a backslash
-    match(http, "ARG.7.", "k\"l")
-} else {
-    match(http, "ARG.7.", "k\\\"l")
-}
+match(http, "ARG.7.", "kl")
 match(http, "ARG.8.", "m n")
-match(http, "QUERY_STRING", "a|b+c>d+e?f+g>h+i'j+k\"l+m%20n")
-assert(http.response.contains("QVAR a|b c>d e?f g>h i'j k\"l m n"))
+match(http, "QUERY_STRING", "a,b+c#d+e?f+g#h+i'j+kl+m%20n")
+assert(http.response.contains("QVAR a,b c#d e?f g#h i'j kl m n"))
 http.close()
