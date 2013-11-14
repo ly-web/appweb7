@@ -9815,8 +9815,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
     }
 #else
     /*
-        Initialize the "wakeup" pipe. This is used to wakeup the service thread if other threads need 
-     *  to wait for I/O.
+        Initialize the "wakeup" pipe. This is used to wakeup the service thread if other threads need to wait for I/O.
      */
     if (pipe(ws->breakFd) < 0) {
         mprError("Cannot open breakout pipe");
