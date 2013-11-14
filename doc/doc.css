@@ -502,6 +502,13 @@ img.screen {
     overflow: hidden;
 }
 
+img.big-screen {
+    width: 630px;
+    margin: 0;
+    padding: 10px 0 5px 0;
+    overflow: hidden;
+}
+
 td.pivot {
 	background-color: #7090C0;
 	color: #FFFFFF;
