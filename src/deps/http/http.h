@@ -1128,7 +1128,9 @@ PUBLIC char *httpUriToString(HttpUri *uri, int flags);
 /**
     Test if a URI is using only valid characters
     Note this does not test if the URI is fully legal. Some components of the URI have restricted character sets 
-    that this routine does not test.
+    that this routine does not test. This tests if the URI has only characters valid to use in a URI before decoding. 
+    i.e. It will permit %NN encodings. The set of valid characters is:
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%"
     @param uri Uri to test
     @return True if the URI string is comprised of legal URI characters.
   */
