@@ -1309,7 +1309,7 @@ PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprT
             mime = "application/octet-stream";
         }
         mprAddItem(lines, "Content-Transfer-Encoding: base64");
-        mprAddItem(lines, sfmt("Content-Disposition: inline; filename=\%s\"", mprGetPathBase(file)));
+        mprAddItem(lines, sfmt("Content-Disposition: inline; filename=\"%s\"", mprGetPathBase(file)));
         mprAddItem(lines, sfmt("Content-Type: %s; name=\"%s\"", mime, mprGetPathBase(file)));
         mprAddItem(lines, "");
         contents = mprReadPathContents(file, &length);
