@@ -85,6 +85,11 @@ Bit.load({
          */
         static: false,
 
+        /*
+            Enable extra security measures that are not required, but have a small performance penalty.
+         */
+        extraSecurity: false,
+
         http: {
             /* Use PAM (Plugable Authentication Module) to store passwords */
             pam: true,

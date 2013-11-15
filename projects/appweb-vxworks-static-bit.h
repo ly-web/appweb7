@@ -79,6 +79,9 @@
 #ifndef BIT_EST_XTEA
     #define BIT_EST_XTEA 0
 #endif
+#ifndef BIT_EXTRA_SECURITY
+    #define BIT_EXTRA_SECURITY 0
+#endif
 #ifndef BIT_HAS_ATOMIC
     #define BIT_HAS_ATOMIC 0
 #endif

@@ -1162,6 +1162,7 @@ $(CONFIG)\esp: $(DEPS_58)
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-local.es $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-local.es
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-local.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-local.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-modal.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-modal.js
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-resource.es $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-resource.es
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-resource.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-resource.js
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-session.es $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-session.es
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-session.js $(CONFIG)\esp\components\angular-esp\client\lib\angular-esp\esp-session.js
@@ -1174,8 +1175,12 @@ $(CONFIG)\esp: $(DEPS_58)
 	copy /Y src\esp\proto\components\angular-esp-extras\client\lib\angular-esp-extras\esp-svg-gauge.js $(CONFIG)\esp\components\angular-esp-extras\client\lib\angular-esp-extras\esp-svg-gauge.js
 	if not exist "$(CONFIG)\esp\components\angular-esp-extras" md "$(CONFIG)\esp\components\angular-esp-extras"
 	copy /Y src\esp\proto\components\angular-esp-extras\config.json $(CONFIG)\esp\components\angular-esp-extras\config.json
+	if not exist "$(CONFIG)\esp\components\angular-mvc" md "$(CONFIG)\esp\components\angular-mvc"
+	copy /Y src\esp\proto\components\angular-mvc\appweb.conf $(CONFIG)\esp\components\angular-mvc\appweb.conf
 	if not exist "$(CONFIG)\esp\components\angular-mvc\client\app" md "$(CONFIG)\esp\components\angular-mvc\client\app"
 	copy /Y src\esp\proto\components\angular-mvc\client\app\main.js $(CONFIG)\esp\components\angular-mvc\client\app\main.js
+	if not exist "$(CONFIG)\esp\components\angular-mvc\client\assets" md "$(CONFIG)\esp\components\angular-mvc\client\assets"
+	copy /Y src\esp\proto\components\angular-mvc\client\assets\favicon.ico $(CONFIG)\esp\components\angular-mvc\client\assets\favicon.ico
 	if not exist "$(CONFIG)\esp\components\angular-mvc\client\css" md "$(CONFIG)\esp\components\angular-mvc\client\css"
 	copy /Y src\esp\proto\components\angular-mvc\client\css\all.less $(CONFIG)\esp\components\angular-mvc\client\css\all.less
 	copy /Y src\esp\proto\components\angular-mvc\client\css\app.less $(CONFIG)\esp\components\angular-mvc\client\css\app.less
@@ -1185,8 +1190,8 @@ $(CONFIG)\esp: $(DEPS_58)
 	copy /Y src\esp\proto\components\angular-mvc\client\index.esp $(CONFIG)\esp\components\angular-mvc\client\index.esp
 	if not exist "$(CONFIG)\esp\components\angular-mvc\client\pages" md "$(CONFIG)\esp\components\angular-mvc\client\pages"
 	copy /Y src\esp\proto\components\angular-mvc\client\pages\splash.html $(CONFIG)\esp\components\angular-mvc\client\pages\splash.html
-	if not exist "$(CONFIG)\esp\components\angular-mvc" md "$(CONFIG)\esp\components\angular-mvc"
 	copy /Y src\esp\proto\components\angular-mvc\config.json $(CONFIG)\esp\components\angular-mvc\config.json
+	copy /Y src\esp\proto\components\angular-mvc\hosted.conf $(CONFIG)\esp\components\angular-mvc\hosted.conf
 	copy /Y src\esp\proto\components\angular-mvc\start.bit $(CONFIG)\esp\components\angular-mvc\start.bit
 	if not exist "$(CONFIG)\esp\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap" md "$(CONFIG)\esp\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap"
 	copy /Y src\esp\proto\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap\ui-bootstrap-tpls.js $(CONFIG)\esp\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap\ui-bootstrap-tpls.js
@@ -1309,6 +1314,10 @@ $(CONFIG)\esp: $(DEPS_58)
 	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\font-awesome.scss $(CONFIG)\esp\components\font-awesome\client\lib\font-awesome\scss\font-awesome.scss
 	if not exist "$(CONFIG)\esp\components\font-awesome" md "$(CONFIG)\esp\components\font-awesome"
 	copy /Y src\esp\proto\components\font-awesome\config.json $(CONFIG)\esp\components\font-awesome\config.json
+	if not exist "$(CONFIG)\esp\components\html-mvc" md "$(CONFIG)\esp\components\html-mvc"
+	copy /Y src\esp\proto\components\html-mvc\appweb.conf $(CONFIG)\esp\components\html-mvc\appweb.conf
+	if not exist "$(CONFIG)\esp\components\html-mvc\client\assets" md "$(CONFIG)\esp\components\html-mvc\client\assets"
+	copy /Y src\esp\proto\components\html-mvc\client\assets\favicon.ico $(CONFIG)\esp\components\html-mvc\client\assets\favicon.ico
 	if not exist "$(CONFIG)\esp\components\html-mvc\client\css" md "$(CONFIG)\esp\components\html-mvc\client\css"
 	copy /Y src\esp\proto\components\html-mvc\client\css\all.less $(CONFIG)\esp\components\html-mvc\client\css\all.less
 	copy /Y src\esp\proto\components\html-mvc\client\css\app.less $(CONFIG)\esp\components\html-mvc\client\css\app.less
@@ -1316,8 +1325,8 @@ $(CONFIG)\esp: $(DEPS_58)
 	copy /Y src\esp\proto\components\html-mvc\client\css\theme.less $(CONFIG)\esp\components\html-mvc\client\css\theme.less
 	if not exist "$(CONFIG)\esp\components\html-mvc\client" md "$(CONFIG)\esp\components\html-mvc\client"
 	copy /Y src\esp\proto\components\html-mvc\client\index.esp $(CONFIG)\esp\components\html-mvc\client\index.esp
-	if not exist "$(CONFIG)\esp\components\html-mvc" md "$(CONFIG)\esp\components\html-mvc"
 	copy /Y src\esp\proto\components\html-mvc\config.json $(CONFIG)\esp\components\html-mvc\config.json
+	copy /Y src\esp\proto\components\html-mvc\hosted.conf $(CONFIG)\esp\components\html-mvc\hosted.conf
 	if not exist "$(CONFIG)\esp\components\html-mvc\layouts" md "$(CONFIG)\esp\components\html-mvc\layouts"
 	copy /Y src\esp\proto\components\html-mvc\layouts\default.esp $(CONFIG)\esp\components\html-mvc\layouts\default.esp
 	copy /Y src\esp\proto\components\html-mvc\start.bit $(CONFIG)\esp\components\html-mvc\start.bit
@@ -1378,9 +1387,9 @@ $(CONFIG)\esp: $(DEPS_58)
 	if not exist "$(CONFIG)\esp\components\respond" md "$(CONFIG)\esp\components\respond"
 	copy /Y src\esp\proto\components\respond\config.json $(CONFIG)\esp\components\respond\config.json
 	if not exist "$(CONFIG)\esp\components\server" md "$(CONFIG)\esp\components\server"
-	copy /Y src\esp\proto\components\server\app.conf $(CONFIG)\esp\components\server\app.conf
 	copy /Y src\esp\proto\components\server\appweb.conf $(CONFIG)\esp\components\server\appweb.conf
 	copy /Y src\esp\proto\components\server\config.json $(CONFIG)\esp\components\server\config.json
+	copy /Y src\esp\proto\components\server\hosted.conf $(CONFIG)\esp\components\server\hosted.conf
 	if not exist "$(CONFIG)\esp\components\xcharts\client\lib\xcharts" md "$(CONFIG)\esp\components\xcharts\client\lib\xcharts"
 	copy /Y src\esp\proto\components\xcharts\client\lib\xcharts\xcharts.css $(CONFIG)\esp\components\xcharts\client\lib\xcharts\xcharts.css
 	copy /Y src\esp\proto\components\xcharts\client\lib\xcharts\xcharts.js $(CONFIG)\esp\components\xcharts\client\lib\xcharts\xcharts.js
@@ -2422,6 +2431,7 @@ installBinary: $(DEPS_102)
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-local.es "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-local.es"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-local.js "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-local.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-modal.js "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-modal.js"
+	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-resource.es "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-resource.es"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-resource.js "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-resource.js"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-session.es "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-session.es"
 	copy /Y src\esp\proto\components\angular-esp\client\lib\angular-esp\esp-session.js "$(BIT_VAPP_PREFIX)\esp\components\angular-esp\client\lib\angular-esp\esp-session.js"
@@ -2434,8 +2444,12 @@ installBinary: $(DEPS_102)
 	copy /Y src\esp\proto\components\angular-esp-extras\client\lib\angular-esp-extras\esp-svg-gauge.js "$(BIT_VAPP_PREFIX)\esp\components\angular-esp-extras\client\lib\angular-esp-extras\esp-svg-gauge.js"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\angular-esp-extras" md "$(BIT_VAPP_PREFIX)\esp\components\angular-esp-extras"
 	copy /Y src\esp\proto\components\angular-esp-extras\config.json "$(BIT_VAPP_PREFIX)\esp\components\angular-esp-extras\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc" md "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc"
+	copy /Y src\esp\proto\components\angular-mvc\appweb.conf "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc\appweb.conf"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc\client\app" md "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc\client\app"
 	copy /Y src\esp\proto\components\angular-mvc\client\app\main.js "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc\client\app\main.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc\client\assets" md "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc\client\assets"
+	copy /Y src\esp\proto\components\angular-mvc\client\assets\favicon.ico "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc\client\assets\favicon.ico"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc\client\css" md "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc\client\css"
 	copy /Y src\esp\proto\components\angular-mvc\client\css\all.less "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc\client\css\all.less"
 	copy /Y src\esp\proto\components\angular-mvc\client\css\app.less "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc\client\css\app.less"
@@ -2445,8 +2459,8 @@ installBinary: $(DEPS_102)
 	copy /Y src\esp\proto\components\angular-mvc\client\index.esp "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc\client\index.esp"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc\client\pages" md "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc\client\pages"
 	copy /Y src\esp\proto\components\angular-mvc\client\pages\splash.html "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc\client\pages\splash.html"
-	if not exist "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc" md "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc"
 	copy /Y src\esp\proto\components\angular-mvc\config.json "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc\config.json"
+	copy /Y src\esp\proto\components\angular-mvc\hosted.conf "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc\hosted.conf"
 	copy /Y src\esp\proto\components\angular-mvc\start.bit "$(BIT_VAPP_PREFIX)\esp\components\angular-mvc\start.bit"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap" md "$(BIT_VAPP_PREFIX)\esp\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap"
 	copy /Y src\esp\proto\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap\ui-bootstrap-tpls.js "$(BIT_VAPP_PREFIX)\esp\components\angular-ui-bootstrap\client\lib\angular-ui-bootstrap\ui-bootstrap-tpls.js"
@@ -2569,6 +2583,10 @@ installBinary: $(DEPS_102)
 	copy /Y src\esp\proto\components\font-awesome\client\lib\font-awesome\scss\font-awesome.scss "$(BIT_VAPP_PREFIX)\esp\components\font-awesome\client\lib\font-awesome\scss\font-awesome.scss"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\font-awesome" md "$(BIT_VAPP_PREFIX)\esp\components\font-awesome"
 	copy /Y src\esp\proto\components\font-awesome\config.json "$(BIT_VAPP_PREFIX)\esp\components\font-awesome\config.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\components\html-mvc" md "$(BIT_VAPP_PREFIX)\esp\components\html-mvc"
+	copy /Y src\esp\proto\components\html-mvc\appweb.conf "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\appweb.conf"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\assets" md "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\assets"
+	copy /Y src\esp\proto\components\html-mvc\client\assets\favicon.ico "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\assets\favicon.ico"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\css" md "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\css"
 	copy /Y src\esp\proto\components\html-mvc\client\css\all.less "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\css\all.less"
 	copy /Y src\esp\proto\components\html-mvc\client\css\app.less "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\css\app.less"
@@ -2576,8 +2594,8 @@ installBinary: $(DEPS_102)
 	copy /Y src\esp\proto\components\html-mvc\client\css\theme.less "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\css\theme.less"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client" md "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client"
 	copy /Y src\esp\proto\components\html-mvc\client\index.esp "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\client\index.esp"
-	if not exist "$(BIT_VAPP_PREFIX)\esp\components\html-mvc" md "$(BIT_VAPP_PREFIX)\esp\components\html-mvc"
 	copy /Y src\esp\proto\components\html-mvc\config.json "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\config.json"
+	copy /Y src\esp\proto\components\html-mvc\hosted.conf "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\hosted.conf"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\layouts" md "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\layouts"
 	copy /Y src\esp\proto\components\html-mvc\layouts\default.esp "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\layouts\default.esp"
 	copy /Y src\esp\proto\components\html-mvc\start.bit "$(BIT_VAPP_PREFIX)\esp\components\html-mvc\start.bit"
@@ -2638,9 +2656,9 @@ installBinary: $(DEPS_102)
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\respond" md "$(BIT_VAPP_PREFIX)\esp\components\respond"
 	copy /Y src\esp\proto\components\respond\config.json "$(BIT_VAPP_PREFIX)\esp\components\respond\config.json"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\server" md "$(BIT_VAPP_PREFIX)\esp\components\server"
-	copy /Y src\esp\proto\components\server\app.conf "$(BIT_VAPP_PREFIX)\esp\components\server\app.conf"
 	copy /Y src\esp\proto\components\server\appweb.conf "$(BIT_VAPP_PREFIX)\esp\components\server\appweb.conf"
 	copy /Y src\esp\proto\components\server\config.json "$(BIT_VAPP_PREFIX)\esp\components\server\config.json"
+	copy /Y src\esp\proto\components\server\hosted.conf "$(BIT_VAPP_PREFIX)\esp\components\server\hosted.conf"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\components\xcharts\client\lib\xcharts" md "$(BIT_VAPP_PREFIX)\esp\components\xcharts\client\lib\xcharts"
 	copy /Y src\esp\proto\components\xcharts\client\lib\xcharts\xcharts.css "$(BIT_VAPP_PREFIX)\esp\components\xcharts\client\lib\xcharts\xcharts.css"
 	copy /Y src\esp\proto\components\xcharts\client\lib\xcharts\xcharts.js "$(BIT_VAPP_PREFIX)\esp\components\xcharts\client\lib\xcharts\xcharts.js"
