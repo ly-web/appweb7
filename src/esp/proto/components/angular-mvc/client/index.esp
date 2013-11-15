@@ -5,9 +5,8 @@
     <meta charset="utf-8" />
     <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
     <% stylesheets(NULL); %>
-    <% securityToken(); %>
 </head>
-<body data-config='<% renderConfig(); id='body' %>'>
+<body data-config='<% renderConfig(); %>' id='body'>
     <nav class="navbar navbar-inverse navbar-static-top">
         <div class="navbar-header">
             <a class="navbar-brand ng-cloak" href="#">${TITLE}</a>

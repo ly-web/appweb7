@@ -58,7 +58,7 @@ angular.module('esp.input-group', [])
                         }
                         angular.forEach(fields, function(field, key) {
                             var i = 0 + key;
-                            var label = (labels && labels[i]) ? ('label="' + labels[i] + '"') : Esp.titlecase(field);
+                            var label = 'label="' + ((labels && labels[i]) ? labels[i] : Esp.titlecase(field)) + '"';
                             var klass = (classes && classes[i]) ? ('class=' + classes[i]) : '';
                             var type = (types && types[i]) ? ('type="' + types[i] + '"') : '';
                             var filter = (filters && filters[i]) ? ('filter="' + filters[i] + '"') : '';

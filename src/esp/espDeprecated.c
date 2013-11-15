@@ -11,8 +11,7 @@
 #include    "esp.h"
 #include    "edi.h"
 
-//  FUTURE
-#if (BIT_PACK_ESP && BIT_ESP_LEGACY) || 1
+#if (BIT_PACK_ESP && BIT_ESP_LEGACY)
 /************************************* Local **********************************/
 
 #define EDATA(s)        "data-esp-" s           /* Prefix for data attributes */
@@ -130,7 +129,7 @@ PUBLIC void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *option
     MprHash     *options;
 
     options = httpGetOptions(optionString);
-    httpSetOption(options, EDATA("click"), httpUri(conn, uri, NULL));
+    httpSetOption(options, EDATA("click"), httpUri(conn, uri));
     espRender(conn, "<button%s>%s</button>", map(conn, options), text);
 }
 
@@ -218,7 +217,7 @@ PUBLIC void espIcon(HttpConn *conn, cchar *uri, cchar *optionString)
     } else if (*uri == 0) {
         uri = sjoin("~/", mprGetPathBase(eroute->clientDir), "/images/favicon.ico", NULL);
     }
-    espRender(conn, "<link href='%s' rel='shortcut icon'%s />", httpUri(conn, uri, NULL), map(conn, options));
+    espRender(conn, "<link href='%s' rel='shortcut icon'%s />", httpUri(conn, uri), map(conn, options));
 }
 
 
@@ -227,7 +226,7 @@ PUBLIC void espImage(HttpConn *conn, cchar *uri, cchar *optionString)
     MprHash     *options;
 
     options = httpGetOptions(optionString);
-    espRender(conn, "<img src='%s'%s />", httpUri(conn, uri, NULL), map(conn, options));
+    espRender(conn, "<img src='%s'%s />", httpUri(conn, uri), map(conn, options));
 }
 
 
@@ -304,7 +303,7 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
     eroute = conn->rx->route->eroute;
     options = httpGetOptions(optionString);
     if (uri) {
-        espRender(conn, "<script src='%s' type='text/javascript'></script>", httpUri(conn, uri, NULL));
+        espRender(conn, "<script src='%s' type='text/javascript'></script>", httpUri(conn, uri));
     } else {
         minified = smatch(httpGetOption(options, "minified", 0), "true");
         indent = "";
@@ -316,7 +315,7 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
                 espRender(conn, "%s<!-- [if lt IE 9]>\n", indent);
             }
             path = sjoin("~/", mprGetPathBase(eroute->clientDir), sp->name, minified ? ".min.js" : ".js", NULL);
-            uri = httpUri(conn, path, NULL);
+            uri = httpUri(conn, path);
             newline = sp[1].name ? "\r\n" :  "";
             espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
             if (sp->flags & SCRIPT_IE) {
@@ -338,14 +337,14 @@ PUBLIC void espStylesheet(HttpConn *conn, cchar *uri, cchar *optionString)
    
     eroute = conn->rx->route->eroute;
     if (uri) {
-        espRender(conn, "<link rel='stylesheet' type='text/css' href='%s' />", httpUri(conn, uri, NULL));
+        espRender(conn, "<link rel='stylesheet' type='text/css' href='%s' />", httpUri(conn, uri));
     } else {
         indent = "";
         options = httpGetOptions(optionString);
         less = smatch(httpGetOption(options, "type", "css"), "less");
         up = less ? defaultLess : defaultCss;
         for (; *up; up++) {
-            uri = httpUri(conn, sjoin("~/", mprGetPathBase(eroute->clientDir), *up, NULL), NULL);
+            uri = httpUri(conn, sjoin("~/", mprGetPathBase(eroute->clientDir), *up, NULL));
             newline = up[1] ? "\r\n" :  "";
             espRender(conn, "%s<link rel='stylesheet%s' type='text/css' href='%s' />%s", indent, less ? "/less" : "", uri, newline);
             indent = "    ";
@@ -724,7 +723,7 @@ PUBLIC void espTabs(HttpConn *conn, EdiGrid *grid, cchar *optionString)
         rec = grid->records[r];
         name = ediGetFieldValue(rec, "name");
         uri = ediGetFieldValue(rec, "uri");
-        uri = toggle ? uri : httpUri(conn, uri, 0);
+        uri = toggle ? uri : httpUri(conn, uri);
         if ((r == 0 && toggle) || smatch(uri, conn->rx->pathInfo)) {
             klass = smatch(uri, conn->rx->pathInfo) ? " class='esp-selected'" : "";
         } else {
@@ -801,6 +800,94 @@ PUBLIC void checkbox(cchar *field, cchar *checkedValue, cchar *optionString)
 PUBLIC void division(cchar *body, cchar *optionString) 
 {
     espDivision(getConn(), body, optionString);
+}
+
+PUBLIC void endform() 
+{
+    renderString("</form>");
+}
+
+
+static void emitFormErrors(HttpConn *conn, EdiRec *rec, MprHash *options)
+{
+    MprHash         *errors;
+    MprKey          *field;
+    char            *msg;
+    int             count;
+   
+    if (!rec->errors || httpGetOption(options, "hideErrors", 0)) {
+        return;
+    }
+    errors = ediGetRecErrors(rec);
+    if (errors) {
+        count = mprGetHashLength(errors);
+        espRender(conn, "<div class='" ESTYLE("form-error") "'><h2>The %s has %s it being saved.</h2>\r\n",
+            spascal(rec->tableName), count <= 1 ? "an error that prevents" : "errors that prevent");
+        espRender(conn, "    <p>There were problems with the following fields:</p>\r\n");
+        espRender(conn, "    <ul>\r\n");
+        for (ITERATE_KEY_DATA(errors, field, msg)) {
+            espRender(conn, "        <li>%s %s</li>\r\n", field->key, msg);
+        }
+        espRender(conn, "    </ul>\r\n");
+        espRender(conn, "</div>");
+    }
+}
+
+
+PUBLIC void form(EdiRec *record, cchar *optionString)
+{
+    HttpConn    *conn;
+    EspReq      *req;
+    MprHash     *options;
+    cchar       *action, *recid, *method, *uri, *token;
+   
+    conn = getConn();
+    if (record == 0) {
+        record = getRec();
+    } else {
+        conn->record = record;
+    }
+    req = conn->data;
+    options = httpGetOptions(optionString);
+    recid = 0;
+
+    /*
+        If record provided, get the record id. Can be overridden using options.recid
+     */
+    if (record) {
+        if (record->id && !httpGetOption(options, "recid", 0)) {
+            httpAddOption(options, "recid", record->id);
+        }
+        recid = httpGetOption(options, "recid", 0);
+        emitFormErrors(conn, record, options);
+    }
+    if ((method = httpGetOption(options, "method", 0)) == 0) {
+        method = (recid) ? "PUT" : "POST";
+    }
+    if (!scaselessmatch(method, "GET") && !scaselessmatch(method, "POST")) {
+        /* All methods use POST and tunnel method in data-method */
+        httpAddOption(options, EDATA("method"), method);
+        method = "POST";
+    }
+    if ((action = httpGetOption(options, "action", 0)) == 0) {
+        action = (recid) ? "@update" : "@create";
+    }
+    uri = httpUri(conn, action);
+
+    if (smatch(httpGetOption(options, "remote", 0), "true")) {
+        espRender(conn, "<form method='%s' " EDATA("remote") "='%s'%s >\r\n", method, uri, map(conn, options));
+    } else {
+        espRender(conn, "<form method='%s' action='%s'%s >\r\n", method, uri, map(conn, options));
+    }
+    if (recid) {
+        espRender(conn, "    <input name='recid' type='hidden' value='%s' />\r\n", recid);
+    }
+    if (!httpGetOption(options, "insecure", 0)) {
+        if ((token = httpGetOption(options, "securityToken", 0)) == 0) {
+            token = httpGetSecurityToken(conn);
+        }
+        espRender(conn, "    <input name='%s' type='hidden' value='%s' />\r\n", BIT_XSRF_PARAM, token);
+    }
 }
 
 
@@ -978,7 +1065,7 @@ static cchar *map(HttpConn *conn, MprHash *options)
                 Support link template resolution for these options
              */
             if (smatch(kp->key, EDATA("click")) || smatch(kp->key, EDATA("remote")) || smatch(kp->key, EDATA("refresh"))) {
-                value = httpUri(conn, value, options);
+                value = httpUriEx(conn, value, options);
                 if ((params = httpGetOptionHash(options, "params")) != 0) {
                     pstr = (char*) "";
                     for (kp = 0; (kp = mprGetNextKey(params, kp)) != 0; ) {
@@ -1003,10 +1090,11 @@ static cchar *map(HttpConn *conn, MprHash *options)
 }
 
 
-PUBLIC void espInitHtmlOptions2(Esp *esp)
+PUBLIC void espInitHtmlOptions(Esp *esp)
 {
     char   **op;
 
+    esp->internalOptions = mprCreateHash(-1, MPR_HASH_STATIC_VALUES);
     for (op = internalOptions; *op; op++) {
         mprAddKey(esp->internalOptions, *op, op);
     }

@@ -11,160 +11,13 @@
 
 #if BIT_PACK_ESP
 
-#define EDATA(s)        "data-esp-" s           /* Prefix for data attributes */
-#define ESTYLE(s)       "esp-" s                /* Prefix for ESP styles */
-
 /************************************* Local **********************************/
 
-//  FUTURE - review
-static char *internalOptions[] = {
-    "action",                       /* Service/Action to invoke */
-    "cell",                         /* table(): If set, table clicks apply to the cell and not to the row */
-    "click",                        /* general: URI to invoke if the control is clicked */
-    "columns",                      /* table(): Column options */
-    "controller",                   /* general: Service to use for click events */
-    "escape",                       /* general: Html escape the data */
-    "feedback",                     /* general: User feedback overlay after a clickable event */
-    "field",
-    "formatter",                    /* general: Printf style format string to apply to data */
-    "header",                       /* table(): Column options header */
-    "hidden",                       /* text(): Field should be hidden */
-    "hideErrors",                   /* form(): Hide record validation errors */
-    "insecure",                     /* form(): Don't generate a CSRF security token */
-    "key",                          /* general: key property/value data to provide for clickable events */
-    "keyFormat",                    /* General: How keys are handled for click events: "params" | "path" | "query" */
-    "kind",
-    "minified",                     /* script(): Use minified script variants */
-    "name",                         /* table(): Column options name */
-    "params",                       /* general: Parms to pass on click events */
-    "pass",
-    "password",                     /* text(): Text input is a password */
-    "pivot",                        /* table(): Pivot the table data */
-    "remote",                       /* general: Set to true to make click event operate in the background */
-    "retain",
-    "securityToken",                /* form(): Name of security token to use */
-    "showHeader",                   /* table(): Show table column names header  */
-    "showId",                       /* table(): Show the ID column */
-    "sort",                         /* table(): Column to sort rows by */
-    "sortOrder",                    /* table(): Row sort order */
-    "styleCells",                   /* table(): Styles to use for table cells */
-    "styleColumns",                 /* table(): Styles to use for table columns */
-    "styleRows",                    /* table(): Styles to use for table rows */
-    "title",                        /* table(): Table title to display */
-    "toggle",                       /* tabs(): Toggle tabbed panes */
-    "value",                        /* general: Value to use instead of record-bound data */
-    0
-};
-
-static void emitFormErrors(HttpConn *conn, EdiRec *record, MprHash *options);
+static cchar *getValue(HttpConn *conn, cchar *fieldName, MprHash *options);
 static cchar *map(HttpConn *conn, MprHash *options);
 
 /************************************* Code ***********************************/
 
-PUBLIC void endForm() 
-{
-    renderString("</form>");
-}
-
-
-/*
-    recid
-    method
-    action
-    remote
-    insecure
-    securityToken
-    hideErrors
-    params
- */
-PUBLIC void form(EdiRec *record, cchar *optionString)
-{
-    HttpConn    *conn;
-    EspReq      *req;
-    MprHash     *options;
-    cchar       *action, *recid, *method, *uri, *token;
-   
-    conn = getConn();
-    if (record == 0) {
-        record = getRec();
-    }
-    req = conn->data;
-    options = httpGetOptions(optionString);
-    recid = 0;
-
-    /*
-        If record provided, get the record id. Can be overridden using options.recid
-     */
-    if (record) {
-        conn->record = record;
-        if (record->id && !httpGetOption(options, "recid", 0)) {
-            httpAddOption(options, "recid", record->id);
-        }
-        recid = httpGetOption(options, "recid", 0);
-        emitFormErrors(conn, record, options);
-    }
-    if ((method = httpGetOption(options, "method", 0)) == 0) {
-        method = (recid) ? "PUT" : "POST";
-    }
-    if (!scaselessmatch(method, "GET") && !scaselessmatch(method, "POST")) {
-        /* All methods use POST and tunnel method in data-method */
-        httpAddOption(options, EDATA("method"), method);
-        method = "POST";
-    }
-    if ((action = httpGetOption(options, "action", 0)) == 0) {
-        action = (recid) ? "@update" : "@create";
-    }
-    uri = httpUri(conn, action, NULL);
-    if (smatch(httpGetOption(options, "remote", 0), "true")) {
-        espRender(conn, "<form method='%s' " EDATA("remote") "='%s'%s >\r\n", method, uri, map(conn, options));
-    } else {
-        espRender(conn, "<form method='%s' action='%s'%s >\r\n", method, uri, map(conn, options));
-    }
-    if (recid) {
-        espRender(conn, "    <input name='recid' type='hidden' value='%s' />\r\n", recid);
-    }
-    if (!httpGetOption(options, "insecure", 0)) {
-        if ((token = httpGetOption(options, "securityToken", 0)) == 0) {
-            token = espGetSecurityToken(conn);
-        }
-        espRender(conn, "    <input name='%s' type='hidden' value='%s' />\r\n", ESP_SECURITY_TOKEN_NAME, token);
-    }
-}
-
-
-static cchar *getValue(HttpConn *conn, cchar *fieldName, MprHash *options)
-{
-    EspReq      *req;
-    EdiRec      *record;
-    MprKey      *field;
-    cchar       *value, *msg;
-
-    req = conn->data;
-    record = conn->record;
-    value = 0;
-    if (record) {
-        value = ediGetFieldValue(record, fieldName);
-        if (record->errors) {
-            for (ITERATE_KEY_DATA(record->errors, field, msg)) {
-                if (smatch(field->key, fieldName)) {
-                    httpInsertOption(options, "class", ESTYLE("field-error"));
-                }
-            }
-        }
-    }
-    if (value == 0) {
-        value = httpGetOption(options, "value", 0);
-    }
-    if (httpGetOption(options, "escape", 0)) {                                                                                                                 
-        value = mprEscapeHtml(value);                                                                                                                          
-    }                                                                                                                                                          
-    return value;                                                                                                                                              
-}
-
-
-/*
-    rows
- */
 PUBLIC void input(cchar *field, cchar *optionString)
 {
     HttpConn    *conn;
@@ -172,7 +25,7 @@ PUBLIC void input(cchar *field, cchar *optionString)
     MprKey      *kp;
     EspReq      *req;
     EdiRec      *rec;
-    cchar       *rows, *cols, *etype, *value, *checked, *style;
+    cchar       *rows, *cols, *etype, *value, *checked, *style, *error, *errorMsg;
     int         type, flags;
 
     conn = getConn();
@@ -183,6 +36,8 @@ PUBLIC void input(cchar *field, cchar *optionString)
     }
     options = httpGetOptions(optionString);
     style = httpGetOption(options, "class", "");
+    errorMsg = rec->errors ? mprLookupKey(rec->errors, field) : 0;
+    error = errorMsg ? sfmt("<span class=\"input-group-addon\">%s</span>", errorMsg) : ""; 
 
     switch (type) {
     case EDI_TYPE_BOOL:
@@ -200,10 +55,11 @@ PUBLIC void input(cchar *field, cchar *optionString)
         httpError(conn, 0, "espInput: unknown field type %d", type);
         /* Fall through */
     case EDI_TYPE_FLOAT:
+    case EDI_TYPE_TEXT:
+
     case EDI_TYPE_INT:
     case EDI_TYPE_DATE:
-    case EDI_TYPE_STRING:
-    case EDI_TYPE_TEXT:
+    case EDI_TYPE_STRING:        
         if (type == EDI_TYPE_TEXT && !httpGetOption(options, "rows", 0)) {
             httpSetOption(options, "rows", "10");
         }
@@ -225,105 +81,80 @@ PUBLIC void input(cchar *field, cchar *optionString)
             espRender(conn, "<input name='%s' type='%s' value='%s'%s class='%s'/>", field, etype, value, 
                 map(conn, options), style);
         }
+        if (error) {
+            espRenderString(conn, error);
+        }
         break;
     }
 }
 
+
+PUBLIC void renderSecurityToken()
+{
+    HttpConn    *conn;
+
+    conn = getConn();
+    espRender(conn, "    <input name='%s' type='hidden' value='%s' />\r\n", BIT_XSRF_PARAM, httpGetSecurityToken(conn));
+}
+
+
 /**************************************** Support *************************************/ 
 
-//  FUTURE - update to be like has-errors
-
-static void emitFormErrors(HttpConn *conn, EdiRec *rec, MprHash *options)
+static cchar *getValue(HttpConn *conn, cchar *fieldName, MprHash *options)
 {
-    MprHash         *errors;
-    MprKey          *field;
-    char            *msg;
-    int             count;
-   
-    if (!rec->errors || httpGetOption(options, "hideErrors", 0)) {
-        return;
-    }
-    errors = ediGetRecErrors(rec);
-    if (errors) {
-        count = mprGetHashLength(errors);
-        espRender(conn, "<div class='" ESTYLE("form-error") "'><h2>The %s has %s it being saved.</h2>\r\n",
-            spascal(rec->tableName), count <= 1 ? "an error that prevents" : "errors that prevent");
-        espRender(conn, "    <p>There were problems with the following fields:</p>\r\n");
-        espRender(conn, "    <ul>\r\n");
-        for (ITERATE_KEY_DATA(errors, field, msg)) {
-            espRender(conn, "        <li>%s %s</li>\r\n", field->key, msg);
+    EdiRec      *record;
+    cchar       *value;
+
+    record = conn->record;
+    value = 0;
+    if (record) {
+        value = ediGetFieldValue(record, fieldName);
+#if BIT_ESP_LEGACY
+        if (record->errors) {
+            MprKey  *field;
+            cchar   *msg;
+            #define ESTYLE(s) "esp-" s 
+            for (ITERATE_KEY_DATA(record->errors, field, msg)) {
+                if (smatch(field->key, fieldName)) {
+                    httpInsertOption(options, "class", ESTYLE("field-error"));
+                }
+            }
         }
-        espRender(conn, "    </ul>\r\n");
-        espRender(conn, "</div>");
+#endif
     }
+    if (value == 0) {
+        value = httpGetOption(options, "value", 0);
+    }
+    if (httpGetOption(options, "escape", 0)) {
+        value = mprEscapeHtml(value);
+    }
+    return value;
 }
 
 
 /*
-    Map options to an attribute string. Remove all internal control specific options and transparently handle URI link options.
-    WARNING: this returns a non-cloned reference and relies on no GC yield until the returned value is used or cloned.
-    This is done as an optimization to reduce memeory allocations.
+    Map options to an attribute string.
  */
 static cchar *map(HttpConn *conn, MprHash *options)
 {
-    Esp         *esp;
-    EspReq      *req;
-    MprHash     *params;
     MprKey      *kp;
     MprBuf      *buf;
-    cchar       *value;
-    char        *pstr;
 
     if (options == 0 || mprGetHashLength(options) == 0) {
         return MPR->emptyString;
     }
-    req = conn->data;
-    //  FUTURE - remove refresh
-    if (httpGetOption(options, EDATA("refresh"), 0) && !httpGetOption(options, "id", 0)) {
-        httpAddOption(options, "id", sfmt("id_%d", req->lastDomID++));
-    }
-    esp = MPR->espService;
     buf = mprCreateBuf(-1, -1);
     for (kp = 0; (kp = mprGetNextKey(options, kp)) != 0; ) {
-        if (kp->type != MPR_JSON_OBJ && kp->type != MPR_JSON_ARRAY && !mprLookupKey(esp->internalOptions, kp->key)) {
+        if (kp->type != MPR_JSON_OBJ && kp->type != MPR_JSON_ARRAY) {
             mprPutCharToBuf(buf, ' ');
-            value = kp->data;
-            /*
-                Support link template resolution for these options
-             */
-            if (smatch(kp->key, EDATA("click")) || smatch(kp->key, EDATA("remote")) || smatch(kp->key, EDATA("refresh"))) {
-                value = httpUri(conn, value, options);
-                if ((params = httpGetOptionHash(options, "params")) != 0) {
-                    pstr = (char*) "";
-                    for (kp = 0; (kp = mprGetNextKey(params, kp)) != 0; ) {
-                        pstr = sjoin(pstr, mprUriEncode(kp->key, MPR_ENCODE_URI_COMPONENT), "=", 
-                            mprUriEncode(kp->data, MPR_ENCODE_URI_COMPONENT), "&", NULL);
-                    }
-                    if (pstr[0]) {
-                        /* Trim last "&" */
-                        pstr[strlen(pstr) - 1] = '\0';
-                    }
-                    mprPutToBuf(buf, "%s-params='%s", params);
-                }
-            }
             mprPutStringToBuf(buf, kp->key);
             mprPutStringToBuf(buf, "='");
-            mprPutStringToBuf(buf, value);
+            mprPutStringToBuf(buf, kp->data);
             mprPutCharToBuf(buf, '\'');
         }
     }
     mprAddNullToBuf(buf);
     return mprGetBufStart(buf);
-}
-
-
-PUBLIC void espInitHtmlOptions(Esp *esp)
-{
-    char   **op;
-
-    for (op = internalOptions; *op; op++) {
-        mprAddKey(esp->internalOptions, *op, op);
-    }
 }
 
 #endif /* BIT_PACK_ESP */

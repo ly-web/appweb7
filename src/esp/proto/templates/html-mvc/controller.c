@@ -8,10 +8,10 @@
  */ 
 static void create${TITLE}() { 
     if (updateRec(createRec("${NAME}", params()))) {
-        feedback("inform", "New ${NAME} created");
-        renderView("${NAME}-list");
+        flash("inform", "New ${NAME} created");
+        renderView("${NAME}/list");
     } else {
-        renderView("${NAME}-edit");
+        renderView("${NAME}/edit");
     }
 }
 
@@ -27,7 +27,7 @@ static void edit${TITLE}() {
  */ 
 static void get${TITLE}() { 
     readRec("${NAME}", param("id"));
-    renderView("${NAME}-edit");
+    renderView("${NAME}/edit");
 }
 
 /*
@@ -35,14 +35,14 @@ static void get${TITLE}() {
  */
 static void init${TITLE}() { 
     createRec("${NAME}", 0);
-    renderView("${NAME}-edit");
+    renderView("${NAME}/edit");
 }
 
 /*
     List the resources in this group
  */ 
 static void list${TITLE}() { 
-    renderView("${NAME}-list");
+    renderView("${NAME}/list");
 }
 
 /*
@@ -50,28 +50,37 @@ static void list${TITLE}() {
  */
 static void remove${TITLE}() { 
     if (removeRec("${NAME}", param("id"))) {
-        feedback("inform", "${TITLE} removed");
+        flash("inform", "${TITLE} removed");
     }
-    renderView("${NAME}-list");
+    redirect("list");
 }
 
 /*
     Update an existing resource in the database
     If "id" is not defined, this is the same as a create
+    Also we tunnel delete here if the user clicked delete
  */
 static void update${TITLE}() { 
-    if (updateFields("${NAME}", params())) {
-        feedback("inform", "${TITLE} updated successfully.");
-        renderView("${NAME}-list");
+    if (smatch(param("submit"), "Delete")) {
+        removePost();
     } else {
-        renderView("${NAME}-edit");
+        if (updateFields("${NAME}", params())) {
+            flash("inform", "${TITLE} updated successfully.");
+            redirect("list");
+        } else {
+            renderView("${NAME}/edit");
+        }
     }
+}
+
+static void common(HttpConn *conn) {
 }
 
 /*
     Dynamic module initialization
  */
 ESP_EXPORT int esp_controller_${APP}_${NAME}(HttpRoute *route, MprModule *module) {
+    espDefineBase(route, common);
     espDefineAction(route, "${NAME}-create", create${TITLE});
     espDefineAction(route, "${NAME}-remove", remove${TITLE});
     espDefineAction(route, "${NAME}-edit", edit${TITLE});
@@ -79,5 +88,12 @@ ESP_EXPORT int esp_controller_${APP}_${NAME}(HttpRoute *route, MprModule *module
     espDefineAction(route, "${NAME}-init", init${TITLE});
     espDefineAction(route, "${NAME}-list", list${TITLE});
     espDefineAction(route, "${NAME}-update", update${TITLE});
-${DEFINE_ACTIONS}    return 0;
+${DEFINE_ACTIONS}    
+#if SAMPLE_VALIDATIONS
+    Edi *edi = espGetRouteDatabase(route);
+    ediAddValidation(edi, "present", "${NAME}", "title", 0);
+    ediAddValidation(edi, "unique", "${NAME}", "title", 0);
+    ediAddValidation(edi, "format", "${NAME}", "message", "(dog|cat)");
+#endif
+    return 0;
 }

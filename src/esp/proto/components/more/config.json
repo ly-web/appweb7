@@ -3,7 +3,7 @@
     description: "Collection of CSS polyfills for emerging HTML5 elements",
     settings: {
         components: {
-            more: {scripts: ['*']},
+            more: {},
         },
     },
 }

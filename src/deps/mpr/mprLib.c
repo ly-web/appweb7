@@ -1458,6 +1458,9 @@ PUBLIC int mprCreateEventOutside(MprDispatcher *dispatcher, void *proc, void *da
     while (heap->mustYield) {
         mprNap(0);
     }
+    if (MPR->state >= MPR_STOPPING) {
+        return MPR_ERR_CANT_CREATE;
+    }
     event = mprCreateEvent(dispatcher, "relay", 0, proc, data, MPR_EVENT_STATIC_DATA);
     mprAtomicAdd((int*) &heap->pauseGC, -1);
     if (!event) {
@@ -12139,12 +12142,17 @@ static int gettok(MprJsonParser *parser)
             case '\'':
                 if (parser->state == MPR_JSON_STATE_NAME || parser->state == MPR_JSON_STATE_VALUE) {
                     for (cp = parser->input; *cp; cp++) {
-                        if (*cp == c && (cp == parser->input || *cp != '\\')) {
-                            mprPutBlockToBuf(parser->buf, parser->input, cp - parser->input);
-                            parser->tokid = JTOK_STRING;
-                            parser->input = cp + 1;
-                            break;
+                        if (*cp == '\\') {
+                            cp++;
                         }
+                        if (*cp == c) {
+                            if (cp == parser->input || cp[-1] != '\\') {
+                                parser->tokid = JTOK_STRING;
+                                parser->input = cp + 1;
+                                break;
+                            }
+                        }
+                        mprPutCharToBuf(parser->buf, *cp);
                     }
                     if (*cp != c) {
                         mprSetJsonError(parser, "Missing closing quote");
@@ -12309,7 +12317,7 @@ static void formatValue(MprBuf *buf, MprJson *obj, int flags)
     }
     mprPutCharToBuf(buf, '"');
     for (cp = obj->value; *cp; cp++) {
-        if (*cp == '\'') {
+        if (*cp == '\"') {
             mprPutCharToBuf(buf, '\\');
         }
         mprPutCharToBuf(buf, *cp);
@@ -13003,9 +13011,7 @@ PUBLIC MprHash *mprDeserializeInto(cchar *str, MprHash *hash)
 
     obj = mprParseJson(str);
     for (ITERATE_JSON(obj, child, index)) {
-        if (child->type & MPR_JSON_VALUE) {
-            mprAddKey(hash, child->name, child->value);
-        }
+        mprAddKey(hash, child->name, child->value);
     }
     return hash;
 }
@@ -14319,7 +14325,7 @@ PUBLIC MprMutex *mprCreateLock()
 #elif WINCE
     InitializeCriticalSection(&lock->cs);
 #elif BIT_WIN_LIKE
-    InitializeCriticalSectionAndSpinCount(&lock->cs, 5000);
+    InitializeCriticalSectionAndSpinCount(&lock->cs, BIT_MPR_SPIN_COUNT);
 #elif VXWORKS
     /* Removed SEM_INVERSION_SAFE */
     lock->cs = semMCreate(SEM_Q_PRIORITY | SEM_DELETE_SAFE);
@@ -14339,8 +14345,8 @@ static void manageLock(MprMutex *lock, int flags)
 #if BIT_UNIX_LIKE
         pthread_mutex_destroy(&lock->cs);
 #elif BIT_WIN_LIKE
+        lock->freed = 1;
         DeleteCriticalSection(&lock->cs);
-        lock->cs.SpinCount = 0;
 #elif VXWORKS
         semDelete(lock->cs);
 #endif
@@ -14361,10 +14367,9 @@ PUBLIC MprMutex *mprInitLock(MprMutex *lock)
     InitializeCriticalSection(&lock->cs);
 
 #elif BIT_WIN_LIKE
-    InitializeCriticalSectionAndSpinCount(&lock->cs, 5000);
+    InitializeCriticalSectionAndSpinCount(&lock->cs, BIT_MPR_SPIN_COUNT);
 
 #elif VXWORKS
-    /* Removed SEM_INVERSION_SAFE */
     lock->cs = semMCreate(SEM_Q_PRIORITY | SEM_DELETE_SAFE);
     if (lock->cs == 0) {
         assert(0);
@@ -14387,8 +14392,7 @@ PUBLIC bool mprTryLock(MprMutex *lock)
 #if BIT_UNIX_LIKE
     rc = pthread_mutex_trylock(&lock->cs) != 0;
 #elif BIT_WIN_LIKE
-    /* Rely on SpinCount being non-zero */
-    if (lock->cs.SpinCount) {
+    if (!lock->freed) {
         rc = TryEnterCriticalSection(&lock->cs) == 0;
     } else {
         rc = 0;
@@ -14425,8 +14429,8 @@ PUBLIC void mprManageSpinLock(MprSpin *lock, int flags)
 #elif BIT_UNIX_LIKE
         pthread_mutex_destroy(&lock->cs);
 #elif BIT_WIN_LIKE
+        lock->freed = 1;
         DeleteCriticalSection(&lock->cs);
-        lock->cs.SpinCount = 0;
 #elif VXWORKS
         semDelete(lock->cs);
 #endif
@@ -14457,7 +14461,7 @@ PUBLIC MprSpin *mprInitSpinLock(MprSpin *lock)
 #elif WINCE
     InitializeCriticalSection(&lock->cs);
 #elif BIT_WIN_LIKE
-    InitializeCriticalSectionAndSpinCount(&lock->cs, 5000);
+    InitializeCriticalSectionAndSpinCount(&lock->cs, BIT_MPR_SPIN_COUNT);
 #elif VXWORKS
     #if KEEP
         spinLockTaskInit(&lock->cs, 0);
@@ -14495,8 +14499,7 @@ PUBLIC bool mprTrySpinLock(MprSpin *lock)
 #elif BIT_UNIX_LIKE
     rc = pthread_mutex_trylock(&lock->cs) != 0;
 #elif BIT_WIN_LIKE
-    /* Rely on SpinCount being non-zero */
-    if (lock->cs.SpinCount) {
+    if (!lock->freed) {
         rc = TryEnterCriticalSection(&lock->cs) == 0;
     } else {
         rc = 0;
@@ -14552,8 +14555,7 @@ PUBLIC void mprLock(MprMutex *lock)
 #if BIT_UNIX_LIKE
     pthread_mutex_lock(&lock->cs);
 #elif BIT_WIN_LIKE
-    /* Rely on SpinCount being non-zero */
-    if (lock->cs.SpinCount) {
+    if (!lock->freed) {
         EnterCriticalSection(&lock->cs);
     }
 #elif VXWORKS
@@ -14605,7 +14607,7 @@ PUBLIC void mprSpinLock(MprSpin *lock)
 #elif BIT_UNIX_LIKE
     pthread_mutex_lock(&lock->cs);
 #elif BIT_WIN_LIKE
-    if (lock->cs.SpinCount) {
+    if (!lock->freed) {
         EnterCriticalSection(&lock->cs);
     }
 #elif VXWORKS
@@ -20939,7 +20941,7 @@ PUBLIC MprWaitHandler *mprAddSocketHandler(MprSocket *sp, int mask, MprDispatche
 
 PUBLIC void mprRemoveSocketHandler(MprSocket *sp)
 {
-    if (sp->handler) {
+    if (sp && sp->handler) {
         mprRemoveWaitHandler(sp->handler);
         sp->handler = 0;
     }
@@ -20948,7 +20950,7 @@ PUBLIC void mprRemoveSocketHandler(MprSocket *sp)
 
 PUBLIC void mprSetSocketDispatcher(MprSocket *sp, MprDispatcher *dispatcher)
 {
-    if (sp->handler) {
+    if (sp && sp->handler) {
         sp->handler->dispatcher = dispatcher;
     }
 }
@@ -23173,6 +23175,15 @@ PUBLIC int64 stoi(cchar *str)
 }
 
 
+PUBLIC double stof(cchar *str)
+{
+    if (str == 0 || *str == 0) {
+        return 0.0;
+    }
+    return atof(str);
+}
+
+
 /*
     Parse a number and check for parse errors. Supports radix 8, 10 or 16. 
     If radix is <= 0, then the radix is sleuthed from the input.
@@ -23180,7 +23191,6 @@ PUBLIC int64 stoi(cchar *str)
         [(+|-)][0][OCTAL_DIGITS]
         [(+|-)][0][(x|X)][HEX_DIGITS]
         [(+|-)][DIGITS]
-
  */
 PUBLIC int64 stoiradix(cchar *str, int radix, int *err)
 {

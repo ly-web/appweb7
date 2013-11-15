@@ -115,8 +115,6 @@ static void setupFlash(HttpConn *conn)
         if (req->flash) {
             httpRemoveSessionVar(conn, ESP_FLASH_VAR);
             req->lastFlash = mprCloneHash(req->flash);
-        } else {
-            req->flash = 0;
         }
     }
 }
@@ -170,11 +168,11 @@ static void startEsp(HttpQueue *q)
 
     if (req) {
         mprSetThreadData(req->esp->local, conn);
+        httpAuthenticate(conn);
         setupFlash(conn);
         if (!runAction(conn)) {
             pruneFlash(conn);
         } else {
-            pruneFlash(conn);
             if (req->autoFinalize) {
                 if (!conn->tx->responded) {
                     espRenderView(conn, 0);
@@ -183,6 +181,7 @@ static void startEsp(HttpQueue *q)
                     espFinalize(conn);
                 }
             }
+            pruneFlash(conn);
         }
         finalizeFlash(conn);
         mprSetThreadData(req->esp->local, NULL);
@@ -366,14 +365,13 @@ static int runAction(HttpConn *conn)
             }
         }
     }
-    if (rx->flags & HTTP_POST && rx->authenticated && (route->flags & HTTP_ROUTE_XSRF)) {
+    if (rx->flags & HTTP_POST && route->flags & HTTP_ROUTE_XSRF) {
         if (!httpCheckSecurityToken(conn)) {
             httpCreateSecurityToken(conn);
-            httpRenderSecurityToken(conn);
+            httpSetSecurityToken(conn);
             httpSetStatus(conn, HTTP_CODE_UNAUTHORIZED);
             if (eroute->json) {
-                espRenderString(conn, 
-                    "{\"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
+                espRenderString(conn, "{\"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
                 espFinalize(conn);
             } else {
                 httpError(conn, HTTP_CODE_UNAUTHORIZED, "Security token is stale. Please retry.");
@@ -381,7 +379,6 @@ static int runAction(HttpConn *conn)
             return 0;
         }
     }
-
     if (action) {
         controllerName = stok(sclone(rx->target), "-", &actionName);
         httpSetParam(conn, "controller", controllerName);
@@ -517,6 +514,9 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         return;
     }
     httpAddHeaderString(conn, "Content-Type", "text/html");
+    if (rx->route->flags & HTTP_ROUTE_XSRF) {
+        httpSetSecurityToken(conn);
+    }
     (view)(conn);
 }
 
@@ -647,7 +647,6 @@ static EspRoute *allocEspRoute(HttpRoute *route)
     eroute->keepSource = BIT_DEBUG;
     eroute->lifespan = 0;
     route->eroute = eroute;
-    route->flags |= HTTP_ROUTE_XSRF;
     return eroute;
 }
 
@@ -709,11 +708,16 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     eroute->controllersDir = mprJoinPath(dir, "controllers");
     eroute->srcDir      = mprJoinPath(dir, "src");
     eroute->appDir      = mprJoinPath(dir, "client/app");
-    //  DEPRECATED
+#if BIT_ESP_LEGACY
+    if (!eroute->legacy && !mprPathExists(mprJoinPath(route->documents, "config.json"), R_OK)) {
+        eroute->legacy = 1;
+    }
     if (eroute->legacy) {
         eroute->layoutsDir  = mprJoinPath(dir, "layouts");
         eroute->viewsDir    = mprJoinPath(dir, "views");
-    } else {
+    } else 
+#endif
+    {
         eroute->layoutsDir  = mprJoinPath(eroute->appDir, "layouts");
         eroute->viewsDir    = eroute->appDir;
     }
@@ -741,9 +745,6 @@ static void manageReq(EspReq *req, int flags)
         mprMark(req->flash);
         mprMark(req->feedback);
         mprMark(req->module);
-#if UNUSED
-        mprMark(req->record);
-#endif
         mprMark(req->route);
         mprMark(req->source);
         mprMark(req->view);
@@ -763,8 +764,7 @@ static void manageEsp(Esp *esp, int flags)
         mprMark(esp->databases);
         mprMark(esp->databasesTimer);
         mprMark(esp->ediService);
-        //FUTURE
-#if (BIT_ESP_LEGACY || DEPRECATE) || 1
+#if BIT_ESP_LEGACY
         mprMark(esp->internalOptions);
 #endif
         mprMark(esp->local);
@@ -799,7 +799,7 @@ static EspRoute *getEroute(HttpRoute *route)
 }
 
 
-#if DEPRECATED || 1
+#if BIT_ESP_LEGACY
 /*
     Deprecated in 4.4
  */
@@ -863,40 +863,6 @@ PUBLIC void httpAddLegacyResource(HttpRoute *parent, cchar *prefix, cchar *resou
 #endif
 
 
-#if UNUSED
-static void configAction(HttpConn *conn)
-{
-    EspRoute    *eroute;
-    MprJson     *settings;
-
-    eroute = conn->rx->route->eroute;
-    settings = mprLookupJson(eroute->config, "settings");
-    httpSetContentType(conn, "application/json");
-    if (settings) {
-        renderString(mprJsonToString(settings, MPR_JSON_QUOTES));
-    } else {
-        renderError(HTTP_CODE_NOT_FOUND, "Cannot find config.settings to send to client");
-    }
-    finalize();
-}
-
-
-PUBLIC void espAddEspRoute(HttpRoute *parent)
-{
-    HttpRoute   *route;
-    EspRoute    *eroute;
-    char        *prefix;
-
-    prefix = parent->prefix ? parent->prefix : "";
-    if ((route = httpDefineRoute(parent, sfmt("%s/esp", prefix), "GET", sfmt("^%s/esp/{action}$", prefix), "esp-$1", ".")) != 0) {
-        eroute = cloneEspRoute(route, parent->eroute);
-        eroute->update = 0;
-        espDefineAction(route, "esp-config", configAction);
-    }
-}
-#endif
-
-
 PUBLIC void espAddHomeRoute(HttpRoute *parent)
 {
     cchar   *source, *name, *path, *pattern, *prefix;
@@ -930,7 +896,7 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
         eroute->viewsDir = eroute->appDir;
         eroute->layoutsDir = mprJoinPath(eroute->clientDir, "layouts");
 
-#if DEPRECATE || 1
+#if BIT_ESP_LEGACY
     /*
         Deprecated in 4.4
      */
@@ -955,8 +921,8 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
 
     } else if (!scaselessmatch(set, "none")) {
         mprError("Unknown route set %s", set);
-    }
 #endif
+    }
 }
 
 /*********************************** Directives *******************************/
@@ -1040,7 +1006,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     }
     state->route = route;
     httpSetRouteDocuments(route, dir);
-    
+
     if ((eroute = getEroute(route)) == 0) {
         return MPR_ERR_MEMORY;
     }
@@ -1073,7 +1039,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     }
     espSetConfig(route, "settings.appPrefix", prefix);
     espSetConfig(route, "settings.prefix", sjoin(prefix ? prefix : "", route->serverPrefix, NULL));
-#if DEPRECATE || 1
+#if BIT_ESP_LEGACY
     if (eroute->legacy) {
         if (!routeSet) {
             routeSet = "restful";
@@ -1092,9 +1058,12 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     httpSetRouteTarget(route, "run", "$&");
     httpAddRouteHandler(route, "espHandler", "");
     httpAddRouteHandler(route, "espHandler", "esp");
-    if (!eroute->legacy) {
+
+#if BIT_ESP_LEGACY
+    if (!eroute->legacy)
+#endif
         httpAddRouteIndex(route, "index.esp");
-    }
+
     if (database) {
         eroute->database = sclone(database);
         if (espDbDirective(state, key, eroute->database) < 0) {
@@ -1646,16 +1615,8 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     if (module) {
         mprSetModuleFinalizer(module, unloadEsp);
     }
-#if BIT_ESP_LEGACY || DEPRECATE || 1
-    /* Thread-safe */
-    if ((esp->internalOptions = mprCreateHash(-1, MPR_HASH_STATIC_VALUES)) == 0) {
-        return 0;
-    }
+#if BIT_ESP_LEGACY
     espInitHtmlOptions(esp);
-    //  FUTURE
-#if BIT_PACK_ESP && BIT_ESP_LEGACY
-    espInitHtmlOptions2(esp);
-#endif
 #endif
     /* Thread-safe */
     if ((esp->views = mprCreateHash(-1, MPR_HASH_STATIC_VALUES)) == 0) {
@@ -1664,7 +1625,6 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     if ((esp->actions = mprCreateHash(-1, MPR_HASH_STATIC_VALUES)) == 0) {
         return 0;
     }
-
     /*
         Add configuration file directives
      */

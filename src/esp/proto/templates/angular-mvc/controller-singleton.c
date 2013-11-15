@@ -7,28 +7,28 @@
     Create a new resource in the database
  */
 static void create${TITLE}() { 
-    renderResult(updateRec(createRec("${TABLE}", params())));
+    sendResult(updateRec(createRec("${TABLE}", params())));
 }
 
 /*
     Get a resource
  */
 static void get${TITLE}() { 
-    renderRec(readRec("${TABLE}", "1"));
+    sendRec(readRec("${TABLE}", "1"));
 }
 
 /*
     Initialize a new resource for the client to complete
  */
 static void init${TITLE}() { 
-    renderRec(createRec("${TABLE}", 0));
+    sendRec(createRec("${TABLE}", 0));
 }
 
 /*
     Remove a resource identified by the "id" parameter
  */
 static void remove${TITLE}() { 
-    renderResult(removeRec("${TABLE}", "1"));
+    sendResult(removeRec("${TABLE}", "1"));
 }
 
 /*
@@ -36,7 +36,7 @@ static void remove${TITLE}() {
     If "id" is not defined, this is the same as a create
  */
 static void update${TITLE}() { 
-    renderResult(updateRec(setFields(readRec("${TABLE}", "1"), params())));
+    sendResult(updateRec(setFields(readRec("${TABLE}", "1"), params())));
 }
 
 /*

@@ -407,8 +407,27 @@ PUBLIC int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int
  */
 PUBLIC cchar *ediGetRecSchemaAsJson(EdiRec *rec);
 
-//  MOB 
-PUBLIC EdiField *ediGetNextField(EdiRec *rec, EdiField *fp);
+/**
+    Get the next field in a record
+    This is used as an iterator. For the first call, set fp to NULL.
+    @param rec Record whose fields are iterated
+    @param fp Field pointer
+    @param offset Initial offset. Set to 1 to step over the ID field.
+    @return The next field object. Returns NULL after the last field.
+    @ingroup EdiRec
+    @stability Prototype
+ */
+PUBLIC EdiField *ediGetNextField(EdiRec *rec, EdiField *fp, int offset);
+
+/**
+    Get the next record in a grid
+    This is used as an iterator. For the first call, set rec to NULL.
+    @param grid Grid whose records are iterated
+    @param rec Record pointer
+    @return The next record object. Returns NULL after the last record.
+    @ingroup EdiGrid
+    @stability Prototype
+ */
 PUBLIC EdiRec *ediGetNextRec(EdiGrid *grid, EdiRec *rec);
 
 /**
@@ -511,7 +530,13 @@ PUBLIC EdiProvider *ediLookupProvider(cchar *providerName);
  */
 PUBLIC Edi *ediOpen(cchar *source, cchar *provider, int flags);
 
-//  MOB
+/**
+    Clone a database
+    @param edi Database to clone
+    @return A copy of the database
+    @ingroup Edi
+    @stability Internal
+ */
 PUBLIC Edi *ediClone(Edi *edi);
 
 /**
@@ -731,8 +756,22 @@ PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value);
  */
 PUBLIC EdiRec *ediSetFields(EdiRec *rec, MprJson *data);
 
-//MOB
+/**
+    Control whether the database accepts updates.
+    @param edi Database handle
+    @param on Set to true to make the database readonly, i.e. to disable all updates.
+    @ingroup Edi
+    @stability Prototype
+ */
 PUBLIC void ediSetReadonly(Edi *edi, bool on);
+
+/**
+    Create a private database for each client.
+    @param edi Database handle
+    @param on Set to true to clone the database for each connected client.
+    @ingroup Edi
+    @stability Internal
+ */
 PUBLIC void ediSetPrivate(Edi *edi, bool on);
 
 /**
@@ -798,8 +837,24 @@ PUBLIC EdiGrid *ediCreateBareGrid(Edi *edi, cchar *tableName, int nrows);
  */
 PUBLIC EdiRec *ediCreateBareRec(Edi *edi, cchar *tableName, int nfields);
 
-//  MOB DOC 
+/**
+    Filter the fields of a grid
+    @param grid Grid to modify and filter
+    @param fields Space separated list of record field names 
+    @return The filtered grid. Same reference as the input grid.
+    @ingroup EdiGrid
+    @stability Internal
+ */
 PUBLIC EdiGrid *ediFilterGridFields(EdiGrid *grid, cchar *fields);
+
+/**
+    Filter the fields of a record
+    @param rec Record to modify and filter
+    @param fields Space separated list of record field names 
+    @return The filtered record. Same reference as the input record.
+    @ingroup EdiRec
+    @stability Internal
+ */
 PUBLIC EdiRec *ediFilterRecFields(EdiRec *rec, cchar *fields);
 
 /**

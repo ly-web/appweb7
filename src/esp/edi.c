@@ -95,6 +95,7 @@ PUBLIC int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *colu
     cchar               *errMsg;
     int                 column;
 
+    //  FUTURE - should not be attached to "es". Should be unique per database.
     es = MPR->ediService;
     if ((vp = mprAllocObj(EdiValidation, manageValidation)) == 0) {
         return MPR_ERR_MEMORY;
@@ -220,13 +221,16 @@ PUBLIC int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int
 }
 
 
-PUBLIC EdiField *ediGetNextField(EdiRec *rec, EdiField *fp) 
+PUBLIC EdiField *ediGetNextField(EdiRec *rec, EdiField *fp, int offset)
 {
-    if (rec->nfields <= 0) {
+    if (rec == 0 || rec->nfields <= 0) {
         return 0;
     }
     if (fp == 0) {
-        fp = rec->fields;
+        if (offset >= rec->nfields) {
+            return 0;
+        }
+        fp = &rec->fields[offset];
     } else {
         if (++fp >= &rec->fields[rec->nfields]) {
             fp = 0;  
@@ -235,11 +239,12 @@ PUBLIC EdiField *ediGetNextField(EdiRec *rec, EdiField *fp)
     return fp;
 }
 
-PUBLIC EdiRec *ediGetNextRec(EdiGrid *grid, EdiRec *rec) 
+
+PUBLIC EdiRec *ediGetNextRec(EdiGrid *grid, EdiRec *rec)
 {
     int     index;
 
-    if (grid->nrecords <= 0) {
+    if (grid == 0 || grid->nrecords <= 0) {
         return 0;
     }
     if (rec == 0) {

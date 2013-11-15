@@ -6,29 +6,29 @@
 static void createPost() { 
     EdiRec *rec;
     rec = createRec("post", params());
-    renderResult(updateRec(rec));
+    sendResult(updateRec(rec));
 }
 
 static void getPost() { 
-    renderRec(readRec("post", param("id")));
+    sendRec(readRec("post", param("id")));
 }
 
 static void initPost() { 
-    renderRec(createRec("post", 0));
+    sendRec(createRec("post", 0));
 }
 
 static void listPost() {
-    renderGrid(readTable("post"));
+    sendGrid(readTable("post"));
 }
 
 static void removePost() { 
-    renderResult(removeRec("post", param("id")));
+    sendResult(removeRec("post", param("id")));
 }
 
 static void updatePost() { 
     EdiRec *rec;
     rec = setFields(readRec("post", param("id")), params());
-    renderResult(updateRec(rec));
+    sendResult(updateRec(rec));
 }
 
 ESP_EXPORT int esp_controller_angular_post(HttpRoute *route, MprModule *module) {
