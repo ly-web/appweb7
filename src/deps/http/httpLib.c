@@ -9768,7 +9768,7 @@ PUBLIC void httpMapFile(HttpConn *conn, HttpRoute *route)
     tx->filename = mprGetRelPath(tx->filename, NULL);
 #endif
 #if BIT_WIN_LIKE || BIT_EXTRA_SECURITY
-    if (!mprIsParentPathOf(route->documents, filename)) {
+    if (!mprIsParentPathOf(route->documents, tx->filename)) {
         httpError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Bad URL");
         return;
     }
