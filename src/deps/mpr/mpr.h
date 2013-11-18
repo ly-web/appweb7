@@ -3775,6 +3775,8 @@ PUBLIC void mprAssert(cchar *loc, cchar *msg);
  */
 PUBLIC void mprCreateLogService();
 
+PUBLIC int mprCreateCacheService();
+
 /**
     Backup a log
     @param path Base log filename
