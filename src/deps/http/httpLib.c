@@ -9767,6 +9767,12 @@ PUBLIC void httpMapFile(HttpConn *conn, HttpRoute *route)
 #if BIT_ROM
     tx->filename = mprGetRelPath(tx->filename, NULL);
 #endif
+#if BIT_WIN_LIKE || BIT_EXTRA_SECURITY
+    if (!mprIsParentPathOf(route->documents, filename)) {
+        httpError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Bad URL");
+        return;
+    }
+#endif
     /*
         Change the filename if using mapping. Typically used to prefer compressed or minified content.
      */
