@@ -408,6 +408,10 @@ PUBLIC void assert(bool cond);
  */
 typedef struct MprSynch { int dummy; } MprSynch;
 
+#ifndef BIT_MPR_SPIN_COUNT
+    #define BIT_MPR_SPIN_COUNT 5000 /* Windows lock spin count */
+#endif
+
 /**
     Condition variable for single and multi-thread synchronization. Condition variables can be used to coordinate 
     activities. These variables are level triggered in that a condition can be signalled prior to another thread 
@@ -504,6 +508,7 @@ PUBLIC int mprWaitForMultiCond(MprCond *cond, MprTicks timeout);
 typedef struct MprMutex {
     #if BIT_WIN_LIKE
         CRITICAL_SECTION cs;            /**< Internal mutex critical section */
+        bool             freed;
     #elif VXWORKS
         SEM_ID      cs;
     #elif BIT_UNIX_LIKE
@@ -526,6 +531,7 @@ typedef struct MprSpin {
         MprMutex                cs;
     #elif BIT_WIN_LIKE
         CRITICAL_SECTION        cs;            /**< Internal mutex critical section */
+        bool                    freed;
     #elif VXWORKS
         #if FUTURE && SPIN_LOCK_TASK_INIT
             spinlockTask_t      cs;
@@ -641,7 +647,7 @@ PUBLIC void mprManageSpinLock(MprSpin *lock, int flags);
         #define mprSpinLock(lock)   if (lock) pthread_mutex_lock(&((lock)->cs))
         #define mprSpinUnlock(lock) if (lock) pthread_mutex_unlock(&((lock)->cs))
     #elif BIT_WIN_LIKE
-        #define mprSpinLock(lock)   if (lock && (((MprSpin*)(lock))->cs.SpinCount)) EnterCriticalSection(&((lock)->cs))
+        #define mprSpinLock(lock)   if (lock && (!((MprSpin*)(lock))->freed)) EnterCriticalSection(&((lock)->cs))
         #define mprSpinUnlock(lock) if (lock) LeaveCriticalSection(&((lock)->cs))
     #elif VXWORKS
         #define mprSpinLock(lock)   if (lock) semTake((lock)->cs, WAIT_FOREVER)
@@ -655,7 +661,7 @@ PUBLIC void mprManageSpinLock(MprSpin *lock, int flags);
         #define mprLock(lock)       if (lock) pthread_mutex_lock(&((lock)->cs))
         #define mprUnlock(lock)     if (lock) pthread_mutex_unlock(&((lock)->cs))
     #elif BIT_WIN_LIKE
-        #define mprLock(lock)       if (lock && (((MprSpin*)(lock))->cs.SpinCount)) EnterCriticalSection(&((lock)->cs))
+        #define mprLock(lock)       if (lock && !(((MprSpin*)(lock))->freed)) EnterCriticalSection(&((lock)->cs))
         #define mprUnlock(lock)     if (lock) LeaveCriticalSection(&((lock)->cs))
     #elif VXWORKS
         #define mprLock(lock)       if (lock) semTake((lock)->cs, WAIT_FOREVER)
