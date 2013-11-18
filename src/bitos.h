@@ -292,7 +292,9 @@
     #define _GNU_SOURCE 1
     #if !BIT_64
         #define _LARGEFILE64_SOURCE 1
-        #define _FILE_OFFSET_BITS 64
+        #ifdef __USE_FILE_OFFSET64
+            #define _FILE_OFFSET_BITS 64
+        #endif
     #endif
 #endif
 
@@ -411,9 +413,14 @@
     #include    "sys/cygwin.h"
 #endif
 #if LINUX
-    #include    <sys/epoll.h>
+    #include <linux/version.h>
+    #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
+        #include    <sys/epoll.h>
+    #endif
     #include    <sys/prctl.h>
-    #include    <sys/eventfd.h>
+    #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22)
+        #include    <sys/eventfd.h>
+    #endif
     #if !__UCLIBC__
         #include    <sys/sendfile.h>
     #endif
