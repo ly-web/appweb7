@@ -213,7 +213,9 @@ Bit.load({
                     }
                 }
                 /* Main.min must be first */
-                list += ['client/app/main.min.js']
+                if (Path('client/app/main.js').exists) {
+                    list += ['client/app/main.min.js']
+                }
                 list += Path('client').files('app/**.min.js', {exclude: /main.min.js/})
                 let all = TARGET.path
                 for each (let f:Path in list) {

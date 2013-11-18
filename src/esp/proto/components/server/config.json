@@ -34,7 +34,7 @@
     settings: {
         loginRequired: "",
         refresh: 1000,
-        serverPrefix: "/server",
+        serverPrefix: "/do",
         sendJson: false,
         timeouts: {
             session: 1800,

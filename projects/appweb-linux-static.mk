@@ -1261,10 +1261,17 @@ $(CONFIG)/esp: $(DEPS_56)
 	cp src/esp/proto/components/html-mvc/client/css/theme.less $(CONFIG)/esp/components/html-mvc/client/css/theme.less
 	mkdir -p "$(CONFIG)/esp/components/html-mvc/client"
 	cp src/esp/proto/components/html-mvc/client/index.esp $(CONFIG)/esp/components/html-mvc/client/index.esp
+<<<<<<< HEAD
 	cp src/esp/proto/components/html-mvc/config.json $(CONFIG)/esp/components/html-mvc/config.json
 	cp src/esp/proto/components/html-mvc/hosted.conf $(CONFIG)/esp/components/html-mvc/hosted.conf
 	mkdir -p "$(CONFIG)/esp/components/html-mvc/layouts"
 	cp src/esp/proto/components/html-mvc/layouts/default.esp $(CONFIG)/esp/components/html-mvc/layouts/default.esp
+=======
+	mkdir -p "$(CONFIG)/esp/components/html-mvc/client/layouts"
+	cp src/esp/proto/components/html-mvc/client/layouts/default.esp $(CONFIG)/esp/components/html-mvc/client/layouts/default.esp
+	cp src/esp/proto/components/html-mvc/config.json $(CONFIG)/esp/components/html-mvc/config.json
+	cp src/esp/proto/components/html-mvc/hosted.conf $(CONFIG)/esp/components/html-mvc/hosted.conf
+>>>>>>> feature/html-mvc
 	cp src/esp/proto/components/html-mvc/start.bit $(CONFIG)/esp/components/html-mvc/start.bit
 	mkdir -p "$(CONFIG)/esp/components/html5shiv/client/lib/html5shiv"
 	cp src/esp/proto/components/html5shiv/client/lib/html5shiv/html5shiv.js $(CONFIG)/esp/components/html5shiv/client/lib/html5shiv/html5shiv.js
@@ -2462,10 +2469,17 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/proto/components/html-mvc/client/css/theme.less $(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/css/theme.less
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/html-mvc/client"
 	cp src/esp/proto/components/html-mvc/client/index.esp $(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/index.esp
+<<<<<<< HEAD
 	cp src/esp/proto/components/html-mvc/config.json $(BIT_VAPP_PREFIX)/esp/components/html-mvc/config.json
 	cp src/esp/proto/components/html-mvc/hosted.conf $(BIT_VAPP_PREFIX)/esp/components/html-mvc/hosted.conf
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/html-mvc/layouts"
 	cp src/esp/proto/components/html-mvc/layouts/default.esp $(BIT_VAPP_PREFIX)/esp/components/html-mvc/layouts/default.esp
+=======
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/layouts"
+	cp src/esp/proto/components/html-mvc/client/layouts/default.esp $(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/layouts/default.esp
+	cp src/esp/proto/components/html-mvc/config.json $(BIT_VAPP_PREFIX)/esp/components/html-mvc/config.json
+	cp src/esp/proto/components/html-mvc/hosted.conf $(BIT_VAPP_PREFIX)/esp/components/html-mvc/hosted.conf
+>>>>>>> feature/html-mvc
 	cp src/esp/proto/components/html-mvc/start.bit $(BIT_VAPP_PREFIX)/esp/components/html-mvc/start.bit
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/html5shiv/client/lib/html5shiv"
 	cp src/esp/proto/components/html5shiv/client/lib/html5shiv/html5shiv.js $(BIT_VAPP_PREFIX)/esp/components/html5shiv/client/lib/html5shiv/html5shiv.js

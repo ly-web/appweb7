@@ -53,7 +53,7 @@
     #define BIT_EJS_ONE_MODULE 1
 #endif
 #ifndef BIT_ESP_LEGACY
-    #define BIT_ESP_LEGACY 0
+    #define BIT_ESP_LEGACY 1
 #endif
 #ifndef BIT_EST_CAMELLIA
     #define BIT_EST_CAMELLIA 0

@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <% securityToken(); %>
     <% icon(0, 0); %>
     <% stylesheet(0, "{type: 'less'}"); %>
     <% script(0, "{minified: false, less: true}"); %>

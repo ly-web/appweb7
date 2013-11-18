@@ -21,10 +21,11 @@ extern "C" {
 
 /********************************** Tunables **********************************/
 /*
-    DEPRECATED in 4.4
+    DEPRECATED from 4.4, but still enabled
  */
 #ifndef BIT_ESP_LEGACY
-    #define BIT_ESP_LEGACY 1
+    /* Reverse this in 5.0 */
+    #define BIT_ESP_LEGACY 1                            /* Must be enabled while testing with legacy-mvc */
 #endif
 #ifndef BIT_ESP_SERVER_PREFIX
     #define BIT_ESP_SERVER_PREFIX "/server"             /**< URI prefix for server controllers */
@@ -62,13 +63,6 @@ typedef void (*EspProc)(HttpConn *conn);
     #define ESP_EXPORT
 #endif
 #define ESP_EXPORT_STRING MPR_STRINGIFY(ESP_EXPORT)
-
-#if DEPRECATE || 1
-/*
-    Deprecate in 4.4
- */
-#define ESP_SECURITY_TOKEN_NAME "__esp_security_token__"
-#endif
 
 #define ESP_FLASH_VAR           "__flash__"
 
@@ -152,9 +146,6 @@ PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *rout
  */
 PUBLIC void espInitHtmlOptions(Esp *esp);
 
-//  MOB
-PUBLIC void espInitHtmlOptions2(Esp *esp);
-
 /********************************** EspRoutes *********************************/
 /**
     EspRoute extended route configuration.
@@ -187,15 +178,12 @@ typedef struct EspRoute {
     cchar           *mode;                  /**< Application run mode (debug|release) */
 
     cchar           *database;              /**< Name of database for route */
-#if UNUSED
-    cchar           *serverPrefix;          /**< Route prefix for server side routes */
-#endif
     cchar           *routeSet;              /**< Route set to use */
     int             flat;                   /**< Compile the application flat */
     int             keepSource;             /**< Preserve generated source */
     int             update;                 /**< Auto-update modified ESP source */
     int             json;                   /**< Emit json responses */
-#if DEPRECATE || 1
+#if BIT_ESP_LEGACY
     int             legacy;                 /**< Legacy MVC app */
 #endif
     MprTicks        lifespan;               /**< Default cache lifespan */
@@ -213,17 +201,6 @@ typedef struct EspRoute {
  */
 PUBLIC void espAddComponent(HttpRoute *route, cchar *name, MprJson *details);
 
-#if UNUSED
-/**
-    Add a route for the ESP controller
-    @description This is an ESP control route for framework specific actions.
-    @param parent Route from which to inherit settings
-    @ingroup EspRoute
-    @stability Prototype
- */
-PUBLIC void espAddEspRoute(HttpRoute *parent);
-#endif
-
 /**
     Add a route for the home page.
     @description This will add a home page to route ESP applications. This will add the following route:
@@ -231,11 +208,11 @@ PUBLIC void espAddEspRoute(HttpRoute *parent);
         <tr><td>Name</td><td>Method</td><td>Pattern</td><td>Target</td></tr>
         <tr><td>home</td><td>GET,POST,PUT</td><td>^/$</td><td>index.esp</td></tr>
     </table>
-    @param parent Parent route from which to inherit configuration.
+    @param route Parent route from which to inherit configuration.
     @ingroup EspRoute
     @stability Prototype
  */
-PUBLIC void espAddHomeRoute(HttpRoute *parent);
+PUBLIC void espAddHomeRoute(HttpRoute *route);
 
 /**
     Add a route set package
@@ -245,12 +222,7 @@ PUBLIC void espAddHomeRoute(HttpRoute *parent);
         <tr><td>home</td><td>GET,POST,PUT</td><td>^/$</td><td>index.esp</td></tr>
     </table>
     @param route Parent route from which to inherit configuration.
-    @param set Route set to select. Use "simple", or "restful".  
-        \n\n
-        The "simple" pack will invoke
-        #httpAddHomeRoute and #httpAddStaticRoute to add the "home" routes.  
-        \n\n
-        The "restful" selection will add a set of RESTful routes for generic controllers.
+    @param set Route set to select. Use "angular-mvc", or "html-mvc".  
     @ingroup EspRoute
     @stability Prototype
  */
@@ -562,9 +534,6 @@ typedef struct EspReq {
     int             autoFinalize;           /**< Request is or will be auto-finalized */
     int             sessionProbed;          /**< Already probed for session store */
     int             lastDomID;              /**< Last generated DOM ID */
-#if UNUSED
-    EdiRec          *record;                /**< Current data record */
-#endif
     Edi             *edi;                   /**< Database for this request */
 } EspReq;
 
@@ -639,21 +608,9 @@ PUBLIC void espAppendHeaderString(HttpConn *conn, cchar *key, cchar *value);
  */
 PUBLIC void espAutoFinalize(HttpConn *conn);
 
-/**
-    Check a security token.
-    @description Check the request security token. If a required security token is defined in the session state, the
-    request must supply the same token with all POST requests. This helps mitigate potential CSRF threats.
-    Security tokens are used to help guard against CSRF threats. If a template web page includes the
-        renderSecurityToken() control, a security token will be added to the meta section of the generated HTML. When a 
-        form is posted from this page, the ESP jQuery script will add the security token to the form parameters.
-        This call validates the security token to ensure it matches the security token stored in session state.
-    @param conn Http connection object
-    @return False if the request is a POST request and the security token does not match the session held token.
-        Otherwise return "true".
-    @ingroup EspReq
-    @stability Evolving
- */
+#if BIT_ESP_LEGACY
 PUBLIC bool espCheckSecurityToken(HttpConn *conn);
+#endif
 
 /**
     Create a session state object. 
@@ -801,7 +758,7 @@ PUBLIC EspRoute *espGetEspRoute(HttpConn *conn);
  */
 PUBLIC cchar *espGetDocuments(HttpConn *conn);
 
-#if DEPRECATED || 1
+#if BIT_ESP_LEGACY
 PUBLIC cchar *espGetDir(HttpConn *conn);
 #endif
 
@@ -930,7 +887,7 @@ PUBLIC cchar *espGetQueryString(HttpConn *conn);
     Get the referring URI.
     @description This returns the referring URI as described in the HTTP "referer" (yes the HTTP specification does
         spell it incorrectly) header. If this header is not defined, this routine will return the home URI as returned
-        by #espGetTop.
+        by uri("~").
     @param conn HttpConn connection object
     @return String URI back to the referring URI. If no referrer is defined, refers to the home URI.
     @ingroup EspReq
@@ -946,17 +903,6 @@ PUBLIC char *espGetReferrer(HttpConn *conn);
     @stability Evolving
  */
 PUBLIC Edi *espGetRouteDatabase(HttpRoute *route);
-
-/**
-    Get a unique security token.
-    @description Security tokens help mitigate against replay attacks. The security token is stored in HttpRx.securityToken
-        and in the session store.
-    @param conn HttpConn connection object
-    @return The security token string
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC cchar *espGetSecurityToken(HttpConn *conn);
 
 /**
     Get the session state ID. 
@@ -990,6 +936,7 @@ PUBLIC int espGetStatus(HttpConn *conn);
  */
 PUBLIC char *espGetStatusMessage(HttpConn *conn);
 
+#if BIT_ESP_LEGACY
 /**
     Get a relative URI to the top of the application.
     @description This will return an absolute URI for the top of the application. This will be "/" if there is no
@@ -1000,6 +947,7 @@ PUBLIC char *espGetStatusMessage(HttpConn *conn);
     @stability Evolving
  */
 PUBLIC char *espGetTop(HttpConn *conn);
+#endif
 
 /**
     Get the uploaded files.
@@ -1214,30 +1162,6 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path);
 PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds);
 
 /**
-    Render an EDI database record as a JSON string
-    @description The JSON string is rendered as part of an enclosing "{ data: JSON }" wrapper.
-    @param conn HttpConn connection object
-    @param rec EDI record
-    @param flags Reserved. Set to zero.
-    @return Number of bytes rendered
-    @ingroup EspReq
-    @stability Prototype
-  */
-PUBLIC ssize espRenderRec(HttpConn *conn, EdiRec *rec, int flags);
-
-/**
-    Render an EDI database grid as a JSON string
-    @description The JSON string is rendered as part of an enclosing "{ data: JSON }" wrapper.
-    @param conn HttpConn connection object
-    @param grid EDI grid
-    @param flags Reserved. Set to zero.
-    @return Number of bytes rendered
-    @ingroup EspReq
-    @stability Prototype
-  */
-PUBLIC ssize espRenderGrid(HttpConn *conn, EdiGrid *grid, int flags);
-
-/**
     Read a table from the current database
     @param conn HttpConn connection object
     @param tableName Database table name
@@ -1246,34 +1170,6 @@ PUBLIC ssize espRenderGrid(HttpConn *conn, EdiGrid *grid, int flags);
     @stability Prototype
   */
 PUBLIC EdiGrid *espReadTable(HttpConn *conn, cchar *tableName);
-
-#if UNUSED
-/**
-    Render feedback messages.
-    @description Feedback messages are additional state messages that are sent with a JSON response. See the 
-        espSetFeedback API to define feedback messages.
-    @param conn Http connection object
-    @param kinds Space separated list of feedback messages types. Typical types are: "error", "inform", "warning".
-    @param options Reserved. Set to "".
-    @ingroup EspReq
-    @stability Prototype
- */
-PUBLIC void espRenderFeedback(HttpConn *conn, cchar *kinds, cchar *options);
-#endif
-
-/**
-    Render a JSON response result
-    @description This renders a JSON response including the request success status, feedback message and field errors. 
-    The field errors apply to the current EDI record.
-    The format of the response is:
-        "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
-    The feedback messages are created via the espSetFeedback API. Field errors are created by ESP validations.
-    @param conn HttpConn connection object
-    @param success True if the operation was a success.
-    @ingroup EspReq
-    @stability Prototype
-  */
-PUBLIC void espRenderResult(HttpConn *conn, bool success);
 
 /**
     Render a formatted string after HTML escaping
@@ -1300,25 +1196,6 @@ PUBLIC ssize espRenderSafe(HttpConn *conn, cchar *fmt, ...);
     @stability Evolving
  */
 PUBLIC ssize espRenderSafeString(HttpConn *conn, cchar *s);
-
-/**
-    Render a security token.
-    @description Security tokens are used to help guard against CSRF threats.
-        This call will render a security token for the page, and emit an HTML meta element for the security token.
-        The token will automatically be included whenever forms are submitted and the token is validated by the 
-        receiving controller. Typically, forms will automatically generate the security token. Note that explicitly
-        calling this routine is not necessary unless a security token is required for non-form requests such as AJAX
-        requests. The #securityToken control should be called inside the &lt;head section of the web page.
-    @param conn Http connection object
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC void espRenderSecurityToken(HttpConn *conn);
-
-#if DEPRECATED || 1
-/* Renamed to espRenderSecurityToken */
-PUBLIC void espSecurityToken(HttpConn *conn);
-#endif
 
 /**
     Render a string of data to the client
@@ -1353,6 +1230,44 @@ PUBLIC ssize espRenderVar(HttpConn *conn, cchar *name);
     @stability Evolving
  */
 PUBLIC void espRenderView(HttpConn *conn, cchar *name);
+
+/**
+    Send a database grid as a JSON string
+    @description The JSON string is rendered as part of an enclosing "{ data: JSON }" wrapper.
+    @param conn HttpConn connection object
+    @param grid EDI grid
+    @param flags Reserved. Set to zero.
+    @return Number of bytes rendered
+    @ingroup EspReq
+    @stability Prototype
+  */
+PUBLIC ssize espSendGrid(HttpConn *conn, EdiGrid *grid, int flags);
+
+/**
+    Send a database record as a JSON string
+    @description The JSON string is rendered as part of an enclosing "{ data: JSON }" wrapper.
+    @param conn HttpConn connection object
+    @param rec EDI record
+    @param flags Reserved. Set to zero.
+    @return Number of bytes rendered
+    @ingroup EspReq
+    @stability Prototype
+  */
+PUBLIC ssize espSendRec(HttpConn *conn, EdiRec *rec, int flags);
+
+/**
+    Send a JSON response result
+    @description This renders a JSON response including the request success status, feedback message and field errors. 
+    The field errors apply to the current EDI record.
+    The format of the response is:
+        "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
+    The feedback messages are created via the espSetFeedback API. Field errors are created by ESP validations.
+    @param conn HttpConn connection object
+    @param success True if the operation was a success.
+    @ingroup EspReq
+    @stability Prototype
+  */
+PUBLIC void espSendResult(HttpConn *conn, bool success);
 
 /**
     Enable auto-finalizing for this request
@@ -1413,7 +1328,7 @@ PUBLIC void espSetContentType(HttpConn *conn, cchar *mimeType);
 /**
     Set a feedback message
     @description Feedback messages are a convenient way to aggregate messages state information in the response.
-        The #espRenderFeedback and #renderFeedback APIs can be used to extract messages for inclusion in the response.
+        The #espGetFeedback APIs can be used to extract feedback messages.
         Feedback messages are removed at the completion of the request.
     @param conn Http connection object
     @param kind Kind of feedback message
@@ -1586,6 +1501,12 @@ PUBLIC int espSetSessionVar(HttpConn *conn, cchar *name, cchar *value);
  */
 PUBLIC void espShowRequest(HttpConn *conn);
 
+#if BIT_ESP_LEGACY
+#define espSetSecurityToken httpSetSecurityToken
+#define espSecurityToken httpSetSecurityToken
+#define espGetSecurityToken httpGetSecurityToken
+#endif
+
 /**
     Update the cached content for a request
     @description Save the given content for future requests. This is useful if the caching mode has been set to "manual". 
@@ -1717,7 +1638,7 @@ PUBLIC void addParam(cchar *name, cchar *value);
     Test if a user has the required abilities
     @param abilities Comma separated list of abilities to test for. If null, then use the required abilities defined
         for the current request route.
-    @param warn If true, warn the user via the response feedback.
+    @param warn If true, warn the user via #sendResult.
     @return True if the user has all the required abilities
     @ingroup EspAbbrev
     @stability prototype
@@ -1800,7 +1721,7 @@ PUBLIC void flash(cchar *kind, cchar *fmt, ...);
 /**
     Set a feedback message
     @description Feedback messages are a convenient way to aggregate messages state information in the response.
-        The #renderFeedback APIs can be used to extract messages for inclusion in the response.
+        The #getFeedback API can be used to retrieve feedback messages.
         Feedback messages are removed at the completion of the request.
     @param kind Kind of feedback message
     @param fmt Printf style formatted string to use as the message
@@ -1919,7 +1840,7 @@ PUBLIC EspRoute *getEspRoute();
  */
 PUBLIC cchar *getDocuments();
 
-#if DEPRECATED || 1
+#if BIT_ESP_LEGACY
 PUBLIC cchar *getDir();
 #endif
 
@@ -1974,12 +1895,20 @@ PUBLIC cchar *getQuery();
     Get the referring URI
     @description This returns the referring URI as described in the HTTP "referer" (yes the HTTP specification does
         spell it incorrectly) header. If this header is not defined, this routine will return the home URI as returned
-        by #espGetTop.
+        by uri("~").
     @return String URI back to the referring URI. If no referrer is defined, refers to the home URI.
     @ingroup EspAbbrev
     @stability Evolving
  */
 PUBLIC cchar *getReferrer();
+
+/**
+    Get the ESP request object
+    @return EspReq connection instance object.
+    @ingroup EspAbbrev
+    @stability Prototype
+ */
+PUBLIC EspReq *getReq();
 
 /**
     Get a session state variable
@@ -2001,6 +1930,7 @@ PUBLIC cchar *getSessionVar(cchar *name);
  */
 PUBLIC cchar *getSessionID();
 
+#if BIT_ESP_LEGACY
 /**
     Get a relative URI to the top of the application.
     @description This will return an absolute URI for the top of the application. This will be "/" if there is no
@@ -2011,7 +1941,14 @@ PUBLIC cchar *getSessionID();
     @stability Evolving
  */
 PUBLIC cchar *getAppUri();
+#endif
 
+/**
+    Test if a field in the current record has input validation errors
+    @ingroup EspAbbrev
+    @stability Prototype
+ */
+PUBLIC cchar *getFieldError(cchar *field);
 
 /**
     Get the uploaded files
@@ -2199,11 +2136,6 @@ PUBLIC bool modeIs(cchar *check);
  */
 PUBLIC cchar *param(cchar *name);
 
-#if UNUSED
-//  TODO DOC
-PUBLIC cchar *id();
-#endif
-
 /**
     Get the request parameter hash table
     @description This call gets the params hash table for the current request.
@@ -2243,8 +2175,10 @@ PUBLIC EdiRec *readRec(cchar *tableName, cchar *key);
  */
 PUBLIC EdiGrid *readWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
 
-/* Deprecated in 4.4.1 */
-#if DEPRECATE || 1
+#if BIT_ESP_LEGACY
+/* 
+    Deprecated in 4.4.1 
+ */
 PUBLIC EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
 #endif
 
@@ -2384,20 +2318,6 @@ PUBLIC ssize renderConfig();
  */
 PUBLIC void renderError(int status, cchar *fmt, ...);
 
-#if UNUSED
-/**
-    Render feedback messages.
-    @description Feedback messages are additional state messages that are sent with a JSON response. See the 
-        espSetFeedback API to define feedback messages.
-    @param status Request success status. Note: this is not the HTTP response status code.
-    @param kind Kind of feedback message
-    @ingroup EspAbbrev
-    @stability Prototype
- */
-PUBLIC void renderFeedback(int status, cchar *kind, ...);
-#endif
-
-//  TODO - is this used?
 /**
     Render flash messages.
     @description Flash notices are one-time messages that are passed to the newt request (only).
@@ -2421,39 +2341,6 @@ PUBLIC void renderFlash(cchar *kinds);
 PUBLIC ssize renderFile(cchar *path);
 
 /**
-    Render an EDI database grid as a JSON string
-    @description The JSON string is rendered as part of an enclosing "{ data: JSON }" wrapper.
-    @param grid EDI grid
-    @return Number of bytes rendered
-    @ingroup EspReq
-    @stability Prototype
-  */
-PUBLIC ssize renderGrid(EdiGrid *grid);
-
-/**
-    Render an EDI database record as a JSON string
-    @description The JSON string is rendered as part of an enclosing "{ data: JSON }" wrapper.
-    @param rec EDI record
-    @return Number of bytes rendered
-    @ingroup EspReq
-    @stability Prototype
-  */
-PUBLIC ssize renderRec(EdiRec *rec);
-
-/**
-    Render a JSON response result
-    @description This renders a JSON response including the request success status, feedback message and field errors. 
-    The field errors apply to the current EDI record.
-    The format of the response is:
-        "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
-    The feedback messages are created via the espSetFeedback API. Field errors are created by ESP validations.
-    @param status Request success status. Note: this is not the HTTP response status code.
-    @ingroup EspReq
-    @stability Prototype
-  */
-PUBLIC void renderResult(bool status);
-
-/**
     Render a formatted string after HTML escaping
     @description Render a formatted string of data and then HTML escape. Data packets will be created
         as required to store the write data. This call may block waiting for data to drain to the client.
@@ -2466,15 +2353,13 @@ PUBLIC void renderResult(bool status);
 PUBLIC ssize renderSafe(cchar *fmt, ...);
 
 /**
-    Generate a security token.
+    Render a security token input field.
     @description Security tokens are used to help guard against CSRF threats.
-    This call will generate a security token for the page and emit an HTML meta element for the security token.
-    The token will automatically be included whenever forms are submitted and the token be validated by the 
-    receiving controller. Forms will normally automatically generate the security token and that explicitly
-    calling this routine is not required unless a security token is required for non-form requests such as AJAX
-    requests. The #securityToken control should be called inside the &lt;head section of the web page.
+    This call will generate a hidden input field that includes the CSRF security token for the page.
+    This call should not be included in Angular client applications as the Angular framework will automatically
+    handle the security token.
     @ingroup EspAbbrev
-    @stability Evolving
+    @stability Prototype
  */
 PUBLIC void renderSecurityToken();
 
@@ -2510,7 +2395,7 @@ PUBLIC ssize renderVar(cchar *name);
 PUBLIC void renderView(cchar *view);
 
 /**
-    Render scripts elements 
+    Render scripts
     @description This renders script elements for all matching filenames on the server.
     @param patterns An enhanced glob-style expression pattern. The format is is a comma separated string of filename
     expressions. Each expression may contain the wildcard tokens: "*" which matches any filename portion, "**" which matches
@@ -2519,22 +2404,54 @@ PUBLIC void renderView(cchar *view);
     @stability Prototype
  */
 PUBLIC void scripts(cchar *patterns);
-//  TODO
-PUBLIC void stylesheets(cchar *patterns);
 
 /**
-    Render a security token.
-    @description Security tokens are used to help guard against CSRF threats.
-        This call will render a security token for the page, and emit an HTML meta element for the security token.
-        The token will automatically be included whenever forms are submitted and the token is validated by the 
-        receiving controller. Typically, forms will automatically generate the security token. Note that explicitly
-        calling this routine is not necessary unless a security token is required for non-form requests such as AJAX
-        requests. The #securityToken control should be called inside the &lt;head section of the web page.
+    Send a Edatabase grid as a JSON string
+    @description The JSON string is rendered as part of an enclosing "{ data: JSON }" wrapper.
+    @param grid EDI grid
+    @return Number of bytes sent
+    @ingroup EspReq
+    @stability Prototype
+  */
+PUBLIC ssize sendGrid(EdiGrid *grid);
+
+/**
+    Send a database record as a JSON string
+    @description The JSON string is rendered as part of an enclosing "{ data: JSON }" wrapper.
+    @param rec EDI record
+    @return Number of bytes sent
+    @ingroup EspReq
+    @stability Prototype
+  */
+PUBLIC ssize sendRec(EdiRec *rec);
+
+/**
+    Send a JSON response result
+    @description This sends a JSON response including the request success status, feedback message and field errors. 
+    The field errors apply to the current EDI record.
+    The format of the response is:
+        "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
+    The feedback messages are created via the espSetFeedback API. Field errors are created by ESP validations.
+    @param status Request success status. Note: this is not the HTTP response status code.
+    @ingroup EspReq
+    @stability Prototype
+  */
+PUBLIC void sendResult(bool status);
+
+/**
+    Render stylesheets 
+    @description This renders stylesheet elements for all matching filenames on the server.
+    @param patterns An enhanced glob-style expression pattern. The format is is a comma separated string of filename
+    expressions. Each expression may contain the wildcard tokens: "*" which matches any filename portion, "**" which matches
+    any filename portion in any subdirectory. An expression may be prefixed with "!" to exclude files of that expression.
     @ingroup EspAbbrev
-    @stability Evolving
-    @internal
+    @stability Prototype
  */
+PUBLIC void stylesheets(cchar *patterns);
+
+#if BIT_ESP_LEGACY
 PUBLIC void securityToken();
+#endif
 
 /**
     Get a session state variable
@@ -2779,145 +2696,73 @@ PUBLIC bool updateRec(EdiRec *rec);
 */ 
 PUBLIC bool updateRecFromParams(cchar *table);
 
-
-//  MOB DOC
+/** 
+    Create a URI. 
+    @description Create a URI link based on a given target an expanding embedded tokens based on the current request and 
+        route state. The target URI parameter may contain partial or complete URI information. The missing parts 
+    are supplied using the current request and route tables. The resulting URI is a normalized, server-local 
+    URI (that begins with "/"). The URI will include a required application route prefix, but will not include scheme, host or 
+    port components.
+    @param target The URI target. The target parameter can be a URI string or JSON style set of options. 
+        The target will have any embedded "{tokens}" expanded by using token values from the request parameters.
+        If the target has an absolute URI path, that path is used directly after tokenization. If the target begins with
+        "~", that character will be replaced with the route prefix. This is a very convenient way to create application 
+        top-level relative links.
+        \n\n
+        If the target is a string that begins with "{AT}" it will be interpreted as a service/action pair of the 
+        form "{AT}Service/action". If the "service/" portion is absent, the current service is used. If 
+        the action component is missing, the "list" action is used. A bare "{AT}" refers to the "list" action 
+        of the current service.
+        \n\n
+        If the target starts with "{" it is interpreted as being a JSON style set of options that describe the link.
+        If the target is a relative URI path, it is appended to the current request URI path.  
+        \n\n
+        If the is a JSON style of options, it can specify the URI components: scheme, host, port, path, reference and
+        query. If these component properties are supplied, these will be combined to create a URI.
+        \n\n
+        If the target specifies either a service/action or a JSON set of options, The URI will be created according 
+        to the route URI template. The template may be explicitly specified
+        via a "route" target property. Otherwise, if an "action" property is specified, the route of the same
+        name will be used. If these don't result in a usable route, the "default" route will be used. 
+        \n\n
+        These are the properties supported in a JSON style "{ ... }" target:
+        <ul>
+            <li>scheme String URI scheme portion</li>
+            <li>host String URI host portion</li>
+            <li>port Number URI port number</li>
+            <li>path String URI path portion</li>
+            <li>reference String URI path reference. Does not include "#"</li>
+            <li>query String URI query parameters. Does not include "?"</li>
+            <li>service String Service name if using a Service-based route. This can also be specified via
+                the action option.</li>
+            <li>action String Action to invoke. This can be a URI string or a Service action of the form
+                {AT}Service/action.</li>
+            <li>route String Route name to use for the URI template</li>
+        </ul>
+    @param ... arguments to the formatted target string
+    @return A normalized, server-local Uri string.
+    @ingroup Esp
+    @stability Prototype
+    @remarks Examples:<pre>
+    uri("http://example.com/index.html");
+    uri("/path/to/index.html");
+    uri("../images/splash.png");
+    uri("~/static/images/splash.png");
+    uri("${app}/static/images/splash.png");
+    uri("@service/checkout");
+    uri("@service/")               //  Service = Service, action = index
+    uri("@init")                   //  Current service, action = init
+    uri("@")                       //  Current service, action = index
+    uri("{ action: '@post/create' }");
+    uri("{ action: 'checkout' }");
+    uri("{ action: 'logout', service: 'admin' }");
+    uri("{ action: 'admin/logout'");
+    uri("{ product: 'candy', quantity: '10', template: '/cart/${product}/${quantity}' }");
+    uri("{ route: '~/STAR/edit', action: 'checkout', id: '99' }");
+    uri("{ template: '~/static/images/${theme}/background.jpg', theme: 'blue' }");
+</pre>
+ */
 PUBLIC cchar *uri(cchar *target, ...);
-
-/////////////////////////// /////////////////////////// /////////////////////////// ///////////////////////////
-/////////////////////////// /////////////////////////// /////////////////////////// ///////////////////////////
-
-/**
-    Suite of high-level controls that generate HTML5.
-    @description There are two forms of the ESP control APIs.
-    The "full" form and the "abbreviated" form. The "full" form API takes a
-    HttpConn request connection object as the first parameter and the function names are prefixed with "esp". 
-    The "abbreviated" form APIs are shorter and more convenient. They do not have a connection argument and 
-    determine the request connection using Thread-Local storage. They do not have any function prefix. Ocassionally,
-    an ESP control name may clash with a function name in another library. 
-    \n\n
-    ESP Controls are grouped into two families: input form controls and general output controls. Input controls
-    are typically located inside a form/endform control pair that defines a current database record from which data
-    will be utilized. Output controls can be used anywhere on a page outside a form/endform group.
-    \n\n
-    Input controls are generally of the form: function(field, options) where field is the name of the property
-    in the current record that contains the data to display. The options is an object hash that controls and modifies
-    how the control will render. The options hash is a JSON string, which is interpreted as a set of property values.
-    \n\n
-    Various controls have custom options, but most share the following common set of option properties:
-    @arg action String Action to invoke. This can be a URI string or a controller/Action pair of the form
-        \@controller/action. If only the controller is provided (\@controller/), the "list" action assumed.
-
-//???
-    @arg apply String Client JQuery selector identifying the element to apply the remote update.
-        Typically "div.ID" where ID is the DOM ID for the element.
-
-//???
-    @arg background String Background color. This is a CSS RGB color specification. For example "FF0000" for red.
-
-//???
-    @arg click (Boolean|Uri|String) URI to invoke if the control is clicked.
-//???
-    @arg color String Foreground color. This is a CSS RGB color specification. For example "FF0000" for red.
-//???
-    @arg confirm String Message to prompt the user to request confirmation before submitting a form or request.
-//???
-    @arg controller controller owning the action to invoke when clicked. Defaults to the current controller.
-
-//OK
-    @arg data-* All data-* names are passed through to the HTML unmodified.
-//OK
-    @arg domid String Client-side DOM-ID to use for the control
-//???
-    @arg effects String Transition effects to apply when updating a control. Select from: "fadein", "fadeout",
-        "highlight".
-//OK
-    @arg escape Boolean Escape the text before rendering. This converts HTML reserved tags and delimiters into
-        an encoded form.
-//??
-    @arg height (Number|String) Height of the control. Can be a number of pixels or a percentage string. 
-        Defaults to unlimited.
-//??
-    @arg key Array List of fields to set as the key values to uniquely identify the clicked or edited element. 
-        The key will be rendered as a "data-key" HTML attribute and will be passed to the receiving controller 
-        when the entry is clicked or edited. Each entry of the key option can be a simple
-        string field name or it can be an Object with a single property, where the property name is a simple
-        string field name and the property value is the mapped field name to use as the actual key name. This 
-        supports using custom key names. NOTE: this option cannot be used if using cell clicks or edits. In that
-        case, set click/edit to a callback function and explicitly construct the required URI and parameters.
-//??
-    @arg keyFormat String Define how the keys will be handled for click and edit URIs. 
-        Set to one of the set: ["params", "path", "query"]. Default is "path".
-        Set to "query" to add the key/value pairs to the request URI. Each pair is separated using "&" and the
-            key and value are formatted as "key=value".
-        Set to "params" to add the key/value pair to the request body parameters. 
-        Set to "path" to add the key values in order to the request URI. Each value is separated using "/". This
-            provides "pretty" URIs that can be easily tokenized by router templates.
-        If you require more complex key management, set click or edit to a callback function and format the 
-        URI and params manually.
-//OK
-    @arg id Number Numeric database ID for the record that originated the data for the view element.
-//OK
-    @arg method String HTTP method to invoke.
-//??? is this used 
-    @arg pass String attributes to pass through unaltered to the client
-
-    @arg params Request parameters to include with a click or remote request
-//  NO
-    @arg period Number Period in milliseconds to invoke the #refresh URI to update the control data. If period
-        is zero (or undefined), then refresh will be done using a perisistent connection.
-    @arg query URI query string to add to click URIs.
-    @arg rel String HTML rel attribute. Can be used to generate "rel=nofollow" on links.
-//  NO
-    @arg remote (String|URI|Object) Perform the request in the background without changing the browser location.
-//  NO
-    @arg refresh (String|URI|Object) URI to invoke in the background to refresh the control's data every period.
-        milliseconds. If period is undefined or zero, a persistent connection may be used to refresh data.
-        The refresh option may use the "\@controller/action" form.
-//  NO
-    @arg size (Number|String) Size of the element.
-    @arg style String CSS Style to use for the element.
-    @arg value Object Override value to display if used without a form control record.
-//  NO
-    @arg width (Number|String) Width of the control. Can be a number of pixels or a percentage string. Defaults to
-        unlimited.
-    @stability Evolving
-    @defgroup EspControl EspControl
-    @internal
-  */
-typedef struct EspControl { 
-    int dummy;  /**< Unused */
-} EspControl;
-
-/**
-    Signify the end of an HTML form. 
-    @description This emits a HTML closing form tag.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void endform();
-
-/**
-    TODO - should this refer to the espForm doc?
-    Render an HTML form 
-    @description This will render an HTML form tag and optionally associate the given record as the current record for
-        the request. Abbreviated controls (see \l EspAbbrev \el) use the current record to supply form data fields and values.
-        The espForm control can be used without a record. In this case, nested ESP controls may have to provide 
-        values via an Options.value field.
-    @param record Record to use by default to supply form field names and values. If NULL, use the default record.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @arg hideErrors -- Don't display database record errors. Records retain error diagnostics from the previous
-        failed write. Setting this option will prevent the display of such errors.
-    @arg modal -- Make the form a modal dialog. This will block all other HTML controls except the form.
-    @arg insecure -- Don't generate a security token for the form.
-    @arg securityToken -- String Override CSRF security token to include when the form is submitted. A default 
-        security token will always be generated unless options.insecure is defined to be true.
-        Security tokens are used by ESP to mitigate cross site scripting errors.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void form(EdiRec *record, cchar *options);
 
 /**
     Get the current database record
@@ -2935,17 +2780,14 @@ PUBLIC EdiRec *getRec();
         of the initial value to display. The field should be a property of the form current record. 
         If this call is used without a form control record, the actual data value should be supplied via the 
         options.value property.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
+    @param options These are in JSON string form and are converted to attributes to pass to the input element
     @ingroup EspAbbrev
     @stability Deprecated
     @internal
  */
 PUBLIC void input(cchar *field, cchar *options);
 
-/////////////////////////// /////////////////////////// /////////////////////////// ///////////////////////////
-/////////////////////////// /////////////////////////// /////////////////////////// ///////////////////////////
-
-#if (BIT_PACK_ESP && BIT_ESP_LEGACY) || 1
+#if BIT_ESP_LEGACY 
 /**
     Suite of high-level controls that generate HTML5.
     @description There are two forms of the ESP control APIs.
@@ -3074,7 +2916,7 @@ PUBLIC void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *option
     @description This creates a checkbox suitable for use within an input form. 
     @param conn Http connection object
     @param name Name for the input checkbox. This defines the HTML element name, and provides the source of the
-        initial value for the checkbox. The field should be a property of the #espForm current record. 
+        initial value for the checkbox. The field should be a property of the #form current record. 
         If this call is used without a form control record, the actual data value should be supplied via the 
         options.value property.
     @param checkedValue Value for which the checkbox will be checked.
@@ -3098,6 +2940,7 @@ PUBLIC void espCheckbox(HttpConn *conn, cchar *name, cchar *checkedValue, cchar 
  */
 PUBLIC void espDivision(HttpConn *conn, cchar *body, cchar *options);
 
+/* Deprecated */
 PUBLIC void espForm(HttpConn *conn, EdiRec *record, cchar *options);
 
 /**
@@ -3207,7 +3050,7 @@ PUBLIC void espRefresh(HttpConn *conn, cchar *on, cchar *off, cchar *options);
 
 /**
     Render a script link.
-    @param uri Script URI to load. Set to null to get a default set of scripts. See #httpLink for a list of possible
+    @param uri Script URI to load. Set to null to get a default set of scripts. See #httpUri for a list of possible
         URI formats.
     @param conn Http connection object
     @param options Extra options. See \l EspControl \el for a list of the standard options.
@@ -3219,7 +3062,7 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *options);
 
 /**
     Render a stylesheet link
-    @param uri Stylesheet URI to load. Set to null to get a default set of stylesheets. See #httpLink for a list of possible
+    @param uri Stylesheet URI to load. Set to null to get a default set of stylesheets. See #httpUri for a list of possible
         URI formats.
     @param conn Http connection object
     @param options Extra options. See \l EspControl \el for a list of the standard options.
@@ -3279,7 +3122,7 @@ PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *options);
     other panes to be "-ejs-pane-hidden". The control's client side code will toggle these classes to make panes
     visible or hidden.
     @param conn Http connection object
-    @param rec Tab data for the control. Tab data is be be a single object where the tab text is the property 
+    @param grid Tab data for the control. Tab data is be be a single object where the tab text is the property 
         key and the target to invoke is the property value. 
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @arg click Set to "true" to invoke the selected pane via a foreground click.
@@ -3381,7 +3224,7 @@ PUBLIC void chart(EdiGrid *grid, cchar *options);
     Render an input checkbox. 
     @description This creates a checkbox suitable for use within an input form. 
     @param field Name for the input checkbox. This defines the HTML element name and provides the source of the
-        initial value for the checkbox. The field should be a property of the #espForm current record. 
+        initial value for the checkbox. The field should be a property of the #form current record. 
         If this call is used without a form control record, the actual data value should be supplied via the 
         options.value property.
     @param checkedValue Value for which the checkbox will be checked.
@@ -3421,6 +3264,36 @@ PUBLIC void division(cchar *body, cchar *options);
     @internal
  */
 PUBLIC void dropdown(cchar *field, EdiGrid *choices, cchar *options);
+
+/**
+    Signify the end of an HTML form. 
+    @description This emits a HTML closing form tag.
+    @ingroup EspControl
+    @stability Deprecated
+    @internal
+ */
+PUBLIC void endform();
+
+/**
+    Render an HTML form 
+    @description This will render an HTML form tag and optionally associate the given record as the current record for
+        the request. Abbreviated controls (see \l EspAbbrev \el) use the current record to supply form data fields and values.
+        The form control can be used without a record. In this case, nested ESP controls may have to provide 
+        values via an Options.value field.
+    @param record Record to use by default to supply form field names and values. If NULL, use the default record.
+    @param options Extra options. See \l EspControl \el for a list of the standard options.
+    @arg hideErrors -- Don't display database record errors. Records retain error diagnostics from the previous
+        failed write. Setting this option will prevent the display of such errors.
+    @arg modal -- Make the form a modal dialog. This will block all other HTML controls except the form.
+    @arg insecure -- Don't generate a security token for the form.
+    @arg securityToken -- String Override CSRF security token to include when the form is submitted. A default 
+        security token will always be generated unless options.insecure is defined to be true.
+        Security tokens are used by ESP to mitigate cross site scripting errors.
+    @ingroup EspAbbrev
+    @stability Deprecated
+    @internal
+ */
+PUBLIC void form(EdiRec *record, cchar *options);
 
 /**
     Get a URI for the top of the application
@@ -3519,7 +3392,7 @@ PUBLIC void refresh(cchar *on, cchar *off, cchar *options);
 
 /**
     Render a script link
-    @param uri Script URI to load. Set to null to get a default set of scripts. See #httpLink for a list of possible
+    @param uri Script URI to load. Set to null to get a default set of scripts. See #httpUri for a list of possible
         URI formats.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
@@ -3531,7 +3404,7 @@ PUBLIC void script(cchar *uri, cchar *options);
 /**
     Render a stylesheet link
     @param uri Stylesheet URI to load. Set to null to get a default set of stylesheets. 
-        See #httpLink for a list of possible URI formats.
+        See #httpUri for a list of possible URI formats.
     @param options Extra options. See \l EspControl \el for a list of the standard options.
     @ingroup EspAbbrev
     @stability Deprecated
@@ -3588,7 +3461,7 @@ PUBLIC void table(EdiGrid *grid, cchar *options);
     If using show/hide tabs, define the initial visible pane to be of the class "-ejs-pane-visible" and define
     other panes to be "-ejs-pane-hidden". The control's client side code will toggle these classes to make panes
     visible or hidden.
-    @param rec Tab data for the control. Tab data is a single object where the tab text is the property 
+    @param grid Tab data for the control. Tab data is a single object where the tab text is the property 
         key and the target to invoke is the property value. 
     @param options Optional extra options. See \l EspControl \el for a list of the standard options.
     @arg click Set to "true" to invoke the selected pane via a foreground click.

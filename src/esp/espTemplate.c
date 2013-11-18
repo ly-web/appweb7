@@ -478,7 +478,7 @@ static char *joinLine(cchar *str, ssize *lenp)
         @!var               Substitue the value of a variable. Var can also be simple expressions (without spaces)
         @#field             Lookup the current record for the value of the field.
         @~                  Home URL for the application
-        @^                  Top level server side URL
+        @|                  Top level server side URL
 
  */
 PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
@@ -819,7 +819,7 @@ static int getEspToken(EspParse *parse)
                     }
                     done++;
 
-                } else if (t == '^') {
+                } else if (t == BIT_SERVER_PREFIX_CHAR) {
                     next += 2;
                     if (mprGetBufLength(parse->token) > 0) {
                         next -= 3;

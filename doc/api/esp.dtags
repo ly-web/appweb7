@@ -27,8 +27,8 @@
       <type>void</type>
       <name>espAddHomeRoute</name>
       <anchorfile>group___esp_route.html</anchorfile>
-      <anchor>ga353a4119cdce7dee63a4ddcfb4e9114a</anchor>
-      <arglist>(HttpRoute *parent)</arglist>
+      <anchor>gaa6e0943224a139d93f465b7ff2060c36</anchor>
+      <arglist>(HttpRoute *route)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -194,13 +194,6 @@
       <name>espAutoFinalize</name>
       <anchorfile>group___esp_req.html</anchorfile>
       <anchor>gab6aeea9bb5cb500eabf3e1cfd1745f03</anchor>
-      <arglist>(HttpConn *conn)</arglist>
-    </member>
-    <member kind="function">
-      <type>bool</type>
-      <name>espCheckSecurityToken</name>
-      <anchorfile>group___esp_req.html</anchorfile>
-      <anchor>gab1683170a07c0b0073ab8c1969680e9a</anchor>
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
@@ -387,13 +380,6 @@
     </member>
     <member kind="function">
       <type>cchar *</type>
-      <name>espGetSecurityToken</name>
-      <anchorfile>group___esp_req.html</anchorfile>
-      <anchor>gae84ca6c41153894754c0bb48a8ce865d</anchor>
-      <arglist>(HttpConn *conn)</arglist>
-    </member>
-    <member kind="function">
-      <type>cchar *</type>
       <name>espGetSessionID</name>
       <anchorfile>group___esp_req.html</anchorfile>
       <anchor>ga63a13780299e2781dca728d4087165bb</anchor>
@@ -562,27 +548,6 @@
     </member>
     <member kind="function">
       <type>ssize</type>
-      <name>espRenderGrid</name>
-      <anchorfile>group___esp_req.html</anchorfile>
-      <anchor>gad0c6f3dc13ea133573d023cd8b706fa0</anchor>
-      <arglist>(HttpConn *conn, EdiGrid *grid, int flags)</arglist>
-    </member>
-    <member kind="function">
-      <type>ssize</type>
-      <name>espRenderRec</name>
-      <anchorfile>group___esp_req.html</anchorfile>
-      <anchor>ga3de02e5992653f17b0f6c9fa8f0a0dff</anchor>
-      <arglist>(HttpConn *conn, EdiRec *rec, int flags)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>espRenderResult</name>
-      <anchorfile>group___esp_req.html</anchorfile>
-      <anchor>gaf467a9ed25600f3ac6a8647623dffac7</anchor>
-      <arglist>(HttpConn *conn, bool success)</arglist>
-    </member>
-    <member kind="function">
-      <type>ssize</type>
       <name>espRenderSafe</name>
       <anchorfile>group___esp_req.html</anchorfile>
       <anchor>ga53ad9ef2ea042b04db7307acde5ebf02</anchor>
@@ -594,13 +559,6 @@
       <anchorfile>group___esp_req.html</anchorfile>
       <anchor>ga743eec6372aeb305a939bc9b0026281e</anchor>
       <arglist>(HttpConn *conn, cchar *s)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>espRenderSecurityToken</name>
-      <anchorfile>group___esp_req.html</anchorfile>
-      <anchor>gab2709dd69ca525f653ffbe51a97812cd</anchor>
-      <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
@@ -622,6 +580,27 @@
       <anchorfile>group___esp_req.html</anchorfile>
       <anchor>ga492e5353599306baaf769d1b8636260e</anchor>
       <arglist>(HttpConn *conn, cchar *name)</arglist>
+    </member>
+    <member kind="function">
+      <type>ssize</type>
+      <name>espSendGrid</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>gaed0422d33553efa73195661fd80efaee</anchor>
+      <arglist>(HttpConn *conn, EdiGrid *grid, int flags)</arglist>
+    </member>
+    <member kind="function">
+      <type>ssize</type>
+      <name>espSendRec</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>ga1ba6eef08895cd89005dd96262d1cd53</anchor>
+      <arglist>(HttpConn *conn, EdiRec *rec, int flags)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>espSendResult</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>ga97122549f9063d7c41f80bae689d42fe</anchor>
+      <arglist>(HttpConn *conn, bool success)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
@@ -786,23 +765,23 @@
     </member>
     <member kind="function">
       <type>ssize</type>
-      <name>renderGrid</name>
+      <name>sendGrid</name>
       <anchorfile>group___esp_req.html</anchorfile>
-      <anchor>ga2789d2aa7add24367274c035f7eee6e0</anchor>
+      <anchor>gab8d6f093fa851a73a6e80b20ea1cbc9d</anchor>
       <arglist>(EdiGrid *grid)</arglist>
     </member>
     <member kind="function">
       <type>ssize</type>
-      <name>renderRec</name>
+      <name>sendRec</name>
       <anchorfile>group___esp_req.html</anchorfile>
-      <anchor>gafe76fa3befab7774fab9c274d10000a5</anchor>
+      <anchor>gaa7f2ab9ce2162dcc0a10f82e74a92d80</anchor>
       <arglist>(EdiRec *rec)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
-      <name>renderResult</name>
+      <name>sendResult</name>
       <anchorfile>group___esp_req.html</anchorfile>
-      <anchor>gaa2b3f5fa75787b7ec4d7515c28fb680c</anchor>
+      <anchor>ga5a39a9b8619ef0cc07818c3a79eb023c</anchor>
       <arglist>(bool status)</arglist>
     </member>
   </compound>
@@ -1050,6 +1029,13 @@
     </member>
     <member kind="function">
       <type>cchar *</type>
+      <name>getFieldError</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>gaca4c0e5a528f05f835631b4f60b2917c</anchor>
+      <arglist>(cchar *field)</arglist>
+    </member>
+    <member kind="function">
+      <type>cchar *</type>
       <name>getFlash</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>ga99b145381ebe019cea05e3405d51c684</anchor>
@@ -1088,6 +1074,13 @@
       <name>getReferrer</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>gaefcc3825a86579c9c2669e239f8b1431</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>EspReq *</type>
+      <name>getReq</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga3dea06818770c33f63a8b60f793a6999</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
@@ -1434,13 +1427,6 @@
       <arglist>(cchar *patterns)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
-      <name>securityToken</name>
-      <anchorfile>group___esp_abbrev.html</anchorfile>
-      <anchor>gab3444f174346e0d8e8d4d3a43d451c5e</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
       <type>cchar *</type>
       <name>session</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
@@ -1565,6 +1551,13 @@
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>ga50471de30febcd31bae044ec7627e67d</anchor>
       <arglist>(cchar *uri, cchar *options)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>stylesheets</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga61c6ed68dcee1735502c33d2f362d5c7</anchor>
+      <arglist>(cchar *patterns)</arglist>
     </member>
     <member kind="function">
       <type>void</type>

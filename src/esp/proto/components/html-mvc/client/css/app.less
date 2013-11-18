@@ -64,6 +64,14 @@
     }
 }
 
+table.list {
+    .table();
+    .table-striped();
+    .table-bordered();
+    .table-hover();
+    .table-condensed();
+}
+
 .form-error {
     width: 500px;
     margin-bottom: 20px;
@@ -123,7 +131,7 @@
     .gradient(@feedback-inform-background, lighten(@feedback-inform-background, 10%), darken(@feedback-inform-background, 10%));
     opacity: 0;
     top: -100px;
-    &.ng-hide-remove {
+    &.animate {
         -webkit-animation: feedback-transition ease-in 10s;
     }
 }

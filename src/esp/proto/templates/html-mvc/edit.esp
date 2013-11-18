@@ -1,23 +1,26 @@
+<%^ start
+    EdiRec      *rec = getRec();
+    EdiField    *fp;
+%>
 <h1><%= param("id") ? "Edit" : "Create" %> ${TITLE}</h1>
 
-<form name='${NAME}Form' class='form-horizontal' action='/service/${NAME}/@@param("id")'>
-    <% { for (int f = 1; f < getRec()->nfields; f++) { %>
+<form name='${NAME}Form' class='form-horizontal' action='@|/${NAME}/@@id' method="POST">
+    <% for (fp = 0; (fp = ediGetNextField(rec, fp, 1)) != 0; ) { %> 
         <div class='form-group'>
-            <label class='control-label col-xs-2'>@@uname</label>
-            <div class='controls col-xs-6 ${STYLE}'>
-                <% input(getRec()->fields[f].name, 0); %>
+            <label class='control-label col-md-3'><%= stitle(fp->name) %></label>
+            <div class='input-group col-md-8 <%= getFieldError(rec, fp->name) ? "has-error" : "" %>'>
+                <% input(fp->name, "{class: 'form-control'}"); %>
             </div>
         </div>
     <% } %>
-
     <div class='form-group'>
-        <div class='col-xs-offset-2 col-xs-10'>
-            <button type='submit' class='btn btn-primary'>OK</button>
-            <a class='btn' href='/'>Cancel</a>
-            <% if (param("id")) %>
-<!-- MOB - need delete route -->
-                <a class='btn' href='/service/${NAME}/@@param("id")/delete'>Delete</button>
+        <div class='col-md-offset-2 col-md-10'>
+            <input type='submit' class='btn btn-primary' name="submit" value="Save">
+            <a href='list'><button class='btn' type="button">Cancel</button></a>
+            <% if (hasRec()) { %>
+                <input type='submit' class='btn' name="submit" value="Delete">
             <% } %>
+            <% renderSecurityToken(); %>
         </div>
     </div>
 </form>

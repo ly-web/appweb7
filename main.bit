@@ -107,7 +107,8 @@ Bit.load({
         },
 
         esp: {
-            legacy: false,
+            /* Reverse this in 5.0 */
+            legacy: true,
         },
 
         /*

@@ -42,7 +42,7 @@ PUBLIC bool canUser(cchar *abilities, bool warn)
     }
     if (warn) {
         setStatus(HTTP_CODE_UNAUTHORIZED);
-        renderResult(feedback("error", "Access Denied. Insufficient Privilege."));
+        sendResult(feedback("error", "Access Denied. Insufficient Privilege."));
     }
     return 0;
 }
@@ -121,11 +121,12 @@ PUBLIC void flush()
 }
 
 
-//  FUTURE - getTop is easier
+#if BIT_ESP_LEGACY
 PUBLIC cchar *getAppUri()
 {
     return espGetTop(getConn());
 }
+#endif
 
 
 PUBLIC MprList *getColumns(EdiRec *rec)
@@ -187,7 +188,7 @@ PUBLIC cchar *getDocuments()
 }
 
 
-#if DEPRECATED || 1
+#if BIT_ESP_LEGACY
 PUBLIC cchar *getDir()
 {
     return getDocuments();
@@ -216,6 +217,12 @@ PUBLIC cchar *getFlash(cchar *kind)
 PUBLIC cchar *getField(EdiRec *rec, cchar *field)
 {
     return ediGetFieldValue(rec, field);
+}
+
+
+PUBLIC cchar *getFieldError(cchar *field)
+{
+    return mprLookupKey(getRec()->errors, field);
 }
 
 
@@ -255,6 +262,12 @@ PUBLIC cchar *getReferrer()
 }
 
 
+PUBLIC EspReq *getReq()
+{
+    return getConn()->data;
+}
+
+
 /*
     Get a session and return the session ID. Creates a session if one does not already exist.
  */
@@ -270,7 +283,7 @@ PUBLIC cchar *getSessionVar(cchar *key)
 }
 
 
-#if DEPRECATE || 1
+#if BIT_ESP_LEGACY
 PUBLIC cchar *getTop()
 {
     return getAppUri();
@@ -416,8 +429,10 @@ PUBLIC EdiGrid *readWhere(cchar *tableName, cchar *fieldName, cchar *operation, 
 }
 
 
-#if DEPRECATE || 1
-/* Deprecated in 4.4.1 */
+#if BIT_ESP_LEGACY
+/* 
+    Deprecated in 4.4.1 
+ */
 PUBLIC EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
 {
     return readWhere(tableName, fieldName, operation, value);
@@ -513,26 +528,6 @@ PUBLIC void renderError(int status, cchar *fmt, ...)
 }
 
 
-#if UNUSED
-//  FUTURE - need espRenderFeedback
-//  FUTURE - doc
-PUBLIC void renderFeedback(int status, cchar *kind, ...)
-{
-    va_list     args;
-    cchar       *fmt, *msg;
-
-    if (kind) {
-        va_start(args, kind);
-        fmt = va_arg(args, cchar *);
-        msg = sfmt(fmt, args);
-        espSetFeedbackv(getConn(), kind, fmt, args);
-        va_end(args);
-    }
-    renderResult(status);
-}
-#endif
-
-
 PUBLIC ssize renderFile(cchar *path)
 {
     return espRenderFile(getConn(), path);
@@ -542,26 +537,6 @@ PUBLIC ssize renderFile(cchar *path)
 PUBLIC void renderFlash(cchar *kind)
 {
     espRenderFlash(getConn(), kind);
-}
-
-
-PUBLIC ssize renderGrid(EdiGrid *grid)
-{
-    return espRenderGrid(getConn(), grid, 0);
-}
-
-
-PUBLIC ssize renderRec(EdiRec *rec)
-{
-    return espRenderRec(getConn(), rec, 0);
-}
-
-
-//  FUTURE - change this to renderStatus?
-
-PUBLIC void renderResult(bool status)
-{
-    espRenderResult(getConn(), status);
 }
 
 
@@ -588,12 +563,6 @@ PUBLIC ssize renderString(cchar *s)
 PUBLIC void renderView(cchar *view)
 {
     espRenderView(getConn(), view);
-}
-
-
-PUBLIC void renderSecurityToken()
-{
-    espSecurityToken(getConn());
 }
 
 
@@ -651,7 +620,7 @@ PUBLIC void scripts(cchar *patterns)
         }
         for (ITERATE_ITEMS(files, path, next)) {
             path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
-            uri = httpUri(conn, path, NULL);
+            uri = httpUri(conn, path);
             if (scontains(path, "-IE-") || scontains(path, "html5shiv")) {
                 espRender(conn, "    <!-- [if lt IE 9]>\n");
                 espRender(conn, "        <script src='%s' type='text/javascript'></script>\n", uri);
@@ -664,9 +633,32 @@ PUBLIC void scripts(cchar *patterns)
 }
 
 
+#if BIT_ESP_LEGACY
+/*
+    Should not be called explicitly as this is done by the framework
+ */
 PUBLIC void securityToken()
 {
-    espSecurityToken(getConn());
+    httpSetSecurityToken(getConn());
+}
+#endif
+
+
+PUBLIC ssize sendGrid(EdiGrid *grid)
+{
+    return espSendGrid(getConn(), grid, 0);
+}
+
+
+PUBLIC ssize sendRec(EdiRec *rec)
+{
+    return espSendRec(getConn(), rec, 0);
+}
+
+
+PUBLIC void sendResult(bool status)
+{
+    espSendResult(getConn(), status);
 }
 
 
@@ -812,7 +804,7 @@ PUBLIC void stylesheets(cchar *patterns)
     }
     for (ITERATE_ITEMS(files, path, next)) {
         path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
-        uri = httpUri(conn, path, NULL);
+        uri = httpUri(conn, path);
         kind = mprGetPathExt(path);
         if (smatch(kind, "css")) {
             espRender(conn, "    <link rel='stylesheet' type='text/css' href='%s' />\n", uri);
@@ -850,6 +842,7 @@ PUBLIC bool updateFields(cchar *tableName, MprJson *params)
 
 PUBLIC bool updateRec(EdiRec *rec)
 {
+    setRec(rec);
     if (ediUpdateRec(getDatabase(), rec) < 0) {
         feedback("error", "Cannot save %s", spascal(rec->tableName));
         return 0;
@@ -873,7 +866,7 @@ PUBLIC cchar *uri(cchar *target, ...)
     va_start(args, target);
     uri = sfmtv(target, args);
     va_end(args);
-    return httpUri(getConn(), uri, NULL);
+    return httpUri(getConn(), uri);
 }
 
 

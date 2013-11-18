@@ -111,6 +111,8 @@ angular.module('esp.input', [])
                                 html = html + '<option value="' + key + '"">' + value + '</option>';
                             });
                         }
+                    } else if (type == 'text') {
+                        html = '<' + tag + ' type="' + type + '"' + astr + '></' + tag + '>';
                     } else {
                         html = '<' + tag + ' type="' + type + '"' + astr + '>';
                     }

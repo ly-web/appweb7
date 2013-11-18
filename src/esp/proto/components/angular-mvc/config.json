@@ -20,7 +20,7 @@
         },
         loginRequired: "",
         redirect: "secure",
-        serverPrefix: "/server",
+        serverPrefix: "/do",
         sendJson: true,
         timeouts: {
             session: 300,

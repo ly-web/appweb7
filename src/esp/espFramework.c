@@ -101,10 +101,15 @@ PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags)
 }
 
 
+#if BIT_ESP_LEGACY
+/*
+    Should not be called explicitly
+ */
 PUBLIC bool espCheckSecurityToken(HttpConn *conn) 
 {
     return httpCheckSecurityToken(conn);
 }
+#endif
 
 
 PUBLIC cchar *espCreateSession(HttpConn *conn)
@@ -256,7 +261,7 @@ PUBLIC cchar *espGetDocuments(HttpConn *conn)
 }
 
 
-#if DEPRECATED || 1
+#if BIT_ESP_LEGACY
 PUBLIC cchar *espGetDir(HttpConn *conn)
 {
     return espGetDocuments(conn);
@@ -370,7 +375,7 @@ PUBLIC char *espGetReferrer(HttpConn *conn)
     if (conn->rx->referrer) {
         return conn->rx->referrer;
     }
-    return espGetTop(conn);
+    return httpUri(conn, "~");
 }
 
 
@@ -383,12 +388,6 @@ PUBLIC Edi *espGetRouteDatabase(HttpRoute *route)
         return 0;
     }
     return eroute->edi;
-}
-
-
-PUBLIC cchar *espGetSecurityToken(HttpConn *conn)
-{
-    return httpGetSecurityToken(conn);
 }
 
 
@@ -415,10 +414,12 @@ PUBLIC char *espGetStatusMessage(HttpConn *conn)
 }
 
 
+#if BIT_ESP_LEGACY
 PUBLIC char *espGetTop(HttpConn *conn)
 {
-    return httpUri(conn, "~", NULL);
+    return httpUri(conn, "~");
 }
+#endif
 
 
 PUBLIC MprHash *espGetUploads(HttpConn *conn)
@@ -494,8 +495,8 @@ PUBLIC int espLoadConfig(HttpRoute *route)
         eroute->configLoaded = cinfo.mtime;
     }
     if (!eroute->config) {
+#if BIT_ESP_LEGACY
         if (!mprPathExists(cpath, R_OK)) {
-            //  DEPRECATED
             if (eroute->appName) {
                 mprLog(0, "App %s is missing %s, switching to legacy-mvc mode", eroute->appName, cpath);
             }
@@ -503,8 +504,9 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             espAddComponent(route, "legacy-mvc", 0);
             eroute->legacy = 1;
             httpSetRouteServerPrefix(route, "");
-
-        } else {
+        } else 
+#endif
+        {
             if ((cdata = mprReadPathContents(cpath, NULL)) == 0) {
                 mprError("Cannot read config.json at %s", cpath);
                 return MPR_ERR_CANT_READ;
@@ -550,7 +552,6 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 httpSetRouteVar(route, "SERVER_PREFIX", sjoin(route->prefix ? route->prefix: "", route->serverPrefix, 0));
             }
 #if DEPRECATE || 1
-            /* Deprecated in 4.4.4 */
             if ((value = espGetConfig(route, "settings.routePrefix", 0)) != 0) {
                 httpSetRouteServerPrefix(route, value);
                 httpSetRouteVar(route, "SERVER_PREFIX", sjoin(route->prefix ? route->prefix: "", route->serverPrefix, 0));
@@ -582,10 +583,12 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 }
             }
             eroute->json = espTestConfig(route, "settings.json", "1");
+#if BIT_ESP_LEGACY
             if (espHasComponent(route, "legacy-mvc")) {
                 eroute->legacy = 1;
                 httpSetRouteServerPrefix(route, "");
             }
+#endif
         }
     }
     return 0;
@@ -693,25 +696,6 @@ PUBLIC ssize espRenderCached(HttpConn *conn)
 }
 
 
-#if UNUSED
-PUBLIC void espRenderConfig(HttpConn *conn)
-{
-    EspRoute    *eroute;
-    MprJson     *settings;
-
-    eroute = conn->rx->route->eroute;
-    settings = mprLookupJson(eroute->config, "settings");
-    httpSetContentType(conn, "application/json");
-    if (settings) {
-        renderString(mprJsonToString(settings, MPR_JSON_QUOTES));
-    } else {
-        renderError(HTTP_CODE_NOT_FOUND, "Cannot find config.settings to send to client");
-    }
-    finalize();
-}
-#endif
-
-
 PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
 {
     va_list     args;
@@ -783,20 +767,9 @@ PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds)
     for (kp = 0; (kp = mprGetNextKey(req->flash, kp)) != 0; ) {
         msg = kp->data;
         if (strstr(kinds, kp->key) || strstr(kinds, "all")) {
-            espRender(conn, "<span class='flash-%s'>%s</span>", kp->key, msg);
+            espRender(conn, "<span class='feedback-%s animate'>%s</span>", kp->key, msg);
         }
     }
-}
-
-
-/*
-    Render a security token
-    Security tokens are used to minimize the CSRF threat.
-    Note: the HttpSession API prevents session hijacking by pairing with the client IP
- */
-PUBLIC void espRenderSecurityToken(HttpConn *conn) 
-{
-    httpRenderSecurityToken(conn);
 }
 
 
@@ -834,26 +807,6 @@ PUBLIC void espSetNotifier(HttpConn *conn, HttpNotifier notifier)
 }
 
 
-PUBLIC ssize espRenderGrid(HttpConn *conn, EdiGrid *grid, int flags)
-{
-    httpAddHeaderString(conn, "Content-Type", "application/json");
-    if (grid) {
-        return espRender(conn, "{\n  \"data\": %s, \"schema\": %s}\n", ediGridAsJson(grid, flags), ediGetGridSchemaAsJson(grid));
-    }
-    return espRender(conn, "{}");
-}
-
-
-PUBLIC ssize espRenderRec(HttpConn *conn, EdiRec *rec, int flags)
-{
-    httpAddHeaderString(conn, "Content-Type", "application/json");
-    if (rec) {
-        return espRender(conn, "{\n  \"data\": %s, \"schema\": %s}\n", ediRecAsJson(rec, flags), ediGetRecSchemaAsJson(rec)); 
-    }
-    return espRender(conn, "{}");
-}
-
-
 PUBLIC ssize espRenderSafe(HttpConn *conn, cchar *fmt, ...)
 {
     va_list     args;
@@ -876,25 +829,6 @@ PUBLIC ssize espRenderSafeString(HttpConn *conn, cchar *s)
 PUBLIC ssize espRenderString(HttpConn *conn, cchar *s)
 {
     return espRenderBlock(conn, s, slen(s));
-}
-
-
-PUBLIC void espRenderResult(HttpConn *conn, bool success)
-{
-    EspReq      *req;
-    EdiRec      *rec;
-
-    req = conn->data;
-    rec = getRec();
-    if (rec && rec->errors) {
-        espRender(conn, "{\"error\": %d, \"feedback\": %s, \"fieldErrors\": %s}", !success, 
-            req->feedback ? mprSerialize(req->feedback, MPR_JSON_QUOTES) : "{}",
-            mprSerialize(rec->errors, MPR_JSON_QUOTES));
-    } else {
-        espRender(conn, "{\"error\": %d, \"feedback\": %s}", !success, 
-            req->feedback ? mprSerialize(req->feedback, MPR_JSON_QUOTES) : "{}");
-    }
-    espFinalize(conn);
 }
 
 
@@ -934,6 +868,45 @@ PUBLIC int espSaveConfig(HttpRoute *route)
 
     eroute = route->eroute;
     return mprSaveJson(eroute->config, mprJoinPath(route->documents, "config.json"), MPR_JSON_PRETTY);
+}
+
+
+PUBLIC ssize espSendGrid(HttpConn *conn, EdiGrid *grid, int flags)
+{
+    httpAddHeaderString(conn, "Content-Type", "application/json");
+    if (grid) {
+        return espRender(conn, "{\n  \"data\": %s, \"schema\": %s}\n", ediGridAsJson(grid, flags), ediGetGridSchemaAsJson(grid));
+    }
+    return espRender(conn, "{}");
+}
+
+
+PUBLIC ssize espSendRec(HttpConn *conn, EdiRec *rec, int flags)
+{
+    httpAddHeaderString(conn, "Content-Type", "application/json");
+    if (rec) {
+        return espRender(conn, "{\n  \"data\": %s, \"schema\": %s}\n", ediRecAsJson(rec, flags), ediGetRecSchemaAsJson(rec)); 
+    }
+    return espRender(conn, "{}");
+}
+
+
+PUBLIC void espSendResult(HttpConn *conn, bool success)
+{
+    EspReq      *req;
+    EdiRec      *rec;
+
+    req = conn->data;
+    rec = getRec();
+    if (rec && rec->errors) {
+        espRender(conn, "{\"error\": %d, \"feedback\": %s, \"fieldErrors\": %s}", !success, 
+            req->feedback ? mprSerialize(req->feedback, MPR_JSON_QUOTES) : "{}",
+            mprSerialize(rec->errors, MPR_JSON_QUOTES));
+    } else {
+        espRender(conn, "{\"error\": %d, \"feedback\": %s}", !success, 
+            req->feedback ? mprSerialize(req->feedback, MPR_JSON_QUOTES) : "{}");
+    }
+    espFinalize(conn);
 }
 
 
@@ -1094,12 +1067,6 @@ PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec)
 }
 
 
-PUBLIC void espSecurityToken(HttpConn *conn) 
-{
-    espRenderSecurityToken(conn);
-}
-
-
 PUBLIC int espSetSessionVar(HttpConn *conn, cchar *var, cchar *value) 
 {
     return httpSetSessionVar(conn, var, value);
@@ -1234,7 +1201,7 @@ PUBLIC void espUpdateCache(HttpConn *conn, cchar *uri, cchar *data, int lifesecs
 
 PUBLIC cchar *espUri(HttpConn *conn, cchar *target)
 {
-    return httpUri(conn, target, 0);
+    return httpUri(conn, target);
 }
 
 

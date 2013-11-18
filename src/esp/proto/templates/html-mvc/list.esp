@@ -1,32 +1,28 @@
 <%^ start
-    EdiGrid *grid = readTable("${NAME}");
-    EdiRec  *rec;
-    cchar   *value;
-    int     r, f;
+    EdiGrid     *grid = readTable("${NAME}");
+    EdiRec      *rec;
+    EdiField    *fp;
 %>
-<h1>${TITLE} List</h1>
-<table class='table table-striped table-bordered table-hover table-condensed'>
+<h1>Post List</h1>
+<table class='list'>
     <thead>
         <tr><%
             if (grid->nrecords) {
                 rec = grid->records[0];
-                for (f = 0; f < rec->nfields; f++) {
-                    render("<th>%s</th>\n", rec->fields[f].name);
+                for (fp = 0; (fp = ediGetNextField(rec, fp, 1)) != 0; ) { 
+                    render("<th>%s</th>\n", spascal(fp->name));
                 }
             } %>
         </tr>
     </thead>
-    <tbody><%
-        for (r = 0; r < grid->nrecords; r++) {
-            rec = grid->records[r];
-            render("<tr onclick='document.location=\"/${NAME}/%d\"'\n", rec->id);
-            for (f = 0; f < rec->nfields; f++) {
-//  MOB - need abbrev API
-                value = ediFormatField(0, &rec->fields[f]);
-                render("<td>%s</td>\n", value);
-            }
-            render("</tr>\n");
-        } %>
+    <tbody>
+        <% for (rec = 0; (rec = ediGetNextRec(grid, rec)) != 0; ) { %>
+            <tr onclick='document.location="<%= uri("^/${NAME}/%s", rec->id) %>"'>
+                <% for (fp = 0; (fp = ediGetNextField(rec, fp, 1)) != 0; ) { %>
+                    <td><%= ediFormatField(0, fp); %></td>
+                <% } %>
+            </tr>
+        <% } %>
     </tbody>
 </table>
-<a class='btn btn-primary' esp-click='/${NAME}/'>New ${TITLE}</a>
+<a href="init"><button class='btn btn-primary'>New Post</button></a>

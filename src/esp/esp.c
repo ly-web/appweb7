@@ -1177,19 +1177,27 @@ static void compileFlat(HttpRoute *route)
             }
         }
     }
-    if (eroute->viewsDir) {
-        app->files = mprGetPathFiles(eroute->viewsDir, MPR_PATH_DESCEND);
-        for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
-            path = dp->name;
-            mprAddItem(app->build, mprCreateKeyPair(path, "view", 0));
-        }
-    }
     if (eroute->clientDir) {
         app->files = mprGetPathFiles(eroute->clientDir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
+            if (sstarts(path, eroute->layoutsDir)) {
+                continue;
+            }
+            if (sstarts(path, eroute->viewsDir)) {
+                continue;
+            }
             if (smatch(mprGetPathExt(path), "esp")) {
                 mprAddItem(app->build, mprCreateKeyPair(path, "page", 0));
+            }
+        }
+    }
+    if (eroute->viewsDir) {
+        app->files = mprGetPathFiles(eroute->viewsDir, MPR_PATH_DESCEND);
+        for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
+            path = dp->name;
+            if (smatch(mprGetPathExt(path), "esp")) {
+                mprAddItem(app->build, mprCreateKeyPair(path, "view", 0));
             }
         }
     }
@@ -1296,21 +1304,6 @@ static void addComponents(int argc, char **argv)
         addDeps(argv[i]);
     }
 }
-
-
-#if UNUSED
-static void addComponentDeps()
-{
-    MprJson     *components, *component;
-    int         i;
-
-    components = mprGetJson(app->eroute->config, "settings.components", 0);
-    mprSetJson(app->eroute->config, "settings.components", mprCreateJson(MPR_JSON_ARRAY), 0);
-    for (ITERATE_JSON(components, component, i)) {
-        addDeps(component->value);
-    }
-}
-#endif
 
 
 /*
@@ -1521,7 +1514,7 @@ static void generateScaffoldMigration(cchar *name, cchar *table, int argc, char 
 {
     cchar       *comment;
 
-    if (argc < 2) {
+    if (argc < 1) {
         fail("Bad migration command line");
     }
     if (app->error) {
@@ -1919,7 +1912,7 @@ static void generateAppFiles()
 {
     EspRoute    *eroute;
     HttpRoute   *route;
-    MprJson     *components, *newConfig, *component;
+    MprJson     *components, *newConfig, *cp;
     cchar       *config, *name, *path;
     int         i;
 
@@ -1928,25 +1921,33 @@ static void generateAppFiles()
     makeEspDir(route->documents);
     app->routeSet = sclone("restful");
     components = mprGetJson(eroute->config, "settings.components", 0);
-    for (ITERATE_JSON(components, component, i)) {
-        name = component->name;
-        path = mprJoinPath(app->componentsDir, name);
-        if (!mprPathExists(path, X_OK)) {
-            fail("Cannot find component \"%s\"", name);
-            return;
-        }
-        trace("Generate",  "Component: %s", name);
-        copyEspDir(path, route->documents);
 
-        /*
-            Blend config.json from new component
-         */
-        config = mprJoinPath(path, "config.json");
-        if (mprPathExists(config, R_OK)) {
-            if ((newConfig = mprLoadJson(config)) != 0) {
-                mprBlendJson(eroute->config, newConfig, 0);
-                mprSetJsonValue(eroute->config, "name", app->appName, 0);
-                mprRemoveJson(eroute->config, "description");
+    /*
+        Generate components in reverse order (top-down) so that the top-level components can install 
+        files first which become the presiding versions.
+    */
+    if (components) {
+        cp = components->children->prev;
+        for (i = 0; i < components->length; i++, cp = cp->prev) {
+            name = cp->name;
+            path = mprJoinPath(app->componentsDir, name);
+            if (!mprPathExists(path, X_OK)) {
+                fail("Cannot find component \"%s\"", name);
+                return;
+            }
+            trace("Generate",  "Component: %s", name);
+            copyEspDir(path, route->documents);
+
+            /*
+                Blend config.json from new component
+             */
+            config = mprJoinPath(path, "config.json");
+            if (mprPathExists(config, R_OK)) {
+                if ((newConfig = mprLoadJson(config)) != 0) {
+                    mprBlendJson(eroute->config, newConfig, 0);
+                    mprSetJsonValue(eroute->config, "name", app->appName, 0);
+                    mprRemoveJson(eroute->config, "description");
+                }
             }
         }
     }
@@ -2001,7 +2002,7 @@ static void copyEspDir(cchar *fromDir, cchar *toDir)
 static void generateHostingConfig()
 {
     fixupFile(mprJoinPath(app->route->documents, "appweb.conf"));
-    fixupFile(mprJoinPath(app->route->documents, "app.conf"));
+    fixupFile(mprJoinPath(app->route->documents, "hosted.conf"));
 }
 
 
