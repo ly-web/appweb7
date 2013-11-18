@@ -1770,7 +1770,7 @@ PUBLIC ssize httpFilterChunkData(HttpQueue *q, HttpPacket *packet)
         start = mprGetBufStart(buf);
         bad = (start[0] != '\r' || start[1] != '\n');
         for (cp = &start[2]; cp < buf->end && *cp != '\n'; cp++) {}
-        if (*cp != '\n' && (cp - start) < 80) {
+        if (cp >= buf->end || *cp != '\n' && (cp - start) < 80) {
             return 0;
         }
         bad += (cp[-1] != '\r' || cp[0] != '\n');
