@@ -3,7 +3,7 @@
 #
 
 PRODUCT            := appweb
-VERSION            := 4.4.3
+VERSION            := 4.4.4
 BUILD_NUMBER       := 0
 PROFILE            := default
 ARCH               := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
@@ -78,7 +78,7 @@ BIT_PACK_ZIP_PATH         := zip
 
 CFLAGS             += -O2  -w
 DFLAGS             +=  $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_MDB=$(BIT_PACK_MDB) -DBIT_PACK_NANOSSL=$(BIT_PACK_NANOSSL) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_PCRE=$(BIT_PACK_PCRE) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SDB=$(BIT_PACK_SDB) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
-IFLAGS             += -I$(CONFIG)/inc
+IFLAGS             += "-I$(CONFIG)/inc"
 LDFLAGS            += '-Wl,-rpath,@executable_path/' '-Wl,-rpath,@loader_path/'
 LIBPATHS           += -L$(CONFIG)/bin
 LIBS               += -ldl -lpthread -lm
@@ -301,7 +301,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.4.3-0
+	@echo 4.4.4-0
 
 #
 #   mpr.h
@@ -337,7 +337,7 @@ DEPS_5 += $(CONFIG)/inc/bitos.h
 $(CONFIG)/obj/mprLib.o: \
     src/deps/mpr/mprLib.c $(DEPS_5)
 	@echo '   [Compile] $(CONFIG)/obj/mprLib.o'
-	$(CC) -c -o $(CONFIG)/obj/mprLib.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/mpr/mprLib.c
+	$(CC) -c -o $(CONFIG)/obj/mprLib.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/mprLib.c
 
 #
 #   libmpr
@@ -349,7 +349,7 @@ DEPS_6 += $(CONFIG)/obj/mprLib.o
 
 $(CONFIG)/bin/libmpr.dylib: $(DEPS_6)
 	@echo '      [Link] $(CONFIG)/bin/libmpr.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmpr.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/mprLib.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmpr.dylib -compatibility_version 4.4.4 -current_version 4.4.4 "$(CONFIG)/obj/mprLib.o" $(LIBS) 
 
 #
 #   est.h
@@ -369,7 +369,7 @@ DEPS_8 += $(CONFIG)/inc/bitos.h
 $(CONFIG)/obj/estLib.o: \
     src/deps/est/estLib.c $(DEPS_8)
 	@echo '   [Compile] $(CONFIG)/obj/estLib.o'
-	$(CC) -c -o $(CONFIG)/obj/estLib.o -arch $(CC_ARCH) -O2 "$(IFLAGS)" src/deps/est/estLib.c
+	$(CC) -c -o $(CONFIG)/obj/estLib.o -arch $(CC_ARCH) -O2 $(IFLAGS) src/deps/est/estLib.c
 
 ifeq ($(BIT_PACK_EST),1)
 #
@@ -382,7 +382,7 @@ DEPS_9 += $(CONFIG)/obj/estLib.o
 
 $(CONFIG)/bin/libest.dylib: $(DEPS_9)
 	@echo '      [Link] $(CONFIG)/bin/libest.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libest.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libest.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/estLib.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libest.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libest.dylib -compatibility_version 4.4.4 -current_version 4.4.4 "$(CONFIG)/obj/estLib.o" $(LIBS) 
 endif
 
 #
@@ -395,7 +395,7 @@ DEPS_10 += $(CONFIG)/inc/est.h
 $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c $(DEPS_10)
 	@echo '   [Compile] $(CONFIG)/obj/mprSsl.o'
-	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/deps/mpr/mprSsl.c
+	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/deps/mpr/mprSsl.c
 
 #
 #   libmprssl
@@ -435,7 +435,7 @@ endif
 
 $(CONFIG)/bin/libmprssl.dylib: $(DEPS_11)
 	@echo '      [Link] $(CONFIG)/bin/libmprssl.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmprssl.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/mprSsl.o" $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmprssl.dylib -compatibility_version 4.4.4 -current_version 4.4.4 "$(CONFIG)/obj/mprSsl.o" $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS) 
 
 #
 #   manager.o
@@ -446,7 +446,7 @@ DEPS_12 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/manager.o: \
     src/deps/mpr/manager.c $(DEPS_12)
 	@echo '   [Compile] $(CONFIG)/obj/manager.o'
-	$(CC) -c -o $(CONFIG)/obj/manager.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/mpr/manager.c
+	$(CC) -c -o $(CONFIG)/obj/manager.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/manager.c
 
 #
 #   manager
@@ -473,7 +473,7 @@ DEPS_14 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/makerom.o: \
     src/deps/mpr/makerom.c $(DEPS_14)
 	@echo '   [Compile] $(CONFIG)/obj/makerom.o'
-	$(CC) -c -o $(CONFIG)/obj/makerom.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/mpr/makerom.c
+	$(CC) -c -o $(CONFIG)/obj/makerom.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/makerom.c
 
 #
 #   makerom
@@ -518,7 +518,7 @@ DEPS_18 += $(CONFIG)/inc/pcre.h
 $(CONFIG)/obj/pcre.o: \
     src/deps/pcre/pcre.c $(DEPS_18)
 	@echo '   [Compile] $(CONFIG)/obj/pcre.o'
-	$(CC) -c -o $(CONFIG)/obj/pcre.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/pcre/pcre.c
+	$(CC) -c -o $(CONFIG)/obj/pcre.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/pcre/pcre.c
 
 ifeq ($(BIT_PACK_PCRE),1)
 #
@@ -530,7 +530,7 @@ DEPS_19 += $(CONFIG)/obj/pcre.o
 
 $(CONFIG)/bin/libpcre.dylib: $(DEPS_19)
 	@echo '      [Link] $(CONFIG)/bin/libpcre.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libpcre.dylib -arch $(CC_ARCH) $(LDFLAGS) -compatibility_version 4.4.3 -current_version 4.4.3 $(LIBPATHS) -install_name @rpath/libpcre.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/pcre.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libpcre.dylib -arch $(CC_ARCH) $(LDFLAGS) -compatibility_version 4.4.4 -current_version 4.4.4 $(LIBPATHS) -install_name @rpath/libpcre.dylib -compatibility_version 4.4.4 -current_version 4.4.4 "$(CONFIG)/obj/pcre.o" $(LIBS) 
 endif
 
 #
@@ -551,7 +551,7 @@ DEPS_21 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/httpLib.o: \
     src/deps/http/httpLib.c $(DEPS_21)
 	@echo '   [Compile] $(CONFIG)/obj/httpLib.o'
-	$(CC) -c -o $(CONFIG)/obj/httpLib.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/http/httpLib.c
+	$(CC) -c -o $(CONFIG)/obj/httpLib.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/http/httpLib.c
 
 #
 #   libhttp
@@ -576,7 +576,7 @@ endif
 
 $(CONFIG)/bin/libhttp.dylib: $(DEPS_22)
 	@echo '      [Link] $(CONFIG)/bin/libhttp.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libhttp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libhttp.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/httpLib.o" $(LIBPATHS_22) $(LIBS_22) $(LIBS_22) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libhttp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libhttp.dylib -compatibility_version 4.4.4 -current_version 4.4.4 "$(CONFIG)/obj/httpLib.o" $(LIBPATHS_22) $(LIBS_22) $(LIBS_22) $(LIBS) -lpam 
 
 #
 #   http.o
@@ -587,7 +587,7 @@ DEPS_23 += $(CONFIG)/inc/http.h
 $(CONFIG)/obj/http.o: \
     src/deps/http/http.c $(DEPS_23)
 	@echo '   [Compile] $(CONFIG)/obj/http.o'
-	$(CC) -c -o $(CONFIG)/obj/http.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/http/http.c
+	$(CC) -c -o $(CONFIG)/obj/http.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/http/http.c
 
 #
 #   http
@@ -634,7 +634,7 @@ DEPS_26 += $(CONFIG)/inc/sqlite3.h
 $(CONFIG)/obj/sqlite3.o: \
     src/deps/sqlite/sqlite3.c $(DEPS_26)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite3.o'
-	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -arch $(CC_ARCH) -O2 "$(IFLAGS)" src/deps/sqlite/sqlite3.c
+	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -arch $(CC_ARCH) -O2 $(IFLAGS) src/deps/sqlite/sqlite3.c
 
 ifeq ($(BIT_PACK_SQLITE),1)
 #
@@ -646,7 +646,7 @@ DEPS_27 += $(CONFIG)/obj/sqlite3.o
 
 $(CONFIG)/bin/libsqlite3.dylib: $(DEPS_27)
 	@echo '      [Link] $(CONFIG)/bin/libsqlite3.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libsqlite3.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libsqlite3.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/sqlite3.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libsqlite3.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libsqlite3.dylib -compatibility_version 4.4.4 -current_version 4.4.4 "$(CONFIG)/obj/sqlite3.o" $(LIBS) 
 endif
 
 #
@@ -658,7 +658,7 @@ DEPS_28 += $(CONFIG)/inc/sqlite3.h
 $(CONFIG)/obj/sqlite.o: \
     src/deps/sqlite/sqlite.c $(DEPS_28)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite.o'
-	$(CC) -c -o $(CONFIG)/obj/sqlite.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/sqlite/sqlite.c
+	$(CC) -c -o $(CONFIG)/obj/sqlite.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/sqlite/sqlite.c
 
 ifeq ($(BIT_PACK_SQLITE),1)
 #
@@ -706,7 +706,7 @@ DEPS_32 += $(CONFIG)/inc/customize.h
 $(CONFIG)/obj/config.o: \
     src/config.c $(DEPS_32)
 	@echo '   [Compile] $(CONFIG)/obj/config.o'
-	$(CC) -c -o $(CONFIG)/obj/config.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/config.c
+	$(CC) -c -o $(CONFIG)/obj/config.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/config.c
 
 #
 #   convenience.o
@@ -717,7 +717,7 @@ DEPS_33 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/convenience.o: \
     src/convenience.c $(DEPS_33)
 	@echo '   [Compile] $(CONFIG)/obj/convenience.o'
-	$(CC) -c -o $(CONFIG)/obj/convenience.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/convenience.c
+	$(CC) -c -o $(CONFIG)/obj/convenience.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/convenience.c
 
 #
 #   dirHandler.o
@@ -728,7 +728,7 @@ DEPS_34 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/dirHandler.o: \
     src/dirHandler.c $(DEPS_34)
 	@echo '   [Compile] $(CONFIG)/obj/dirHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/dirHandler.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/dirHandler.c
+	$(CC) -c -o $(CONFIG)/obj/dirHandler.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/dirHandler.c
 
 #
 #   fileHandler.o
@@ -739,7 +739,7 @@ DEPS_35 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/fileHandler.o: \
     src/fileHandler.c $(DEPS_35)
 	@echo '   [Compile] $(CONFIG)/obj/fileHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/fileHandler.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/fileHandler.c
+	$(CC) -c -o $(CONFIG)/obj/fileHandler.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/fileHandler.c
 
 #
 #   log.o
@@ -750,7 +750,7 @@ DEPS_36 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/log.o: \
     src/log.c $(DEPS_36)
 	@echo '   [Compile] $(CONFIG)/obj/log.o'
-	$(CC) -c -o $(CONFIG)/obj/log.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/log.c
+	$(CC) -c -o $(CONFIG)/obj/log.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/log.c
 
 #
 #   server.o
@@ -761,7 +761,7 @@ DEPS_37 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/server.o: \
     src/server.c $(DEPS_37)
 	@echo '   [Compile] $(CONFIG)/obj/server.o'
-	$(CC) -c -o $(CONFIG)/obj/server.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/server.c
+	$(CC) -c -o $(CONFIG)/obj/server.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/server.c
 
 #
 #   libappweb
@@ -796,7 +796,7 @@ endif
 
 $(CONFIG)/bin/libappweb.dylib: $(DEPS_38)
 	@echo '      [Link] $(CONFIG)/bin/libappweb.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libappweb.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/config.o" "$(CONFIG)/obj/convenience.o" "$(CONFIG)/obj/dirHandler.o" "$(CONFIG)/obj/fileHandler.o" "$(CONFIG)/obj/log.o" "$(CONFIG)/obj/server.o" $(LIBPATHS_38) $(LIBS_38) $(LIBS_38) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libappweb.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 4.4.4 -current_version 4.4.4 "$(CONFIG)/obj/config.o" "$(CONFIG)/obj/convenience.o" "$(CONFIG)/obj/dirHandler.o" "$(CONFIG)/obj/fileHandler.o" "$(CONFIG)/obj/log.o" "$(CONFIG)/obj/server.o" $(LIBPATHS_38) $(LIBS_38) $(LIBS_38) $(LIBS) -lpam 
 
 #
 #   edi.h
@@ -832,7 +832,7 @@ DEPS_42 += $(CONFIG)/inc/pcre.h
 $(CONFIG)/obj/edi.o: \
     src/esp/edi.c $(DEPS_42)
 	@echo '   [Compile] $(CONFIG)/obj/edi.o'
-	$(CC) -c -o $(CONFIG)/obj/edi.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/edi.c
+	$(CC) -c -o $(CONFIG)/obj/edi.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/esp/edi.c
 
 #
 #   espAbbrev.o
@@ -843,7 +843,7 @@ DEPS_43 += $(CONFIG)/inc/esp.h
 $(CONFIG)/obj/espAbbrev.o: \
     src/esp/espAbbrev.c $(DEPS_43)
 	@echo '   [Compile] $(CONFIG)/obj/espAbbrev.o'
-	$(CC) -c -o $(CONFIG)/obj/espAbbrev.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/espAbbrev.c
+	$(CC) -c -o $(CONFIG)/obj/espAbbrev.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/esp/espAbbrev.c
 
 #
 #   espFramework.o
@@ -854,7 +854,7 @@ DEPS_44 += $(CONFIG)/inc/esp.h
 $(CONFIG)/obj/espFramework.o: \
     src/esp/espFramework.c $(DEPS_44)
 	@echo '   [Compile] $(CONFIG)/obj/espFramework.o'
-	$(CC) -c -o $(CONFIG)/obj/espFramework.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/espFramework.c
+	$(CC) -c -o $(CONFIG)/obj/espFramework.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/esp/espFramework.c
 
 #
 #   espHandler.o
@@ -867,7 +867,7 @@ DEPS_45 += $(CONFIG)/inc/edi.h
 $(CONFIG)/obj/espHandler.o: \
     src/esp/espHandler.c $(DEPS_45)
 	@echo '   [Compile] $(CONFIG)/obj/espHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/espHandler.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/espHandler.c
+	$(CC) -c -o $(CONFIG)/obj/espHandler.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/esp/espHandler.c
 
 #
 #   espHtml.o
@@ -879,7 +879,7 @@ DEPS_46 += $(CONFIG)/inc/edi.h
 $(CONFIG)/obj/espHtml.o: \
     src/esp/espHtml.c $(DEPS_46)
 	@echo '   [Compile] $(CONFIG)/obj/espHtml.o'
-	$(CC) -c -o $(CONFIG)/obj/espHtml.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/espHtml.c
+	$(CC) -c -o $(CONFIG)/obj/espHtml.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/esp/espHtml.c
 
 #
 #   espTemplate.o
@@ -890,7 +890,7 @@ DEPS_47 += $(CONFIG)/inc/esp.h
 $(CONFIG)/obj/espTemplate.o: \
     src/esp/espTemplate.c $(DEPS_47)
 	@echo '   [Compile] $(CONFIG)/obj/espTemplate.o'
-	$(CC) -c -o $(CONFIG)/obj/espTemplate.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/espTemplate.c
+	$(CC) -c -o $(CONFIG)/obj/espTemplate.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/esp/espTemplate.c
 
 #
 #   mdb.o
@@ -904,7 +904,7 @@ DEPS_48 += $(CONFIG)/inc/pcre.h
 $(CONFIG)/obj/mdb.o: \
     src/esp/mdb.c $(DEPS_48)
 	@echo '   [Compile] $(CONFIG)/obj/mdb.o'
-	$(CC) -c -o $(CONFIG)/obj/mdb.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/mdb.c
+	$(CC) -c -o $(CONFIG)/obj/mdb.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/esp/mdb.c
 
 #
 #   sdb.o
@@ -915,7 +915,7 @@ DEPS_49 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/sdb.o: \
     src/esp/sdb.c $(DEPS_49)
 	@echo '   [Compile] $(CONFIG)/obj/sdb.o'
-	$(CC) -c -o $(CONFIG)/obj/sdb.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/sdb.c
+	$(CC) -c -o $(CONFIG)/obj/sdb.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/esp/sdb.c
 
 ifeq ($(BIT_PACK_ESP),1)
 #
@@ -967,7 +967,7 @@ endif
 
 $(CONFIG)/bin/libmod_esp.dylib: $(DEPS_50)
 	@echo '      [Link] $(CONFIG)/bin/libmod_esp.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_esp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/edi.o" "$(CONFIG)/obj/espAbbrev.o" "$(CONFIG)/obj/espFramework.o" "$(CONFIG)/obj/espHandler.o" "$(CONFIG)/obj/espHtml.o" "$(CONFIG)/obj/espTemplate.o" "$(CONFIG)/obj/mdb.o" "$(CONFIG)/obj/sdb.o" $(LIBPATHS_50) $(LIBS_50) $(LIBS_50) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_esp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 4.4.4 -current_version 4.4.4 "$(CONFIG)/obj/edi.o" "$(CONFIG)/obj/espAbbrev.o" "$(CONFIG)/obj/espFramework.o" "$(CONFIG)/obj/espHandler.o" "$(CONFIG)/obj/espHtml.o" "$(CONFIG)/obj/espTemplate.o" "$(CONFIG)/obj/mdb.o" "$(CONFIG)/obj/sdb.o" $(LIBPATHS_50) $(LIBS_50) $(LIBS_50) $(LIBS) -lpam 
 endif
 
 #
@@ -979,7 +979,7 @@ DEPS_51 += $(CONFIG)/inc/esp.h
 $(CONFIG)/obj/esp.o: \
     src/esp/esp.c $(DEPS_51)
 	@echo '   [Compile] $(CONFIG)/obj/esp.o'
-	$(CC) -c -o $(CONFIG)/obj/esp.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/esp/esp.c
+	$(CC) -c -o $(CONFIG)/obj/esp.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/esp/esp.c
 
 ifeq ($(BIT_PACK_ESP),1)
 #
@@ -1325,7 +1325,7 @@ DEPS_59 += $(CONFIG)/inc/ejs.slots.h
 $(CONFIG)/obj/ejsLib.o: \
     src/deps/ejs/ejsLib.c $(DEPS_59)
 	@echo '   [Compile] $(CONFIG)/obj/ejsLib.o'
-	$(CC) -c -o $(CONFIG)/obj/ejsLib.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/ejs/ejsLib.c
+	$(CC) -c -o $(CONFIG)/obj/ejsLib.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/ejs/ejsLib.c
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
@@ -1360,7 +1360,7 @@ endif
 
 $(CONFIG)/bin/libejs.dylib: $(DEPS_60)
 	@echo '      [Link] $(CONFIG)/bin/libejs.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_60) $(LIBS_60) $(LIBS_60) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 4.4.4 -current_version 4.4.4 "$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_60) $(LIBS_60) $(LIBS_60) $(LIBS) -lpam 
 endif
 
 #
@@ -1372,7 +1372,7 @@ DEPS_61 += $(CONFIG)/inc/ejs.h
 $(CONFIG)/obj/ejs.o: \
     src/deps/ejs/ejs.c $(DEPS_61)
 	@echo '   [Compile] $(CONFIG)/obj/ejs.o'
-	$(CC) -c -o $(CONFIG)/obj/ejs.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/ejs/ejs.c
+	$(CC) -c -o $(CONFIG)/obj/ejs.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/ejs/ejs.c
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
@@ -1422,7 +1422,7 @@ DEPS_63 += $(CONFIG)/inc/ejs.h
 $(CONFIG)/obj/ejsc.o: \
     src/deps/ejs/ejsc.c $(DEPS_63)
 	@echo '   [Compile] $(CONFIG)/obj/ejsc.o'
-	$(CC) -c -o $(CONFIG)/obj/ejsc.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/deps/ejs/ejsc.c
+	$(CC) -c -o $(CONFIG)/obj/ejsc.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/ejs/ejsc.c
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
@@ -1502,7 +1502,7 @@ DEPS_66 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/cgiHandler.o: \
     src/modules/cgiHandler.c $(DEPS_66)
 	@echo '   [Compile] $(CONFIG)/obj/cgiHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/cgiHandler.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/modules/cgiHandler.c
+	$(CC) -c -o $(CONFIG)/obj/cgiHandler.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/modules/cgiHandler.c
 
 ifeq ($(BIT_PACK_CGI),1)
 #
@@ -1541,7 +1541,7 @@ endif
 
 $(CONFIG)/bin/libmod_cgi.dylib: $(DEPS_67)
 	@echo '      [Link] $(CONFIG)/bin/libmod_cgi.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/cgiHandler.o" $(LIBPATHS_67) $(LIBS_67) $(LIBS_67) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 4.4.4 -current_version 4.4.4 "$(CONFIG)/obj/cgiHandler.o" $(LIBPATHS_67) $(LIBS_67) $(LIBS_67) $(LIBS) -lpam 
 endif
 
 #
@@ -1553,7 +1553,7 @@ DEPS_68 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/ejsHandler.o: \
     src/modules/ejsHandler.c $(DEPS_68)
 	@echo '   [Compile] $(CONFIG)/obj/ejsHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/ejsHandler.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/modules/ejsHandler.c
+	$(CC) -c -o $(CONFIG)/obj/ejsHandler.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/modules/ejsHandler.c
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
@@ -1601,7 +1601,7 @@ endif
 
 $(CONFIG)/bin/libmod_ejs.dylib: $(DEPS_69)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ejs.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_69) $(LIBS_69) $(LIBS_69) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 4.4.4 -current_version 4.4.4 "$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_69) $(LIBS_69) $(LIBS_69) $(LIBS) -lpam 
 endif
 
 #
@@ -1613,7 +1613,7 @@ DEPS_70 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/phpHandler.o: \
     src/modules/phpHandler.c $(DEPS_70)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/phpHandler.o -arch $(CC_ARCH) -O2 "$(IFLAGS)" "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/modules/phpHandler.c
+	$(CC) -c -o $(CONFIG)/obj/phpHandler.o -arch $(CC_ARCH) -O2 $(IFLAGS) "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/modules/phpHandler.c
 
 ifeq ($(BIT_PACK_PHP),1)
 #
@@ -1654,7 +1654,7 @@ LIBPATHS_71 += -L$(BIT_PACK_PHP_PATH)/libs
 
 $(CONFIG)/bin/libmod_php.dylib: $(DEPS_71)
 	@echo '      [Link] $(CONFIG)/bin/libmod_php.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_php.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmod_php.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_php.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmod_php.dylib -compatibility_version 4.4.4 -current_version 4.4.4 "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS) -lpam 
 endif
 
 #
@@ -1666,7 +1666,7 @@ DEPS_72 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/sslModule.o: \
     src/modules/sslModule.c $(DEPS_72)
 	@echo '   [Compile] $(CONFIG)/obj/sslModule.o'
-	$(CC) -c -o $(CONFIG)/obj/sslModule.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/modules/sslModule.c
+	$(CC) -c -o $(CONFIG)/obj/sslModule.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/modules/sslModule.c
 
 ifeq ($(BIT_PACK_SSL),1)
 #
@@ -1732,7 +1732,7 @@ endif
 
 $(CONFIG)/bin/libmod_ssl.dylib: $(DEPS_73)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ssl.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmod_ssl.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/sslModule.o" $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmod_ssl.dylib -compatibility_version 4.4.4 -current_version 4.4.4 "$(CONFIG)/obj/sslModule.o" $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) -lpam 
 endif
 
 #
@@ -1744,7 +1744,7 @@ DEPS_74 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/authpass.o: \
     src/utils/authpass.c $(DEPS_74)
 	@echo '   [Compile] $(CONFIG)/obj/authpass.o'
-	$(CC) -c -o $(CONFIG)/obj/authpass.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/utils/authpass.c
+	$(CC) -c -o $(CONFIG)/obj/authpass.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/utils/authpass.c
 
 #
 #   authpass
@@ -1792,7 +1792,7 @@ DEPS_76 += $(CONFIG)/inc/bit.h
 $(CONFIG)/obj/cgiProgram.o: \
     src/utils/cgiProgram.c $(DEPS_76)
 	@echo '   [Compile] $(CONFIG)/obj/cgiProgram.o'
-	$(CC) -c -o $(CONFIG)/obj/cgiProgram.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/utils/cgiProgram.c
+	$(CC) -c -o $(CONFIG)/obj/cgiProgram.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/utils/cgiProgram.c
 
 ifeq ($(BIT_PACK_CGI),1)
 #
@@ -1821,7 +1821,7 @@ DEPS_79 += $(CONFIG)/inc/esp.h
 $(CONFIG)/obj/slink.o: \
     src/server/slink.c $(DEPS_79)
 	@echo '   [Compile] $(CONFIG)/obj/slink.o'
-	$(CC) -c -o $(CONFIG)/obj/slink.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/server/slink.c
+	$(CC) -c -o $(CONFIG)/obj/slink.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/server/slink.c
 
 #
 #   libslink
@@ -1833,7 +1833,7 @@ DEPS_80 += $(CONFIG)/obj/slink.o
 
 $(CONFIG)/bin/libslink.dylib: $(DEPS_80)
 	@echo '      [Link] $(CONFIG)/bin/libslink.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libslink.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 4.4.3 -current_version 4.4.3 "$(CONFIG)/obj/slink.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libslink.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 4.4.4 -current_version 4.4.4 "$(CONFIG)/obj/slink.o" $(LIBS) 
 
 #
 #   appweb.o
@@ -1845,7 +1845,7 @@ DEPS_81 += $(CONFIG)/inc/esp.h
 $(CONFIG)/obj/appweb.o: \
     src/server/appweb.c $(DEPS_81)
 	@echo '   [Compile] $(CONFIG)/obj/appweb.o'
-	$(CC) -c -o $(CONFIG)/obj/appweb.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/server/appweb.c
+	$(CC) -c -o $(CONFIG)/obj/appweb.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/server/appweb.c
 
 #
 #   appweb
@@ -1915,7 +1915,7 @@ DEPS_85 += $(CONFIG)/inc/http.h
 $(CONFIG)/obj/testAppweb.o: \
     test/src/testAppweb.c $(DEPS_85)
 	@echo '   [Compile] $(CONFIG)/obj/testAppweb.o'
-	$(CC) -c -o $(CONFIG)/obj/testAppweb.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/src/testAppweb.c
+	$(CC) -c -o $(CONFIG)/obj/testAppweb.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) test/src/testAppweb.c
 
 #
 #   testHttp.o
@@ -1926,7 +1926,7 @@ DEPS_86 += $(CONFIG)/inc/testAppweb.h
 $(CONFIG)/obj/testHttp.o: \
     test/src/testHttp.c $(DEPS_86)
 	@echo '   [Compile] $(CONFIG)/obj/testHttp.o'
-	$(CC) -c -o $(CONFIG)/obj/testHttp.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/src/testHttp.c
+	$(CC) -c -o $(CONFIG)/obj/testHttp.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) test/src/testHttp.c
 
 #
 #   testAppweb
@@ -2107,16 +2107,8 @@ stop: $(DEPS_92)
 #
 installBinary: $(DEPS_93)
 	mkdir -p "$(BIT_APP_PREFIX)"
-	mkdir -p "$(BIT_VAPP_PREFIX)"
-	mkdir -p "$(BIT_ETC_PREFIX)"
-	mkdir -p "$(BIT_WEB_PREFIX)"
-	mkdir -p "$(BIT_LOG_PREFIX)"
-	mkdir -p "$(BIT_SPOOL_PREFIX)"
-	rm -fr "$(BIT_CACHE_PREFIX)"
-	mkdir -p "$(BIT_CACHE_PREFIX)"
-	mkdir -p "$(BIT_APP_PREFIX)"
 	rm -f "$(BIT_APP_PREFIX)/latest"
-	ln -s "4.4.3" "$(BIT_APP_PREFIX)/latest"
+	ln -s "4.4.4" "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_LOG_PREFIX)"
 	chmod 755 "$(BIT_LOG_PREFIX)"
 	[ `id -u` = 0 ] && chown $(WEB_USER):$(WEB_GROUP) "$(BIT_LOG_PREFIX)"; true

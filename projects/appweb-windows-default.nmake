@@ -3,7 +3,7 @@
 #
 
 PRODUCT            = appweb
-VERSION            = 4.4.3
+VERSION            = 4.4.4
 BUILD_NUMBER       = 0
 PROFILE            = default
 PA                 = $(PROCESSOR_ARCHITECTURE)
@@ -387,7 +387,7 @@ clean:
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.4.3-0
+	@echo 4.4.4-0
 
 #
 #   bit.h
@@ -403,7 +403,7 @@ DEPS_3 = $(DEPS_3) $(CONFIG)\inc\bit.h
 $(CONFIG)\obj\removeFiles.obj: \
     package\windows\removeFiles.c $(DEPS_3)
 	@echo '   [Compile] $(CONFIG)/obj/removeFiles.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\removeFiles.obj -Fd$(CONFIG)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" package\windows\removeFiles.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\removeFiles.obj -Fd$(CONFIG)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) package\windows\removeFiles.c
 
 #
 #   removeFiles
@@ -443,7 +443,7 @@ DEPS_7 = $(DEPS_7) $(CONFIG)\inc\bitos.h
 $(CONFIG)\obj\mprLib.obj: \
     src\deps\mpr\mprLib.c $(DEPS_7)
 	@echo '   [Compile] $(CONFIG)/obj/mprLib.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\mprLib.obj -Fd$(CONFIG)\obj\mprLib.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\mpr\mprLib.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mprLib.obj -Fd$(CONFIG)\obj\mprLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\mprLib.c
 
 #
 #   libmpr
@@ -475,7 +475,7 @@ DEPS_10 = $(DEPS_10) $(CONFIG)\inc\bitos.h
 $(CONFIG)\obj\estLib.obj: \
     src\deps\est\estLib.c $(DEPS_10)
 	@echo '   [Compile] $(CONFIG)/obj/estLib.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\estLib.obj -Fd$(CONFIG)\obj\estLib.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\est\estLib.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\estLib.obj -Fd$(CONFIG)\obj\estLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\est\estLib.c
 
 !IF "$(BIT_PACK_EST)" == "1"
 #
@@ -501,7 +501,7 @@ DEPS_12 = $(DEPS_12) $(CONFIG)\inc\est.h
 $(CONFIG)\obj\mprSsl.obj: \
     src\deps\mpr\mprSsl.c $(DEPS_12)
 	@echo '   [Compile] $(CONFIG)/obj/mprSsl.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)\src" "-I$(BIT_PACK_OPENSSL_PATH)\include" src\deps\mpr\mprSsl.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)\src" "-I$(BIT_PACK_OPENSSL_PATH)\include" src\deps\mpr\mprSsl.c
 
 #
 #   libmprssl
@@ -552,7 +552,7 @@ DEPS_14 = $(DEPS_14) $(CONFIG)\inc\mpr.h
 $(CONFIG)\obj\manager.obj: \
     src\deps\mpr\manager.c $(DEPS_14)
 	@echo '   [Compile] $(CONFIG)/obj/manager.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\manager.obj -Fd$(CONFIG)\obj\manager.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\mpr\manager.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\manager.obj -Fd$(CONFIG)\obj\manager.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\manager.c
 
 #
 #   manager
@@ -579,7 +579,7 @@ DEPS_16 = $(DEPS_16) $(CONFIG)\inc\mpr.h
 $(CONFIG)\obj\makerom.obj: \
     src\deps\mpr\makerom.c $(DEPS_16)
 	@echo '   [Compile] $(CONFIG)/obj/makerom.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\makerom.obj -Fd$(CONFIG)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\mpr\makerom.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\makerom.obj -Fd$(CONFIG)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\makerom.c
 
 #
 #   makerom
@@ -624,7 +624,7 @@ DEPS_20 = $(DEPS_20) $(CONFIG)\inc\pcre.h
 $(CONFIG)\obj\pcre.obj: \
     src\deps\pcre\pcre.c $(DEPS_20)
 	@echo '   [Compile] $(CONFIG)/obj/pcre.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\pcre.obj -Fd$(CONFIG)\obj\pcre.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\pcre\pcre.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\pcre.obj -Fd$(CONFIG)\obj\pcre.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\pcre\pcre.c
 
 !IF "$(BIT_PACK_PCRE)" == "1"
 #
@@ -657,7 +657,7 @@ DEPS_23 = $(DEPS_23) $(CONFIG)\inc\mpr.h
 $(CONFIG)\obj\httpLib.obj: \
     src\deps\http\httpLib.c $(DEPS_23)
 	@echo '   [Compile] $(CONFIG)/obj/httpLib.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\httpLib.obj -Fd$(CONFIG)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\http\httpLib.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\httpLib.obj -Fd$(CONFIG)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\http\httpLib.c
 
 #
 #   libhttp
@@ -693,7 +693,7 @@ DEPS_25 = $(DEPS_25) $(CONFIG)\inc\http.h
 $(CONFIG)\obj\http.obj: \
     src\deps\http\http.c $(DEPS_25)
 	@echo '   [Compile] $(CONFIG)/obj/http.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\http.obj -Fd$(CONFIG)\obj\http.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\http\http.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\http.obj -Fd$(CONFIG)\obj\http.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\http\http.c
 
 #
 #   http
@@ -740,7 +740,7 @@ DEPS_28 = $(DEPS_28) $(CONFIG)\inc\sqlite3.h
 $(CONFIG)\obj\sqlite3.obj: \
     src\deps\sqlite\sqlite3.c $(DEPS_28)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite3.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite3.obj -Fd$(CONFIG)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\sqlite\sqlite3.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite3.obj -Fd$(CONFIG)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\sqlite\sqlite3.c
 
 !IF "$(BIT_PACK_SQLITE)" == "1"
 #
@@ -764,7 +764,7 @@ DEPS_30 = $(DEPS_30) $(CONFIG)\inc\sqlite3.h
 $(CONFIG)\obj\sqlite.obj: \
     src\deps\sqlite\sqlite.c $(DEPS_30)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite.obj -Fd$(CONFIG)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\sqlite\sqlite.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite.obj -Fd$(CONFIG)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\sqlite\sqlite.c
 
 !IF "$(BIT_PACK_SQLITE)" == "1"
 #
@@ -812,7 +812,7 @@ DEPS_34 = $(DEPS_34) $(CONFIG)\inc\customize.h
 $(CONFIG)\obj\config.obj: \
     src\config.c $(DEPS_34)
 	@echo '   [Compile] $(CONFIG)/obj/config.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\config.obj -Fd$(CONFIG)\obj\config.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\config.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\config.obj -Fd$(CONFIG)\obj\config.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\config.c
 
 #
 #   convenience.obj
@@ -823,7 +823,7 @@ DEPS_35 = $(DEPS_35) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\convenience.obj: \
     src\convenience.c $(DEPS_35)
 	@echo '   [Compile] $(CONFIG)/obj/convenience.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\convenience.obj -Fd$(CONFIG)\obj\convenience.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\convenience.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\convenience.obj -Fd$(CONFIG)\obj\convenience.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\convenience.c
 
 #
 #   dirHandler.obj
@@ -834,7 +834,7 @@ DEPS_36 = $(DEPS_36) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\dirHandler.obj: \
     src\dirHandler.c $(DEPS_36)
 	@echo '   [Compile] $(CONFIG)/obj/dirHandler.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\dirHandler.obj -Fd$(CONFIG)\obj\dirHandler.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\dirHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\dirHandler.obj -Fd$(CONFIG)\obj\dirHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\dirHandler.c
 
 #
 #   fileHandler.obj
@@ -845,7 +845,7 @@ DEPS_37 = $(DEPS_37) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\fileHandler.obj: \
     src\fileHandler.c $(DEPS_37)
 	@echo '   [Compile] $(CONFIG)/obj/fileHandler.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\fileHandler.obj -Fd$(CONFIG)\obj\fileHandler.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\fileHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\fileHandler.obj -Fd$(CONFIG)\obj\fileHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\fileHandler.c
 
 #
 #   log.obj
@@ -856,7 +856,7 @@ DEPS_38 = $(DEPS_38) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\log.obj: \
     src\log.c $(DEPS_38)
 	@echo '   [Compile] $(CONFIG)/obj/log.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\log.obj -Fd$(CONFIG)\obj\log.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\log.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\log.obj -Fd$(CONFIG)\obj\log.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\log.c
 
 #
 #   server.obj
@@ -867,7 +867,7 @@ DEPS_39 = $(DEPS_39) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\server.obj: \
     src\server.c $(DEPS_39)
 	@echo '   [Compile] $(CONFIG)/obj/server.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\server.obj -Fd$(CONFIG)\obj\server.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\server.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\server.obj -Fd$(CONFIG)\obj\server.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server.c
 
 #
 #   libappweb
@@ -938,7 +938,7 @@ DEPS_44 = $(DEPS_44) $(CONFIG)\inc\pcre.h
 $(CONFIG)\obj\edi.obj: \
     src\esp\edi.c $(DEPS_44)
 	@echo '   [Compile] $(CONFIG)/obj/edi.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\edi.obj -Fd$(CONFIG)\obj\edi.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\esp\edi.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\edi.obj -Fd$(CONFIG)\obj\edi.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\edi.c
 
 #
 #   espAbbrev.obj
@@ -949,7 +949,7 @@ DEPS_45 = $(DEPS_45) $(CONFIG)\inc\esp.h
 $(CONFIG)\obj\espAbbrev.obj: \
     src\esp\espAbbrev.c $(DEPS_45)
 	@echo '   [Compile] $(CONFIG)/obj/espAbbrev.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\espAbbrev.obj -Fd$(CONFIG)\obj\espAbbrev.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\esp\espAbbrev.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\espAbbrev.obj -Fd$(CONFIG)\obj\espAbbrev.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espAbbrev.c
 
 #
 #   espFramework.obj
@@ -960,7 +960,7 @@ DEPS_46 = $(DEPS_46) $(CONFIG)\inc\esp.h
 $(CONFIG)\obj\espFramework.obj: \
     src\esp\espFramework.c $(DEPS_46)
 	@echo '   [Compile] $(CONFIG)/obj/espFramework.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\espFramework.obj -Fd$(CONFIG)\obj\espFramework.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\esp\espFramework.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\espFramework.obj -Fd$(CONFIG)\obj\espFramework.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espFramework.c
 
 #
 #   espHandler.obj
@@ -973,7 +973,7 @@ DEPS_47 = $(DEPS_47) $(CONFIG)\inc\edi.h
 $(CONFIG)\obj\espHandler.obj: \
     src\esp\espHandler.c $(DEPS_47)
 	@echo '   [Compile] $(CONFIG)/obj/espHandler.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\espHandler.obj -Fd$(CONFIG)\obj\espHandler.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\esp\espHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\espHandler.obj -Fd$(CONFIG)\obj\espHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espHandler.c
 
 #
 #   espHtml.obj
@@ -985,7 +985,7 @@ DEPS_48 = $(DEPS_48) $(CONFIG)\inc\edi.h
 $(CONFIG)\obj\espHtml.obj: \
     src\esp\espHtml.c $(DEPS_48)
 	@echo '   [Compile] $(CONFIG)/obj/espHtml.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\espHtml.obj -Fd$(CONFIG)\obj\espHtml.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\esp\espHtml.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\espHtml.obj -Fd$(CONFIG)\obj\espHtml.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espHtml.c
 
 #
 #   espTemplate.obj
@@ -996,7 +996,7 @@ DEPS_49 = $(DEPS_49) $(CONFIG)\inc\esp.h
 $(CONFIG)\obj\espTemplate.obj: \
     src\esp\espTemplate.c $(DEPS_49)
 	@echo '   [Compile] $(CONFIG)/obj/espTemplate.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\espTemplate.obj -Fd$(CONFIG)\obj\espTemplate.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\esp\espTemplate.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\espTemplate.obj -Fd$(CONFIG)\obj\espTemplate.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espTemplate.c
 
 #
 #   mdb.obj
@@ -1010,7 +1010,7 @@ DEPS_50 = $(DEPS_50) $(CONFIG)\inc\pcre.h
 $(CONFIG)\obj\mdb.obj: \
     src\esp\mdb.c $(DEPS_50)
 	@echo '   [Compile] $(CONFIG)/obj/mdb.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\mdb.obj -Fd$(CONFIG)\obj\mdb.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\esp\mdb.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mdb.obj -Fd$(CONFIG)\obj\mdb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\mdb.c
 
 #
 #   sdb.obj
@@ -1021,7 +1021,7 @@ DEPS_51 = $(DEPS_51) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\sdb.obj: \
     src\esp\sdb.c $(DEPS_51)
 	@echo '   [Compile] $(CONFIG)/obj/sdb.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\sdb.obj -Fd$(CONFIG)\obj\sdb.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\esp\sdb.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\sdb.obj -Fd$(CONFIG)\obj\sdb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\sdb.c
 
 !IF "$(BIT_PACK_ESP)" == "1"
 #
@@ -1085,7 +1085,7 @@ DEPS_53 = $(DEPS_53) $(CONFIG)\inc\esp.h
 $(CONFIG)\obj\esp.obj: \
     src\esp\esp.c $(DEPS_53)
 	@echo '   [Compile] $(CONFIG)/obj/esp.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\esp.obj -Fd$(CONFIG)\obj\esp.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\esp\esp.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\esp.obj -Fd$(CONFIG)\obj\esp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\esp.c
 
 !IF "$(BIT_PACK_ESP)" == "1"
 #
@@ -1431,7 +1431,7 @@ DEPS_61 = $(DEPS_61) $(CONFIG)\inc\ejs.slots.h
 $(CONFIG)\obj\ejsLib.obj: \
     src\deps\ejs\ejsLib.c $(DEPS_61)
 	@echo '   [Compile] $(CONFIG)/obj/ejsLib.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\ejsLib.obj -Fd$(CONFIG)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\ejs\ejsLib.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejsLib.obj -Fd$(CONFIG)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\ejs\ejsLib.c
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 #
@@ -1478,7 +1478,7 @@ DEPS_63 = $(DEPS_63) $(CONFIG)\inc\ejs.h
 $(CONFIG)\obj\ejs.obj: \
     src\deps\ejs\ejs.c $(DEPS_63)
 	@echo '   [Compile] $(CONFIG)/obj/ejs.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\ejs.obj -Fd$(CONFIG)\obj\ejs.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\ejs\ejs.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejs.obj -Fd$(CONFIG)\obj\ejs.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\ejs\ejs.c
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 #
@@ -1528,7 +1528,7 @@ DEPS_65 = $(DEPS_65) $(CONFIG)\inc\ejs.h
 $(CONFIG)\obj\ejsc.obj: \
     src\deps\ejs\ejsc.c $(DEPS_65)
 	@echo '   [Compile] $(CONFIG)/obj/ejsc.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\ejsc.obj -Fd$(CONFIG)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\deps\ejs\ejsc.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejsc.obj -Fd$(CONFIG)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\ejs\ejsc.c
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 #
@@ -1608,7 +1608,7 @@ DEPS_68 = $(DEPS_68) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\cgiHandler.obj: \
     src\modules\cgiHandler.c $(DEPS_68)
 	@echo '   [Compile] $(CONFIG)/obj/cgiHandler.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\cgiHandler.obj -Fd$(CONFIG)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\modules\cgiHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\cgiHandler.obj -Fd$(CONFIG)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\cgiHandler.c
 
 !IF "$(BIT_PACK_CGI)" == "1"
 #
@@ -1659,7 +1659,7 @@ DEPS_70 = $(DEPS_70) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\ejsHandler.obj: \
     src\modules\ejsHandler.c $(DEPS_70)
 	@echo '   [Compile] $(CONFIG)/obj/ejsHandler.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\ejsHandler.obj -Fd$(CONFIG)\obj\ejsHandler.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\modules\ejsHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejsHandler.obj -Fd$(CONFIG)\obj\ejsHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\ejsHandler.c
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 #
@@ -1719,7 +1719,7 @@ DEPS_72 = $(DEPS_72) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\phpHandler.obj: \
     src\modules\phpHandler.c $(DEPS_72)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\phpHandler.obj -Fd$(CONFIG)\obj\phpHandler.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)\main" "-I$(BIT_PACK_PHP_PATH)\Zend" "-I$(BIT_PACK_PHP_PATH)\TSRM" src\modules\phpHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\phpHandler.obj -Fd$(CONFIG)\obj\phpHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)\main" "-I$(BIT_PACK_PHP_PATH)\Zend" "-I$(BIT_PACK_PHP_PATH)\TSRM" src\modules\phpHandler.c
 
 !IF "$(BIT_PACK_PHP)" == "1"
 #
@@ -1772,7 +1772,7 @@ DEPS_74 = $(DEPS_74) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\sslModule.obj: \
     src\modules\sslModule.c $(DEPS_74)
 	@echo '   [Compile] $(CONFIG)/obj/sslModule.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\sslModule.obj -Fd$(CONFIG)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)\src" "-I$(BIT_PACK_OPENSSL_PATH)\include" src\modules\sslModule.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\sslModule.obj -Fd$(CONFIG)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)\src" "-I$(BIT_PACK_OPENSSL_PATH)\include" src\modules\sslModule.c
 
 !IF "$(BIT_PACK_SSL)" == "1"
 #
@@ -1850,7 +1850,7 @@ DEPS_76 = $(DEPS_76) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\authpass.obj: \
     src\utils\authpass.c $(DEPS_76)
 	@echo '   [Compile] $(CONFIG)/obj/authpass.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\authpass.obj -Fd$(CONFIG)\obj\authpass.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\utils\authpass.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\authpass.obj -Fd$(CONFIG)\obj\authpass.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\authpass.c
 
 #
 #   authpass
@@ -1898,7 +1898,7 @@ DEPS_78 = $(DEPS_78) $(CONFIG)\inc\bit.h
 $(CONFIG)\obj\cgiProgram.obj: \
     src\utils\cgiProgram.c $(DEPS_78)
 	@echo '   [Compile] $(CONFIG)/obj/cgiProgram.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\cgiProgram.obj -Fd$(CONFIG)\obj\cgiProgram.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\utils\cgiProgram.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\cgiProgram.obj -Fd$(CONFIG)\obj\cgiProgram.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\cgiProgram.c
 
 !IF "$(BIT_PACK_CGI)" == "1"
 #
@@ -1929,7 +1929,7 @@ DEPS_81 = $(DEPS_81) $(CONFIG)\inc\esp.h
 $(CONFIG)\obj\slink.obj: \
     src\server\slink.c $(DEPS_81)
 	@echo '   [Compile] $(CONFIG)/obj/slink.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\slink.obj -Fd$(CONFIG)\obj\slink.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\server\slink.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\slink.obj -Fd$(CONFIG)\obj\slink.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\slink.c
 
 #
 #   libslink
@@ -1953,7 +1953,7 @@ DEPS_83 = $(DEPS_83) $(CONFIG)\inc\esp.h
 $(CONFIG)\obj\appweb.obj: \
     src\server\appweb.c $(DEPS_83)
 	@echo '   [Compile] $(CONFIG)/obj/appweb.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\appweb.obj -Fd$(CONFIG)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\server\appweb.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\appweb.obj -Fd$(CONFIG)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\appweb.c
 
 #
 #   appweb
@@ -2031,7 +2031,7 @@ DEPS_88 = $(DEPS_88) $(CONFIG)\inc\mpr.h
 $(CONFIG)\obj\appwebMonitor.obj: \
     src\server\windows\appwebMonitor.c $(DEPS_88)
 	@echo '   [Compile] $(CONFIG)/obj/appwebMonitor.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\appwebMonitor.obj -Fd$(CONFIG)\obj\appwebMonitor.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src\server\windows\appwebMonitor.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\appwebMonitor.obj -Fd$(CONFIG)\obj\appwebMonitor.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\windows\appwebMonitor.c
 
 #
 #   appwebMonitor
@@ -2111,7 +2111,7 @@ DEPS_93 = $(DEPS_93) $(CONFIG)\inc\http.h
 $(CONFIG)\obj\testAppweb.obj: \
     test\src\testAppweb.c $(DEPS_93)
 	@echo '   [Compile] $(CONFIG)/obj/testAppweb.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\testAppweb.obj -Fd$(CONFIG)\obj\testAppweb.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test\src\testAppweb.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testAppweb.obj -Fd$(CONFIG)\obj\testAppweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\src\testAppweb.c
 
 #
 #   testHttp.obj
@@ -2122,7 +2122,7 @@ DEPS_94 = $(DEPS_94) $(CONFIG)\inc\testAppweb.h
 $(CONFIG)\obj\testHttp.obj: \
     test\src\testHttp.c $(DEPS_94)
 	@echo '   [Compile] $(CONFIG)/obj/testHttp.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\testHttp.obj -Fd$(CONFIG)\obj\testHttp.pdb $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test\src\testHttp.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testHttp.obj -Fd$(CONFIG)\obj\testHttp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\src\testHttp.c
 
 #
 #   testAppweb
