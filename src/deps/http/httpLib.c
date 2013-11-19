@@ -17814,26 +17814,10 @@ PUBLIC char *httpNormalizeUriPath(cchar *pathArg)
                     j--;
                 }
             } else if (sp[1] == '.' && sp[2] == '\0')  {
-#if UNUSED
-                /* Have ".." */
-                if (i == 1 && *segments[0] == '\0') {
-                    /* Leading ".." */
-                    j = 0;
-                } else if ((i+1) == nseg) {
-                    /* Trailing ".." */
-                    if (--j >= 0) {
-                        /* Trim last segment */
-                        segments[j] = "";
-                    }
-                } else {
-                    j = max(j - 2, -1);
-                }
-#else
                 j = max(j - 2, -1);
                 if ((i+1) == nseg) {
                     nseg--;
                 }
-#endif
             }
         } else {
             segments[j] = segments[i];
