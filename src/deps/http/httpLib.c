@@ -17820,6 +17820,9 @@ PUBLIC char *httpNormalizeUriPath(cchar *pathArg)
                 if ((i+1) == nseg) {
                     nseg--;
                 }
+            } else {
+                /* ..more-chars */
+                segments[j] = segments[i];
             }
         } else {
             segments[j] = segments[i];
