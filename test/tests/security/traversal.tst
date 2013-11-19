@@ -15,5 +15,10 @@ http.close()
 
 /* Test windows '\' delimiter */
 http.get(HTTP + "/..%5Cappweb.conf")
-assert(http.status == 404)
+if (Config.OS == 'windows') {
+    /* for windows, the "..\\" is an invalid filename */
+    assert(http.status == 400)
+} else {
+    assert(http.status == 404)
+}
 http.close()
