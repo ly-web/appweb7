@@ -168,7 +168,7 @@ PUBLIC bool httpAuthenticate(HttpConn *conn)
 
     if (!rx->authenticated) {
         if ((username = httpGetSessionVar(conn, HTTP_SESSION_USERNAME, 0)) == 0) {
-            if (auth->username) {
+            if (auth->username && *auth->username) {
                 httpLogin(conn, auth->username, NULL);
                 username = httpGetSessionVar(conn, HTTP_SESSION_USERNAME, 0);
             }
@@ -259,12 +259,14 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
     if ((session = httpCreateSession(conn)) == 0) {
         return 0;
     }
+#if UNUSED
     if (rx->route->flags & HTTP_ROUTE_XSRF) {
         if ((httpCreateSecurityToken(conn)) == 0) {
             return 0;
         }
         httpSetSecurityToken(conn);
     }
+#endif
     httpSetSessionVar(conn, HTTP_SESSION_USERNAME, username);
     rx->authenticated = 1;
     conn->username = sclone(username);
@@ -14853,7 +14855,7 @@ static void manageSession(HttpSession *sp, int flags);
     Allocate a http session state object. This keeps a local hash for session state items.
     This is written via httpWriteSession to the backend session state store.
  */
-static HttpSession *allocSession(HttpConn *conn, cchar *id, cchar *data)
+static HttpSession *allocSessionObj(HttpConn *conn, cchar *id, cchar *data)
 {
     HttpSession *sp;
 
@@ -14878,38 +14880,6 @@ static HttpSession *allocSession(HttpConn *conn, cchar *id, cchar *data)
 }
 
 
-/*
-    Create a new session. This generates a new session ID.
- */
-static HttpSession *createSession(HttpConn *conn)
-{
-    Http            *http;
-    char            *id;
-    static int      nextSession = 0;
-
-    assert(conn);
-    http = conn->http;
-    assert(http);
-
-    /* 
-        Thread race here on nextSession++ not critical 
-     */
-    id = sfmt("%08x%08x%d", PTOI(conn->data) + PTOI(conn), (int) mprGetTicks(), nextSession++);
-    id = mprGetMD5WithPrefix(id, slen(id), "::http.session::");
-
-    lock(http);
-    mprGetCacheStats(http->sessionCache, &http->activeSessions, NULL);
-    if (http->activeSessions >= conn->limits->sessionMax) {
-        unlock(http);
-        httpLimitError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Too many sessions %d/%d", http->activeSessions, conn->limits->sessionMax);
-        return 0;
-    }
-    unlock(http);
-
-    return allocSession(conn, id, NULL);
-}
-
-
 PUBLIC bool httpLookupSessionID(cchar *id)
 {
     Http    *http;
@@ -14917,23 +14887,6 @@ PUBLIC bool httpLookupSessionID(cchar *id)
     http = MPR->httpService;
     assert(http);
     return mprReadCache(http->sessionCache, id, 0, 0) != 0;
-}
-
-
-static HttpSession *lookupSession(HttpConn *conn)
-{
-    cchar   *data, *id;
-
-    assert(conn);
-    assert(conn->http);
-
-    if ((id = httpGetSessionID(conn)) == 0) {
-        return 0;
-    }
-    if ((data = mprReadCache(conn->http->sessionCache, id, 0, 0)) == 0) {
-        return 0;
-    }
-    return allocSession(conn, id, data);
 }
 
 
@@ -14982,22 +14935,51 @@ static void manageSession(HttpSession *sp, int flags)
  */
 PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create)
 {
+    Http        *http;
     HttpRx      *rx;
+    cchar       *data, *id;
+    static int  nextSession = 0;
     int         flags;
 
     assert(conn);
     rx = conn->rx;
+    http = conn->http;
     assert(rx);
 
     if (!rx->session) {
-        if ((rx->session = lookupSession(conn)) == 0 && create) {
-            /*
-                If forced create or we have a session-state cookie, then allocate a session object to manage the state.
-                NOTE: the session state for this ID may already exist if data has been written to the session.
+        if ((id = httpGetSessionID(conn)) != 0) {
+            if ((data = mprReadCache(conn->http->sessionCache, id, 0, 0)) != 0) {
+                rx->session = allocSessionObj(conn, id, data);
+            }
+        }
+        if (!rx->session && create) {
+            /* 
+                Thread race here on nextSession++ not critical 
              */
-            if ((rx->session = createSession(conn)) != 0) {
+            id = sfmt("%08x%08x%d", PTOI(conn->data) + PTOI(conn), (int) mprGetTicks(), nextSession++);
+            id = mprGetMD5WithPrefix(id, slen(id), "::http.session::");
+
+            lock(http);
+            mprGetCacheStats(http->sessionCache, &http->activeSessions, NULL);
+            if (http->activeSessions >= conn->limits->sessionMax) {
+                unlock(http);
+                httpLimitError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, 
+                    "Too many sessions %d/%d", http->activeSessions, conn->limits->sessionMax);
+                return 0;
+            }
+            unlock(http);
+            if ((rx->session = allocSessionObj(conn, id, NULL)) != 0) {
                 flags = (rx->route->flags & HTTP_ROUTE_VISIBLE_SESSION) ? 0 : HTTP_COOKIE_HTTP;
                 httpSetCookie(conn, HTTP_SESSION_COOKIE, rx->session->id, "/", NULL, rx->session->lifespan, flags);
+            }
+            /*
+                Ensure XSRF token is preserved in the new session
+             */
+            if (rx->route->flags & HTTP_ROUTE_XSRF) {
+                if ((httpCreateSecurityToken(conn)) == 0) {
+                    return 0;
+                }
+                httpSetSecurityToken(conn);
             }
         }
     }
