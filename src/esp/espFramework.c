@@ -561,12 +561,23 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 /* Automatic login as this user. Password not required */
                 httpSetAuthUsername(route->auth, value);
             }
-            if ((value = espGetConfig(route, "settings.xsrfToken", 0)) != 0) {
+            if ((value = espGetConfig(route, "settings.xsrf", 0)) != 0) {
                 httpSetRouteXsrf(route, smatch(value, "true"));
+#if DEPRECATE || 1
+            } else {
+                if ((value = espGetConfig(route, "settings.xsrfToken", 0)) != 0) {
+                    httpSetRouteXsrf(route, smatch(value, "true"));
+                }
+#endif
             }
-            //  FUTURE - should this default to true for non-legacy
-            if ((value = espGetConfig(route, "settings.sendJson", 0)) != 0) {
+            if ((value = espGetConfig(route, "settings.json", 0)) != 0) {
                 eroute->json = smatch(value, "true");
+#if DEPRECATE || 1
+            } else {
+                if ((value = espGetConfig(route, "settings.sendJson", 0)) != 0) {
+                    eroute->json = smatch(value, "true");
+                }
+#endif
             }
             if ((value = espGetConfig(route, "settings.timeouts.session", 0)) != 0) {
                 route->limits->sessionTimeout = stoi(value) * 1000;
@@ -582,7 +593,6 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                     }
                 }
             }
-            eroute->json = espTestConfig(route, "settings.json", "1");
 #if BIT_ESP_LEGACY
             if (espHasComponent(route, "legacy-mvc")) {
                 eroute->legacy = 1;

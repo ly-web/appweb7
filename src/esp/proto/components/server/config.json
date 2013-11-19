@@ -32,13 +32,13 @@
         },
     },
     settings: {
+        json: false,
         loginRequired: "",
         refresh: 1000,
         serverPrefix: "/do",
-        sendJson: false,
         timeouts: {
             session: 1800,
         },
-        xsrfToken: true,
+        xsrf: true,
     },
 }

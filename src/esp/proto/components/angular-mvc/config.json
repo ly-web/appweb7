@@ -18,14 +18,14 @@
             float: 2,                                                                                                  
             int: 0
         },
+        json: true,
         loginRequired: "",
         redirect: "secure",
         serverPrefix: "/do",
-        sendJson: true,
         timeouts: {
             session: 300,
         },
-        xsrfToken: true,
+        xsrf: true,
     },
     server: {
         database: "${DATABASE}://${NAME}.${DATABASE}",

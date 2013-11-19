@@ -61,11 +61,11 @@
             "angular-mvc"
         ],
         redirect: "secure",
-        sendJson: true,
+        json: true,
         serverPrefix: "/service",
         timeouts: {
             session: 1800
         },
-        xsrfToken: true,
+        xsrf: true,
     }
 }
