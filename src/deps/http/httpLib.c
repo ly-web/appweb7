@@ -9694,7 +9694,9 @@ static int checkRoute(HttpConn *conn, HttpRoute *route)
     if ((rc = (*proc)(conn, route, 0)) != HTTP_ROUTE_OK) {
         return rc;
     }
-    if (tx->handler->rewrite) {
+    if (tx->finalized) {
+        tx->handler = conn->http->passHandler;
+    } else if (tx->handler->rewrite) {
         rc = tx->handler->rewrite(conn);
     }
     return rc;
