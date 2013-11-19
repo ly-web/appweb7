@@ -1068,7 +1068,7 @@ LIBS_52 = $(LIBS_52) libmpr.lib
 LIBS_52 = $(LIBS_52) libpcre.lib
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_52 = $(LIBS_52) libsql.lib
+LIBS_52 = $(LIBS_52) libsqlite3.lib
 !ENDIF
 
 $(CONFIG)\bin\libmod_esp.dll: $(DEPS_52)
@@ -1134,7 +1134,7 @@ LIBS_54 = $(LIBS_54) libmpr.lib
 LIBS_54 = $(LIBS_54) libpcre.lib
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_54 = $(LIBS_54) libsql.lib
+LIBS_54 = $(LIBS_54) libsqlite3.lib
 !ENDIF
 LIBS_54 = $(LIBS_54) libmod_esp.lib
 
@@ -1461,7 +1461,7 @@ LIBS_62 = $(LIBS_62) libmpr.lib
 LIBS_62 = $(LIBS_62) libpcre.lib
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_62 = $(LIBS_62) libsql.lib
+LIBS_62 = $(LIBS_62) libsqlite3.lib
 !ENDIF
 
 $(CONFIG)\bin\libejs.dll: $(DEPS_62)
@@ -1511,7 +1511,7 @@ LIBS_64 = $(LIBS_64) libmpr.lib
 LIBS_64 = $(LIBS_64) libpcre.lib
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_64 = $(LIBS_64) libsql.lib
+LIBS_64 = $(LIBS_64) libsqlite3.lib
 !ENDIF
 
 $(CONFIG)\bin\ejs.exe: $(DEPS_64)
@@ -1561,7 +1561,7 @@ LIBS_66 = $(LIBS_66) libmpr.lib
 LIBS_66 = $(LIBS_66) libpcre.lib
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_66 = $(LIBS_66) libsql.lib
+LIBS_66 = $(LIBS_66) libsqlite3.lib
 !ENDIF
 
 $(CONFIG)\bin\ejsc.exe: $(DEPS_66)
@@ -1702,7 +1702,7 @@ LIBS_71 = $(LIBS_71) libpcre.lib
 !ENDIF
 LIBS_71 = $(LIBS_71) libejs.lib
 !IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_71 = $(LIBS_71) libsql.lib
+LIBS_71 = $(LIBS_71) libsqlite3.lib
 !ENDIF
 
 $(CONFIG)\bin\libmod_ejs.dll: $(DEPS_71)

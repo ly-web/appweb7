@@ -1020,7 +1020,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_52 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_52 += -lsql
+    LIBS_52 += -lsqlite3
 endif
 LIBS_52 += -lmod_esp
 
@@ -1388,7 +1388,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_62 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_62 += -lsql
+    LIBS_62 += -lsqlite3
 endif
 
 $(CONFIG)/bin/ejs.out: $(DEPS_62)
@@ -1438,7 +1438,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_64 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_64 += -lsql
+    LIBS_64 += -lsqlite3
 endif
 
 $(CONFIG)/bin/ejsc.out: $(DEPS_64)
@@ -1895,7 +1895,7 @@ ifeq ($(BIT_PACK_ESP),1)
     LIBS_82 += -lmod_esp
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_82 += -lsql
+    LIBS_82 += -lsqlite3
 endif
 ifeq ($(BIT_PACK_SSL),1)
     LIBS_82 += -lmod_ssl

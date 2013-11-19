@@ -962,7 +962,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_50 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_50 += -lsql
+    LIBS_50 += -lsqlite3
 endif
 
 $(CONFIG)/bin/libmod_esp.so: $(DEPS_50)
@@ -1028,7 +1028,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_52 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_52 += -lsql
+    LIBS_52 += -lsqlite3
 endif
 LIBS_52 += -lmod_esp
 
@@ -1355,7 +1355,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_60 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_60 += -lsql
+    LIBS_60 += -lsqlite3
 endif
 
 $(CONFIG)/bin/libejs.so: $(DEPS_60)
@@ -1405,7 +1405,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_62 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_62 += -lsql
+    LIBS_62 += -lsqlite3
 endif
 
 $(CONFIG)/bin/ejs: $(DEPS_62)
@@ -1455,7 +1455,7 @@ ifeq ($(BIT_PACK_PCRE),1)
     LIBS_64 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_64 += -lsql
+    LIBS_64 += -lsqlite3
 endif
 
 $(CONFIG)/bin/ejsc: $(DEPS_64)
@@ -1596,7 +1596,7 @@ ifeq ($(BIT_PACK_PCRE),1)
 endif
 LIBS_69 += -lejs
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_69 += -lsql
+    LIBS_69 += -lsqlite3
 endif
 
 $(CONFIG)/bin/libmod_ejs.so: $(DEPS_69)

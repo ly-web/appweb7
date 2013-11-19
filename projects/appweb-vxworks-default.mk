@@ -935,13 +935,9 @@ DEPS_50 += $(CONFIG)/obj/espTemplate.o
 DEPS_50 += $(CONFIG)/obj/mdb.o
 DEPS_50 += $(CONFIG)/obj/sdb.o
 
-ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_50 += -lsql
-endif
-
 $(CONFIG)/bin/libmod_esp.out: $(DEPS_50)
 	@echo '      [Link] $(CONFIG)/bin/libmod_esp.out'
-	$(CC) -r -o $(CONFIG)/bin/libmod_esp.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/edi.o" "$(CONFIG)/obj/espAbbrev.o" "$(CONFIG)/obj/espFramework.o" "$(CONFIG)/obj/espHandler.o" "$(CONFIG)/obj/espHtml.o" "$(CONFIG)/obj/espTemplate.o" "$(CONFIG)/obj/mdb.o" "$(CONFIG)/obj/sdb.o" $(LIBPATHS_50) $(LIBS_50) $(LIBS_50) $(LIBS) 
+	$(CC) -r -o $(CONFIG)/bin/libmod_esp.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/edi.o" "$(CONFIG)/obj/espAbbrev.o" "$(CONFIG)/obj/espFramework.o" "$(CONFIG)/obj/espHandler.o" "$(CONFIG)/obj/espHtml.o" "$(CONFIG)/obj/espTemplate.o" "$(CONFIG)/obj/mdb.o" "$(CONFIG)/obj/sdb.o" $(LIBS) 
 endif
 
 #
@@ -995,13 +991,9 @@ DEPS_52 += $(CONFIG)/obj/sdb.o
 DEPS_52 += $(CONFIG)/bin/libmod_esp.out
 DEPS_52 += $(CONFIG)/obj/esp.o
 
-ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_52 += -lsql
-endif
-
 $(CONFIG)/bin/esp.out: $(DEPS_52)
 	@echo '      [Link] $(CONFIG)/bin/esp.out'
-	$(CC) -o $(CONFIG)/bin/esp.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/edi.o" "$(CONFIG)/obj/esp.o" "$(CONFIG)/obj/espAbbrev.o" "$(CONFIG)/obj/espFramework.o" "$(CONFIG)/obj/espHandler.o" "$(CONFIG)/obj/espHtml.o" "$(CONFIG)/obj/espTemplate.o" "$(CONFIG)/obj/mdb.o" "$(CONFIG)/obj/sdb.o" $(LIBPATHS_52) $(LIBS_52) $(LIBS_52) $(LIBS) -Wl,-r 
+	$(CC) -o $(CONFIG)/bin/esp.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/edi.o" "$(CONFIG)/obj/esp.o" "$(CONFIG)/obj/espAbbrev.o" "$(CONFIG)/obj/espFramework.o" "$(CONFIG)/obj/espHandler.o" "$(CONFIG)/obj/espHtml.o" "$(CONFIG)/obj/espTemplate.o" "$(CONFIG)/obj/mdb.o" "$(CONFIG)/obj/sdb.o" $(LIBS) -Wl,-r 
 endif
 
 ifeq ($(BIT_PACK_ESP),1)
@@ -1316,13 +1308,9 @@ DEPS_60 += $(CONFIG)/inc/ejs.slots.h
 DEPS_60 += $(CONFIG)/inc/ejsByteGoto.h
 DEPS_60 += $(CONFIG)/obj/ejsLib.o
 
-ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_60 += -lsql
-endif
-
 $(CONFIG)/bin/libejs.out: $(DEPS_60)
 	@echo '      [Link] $(CONFIG)/bin/libejs.out'
-	$(CC) -r -o $(CONFIG)/bin/libejs.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_60) $(LIBS_60) $(LIBS_60) $(LIBS) 
+	$(CC) -r -o $(CONFIG)/bin/libejs.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejsLib.o" $(LIBS) 
 endif
 
 #
@@ -1360,13 +1348,9 @@ DEPS_62 += $(CONFIG)/obj/ejsLib.o
 DEPS_62 += $(CONFIG)/bin/libejs.out
 DEPS_62 += $(CONFIG)/obj/ejs.o
 
-ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_62 += -lsql
-endif
-
 $(CONFIG)/bin/ejs.out: $(DEPS_62)
 	@echo '      [Link] $(CONFIG)/bin/ejs.out'
-	$(CC) -o $(CONFIG)/bin/ejs.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejs.o" $(LIBPATHS_62) $(LIBS_62) $(LIBS_62) $(LIBS) -Wl,-r 
+	$(CC) -o $(CONFIG)/bin/ejs.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejs.o" $(LIBS) -Wl,-r 
 endif
 
 #
@@ -1404,13 +1388,9 @@ DEPS_64 += $(CONFIG)/obj/ejsLib.o
 DEPS_64 += $(CONFIG)/bin/libejs.out
 DEPS_64 += $(CONFIG)/obj/ejsc.o
 
-ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_64 += -lsql
-endif
-
 $(CONFIG)/bin/ejsc.out: $(DEPS_64)
 	@echo '      [Link] $(CONFIG)/bin/ejsc.out'
-	$(CC) -o $(CONFIG)/bin/ejsc.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejsc.o" $(LIBPATHS_64) $(LIBS_64) $(LIBS_64) $(LIBS) -Wl,-r 
+	$(CC) -o $(CONFIG)/bin/ejsc.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejsc.o" $(LIBS) -Wl,-r 
 endif
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
@@ -1531,13 +1511,9 @@ DEPS_69 += $(CONFIG)/obj/ejsLib.o
 DEPS_69 += $(CONFIG)/bin/libejs.out
 DEPS_69 += $(CONFIG)/obj/ejsHandler.o
 
-ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_69 += -lsql
-endif
-
 $(CONFIG)/bin/libmod_ejs.out: $(DEPS_69)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ejs.out'
-	$(CC) -r -o $(CONFIG)/bin/libmod_ejs.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_69) $(LIBS_69) $(LIBS_69) $(LIBS) 
+	$(CC) -r -o $(CONFIG)/bin/libmod_ejs.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejsHandler.o" $(LIBS) 
 endif
 
 #
