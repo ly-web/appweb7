@@ -9777,7 +9777,9 @@ PUBLIC void httpMapRequest(HttpConn *conn)
 #endif
 #if BIT_WIN_LIKE || BIT_EXTRA_SECURITY
     if (!mprIsParentPathOf(route->documents, filename)) {
-        httpError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Bad URL");
+        info->checked = 1;
+        info->valid = 0;
+        httpError(conn, HTTP_CODE_BAD_REQUEST, "Bad URL");
         return;
     }
 #endif
