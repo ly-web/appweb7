@@ -434,7 +434,7 @@ static bool similarRoute(HttpRoute *r1, HttpRoute *r2)
         return 0;
     }
     if (scontains(r1->sourceName, "${") == 0 && scontains(r2->sourceName, "${") == 0) {
-        if (r2->sourceName && r2->sourceName) {
+        if (r1->sourceName || r2->sourceName) {
             return smatch(r1->sourceName, r2->sourceName);
         }
     }
