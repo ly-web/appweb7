@@ -500,6 +500,7 @@ PUBLIC ssize renderCached()
     return espRenderCached(getConn());;
 }
 
+
 PUBLIC ssize renderConfig()
 {
     HttpConn    *conn;
@@ -508,7 +509,7 @@ PUBLIC ssize renderConfig()
 
     conn = getConn();
     eroute = conn->rx->route->eroute;
-    settings = mprLookupJson(eroute->config, "settings");
+    settings = mprLookupJsonObj(eroute->config, "settings");
     if (settings) {
         return renderString(mprJsonToString(settings, MPR_JSON_QUOTES));
     }
@@ -591,9 +592,9 @@ PUBLIC void scripts(cchar *patterns)
             name = sfmt("all-%s.min.js", espGetConfig(route, "version", "1.0.0"));
             scripts(name);
         } else {
-            if ((components = mprGetJson(eroute->config, "settings.components", 0)) != 0) {
+            if ((components = mprGetJsonObj(eroute->config, "settings.components", 0)) != 0) {
                 for (ITERATE_JSON(components, component, ci)) {
-                    if ((componentScripts = mprGetJson(component, "scripts", 0)) != 0) {
+                    if ((componentScripts = mprGetJsonObj(component, "scripts", 0)) != 0) {
                         for (ITERATE_JSON(componentScripts, file, fi)) {
                             if (smatch(file->value, "*")) {
                                 scripts(sfmt("lib/%s/**.js", component->name));
@@ -832,7 +833,7 @@ PUBLIC bool updateFields(cchar *tableName, MprJson *params)
     EdiRec  *rec;
     cchar   *key;
 
-    key = mprLookupJsonValue(params, "id");
+    key = mprLookupJson(params, "id");
     if ((rec = ediSetFields(ediReadRec(getDatabase(), tableName, key), params)) == 0) {
         return 0;
     }

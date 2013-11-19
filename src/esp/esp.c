@@ -546,9 +546,9 @@ static MprList *getRoutes()
     eroute = app->eroute = app->route->eroute;
     assert(eroute);
     if (eroute->config) {
-        app->topComponent = mprGetJsonValue(eroute->config, "generate.top", 0);
+        app->topComponent = mprGetJson(eroute->config, "generate.top", 0);
         app->appName = eroute->appName;
-        app->topComponent = mprGetJsonValue(eroute->config, "generate.top", 0);
+        app->topComponent = mprGetJson(eroute->config, "generate.top", 0);
     }
     return routes;
 }
@@ -1276,14 +1276,14 @@ static void addDeps(cchar *component)
             fail("Cannot load %s", cpath);
             return;
         }
-        if ((depends = mprGetJson(config, "depends", 0)) != 0) {
+        if ((depends = mprGetJsonObj(config, "depends", 0)) != 0) {
             for (ITERATE_JSON(depends, dep, i)) {
                 if (!espHasComponent(app->route, dep->value)) {
                     addDeps(dep->value);
                 }
             }
         }
-        details = mprGetJson(config, sfmt("settings.components.%s", component), 0);
+        details = mprGetJsonObj(config, sfmt("settings.components.%s", component), 0);
         if (!espHasComponent(app->route, component)) {
             mprTrace(4, "Add component %s", component);
             espAddComponent(app->route, component, details);
@@ -1920,7 +1920,7 @@ static void generateAppFiles()
     eroute = app->eroute;
     makeEspDir(route->documents);
     app->routeSet = sclone("restful");
-    components = mprGetJson(eroute->config, "settings.components", 0);
+    components = mprGetJsonObj(eroute->config, "settings.components", 0);
 
     /*
         Generate components in reverse order (top-down) so that the top-level components can install 
@@ -1964,7 +1964,7 @@ static void generateAppFiles()
         fail("Cannot save config.json");
     }
     fixupFile(mprJoinPath(route->documents, "config.json"));
-    app->topComponent = mprGetJsonValue(eroute->config, "generate.top", 0);
+    app->topComponent = mprGetJson(eroute->config, "generate.top", 0);
 }
 
 
@@ -2026,7 +2026,7 @@ static void generateAppDb()
     if (!app->database) {
         return;
     }
-    dbspec = mprGetJsonValue(app->eroute->config, "server.database", 0);
+    dbspec = mprGetJson(app->eroute->config, "server.database", 0);
     if (!dbspec || *dbspec == '\0') {
         return;
     }
@@ -2091,7 +2091,7 @@ static cchar *getComponents()
         path = mprJoinPath(dp->name, "config.json");
         if (mprPathExists(path, R_OK)) {
             if ((config = mprLoadJson(path)) != 0) {
-                mprAddItem(result, sfmt("%24s: %s", mprGetJsonValue(config, "name", 0), mprGetJsonValue(config, "description", 0)));
+                mprAddItem(result, sfmt("%24s: %s", mprGetJson(config, "name", 0), mprGetJson(config, "description", 0)));
             }
         }
     }

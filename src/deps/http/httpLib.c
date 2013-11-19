@@ -259,14 +259,6 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
     if ((session = httpCreateSession(conn)) == 0) {
         return 0;
     }
-#if UNUSED
-    if (rx->route->flags & HTTP_ROUTE_XSRF) {
-        if ((httpCreateSecurityToken(conn)) == 0) {
-            return 0;
-        }
-        httpSetSecurityToken(conn);
-    }
-#endif
     httpSetSessionVar(conn, HTTP_SESSION_USERNAME, username);
     rx->authenticated = 1;
     conn->username = sclone(username);
@@ -11074,7 +11066,7 @@ PUBLIC char *httpTemplate(HttpConn *conn, cchar *template, MprHash *options)
                 if (options && (value = httpGetOption(options, key, 0)) != 0) {
                     mprPutStringToBuf(buf, value);
 
-                } else if ((value = mprLookupJsonValue(rx->params, key)) != 0) {
+                } else if ((value = mprLookupJson(rx->params, key)) != 0) {
                     mprPutStringToBuf(buf, value);
                 }
                 if (value == 0) {
@@ -18287,7 +18279,7 @@ static void addParamsFromBuf(HttpConn *conn, cchar *buf, ssize len)
             /*
                 Append to existing keywords
              */
-            prior = mprLookupJson(params, keyword);
+            prior = mprLookupJsonObj(params, keyword);
             if (prior && prior->type == MPR_JSON_VALUE) {
                 if (*value) {
                     newValue = sjoin(prior->value, " ", value, NULL);
@@ -18366,7 +18358,7 @@ PUBLIC MprJson *httpGetParams(HttpConn *conn)
 
 PUBLIC int httpTestParam(HttpConn *conn, cchar *var)
 {
-    return mprLookupJson(httpGetParams(conn), var) != 0;
+    return mprLookupJsonObj(httpGetParams(conn), var) != 0;
 }
 
 
@@ -18374,7 +18366,7 @@ PUBLIC cchar *httpGetParam(HttpConn *conn, cchar *var, cchar *defaultValue)
 {
     cchar       *value;
 
-    value = mprLookupJsonValue(httpGetParams(conn), var);
+    value = mprLookupJson(httpGetParams(conn), var);
     return (value) ? value : defaultValue;
 }
 
@@ -18383,7 +18375,7 @@ PUBLIC int httpGetIntParam(HttpConn *conn, cchar *var, int defaultValue)
 {
     cchar       *value;
 
-    value = mprLookupJsonValue(httpGetParams(conn), var);
+    value = mprLookupJson(httpGetParams(conn), var);
     return (value) ? (int) stoi(value) : defaultValue;
 }
 
