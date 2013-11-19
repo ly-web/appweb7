@@ -14,7 +14,7 @@ http.get(HTTP + "/cgiProgram.cgi/extra%20long/a/../path/a/..?var%201=value%201")
 match(http, "QUERY_STRING", "var%201=value%201")
 match(http, "SCRIPT_NAME", "/cgiProgram.cgi")
 match(http, "QVAR var 1", "value 1")
-match(http, "PATH_INFO", "/extra long/path/")
+match(http, "PATH_INFO", "/extra long/path")
 
 let scriptFilename = keyword(http, "SCRIPT_FILENAME")
 let path = Path(scriptFilename).dirname.join("extra long/path")

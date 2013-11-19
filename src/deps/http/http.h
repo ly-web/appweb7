@@ -1143,6 +1143,17 @@ PUBLIC char *httpLink(struct HttpConn *conn, cchar *target, MprHash *options);
 PUBLIC char *httpUriToString(HttpUri *uri, int flags);
 
 /**
+    Validate a URI path as expected in a HTTP request line
+    @description This expects a URI beginning with "/" and containing only valid URI characters.
+    The URI is decoded, and normalized removing "../" and "." segments.
+    The URI must begin with a "/" both before and after decoding and normalization. 
+    @param uri URI to validate.
+    @return A validated, normalized URI path
+    @stability Prototype
+ */
+PUBLIC char *httpValidateUriPath(cchar *uri);
+
+/**
     Test if a URI is using only valid characters
     Note this does not test if the URI is fully legal. Some components of the URI have restricted character sets 
     that this routine does not test. This tests if the URI has only characters valid to use in a URI before decoding. 

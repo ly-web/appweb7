@@ -13980,8 +13980,9 @@ static int setParsedUri(HttpConn *conn)
 
     rx = conn->rx;
     if (httpSetUri(conn, rx->uri) < 0 || rx->pathInfo[0] != '/') {
-        httpBadRequestError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Bad URL");
-        return MPR_ERR_BAD_ARGS;
+        httpBadRequestError(conn, HTTP_CODE_BAD_REQUEST, "Bad URL");
+        rx->parsedUri = httpCreateUri("", 0);
+        /* Continue to render a response */
     }
     /*
         Complete the URI based on the connection state.
@@ -14007,14 +14008,10 @@ PUBLIC int httpSetUri(HttpConn *conn, cchar *uri)
     char        *pathInfo;
 
     rx = conn->rx;
-    if (!httpValidUriChars(uri)) {
-        return MPR_ERR_BAD_ARGS;
-    }
     if ((rx->parsedUri = httpCreateUri(uri, 0)) == 0) {
         return MPR_ERR_BAD_ARGS;
     }
-    pathInfo = httpNormalizeUriPath(mprUriDecode(rx->parsedUri->path));
-    if (pathInfo[0] != '/') {
+    if ((pathInfo = httpValidateUriPath(rx->parsedUri->path)) == 0) {
         return MPR_ERR_BAD_ARGS;
     }
     rx->pathInfo = pathInfo;
@@ -17742,6 +17739,13 @@ PUBLIC HttpUri *httpJoinUri(HttpUri *uri, int argc, HttpUri **others)
 }
 
 
+#if DEPRECATE || 1
+PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
+{
+    return httpUriEx(conn, target, options);
+}
+#endif
+
 /*
     Create and resolve a URI link given a set of options.
  */
@@ -17803,20 +17807,33 @@ PUBLIC char *httpNormalizeUriPath(cchar *pathArg)
         if (sp[0] == '.') {
             if (sp[1] == '\0')  {
                 if ((i+1) == nseg) {
+                    /* Trim trailing "." */
                     segments[j] = "";
                 } else {
+                    /* Trim intermediate "." */
                     j--;
                 }
             } else if (sp[1] == '.' && sp[2] == '\0')  {
+#if UNUSED
+                /* Have ".." */
                 if (i == 1 && *segments[0] == '\0') {
+                    /* Leading ".." */
                     j = 0;
                 } else if ((i+1) == nseg) {
+                    /* Trailing ".." */
                     if (--j >= 0) {
+                        /* Trim last segment */
                         segments[j] = "";
                     }
                 } else {
                     j = max(j - 2, -1);
                 }
+#else
+                j = max(j - 2, -1);
+                if ((i+1) == nseg) {
+                    nseg--;
+                }
+#endif
             }
         } else {
             segments[j] = segments[i];
@@ -17993,17 +18010,33 @@ PUBLIC char *httpUri(HttpConn *conn, cchar *target)
 }
 
 
-#if DEPRECATE || 1
-PUBLIC char *httpLink(HttpConn *conn, cchar *target, MprHash *options)
-{
-    return httpUriEx(conn, target, options);
-}
-#endif
-
-
 PUBLIC char *httpUriToString(HttpUri *uri, int flags)
 {
     return httpFormatUri(uri->scheme, uri->host, uri->port, uri->path, uri->reference, uri->query, flags);
+}
+
+
+/*
+    Validate a URI path for use in a HTTP request line
+    The URI must contain only valid characters and must being with "/" both before and after decoding.
+    A decoded, normalized URI path is returned.
+ */
+PUBLIC char *httpValidateUriPath(cchar *uri)
+{
+    char    *up;
+
+    if (*uri != '/') {
+        return 0;
+    }
+    if (!httpValidUriChars(uri)) {
+        return 0;
+    }
+    up = mprUriDecode(uri);
+    up = httpNormalizeUriPath(up);
+    if (*up != '/') {
+        return 0;
+    }
+    return up;
 }
 
 
@@ -18015,7 +18048,7 @@ PUBLIC bool httpValidUriChars(cchar *uri)
     ssize   pos;
 
     if (uri == 0 || *uri == 0) {
-        return 0;
+        return 1;
     }
     pos = strspn(uri, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%");
     if (pos < slen(uri)) {
