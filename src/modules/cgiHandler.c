@@ -46,7 +46,7 @@ static void readFromCgi(Cgi *cgi, int channel);
 #endif
 
 #if BIT_WIN_LIKE || VXWORKS
-    static void findExecutable(HttpConn *conn, char **program, char **script, char **bangScript, char *fileName);
+    static void findExecutable(HttpConn *conn, char **program, char **script, char **bangScript, cchar *fileName);
 #endif
 #if BIT_WIN_LIKE
     static void checkCompletion(HttpQueue *q, MprEvent *event);
@@ -774,15 +774,15 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
     we just return in program the fileName we were passed in. script will be set if we are modifying the program 
     to run and we have extracted the name of the file to run as a script.
  */
-static void findExecutable(HttpConn *conn, char **program, char **script, char **bangScript, char *fileName)
+static void findExecutable(HttpConn *conn, char **program, char **script, char **bangScript, cchar *fileName)
 {
     HttpRx      *rx;
     HttpTx      *tx;
     HttpRoute   *route;
     MprKey      *kp;
     MprFile     *file;
-    cchar       *actionProgram, *ext, *cmdShell, *cp, *start;
-    char        *tok, buf[BIT_MAX_FNAME + 1], *path;
+    cchar       *actionProgram, *ext, *cmdShell, *cp, *start, *path;
+    char        *tok, buf[BIT_MAX_FNAME + 1];
 
     rx = conn->rx;
     tx = conn->tx;
