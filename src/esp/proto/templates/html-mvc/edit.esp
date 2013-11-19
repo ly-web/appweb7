@@ -8,7 +8,7 @@
     <% for (fp = 0; (fp = ediGetNextField(rec, fp, 1)) != 0; ) { %> 
         <div class='form-group'>
             <label class='control-label col-md-3'><%= stitle(fp->name) %></label>
-            <div class='input-group col-md-8 <%= getFieldError(rec, fp->name) ? "has-error" : "" %>'>
+            <div class='input-group col-md-8 <%= getFieldError(fp->name) ? "has-error" : "" %>'>
                 <% input(fp->name, "{class: 'form-control'}"); %>
             </div>
         </div>
