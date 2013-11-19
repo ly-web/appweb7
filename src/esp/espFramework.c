@@ -477,7 +477,7 @@ PUBLIC bool espIsSecure(HttpConn *conn)
 
 
 /*
-    Load the config.json
+    Load the esp.json
  */
 PUBLIC int espLoadConfig(HttpRoute *route)
 {
@@ -487,7 +487,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
     cchar       *cdata, *cpath, *value, *errorMsg;
 
     eroute = route->eroute;
-    cpath = mprJoinPath(route->documents, "config.json");
+    cpath = mprJoinPath(route->documents, BIT_ESP_CONFIG);
     if (mprGetPathInfo(cpath, &cinfo) == 0) {
         if (eroute->config && cinfo.mtime > eroute->configLoaded) {
             eroute->config = 0;
@@ -508,7 +508,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
 #endif
         {
             if ((cdata = mprReadPathContents(cpath, NULL)) == 0) {
-                mprError("Cannot read config.json at %s", cpath);
+                mprError("Cannot read ESP configuration from %s", cpath);
                 return MPR_ERR_CANT_READ;
             }
             if ((eroute->config = mprParseJsonEx(cdata, 0, 0, 0, &errorMsg)) == 0) {
@@ -877,7 +877,7 @@ PUBLIC int espSaveConfig(HttpRoute *route)
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    return mprSaveJson(eroute->config, mprJoinPath(route->documents, "config.json"), MPR_JSON_PRETTY);
+    return mprSaveJson(eroute->config, mprJoinPath(route->documents, BIT_ESP_CONFIG), MPR_JSON_PRETTY);
 }
 
 

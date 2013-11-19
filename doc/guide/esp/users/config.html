@@ -211,7 +211,7 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
             parse all the config files under the <em>apps</em>. Installing or removing a config file for each 
             application under the <em>apps</em> directory is a simple way to add/remove an application.</p>
             <h3>Config.json</h3>
-            <p>ESP MVC applications use a <em>config.json</em> configuration file to define applications-specific
+            <p>ESP MVC applications use a <em>esp.json</em> configuration file to define applications-specific
             configuration data. This file is a JSON property file that is made available to server-side controllers and
             portions to client-side scripts. For example:</p>
             <pre>
@@ -280,7 +280,7 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
             <a id="database"></a>
             <h2 class="section">Databases</h2>
             <p>Databases can be specified and pre-opened via the <em>EspDb</em> directive or via the 
-                <em>server.database</em> property in the <em>config.json</em> for ESP MVC applications. Pre-opening a
+                <em>server.database</em> property in the <em>esp.json</em> for ESP MVC applications. Pre-opening a
             database connection for an ESP application or route within an application eliminates the run-time delay 
             connecting to the database. </p>
             <p>ESP supports multiple database engines through a single Embedded Database Interface. Support is included for

@@ -36,6 +36,9 @@ extern "C" {
 #ifndef BIT_ESP_RELOAD_TIMEOUT
     #define BIT_ESP_RELOAD_TIMEOUT (5 * 1000)           /**< Timeout for reloading esp modules */
 #endif
+#ifndef BIT_ESP_CONFIG
+    #define BIT_ESP_CONFIG  "esp.json"                  /**< ESP configuration json file */
+#endif
 #define ESP_TOK_INCR        1024                        /**< Growth increment for ESP tokens */
 #define ESP_LISTEN          "4000"                      /**< Default listening endpoint for the esp program */
 #define ESP_UNLOAD_TIMEOUT  (10)                        /**< Very short timeout for reloading */
@@ -158,8 +161,8 @@ typedef struct EspRoute {
     struct EspRoute *top;                   /**< Top-level route for this application */
     EspProc         commonController;       /**< Common code for all controllers */
     MprHash         *env;                   /**< Environment variables for route */
-    MprJson         *config;                /**< App configuration from config.json */
-    MprTime         configLoaded;           /**< When config.json was last loaded */
+    MprJson         *config;                /**< App configuration from esp.json */
+    MprTime         configLoaded;           /**< When esp.json was last loaded */
 
     cchar           *appModulePath;         /**< App module path when compiled flat */
     cchar           *searchPath;            /**< Search path to use when locating compiler/linker */
@@ -191,7 +194,7 @@ typedef struct EspRoute {
 } EspRoute;
 
 /**
-    Add the specified component to the config.json components list.
+    Add the specified component to the esp.json components list.
     @param route HttpRoute defining the ESP application
     @param name Desired component name. For example: "angular-mvc"
     @param details Component details. JSON object with optional script property. Set to NULL if no details.
@@ -406,7 +409,7 @@ PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *viewProc);
 PUBLIC char *espExpandCommand(HttpRoute *route, cchar *command, cchar *source, cchar *module);
 
 /**
-    Get a configuration value from the ESP config.json
+    Get a configuration value from the ESP esp.json
     @param route HttpRoute defining the ESP application
     @param key Configuration property path. May contain dots.
     @param defaultValue Default value to use if the configuration is not defined. May be null
@@ -428,7 +431,7 @@ PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue);
 PUBLIC bool espHasComponent(HttpRoute *route, cchar *name);
 
 /**
-    Load ESP config.json configuration file 
+    Load ESP esp.json configuration file 
     @param route HttpRoute defining the ESP application
     @returns Zero if successful, otherwise a negative MPR error code.
     @ingroup EspRoute
@@ -437,7 +440,7 @@ PUBLIC bool espHasComponent(HttpRoute *route, cchar *name);
 PUBLIC int espLoadConfig(HttpRoute *route);
 
 /**
-    Save the in-memory ESP config.json configuration to the default location for the ESP application
+    Save the in-memory ESP esp.json configuration to the default location for the ESP application
     defined by the specified route. 
     @param route HttpRoute defining the ESP application
     @returns Zero if successful, otherwise a negative MPR error code.
@@ -447,8 +450,8 @@ PUBLIC int espLoadConfig(HttpRoute *route);
 PUBLIC int espSaveConfig(HttpRoute *route);
 
 /**
-    Set a configuration value to the ESP config.json. 
-    @description This updates the in-memory copy of the config.json only.
+    Set a configuration value to the ESP esp.json. 
+    @description This updates the in-memory copy of the esp.json only.
     @param route HttpRoute defining the ESP application
     @param key Configuration property path. May contain dots.
     @param value Value to set the property to.
@@ -469,7 +472,7 @@ PUBLIC int espSetConfig(HttpRoute *route, cchar *key, cchar *value);
 PUBLIC void espSetData(HttpConn *conn, void *data);
 
 /**
-    Test if a configuration property from the ESP config.json has a desired value.
+    Test if a configuration property from the ESP esp.json has a desired value.
     @param route HttpRoute defining the ESP application
     @param key Configuration property path. May contain dots.
     @param desired Desired value to compare with.
@@ -2116,7 +2119,7 @@ PUBLIC cchar *makeUri(cchar *target);
 
 /**
     Test the the application mode
-    @description This is typically set to "debug" or "release". The mode is defined by the "mode" property in the config.json.
+    @description This is typically set to "debug" or "release". The mode is defined by the "mode" property in the esp.json.
     @param check Mode to compare with the current application mode.
     @return True if the current app mode matches the check mode
     @ingroup EspAbbrev
@@ -2301,7 +2304,7 @@ PUBLIC ssize render(cchar *fmt, ...);
 PUBLIC ssize renderCached();
 
 /**
-    Render the config.json
+    Render the esp.json
     @return A count of the bytes actually written
     @ingroup EspAbbrev
     @stability Prototype

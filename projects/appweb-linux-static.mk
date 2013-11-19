@@ -1086,7 +1086,7 @@ $(CONFIG)/esp: $(DEPS_56)
 	cp src/esp/proto/components/angular/client/lib/angular/version.json $(CONFIG)/esp/components/angular/client/lib/angular/version.json
 	cp src/esp/proto/components/angular/client/lib/angular/version.txt $(CONFIG)/esp/components/angular/client/lib/angular/version.txt
 	mkdir -p "$(CONFIG)/esp/components/angular"
-	cp src/esp/proto/components/angular/config.json $(CONFIG)/esp/components/angular/config.json
+	cp src/esp/proto/components/angular/esp.json $(CONFIG)/esp/components/angular/esp.json
 	mkdir -p "$(CONFIG)/esp/components/angular-esp/client/lib/angular-esp"
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-click.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-click.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-confirm.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp-confirm.js
@@ -1106,11 +1106,11 @@ $(CONFIG)/esp: $(DEPS_56)
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp.es $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp.es
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp.js $(CONFIG)/esp/components/angular-esp/client/lib/angular-esp/esp.js
 	mkdir -p "$(CONFIG)/esp/components/angular-esp"
-	cp src/esp/proto/components/angular-esp/config.json $(CONFIG)/esp/components/angular-esp/config.json
+	cp src/esp/proto/components/angular-esp/esp.json $(CONFIG)/esp/components/angular-esp/esp.json
 	mkdir -p "$(CONFIG)/esp/components/angular-esp-extras/client/lib/angular-esp-extras"
 	cp src/esp/proto/components/angular-esp-extras/client/lib/angular-esp-extras/esp-svg-gauge.js $(CONFIG)/esp/components/angular-esp-extras/client/lib/angular-esp-extras/esp-svg-gauge.js
 	mkdir -p "$(CONFIG)/esp/components/angular-esp-extras"
-	cp src/esp/proto/components/angular-esp-extras/config.json $(CONFIG)/esp/components/angular-esp-extras/config.json
+	cp src/esp/proto/components/angular-esp-extras/esp.json $(CONFIG)/esp/components/angular-esp-extras/esp.json
 	mkdir -p "$(CONFIG)/esp/components/angular-mvc"
 	cp src/esp/proto/components/angular-mvc/appweb.conf $(CONFIG)/esp/components/angular-mvc/appweb.conf
 	mkdir -p "$(CONFIG)/esp/components/angular-mvc/client/app"
@@ -1126,17 +1126,17 @@ $(CONFIG)/esp: $(DEPS_56)
 	cp src/esp/proto/components/angular-mvc/client/index.esp $(CONFIG)/esp/components/angular-mvc/client/index.esp
 	mkdir -p "$(CONFIG)/esp/components/angular-mvc/client/pages"
 	cp src/esp/proto/components/angular-mvc/client/pages/splash.html $(CONFIG)/esp/components/angular-mvc/client/pages/splash.html
-	cp src/esp/proto/components/angular-mvc/config.json $(CONFIG)/esp/components/angular-mvc/config.json
+	cp src/esp/proto/components/angular-mvc/esp.json $(CONFIG)/esp/components/angular-mvc/esp.json
 	cp src/esp/proto/components/angular-mvc/hosted.conf $(CONFIG)/esp/components/angular-mvc/hosted.conf
 	cp src/esp/proto/components/angular-mvc/start.bit $(CONFIG)/esp/components/angular-mvc/start.bit
 	mkdir -p "$(CONFIG)/esp/components/angular-ui-bootstrap/client/lib/angular-ui-bootstrap"
 	cp src/esp/proto/components/angular-ui-bootstrap/client/lib/angular-ui-bootstrap/ui-bootstrap-tpls.js $(CONFIG)/esp/components/angular-ui-bootstrap/client/lib/angular-ui-bootstrap/ui-bootstrap-tpls.js
 	mkdir -p "$(CONFIG)/esp/components/angular-ui-bootstrap"
-	cp src/esp/proto/components/angular-ui-bootstrap/config.json $(CONFIG)/esp/components/angular-ui-bootstrap/config.json
+	cp src/esp/proto/components/angular-ui-bootstrap/esp.json $(CONFIG)/esp/components/angular-ui-bootstrap/esp.json
 	mkdir -p "$(CONFIG)/esp/components/animate/client/css"
 	cp src/esp/proto/components/animate/client/css/animate.css $(CONFIG)/esp/components/animate/client/css/animate.css
 	mkdir -p "$(CONFIG)/esp/components/animate"
-	cp src/esp/proto/components/animate/config.json $(CONFIG)/esp/components/animate/config.json
+	cp src/esp/proto/components/animate/esp.json $(CONFIG)/esp/components/animate/esp.json
 	mkdir -p "$(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/css"
 	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/css/bootstrap-theme.css $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/css/bootstrap-theme.css
 	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/css/bootstrap-theme.min.css $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/css/bootstrap-theme.min.css
@@ -1191,11 +1191,11 @@ $(CONFIG)/esp: $(DEPS_56)
 	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/variables.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/variables.less
 	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/wells.less $(CONFIG)/esp/components/bootstrap/client/lib/bootstrap/less/wells.less
 	mkdir -p "$(CONFIG)/esp/components/bootstrap"
-	cp src/esp/proto/components/bootstrap/config.json $(CONFIG)/esp/components/bootstrap/config.json
+	cp src/esp/proto/components/bootstrap/esp.json $(CONFIG)/esp/components/bootstrap/esp.json
 	mkdir -p "$(CONFIG)/esp/components/d3/client/lib/d3"
 	cp src/esp/proto/components/d3/client/lib/d3/d3.v3.js $(CONFIG)/esp/components/d3/client/lib/d3/d3.v3.js
 	mkdir -p "$(CONFIG)/esp/components/d3"
-	cp src/esp/proto/components/d3/config.json $(CONFIG)/esp/components/d3/config.json
+	cp src/esp/proto/components/d3/esp.json $(CONFIG)/esp/components/d3/esp.json
 	mkdir -p "$(CONFIG)/esp/components/flot/client/lib/flot"
 	cp src/esp/proto/components/flot/client/lib/flot/excanvas.js $(CONFIG)/esp/components/flot/client/lib/flot/excanvas.js
 	cp src/esp/proto/components/flot/client/lib/flot/jquery.colorhelpers.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.colorhelpers.js
@@ -1216,7 +1216,7 @@ $(CONFIG)/esp: $(DEPS_56)
 	cp src/esp/proto/components/flot/client/lib/flot/jquery.flot.time.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.flot.time.js
 	cp src/esp/proto/components/flot/client/lib/flot/jquery.js $(CONFIG)/esp/components/flot/client/lib/flot/jquery.js
 	mkdir -p "$(CONFIG)/esp/components/flot"
-	cp src/esp/proto/components/flot/config.json $(CONFIG)/esp/components/flot/config.json
+	cp src/esp/proto/components/flot/esp.json $(CONFIG)/esp/components/flot/esp.json
 	mkdir -p "$(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/css"
 	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.css $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.css
 	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.min.css $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.min.css
@@ -1249,7 +1249,7 @@ $(CONFIG)/esp: $(DEPS_56)
 	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/font-awesome-ie7.scss $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/scss/font-awesome-ie7.scss
 	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/font-awesome.scss $(CONFIG)/esp/components/font-awesome/client/lib/font-awesome/scss/font-awesome.scss
 	mkdir -p "$(CONFIG)/esp/components/font-awesome"
-	cp src/esp/proto/components/font-awesome/config.json $(CONFIG)/esp/components/font-awesome/config.json
+	cp src/esp/proto/components/font-awesome/esp.json $(CONFIG)/esp/components/font-awesome/esp.json
 	mkdir -p "$(CONFIG)/esp/components/html-mvc"
 	cp src/esp/proto/components/html-mvc/appweb.conf $(CONFIG)/esp/components/html-mvc/appweb.conf
 	mkdir -p "$(CONFIG)/esp/components/html-mvc/client/assets"
@@ -1263,19 +1263,19 @@ $(CONFIG)/esp: $(DEPS_56)
 	cp src/esp/proto/components/html-mvc/client/index.esp $(CONFIG)/esp/components/html-mvc/client/index.esp
 	mkdir -p "$(CONFIG)/esp/components/html-mvc/client/layouts"
 	cp src/esp/proto/components/html-mvc/client/layouts/default.esp $(CONFIG)/esp/components/html-mvc/client/layouts/default.esp
-	cp src/esp/proto/components/html-mvc/config.json $(CONFIG)/esp/components/html-mvc/config.json
+	cp src/esp/proto/components/html-mvc/esp.json $(CONFIG)/esp/components/html-mvc/esp.json
 	cp src/esp/proto/components/html-mvc/hosted.conf $(CONFIG)/esp/components/html-mvc/hosted.conf
 	cp src/esp/proto/components/html-mvc/start.bit $(CONFIG)/esp/components/html-mvc/start.bit
 	mkdir -p "$(CONFIG)/esp/components/html5shiv/client/lib/html5shiv"
 	cp src/esp/proto/components/html5shiv/client/lib/html5shiv/html5shiv.js $(CONFIG)/esp/components/html5shiv/client/lib/html5shiv/html5shiv.js
 	mkdir -p "$(CONFIG)/esp/components/html5shiv"
-	cp src/esp/proto/components/html5shiv/config.json $(CONFIG)/esp/components/html5shiv/config.json
+	cp src/esp/proto/components/html5shiv/esp.json $(CONFIG)/esp/components/html5shiv/esp.json
 	mkdir -p "$(CONFIG)/esp/components/jquery/client/lib/jquery"
 	cp src/esp/proto/components/jquery/client/lib/jquery/jquery.js $(CONFIG)/esp/components/jquery/client/lib/jquery/jquery.js
 	mkdir -p "$(CONFIG)/esp/components/jquery"
-	cp src/esp/proto/components/jquery/config.json $(CONFIG)/esp/components/jquery/config.json
+	cp src/esp/proto/components/jquery/esp.json $(CONFIG)/esp/components/jquery/esp.json
 	mkdir -p "$(CONFIG)/esp/components/legacy-mvc"
-	cp src/esp/proto/components/legacy-mvc/config.json $(CONFIG)/esp/components/legacy-mvc/config.json
+	cp src/esp/proto/components/legacy-mvc/esp.json $(CONFIG)/esp/components/legacy-mvc/esp.json
 	mkdir -p "$(CONFIG)/esp/components/legacy-mvc/layouts"
 	cp src/esp/proto/components/legacy-mvc/layouts/default.esp $(CONFIG)/esp/components/legacy-mvc/layouts/default.esp
 	mkdir -p "$(CONFIG)/esp/components/legacy-mvc/static/css"
@@ -1303,35 +1303,35 @@ $(CONFIG)/esp: $(DEPS_56)
 	mkdir -p "$(CONFIG)/esp/components/less/client/lib/less"
 	cp src/esp/proto/components/less/client/lib/less/less.js $(CONFIG)/esp/components/less/client/lib/less/less.js
 	mkdir -p "$(CONFIG)/esp/components/less"
-	cp src/esp/proto/components/less/config.json $(CONFIG)/esp/components/less/config.json
+	cp src/esp/proto/components/less/esp.json $(CONFIG)/esp/components/less/esp.json
 	mkdir -p "$(CONFIG)/esp/components/more/client/css"
 	cp src/esp/proto/components/more/client/css/more.less $(CONFIG)/esp/components/more/client/css/more.less
 	mkdir -p "$(CONFIG)/esp/components/more"
-	cp src/esp/proto/components/more/config.json $(CONFIG)/esp/components/more/config.json
+	cp src/esp/proto/components/more/esp.json $(CONFIG)/esp/components/more/esp.json
 	mkdir -p "$(CONFIG)/esp/components/normalize/client/css"
 	cp src/esp/proto/components/normalize/client/css/normalize.less $(CONFIG)/esp/components/normalize/client/css/normalize.less
 	mkdir -p "$(CONFIG)/esp/components/normalize"
-	cp src/esp/proto/components/normalize/config.json $(CONFIG)/esp/components/normalize/config.json
+	cp src/esp/proto/components/normalize/esp.json $(CONFIG)/esp/components/normalize/esp.json
 	mkdir -p "$(CONFIG)/esp/components/nvd3/client/lib/nvd3"
 	cp src/esp/proto/components/nvd3/client/lib/nvd3/nv.d3.css $(CONFIG)/esp/components/nvd3/client/lib/nvd3/nv.d3.css
 	cp src/esp/proto/components/nvd3/client/lib/nvd3/nv.d3.js $(CONFIG)/esp/components/nvd3/client/lib/nvd3/nv.d3.js
 	cp src/esp/proto/components/nvd3/client/lib/nvd3/nv.d3.min.css $(CONFIG)/esp/components/nvd3/client/lib/nvd3/nv.d3.min.css
 	mkdir -p "$(CONFIG)/esp/components/nvd3"
-	cp src/esp/proto/components/nvd3/config.json $(CONFIG)/esp/components/nvd3/config.json
+	cp src/esp/proto/components/nvd3/esp.json $(CONFIG)/esp/components/nvd3/esp.json
 	mkdir -p "$(CONFIG)/esp/components/respond/client/lib/respond"
 	cp src/esp/proto/components/respond/client/lib/respond/respond.js $(CONFIG)/esp/components/respond/client/lib/respond/respond.js
 	mkdir -p "$(CONFIG)/esp/components/respond"
-	cp src/esp/proto/components/respond/config.json $(CONFIG)/esp/components/respond/config.json
+	cp src/esp/proto/components/respond/esp.json $(CONFIG)/esp/components/respond/esp.json
 	mkdir -p "$(CONFIG)/esp/components/server"
 	cp src/esp/proto/components/server/appweb.conf $(CONFIG)/esp/components/server/appweb.conf
-	cp src/esp/proto/components/server/config.json $(CONFIG)/esp/components/server/config.json
+	cp src/esp/proto/components/server/esp.json $(CONFIG)/esp/components/server/esp.json
 	cp src/esp/proto/components/server/hosted.conf $(CONFIG)/esp/components/server/hosted.conf
 	mkdir -p "$(CONFIG)/esp/components/xcharts/client/lib/xcharts"
 	cp src/esp/proto/components/xcharts/client/lib/xcharts/xcharts.css $(CONFIG)/esp/components/xcharts/client/lib/xcharts/xcharts.css
 	cp src/esp/proto/components/xcharts/client/lib/xcharts/xcharts.js $(CONFIG)/esp/components/xcharts/client/lib/xcharts/xcharts.js
 	cp src/esp/proto/components/xcharts/client/lib/xcharts/xcharts.min.css $(CONFIG)/esp/components/xcharts/client/lib/xcharts/xcharts.min.css
 	mkdir -p "$(CONFIG)/esp/components/xcharts"
-	cp src/esp/proto/components/xcharts/config.json $(CONFIG)/esp/components/xcharts/config.json
+	cp src/esp/proto/components/xcharts/esp.json $(CONFIG)/esp/components/xcharts/esp.json
 	mkdir -p "$(CONFIG)/esp/templates/angular-mvc"
 	cp src/esp/proto/templates/angular-mvc/controller-singleton.c $(CONFIG)/esp/templates/angular-mvc/controller-singleton.c
 	cp src/esp/proto/templates/angular-mvc/controller.c $(CONFIG)/esp/templates/angular-mvc/controller.c
@@ -2287,7 +2287,7 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/proto/components/angular/client/lib/angular/version.json $(BIT_VAPP_PREFIX)/esp/components/angular/client/lib/angular/version.json
 	cp src/esp/proto/components/angular/client/lib/angular/version.txt $(BIT_VAPP_PREFIX)/esp/components/angular/client/lib/angular/version.txt
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular"
-	cp src/esp/proto/components/angular/config.json $(BIT_VAPP_PREFIX)/esp/components/angular/config.json
+	cp src/esp/proto/components/angular/esp.json $(BIT_VAPP_PREFIX)/esp/components/angular/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp"
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-click.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-click.js
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp-confirm.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp-confirm.js
@@ -2307,11 +2307,11 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp.es $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp.es
 	cp src/esp/proto/components/angular-esp/client/lib/angular-esp/esp.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp/client/lib/angular-esp/esp.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular-esp"
-	cp src/esp/proto/components/angular-esp/config.json $(BIT_VAPP_PREFIX)/esp/components/angular-esp/config.json
+	cp src/esp/proto/components/angular-esp/esp.json $(BIT_VAPP_PREFIX)/esp/components/angular-esp/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular-esp-extras/client/lib/angular-esp-extras"
 	cp src/esp/proto/components/angular-esp-extras/client/lib/angular-esp-extras/esp-svg-gauge.js $(BIT_VAPP_PREFIX)/esp/components/angular-esp-extras/client/lib/angular-esp-extras/esp-svg-gauge.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular-esp-extras"
-	cp src/esp/proto/components/angular-esp-extras/config.json $(BIT_VAPP_PREFIX)/esp/components/angular-esp-extras/config.json
+	cp src/esp/proto/components/angular-esp-extras/esp.json $(BIT_VAPP_PREFIX)/esp/components/angular-esp-extras/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular-mvc"
 	cp src/esp/proto/components/angular-mvc/appweb.conf $(BIT_VAPP_PREFIX)/esp/components/angular-mvc/appweb.conf
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular-mvc/client/app"
@@ -2327,17 +2327,17 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/proto/components/angular-mvc/client/index.esp $(BIT_VAPP_PREFIX)/esp/components/angular-mvc/client/index.esp
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular-mvc/client/pages"
 	cp src/esp/proto/components/angular-mvc/client/pages/splash.html $(BIT_VAPP_PREFIX)/esp/components/angular-mvc/client/pages/splash.html
-	cp src/esp/proto/components/angular-mvc/config.json $(BIT_VAPP_PREFIX)/esp/components/angular-mvc/config.json
+	cp src/esp/proto/components/angular-mvc/esp.json $(BIT_VAPP_PREFIX)/esp/components/angular-mvc/esp.json
 	cp src/esp/proto/components/angular-mvc/hosted.conf $(BIT_VAPP_PREFIX)/esp/components/angular-mvc/hosted.conf
 	cp src/esp/proto/components/angular-mvc/start.bit $(BIT_VAPP_PREFIX)/esp/components/angular-mvc/start.bit
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular-ui-bootstrap/client/lib/angular-ui-bootstrap"
 	cp src/esp/proto/components/angular-ui-bootstrap/client/lib/angular-ui-bootstrap/ui-bootstrap-tpls.js $(BIT_VAPP_PREFIX)/esp/components/angular-ui-bootstrap/client/lib/angular-ui-bootstrap/ui-bootstrap-tpls.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/angular-ui-bootstrap"
-	cp src/esp/proto/components/angular-ui-bootstrap/config.json $(BIT_VAPP_PREFIX)/esp/components/angular-ui-bootstrap/config.json
+	cp src/esp/proto/components/angular-ui-bootstrap/esp.json $(BIT_VAPP_PREFIX)/esp/components/angular-ui-bootstrap/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/animate/client/css"
 	cp src/esp/proto/components/animate/client/css/animate.css $(BIT_VAPP_PREFIX)/esp/components/animate/client/css/animate.css
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/animate"
-	cp src/esp/proto/components/animate/config.json $(BIT_VAPP_PREFIX)/esp/components/animate/config.json
+	cp src/esp/proto/components/animate/esp.json $(BIT_VAPP_PREFIX)/esp/components/animate/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/bootstrap/client/lib/bootstrap/css"
 	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/css/bootstrap-theme.css $(BIT_VAPP_PREFIX)/esp/components/bootstrap/client/lib/bootstrap/css/bootstrap-theme.css
 	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/css/bootstrap-theme.min.css $(BIT_VAPP_PREFIX)/esp/components/bootstrap/client/lib/bootstrap/css/bootstrap-theme.min.css
@@ -2392,11 +2392,11 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/variables.less $(BIT_VAPP_PREFIX)/esp/components/bootstrap/client/lib/bootstrap/less/variables.less
 	cp src/esp/proto/components/bootstrap/client/lib/bootstrap/less/wells.less $(BIT_VAPP_PREFIX)/esp/components/bootstrap/client/lib/bootstrap/less/wells.less
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/bootstrap"
-	cp src/esp/proto/components/bootstrap/config.json $(BIT_VAPP_PREFIX)/esp/components/bootstrap/config.json
+	cp src/esp/proto/components/bootstrap/esp.json $(BIT_VAPP_PREFIX)/esp/components/bootstrap/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/d3/client/lib/d3"
 	cp src/esp/proto/components/d3/client/lib/d3/d3.v3.js $(BIT_VAPP_PREFIX)/esp/components/d3/client/lib/d3/d3.v3.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/d3"
-	cp src/esp/proto/components/d3/config.json $(BIT_VAPP_PREFIX)/esp/components/d3/config.json
+	cp src/esp/proto/components/d3/esp.json $(BIT_VAPP_PREFIX)/esp/components/d3/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/flot/client/lib/flot"
 	cp src/esp/proto/components/flot/client/lib/flot/excanvas.js $(BIT_VAPP_PREFIX)/esp/components/flot/client/lib/flot/excanvas.js
 	cp src/esp/proto/components/flot/client/lib/flot/jquery.colorhelpers.js $(BIT_VAPP_PREFIX)/esp/components/flot/client/lib/flot/jquery.colorhelpers.js
@@ -2417,7 +2417,7 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/proto/components/flot/client/lib/flot/jquery.flot.time.js $(BIT_VAPP_PREFIX)/esp/components/flot/client/lib/flot/jquery.flot.time.js
 	cp src/esp/proto/components/flot/client/lib/flot/jquery.js $(BIT_VAPP_PREFIX)/esp/components/flot/client/lib/flot/jquery.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/flot"
-	cp src/esp/proto/components/flot/config.json $(BIT_VAPP_PREFIX)/esp/components/flot/config.json
+	cp src/esp/proto/components/flot/esp.json $(BIT_VAPP_PREFIX)/esp/components/flot/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/font-awesome/client/lib/font-awesome/css"
 	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.css $(BIT_VAPP_PREFIX)/esp/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.css
 	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.min.css $(BIT_VAPP_PREFIX)/esp/components/font-awesome/client/lib/font-awesome/css/font-awesome-ie7.min.css
@@ -2450,7 +2450,7 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/font-awesome-ie7.scss $(BIT_VAPP_PREFIX)/esp/components/font-awesome/client/lib/font-awesome/scss/font-awesome-ie7.scss
 	cp src/esp/proto/components/font-awesome/client/lib/font-awesome/scss/font-awesome.scss $(BIT_VAPP_PREFIX)/esp/components/font-awesome/client/lib/font-awesome/scss/font-awesome.scss
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/font-awesome"
-	cp src/esp/proto/components/font-awesome/config.json $(BIT_VAPP_PREFIX)/esp/components/font-awesome/config.json
+	cp src/esp/proto/components/font-awesome/esp.json $(BIT_VAPP_PREFIX)/esp/components/font-awesome/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/html-mvc"
 	cp src/esp/proto/components/html-mvc/appweb.conf $(BIT_VAPP_PREFIX)/esp/components/html-mvc/appweb.conf
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/assets"
@@ -2464,19 +2464,19 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/proto/components/html-mvc/client/index.esp $(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/index.esp
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/layouts"
 	cp src/esp/proto/components/html-mvc/client/layouts/default.esp $(BIT_VAPP_PREFIX)/esp/components/html-mvc/client/layouts/default.esp
-	cp src/esp/proto/components/html-mvc/config.json $(BIT_VAPP_PREFIX)/esp/components/html-mvc/config.json
+	cp src/esp/proto/components/html-mvc/esp.json $(BIT_VAPP_PREFIX)/esp/components/html-mvc/esp.json
 	cp src/esp/proto/components/html-mvc/hosted.conf $(BIT_VAPP_PREFIX)/esp/components/html-mvc/hosted.conf
 	cp src/esp/proto/components/html-mvc/start.bit $(BIT_VAPP_PREFIX)/esp/components/html-mvc/start.bit
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/html5shiv/client/lib/html5shiv"
 	cp src/esp/proto/components/html5shiv/client/lib/html5shiv/html5shiv.js $(BIT_VAPP_PREFIX)/esp/components/html5shiv/client/lib/html5shiv/html5shiv.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/html5shiv"
-	cp src/esp/proto/components/html5shiv/config.json $(BIT_VAPP_PREFIX)/esp/components/html5shiv/config.json
+	cp src/esp/proto/components/html5shiv/esp.json $(BIT_VAPP_PREFIX)/esp/components/html5shiv/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/jquery/client/lib/jquery"
 	cp src/esp/proto/components/jquery/client/lib/jquery/jquery.js $(BIT_VAPP_PREFIX)/esp/components/jquery/client/lib/jquery/jquery.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/jquery"
-	cp src/esp/proto/components/jquery/config.json $(BIT_VAPP_PREFIX)/esp/components/jquery/config.json
+	cp src/esp/proto/components/jquery/esp.json $(BIT_VAPP_PREFIX)/esp/components/jquery/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/legacy-mvc"
-	cp src/esp/proto/components/legacy-mvc/config.json $(BIT_VAPP_PREFIX)/esp/components/legacy-mvc/config.json
+	cp src/esp/proto/components/legacy-mvc/esp.json $(BIT_VAPP_PREFIX)/esp/components/legacy-mvc/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/legacy-mvc/layouts"
 	cp src/esp/proto/components/legacy-mvc/layouts/default.esp $(BIT_VAPP_PREFIX)/esp/components/legacy-mvc/layouts/default.esp
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/legacy-mvc/static/css"
@@ -2504,35 +2504,35 @@ ifeq ($(BIT_PACK_ESP),1)
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/less/client/lib/less"
 	cp src/esp/proto/components/less/client/lib/less/less.js $(BIT_VAPP_PREFIX)/esp/components/less/client/lib/less/less.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/less"
-	cp src/esp/proto/components/less/config.json $(BIT_VAPP_PREFIX)/esp/components/less/config.json
+	cp src/esp/proto/components/less/esp.json $(BIT_VAPP_PREFIX)/esp/components/less/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/more/client/css"
 	cp src/esp/proto/components/more/client/css/more.less $(BIT_VAPP_PREFIX)/esp/components/more/client/css/more.less
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/more"
-	cp src/esp/proto/components/more/config.json $(BIT_VAPP_PREFIX)/esp/components/more/config.json
+	cp src/esp/proto/components/more/esp.json $(BIT_VAPP_PREFIX)/esp/components/more/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/normalize/client/css"
 	cp src/esp/proto/components/normalize/client/css/normalize.less $(BIT_VAPP_PREFIX)/esp/components/normalize/client/css/normalize.less
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/normalize"
-	cp src/esp/proto/components/normalize/config.json $(BIT_VAPP_PREFIX)/esp/components/normalize/config.json
+	cp src/esp/proto/components/normalize/esp.json $(BIT_VAPP_PREFIX)/esp/components/normalize/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/nvd3/client/lib/nvd3"
 	cp src/esp/proto/components/nvd3/client/lib/nvd3/nv.d3.css $(BIT_VAPP_PREFIX)/esp/components/nvd3/client/lib/nvd3/nv.d3.css
 	cp src/esp/proto/components/nvd3/client/lib/nvd3/nv.d3.js $(BIT_VAPP_PREFIX)/esp/components/nvd3/client/lib/nvd3/nv.d3.js
 	cp src/esp/proto/components/nvd3/client/lib/nvd3/nv.d3.min.css $(BIT_VAPP_PREFIX)/esp/components/nvd3/client/lib/nvd3/nv.d3.min.css
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/nvd3"
-	cp src/esp/proto/components/nvd3/config.json $(BIT_VAPP_PREFIX)/esp/components/nvd3/config.json
+	cp src/esp/proto/components/nvd3/esp.json $(BIT_VAPP_PREFIX)/esp/components/nvd3/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/respond/client/lib/respond"
 	cp src/esp/proto/components/respond/client/lib/respond/respond.js $(BIT_VAPP_PREFIX)/esp/components/respond/client/lib/respond/respond.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/respond"
-	cp src/esp/proto/components/respond/config.json $(BIT_VAPP_PREFIX)/esp/components/respond/config.json
+	cp src/esp/proto/components/respond/esp.json $(BIT_VAPP_PREFIX)/esp/components/respond/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/server"
 	cp src/esp/proto/components/server/appweb.conf $(BIT_VAPP_PREFIX)/esp/components/server/appweb.conf
-	cp src/esp/proto/components/server/config.json $(BIT_VAPP_PREFIX)/esp/components/server/config.json
+	cp src/esp/proto/components/server/esp.json $(BIT_VAPP_PREFIX)/esp/components/server/esp.json
 	cp src/esp/proto/components/server/hosted.conf $(BIT_VAPP_PREFIX)/esp/components/server/hosted.conf
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/xcharts/client/lib/xcharts"
 	cp src/esp/proto/components/xcharts/client/lib/xcharts/xcharts.css $(BIT_VAPP_PREFIX)/esp/components/xcharts/client/lib/xcharts/xcharts.css
 	cp src/esp/proto/components/xcharts/client/lib/xcharts/xcharts.js $(BIT_VAPP_PREFIX)/esp/components/xcharts/client/lib/xcharts/xcharts.js
 	cp src/esp/proto/components/xcharts/client/lib/xcharts/xcharts.min.css $(BIT_VAPP_PREFIX)/esp/components/xcharts/client/lib/xcharts/xcharts.min.css
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/components/xcharts"
-	cp src/esp/proto/components/xcharts/config.json $(BIT_VAPP_PREFIX)/esp/components/xcharts/config.json
+	cp src/esp/proto/components/xcharts/esp.json $(BIT_VAPP_PREFIX)/esp/components/xcharts/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/templates/angular-mvc"
 	cp src/esp/proto/templates/angular-mvc/controller-singleton.c $(BIT_VAPP_PREFIX)/esp/templates/angular-mvc/controller-singleton.c
 	cp src/esp/proto/templates/angular-mvc/controller.c $(BIT_VAPP_PREFIX)/esp/templates/angular-mvc/controller.c

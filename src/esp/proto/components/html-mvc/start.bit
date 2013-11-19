@@ -161,7 +161,7 @@ Bit.load({
                         }
                     }
                 }
-                let config = Path('config.json').readJSON();
+                let config = Path('esp.json').readJSON();
                 let list = []
                 for (let [component,details] in config.settings.components) {
                     if (component == 'less' && config.mode == 'release') continue
@@ -201,7 +201,7 @@ Bit.load({
                 trace('Catenate', 'client/all.min.js')
                 rm('client/all.min.js.gz')
                 let list = []
-                let config = Path('config.json').readJSON();
+                let config = Path('esp.json').readJSON();
                 for (let [component,details] in config.settings.components) {
                     if (component == 'less' && config.mode == 'release') continue
                     for each (file in details.scripts) {

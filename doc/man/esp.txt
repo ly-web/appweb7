@@ -79,11 +79,11 @@ GENERATING APPLICATIONS
              esp generate app NAME components
 
        Components are modules of  functionality  for  generated  applications.
-       Components  are  described  by  their  config.json file. Components may
-       depend on other components so that generating the top  level  component
-       may  generate  other  required  components. For example: generating the
-       "angular-mvc" components will generate the components angular, angular-
-       esp, angular-local etc.
+       Components  are described by their esp.json file. Components may depend
+       on other components so that generating the top level component may gen-
+       erate  other required components. For example: generating the "angular-
+       mvc" components will  generate  the  components  angular,  angular-esp,
+       angular-local etc.
 
        Other components are:
 

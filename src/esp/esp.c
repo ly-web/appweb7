@@ -1270,7 +1270,7 @@ static void addDeps(cchar *component)
         fail("Cannot find component \"%s\"", component);
         return;
     }
-    cpath = mprJoinPath(path, "config.json");
+    cpath = mprJoinPath(path, BIT_ESP_CONFIG);
     if (mprPathExists(cpath, R_OK)) {
         if ((config = mprLoadJson(cpath)) == 0) {
             fail("Cannot load %s", cpath);
@@ -1939,9 +1939,9 @@ static void generateAppFiles()
             copyEspDir(path, route->documents);
 
             /*
-                Blend config.json from new component
+                Blend new component
              */
-            config = mprJoinPath(path, "config.json");
+            config = mprJoinPath(path, BIT_ESP_CONFIG);
             if (mprPathExists(config, R_OK)) {
                 if ((newConfig = mprLoadJson(config)) != 0) {
                     mprBlendJson(eroute->config, newConfig, 0);
@@ -1961,9 +1961,9 @@ static void generateAppFiles()
     fixupFile(mprJoinPath(eroute->layoutsDir, "default.esp"));
 
     if (espSaveConfig(app->route) < 0) {
-        fail("Cannot save config.json");
+        fail("Cannot save ESP configuration");
     }
-    fixupFile(mprJoinPath(route->documents, "config.json"));
+    fixupFile(mprJoinPath(route->documents, BIT_ESP_CONFIG));
     app->topComponent = mprGetJson(eroute->config, "generate.top", 0);
 }
 
@@ -1977,7 +1977,7 @@ static void copyEspDir(cchar *fromDir, cchar *toDir)
 
     files = mprGetPathFiles(fromDir, MPR_PATH_DESCEND | MPR_PATH_RELATIVE | MPR_PATH_NODIRS);
     for (next = 0; (dp = mprGetNextItem(files, &next)) != 0 && !app->error; ) {
-        if (smatch("config.json", mprGetPathBase(dp->name))) {
+        if (smatch(BIT_ESP_CONFIG, mprGetPathBase(dp->name))) {
             continue;
         }
         from = mprJoinPath(fromDir, dp->name);
@@ -2088,7 +2088,7 @@ static cchar *getComponents()
     result = mprCreateList(0, 0);
     files = mprGetPathFiles(app->componentsDir, 0);
     for (ITERATE_ITEMS(files, dp, next)) {
-        path = mprJoinPath(dp->name, "config.json");
+        path = mprJoinPath(dp->name, BIT_ESP_CONFIG);
         if (mprPathExists(path, R_OK)) {
             if ((config = mprLoadJson(path)) != 0) {
                 mprAddItem(result, sfmt("%24s: %s", mprGetJson(config, "name", 0), mprGetJson(config, "description", 0)));

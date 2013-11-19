@@ -1,7 +1,7 @@
 /*
     esp-format.js - ESP Format Filter
 
-    This filter formats fields according to the fields datatype and ESP config.json settings.formats.
+    This filter formats fields according to the fields datatype and ESP esp.json settings.formats.
 
     string | format:SCHEMA:FIELD
  */

@@ -287,7 +287,7 @@ static int runAction(HttpConn *conn)
 
 #if BIT_DEBUG
     /*
-        See if the config.json or app needs to be reloaded.
+        See if the esp configuration or app needs to be reloaded.
      */
     if (espLoadConfig(route) < 0) {
         return MPR_ERR_CANT_LOAD;
@@ -709,7 +709,7 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     eroute->srcDir      = mprJoinPath(dir, "src");
     eroute->appDir      = mprJoinPath(dir, "client/app");
 #if BIT_ESP_LEGACY
-    if (!eroute->legacy && !mprPathExists(mprJoinPath(route->documents, "config.json"), R_OK)) {
+    if (!eroute->legacy && !mprPathExists(mprJoinPath(route->documents, BIT_ESP_CONFIG), R_OK)) {
         eroute->legacy = 1;
     }
     if (eroute->legacy) {
@@ -1032,7 +1032,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     }
     httpSetRouteVar(route, "PREFIX", prefix);
     /*
-        Load the config.json here before creating routes. This allows config.json to override settings.
+        Load the config file here before creating routes
      */
     if (espLoadConfig(route) < 0) {
         return MPR_ERR_CANT_LOAD;
