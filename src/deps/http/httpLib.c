@@ -4462,7 +4462,7 @@ static void printRoute(HttpRoute *route, int next, bool full)
     cchar       *methods, *pattern, *target, *index;
     int         nextIndex;
 
-    if (smatch(route->name, "unused") || (route->flags & HTTP_ROUTE_DISABLED)) {
+    if (route->flags & HTTP_ROUTE_HIDDEN) {
         return;
     }
     methods = httpGetRouteMethods(route);
@@ -9752,6 +9752,7 @@ PUBLIC void httpSetHandler(HttpConn *conn, HttpStage *handler)
 
 /*
     Map the target to physical storage. Sets tx->filename and tx->ext.
+    This will validate on windows (or BIT_EXTRA_SECURITY) if the resultant filename is within the route documents.
  */
 PUBLIC void httpMapRequest(HttpConn *conn)
 {
@@ -9834,6 +9835,9 @@ PUBLIC void httpMapRequest(HttpConn *conn)
 }
 
 
+/*
+    Map file may be called by handlers. The filename may be outside the route documents. So caller must take care.
+ */
 PUBLIC void httpMapFile(HttpConn *conn, cchar *filename)
 {
     HttpTx      *tx;
@@ -12382,6 +12386,15 @@ PUBLIC void httpSetOption(MprHash *options, cchar *field, cchar *value)
         return;
     }
     mprAddKey(options, field, value);
+}
+
+
+PUBLIC void httpHideRoute(HttpRoute *route, bool on)
+{
+    route->flags &= ~HTTP_ROUTE_HIDDEN;
+    if (on) {
+        route->flags |= HTTP_ROUTE_HIDDEN;
+    }
 }
 
 

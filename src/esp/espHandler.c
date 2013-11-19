@@ -884,7 +884,7 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
     if (scaselessmatch(set, "angular-mvc")) {
         httpAddResourceGroup(route, route->serverPrefix, "{controller}");
         httpAddClientRoute(route, "", "/public");
-        route->name = sclone("unused");
+        httpHideRoute(route, 1);
         eroute->viewsDir = eroute->appDir;
         eroute->layoutsDir = mprJoinPath(eroute->clientDir, "layouts");
 
@@ -892,7 +892,7 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
         httpAddRestfulRoute(route, route->serverPrefix, "delete", "POST", "/{id=[0-9]+}/delete$", "delete", "{controller}");
         httpAddResourceGroup(route, route->serverPrefix, "{controller}");
         httpAddClientRoute(route, "", "/public");
-        route->name = sclone("unused");
+        httpHideRoute(route, 1);
         eroute->viewsDir = eroute->appDir;
         eroute->layoutsDir = mprJoinPath(eroute->clientDir, "layouts");
 
