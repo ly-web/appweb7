@@ -708,19 +708,8 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     eroute->controllersDir = mprJoinPath(dir, "controllers");
     eroute->srcDir      = mprJoinPath(dir, "src");
     eroute->appDir      = mprJoinPath(dir, "client/app");
-#if BIT_ESP_LEGACY
-    if (!eroute->legacy && !mprPathExists(mprJoinPath(route->documents, BIT_ESP_CONFIG), R_OK)) {
-        eroute->legacy = 1;
-    }
-    if (eroute->legacy) {
-        eroute->layoutsDir  = mprJoinPath(dir, "layouts");
-        eroute->viewsDir    = mprJoinPath(dir, "views");
-    } else 
-#endif
-    {
-        eroute->layoutsDir  = mprJoinPath(eroute->appDir, "layouts");
-        eroute->viewsDir    = eroute->appDir;
-    }
+    eroute->layoutsDir  = mprJoinPath(eroute->appDir, "layouts");
+    eroute->viewsDir    = eroute->appDir;
     httpSetRouteVar(route, "CACHE_DIR", eroute->cacheDir);
     httpSetRouteVar(route, "CLIENT_DIR", eroute->clientDir);
     httpSetRouteVar(route, "CONTROLLERS_DIR", eroute->controllersDir);
@@ -729,6 +718,24 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     httpSetRouteVar(route, "SRC_DIR", eroute->srcDir);
     httpSetRouteVar(route, "VIEWS_DIR", eroute->viewsDir);
 }
+
+
+#if BIT_ESP_LEGACY
+PUBLIC void espSetLegacyDirs(HttpRoute *route)
+{
+    EspRoute    *eroute;
+    char        *dir;
+
+    eroute = route->eroute;
+    dir = route->documents;
+    eroute->clientDir  = mprJoinPath(dir, "static");
+    eroute->layoutsDir = mprJoinPath(dir, "layouts");
+    eroute->viewsDir   = mprJoinPath(dir, "views");
+    httpSetRouteVar(route, "CLIENT_DIR", eroute->clientDir);
+    httpSetRouteVar(route, "LAYOUTS_DIR", eroute->layoutsDir);
+    httpSetRouteVar(route, "VIEWS_DIR", eroute->viewsDir);
+}
+#endif
 
 
 /*
@@ -1040,12 +1047,8 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     espSetConfig(route, "settings.appPrefix", prefix);
     espSetConfig(route, "settings.prefix", sjoin(prefix ? prefix : "", route->serverPrefix, NULL));
 #if BIT_ESP_LEGACY
-    if (eroute->legacy) {
-        if (!routeSet) {
-            routeSet = "restful";
-        }
-        eroute->clientDir = mprJoinPath(route->documents, "static");
-        httpSetRouteVar(route, "CLIENT_DIR", eroute->clientDir);
+    if (eroute->legacy && (eroute->routeSet == 0 || *eroute->routeSet == '\0')) {
+        eroute->routeSet = sclone("restful");
     }
 #endif
     if (auth) {
