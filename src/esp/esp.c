@@ -1306,12 +1306,27 @@ static void addComponents(int argc, char **argv)
  */
 static void generateApp(int argc, char **argv)
 {
-    cchar   *dir, *name;
+    cchar   *cp, *dir, *name;
 
     name = argv[0];
+    for (cp = name; *cp; cp++) {
+        if (!isalnum(*cp)) {
+            break;
+        }
+    }
+    if (!isalpha(*name) || *cp) {
+        fail("Cannot generate. Application name must be a valid C identifier");
+        return;
+    }
     app->route = createRoute(name);
     app->eroute = app->route->eroute;
     addComponents(argc - 1, &argv[1]);
+#if BIT_ESP_LEGACY
+    if (espHasComponent(app->route, "legacy-mvc")) {
+        app->eroute->legacy = 1;
+        espSetLegacyDirs(app->route);
+    }
+#endif
     if (app->error) {
         return;
     }
@@ -1908,7 +1923,7 @@ static void generateAppFiles()
     EspRoute    *eroute;
     HttpRoute   *route;
     MprJson     *components, *newConfig, *cp;
-    cchar       *config, *name, *path;
+    cchar       *config, *path;
     int         i;
 
     app->generateApp = 1;
@@ -1925,27 +1940,29 @@ static void generateAppFiles()
     if (components) {
         cp = components->children->prev;
         for (i = 0; i < components->length; i++, cp = cp->prev) {
-            name = cp->name;
-            path = mprJoinPath(app->espDir, name);
+            path = mprJoinPath(app->espDir, cp->name);
             if (!mprPathExists(path, X_OK)) {
-                fail("Cannot find component \"%s\"", name);
+                fail("Cannot find component \"%s\"", cp->name);
                 return;
             }
-            trace("Generate",  "Component: %s", name);
+            trace("Generate",  "Component: %s", cp->name);
             copyEspDir(path, route->documents);
-
-            /*
-                Blend new component
-             */
+        }
+        /*
+            Blend new component config files. Do in forward order and overwrite existing keys.
+         */
+        for (ITERATE_JSON(components, cp, i)) {
+            path = mprJoinPath(app->espDir, cp->name);
             config = mprJoinPath(path, BIT_ESP_CONFIG);
             if (mprPathExists(config, R_OK)) {
                 if ((newConfig = mprLoadJson(config)) != 0) {
-                    mprBlendJson(eroute->config, newConfig, 0);
-                    mprSetJsonValue(eroute->config, "name", app->appName, 0);
-                    mprRemoveJson(eroute->config, "description");
+                    mprBlendJson(eroute->config, newConfig, MPR_JSON_OVERWRITE);
+
                 }
             }
         }
+        mprSetJson(eroute->config, "name", app->appName, 0);
+        mprRemoveJson(eroute->config, "description");
     }
     /*
         Remove depends and generate
@@ -1953,9 +1970,10 @@ static void generateAppFiles()
     mprRemoveJson(eroute->config, "depends");
 
     fixupFile(mprJoinPath(eroute->clientDir, "index.esp"));
-    fixupFile(mprJoinPath(eroute->appDir, "main.js"));
     fixupFile(mprJoinPath(eroute->layoutsDir, "default.esp"));
-
+    if (!eroute->legacy) {
+        fixupFile(mprJoinPath(eroute->appDir, "main.js"));
+    }
     if (espSaveConfig(app->route) < 0) {
         fail("Cannot save ESP configuration");
     }

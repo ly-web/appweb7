@@ -19,7 +19,7 @@ PUBLIC void espAddComponent(HttpRoute *route, cchar *name, MprJson *details)
     if (!details) {
         details = mprCreateJson(0);
     }
-    mprSetJson(eroute->config, sfmt("settings.components.%s", name), details, 0);
+    mprSetJsonObj(eroute->config, sfmt("settings.components.%s", name), details, 0);
 }
 
 
@@ -439,7 +439,7 @@ PUBLIC bool espHasComponent(HttpRoute *route, cchar *name)
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    return mprGetJson(eroute->config, sfmt("settings.components[@ = '%s']", name), 0) != 0;
+    return mprGetJsonObj(eroute->config, sfmt("settings.components.%s", name), 0) != 0;
 }
 
 
@@ -487,6 +487,9 @@ PUBLIC int espLoadConfig(HttpRoute *route)
     cchar       *cdata, *cpath, *value, *errorMsg;
 
     eroute = route->eroute;
+    /*
+        See if config file has been modified and if so, reload.
+     */
     cpath = mprJoinPath(route->documents, BIT_ESP_CONFIG);
     if (mprGetPathInfo(cpath, &cinfo) == 0) {
         if (eroute->config && cinfo.mtime > eroute->configLoaded) {
@@ -500,10 +503,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             if (eroute->appName) {
                 mprLog(0, "App %s is missing %s, switching to legacy-mvc mode", eroute->appName, cpath);
             }
-            eroute->config = mprCreateJson(MPR_JSON_OBJ);
-            espAddComponent(route, "legacy-mvc", 0);
             eroute->legacy = 1;
-            httpSetRouteServerPrefix(route, "");
         } else 
 #endif
         {
@@ -522,7 +522,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             if ((msettings = mprGetJsonObj(eroute->config, sfmt("modes.%s", eroute->mode), 0)) != 0) {
                 settings = mprLookupJsonObj(eroute->config, "settings");
                 mprBlendJson(settings, msettings, 0);
-                mprSetJsonValue(settings, "mode", eroute->mode, 0);
+                mprSetJson(settings, "mode", eroute->mode, 0);
             }
             if ((value = espGetConfig(route, "settings.auth", 0)) != 0) {
                 if (httpSetAuthStore(route->auth, value) < 0) {
@@ -596,10 +596,19 @@ PUBLIC int espLoadConfig(HttpRoute *route)
 #if BIT_ESP_LEGACY
             if (espHasComponent(route, "legacy-mvc")) {
                 eroute->legacy = 1;
-                httpSetRouteServerPrefix(route, "");
             }
 #endif
         }
+#if BIT_ESP_LEGACY
+        if (eroute->legacy) {
+            espSetLegacyDirs(route);
+            httpSetRouteServerPrefix(route, "");
+            if (!eroute->config) {
+                eroute->config = mprCreateJson(MPR_JSON_OBJ);
+                espAddComponent(route, "legacy-mvc", 0);
+            }
+        }
+#endif
     }
     return 0;
 }
@@ -777,6 +786,12 @@ PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds)
     for (kp = 0; (kp = mprGetNextKey(req->flash, kp)) != 0; ) {
         msg = kp->data;
         if (strstr(kinds, kp->key) || strstr(kinds, "all")) {
+#if BIT_ESP_LEGACY
+            EspRoute *eroute = conn->rx->route->eroute;
+            if (eroute->legacy) {
+                espRender(conn, "<div class='-esp-flash -esp-flash-%s'>%s</div>", kp->key, msg);
+            } else 
+#endif
             espRender(conn, "<span class='feedback-%s animate'>%s</span>", kp->key, msg);
         }
     }
@@ -937,7 +952,7 @@ PUBLIC int espSetConfig(HttpRoute *route, cchar *key, cchar *value)
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    return mprSetJsonValue(eroute->config, key, value, 0);
+    return mprSetJson(eroute->config, key, value, 0);
 }
 
 

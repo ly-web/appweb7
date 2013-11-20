@@ -708,19 +708,8 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     eroute->controllersDir = mprJoinPath(dir, "controllers");
     eroute->srcDir      = mprJoinPath(dir, "src");
     eroute->appDir      = mprJoinPath(dir, "client/app");
-#if BIT_ESP_LEGACY
-    if (!eroute->legacy && !mprPathExists(mprJoinPath(route->documents, BIT_ESP_CONFIG), R_OK)) {
-        eroute->legacy = 1;
-    }
-    if (eroute->legacy) {
-        eroute->layoutsDir  = mprJoinPath(dir, "layouts");
-        eroute->viewsDir    = mprJoinPath(dir, "views");
-    } else 
-#endif
-    {
-        eroute->layoutsDir  = mprJoinPath(eroute->appDir, "layouts");
-        eroute->viewsDir    = eroute->appDir;
-    }
+    eroute->layoutsDir  = mprJoinPath(eroute->appDir, "layouts");
+    eroute->viewsDir    = eroute->appDir;
     httpSetRouteVar(route, "CACHE_DIR", eroute->cacheDir);
     httpSetRouteVar(route, "CLIENT_DIR", eroute->clientDir);
     httpSetRouteVar(route, "CONTROLLERS_DIR", eroute->controllersDir);
@@ -729,6 +718,24 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     httpSetRouteVar(route, "SRC_DIR", eroute->srcDir);
     httpSetRouteVar(route, "VIEWS_DIR", eroute->viewsDir);
 }
+
+
+#if BIT_ESP_LEGACY
+PUBLIC void espSetLegacyDirs(HttpRoute *route)
+{
+    EspRoute    *eroute;
+    char        *dir;
+
+    eroute = route->eroute;
+    dir = route->documents;
+    eroute->clientDir  = mprJoinPath(dir, "static");
+    eroute->layoutsDir = mprJoinPath(dir, "layouts");
+    eroute->viewsDir   = mprJoinPath(dir, "views");
+    httpSetRouteVar(route, "CLIENT_DIR", eroute->clientDir);
+    httpSetRouteVar(route, "LAYOUTS_DIR", eroute->layoutsDir);
+    httpSetRouteVar(route, "VIEWS_DIR", eroute->viewsDir);
+}
+#endif
 
 
 /*
@@ -881,6 +888,9 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
     EspRoute    *eroute;
 
     eroute = route->eroute;
+    if (set == 0 || *set == 0) {
+        return;
+    }
     if (scaselessmatch(set, "angular-mvc")) {
         httpAddResourceGroup(route, route->serverPrefix, "{controller}");
         httpAddClientRoute(route, "", "/public");
@@ -909,7 +919,7 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
         httpAddClientRoute(route, "/static", "/static");
         httpDefineRoute(route, "default", NULL, "^/{controller}(~/{action}~)", "${controller}-${action}", "${controller}.c");
 
-    } else if (scaselessmatch(set, "restful")) {
+    } else if (scaselessmatch(set, "restful") || scaselessmatch(set, "legacy-mvc")) {
         if (eroute->legacy) {
             espAddHomeRoute(route);
             httpAddClientRoute(route, "/static", "/static");
@@ -1014,9 +1024,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     eroute->flat = scaselessmatch(flat, "true") || smatch(flat, "1");
     eroute->appName = sclone(name);
     httpSetRouteVar(route, "APP_NAME", name);
-    if (routeSet) {
-        eroute->routeSet = sclone(routeSet);
-    }
+    eroute->routeSet = sclone(routeSet);
     espSetDefaultDirs(route);
     if (prefix) {
         if (*prefix != '/') {
@@ -1040,12 +1048,8 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     espSetConfig(route, "settings.appPrefix", prefix);
     espSetConfig(route, "settings.prefix", sjoin(prefix ? prefix : "", route->serverPrefix, NULL));
 #if BIT_ESP_LEGACY
-    if (eroute->legacy) {
-        if (!routeSet) {
-            routeSet = "restful";
-        }
-        eroute->clientDir = mprJoinPath(route->documents, "static");
-        httpSetRouteVar(route, "CLIENT_DIR", eroute->clientDir);
+    if (eroute->legacy && (eroute->routeSet == 0 || *eroute->routeSet == '\0')) {
+        eroute->routeSet = sclone("restful");
     }
 #endif
     if (auth) {
@@ -1085,9 +1089,7 @@ static int finishEspAppDirective(MaState *state, cchar *key, cchar *value)
      */
     route = state->route;
     eroute = route->eroute;
-    if (eroute->routeSet) {
-        espAddRouteSet(route, eroute->routeSet);
-    }
+    espAddRouteSet(route, eroute->routeSet);
     if (route != state->prev->route) {
         httpFinalizeRoute(route);
     }
