@@ -1,0 +1,90 @@
+{
+    settings: {
+        components: {
+            server: {
+            },
+            bootstrap: {
+            },
+            html5shiv: {
+                scripts: [
+                    "*"
+                ]
+            },
+            font-awesome: {
+            },
+            less: {
+                scripts: [
+                    "*"
+                ]
+            },
+            more: {
+            },
+            respond: {
+                scripts: [
+                    "*"
+                ]
+            },
+            html-mvc: {
+            }
+        },
+        auth: "app",
+        formats: {
+            date: "yyyy-MM-dd",
+            float: 2,
+            int: 0
+        },
+        json: false,
+        redirect: "secure",
+        serverPrefix: "/do",
+        loginRequired: "",
+        refresh: 1000,
+        timeouts: {
+            session: 1800
+        },
+        xsrf: true
+    },
+    name: "esp-html-mvc",
+    server: {
+        database: "mdb://esp-html-mvc.mdb"
+    },
+    generate: {
+        top: "html-mvc",
+        scaffold: true,
+        clientModel: false,
+        clientController: false,
+        clientView: false,
+        controller: true,
+        migration: true,
+        view: false
+    },
+    mode: "debug",
+    modes: {
+        debug: {
+            flat: false,
+            showErrors: true,
+            keepSource: true,
+            update: true,
+            login: {
+                name: "",
+                abilities: {
+                    edit: true,
+                    view: true
+                }
+            }
+        },
+        release: {
+            flat: true,
+            map: "compressed",
+            showErrors: false,
+            update: false,
+            keepSource: false,
+            login: {
+                name: "",
+                abilities: {
+                    edit: true,
+                    view: true
+                }
+            }
+        }
+    }
+}

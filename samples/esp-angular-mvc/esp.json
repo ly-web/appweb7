@@ -1,0 +1,108 @@
+{
+    settings: {
+        components: {
+            server: {
+            },
+            angular: {
+                scripts: [
+                    "angular.js",
+                    "angular-animate.js",
+                    "angular-bootstrap.js",
+                    "angular-resource.js",
+                    "angular-route.js"
+                ]
+            },
+            angular-esp: {
+                scripts: [
+                    "*"
+                ]
+            },
+            bootstrap: {
+            },
+            html5shiv: {
+                scripts: [
+                    "*"
+                ]
+            },
+            angular-ui-bootstrap: {
+                scripts: [
+                    "*"
+                ]
+            },
+            font-awesome: {
+            },
+            less: {
+                scripts: [
+                    "*"
+                ]
+            },
+            more: {
+            },
+            respond: {
+                scripts: [
+                    "*"
+                ]
+            },
+            angular-mvc: {
+            }
+        },
+        formats: {
+            date: "yyyy-MM-dd",
+            float: 2,
+            int: 0
+        },
+        json: false,
+        loginRequired: "",
+        redirect: "secure",
+        serverPrefix: "/do",
+        timeouts: {
+            session: 1800
+        },
+        xsrf: true,
+        refresh: 1000
+    },
+    name: "esp-angular-mvc",
+    server: {
+        database: "mdb://esp-angular-mvc.mdb"
+    },
+    generate: {
+        top: "angular-mvc",
+        scaffold: true,
+        clientModel: true,
+        clientController: true,
+        clientView: true,
+        controller: true,
+        migration: true,
+        view: false
+    },
+    mode: "debug",
+    modes: {
+        debug: {
+            flat: false,
+            showErrors: true,
+            keepSource: true,
+            update: true,
+            login: {
+                name: "",
+                abilities: {
+                    edit: true,
+                    view: true
+                }
+            }
+        },
+        release: {
+            flat: true,
+            map: "compressed",
+            showErrors: false,
+            update: false,
+            keepSource: false,
+            login: {
+                name: "",
+                abilities: {
+                    edit: true,
+                    view: true
+                }
+            }
+        }
+    }
+}
