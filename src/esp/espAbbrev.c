@@ -132,7 +132,9 @@ PUBLIC cchar *getAppUri()
 PUBLIC MprList *getColumns(EdiRec *rec)
 {
     if (rec == 0) {
-        return 0;
+        if ((rec = getRec()) == 0) {
+            return 0;
+        }
     }
     return ediGetColumns(getDatabase(), rec->tableName);
 }
