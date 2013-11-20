@@ -173,7 +173,6 @@ Bit.load({
                         }
                     }
                 }
-                dump('LIST', list)
                 for each (f in list) {
                     let minified = f.replaceExt('min.js')
                     if (!minified.exists || minified.modified < f.modified) {
@@ -194,7 +193,6 @@ Bit.load({
             enable: 'bit.settings.js.flat',
             path: 'client/all-${settings.version}.min.js',
             files: [ '**.min.js' ],
-            //  MOB - check these
             exclude: /client\/lib\/all.min.js|client\/lib\/spare\/|client\/lib\/html5shiv/,
             depends: ['min.js'],
             build: "

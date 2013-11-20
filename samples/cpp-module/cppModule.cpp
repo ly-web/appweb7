@@ -43,7 +43,7 @@ int maSimpleModuleInit(Http *http, MprModule *mp)
     }
     /*
         Create an appweb.conf custom directive
-    */
+     */
     appweb = (MaAppweb*) httpGetContext(http);
     maAddDirective(appweb, "CustomConfig", customConfig);
     return 0;

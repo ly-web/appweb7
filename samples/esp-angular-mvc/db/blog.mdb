@@ -8,7 +8,7 @@
             'version': { type: 'string' },
         },
         data: [
-            [ 1, '201304102141190', ],
+            [ 1, '201311192308330', ],
         ],
     },
     'post': {
@@ -21,11 +21,8 @@
             'body': { type: 'text' },
         },
         data: [
-            [ 1, 'rrrr', 'bbbb', ],
-            [ 2, 'aaaa', 'bbbb', ],
-            [ 3, 'aaaaaaa', 'ffdf', ],
-            [ 4, 'aaaaaaa', 'ffdf', ],
-            [ 5, 'dddd', 'bbbb', ],
+            [ 2, 'aaa', 'aaa', ],
+            [ 3, 'ddd', 'ddd', ],
         ],
     },
 }

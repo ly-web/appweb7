@@ -260,6 +260,7 @@ div.top {
 	background-image: url("../images/banner.jpg");
 	background-position: top right;
 	background-repeat: no-repeat;
+    height: 60px;
 }
 
 div.top h1 {
@@ -466,7 +467,7 @@ tr:hover {
 }
 
 button {
-	-webkit-box-shadow: 4px 4px 8px #888;
+    padding: 4px;
 }
 
 form table {
@@ -499,11 +500,11 @@ div.-esp-form-error h2 {
     font-size: 12pt;
 }
 
-[data-click] {
+[data-click],[data-esp-click] {
     cursor: pointer;
 }
 
-[data-click]:hover { 
+[data-click]:hover,[data-esp-click]:hover { 
     color: #444477;
 }
 

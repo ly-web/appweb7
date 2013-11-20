@@ -46,35 +46,22 @@
             angular-mvc: {
             }
         },
+        json: true,
+        loginRequired: "",
+        refresh: 1000,
+        serverPrefix: "/do",
+        timeouts: {
+            session: 300
+        },
+        xsrf: true,
         formats: {
             date: "yyyy-MM-dd",
             float: 2,
             int: 0
         },
-        json: false,
-        loginRequired: "",
-        redirect: "secure",
-        serverPrefix: "/do",
-        timeouts: {
-            session: 1800
-        },
-        xsrf: true,
-        refresh: 1000
+        redirect: "secure"
     },
-    name: "esp-angular-mvc",
-    server: {
-        database: "mdb://esp-angular-mvc.mdb"
-    },
-    generate: {
-        top: "angular-mvc",
-        scaffold: true,
-        clientModel: true,
-        clientController: true,
-        clientView: true,
-        controller: true,
-        migration: true,
-        view: false
-    },
+    name: "blog",
     mode: "debug",
     modes: {
         debug: {
@@ -104,5 +91,18 @@
                 }
             }
         }
+    },
+    server: {
+        database: "mdb://blog.mdb"
+    },
+    generate: {
+        top: "angular-mvc",
+        scaffold: true,
+        clientModel: true,
+        clientController: true,
+        clientView: true,
+        controller: true,
+        migration: true,
+        view: false
     }
 }

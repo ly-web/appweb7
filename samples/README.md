@@ -18,6 +18,7 @@ The following samples are available:
 * [esp-layout](esp-layout/README.md)                ESP layout templates.
 * [esp-login](esp-login/README.md)                  ESP form-based login.
 * [esp-mvc](esp-mvc/README.md)                      ESP MVC application (stand-alone).
+* [esp-legacy-mvc](esp-legacy-mvc/README.md)        Legacy ESP MVC application (stand-alone).
 * [esp-page](esp-page/README.md)                    Serving ESP web pages.
 * [esp-session](esp-session/README.md)              Using ESP session state storage.
 * [esp-upload](esp-upload/README.md)                ESP file upload.

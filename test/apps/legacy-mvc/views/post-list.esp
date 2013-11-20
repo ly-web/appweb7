@@ -1,15 +1,12 @@
 <h1>Post List</h1>
-
-<% 
-{
-    EdiGrid *grid = readTable("post");
-    table(grid, "{ \
-    data-click: '@edit', \
-    columns: { \
-        id: { header: 'ID' }, \
-        title: { header: 'TITLE' }, \
-        body: { header: 'BODY' }, \
-    } \
-"); 
+<% {
+    table(readTable("post"), "{ \
+        data-esp-click: '@edit', \
+        columns: { \
+            id: { header: 'ID' }, \
+            title: { header: 'TITLE' }, \
+            body: { header: 'BODY' } \
+        } \
+    }"); 
 } %>
 <% buttonLink("New Post", "@init", 0); %>

@@ -4,14 +4,12 @@
             ncols: 3
         },
         schema: {
-            'id': { type: 'string', autoinc: 'true', index: 'true', key: 'true' },
+            'id': { type: 'string', autoinc: true, index: true, key: true },
             'title': { type: 'string' },
             'body': { type: 'text' },
         },
         data: [
-            [ '4', 'Fourth post', 'dog', ],
-            [ '5', 'Yet another', 'more text
-dog', ],
+            [ '6', 'dddd', 'eeee dog', ],
         ],
     },
 }

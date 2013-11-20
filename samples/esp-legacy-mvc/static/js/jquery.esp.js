@@ -55,7 +55,6 @@
             }
         }
         elt.trigger('http:before');
-        // MOB changeUrl(url);
         $.ajax({
             url: url,
             data: data,
@@ -125,8 +124,6 @@
     function request() {
         var el          = $(this);
 
-        //  MOB - when is data-esp-click-method used and when data-esp-method
-        //  MOB -- really should pair these. If method uses data-esp-click-method, then params must be data-esp-click-params
         var method      = el.attr('data-esp-click-method') || el.attr('data-esp-method') || 'GET';
         var url         = el.attr('data-esp-click') || el.attr('action') || el.attr('href');
         var params      = el.attr('data-esp-click-params') || el.attr('data-esp-params');
@@ -197,9 +194,7 @@
             e.fadeTo(0, 1);
             e.fadeTo(1000, 0);
         } else if (effects == "bold") {
-            /* MOB Broken */
             e.css("font-weight", 100);
-            // e.animate({"opacity": 0.1, "font-weight": 900}, 1000);
             e.animate({"font-weight": 900}, 1000);
         }
     }
@@ -222,9 +217,7 @@
                 e.fadeTo(0, 1);
                 e.fadeTo(1000, 0);
             } else if (effects == "bold") {
-                /* MOB Broken */
                 e.css("font-weight", 100);
-                // e.animate({"opacity": 0.1, "font-weight": 900}, 1000);
                 e.animate({"font-weight": 900}, 1000);
             }
         }
@@ -272,7 +265,6 @@
                             e.removeAttr("checked")
                         }
                     } else if (d.type == "radio") {
-                        //  MOB BROKEN
                         if (data == e.val()) {
                             e.attr("checked", "yes")
                         } else {
@@ -282,7 +274,6 @@
                         e.val(data);
                     } else if (d.tagName == "IMG") {
                         e.attr("src", data)
-                        // var img = $('<img />').attr('src', data);
                     } else {
                         e.text(data);
                     }
@@ -297,13 +288,11 @@
         function update(options) {
             var elt = $(this);
             var id = elt.attr("id");
-            //  MOB - what about defaults?
             var o = $.extend({}, options, elt.data("esp-options") || {}, getDataAttributes(elt));
             elt.data("esp-options", o);
             if (o.updating) {
                 var method = o["data-esp-method"] || "GET";
 
-                //  MOB - consider firing events - elt.trigger('http:complete', http);
                 $.ajax({
                     url: o['data-esp-refresh'],
                     type: method,
@@ -389,7 +378,6 @@
         $(this).attr("checked", true);
     });
 
-//  MOB -- is this used? or is data-esp-click always present?
     /* Click on link foreground with data-esp-method */
     $('a[data-esp-method]:not([data-esp-remote])').live('click', function (e) {
         request.apply(this)
@@ -447,7 +435,6 @@
     });
 
     $('[data-esp-click] a').live('click', function (e) {
-        // window.location = $(this).attr('href');
         request.apply(this);
         return false;
     });
@@ -509,9 +496,6 @@
         return false;
     });
 
-/////////////////////////////////////////
-/*  MOB -- TODO - fix location 
-    //  MOB -- rename change Address
     function changeUrl(i) {
         console.log("CHANGE " + i);
         $.address.title(i);
