@@ -888,6 +888,9 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
     EspRoute    *eroute;
 
     eroute = route->eroute;
+    if (set == 0 || *set == 0) {
+        return;
+    }
     if (scaselessmatch(set, "angular-mvc")) {
         httpAddResourceGroup(route, route->serverPrefix, "{controller}");
         httpAddClientRoute(route, "", "/public");
@@ -916,7 +919,7 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
         httpAddClientRoute(route, "/static", "/static");
         httpDefineRoute(route, "default", NULL, "^/{controller}(~/{action}~)", "${controller}-${action}", "${controller}.c");
 
-    } else if (scaselessmatch(set, "restful")) {
+    } else if (scaselessmatch(set, "restful") || scaselessmatch(set, "legacy-mvc")) {
         if (eroute->legacy) {
             espAddHomeRoute(route);
             httpAddClientRoute(route, "/static", "/static");
@@ -1021,9 +1024,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     eroute->flat = scaselessmatch(flat, "true") || smatch(flat, "1");
     eroute->appName = sclone(name);
     httpSetRouteVar(route, "APP_NAME", name);
-    if (routeSet) {
-        eroute->routeSet = sclone(routeSet);
-    }
+    eroute->routeSet = sclone(routeSet);
     espSetDefaultDirs(route);
     if (prefix) {
         if (*prefix != '/') {
@@ -1088,9 +1089,7 @@ static int finishEspAppDirective(MaState *state, cchar *key, cchar *value)
      */
     route = state->route;
     eroute = route->eroute;
-    if (eroute->routeSet) {
-        espAddRouteSet(route, eroute->routeSet);
-    }
+    espAddRouteSet(route, eroute->routeSet);
     if (route != state->prev->route) {
         httpFinalizeRoute(route);
     }
