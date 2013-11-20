@@ -18237,11 +18237,11 @@ PUBLIC void httpCreateCGIParams(HttpConn *conn)
         assert(params);
         for (index = 0, kp = 0; (kp = mprGetNextKey(rx->files, kp)) != 0; index++) {
             up = (HttpUploadFile*) kp->data;
-            mprSetJsonValue(params, sfmt("FILE_%d_FILENAME", index), up->filename, MPR_JSON_SIMPLE);
-            mprSetJsonValue(params, sfmt("FILE_%d_CLIENT_FILENAME", index), up->clientFilename, MPR_JSON_SIMPLE);
-            mprSetJsonValue(params, sfmt("FILE_%d_CONTENT_TYPE", index), up->contentType, MPR_JSON_SIMPLE);
-            mprSetJsonValue(params, sfmt("FILE_%d_NAME", index), kp->key, MPR_JSON_SIMPLE);
-            mprSetJsonValue(params, sfmt("FILE_%d_SIZE", index), sfmt("%d", up->size), MPR_JSON_SIMPLE);
+            mprSetJson(params, sfmt("FILE_%d_FILENAME", index), up->filename, MPR_JSON_SIMPLE);
+            mprSetJson(params, sfmt("FILE_%d_CLIENT_FILENAME", index), up->clientFilename, MPR_JSON_SIMPLE);
+            mprSetJson(params, sfmt("FILE_%d_CONTENT_TYPE", index), up->contentType, MPR_JSON_SIMPLE);
+            mprSetJson(params, sfmt("FILE_%d_NAME", index), kp->key, MPR_JSON_SIMPLE);
+            mprSetJson(params, sfmt("FILE_%d_SIZE", index), sfmt("%d", up->size), MPR_JSON_SIMPLE);
         }
     }
     if (conn->http->envCallback) {
@@ -18283,10 +18283,10 @@ static void addParamsFromBuf(HttpConn *conn, cchar *buf, ssize len)
             if (prior && prior->type == MPR_JSON_VALUE) {
                 if (*value) {
                     newValue = sjoin(prior->value, " ", value, NULL);
-                    mprSetJsonValue(params, keyword, newValue, MPR_JSON_SIMPLE);
+                    mprSetJson(params, keyword, newValue, MPR_JSON_SIMPLE);
                 }
             } else {
-                mprSetJsonValue(params, keyword, value, MPR_JSON_SIMPLE);
+                mprSetJson(params, keyword, value, MPR_JSON_SIMPLE);
             }
         }
         keyword = stok(0, "&", &tok);
@@ -18400,13 +18400,13 @@ PUBLIC char *httpGetParamsString(HttpConn *conn)
 
 PUBLIC void httpSetParam(HttpConn *conn, cchar *var, cchar *value) 
 {
-    mprSetJsonValue(httpGetParams(conn), var, value, MPR_JSON_SIMPLE);
+    mprSetJson(httpGetParams(conn), var, value, MPR_JSON_SIMPLE);
 }
 
 
 PUBLIC void httpSetIntParam(HttpConn *conn, cchar *var, int value) 
 {
-    mprSetJsonValue(httpGetParams(conn), var, sfmt("%d", value), MPR_JSON_SIMPLE);
+    mprSetJson(httpGetParams(conn), var, sfmt("%d", value), MPR_JSON_SIMPLE);
 }
 
 

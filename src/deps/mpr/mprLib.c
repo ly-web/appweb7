@@ -12371,7 +12371,7 @@ PUBLIC void mprSetJsonError(MprJsonParser *parser, cchar *fmt, ...)
 
 PUBLIC int mprBlendJson(MprJson *obj, MprJson *other, int flags)
 {
-    MprJson      *dp, *sp;
+    MprJson     *dp, *sp;
     int         si, di;
 
     if (other == 0) {
@@ -12380,30 +12380,36 @@ PUBLIC int mprBlendJson(MprJson *obj, MprJson *other, int flags)
     if (obj == 0) {
         obj = mprCreateJson(MPR_JSON_OBJ);
     }
-    for (ITERATE_JSON(other, sp, si)) {
-        if (sp->type & MPR_JSON_VALUE) {
-            if (obj->type & MPR_JSON_ARRAY) {
-                for (ITERATE_JSON(obj, dp, di)) {
-                    if (smatch(dp->value, sp->value)) {
-                        /* Already present in array */
-                        break;
-                    }
+    /*
+        Loop over source object properties
+     */
+    if (obj->type & MPR_JSON_ARRAY) {
+        for (ITERATE_JSON(other, sp, si)) {
+            for (ITERATE_JSON(obj, dp, di)) {
+                if (smatch(dp->value, sp->value)) break;
+            }
+            if (di >= obj->length) {
+                setProperty(obj, sp->name, mprCloneJson(sp), flags);
+            }
+        }
+    } else if (obj->type & MPR_JSON_OBJ) {
+        for (ITERATE_JSON(other, sp, si)) {
+            for (ITERATE_JSON(obj, dp, di)) {
+                if (smatch(dp->name, sp->name)) {
+                    break;
                 }
-                if (di == obj->length) {
-                    /* Not present */
-                    setProperty(obj, sp->name, mprCloneJson(sp), 0);
+            }
+            if (di < obj->length) {
+                /* Already present in destination */
+                if (dp->type & (MPR_JSON_OBJ | MPR_JSON_ARRAY)) {
+                    mprBlendJson(dp, sp, flags);
+                } else if (flags & MPR_JSON_OVERWRITE) {
+                    setProperty(obj, sp->name, mprCloneJson(sp), flags);
                 }
             } else {
-                /* This overwrite if already existing */
-                setProperty(obj, sp->name, mprCloneJson(sp), 0);
+                /* Absent in destination */
+                setProperty(obj, sp->name, mprCloneJson(sp), flags);
             }
-
-        } else {
-            if ((dp = mprLookupJsonObj(obj, sp->name)) == 0) {
-                dp = mprCreateJson(sp->type);
-                setProperty(obj, sp->name, dp, 0);
-            }
-            mprBlendJson(dp, sp, flags);
         }
     }
     return 0;
@@ -12853,7 +12859,7 @@ PUBLIC cchar *mprGetJson(MprJson *obj, cchar *key, int flags)
 }
 
 
-PUBLIC int mprSetJson(MprJson *obj, cchar *key, MprJson *value, int flags)
+PUBLIC int mprSetJsonObj(MprJson *obj, cchar *key, MprJson *value, int flags)
 {
     MprJson     *result;
 
@@ -12865,12 +12871,12 @@ PUBLIC int mprSetJson(MprJson *obj, cchar *key, MprJson *value, int flags)
 }
 
 
-PUBLIC int mprSetJsonValue(MprJson *obj, cchar *key, cchar *value, int flags)
+PUBLIC int mprSetJson(MprJson *obj, cchar *key, cchar *value, int flags)
 {
     if (flags & MPR_JSON_TOP) {
         return setProperty(obj, sclone(key), createJsonValue(value), flags);
     }
-    return mprSetJson(obj, key, createJsonValue(value), flags);
+    return mprSetJsonObj(obj, key, createJsonValue(value), flags);
 }
 
 

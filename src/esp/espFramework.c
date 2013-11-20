@@ -19,7 +19,7 @@ PUBLIC void espAddComponent(HttpRoute *route, cchar *name, MprJson *details)
     if (!details) {
         details = mprCreateJson(0);
     }
-    mprSetJson(eroute->config, sfmt("settings.components.%s", name), details, 0);
+    mprSetJsonObj(eroute->config, sfmt("settings.components.%s", name), details, 0);
 }
 
 
@@ -439,7 +439,7 @@ PUBLIC bool espHasComponent(HttpRoute *route, cchar *name)
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    return mprGetJson(eroute->config, sfmt("settings.components[@ = '%s']", name), 0) != 0;
+    return mprGetJsonObj(eroute->config, sfmt("settings.components.%s", name), 0) != 0;
 }
 
 
@@ -522,7 +522,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             if ((msettings = mprGetJsonObj(eroute->config, sfmt("modes.%s", eroute->mode), 0)) != 0) {
                 settings = mprLookupJsonObj(eroute->config, "settings");
                 mprBlendJson(settings, msettings, 0);
-                mprSetJsonValue(settings, "mode", eroute->mode, 0);
+                mprSetJson(settings, "mode", eroute->mode, 0);
             }
             if ((value = espGetConfig(route, "settings.auth", 0)) != 0) {
                 if (httpSetAuthStore(route->auth, value) < 0) {
@@ -937,7 +937,7 @@ PUBLIC int espSetConfig(HttpRoute *route, cchar *key, cchar *value)
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    return mprSetJsonValue(eroute->config, key, value, 0);
+    return mprSetJson(eroute->config, key, value, 0);
 }
 
 

@@ -1940,12 +1940,13 @@ static void generateAppFiles()
             config = mprJoinPath(path, BIT_ESP_CONFIG);
             if (mprPathExists(config, R_OK)) {
                 if ((newConfig = mprLoadJson(config)) != 0) {
-                    mprBlendJson(eroute->config, newConfig, 0);
-                    mprSetJsonValue(eroute->config, "name", app->appName, 0);
-                    mprRemoveJson(eroute->config, "description");
+                    mprBlendJson(eroute->config, newConfig, MPR_JSON_OVERWRITE);
+
                 }
             }
         }
+        mprSetJson(eroute->config, "name", app->appName, 0);
+        mprRemoveJson(eroute->config, "description");
     }
     /*
         Remove depends and generate
