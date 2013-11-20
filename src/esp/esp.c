@@ -27,8 +27,6 @@ typedef struct App {
 
     cchar       *binDir;                /* Appweb bin directory */
     cchar       *espDir;                /* ESP prototype directory */
-    cchar       *componentsDir;         /* ESP generated components directory */
-    cchar       *templatesDir;          /* ESP templates directory */
     cchar       *listen;                /* Listen endpoint for "esp run" */
     cchar       *platform;              /* Target platform os-arch-profile (lower) */
     cchar       *topComponent;          /* Top level component */
@@ -59,6 +57,7 @@ typedef struct App {
     int         error;                  /* Any processing error */
     int         flat;                   /* Combine all inputs into one, flat output */ 
     int         keep;                   /* Keep source */ 
+    int         generateApp;            /* Generating a new app */
     int         overwrite;              /* Overwrite existing files if required */
     int         quiet;                  /* Don't trace progress */
     int         rebuild;                /* Force a rebuild */
@@ -110,7 +109,7 @@ static void generateAppFiles();
 static void generateHostingConfig();
 static void generateAppSrc();
 static void generateMigration(int argc, char **argv);
-static char *getTemplate(cchar *path, MprHash *tokens);
+static char *getTemplate(cchar *component, cchar *path, MprHash *tokens);
 static void initialize();
 static void makeEspDir(cchar *dir);
 static void makeEspFile(cchar *path, cchar *data, cchar *msg);
@@ -334,8 +333,6 @@ static void manageApp(App *app, int flags)
         mprMark(app->genlink);
         mprMark(app->binDir);
         mprMark(app->espDir);
-        mprMark(app->componentsDir);
-        mprMark(app->templatesDir);
         mprMark(app->listen);
         mprMark(app->module);
         mprMark(app->mpr);
@@ -383,8 +380,6 @@ static void initialize()
     app->currentDir = mprGetCurrentPath();
     app->binDir = mprGetAppDir();
     app->espDir = mprJoinPath(mprGetAppDir(), "../esp");
-    app->componentsDir = mprJoinPath(app->espDir, "components");
-    app->templatesDir = mprJoinPath(app->espDir, "templates");
     httpCreate(HTTP_SERVER_SIDE | HTTP_UTILITY);
 }
 
@@ -1265,7 +1260,7 @@ static void addDeps(cchar *component)
     cchar       *path, *cpath;
     int         i;
 
-    path = mprJoinPath(app->componentsDir, component);
+    path = mprJoinPath(app->espDir, component);
     if (!mprPathExists(path, X_OK)) {
         fail("Cannot find component \"%s\"", component);
         return;
@@ -1399,7 +1394,7 @@ static void createMigration(cchar *name, cchar *table, cchar *comment, int field
     path = sfmt("%s/%s_%s.c", dir, seq, name, ".c");
     tokens = mprDeserialize(sfmt("{ NAME: '%s', TABLE: '%s', COMMENT: '%s', FORWARD: '%s', BACKWARD: '%s' }", 
         name, table, comment, forward, backward));
-    data = getTemplate("server/migration.c", tokens);
+    data = getTemplate("server", "migration.c", tokens);
 
     files = mprGetPathFiles("db/migrations", MPR_PATH_RELATIVE);
     tail = sfmt("%s.c", name);
@@ -1446,7 +1441,7 @@ static void generateController(int argc, char **argv)
     }
     tokens = mprDeserialize(sfmt("{ APP: '%s', NAME: '%s', TITLE: '%s', ACTIONS: '%s', DEFINE_ACTIONS: '%s' }", 
         app->appName, name, title, actions, defines));
-    data = getTemplate("server/controller.c", tokens);
+    data = getTemplate("server", "controller.c", tokens);
     makeEspFile(path, data, "Controller");
 }
 
@@ -1463,9 +1458,9 @@ static void generateScaffoldController(cchar *name, cchar *table, int argc, char
     tokens = mprDeserialize(sfmt("{ APP: '%s', NAME: '%s', TABLE: '%s', TITLE: '%s', DEFINE_ACTIONS: '%s' }", 
         app->appName, name, table, spascal(name), defines));
     if (app->singleton) {
-        data = getTemplate(mprJoinPath(app->topComponent, "controller-singleton.c"), tokens);
+        data = getTemplate(app->topComponent, "controller-singleton.c", tokens);
     } else {
-        data = getTemplate(mprJoinPath(app->topComponent, "controller.c"), tokens);
+        data = getTemplate(app->topComponent, "controller.c", tokens);
     }
     path = mprJoinPathExt(mprJoinPath(app->eroute->controllersDir, name), ".c");
     makeEspFile(path, data, "Scaffold");
@@ -1486,7 +1481,7 @@ static void generateClientController(cchar *name, cchar *table, int argc, char *
     defines = sclone("");
     tokens = mprDeserialize(sfmt("{ APPDIR: '%s', NAME: '%s', LIST: '%s', TABLE: '%s', TITLE: '%s', DEFINE_ACTIONS: '%s', SERVICE: '%s' }",
         app->eroute->appDir, name, list, table, title, defines, app->route->serverPrefix));
-    data = getTemplate(mprJoinPath(app->topComponent, "controller.js"), tokens);
+    data = getTemplate(app->topComponent, "controller.js", tokens);
     makeEspFile(path, data, "Controller Scaffold");
 }
 
@@ -1502,7 +1497,7 @@ static void generateClientModel(cchar *name, int argc, char **argv)
     title = spascal(name);
     path = sfmt("%s/%s/%s.js", app->eroute->appDir, name, title);
     tokens = mprDeserialize(sfmt("{ NAME: '%s', SERVICE: '%s', TITLE: '%s'}", name, app->route->serverPrefix, title));
-    data = getTemplate(mprJoinPath(app->topComponent, "model.js"), tokens);
+    data = getTemplate(app->topComponent, "model.js", tokens);
     makeEspFile(path, data, "Scaffold Model");
 }
 
@@ -1591,19 +1586,19 @@ static void generateScaffoldViews(cchar *name, cchar *table, int argc, char **ar
 
     if (espTestConfig(app->route, "generate.clientView", "true")) {
         path = sfmt("%s/%s/%s-list.html", app->eroute->appDir, name, name);
-        data = getTemplate(mprJoinPath(app->topComponent, "list.html"), tokens);
+        data = getTemplate(app->topComponent, "list.html", tokens);
     } else {
         path = sfmt("%s/%s-list.esp", app->eroute->viewsDir, name);
-        data = getTemplate(mprJoinPath(app->topComponent, "list.esp"), tokens);
+        data = getTemplate(app->topComponent, "list.esp", tokens);
     }
     makeEspFile(path, data, "Scaffold List View");
 
     if (espTestConfig(app->route, "generate.clientView", "true")) {
         path = sfmt("%s/%s/%s-edit.html", app->eroute->appDir, name, name);
-        data = getTemplate(mprJoinPath(app->topComponent, "edit.html"), tokens);
+        data = getTemplate(app->topComponent, "edit.html", tokens);
     } else {
         path = sfmt("%s/%s-edit.esp", app->eroute->viewsDir, name);
-        data = getTemplate(mprJoinPath(app->topComponent, "edit.esp"), tokens);
+        data = getTemplate(app->topComponent, "edit.esp", tokens);
     }
     makeEspFile(path, data, "Scaffold Edit View");
 }
@@ -1916,6 +1911,7 @@ static void generateAppFiles()
     cchar       *config, *name, *path;
     int         i;
 
+    app->generateApp = 1;
     route = app->route;
     eroute = app->eroute;
     makeEspDir(route->documents);
@@ -1930,7 +1926,7 @@ static void generateAppFiles()
         cp = components->children->prev;
         for (i = 0; i < components->length; i++, cp = cp->prev) {
             name = cp->name;
-            path = mprJoinPath(app->componentsDir, name);
+            path = mprJoinPath(app->espDir, name);
             if (!mprPathExists(path, X_OK)) {
                 fail("Cannot find component \"%s\"", name);
                 return;
@@ -1987,7 +1983,9 @@ static void copyEspDir(cchar *fromDir, cchar *toDir)
             return;
         }
         if (mprPathExists(to, R_OK) && !app->overwrite) {
-            trace("Exists",  "File: %s", mprGetRelPath(to, 0));
+            if (!app->generateApp) {
+                trace("Exists",  "File: %s", mprGetRelPath(to, 0));
+            }
         } else {
             vtrace("Create",  "File: %s", mprGetRelPath(to, 0));
             if (mprCopyPath(from, to, 0644) < 0) {
@@ -2013,7 +2011,7 @@ static void generateAppSrc()
 
     path = mprJoinPath(app->eroute->srcDir, "app.c");
     tokens = mprDeserialize(sfmt("{ NAME: '%s', TITLE: '%s' }", app->appName, spascal(app->appName)));
-    data = getTemplate("server/app.c", tokens);
+    data = getTemplate("server", "app.c", tokens);
     makeEspFile(path, data, "Header");
 }
 
@@ -2061,7 +2059,9 @@ static void makeEspFile(cchar *path, cchar *data, cchar *msg)
 
     exists = mprPathExists(path, R_OK);
     if (exists && !app->overwrite) {
-        trace("Exists", path);
+        if (!app->generateApp) {
+            trace("Exists", path);
+        }
         return;
     }
     makeEspDir(mprGetPathDir(path));
@@ -2086,7 +2086,7 @@ static cchar *getComponents()
     int             next;
 
     result = mprCreateList(0, 0);
-    files = mprGetPathFiles(app->componentsDir, 0);
+    files = mprGetPathFiles(app->espDir, 0);
     for (ITERATE_ITEMS(files, dp, next)) {
         path = mprJoinPath(dp->name, BIT_ESP_CONFIG);
         if (mprPathExists(path, R_OK)) {
@@ -2099,11 +2099,14 @@ static cchar *getComponents()
 }
 
 
-static char *getTemplate(cchar *path, MprHash *tokens)
+static char *getTemplate(cchar *component, cchar *file, MprHash *tokens)
 {
-    char    *data;
+    cchar       *data, *path;
 
-    path = mprJoinPath(app->templatesDir, path);
+    path = sfmt("%s/templates/%s", mprGetCurrentPath(), file);
+    if (!mprPathExists(path, R_OK)) {
+        path = sfmt("%s/%s/templates/%s", app->espDir, component, file);
+    }
     if ((data = mprReadPathContents(path, NULL)) == 0) {
         fail("Cannot open template file \"%s\"", path);
     }
@@ -2117,7 +2120,6 @@ static void usageError()
 
     name = mprGetAppName();
     app->espDir = mprJoinPath(mprGetAppDir(), "../esp");
-    app->componentsDir = mprJoinPath(app->espDir, "components");
     components = getComponents();
 
     mprEprintf("\nESP Usage:\n\n"
