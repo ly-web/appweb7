@@ -31,7 +31,7 @@ static void readySimple(HttpQueue *q)
         Call finalize when the response to the client is complete. Call httpFlushOutput if the response is 
         incomplete and you wish to immediately send any buffered output.
      */
-    httpFinalizeOutput(conn);
+    httpFinalize(conn);
 }
 
 
@@ -41,7 +41,9 @@ static void incomingSimple(HttpQueue *q, HttpPacket *packet)
     /*
         Do something with the incoming data in packet and then free the packet.
      */
-    mprLog(0, "Data in packet is %s", mprGetBufStart(packet->content));
+    if (packet->content) {
+        mprLog(0, "Data in packet is %s", mprGetBufStart(packet->content));
+    }
 }
 
 #ifdef __cplusplus 

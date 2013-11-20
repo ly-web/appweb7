@@ -16,5 +16,5 @@
         </table>
         <% button("commit", "OK", 0); %>
         <% buttonLink("Cancel", "@", 0); %>
-        <% if (hasRec()) buttonLink("Delete", "@destroy", "{data-method: 'DELETE'}"); %>
+        <% if (hasRec()) buttonLink("Delete", "@destroy", "{data-esp-method: 'DELETE'}"); %>
     <% endform(); %>

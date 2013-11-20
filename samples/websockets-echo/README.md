@@ -6,7 +6,7 @@ echos incoming packets back to the client. The application source is in echo.c.
 This is a simple ESP controler with one action that is run in response
 to the URI: 
 
-    /ws/test/echo.
+    /ws/test/echo
 
 The HTML page web/test.html is served to the client browser to issue a web socket
 request.

@@ -50,7 +50,7 @@ static void echo_action() {
 /*
     Initialize the "echo" loadable module
  */
-ESP_EXPORT int esp_module_echo(HttpRoute *route, MprModule *module) {
+ESP_EXPORT int esp_controller_echo(HttpRoute *route, MprModule *module) {
     /*
         Define the "echo" action that will run when the "test/echo" URI is invoked
      */

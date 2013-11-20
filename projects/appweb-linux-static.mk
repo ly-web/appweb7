@@ -3,8 +3,8 @@
 #
 
 PRODUCT            := appweb
-VERSION            := 4.4.4
-BUILD_NUMBER       := 0
+VERSION            := 4.5.0
+BUILD_NUMBER       := rc.0
 PROFILE            := static
 ARCH               := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
 CC_ARCH            := $(shell echo $(ARCH) | sed 's/x86/i686/;s/x64/x86_64/')
@@ -76,7 +76,7 @@ BIT_PACK_SSL_PATH         := ssl
 BIT_PACK_UTEST_PATH       := utest
 BIT_PACK_ZIP_PATH         := zip
 
-CFLAGS             += -O2 -fPIC -w
+CFLAGS             += -fPIC -w
 DFLAGS             += -D_REENTRANT -DPIC $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_MDB=$(BIT_PACK_MDB) -DBIT_PACK_NANOSSL=$(BIT_PACK_NANOSSL) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_PCRE=$(BIT_PACK_PCRE) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SDB=$(BIT_PACK_SDB) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
 IFLAGS             += "-I$(CONFIG)/inc"
 LDFLAGS            += '-rdynamic' '-Wl,--enable-new-dtags' '-Wl,-rpath,$$ORIGIN/'
@@ -302,7 +302,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.4.4-0
+	@echo 4.5.0-rc.0
 
 #
 #   mpr.h
@@ -370,7 +370,7 @@ DEPS_8 += $(CONFIG)/inc/bitos.h
 $(CONFIG)/obj/estLib.o: \
     src/deps/est/estLib.c $(DEPS_8)
 	@echo '   [Compile] $(CONFIG)/obj/estLib.o'
-	$(CC) -c -o $(CONFIG)/obj/estLib.o -O2 -fPIC $(DFLAGS) $(IFLAGS) src/deps/est/estLib.c
+	$(CC) -c -o $(CONFIG)/obj/estLib.o -fPIC $(DFLAGS) $(IFLAGS) src/deps/est/estLib.c
 
 ifeq ($(BIT_PACK_EST),1)
 #
@@ -636,7 +636,7 @@ DEPS_26 += $(CONFIG)/inc/sqlite3.h
 $(CONFIG)/obj/sqlite3.o: \
     src/deps/sqlite/sqlite3.c $(DEPS_26)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite3.o'
-	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -O2 -fPIC $(DFLAGS) $(IFLAGS) src/deps/sqlite/sqlite3.c
+	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -fPIC $(DFLAGS) $(IFLAGS) src/deps/sqlite/sqlite3.c
 
 ifeq ($(BIT_PACK_SQLITE),1)
 #
@@ -1292,30 +1292,19 @@ $(CONFIG)/esp: $(DEPS_56)
 	cp src/esp/proto/legacy-mvc/layouts/default.esp $(CONFIG)/esp/legacy-mvc/layouts/default.esp
 	mkdir -p "$(CONFIG)/esp/legacy-mvc/static/css"
 	cp src/esp/proto/legacy-mvc/static/css/all.css $(CONFIG)/esp/legacy-mvc/static/css/all.css
-	cp src/esp/proto/legacy-mvc/static/css/all.less $(CONFIG)/esp/legacy-mvc/static/css/all.less
-	cp src/esp/proto/legacy-mvc/static/css/app.less $(CONFIG)/esp/legacy-mvc/static/css/app.less
-	cp src/esp/proto/legacy-mvc/static/css/esp.less $(CONFIG)/esp/legacy-mvc/static/css/esp.less
-	cp src/esp/proto/legacy-mvc/static/css/more.less $(CONFIG)/esp/legacy-mvc/static/css/more.less
-	cp src/esp/proto/legacy-mvc/static/css/normalize.less $(CONFIG)/esp/legacy-mvc/static/css/normalize.less
-	cp src/esp/proto/legacy-mvc/static/css/theme.less $(CONFIG)/esp/legacy-mvc/static/css/theme.less
 	mkdir -p "$(CONFIG)/esp/legacy-mvc/static/images"
 	cp src/esp/proto/legacy-mvc/static/images/banner.jpg $(CONFIG)/esp/legacy-mvc/static/images/banner.jpg
 	cp src/esp/proto/legacy-mvc/static/images/favicon.ico $(CONFIG)/esp/legacy-mvc/static/images/favicon.ico
 	cp src/esp/proto/legacy-mvc/static/images/splash.jpg $(CONFIG)/esp/legacy-mvc/static/images/splash.jpg
 	mkdir -p "$(CONFIG)/esp/legacy-mvc/static"
 	cp src/esp/proto/legacy-mvc/static/index.esp $(CONFIG)/esp/legacy-mvc/static/index.esp
-	mkdir -p "$(CONFIG)/esp/legacy-mvc/static/lib"
-	cp src/esp/proto/legacy-mvc/static/lib/html5shiv.js $(CONFIG)/esp/legacy-mvc/static/lib/html5shiv.js
-	cp src/esp/proto/legacy-mvc/static/lib/jquery.esp.js $(CONFIG)/esp/legacy-mvc/static/lib/jquery.esp.js
-	cp src/esp/proto/legacy-mvc/static/lib/jquery.js $(CONFIG)/esp/legacy-mvc/static/lib/jquery.js
-	cp src/esp/proto/legacy-mvc/static/lib/jquery.simplemodal.js $(CONFIG)/esp/legacy-mvc/static/lib/jquery.simplemodal.js
-	cp src/esp/proto/legacy-mvc/static/lib/jquery.tablesorter.js $(CONFIG)/esp/legacy-mvc/static/lib/jquery.tablesorter.js
-	cp src/esp/proto/legacy-mvc/static/lib/less.js $(CONFIG)/esp/legacy-mvc/static/lib/less.js
-	cp src/esp/proto/legacy-mvc/static/lib/respond.js $(CONFIG)/esp/legacy-mvc/static/lib/respond.js
+	mkdir -p "$(CONFIG)/esp/legacy-mvc/static/js"
+	cp src/esp/proto/legacy-mvc/static/js/jquery.esp.js $(CONFIG)/esp/legacy-mvc/static/js/jquery.esp.js
+	cp src/esp/proto/legacy-mvc/static/js/jquery.js $(CONFIG)/esp/legacy-mvc/static/js/jquery.js
 	mkdir -p "$(CONFIG)/esp/legacy-mvc/templates"
 	cp src/esp/proto/legacy-mvc/templates/controller.c $(CONFIG)/esp/legacy-mvc/templates/controller.c
-	cp src/esp/proto/legacy-mvc/templates/edit.html $(CONFIG)/esp/legacy-mvc/templates/edit.html
-	cp src/esp/proto/legacy-mvc/templates/list.html $(CONFIG)/esp/legacy-mvc/templates/list.html
+	cp src/esp/proto/legacy-mvc/templates/edit.esp $(CONFIG)/esp/legacy-mvc/templates/edit.esp
+	cp src/esp/proto/legacy-mvc/templates/list.esp $(CONFIG)/esp/legacy-mvc/templates/list.esp
 	mkdir -p "$(CONFIG)/esp/less/client/lib/less"
 	cp src/esp/proto/less/client/lib/less/less.js $(CONFIG)/esp/less/client/lib/less/less.js
 	mkdir -p "$(CONFIG)/esp/less"
@@ -1653,7 +1642,7 @@ DEPS_71 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/phpHandler.o: \
     src/modules/phpHandler.c $(DEPS_71)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/phpHandler.o -O2 -fPIC $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/modules/phpHandler.c
+	$(CC) -c -o $(CONFIG)/obj/phpHandler.o -fPIC $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/modules/phpHandler.c
 
 ifeq ($(BIT_PACK_PHP),1)
 #
@@ -2236,7 +2225,7 @@ stop: $(DEPS_93)
 installBinary: $(DEPS_94)
 	mkdir -p "$(BIT_APP_PREFIX)"
 	rm -f "$(BIT_APP_PREFIX)/latest"
-	ln -s "4.4.4" "$(BIT_APP_PREFIX)/latest"
+	ln -s "4.5.0" "$(BIT_APP_PREFIX)/latest"
 	mkdir -p "$(BIT_LOG_PREFIX)"
 	chmod 755 "$(BIT_LOG_PREFIX)"
 	[ `id -u` = 0 ] && chown $(WEB_USER):$(WEB_GROUP) "$(BIT_LOG_PREFIX)"; true
@@ -2493,30 +2482,19 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/proto/legacy-mvc/layouts/default.esp $(BIT_VAPP_PREFIX)/esp/legacy-mvc/layouts/default.esp
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/css"
 	cp src/esp/proto/legacy-mvc/static/css/all.css $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/css/all.css
-	cp src/esp/proto/legacy-mvc/static/css/all.less $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/css/all.less
-	cp src/esp/proto/legacy-mvc/static/css/app.less $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/css/app.less
-	cp src/esp/proto/legacy-mvc/static/css/esp.less $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/css/esp.less
-	cp src/esp/proto/legacy-mvc/static/css/more.less $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/css/more.less
-	cp src/esp/proto/legacy-mvc/static/css/normalize.less $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/css/normalize.less
-	cp src/esp/proto/legacy-mvc/static/css/theme.less $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/css/theme.less
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/images"
 	cp src/esp/proto/legacy-mvc/static/images/banner.jpg $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/images/banner.jpg
 	cp src/esp/proto/legacy-mvc/static/images/favicon.ico $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/images/favicon.ico
 	cp src/esp/proto/legacy-mvc/static/images/splash.jpg $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/images/splash.jpg
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/legacy-mvc/static"
 	cp src/esp/proto/legacy-mvc/static/index.esp $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/index.esp
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/lib"
-	cp src/esp/proto/legacy-mvc/static/lib/html5shiv.js $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/lib/html5shiv.js
-	cp src/esp/proto/legacy-mvc/static/lib/jquery.esp.js $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/lib/jquery.esp.js
-	cp src/esp/proto/legacy-mvc/static/lib/jquery.js $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/lib/jquery.js
-	cp src/esp/proto/legacy-mvc/static/lib/jquery.simplemodal.js $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/lib/jquery.simplemodal.js
-	cp src/esp/proto/legacy-mvc/static/lib/jquery.tablesorter.js $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/lib/jquery.tablesorter.js
-	cp src/esp/proto/legacy-mvc/static/lib/less.js $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/lib/less.js
-	cp src/esp/proto/legacy-mvc/static/lib/respond.js $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/lib/respond.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/js"
+	cp src/esp/proto/legacy-mvc/static/js/jquery.esp.js $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/js/jquery.esp.js
+	cp src/esp/proto/legacy-mvc/static/js/jquery.js $(BIT_VAPP_PREFIX)/esp/legacy-mvc/static/js/jquery.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/legacy-mvc/templates"
 	cp src/esp/proto/legacy-mvc/templates/controller.c $(BIT_VAPP_PREFIX)/esp/legacy-mvc/templates/controller.c
-	cp src/esp/proto/legacy-mvc/templates/edit.html $(BIT_VAPP_PREFIX)/esp/legacy-mvc/templates/edit.html
-	cp src/esp/proto/legacy-mvc/templates/list.html $(BIT_VAPP_PREFIX)/esp/legacy-mvc/templates/list.html
+	cp src/esp/proto/legacy-mvc/templates/edit.esp $(BIT_VAPP_PREFIX)/esp/legacy-mvc/templates/edit.esp
+	cp src/esp/proto/legacy-mvc/templates/list.esp $(BIT_VAPP_PREFIX)/esp/legacy-mvc/templates/list.esp
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/less/client/lib/less"
 	cp src/esp/proto/less/client/lib/less/less.js $(BIT_VAPP_PREFIX)/esp/less/client/lib/less/less.js
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/less"

@@ -1,0 +1,148 @@
+/*
+    app.less - Default ESP angular-mvc style sheet.
+ */
+
+.navbar {
+    .navbar-header {
+        width: 200px;
+    }
+    .navbar-brand {
+        width: 200px;
+        font-size: @font-size-base;
+    }
+    .form-control {
+        background-color: @gray-darker;
+        border-color: @gray-darker;
+        width: 220px;
+        &:focus {
+            background-color: @gray-lighter;
+            -webkit-transition: all .3s linear;
+        }
+    }
+    .glyphicon-search {
+        color: @gray;
+        position: relative;
+        top: 6px;
+        left: -28px;
+    }
+    li {
+        border-left: 1px solid @gray-darker;
+    }
+    .dropdown li {
+        border: none;
+    }
+}
+
+.home {
+    .container {
+    }
+    .sidebar {
+        padding-top: 40px;
+        width: 140px;
+        color: @gray;
+        .glyphicon, i {
+            font-size: @font-size-larger;
+            color: @gray;
+        }
+        .menu-item {
+            font-size: @font-size-base;
+            color: @gray;
+            display: block;
+        }
+    }
+    .content {
+        padding-left: 20px;
+        background: white;
+    }
+    footer {
+        background: @gray-darker;
+        color: @gray-lighter;
+        font-size: @font-size-small;
+        .powered {
+            text-align: right;
+        }
+    }
+}
+
+table.list {
+    .table();
+    .table-striped();
+    .table-bordered();
+    .table-hover();
+    .table-condensed();
+}
+
+.form-error {
+    width: 500px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    text-indent: 10px;
+    border: 2px solid @error-color;
+    .rounded(4px);
+    .drop-shadow();
+    h2 {
+        margin: 0 0 10px 0;
+        padding: 10px 0 10px 0;
+        font-size: @font-size-small;
+        color: white;
+        background-color: @error-color;
+    }
+    ul {
+        margin-bottom: 0;
+    }
+}
+
+.field-error {
+    border: 2px solid @error-color !important;
+}
+
+.feedback {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 500px;
+    height: 41px;
+    margin: 0 0 0 -250px;
+    padding: 8px 3px 3px 3px;
+    .rounded(7px);
+    .border-radius(0, 7px, 7px, 0);
+    .drop-shadow();
+    color: white;
+    text-align: center;
+    z-index: 2000;
+    &:empty {
+        display: none;
+    }
+}
+
+.feedback-error {
+    .feedback();
+    .gradient(@feedback-error-background, lighten(@feedback-error-background, 10%), darken(@feedback-error-background, 10%));
+    font-weight: bold;
+}
+
+.feedback-warning {
+    .feedback();
+    .gradient(@feedback-warning-background, lighten(@feedback-warning-background, 10%), darken(@feedback-warning-background, 10%));
+}
+
+.feedback-inform {
+    .feedback();
+    .gradient(@feedback-inform-background, lighten(@feedback-inform-background, 10%), darken(@feedback-inform-background, 10%));
+    opacity: 0;
+    top: -100px;
+    &.animate {
+        -webkit-animation: feedback-transition ease-in 10s;
+    }
+}
+
+@-webkit-keyframes feedback-transition {
+    0%   { opacity: 1.0; top:    0px; }
+    80%  { opacity: 1.0; top:    0px; }
+    90%  { opacity: 0.5; top:    0px; }
+    100% { opacity: 0.0; top: -100px; }
+}
+
+[ng-click],[esp-click],[onclick] {
+    cursor: pointer;
+}
