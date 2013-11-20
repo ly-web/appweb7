@@ -3,8 +3,8 @@
 #
 
 PRODUCT            := appweb
-VERSION            := 4.4.4
-BUILD_NUMBER       := 0
+VERSION            := 4.5.0
+BUILD_NUMBER       := rc.0
 PROFILE            := static
 ARCH               := $(shell echo $(WIND_HOST_TYPE) | sed 's/-.*//')
 CPU                := $(subst X86,PENTIUM,$(shell echo $(ARCH) | tr a-z A-Z))
@@ -309,7 +309,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.4.4-0
+	@echo 4.5.0-rc.0
 
 #
 #   mpr.h
@@ -1299,30 +1299,19 @@ $(CONFIG)/esp: $(DEPS_56)
 	cp src/esp/proto/legacy-mvc/layouts/default.esp $(CONFIG)/esp/legacy-mvc/layouts/default.esp
 	mkdir -p "$(CONFIG)/esp/legacy-mvc/static/css"
 	cp src/esp/proto/legacy-mvc/static/css/all.css $(CONFIG)/esp/legacy-mvc/static/css/all.css
-	cp src/esp/proto/legacy-mvc/static/css/all.less $(CONFIG)/esp/legacy-mvc/static/css/all.less
-	cp src/esp/proto/legacy-mvc/static/css/app.less $(CONFIG)/esp/legacy-mvc/static/css/app.less
-	cp src/esp/proto/legacy-mvc/static/css/esp.less $(CONFIG)/esp/legacy-mvc/static/css/esp.less
-	cp src/esp/proto/legacy-mvc/static/css/more.less $(CONFIG)/esp/legacy-mvc/static/css/more.less
-	cp src/esp/proto/legacy-mvc/static/css/normalize.less $(CONFIG)/esp/legacy-mvc/static/css/normalize.less
-	cp src/esp/proto/legacy-mvc/static/css/theme.less $(CONFIG)/esp/legacy-mvc/static/css/theme.less
 	mkdir -p "$(CONFIG)/esp/legacy-mvc/static/images"
 	cp src/esp/proto/legacy-mvc/static/images/banner.jpg $(CONFIG)/esp/legacy-mvc/static/images/banner.jpg
 	cp src/esp/proto/legacy-mvc/static/images/favicon.ico $(CONFIG)/esp/legacy-mvc/static/images/favicon.ico
 	cp src/esp/proto/legacy-mvc/static/images/splash.jpg $(CONFIG)/esp/legacy-mvc/static/images/splash.jpg
 	mkdir -p "$(CONFIG)/esp/legacy-mvc/static"
 	cp src/esp/proto/legacy-mvc/static/index.esp $(CONFIG)/esp/legacy-mvc/static/index.esp
-	mkdir -p "$(CONFIG)/esp/legacy-mvc/static/lib"
-	cp src/esp/proto/legacy-mvc/static/lib/html5shiv.js $(CONFIG)/esp/legacy-mvc/static/lib/html5shiv.js
-	cp src/esp/proto/legacy-mvc/static/lib/jquery.esp.js $(CONFIG)/esp/legacy-mvc/static/lib/jquery.esp.js
-	cp src/esp/proto/legacy-mvc/static/lib/jquery.js $(CONFIG)/esp/legacy-mvc/static/lib/jquery.js
-	cp src/esp/proto/legacy-mvc/static/lib/jquery.simplemodal.js $(CONFIG)/esp/legacy-mvc/static/lib/jquery.simplemodal.js
-	cp src/esp/proto/legacy-mvc/static/lib/jquery.tablesorter.js $(CONFIG)/esp/legacy-mvc/static/lib/jquery.tablesorter.js
-	cp src/esp/proto/legacy-mvc/static/lib/less.js $(CONFIG)/esp/legacy-mvc/static/lib/less.js
-	cp src/esp/proto/legacy-mvc/static/lib/respond.js $(CONFIG)/esp/legacy-mvc/static/lib/respond.js
+	mkdir -p "$(CONFIG)/esp/legacy-mvc/static/js"
+	cp src/esp/proto/legacy-mvc/static/js/jquery.esp.js $(CONFIG)/esp/legacy-mvc/static/js/jquery.esp.js
+	cp src/esp/proto/legacy-mvc/static/js/jquery.js $(CONFIG)/esp/legacy-mvc/static/js/jquery.js
 	mkdir -p "$(CONFIG)/esp/legacy-mvc/templates"
 	cp src/esp/proto/legacy-mvc/templates/controller.c $(CONFIG)/esp/legacy-mvc/templates/controller.c
-	cp src/esp/proto/legacy-mvc/templates/edit.html $(CONFIG)/esp/legacy-mvc/templates/edit.html
-	cp src/esp/proto/legacy-mvc/templates/list.html $(CONFIG)/esp/legacy-mvc/templates/list.html
+	cp src/esp/proto/legacy-mvc/templates/edit.esp $(CONFIG)/esp/legacy-mvc/templates/edit.esp
+	cp src/esp/proto/legacy-mvc/templates/list.esp $(CONFIG)/esp/legacy-mvc/templates/list.esp
 	mkdir -p "$(CONFIG)/esp/less/client/lib/less"
 	cp src/esp/proto/less/client/lib/less/less.js $(CONFIG)/esp/less/client/lib/less/less.js
 	mkdir -p "$(CONFIG)/esp/less"

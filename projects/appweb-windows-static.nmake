@@ -3,8 +3,8 @@
 #
 
 PRODUCT            = appweb
-VERSION            = 4.4.4
-BUILD_NUMBER       = 0
+VERSION            = 4.5.0
+BUILD_NUMBER       = rc.0
 PROFILE            = static
 PA                 = $(PROCESSOR_ARCHITECTURE)
 
@@ -346,7 +346,7 @@ clean:
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.4.4-0
+	@echo 4.5.0-rc.0
 
 #
 #   bit.h
@@ -1356,30 +1356,19 @@ $(CONFIG)\esp: $(DEPS_58)
 	copy /Y src\esp\proto\legacy-mvc\layouts\default.esp $(CONFIG)\esp\legacy-mvc\layouts\default.esp
 	if not exist "$(CONFIG)\esp\legacy-mvc\static\css" md "$(CONFIG)\esp\legacy-mvc\static\css"
 	copy /Y src\esp\proto\legacy-mvc\static\css\all.css $(CONFIG)\esp\legacy-mvc\static\css\all.css
-	copy /Y src\esp\proto\legacy-mvc\static\css\all.less $(CONFIG)\esp\legacy-mvc\static\css\all.less
-	copy /Y src\esp\proto\legacy-mvc\static\css\app.less $(CONFIG)\esp\legacy-mvc\static\css\app.less
-	copy /Y src\esp\proto\legacy-mvc\static\css\esp.less $(CONFIG)\esp\legacy-mvc\static\css\esp.less
-	copy /Y src\esp\proto\legacy-mvc\static\css\more.less $(CONFIG)\esp\legacy-mvc\static\css\more.less
-	copy /Y src\esp\proto\legacy-mvc\static\css\normalize.less $(CONFIG)\esp\legacy-mvc\static\css\normalize.less
-	copy /Y src\esp\proto\legacy-mvc\static\css\theme.less $(CONFIG)\esp\legacy-mvc\static\css\theme.less
 	if not exist "$(CONFIG)\esp\legacy-mvc\static\images" md "$(CONFIG)\esp\legacy-mvc\static\images"
 	copy /Y src\esp\proto\legacy-mvc\static\images\banner.jpg $(CONFIG)\esp\legacy-mvc\static\images\banner.jpg
 	copy /Y src\esp\proto\legacy-mvc\static\images\favicon.ico $(CONFIG)\esp\legacy-mvc\static\images\favicon.ico
 	copy /Y src\esp\proto\legacy-mvc\static\images\splash.jpg $(CONFIG)\esp\legacy-mvc\static\images\splash.jpg
 	if not exist "$(CONFIG)\esp\legacy-mvc\static" md "$(CONFIG)\esp\legacy-mvc\static"
 	copy /Y src\esp\proto\legacy-mvc\static\index.esp $(CONFIG)\esp\legacy-mvc\static\index.esp
-	if not exist "$(CONFIG)\esp\legacy-mvc\static\lib" md "$(CONFIG)\esp\legacy-mvc\static\lib"
-	copy /Y src\esp\proto\legacy-mvc\static\lib\html5shiv.js $(CONFIG)\esp\legacy-mvc\static\lib\html5shiv.js
-	copy /Y src\esp\proto\legacy-mvc\static\lib\jquery.esp.js $(CONFIG)\esp\legacy-mvc\static\lib\jquery.esp.js
-	copy /Y src\esp\proto\legacy-mvc\static\lib\jquery.js $(CONFIG)\esp\legacy-mvc\static\lib\jquery.js
-	copy /Y src\esp\proto\legacy-mvc\static\lib\jquery.simplemodal.js $(CONFIG)\esp\legacy-mvc\static\lib\jquery.simplemodal.js
-	copy /Y src\esp\proto\legacy-mvc\static\lib\jquery.tablesorter.js $(CONFIG)\esp\legacy-mvc\static\lib\jquery.tablesorter.js
-	copy /Y src\esp\proto\legacy-mvc\static\lib\less.js $(CONFIG)\esp\legacy-mvc\static\lib\less.js
-	copy /Y src\esp\proto\legacy-mvc\static\lib\respond.js $(CONFIG)\esp\legacy-mvc\static\lib\respond.js
+	if not exist "$(CONFIG)\esp\legacy-mvc\static\js" md "$(CONFIG)\esp\legacy-mvc\static\js"
+	copy /Y src\esp\proto\legacy-mvc\static\js\jquery.esp.js $(CONFIG)\esp\legacy-mvc\static\js\jquery.esp.js
+	copy /Y src\esp\proto\legacy-mvc\static\js\jquery.js $(CONFIG)\esp\legacy-mvc\static\js\jquery.js
 	if not exist "$(CONFIG)\esp\legacy-mvc\templates" md "$(CONFIG)\esp\legacy-mvc\templates"
 	copy /Y src\esp\proto\legacy-mvc\templates\controller.c $(CONFIG)\esp\legacy-mvc\templates\controller.c
-	copy /Y src\esp\proto\legacy-mvc\templates\edit.html $(CONFIG)\esp\legacy-mvc\templates\edit.html
-	copy /Y src\esp\proto\legacy-mvc\templates\list.html $(CONFIG)\esp\legacy-mvc\templates\list.html
+	copy /Y src\esp\proto\legacy-mvc\templates\edit.esp $(CONFIG)\esp\legacy-mvc\templates\edit.esp
+	copy /Y src\esp\proto\legacy-mvc\templates\list.esp $(CONFIG)\esp\legacy-mvc\templates\list.esp
 	if not exist "$(CONFIG)\esp\less\client\lib\less" md "$(CONFIG)\esp\less\client\lib\less"
 	copy /Y src\esp\proto\less\client\lib\less\less.js $(CONFIG)\esp\less\client\lib\less\less.js
 	if not exist "$(CONFIG)\esp\less" md "$(CONFIG)\esp\less"
@@ -2625,30 +2614,19 @@ installBinary: $(DEPS_102)
 	copy /Y src\esp\proto\legacy-mvc\layouts\default.esp "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\layouts\default.esp"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\css" md "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\css"
 	copy /Y src\esp\proto\legacy-mvc\static\css\all.css "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\css\all.css"
-	copy /Y src\esp\proto\legacy-mvc\static\css\all.less "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\css\all.less"
-	copy /Y src\esp\proto\legacy-mvc\static\css\app.less "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\css\app.less"
-	copy /Y src\esp\proto\legacy-mvc\static\css\esp.less "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\css\esp.less"
-	copy /Y src\esp\proto\legacy-mvc\static\css\more.less "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\css\more.less"
-	copy /Y src\esp\proto\legacy-mvc\static\css\normalize.less "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\css\normalize.less"
-	copy /Y src\esp\proto\legacy-mvc\static\css\theme.less "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\css\theme.less"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\images" md "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\images"
 	copy /Y src\esp\proto\legacy-mvc\static\images\banner.jpg "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\images\banner.jpg"
 	copy /Y src\esp\proto\legacy-mvc\static\images\favicon.ico "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\images\favicon.ico"
 	copy /Y src\esp\proto\legacy-mvc\static\images\splash.jpg "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\images\splash.jpg"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static" md "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static"
 	copy /Y src\esp\proto\legacy-mvc\static\index.esp "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\index.esp"
-	if not exist "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\lib" md "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\lib"
-	copy /Y src\esp\proto\legacy-mvc\static\lib\html5shiv.js "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\lib\html5shiv.js"
-	copy /Y src\esp\proto\legacy-mvc\static\lib\jquery.esp.js "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\lib\jquery.esp.js"
-	copy /Y src\esp\proto\legacy-mvc\static\lib\jquery.js "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\lib\jquery.js"
-	copy /Y src\esp\proto\legacy-mvc\static\lib\jquery.simplemodal.js "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\lib\jquery.simplemodal.js"
-	copy /Y src\esp\proto\legacy-mvc\static\lib\jquery.tablesorter.js "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\lib\jquery.tablesorter.js"
-	copy /Y src\esp\proto\legacy-mvc\static\lib\less.js "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\lib\less.js"
-	copy /Y src\esp\proto\legacy-mvc\static\lib\respond.js "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\lib\respond.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\js" md "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\js"
+	copy /Y src\esp\proto\legacy-mvc\static\js\jquery.esp.js "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\js\jquery.esp.js"
+	copy /Y src\esp\proto\legacy-mvc\static\js\jquery.js "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\static\js\jquery.js"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\templates" md "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\templates"
 	copy /Y src\esp\proto\legacy-mvc\templates\controller.c "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\templates\controller.c"
-	copy /Y src\esp\proto\legacy-mvc\templates\edit.html "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\templates\edit.html"
-	copy /Y src\esp\proto\legacy-mvc\templates\list.html "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\templates\list.html"
+	copy /Y src\esp\proto\legacy-mvc\templates\edit.esp "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\templates\edit.esp"
+	copy /Y src\esp\proto\legacy-mvc\templates\list.esp "$(BIT_VAPP_PREFIX)\esp\legacy-mvc\templates\list.esp"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\less\client\lib\less" md "$(BIT_VAPP_PREFIX)\esp\less\client\lib\less"
 	copy /Y src\esp\proto\less\client\lib\less\less.js "$(BIT_VAPP_PREFIX)\esp\less\client\lib\less\less.js"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\less" md "$(BIT_VAPP_PREFIX)\esp\less"
