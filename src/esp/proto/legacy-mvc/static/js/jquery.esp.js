@@ -264,12 +264,12 @@
         if (method == "GET") {
             window.location = url;
         } else {
-            var tokenName = $('meta[name=SecurityTokenName]').attr('content');
-            var token = $('meta[name=' + tokenName + ']').attr('content');
+            var parts = document.cookie.split("XSRF-TOKEN=");
+            var token = (parts.length == 2) ? parts.pop().split(";").shift() : null;
             if (token) {
                 var form = $('<form method="post" action="' + url + '"/>').
                     append('<input name="-http-method-" value="' + method + '" type="hidden" />').
-                    append('<input name="' + tokenName + '" value="' + token + '" type="hidden" />');
+                    append('<input name="-xsrf-" value="' + token + '" type="hidden" />');
                 if (params) {
                     params = params.split("&")
                     var k;
@@ -301,7 +301,6 @@
             try {
                 if (contentType == "text/html") {
                     if (e[0] && e[0].tagName == "TABLE") {
-                        // Copy tablesorter data and config and re-sort the data before displaying 
                         var config = data[0].config = e[0].config;
                         if (config) {
                             elt.tablesorter({ sortList: config.sortList });
