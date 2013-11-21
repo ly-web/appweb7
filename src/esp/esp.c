@@ -1589,12 +1589,14 @@ static void generateTable(int argc, char **argv)
  */
 static void generateScaffoldViews(cchar *name, cchar *table, int argc, char **argv)
 {
+    EspRoute    *eroute;
     MprHash     *tokens;
     cchar       *path, *data, *list;
 
     if (app->error) {
         return;
     }
+    eroute = app->eroute;
     list = smatch(name, table) ? sfmt("%ss", name) : table; 
     tokens = mprDeserialize(sfmt("{ NAME: '%s', LIST: '%s', TABLE: '%s', TITLE: '%s', SERVICE: '%s'}", 
         name, list, table, spascal(name), app->route->serverPrefix));
@@ -1602,8 +1604,13 @@ static void generateScaffoldViews(cchar *name, cchar *table, int argc, char **ar
     if (espTestConfig(app->route, "generate.clientView", "true")) {
         path = sfmt("%s/%s/%s-list.html", app->eroute->appDir, name, name);
         data = getTemplate(app->topComponent, "list.html", tokens);
-    } else {
+#if BIT_ESP_LEGACY
+    } else if (eroute->legacy) {
         path = sfmt("%s/%s-list.esp", app->eroute->viewsDir, name);
+        data = getTemplate(app->topComponent, "list.esp", tokens);
+#endif
+    } else {
+        path = sfmt("%s/%s/%s-list.esp", app->eroute->appDir, name, name);
         data = getTemplate(app->topComponent, "list.esp", tokens);
     }
     makeEspFile(path, data, "Scaffold List View");
@@ -1611,8 +1618,13 @@ static void generateScaffoldViews(cchar *name, cchar *table, int argc, char **ar
     if (espTestConfig(app->route, "generate.clientView", "true")) {
         path = sfmt("%s/%s/%s-edit.html", app->eroute->appDir, name, name);
         data = getTemplate(app->topComponent, "edit.html", tokens);
-    } else {
+#if BIT_ESP_LEGACY
+    } else if (eroute->legacy) {
         path = sfmt("%s/%s-edit.esp", app->eroute->viewsDir, name);
+        data = getTemplate(app->topComponent, "edit.esp", tokens);
+#endif
+    } else {
+        path = sfmt("%s/%s/%s-edit.esp", app->eroute->appDir, name, name);
         data = getTemplate(app->topComponent, "edit.esp", tokens);
     }
     makeEspFile(path, data, "Scaffold Edit View");

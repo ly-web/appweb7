@@ -1,5 +1,5 @@
 /*
-    controller.c - Test ESP controller
+    service.c - Test ESP controller
  */
  
 #include    "esp.h"
@@ -15,7 +15,7 @@ static void hello() {
 /*
     Controller initialization. Invoked when the controller is loaded.
  */
-ESP_EXPORT int esp_controller_controller(HttpRoute *route, MprModule *module) {
+ESP_EXPORT int esp_controller_service(HttpRoute *route, MprModule *module) {
     espDefineAction(route, "test-hello", hello);
     return 0;
 }

@@ -11111,7 +11111,7 @@ PUBLIC cchar *httpExpandRouteVars(HttpRoute *route, cchar *str)
 
 /*
     Make a path name. This replaces $references, converts to an absolute path name, cleans the path and maps delimiters.
-    Paths are resolved relative to the route home (configuration directory not documents).
+    Paths are resolved relative to the given directory or route home if "dir" is null.
  */
 PUBLIC char *httpMakePath(HttpRoute *route, cchar *dir, cchar *path)
 {
@@ -13057,12 +13057,6 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
                     httpBadRequestError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Bad content length");
                     return 0;
                 }
-                if (rx->length >= conn->limits->receiveBodySize) {
-                    httpLimitError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE,
-                        "Request content length %,Ld bytes is too big. Limit %,Ld", 
-                        rx->length, conn->limits->receiveBodySize);
-                    return 0;
-                }
                 rx->contentLength = sclone(value);
                 assert(rx->length >= 0);
                 if (conn->endpoint || !scaselessmatch(tx->method, "HEAD")) {
@@ -13306,6 +13300,11 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
             }
             break;
         }
+    }
+    if (!rx->upload && rx->length >= conn->limits->receiveBodySize) {
+        httpLimitError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE,
+            "Request content length %,Ld bytes is too big. Limit %,Ld", rx->length, conn->limits->receiveBodySize);
+        return 0;
     }
     if (rx->form && rx->length >= conn->limits->receiveFormSize) {
         httpLimitError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
@@ -15072,7 +15071,7 @@ PUBLIC int httpSetSessionVar(HttpConn *conn, cchar *key, cchar *value)
     if (value == 0) {
         httpRemoveSessionVar(conn, key);
     } else {
-        mprAddKey(sp->data, key, value);
+        mprAddKey(sp->data, key, sclone(value));
     }
     return 0;
 }
@@ -16057,8 +16056,14 @@ PUBLIC void httpOmitBody(HttpConn *conn)
 }
 
 
+static bool localEndpoint(cchar *host)
+{
+    return smatch(host, "localhost") || smatch(host, "127.0.0.1") || smatch(host, "::1");
+}
+
+
 /*
-    Redirect the user to another web page. The targetUri may or may not have a scheme.
+    Redirect the user to another URI. The targetUri may or may not have a scheme or hostname.
  */
 PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
 {
@@ -16079,10 +16084,11 @@ PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
     }
     tx->status = status;
 
+    /*
+        Expand the target for embedded tokens. Resolve relative to the current request URI
+        This may add "localhost" if the host is missing in the targetUri.
+     */
     targetUri = httpUri(conn, targetUri);
-    if (schr(targetUri, '$')) {
-        targetUri = httpExpandUri(conn, targetUri);
-    }
     mprLog(3, "redirect %d %s", status, targetUri);
     msg = httpLookupStatus(conn->http, status);
 
@@ -16096,15 +16102,12 @@ PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
             Support URIs without a host:  https:///path. This is used to redirect onto the same host but with a 
             different scheme. So find a suitable local endpoint to supply the port for the scheme.
         */
-        if (!target->port &&
-                (!target->host || smatch(base->host, target->host)) &&
-                (target->scheme && !smatch(target->scheme, base->scheme))) {
-            endpoint = smatch(target->scheme, "https") ? conn->host->secureEndpoint : conn->host->defaultEndpoint;
-            if (endpoint) {
-                target->port = endpoint->port;
-            } else {
-                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot find endpoint for scheme %s", target->scheme);
-                return;
+        if (!target->port && (target->scheme && !smatch(target->scheme, base->scheme))) {
+            if (!target->host || smatch(base->host, target->host) || (localEndpoint(base->host) && localEndpoint(target->host))) {
+                endpoint = smatch(target->scheme, "https") ? conn->host->secureEndpoint : conn->host->defaultEndpoint;
+                if (endpoint) {
+                    target->port = endpoint->port;
+                }
             }
         }
         if (target->path && target->path[0] != '/') {
@@ -17503,9 +17506,9 @@ PUBLIC HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *base)
     } else {
         if (!uri->host) {
             uri->host = base->host;
-            if (!uri->port) {
-                uri->port = base->port;
-            }
+        }
+        if (!uri->port) {
+            uri->port = base->port;
         }
         if (!uri->scheme) {
             uri->scheme = base->scheme;
@@ -17542,7 +17545,9 @@ PUBLIC char *httpFormatUri(cchar *scheme, cchar *host, int port, cchar *path, cc
             scheme = "http";
         }
         if (host == 0 || *host == '\0') {
-            host = "localhost";
+            if (port || path || reference || query) {
+                host = "localhost";
+            }
         }
         hostDelim = "://";
     } else {

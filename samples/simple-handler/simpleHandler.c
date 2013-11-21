@@ -31,7 +31,7 @@ static void readySimple(HttpQueue *q)
         Call finalize when the response to the client is complete. Call httpFlushOutput if the response is 
         incomplete and you wish to immediately send any buffered output.
     */
-    httpFinalizeOutput(conn);
+    httpFinalize(conn);
 }
 
 

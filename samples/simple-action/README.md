@@ -1,7 +1,9 @@
 Simple Action Sample
 ===
 
-This sample shows how to create actions. i.e. Simple bindings from URIs to C functions
+This sample shows how to create actions. i.e. Simple bindings from URIs to C functions.
+The sample contains a main program which initializes the server and registers the required
+actions.
 
 Requirements
 ---

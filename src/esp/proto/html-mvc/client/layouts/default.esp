@@ -17,7 +17,7 @@
             <%@ content %>
         </section>
         <div class="feedback">
-            <% renderFlash(NULL); %>
+            <% renderFlash("all"); %>
         </div>
     </main>
     <% scripts(NULL); %>

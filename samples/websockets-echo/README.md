@@ -8,7 +8,7 @@ to the URI:
 
     /ws/test/echo
 
-The HTML page web/test.html is served to the client browser to issue a web socket
+The HTML page web/index.html is served to the client browser to issue a web socket
 request.
 
 The server is configured to keep the web socket open for 1 minute of inactivity and
@@ -30,7 +30,7 @@ To run:
 
 The server listens on port 8080. Browse to: 
  
-     http://localhost:8080/test.html
+     http://localhost:8080/
 
 This opens a web socket and sends the message "Hello Server" to the server. The server responds
 by echoing back the message. After one minute of inactivity, the server will close the connection.
@@ -41,7 +41,7 @@ Code:
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [echo.c](echo.c) - WebSockets echo server code
 * [start.bit](start.bit) - Bit build instructions
-* [web](web) - Directory containing the test.html web page
+* [web](web) - Directory containing the index.html web page
 
 Documentation:
 ---

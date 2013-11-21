@@ -1049,10 +1049,10 @@ PUBLIC HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool l
 /** 
     Create a URI. 
     @description Create a URI link based on a given target an expanding embedded tokens based on the current request and 
-        route state. The target URI parameter may contain partial or complete URI information. The missing parts 
-    are supplied using the current request and route tables. The resulting URI is a normalized, server-local 
-    URI (that begins with "/"). The URI will include a required application route prefix, but will not include scheme, host or 
-    port components.
+        route state. The target URI parameter may contain partial or complete URI information. The missing parts are 
+        supplied using the current request and route tables. The resulting URI is a normalized, server-local URI (that 
+        begins with "/"). The URI will include a required application route prefix, but will not include scheme, host or 
+        port components.
     @param [in] conn HttpConn connection object 
     @param target The URI target. The target parameter can be a URI string or JSON style set of options. 
         The target will have any embedded "{tokens}" expanded by using token values from the request parameters.
@@ -1090,7 +1090,6 @@ PUBLIC HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool l
                 {AT}Service/action.</li>
             <li>route String Route name to use for the URI template</li>
         </ul>
-    @param options Hash of option values for embedded tokens. This hash is blended with the route variables.
     @return A normalized, server-local Uri string.
     @ingroup HttpUri
     @stability Evolving
@@ -3234,7 +3233,7 @@ PUBLIC HttpUser *httpAddUser(HttpAuth *auth, cchar *user, cchar *password, cchar
 /**
     Authenticate a user
     This routine authenticates a user by testing the user supplied session cookie against the server session store.
-    The result is saved in HttpRx.authenticated and supplied as a return result. Thereafter, #httpIsLoggedIn may be called
+    The result is saved in HttpRx.authenticated and supplied as a return result. Thereafter, #httpIsAuthenticated may be called
     to test HttpRx.authenticated.
     The httpAuthenticate call is not automatically performed by the request pipeline. Web Frameworks should call this if required.
     @param conn HttpConn connection object created via #httpCreateConn object.

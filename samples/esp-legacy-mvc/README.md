@@ -2,7 +2,7 @@ ESP LEGACY MVC Sample
 ===
 
 WARNING: Do not use this sample for any new applications. The legacy-mvc ESP component is deprecated
-and will be removed in Appweb 5.
+and will be removed in Appweb 5. Instead, see the esp-html-mvc or esp-angular-mvc samples as an alternative.
 
 This sample demonstrates a Legacy ESP MVC application. This was the old ESP MVC application layout. 
 
@@ -20,7 +20,7 @@ This app was generated, then edited for simplicity via:
     cd blog
     esp generate scaffold post title:string body:text
     cd ..
-    cp -r blog/* esp-legacy-mvc
+    mv blog esp-legacy-mvc
 
 For the new style ESP MVC application, see the esp-html-mvc sample:
 
@@ -30,9 +30,13 @@ For the ESP Angular application, see the esp-angular-mvc sample:
 
 * [esp-angular-mvc](../esp-angular-mvc/README.md)
 
-If you require an ESP MVC application hosted inside Appweb, see the esp-hosted-mvc sample:
-
-* [esp-hosted-mvc](../esp-hosted-mvc/README.md)
+Differences
+---
+The key changes in the new style html-mvc vs the legacy-mvc are:
+* The "static" directory of public client-side content is renamed to "client"
+* The "views" are distributed under "client/app/CONTROLLER" directories
+* The "layouts" directory is moved under "client/layouts"
+* The base URL to access the application uses a server prefix "/do"
 
 Requirements
 ---

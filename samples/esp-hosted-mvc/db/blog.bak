@@ -4,11 +4,11 @@
             ncols: 2
         },
         schema: {
-            'id': { type: 'int', autoinc: 'true', index: 'true', key: 'true' },
+            'id': { type: 'int', autoinc: true, index: true, key: true },
             'version': { type: 'string' },
         },
         data: [
-            [ '1', '201304102141190', ],
+            [ 1, '201311201009500', ],
         ],
     },
     'post': {
@@ -16,11 +16,14 @@
             ncols: 3
         },
         schema: {
-            'id': { type: 'int', autoinc: 'true', index: 'true', key: 'true' },
+            'id': { type: 'int', autoinc: true, index: true, key: true },
             'title': { type: 'string' },
             'body': { type: 'text' },
         },
         data: [
+            [ 1, 'aazzz', 'zzz', ],
+            [ 2, 'tttt', 'ttt', ],
+            [ 3, 'xxx', 'xxx', ],
         ],
     },
 }

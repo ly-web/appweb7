@@ -27,36 +27,23 @@
             html-mvc: {
             }
         },
+        json: false,
+        loginRequired: "",
+        refresh: 1000,
+        serverPrefix: "/do",
+        timeouts: {
+            session: 1800
+        },
+        xsrf: true,
         auth: "app",
         formats: {
             date: "yyyy-MM-dd",
             float: 2,
             int: 0
         },
-        json: false,
-        redirect: "secure",
-        serverPrefix: "/do",
-        loginRequired: "",
-        refresh: 1000,
-        timeouts: {
-            session: 1800
-        },
-        xsrf: true
+        redirect: "secure"
     },
-    name: "esp-html-mvc",
-    server: {
-        database: "mdb://esp-html-mvc.mdb"
-    },
-    generate: {
-        top: "html-mvc",
-        scaffold: true,
-        clientModel: false,
-        clientController: false,
-        clientView: false,
-        controller: true,
-        migration: true,
-        view: false
-    },
+    name: "blog",
     mode: "debug",
     modes: {
         debug: {
@@ -86,5 +73,18 @@
                 }
             }
         }
+    },
+    server: {
+        database: "mdb://blog.mdb"
+    },
+    generate: {
+        top: "html-mvc",
+        scaffold: true,
+        clientModel: false,
+        clientController: false,
+        clientView: false,
+        controller: true,
+        migration: true,
+        view: false
     }
 }

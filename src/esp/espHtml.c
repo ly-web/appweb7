@@ -24,12 +24,14 @@ PUBLIC void input(cchar *field, cchar *optionString)
     MprHash     *choices, *options;
     MprKey      *kp;
     EspReq      *req;
+    EspRoute    *eroute;
     EdiRec      *rec;
     cchar       *rows, *cols, *etype, *value, *checked, *style, *error, *errorMsg;
     int         type, flags;
 
     conn = getConn();
     req = conn->data;
+    eroute = req->route->eroute;
     rec = conn->record;
     if (ediGetColumnSchema(rec->edi, rec->tableName, field, &type, &flags, NULL) < 0) {
         type = -1;
@@ -37,7 +39,7 @@ PUBLIC void input(cchar *field, cchar *optionString)
     options = httpGetOptions(optionString);
     style = httpGetOption(options, "class", "");
     errorMsg = rec->errors ? mprLookupKey(rec->errors, field) : 0;
-    error = errorMsg ? sfmt("<span class=\"input-group-addon\">%s</span>", errorMsg) : ""; 
+    error = (errorMsg && !eroute->legacy) ? sfmt("<span class=\"input-group-addon\">%s</span>", errorMsg) : ""; 
 
     switch (type) {
     case EDI_TYPE_BOOL:

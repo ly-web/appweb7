@@ -9,9 +9,10 @@ This sample creates a simple web server to load the appweb.conf. However, you
 can use this appweb.conf with the full "appweb" program if you wish.
 
 If you want to run an application stand-alone using the web server integrated
-into the esp command, see the esp-mvc sample
+into the esp command, see the esp-html-mvc or esp-angular-mvc samples:
 
-* [esp-mvc](../esp-mvc/README.md)
+* [esp-angular-mvc](../esp-angular-mvc/README.md)
+* [esp-html-mvc](../esp-html-mvc/README.md)
 
 The app contains:
 * blog database with post table
@@ -25,7 +26,7 @@ This app was generated then edited via:
     cd blog
     esp generate scaffold post title:string body:text
     cd ..
-    cp -r blog/* esp-mvc
+    mv blog esp-hosted-mvc
 
 Requirements
 ---
@@ -42,24 +43,32 @@ To run:
 
 The server listens on port 8080. Browse to: 
  
-     http://localhost:8080/post/
+     http://localhost:8080/blog/do/post/list
 
 Notes:
 ---
-If you modify the controller.c it will be automatically recompiled and reloaded when next accessed.
+If you modify the controller or web pages they will be automatically recompiled and reloaded when next accessed.
+The "/blog" prefix is the prefix for the hosted application. The "/do" prefix is for server-side URIs for the application.
+So the "client" directory is published as: /blog/.
 
 Code:
 ---
 * [controllers](controllers/post.c) - Post controller
-* [appweb.conf](appweb.conf) - Appweb server configuration file
+* [appweb.conf](appweb.conf) - Master appweb server configuration file
 * [cache](cache) - Directory of compiled ESP modules
+* [client](client) - Client-side public web content
+* [client/app](client/app) - Client-side application per-module pages and scripts
+* [client/assets](client/assets) - Client-side media assets
+* [client/css](client/css) - Client-side CSS and Less stylesheets
+* [client/index.esp](client/index.esp) - Application home page
+* [client/layouts](client/layouts) - Master view layout templates 
+* [client/lib](client/lib) - Client-side 3rd-party libraries
 * [db](db) - Database directory for the blog application
 * [db/blog.mdb](db/blog.mdb) - Blog database 
 * [db/migrations](db/migrations) - Database base migrations to create / destroy the database schema
-* [layouts](layouts) - Master view layout templates 
-* [static](static) - Static web content
+* [esp.json](esp.json) - ESP configuration file
+* [hosted.conf](hosted.conf) - Application appweb configuration file
 * [start.bit](start.bit) - Bit build instructions
-* [views](views) - Web views
 
 Documentation:
 ---

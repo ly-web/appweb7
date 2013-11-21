@@ -8,8 +8,14 @@ This sample shows how to configure a secure Appweb server. This configuration us
 * Chroot
 * Login authentication 
 * Sandbox resource limits
+* Blowfish encryption for the password
 
 This sample uses a self-signed certificate. In your application, you will need a real certificate.
+
+Notes:
+The password database is kept in a flat file called auth.conf. The password was created via:
+
+    authpass --cipher blowfish --password pass5 auth.conf example.com ralph
 
 Requirements
 ---
@@ -19,6 +25,9 @@ Requirements
 To build:
 ---
     bit 
+    esp compile
+
+    # Note that the ESP pages must be pre-compiled as the cc compiler wont be available inside the chroot jail.
 
 To run:
 ---
@@ -29,7 +38,7 @@ The server listens on port 8080 for HTTP traffice and 4443 for SSL. Browse to:
      http://localhost:8080/
 
 This will redirect to SSL (you will get a warning due to the self-signed certificate).
-Continue and you will be prompted to login. The test username/password is joshua/pass1.
+Continue and you will be prompted to login. The test username/password is ralph/pass5.
 
 Code:
 ---

@@ -9,7 +9,10 @@
             'body': { type: 'text' },
         },
         data: [
-            [ '6', 'dddd', 'eeee dog', ],
+            [ '6', 'dddd', 'eeee
+dog', ],
+            [ '7', 'aaa', 'aaaa fox
+', ],
         ],
     },
 }

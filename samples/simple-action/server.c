@@ -26,7 +26,7 @@ static void myaction(HttpConn *conn)
     /*
         Add desired headers. "Set" will overwrite, add will create if not already defined.
      */
-    httpAddHeaderString(conn, "Content-Type", "text/plain");
+    httpAddHeaderString(conn, "Content-Type", "text/html");
     httpSetHeaderString(conn, "Cache-Control", "no-cache");
 
     httpWrite(q, "<html><title>simpleAction</title><body>\r\n");

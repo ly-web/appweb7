@@ -642,7 +642,10 @@ static EspRoute *allocEspRoute(HttpRoute *route)
         path = route->home;
     }
 #endif
-    eroute->cacheDir = (char*) path;
+    /*
+        Use a relative path incase a Chroot directive happens after loading the esp handler
+     */
+    eroute->cacheDir = (char*) mprGetRelPath(path, NULL);
     eroute->update = BIT_DEBUG;
     eroute->keepSource = BIT_DEBUG;
     eroute->lifespan = 0;
@@ -708,7 +711,7 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     eroute->controllersDir = mprJoinPath(dir, "controllers");
     eroute->srcDir      = mprJoinPath(dir, "src");
     eroute->appDir      = mprJoinPath(dir, "client/app");
-    eroute->layoutsDir  = mprJoinPath(eroute->appDir, "layouts");
+    eroute->layoutsDir  = mprJoinPath(eroute->clientDir, "layouts");
     eroute->viewsDir    = eroute->appDir;
     httpSetRouteVar(route, "CACHE_DIR", eroute->cacheDir);
     httpSetRouteVar(route, "CLIENT_DIR", eroute->clientDir);

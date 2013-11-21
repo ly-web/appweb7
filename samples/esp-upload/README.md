@@ -6,7 +6,7 @@ This sample shows how to configure ESP for file upload.
 The sample includes an upload web form: web/upload/upload-form.html. This form will
 post the uploaded file to the web/upload/upload.esp page.
 
-For security, file upload is restricted to URIsstarting with /upload.
+For security, file upload is restricted to URIs starting with /upload.
 
 Requirements
 ---

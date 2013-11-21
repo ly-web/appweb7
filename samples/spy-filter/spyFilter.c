@@ -25,7 +25,7 @@ static void incomingSpy(HttpQueue *q, HttpPacket *packet)
 {
     if (packet->content == 0) {
         /*
-            End of input
+            End of input. Set a greeting response header if the input says hello.
          */
         if (q->first && q->first->content && scontains(q->first->content->start, "hello")) {
             httpSetHeader(q->conn, "X-Greeting", "found");

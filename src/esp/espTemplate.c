@@ -259,9 +259,9 @@ static int runCommand(HttpRoute *route, MprDispatcher *dispatcher, cchar *comman
             /* Windows puts errors to stdout Ugh! */
             err = out;
         }
-        mprError("ESP: Cannot run command %s, error %s", commandLine, err);
+        mprError("ESP: Cannot run command: %s, error %s", commandLine, err);
         if (route->flags & HTTP_ROUTE_SHOW_ERRORS) {
-            *errMsg = sfmt("Cannot run command %s, error %s", commandLine, err);
+            *errMsg = sfmt("Cannot run command: %s, error %s", commandLine, err);
         } else {
             *errMsg = "Cannot compile view";
         }

@@ -326,10 +326,12 @@ PUBLIC int maSetPlatform(cchar *platformPath)
     MaAppweb        *appweb;
     MprDirEntry     *dp;
     cchar           *platform, *dir, *junk, *appwebExe, *path;
-    int             next, i, notrace;
+    int             next, i;
 
+#if UNUSED
+    int notrace = !platformPath;
+#endif
     appweb = MPR->appwebService;
-    notrace = !platformPath;
     if (!platformPath) {
         platformPath = appweb->localPlatform;
     }
@@ -372,7 +374,7 @@ PUBLIC int maSetPlatform(cchar *platformPath)
             for (ITERATE_ITEMS(mprGetPathFiles(dir, 0), dp, next)) {
                 if (dp->isDir && sstarts(mprGetPathBase(dp->name), platform)) {
                     path = mprJoinPath(dir, dp->name);
-                    if (mprPathExists(mprJoinPath(path, "appweb" BIT_EXE), X_OK)) {
+                    if (mprPathExists(mprJoinPath(path, "bin/appweb" BIT_EXE), X_OK)) {
                         appweb->platform = mprGetPathBase(dp->name);
                         appweb->platformDir = mprJoinPath(dir, dp->name);
                         break;
@@ -389,9 +391,13 @@ PUBLIC int maSetPlatform(cchar *platformPath)
         return MPR_ERR_BAD_ARGS;
     }
     appweb->platformDir = mprGetAbsPath(appweb->platformDir);
+#if UNUSED
     if (!notrace) {
+#endif
         mprLog(1, "Using platform %s at \"%s\"", appweb->platform, appweb->platformDir);
+#if UNUSED
     }
+#endif
     return 0;
 }
 

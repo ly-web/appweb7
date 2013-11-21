@@ -119,7 +119,7 @@ static void output_action()
 /*
     Initialize the "output" loadable module
  */
-ESP_EXPORT int esp_module_output(HttpRoute *route, MprModule *module) {
+ESP_EXPORT int esp_controller_output(HttpRoute *route, MprModule *module) {
     /*
         Define the "output" action that will run when the "test/output" URI is invoked
      */

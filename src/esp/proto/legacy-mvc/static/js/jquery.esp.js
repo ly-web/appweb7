@@ -21,6 +21,7 @@
             $('[data-esp-sort-order]').each(sort);
             $('[data-esp-refresh]').each(refresh);
             $('span[class~=esp-flash-inform]').animate({opacity: 1.0}, 1000).hide("slow");
+            $('div[class~=esp-flash-inform]').animate({opacity: 1.0}, 1000).hide("slow");
 
             /*
                 Attach event handlers

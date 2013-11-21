@@ -22,10 +22,7 @@
         },
         data: [
             [ 1, 'rrrr', 'bbbb', ],
-            [ 2, 'aaaa', 'bbbb', ],
             [ 3, 'aaaaaaa', 'ffdf', ],
-            [ 4, 'aaaaaaa', 'ffdf', ],
-            [ 5, 'dddd', 'bbbb', ],
         ],
     },
 }

@@ -18,7 +18,7 @@
         },
         json: false,
         redirect: "secure",
-        serverPrefix: "",
+        serverPrefix: "/do",
     },
     server: {
         database: "${DATABASE}://${NAME}.${DATABASE}",

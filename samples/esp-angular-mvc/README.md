@@ -2,9 +2,12 @@ ESP Angular MVC Sample
 ===
 
 This sample demonstrates an Angular ESP MVC application. This is an ESP MVC application that uses the
-AngularJS client-side Javascript framework.
+AngularJS client-side Javascript framework to generate the user interface in the browser.
 
-The app is a trivial blogging application. Posts with a title and body can be created, listed and deleted.
+The server-side supplies scripts, style sheets HTML pages. It also interacts with the client via JSON
+requests and responses. 
+
+This sample is a trivial blogging application. Posts with a title and body can be created, listed and deleted.
 
 The app contains:
 * blog database with post table
@@ -18,7 +21,7 @@ This app was generated, then edited for simplicity via:
     cd blog
     esp generate scaffold post title:string body:text
     cd ..
-    cp -r blog/* esp-angular-mvc
+    mv blog esp-angular-mvc
 
 Requirements
 ---
@@ -58,6 +61,12 @@ Code:
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [cache](cache) - Directory of compiled ESP modules
 * [client](client) - Client-side public web content
+* [client/app](client/app) - Client-side application per-module pages and scripts
+* [client/assets](client/assets) - Client-side media assets
+* [client/css](client/css) - Client-side CSS and Less stylesheets
+* [client/index.esp](client/index.esp) - Application home page
+* [client/lib](client/lib) - Client-side 3rd-party libraries
+* [client/pages](client/pages) - Client-side stand-alone web pages
 * [db](db) - Database directory for the blog application
 * [db/blog.mdb](db/blog.mdb) - Blog database 
 * [db/migrations](db/migrations) - Database base migrations to create / destroy the database schema

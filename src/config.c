@@ -363,12 +363,17 @@ static int addHandlerDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_CANT_CREATE;
     }
     if (smatch(handler, "espHandler") && !espLoaded) {
-        path = httpMakePath(state->route, state->configDir, "${BIN_DIR}/esp.conf");
+        path = "./esp.conf";
+        if (!mprPathExists("esp.conf", R_OK)) {
+            path = httpMakePath(state->route, state->configDir, "${BIN_DIR}/esp.conf");
+        }
         if (mprPathExists(path, R_OK)) {
             espLoaded = 1;
             if (parseFile(state, path) < 0) {
                 return MPR_ERR_CANT_OPEN;
             }
+        } else {
+            mprLog(0, "Cannot find esp.conf at %s", path);
         }
     }
     return 0;
@@ -634,27 +639,40 @@ static int cacheDirective(MaState *state, cchar *key, cchar *value)
 static int chrootDirective(MaState *state, cchar *key, cchar *value)
 {
 #if BIT_UNIX_LIKE
-    char    *path;
+    MprKey  *kp;
+    cchar   *oldConfigDir;
+    char    *home;
     
-    path = httpMakePath(state->route, state->configDir, value);
-    if (chdir(path) < 0) {
-        mprError("Cannot change working directory to %s", path);
+    home = httpMakePath(state->route, state->configDir, value);
+    if (chdir(home) < 0) {
+        mprError("Cannot change working directory to %s", home);
         return MPR_ERR_CANT_OPEN;
     }
     if (state->http->flags & HTTP_UTILITY) {
-        mprLog(MPR_CONFIG, "Change directory to: \"%s\"", path);
+        /* Not running a web server but rather a utility like the "esp" generator program */
+        mprLog(MPR_CONFIG, "Change directory to: \"%s\"", home);
     } else {
-        if (chroot(path) < 0) {
+        if (chroot(home) < 0) {
             if (errno == EPERM) {
                 mprError("Must be super user to use chroot\n");
             } else {
-                mprError("Cannot change change root directory to %s, errno %d\n", path, errno);
+                mprError("Cannot change change root directory to %s, errno %d\n", home, errno);
             }
             return MPR_ERR_BAD_SYNTAX;
         }
-        state->route->documents = mprGetRelPath(state->route->documents, path);
+        /*
+            Remap directories
+         */
+        oldConfigDir = state->configDir;
+        state->configDir = mprGetAbsPath(mprGetRelPath(state->configDir, home));
+        state->route->documents = mprGetAbsPath(mprGetRelPath(state->route->documents, home));
         state->route->home = state->route->documents;
-        mprLog(MPR_CONFIG, "Chroot to: \"%s\"", path);
+        for (ITERATE_KEYS(state->route->vars, kp)) {
+            if (sstarts(kp->data, oldConfigDir)) {
+                kp->data = mprGetAbsPath(mprGetRelPath(kp->data, oldConfigDir));
+            }
+        }
+        mprLog(MPR_CONFIG, "Chroot to: \"%s\"", home);
     }
     return 0;
 #else
@@ -853,10 +871,11 @@ static int directoryIndexDirective(MaState *state, cchar *key, cchar *value)
 static int documentsDirective(MaState *state, cchar *key, cchar *value)
 {
     cchar   *path;
+
     if (!maTokenize(state, value, "%T", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    path = mprGetAbsPath(mprJoinPath(state->configDir, httpExpandRouteVars(state->route, path)));
+    path = mprJoinPath(state->configDir, httpExpandRouteVars(state->route, path));
     httpSetRouteDocuments(state->route, path);
     return 0;
 }

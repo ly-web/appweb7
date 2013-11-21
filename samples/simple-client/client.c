@@ -26,6 +26,11 @@ MAIN(simpleClient, int argc, char **argv, char **envp)
         return 255;
     }
     printf("Server responded with: %s\n", response);
+    /*
+        Alternatively if you already have the MPR initialized, you can use the httpRequest API:
+
+        code = httpRequest(method, uri, data, response, err);
+     */
     return 0;
 }
 

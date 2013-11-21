@@ -4134,6 +4134,7 @@ PUBLIC MprKey *mprAddDuplicateKey(MprHash *table, cvoid *key, cvoid *ptr);
 /**
     Add a symbol value into the hash table
     @description Associate an arbitrary value with a string symbol key and insert into the symbol table.
+        This will replace existing key values. Use mprAddDuplicateKey to allow duplicates.
     @param table Symbol table returned via mprCreateSymbolTable.
     @param key String key of the symbole entry to delete.
     @param ptr Arbitrary pointer to associate with the key in the table.

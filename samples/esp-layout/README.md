@@ -29,7 +29,6 @@ Code:
 * [index.esp](index.esp) - ESP page to serve. Uses layout.esp as a template.
 * [layout.esp](index.esp) - ESP layout template
 * [start.bit](start.bit) - Bit build instructions
-* [cache](cache) - Compiled ESP modules 
 
 Documentation:
 ---

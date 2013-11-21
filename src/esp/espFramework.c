@@ -789,7 +789,7 @@ PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds)
 #if BIT_ESP_LEGACY
             EspRoute *eroute = conn->rx->route->eroute;
             if (eroute->legacy) {
-                espRender(conn, "<div class='-esp-flash -esp-flash-%s'>%s</div>", kp->key, msg);
+                espRender(conn, "<div class='esp-flash esp-flash-%s'>%s</div>", kp->key, msg);
             } else 
 #endif
             espRender(conn, "<span class='feedback-%s animate'>%s</span>", kp->key, msg);

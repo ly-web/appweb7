@@ -9,9 +9,9 @@
 static void create${TITLE}() { 
     if (updateRec(createRec("${NAME}", params()))) {
         flash("inform", "New ${NAME} created");
-        renderView("${NAME}/list");
+        renderView("${NAME}/${NAME}-list");
     } else {
-        renderView("${NAME}/edit");
+        renderView("${NAME}/${NAME}-edit");
     }
 }
 
@@ -27,7 +27,7 @@ static void edit${TITLE}() {
  */ 
 static void get${TITLE}() { 
     readRec("${NAME}", param("id"));
-    renderView("${NAME}/edit");
+    renderView("${NAME}/${NAME}-edit");
 }
 
 /*
@@ -35,14 +35,14 @@ static void get${TITLE}() {
  */
 static void init${TITLE}() { 
     createRec("${NAME}", 0);
-    renderView("${NAME}/edit");
+    renderView("${NAME}/${NAME}-edit");
 }
 
 /*
     List the resources in this group
  */ 
 static void list${TITLE}() { 
-    renderView("${NAME}/list");
+    renderView("${NAME}/${NAME}-list");
 }
 
 /*
@@ -68,7 +68,7 @@ static void update${TITLE}() {
             flash("inform", "${TITLE} updated successfully.");
             redirect("list");
         } else {
-            renderView("${NAME}/edit");
+            renderView("${NAME}/${NAME}-edit");
         }
     }
 }
