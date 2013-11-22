@@ -371,7 +371,8 @@ static int runAction(HttpConn *conn)
             httpSetSecurityToken(conn);
             httpSetStatus(conn, HTTP_CODE_UNAUTHORIZED);
             if (eroute->json) {
-                espRenderString(conn, "{\"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please reload page.\"}}");
+                mprLog(2, "Security token is stale. Please reload page.");
+                espRenderString(conn, "{\"retry\": true, \"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
                 espFinalize(conn);
             } else {
                 httpError(conn, HTTP_CODE_UNAUTHORIZED, "Security token is stale. Please reload page.");
