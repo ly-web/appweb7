@@ -62,7 +62,7 @@
         </div>
         <div class="contentLeft">
             <h1>ESP Pages</h1>
-            <p>ESP Pages are HTML pages with embedded code that determines what is sent to the client at runtime. 
+            <p>ESP Pages are HTML pages with embedded "C" code that renders what is sent to the client at runtime. 
             Whereas static HTML pages must be fixed at development time, ESP pages can generate HTML and data at 
             runtime and on a per-user basis. ESP provides one of the easiest and most powerful web frameworks 
             without compromising speed or memory footprint.</p>
@@ -82,10 +82,11 @@
             and other system APIs are easy, fast and compact. There is no translation or coupling required getting 
             into and out of another language.</p>
             <h3>Transparent Compiling</h3>
-            <p>When a client request for an ESP page is received, the ESP page is parsed, converted into "C" code, 
-            and then compiled and saved as a native code library. Once loaded, subsequent requests will use the in-memory
+            <p>However, ESP is not a traditional low-level environment. When a client request for an ESP page 
+            is received, the ESP page is transparently parsed, converted into "C" code, compiled and saved as 
+            a native code shared library. Once loaded, subsequent requests will use the in-memory
             code without any access to the original ESP page. If the system is rebooted, the on-disk cached module 
-            will be loaded without recompilation.</p>
+            will be loaded without recompilation.</p>p>
             
             <img src="../../../images/esp/template/compile.jpeg" alt="compile" />
             <p>The compilation of ESP pages happens automatically and quickly in the background when in development mode. 
@@ -95,6 +96,12 @@
             <em><a href="../../appweb/users/dir/esp.html#espUpdate">EspUpdate</a></em> configuration directive.</p>
             <p>Alternatively, ESP pages can be precompiled via the <em>esp</em> generator program. For example:</p>
             <pre>esp compile</pre>
+
+            <p>In fact, the entire application can be compiled into a single module by compiling in flat mode:</p>
+            <pre>esp -flat compile</pre>
+            <p>In this mode, all the ESP pages, controllers and source code can be compiled into a single, managable
+            flexible library file.</p>
+
             <h3>Garbage Collection</h3>
             <p>ESP uses <a href="../../../ref/appweb/memory.html#collector">Garbage Collection</a> 
             for managing ESP and Appweb memory. This makes working with ESP pages 
@@ -175,6 +182,16 @@
                     <tr>
                         <td>@#field</td>
                         <td>Record field variable. This is equivalent to "<em>ediGetField(getRec(), field))</em>"</td>
+                    </tr>
+                    <tr>
+                        <td>@~</td>
+                        <td>Top level application URL. Use this to create relative URLs without having to hard
+                            code URI prefixes in your application.</td>
+                    </tr>
+                    <tr>
+                        <td>@|</td>
+                        <td>Top level server-side application URL. Use this to get the URI prefix for server-side
+                            controllers.</td>
                     </tr>
                 </tbody>
             </table>
@@ -318,11 +335,11 @@ Today is &lt;%= mprGetDate(0); %&gt;&lt;
             vulnerabilities.</li>
                 <li><a href="../../../api/esp.html#group___esp_abbrev_1gaa1e37f244a0e0796df494dfb756472a8">renderFile</a> to send
             the contents of a file back to the client.</li>
-                <li><a href="../../../api/esp.html#group___esp_req_1ga2789d2aa7add24367274c035f7eee6e0">renderGrid</a> to send
+                <li><a href="../../../api/esp.html#group___esp_req_1gab8d6f093fa851a73a6e80b20ea1cbc9">sendGrid</a> to send
                     a database table grid as JSON.</li>
-                <li><a href="../../../api/esp.html#group___esp_req_1gafe76fa3befab7774fab9c274d10000a5">renderRec</a> to send
+                <li><a href="../../../api/esp.html#group___esp_req_1gaa7f2ab9ce2162dcc0a10f82e74a92d80">sendRec</a> to send
                     a database record as JSON.</li>
-                <li><a href="../../../api/esp.html#group___esp_req_1ga32581f3ba31472f878c2442cbcaa0567">renderResult</a> to send
+                <li><a href="../../../api/esp.html#group___esp_req_1ga5a39a9b8619ef0cc07818c3a79eb023c">sendResult</a> to send
                     a status result with feedback as JSON.</li>
             </ul>
             <h3>Redirecting</h3>

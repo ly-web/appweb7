@@ -1,154 +1,73 @@
 /*
-    app.less - Layer2 stylesheet
+    app.less - Default ESP angular-mvc style sheet.
  */
-
-body {
-    //  THEME
-    background: #F2F2F2;
-}
 
 .navbar {
     .navbar-header {
         width: 200px;
     }
-    i, .glyphicon {
-        font-size: 14px;
+    .navbar-brand {
+        width: 200px;
+        font-size: @font-size-base;
     }
     .form-control {
-        //  MOB - use  navbar-inverse-search-bg etc from theme.
-        background-color: #141414;
-        border-color: #141414;
+        background-color: @gray-darker;
+        border-color: @gray-darker;
         width: 220px;
         &:focus {
-            background-color: #FFFFFF;
+            background-color: @gray-lighter;
             -webkit-transition: all .3s linear;
-            //position: relative;
         }
     }
     .glyphicon-search {
-        color: #777777;
+        color: @gray;
         position: relative;
         top: 6px;
         left: -28px;
     }
     li {
-        border-left: 1px solid #101417;
+        border-left: 1px solid @gray-darker;
     }
     .dropdown li {
         border: none;
     }
 }
 
-.home {
-    .container {
-    }
+main.container {
     .sidebar {
-        -margin-top: -20px;
-        -padding-bottom: 20px;
-        -background: #EEEEEE;
         padding-top: 40px;
         width: 140px;
-        color: #888;
+        color: @gray;
         .glyphicon, i {
-            font-size: 22px;
-            color: #888;
+            font-size: @font-size-larger;
+            color: @gray;
         }
         .menu-item {
-            font-size: 14px;
-            color: #888;
+            font-size: @font-size-base;
+            color: @gray;
             display: block;
         }
     }
     .content {
         padding-left: 20px;
-        background: #FFFFFF;
+        background: white;
     }
     footer {
-        background: #111111;
-        color: #BBBBBB;
-        font-size: 12px;
+        background: @gray-darker;
+        color: @gray-lighter;
+        font-size: @font-size-small;
         .powered {
             text-align: right;
         }
     }
 }
 
-.modal-backdrop {
-    background-image: url('../assets/background.jpg');
-}
-
-.login {
-    &.modal-dialog {
-        width: 400px;
-    }
-    .modal-header {
-        text-align: center;
-    }
-    .modal-content {
-        padding: 20px;
-    }
-    .forgot-password {
-        text-align: right;
-    }
-    .remember-me {
-        font-size: @font-size-small;
-    }
-}
-
-.log {
-    padding-bottom: 0px;
-    width: 400px;
-    color: @gray;
-    li {
-        padding: 8px 0 8px 0;
-        &:hover {
-            background: @gray-lighter;
-        }
-    }
-    .divider {
-        margin: 0;
-        padding: 0;
-    }
-    .header {
-        padding: 8px 20px 4px 20px;
-        font-weight: bold;
-    }
-    .footer {
-        margin: 12px 0 0 0;
-        background: @gray-lighter;
-    }
-    .icon {
-        font-size: @font-size-large;
-        padding-right: 10px;
-    }
-    .message {
-        padding: 4px 20px 4px 20px;
-        font-size: @font-size-small;
-        text-decoration: none;
-        color: @gray;
-    }
-    .time {
-        //  THEME
-        float: right;
-        padding-right: 20px;
-        font-style: italic;
-        font-size: 11px;
-    }
-}
-
-[ng-click] {
-    cursor: pointer;
-}
-
-UNUSED.shadow {
-    .drop-shadow();
-}
-
-
-TABLE_ONLY.collapse {
-    :empty {
-        display: none;
-    }
+table.list {
+    .table();
+    .table-striped();
+    .table-bordered();
+    .table-hover();
+    .table-condensed();
 }
 
 .form-error {
@@ -157,11 +76,12 @@ TABLE_ONLY.collapse {
     padding-bottom: 10px;
     text-indent: 10px;
     border: 2px solid @error-color;
-    .rounded(6px);
+    .rounded(4px);
     .drop-shadow();
     h2 {
         margin: 0 0 10px 0;
-        font-size: 12pt;
+        padding: 10px 0 10px 0;
+        font-size: @font-size-small;
         color: white;
         background-color: @error-color;
     }
@@ -174,17 +94,14 @@ TABLE_ONLY.collapse {
     border: 2px solid @error-color !important;
 }
 
-//  MOB - can this be nested?
 .feedback {
     position: absolute;
     top: 0;
     left: 50%;
     width: 500px;
     height: 41px;
-    margin: 0;
-    margin-left: -250px;
+    margin: 0 0 0 -250px;
     padding: 8px 3px 3px 3px;
-    font-size: 110%;
     .rounded(7px);
     .border-radius(0, 7px, 7px, 0);
     .drop-shadow();
@@ -224,6 +141,6 @@ TABLE_ONLY.collapse {
     100% { opacity: 0.0; top: -100px; }
 }
 
-_UNUSED_td.centered {
-    text-align: center;
+[ng-click],[esp-click],[onclick] {
+    cursor: pointer;
 }

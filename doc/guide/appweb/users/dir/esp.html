@@ -44,6 +44,7 @@
                 <li><a href="#espKeepSource">EspKeepSource</a></li>
                 <li><a href="#espLink">EspLink</a></li>
                 <li><a href="#espLoad">EspLoad</a></li>
+                <li><a href="#espPermResource">EspPermResource</a></li>
                 <li><a href="#espResource">EspResource</a></li>
                 <li><a href="#espResourceGroup">EspResourceGroup</a></li>
                 <li><a href="#espRoute">EspRoute</a></li>
@@ -487,6 +488,53 @@ EspLoad blog cache/app.dylib
                     </tr>
                 </tbody>
             </table>
+
+
+            <a id="espPermResource"></a>
+            <h2>EspPermResource</h2>
+            <table class="directive" title="directive">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Create a set of routes for a permanent resource</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>EspPermResource name [, name] ...</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, Virtual host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>
+<pre>EspPermResource system profile status</pre>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The EspPermResource directive creates a set of routes suitable for a permanent resource.
+                            The routes created are <a href="http://en.wikipedia.org/wiki/Representational_state_transfer#RESTful_web_services">RESTful</a> routes that are designed to mesh well with ESP MVC applications. They provide clean URIs
+                            that allow the basic operations on a resource.</p>
+                            For example, this command will generate the following routes:
+<pre>EspPermResource system
+LogRoutes
+# Prints ...
+<b>
+Name            Method   Pattern                         Target
+/system/get     GET      ^/{controller=system}(/)*$      system-get    
+/system/update  POST     ^/{controller=system}(/)*$      system-update 
+/system/default GET,POST ^/{controller=system}/{action}$ system-$2 
+</b>
+</pre>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
             <a id="espResource"></a>
             <h2>EspResource</h2>
             <table class="directive" title="directive">
@@ -535,6 +583,7 @@ Name            Method   Pattern                         Target
                     </tr>
                 </tbody>
             </table>
+
             <a id="espResourceGroup"></a>
             <h2>EspResourceGroup</h2>
             <table class="directive" title="directive">

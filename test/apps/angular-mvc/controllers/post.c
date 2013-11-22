@@ -3,35 +3,53 @@
  */
 #include "esp.h"
 
+/*
+    Create a new resource in the database
+ */
 static void createPost() { 
-    EdiRec *rec;
-    rec = createRec("post", params());
-    sendResult(updateRec(rec));
+    sendResult(updateRec(createRec("post", params())));
 }
 
+/*
+    Get a resource
+ */
 static void getPost() { 
     sendRec(readRec("post", param("id")));
 }
 
+/*
+    Initialize a new resource for the client to complete
+ */
 static void initPost() { 
     sendRec(createRec("post", 0));
 }
 
+/*
+    List the resources in this group
+ */
 static void listPost() {
     sendGrid(readTable("post"));
 }
 
+/*
+    Remove a resource identified by the "id" parameter
+ */
 static void removePost() { 
     sendResult(removeRec("post", param("id")));
 }
 
+/*
+    Update an existing resource in the database
+    If "id" is not defined, this is the same as a create
+ */
 static void updatePost() { 
-    EdiRec *rec;
-    rec = setFields(readRec("post", param("id")), params());
-    sendResult(updateRec(rec));
+    sendResult(updateRec(setFields(readRec("post", param("id")), params())));
 }
 
-ESP_EXPORT int esp_controller_angular_post(HttpRoute *route, MprModule *module) {
+/*
+    Dynamic module initialization
+ */
+ESP_EXPORT int esp_controller_blog_post(HttpRoute *route, MprModule *module) {
     espDefineAction(route, "post-create", createPost);
     espDefineAction(route, "post-get", getPost);
     espDefineAction(route, "post-init", initPost);

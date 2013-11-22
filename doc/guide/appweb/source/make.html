@@ -41,7 +41,8 @@
                 <li><a href="#installing">Installing</a></li>
                 <li><a href="#cross">Cross Compiling</a></li>
                 <li><a href="#toolchain">Specifying a Tool chain</a></li>
-                <li><a href="#ejs">Supporting OpenSSL</a></li>
+                <li><a href="#vxworks">Building for VxWorks</a></li>
+                <li><a href="#openssl">Supporting OpenSSL</a></li>
                 <li><a href="#ejs">Supporting Ejscript</a></li>
                 <li><a href="bit.html">Building with Bit</a></li>
                 <li><a href="ide.html">Building with an IDE</a></li>
@@ -221,6 +222,7 @@ make CC=/opt/bin/ccarm.exe LD=/opt/bin/ccarm.exe ARCH=arm PROFILE=release
                 makefile profile. For example:</p>
                 <pre>make PROFILE=static</pre>
             <p>Some web frameworks such as ESP and Ejscript may have reduced functionality in static builds.</p>
+
             <a name="vxworks"></a>
             <h2>Building for VxWorks</h2>
             <p>Before building for VxWorks, you must define the WIND_* environment variables via the 

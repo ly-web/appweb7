@@ -4,53 +4,51 @@
 
 'use strict';
 
-app.controller('PostControl', function ($rootScope, $scope, $location, $routeParams, Post) {
-    if ($routeParams.id) {
-        Post.get({id: $routeParams.id}, function(response) {
-            $scope.data = response.data;
-            $scope.schema = response.schema;
-            $scope.post = $scope.data;
-            $scope.action = "Edit";
-        });
-    } else if ($location.path() == "/service/post/") {
-        $scope.action = "Create";
-        $scope.post = new Post();
-        Post.init({id: $routeParams.id}, function(response) {
-            $scope.schema = response.schema;
-        });
+/*
+    Specify the Post controller and its dependencies.
+ */
+angular.module('app').controller('PostControl', function (Esp, Post, $location, $routeParams, $scope) {
+    angular.extend($scope, $routeParams);
+
+    /*
+        Model calling sequence:
+            Post.action(input-params, [output], [response-mappings], [success-callback], [failure-callback]);
+            Post will set results to [output] and update $rootScope.feedback as appropriate.
+     */
+    if ($scope.id) {
+        Post.get({id: $scope.id}, $scope);
+
+    } else if ($location.path() == "/post/") {
+        Post.init(null, $scope);
+
     } else {
-        $scope.list = Post.list({}, function(response) {
-            $scope.posts = response;
-        });
+        Post.list(null, $scope, {posts: "data"});
     }
-    $scope.routeParams = $routeParams;
 
     $scope.remove = function() {
-        Post.remove({id: $scope.post.id}, function(response) {
+        Post.remove({id: $scope.id}, function(response) {
             $location.path("/");
         });
     };
 
     $scope.save = function() {
-        Post.save($scope.post, function(response) {
+        Post.update($scope.post, $scope, function(response) {
             if (!response.error) {
                 $location.path('/');
             }
         });
     };
-
-    $scope.click = function(index) {
-        $location.path('/service/post/' + $scope.posts.data[index].id);
-    };
 });
 
-app.config(function($routeProvider) {
-    $routeProvider.when('/', {
-        templateUrl: '/app/post/post-list.html',
+/*
+    Setup Post routes
+ */
+angular.module('app').config(function($routeProvider) {
+    var esp = angular.module('esp');
+    var Default = {
         controller: 'PostControl',
-    });
-    $routeProvider.when('/service/post/:id', {
-        templateUrl: '/app/post/post-edit.html',
-        controller: 'PostControl',
-    });
+        resolve: { action: 'Esp' },
+    };
+    $routeProvider.when('/', angular.extend({}, Default, {templateUrl: esp.url('/app/post/post-list.html')}));
+    $routeProvider.when('/post/:id', angular.extend({}, Default, {templateUrl: esp.url('/app/post/post-edit.html')}));
 });
