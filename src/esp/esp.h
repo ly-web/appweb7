@@ -28,7 +28,7 @@ extern "C" {
     #define BIT_ESP_LEGACY 1                            /* Must be enabled while testing with legacy-mvc */
 #endif
 #ifndef BIT_ESP_SERVER_PREFIX
-    #define BIT_ESP_SERVER_PREFIX "/server"             /**< URI prefix for server controllers */
+    #define BIT_ESP_SERVER_PREFIX "/do"                 /**< URI prefix for server controllers */
 #endif
 #ifndef BIT_ESP_EMAIL_TIMEOUT
     #define BIT_ESP_EMAIL_TIMEOUT (60 * 1000)           /**< Timeout for sending email */
