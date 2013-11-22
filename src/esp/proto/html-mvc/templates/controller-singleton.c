@@ -82,6 +82,7 @@ ESP_EXPORT int esp_controller_${APP}_${NAME}(HttpRoute *route, MprModule *module
     espDefineAction(route, "${NAME}-init", init${TITLE});
     espDefineAction(route, "${NAME}-list", list${TITLE});
     espDefineAction(route, "${NAME}-update", update${TITLE});
+    espDefineAction(route, "${NAME}-cmd-", list${TITLE});
 ${DEFINE_ACTIONS}    
 #if SAMPLE_VALIDATIONS
     Edi *edi = espGetRouteDatabase(route);
