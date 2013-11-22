@@ -59,13 +59,11 @@ static void readFromCgi(Cgi *cgi, int channel);
  */
 static void openCgi(HttpQueue *q)
 {
-    HttpRx      *rx;
     HttpConn    *conn;
     Cgi         *cgi;
     int         nproc;
 
     conn = q->conn;
-    rx = conn->rx;
     mprTrace(5, "Open CGI handler");
     if ((nproc = (int) httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_PROCESSES, 1)) >= conn->limits->processMax) {
         httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Server overloaded");

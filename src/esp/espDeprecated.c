@@ -837,7 +837,6 @@ static void emitFormErrors(HttpConn *conn, EdiRec *rec, MprHash *options)
 PUBLIC void form(EdiRec *record, cchar *optionString)
 {
     HttpConn    *conn;
-    EspReq      *req;
     MprHash     *options;
     cchar       *action, *recid, *method, *uri, *token;
    
@@ -847,7 +846,6 @@ PUBLIC void form(EdiRec *record, cchar *optionString)
     } else {
         conn->record = record;
     }
-    req = conn->data;
     options = httpGetOptions(optionString);
     recid = 0;
 
@@ -1004,12 +1002,10 @@ static cchar *formatValue(EdiField *fp, MprHash *options)
 
 static cchar *getValue(HttpConn *conn, cchar *fieldName, MprHash *options)
 {
-    EspReq      *req;
     EdiRec      *record;
     MprKey      *field;
     cchar       *value, *msg;
 
-    req = conn->data;
     record = conn->record;
     value = 0;
 
