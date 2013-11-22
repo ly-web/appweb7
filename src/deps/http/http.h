@@ -3926,9 +3926,10 @@ PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *prefix, cchar *resour
 
 /**
     Add a route for the client directory
+    The client directory is defined via the {CLIENT_DIR} route var.
     @param parent Parent route from which to inherit configuration.
     @param prefix URI prefix to append to the application prefix when constructing route URIs.
-    @param name Name of the client directory
+    @param name Route name.
     @ingroup HttpRoute
     @stability Prototype
  */
@@ -4134,6 +4135,7 @@ PUBLIC void httpAddRouteResponseHeader(HttpRoute *route, int cmd, cchar *header,
  */
 PUBLIC int httpAddRouteUpdate(HttpRoute *route, cchar *name, cchar *details, int flags);
 
+#if UNUSED
 /**
     Add a route for static content. This can be used for ESP applications. Use the EspDir
         appweb configuration file directive to modify the directory.
@@ -4148,6 +4150,17 @@ PUBLIC int httpAddRouteUpdate(HttpRoute *route, cchar *name, cchar *details, int
     @stability Evolving
  */
 PUBLIC void httpAddStaticRoute(HttpRoute *parent, cchar *name);
+#endif
+
+/**
+    Add a route using the WebSockets filter 
+    @param parent Parent route from which to inherit configuration.
+    @param prefix URI prefix to append to the application prefix when constructing route URIs.
+    @param name Route name.
+    @ingroup HttpRoute
+    @stability Prototype
+ */
+PUBLIC void httpAddWebSocketsRoute(HttpRoute *parent, cchar *prefix, cchar *name);
 
 /**
     Backup the route log if required
