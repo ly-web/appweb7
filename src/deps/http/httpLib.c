@@ -140,11 +140,11 @@ PUBLIC void httpInitAuth(Http *http)
     httpAddAuthType("digest", httpDigestLogin, httpDigestParse, httpDigestSetHeaders);
     httpAddAuthType("form", formLogin, NULL, NULL);
 
-#if BIT_HAS_PAM && BIT_HTTP_PAM
     httpAddAuthStore("app", NULL);
+    httpAddAuthStore("internal", fileVerifyUser);
+#if BIT_HAS_PAM && BIT_HTTP_PAM
     httpAddAuthStore("system", httpPamVerifyUser);
 #endif
-    httpAddAuthStore("internal", fileVerifyUser);
 #if DEPRECATE || 1
     /*
         Deprecated in 4.4. Use "internal"
