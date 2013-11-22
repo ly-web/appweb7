@@ -239,7 +239,6 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
         mprTrace(5, "httpLogin missing username");
         return 0;
     }
-    assert(auth->store);
     if (!auth->store) {
         mprError("No AuthStore defined");
         return 0;

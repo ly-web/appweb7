@@ -80,7 +80,6 @@
             <p>Embedded Server Pages (ESP) is a web framework that makes it dramatically easier to create blazing fast,
             dynamic web applications. ESP uses the "C" language for server-side web programming which allows easy
             access to low-level data for management user interfaces. </p>
-
             <p>However, ESP is not a traditional low-level environment. If web pages or controllers are modified during development, the code is transparently recompiled and reloaded. ESP uses a garbage-collected environment 
             memory management and for safe programming. This enables unparalleled performance with "script-like" flexibility for web applications. environment and blazing runtime speed.</p>
             
@@ -89,7 +88,6 @@
             migrations  and an extensive programming API.</p>
             <p>This document describes the ESP web framework and how to use ESP. Note that ESP is integrated 
             into Appweb and is not a separate product.</p>
-
             <a id="patterns"></a>
             <h2 class="section">ESP Patterns</h2>
             <p>ESP supports several design patterns:</p>
@@ -117,7 +115,6 @@
             any standard C code.</p>
             <p> If the page is modified, the next time it is requested, the page and embedded C code 
             will be transparently recompiled and reloaded.</p>
-
             <p>See <a href="#pages">ESP Pages</a> below for more details.</p>
             <a name="webservices"></a>
             <h3>Web Services</h3>
@@ -152,13 +149,11 @@ ESP_EXPORT int esp_module_greeting(HttpRoute *route, MprModule *module) {
             same paradigm with an embedded spin.</p>
             <p>ESP supports MVC applications and provides an <em>esp</em> application generator to generate MVC 
             application skeletons and scaffolds.</p>
-
             <p>ESP support two styles of MVC applications:</p>
             <ul>
                 <li>Single Page Applications</li>
                 <li>Server-side MVC Applications</li>
             </ul>
-
             <a name="spa"></a>
             <h3>Single Page Applications</h3>
             <p>Single page applications deliver the entire web application as a single page and then incrementally
@@ -166,16 +161,13 @@ ESP_EXPORT int esp_module_greeting(HttpRoute *route, MprModule *module) {
             defines the entire user interface via a client-side Javascript framework such as Angular. The server 
             provides the initial page load and ongoing data. This approach can provide a more responsive and 
             fluid user experience without the delays caused by page reloads.</p>
-
             <p>ESP is well suited to SPA applications and can deliver all the required resources and data for such apps.
             <p>ESP includes support for the <a href="http://angularjs.org">Angular</a> SPA client framework. The 
             <em>esp</em> application generator can generate Angular application skeletons and client-side scaffolds.</p>
-
             <h3>Server-side MVC Applications</h3>
             <p>An alternative approach to MVC web applications is to generate HTML pages dynamically at the server.
             ESP provides a powerful HTML templating engine with master page layouts. This permits the easy insertion
             of dynamic data into web pages before they are delivered to the client.</p>
-
             <h2 class="section">ESP Web Framework</h2>
             <img src="../../../images/espArchitecture.jpg" alt="ESP Web Framework Architecture" />
             <p>The main components of the ESP Web Framework are:</p>

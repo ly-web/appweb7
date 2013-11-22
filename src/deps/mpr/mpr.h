@@ -6287,7 +6287,7 @@ PUBLIC MprHash *mprDeserializeInto(cchar *str, MprHash *hash);
     Lookup a parsed JSON object for a key value
     @param obj Parsed JSON object returned by mprJsonParser
     @param key Property name to search for. This may include ".". For example: "settings.mode".
-        See mprJsonQuery for a full description of key formats.
+        See $mprJsonQuery for a full description of key formats.
     @param flags Include MPR_JSON_SIMPLE for simple property names without embedded query expressions.
         Include MPR_JSON_TOP for properties at the top level (without embedded ".").
     @return Returns the property value otherwise NULL if not found or not the correct type.
@@ -6301,7 +6301,7 @@ PUBLIC MprJson *mprGetJsonObj(MprJson *obj, cchar *key, int flags);
     @description This routine is useful to querying leaf property values in a JSON object.
     @param obj Parsed JSON object returned by mprParseJson
     @param key Property name to search for. This may include ".". For example: "settings.mode".
-        See mprJsonQuery for a full description of key formats.
+        See $mprJsonQuery for a full description of key formats.
     @param flags Include MPR_JSON_SIMPLE for simple property names without embedded query expressions.
         Include MPR_JSON_TOP for properties at the top level (without embedded ".").
     @return A string property value or NULL if not found or not a string property type.
@@ -6336,6 +6336,32 @@ PUBLIC MprJson *mprHashToJson(MprHash *hash);
     @stability Prototype
  */
 PUBLIC MprHash *mprJsonToHash(MprJson *json);
+
+/*
+    Query a JSON object for a property key path and execute the given command.
+    The JSON object may be a string, array or object.
+    @param keyPath The keyPath is a multipart property string that specifies which property or
+        properties to examine. Examples are:
+        <pre>
+        user.name
+        user['name']
+        users[2]
+        users[2:4]
+        users[-4:-1]                //  Range from end of array
+        users[name == 'john']
+        users[age >= 50]
+        users[phone ~ ^206]         //  Starts with 206
+        colors[@ != 'red']          //  Array element not 'red'
+        people..[name == 'john']    //  Elipsis descends down multiple levels
+        </pre>
+    @param value If a value is provided, the property described by the keyPath is set to the value.
+    @flags If flags includes MPR_JSON_REMOVE, the property described by the keyPath is removed.
+        If flags includes MPR_JSON_SIMPLE, the property is not parsed for expressions.
+        Otherwise the the properties described by the keyPath are cloned and returned as a 
+        children of a container object.
+    @return Json object containing the selected property values.
+ */
+PUBLIC MprJson *mprJsonQuery(MprJson *obj, cchar *keyPath, MprJson *value, int flags);
 
 /**
     Serialize a JSON object into a string
@@ -6451,7 +6477,7 @@ PUBLIC MprJson *mprQueryJson(MprJson *obj, cchar *key, int flags);
     Remove a property from a JSON object
     @param obj Parsed JSON object returned by mprParseJson
     @param key Property name to remove for. This may include ".". For example: "settings.mode".
-        See mprJsonQuery for a full description of key formats.
+        See $mprJsonQuery for a full description of key formats.
     @return Returns a JSON object list of all removed properties
     @ingroup MprJson
     @stability Prototype
@@ -6497,7 +6523,7 @@ PUBLIC void mprSetJsonError(MprJsonParser *jp, cchar *fmt, ...);
     @description This call takes a multipart property name and will operate at any level of depth in the JSON object.
     @param obj Parsed JSON object returned by mprParseJson
     @param key Property name to add/update. This may include ".". For example: "settings.mode".
-        See mprJsonQuery for a full description of key formats.
+        See $mprJsonQuery for a full description of key formats.
     @param value Property value to set.
     @param flags Include MPR_JSON_SIMPLE for simple property names without embedded query expressions.
         Include MPR_JSON_TOP for properties at the top level (without embedded "."). Include MPR_JSON_DUPLICATE to permit
@@ -6513,7 +6539,7 @@ PUBLIC int mprSetJsonObj(MprJson *obj, cchar *key, MprJson *value, int flags);
     @description This call takes a multipart property name and will operate at any level of depth in the JSON object.
     @param obj Parsed JSON object returned by mprParseJson
     @param key Property name to add/update. This may include ".". For example: "settings.mode".
-        See mprJsonQuery for a full description of key formats.
+        See $mprJsonQuery for a full description of key formats.
     @param flags Include MPR_JSON_SIMPLE for simple property names without embedded query expressions.
         Include MPR_JSON_TOP for properties at the top level (without embedded "."). Include MPR_JSON_DUPLICATE to permit
         duplicate values with the same property name.

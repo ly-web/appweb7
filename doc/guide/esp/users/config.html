@@ -92,7 +92,6 @@
 <pre>LoadModule espHandler libmod_esp</pre>
             <p>This loads the <em>libmod_esp</em> module and invokes the ESP module initialization routine that registers
             ESP with Appweb.</p>
-
             <a id="handler"></a>
             <h2>ESP Handler</h2>
             <p>For ESP to receive incoming client requests, the Appweb router must be told what requests to send to ESP.
@@ -130,7 +129,6 @@
             <em>EspKeepSource</em> directive to "<em>on</em>" will cause ESP to preserve this intermediate source file
             in the <em>cache</em> directory.</p>
             <pre>EspKeepSource on</pre>
-
             <h2 class="section">Configuring ESP Applications</h2>
             <p>There are four primary use patterns to consider for ESP Applications:</p>
             <ol>
@@ -151,7 +149,6 @@
             In MVC applications, ESP pages may be placed anywhere under the "client" directory which defines the set
             of public resources for the browser to access and download. In prior Appweb versions, some ESP pages
             were grouped under a "views" directory. This is no-longer required.</p>
-
             <a id="controllers"></a>
             <h2>ESP Controllers</h2>
             <p>ESP Controllers may be used as part of an ESP MVC application or they may be used stand-alone outside
@@ -220,7 +217,6 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
             on Windows, the <em>Embedthis Appweb/apps</em> directory. When Appweb is started or restarted, it will
             parse all the config files under the <em>apps</em>. Installing or removing a config file for each 
             application under the <em>apps</em> directory is a simple way to add/remove an application.</p>
-
             <h2 class="section">ESP Configuration File</h2>
             <p>ESP MVC applications use a <em>esp.json</em> configuration file to define applications-specific
             configuration data. This file is a JSON property file that is made available to server-side controllers and
@@ -249,19 +245,14 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
         },
         // Expect requests and responses in JSON format
         json: false,
-
         // Set if a login is required to the login home page
         loginRequired: "",
-
         // Redirect all traffic over HTTPS
         redirect: "secure"
-
         // Default refresh period to use for dynamic data polling
         refresh: 1000,
-
         // Routing prefix for server-side URIs
         serverPrefix: "/do",
-
         // Default timeouts (secs)
         timeouts: {
             session: 1800,
@@ -269,7 +260,6 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
         // Set to include a XSRF token to minimize CSRF vulnerabilies
         xsrf: true,
     },
-
     // Application mode. 
     //  This selects a set of properties below and copies them to settings
     mode: "debug",
@@ -277,16 +267,12 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
         debug: {
             // Application compiled flat via "esp --flat compile"
             flat: false,
-
             // Display server-side errors in the browser
             showErrors: true,
-
             // Keep intermediate source for views in the cache directory
             keepSource: true,
-
             // Transparently recompile updated views, controllers and source
             update: true,
-
             // Automatic login credentials.
             login: {
                 name: "",
@@ -324,7 +310,6 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
                     <li>EspResource &mdash; Create routes for a singleton resource</li>
                     <li>EspResourceGroup &mdash; Create routes for a group of resources</li>
                 </ul>
-
             <h3>EspPermResource</h3>
             <p>The EspPermResource directive is used to create a RESTful set of routes to manage a permanent resource.
             A permanent resource is a resource that cannot be created or destroyed. It may be modifified and has 
@@ -332,14 +317,12 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
             These routes define URI routes for get, update and custom actions.
             See the <a href="../../appweb/users/dir/esp.html#espPermResource">EspPermResource</a> reference
             for details of the actual routes created.</p>
-
             <h3>EspResource</h3>
             <p>The EspResource directive is used to create a RESTful set of routes to manage a singleton resource.
             A singleton resource is one or more related properties that are managed as a unit, like the WIFI network
             name and password. These routes define URI routes for create, edit, get, init, remove, show and  
             update functions. See the <a href="../../appweb/users/dir/esp.html#espResource">EspResource</a> reference
             for details of the actual routes created.</p>
-
             <h3>EspResourceGroup</h3>
             <p>The EspResourceGroup directive is used to create a RESTful set of routes to manage a singleton resource.
             A group of resources is one or more instances of a resource that can be managed individually, like the 
