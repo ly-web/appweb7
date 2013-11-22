@@ -15185,9 +15185,10 @@ PUBLIC int httpSetSecurityToken(HttpConn *conn)
 
     securityToken = httpGetSecurityToken(conn);
     httpSetCookie(conn, BIT_XSRF_COOKIE, securityToken, "/", NULL,  0, 0);
-#if UNUSED
+    /*
+        Also include as a header to make it easy to extract in the client
+     */
     httpSetHeader(conn, BIT_XSRF_HEADER, securityToken);
-#endif
     return 0;
 }
 
