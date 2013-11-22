@@ -1,9 +1,10 @@
 /*
-    LocalStore.js - Local storage service
+    esp-local.js - Local storage service
  */
 'use strict';
 
-app.factory('LocalStore', function() {
+angular.module('esp.local', [])
+.factory('LocalStore', function() {
     return {
         get: function (key) {
             return JSON.parse(localStorage.getItem(key) || '[]');
@@ -11,7 +12,7 @@ app.factory('LocalStore', function() {
         put: function (key, value) {
             localStorage.setItem(key, JSON.stringify(value));
         },
-        remove: function (key, value) {
+        remove: function (key) {
             localStorage.removeItem(key);
         }
     };

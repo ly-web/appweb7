@@ -1,9 +1,10 @@
 /*
-    SessionStore.js - Client side session storage service
+    esp-session.js - Client side session storage service
  */
 'use strict';
 
-app.factory('SessionStore', function() {
+angular.module('esp.session', [])
+.factory('SessionStore', function() {
     return {
         get: function (key) {
             return JSON.parse(sessionStorage.getItem(key) || '[]');
@@ -16,4 +17,3 @@ app.factory('SessionStore', function() {
         }
     };
 });
-

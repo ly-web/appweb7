@@ -1,0 +1,11 @@
+/*
+    start.bit - Bit build file
+ */
+
+Bit.load({
+    settings: {
+        bit: '0.8.6',
+    },
+    targets: {
+    },
+})

@@ -105,6 +105,7 @@
 <li>animate &mdash; The <a href="http://daneden.me/animate/">Animate.css</a> library for CSS animations</li>
 <li>bootstrap &mdash; The <a href="http://getbootstrap.com">Bootstrap</a> client-side CSS framework</li>
 <li>font-awesome &mdash; The <a href="http://fortawesome.github.io/Font-Awesome/">Font-Awesome</a> Icon font</li>
+<li>html-mvc &mdash; ESP MVC application skeleton</li>
 <li>html5shiv &mdash; The <a href="https://github.com/aFarkas/html5shiv">Html5Shiv</a> Javascript polyfill for IE 8 and before</li>
 <li>jquery &mdash; The <a href="http://jquery.com">JQuery</a> Client-side Javascript library for DOM manipulation</li>
 <li>legacy-mvc &mdash; Legacy ESP MVC application skeleton</li>
@@ -183,12 +184,16 @@ $ <b>esp generate app blog angular-mvc</b>
                         <td>Client side CSS</td>
                     </tr>
                     <tr>
+                        <td>client/layouts</td>
+                        <td>Layout template pages</td>
+                    </tr>
+                    <tr>
                         <td>client/lib</td>
                         <td>Client side Javascript libraries</td>
                     </tr>
                     <tr>
                         <td>client/pages</td>
-                        <td>Client side web pages </td>
+                        <td>Stand-alone client-side web pages</td>
                     </tr>
                     <tr>
                         <td>controllers</td>
@@ -197,14 +202,6 @@ $ <b>esp generate app blog angular-mvc</b>
                     <tr>
                         <td>db</td>
                         <td>Databases and scripts</td>
-                    </tr>
-                    <tr>
-                        <td>layouts</td>
-                        <td>Layout template pages</td>
-                    </tr>
-                    <tr>
-                        <td>views</td>
-                        <td>View source files</td>
                     </tr>
                 </tbody>
             </table>
@@ -222,7 +219,11 @@ $ <b>esp generate app blog angular-mvc</b>
                         <td>Appweb startup configuration file</td>
                     </tr>
                     <tr>
-                        <td>app.conf</td>
+                        <td>esp.json</td>
+                        <td>ESP configuration file. Available to server and client.</td>
+                    </tr>
+                    <tr>
+                        <td>hosted.conf</td>
                         <td>Appweb configuration file to include from an appweb.conf file</td>
                     </tr>
                     <tr>
