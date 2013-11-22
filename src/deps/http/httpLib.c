@@ -11677,6 +11677,21 @@ PUBLIC void httpAddHomeRoute(HttpRoute *parent)
 }
 
 
+PUBLIC void httpAddWebSocketsRoute(HttpRoute *parent, cchar *prefix, cchar *name)
+{
+    HttpRoute   *route;
+    cchar       *path, *pattern;
+
+    if (parent->prefix) {
+        prefix = sjoin(parent->prefix, prefix, NULL);
+        name = sjoin(parent->prefix, name, NULL);
+    }
+    pattern = sfmt("^%s/{controller}/stream", prefix);
+    path = mprGetRelPath(stemplate("$1-cmd-stream", parent->vars), parent->documents);
+    route = httpDefineRoute(parent, name, "GET", pattern, path, parent->sourceName);
+    httpAddRouteFilter(route, "webSocketFilter", "", HTTP_STAGE_RX | HTTP_STAGE_TX);
+}
+
 /*************************************************** Support Routines ****************************************************/
 /*
     Route operations are used per-route for headers and fields

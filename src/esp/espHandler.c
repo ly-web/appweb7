@@ -895,6 +895,7 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
         return;
     }
     if (scaselessmatch(set, "angular-mvc")) {
+        httpAddWebSocketsRoute(route, route->serverPrefix, "/*/stream");
         httpAddResourceGroup(route, route->serverPrefix, "{controller}");
         httpAddClientRoute(route, "", "/public");
         httpHideRoute(route, 1);
