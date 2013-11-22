@@ -1731,10 +1731,10 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>httpAddStaticRoute</name>
+      <name>httpAddWebSocketsRoute</name>
       <anchorfile>group___http_route.html</anchorfile>
-      <anchor>gaf718d7af90fc8912cf1bc1f4aa63dd2e</anchor>
-      <arglist>(HttpRoute *parent, cchar *name)</arglist>
+      <anchor>gad678ae1aebed7fd23d37b8c1edf90cb5</anchor>
+      <arglist>(HttpRoute *parent, cchar *prefix, cchar *name)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
