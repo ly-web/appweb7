@@ -1,7 +1,7 @@
 {
     settings: {
-        components: {
-            server: {
+        packs: {
+            esp-server: {
             },
             angular: {
                 scripts: [
@@ -12,24 +12,10 @@
                     "angular-route.js"
                 ]
             },
-            angular-esp: {
+            esp-angular: {
                 scripts: [
                     "*"
                 ]
-            },
-            bootstrap: {
-            },
-            html5shiv: {
-                scripts: [
-                    "*"
-                ]
-            },
-            angular-ui-bootstrap: {
-                scripts: [
-                    "*"
-                ]
-            },
-            font-awesome: {
             },
             less: {
                 scripts: [
@@ -38,12 +24,7 @@
             },
             more: {
             },
-            respond: {
-                scripts: [
-                    "*"
-                ]
-            },
-            angular-mvc: {
+            esp-angular-mvc: {
             }
         },
         json: true,

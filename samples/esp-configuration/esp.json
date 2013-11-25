@@ -16,15 +16,11 @@
         /*
             Components used by this application.
          */
-        components: {
-            server: {},
-            bootstrap: {},
-            html5shiv: {scripts: ["*"]},
-            font-awesome: {},
+        packs: {
+            esp-server: {},
             less: {scripts: ["*"]},
             more: {},
-            respond: {scripts: ["*"]},
-            html-mvc: {},
+            esp-html-mvc: {},
         },
 
         /*

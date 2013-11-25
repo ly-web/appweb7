@@ -84,75 +84,57 @@
 [Create] Directory: blog/src
 [Create] blog/src/app.c
   [Task] Compile</pre>
-            <p>This generates the bare minimum application without additional components. The appweb.conf file
+            <p>This generates the bare minimum application without additional packs. The appweb.conf file
             is an Appweb configuration file. This defines the Appweb and ESP configuration when you run your application.
             Alternatively, you can use the app.conf file that is suitable when hosting the application from an 
             existing appweb configuration. The <em>esp.json</em> file is the ESP configuration for the application.
             The application source code stub is generated in <em>app.c</em>.</p>
             <p>The format of the "esp generate app" command is:</p>
-            <pre>esp generate app NAME [COMPONENTS...]</pre>
+            <pre>esp generate app NAME [PACKS...]</pre>
             <p>The given NAME is the name of the application and also the name of the directory into which esp will
-            generate the application. The COMPONENTS are optional extensions for the generated application.
-            The supported components are:</p>
+            generate the application. The PACKS are optional extension packs for the 
+            generated application. The supported packs are:</p>
             <ul>
                 <li>angular &mdash; The <a href="http://www.angularjs.org">AngularJS Client Framework</a></li>
-<li>angular-esp &mdash; Angular support for Embedthis ESP</li>
-<li>angular-extras &mdash; Angular extra utility routines</li>
-<li>angular-local &mdash; Angular local storage service</li>
-<li>angular-mvc &mdash; Angular ESP MVC application skeleton</li>
-<li>angular-session &mdash; Angular session state storage</li>
-<li>angular-ui-bootstrap &mdash; The <a href="http://angular-ui.github.io/bootstrap/">Angular UI Bootstrap</a> support</li>
-<li>animate &mdash; The <a href="http://daneden.me/animate/">Animate.css</a> library for CSS animations</li>
-<li>bootstrap &mdash; The <a href="http://getbootstrap.com">Bootstrap</a> client-side CSS framework</li>
-<li>font-awesome &mdash; The <a href="http://fortawesome.github.io/Font-Awesome/">Font-Awesome</a> Icon font</li>
-<li>html-mvc &mdash; ESP MVC application skeleton</li>
-<li>html5shiv &mdash; The <a href="https://github.com/aFarkas/html5shiv">Html5Shiv</a> Javascript polyfill for IE 8 and before</li>
-<li>jquery &mdash; The <a href="http://jquery.com">JQuery</a> Client-side Javascript library for DOM manipulation</li>
-<li>legacy-mvc &mdash; Legacy ESP MVC application skeleton</li>
+<li>esp-angular &mdash; Angular support for Embedthis ESP</li>
+<li>esp-angular-mvc &mdash; ESP MVC application skeleton for Angular</li>
+<li>esp-angular-session &mdash; Angular session state storage</li>
+<li>esp-server &mdash; Default ESP service-side configuration for Appweb</li>
+<li>esp-html-mvc &mdash; ESP server-side MVC application skeleton</li>
 <li>less &mdash; The <a href="http://lesscss.org">Less</a> CSS pre-processor</li>
 <li>more &mdash; Collection of CSS polyfills for emerging HTML5 elements</li>
-<li>normalize &mdash; Normalize base styles for browsers</li>
-<li>respond &mdash; Polyfill for CSS media queries</li>
-<li>server &mdash; Default ESP service-side configuration for Appweb</li>
             </ul>
             <p> For example:</p>
             <pre>
-$ <b>esp generate app blog angular-mvc</b>
+$ <b>esp generate app blog esp-angular-mvc</b>
     [Create] Directory: blog
-  [Generate] Component: server
-  [Generate] Component: angular-mvc
-  [Generate] Component: angular
-  [Generate] Component: angular-local
-  [Generate] Component: angular-session
-  [Generate] Component: angular-esp
-  [Generate] Component: bootstrap
-  [Generate] Component: html5shiv
-  [Generate] Component: angular-ui-bootstrap
-  [Generate] Component: font-awesome
-  [Generate] Component: less
-  [Generate] Component: more
-  [Generate] Component: respond
+  [Generate] Pack: esp-server
+  [Generate] Pack: esp-angular-mvc
+  [Generate] Pack: esp-angular
+  [Generate] Pack: less
+  [Generate] Pack: more
     [Create] Directory: blog/src
     [Create] blog/src/app.c
     [Create] Directory: blog/db
       [Task] Complete
 </pre>
-            <h3>Component Dependencies</h3>
-            <p>Components may depend on other components. The <em>esp</em> generator will resolve these dependencies 
-            and generate all the required components. For example: the <em>angular-mvc</em> component
-            depends on: angular, angular-local, angular-session, angular-esp, bootstrap, angular-ui-bootstrap, html5shiv,
-            font-awesome, less, more and respond. After generating, the component dependencies are listed in the
-            generated <em>esp.json</em> file as the <em>settings.components</em> property.</p>
+            <h3>Pack Dependencies</h3>
+            <p>Pack may depend on other packs. The <em>esp</em> generator will resolve these 
+            dependencies and generate all the required packs. For example: the 
+            <em>esp-angular-mvc</em> pack depends on: angular, esp-angular-session, esp-angularesp, 
+            less and more packs. After generating, the pack dependencies are described in the
+            generated <em>esp.json</em> file as the <em>settings.packs</em> property.</p>
             <h3>Overwriting</h3>
-            <p>The <em>esp</em> command will create directories and generate configuration and source code 
-            files which can then be manually edited as required. The <em>esp</em> command is intelligent and will 
-            not overwrite existing files, so you can safely edit and regenerate without losing your changes. 
-            You can add components by generating the application and selecting additional components at any time.
+            <p>The <em>esp</em> command will create directories and generate configuration and 
+            source code files which can then be manually edited as required. The <em>esp</em> 
+            command is intelligent and will not overwrite existing files after you have generated
+            your application, so you can safely edit without losing your changes. 
+            You can add packs by generating the application and selecting additional packs. 
             You can overwrite your changes if you wish to by using the <em>--overwrite</em> switch.</p>
             
             <h3>Created Directories</h3>
             <p>The <em>esp</em> command will create directories as required when generating an application.
-            Not all these directories will be created depending on the generated components.</p>
+            Not all these directories will be created depending on the generated packs.</p>
             <table title="Directories">
                 <thead>
                     <tr>
@@ -308,11 +290,11 @@ esp generate migration description MODEL [field:type ...]
             Generating a scaffold will create a database table, controller and a set of views that provide
             add, edit and list functionality for a database table. Scaffolds are useful to quickly generate prototype
             web pages and actions for managing a database table. </p>
-            <p>Generating scaffolds is available if you are using the <em>angular-mvc</em> component &mdash; as the view
-            scaffold depends on the Angular libraries.</p>
+            <p>Generating scaffolds is available if you are using the <em>esp-angular-mvc</em> 
+            pack &mdash; as the view scaffold depends on the Angular libraries.</p>
             <p>To generate a scaffold:</p>
             <pre>
-esp generate app blog angular-mvc
+esp generate app blog esp-angular-mvc
 cd blog
 <b>esp generate scaffold NAME [field:type ...]</b>
 </pre>

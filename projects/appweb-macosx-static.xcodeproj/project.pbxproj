@@ -43,17 +43,17 @@
 			name = esp.conf.server;
 			productName = esp.conf.server;
 		};
-		AE9929FAAE993E6800000012 /* proto */ = {
+		AE9929FAAE993E6800000012 /* packs */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = AE9929FAAE993E6800000011 /* Build configuration list for PBXAggregateTarget "proto" */;
+			buildConfigurationList = AE9929FAAE993E6800000011 /* Build configuration list for PBXAggregateTarget "packs" */;
 			buildPhases = (
 				AE9929FAAE993E6800000013,
 			);
 			dependencies = (
 				AE9929FAAE993E6800000014 /* PBXTargetDependency Prep */,
 			);
-			name = proto;
-			productName = proto;
+			name = packs;
+			productName = packs;
 		};
 		AE9929FAAE993E6800000016 /* slink.c */ = {
 			isa = PBXAggregateTarget;
@@ -152,7 +152,7 @@
 				AE9929FAAE993E680000003E /* PBXTargetDependency espcmd */,
 				AE9929FAAE993E680000003F /* PBXTargetDependency esp.conf */,
 				AE9929FAAE993E6800000040 /* PBXTargetDependency esp.conf.server */,
-				AE9929FAAE993E6800000041 /* PBXTargetDependency proto */,
+				AE9929FAAE993E6800000041 /* PBXTargetDependency packs */,
 				AE9929FAAE993E6800000042 /* PBXTargetDependency libmod_cgi */,
 				AE9929FAAE993E6800000043 /* PBXTargetDependency libmod_ssl */,
 				AE9929FAAE993E6800000044 /* PBXTargetDependency authpass */,
@@ -543,7 +543,7 @@
 			remoteGlobalIDString = AE9929FAAE993E6800000050;
 			remoteInfo = Prep;
 		};
-		AE9929FAAE993E6800000100 /* PBXContainerItemProxy Prep from proto */ = {
+		AE9929FAAE993E6800000100 /* PBXContainerItemProxy Prep from packs */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = AE9929FAAE993E6800000001 /* Project object */;
 			proxyType = 1;
@@ -1103,12 +1103,12 @@
 			remoteGlobalIDString = AE9929FAAE993E680000000E;
 			remoteInfo = esp.conf.server;
 		};
-		AE9929FAAE993E6800000159 /* PBXContainerItemProxy proto from All */ = {
+		AE9929FAAE993E6800000159 /* PBXContainerItemProxy packs from All */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = AE9929FAAE993E6800000001 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = AE9929FAAE993E6800000012;
-			remoteInfo = proto;
+			remoteInfo = packs;
 		};
 		AE9929FAAE993E680000015A /* PBXContainerItemProxy libmod_cgi from All */ = {
 			isa = PBXContainerItemProxy;
@@ -2184,13 +2184,13 @@ rm -rf ../server/esp.conf
 cp -r esp.conf ../server/esp.conf
 ";
 		};
-		AE9929FAAE993E6800000013 /* ShellScript for proto */ = {
+		AE9929FAAE993E6800000013 /* ShellScript for packs */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
-../src/esp/proto
+../src/esp/packs
 			);
 			outputPaths = (
 ../macosx-x64-static/esp
@@ -2200,7 +2200,7 @@ cp -r esp.conf ../server/esp.conf
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/esp
 rm -rf ../${OUT_DIR}/esp
-cp -r proto ../${OUT_DIR}/esp
+cp -r packs ../${OUT_DIR}/esp
 ";
 		};
 		AE9929FAAE993E6800000017 /* ShellScript for slink.c */ = {
@@ -2411,7 +2411,7 @@ fi";
 				AE9929FAAE993E6800000006 /* ca-crt */,
 				AE9929FAAE993E680000000A /* esp.conf */,
 				AE9929FAAE993E680000000E /* esp.conf.server */,
-				AE9929FAAE993E6800000012 /* proto */,
+				AE9929FAAE993E6800000012 /* packs */,
 				AE9929FAAE993E680000001A /* server-cache */,
 				AE9929FAAE993E6800000016 /* slink.c */,
 				AE9929FAAE993E6800000028 /* test-basic.cgi */,
@@ -2778,7 +2778,7 @@ fi";
 			target = AE9929FAAE993E6800000050 /* Prep */;
 			targetProxy = AE9929FAAE993E68000000FF /* PBXContainerItemProxy */;
 		};
-		AE9929FAAE993E6800000014 /* PBXTargetDependency proto depends on Prep */ = {
+		AE9929FAAE993E6800000014 /* PBXTargetDependency packs depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = AE9929FAAE993E6800000050 /* Prep */;
 			targetProxy = AE9929FAAE993E6800000100 /* PBXContainerItemProxy */;
@@ -3178,9 +3178,9 @@ fi";
 			target = AE9929FAAE993E680000000E /* esp.conf.server */;
 			targetProxy = AE9929FAAE993E6800000158 /* PBXContainerItemProxy */;
 		};
-		AE9929FAAE993E6800000041 /* PBXTargetDependency All depends on proto */ = {
+		AE9929FAAE993E6800000041 /* PBXTargetDependency All depends on packs */ = {
 			isa = PBXTargetDependency;
-			target = AE9929FAAE993E6800000012 /* proto */;
+			target = AE9929FAAE993E6800000012 /* packs */;
 			targetProxy = AE9929FAAE993E6800000159 /* PBXContainerItemProxy */;
 		};
 		AE9929FAAE993E6800000042 /* PBXTargetDependency All depends on libmod_cgi */ = {
@@ -3821,7 +3821,7 @@ fi";
 		AE9929FAAE993E680000023C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = proto;
+				PRODUCT_NAME = packs;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"BIT_DEBUG",
@@ -3837,7 +3837,7 @@ fi";
 		AE9929FAAE993E680000023D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = proto;
+				PRODUCT_NAME = packs;
 
 				OTHER_LDFLAGS = ();
 
@@ -4432,7 +4432,7 @@ fi";
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AE9929FAAE993E6800000011 /* Build configuration list for PBXNativeTarget "proto" */ = {
+		AE9929FAAE993E6800000011 /* Build configuration list for PBXNativeTarget "packs" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AE9929FAAE993E680000023C /* Debug */,

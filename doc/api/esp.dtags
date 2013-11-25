@@ -18,17 +18,17 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>espAddComponent</name>
-      <anchorfile>group___esp_route.html</anchorfile>
-      <anchor>ga01d14fd7709ae8ce828eea289f98a2ff</anchor>
-      <arglist>(HttpRoute *route, cchar *name, MprJson *details)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
       <name>espAddHomeRoute</name>
       <anchorfile>group___esp_route.html</anchorfile>
       <anchor>gaa6e0943224a139d93f465b7ff2060c36</anchor>
       <arglist>(HttpRoute *route)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>espAddPack</name>
+      <anchorfile>group___esp_route.html</anchorfile>
+      <anchor>ga90b169ef652f4071f14a3b616efbc806</anchor>
+      <arglist>(HttpRoute *route, cchar *name, MprJson *details)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -102,9 +102,9 @@
     </member>
     <member kind="function">
       <type>bool</type>
-      <name>espHasComponent</name>
+      <name>espHasPack</name>
       <anchorfile>group___esp_route.html</anchorfile>
-      <anchor>gafc024199e50485bf72a3e867515bb42c</anchor>
+      <anchor>gaf585a2ec0d2b132e52f47fe7d5a3aa88</anchor>
       <arglist>(HttpRoute *route, cchar *name)</arglist>
     </member>
     <member kind="function">

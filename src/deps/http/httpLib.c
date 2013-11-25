@@ -11688,7 +11688,7 @@ PUBLIC void httpAddWebSocketsRoute(HttpRoute *parent, cchar *prefix, cchar *name
     }
     pattern = sfmt("^%s/{controller}/stream", prefix);
     path = mprGetRelPath(stemplate("$1-cmd-stream", parent->vars), parent->documents);
-    route = httpDefineRoute(parent, name, "GET", pattern, path, parent->sourceName);
+    route = httpDefineRoute(parent, name, "GET", pattern, path, "${controller}.c");
     httpAddRouteFilter(route, "webSocketFilter", "", HTTP_STAGE_RX | HTTP_STAGE_TX);
 }
 

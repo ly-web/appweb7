@@ -67,44 +67,35 @@
             <p>Angular is a client-side web framework designed for single web page applications that is well-suited for
             creating dynamic management applications. ESP support Angular by providing an Angular component for the
             esp generator and a script library to support and extend Angular for ESP.</p>
-
             <h2>Why Angular?</h2>
             <p>Why use a client-side framework like Angular?  Why not just generate HTML at the web server?
             The answer is a better user experience. By using a framework such as Angular, you can create a faster,
             more responsive, more dynamic user interface. This is because it creates dynamically creates the user 
             views at the client. This reduces or eliminates the typical page reload wait times if all views are 
             rendered at the server.</p>
-
             <p>There are may client-side web frameworks to choose from, but Angular offers one of the more powerful
             framworks that requires very little coding to express and manage user interfaces. </p>
-
             <img class="big-screen" src="../../../images/esp/angular/kickstart.png" />
-            <p>This screen shot is of the Embedthis Kickstart interface and was created using Appweb and ESP Angular.</p>
-
+            <p>This screen shot is of the Embedthis Kickstart interface that was created using Appweb and ESP Angular.</p>
             <h2>Distributed MVC</h2>
             <p>When using a client-side, single-page architecture (SPA) framework like Angular, the traditional 
             Model-View-Controller paradigm becomes distributed or spread-out over both the server and the client.
             Both client and server run MVC stacks, but each side emphasises different parts of the MVC paradigm.</p>
-
             <p>At the server, application data and server-side data models are stored. Server controllers
             receive client requests, validate request data and access data models as required. Responses are typically
             sent in JSON format.</p>
-
             <p>On the client side, a simple data model receives and stores server data. Client side controllers manage
             the client interaction and response data for the presentation views. View templates are dynamically 
             created and populated with server data before being and applied to the brower DOM for display.</p>
-
             <h2>Generating Applications</h2>
             <p>The easiest way to get started with ESP for Angular is to use the <em>esp</em> generator program.
             The following sequence will generate an application with ESP for Angular support.</p>
-            <pre>esp generate app myapp angular-mvc</pre>
-
+            <pre>esp generate app myapp esp->angular-mvc</pre>
             <p>Once generated, you can generate controllers, scaffolds or database migrations. For example:
             <pre>cd myapp
 esp generate scaffold blog title:string body:text</pre>
             <p>This will generate your app with MVC support for a "blog" database table, controller and basic
             Create/Read/Update/Delete (CRUD) operations and views.</p>
-
             <h2>Application Structure</h2>
             <p>ESP for Angular uses a standard directory layout to structure your application. While this can be
             modified to suit custom needs, the standard structure scales well to suit most needs. The approach
@@ -112,64 +103,49 @@ esp generate scaffold blog title:string body:text</pre>
             models, services and controllers, ESP organizes the application by feature so that the view, controller
             and data model for a given feature are together in one place. This approach scales better as the
             application grows. 
-
             <h3>Directory Layout</h3>
             <p>If you use the <em>esp</em> generator to create your application, the default ESP organization is generated for you. Directories are created for client-side code and assets as well as directories for 
             server-side controllers and database assets.</p>
-
             <p>The <em>client</em> directory is the set of public files that are served to the client. This directory
             represents the top of the application. Everything under the <em>client</em> directory is visiable to 
             the client. So do not put private information such as passwords or keys anywhere under the client
             directory.</p>
-
             <p>The key directories and files are listed below:</p>
 <pre>
 appweb.conf                 # Appweb configuration file
 esp.json                    # ESP and application configuration file
 start.bit                   # Bit build file
-
 cache/                      # Compiled code
-
 client/                     # Public files served to the client
     app/                    # Application features
         main.js             # Main application script
         main.js             # Main application script
-
         name/               # Single (named) application feature
             name.js         # Feature database MVC model
             nameControl.js  # Feature MVC controller
             name-edit.html  # Edit view HTML partial page
             name-list.html  # List view HTML partial page
             ...
-
     assets/                 # Media assets. Images, audio, video
         favicon.ico
-
     css/                    # Style sheets and Less sheets
         all.less            # Top level less sheet that includes all others
         app.less            # Application specific styles
         theme.less          # Application theme variables
-
     index.esp               # Application home page
-
     lib/                    # Third party components
-
 controllers/                # Server-side "C" controllers
     name.c                  # Server controller for feature "name"
-
 db/                         # Database files
     migrations              # Database migration "C" scripts
-
 src/                        # Other application "C" code
     app.c                   # Application global code
-
 </pre>
             <p>To change default directories, use the 
                 <a href="../../appweb/users/dir/esp.html#espDir">EspDir</a> configuration directive. For example:
-                <pre>&lt;EspApp name="myapp" routes="angular-mvc"&gt;
+                <pre>&lt;EspApp name="myapp" routes="esp-angular-mvc"&gt;
     EspDir cache /var/spool/cache/myapp
 &lt;/EspApp&gt;</pre>
-
             <h2>Building</h2>
             <p>An ESP for Angular application is represented by five groups of resources:</p>
                 <ol>
@@ -179,14 +155,15 @@ src/                        # Other application "C" code
                     <li>C Code</li>
                     <li>Media assets</li>
                 </ol>
-            <p>In a typical application, these may number in the hundereds of resources. If these were served 
-            individually, either the initial startup time would be slow, or the per-page transition would be slow.
-            ESP for Angular optimizes this by compiling HTML pages into Javascript and then combining with all other
-            all scripts into a single, minified, compressed script file. Similarly, CSS and Less sheets are aggregated, 
-            minified, and compressed into a single file. Further, the C code can be "flatened" into one source file 
-            which is compiled into a single binary. The end result is a highly optimized application that starts
-            quickly and transitions from view to view without delay.</p>
-
+            <p>In a typical application, these resources may number in the hundereds. If they 
+            were served individually, either the initial startup time would be slow, or the 
+            per-page transition would be slow. ESP for Angular optimizes this by compiling 
+            HTML pages into Javascript and then combining with all other all scripts into a single,
+             minified, compressed script file. Similarly, CSS and Less sheets are aggregated, 
+            minified, and compressed into a single file. Further, the C code can be "flatened" 
+            into one source file which is compiled into a single binary. The end result is a 
+            highly optimized application that starts quickly and transitions from view to view 
+            without delay.</p>
             <h2>Components</h2>
             <p>ESP for Angular depends on a suite of contributing components to achieve its magic. 
             These components are:</p>
@@ -194,21 +171,13 @@ src/                        # Other application "C" code
             <li>Server &mdash; Core ESP Angular server-side structure</li>
             <li>Angular &mdash; AngularJS libraries </li>
             <li>Angular-esp &mdash; ESP for Angular services, directives and scripts</li>
-            <li>bootstrap &mdash; <a href="http://getbootstrap.com">Bootstrap</a> look and feel</li>
-            <li>html5shiv &mdash; HTML5 polyfill for older browsers</li>
-            <li>angular-ui-bootstrap &mdash; Angular UI components for Bootstrap</li>
-            <li>font-awesome &mdash; <a href="http://fontawesome.io">Iconic font for Bootstrap</a></li>
-            <li>less &mdash; <a href="lesscss.org">The Less dynamic stylesheet language</a></li>
+            <li>less &mdash; The <a href="lesscss.org">Less</a> dynamic stylesheet language</a></li>
             <li>more &mdash; Polyfill for newer HTML5 elements</li>
-            <li>respond &mdash; Polyfill for CSS3 media queries</li>
-            <li>angular-mvc &mdash; ESP for Angular definition and templates </li>
+            <li>esp-angular-mvc &mdash; ESP for Angular definition and templates </li>
             </ul>
-
-
             <h2>Over-the-wire protocol</h2>
                 request
                 response
-
             <h2>Client / Server Request Protocol</h2>
             <p>Between the client and server, the typical exchange of HTML pages, style sheets, scripts and media takes
             place. However with ESP and Angular, this occurs mostly at the start of the application. Thereafter, 
@@ -218,7 +187,6 @@ src/                        # Other application "C" code
             the vast bulk of the traffic is pure JSON. 
             This can make the application much more efficient and responsive as there are fewer requests to the server
             and the responses are typically much more compact.</p>
-
             <h2>ESP Angular Directives</h2>
                 click, confirm, field-errors, gauge, input, input-group, modal
             <h2>ESP Angular Services</h2>

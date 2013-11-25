@@ -1,33 +1,11 @@
 {
     settings: {
-        components: {
-            server: {
-            },
-            bootstrap: {
-            },
-            html5shiv: {
-                scripts: [
-                    "*"
-                ]
-            },
-            font-awesome: {
-            },
-            less: {
-                scripts: [
-                    "*"
-                ]
-            },
-            more: {
-            },
-            respond: {
-                scripts: [
-                    "*"
-                ]
-            },
-            html-mvc: {
-            }
+        packs: {
+            esp-server: { },
+            less: { scripts: [ "*" ] },
+            more: { },
+            esp-html-mvc: { }
         },
-        json: false,
         loginRequired: "",
         refresh: 1000,
         serverPrefix: "/do",
@@ -41,7 +19,7 @@
             float: 2,
             int: 0
         },
-        redirect: "secure"
+        redirect: ""
     },
     name: "blog",
     mode: "debug",

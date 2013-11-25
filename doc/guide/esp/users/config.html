@@ -194,23 +194,13 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
             <p>This defines an ESP application at the given directory that will receive 
             requests that begin with specified URI prefix. This will define a new Route block, inheriting the existing
             ESP and route configuration. For example, this directive defines a "blog" application stored in the "./blog" directory.</p>
-            <pre>&lt;EspApp prefix="/myblog" dir="./blog" routes="html-mvc"&gt;
+            <pre>&lt;EspApp prefix="/myblog" dir="./blog" routes="esp-html-mvc"&gt;
     ...
 &lt;EspApp&gt;</pre>
             <p>With this configuration, Appweb will send client requests begin with the URI <em>/myblog</em> 
             to this ESP application at "./blog".</p>
             <p>Inside the EspApp directory, you can define other routes, configure caching, define resource limits
              or use most Appweb directives.</p>
-            <p>The EspApp directive is really a convenience directive that is equivalent to a set of 
-            lower-level directives. For example, the previous EspApp directive is equivalent to:</p>
-<pre>
-&lt;Route ^/myblog &gt;
-    Prefix /myblog
-    Documents ./blog
-    AddHandler espHandler
-    EspRouteSet html-mvc                                                                                
-&lt;/Route&gt;  
-</pre>
             <h3>Separate Config</h3>
             <p>To modularize each ESP application, it is best practice to create a separate config file for each 
             application. This per-application config file should be saved to the <em>/etc/appweb/apps</em> or 
@@ -224,18 +214,14 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
             <pre>
 {
     settings: {
-        // Name of the Auth Store. "app" implies server-side auth database
+        // Name of the Auth Store. "app" means server-side auth database
         auth: "app",
         
         // Components used by this application.
         components: {
-            server: {},
-            bootstrap: {},
-            html5shiv: {scripts: ["*"]},
-            font-awesome: {},
-            less: {scripts: ["*"]},
-            respond: {scripts: ["*"]},
-            html-mvc: {},
+            'esp-server': {},
+            'less': {scripts: ["*"]},
+            'esp-html-mvc': {},
         },
         // Default presentation formats for various types
         formats: {
@@ -243,14 +229,8 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
             float: 2,
             int: 0,
         },
-        // Expect requests and responses in JSON format
-        json: false,
-        // Set if a login is required to the login home page
-        loginRequired: "",
         // Redirect all traffic over HTTPS
         redirect: "secure"
-        // Default refresh period to use for dynamic data polling
-        refresh: 1000,
         // Routing prefix for server-side URIs
         serverPrefix: "/do",
         // Default timeouts (secs)
@@ -273,6 +253,7 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
             keepSource: true,
             // Transparently recompile updated views, controllers and source
             update: true,
+            
             // Automatic login credentials.
             login: {
                 name: "",
@@ -284,7 +265,6 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
         },
         release: {
             //  Same fields as per debug
-            //  ...
         },
     },
     // Server side properties not passed to the client
