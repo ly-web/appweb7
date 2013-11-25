@@ -11,7 +11,7 @@
 #if BIT_PACK_ESP
 /************************************* Code ***********************************/
 
-PUBLIC void espAddComponent(HttpRoute *route, cchar *name, MprJson *details)
+PUBLIC void espAddPack(HttpRoute *route, cchar *name, MprJson *details)
 {
     EspRoute    *eroute;
 
@@ -19,7 +19,7 @@ PUBLIC void espAddComponent(HttpRoute *route, cchar *name, MprJson *details)
     if (!details) {
         details = mprCreateJson(0);
     }
-    mprSetJsonObj(eroute->config, sfmt("settings.components.%s", name), details, 0);
+    mprSetJsonObj(eroute->config, sfmt("settings.packs.%s", name), details, 0);
 }
 
 
@@ -434,12 +434,12 @@ PUBLIC cchar *espGetUri(HttpConn *conn)
 }
 
 
-PUBLIC bool espHasComponent(HttpRoute *route, cchar *name)
+PUBLIC bool espHasPack(HttpRoute *route, cchar *name)
 {
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    return mprGetJsonObj(eroute->config, sfmt("settings.components.%s", name), 0) != 0;
+    return mprGetJsonObj(eroute->config, sfmt("settings.packs.%s", name), 0) != 0;
 }
 
 
@@ -501,7 +501,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
 #if BIT_ESP_LEGACY
         if (!mprPathExists(cpath, R_OK)) {
             if (eroute->appName) {
-                mprLog(0, "App %s is missing %s, switching to legacy-mvc mode", eroute->appName, cpath);
+                mprLog(0, "App %s is missing %s, switching to esp-legacy-mvc mode", eroute->appName, cpath);
             }
             eroute->legacy = 1;
         } else 
@@ -533,10 +533,12 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 eroute->flat = smatch(value, "true");
             }
             if ((value = espGetConfig(route, "server.redirect", 0)) != 0) {
-                HttpRoute *alias = httpCreateAliasRoute(route, "/", 0, 0);
-                httpSetRouteTarget(alias, "redirect", "0 https://");
-                httpAddRouteCondition(alias, "secure", "31536000000", HTTP_ROUTE_NOT);
-                httpFinalizeRoute(alias);
+                if (smatch(value, "true")) {
+                    HttpRoute *alias = httpCreateAliasRoute(route, "/", 0, 0);
+                    httpSetRouteTarget(alias, "redirect", "0 https://");
+                    httpAddRouteCondition(alias, "secure", "31536000000", HTTP_ROUTE_NOT);
+                    httpFinalizeRoute(alias);
+                }
             }
             if ((value = espGetConfig(route, "settings.showErrors", 0)) != 0) {
                 httpSetRouteShowErrors(route, smatch(value, "true"));
@@ -582,7 +584,12 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             if ((value = espGetConfig(route, "settings.timeouts.session", 0)) != 0) {
                 route->limits->sessionTimeout = stoi(value) * 1000;
             }
+#if DEPRECATE || 1
             if (espTestConfig(route, "settings.map", "compressed")) {
+                httpAddRouteMapping(route, "css,html,js,less,txt,xml", "min.${1}.gz, min.${1}, ${1}.gz");
+            }
+#endif
+            if (espTestConfig(route, "settings.compressed", "true")) {
                 httpAddRouteMapping(route, "css,html,js,less,txt,xml", "min.${1}.gz, min.${1}, ${1}.gz");
             }
             if (!eroute->database) {
@@ -594,7 +601,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 }
             }
 #if BIT_ESP_LEGACY
-            if (espHasComponent(route, "legacy-mvc")) {
+            if (espHasPack(route, "esp-legacy-mvc")) {
                 eroute->legacy = 1;
             }
 #endif
@@ -605,7 +612,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             httpSetRouteServerPrefix(route, "");
             if (!eroute->config) {
                 eroute->config = mprCreateJson(MPR_JSON_OBJ);
-                espAddComponent(route, "legacy-mvc", 0);
+                espAddPack(route, "esp-legacy-mvc", 0);
             }
         }
 #endif

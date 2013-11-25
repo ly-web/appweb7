@@ -1,0 +1,15 @@
+{
+    name: "angular",
+    description: "Angular client-side framework",
+    settings: {
+        packs: {
+            angular: {
+                scripts: [
+                    "angular.js",
+                    "angular-animate.js",
+                    "angular-route.js",
+                ],
+            },
+        },
+    },
+}

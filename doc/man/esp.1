@@ -29,7 +29,7 @@ commands ...
  esp clean
  esp compile
  esp compile [pathFilters...]
- esp generate app name [components]
+ esp generate app name [packs]
  esp generate controller name [action [, action] ...]
  esp generate migration description model [field:type [, field:type] ...]
  esp generate scaffold model [field:type [, field:type] ...]
@@ -85,36 +85,26 @@ Esp will also create some files which have the following meaning:
  start.bit      - Bit build file
 .RE
 
-The esp command can generate various components by specifying the components on the command line.
+The esp command can generate various functionality by specifying extension packs on the command line.
 
 .RS 5
- \fBesp generate app NAME components\fR
+ \fBesp generate app NAME [packs...]\fR
 .RE
 .PP
-Components are modules of functionality for generated applications. Components are described by their
-esp.json file. Components may depend on other components so that generating the top level component
-may generate other required components. For example: generating the "angular-mvc" components will
-generate the components angular, angular-esp, angular-local etc.
+Packs are modules of functionality for generated applications that are described by their
+esp.json file. Packs may depend on other packs so that generating the top level pack
+may generate other required packs. For example: generating the "esp-angular-mvc" pack will
+also generate: esp-angular, angular, less and more.
 .PP
-Other components are:
+Other packs are:
 
 .RS 5
  angular               - Angular client-side framework
- angular-esp           - Angular support for Embedthis ESP
- angular-local         - Angular local storage service
- angular-mvc           - Angular ESP MVC application skeleton
- angular-session       - Angular session state storage
- angular-ui-bootstrap  - Angular UI Bootstrap support
- animate               - Animate.css CSS animations
- bootstrap             - Bootstrap client-side web styles
- font-awesome          - Icon font for Bootstrap
- html5shiv             - Javascript polyfill for IE 8 and before
- jquery                - Client-side Javascript library
+ esp-angular           - ESP for Angular
+ esp-angular-mvc       - ESP MVC appplications for Angular
+ esp-server            - Default ESP server-side configuration
  less                  - CSS pre-processor for the Less stylesheet
  more                  - Collection of CSS polyfills
- normalize             - Normalize base styles for browsers
- respond               - Polyfill for CSS media queries
- server                - Default ESP server-side configuration
 
 .SH GENERATING MIGRATIONS
 Migrations are generated code modules that manage portions of the database. Migrations are used to create tables, 
@@ -323,7 +313,7 @@ Generate a controller for a singleton resource instead of a group of resources. 
 action.
 .TP 6
 \fB\--static\fR
-Use static linking when building ESP components. This causes esp to create archive libraries instead of shared libraries.
+Use static linking when building ESP applications. This causes esp to create archive libraries instead of shared libraries.
 .TP 6
 \fB\--table name\fR
 Override the database table name when generating tables, migrations or scaffolds. This is useful to request a plural 

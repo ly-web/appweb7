@@ -1,0 +1,19 @@
+{
+    name: "esp-legacy-mvc",
+    description: "Legacy ESP Server Side MVC",
+    depends: [],
+    settings: { },
+    server: {
+        database: "${DATABASE}://${NAME}.${DATABASE}",
+    },
+    generate: {
+        top: "legacy-mvc",
+        scaffold: true,
+        clientModel: false,
+        clientController: false,
+        clientView: false,
+        controller: true,
+        migration: true,
+        view: true,
+    },
+}

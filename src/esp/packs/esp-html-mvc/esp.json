@@ -1,0 +1,25 @@
+{
+    name: "esp-html-mvc",
+    description: "ESP Server Side MVC",
+    depends: [
+        'esp-server', 
+        'less', 
+    ],
+    settings: {
+        auth: "app",
+        serverPrefix: "/do",
+    },
+    server: {
+        database: "${DATABASE}://${NAME}.${DATABASE}",
+    },
+    generate: {
+        top: "html-mvc",
+        scaffold: true,
+        clientModel: false,
+        clientController: false,
+        clientView: false,
+        controller: true,
+        migration: true,
+        view: false,
+    },
+}

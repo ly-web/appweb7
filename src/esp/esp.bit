@@ -35,10 +35,10 @@ Bit.load({
             packs: 'esp',
         },
 
-        'proto': {
+        'packs': {
             type: 'file',
             path: '${OUT}/esp/',
-            files: [ 'proto/' ],
+            files: [ 'packs/' ],
             platforms: [ 'local' ],
             packs: 'esp',
         },

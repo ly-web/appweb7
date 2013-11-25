@@ -895,7 +895,7 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
     if (set == 0 || *set == 0) {
         return;
     }
-    if (scaselessmatch(set, "angular-mvc")) {
+    if (scaselessmatch(set, "esp-angular-mvc")) {
         httpAddWebSocketsRoute(route, route->serverPrefix, "/*/stream");
         httpAddResourceGroup(route, route->serverPrefix, "{controller}");
         httpAddClientRoute(route, "", "/public");
@@ -903,7 +903,7 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
         eroute->viewsDir = eroute->appDir;
         eroute->layoutsDir = mprJoinPath(eroute->clientDir, "layouts");
 
-    } else if (scaselessmatch(set, "html-mvc")) {
+    } else if (scaselessmatch(set, "esp-html-mvc")) {
         httpAddRestfulRoute(route, route->serverPrefix, "delete", "POST", "/{id=[0-9]+}/delete$", "delete", "{controller}");
         httpAddResourceGroup(route, route->serverPrefix, "{controller}");
         httpAddClientRoute(route, "", "/public");
@@ -924,7 +924,7 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
         httpAddClientRoute(route, "/static", "/static");
         httpDefineRoute(route, "default", NULL, "^/{controller}(~/{action}~)", "${controller}-${action}", "${controller}.c");
 
-    } else if (scaselessmatch(set, "restful") || scaselessmatch(set, "legacy-mvc")) {
+    } else if (scaselessmatch(set, "restful") || scaselessmatch(set, "esp-legacy-mvc")) {
         if (eroute->legacy) {
             espAddHomeRoute(route);
             httpAddClientRoute(route, "/static", "/static");

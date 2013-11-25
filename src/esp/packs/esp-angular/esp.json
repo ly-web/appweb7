@@ -1,0 +1,14 @@
+{
+    name: "esp-angular",
+    description: "Embedthis ESP for Angular",
+    depends: [
+        "esp-server",
+        "angular",
+    ],
+    settings: {
+        packs: {
+            "esp-angular": {scripts: ["*"]},
+        },
+        loginRequired: "",
+    },
+}

@@ -1,0 +1,42 @@
+{
+    name: "esp-server",
+    description: "ESP MVC Framework",
+    mode: "debug",
+    modes: {
+        debug: {
+            flat: false,
+            showErrors: true,
+            keepSource: true,
+            update: true,
+            login: {
+                name: "",
+                abilities: {
+                    edit: true,
+                    view: true,
+                },
+            },
+        },
+        release: {
+            flat: true,
+            compressed: true,
+            showErrors: false,
+            update: false,
+            keepSource: false,
+            login: {
+                name: "",
+                abilities: {
+                    edit: true,
+                    view: true,
+                },
+            },
+        },
+    },
+    settings: {
+        redirect: "",
+        serverPrefix: "/do",
+        timeouts: {
+            session: 1800,
+        },
+        xsrf: true,
+    },
+}

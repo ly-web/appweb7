@@ -194,15 +194,15 @@ typedef struct EspRoute {
 } EspRoute;
 
 /**
-    Add the specified component to the esp.json components list.
+    Add the specified pack to the esp.json packs list.
     @param route HttpRoute defining the ESP application
-    @param name Desired component name. For example: "angular-mvc"
-    @param details Component details. JSON object with optional script property. Set to NULL if no details.
+    @param name Desired pack name. For example: "angular-mvc"
+    @param details Pack details. JSON object with optional script property. Set to NULL if no details.
     @returns Zero if successful, otherwise a negative MPR error code.
     @ingroup EspRoute
     @stability Prototype
  */
-PUBLIC void espAddComponent(HttpRoute *route, cchar *name, MprJson *details);
+PUBLIC void espAddPack(HttpRoute *route, cchar *name, MprJson *details);
 
 /**
     Add a route for the home page.
@@ -420,15 +420,15 @@ PUBLIC char *espExpandCommand(HttpRoute *route, cchar *command, cchar *source, c
 PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue);
 
 /**
-    Test if the ESP application includes the specified component
-    @description This tests the settings.components for the specified component.
+    Test if the ESP application includes the specified pack
+    @description This tests the settings.packs for the specified pack.
     @param route HttpRoute defining the ESP application
-    @param name Desired component name. For example: "angular-mvc"
-    @returns True if the specified component is supported
+    @param name Desired pack name. For example: "angular-mvc"
+    @returns True if the specified pack is supported
     @ingroup EspRoute
     @stability Prototype
  */
-PUBLIC bool espHasComponent(HttpRoute *route, cchar *name);
+PUBLIC bool espHasPack(HttpRoute *route, cchar *name);
 
 /**
     Load ESP esp.json configuration file 

@@ -580,7 +580,7 @@ PUBLIC void scripts(cchar *patterns)
     HttpRoute   *route;
     EspRoute    *eroute;
     MprList     *files;
-    MprJson     *components, *component, *componentScripts, *file;
+    MprJson     *packs, *pack, *packScripts, *file;
     cchar       *name, *uri, *path;
     int         next, ci, fi;
 
@@ -594,14 +594,14 @@ PUBLIC void scripts(cchar *patterns)
             name = sfmt("all-%s.min.js", espGetConfig(route, "version", "1.0.0"));
             scripts(name);
         } else {
-            if ((components = mprGetJsonObj(eroute->config, "settings.components", 0)) != 0) {
-                for (ITERATE_JSON(components, component, ci)) {
-                    if ((componentScripts = mprGetJsonObj(component, "scripts", 0)) != 0) {
-                        for (ITERATE_JSON(componentScripts, file, fi)) {
+            if ((packs = mprGetJsonObj(eroute->config, "settings.packs", 0)) != 0) {
+                for (ITERATE_JSON(packs, pack, ci)) {
+                    if ((packScripts = mprGetJsonObj(pack, "scripts", 0)) != 0) {
+                        for (ITERATE_JSON(packScripts, file, fi)) {
                             if (smatch(file->value, "*")) {
-                                scripts(sfmt("lib/%s/**.js", component->name));
+                                scripts(sfmt("lib/%s/**.js", pack->name));
                             } else {
-                                scripts(sfmt("lib/%s/%s", component->name, file->value));
+                                scripts(sfmt("lib/%s/%s", pack->name, file->value));
                             }
                         }
                     }

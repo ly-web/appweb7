@@ -1,9 +1,0 @@
-{
-    name: "jquery",
-    description: "Client-side Javascript library for DOM manipulation",
-    settings: {
-        components: {
-            jquery: {scripts: ['*']},
-        },
-    },
-}

@@ -1,9 +1,0 @@
-{
-    name: "angular-esp-extras",
-    description: "ESP angular extra directives",
-    settings: {
-        components: {
-            "angular-esp-extras": {scripts: ["*"]},
-        },
-    },
-}
