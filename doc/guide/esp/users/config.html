@@ -207,6 +207,7 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
             on Windows, the <em>Embedthis Appweb/apps</em> directory. When Appweb is started or restarted, it will
             parse all the config files under the <em>apps</em>. Installing or removing a config file for each 
             application under the <em>apps</em> directory is a simple way to add/remove an application.</p>
+            <a name="json"></a>
             <h2 class="section">ESP Configuration File</h2>
             <p>ESP MVC applications use a <em>esp.json</em> configuration file to define applications-specific
             configuration data. This file is a JSON property file that is made available to server-side controllers and
@@ -240,8 +241,9 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
         // Set to include a XSRF token to minimize CSRF vulnerabilies
         xsrf: true,
     },
-    // Application mode. 
-    //  This selects a set of properties below and copies them to settings
+    
+    // Application mode selects debug or release properties and 
+    // copies them to settings
     mode: "debug",
     modes: {
         debug: {

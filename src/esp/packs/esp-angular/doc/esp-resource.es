@@ -75,7 +75,7 @@ angular.module('app').factory('User', function (EspResource) {
 
         @stability prototype
  */
-    class Resource {
+    class EspResource {
         /**
             Create a set of routes for a resource group. This should be used when there are more than one instance
             of a resource. For example: a Users resource group has one or more users.
@@ -91,7 +91,7 @@ angular.module('app').factory('User', function (EspResource) {
             @return An EspResource object which may be used to issue requests on the server. 
             The object contains methods for create, edit, init, list, remove and update.
          */
-        public static function group(controller: Object, params: Object, options: Object): Resource { return null }
+        public static function group(controller: Object, params: Object, options: Object): EspResource { return null }
     
         /**
             Create a set of routes for a single resource. This should be used when there is only one instance
@@ -114,7 +114,7 @@ angular.module('app').factory('User', function (EspResource) {
                 //  Get a list of ports and map the response data to the "ports" property.
                 Port.list(null, $scope, {ports: "data"});
          */
-        public static function solo(controller: Object, params: Object, options: Object): Resource { return null }
+        public static function solo(controller: Object, params: Object, options: Object): EspResource { return null }
     }
 }
 

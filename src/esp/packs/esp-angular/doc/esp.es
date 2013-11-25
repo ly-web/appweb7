@@ -56,7 +56,7 @@ module esp.angular {
         public static function inform(msg: String): Void {}
 
         /**
-            Load a script
+            Load a script.
             This routine loads the requested script and executes it in the browser by appending a script DOM
             element to the document body.
             @param script URL of script to load
@@ -65,7 +65,7 @@ module esp.angular {
         public static function loadScript(script: Uri, callback: Function): Void {}
 
         /**
-            Login as a user
+            Login as a user.
             This performs a client-side registration of a server-authenticated user.
             The user details are saved in Esp.user. After this routine, Esp will monitor the user session 
             and warn when the session is due to expire.
@@ -82,14 +82,14 @@ module esp.angular {
         public static function logout(): Void {}
 
         /**
-            Map a string to TitleCase
+            Map a string to TitleCase.
             @param str String to convert
             @return A titlecase string where the first letter of each word is capitalized.
          */
         public static function titlecase(str: String): String  { return "" }
 
         /**
-            Return a qualified client URI 
+            Return a qualified client URI.
             This routine supports hosting an application using an application URI prefix.
             This returns a fully qualified URI including the application URI prefix by prepending the
             application prefix from Esp.config.appPrefix.

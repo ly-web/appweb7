@@ -293,11 +293,13 @@ PUBLIC cchar *ediGetTableSchemaAsJson(Edi *edi, cchar *tableName)
         mprPutToBuf(buf, "\"%s\", ", s);
     }
     mprAdjustBufEnd(buf, -2);
+#if UNUSED
     mprPutStringToBuf(buf, " ],\n    \"headers\": [ ");
     for (ITERATE_ITEMS(columns, s, next)) {
         mprPutToBuf(buf, "\"%s\", ", spascal(s));
     }
     mprAdjustBufEnd(buf, -2);
+#endif
     mprPutStringToBuf(buf, " ]\n  }");
     mprAddNullToBuf(buf);
     schema = mprGetBufStart(buf);
