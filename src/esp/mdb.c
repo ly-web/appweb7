@@ -1172,7 +1172,7 @@ static int mdbSave(Edi *edi)
     MdbTable    *table;
     MdbRow      *row;
     MdbCol      *col;
-    cchar       *value, *path;
+    cchar       *value, *path, *cp;
     char        *npath, *bak, *type;
     MprFile     *out;
     int         cid, rid, tid, ntables, nrows;
@@ -1191,6 +1191,7 @@ static int mdbSave(Edi *edi)
         mprError("Cannot open database %s", npath);
         return 0;
     }
+    mprEnableFileBuffering(out, 0, 0);
     mprWriteFileFmt(out, "{\n");
 
     ntables = mprGetListLength(mdb->tables);
@@ -1239,9 +1240,22 @@ static int mdbSave(Edi *edi)
                 if (value == 0) {
                     mprWriteFileFmt(out, "null, ");
                 } else if (col->type == EDI_TYPE_STRING || col->type == EDI_TYPE_TEXT) {
-                    mprWriteFileFmt(out, "'%s', ", value);
+                    mprWriteFile(out, "'", 1);
+                    for (cp = value; *cp; cp++) {
+                        if (*cp == '\'' || *cp == '\\') {
+                            mprWriteFile(out, "\\", 1);
+                        }
+                        mprWriteFile(out, cp, 1);
+                    }
+                    mprWriteFile(out, "',", 2);
                 } else {
-                    mprWriteFileFmt(out, "%s, ", value);
+                    for (cp = value; *cp; cp++) {
+                        if (*cp == '\'' || *cp == '\\') {
+                            mprWriteFile(out, "\\", 1);
+                        }
+                        mprWriteFile(out, cp, 1);
+                    }
+                    mprWriteFile(out, ",", 1);
                 }
             }
             mprWriteFileString(out, "],\n");
