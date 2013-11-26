@@ -7,13 +7,13 @@
     <% stylesheets(NULL); %>
 </head>
 <body id='body' data-config='<% renderConfig(); %>'>
-    <nav class="navbar navbar-inverse navbar-static-top">
+    <nav class="navbar">
         <div class="navbar-header">
             <a class="navbar-brand" href="@~">${TITLE}</a>
         </div>
     </nav>
     <main class="container">
-        <section class="content col-sm-10" id="content">
+        <section class="content col-md-10" id="content">
             <%@ content %>
         </section>
         <div class="feedback">

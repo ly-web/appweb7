@@ -173,7 +173,6 @@ Bit.load({
                         }
                     }
                 }
-                dump('LIST', list)
                 for each (f in list) {
                     let minified = f.replaceExt('min.js')
                     if (!minified.exists || minified.modified < f.modified) {

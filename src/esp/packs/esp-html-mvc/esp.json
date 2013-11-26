@@ -4,6 +4,7 @@
     depends: [
         'esp-server', 
         'less', 
+        'more', 
     ],
     settings: {
         auth: "app",
