@@ -13512,8 +13512,11 @@ static bool processContent(HttpConn *conn)
         if (conn->state < HTTP_STATE_FINALIZED) {
             if (conn->endpoint) {
                 if (!rx->route) {
-                    httpAddBodyParams(conn);
-                    mapMethod(conn);
+                    if (httpAddBodyParams(conn) < 0) {
+                        httpError(conn, HTTP_CODE_BAD_REQUEST, "Bad request parameters");
+                    } else {
+                        mapMethod(conn);
+                    }
                     httpRouteRequest(conn);
                     httpCreatePipeline(conn);
                     /*
@@ -17532,9 +17535,10 @@ PUBLIC HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *base)
     } else {
         if (!uri->host) {
             uri->host = base->host;
-        }
-        if (!uri->port) {
-            uri->port = base->port;
+            /* Must not add a port if there is already a host */
+            if (!uri->port) {
+                uri->port = base->port;
+            }
         }
         if (!uri->scheme) {
             uri->scheme = base->scheme;
@@ -18337,7 +18341,7 @@ PUBLIC void httpAddQueryParams(HttpConn *conn)
 }
 
 
-PUBLIC void httpAddBodyParams(HttpConn *conn)
+PUBLIC int httpAddBodyParams(HttpConn *conn)
 {
     HttpRx      *rx;
     HttpQueue   *q;
@@ -18356,11 +18360,14 @@ PUBLIC void httpAddBodyParams(HttpConn *conn)
                 addParamsFromBuf(conn, mprGetBufStart(content), mprGetBufLength(content));
 
             } else if (sstarts(rx->mimeType, "application/json")) {
-                mprParseJsonInto(httpGetBodyInput(conn), httpGetParams(conn));
+                if (mprParseJsonInto(httpGetBodyInput(conn), httpGetParams(conn)) == 0) {
+                    return MPR_ERR_BAD_FORMAT;
+                }
             }
         }
         rx->flags |= HTTP_ADDED_BODY_PARAMS;
     }
+    return 0;
 }
 
 

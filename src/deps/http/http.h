@@ -5340,11 +5340,12 @@ PUBLIC void httpAddQueryParams(HttpConn *conn);
     Add parameters from the request body content.
     @description This adds query data to the request params
     @param conn HttpConn connection object
+    @return Zero if successful, otherwise a negative MPR error code.
     @ingroup HttpRx
     @stability Internal
     @internal
  */
-PUBLIC void httpAddBodyParams(HttpConn *conn);
+PUBLIC int httpAddBodyParams(HttpConn *conn);
 
 /**
     Add parameters from a JSON body.

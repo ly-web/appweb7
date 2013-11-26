@@ -11988,6 +11988,9 @@ static MprJson *jsonParse(MprJsonParser *parser, MprJson *obj)
                 mprSetJsonError(parser, "Unexpected input");
                 return 0;
             }
+            if (child == 0) {
+                return 0;
+            }
             if (obj) {
                 if (parser->callback.setValue(parser, obj, name, child) < 0) {
                     return 0;
@@ -12142,15 +12145,12 @@ static int gettok(MprJsonParser *parser)
             case '\'':
                 if (parser->state == MPR_JSON_STATE_NAME || parser->state == MPR_JSON_STATE_VALUE) {
                     for (cp = parser->input; *cp; cp++) {
-                        if (*cp == '\\') {
+                        if (*cp == '\\' && cp[1]) {
                             cp++;
-                        }
-                        if (*cp == c) {
-                            if (cp == parser->input || cp[-1] != '\\') {
-                                parser->tokid = JTOK_STRING;
-                                parser->input = cp + 1;
-                                break;
-                            }
+                        } else if (*cp == c) {
+                            parser->tokid = JTOK_STRING;
+                            parser->input = cp + 1;
+                            break;
                         }
                         mprPutCharToBuf(parser->buf, *cp);
                     }
@@ -12169,13 +12169,14 @@ static int gettok(MprJsonParser *parser)
                         /* Allow unquoted names */
                         for (cp = parser->input; *cp; cp++) {
                             c = *cp;
-                            if (c == '\\') {
+                            if (c == '\\' && cp[1]) {
                                 if (isxdigit((uchar) cp[1]) && isxdigit((uchar) cp[2]) && isxdigit((uchar) cp[3]) && isxdigit((uchar) cp[4])) {
                                     c = (int) stoiradix(cp, 16, NULL);
                                     cp += 3;
+                                } else {
+                                    c = *cp++;
                                 }
-                            }
-                            if ((isspace((uchar) c) || c == ':') && (cp == parser->input || *cp != '\\')) {
+                            } else if (isspace((uchar) c) || c == ':') {
                                 break;
                             }
                             mprPutCharToBuf(parser->buf, c);
@@ -12317,7 +12318,7 @@ static void formatValue(MprBuf *buf, MprJson *obj, int flags)
     }
     mprPutCharToBuf(buf, '"');
     for (cp = obj->value; *cp; cp++) {
-        if (*cp == '\"') {
+        if (*cp == '\"' || *cp == '\\') {
             mprPutCharToBuf(buf, '\\');
         }
         mprPutCharToBuf(buf, *cp);
@@ -12573,7 +12574,9 @@ static char *splitExpression(char *property, int *operator, char **value)
         vp += i;
         if (*vp == '\'' || *vp == '"') {
             for (end = &vp[1]; *end; end++) {
-                if (*end == *vp && (end == &vp[1] || *end != '\\')) {
+                if (*end == '\\' && end[1]) {
+                    end++;
+                } else if (*end == *vp) {
                     *end = '\0';
                     vp++;
                 }
