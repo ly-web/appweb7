@@ -1957,6 +1957,14 @@ PUBLIC cchar *getAppUri();
 PUBLIC cchar *getFieldError(cchar *field);
 
 /**
+    Get the current database record
+    @return EdiRec instance
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC EdiRec *getRec();
+
+/**
     Get the uploaded files
     @description Get the hash table defining the uploaded files.
         This hash is indexed by the file identifier supplied in the upload form. The hash entries are HttpUploadFile
@@ -1993,6 +2001,22 @@ PUBLIC bool hasGrid();
     @stability Evolving
  */
 PUBLIC bool hasRec();
+
+/**
+    Render an input field as part of a form. This is a smart input control that will call the appropriate
+        input control based on the database record field data type. This control should not be used 
+        if using the esp-angular-mvc or other similar client-side Javascript framework.
+    @param field Name for the input field. This defines the HTML element name and provides the source 
+        of the initial value to display. The field should be a property of the form current record. 
+        If this call is used without a form control record, the actual data value should be supplied via the 
+        options.value property.
+    @param options These are in JSON string form and are converted to attributes to pass to the input element
+    @arg noescape Boolean Do not HTML escape the text before rendering. 
+    @arg ... Other options are converted and rendered as HTML attributes.
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC void input(cchar *field, cchar *options);
 
 /**
     Test if the receive input stream is at end-of-file
@@ -2769,29 +2793,6 @@ PUBLIC bool updateRecFromParams(cchar *table);
 </pre>
  */
 PUBLIC cchar *uri(cchar *target, ...);
-
-/**
-    Get the current database record
-    @return EdiRec instance
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC EdiRec *getRec();
-
-/**
-    Render an input field as part of a form. This is a smart input control that will call the appropriate
-        input control based on the database record field data type.
-    @param field Name for the input field. This defines the HTML element name and provides the source 
-        of the initial value to display. The field should be a property of the form current record. 
-        If this call is used without a form control record, the actual data value should be supplied via the 
-        options.value property.
-    @param options These are in JSON string form and are converted to attributes to pass to the input element
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void input(cchar *field, cchar *options);
 
 #if BIT_ESP_LEGACY 
 /**

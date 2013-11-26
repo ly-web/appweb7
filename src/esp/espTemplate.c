@@ -599,7 +599,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                 if (token == 0) { 
                     token = "";
                 }
-                /* If users want a format and safe, use %S or renderSafe() */
+                /* Default without format is safe. If users want a format and safe, use %S or renderSafe() */
                 token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
                 mprPutToBuf(body, "  espRender(conn, \"%s\", %s);\n", fmt, token);
             } else {

@@ -127,7 +127,7 @@ static cchar *getValue(HttpConn *conn, cchar *fieldName, MprHash *options)
     if (value == 0) {
         value = httpGetOption(options, "value", 0);
     }
-    if (httpGetOption(options, "escape", 0)) {
+    if (!httpGetOption(options, "noescape", 0)) {
         value = mprEscapeHtml(value);
     }
     return value;
