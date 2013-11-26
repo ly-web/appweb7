@@ -1094,7 +1094,7 @@
   <div class="apiDetail">
 <p>Get the current database record.</p>
     <dl><dt>Returns:</dt><dd>EdiRec instance.</dd></dl>
-    <dl><dt><b>API</b> Stability:</dt><dd>Deprecated.</dd></dl>
+    <dl><dt><b>API</b> Stability:</dt><dd>Evolving.</dd></dl>
     <dl><dt>See Also:</dt><dd>
     <a href="#group___esp_control_1ga46d20e684116990c878ef113b0702972" class="ref">espAlert</a></dd></dl>
   </div>
@@ -1309,13 +1309,13 @@
   </div>
   <div class="apiDetail">
 <p>Render an input field as part of a form.</p>
-This is a smart input control that will call the appropriate input control based on the database record field data type
+This is a smart input control that will call the appropriate input control based on the database record field data type. This control should not be used if using the esp-angular-mvc or other similar client-side Javascript framework
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">field</td><td>Name for the input field. This defines the HTML element name and provides the source of the initial value to display. The field should be a property of the form current record. If this call is used without a form control record, the actual data value should be supplied via the options.value property.</td>
-    <tr><td class="param">options</td><td>These are in JSON string form and are converted to attributes to pass to the input element.</td>
+    <tr><td class="param">options</td><td>These are in JSON string form and are converted to attributes to pass to the input element <ul><li>noescape Boolean Do not HTML escape the text before rendering. </li><li>... Other options are converted and rendered as HTML attributes.</li></ul></td>
     </table></dd></dl>
-    <dl><dt><b>API</b> Stability:</dt><dd>Deprecated.</dd></dl>
+    <dl><dt><b>API</b> Stability:</dt><dd>Evolving.</dd></dl>
     <dl><dt>See Also:</dt><dd>
     <a href="#group___esp_control_1ga46d20e684116990c878ef113b0702972" class="ref">espAlert</a></dd></dl>
   </div>
