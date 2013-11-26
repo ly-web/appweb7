@@ -1674,6 +1674,10 @@ static void generateScaffold(int argc, char **argv)
         generateScaffoldMigration(name, table, argc, argv);
     }
     migrate(0, 0);
+
+    if (espTestConfig(app->route, "generate.clientController", "false")) {
+        trace("Info", sfmt("Use URL: %s/%s/list for a resource list", app->route->serverPrefix, name));
+    }
 }
 
 
