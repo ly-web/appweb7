@@ -62,6 +62,9 @@ angular.module('esp.resource', [])
                     if (angular.isFunction(value)) {
                         params[key] = value();
                     }
+                    if (params[key].replace) {
+                        params[key] = params[key].replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+                    }
                 });
                 var args = {};
                 if (/^(POST|PUT)$/i.test(action.method)) {

@@ -7,7 +7,7 @@
     <% stylesheets(NULL); %>
 </head>
 <body data-config='<% renderConfig(); %>' id='body'>
-    <nav class="navbar navbar-inverse navbar-static-top">
+    <nav class="navbar">
         <div class="navbar-header">
             <a class="navbar-brand ng-cloak" href="#">Blog</a>
         </div>

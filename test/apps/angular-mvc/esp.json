@@ -1,13 +1,12 @@
 {
     settings: {
         packs: {
-            esp-server: { },
+            esp-server: {
+            },
             angular: {
                 scripts: [
                     "angular.js",
                     "angular-animate.js",
-                    "angular-bootstrap.js",
-                    "angular-resource.js",
                     "angular-route.js"
                 ]
             },
@@ -21,22 +20,23 @@
                     "*"
                 ]
             },
-            more: { },
-            esp-angular-mvc: { }
+            more: {
+            },
+            esp-angular-mvc: {
+            }
         },
-        json: true,
-        loginRequired: "",
-        refresh: 1000,
+        redirect: "",
         serverPrefix: "/do",
         timeouts: {
-            session: 300
+            session: 1800
         },
         xsrf: true,
+        loginRequired: "",
         formats: {
             date: "yyyy-MM-dd",
-            float: 2,
+            float: 2
         },
-        redirect: "secure"
+        json: true
     },
     name: "blog",
     mode: "debug",
@@ -56,7 +56,7 @@
         },
         release: {
             flat: true,
-            map: "compressed",
+            compressed: true,
             showErrors: false,
             update: false,
             keepSource: false,
