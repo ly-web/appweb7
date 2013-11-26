@@ -1218,10 +1218,6 @@ $(CONFIG)\esp: $(DEPS_58)
 	copy /Y src\esp\packs\esp-angular\client\lib\esp-angular\esp-session.js $(CONFIG)\esp\esp-angular\client\lib\esp-angular\esp-session.js
 	copy /Y src\esp\packs\esp-angular\client\lib\esp-angular\esp-titlecase.js $(CONFIG)\esp\esp-angular\client\lib\esp-angular\esp-titlecase.js
 	copy /Y src\esp\packs\esp-angular\client\lib\esp-angular\esp.js $(CONFIG)\esp\esp-angular\client\lib\esp-angular\esp.js
-	if not exist "$(CONFIG)\esp\esp-angular\doc" md "$(CONFIG)\esp\esp-angular\doc"
-	copy /Y src\esp\packs\esp-angular\doc\esp-resource.es $(CONFIG)\esp\esp-angular\doc\esp-resource.es
-	copy /Y src\esp\packs\esp-angular\doc\esp-session.es $(CONFIG)\esp\esp-angular\doc\esp-session.es
-	copy /Y src\esp\packs\esp-angular\doc\esp.es $(CONFIG)\esp\esp-angular\doc\esp.es
 	if not exist "$(CONFIG)\esp\esp-angular" md "$(CONFIG)\esp\esp-angular"
 	copy /Y src\esp\packs\esp-angular\esp.json $(CONFIG)\esp\esp-angular\esp.json
 	if not exist "$(CONFIG)\esp\esp-angular-mvc" md "$(CONFIG)\esp\esp-angular-mvc"
@@ -2296,10 +2292,6 @@ installBinary: $(DEPS_102)
 	copy /Y src\esp\packs\esp-angular\client\lib\esp-angular\esp-session.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\client\lib\esp-angular\esp-session.js"
 	copy /Y src\esp\packs\esp-angular\client\lib\esp-angular\esp-titlecase.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\client\lib\esp-angular\esp-titlecase.js"
 	copy /Y src\esp\packs\esp-angular\client\lib\esp-angular\esp.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\client\lib\esp-angular\esp.js"
-	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular\doc" md "$(BIT_VAPP_PREFIX)\esp\esp-angular\doc"
-	copy /Y src\esp\packs\esp-angular\doc\esp-resource.es "$(BIT_VAPP_PREFIX)\esp\esp-angular\doc\esp-resource.es"
-	copy /Y src\esp\packs\esp-angular\doc\esp-session.es "$(BIT_VAPP_PREFIX)\esp\esp-angular\doc\esp-session.es"
-	copy /Y src\esp\packs\esp-angular\doc\esp.es "$(BIT_VAPP_PREFIX)\esp\esp-angular\doc\esp.es"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular" md "$(BIT_VAPP_PREFIX)\esp\esp-angular"
 	copy /Y src\esp\packs\esp-angular\esp.json "$(BIT_VAPP_PREFIX)\esp\esp-angular\esp.json"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc" md "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc"

@@ -1112,10 +1112,6 @@ $(CONFIG)/esp: $(DEPS_56)
 	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-session.js $(CONFIG)/esp/esp-angular/client/lib/esp-angular/esp-session.js
 	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-titlecase.js $(CONFIG)/esp/esp-angular/client/lib/esp-angular/esp-titlecase.js
 	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp.js $(CONFIG)/esp/esp-angular/client/lib/esp-angular/esp.js
-	mkdir -p "$(CONFIG)/esp/esp-angular/doc"
-	cp src/esp/packs/esp-angular/doc/esp-resource.es $(CONFIG)/esp/esp-angular/doc/esp-resource.es
-	cp src/esp/packs/esp-angular/doc/esp-session.es $(CONFIG)/esp/esp-angular/doc/esp-session.es
-	cp src/esp/packs/esp-angular/doc/esp.es $(CONFIG)/esp/esp-angular/doc/esp.es
 	mkdir -p "$(CONFIG)/esp/esp-angular"
 	cp src/esp/packs/esp-angular/esp.json $(CONFIG)/esp/esp-angular/esp.json
 	mkdir -p "$(CONFIG)/esp/esp-angular-mvc"
@@ -2114,10 +2110,6 @@ ifeq ($(BIT_PACK_ESP),1)
 	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-session.js $(BIT_VAPP_PREFIX)/esp/esp-angular/client/lib/esp-angular/esp-session.js
 	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-titlecase.js $(BIT_VAPP_PREFIX)/esp/esp-angular/client/lib/esp-angular/esp-titlecase.js
 	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp.js $(BIT_VAPP_PREFIX)/esp/esp-angular/client/lib/esp-angular/esp.js
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular/doc"
-	cp src/esp/packs/esp-angular/doc/esp-resource.es $(BIT_VAPP_PREFIX)/esp/esp-angular/doc/esp-resource.es
-	cp src/esp/packs/esp-angular/doc/esp-session.es $(BIT_VAPP_PREFIX)/esp/esp-angular/doc/esp-session.es
-	cp src/esp/packs/esp-angular/doc/esp.es $(BIT_VAPP_PREFIX)/esp/esp-angular/doc/esp.es
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular"
 	cp src/esp/packs/esp-angular/esp.json $(BIT_VAPP_PREFIX)/esp/esp-angular/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular-mvc"
