@@ -39,7 +39,7 @@ PUBLIC void input(cchar *field, cchar *optionString)
     options = httpGetOptions(optionString);
     style = httpGetOption(options, "class", "");
     errorMsg = rec->errors ? mprLookupKey(rec->errors, field) : 0;
-    error = (errorMsg && !eroute->legacy) ? sfmt("<span class=\"input-group-addon\">%s</span>", errorMsg) : ""; 
+    error = (errorMsg && !eroute->legacy) ? sfmt("<span class=\"field-error\">%s</span>", errorMsg) : ""; 
 
     switch (type) {
     case EDI_TYPE_BOOL:
