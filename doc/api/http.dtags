@@ -2347,10 +2347,10 @@
     <title>HttpRx</title>
     <filename>group___http_rx.html</filename>
     <member kind="function">
-      <type>void</type>
+      <type>int</type>
       <name>httpAddBodyParams</name>
       <anchorfile>group___http_rx.html</anchorfile>
-      <anchor>gabcf27ce00a81bb7dbe840d71b0550e53</anchor>
+      <anchor>gab53b87abd5349e40a0160d4632ce068f</anchor>
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">

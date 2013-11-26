@@ -44,7 +44,7 @@ Bit.load({
         'esp-doc': {
             action: "
                 if (Cmd.locate('ejsc')) {
-                    let list = Path('../src/esp/packs/esp-angular/doc').files('*.es')
+                    let list = Path('api/esp-angular/masters').files('*.es')
                         run('ejsc --doc '  + list.join(' '))
                     }
                     run('ejsmod --html api/esp-angular ' + Path('.').files('*.mod').join(' '))

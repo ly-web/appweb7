@@ -120,7 +120,7 @@ angular.module('esp.input', [])
                                 '<label class="control-label ' + labelClass + '">' + label + '</label>' +
                                 '<div class="input-group ' + inputClass + '"' + errorHighlight + '>' + 
                                     html + 
-                                    '<span class="input-group-addon" ng-show="fieldErrors.' + field + '">{{fieldErrors.' + field + '}}</span>' +
+                                    '<span class="field-error" ng-show="fieldErrors.' + field + '">{{fieldErrors.' + field + '}}</span>' +
                                 '</div>' +
                             '</div>';
                     var newelt = angular.element(html);
