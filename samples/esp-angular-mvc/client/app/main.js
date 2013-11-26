@@ -7,7 +7,7 @@
     Create the primary application module and specify the list of required dependencies. 
     Application controllers and models create other sub-modules.
  */
-var app = angular.module('app', ['ngAnimate', 'ngResource', 'ngRoute', 'ui.bootstrap', 'esp']);
+var app = angular.module('app', ['ngAnimate', 'ngRoute', 'esp']);
 
 /*
     Use manual bootstrap so the Angular scripts can be put at the end of the HTML page
