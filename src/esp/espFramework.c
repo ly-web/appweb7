@@ -897,9 +897,12 @@ PUBLIC void espRemoveSessionVar(HttpConn *conn, cchar *var)
 PUBLIC int espSaveConfig(HttpRoute *route)
 {
     EspRoute    *eroute;
+    cchar       *path;
 
     eroute = route->eroute;
-    return mprSaveJson(eroute->config, mprJoinPath(route->documents, BIT_ESP_CONFIG), MPR_JSON_PRETTY);
+    path = mprJoinPath(route->documents, BIT_ESP_CONFIG);
+    mprBackupLog(path, 3);
+    return mprSaveJson(eroute->config, path, MPR_JSON_PRETTY);
 }
 
 

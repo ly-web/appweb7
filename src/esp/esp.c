@@ -59,6 +59,7 @@ typedef struct App {
     int         keep;                   /* Keep source */ 
     int         generateApp;            /* Generating a new app */
     int         overwrite;              /* Overwrite existing files if required */
+    int         previous;               /* Previous install present */
     int         quiet;                  /* Don't trace progress */
     int         rebuild;                /* Force a rebuild */
     int         reverse;                /* Reverse migrations */
@@ -1314,7 +1315,12 @@ static void generateApp(int argc, char **argv)
             break;
         }
     }
-    if (!isalpha(*name) || *cp) {
+    if (smatch(name, ".")) {
+        if (!mprPathExists(BIT_ESP_CONFIG, R_OK)) {
+            fail("Cannot find ESP application in this directory");
+            return;
+        }
+    } else if (!isalpha(*name) || *cp) {
         fail("Cannot generate. Application name must be a valid C identifier");
         return;
     }
@@ -1950,6 +1956,17 @@ static void generateAppFiles()
     packs = mprGetJsonObj(eroute->config, "settings.packs", 0);
 
     /*
+        Blend existing esp.json if generating into a prior directory
+     */
+    path = mprJoinPath(route->documents, BIT_ESP_CONFIG);
+    if ((app->previous = mprPathExists(path, R_OK)) != 0) {
+        if ((newConfig = mprLoadJson(path)) != 0) {
+            mprBlendJson(newConfig, eroute->config, MPR_JSON_OVERWRITE);
+            eroute->config = newConfig;
+        }
+    }
+
+    /*
         Generate packs in reverse order (top-down) so that the top-level packs can install 
         files first which become the presiding versions.
     */
@@ -1973,7 +1990,6 @@ static void generateAppFiles()
             if (mprPathExists(config, R_OK)) {
                 if ((newConfig = mprLoadJson(config)) != 0) {
                     mprBlendJson(eroute->config, newConfig, MPR_JSON_OVERWRITE);
-
                 }
             }
         }
@@ -2017,7 +2033,7 @@ static void copyEspDir(cchar *fromDir, cchar *toDir)
             return;
         }
         if (mprPathExists(to, R_OK) && !app->overwrite) {
-            if (!app->generateApp) {
+            if (!app->generateApp || app->previous) {
                 trace("Exists",  "File: %s", mprGetRelPath(to, 0));
             }
         } else {
