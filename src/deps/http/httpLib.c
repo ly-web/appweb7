@@ -14866,6 +14866,7 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q) {}
 
 /********************************** Forwards  *********************************/
 
+static cchar *createSecurityToken(HttpConn *conn);
 static void manageSession(HttpSession *sp, int flags);
 
 /************************************* Code ***********************************/
@@ -14990,14 +14991,9 @@ PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create)
                 flags = (rx->route->flags & HTTP_ROUTE_VISIBLE_SESSION) ? 0 : HTTP_COOKIE_HTTP;
                 httpSetCookie(conn, HTTP_SESSION_COOKIE, rx->session->id, "/", NULL, rx->session->lifespan, flags);
             }
-            /*
-                Ensure XSRF token is preserved in the new session
-             */
             if (rx->route->flags & HTTP_ROUTE_XSRF) {
-                if ((httpCreateSecurityToken(conn)) == 0) {
-                    return 0;
-                }
-                httpSetSecurityToken(conn);
+                createSecurityToken(conn);
+                httpAddSecurityToken(conn);
             }
         }
     }
@@ -15146,13 +15142,26 @@ PUBLIC cchar *httpGetSessionID(HttpConn *conn)
 
     Note: the HttpSession API prevents session hijacking by pairing with the client IP
  */
-PUBLIC cchar *httpCreateSecurityToken(HttpConn *conn)
+static cchar *createSecurityToken(HttpConn *conn)
 {
     HttpRx      *rx;
 
     rx = conn->rx;
-    rx->securityToken = mprGetRandomString(32);
-    httpSetSessionVar(conn, BIT_XSRF_COOKIE, rx->securityToken);
+    assert(rx->route->flags & HTTP_ROUTE_XSRF);
+    rx->securityToken = 0;
+
+    /*
+        The call to httpSetSessionVar below may create a session which may call this function.
+        To eliminate a double call, get the session first.
+     */
+    if (!rx->session) {
+        /* httpGetSesion may call this function if it creates a session */ 
+        httpGetSession(conn, 1);
+    }
+    if (!rx->securityToken) {
+        rx->securityToken = mprGetRandomString(32);
+        httpSetSessionVar(conn, BIT_XSRF_COOKIE, rx->securityToken);
+    }
     return rx->securityToken;
 }
 
@@ -15169,7 +15178,7 @@ PUBLIC cchar *httpGetSecurityToken(HttpConn *conn)
     if (rx->securityToken == 0) {
         rx->securityToken = (char*) httpGetSessionVar(conn, BIT_XSRF_COOKIE, 0);
         if (rx->securityToken == 0) {
-            httpCreateSecurityToken(conn);
+            createSecurityToken(conn);
         }
     }
     return rx->securityToken;
@@ -15177,17 +15186,14 @@ PUBLIC cchar *httpGetSecurityToken(HttpConn *conn)
 
 
 /*
-    Set the security token cookie and header
+    Add the security token to a XSRF cookie and response header
  */
-PUBLIC int httpSetSecurityToken(HttpConn *conn) 
+PUBLIC int httpAddSecurityToken(HttpConn *conn) 
 {
     cchar   *securityToken;
 
     securityToken = httpGetSecurityToken(conn);
     httpSetCookie(conn, BIT_XSRF_COOKIE, securityToken, "/", NULL,  0, 0);
-    /*
-        Also include as a header to make it easy to extract in the client
-     */
     httpSetHeader(conn, BIT_XSRF_HEADER, securityToken);
     return 0;
 }
@@ -15195,7 +15201,7 @@ PUBLIC int httpSetSecurityToken(HttpConn *conn)
 
 /*
     Check the security token with the request. This must match the last generated token stored in the session state.
-    It is expected the client will set the X-XSRF-TOKEN header with the token or
+    It is expected the client will set the X-XSRF-TOKEN header with the token.
  */
 PUBLIC bool httpCheckSecurityToken(HttpConn *conn) 
 {
@@ -15214,7 +15220,10 @@ PUBLIC bool httpCheckSecurityToken(HttpConn *conn)
         if (!smatch(sessionToken, requestToken)) {
             /*
                 Potential CSRF attack. Deny request.
+                Re-create a new security token so legitimate clients can retry.
              */
+            createSecurityToken(conn);
+            httpAddSecurityToken(conn);
             return 0;
         }
     }

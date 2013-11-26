@@ -365,19 +365,19 @@ static int runAction(HttpConn *conn)
             }
         }
     }
-    if (rx->flags & HTTP_POST && route->flags & HTTP_ROUTE_XSRF) {
+    if (route->flags & HTTP_ROUTE_XSRF) {
         if (!httpCheckSecurityToken(conn)) {
-            httpCreateSecurityToken(conn);
-            httpSetSecurityToken(conn);
-            httpSetStatus(conn, HTTP_CODE_UNAUTHORIZED);
-            if (eroute->json) {
-                mprLog(2, "Security token is stale. Please reload page.");
-                espRenderString(conn, "{\"retry\": true, \"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
-                espFinalize(conn);
-            } else {
-                httpError(conn, HTTP_CODE_UNAUTHORIZED, "Security token is stale. Please reload page.");
+            if (rx->flags & HTTP_POST) {
+                httpSetStatus(conn, HTTP_CODE_UNAUTHORIZED);
+                if (eroute->json) {
+                    mprLog(2, "Security token is stale. Please reload page.");
+                    espRenderString(conn, "{\"retry\": true, \"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
+                    espFinalize(conn);
+                } else {
+                    httpError(conn, HTTP_CODE_UNAUTHORIZED, "Security token is stale. Please reload page.");
+                }
+                return 0;
             }
-            return 0;
         }
     }
     if (action) {
@@ -516,7 +516,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     }
     httpAddHeaderString(conn, "Content-Type", "text/html");
     if (rx->route->flags & HTTP_ROUTE_XSRF) {
-        httpSetSecurityToken(conn);
+        httpAddSecurityToken(conn);
     }
     (view)(conn);
 }

@@ -642,7 +642,7 @@ PUBLIC void scripts(cchar *patterns)
  */
 PUBLIC void securityToken()
 {
-    httpSetSecurityToken(getConn());
+    httpAddSecurityToken(getConn());
 }
 #endif
 
