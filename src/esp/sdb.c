@@ -24,7 +24,6 @@
 typedef struct Sdb {
     Edi             edi;            /**< EDI database interface structure */
     sqlite3         *db;            /**< SQLite database handle */
-    MprHash         *validations;   /**< Validations */
     MprHash         *schemas;       /**< Table schemas */
 } Sdb;
 
@@ -63,6 +62,7 @@ static char *dataTypeToSqlType[] = {
 
 /************************************ Forwards ********************************/
 
+static void cloneValidations(Edi *edi, Edi *base);
 static EdiRec *createBareRec(Edi *edi, cchar *tableName, int nfields);
 static EdiField makeRecField(cchar *value, cchar *name, int type);
 static void manageSdb(Sdb *sdb, int flags);
@@ -100,16 +100,14 @@ static int sdbSave(Edi *edi);
 static void sdbTrace(Edi *edi, int level, cchar *fmt, ...);
 static int sdbUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName, cchar *value);
 static int sdbUpdateRec(Edi *edi, EdiRec *rec);
-static bool sdbValidateRec(Edi *edi, EdiRec *rec);
-static bool validateField(Sdb *sdb, EdiRec *rec, cchar *tableName, cchar *columnName, cchar *value);
 static bool validName(cchar *str);
 
 static EdiProvider SdbProvider = {
     "sdb",
-    sdbAddColumn, sdbAddIndex, sdbAddTable, sdbAddValidation, sdbChangeColumn, sdbClose, sdbCreateRec, sdbDelete, 
+    sdbAddColumn, sdbAddIndex, sdbAddTable, sdbChangeColumn, sdbClose, sdbCreateRec, sdbDelete, 
     sdbGetColumns, sdbGetColumnSchema, sdbGetTables, sdbGetTableDimensions, NULL, sdbLookupField, sdbOpen, sdbQuery, 
     sdbReadField, sdbReadRec, sdbReadWhere, sdbRemoveColumn, sdbRemoveIndex, sdbRemoveRec, sdbRemoveTable, 
-    sdbRenameTable, sdbRenameColumn, sdbSave, sdbUpdateField, sdbUpdateRec, sdbValidateRec,
+    sdbRenameTable, sdbRenameColumn, sdbSave, sdbUpdateField, sdbUpdateRec,
 };
 
 /************************************* Code ***********************************/
@@ -134,8 +132,9 @@ static Sdb *sdbCreate(cchar *path, int flags)
     sdb->edi.provider = &SdbProvider;
     sdb->edi.path = sclone(path);
     sdb->edi.schemaCache = mprCreateHash(0, 0);
+    sdb->edi.validations = mprCreateHash(0, 0);
+    sdb->edi.mutex = mprCreateLock();
     sdb->schemas = mprCreateHash(0, MPR_HASH_STABLE);
-    sdb->validations = mprCreateHash(0, MPR_HASH_STABLE);
     return sdb;
 }
 
@@ -146,8 +145,9 @@ static void manageSdb(Sdb *sdb, int flags)
         mprMark(sdb->edi.path);
         mprMark(sdb->edi.schemaCache);
         mprMark(sdb->edi.errMsg);
+        mprMark(sdb->edi.mutex);
+        mprMark(sdb->edi.validations);
         mprMark(sdb->schemas);
-        mprMark(sdb->validations);
 
     } else if (flags & MPR_MANAGE_FREE) {
         sdbClose((Edi*) sdb);
@@ -317,10 +317,10 @@ static int sdbAddTable(Edi *edi, cchar *tableName)
      */
     removeSchema(edi, tableName);
     return query(edi, sfmt("CREATE TABLE %s (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL);", tableName), NULL) != 0;
-
 }
 
 
+#if UNUSED
 static int sdbAddValidation(Edi *edi, cchar *tableName, cchar *columnName, EdiValidation *vp)
 {
     Sdb             *sdb;
@@ -336,9 +336,9 @@ static int sdbAddValidation(Edi *edi, cchar *tableName, cchar *columnName, EdiVa
 
     sdb = (Sdb*) edi;
     vkey = sfmt("%s.%s", tableName, columnName);
-    if ((validations = mprLookupKey(sdb->validations, vkey)) == 0) {
+    if ((validations = mprLookupKey(sdb->edi.validations, vkey)) == 0) {
         validations = mprCreateList(0, MPR_LIST_STABLE);
-        mprAddKey(sdb->validations, vkey, validations);
+        mprAddKey(sdb->edi.validations, vkey, validations);
     }
     for (ITERATE_ITEMS(validations, prior, next)) {
         if (prior->vfn == vp->vfn) {
@@ -350,6 +350,7 @@ static int sdbAddValidation(Edi *edi, cchar *tableName, cchar *columnName, EdiVa
     }
     return 0;
 }
+#endif
 
 
 static int sdbChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags)
@@ -618,6 +619,7 @@ static int sdbSave(Edi *edi)
 }
 
 
+#if UNUSED
 static bool sdbValidateRec(Edi *edi, EdiRec *rec)
 {
     Sdb         *sdb;
@@ -639,6 +641,7 @@ static bool sdbValidateRec(Edi *edi, EdiRec *rec)
     }
     return pass;
 }
+#endif
 
 
 /*
@@ -697,7 +700,7 @@ static int sdbUpdateRec(Edi *edi, EdiRec *rec)
     cchar       **argv;
     int         argc, f;
 
-    if (!sdbValidateRec(edi, rec)) {
+    if (!ediValidateRec(rec)) {
         return MPR_ERR_CANT_WRITE;
     }
     if ((argv = mprAlloc(((rec->nfields * 2) + 2) * sizeof(cchar*))) == 0) {
@@ -888,7 +891,8 @@ static EdiGrid *queryv(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list var
 }
 
 
-static bool validateField(Sdb *sdb, EdiRec *rec, cchar *tableName, cchar *columnName, cchar *value)
+#if UNUSED
+static bool validateField(Sdb *sdb, EdiRec *rec, cchar *columnName, cchar *value)
 {
     EdiValidation   *vp;
     MprList         *validations;
@@ -898,12 +902,11 @@ static bool validateField(Sdb *sdb, EdiRec *rec, cchar *tableName, cchar *column
 
     assert(sdb);
     assert(rec);
-    assert(tableName && *tableName);
     assert(columnName && *columnName);
 
     pass = 1;
-    vkey = sfmt("%s.%s", tableName, columnName);
-    if ((validations = mprLookupKey(sdb->validations, vkey)) != 0) {
+    vkey = sfmt("%s.%s", rec->tableName, columnName);
+    if ((validations = mprLookupKey(sdb->edi.validations, vkey)) != 0) {
         for (ITERATE_ITEMS(validations, vp, next)) {
             if ((error = (*vp->vfn)(vp, rec, columnName, value)) != 0) {
                 if (rec->errors == 0) {
@@ -916,6 +919,7 @@ static bool validateField(Sdb *sdb, EdiRec *rec, cchar *tableName, cchar *column
     }
     return pass;
 }
+#endif
 
 
 static EdiRec *createBareRec(Edi *edi, cchar *tableName, int nfields)

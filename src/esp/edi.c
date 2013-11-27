@@ -16,6 +16,7 @@ static void addValidations();
 static void formatFieldForJson(MprBuf *buf, EdiField *fp);
 static void manageEdiService(EdiService *es, int flags);
 static void manageEdiGrid(EdiGrid *grid, int flags);
+static bool validateField(Edi *edi, EdiRec *rec, cchar *columnName, cchar *value);
 
 /************************************* Code ***********************************/
 
@@ -91,9 +92,10 @@ static void manageValidation(EdiValidation *vp, int flags)
 PUBLIC int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *columnName, cvoid *data)
 {
     EdiService          *es;
-    EdiValidation       *vp; 
-    cchar               *errMsg;
-    int                 column;
+    EdiValidation       *prior, *vp; 
+    MprList             *validations;
+    cchar               *errMsg, *vkey;
+    int                 column, next;
 
     //  FUTURE - should not be attached to "es". Should be unique per database.
     es = MPR->ediService;
@@ -117,7 +119,52 @@ PUBLIC int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *colu
         data = 0;
     }
     vp->data = data;
-    return edi->provider->addValidation(edi, tableName, columnName, vp);
+    vkey = sfmt("%s.%s", tableName, columnName);
+
+    lock(edi);
+    if ((validations = mprLookupKey(edi->validations, vkey)) == 0) {
+        validations = mprCreateList(0, MPR_LIST_STABLE);
+        mprAddKey(edi->validations, vkey, validations);
+    }
+    for (ITERATE_ITEMS(validations, prior, next)) {
+        if (prior->vfn == vp->vfn) {
+            break;
+        }
+    }
+    if (!prior) {
+        mprAddItem(validations, vp);
+    }
+    unlock(edi);
+    return 0;
+}
+
+
+static bool validateField(Edi *edi, EdiRec *rec, cchar *columnName, cchar *value)
+{
+    EdiValidation   *vp;
+    MprList         *validations;
+    cchar           *error, *vkey;
+    int             next;
+    bool            pass;
+
+    assert(edi);
+    assert(rec);
+    assert(columnName && *columnName);
+
+    pass = 1;
+    vkey = sfmt("%s.%s", rec->tableName, columnName);
+    if ((validations = mprLookupKey(edi->validations, vkey)) != 0) {
+        for (ITERATE_ITEMS(validations, vp, next)) {
+            if ((error = (*vp->vfn)(vp, rec, columnName, value)) != 0) {
+                if (rec->errors == 0) {
+                    rec->errors = mprCreateHash(0, MPR_HASH_STABLE);
+                }
+                mprAddKey(rec->errors, columnName, sfmt("%s %s", columnName, error));
+                pass = 0;
+            }
+        }
+    }
+    return pass;
 }
 
 
@@ -497,10 +544,15 @@ PUBLIC Edi *ediOpen(cchar *path, cchar *providerName, int flags)
 
 PUBLIC Edi *ediClone(Edi *edi)
 {
+    Edi     *cloned;
+
     if (!edi) {
         return 0;
     }
-    return ediOpen(edi->path, edi->provider->name, edi->flags);
+    if ((cloned = edi->provider->open(edi->path, edi->flags)) != 0) {
+        cloned->validations = edi->validations;
+    }
+    return cloned;
 }
 
 
@@ -652,11 +704,23 @@ PUBLIC int ediUpdateRec(Edi *edi, EdiRec *rec)
 
 PUBLIC bool ediValidateRec(EdiRec *rec)
 {
+    EdiField    *fp;
+    bool        pass;
+    int         c;
+
     assert(rec->edi);
     if (rec == 0 || rec->edi == 0) {
         return 0;
     }
-    return rec->edi->provider->validateRec(rec->edi, rec);
+    pass = 1;
+    for (c = 0; c < rec->nfields; c++) {
+        fp = &rec->fields[c];
+        if (!validateField(rec->edi, rec, fp->name, fp->value)) {
+            pass = 0;
+            /* Keep going */
+        }
+    }
+    return pass;
 }
 
 

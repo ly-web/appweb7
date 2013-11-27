@@ -31,7 +31,9 @@ extern "C" {
     Per column structure
  */
 typedef struct MdbCol {
+#if UNUSED
     MprList         *validations;       /* List of column validations */
+#endif
     char            *name;              /* Column name */
     int             type;               /* Column type */
     int             flags;              /* Column flags */
@@ -90,6 +92,7 @@ typedef struct Mdb {
     MdbCol          *loadCol;           /* Current column */
     MdbRow          *loadRow;           /* Current row */
     MprList         *loadStack;         /* State stack */
+    MprHash         *validations;       /**< Validations */
     int             loadCid;            /* Current column index to load */
     int             loadState;          /* Current state */
     int             loadNcols;          /* Expected number of cols */
