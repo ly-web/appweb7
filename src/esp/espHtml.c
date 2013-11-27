@@ -105,14 +105,16 @@ PUBLIC void renderSecurityToken()
 static cchar *getValue(HttpConn *conn, cchar *fieldName, MprHash *options)
 {
     EdiRec      *record;
+    EspRoute    *eroute;
     cchar       *value;
 
     record = conn->record;
+    eroute = conn->rx->route->eroute;
     value = 0;
     if (record) {
         value = ediGetFieldValue(record, fieldName);
 #if BIT_ESP_LEGACY
-        if (record->errors) {
+        if (record->errors && eroute->legacy) {
             MprKey  *field;
             cchar   *msg;
             #define ESTYLE(s) "esp-" s 

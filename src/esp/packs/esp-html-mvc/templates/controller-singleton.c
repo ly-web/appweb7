@@ -8,9 +8,10 @@
  */
 static void create${TITLE}() { 
     if (updateRec(createRec("${NAME}", params()))) {
-        flash("inform", "New ${NAME} created");
+        flash("inform", "New ${NAME} Created");
         renderView("${NAME}/${NAME}-list");
     } else {
+        flash("error", "Cannot Create ${TITLE}");
         renderView("${NAME}/${NAME}-edit");
     }
 }
@@ -43,7 +44,7 @@ static void init${TITLE}() {
  */
 static void remove${TITLE}() { 
     if (removeRec("${NAME}", param("id"))) {
-        flash("inform", "${TITLE} removed");
+        flash("inform", "${TITLE} Removed");
     }
     redirect("list");
 }
@@ -58,9 +59,10 @@ static void update${TITLE}() {
         removePost();
     } else {
         if (updateFields("${NAME}", params())) {
-            flash("inform", "${TITLE} updated successfully.");
+            flash("inform", "${TITLE} Updated Successfully");
             redirect("list");
         } else {
+            flash("error", "Cannot Update ${TITLE}");
             renderView("${NAME}/${NAME}-edit");
         }
     }

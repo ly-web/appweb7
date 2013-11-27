@@ -1036,7 +1036,7 @@ PUBLIC void espSetFlash(HttpConn *conn, cchar *kind, cchar *fmt, ...)
 PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
 {
     EspReq      *req;
-    cchar       *prior, *msg;
+    cchar       *msg;
 
     req = conn->data;
     msg = sfmtv(fmt, args);
@@ -1044,11 +1044,7 @@ PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
     if (req->flash == 0) {
         req->flash = mprCreateHash(0, MPR_HASH_STABLE);
     }
-    if ((prior = mprLookupKey(req->flash, kind)) != 0) {
-        mprAddKey(req->flash, kind, sjoin(prior, "\n", msg, NULL));
-    } else {
-        mprAddKey(req->flash, kind, sclone(msg));
-    }
+    mprAddKey(req->flash, kind, sclone(msg));
     /*
         Create a session as early as possible so a Set-Cookie header can be omitted.
      */

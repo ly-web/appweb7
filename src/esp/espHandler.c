@@ -129,7 +129,7 @@ static void pruneFlash(HttpConn *conn)
     if (req->flash && req->lastFlash) {
         for (ITERATE_KEYS(req->flash, kp)) {
             for (ITERATE_KEYS(req->lastFlash, lp)) {
-                if (smatch(kp->key, lp->key) && kp->data == lp->data) {
+                if (smatch(kp->key, lp->key) /* UNUSED && kp->data == lp->data */) {
                     mprRemoveKey(req->flash, kp->key);
                 }
             }
