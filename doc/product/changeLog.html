@@ -64,41 +64,66 @@
             Please see the <a href="http://github.com/embedthis/appweb-4/issues">Appweb Issue Database</a> 
             for the official product issue list and for comprehensive CVE dispositions.</p>
         
-            <a id="r4.4.5"></a>
-            <h2 class="section">Changes in 4.4.5</h2>
-            <h3>Minor Features</h3>
+            <a id="r4.5.0"></a>
+            <h2 class="section">Changes in 4.5.0</h2>
+            <h3>Major Features</h3>
             <ul>
-                <li>Optimize generated ESP angular-mvc apps
+                <li>Big upgrade for ESP application frameworks.
                     <a href="https://github.com/embedthis/appweb-4/issues/237">[issue 237]</a>.
                     Changes include:
                     <ul>
-                    <li>Rename Esp.js to esp.js</li>
-                    <li>Simplify generated client-side controllers</li>
-                    <li>Remap generated JSON structure to simplify Angular consumption of JSON responses</li>
-                    <li>Add routePrefix to esp.json and update esp.js to automatically parse and include in all routes</li>
-                    <li>Add esp-click attribute for elements without hrefs</li>
-                    <li>Add esp-resource to wrap $resource</li>
-                    <li>Add esp-confirm for modal confirmations</li>
+                        <li>Complete support for ESP <a href="http://angularjs.org">AngularJS</a> MVC applications.</li>
+                        <li>New simplified support for server-side ESP MVC applications.</li>
+                        <li>Enhanced ESP application generator with extension packages.</li>
+                        <li>Universal configuration file for ESP applications in "esp.json".</li>
+                        <li>Updated and extended samles.</li>
+                        <li>Simplify generated client-side controllers</li>
+                        <li>Optimize generated JSON structure to simplify Angular consumption of JSON responses</li>
+                        <li>Rename ESP Angular Esp.js to esp.js</li>
+                        <li>Add routePrefix to esp.json and update esp.js to automatically parse and include in all routes</li>
+                        <li>Add esp-click attribute for elements without hrefs</li>
+                        <li>Add esp-resource to communicate with ESP server-side controllers</li>
+                        <li>Add esp-confirm for modal confirmations</li>
                     </ul>
                 </li>
             </ul>
             <h3>Fixes</h3>
             <ul>
-                <li>Rename readRecsWhere to readWhere to be consistent with EDI API.
-                    <a href="https://github.com/embedthis/appweb-4/issues/236">[issue 236]</a></li>
                 <li>Add Reroute directive. Revert Route directive to not open previously defined routes.
                     <a href="https://github.com/embedthis/appweb-4/issues/238">[issue 238]</a></li>
                 <li>Add BIT_MPR_SSL_RENEGOTIATE option (config: mpr.ssl.renegotiate) to control SSL renegotiation.
                     Renegotiation is enabled by default. 
                     <a href="https://github.com/embedthis/appweb-4/issues/240">[issue 240]</a></li>
-                <li>Rename libsqlite3 to libsql to avoid clashing with existing SQLite libraries.
-                    <a href="https://github.com/embedthis/appweb-4/issues/242">[issue 242]</a></li>
+                <li>JSON parser handling of embedded quotes and backslashes
+                <li>Mdb database saving of field values in JSON with embedded quotes and backslashes </li>
+                <li>Improve XSRF security token handling adding transparent regeneration if possible. </li>
+                <li>Early detection of bad characters in URIs. This tightens request URI validation 
+                    of invalid URIs that were previously permitted.</li>
             </ul>
             <h3>Incompatible Changes</h3>
             <ul>
+                <li>Rename libsqlite3 to libsql to avoid clashing with existing SQLite libraries.
+                    <a href="https://github.com/embedthis/appweb-4/issues/242">[issue 242]</a></li>
+                <li>Rename readRecsWhere to readWhere to be consistent with EDI API.
+                    <a href="https://github.com/embedthis/appweb-4/issues/236">[issue 236]</a></li>
                 <li>Add body argument to mprRunCmd to write data to spawned command.
                     <a href="https://github.com/embedthis/appweb-4/issues/239">[issue 239]</a></li>
+                <li>Rename config.json to esp.json
+                <li>Deprecate the prior ESP MVC skeleton. It is renamed to esp-legacy-mvc.  </li>
+                <li>Move views by default under client/app. The EspDir directive can be used to modify the views directory.</li>
+                <li>Move layouts under client/layouts. The Espdir directive can be used to modify the layouts directory.</li>
+                <li>Renamed the old ESP pack from angular-mvc to esp-angular-mvc. All ESP packs now take an "esp-" prefix.</li>
+                <li>Changed default generated application skeleton from "esp-legacy-mvc" to "server". This permits the generation 
+                    of non-MVC applications that consist only of server-side controllers.</li>
+                <li>Fix calls to renderFlash with incorrect arg count</li>
+                <li>Change ESP server-side controller entry point from esp_module_NAME, to esp_controller_APP_CONTROLLER.
+                    Also, ESP application source modules include the app name in the entry point. This is to resolve init 
+                    entry point name clashes when hosting multiple applications.</li>
+                <li>Rename APIs that send JSON from renderResult, renderGrid, renderRec to use a send prefix instead of render. 
+                    This is to clarify which APIs send HTML and which send JSON. The render* APIs send HTML and raw data. 
+                    The send* APIs send JSON.</li>
             </ul>
+
             <a id="r4.4.4"></a>
             <h2 class="section">Changes in 4.4.4</h2>
             <h3>Fixes</h3>
@@ -113,6 +138,10 @@
                     <a href="https://github.com/embedthis/appweb-4/issues/249">[issue 249]</a></li>
                 <li>Linux 2.4 compilation
                     <a href="https://github.com/embedthis/appweb-4/issues/245">[issue 245]</a></li>
+                <li>Legacy-mvc application fails to compile because default.esp uses renderFlash with too many args.
+                    <a href="https://github.com/embedthis/appweb-4/issues/251">[issue 251]</a></li>
+                <li>Fix httpStealConn freeing of connection socket.
+                    <a href="https://github.com/embedthis/appweb-4/issues/252">[issue 252]</a></li>
             </ul>
             <a id="r4.4.3"></a>
             <h2 class="section">Changes in 4.4.3</h2>
