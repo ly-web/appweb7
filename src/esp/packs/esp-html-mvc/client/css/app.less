@@ -64,11 +64,15 @@ main.container {
 }
 
 .col-md-10 {
-    width: 83.33333333333334%;
+    width: 70%;
 }
 
 .form-group {
     margin-bottom: 15px;
+}
+
+.control-label {
+    font-weight: bold;
 }
 
 .form-control {
@@ -92,26 +96,18 @@ main.container {
     transition: all border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s ease-out;
 }
 
-.form-error {
-    width: 500px;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    text-indent: 10px;
-    border: 2px solid @error-color;
-    h2 {
-        margin: 0 0 10px 0;
-        padding: 10px 0 10px 0;
-        font-size: @font-size-small;
-        color: white;
-        background-color: @error-color;
-    }
-    ul {
-        margin-bottom: 0;
-    }
+.has-error .form-control {
+    border: 2px solid @error-color !important;
 }
 
-.field-error {
-    border: 2px solid @error-color !important;
+.has-error .field-error {
+    color: @error-color;
+    background-color: #FFF;
+    position: relative;
+    top: -35px;
+    left: 100%;
+    margin-left: 40px;
+    font-weight: bold;
 }
 
 .feedback {
@@ -119,7 +115,7 @@ main.container {
     top: 0;
     left: 50%;
     width: 500px;
-    height: 41px;
+    height: 31px;
     margin: 0 0 0 -250px;
     padding: 8px 3px 3px 3px;
     color: white;
@@ -132,6 +128,7 @@ main.container {
 
 .feedback-error {
     .feedback();
+    background: #FF0000;
     font-weight: bold;
 }
 
