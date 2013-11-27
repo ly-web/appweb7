@@ -139,9 +139,9 @@ PUBLIC void httpInitAuth(Http *http)
     httpAddAuthType("basic", httpBasicLogin, httpBasicParse, httpBasicSetHeaders);
     httpAddAuthType("digest", httpDigestLogin, httpDigestParse, httpDigestSetHeaders);
     httpAddAuthType("form", formLogin, NULL, NULL);
+    httpAddAuthStore("app", NULL);
 
 #if BIT_HAS_PAM && BIT_HTTP_PAM
-    httpAddAuthStore("app", NULL);
     httpAddAuthStore("system", httpPamVerifyUser);
 #endif
     httpAddAuthStore("internal", fileVerifyUser);
@@ -2793,10 +2793,11 @@ PUBLIC MprSocket *httpStealConn(HttpConn *conn)
 {
     MprSocket   *sock;
 
-    sock = conn->sock;
+    if ((sock = conn->sock) != 0) {
+        mprRemoveSocketHandler(sock);
+    }
     conn->sock = 0;
 
-    mprRemoveSocketHandler(conn->sock);
     if (conn->http) {
         lock(conn->http);
         httpRemoveConn(conn->http, conn);
