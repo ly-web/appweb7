@@ -64,8 +64,9 @@ ESP_EXPORT int esp_controller_blog_post(HttpRoute *route, MprModule *module) {
     edi = espGetRouteDatabase(route);
     ediAddValidation(edi, "present", "post", "title", 0);
     ediAddValidation(edi, "unique", "post", "title", 0);
+    ediAddValidation(edi, "banned", "post", "body", "(swear|curse)");
 
-#if FUTURE || 1
+#if FUTURE
     /*
         Regular expression to check the format of a field. This example requires posts to mention dog or cat.
      */
