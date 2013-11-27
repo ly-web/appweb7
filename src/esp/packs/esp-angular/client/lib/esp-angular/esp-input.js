@@ -58,7 +58,7 @@ angular.module('esp.input', [])
             scope.$watch('schema', function (val) {
                 if (scope.schema && element.parent().length && element.children().length == 0) {
                     var dataType = scope.schema.types[field].type;
-                    var inputClass = (attrs.inputClass) ? attrs.inputClass : 'col-xs-8';
+                    var inputClass = (attrs.inputClass) ? attrs.inputClass : 'col-xs-6';
                     var errorHighlight = " ng-class='{\"has-error\": fieldErrors." + field + "}'";
                     var label = attrs.label ? attrs.label : title(field);
                     var labelClass = (attrs.labelClass) ? attrs.labelClass : 'col-xs-3';
