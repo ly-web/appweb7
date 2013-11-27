@@ -56,5 +56,13 @@ ESP_EXPORT int esp_controller_${APP}_${NAME}(HttpRoute *route, MprModule *module
     espDefineAction(route, "${NAME}-list", list${TITLE});
     espDefineAction(route, "${NAME}-remove", remove${TITLE});
     espDefineAction(route, "${NAME}-update", update${TITLE});
-${DEFINE_ACTIONS}    return 0;
+${DEFINE_ACTIONS}    
+#if SAMPLE_VALIDATIONS
+    Edi *edi = espGetRouteDatabase(route);
+    ediAddValidation(edi, "present", "${NAME}", "title", 0);
+    ediAddValidation(edi, "unique", "${NAME}", "title", 0);
+    ediAddValidation(edi, "banned", "${NAME}", "body", "(swear|curse)");
+    ediAddValidation(edi, "format", "${NAME}", "phone", "/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/");
+#endif
+    return 0;
 }

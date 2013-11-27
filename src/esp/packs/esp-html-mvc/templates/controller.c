@@ -94,7 +94,8 @@ ${DEFINE_ACTIONS}
     Edi *edi = espGetRouteDatabase(route);
     ediAddValidation(edi, "present", "${NAME}", "title", 0);
     ediAddValidation(edi, "unique", "${NAME}", "title", 0);
-    ediAddValidation(edi, "format", "${NAME}", "message", "(dog|cat)");
+    ediAddValidation(edi, "banned", "${NAME}", "body", "(swear|curse)");
+    ediAddValidation(edi, "format", "${NAME}", "phone", "/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/");
 #endif
     return 0;
 }

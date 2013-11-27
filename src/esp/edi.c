@@ -105,7 +105,7 @@ PUBLIC int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *colu
         mprError("Cannot find validation '%s'", name);
         return MPR_ERR_CANT_FIND;
     }
-    if (smatch(name, "format")) {
+    if (smatch(name, "format") || smatch(name, "banned")) {
         if (!data || ((char*) data)[0] == '\0') {
             mprError("Bad validation format pattern for %s", name);
             return MPR_ERR_BAD_SYNTAX;
@@ -1327,6 +1327,17 @@ static cchar *checkFormat(EdiValidation *vp, EdiRec *rec, cchar *fieldName, ccha
 }
 
 
+static cchar *checkBanned(EdiValidation *vp, EdiRec *rec, cchar *fieldName, cchar *value)
+{
+    int     matched[BIT_MAX_ROUTE_MATCHES * 2];
+
+    if (pcre_exec(vp->mdata, NULL, value, (int) slen(value), 0, 0, matched, sizeof(matched) / sizeof(int)) > 0) {
+        return "contains banned content";
+    }
+    return 0;
+}
+
+
 static cchar *checkInteger(EdiValidation *vp, EdiRec *rec, cchar *fieldName, cchar *value)
 {
     if (value && *value) {
@@ -1429,6 +1440,7 @@ static void addValidations()
     es->validations = mprCreateHash(0, MPR_HASH_STATIC_VALUES);
     ediDefineValidation("boolean", checkBoolean);
     ediDefineValidation("format", checkFormat);
+    ediDefineValidation("banned", checkBanned);
     ediDefineValidation("integer", checkInteger);
     ediDefineValidation("number", checkNumber);
     ediDefineValidation("present", checkPresent);

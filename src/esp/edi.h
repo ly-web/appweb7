@@ -290,6 +290,7 @@ PUBLIC int ediAddTable(Edi *edi, cchar *tableName);
         using builtin validators.
     @param edi Database handle
     @param name Validation name. Select from: 
+        @arg banned -- to validate field data against a regular express for banned content.
         @arg boolean -- to validate field data as "true" or "false"
         @arg date -- to validate field data as a date or time.
         @arg format -- to validate field data against a regular expression supplied in the "data" argument
