@@ -500,9 +500,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
     if (!eroute->config) {
 #if BIT_ESP_LEGACY
         if (!mprPathExists(cpath, R_OK)) {
-            if (eroute->appName) {
-                mprLog(0, "App %s is missing %s, switching to esp-legacy-mvc mode", eroute->appName, cpath);
-            }
+            mprLog(0, "Missing %s, switching to esp-legacy-mvc mode", cpath);
             eroute->legacy = 1;
         } else 
 #endif

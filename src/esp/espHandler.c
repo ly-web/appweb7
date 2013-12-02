@@ -550,7 +550,7 @@ static int loadApp(HttpRoute *route, MprDispatcher *dispatcher)
     cchar       *canonical, *source, *cacheName, *appName;
 
     eroute = route->eroute;
-    if (!eroute->appName) {
+    if (eroute->appName == 0 || *eroute->appName == '\0') {
         return 0;
     }
     appName = eroute->appName ? eroute->appName : route->host->name;
@@ -562,6 +562,7 @@ static int loadApp(HttpRoute *route, MprDispatcher *dispatcher)
     } else {
         source = mprJoinPath(eroute->srcDir, "app.c");
         if (!mprPathExists(source, R_OK)) {
+mprLog(0, "AN %s", eroute->appName);
             mprError("Cannot find %s", source);
             return 0;
         }
