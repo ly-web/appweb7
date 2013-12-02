@@ -24,17 +24,14 @@ http.close()
 
 //  POST /session/login
 http.setCookie(cookie)
-// http.setHeader("__esp_security_token__", securityToken)
 http.setHeader("X-XSRF-TOKEN", securityToken)
 http.form(HTTP + "/session/login", { 
-    __esp_security_token__: securityToken,
     username: "admin", 
     password: "secret", 
     color: "blue" 
 })
 assert(http.status == 200)
 assert(http.response.contains("Valid Login"))
-assert(!http.sessionCookie)
 // print("STATUS", http.status)
 // dump("\nXX PRIOR HEADERS", http.headers)
 // print("PRIOR RESPONSE: \"" + http.response + "\"")
