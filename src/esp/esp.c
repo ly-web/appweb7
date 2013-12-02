@@ -26,7 +26,7 @@ typedef struct App {
     cchar       *flatPath;              /* Output filename for flat compilations */
 
     cchar       *binDir;                /* Appweb bin directory */
-    cchar       *espDir;                /* ESP packs directory */
+    cchar       *packDir;               /* ESP packs directory */
     cchar       *listen;                /* Listen endpoint for "esp run" */
     cchar       *platform;              /* Target platform os-arch-profile (lower) */
     cchar       *topPack;               /* Top level pack */
@@ -40,6 +40,7 @@ typedef struct App {
     MprList     *build;                 /* Items to build */
     MprList     *slink;                 /* List of items for static link */
     MprHash     *targets;               /* Command line targets */
+    MprHash     *upgraded;              /* Set of upgraded files */
     EdiGrid     *migrations;            /* Migrations table */
 
     cchar       *command;               /* Compilation or link command */
@@ -59,13 +60,14 @@ typedef struct App {
     int         keep;                   /* Keep source */ 
     int         generateApp;            /* Generating a new app */
     int         overwrite;              /* Overwrite existing files if required */
-    int         previous;               /* Previous install present */
+    int         priorInstall;           /* Generating into an existing application directory */
     int         quiet;                  /* Don't trace progress */
     int         rebuild;                /* Force a rebuild */
     int         reverse;                /* Reverse migrations */
     int         show;                   /* Show compilation commands */
     int         singleton;              /* Generate a singleton resource controller */
     int         staticLink;             /* Use static linking */
+    int         upgrade;                /* Upgrade */
     int         verbose;                /* Verbose mode */
     int         why;                    /* Why rebuild */
 } App;
@@ -122,6 +124,7 @@ static bool requiredRoute(HttpRoute *route);
 static void run(int argc, char **argv);
 static bool selectResource(cchar *path, cchar *kind);
 static void trace(cchar *tag, cchar *fmt, ...);
+static void upgrade(int argc, char **argv);
 static void usageError();
 static void vtrace(cchar *tag, cchar *fmt, ...);
 static void why(cchar *path, cchar *fmt, ...);
@@ -333,7 +336,7 @@ static void manageApp(App *app, int flags)
         mprMark(app->flatPath);
         mprMark(app->genlink);
         mprMark(app->binDir);
-        mprMark(app->espDir);
+        mprMark(app->packDir);
         mprMark(app->listen);
         mprMark(app->module);
         mprMark(app->mpr);
@@ -350,6 +353,7 @@ static void manageApp(App *app, int flags)
         mprMark(app->serverRoot);
         mprMark(app->targets);
         mprMark(app->table);
+        mprMark(app->upgraded);
     }
 }
 
@@ -380,7 +384,7 @@ static void initialize()
 {
     app->currentDir = mprGetCurrentPath();
     app->binDir = mprGetAppDir();
-    app->espDir = mprJoinPath(mprGetAppDir(), "../esp");
+    app->packDir = mprJoinPath(mprGetAppDir(), "../esp");
     httpCreate(HTTP_SERVER_SIDE | HTTP_UTILITY);
 }
 
@@ -671,8 +675,13 @@ static void process(int argc, char **argv)
         app->routes = getRoutes();
         run(argc - 1, &argv[1]);
 
+    } else if (smatch(cmd, "upgrade")) {
+        app->routes = getRoutes();
+        upgrade(argc - 1, &argv[1]);
+
     } else if (cmd && *cmd) {
         fail("Unknown command %s", cmd);
+        usageError();
 
     } else {
         usageError();
@@ -724,6 +733,31 @@ static void run(int argc, char **argv)
         return;
     }
     mprWaitForCmd(cmd, -1);
+}
+
+
+static void upgrade(int argc, char **argv)
+{
+    HttpRoute   *route;
+    EspRoute    *eroute;
+    MprJson     *packs, *pack;
+    cchar       *path;
+    int         index;
+
+    app->upgrade = 1;
+    app->upgraded = mprCreateHash(0, 0);
+    route = app->route;
+    eroute = app->eroute;
+    packs = mprGetJsonObj(eroute->config, "settings.packs", 0);
+    pack = packs->children->prev;
+    for (index = 0; index < packs->length; index++, pack = pack->prev) {
+        path = mprJoinPath(app->packDir, pack->name);
+        if (!mprPathExists(path, X_OK)) {
+            continue;
+        }
+        copyEspDir(path, route->documents);
+    }
+    app->upgrade = 0;
 }
 
 
@@ -1261,7 +1295,7 @@ static void addDeps(cchar *pack)
     cchar       *path, *cpath;
     int         i;
 
-    path = mprJoinPath(app->espDir, pack);
+    path = mprJoinPath(app->packDir, pack);
     if (!mprPathExists(path, X_OK)) {
         fail("Cannot find pack \"%s\"", pack);
         return;
@@ -1959,7 +1993,7 @@ static void generateAppFiles()
         Blend existing esp.json if generating into a prior directory
      */
     path = mprJoinPath(route->documents, BIT_ESP_CONFIG);
-    if ((app->previous = mprPathExists(path, R_OK)) != 0) {
+    if ((app->priorInstall = mprPathExists(path, R_OK)) != 0) {
         if ((newConfig = mprLoadJson(path)) != 0) {
             mprBlendJson(newConfig, eroute->config, MPR_JSON_OVERWRITE);
             eroute->config = newConfig;
@@ -1973,7 +2007,7 @@ static void generateAppFiles()
     if (packs) {
         cp = packs->children->prev;
         for (i = 0; i < packs->length; i++, cp = cp->prev) {
-            path = mprJoinPath(app->espDir, cp->name);
+            path = mprJoinPath(app->packDir, cp->name);
             if (!mprPathExists(path, X_OK)) {
                 fail("Cannot find pack \"%s\"", cp->name);
                 return;
@@ -1985,7 +2019,7 @@ static void generateAppFiles()
             Blend new pack config files. Do in forward order and overwrite existing keys.
          */
         for (ITERATE_JSON(packs, cp, i)) {
-            path = mprJoinPath(app->espDir, cp->name);
+            path = mprJoinPath(app->packDir, cp->name);
             config = mprJoinPath(path, BIT_ESP_CONFIG);
             if (mprPathExists(config, R_OK)) {
                 if ((newConfig = mprLoadJson(config)) != 0) {
@@ -2018,7 +2052,7 @@ static void copyEspDir(cchar *fromDir, cchar *toDir)
 {
     MprList     *files;
     MprDirEntry *dp;
-    char        *from, *to;
+    char        *data, *from, *to, *fromSum, *toSum;
     int         next;
 
     files = mprGetPathFiles(fromDir, MPR_PATH_DESCEND | MPR_PATH_RELATIVE | MPR_PATH_NODIRS);
@@ -2032,15 +2066,40 @@ static void copyEspDir(cchar *fromDir, cchar *toDir)
             fail("Cannot make directory %s", mprGetPathDir(to));
             return;
         }
-        if (mprPathExists(to, R_OK) && !app->overwrite) {
-            if (!app->generateApp || app->previous) {
+        if (mprPathExists(to, R_OK) && !app->overwrite && !app->upgrade) {
+            if (!app->generateApp || app->priorInstall) {
                 trace("Exists",  "File: %s", mprGetRelPath(to, 0));
             }
         } else {
-            vtrace("Create",  "File: %s", mprGetRelPath(to, 0));
-            if (mprCopyPath(from, to, 0644) < 0) {
-                fail("Cannot copy file %s to %s", from, mprGetRelPath(to, 0));
-                return;
+            if (app->upgrade) {
+                if (scontains)
+                if (mprLookupKey(app->upgraded, to)) {
+                    vtrace("Skip",  "Upgraded file: %s", mprGetRelPath(to, 0));
+                    continue;
+                }
+                mprAddKey(app->upgraded, to, to);
+                data = mprReadPathContents(from, 0);
+                if (scontains(data, "${NAME}") || scontains(data, "${TITLE}")) {
+                    /* TEMP - skip upgrading files which are templates */
+                    continue;
+                }
+                fromSum = mprGetMD5(data);
+                toSum = mprGetMD5(mprReadPathContents(to, 0));
+                if (!smatch(fromSum, toSum)) {
+                    trace("Upgrade",  "File: %s", mprGetRelPath(to, 0));
+                    if (mprCopyPath(from, to, 0644) < 0) {
+                        fail("Cannot copy file %s to %s", from, mprGetRelPath(to, 0));
+                        return;
+                    }
+                } else {
+                    vtrace("Same",  "File: %s", mprGetRelPath(to, 0));
+                }
+            } else {
+                vtrace(app->upgrade ? "Upgrade" : "Create",  "File: %s", mprGetRelPath(to, 0));
+                if (mprCopyPath(from, to, 0644) < 0) {
+                    fail("Cannot copy file %s to %s", from, mprGetRelPath(to, 0));
+                    return;
+                }
             }
         }
     }
@@ -2136,7 +2195,7 @@ static cchar *getPacks()
     int             next;
 
     result = mprCreateList(0, 0);
-    files = mprGetPathFiles(app->espDir, 0);
+    files = mprGetPathFiles(app->packDir, 0);
     for (ITERATE_ITEMS(files, dp, next)) {
         path = mprJoinPath(dp->name, BIT_ESP_CONFIG);
         if (mprPathExists(path, R_OK)) {
@@ -2155,7 +2214,7 @@ static char *getTemplate(cchar *pack, cchar *file, MprHash *tokens)
 
     path = sfmt("%s/templates/%s", mprGetCurrentPath(), file);
     if (!mprPathExists(path, R_OK)) {
-        path = sfmt("%s/%s/templates/%s", app->espDir, pack, file);
+        path = sfmt("%s/%s/templates/%s", app->packDir, pack, file);
     }
     if ((data = mprReadPathContents(path, NULL)) == 0) {
         fail("Cannot open template file \"%s\"", path);
@@ -2169,7 +2228,7 @@ static void usageError()
     cchar   *name, *packs;
 
     name = mprGetAppName();
-    app->espDir = mprJoinPath(mprGetAppDir(), "../esp");
+    app->packDir = mprJoinPath(mprGetAppDir(), "../esp");
     packs = getPacks();
 
     mprEprintf("\nESP Usage:\n\n"
@@ -2206,6 +2265,9 @@ static void usageError()
     "    esp generate migration description model [field:type [, field:type] ...]\n"
     "    esp generate scaffold model [field:type [, field:type] ...]\n"
     "    esp generate table name [field:type [, field:type] ...]\n"
+#if FUTURE
+    "    esp upgrade [packs ...]\n"
+#endif
     "    esp run\n"
     "\n"
     "  Packs: (for esp generate app)\n%s\n"
