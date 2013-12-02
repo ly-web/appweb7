@@ -192,6 +192,13 @@ Bit.load({
                 packs:      'php',
                 enable:     "bit.platform.os == 'windows'",
 
+           }, {
+                from:       [ 'package/uninstall.sh' ],
+                to:         '${abin}/uninstall',
+                expand:     true,
+                permissions: 0755,
+                set:        'core',
+
             },{ from:        [
                     /* Windows needs the libs to be able to compile esp programs */
                     '${BIN}/libmod_esp${SHLIB}',
