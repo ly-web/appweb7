@@ -11,7 +11,6 @@
             --home path             # Set the home working directory
             --log logFile:level     # Log to file file at verbosity level
             --name uniqueName       # Name for this instance
-            --threads maxThreads    # Set maximum worker threads
             --version               # Output version information
             -v                      # Same as --log stderr:2
  */
@@ -389,7 +388,6 @@ static void usageError(Mpr *mpr)
         "    --home directory       # Change to directory to run\n"
         "    --log logFile:level    # Log to file file at verbosity level\n"
         "    --name uniqueName      # Unique name for this instance\n"
-        "    --threads maxThreads   # Set maximum worker threads\n"
         "    --verbose              # Same as --log stderr:2\n"
         "    --version              # Output version information\n\n",
         mprGetAppTitle(), name, name, name);

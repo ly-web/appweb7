@@ -2072,7 +2072,6 @@ static void copyEspDir(cchar *fromDir, cchar *toDir)
             }
         } else {
             if (app->upgrade) {
-                if (scontains)
                 if (mprLookupKey(app->upgraded, to)) {
                     vtrace("Skip",  "Upgraded file: %s", mprGetRelPath(to, 0));
                     continue;
