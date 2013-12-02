@@ -12,7 +12,7 @@ Bit.load({
         },
         html: {
             minify: true,
-            flat: true,
+            flat: false,
             compress: true,
         },
         js: {
@@ -83,7 +83,6 @@ Bit.load({
         },
         'min.html': {
             enable: 'bit.settings.html.minify',
-            path: 'client/app/all.html.js',
             files: [ '**.html' ],
             exclude: /client\/lib\/all.min.html/,
             build: "
@@ -107,43 +106,11 @@ Bit.load({
                 }
             ",
         },
-        'html.js': {
-            enable: 'bit.settings.html.flat',
-            path: 'client/app/all.html.js',
-            files: [ 'client/app/all.html.js' ],
-            depends: ['min.html']
-            build: "
-                let list = Path('client').files('**.min.html')
-                let all = Path('client/app/all.html.js')
-                trace('Convert', all)
-                all.append('angular.module(\"app\").run(function(Esp, $templateCache) {')
-                for each (let f:Path in list) {
-                    let file = f.relativeTo('client').replace('.min.html', '.html')
-                    let data = f.readLines()
-                    for (let [key,value] in data) {
-                        data[key] = value.replace(/\"/g, '\\\\\"')
-                    }
-                    data = data.join('\\\\\n')
-                    all.append('\n    $templateCache.put(Esp.url(\"/' + file + '\"), \"' + data + '\");\n')
-                }
-                all.append('});')
-            ",
-        },
-        'html.js.gz': {
-            enable: 'bit.settings.html.flat && bit.settings.html.compress && !bit.settings.js.flat',
-            path: 'client/app/all.html.js.gz',
-            files: [ 'client/app/all.html.js' ],
-            depends: ['html.js']
-            build: "
-                run('gzip --keep client/app/all.html.js')
-            ",
-        },
         'min.js': {
             enable: 'bit.settings.js.minify',
             path: 'client/all-${settings.version}.min.js',
             files: [ '**.js' ],
             exclude: /client\/lib\/all.min.js|client\/lib\/spare\/|client\/lib\/html5shiv/,
-            depends: ['html.js'],
             build: "
                 trace('Minify', '*.js')
                 if (!Cmd.locate('uglifyjs')) {
