@@ -82,7 +82,9 @@ typedef struct MdbTable {
  */
 typedef struct Mdb {
     Edi             edi;                /**< EDI database interface structure */
+#if UNUSED
     MprMutex        *mutex;             /**< Multithread lock for Schema modifications only */
+#endif
     MprList         *tables;            /**< List of tables */
 
     /*

@@ -487,6 +487,8 @@ PUBLIC int espLoadConfig(HttpRoute *route)
     cchar       *cdata, *cpath, *value, *errorMsg;
 
     eroute = route->eroute;
+    lock(eroute);
+
     /*
         See if config file has been modified and if so, reload.
      */
@@ -507,10 +509,12 @@ PUBLIC int espLoadConfig(HttpRoute *route)
         {
             if ((cdata = mprReadPathContents(cpath, NULL)) == 0) {
                 mprError("Cannot read ESP configuration from %s", cpath);
+                unlock(eroute);
                 return MPR_ERR_CANT_READ;
             }
             if ((eroute->config = mprParseJsonEx(cdata, 0, 0, 0, &errorMsg)) == 0) {
                 mprError("Cannot parse %s: error %s", cpath, errorMsg);
+                unlock(eroute);
                 return 0;
             }
             /*
@@ -594,6 +598,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 if ((eroute->database = espGetConfig(route, "server.database", 0)) != 0) {
                     if (espOpenDatabase(route, eroute->database) < 0) {
                         mprError("Cannot open database %s", eroute->database);
+                        unlock(eroute);
                         return MPR_ERR_CANT_OPEN;
                     }
                 }
@@ -615,6 +620,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
         }
 #endif
     }
+    unlock(eroute);
     return 0;
 }
 
@@ -1231,31 +1237,6 @@ PUBLIC void espUpdateCache(HttpConn *conn, cchar *uri, cchar *data, int lifesecs
 PUBLIC cchar *espUri(HttpConn *conn, cchar *target)
 {
     return httpUri(conn, target);
-}
-
-
-PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
-{
-    if (flags & MPR_MANAGE_MARK) {
-        mprMark(eroute->appDir);
-        mprMark(eroute->appName);
-        mprMark(eroute->appModulePath);
-        mprMark(eroute->cacheDir);
-        mprMark(eroute->clientDir);
-        mprMark(eroute->compile);
-        mprMark(eroute->config);
-        mprMark(eroute->controllersDir);
-        mprMark(eroute->database);
-        mprMark(eroute->dbDir);
-        mprMark(eroute->edi);
-        mprMark(eroute->env);
-        mprMark(eroute->layoutsDir);
-        mprMark(eroute->link);
-        mprMark(eroute->searchPath);
-        mprMark(eroute->routeSet);
-        mprMark(eroute->srcDir);
-        mprMark(eroute->viewsDir);
-    }
 }
 
 

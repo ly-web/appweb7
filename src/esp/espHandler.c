@@ -623,6 +623,36 @@ static bool pageExists(HttpConn *conn)
 
 
 /************************************ Esp Route *******************************/
+/*
+    Public so that esp.c can also call
+ */
+PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
+{
+    if (flags & MPR_MANAGE_MARK) {
+        mprMark(eroute->appDir);
+        mprMark(eroute->appName);
+        mprMark(eroute->appModulePath);
+        mprMark(eroute->cacheDir);
+        mprMark(eroute->clientDir);
+        mprMark(eroute->compile);
+        mprMark(eroute->config);
+        mprMark(eroute->controllersDir);
+        mprMark(eroute->database);
+        mprMark(eroute->dbDir);
+        mprMark(eroute->edi);
+        mprMark(eroute->env);
+        mprMark(eroute->layoutsDir);
+        mprMark(eroute->link);
+        mprMark(eroute->mutex);
+        mprMark(eroute->searchPath);
+        mprMark(eroute->routeSet);
+        mprMark(eroute->srcDir);
+        mprMark(eroute->viewsDir);
+    }
+}
+
+
+//  FUTURE - make public and share with esp.c
 
 static EspRoute *allocEspRoute(HttpRoute *route)
 {
@@ -651,6 +681,7 @@ static EspRoute *allocEspRoute(HttpRoute *route)
     eroute->update = BIT_DEBUG;
     eroute->keepSource = BIT_DEBUG;
     eroute->lifespan = 0;
+    eroute->mutex = mprCreateLock();
     route->eroute = eroute;
     return eroute;
 }

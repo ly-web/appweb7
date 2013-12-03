@@ -191,6 +191,7 @@ typedef struct EspRoute {
 #endif
     MprTicks        lifespan;               /**< Default cache lifespan */
     Edi             *edi;                   /**< Default database for this route */
+    MprMutex        *mutex;                 /**< Multithread lock */
 } EspRoute;
 
 /**
@@ -2383,15 +2384,15 @@ PUBLIC ssize renderFile(cchar *path);
 PUBLIC ssize renderSafe(cchar *fmt, ...);
 
 /**
-    Render a security token input field.
+    Render an input field with a hidden XSRF security token.
     @description Security tokens are used to help guard against CSRF threats.
-    This call will generate a hidden input field that includes the CSRF security token for the page.
+    This call will generate a hidden input field that includes the CSRF security token for the form.
     This call should not be included in Angular client applications as the Angular framework will automatically
     handle the security token.
     @ingroup EspAbbrev
     @stability Prototype
  */
-PUBLIC void renderSecurityToken();
+PUBLIC void inputSecurityToken();
 
 /**
     Render a string of data to the client
@@ -2479,9 +2480,16 @@ PUBLIC void sendResult(bool status);
  */
 PUBLIC void stylesheets(cchar *patterns);
 
-#if BIT_ESP_LEGACY
+/**
+    Add the security token to the response.
+    @description To minimize form replay attacks, a security token may be required for POST requests on a route.
+    This call will set a security token in the response as a response header and as a response cookie.
+    Client-side Javascript must then send this token as a request header in subsquent POST requests.
+    To configure a route to require security tokens, call #httpSetRouteXsrf.
+    @ingroup EspAbbrev
+    @stability Evolving
+*/
 PUBLIC void securityToken();
-#endif
 
 /**
     Get a session state variable
