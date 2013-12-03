@@ -636,15 +636,14 @@ PUBLIC void scripts(cchar *patterns)
 }
 
 
-#if BIT_ESP_LEGACY
 /*
-    Should not be called explicitly as this is done by the framework
+    Add a security token to the response. The token is generated as a HTTP header and session cookie.
+    Note that views will automatically add security tokens to views.
  */
 PUBLIC void securityToken()
 {
     httpAddSecurityToken(getConn());
 }
-#endif
 
 
 PUBLIC ssize sendGrid(EdiGrid *grid)

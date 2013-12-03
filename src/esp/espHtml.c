@@ -91,7 +91,11 @@ PUBLIC void input(cchar *field, cchar *optionString)
 }
 
 
-PUBLIC void renderSecurityToken()
+/*
+    Render an input field with a hidden security token
+    Used by esp-html-mvc to add XSRF tokens to a form
+ */
+PUBLIC void inputSecurityToken()
 {
     HttpConn    *conn;
 
