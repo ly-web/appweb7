@@ -59,7 +59,6 @@ Code:
 * [db/blog.mdb](db/blog.mdb) - Blog database 
 * [db/migrations](db/migrations) - Database base migrations to create / destroy the database schema
 * [esp.json](esp.json) - ESP configuration file
-* [hosted.conf](hosted.conf) - Appweb configuration file to use when hosting the application in an existing Appweb site.
 * [start.bit](start.bit) - Bit build instructions
 
 Documentation:

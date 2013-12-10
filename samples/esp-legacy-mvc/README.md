@@ -91,7 +91,6 @@ Documentation:
 See Also:
 ---
 * [esp-controller - Creating ESP controllers](../esp-controller/README.md)
-* [esp-hosted-mvc - Appweb hosted MVC sample](../esp-hosted-mvc/README.md)
 * [esp-page - Serving ESP pages](../esp-page/README.md)
 * [secure-server - Secure server](../secure-server/README.md)
 * [simple-server - Simple server and embedding API](../simple-server/README.md)

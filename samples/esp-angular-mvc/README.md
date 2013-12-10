@@ -71,7 +71,6 @@ Code:
 * [db/blog.mdb](db/blog.mdb) - Blog database 
 * [db/migrations](db/migrations) - Database base migrations to create / destroy the database schema
 * [esp.json](esp.json) - ESP configuration file
-* [hosted.conf](hosted.conf) - Appweb configuration file to host application inside a web site
 * [start.bit](start.bit) - Bit build instructions
 * [templates](templates) - ESP generator application templates
 
@@ -89,7 +88,6 @@ Documentation:
 See Also:
 ---
 * [esp-controller - Creating ESP controllers](../esp-controller/README.md)
-* [esp-hosted-mvc - Appweb hosted MVC sample](../esp-hosted-mvc/README.md)
 * [esp-html-mvc - ESP MVC](../esp-html-mvc/README.md)
 * [esp-page - Serving ESP pages](../esp-page/README.md)
 * [secure-server - Secure server](../secure-server/README.md)

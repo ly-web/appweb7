@@ -7,142 +7,145 @@
     The format of this file is an enhanced JSON file. Property keys do not need to be enclosed in quotes.
     Also the last property in a collection may be terminated with a comma.
 {
-    settings: {
+    "name": "blog",
+    "description": "blog",
+    "version": "1.0.0",
+
+    "esp": {
         /* 
             Name of the Auth Store to use, "app" means user credentials are stored in a server-side application database
          */
-        auth: "app",
+        "auth": "app",
         
         /*
             Components used by this application.
          */
-        packs: {
-            esp-server: {},
-            less: {scripts: ["*"]},
-            more: {},
-            esp-html-mvc: {},
+        "scripts": {
+            "angular": [
+                "angular.js",
+                "angular-animate.js",
+                "angular-route.js"
+            ],
+            "esp-angular": [ "*" ],
+            "less": [ "*" ],
         },
 
         /*
             Default presentation formats for various types
          */
-        formats: {
-            date: "yyyy-MM-dd",
-            float: 2,
-            int: 0,
+        "formats": {
+            "date": "yyyy-MM-dd",
+            "float": 2,
         },
 
         /*
             Expect requests and responses in JSON format
          */
-        json: false,
+        "json": true,
 
         /*
             Set if a login is required to the login home page
          */
-        loginRequired: "",
+        "loginRequired": "",
 
         /*
             Redirect all traffic over HTTPS
          */
-        redirect: "secure"
+        "redirect": "secure"
 
         /*
             Default refresh period to use for dynamic data polling
          */
-        refresh: 1000,
+        "refresh": 1000,
 
         /*
             Routing prefix for server-side URIs
          */
-        serverPrefix: "/do",
+        "serverPrefix": "/do",
 
         /*
             Default timeouts (secs)
          */
-        timeouts: {
-            session: 1800,
+        "timeouts": {
+            "session": 1800,
         },
 
         /*
             Set to include a XSRF token to minimize CSRF vulnerabilies
          */
-        xsrf: true,
+        "xsrf": true,
+
+        /*
+            Server side properties not passed to the client
+         */
+        "server": {
+            "database": "mdb://blog.mdb"
+        },
     },
-    name: "blog",
 
     /*
         Application mode. This selects a set of properties below and copies them to settings
      */
-    mode: "debug",
-    modes: {
-        debug: {
+    "mode": "debug",
+    "modes": {
+        "debug": {
             /*
                 Application compiled flat via "esp --flat compile"
              */
-            flat: false,
+            "flat": false,
 
             /*
                 Display server-side errors in the browser
              */
-            showErrors: true,
+            "showErrors": true,
 
             /*
                 Keep intermediate source for views in the cache directory
              */
-            keepSource: true,
+            "keepSource": true,
 
             /*
                 Transparently recompile updated views, controllers and source
              */
-            update: true,
+            "update": true,
 
             /*
                 Automatic login credentials.
              */
-            login: {
-                name: "",
-                abilities: {
-                    edit: true,
-                    view: true,
+            "login": {
+                "name": "",
+                "abilities": {
+                    "edit": true,
+                    "view": true,
                 },
             },
         },
-        release: {
-            flat: true,
-            map: "compressed",
-            showErrors: false,
-            update: false,
-            keepSource: false,
-            login: {
-                name: "",
-                abilities: {
-                    edit: true,
-                    view: true,
+        "release": {
+            "flat": true,
+            "map": "compressed",
+            "showErrors": false,
+            "update": false,
+            "keepSource": false,
+            "login": {
+                "name": "",
+                "abilities": {
+                    "edit": true,
+                    "view": true,
                 },
             },
         },
-    },
-    /*
-        Server side properties not passed to the client
-     */
-    server: {
-        /*
-            Server side database.
-         */
-        database: "mdb://blog.mdb"
     },
     /*
         Generation hints for "esp generate"
      */
-    generate: {
-        top: "html-mvc",
-        scaffold: true,
-        clientModel: false,
-        clientController: false,
-        clientView: false,
-        controller: true,
-        migration: true,
-        view: false
+    "generate": {
+        "top": "html-mvc",
+        "scaffold": true,
+        "clientModel": false,
+        "clientController": false,
+        "clientView": false,
+        "controller": true,
+        "migration": true,
+        "view": false
     },
 },
