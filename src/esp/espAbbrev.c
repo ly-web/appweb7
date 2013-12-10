@@ -507,13 +507,16 @@ PUBLIC ssize renderConfig()
 {
     HttpConn    *conn;
     EspRoute    *eroute;
-    MprJson     *settings;
+    MprJson     *obj;
 
     conn = getConn();
     eroute = conn->rx->route->eroute;
-    settings = mprLookupJsonObj(eroute->config, "settings");
-    if (settings) {
-        return renderString(mprJsonToString(settings, MPR_JSON_QUOTES));
+    obj = mprLookupJsonObj(eroute->config, "esp");
+    if (obj) {
+        //  MOB OPT
+        obj = mprCloneJson(obj);
+        mprRemoveJson(obj, "server");
+        return renderString(mprJsonToString(obj, MPR_JSON_QUOTES));
     }
     return 0;
 }
@@ -580,7 +583,7 @@ PUBLIC void scripts(cchar *patterns)
     HttpRoute   *route;
     EspRoute    *eroute;
     MprList     *files;
-    MprJson     *packs, *pack, *packScripts, *file;
+    MprJson     *packs, *pack, *file;
     cchar       *name, *uri, *path;
     int         next, ci, fi;
 
@@ -594,15 +597,13 @@ PUBLIC void scripts(cchar *patterns)
             name = sfmt("all-%s.min.js", espGetConfig(route, "version", "1.0.0"));
             scripts(name);
         } else {
-            if ((packs = mprGetJsonObj(eroute->config, "settings.packs", 0)) != 0) {
+            if ((packs = mprGetJsonObj(eroute->config, "esp.scripts", 0)) != 0) {
                 for (ITERATE_JSON(packs, pack, ci)) {
-                    if ((packScripts = mprGetJsonObj(pack, "scripts", 0)) != 0) {
-                        for (ITERATE_JSON(packScripts, file, fi)) {
-                            if (smatch(file->value, "*")) {
-                                scripts(sfmt("lib/%s/**.js", pack->name));
-                            } else {
-                                scripts(sfmt("lib/%s/%s", pack->name, file->value));
-                            }
+                    for (ITERATE_JSON(pack, file, fi)) {
+                        if (smatch(file->value, "*")) {
+                            scripts(sfmt("lib/%s/**.js", pack->name));
+                        } else {
+                            scripts(sfmt("lib/%s/%s", pack->name, file->value));
                         }
                     }
                 }

@@ -35,12 +35,13 @@ Bit.load({
             packs: 'esp',
         },
 
-        'packs': {
-            type: 'file',
-            path: '${OUT}/esp/',
-            files: [ 'packs/' ],
+        'paks': {
+            path: '${OUT}/paks/',
+            home: '${TOP}/src/esp/paks',
+            files: [ '.'],
             platforms: [ 'local' ],
             packs: 'esp',
+            build: "run('pak --cache ${OUT}/paks cache ' + Path('.').files().join(' '))"
         },
 
         'esp-configure': {

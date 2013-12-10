@@ -1,0 +1,33 @@
+{
+    "name": "esp-angular-mvc",
+    "description": "ESP Angular MVC Application Skeleton",
+    "dependencies": {
+        "esp-angular": "*",
+        "less": ">=1.3.3",
+        "more": "*"
+    },
+    "dirs": {
+        "base": ".",
+        "paks": "client/paks",
+    },
+    "esp": {
+        "formats": {
+            "date": "yyyy-MM-dd",
+            "float": 2
+        },
+        "json": true,
+        "server": {
+            "database": "${DATABASE}://${NAME}.${DATABASE}"
+        }
+    },
+    "generate": {
+        "top": "angular-mvc",
+        "scaffold": true,
+        "clientModel": true,
+        "clientController": true,
+        "clientView": true,
+        "controller": true,
+        "migration": true,
+        "view": false,
+    }
+}

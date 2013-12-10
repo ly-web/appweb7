@@ -1,0 +1,11 @@
+{
+    "name": "esp-server",
+    "description": "ESP Server Framework",
+    "dirs": {
+        "base": ".",
+        "paks": "client/paks",
+    },
+    "esp": {
+        "serverPrefix": "/do",
+    },
+}

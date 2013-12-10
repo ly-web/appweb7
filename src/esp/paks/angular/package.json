@@ -1,0 +1,14 @@
+{
+    "name": "angular",
+    "description": "Angular client-side framework",
+    "version": "1.2.0",
+    "esp": {
+        "scripts": {
+            "angular": [
+                "angular.js",
+                "angular-animate.js",
+                "angular-route.js",
+            ]
+        }
+    }
+}

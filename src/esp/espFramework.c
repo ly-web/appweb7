@@ -11,15 +11,15 @@
 #if BIT_PACK_ESP
 /************************************* Code ***********************************/
 
-PUBLIC void espAddPack(HttpRoute *route, cchar *name, MprJson *details)
+PUBLIC void espAddPack(HttpRoute *route, cchar *name, cchar *version)
 {
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    if (!details) {
-        details = mprCreateJson(0);
+    if (!version || !*version || smatch(version, "0.0.0")) {
+        version = "*";
     }
-    mprSetJsonObj(eroute->config, sfmt("settings.packs.%s", name), details, 0);
+    mprSetJson(eroute->config, sfmt("dependencies.%s", name), version, 0);
 }
 
 
@@ -352,6 +352,15 @@ PUBLIC cchar *espGetMethod(HttpConn *conn)
 } 
 
 
+PUBLIC cchar *espGetPackVersion(HttpRoute *route, cchar *name)
+{
+    EspRoute    *eroute;
+
+    eroute = route->eroute;
+    return mprGetJson(eroute->config, sfmt("dependencies.%s", name), 0);
+}
+
+
 PUBLIC cchar *espGetParam(HttpConn *conn, cchar *var, cchar *defaultValue)
 {
     return httpGetParam(conn, var, defaultValue);
@@ -439,7 +448,7 @@ PUBLIC bool espHasPack(HttpRoute *route, cchar *name)
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    return mprGetJsonObj(eroute->config, sfmt("settings.packs.%s", name), 0) != 0;
+    return mprGetJsonObj(eroute->config, sfmt("dependencies.%s", name), 0) != 0;
 }
 
 
@@ -477,7 +486,7 @@ PUBLIC bool espIsSecure(HttpConn *conn)
 
 
 /*
-    Load the esp.json
+    Load the package.json
  */
 PUBLIC int espLoadConfig(HttpRoute *route)
 {
@@ -485,6 +494,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
     MprJson     *msettings, *settings;
     MprPath     cinfo;
     cchar       *cdata, *cpath, *value, *errorMsg;
+    bool        debug;
 
     eroute = route->eroute;
     lock(eroute);
@@ -492,7 +502,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
     /*
         See if config file has been modified and if so, reload.
      */
-    cpath = mprJoinPath(route->documents, BIT_ESP_CONFIG);
+    cpath = mprJoinPath(route->documents, BIT_ESP_PACKAGE);
     if (mprGetPathInfo(cpath, &cinfo) == 0) {
         if (eroute->config && cinfo.mtime > eroute->configLoaded) {
             eroute->config = 0;
@@ -520,21 +530,25 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             /*
                 Blend the mode properties into settings
              */
-            eroute->mode = mprGetJson(eroute->config, "mode", 0);
-            if ((msettings = mprGetJsonObj(eroute->config, sfmt("modes.%s", eroute->mode), 0)) != 0) {
-                settings = mprLookupJsonObj(eroute->config, "settings");
-                mprBlendJson(settings, msettings, 0);
-                mprSetJson(settings, "mode", eroute->mode, 0);
+            eroute->mode = mprGetJson(eroute->config, "esp.mode", 0);
+            if (!eroute->mode) {
+                eroute->mode = sclone("debug");
             }
-            if ((value = espGetConfig(route, "settings.auth", 0)) != 0) {
+            debug = smatch(eroute->mode, "debug");
+            if ((msettings = mprGetJsonObj(eroute->config, sfmt("esp.modes.%s", eroute->mode), 0)) != 0) {
+                settings = mprLookupJsonObj(eroute->config, "esp");
+                mprBlendJson(settings, msettings, 0);
+                mprSetJson(settings, "esp.mode", eroute->mode, 0);
+            }
+            if ((value = espGetConfig(route, "esp.auth", 0)) != 0) {
                 if (httpSetAuthStore(route->auth, value) < 0) {
                     mprError("The %s AuthStore is not available on this platform", value);
                 }
             }
-            if ((value = espGetConfig(route, "settings.flat", 0)) != 0) {
+            if ((value = espGetConfig(route, "esp.flat", 0)) != 0) {
                 eroute->flat = smatch(value, "true");
             }
-            if ((value = espGetConfig(route, "server.redirect", 0)) != 0) {
+            if ((value = espGetConfig(route, "esp.server.redirect", 0)) != 0) {
                 if (smatch(value, "true")) {
                     HttpRoute *alias = httpCreateAliasRoute(route, "/", 0, 0);
                     httpSetRouteTarget(alias, "redirect", "0 https://");
@@ -542,60 +556,62 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                     httpFinalizeRoute(alias);
                 }
             }
-            if ((value = espGetConfig(route, "settings.showErrors", 0)) != 0) {
+            if ((value = espGetConfig(route, "esp.showErrors", 0)) != 0) {
                 httpSetRouteShowErrors(route, smatch(value, "true"));
+            } else if (debug) {
+                httpSetRouteShowErrors(route, 1);
             }
-            if ((value = espGetConfig(route, "settings.update", 0)) != 0) {
+            if ((value = espGetConfig(route, "esp.update", 0)) != 0) {
                 eroute->update = smatch(value, "true");
             }
-            if ((value = espGetConfig(route, "settings.keepSource", 0)) != 0) {
+            if ((value = espGetConfig(route, "esp.keepSource", 0)) != 0) {
                 eroute->keepSource = smatch(value, "true");
             }
-            if ((value = espGetConfig(route, "settings.serverPrefix", 0)) != 0) {
+            if ((value = espGetConfig(route, "esp.serverPrefix", 0)) != 0) {
                 httpSetRouteServerPrefix(route, value);
                 httpSetRouteVar(route, "SERVER_PREFIX", sjoin(route->prefix ? route->prefix: "", route->serverPrefix, 0));
             }
 #if DEPRECATE || 1
-            if ((value = espGetConfig(route, "settings.routePrefix", 0)) != 0) {
+            if ((value = espGetConfig(route, "esp.routePrefix", 0)) != 0) {
                 httpSetRouteServerPrefix(route, value);
                 httpSetRouteVar(route, "SERVER_PREFIX", sjoin(route->prefix ? route->prefix: "", route->serverPrefix, 0));
             }
 #endif
-            if ((value = espGetConfig(route, "settings.login.name", 0)) != 0) {
+            if ((value = espGetConfig(route, "esp.login.name", 0)) != 0) {
                 /* Automatic login as this user. Password not required */
                 httpSetAuthUsername(route->auth, value);
             }
-            if ((value = espGetConfig(route, "settings.xsrf", 0)) != 0) {
+            if ((value = espGetConfig(route, "esp.xsrf", 0)) != 0) {
                 httpSetRouteXsrf(route, smatch(value, "true"));
 #if DEPRECATE || 1
-            } else {
-                if ((value = espGetConfig(route, "settings.xsrfToken", 0)) != 0) {
-                    httpSetRouteXsrf(route, smatch(value, "true"));
-                }
+            } else if ((value = espGetConfig(route, "esp.xsrfToken", 0)) != 0) {
+                httpSetRouteXsrf(route, smatch(value, "true"));
 #endif
+            } else {
+                httpSetRouteXsrf(route, 1);
             }
-            if ((value = espGetConfig(route, "settings.json", 0)) != 0) {
+            if ((value = espGetConfig(route, "esp.json", 0)) != 0) {
                 eroute->json = smatch(value, "true");
 #if DEPRECATE || 1
             } else {
-                if ((value = espGetConfig(route, "settings.sendJson", 0)) != 0) {
+                if ((value = espGetConfig(route, "esp.sendJson", 0)) != 0) {
                     eroute->json = smatch(value, "true");
                 }
 #endif
             }
-            if ((value = espGetConfig(route, "settings.timeouts.session", 0)) != 0) {
+            if ((value = espGetConfig(route, "esp.timeouts.session", 0)) != 0) {
                 route->limits->sessionTimeout = stoi(value) * 1000;
             }
 #if DEPRECATE || 1
-            if (espTestConfig(route, "settings.map", "compressed")) {
+            if (espTestConfig(route, "esp.map", "compressed")) {
                 httpAddRouteMapping(route, "css,html,js,less,txt,xml", "min.${1}.gz, min.${1}, ${1}.gz");
             }
 #endif
-            if (espTestConfig(route, "settings.compressed", "true")) {
+            if (espTestConfig(route, "esp.compressed", "true")) {
                 httpAddRouteMapping(route, "css,html,js,less,txt,xml", "min.${1}.gz, min.${1}, ${1}.gz");
             }
             if (!eroute->database) {
-                if ((eroute->database = espGetConfig(route, "server.database", 0)) != 0) {
+                if ((eroute->database = espGetConfig(route, "esp.server.database", 0)) != 0) {
                     if (espOpenDatabase(route, eroute->database) < 0) {
                         mprError("Cannot open database %s", eroute->database);
                         unlock(eroute);
@@ -904,9 +920,11 @@ PUBLIC int espSaveConfig(HttpRoute *route)
     cchar       *path;
 
     eroute = route->eroute;
-    path = mprJoinPath(route->documents, BIT_ESP_CONFIG);
+    path = mprJoinPath(route->documents, BIT_ESP_PACKAGE);
+#if UNUSED
     mprBackupLog(path, 3);
-    return mprSaveJson(eroute->config, path, MPR_JSON_PRETTY);
+#endif
+    return mprSaveJson(eroute->config, path, MPR_JSON_PRETTY | MPR_JSON_QUOTES);
 }
 
 
