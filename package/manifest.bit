@@ -198,6 +198,7 @@ Bit.load({
                 expand:     true,
                 permissions: 0755,
                 set:        'core',
+                enable:     "!bit.generating",
 
             },{ from:        [
                     /* Windows needs the libs to be able to compile esp programs */
