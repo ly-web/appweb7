@@ -4,7 +4,7 @@
 
 PRODUCT            := appweb
 VERSION            := 4.5.0
-BUILD_NUMBER       := rc.0
+BUILD_NUMBER       := 0
 PROFILE            := default
 ARCH               := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
 CC_ARCH            := $(shell echo $(ARCH) | sed 's/x86/i686/;s/x64/x86_64/')
@@ -143,7 +143,7 @@ ifeq ($(BIT_PACK_ESP),1)
 TARGETS            += src/server/esp.conf
 endif
 ifeq ($(BIT_PACK_ESP),1)
-TARGETS            += $(CONFIG)/esp
+TARGETS            += $(CONFIG)/paks
 endif
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 TARGETS            += $(CONFIG)/bin/libejs.dylib
@@ -240,7 +240,6 @@ clean:
 	rm -f "$(CONFIG)/bin/esp"
 	rm -f "$(CONFIG)/bin/esp.conf"
 	rm -f "src/server/esp.conf"
-	rm -fr "$(CONFIG)/esp"
 	rm -f "$(CONFIG)/bin/libejs.dylib"
 	rm -f "$(CONFIG)/bin/ejs"
 	rm -f "$(CONFIG)/bin/ejsc"
@@ -302,7 +301,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.5.0-rc.0
+	@echo 4.5.0-0
 
 #
 #   mpr.h
@@ -1077,132 +1076,12 @@ src/server/esp.conf: $(DEPS_55)
 endif
 
 ifeq ($(BIT_PACK_ESP),1)
-#
-#   packs
-#
-DEPS_56 += src/esp/packs
-
-$(CONFIG)/esp: $(DEPS_56)
-	@echo '      [Copy] $(CONFIG)/esp'
-	mkdir -p "$(CONFIG)/esp/angular/client/lib/angular"
-	cp src/esp/packs/angular/client/lib/angular/angular-animate.js $(CONFIG)/esp/angular/client/lib/angular/angular-animate.js
-	cp src/esp/packs/angular/client/lib/angular/angular-bootstrap-prettify.js $(CONFIG)/esp/angular/client/lib/angular/angular-bootstrap-prettify.js
-	cp src/esp/packs/angular/client/lib/angular/angular-bootstrap.js $(CONFIG)/esp/angular/client/lib/angular/angular-bootstrap.js
-	cp src/esp/packs/angular/client/lib/angular/angular-cookies.js $(CONFIG)/esp/angular/client/lib/angular/angular-cookies.js
-	cp src/esp/packs/angular/client/lib/angular/angular-loader.js $(CONFIG)/esp/angular/client/lib/angular/angular-loader.js
-	cp src/esp/packs/angular/client/lib/angular/angular-mocks.js $(CONFIG)/esp/angular/client/lib/angular/angular-mocks.js
-	cp src/esp/packs/angular/client/lib/angular/angular-resource.js $(CONFIG)/esp/angular/client/lib/angular/angular-resource.js
-	cp src/esp/packs/angular/client/lib/angular/angular-route.js $(CONFIG)/esp/angular/client/lib/angular/angular-route.js
-	cp src/esp/packs/angular/client/lib/angular/angular-sanitize.js $(CONFIG)/esp/angular/client/lib/angular/angular-sanitize.js
-	cp src/esp/packs/angular/client/lib/angular/angular-scenario.js $(CONFIG)/esp/angular/client/lib/angular/angular-scenario.js
-	cp src/esp/packs/angular/client/lib/angular/angular-touch.js $(CONFIG)/esp/angular/client/lib/angular/angular-touch.js
-	cp src/esp/packs/angular/client/lib/angular/angular.js $(CONFIG)/esp/angular/client/lib/angular/angular.js
-	cp src/esp/packs/angular/client/lib/angular/errors.json $(CONFIG)/esp/angular/client/lib/angular/errors.json
-	cp src/esp/packs/angular/client/lib/angular/version.json $(CONFIG)/esp/angular/client/lib/angular/version.json
-	cp src/esp/packs/angular/client/lib/angular/version.txt $(CONFIG)/esp/angular/client/lib/angular/version.txt
-	mkdir -p "$(CONFIG)/esp/angular"
-	cp src/esp/packs/angular/esp.json $(CONFIG)/esp/angular/esp.json
-	mkdir -p "$(CONFIG)/esp/esp-angular/client/lib/esp-angular"
-	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-click.js $(CONFIG)/esp/esp-angular/client/lib/esp-angular/esp-click.js
-	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-field-errors.js $(CONFIG)/esp/esp-angular/client/lib/esp-angular/esp-field-errors.js
-	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-format.js $(CONFIG)/esp/esp-angular/client/lib/esp-angular/esp-format.js
-	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-input-group.js $(CONFIG)/esp/esp-angular/client/lib/esp-angular/esp-input-group.js
-	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-input.js $(CONFIG)/esp/esp-angular/client/lib/esp-angular/esp-input.js
-	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-resource.js $(CONFIG)/esp/esp-angular/client/lib/esp-angular/esp-resource.js
-	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-session.js $(CONFIG)/esp/esp-angular/client/lib/esp-angular/esp-session.js
-	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-titlecase.js $(CONFIG)/esp/esp-angular/client/lib/esp-angular/esp-titlecase.js
-	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp.js $(CONFIG)/esp/esp-angular/client/lib/esp-angular/esp.js
-	mkdir -p "$(CONFIG)/esp/esp-angular"
-	cp src/esp/packs/esp-angular/esp.json $(CONFIG)/esp/esp-angular/esp.json
-	mkdir -p "$(CONFIG)/esp/esp-angular-mvc"
-	cp src/esp/packs/esp-angular-mvc/appweb.conf $(CONFIG)/esp/esp-angular-mvc/appweb.conf
-	mkdir -p "$(CONFIG)/esp/esp-angular-mvc/client/app"
-	cp src/esp/packs/esp-angular-mvc/client/app/main.js $(CONFIG)/esp/esp-angular-mvc/client/app/main.js
-	mkdir -p "$(CONFIG)/esp/esp-angular-mvc/client/assets"
-	cp src/esp/packs/esp-angular-mvc/client/assets/favicon.ico $(CONFIG)/esp/esp-angular-mvc/client/assets/favicon.ico
-	mkdir -p "$(CONFIG)/esp/esp-angular-mvc/client/css"
-	cp src/esp/packs/esp-angular-mvc/client/css/all.less $(CONFIG)/esp/esp-angular-mvc/client/css/all.less
-	cp src/esp/packs/esp-angular-mvc/client/css/app.less $(CONFIG)/esp/esp-angular-mvc/client/css/app.less
-	cp src/esp/packs/esp-angular-mvc/client/css/fix.less $(CONFIG)/esp/esp-angular-mvc/client/css/fix.less
-	cp src/esp/packs/esp-angular-mvc/client/css/theme.less $(CONFIG)/esp/esp-angular-mvc/client/css/theme.less
-	mkdir -p "$(CONFIG)/esp/esp-angular-mvc/client"
-	cp src/esp/packs/esp-angular-mvc/client/index.esp $(CONFIG)/esp/esp-angular-mvc/client/index.esp
-	mkdir -p "$(CONFIG)/esp/esp-angular-mvc/client/pages"
-	cp src/esp/packs/esp-angular-mvc/client/pages/splash.html $(CONFIG)/esp/esp-angular-mvc/client/pages/splash.html
-	cp src/esp/packs/esp-angular-mvc/esp.json $(CONFIG)/esp/esp-angular-mvc/esp.json
-	cp src/esp/packs/esp-angular-mvc/hosted.conf $(CONFIG)/esp/esp-angular-mvc/hosted.conf
-	cp src/esp/packs/esp-angular-mvc/start.bit $(CONFIG)/esp/esp-angular-mvc/start.bit
-	mkdir -p "$(CONFIG)/esp/esp-angular-mvc/templates"
-	cp src/esp/packs/esp-angular-mvc/templates/controller-singleton.c $(CONFIG)/esp/esp-angular-mvc/templates/controller-singleton.c
-	cp src/esp/packs/esp-angular-mvc/templates/controller.c $(CONFIG)/esp/esp-angular-mvc/templates/controller.c
-	cp src/esp/packs/esp-angular-mvc/templates/controller.js $(CONFIG)/esp/esp-angular-mvc/templates/controller.js
-	cp src/esp/packs/esp-angular-mvc/templates/edit.html $(CONFIG)/esp/esp-angular-mvc/templates/edit.html
-	cp src/esp/packs/esp-angular-mvc/templates/list.html $(CONFIG)/esp/esp-angular-mvc/templates/list.html
-	cp src/esp/packs/esp-angular-mvc/templates/model.js $(CONFIG)/esp/esp-angular-mvc/templates/model.js
-	mkdir -p "$(CONFIG)/esp/esp-html-mvc"
-	cp src/esp/packs/esp-html-mvc/appweb.conf $(CONFIG)/esp/esp-html-mvc/appweb.conf
-	mkdir -p "$(CONFIG)/esp/esp-html-mvc/client/assets"
-	cp src/esp/packs/esp-html-mvc/client/assets/favicon.ico $(CONFIG)/esp/esp-html-mvc/client/assets/favicon.ico
-	mkdir -p "$(CONFIG)/esp/esp-html-mvc/client/css"
-	cp src/esp/packs/esp-html-mvc/client/css/all.less $(CONFIG)/esp/esp-html-mvc/client/css/all.less
-	cp src/esp/packs/esp-html-mvc/client/css/app.less $(CONFIG)/esp/esp-html-mvc/client/css/app.less
-	cp src/esp/packs/esp-html-mvc/client/css/fix.less $(CONFIG)/esp/esp-html-mvc/client/css/fix.less
-	cp src/esp/packs/esp-html-mvc/client/css/theme.less $(CONFIG)/esp/esp-html-mvc/client/css/theme.less
-	mkdir -p "$(CONFIG)/esp/esp-html-mvc/client"
-	cp src/esp/packs/esp-html-mvc/client/index.esp $(CONFIG)/esp/esp-html-mvc/client/index.esp
-	mkdir -p "$(CONFIG)/esp/esp-html-mvc/client/layouts"
-	cp src/esp/packs/esp-html-mvc/client/layouts/default.esp $(CONFIG)/esp/esp-html-mvc/client/layouts/default.esp
-	cp src/esp/packs/esp-html-mvc/esp.json $(CONFIG)/esp/esp-html-mvc/esp.json
-	cp src/esp/packs/esp-html-mvc/hosted.conf $(CONFIG)/esp/esp-html-mvc/hosted.conf
-	cp src/esp/packs/esp-html-mvc/start.bit $(CONFIG)/esp/esp-html-mvc/start.bit
-	mkdir -p "$(CONFIG)/esp/esp-html-mvc/templates"
-	cp src/esp/packs/esp-html-mvc/templates/controller-singleton.c $(CONFIG)/esp/esp-html-mvc/templates/controller-singleton.c
-	cp src/esp/packs/esp-html-mvc/templates/controller.c $(CONFIG)/esp/esp-html-mvc/templates/controller.c
-	cp src/esp/packs/esp-html-mvc/templates/edit.esp $(CONFIG)/esp/esp-html-mvc/templates/edit.esp
-	cp src/esp/packs/esp-html-mvc/templates/list.esp $(CONFIG)/esp/esp-html-mvc/templates/list.esp
-	mkdir -p "$(CONFIG)/esp/esp-legacy-mvc"
-	cp src/esp/packs/esp-legacy-mvc/esp.json $(CONFIG)/esp/esp-legacy-mvc/esp.json
-	mkdir -p "$(CONFIG)/esp/esp-legacy-mvc/layouts"
-	cp src/esp/packs/esp-legacy-mvc/layouts/default.esp $(CONFIG)/esp/esp-legacy-mvc/layouts/default.esp
-	mkdir -p "$(CONFIG)/esp/esp-legacy-mvc/static/css"
-	cp src/esp/packs/esp-legacy-mvc/static/css/all.css $(CONFIG)/esp/esp-legacy-mvc/static/css/all.css
-	mkdir -p "$(CONFIG)/esp/esp-legacy-mvc/static/images"
-	cp src/esp/packs/esp-legacy-mvc/static/images/banner.jpg $(CONFIG)/esp/esp-legacy-mvc/static/images/banner.jpg
-	cp src/esp/packs/esp-legacy-mvc/static/images/favicon.ico $(CONFIG)/esp/esp-legacy-mvc/static/images/favicon.ico
-	cp src/esp/packs/esp-legacy-mvc/static/images/splash.jpg $(CONFIG)/esp/esp-legacy-mvc/static/images/splash.jpg
-	mkdir -p "$(CONFIG)/esp/esp-legacy-mvc/static"
-	cp src/esp/packs/esp-legacy-mvc/static/index.esp $(CONFIG)/esp/esp-legacy-mvc/static/index.esp
-	mkdir -p "$(CONFIG)/esp/esp-legacy-mvc/static/js"
-	cp src/esp/packs/esp-legacy-mvc/static/js/jquery.esp.js $(CONFIG)/esp/esp-legacy-mvc/static/js/jquery.esp.js
-	cp src/esp/packs/esp-legacy-mvc/static/js/jquery.js $(CONFIG)/esp/esp-legacy-mvc/static/js/jquery.js
-	mkdir -p "$(CONFIG)/esp/esp-legacy-mvc/templates"
-	cp src/esp/packs/esp-legacy-mvc/templates/controller.c $(CONFIG)/esp/esp-legacy-mvc/templates/controller.c
-	cp src/esp/packs/esp-legacy-mvc/templates/edit.esp $(CONFIG)/esp/esp-legacy-mvc/templates/edit.esp
-	cp src/esp/packs/esp-legacy-mvc/templates/list.esp $(CONFIG)/esp/esp-legacy-mvc/templates/list.esp
-	mkdir -p "$(CONFIG)/esp/esp-server"
-	cp src/esp/packs/esp-server/appweb.conf $(CONFIG)/esp/esp-server/appweb.conf
-	cp src/esp/packs/esp-server/esp.json $(CONFIG)/esp/esp-server/esp.json
-	cp src/esp/packs/esp-server/hosted.conf $(CONFIG)/esp/esp-server/hosted.conf
-	mkdir -p "$(CONFIG)/esp/esp-server/templates"
-	cp src/esp/packs/esp-server/templates/app.c $(CONFIG)/esp/esp-server/templates/app.c
-	cp src/esp/packs/esp-server/templates/controller.c $(CONFIG)/esp/esp-server/templates/controller.c
-	cp src/esp/packs/esp-server/templates/migration.c $(CONFIG)/esp/esp-server/templates/migration.c
-	mkdir -p "$(CONFIG)/esp/less/client/lib/less"
-	cp src/esp/packs/less/client/lib/less/less.js $(CONFIG)/esp/less/client/lib/less/less.js
-	mkdir -p "$(CONFIG)/esp/less"
-	cp src/esp/packs/less/esp.json $(CONFIG)/esp/less/esp.json
-	mkdir -p "$(CONFIG)/esp/more/client/css"
-	cp src/esp/packs/more/client/css/more.less $(CONFIG)/esp/more/client/css/more.less
-	mkdir -p "$(CONFIG)/esp/more"
-	cp src/esp/packs/more/esp.json $(CONFIG)/esp/more/esp.json
-	mkdir -p "$(CONFIG)/esp"
-	cp src/esp/packs/README.md $(CONFIG)/esp/README.md
 endif
 
 #
 #   ejs.h
 #
-$(CONFIG)/inc/ejs.h: $(DEPS_57)
+$(CONFIG)/inc/ejs.h: $(DEPS_56)
 	@echo '      [Copy] $(CONFIG)/inc/ejs.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp src/deps/ejs/ejs.h $(CONFIG)/inc/ejs.h
@@ -1210,7 +1089,7 @@ $(CONFIG)/inc/ejs.h: $(DEPS_57)
 #
 #   ejs.slots.h
 #
-$(CONFIG)/inc/ejs.slots.h: $(DEPS_58)
+$(CONFIG)/inc/ejs.slots.h: $(DEPS_57)
 	@echo '      [Copy] $(CONFIG)/inc/ejs.slots.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp src/deps/ejs/ejs.slots.h $(CONFIG)/inc/ejs.slots.h
@@ -1218,7 +1097,7 @@ $(CONFIG)/inc/ejs.slots.h: $(DEPS_58)
 #
 #   ejsByteGoto.h
 #
-$(CONFIG)/inc/ejsByteGoto.h: $(DEPS_59)
+$(CONFIG)/inc/ejsByteGoto.h: $(DEPS_58)
 	@echo '      [Copy] $(CONFIG)/inc/ejsByteGoto.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp src/deps/ejs/ejsByteGoto.h $(CONFIG)/inc/ejsByteGoto.h
@@ -1226,16 +1105,16 @@ $(CONFIG)/inc/ejsByteGoto.h: $(DEPS_59)
 #
 #   ejsLib.o
 #
-DEPS_60 += $(CONFIG)/inc/bit.h
-DEPS_60 += $(CONFIG)/inc/ejs.h
-DEPS_60 += $(CONFIG)/inc/mpr.h
-DEPS_60 += $(CONFIG)/inc/pcre.h
-DEPS_60 += $(CONFIG)/inc/bitos.h
-DEPS_60 += $(CONFIG)/inc/http.h
-DEPS_60 += $(CONFIG)/inc/ejs.slots.h
+DEPS_59 += $(CONFIG)/inc/bit.h
+DEPS_59 += $(CONFIG)/inc/ejs.h
+DEPS_59 += $(CONFIG)/inc/mpr.h
+DEPS_59 += $(CONFIG)/inc/pcre.h
+DEPS_59 += $(CONFIG)/inc/bitos.h
+DEPS_59 += $(CONFIG)/inc/http.h
+DEPS_59 += $(CONFIG)/inc/ejs.slots.h
 
 $(CONFIG)/obj/ejsLib.o: \
-    src/deps/ejs/ejsLib.c $(DEPS_60)
+    src/deps/ejs/ejsLib.c $(DEPS_59)
 	@echo '   [Compile] $(CONFIG)/obj/ejsLib.o'
 	$(CC) -c -o $(CONFIG)/obj/ejsLib.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/ejs/ejsLib.c
 
@@ -1243,46 +1122,46 @@ ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
 #   libejs
 #
-DEPS_61 += $(CONFIG)/inc/mpr.h
-DEPS_61 += $(CONFIG)/inc/bit.h
-DEPS_61 += $(CONFIG)/inc/bitos.h
-DEPS_61 += $(CONFIG)/obj/mprLib.o
-DEPS_61 += $(CONFIG)/bin/libmpr.dylib
-DEPS_61 += $(CONFIG)/inc/pcre.h
-DEPS_61 += $(CONFIG)/obj/pcre.o
+DEPS_60 += $(CONFIG)/inc/mpr.h
+DEPS_60 += $(CONFIG)/inc/bit.h
+DEPS_60 += $(CONFIG)/inc/bitos.h
+DEPS_60 += $(CONFIG)/obj/mprLib.o
+DEPS_60 += $(CONFIG)/bin/libmpr.dylib
+DEPS_60 += $(CONFIG)/inc/pcre.h
+DEPS_60 += $(CONFIG)/obj/pcre.o
 ifeq ($(BIT_PACK_PCRE),1)
-    DEPS_61 += $(CONFIG)/bin/libpcre.dylib
+    DEPS_60 += $(CONFIG)/bin/libpcre.dylib
 endif
-DEPS_61 += $(CONFIG)/inc/http.h
-DEPS_61 += $(CONFIG)/obj/httpLib.o
-DEPS_61 += $(CONFIG)/bin/libhttp.dylib
-DEPS_61 += $(CONFIG)/inc/ejs.h
-DEPS_61 += $(CONFIG)/inc/ejs.slots.h
-DEPS_61 += $(CONFIG)/inc/ejsByteGoto.h
-DEPS_61 += $(CONFIG)/obj/ejsLib.o
+DEPS_60 += $(CONFIG)/inc/http.h
+DEPS_60 += $(CONFIG)/obj/httpLib.o
+DEPS_60 += $(CONFIG)/bin/libhttp.dylib
+DEPS_60 += $(CONFIG)/inc/ejs.h
+DEPS_60 += $(CONFIG)/inc/ejs.slots.h
+DEPS_60 += $(CONFIG)/inc/ejsByteGoto.h
+DEPS_60 += $(CONFIG)/obj/ejsLib.o
 
-LIBS_61 += -lhttp
-LIBS_61 += -lmpr
+LIBS_60 += -lhttp
+LIBS_60 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
-    LIBS_61 += -lpcre
+    LIBS_60 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_61 += -lsql
+    LIBS_60 += -lsql
 endif
 
-$(CONFIG)/bin/libejs.dylib: $(DEPS_61)
+$(CONFIG)/bin/libejs.dylib: $(DEPS_60)
 	@echo '      [Link] $(CONFIG)/bin/libejs.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 4.5.0 -current_version 4.5.0 "$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 4.5.0 -current_version 4.5.0 "$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_60) $(LIBS_60) $(LIBS_60) $(LIBS) -lpam 
 endif
 
 #
 #   ejs.o
 #
-DEPS_62 += $(CONFIG)/inc/bit.h
-DEPS_62 += $(CONFIG)/inc/ejs.h
+DEPS_61 += $(CONFIG)/inc/bit.h
+DEPS_61 += $(CONFIG)/inc/ejs.h
 
 $(CONFIG)/obj/ejs.o: \
-    src/deps/ejs/ejs.c $(DEPS_62)
+    src/deps/ejs/ejs.c $(DEPS_61)
 	@echo '   [Compile] $(CONFIG)/obj/ejs.o'
 	$(CC) -c -o $(CONFIG)/obj/ejs.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/ejs/ejs.c
 
@@ -1290,49 +1169,49 @@ ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
 #   ejs
 #
-DEPS_63 += $(CONFIG)/inc/mpr.h
-DEPS_63 += $(CONFIG)/inc/bit.h
-DEPS_63 += $(CONFIG)/inc/bitos.h
-DEPS_63 += $(CONFIG)/obj/mprLib.o
-DEPS_63 += $(CONFIG)/bin/libmpr.dylib
-DEPS_63 += $(CONFIG)/inc/pcre.h
-DEPS_63 += $(CONFIG)/obj/pcre.o
+DEPS_62 += $(CONFIG)/inc/mpr.h
+DEPS_62 += $(CONFIG)/inc/bit.h
+DEPS_62 += $(CONFIG)/inc/bitos.h
+DEPS_62 += $(CONFIG)/obj/mprLib.o
+DEPS_62 += $(CONFIG)/bin/libmpr.dylib
+DEPS_62 += $(CONFIG)/inc/pcre.h
+DEPS_62 += $(CONFIG)/obj/pcre.o
 ifeq ($(BIT_PACK_PCRE),1)
-    DEPS_63 += $(CONFIG)/bin/libpcre.dylib
+    DEPS_62 += $(CONFIG)/bin/libpcre.dylib
 endif
-DEPS_63 += $(CONFIG)/inc/http.h
-DEPS_63 += $(CONFIG)/obj/httpLib.o
-DEPS_63 += $(CONFIG)/bin/libhttp.dylib
-DEPS_63 += $(CONFIG)/inc/ejs.h
-DEPS_63 += $(CONFIG)/inc/ejs.slots.h
-DEPS_63 += $(CONFIG)/inc/ejsByteGoto.h
-DEPS_63 += $(CONFIG)/obj/ejsLib.o
-DEPS_63 += $(CONFIG)/bin/libejs.dylib
-DEPS_63 += $(CONFIG)/obj/ejs.o
+DEPS_62 += $(CONFIG)/inc/http.h
+DEPS_62 += $(CONFIG)/obj/httpLib.o
+DEPS_62 += $(CONFIG)/bin/libhttp.dylib
+DEPS_62 += $(CONFIG)/inc/ejs.h
+DEPS_62 += $(CONFIG)/inc/ejs.slots.h
+DEPS_62 += $(CONFIG)/inc/ejsByteGoto.h
+DEPS_62 += $(CONFIG)/obj/ejsLib.o
+DEPS_62 += $(CONFIG)/bin/libejs.dylib
+DEPS_62 += $(CONFIG)/obj/ejs.o
 
-LIBS_63 += -lejs
-LIBS_63 += -lhttp
-LIBS_63 += -lmpr
+LIBS_62 += -lejs
+LIBS_62 += -lhttp
+LIBS_62 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
-    LIBS_63 += -lpcre
+    LIBS_62 += -lpcre
 endif
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_63 += -lsql
+    LIBS_62 += -lsql
 endif
 
-$(CONFIG)/bin/ejs: $(DEPS_63)
+$(CONFIG)/bin/ejs: $(DEPS_62)
 	@echo '      [Link] $(CONFIG)/bin/ejs'
-	$(CC) -o $(CONFIG)/bin/ejs -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejs.o" $(LIBPATHS_63) $(LIBS_63) $(LIBS_63) $(LIBS) -lpam -ledit 
+	$(CC) -o $(CONFIG)/bin/ejs -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejs.o" $(LIBPATHS_62) $(LIBS_62) $(LIBS_62) $(LIBS) -lpam -ledit 
 endif
 
 #
 #   ejsc.o
 #
-DEPS_64 += $(CONFIG)/inc/bit.h
-DEPS_64 += $(CONFIG)/inc/ejs.h
+DEPS_63 += $(CONFIG)/inc/bit.h
+DEPS_63 += $(CONFIG)/inc/ejs.h
 
 $(CONFIG)/obj/ejsc.o: \
-    src/deps/ejs/ejsc.c $(DEPS_64)
+    src/deps/ejs/ejsc.c $(DEPS_63)
 	@echo '   [Compile] $(CONFIG)/obj/ejsc.o'
 	$(CC) -c -o $(CONFIG)/obj/ejsc.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/ejs/ejsc.c
 
@@ -1340,6 +1219,46 @@ ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
 #   ejsc
 #
+DEPS_64 += $(CONFIG)/inc/mpr.h
+DEPS_64 += $(CONFIG)/inc/bit.h
+DEPS_64 += $(CONFIG)/inc/bitos.h
+DEPS_64 += $(CONFIG)/obj/mprLib.o
+DEPS_64 += $(CONFIG)/bin/libmpr.dylib
+DEPS_64 += $(CONFIG)/inc/pcre.h
+DEPS_64 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_64 += $(CONFIG)/bin/libpcre.dylib
+endif
+DEPS_64 += $(CONFIG)/inc/http.h
+DEPS_64 += $(CONFIG)/obj/httpLib.o
+DEPS_64 += $(CONFIG)/bin/libhttp.dylib
+DEPS_64 += $(CONFIG)/inc/ejs.h
+DEPS_64 += $(CONFIG)/inc/ejs.slots.h
+DEPS_64 += $(CONFIG)/inc/ejsByteGoto.h
+DEPS_64 += $(CONFIG)/obj/ejsLib.o
+DEPS_64 += $(CONFIG)/bin/libejs.dylib
+DEPS_64 += $(CONFIG)/obj/ejsc.o
+
+LIBS_64 += -lejs
+LIBS_64 += -lhttp
+LIBS_64 += -lmpr
+ifeq ($(BIT_PACK_PCRE),1)
+    LIBS_64 += -lpcre
+endif
+ifeq ($(BIT_PACK_SQLITE),1)
+    LIBS_64 += -lsql
+endif
+
+$(CONFIG)/bin/ejsc: $(DEPS_64)
+	@echo '      [Link] $(CONFIG)/bin/ejsc'
+	$(CC) -o $(CONFIG)/bin/ejsc -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejsc.o" $(LIBPATHS_64) $(LIBS_64) $(LIBS_64) $(LIBS) -lpam 
+endif
+
+ifeq ($(BIT_PACK_EJSCRIPT),1)
+#
+#   ejs.mod
+#
+DEPS_65 += src/deps/ejs/ejs.es
 DEPS_65 += $(CONFIG)/inc/mpr.h
 DEPS_65 += $(CONFIG)/inc/bit.h
 DEPS_65 += $(CONFIG)/inc/bitos.h
@@ -1359,60 +1278,20 @@ DEPS_65 += $(CONFIG)/inc/ejsByteGoto.h
 DEPS_65 += $(CONFIG)/obj/ejsLib.o
 DEPS_65 += $(CONFIG)/bin/libejs.dylib
 DEPS_65 += $(CONFIG)/obj/ejsc.o
+DEPS_65 += $(CONFIG)/bin/ejsc
 
-LIBS_65 += -lejs
-LIBS_65 += -lhttp
-LIBS_65 += -lmpr
-ifeq ($(BIT_PACK_PCRE),1)
-    LIBS_65 += -lpcre
-endif
-ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_65 += -lsql
-endif
-
-$(CONFIG)/bin/ejsc: $(DEPS_65)
-	@echo '      [Link] $(CONFIG)/bin/ejsc'
-	$(CC) -o $(CONFIG)/bin/ejsc -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejsc.o" $(LIBPATHS_65) $(LIBS_65) $(LIBS_65) $(LIBS) -lpam 
-endif
-
-ifeq ($(BIT_PACK_EJSCRIPT),1)
-#
-#   ejs.mod
-#
-DEPS_66 += src/deps/ejs/ejs.es
-DEPS_66 += $(CONFIG)/inc/mpr.h
-DEPS_66 += $(CONFIG)/inc/bit.h
-DEPS_66 += $(CONFIG)/inc/bitos.h
-DEPS_66 += $(CONFIG)/obj/mprLib.o
-DEPS_66 += $(CONFIG)/bin/libmpr.dylib
-DEPS_66 += $(CONFIG)/inc/pcre.h
-DEPS_66 += $(CONFIG)/obj/pcre.o
-ifeq ($(BIT_PACK_PCRE),1)
-    DEPS_66 += $(CONFIG)/bin/libpcre.dylib
-endif
-DEPS_66 += $(CONFIG)/inc/http.h
-DEPS_66 += $(CONFIG)/obj/httpLib.o
-DEPS_66 += $(CONFIG)/bin/libhttp.dylib
-DEPS_66 += $(CONFIG)/inc/ejs.h
-DEPS_66 += $(CONFIG)/inc/ejs.slots.h
-DEPS_66 += $(CONFIG)/inc/ejsByteGoto.h
-DEPS_66 += $(CONFIG)/obj/ejsLib.o
-DEPS_66 += $(CONFIG)/bin/libejs.dylib
-DEPS_66 += $(CONFIG)/obj/ejsc.o
-DEPS_66 += $(CONFIG)/bin/ejsc
-
-$(CONFIG)/bin/ejs.mod: $(DEPS_66)
+$(CONFIG)/bin/ejs.mod: $(DEPS_65)
 	$(LBIN)/ejsc --out ./$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null src/deps/ejs/ejs.es
 endif
 
 #
 #   cgiHandler.o
 #
-DEPS_67 += $(CONFIG)/inc/bit.h
-DEPS_67 += $(CONFIG)/inc/appweb.h
+DEPS_66 += $(CONFIG)/inc/bit.h
+DEPS_66 += $(CONFIG)/inc/appweb.h
 
 $(CONFIG)/obj/cgiHandler.o: \
-    src/modules/cgiHandler.c $(DEPS_67)
+    src/modules/cgiHandler.c $(DEPS_66)
 	@echo '   [Compile] $(CONFIG)/obj/cgiHandler.o'
 	$(CC) -c -o $(CONFIG)/obj/cgiHandler.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/modules/cgiHandler.c
 
@@ -1420,50 +1299,50 @@ ifeq ($(BIT_PACK_CGI),1)
 #
 #   libmod_cgi
 #
-DEPS_68 += $(CONFIG)/inc/mpr.h
-DEPS_68 += $(CONFIG)/inc/bit.h
-DEPS_68 += $(CONFIG)/inc/bitos.h
-DEPS_68 += $(CONFIG)/obj/mprLib.o
-DEPS_68 += $(CONFIG)/bin/libmpr.dylib
-DEPS_68 += $(CONFIG)/inc/pcre.h
-DEPS_68 += $(CONFIG)/obj/pcre.o
+DEPS_67 += $(CONFIG)/inc/mpr.h
+DEPS_67 += $(CONFIG)/inc/bit.h
+DEPS_67 += $(CONFIG)/inc/bitos.h
+DEPS_67 += $(CONFIG)/obj/mprLib.o
+DEPS_67 += $(CONFIG)/bin/libmpr.dylib
+DEPS_67 += $(CONFIG)/inc/pcre.h
+DEPS_67 += $(CONFIG)/obj/pcre.o
 ifeq ($(BIT_PACK_PCRE),1)
-    DEPS_68 += $(CONFIG)/bin/libpcre.dylib
+    DEPS_67 += $(CONFIG)/bin/libpcre.dylib
 endif
-DEPS_68 += $(CONFIG)/inc/http.h
-DEPS_68 += $(CONFIG)/obj/httpLib.o
-DEPS_68 += $(CONFIG)/bin/libhttp.dylib
-DEPS_68 += $(CONFIG)/inc/appweb.h
-DEPS_68 += $(CONFIG)/inc/customize.h
-DEPS_68 += $(CONFIG)/obj/config.o
-DEPS_68 += $(CONFIG)/obj/convenience.o
-DEPS_68 += $(CONFIG)/obj/dirHandler.o
-DEPS_68 += $(CONFIG)/obj/fileHandler.o
-DEPS_68 += $(CONFIG)/obj/log.o
-DEPS_68 += $(CONFIG)/obj/server.o
-DEPS_68 += $(CONFIG)/bin/libappweb.dylib
-DEPS_68 += $(CONFIG)/obj/cgiHandler.o
+DEPS_67 += $(CONFIG)/inc/http.h
+DEPS_67 += $(CONFIG)/obj/httpLib.o
+DEPS_67 += $(CONFIG)/bin/libhttp.dylib
+DEPS_67 += $(CONFIG)/inc/appweb.h
+DEPS_67 += $(CONFIG)/inc/customize.h
+DEPS_67 += $(CONFIG)/obj/config.o
+DEPS_67 += $(CONFIG)/obj/convenience.o
+DEPS_67 += $(CONFIG)/obj/dirHandler.o
+DEPS_67 += $(CONFIG)/obj/fileHandler.o
+DEPS_67 += $(CONFIG)/obj/log.o
+DEPS_67 += $(CONFIG)/obj/server.o
+DEPS_67 += $(CONFIG)/bin/libappweb.dylib
+DEPS_67 += $(CONFIG)/obj/cgiHandler.o
 
-LIBS_68 += -lappweb
-LIBS_68 += -lhttp
-LIBS_68 += -lmpr
+LIBS_67 += -lappweb
+LIBS_67 += -lhttp
+LIBS_67 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
-    LIBS_68 += -lpcre
+    LIBS_67 += -lpcre
 endif
 
-$(CONFIG)/bin/libmod_cgi.dylib: $(DEPS_68)
+$(CONFIG)/bin/libmod_cgi.dylib: $(DEPS_67)
 	@echo '      [Link] $(CONFIG)/bin/libmod_cgi.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 4.5.0 -current_version 4.5.0 "$(CONFIG)/obj/cgiHandler.o" $(LIBPATHS_68) $(LIBS_68) $(LIBS_68) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 4.5.0 -current_version 4.5.0 "$(CONFIG)/obj/cgiHandler.o" $(LIBPATHS_67) $(LIBS_67) $(LIBS_67) $(LIBS) -lpam 
 endif
 
 #
 #   ejsHandler.o
 #
-DEPS_69 += $(CONFIG)/inc/bit.h
-DEPS_69 += $(CONFIG)/inc/appweb.h
+DEPS_68 += $(CONFIG)/inc/bit.h
+DEPS_68 += $(CONFIG)/inc/appweb.h
 
 $(CONFIG)/obj/ejsHandler.o: \
-    src/modules/ejsHandler.c $(DEPS_69)
+    src/modules/ejsHandler.c $(DEPS_68)
 	@echo '   [Compile] $(CONFIG)/obj/ejsHandler.o'
 	$(CC) -c -o $(CONFIG)/obj/ejsHandler.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/modules/ejsHandler.c
 
@@ -1471,59 +1350,59 @@ ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
 #   libmod_ejs
 #
-DEPS_70 += $(CONFIG)/inc/mpr.h
-DEPS_70 += $(CONFIG)/inc/bit.h
-DEPS_70 += $(CONFIG)/inc/bitos.h
-DEPS_70 += $(CONFIG)/obj/mprLib.o
-DEPS_70 += $(CONFIG)/bin/libmpr.dylib
-DEPS_70 += $(CONFIG)/inc/pcre.h
-DEPS_70 += $(CONFIG)/obj/pcre.o
+DEPS_69 += $(CONFIG)/inc/mpr.h
+DEPS_69 += $(CONFIG)/inc/bit.h
+DEPS_69 += $(CONFIG)/inc/bitos.h
+DEPS_69 += $(CONFIG)/obj/mprLib.o
+DEPS_69 += $(CONFIG)/bin/libmpr.dylib
+DEPS_69 += $(CONFIG)/inc/pcre.h
+DEPS_69 += $(CONFIG)/obj/pcre.o
 ifeq ($(BIT_PACK_PCRE),1)
-    DEPS_70 += $(CONFIG)/bin/libpcre.dylib
+    DEPS_69 += $(CONFIG)/bin/libpcre.dylib
 endif
-DEPS_70 += $(CONFIG)/inc/http.h
-DEPS_70 += $(CONFIG)/obj/httpLib.o
-DEPS_70 += $(CONFIG)/bin/libhttp.dylib
-DEPS_70 += $(CONFIG)/inc/appweb.h
-DEPS_70 += $(CONFIG)/inc/customize.h
-DEPS_70 += $(CONFIG)/obj/config.o
-DEPS_70 += $(CONFIG)/obj/convenience.o
-DEPS_70 += $(CONFIG)/obj/dirHandler.o
-DEPS_70 += $(CONFIG)/obj/fileHandler.o
-DEPS_70 += $(CONFIG)/obj/log.o
-DEPS_70 += $(CONFIG)/obj/server.o
-DEPS_70 += $(CONFIG)/bin/libappweb.dylib
-DEPS_70 += $(CONFIG)/inc/ejs.h
-DEPS_70 += $(CONFIG)/inc/ejs.slots.h
-DEPS_70 += $(CONFIG)/inc/ejsByteGoto.h
-DEPS_70 += $(CONFIG)/obj/ejsLib.o
-DEPS_70 += $(CONFIG)/bin/libejs.dylib
-DEPS_70 += $(CONFIG)/obj/ejsHandler.o
+DEPS_69 += $(CONFIG)/inc/http.h
+DEPS_69 += $(CONFIG)/obj/httpLib.o
+DEPS_69 += $(CONFIG)/bin/libhttp.dylib
+DEPS_69 += $(CONFIG)/inc/appweb.h
+DEPS_69 += $(CONFIG)/inc/customize.h
+DEPS_69 += $(CONFIG)/obj/config.o
+DEPS_69 += $(CONFIG)/obj/convenience.o
+DEPS_69 += $(CONFIG)/obj/dirHandler.o
+DEPS_69 += $(CONFIG)/obj/fileHandler.o
+DEPS_69 += $(CONFIG)/obj/log.o
+DEPS_69 += $(CONFIG)/obj/server.o
+DEPS_69 += $(CONFIG)/bin/libappweb.dylib
+DEPS_69 += $(CONFIG)/inc/ejs.h
+DEPS_69 += $(CONFIG)/inc/ejs.slots.h
+DEPS_69 += $(CONFIG)/inc/ejsByteGoto.h
+DEPS_69 += $(CONFIG)/obj/ejsLib.o
+DEPS_69 += $(CONFIG)/bin/libejs.dylib
+DEPS_69 += $(CONFIG)/obj/ejsHandler.o
 
-LIBS_70 += -lappweb
-LIBS_70 += -lhttp
-LIBS_70 += -lmpr
+LIBS_69 += -lappweb
+LIBS_69 += -lhttp
+LIBS_69 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
-    LIBS_70 += -lpcre
+    LIBS_69 += -lpcre
 endif
-LIBS_70 += -lejs
+LIBS_69 += -lejs
 ifeq ($(BIT_PACK_SQLITE),1)
-    LIBS_70 += -lsql
+    LIBS_69 += -lsql
 endif
 
-$(CONFIG)/bin/libmod_ejs.dylib: $(DEPS_70)
+$(CONFIG)/bin/libmod_ejs.dylib: $(DEPS_69)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ejs.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 4.5.0 -current_version 4.5.0 "$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_70) $(LIBS_70) $(LIBS_70) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 4.5.0 -current_version 4.5.0 "$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_69) $(LIBS_69) $(LIBS_69) $(LIBS) -lpam 
 endif
 
 #
 #   phpHandler.o
 #
-DEPS_71 += $(CONFIG)/inc/bit.h
-DEPS_71 += $(CONFIG)/inc/appweb.h
+DEPS_70 += $(CONFIG)/inc/bit.h
+DEPS_70 += $(CONFIG)/inc/appweb.h
 
 $(CONFIG)/obj/phpHandler.o: \
-    src/modules/phpHandler.c $(DEPS_71)
+    src/modules/phpHandler.c $(DEPS_70)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.o'
 	$(CC) -c -o $(CONFIG)/obj/phpHandler.o -arch $(CC_ARCH) $(IFLAGS) "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/modules/phpHandler.c
 
@@ -1531,52 +1410,52 @@ ifeq ($(BIT_PACK_PHP),1)
 #
 #   libmod_php
 #
-DEPS_72 += $(CONFIG)/inc/mpr.h
-DEPS_72 += $(CONFIG)/inc/bit.h
-DEPS_72 += $(CONFIG)/inc/bitos.h
-DEPS_72 += $(CONFIG)/obj/mprLib.o
-DEPS_72 += $(CONFIG)/bin/libmpr.dylib
-DEPS_72 += $(CONFIG)/inc/pcre.h
-DEPS_72 += $(CONFIG)/obj/pcre.o
+DEPS_71 += $(CONFIG)/inc/mpr.h
+DEPS_71 += $(CONFIG)/inc/bit.h
+DEPS_71 += $(CONFIG)/inc/bitos.h
+DEPS_71 += $(CONFIG)/obj/mprLib.o
+DEPS_71 += $(CONFIG)/bin/libmpr.dylib
+DEPS_71 += $(CONFIG)/inc/pcre.h
+DEPS_71 += $(CONFIG)/obj/pcre.o
 ifeq ($(BIT_PACK_PCRE),1)
-    DEPS_72 += $(CONFIG)/bin/libpcre.dylib
+    DEPS_71 += $(CONFIG)/bin/libpcre.dylib
 endif
-DEPS_72 += $(CONFIG)/inc/http.h
-DEPS_72 += $(CONFIG)/obj/httpLib.o
-DEPS_72 += $(CONFIG)/bin/libhttp.dylib
-DEPS_72 += $(CONFIG)/inc/appweb.h
-DEPS_72 += $(CONFIG)/inc/customize.h
-DEPS_72 += $(CONFIG)/obj/config.o
-DEPS_72 += $(CONFIG)/obj/convenience.o
-DEPS_72 += $(CONFIG)/obj/dirHandler.o
-DEPS_72 += $(CONFIG)/obj/fileHandler.o
-DEPS_72 += $(CONFIG)/obj/log.o
-DEPS_72 += $(CONFIG)/obj/server.o
-DEPS_72 += $(CONFIG)/bin/libappweb.dylib
-DEPS_72 += $(CONFIG)/obj/phpHandler.o
+DEPS_71 += $(CONFIG)/inc/http.h
+DEPS_71 += $(CONFIG)/obj/httpLib.o
+DEPS_71 += $(CONFIG)/bin/libhttp.dylib
+DEPS_71 += $(CONFIG)/inc/appweb.h
+DEPS_71 += $(CONFIG)/inc/customize.h
+DEPS_71 += $(CONFIG)/obj/config.o
+DEPS_71 += $(CONFIG)/obj/convenience.o
+DEPS_71 += $(CONFIG)/obj/dirHandler.o
+DEPS_71 += $(CONFIG)/obj/fileHandler.o
+DEPS_71 += $(CONFIG)/obj/log.o
+DEPS_71 += $(CONFIG)/obj/server.o
+DEPS_71 += $(CONFIG)/bin/libappweb.dylib
+DEPS_71 += $(CONFIG)/obj/phpHandler.o
 
-LIBS_72 += -lappweb
-LIBS_72 += -lhttp
-LIBS_72 += -lmpr
+LIBS_71 += -lappweb
+LIBS_71 += -lhttp
+LIBS_71 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
-    LIBS_72 += -lpcre
+    LIBS_71 += -lpcre
 endif
-LIBS_72 += -lphp5
-LIBPATHS_72 += -L$(BIT_PACK_PHP_PATH)/libs
+LIBS_71 += -lphp5
+LIBPATHS_71 += -L$(BIT_PACK_PHP_PATH)/libs
 
-$(CONFIG)/bin/libmod_php.dylib: $(DEPS_72)
+$(CONFIG)/bin/libmod_php.dylib: $(DEPS_71)
 	@echo '      [Link] $(CONFIG)/bin/libmod_php.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_php.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmod_php.dylib -compatibility_version 4.5.0 -current_version 4.5.0 "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_72) $(LIBS_72) $(LIBS_72) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_php.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmod_php.dylib -compatibility_version 4.5.0 -current_version 4.5.0 "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS) -lpam 
 endif
 
 #
 #   sslModule.o
 #
-DEPS_73 += $(CONFIG)/inc/bit.h
-DEPS_73 += $(CONFIG)/inc/appweb.h
+DEPS_72 += $(CONFIG)/inc/bit.h
+DEPS_72 += $(CONFIG)/inc/appweb.h
 
 $(CONFIG)/obj/sslModule.o: \
-    src/modules/sslModule.c $(DEPS_73)
+    src/modules/sslModule.c $(DEPS_72)
 	@echo '   [Compile] $(CONFIG)/obj/sslModule.o'
 	$(CC) -c -o $(CONFIG)/obj/sslModule.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/modules/sslModule.c
 
@@ -1584,125 +1463,125 @@ ifeq ($(BIT_PACK_SSL),1)
 #
 #   libmod_ssl
 #
-DEPS_74 += $(CONFIG)/inc/mpr.h
-DEPS_74 += $(CONFIG)/inc/bit.h
-DEPS_74 += $(CONFIG)/inc/bitos.h
-DEPS_74 += $(CONFIG)/obj/mprLib.o
-DEPS_74 += $(CONFIG)/bin/libmpr.dylib
-DEPS_74 += $(CONFIG)/inc/pcre.h
-DEPS_74 += $(CONFIG)/obj/pcre.o
+DEPS_73 += $(CONFIG)/inc/mpr.h
+DEPS_73 += $(CONFIG)/inc/bit.h
+DEPS_73 += $(CONFIG)/inc/bitos.h
+DEPS_73 += $(CONFIG)/obj/mprLib.o
+DEPS_73 += $(CONFIG)/bin/libmpr.dylib
+DEPS_73 += $(CONFIG)/inc/pcre.h
+DEPS_73 += $(CONFIG)/obj/pcre.o
 ifeq ($(BIT_PACK_PCRE),1)
-    DEPS_74 += $(CONFIG)/bin/libpcre.dylib
+    DEPS_73 += $(CONFIG)/bin/libpcre.dylib
 endif
-DEPS_74 += $(CONFIG)/inc/http.h
-DEPS_74 += $(CONFIG)/obj/httpLib.o
-DEPS_74 += $(CONFIG)/bin/libhttp.dylib
-DEPS_74 += $(CONFIG)/inc/appweb.h
-DEPS_74 += $(CONFIG)/inc/customize.h
-DEPS_74 += $(CONFIG)/obj/config.o
-DEPS_74 += $(CONFIG)/obj/convenience.o
-DEPS_74 += $(CONFIG)/obj/dirHandler.o
-DEPS_74 += $(CONFIG)/obj/fileHandler.o
-DEPS_74 += $(CONFIG)/obj/log.o
-DEPS_74 += $(CONFIG)/obj/server.o
-DEPS_74 += $(CONFIG)/bin/libappweb.dylib
-DEPS_74 += $(CONFIG)/inc/est.h
-DEPS_74 += $(CONFIG)/obj/estLib.o
+DEPS_73 += $(CONFIG)/inc/http.h
+DEPS_73 += $(CONFIG)/obj/httpLib.o
+DEPS_73 += $(CONFIG)/bin/libhttp.dylib
+DEPS_73 += $(CONFIG)/inc/appweb.h
+DEPS_73 += $(CONFIG)/inc/customize.h
+DEPS_73 += $(CONFIG)/obj/config.o
+DEPS_73 += $(CONFIG)/obj/convenience.o
+DEPS_73 += $(CONFIG)/obj/dirHandler.o
+DEPS_73 += $(CONFIG)/obj/fileHandler.o
+DEPS_73 += $(CONFIG)/obj/log.o
+DEPS_73 += $(CONFIG)/obj/server.o
+DEPS_73 += $(CONFIG)/bin/libappweb.dylib
+DEPS_73 += $(CONFIG)/inc/est.h
+DEPS_73 += $(CONFIG)/obj/estLib.o
 ifeq ($(BIT_PACK_EST),1)
-    DEPS_74 += $(CONFIG)/bin/libest.dylib
+    DEPS_73 += $(CONFIG)/bin/libest.dylib
 endif
-DEPS_74 += $(CONFIG)/obj/mprSsl.o
-DEPS_74 += $(CONFIG)/bin/libmprssl.dylib
-DEPS_74 += $(CONFIG)/obj/sslModule.o
+DEPS_73 += $(CONFIG)/obj/mprSsl.o
+DEPS_73 += $(CONFIG)/bin/libmprssl.dylib
+DEPS_73 += $(CONFIG)/obj/sslModule.o
 
-LIBS_74 += -lappweb
-LIBS_74 += -lhttp
-LIBS_74 += -lmpr
+LIBS_73 += -lappweb
+LIBS_73 += -lhttp
+LIBS_73 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
-    LIBS_74 += -lpcre
+    LIBS_73 += -lpcre
 endif
-LIBS_74 += -lmprssl
+LIBS_73 += -lmprssl
 ifeq ($(BIT_PACK_EST),1)
-    LIBS_74 += -lest
+    LIBS_73 += -lest
 endif
 ifeq ($(BIT_PACK_MATRIXSSL),1)
-    LIBS_74 += -lmatrixssl
-    LIBPATHS_74 += -L$(BIT_PACK_MATRIXSSL_PATH)
+    LIBS_73 += -lmatrixssl
+    LIBPATHS_73 += -L$(BIT_PACK_MATRIXSSL_PATH)
 endif
 ifeq ($(BIT_PACK_NANOSSL),1)
-    LIBS_74 += -lssls
-    LIBPATHS_74 += -L$(BIT_PACK_NANOSSL_PATH)/bin
+    LIBS_73 += -lssls
+    LIBPATHS_73 += -L$(BIT_PACK_NANOSSL_PATH)/bin
 endif
 ifeq ($(BIT_PACK_OPENSSL),1)
-    LIBS_74 += -lssl
-    LIBPATHS_74 += -L$(BIT_PACK_OPENSSL_PATH)
+    LIBS_73 += -lssl
+    LIBPATHS_73 += -L$(BIT_PACK_OPENSSL_PATH)
 endif
 ifeq ($(BIT_PACK_OPENSSL),1)
-    LIBS_74 += -lcrypto
-    LIBPATHS_74 += -L$(BIT_PACK_OPENSSL_PATH)
+    LIBS_73 += -lcrypto
+    LIBPATHS_73 += -L$(BIT_PACK_OPENSSL_PATH)
 endif
 
-$(CONFIG)/bin/libmod_ssl.dylib: $(DEPS_74)
+$(CONFIG)/bin/libmod_ssl.dylib: $(DEPS_73)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ssl.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmod_ssl.dylib -compatibility_version 4.5.0 -current_version 4.5.0 "$(CONFIG)/obj/sslModule.o" $(LIBPATHS_74) $(LIBS_74) $(LIBS_74) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmod_ssl.dylib -compatibility_version 4.5.0 -current_version 4.5.0 "$(CONFIG)/obj/sslModule.o" $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) -lpam 
 endif
 
 #
 #   authpass.o
 #
-DEPS_75 += $(CONFIG)/inc/bit.h
-DEPS_75 += $(CONFIG)/inc/appweb.h
+DEPS_74 += $(CONFIG)/inc/bit.h
+DEPS_74 += $(CONFIG)/inc/appweb.h
 
 $(CONFIG)/obj/authpass.o: \
-    src/utils/authpass.c $(DEPS_75)
+    src/utils/authpass.c $(DEPS_74)
 	@echo '   [Compile] $(CONFIG)/obj/authpass.o'
 	$(CC) -c -o $(CONFIG)/obj/authpass.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/utils/authpass.c
 
 #
 #   authpass
 #
-DEPS_76 += $(CONFIG)/inc/mpr.h
-DEPS_76 += $(CONFIG)/inc/bit.h
-DEPS_76 += $(CONFIG)/inc/bitos.h
-DEPS_76 += $(CONFIG)/obj/mprLib.o
-DEPS_76 += $(CONFIG)/bin/libmpr.dylib
-DEPS_76 += $(CONFIG)/inc/pcre.h
-DEPS_76 += $(CONFIG)/obj/pcre.o
+DEPS_75 += $(CONFIG)/inc/mpr.h
+DEPS_75 += $(CONFIG)/inc/bit.h
+DEPS_75 += $(CONFIG)/inc/bitos.h
+DEPS_75 += $(CONFIG)/obj/mprLib.o
+DEPS_75 += $(CONFIG)/bin/libmpr.dylib
+DEPS_75 += $(CONFIG)/inc/pcre.h
+DEPS_75 += $(CONFIG)/obj/pcre.o
 ifeq ($(BIT_PACK_PCRE),1)
-    DEPS_76 += $(CONFIG)/bin/libpcre.dylib
+    DEPS_75 += $(CONFIG)/bin/libpcre.dylib
 endif
-DEPS_76 += $(CONFIG)/inc/http.h
-DEPS_76 += $(CONFIG)/obj/httpLib.o
-DEPS_76 += $(CONFIG)/bin/libhttp.dylib
-DEPS_76 += $(CONFIG)/inc/appweb.h
-DEPS_76 += $(CONFIG)/inc/customize.h
-DEPS_76 += $(CONFIG)/obj/config.o
-DEPS_76 += $(CONFIG)/obj/convenience.o
-DEPS_76 += $(CONFIG)/obj/dirHandler.o
-DEPS_76 += $(CONFIG)/obj/fileHandler.o
-DEPS_76 += $(CONFIG)/obj/log.o
-DEPS_76 += $(CONFIG)/obj/server.o
-DEPS_76 += $(CONFIG)/bin/libappweb.dylib
-DEPS_76 += $(CONFIG)/obj/authpass.o
+DEPS_75 += $(CONFIG)/inc/http.h
+DEPS_75 += $(CONFIG)/obj/httpLib.o
+DEPS_75 += $(CONFIG)/bin/libhttp.dylib
+DEPS_75 += $(CONFIG)/inc/appweb.h
+DEPS_75 += $(CONFIG)/inc/customize.h
+DEPS_75 += $(CONFIG)/obj/config.o
+DEPS_75 += $(CONFIG)/obj/convenience.o
+DEPS_75 += $(CONFIG)/obj/dirHandler.o
+DEPS_75 += $(CONFIG)/obj/fileHandler.o
+DEPS_75 += $(CONFIG)/obj/log.o
+DEPS_75 += $(CONFIG)/obj/server.o
+DEPS_75 += $(CONFIG)/bin/libappweb.dylib
+DEPS_75 += $(CONFIG)/obj/authpass.o
 
-LIBS_76 += -lappweb
-LIBS_76 += -lhttp
-LIBS_76 += -lmpr
+LIBS_75 += -lappweb
+LIBS_75 += -lhttp
+LIBS_75 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
-    LIBS_76 += -lpcre
+    LIBS_75 += -lpcre
 endif
 
-$(CONFIG)/bin/authpass: $(DEPS_76)
+$(CONFIG)/bin/authpass: $(DEPS_75)
 	@echo '      [Link] $(CONFIG)/bin/authpass'
-	$(CC) -o $(CONFIG)/bin/authpass -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/authpass.o" $(LIBPATHS_76) $(LIBS_76) $(LIBS_76) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/authpass -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/authpass.o" $(LIBPATHS_75) $(LIBS_75) $(LIBS_75) $(LIBS) -lpam 
 
 #
 #   cgiProgram.o
 #
-DEPS_77 += $(CONFIG)/inc/bit.h
+DEPS_76 += $(CONFIG)/inc/bit.h
 
 $(CONFIG)/obj/cgiProgram.o: \
-    src/utils/cgiProgram.c $(DEPS_77)
+    src/utils/cgiProgram.c $(DEPS_76)
 	@echo '   [Compile] $(CONFIG)/obj/cgiProgram.o'
 	$(CC) -c -o $(CONFIG)/obj/cgiProgram.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/utils/cgiProgram.c
 
@@ -1710,10 +1589,10 @@ ifeq ($(BIT_PACK_CGI),1)
 #
 #   cgiProgram
 #
-DEPS_78 += $(CONFIG)/inc/bit.h
-DEPS_78 += $(CONFIG)/obj/cgiProgram.o
+DEPS_77 += $(CONFIG)/inc/bit.h
+DEPS_77 += $(CONFIG)/obj/cgiProgram.o
 
-$(CONFIG)/bin/cgiProgram: $(DEPS_78)
+$(CONFIG)/bin/cgiProgram: $(DEPS_77)
 	@echo '      [Link] $(CONFIG)/bin/cgiProgram'
 	$(CC) -o $(CONFIG)/bin/cgiProgram -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/cgiProgram.o" $(LIBS) 
 endif
@@ -1721,97 +1600,97 @@ endif
 #
 #   slink.c
 #
-src/server/slink.c: $(DEPS_79)
+src/server/slink.c: $(DEPS_78)
 	cd src/server; [ ! -f slink.c ] && cp slink.empty slink.c ; true ; cd ../..
 
 #
 #   slink.o
 #
-DEPS_80 += $(CONFIG)/inc/bit.h
-DEPS_80 += $(CONFIG)/inc/esp.h
+DEPS_79 += $(CONFIG)/inc/bit.h
+DEPS_79 += $(CONFIG)/inc/esp.h
 
 $(CONFIG)/obj/slink.o: \
-    src/server/slink.c $(DEPS_80)
+    src/server/slink.c $(DEPS_79)
 	@echo '   [Compile] $(CONFIG)/obj/slink.o'
 	$(CC) -c -o $(CONFIG)/obj/slink.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/server/slink.c
 
 #
 #   libslink
 #
-DEPS_81 += src/server/slink.c
-DEPS_81 += $(CONFIG)/inc/bit.h
-DEPS_81 += $(CONFIG)/inc/esp.h
-DEPS_81 += $(CONFIG)/obj/slink.o
+DEPS_80 += src/server/slink.c
+DEPS_80 += $(CONFIG)/inc/bit.h
+DEPS_80 += $(CONFIG)/inc/esp.h
+DEPS_80 += $(CONFIG)/obj/slink.o
 
-$(CONFIG)/bin/libslink.dylib: $(DEPS_81)
+$(CONFIG)/bin/libslink.dylib: $(DEPS_80)
 	@echo '      [Link] $(CONFIG)/bin/libslink.dylib'
 	$(CC) -dynamiclib -o $(CONFIG)/bin/libslink.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 4.5.0 -current_version 4.5.0 "$(CONFIG)/obj/slink.o" $(LIBS) 
 
 #
 #   appweb.o
 #
-DEPS_82 += $(CONFIG)/inc/bit.h
-DEPS_82 += $(CONFIG)/inc/appweb.h
-DEPS_82 += $(CONFIG)/inc/esp.h
+DEPS_81 += $(CONFIG)/inc/bit.h
+DEPS_81 += $(CONFIG)/inc/appweb.h
+DEPS_81 += $(CONFIG)/inc/esp.h
 
 $(CONFIG)/obj/appweb.o: \
-    src/server/appweb.c $(DEPS_82)
+    src/server/appweb.c $(DEPS_81)
 	@echo '   [Compile] $(CONFIG)/obj/appweb.o'
 	$(CC) -c -o $(CONFIG)/obj/appweb.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/server/appweb.c
 
 #
 #   appweb
 #
-DEPS_83 += $(CONFIG)/inc/mpr.h
-DEPS_83 += $(CONFIG)/inc/bit.h
-DEPS_83 += $(CONFIG)/inc/bitos.h
-DEPS_83 += $(CONFIG)/obj/mprLib.o
-DEPS_83 += $(CONFIG)/bin/libmpr.dylib
-DEPS_83 += $(CONFIG)/inc/pcre.h
-DEPS_83 += $(CONFIG)/obj/pcre.o
+DEPS_82 += $(CONFIG)/inc/mpr.h
+DEPS_82 += $(CONFIG)/inc/bit.h
+DEPS_82 += $(CONFIG)/inc/bitos.h
+DEPS_82 += $(CONFIG)/obj/mprLib.o
+DEPS_82 += $(CONFIG)/bin/libmpr.dylib
+DEPS_82 += $(CONFIG)/inc/pcre.h
+DEPS_82 += $(CONFIG)/obj/pcre.o
 ifeq ($(BIT_PACK_PCRE),1)
-    DEPS_83 += $(CONFIG)/bin/libpcre.dylib
+    DEPS_82 += $(CONFIG)/bin/libpcre.dylib
 endif
-DEPS_83 += $(CONFIG)/inc/http.h
-DEPS_83 += $(CONFIG)/obj/httpLib.o
-DEPS_83 += $(CONFIG)/bin/libhttp.dylib
-DEPS_83 += $(CONFIG)/inc/appweb.h
-DEPS_83 += $(CONFIG)/inc/customize.h
-DEPS_83 += $(CONFIG)/obj/config.o
-DEPS_83 += $(CONFIG)/obj/convenience.o
-DEPS_83 += $(CONFIG)/obj/dirHandler.o
-DEPS_83 += $(CONFIG)/obj/fileHandler.o
-DEPS_83 += $(CONFIG)/obj/log.o
-DEPS_83 += $(CONFIG)/obj/server.o
-DEPS_83 += $(CONFIG)/bin/libappweb.dylib
-DEPS_83 += src/server/slink.c
-DEPS_83 += $(CONFIG)/inc/esp.h
-DEPS_83 += $(CONFIG)/obj/slink.o
-DEPS_83 += $(CONFIG)/bin/libslink.dylib
-DEPS_83 += $(CONFIG)/obj/appweb.o
+DEPS_82 += $(CONFIG)/inc/http.h
+DEPS_82 += $(CONFIG)/obj/httpLib.o
+DEPS_82 += $(CONFIG)/bin/libhttp.dylib
+DEPS_82 += $(CONFIG)/inc/appweb.h
+DEPS_82 += $(CONFIG)/inc/customize.h
+DEPS_82 += $(CONFIG)/obj/config.o
+DEPS_82 += $(CONFIG)/obj/convenience.o
+DEPS_82 += $(CONFIG)/obj/dirHandler.o
+DEPS_82 += $(CONFIG)/obj/fileHandler.o
+DEPS_82 += $(CONFIG)/obj/log.o
+DEPS_82 += $(CONFIG)/obj/server.o
+DEPS_82 += $(CONFIG)/bin/libappweb.dylib
+DEPS_82 += src/server/slink.c
+DEPS_82 += $(CONFIG)/inc/esp.h
+DEPS_82 += $(CONFIG)/obj/slink.o
+DEPS_82 += $(CONFIG)/bin/libslink.dylib
+DEPS_82 += $(CONFIG)/obj/appweb.o
 
-LIBS_83 += -lappweb
-LIBS_83 += -lhttp
-LIBS_83 += -lmpr
+LIBS_82 += -lappweb
+LIBS_82 += -lhttp
+LIBS_82 += -lmpr
 ifeq ($(BIT_PACK_PCRE),1)
-    LIBS_83 += -lpcre
+    LIBS_82 += -lpcre
 endif
-LIBS_83 += -lslink
+LIBS_82 += -lslink
 
-$(CONFIG)/bin/appweb: $(DEPS_83)
+$(CONFIG)/bin/appweb: $(DEPS_82)
 	@echo '      [Link] $(CONFIG)/bin/appweb'
-	$(CC) -o $(CONFIG)/bin/appweb -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/appweb.o" $(LIBPATHS_83) $(LIBS_83) $(LIBS_83) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/appweb -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/appweb.o" $(LIBPATHS_82) $(LIBS_82) $(LIBS_82) $(LIBS) -lpam 
 
 #
 #   server-cache
 #
-src/server/cache: $(DEPS_84)
+src/server/cache: $(DEPS_83)
 	cd src/server; mkdir -p cache ; cd ../..
 
 #
 #   testAppweb.h
 #
-$(CONFIG)/inc/testAppweb.h: $(DEPS_85)
+$(CONFIG)/inc/testAppweb.h: $(DEPS_84)
 	@echo '      [Copy] $(CONFIG)/inc/testAppweb.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp test/src/testAppweb.h $(CONFIG)/inc/testAppweb.h
@@ -1819,29 +1698,70 @@ $(CONFIG)/inc/testAppweb.h: $(DEPS_85)
 #
 #   testAppweb.o
 #
-DEPS_86 += $(CONFIG)/inc/bit.h
-DEPS_86 += $(CONFIG)/inc/testAppweb.h
-DEPS_86 += $(CONFIG)/inc/mpr.h
-DEPS_86 += $(CONFIG)/inc/http.h
+DEPS_85 += $(CONFIG)/inc/bit.h
+DEPS_85 += $(CONFIG)/inc/testAppweb.h
+DEPS_85 += $(CONFIG)/inc/mpr.h
+DEPS_85 += $(CONFIG)/inc/http.h
 
 $(CONFIG)/obj/testAppweb.o: \
-    test/src/testAppweb.c $(DEPS_86)
+    test/src/testAppweb.c $(DEPS_85)
 	@echo '   [Compile] $(CONFIG)/obj/testAppweb.o'
 	$(CC) -c -o $(CONFIG)/obj/testAppweb.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) test/src/testAppweb.c
 
 #
 #   testHttp.o
 #
-DEPS_87 += $(CONFIG)/inc/bit.h
-DEPS_87 += $(CONFIG)/inc/testAppweb.h
+DEPS_86 += $(CONFIG)/inc/bit.h
+DEPS_86 += $(CONFIG)/inc/testAppweb.h
 
 $(CONFIG)/obj/testHttp.o: \
-    test/src/testHttp.c $(DEPS_87)
+    test/src/testHttp.c $(DEPS_86)
 	@echo '   [Compile] $(CONFIG)/obj/testHttp.o'
 	$(CC) -c -o $(CONFIG)/obj/testHttp.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) test/src/testHttp.c
 
 #
 #   testAppweb
+#
+DEPS_87 += $(CONFIG)/inc/mpr.h
+DEPS_87 += $(CONFIG)/inc/bit.h
+DEPS_87 += $(CONFIG)/inc/bitos.h
+DEPS_87 += $(CONFIG)/obj/mprLib.o
+DEPS_87 += $(CONFIG)/bin/libmpr.dylib
+DEPS_87 += $(CONFIG)/inc/pcre.h
+DEPS_87 += $(CONFIG)/obj/pcre.o
+ifeq ($(BIT_PACK_PCRE),1)
+    DEPS_87 += $(CONFIG)/bin/libpcre.dylib
+endif
+DEPS_87 += $(CONFIG)/inc/http.h
+DEPS_87 += $(CONFIG)/obj/httpLib.o
+DEPS_87 += $(CONFIG)/bin/libhttp.dylib
+DEPS_87 += $(CONFIG)/inc/appweb.h
+DEPS_87 += $(CONFIG)/inc/customize.h
+DEPS_87 += $(CONFIG)/obj/config.o
+DEPS_87 += $(CONFIG)/obj/convenience.o
+DEPS_87 += $(CONFIG)/obj/dirHandler.o
+DEPS_87 += $(CONFIG)/obj/fileHandler.o
+DEPS_87 += $(CONFIG)/obj/log.o
+DEPS_87 += $(CONFIG)/obj/server.o
+DEPS_87 += $(CONFIG)/bin/libappweb.dylib
+DEPS_87 += $(CONFIG)/inc/testAppweb.h
+DEPS_87 += $(CONFIG)/obj/testAppweb.o
+DEPS_87 += $(CONFIG)/obj/testHttp.o
+
+LIBS_87 += -lappweb
+LIBS_87 += -lhttp
+LIBS_87 += -lmpr
+ifeq ($(BIT_PACK_PCRE),1)
+    LIBS_87 += -lpcre
+endif
+
+$(CONFIG)/bin/testAppweb: $(DEPS_87)
+	@echo '      [Link] $(CONFIG)/bin/testAppweb'
+	$(CC) -o $(CONFIG)/bin/testAppweb -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/testAppweb.o" "$(CONFIG)/obj/testHttp.o" $(LIBPATHS_87) $(LIBS_87) $(LIBS_87) $(LIBS) -lpam 
+
+ifeq ($(BIT_PACK_CGI),1)
+#
+#   test-testScript
 #
 DEPS_88 += $(CONFIG)/inc/mpr.h
 DEPS_88 += $(CONFIG)/inc/bit.h
@@ -1868,21 +1788,15 @@ DEPS_88 += $(CONFIG)/bin/libappweb.dylib
 DEPS_88 += $(CONFIG)/inc/testAppweb.h
 DEPS_88 += $(CONFIG)/obj/testAppweb.o
 DEPS_88 += $(CONFIG)/obj/testHttp.o
+DEPS_88 += $(CONFIG)/bin/testAppweb
 
-LIBS_88 += -lappweb
-LIBS_88 += -lhttp
-LIBS_88 += -lmpr
-ifeq ($(BIT_PACK_PCRE),1)
-    LIBS_88 += -lpcre
+test/cgi-bin/testScript: $(DEPS_88)
+	cd test; echo '#!../$(CONFIG)/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript ; cd ..
 endif
-
-$(CONFIG)/bin/testAppweb: $(DEPS_88)
-	@echo '      [Link] $(CONFIG)/bin/testAppweb'
-	$(CC) -o $(CONFIG)/bin/testAppweb -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/testAppweb.o" "$(CONFIG)/obj/testHttp.o" $(LIBPATHS_88) $(LIBS_88) $(LIBS_88) $(LIBS) -lpam 
 
 ifeq ($(BIT_PACK_CGI),1)
 #
-#   test-testScript
+#   test-cache.cgi
 #
 DEPS_89 += $(CONFIG)/inc/mpr.h
 DEPS_89 += $(CONFIG)/inc/bit.h
@@ -1911,13 +1825,15 @@ DEPS_89 += $(CONFIG)/obj/testAppweb.o
 DEPS_89 += $(CONFIG)/obj/testHttp.o
 DEPS_89 += $(CONFIG)/bin/testAppweb
 
-test/cgi-bin/testScript: $(DEPS_89)
-	cd test; echo '#!../$(CONFIG)/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript ; cd ..
+test/web/caching/cache.cgi: $(DEPS_89)
+	cd test; echo "#!`type -p ejs`" >web/caching/cache.cgi ; cd ..
+	cd test; echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi ; cd ..
+	cd test; chmod +x web/caching/cache.cgi ; cd ..
 endif
 
 ifeq ($(BIT_PACK_CGI),1)
 #
-#   test-cache.cgi
+#   test-basic.cgi
 #
 DEPS_90 += $(CONFIG)/inc/mpr.h
 DEPS_90 += $(CONFIG)/inc/bit.h
@@ -1946,44 +1862,7 @@ DEPS_90 += $(CONFIG)/obj/testAppweb.o
 DEPS_90 += $(CONFIG)/obj/testHttp.o
 DEPS_90 += $(CONFIG)/bin/testAppweb
 
-test/web/caching/cache.cgi: $(DEPS_90)
-	cd test; echo "#!`type -p ejs`" >web/caching/cache.cgi ; cd ..
-	cd test; echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi ; cd ..
-	cd test; chmod +x web/caching/cache.cgi ; cd ..
-endif
-
-ifeq ($(BIT_PACK_CGI),1)
-#
-#   test-basic.cgi
-#
-DEPS_91 += $(CONFIG)/inc/mpr.h
-DEPS_91 += $(CONFIG)/inc/bit.h
-DEPS_91 += $(CONFIG)/inc/bitos.h
-DEPS_91 += $(CONFIG)/obj/mprLib.o
-DEPS_91 += $(CONFIG)/bin/libmpr.dylib
-DEPS_91 += $(CONFIG)/inc/pcre.h
-DEPS_91 += $(CONFIG)/obj/pcre.o
-ifeq ($(BIT_PACK_PCRE),1)
-    DEPS_91 += $(CONFIG)/bin/libpcre.dylib
-endif
-DEPS_91 += $(CONFIG)/inc/http.h
-DEPS_91 += $(CONFIG)/obj/httpLib.o
-DEPS_91 += $(CONFIG)/bin/libhttp.dylib
-DEPS_91 += $(CONFIG)/inc/appweb.h
-DEPS_91 += $(CONFIG)/inc/customize.h
-DEPS_91 += $(CONFIG)/obj/config.o
-DEPS_91 += $(CONFIG)/obj/convenience.o
-DEPS_91 += $(CONFIG)/obj/dirHandler.o
-DEPS_91 += $(CONFIG)/obj/fileHandler.o
-DEPS_91 += $(CONFIG)/obj/log.o
-DEPS_91 += $(CONFIG)/obj/server.o
-DEPS_91 += $(CONFIG)/bin/libappweb.dylib
-DEPS_91 += $(CONFIG)/inc/testAppweb.h
-DEPS_91 += $(CONFIG)/obj/testAppweb.o
-DEPS_91 += $(CONFIG)/obj/testHttp.o
-DEPS_91 += $(CONFIG)/bin/testAppweb
-
-test/web/auth/basic/basic.cgi: $(DEPS_91)
+test/web/auth/basic/basic.cgi: $(DEPS_90)
 	cd test; echo "#!`type -p ejs`" >web/auth/basic/basic.cgi ; cd ..
 	cd test; echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi ; cd ..
 	cd test; chmod +x web/auth/basic/basic.cgi ; cd ..
@@ -1993,11 +1872,11 @@ ifeq ($(BIT_PACK_CGI),1)
 #
 #   test-cgiProgram
 #
-DEPS_92 += $(CONFIG)/inc/bit.h
-DEPS_92 += $(CONFIG)/obj/cgiProgram.o
-DEPS_92 += $(CONFIG)/bin/cgiProgram
+DEPS_91 += $(CONFIG)/inc/bit.h
+DEPS_91 += $(CONFIG)/obj/cgiProgram.o
+DEPS_91 += $(CONFIG)/bin/cgiProgram
 
-test/cgi-bin/cgiProgram: $(DEPS_92)
+test/cgi-bin/cgiProgram: $(DEPS_91)
 	cd test; cp ../$(CONFIG)/bin/cgiProgram cgi-bin/cgiProgram ; cd ..
 	cd test; cp ../$(CONFIG)/bin/cgiProgram cgi-bin/nph-cgiProgram ; cd ..
 	cd test; cp ../$(CONFIG)/bin/cgiProgram 'cgi-bin/cgi Program' ; cd ..
@@ -2009,15 +1888,15 @@ endif
 #
 #   stop
 #
-DEPS_93 += compile
+DEPS_92 += compile
 
-stop: $(DEPS_93)
+stop: $(DEPS_92)
 	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
 
 #
 #   installBinary
 #
-installBinary: $(DEPS_94)
+installBinary: $(DEPS_93)
 	mkdir -p "$(BIT_APP_PREFIX)"
 	rm -f "$(BIT_APP_PREFIX)/latest"
 	ln -s "4.5.0" "$(BIT_APP_PREFIX)/latest"
@@ -2082,119 +1961,8 @@ ifeq ($(BIT_PACK_PHP),1)
 	cp $(CONFIG)/bin/libphp5.dylib $(BIT_VAPP_PREFIX)/bin/libphp5.dylib
 endif
 ifeq ($(BIT_PACK_ESP),1)
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/angular/client/lib/angular"
-	cp src/esp/packs/angular/client/lib/angular/angular-animate.js $(BIT_VAPP_PREFIX)/esp/angular/client/lib/angular/angular-animate.js
-	cp src/esp/packs/angular/client/lib/angular/angular-bootstrap-prettify.js $(BIT_VAPP_PREFIX)/esp/angular/client/lib/angular/angular-bootstrap-prettify.js
-	cp src/esp/packs/angular/client/lib/angular/angular-bootstrap.js $(BIT_VAPP_PREFIX)/esp/angular/client/lib/angular/angular-bootstrap.js
-	cp src/esp/packs/angular/client/lib/angular/angular-cookies.js $(BIT_VAPP_PREFIX)/esp/angular/client/lib/angular/angular-cookies.js
-	cp src/esp/packs/angular/client/lib/angular/angular-loader.js $(BIT_VAPP_PREFIX)/esp/angular/client/lib/angular/angular-loader.js
-	cp src/esp/packs/angular/client/lib/angular/angular-mocks.js $(BIT_VAPP_PREFIX)/esp/angular/client/lib/angular/angular-mocks.js
-	cp src/esp/packs/angular/client/lib/angular/angular-resource.js $(BIT_VAPP_PREFIX)/esp/angular/client/lib/angular/angular-resource.js
-	cp src/esp/packs/angular/client/lib/angular/angular-route.js $(BIT_VAPP_PREFIX)/esp/angular/client/lib/angular/angular-route.js
-	cp src/esp/packs/angular/client/lib/angular/angular-sanitize.js $(BIT_VAPP_PREFIX)/esp/angular/client/lib/angular/angular-sanitize.js
-	cp src/esp/packs/angular/client/lib/angular/angular-scenario.js $(BIT_VAPP_PREFIX)/esp/angular/client/lib/angular/angular-scenario.js
-	cp src/esp/packs/angular/client/lib/angular/angular-touch.js $(BIT_VAPP_PREFIX)/esp/angular/client/lib/angular/angular-touch.js
-	cp src/esp/packs/angular/client/lib/angular/angular.js $(BIT_VAPP_PREFIX)/esp/angular/client/lib/angular/angular.js
-	cp src/esp/packs/angular/client/lib/angular/errors.json $(BIT_VAPP_PREFIX)/esp/angular/client/lib/angular/errors.json
-	cp src/esp/packs/angular/client/lib/angular/version.json $(BIT_VAPP_PREFIX)/esp/angular/client/lib/angular/version.json
-	cp src/esp/packs/angular/client/lib/angular/version.txt $(BIT_VAPP_PREFIX)/esp/angular/client/lib/angular/version.txt
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/angular"
-	cp src/esp/packs/angular/esp.json $(BIT_VAPP_PREFIX)/esp/angular/esp.json
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular/client/lib/esp-angular"
-	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-click.js $(BIT_VAPP_PREFIX)/esp/esp-angular/client/lib/esp-angular/esp-click.js
-	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-field-errors.js $(BIT_VAPP_PREFIX)/esp/esp-angular/client/lib/esp-angular/esp-field-errors.js
-	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-format.js $(BIT_VAPP_PREFIX)/esp/esp-angular/client/lib/esp-angular/esp-format.js
-	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-input-group.js $(BIT_VAPP_PREFIX)/esp/esp-angular/client/lib/esp-angular/esp-input-group.js
-	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-input.js $(BIT_VAPP_PREFIX)/esp/esp-angular/client/lib/esp-angular/esp-input.js
-	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-resource.js $(BIT_VAPP_PREFIX)/esp/esp-angular/client/lib/esp-angular/esp-resource.js
-	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-session.js $(BIT_VAPP_PREFIX)/esp/esp-angular/client/lib/esp-angular/esp-session.js
-	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp-titlecase.js $(BIT_VAPP_PREFIX)/esp/esp-angular/client/lib/esp-angular/esp-titlecase.js
-	cp src/esp/packs/esp-angular/client/lib/esp-angular/esp.js $(BIT_VAPP_PREFIX)/esp/esp-angular/client/lib/esp-angular/esp.js
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular"
-	cp src/esp/packs/esp-angular/esp.json $(BIT_VAPP_PREFIX)/esp/esp-angular/esp.json
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular-mvc"
-	cp src/esp/packs/esp-angular-mvc/appweb.conf $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/appweb.conf
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/app"
-	cp src/esp/packs/esp-angular-mvc/client/app/main.js $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/app/main.js
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/assets"
-	cp src/esp/packs/esp-angular-mvc/client/assets/favicon.ico $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/assets/favicon.ico
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/css"
-	cp src/esp/packs/esp-angular-mvc/client/css/all.less $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/css/all.less
-	cp src/esp/packs/esp-angular-mvc/client/css/app.less $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/css/app.less
-	cp src/esp/packs/esp-angular-mvc/client/css/fix.less $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/css/fix.less
-	cp src/esp/packs/esp-angular-mvc/client/css/theme.less $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/css/theme.less
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client"
-	cp src/esp/packs/esp-angular-mvc/client/index.esp $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/index.esp
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/pages"
-	cp src/esp/packs/esp-angular-mvc/client/pages/splash.html $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/pages/splash.html
-	cp src/esp/packs/esp-angular-mvc/esp.json $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/esp.json
-	cp src/esp/packs/esp-angular-mvc/hosted.conf $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/hosted.conf
-	cp src/esp/packs/esp-angular-mvc/start.bit $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/start.bit
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates"
-	cp src/esp/packs/esp-angular-mvc/templates/controller-singleton.c $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/controller-singleton.c
-	cp src/esp/packs/esp-angular-mvc/templates/controller.c $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/controller.c
-	cp src/esp/packs/esp-angular-mvc/templates/controller.js $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/controller.js
-	cp src/esp/packs/esp-angular-mvc/templates/edit.html $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/edit.html
-	cp src/esp/packs/esp-angular-mvc/templates/list.html $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/list.html
-	cp src/esp/packs/esp-angular-mvc/templates/model.js $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/model.js
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc"
-	cp src/esp/packs/esp-html-mvc/appweb.conf $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/appweb.conf
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/assets"
-	cp src/esp/packs/esp-html-mvc/client/assets/favicon.ico $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/assets/favicon.ico
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/css"
-	cp src/esp/packs/esp-html-mvc/client/css/all.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/css/all.less
-	cp src/esp/packs/esp-html-mvc/client/css/app.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/css/app.less
-	cp src/esp/packs/esp-html-mvc/client/css/fix.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/css/fix.less
-	cp src/esp/packs/esp-html-mvc/client/css/theme.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/css/theme.less
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client"
-	cp src/esp/packs/esp-html-mvc/client/index.esp $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/index.esp
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/layouts"
-	cp src/esp/packs/esp-html-mvc/client/layouts/default.esp $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/layouts/default.esp
-	cp src/esp/packs/esp-html-mvc/esp.json $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/esp.json
-	cp src/esp/packs/esp-html-mvc/hosted.conf $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/hosted.conf
-	cp src/esp/packs/esp-html-mvc/start.bit $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/start.bit
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates"
-	cp src/esp/packs/esp-html-mvc/templates/controller-singleton.c $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/controller-singleton.c
-	cp src/esp/packs/esp-html-mvc/templates/controller.c $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/controller.c
-	cp src/esp/packs/esp-html-mvc/templates/edit.esp $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/edit.esp
-	cp src/esp/packs/esp-html-mvc/templates/list.esp $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/list.esp
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc"
-	cp src/esp/packs/esp-legacy-mvc/esp.json $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/esp.json
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/layouts"
-	cp src/esp/packs/esp-legacy-mvc/layouts/default.esp $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/layouts/default.esp
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/css"
-	cp src/esp/packs/esp-legacy-mvc/static/css/all.css $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/css/all.css
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/images"
-	cp src/esp/packs/esp-legacy-mvc/static/images/banner.jpg $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/images/banner.jpg
-	cp src/esp/packs/esp-legacy-mvc/static/images/favicon.ico $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/images/favicon.ico
-	cp src/esp/packs/esp-legacy-mvc/static/images/splash.jpg $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/images/splash.jpg
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static"
-	cp src/esp/packs/esp-legacy-mvc/static/index.esp $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/index.esp
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/js"
-	cp src/esp/packs/esp-legacy-mvc/static/js/jquery.esp.js $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/js/jquery.esp.js
-	cp src/esp/packs/esp-legacy-mvc/static/js/jquery.js $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/js/jquery.js
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates"
-	cp src/esp/packs/esp-legacy-mvc/templates/controller.c $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/controller.c
-	cp src/esp/packs/esp-legacy-mvc/templates/edit.esp $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/edit.esp
-	cp src/esp/packs/esp-legacy-mvc/templates/list.esp $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/list.esp
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-server"
-	cp src/esp/packs/esp-server/appweb.conf $(BIT_VAPP_PREFIX)/esp/esp-server/appweb.conf
-	cp src/esp/packs/esp-server/esp.json $(BIT_VAPP_PREFIX)/esp/esp-server/esp.json
-	cp src/esp/packs/esp-server/hosted.conf $(BIT_VAPP_PREFIX)/esp/esp-server/hosted.conf
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-server/templates"
-	cp src/esp/packs/esp-server/templates/app.c $(BIT_VAPP_PREFIX)/esp/esp-server/templates/app.c
-	cp src/esp/packs/esp-server/templates/controller.c $(BIT_VAPP_PREFIX)/esp/esp-server/templates/controller.c
-	cp src/esp/packs/esp-server/templates/migration.c $(BIT_VAPP_PREFIX)/esp/esp-server/templates/migration.c
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/less/client/lib/less"
-	cp src/esp/packs/less/client/lib/less/less.js $(BIT_VAPP_PREFIX)/esp/less/client/lib/less/less.js
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/less"
-	cp src/esp/packs/less/esp.json $(BIT_VAPP_PREFIX)/esp/less/esp.json
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/more/client/css"
-	cp src/esp/packs/more/client/css/more.less $(BIT_VAPP_PREFIX)/esp/more/client/css/more.less
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/more"
-	cp src/esp/packs/more/esp.json $(BIT_VAPP_PREFIX)/esp/more/esp.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp"
-	cp src/esp/packs/README.md $(BIT_VAPP_PREFIX)/esp/README.md
+	cp src/esp/packs $(BIT_VAPP_PREFIX)/esp/packs
 endif
 ifeq ($(BIT_PACK_ESP),1)
 	cp $(CONFIG)/bin/esp.conf $(BIT_VAPP_PREFIX)/bin/esp.conf
@@ -2338,32 +2106,32 @@ endif
 #
 #   start
 #
-DEPS_95 += compile
-DEPS_95 += stop
+DEPS_94 += compile
+DEPS_94 += stop
 
-start: $(DEPS_95)
+start: $(DEPS_94)
 	./$(CONFIG)/bin/appman install enable start
 
 #
 #   install
 #
-DEPS_96 += compile
-DEPS_96 += stop
-DEPS_96 += installBinary
-DEPS_96 += start
+DEPS_95 += compile
+DEPS_95 += stop
+DEPS_95 += installBinary
+DEPS_95 += start
 
-install: $(DEPS_96)
+install: $(DEPS_95)
 	
 
 
 #
 #   uninstall
 #
-DEPS_97 += build
-DEPS_97 += compile
-DEPS_97 += stop
+DEPS_96 += build
+DEPS_96 += compile
+DEPS_96 += stop
 
-uninstall: $(DEPS_97)
+uninstall: $(DEPS_96)
 	rm -f "$(BIT_ETC_PREFIX)/appweb.conf"
 	rm -f "$(BIT_ETC_PREFIX)/esp.conf"
 	rm -f "$(BIT_ETC_PREFIX)/mine.types"
@@ -2385,22 +2153,22 @@ uninstall: $(DEPS_97)
 #
 #   genslink
 #
-genslink: $(DEPS_98)
+genslink: $(DEPS_97)
 	cd src/server; esp --static --genlink slink.c --flat compile ; cd ../..
 
 #
 #   run
 #
-DEPS_99 += compile
+DEPS_98 += compile
 
-run: $(DEPS_99)
+run: $(DEPS_98)
 	cd src/server; sudo ../../$(CONFIG)/bin/appweb -v ; cd ../..
 
 #
 #   test-run
 #
-DEPS_100 += compile
+DEPS_99 += compile
 
-test-run: $(DEPS_100)
+test-run: $(DEPS_99)
 	cd test; ../$(CONFIG)/bin/appweb -v ; cd ..
 

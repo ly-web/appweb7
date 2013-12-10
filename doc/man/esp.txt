@@ -79,10 +79,10 @@ GENERATING APPLICATIONS
              esp generate app NAME [packs...]
 
        Packs are modules of functionality for generated applications that  are
-       described  by  their  esp.json file. Packs may depend on other packs so
-       that generating the top level pack may generate other  required  packs.
-       For  example: generating the "esp-angular-mvc" pack will also generate:
-       esp-angular, angular, less and more.
+       described  by  their package.json file. Packs may depend on other packs
+       so that generating the top  level  pack  may  generate  other  required
+       packs.  For  example:  generating  the "esp-angular-mvc" pack will also
+       generate: esp-angular, angular, less and more.
 
        Other packs are:
 

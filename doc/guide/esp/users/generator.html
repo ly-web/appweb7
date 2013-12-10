@@ -80,14 +80,14 @@
 [Create] Directory: blog
 [Create] File: blog/appweb.conf
 [Create] File: blog/app.conf
-[Create] File: blog/esp.json
+[Create] File: blog/package.json
 [Create] Directory: blog/src
 [Create] blog/src/app.c
   [Task] Compile</pre>
             <p>This generates the bare minimum application without additional packs. The appweb.conf file
             is an Appweb configuration file. This defines the Appweb and ESP configuration when you run your application.
             Alternatively, you can use the app.conf file that is suitable when hosting the application from an 
-            existing appweb configuration. The <em>esp.json</em> file is the ESP configuration for the application.
+            existing appweb configuration. The <em>package.json</em> file is the ESP configuration for the application.
             The application source code stub is generated in <em>app.c</em>.</p>
             <p>The format of the "esp generate app" command is:</p>
             <pre>esp generate app NAME [PACKS...]</pre>
@@ -123,7 +123,7 @@ $ <b>esp generate app blog esp-angular-mvc</b>
             dependencies and generate all the required packs. For example: the 
             <em>esp-angular-mvc</em> pack depends on: angular, esp-angular-session, esp-angularesp, 
             less and more packs. After generating, the pack dependencies are described in the
-            generated <em>esp.json</em> file as the <em>settings.packs</em> property.</p>
+            generated <em>package.json</em> file as the <em>settings.packs</em> property.</p>
             <h3>Overwriting</h3>
             <p>The <em>esp</em> command will create directories and generate configuration and 
             source code files which can then be manually edited as required. The <em>esp</em> 
@@ -201,7 +201,7 @@ $ <b>esp generate app blog esp-angular-mvc</b>
                         <td>Appweb startup configuration file</td>
                     </tr>
                     <tr>
-                        <td>esp.json</td>
+                        <td>package.json</td>
                         <td>ESP configuration file. Available to server and client.</td>
                     </tr>
                     <tr>

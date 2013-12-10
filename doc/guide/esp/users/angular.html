@@ -118,7 +118,7 @@ esp generate scaffold blog title:string body:text</pre>
             <p>The key directories and files are listed below:</p>
 <pre>
 appweb.conf                 # Appweb configuration file
-esp.json                    # ESP and application configuration file
+package.json                # ESP and application configuration file
 start.bit                   # Bit build file
 cache/                      # Compiled code
 client/                     # Public files served to the client
@@ -233,7 +233,7 @@ src/                        # Other application "C" code
                     "columns" field holds the names of the record columns (excluding "id").</li>
             </ul>
             <h2>Configuring ESP</h2>
-            <p>In addition to the standard esp.json configuration fields 
+            <p>In addition to the standard package.json configuration fields 
             (see <a href="config.html#json">Esp Configuration File</a> for details), ESP for Angular defines 
             a few properties to assist with configuration. 
 <pre>

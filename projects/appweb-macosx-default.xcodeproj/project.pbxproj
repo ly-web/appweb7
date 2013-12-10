@@ -43,17 +43,17 @@
 			name = esp.conf.server;
 			productName = esp.conf.server;
 		};
-		8835A6E48835BCEC00000012 /* packs */ = {
+		8835A6E48835BCEC00000012 /* paks */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = 8835A6E48835BCEC00000011 /* Build configuration list for PBXAggregateTarget "packs" */;
+			buildConfigurationList = 8835A6E48835BCEC00000011 /* Build configuration list for PBXAggregateTarget "paks" */;
 			buildPhases = (
 				8835A6E48835BCEC00000013,
 			);
 			dependencies = (
 				8835A6E48835BCEC00000014 /* PBXTargetDependency Prep */,
 			);
-			name = packs;
-			productName = packs;
+			name = paks;
+			productName = paks;
 		};
 		8835A6E48835BCEC00000016 /* slink.c */ = {
 			isa = PBXAggregateTarget;
@@ -152,7 +152,7 @@
 				8835A6E48835BCEC0000003E /* PBXTargetDependency espcmd */,
 				8835A6E48835BCEC0000003F /* PBXTargetDependency esp.conf */,
 				8835A6E48835BCEC00000040 /* PBXTargetDependency esp.conf.server */,
-				8835A6E48835BCEC00000041 /* PBXTargetDependency packs */,
+				8835A6E48835BCEC00000041 /* PBXTargetDependency paks */,
 				8835A6E48835BCEC00000042 /* PBXTargetDependency libmod_cgi */,
 				8835A6E48835BCEC00000043 /* PBXTargetDependency libmod_ssl */,
 				8835A6E48835BCEC00000044 /* PBXTargetDependency authpass */,
@@ -517,7 +517,7 @@
 			remoteGlobalIDString = 8835A6E48835BCEC00000050;
 			remoteInfo = Prep;
 		};
-		8835A6E48835BCEC000000EF /* PBXContainerItemProxy Prep from packs */ = {
+		8835A6E48835BCEC000000EF /* PBXContainerItemProxy Prep from paks */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 8835A6E48835BCEC00000001 /* Project object */;
 			proxyType = 1;
@@ -1007,12 +1007,12 @@
 			remoteGlobalIDString = 8835A6E48835BCEC0000000E;
 			remoteInfo = esp.conf.server;
 		};
-		8835A6E48835BCEC0000013D /* PBXContainerItemProxy packs from All */ = {
+		8835A6E48835BCEC0000013D /* PBXContainerItemProxy paks from All */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 8835A6E48835BCEC00000001 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 8835A6E48835BCEC00000012;
-			remoteInfo = packs;
+			remoteInfo = paks;
 		};
 		8835A6E48835BCEC0000013E /* PBXContainerItemProxy libmod_cgi from All */ = {
 			isa = PBXContainerItemProxy;
@@ -2065,25 +2065,6 @@ rm -rf ../server/esp.conf
 cp -r esp.conf ../server/esp.conf
 ";
 		};
-		8835A6E48835BCEC00000013 /* ShellScript for packs */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-../src/esp/packs
-			);
-			outputPaths = (
-../macosx-x64-default/esp
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = "PATH=$PATH:/usr/local/bin
-cd ../src/esp
-rm -rf ../${OUT_DIR}/esp
-cp -r packs ../${OUT_DIR}/esp
-";
-		};
 		8835A6E48835BCEC00000017 /* ShellScript for slink.c */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -2292,7 +2273,7 @@ fi";
 				8835A6E48835BCEC00000006 /* ca-crt */,
 				8835A6E48835BCEC0000000A /* esp.conf */,
 				8835A6E48835BCEC0000000E /* esp.conf.server */,
-				8835A6E48835BCEC00000012 /* packs */,
+				8835A6E48835BCEC00000012 /* paks */,
 				8835A6E48835BCEC0000001A /* server-cache */,
 				8835A6E48835BCEC00000016 /* slink.c */,
 				8835A6E48835BCEC00000028 /* test-basic.cgi */,
@@ -2649,7 +2630,7 @@ fi";
 			target = 8835A6E48835BCEC00000050 /* Prep */;
 			targetProxy = 8835A6E48835BCEC000000EE /* PBXContainerItemProxy */;
 		};
-		8835A6E48835BCEC00000014 /* PBXTargetDependency packs depends on Prep */ = {
+		8835A6E48835BCEC00000014 /* PBXTargetDependency paks depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = 8835A6E48835BCEC00000050 /* Prep */;
 			targetProxy = 8835A6E48835BCEC000000EF /* PBXContainerItemProxy */;
@@ -2999,9 +2980,9 @@ fi";
 			target = 8835A6E48835BCEC0000000E /* esp.conf.server */;
 			targetProxy = 8835A6E48835BCEC0000013C /* PBXContainerItemProxy */;
 		};
-		8835A6E48835BCEC00000041 /* PBXTargetDependency All depends on packs */ = {
+		8835A6E48835BCEC00000041 /* PBXTargetDependency All depends on paks */ = {
 			isa = PBXTargetDependency;
-			target = 8835A6E48835BCEC00000012 /* packs */;
+			target = 8835A6E48835BCEC00000012 /* paks */;
 			targetProxy = 8835A6E48835BCEC0000013D /* PBXContainerItemProxy */;
 		};
 		8835A6E48835BCEC00000042 /* PBXTargetDependency All depends on libmod_cgi */ = {
@@ -3554,7 +3535,7 @@ fi";
 		8835A6E48835BCEC00000218 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = packs;
+				PRODUCT_NAME = paks;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"BIT_DEBUG",
@@ -3566,7 +3547,7 @@ fi";
 		8835A6E48835BCEC00000219 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = packs;
+				PRODUCT_NAME = paks;
 
 
 			};
@@ -4097,7 +4078,7 @@ fi";
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8835A6E48835BCEC00000011 /* Build configuration list for PBXNativeTarget "packs" */ = {
+		8835A6E48835BCEC00000011 /* Build configuration list for PBXNativeTarget "paks" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8835A6E48835BCEC00000218 /* Debug */,

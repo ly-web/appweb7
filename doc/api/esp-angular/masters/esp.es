@@ -98,7 +98,7 @@ module esp.angular {
          public static function url(uri: Uri): String { return ""}
 
         /*
-            Contents of the esp.json configuration file
+            Contents of the package.json configuration file
          */
         public static var config: Object
 

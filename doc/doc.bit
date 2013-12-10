@@ -46,8 +46,7 @@ Bit.load({
             action: "
                 if (Cmd.locate('ejsc')) {
                     let list = Path('api/esp-angular/masters').files('*.es')
-                        run('ejsc --doc '  + list.join(' '))
-                    }
+                    run('ejsc --doc '  + list.join(' '))
                     run('ejsmod --html api/esp-angular ' + Path('.').files('*.mod').join(' '))
                     for each (path in Path('api/esp-angular/masters').files(['*.html', '*.css'])) {
                         path.copy('api/esp-angular/' + path.basename)

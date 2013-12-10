@@ -201,6 +201,9 @@ Database flags.
     <tr><td class="param">EdiMigration</td><td><td>forw</td><td>
 Forward migration callback.
 </td>
+    <tr><td class="param"><a class="ref" href="#struct_mpr_mutex" external="mpr.dtags">MprMutex</a> *</td><td><td>mutex</td><td>
+Multithread lock.
+</td>
     <tr><td class="param">cchar *</td><td><td>path</td><td>
 Database path.
 </td>
@@ -209,6 +212,9 @@ Database provider.
 </td>
     <tr><td class="param"><a class="ref" href="#struct_mpr_hash" external="mpr.dtags">MprHash</a> *</td><td><td>schemaCache</td><td>
 Cache of table schema in JSON.
+</td>
+    <tr><td class="param"><a class="ref" href="#struct_mpr_hash" external="mpr.dtags">MprHash</a> *</td><td><td>validations</td><td>
+Validations.
 </td>
     </table></dd></dl>
   </div>

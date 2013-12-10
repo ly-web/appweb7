@@ -29,7 +29,7 @@ div.top {
 	position: absolute;
     top: 0;
     left: 0;
-	height: 125px;
+	height: 75px;
 	width: 1800px;
 	background-color: #FFFFFF; 
 	margin: 0;
@@ -68,7 +68,7 @@ div.version {
  */
 div.menu {
 	float: left;
-	padding: 70px 0 0 20px;
+	padding: 50px 0 0 20px;
 	font-size: 110%;
 	color: #EEEEEE;
 }

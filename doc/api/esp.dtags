@@ -27,8 +27,8 @@
       <type>void</type>
       <name>espAddPack</name>
       <anchorfile>group___esp_route.html</anchorfile>
-      <anchor>ga90b169ef652f4071f14a3b616efbc806</anchor>
-      <arglist>(HttpRoute *route, cchar *name, MprJson *details)</arglist>
+      <anchor>gaea13d6bd26ae90e63d344f0ddab12786</anchor>
+      <arglist>(HttpRoute *route, cchar *name, cchar *version)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -99,6 +99,13 @@
       <anchorfile>group___esp_route.html</anchorfile>
       <anchor>ga97b13560e8c066d70810b2df3e8d7f78</anchor>
       <arglist>(HttpRoute *route, cchar *key, cchar *defaultValue)</arglist>
+    </member>
+    <member kind="function">
+      <type>cchar *</type>
+      <name>espGetPackVersion</name>
+      <anchorfile>group___esp_route.html</anchorfile>
+      <anchor>gaa8e6d5a6744ef7bd1265335685d6a375</anchor>
+      <arglist>(HttpRoute *route, cchar *name)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
@@ -1161,6 +1168,13 @@
       <arglist>(cchar *field, cchar *options)</arglist>
     </member>
     <member kind="function">
+      <type>void</type>
+      <name>inputSecurityToken</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga4db83aca814319dcd588e114176d0a09</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
       <type>bool</type>
       <name>isEof</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
@@ -1385,13 +1399,6 @@
       <arglist>(cchar *fmt,...)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
-      <name>renderSecurityToken</name>
-      <anchorfile>group___esp_abbrev.html</anchorfile>
-      <anchor>ga85c221e1a5827bbf0d2796ccf6f68c8f</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
       <type>ssize</type>
       <name>renderString</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
@@ -1425,6 +1432,13 @@
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>ga55805dac6f16fafd2fdc18df732b7b46</anchor>
       <arglist>(cchar *patterns)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>securityToken</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>gab3444f174346e0d8e8d4d3a43d451c5e</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>cchar *</type>
