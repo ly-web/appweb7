@@ -1996,8 +1996,7 @@ static HttpConn *openConnection(HttpConn *conn, struct MprSsl *ssl)
     }
 #endif
     if ((level = httpShouldTrace(conn, HTTP_TRACE_RX, HTTP_TRACE_CONN, NULL)) >= 0) {
-        mprLog(level, "### Outgoing connection from %s:%d to %s:%d", 
-            conn->ip, conn->port, conn->sock->ip, conn->sock->port);
+        mprLog(level, "### Outgoing connection to %s:%d", conn->ip, conn->port);
     }
     return conn;
 }
@@ -2020,9 +2019,9 @@ static void setDefaultHeaders(HttpConn *conn)
         }
     }
     if (conn->port != 80 && conn->port != 443) {
-        httpAddHeader(conn, "Host", "%s:%d", conn->ip, conn->port);
+        httpSetHeader(conn, "Host", "%s:%d", conn->ip, conn->port);
     } else {
-        httpAddHeaderString(conn, "Host", conn->ip);
+        httpSetHeaderString(conn, "Host", conn->ip);
     }
     httpAddHeaderString(conn, "Accept", "*/*");
     if (conn->keepAliveCount > 0) {
@@ -12687,7 +12686,7 @@ static bool parseIncoming(HttpConn *conn, HttpPacket *packet)
     /*
         Don't start processing until all the headers have been received (delimited by two blank lines)
      */
-    if ((end = sncontains(start, "\r\n\r\n", len)) == 0) {
+    if ((end = sncontains(start, "\r\n\r\n", len)) == 0 && (end = sncontains(start, "\n\n", len)) == 0) {
         if (len >= conn->limits->headerSize) {
             httpLimitError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE, 
                 "Header too big. Length %d vs limit %d", len, conn->limits->headerSize);
@@ -17242,41 +17241,30 @@ PUBLIC HttpUri *httpCreateUri(cchar *uri, int flags)
     }
     tok = up->uri = sclone(uri);
 
-    if (sncmp(up->uri, "http://", 7) == 0) {
-        up->scheme = sclone("http");
-        if (flags & HTTP_COMPLETE_URI) {
-            up->port = 80;
+    if ((next = scontains(tok, "://")) != 0) {
+        up->scheme = snclone(tok, (next - tok));
+        if (smatch(up->scheme, "http")) {
+            if (flags & HTTP_COMPLETE_URI) {
+                up->port = 80;
+            }
+        } else if (smatch(up->scheme, "ws")) {
+            if (flags & HTTP_COMPLETE_URI) {
+                up->port = 80;
+            }
+            up->webSockets = 1;
+        } else if (smatch(up->scheme, "https")) {
+            if (flags & HTTP_COMPLETE_URI) {
+                up->port = 443;
+            }
+            up->secure = 1;
+        } else if (smatch(up->scheme, "wss")) {
+            if (flags & HTTP_COMPLETE_URI) {
+                up->port = 443;
+            }
+            up->secure = 1;
+            up->webSockets = 1;
         }
-        tok = &up->uri[7];
-
-    } else if (sncmp(up->uri, "ws://", 5) == 0) {
-        up->scheme = sclone("ws");
-        if (flags & HTTP_COMPLETE_URI) {
-            up->port = 80;
-        }
-        tok = &up->uri[5];
-        up->webSockets = 1;
-
-    } else if (sncmp(up->uri, "https://", 8) == 0) {
-        up->scheme = sclone("https");
-        up->secure = 1;
-        if (flags & HTTP_COMPLETE_URI) {
-            up->port = 443;
-        }
-        tok = &up->uri[8];
-
-    } else if (sncmp(up->uri, "wss://", 6) == 0) {
-        up->scheme = sclone("wss");
-        up->secure = 1;
-        if (flags & HTTP_COMPLETE_URI) {
-            up->port = 443;
-        }
-        tok = &up->uri[6];
-        up->webSockets = 1;
-
-    } else {
-        up->scheme = 0;
-        tok = up->uri;
+        tok = &next[3];
     }
     if (schr(tok, ':')) {
         /* Has port specifier */
