@@ -1470,9 +1470,6 @@ PUBLIC int mprCreateEventOutside(MprDispatcher *dispatcher, void *proc, void *da
 }
 
 
-
-
-
 PUBLIC bool mprEnableGC(bool on)
 {
     bool    old;
@@ -4661,7 +4658,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
          */
         for (kp = 0; (kp = mprGetNextKey(cache->store, kp)) != 0; ) {
             item = (CacheItem*) kp->data;
-            mprTrace(6, "Cache: \"%s\" lifespan %d, expires in %d secs", item->key, 
+            mprTrace(6, "Cache: \"%s\" lifespan %Ld, expires in %Ld secs", item->key, 
                     item->lifespan / 1000, (item->expires - when) / 1000);
             if (item->expires && item->expires <= when) {
                 mprTrace(5, "Cache prune expired key %s", kp->key);
@@ -9086,7 +9083,7 @@ PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, Mpr
 {
     MprOsThread     priorOwner;
 
-    if (isRunning(dispatcher) && dispatcher->owner != mprGetCurrentOsThread()) {
+    if (isRunning(dispatcher) && (dispatcher->owner && dispatcher->owner != mprGetCurrentOsThread())) {
         mprError("Relay to a running dispatcher owned by another thread");
     }
     if (event) {
@@ -9110,10 +9107,11 @@ PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, Mpr
 PUBLIC int mprRunDispatcher(MprDispatcher *dispatcher)
 {
     assert(dispatcher);
-    if (isRunning(dispatcher) && dispatcher->owner != mprGetCurrentOsThread()) {
+    if (isRunning(dispatcher) && (dispatcher->owner && dispatcher->owner != mprGetCurrentOsThread())) {
         mprError("Relay to a running dispatcher owned by another thread");
         return MPR_ERR_BAD_STATE;
     }
+    dispatcher->owner = mprGetCurrentOsThread();
     queueDispatcher(dispatcher->service->runQ, dispatcher);
     return 0;
 }
@@ -14134,6 +14132,9 @@ static int defaultSort(char **q1, char **q2, void *ctx)
 
 PUBLIC MprList *mprSortList(MprList *lp, MprSortProc compare, void *ctx)
 {
+    if (!lp) {
+        return 0;
+    }
     lock(lp);
     if (!compare) {
         compare = (MprSortProc) defaultSort;
@@ -23015,10 +23016,28 @@ PUBLIC bool shnumber(cchar *s)
 
 /*
     Floating point
+    Float:      [DIGITS].[DIGITS][(e|E)[+|-]DIGITS]
  */
 PUBLIC bool sfnumber(cchar *s)
 {
-    return s && *s && strspn(s, "1234567890.+-eE") == strlen(s);
+    cchar   *cp;
+    int     dots, valid;
+
+    valid = s && *s && strspn(s, "1234567890.+-eE") == strlen(s) && strspn(s, "1234567890") > 0;
+    if (valid) {
+        /*
+            Some extra checks
+         */
+        for (cp = s, dots = 0; *cp; cp++) {
+            if (*cp == '.') {
+                if (dots++ > 0) {
+                    valid = 0;
+                    break;
+                }
+            }
+        }
+    }
+    return valid;
 } 
 
 
