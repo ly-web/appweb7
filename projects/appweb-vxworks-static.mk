@@ -308,7 +308,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.5.0-0
+	echo 4.5.0-0
 
 #
 #   mpr.h
