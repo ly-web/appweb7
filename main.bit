@@ -35,11 +35,6 @@ Bit.load({
     ],
 
     settings: {
-        product: 'appweb',
-        title: 'Embedthis Appweb',
-        company: 'Embedthis',
-        version: '4.5.0',
-        buildNumber: '0',
         bit: '0.9.0',
 
         /*
@@ -187,6 +182,12 @@ Bit.load({
     },
 
     targets: {
+        'bower.json': {
+            type: 'file',
+            path: 'bower.json',
+            files: [ 'package.json' ],
+        },
+
         /*
             See src/server/server.bit for the appweb targets
             See src/libappweb.bit for the appweb library target
@@ -195,6 +196,7 @@ Bit.load({
         projects: {
             action: "genProjects('')",
         },
+
         mine: {
             action: "genProjects('-with ejscript -with est -with sdb', 'mine', Config.OS + '-' + Config.CPU)",
         },

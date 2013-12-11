@@ -221,7 +221,7 @@ Bit.load({
                 enable:     "bit.platform.os == 'windows' && !bit.settings.static",
 
             },{
-                from:       ['src/esp/packs/'],
+                from:       ['src/esp/paks/'],
                 to:         '${abin}/../esp',
                 set:        'esp',
                 packs:      'esp',
@@ -381,7 +381,7 @@ Bit.load({
                 Source set
              */
             },{
-                from:        ['Makefile', 'make.bat', 'main.bit' ],
+                from:        ['Makefile', 'make.bat', 'main.bit', 'package.json', 'bower.json' ],
                 to:          '${src}/',
                 set:         'source',
 
