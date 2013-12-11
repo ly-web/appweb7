@@ -5,6 +5,7 @@
         "base": ".",
         "paks": "client/paks",
     },
+    "precious": true,
     "esp": { 
         "server": {
             "database": "${DATABASE}://${NAME}.${DATABASE}",
