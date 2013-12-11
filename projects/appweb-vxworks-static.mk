@@ -194,6 +194,7 @@ endif
 ifeq ($(BIT_PACK_CGI),1)
 TARGETS            += test/cgi-bin/cgiProgram.out
 endif
+TARGETS            += bower.json
 
 unexport CDPATH
 
@@ -259,6 +260,7 @@ clean:
 	rm -f "$(CONFIG)/bin/libslink.a"
 	rm -f "$(CONFIG)/bin/appweb.out"
 	rm -f "$(CONFIG)/bin/testAppweb.out"
+	rm -f "bower.json"
 	rm -f "$(CONFIG)/obj/mprLib.o"
 	rm -f "$(CONFIG)/obj/mprSsl.o"
 	rm -f "$(CONFIG)/obj/manager.o"
@@ -1470,6 +1472,7 @@ DEPS_66 += $(CONFIG)/obj/ejsc.o
 DEPS_66 += $(CONFIG)/bin/ejsc.out
 
 $(CONFIG)/bin/ejs.mod: $(DEPS_66)
+	$(LBIN)/ejsc --out ./$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null src/deps/ejs/ejs.es
 endif
 
 #
@@ -1735,6 +1738,10 @@ endif
 #   slink.c
 #
 src/server/slink.c: $(DEPS_79)
+	( \
+	cd src/server; \
+	[ ! -f slink.c ] && cp slink.empty slink.c ; true ; \
+	)
 
 #
 #   slink.o
@@ -2049,6 +2056,10 @@ DEPS_89 += $(CONFIG)/obj/testHttp.o
 DEPS_89 += $(CONFIG)/bin/testAppweb.out
 
 test/cgi-bin/testScript: $(DEPS_89)
+	( \
+	cd test; \
+	echo '#!../$(CONFIG)/bin/cgiProgram.out' >cgi-bin/testScript ; chmod +x cgi-bin/testScript ; \
+	)
 endif
 
 ifeq ($(BIT_PACK_CGI),1)
@@ -2083,6 +2094,12 @@ DEPS_90 += $(CONFIG)/obj/testHttp.o
 DEPS_90 += $(CONFIG)/bin/testAppweb.out
 
 test/web/caching/cache.cgi: $(DEPS_90)
+	( \
+	cd test; \
+	echo "#!`type -p ejs`" >web/caching/cache.cgi
+	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi
+	chmod +x web/caching/cache.cgi ; \
+	)
 endif
 
 ifeq ($(BIT_PACK_CGI),1)
@@ -2117,6 +2134,12 @@ DEPS_91 += $(CONFIG)/obj/testHttp.o
 DEPS_91 += $(CONFIG)/bin/testAppweb.out
 
 test/web/auth/basic/basic.cgi: $(DEPS_91)
+	( \
+	cd test; \
+	echo "#!`type -p ejs`" >web/auth/basic/basic.cgi
+	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi
+	chmod +x web/auth/basic/basic.cgi ; \
+	)
 endif
 
 ifeq ($(BIT_PACK_CGI),1)
@@ -2128,30 +2151,46 @@ DEPS_92 += $(CONFIG)/obj/cgiProgram.o
 DEPS_92 += $(CONFIG)/bin/cgiProgram.out
 
 test/cgi-bin/cgiProgram.out: $(DEPS_92)
+	( \
+	cd test; \
+	cp ../$(CONFIG)/bin/cgiProgram.out cgi-bin/cgiProgram.out
+	cp ../$(CONFIG)/bin/cgiProgram.out cgi-bin/nph-cgiProgram.out
+	cp ../$(CONFIG)/bin/cgiProgram.out 'cgi-bin/cgi Program.out'
+	cp ../$(CONFIG)/bin/cgiProgram.out web/cgiProgram.cgi
+	chmod +x cgi-bin/* web/cgiProgram.cgi ; \
+	)
 endif
+
+#
+#   bower.json
+#
+DEPS_93 += package.json
+
+bower.json: $(DEPS_93)
+	@echo '      [Copy] bower.json'
 
 #
 #   installBinary
 #
-installBinary: $(DEPS_93)
+installBinary: $(DEPS_94)
 
 #
 #   install
 #
-DEPS_94 += compile
-DEPS_94 += installBinary
+DEPS_95 += compile
+DEPS_95 += installBinary
 
-install: $(DEPS_94)
+install: $(DEPS_95)
 	
 
 
 #
 #   uninstall
 #
-DEPS_95 += build
-DEPS_95 += compile
+DEPS_96 += build
+DEPS_96 += compile
 
-uninstall: $(DEPS_95)
+uninstall: $(DEPS_96)
 	( \
 	cd package; \
 	rm -f "$(BIT_VAPP_PREFIX)/appweb.conf" ; \
@@ -2164,7 +2203,7 @@ uninstall: $(DEPS_95)
 #
 #   genslink
 #
-genslink: $(DEPS_96)
+genslink: $(DEPS_97)
 	( \
 	cd src/server; \
 	esp --static --genlink slink.c --flat compile ; \
@@ -2174,9 +2213,9 @@ genslink: $(DEPS_96)
 #
 #   run
 #
-DEPS_97 += compile
+DEPS_98 += compile
 
-run: $(DEPS_97)
+run: $(DEPS_98)
 	( \
 	cd src/server; \
 	sudo ../../$(CONFIG)/bin/appweb -v ; \

@@ -203,6 +203,7 @@ TARGETS            = $(TARGETS) test\web\auth\basic\basic.cgi
 !IF "$(BIT_PACK_CGI)" == "1"
 TARGETS            = $(TARGETS) test\cgi-bin\cgiProgram.exe
 !ENDIF
+TARGETS            = $(TARGETS) bower.json
 
 !IFNDEF SHOW
 .SILENT:
@@ -339,6 +340,7 @@ clean:
 	if exist "$(CONFIG)\bin\testAppweb.lib" del /Q "$(CONFIG)\bin\testAppweb.lib"
 	if exist "$(CONFIG)\bin\testAppweb.pdb" del /Q "$(CONFIG)\bin\testAppweb.pdb"
 	if exist "$(CONFIG)\bin\testAppweb.exp" del /Q "$(CONFIG)\bin\testAppweb.exp"
+	if exist "bower.json" del /Q "bower.json"
 	if exist "$(CONFIG)\obj\removeFiles.obj" del /Q "$(CONFIG)\obj\removeFiles.obj"
 	if exist "$(CONFIG)\obj\mprLib.obj" del /Q "$(CONFIG)\obj\mprLib.obj"
 	if exist "$(CONFIG)\obj\mprSsl.obj" del /Q "$(CONFIG)\obj\mprSsl.obj"
@@ -2269,19 +2271,27 @@ test\cgi-bin\cgiProgram.exe: $(DEPS_100)
 #  Omit build script test-cgiProgram
 !ENDIF
 
+#
+#   bower.json
+#
+DEPS_101 = $(DEPS_101) package.json
+
+bower.json: $(DEPS_101)
+	@echo '      [Copy] bower.json'
+
 
 #
 #   stop
 #
-DEPS_101 = $(DEPS_101) compile
+DEPS_102 = $(DEPS_102) compile
 
-stop: $(DEPS_101)
+stop: $(DEPS_102)
 	@.\$(CONFIG)\bin\appman stop disable uninstall >/dev/null 2>&1 ; true
 
 #
 #   installBinary
 #
-installBinary: $(DEPS_102)
+installBinary: $(DEPS_103)
 	if not exist "$(BIT_VAPP_PREFIX)\log" md "$(BIT_VAPP_PREFIX)\log"
 	if not exist "$(BIT_VAPP_PREFIX)\cache" md "$(BIT_VAPP_PREFIX)\cache"
 	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
@@ -2340,8 +2350,107 @@ installBinary: $(DEPS_102)
 	copy /Y $(CONFIG)\bin\libmprssl.lib "$(BIT_VAPP_PREFIX)\bin\libmprssl.lib"
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
-	copy /Y src\esp\packs "$(BIT_VAPP_PREFIX)\esp"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\angular" md "$(BIT_VAPP_PREFIX)\esp\angular"
+	copy /Y src\esp\paks\angular\angular-animate.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-animate.js"
+	copy /Y src\esp\paks\angular\angular-bootstrap-prettify.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-bootstrap-prettify.js"
+	copy /Y src\esp\paks\angular\angular-bootstrap.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-bootstrap.js"
+	copy /Y src\esp\paks\angular\angular-cookies.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-cookies.js"
+	copy /Y src\esp\paks\angular\angular-loader.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-loader.js"
+	copy /Y src\esp\paks\angular\angular-mocks.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-mocks.js"
+	copy /Y src\esp\paks\angular\angular-resource.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-resource.js"
+	copy /Y src\esp\paks\angular\angular-route.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-route.js"
+	copy /Y src\esp\paks\angular\angular-sanitize.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-sanitize.js"
+	copy /Y src\esp\paks\angular\angular-scenario.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-scenario.js"
+	copy /Y src\esp\paks\angular\angular-touch.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-touch.js"
+	copy /Y src\esp\paks\angular\angular.js "$(BIT_VAPP_PREFIX)\esp\angular\angular.js"
+	copy /Y src\esp\paks\angular\package.json "$(BIT_VAPP_PREFIX)\esp\angular\package.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular" md "$(BIT_VAPP_PREFIX)\esp\esp-angular"
+	copy /Y src\esp\paks\esp-angular\esp-click.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\esp-click.js"
+	copy /Y src\esp\paks\esp-angular\esp-field-errors.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\esp-field-errors.js"
+	copy /Y src\esp\paks\esp-angular\esp-format.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\esp-format.js"
+	copy /Y src\esp\paks\esp-angular\esp-input-group.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\esp-input-group.js"
+	copy /Y src\esp\paks\esp-angular\esp-input.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\esp-input.js"
+	copy /Y src\esp\paks\esp-angular\esp-resource.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\esp-resource.js"
+	copy /Y src\esp\paks\esp-angular\esp-session.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\esp-session.js"
+	copy /Y src\esp\paks\esp-angular\esp-titlecase.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\esp-titlecase.js"
+	copy /Y src\esp\paks\esp-angular\esp.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\esp.js"
+	copy /Y src\esp\paks\esp-angular\package.json "$(BIT_VAPP_PREFIX)\esp\esp-angular\package.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc" md "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc"
+	copy /Y src\esp\paks\esp-angular-mvc\appweb.conf "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\appweb.conf"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\client\app" md "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\client\app"
+	copy /Y src\esp\paks\esp-angular-mvc\client\app\main.js "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\client\app\main.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\client\assets" md "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\client\assets"
+	copy /Y src\esp\paks\esp-angular-mvc\client\assets\favicon.ico "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\client\assets\favicon.ico"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\client\css" md "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\client\css"
+	copy /Y src\esp\paks\esp-angular-mvc\client\css\all.less "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\client\css\all.less"
+	copy /Y src\esp\paks\esp-angular-mvc\client\css\app.less "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\client\css\app.less"
+	copy /Y src\esp\paks\esp-angular-mvc\client\css\fix.less "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\client\css\fix.less"
+	copy /Y src\esp\paks\esp-angular-mvc\client\css\theme.less "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\client\css\theme.less"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\client" md "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\client"
+	copy /Y src\esp\paks\esp-angular-mvc\client\index.esp "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\client\index.esp"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\client\pages" md "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\client\pages"
+	copy /Y src\esp\paks\esp-angular-mvc\client\pages\splash.html "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\client\pages\splash.html"
+	copy /Y src\esp\paks\esp-angular-mvc\package.json "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\package.json"
+	copy /Y src\esp\paks\esp-angular-mvc\start.bit "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\start.bit"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\templates" md "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\templates"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\controller-singleton.c "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\templates\controller-singleton.c"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\controller.c "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\templates\controller.c"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\controller.js "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\templates\controller.js"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\edit.html "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\templates\edit.html"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\list.html "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\templates\list.html"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\model.js "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\templates\model.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc" md "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc"
+	copy /Y src\esp\paks\esp-html-mvc\appweb.conf "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\appweb.conf"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\client\assets" md "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\client\assets"
+	copy /Y src\esp\paks\esp-html-mvc\client\assets\favicon.ico "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\client\assets\favicon.ico"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\client\css" md "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\client\css"
+	copy /Y src\esp\paks\esp-html-mvc\client\css\all.less "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\client\css\all.less"
+	copy /Y src\esp\paks\esp-html-mvc\client\css\app.less "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\client\css\app.less"
+	copy /Y src\esp\paks\esp-html-mvc\client\css\fix.less "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\client\css\fix.less"
+	copy /Y src\esp\paks\esp-html-mvc\client\css\theme.less "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\client\css\theme.less"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\client" md "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\client"
+	copy /Y src\esp\paks\esp-html-mvc\client\index.esp "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\client\index.esp"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\client\layouts" md "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\client\layouts"
+	copy /Y src\esp\paks\esp-html-mvc\client\layouts\default.esp "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\client\layouts\default.esp"
+	copy /Y src\esp\paks\esp-html-mvc\package.json "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\package.json"
+	copy /Y src\esp\paks\esp-html-mvc\start.bit "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\start.bit"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\templates" md "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\templates"
+	copy /Y src\esp\paks\esp-html-mvc\templates\controller-singleton.c "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\templates\controller-singleton.c"
+	copy /Y src\esp\paks\esp-html-mvc\templates\controller.c "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\templates\controller.c"
+	copy /Y src\esp\paks\esp-html-mvc\templates\edit.esp "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\templates\edit.esp"
+	copy /Y src\esp\paks\esp-html-mvc\templates\list.esp "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\templates\list.esp"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\layouts" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\layouts"
+	copy /Y src\esp\paks\esp-legacy-mvc\layouts\default.esp "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\layouts\default.esp"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc"
+	copy /Y src\esp\paks\esp-legacy-mvc\package.json "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\package.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\static\css" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\static\css"
+	copy /Y src\esp\paks\esp-legacy-mvc\static\css\all.css "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\static\css\all.css"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\static\images" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\static\images"
+	copy /Y src\esp\paks\esp-legacy-mvc\static\images\banner.jpg "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\static\images\banner.jpg"
+	copy /Y src\esp\paks\esp-legacy-mvc\static\images\favicon.ico "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\static\images\favicon.ico"
+	copy /Y src\esp\paks\esp-legacy-mvc\static\images\splash.jpg "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\static\images\splash.jpg"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\static" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\static"
+	copy /Y src\esp\paks\esp-legacy-mvc\static\index.esp "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\static\index.esp"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\static\js" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\static\js"
+	copy /Y src\esp\paks\esp-legacy-mvc\static\js\jquery.esp.js "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\static\js\jquery.esp.js"
+	copy /Y src\esp\paks\esp-legacy-mvc\static\js\jquery.js "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\static\js\jquery.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\controller.c "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\controller.c"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\edit.esp "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\edit.esp"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\list.esp "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\list.esp"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-server" md "$(BIT_VAPP_PREFIX)\esp\esp-server"
+	copy /Y src\esp\paks\esp-server\appweb.conf "$(BIT_VAPP_PREFIX)\esp\esp-server\appweb.conf"
+	copy /Y src\esp\paks\esp-server\package.json "$(BIT_VAPP_PREFIX)\esp\esp-server\package.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-server\templates" md "$(BIT_VAPP_PREFIX)\esp\esp-server\templates"
+	copy /Y src\esp\paks\esp-server\templates\app.c "$(BIT_VAPP_PREFIX)\esp\esp-server\templates\app.c"
+	copy /Y src\esp\paks\esp-server\templates\controller.c "$(BIT_VAPP_PREFIX)\esp\esp-server\templates\controller.c"
+	copy /Y src\esp\paks\esp-server\templates\migration.c "$(BIT_VAPP_PREFIX)\esp\esp-server\templates\migration.c"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\less" md "$(BIT_VAPP_PREFIX)\esp\less"
+	copy /Y src\esp\paks\less\less.js "$(BIT_VAPP_PREFIX)\esp\less\less.js"
+	copy /Y src\esp\paks\less\package.json "$(BIT_VAPP_PREFIX)\esp\less\package.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\more" md "$(BIT_VAPP_PREFIX)\esp\more"
+	copy /Y src\esp\paks\more\more.less "$(BIT_VAPP_PREFIX)\esp\more\more.less"
+	copy /Y src\esp\paks\more\package.json "$(BIT_VAPP_PREFIX)\esp\more\package.json"
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
 	copy /Y $(CONFIG)\bin\esp.conf "$(BIT_VAPP_PREFIX)\bin\esp.conf"
@@ -2421,32 +2530,32 @@ installBinary: $(DEPS_102)
 #
 #   start
 #
-DEPS_103 = $(DEPS_103) compile
-DEPS_103 = $(DEPS_103) stop
+DEPS_104 = $(DEPS_104) compile
+DEPS_104 = $(DEPS_104) stop
 
-start: $(DEPS_103)
+start: $(DEPS_104)
 	.\$(CONFIG)\bin\appman install enable start
 
 #
 #   install
 #
-DEPS_104 = $(DEPS_104) compile
-DEPS_104 = $(DEPS_104) stop
-DEPS_104 = $(DEPS_104) installBinary
-DEPS_104 = $(DEPS_104) start
+DEPS_105 = $(DEPS_105) compile
+DEPS_105 = $(DEPS_105) stop
+DEPS_105 = $(DEPS_105) installBinary
+DEPS_105 = $(DEPS_105) start
 
-install: $(DEPS_104)
+install: $(DEPS_105)
 
 
 
 #
 #   uninstall
 #
-DEPS_105 = $(DEPS_105) build
-DEPS_105 = $(DEPS_105) compile
-DEPS_105 = $(DEPS_105) stop
+DEPS_106 = $(DEPS_106) build
+DEPS_106 = $(DEPS_106) compile
+DEPS_106 = $(DEPS_106) stop
 
-uninstall: $(DEPS_105)
+uninstall: $(DEPS_106)
 	cd package
 	if exist "$(BIT_VAPP_PREFIX)\appweb.conf" del /Q "$(BIT_VAPP_PREFIX)\appweb.conf"
 	if exist "$(BIT_VAPP_PREFIX)\esp.conf" del /Q "$(BIT_VAPP_PREFIX)\esp.conf"
@@ -2473,7 +2582,7 @@ uninstall: $(DEPS_105)
 #
 #   genslink
 #
-genslink: $(DEPS_106)
+genslink: $(DEPS_107)
 	cd src\server
 	esp --static --genlink slink.c --flat compile
 	cd ..\..
@@ -2481,9 +2590,9 @@ genslink: $(DEPS_106)
 #
 #   run
 #
-DEPS_107 = $(DEPS_107) compile
+DEPS_108 = $(DEPS_108) compile
 
-run: $(DEPS_107)
+run: $(DEPS_108)
 	cd src\server
 	sudo ..\..\$(CONFIG)\bin\appweb -v
 	cd ..\..

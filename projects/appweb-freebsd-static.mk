@@ -190,6 +190,7 @@ endif
 ifeq ($(BIT_PACK_CGI),1)
 TARGETS            += test/cgi-bin/cgiProgram
 endif
+TARGETS            += bower.json
 
 unexport CDPATH
 
@@ -252,6 +253,7 @@ clean:
 	rm -f "$(CONFIG)/bin/libslink.a"
 	rm -f "$(CONFIG)/bin/appweb"
 	rm -f "$(CONFIG)/bin/testAppweb"
+	rm -f "bower.json"
 	rm -f "$(CONFIG)/obj/mprLib.o"
 	rm -f "$(CONFIG)/obj/mprSsl.o"
 	rm -f "$(CONFIG)/obj/manager.o"
@@ -1463,6 +1465,7 @@ DEPS_66 += $(CONFIG)/obj/ejsc.o
 DEPS_66 += $(CONFIG)/bin/ejsc
 
 $(CONFIG)/bin/ejs.mod: $(DEPS_66)
+	$(LBIN)/ejsc --out ./$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null src/deps/ejs/ejs.es
 endif
 
 #
@@ -1728,6 +1731,10 @@ endif
 #   slink.c
 #
 src/server/slink.c: $(DEPS_79)
+	( \
+	cd src/server; \
+	[ ! -f slink.c ] && cp slink.empty slink.c ; true ; \
+	)
 
 #
 #   slink.o
@@ -2042,6 +2049,10 @@ DEPS_89 += $(CONFIG)/obj/testHttp.o
 DEPS_89 += $(CONFIG)/bin/testAppweb
 
 test/cgi-bin/testScript: $(DEPS_89)
+	( \
+	cd test; \
+	echo '#!../$(CONFIG)/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript ; \
+	)
 endif
 
 ifeq ($(BIT_PACK_CGI),1)
@@ -2076,6 +2087,12 @@ DEPS_90 += $(CONFIG)/obj/testHttp.o
 DEPS_90 += $(CONFIG)/bin/testAppweb
 
 test/web/caching/cache.cgi: $(DEPS_90)
+	( \
+	cd test; \
+	echo "#!`type -p ejs`" >web/caching/cache.cgi
+	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi
+	chmod +x web/caching/cache.cgi ; \
+	)
 endif
 
 ifeq ($(BIT_PACK_CGI),1)
@@ -2110,6 +2127,12 @@ DEPS_91 += $(CONFIG)/obj/testHttp.o
 DEPS_91 += $(CONFIG)/bin/testAppweb
 
 test/web/auth/basic/basic.cgi: $(DEPS_91)
+	( \
+	cd test; \
+	echo "#!`type -p ejs`" >web/auth/basic/basic.cgi
+	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi
+	chmod +x web/auth/basic/basic.cgi ; \
+	)
 endif
 
 ifeq ($(BIT_PACK_CGI),1)
@@ -2121,21 +2144,37 @@ DEPS_92 += $(CONFIG)/obj/cgiProgram.o
 DEPS_92 += $(CONFIG)/bin/cgiProgram
 
 test/cgi-bin/cgiProgram: $(DEPS_92)
+	( \
+	cd test; \
+	cp ../$(CONFIG)/bin/cgiProgram cgi-bin/cgiProgram
+	cp ../$(CONFIG)/bin/cgiProgram cgi-bin/nph-cgiProgram
+	cp ../$(CONFIG)/bin/cgiProgram 'cgi-bin/cgi Program'
+	cp ../$(CONFIG)/bin/cgiProgram web/cgiProgram.cgi
+	chmod +x cgi-bin/* web/cgiProgram.cgi ; \
+	)
 endif
+
+#
+#   bower.json
+#
+DEPS_93 += package.json
+
+bower.json: $(DEPS_93)
+	@echo '      [Copy] bower.json'
 
 
 #
 #   stop
 #
-DEPS_93 += compile
+DEPS_94 += compile
 
-stop: $(DEPS_93)
+stop: $(DEPS_94)
 	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
 
 #
 #   installBinary
 #
-installBinary: $(DEPS_94)
+installBinary: $(DEPS_95)
 	mkdir -p "$(BIT_APP_PREFIX)"
 	rm -f "$(BIT_APP_PREFIX)/latest"
 	ln -s "4.5.0" "$(BIT_APP_PREFIX)/latest"
@@ -2172,8 +2211,107 @@ installBinary: $(DEPS_94)
 	cp $(CONFIG)/bin/libphp5.so $(BIT_VAPP_PREFIX)/bin/libphp5.so
 	fi
 	if [ "$(BIT_PACK_ESP)" = 1 ]; then 
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp"
-	cp src/esp/packs $(BIT_VAPP_PREFIX)/esp/packs
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/angular"
+	cp src/esp/paks/angular/angular-animate.js $(BIT_VAPP_PREFIX)/esp/angular/angular-animate.js
+	cp src/esp/paks/angular/angular-bootstrap-prettify.js $(BIT_VAPP_PREFIX)/esp/angular/angular-bootstrap-prettify.js
+	cp src/esp/paks/angular/angular-bootstrap.js $(BIT_VAPP_PREFIX)/esp/angular/angular-bootstrap.js
+	cp src/esp/paks/angular/angular-cookies.js $(BIT_VAPP_PREFIX)/esp/angular/angular-cookies.js
+	cp src/esp/paks/angular/angular-loader.js $(BIT_VAPP_PREFIX)/esp/angular/angular-loader.js
+	cp src/esp/paks/angular/angular-mocks.js $(BIT_VAPP_PREFIX)/esp/angular/angular-mocks.js
+	cp src/esp/paks/angular/angular-resource.js $(BIT_VAPP_PREFIX)/esp/angular/angular-resource.js
+	cp src/esp/paks/angular/angular-route.js $(BIT_VAPP_PREFIX)/esp/angular/angular-route.js
+	cp src/esp/paks/angular/angular-sanitize.js $(BIT_VAPP_PREFIX)/esp/angular/angular-sanitize.js
+	cp src/esp/paks/angular/angular-scenario.js $(BIT_VAPP_PREFIX)/esp/angular/angular-scenario.js
+	cp src/esp/paks/angular/angular-touch.js $(BIT_VAPP_PREFIX)/esp/angular/angular-touch.js
+	cp src/esp/paks/angular/angular.js $(BIT_VAPP_PREFIX)/esp/angular/angular.js
+	cp src/esp/paks/angular/package.json $(BIT_VAPP_PREFIX)/esp/angular/package.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular"
+	cp src/esp/paks/esp-angular/esp-click.js $(BIT_VAPP_PREFIX)/esp/esp-angular/esp-click.js
+	cp src/esp/paks/esp-angular/esp-field-errors.js $(BIT_VAPP_PREFIX)/esp/esp-angular/esp-field-errors.js
+	cp src/esp/paks/esp-angular/esp-format.js $(BIT_VAPP_PREFIX)/esp/esp-angular/esp-format.js
+	cp src/esp/paks/esp-angular/esp-input-group.js $(BIT_VAPP_PREFIX)/esp/esp-angular/esp-input-group.js
+	cp src/esp/paks/esp-angular/esp-input.js $(BIT_VAPP_PREFIX)/esp/esp-angular/esp-input.js
+	cp src/esp/paks/esp-angular/esp-resource.js $(BIT_VAPP_PREFIX)/esp/esp-angular/esp-resource.js
+	cp src/esp/paks/esp-angular/esp-session.js $(BIT_VAPP_PREFIX)/esp/esp-angular/esp-session.js
+	cp src/esp/paks/esp-angular/esp-titlecase.js $(BIT_VAPP_PREFIX)/esp/esp-angular/esp-titlecase.js
+	cp src/esp/paks/esp-angular/esp.js $(BIT_VAPP_PREFIX)/esp/esp-angular/esp.js
+	cp src/esp/paks/esp-angular/package.json $(BIT_VAPP_PREFIX)/esp/esp-angular/package.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular-mvc"
+	cp src/esp/paks/esp-angular-mvc/appweb.conf $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/appweb.conf
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/app"
+	cp src/esp/paks/esp-angular-mvc/client/app/main.js $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/app/main.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/assets"
+	cp src/esp/paks/esp-angular-mvc/client/assets/favicon.ico $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/assets/favicon.ico
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/css"
+	cp src/esp/paks/esp-angular-mvc/client/css/all.less $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/css/all.less
+	cp src/esp/paks/esp-angular-mvc/client/css/app.less $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/css/app.less
+	cp src/esp/paks/esp-angular-mvc/client/css/fix.less $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/css/fix.less
+	cp src/esp/paks/esp-angular-mvc/client/css/theme.less $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/css/theme.less
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client"
+	cp src/esp/paks/esp-angular-mvc/client/index.esp $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/index.esp
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/pages"
+	cp src/esp/paks/esp-angular-mvc/client/pages/splash.html $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/client/pages/splash.html
+	cp src/esp/paks/esp-angular-mvc/package.json $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/package.json
+	cp src/esp/paks/esp-angular-mvc/start.bit $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/start.bit
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates"
+	cp src/esp/paks/esp-angular-mvc/templates/controller-singleton.c $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/controller-singleton.c
+	cp src/esp/paks/esp-angular-mvc/templates/controller.c $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/controller.c
+	cp src/esp/paks/esp-angular-mvc/templates/controller.js $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/controller.js
+	cp src/esp/paks/esp-angular-mvc/templates/edit.html $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/edit.html
+	cp src/esp/paks/esp-angular-mvc/templates/list.html $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/list.html
+	cp src/esp/paks/esp-angular-mvc/templates/model.js $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/model.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc"
+	cp src/esp/paks/esp-html-mvc/appweb.conf $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/appweb.conf
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/assets"
+	cp src/esp/paks/esp-html-mvc/client/assets/favicon.ico $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/assets/favicon.ico
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/css"
+	cp src/esp/paks/esp-html-mvc/client/css/all.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/css/all.less
+	cp src/esp/paks/esp-html-mvc/client/css/app.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/css/app.less
+	cp src/esp/paks/esp-html-mvc/client/css/fix.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/css/fix.less
+	cp src/esp/paks/esp-html-mvc/client/css/theme.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/css/theme.less
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client"
+	cp src/esp/paks/esp-html-mvc/client/index.esp $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/index.esp
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/layouts"
+	cp src/esp/paks/esp-html-mvc/client/layouts/default.esp $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/layouts/default.esp
+	cp src/esp/paks/esp-html-mvc/package.json $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/package.json
+	cp src/esp/paks/esp-html-mvc/start.bit $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/start.bit
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates"
+	cp src/esp/paks/esp-html-mvc/templates/controller-singleton.c $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/controller-singleton.c
+	cp src/esp/paks/esp-html-mvc/templates/controller.c $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/controller.c
+	cp src/esp/paks/esp-html-mvc/templates/edit.esp $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/edit.esp
+	cp src/esp/paks/esp-html-mvc/templates/list.esp $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/list.esp
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/layouts"
+	cp src/esp/paks/esp-legacy-mvc/layouts/default.esp $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/layouts/default.esp
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc"
+	cp src/esp/paks/esp-legacy-mvc/package.json $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/package.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/css"
+	cp src/esp/paks/esp-legacy-mvc/static/css/all.css $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/css/all.css
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/images"
+	cp src/esp/paks/esp-legacy-mvc/static/images/banner.jpg $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/images/banner.jpg
+	cp src/esp/paks/esp-legacy-mvc/static/images/favicon.ico $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/images/favicon.ico
+	cp src/esp/paks/esp-legacy-mvc/static/images/splash.jpg $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/images/splash.jpg
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static"
+	cp src/esp/paks/esp-legacy-mvc/static/index.esp $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/index.esp
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/js"
+	cp src/esp/paks/esp-legacy-mvc/static/js/jquery.esp.js $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/js/jquery.esp.js
+	cp src/esp/paks/esp-legacy-mvc/static/js/jquery.js $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/static/js/jquery.js
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates"
+	cp src/esp/paks/esp-legacy-mvc/templates/controller.c $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/controller.c
+	cp src/esp/paks/esp-legacy-mvc/templates/edit.esp $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/edit.esp
+	cp src/esp/paks/esp-legacy-mvc/templates/list.esp $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/list.esp
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-server"
+	cp src/esp/paks/esp-server/appweb.conf $(BIT_VAPP_PREFIX)/esp/esp-server/appweb.conf
+	cp src/esp/paks/esp-server/package.json $(BIT_VAPP_PREFIX)/esp/esp-server/package.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-server/templates"
+	cp src/esp/paks/esp-server/templates/app.c $(BIT_VAPP_PREFIX)/esp/esp-server/templates/app.c
+	cp src/esp/paks/esp-server/templates/controller.c $(BIT_VAPP_PREFIX)/esp/esp-server/templates/controller.c
+	cp src/esp/paks/esp-server/templates/migration.c $(BIT_VAPP_PREFIX)/esp/esp-server/templates/migration.c
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/less"
+	cp src/esp/paks/less/less.js $(BIT_VAPP_PREFIX)/esp/less/less.js
+	cp src/esp/paks/less/package.json $(BIT_VAPP_PREFIX)/esp/less/package.json
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/more"
+	cp src/esp/paks/more/more.less $(BIT_VAPP_PREFIX)/esp/more/more.less
+	cp src/esp/paks/more/package.json $(BIT_VAPP_PREFIX)/esp/more/package.json
 	fi
 	if [ "$(BIT_PACK_ESP)" = 1 ]; then 
 	cp $(CONFIG)/bin/esp.conf $(BIT_VAPP_PREFIX)/bin/esp.conf
@@ -2313,32 +2451,32 @@ installBinary: $(DEPS_94)
 #
 #   start
 #
-DEPS_95 += compile
-DEPS_95 += stop
+DEPS_96 += compile
+DEPS_96 += stop
 
-start: $(DEPS_95)
+start: $(DEPS_96)
 	./$(CONFIG)/bin/appman install enable start
 
 #
 #   install
 #
-DEPS_96 += compile
-DEPS_96 += stop
-DEPS_96 += installBinary
-DEPS_96 += start
+DEPS_97 += compile
+DEPS_97 += stop
+DEPS_97 += installBinary
+DEPS_97 += start
 
-install: $(DEPS_96)
+install: $(DEPS_97)
 	
 
 
 #
 #   uninstall
 #
-DEPS_97 += build
-DEPS_97 += compile
-DEPS_97 += stop
+DEPS_98 += build
+DEPS_98 += compile
+DEPS_98 += stop
 
-uninstall: $(DEPS_97)
+uninstall: $(DEPS_98)
 	( \
 	cd package; \
 	rm -f "$(BIT_ETC_PREFIX)/appweb.conf" ; \
@@ -2363,7 +2501,7 @@ uninstall: $(DEPS_97)
 #
 #   genslink
 #
-genslink: $(DEPS_98)
+genslink: $(DEPS_99)
 	( \
 	cd src/server; \
 	esp --static --genlink slink.c --flat compile ; \
@@ -2372,9 +2510,9 @@ genslink: $(DEPS_98)
 #
 #   run
 #
-DEPS_99 += compile
+DEPS_100 += compile
 
-run: $(DEPS_99)
+run: $(DEPS_100)
 	( \
 	cd src/server; \
 	sudo ../../$(CONFIG)/bin/appweb -v ; \

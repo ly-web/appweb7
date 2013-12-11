@@ -8,13 +8,13 @@
 
 /* Settings */
 #ifndef BIT_BIT
-    #define BIT_BIT "0.8.7"
+    #define BIT_BIT "0.9.0"
 #endif
 #ifndef BIT_BUILD_NUMBER
     #define BIT_BUILD_NUMBER "0"
 #endif
 #ifndef BIT_COMPANY
-    #define BIT_COMPANY "Embedthis"
+    #define BIT_COMPANY "Embedthis Software"
 #endif
 #ifndef BIT_CONFIG_FILE
     #define BIT_CONFIG_FILE "appweb.conf"
