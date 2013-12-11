@@ -14277,7 +14277,9 @@ PUBLIC char *mprListToString(MprList *list, cchar *join)
         mprPutStringToBuf(buf, s);
         mprPutStringToBuf(buf, join);
     }
-    mprAdjustBufEnd(buf, -1);
+    if (next > 0) {
+        mprAdjustBufEnd(buf, -1);
+    }
     mprAddNullToBuf(buf);
     return mprGetBufStart(buf);
 }
