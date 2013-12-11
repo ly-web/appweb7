@@ -158,7 +158,6 @@ copy esp-html-mvc/client/css/theme.less ../../../windows-x86-static/paks/esp-htm
 copy esp-html-mvc/client/index.esp ../../../windows-x86-static/paks/esp-html-mvc/0.0.0/client/index.esp
 mkdir -p "../../../windows-x86-static/paks/esp-html-mvc/0.0.0/client/layouts"
 copy esp-html-mvc/client/layouts/default.esp ../../../windows-x86-static/paks/esp-html-mvc/0.0.0/client/layouts/default.esp
-mkdir -p "../../../windows-x86-static/paks/esp-html-mvc/0.0.0/client/pages"
 copy esp-html-mvc/package.json ../../../windows-x86-static/paks/esp-html-mvc/0.0.0/package.json
 copy esp-html-mvc/start.bit ../../../windows-x86-static/paks/esp-html-mvc/0.0.0/start.bit
 mkdir -p "../../../windows-x86-static/paks/esp-html-mvc/0.0.0/templates"

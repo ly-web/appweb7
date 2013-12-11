@@ -393,6 +393,7 @@ endif
 DEPS_10 += $(CONFIG)/inc/bit.h
 DEPS_10 += $(CONFIG)/inc/mpr.h
 DEPS_10 += $(CONFIG)/inc/est.h
+DEPS_10 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/mprSsl.o: \
     src/deps/mpr/mprSsl.c $(DEPS_10)
@@ -1143,7 +1144,6 @@ DEPS_56 += src/esp/paks/esp-html-mvc/client/css/theme.less
 DEPS_56 += src/esp/paks/esp-html-mvc/client/index.esp
 DEPS_56 += src/esp/paks/esp-html-mvc/client/layouts
 DEPS_56 += src/esp/paks/esp-html-mvc/client/layouts/default.esp
-DEPS_56 += src/esp/paks/esp-html-mvc/client/pages
 DEPS_56 += src/esp/paks/esp-html-mvc/package.json
 DEPS_56 += src/esp/paks/esp-html-mvc/start.bit
 DEPS_56 += src/esp/paks/esp-html-mvc/templates
@@ -1249,7 +1249,6 @@ $(CONFIG)/paks: $(DEPS_56)
 	cp esp-html-mvc/client/index.esp ../../../$(CONFIG)/paks/esp-html-mvc/0.0.0/client/index.esp ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-html-mvc/0.0.0/client/layouts" ; \
 	cp esp-html-mvc/client/layouts/default.esp ../../../$(CONFIG)/paks/esp-html-mvc/0.0.0/client/layouts/default.esp ; \
-	mkdir -p "../../../$(CONFIG)/paks/esp-html-mvc/0.0.0/client/pages" ; \
 	cp esp-html-mvc/package.json ../../../$(CONFIG)/paks/esp-html-mvc/0.0.0/package.json ; \
 	cp esp-html-mvc/start.bit ../../../$(CONFIG)/paks/esp-html-mvc/0.0.0/start.bit ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-html-mvc/0.0.0/templates" ; \
@@ -2043,8 +2042,8 @@ DEPS_90 += $(CONFIG)/bin/testAppweb
 test/web/caching/cache.cgi: $(DEPS_90)
 	( \
 	cd test; \
-	echo "#!`type -p ejs`" >web/caching/cache.cgi
-	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi
+	echo "#!`type -p ejs`" >web/caching/cache.cgi ; \
+	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi ; \
 	chmod +x web/caching/cache.cgi ; \
 	)
 endif
@@ -2083,8 +2082,8 @@ DEPS_91 += $(CONFIG)/bin/testAppweb
 test/web/auth/basic/basic.cgi: $(DEPS_91)
 	( \
 	cd test; \
-	echo "#!`type -p ejs`" >web/auth/basic/basic.cgi
-	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi
+	echo "#!`type -p ejs`" >web/auth/basic/basic.cgi ; \
+	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi ; \
 	chmod +x web/auth/basic/basic.cgi ; \
 	)
 endif
@@ -2100,10 +2099,10 @@ DEPS_92 += $(CONFIG)/bin/cgiProgram
 test/cgi-bin/cgiProgram: $(DEPS_92)
 	( \
 	cd test; \
-	cp ../$(CONFIG)/bin/cgiProgram cgi-bin/cgiProgram
-	cp ../$(CONFIG)/bin/cgiProgram cgi-bin/nph-cgiProgram
-	cp ../$(CONFIG)/bin/cgiProgram 'cgi-bin/cgi Program'
-	cp ../$(CONFIG)/bin/cgiProgram web/cgiProgram.cgi
+	cp ../$(CONFIG)/bin/cgiProgram cgi-bin/cgiProgram ; \
+	cp ../$(CONFIG)/bin/cgiProgram cgi-bin/nph-cgiProgram ; \
+	cp ../$(CONFIG)/bin/cgiProgram 'cgi-bin/cgi Program' ; \
+	cp ../$(CONFIG)/bin/cgiProgram web/cgiProgram.cgi ; \
 	chmod +x cgi-bin/* web/cgiProgram.cgi ; \
 	)
 endif
@@ -2452,7 +2451,6 @@ DEPS_97 += installBinary
 DEPS_97 += start
 
 install: $(DEPS_97)
-	
 
 
 #

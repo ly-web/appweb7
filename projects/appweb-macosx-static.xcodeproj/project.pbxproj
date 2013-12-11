@@ -2279,7 +2279,6 @@ cp -r esp.conf ../server/esp.conf
 ../src/esp/paks/esp-html-mvc/client/index.esp,
 ../src/esp/paks/esp-html-mvc/client/layouts,
 ../src/esp/paks/esp-html-mvc/client/layouts/default.esp,
-../src/esp/paks/esp-html-mvc/client/pages,
 ../src/esp/paks/esp-html-mvc/package.json,
 ../src/esp/paks/esp-html-mvc/start.bit,
 ../src/esp/paks/esp-html-mvc/templates,
@@ -2389,7 +2388,6 @@ cd ../src/esp/paks
 	cp esp-html-mvc/client/index.esp ../../${OUT_DIR}/paks/esp-html-mvc/0.0.0/client/index.esp
 	mkdir -p \"../../${OUT_DIR}/paks/esp-html-mvc/0.0.0/client/layouts\"
 	cp esp-html-mvc/client/layouts/default.esp ../../${OUT_DIR}/paks/esp-html-mvc/0.0.0/client/layouts/default.esp
-	mkdir -p \"../../${OUT_DIR}/paks/esp-html-mvc/0.0.0/client/pages\"
 	cp esp-html-mvc/package.json ../../${OUT_DIR}/paks/esp-html-mvc/0.0.0/package.json
 	cp esp-html-mvc/start.bit ../../${OUT_DIR}/paks/esp-html-mvc/0.0.0/start.bit
 	mkdir -p \"../../${OUT_DIR}/paks/esp-html-mvc/0.0.0/templates\"

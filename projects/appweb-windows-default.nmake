@@ -1249,7 +1249,6 @@ DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\client\css\theme.less
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\client\index.esp
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\client\layouts
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\client\layouts\default.esp
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\client\pages
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\package.json
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\start.bit
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates
@@ -1354,7 +1353,6 @@ $(CONFIG)\paks: $(DEPS_58)
 	copy /Y esp-html-mvc\client\index.esp ..\..\..\$(CONFIG)\paks\esp-html-mvc\0.0.0\client\index.esp
 	if not exist "..\..\..\$(CONFIG)\paks\esp-html-mvc\0.0.0\client\layouts" md "..\..\..\$(CONFIG)\paks\esp-html-mvc\0.0.0\client\layouts"
 	copy /Y esp-html-mvc\client\layouts\default.esp ..\..\..\$(CONFIG)\paks\esp-html-mvc\0.0.0\client\layouts\default.esp
-	if not exist "..\..\..\$(CONFIG)\paks\esp-html-mvc\0.0.0\client\pages" md "..\..\..\$(CONFIG)\paks\esp-html-mvc\0.0.0\client\pages"
 	copy /Y esp-html-mvc\package.json ..\..\..\$(CONFIG)\paks\esp-html-mvc\0.0.0\package.json
 	copy /Y esp-html-mvc\start.bit ..\..\..\$(CONFIG)\paks\esp-html-mvc\0.0.0\start.bit
 	if not exist "..\..\..\$(CONFIG)\paks\esp-html-mvc\0.0.0\templates" md "..\..\..\$(CONFIG)\paks\esp-html-mvc\0.0.0\templates"
@@ -2545,7 +2543,7 @@ DEPS_105 = $(DEPS_105) installBinary
 DEPS_105 = $(DEPS_105) start
 
 install: $(DEPS_105)
-
+#  Omit build script install
 
 
 #

@@ -1135,7 +1135,6 @@ DEPS_56 += src/esp/paks/esp-html-mvc/client/css/theme.less
 DEPS_56 += src/esp/paks/esp-html-mvc/client/index.esp
 DEPS_56 += src/esp/paks/esp-html-mvc/client/layouts
 DEPS_56 += src/esp/paks/esp-html-mvc/client/layouts/default.esp
-DEPS_56 += src/esp/paks/esp-html-mvc/client/pages
 DEPS_56 += src/esp/paks/esp-html-mvc/package.json
 DEPS_56 += src/esp/paks/esp-html-mvc/start.bit
 DEPS_56 += src/esp/paks/esp-html-mvc/templates
@@ -1241,7 +1240,6 @@ $(CONFIG)/paks: $(DEPS_56)
 	cp esp-html-mvc/client/index.esp ../../../$(CONFIG)/paks/esp-html-mvc/0.0.0/client/index.esp ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-html-mvc/0.0.0/client/layouts" ; \
 	cp esp-html-mvc/client/layouts/default.esp ../../../$(CONFIG)/paks/esp-html-mvc/0.0.0/client/layouts/default.esp ; \
-	mkdir -p "../../../$(CONFIG)/paks/esp-html-mvc/0.0.0/client/pages" ; \
 	cp esp-html-mvc/package.json ../../../$(CONFIG)/paks/esp-html-mvc/0.0.0/package.json ; \
 	cp esp-html-mvc/start.bit ../../../$(CONFIG)/paks/esp-html-mvc/0.0.0/start.bit ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-html-mvc/0.0.0/templates" ; \
@@ -2096,8 +2094,8 @@ DEPS_90 += $(CONFIG)/bin/testAppweb.out
 test/web/caching/cache.cgi: $(DEPS_90)
 	( \
 	cd test; \
-	echo "#!`type -p ejs`" >web/caching/cache.cgi
-	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi
+	echo "#!`type -p ejs`" >web/caching/cache.cgi ; \
+	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi ; \
 	chmod +x web/caching/cache.cgi ; \
 	)
 endif
@@ -2136,8 +2134,8 @@ DEPS_91 += $(CONFIG)/bin/testAppweb.out
 test/web/auth/basic/basic.cgi: $(DEPS_91)
 	( \
 	cd test; \
-	echo "#!`type -p ejs`" >web/auth/basic/basic.cgi
-	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi
+	echo "#!`type -p ejs`" >web/auth/basic/basic.cgi ; \
+	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi ; \
 	chmod +x web/auth/basic/basic.cgi ; \
 	)
 endif
@@ -2153,10 +2151,10 @@ DEPS_92 += $(CONFIG)/bin/cgiProgram.out
 test/cgi-bin/cgiProgram.out: $(DEPS_92)
 	( \
 	cd test; \
-	cp ../$(CONFIG)/bin/cgiProgram.out cgi-bin/cgiProgram.out
-	cp ../$(CONFIG)/bin/cgiProgram.out cgi-bin/nph-cgiProgram.out
-	cp ../$(CONFIG)/bin/cgiProgram.out 'cgi-bin/cgi Program.out'
-	cp ../$(CONFIG)/bin/cgiProgram.out web/cgiProgram.cgi
+	cp ../$(CONFIG)/bin/cgiProgram.out cgi-bin/cgiProgram.out ; \
+	cp ../$(CONFIG)/bin/cgiProgram.out cgi-bin/nph-cgiProgram.out ; \
+	cp ../$(CONFIG)/bin/cgiProgram.out 'cgi-bin/cgi Program.out' ; \
+	cp ../$(CONFIG)/bin/cgiProgram.out web/cgiProgram.cgi ; \
 	chmod +x cgi-bin/* web/cgiProgram.cgi ; \
 	)
 endif
@@ -2181,7 +2179,6 @@ DEPS_95 += compile
 DEPS_95 += installBinary
 
 install: $(DEPS_95)
-	
 
 
 #
