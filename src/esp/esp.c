@@ -588,7 +588,7 @@ static bool findHostingConfig()
             }
         }
         if (!app->configFile) {
-            fail("Cannot find appweb.config");
+            fail("Cannot find appweb.config. Run in directory of a generated application or use --config");
             return 0;
         }
     }
@@ -653,7 +653,9 @@ static void process(int argc, char **argv)
     cmd = argv[0];
     generateApp = smatch(cmd, "generate") && argc > 1 && smatch(argv[1], "app");
     if (!generateApp) {
-        readHostingConfig();
+        if (!readHostingConfig()) {
+            return;
+        }
     }
     if (smatch(cmd, "generate")) {
         generate(argc - 1, &argv[1]);
@@ -681,7 +683,7 @@ static void process(int argc, char **argv)
         upgrade(argc - 1, &argv[1]);
 
     } else if (cmd && *cmd) {
-        fail("Unknown command %s", cmd);
+        fail("Unknown command \"%s\"", cmd);
         usageError();
 
     } else {
