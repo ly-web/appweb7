@@ -8,7 +8,7 @@
             "angular": [
                 "angular.js",
                 "angular-animate.js",
-                "angular-route.js",
+                "angular-route.js"
             ]
         }
     }

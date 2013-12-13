@@ -1,6 +1,6 @@
 {
     "name": "more",
     "description": "Collection of CSS polyfills for emerging HTML5 elements",
-    "version": "0.0.2"
-    "precious": true,
+    "version": "0.0.2",
+    "precious": true
 }

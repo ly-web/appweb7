@@ -8,7 +8,7 @@
     "precious": true,
     "esp": {
         "scripts": {
-            "esp-angular": ["*"],
-        },
-    },
+            "esp-angular": ["*"]
+        }
+    }
 }

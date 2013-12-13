@@ -8,7 +8,7 @@
     },
     "dirs": {
         "base": ".",
-        "paks": "client/paks",
+        "paks": "client/paks"
     },
     "precious": true,
     "esp": {
@@ -29,6 +29,6 @@
         "clientView": true,
         "controller": true,
         "migration": true,
-        "view": false,
+        "view": false
     }
 }

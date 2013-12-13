@@ -3,10 +3,10 @@
     "description": "ESP Server Framework",
     "dirs": {
         "base": ".",
-        "paks": "client/paks",
+        "paks": "client/paks"
     },
     "precious": true,
     "esp": {
-        "serverPrefix": "/do",
-    },
+        "serverPrefix": "/do"
+    }
 }
