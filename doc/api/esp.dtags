@@ -25,9 +25,9 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>espAddPack</name>
+      <name>espAddPak</name>
       <anchorfile>group___esp_route.html</anchorfile>
-      <anchor>gaea13d6bd26ae90e63d344f0ddab12786</anchor>
+      <anchor>gae90883055ee760dca316820bf3d81f96</anchor>
       <arglist>(HttpRoute *route, cchar *name, cchar *version)</arglist>
     </member>
     <member kind="function">
@@ -101,17 +101,10 @@
       <arglist>(HttpRoute *route, cchar *key, cchar *defaultValue)</arglist>
     </member>
     <member kind="function">
-      <type>cchar *</type>
-      <name>espGetPackVersion</name>
-      <anchorfile>group___esp_route.html</anchorfile>
-      <anchor>gaa8e6d5a6744ef7bd1265335685d6a375</anchor>
-      <arglist>(HttpRoute *route, cchar *name)</arglist>
-    </member>
-    <member kind="function">
       <type>bool</type>
-      <name>espHasPack</name>
+      <name>espHasPak</name>
       <anchorfile>group___esp_route.html</anchorfile>
-      <anchor>gaf585a2ec0d2b132e52f47fe7d5a3aa88</anchor>
+      <anchor>gab784ceb8c6581201c05c93729f733b6c</anchor>
       <arglist>(HttpRoute *route, cchar *name)</arglist>
     </member>
     <member kind="function">

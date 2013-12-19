@@ -26,7 +26,7 @@
     #define BIT_DEPTH 1
 #endif
 #ifndef BIT_DISCOVER
-    #define BIT_DISCOVER "cgi,dir,doxygen,dsi,esp,man,man2html,mdb,pmaker,ssl,utest,zip"
+    #define BIT_DISCOVER "cgi,dir,doxygen,dsi,esp,gzip,htmlmin,man,man2html,mdb,ngmin,pak,pmaker,recess,ssl,uglifyjs,utest,zip"
 #endif
 #ifndef BIT_EJS_DB
     #define BIT_EJS_DB 1
@@ -311,6 +311,12 @@
 #ifndef BIT_PACK_EST
     #define BIT_PACK_EST 1
 #endif
+#ifndef BIT_PACK_GZIP
+    #define BIT_PACK_GZIP 1
+#endif
+#ifndef BIT_PACK_HTMLMIN
+    #define BIT_PACK_HTMLMIN 1
+#endif
 #ifndef BIT_PACK_LIB
     #define BIT_PACK_LIB 1
 #endif
@@ -332,8 +338,14 @@
 #ifndef BIT_PACK_NANOSSL
     #define BIT_PACK_NANOSSL 0
 #endif
+#ifndef BIT_PACK_NGMIN
+    #define BIT_PACK_NGMIN 1
+#endif
 #ifndef BIT_PACK_OPENSSL
     #define BIT_PACK_OPENSSL 0
+#endif
+#ifndef BIT_PACK_PAK
+    #define BIT_PACK_PAK 1
 #endif
 #ifndef BIT_PACK_PCRE
     #define BIT_PACK_PCRE 1
@@ -344,6 +356,9 @@
 #ifndef BIT_PACK_PMAKER
     #define BIT_PACK_PMAKER 1
 #endif
+#ifndef BIT_PACK_RECESS
+    #define BIT_PACK_RECESS 1
+#endif
 #ifndef BIT_PACK_SDB
     #define BIT_PACK_SDB 1
 #endif
@@ -352,6 +367,9 @@
 #endif
 #ifndef BIT_PACK_SSL
     #define BIT_PACK_SSL 1
+#endif
+#ifndef BIT_PACK_UGLIFYJS
+    #define BIT_PACK_UGLIFYJS 1
 #endif
 #ifndef BIT_PACK_UTEST
     #define BIT_PACK_UTEST 1

@@ -224,7 +224,7 @@ Today is &lt;%= mprGetDate(0); %&gt;&lt;
             <h3>&lt;% statements %&gt;</h3>
             <p>Use this directive to run "C" code statements. No value is substituted back into the page in
             place of the directive. If you need to write data inside a statement block, use the 
-            <!--MOB-->
+            <!--TODO-->
             render API.</p>
             <pre>
 &lt;% 
@@ -233,7 +233,7 @@ Today is &lt;%= mprGetDate(0); %&gt;&lt;
     }
 %&gt;
 </pre>
-            <!-- MOB links -->
+            <!-- TODO links -->
             <p><em>Security Note</em>: you should never use <em>render</em> to write back user data that has not been
             validated. If you 
             must render user input data, use <em>renderSafe</em> which will escape any HTML sequences. This is essential
