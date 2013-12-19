@@ -1,31 +1,31 @@
 {
     "name": "esp-html-mvc",
     "description": "ESP Server-Side HTML MVC",
+    "version": "4.5.0",
     "dependencies": {
-        "esp-server": "*",
-        "less": "*",
-        "more": "*"
+        "esp-server": "*"
     },
-    "dirs": {
-        "base": ".",
-        "paks": "client/paks"
-    },
-    "precious": true,
+    "export": [
+        "appweb.conf",
+        "start.bit",
+        "client/**",
+        "templates/**"
+    ],
     "esp": {
         "auth": "app",
         "serverPrefix": "/do",
         "server": {
-            "database": "${DATABASE}://${NAME}.${DATABASE}"
+            "database": "${DATABASE}://${NAME}.${DATABASE}",
+            "generate": {
+                "top": "esp-html-mvc",
+                "scaffold": true,
+                "clientModel": false,
+                "clientController": false,
+                "clientView": false,
+                "controller": true,
+                "migration": true,
+                "view": false
+            }
         }
-    },
-    "generate": {
-        "top": "html-mvc",
-        "scaffold": true,
-        "clientModel": false,
-        "clientController": false,
-        "clientView": false,
-        "controller": true,
-        "migration": true,
-        "view": false
     }
 }

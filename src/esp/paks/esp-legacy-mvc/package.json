@@ -1,24 +1,25 @@
 {
     "name": "esp-legacy-mvc",
     "description": "ESP Server Side Legacy MVC",
-    "dirs": {
-        "base": ".",
-        "paks": "client/paks"
-    },
-    "precious": true,
-    "esp": { 
+    "version": "4.5.0",
+    "export": [
+        "layouts/**",
+        "static/**",
+        "templates/**"
+    ],
+    "esp": {
         "server": {
-            "database": "${DATABASE}://${NAME}.${DATABASE}"
+            "database": "${DATABASE}://${NAME}.${DATABASE}",
+            "generate": {
+                "top": "esp-legacy-mvc",
+                "scaffold": true,
+                "clientModel": false,
+                "clientController": false,
+                "clientView": false,
+                "controller": true,
+                "migration": true,
+                "view": true
+            }
         }
-    },
-    "generate": {
-        "top": "legacy-mvc",
-        "scaffold": true,
-        "clientModel": false,
-        "clientController": false,
-        "clientView": false,
-        "controller": true,
-        "migration": true,
-        "view": true
     }
 }

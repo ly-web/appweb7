@@ -2,14 +2,9 @@
     "name": "angular",
     "description": "Angular client-side framework",
     "version": "1.2.0",
-    "precious": true,
-    "esp": {
-        "scripts": {
-            "angular": [
-                "angular.js",
-                "angular-animate.js",
-                "angular-route.js"
-            ]
-        }
-    }
+    "client-scripts": [
+        "${PAKS}/angular/angular.js",
+        "${PAKS}/angular/angular-animate.js",
+        "${PAKS}/angular/angular-route.js",
+    ]
 }
