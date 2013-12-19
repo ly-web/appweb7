@@ -68,7 +68,8 @@ Bit.load({
         /*
             Optional packs to automatically discover and configure
          */
-        '+discover': [ 'cgi', 'dir', 'doxygen', 'dsi', 'esp', 'man', 'man2html', 'mdb', 'pmaker', 'ssl', 'utest', 'zip' ],
+        '+discover': [ 'cgi', 'dir', 'doxygen', 'dsi', 'esp', 'gzip', 'htmlmin', 'man', 'man2html', 'mdb', 'ngmin', 'pak', 
+                'pmaker', 'recess', 'ssl', 'uglifyjs', 'utest', 'zip' ],
 
         /*
             Packs to disable when using --without all
