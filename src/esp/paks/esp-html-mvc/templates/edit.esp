@@ -20,7 +20,7 @@
             <% if (hasRec()) { %>
                 <input type='submit' class='btn' name="submit" value="Delete">
             <% } %>
-            <% renderSecurityToken(); %>
+            <% inputSecurityToken(); %>
         </div>
     </div>
 </form>

@@ -2409,6 +2409,10 @@ PUBLIC ssize renderSafe(cchar *fmt, ...);
  */
 PUBLIC void inputSecurityToken();
 
+#if BIT_ESP_LEGACY 
+#define renderSecurityToken inputSecurityToken
+#endif
+
 /**
     Render a string of data to the client
     @description Render a string of data to the client. Data packets will be created
