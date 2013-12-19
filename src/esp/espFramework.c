@@ -496,6 +496,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
     EspRoute    *eroute;
     MprJson     *msettings, *settings;
     MprPath     cinfo;
+    MprTicks    clientLifespan;
     cchar       *cdata, *cpath, *value, *errorMsg;
     bool        debug;
 
@@ -612,6 +613,11 @@ PUBLIC int espLoadConfig(HttpRoute *route)
 #endif
             if (espTestConfig(route, "esp.compressed", "true")) {
                 httpAddRouteMapping(route, "css,html,js,less,txt,xml", "min.${1}.gz, min.${1}, ${1}.gz");
+            }
+            if ((value = espGetConfig(route, "esp.cache", 0)) != 0) {
+                clientLifespan = httpGetTicks(value);
+                httpAddCache(route, NULL, NULL, "html,gif,jpeg,jpg,png,pdf,ico,js,txt,less", NULL, clientLifespan, 0, 
+                    HTTP_CACHE_CLIENT | HTTP_CACHE_ALL);
             }
             if (!eroute->database) {
                 if ((eroute->database = espGetConfig(route, "esp.server.database", 0)) != 0) {
