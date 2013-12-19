@@ -3,7 +3,7 @@
  */
 #include "esp.h"
 
-${DEFINE_CONTROLLERS}
+${ACTIONS}
 
 ESP_EXPORT int esp_controller_${APP}_${NAME}(HttpRoute *route, MprModule *module) {
     ${DEFINE_ACTIONS}    
