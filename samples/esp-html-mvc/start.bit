@@ -194,7 +194,7 @@ Bit.load({
             enable: 'bit.settings.js.flat',
             path: 'client/all-${settings.version}.min.js',
             files: [ '**.min.js' ],
-            //  MOB - check these
+            //  TODO - check these
             exclude: /client\/lib\/all.min.js|client\/lib\/spare\/|client\/lib\/html5shiv/,
             depends: ['min.js'],
             build: "
