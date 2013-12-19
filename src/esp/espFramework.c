@@ -10,8 +10,9 @@
 
 #if BIT_PACK_ESP
 /************************************* Code ***********************************/
+//  MOB - rename Pak
 
-PUBLIC void espAddPack(HttpRoute *route, cchar *name, cchar *version)
+PUBLIC void espAddPak(HttpRoute *route, cchar *name, cchar *version)
 {
     EspRoute    *eroute;
 
@@ -352,13 +353,15 @@ PUBLIC cchar *espGetMethod(HttpConn *conn)
 } 
 
 
-PUBLIC cchar *espGetPackVersion(HttpRoute *route, cchar *name)
+#if UNUSED
+PUBLIC cchar *espGetPakVersion(HttpRoute *route, cchar *name)
 {
     EspRoute    *eroute;
 
     eroute = route->eroute;
     return mprGetJson(eroute->config, sfmt("dependencies.%s", name), 0);
 }
+#endif
 
 
 PUBLIC cchar *espGetParam(HttpConn *conn, cchar *var, cchar *defaultValue)
@@ -443,7 +446,7 @@ PUBLIC cchar *espGetUri(HttpConn *conn)
 }
 
 
-PUBLIC bool espHasPack(HttpRoute *route, cchar *name)
+PUBLIC bool espHasPak(HttpRoute *route, cchar *name)
 {
     EspRoute    *eroute;
 
@@ -620,7 +623,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 }
             }
 #if BIT_ESP_LEGACY
-            if (espHasPack(route, "esp-legacy-mvc")) {
+            if (espHasPak(route, "esp-legacy-mvc")) {
                 eroute->legacy = 1;
             }
 #endif
@@ -631,7 +634,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             httpSetRouteServerPrefix(route, "");
             if (!eroute->config) {
                 eroute->config = mprCreateJson(MPR_JSON_OBJ);
-                espAddPack(route, "esp-legacy-mvc", 0);
+                espAddPak(route, "esp-legacy-mvc", 0);
             }
         }
 #endif

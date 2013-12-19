@@ -583,9 +583,9 @@ PUBLIC void scripts(cchar *patterns)
     HttpRoute   *route;
     EspRoute    *eroute;
     MprList     *files;
-    MprJson     *packs, *pack, *file;
+    MprJson     *cscripts, *script;
     cchar       *name, *uri, *path;
-    int         next, ci, fi;
+    int         next, ci;
 
     conn = getConn();
     route = conn->rx->route;
@@ -597,42 +597,24 @@ PUBLIC void scripts(cchar *patterns)
             name = sfmt("all-%s.min.js", espGetConfig(route, "version", "1.0.0"));
             scripts(name);
         } else {
-            if ((packs = mprGetJsonObj(eroute->config, "esp.scripts", 0)) != 0) {
-                for (ITERATE_JSON(packs, pack, ci)) {
-                    for (ITERATE_JSON(pack, file, fi)) {
-                        if (smatch(file->value, "*")) {
-                            scripts(sfmt("lib/%s/**.js", pack->name));
-                        } else {
-                            scripts(sfmt("lib/%s/%s", pack->name, file->value));
-                        }
-                    }
+            if ((cscripts = mprGetJsonObj(eroute->config, "client-scripts", 0)) != 0) {
+                for (ITERATE_JSON(cscripts, script, ci)) {
+                    scripts(script->value);
                 }
             }
-            if (mprPathExists(mprJoinPath(eroute->clientDir, "app/main.js"), R_OK)) {
-                scripts("app/main.js");
-            }
-            scripts("app/*/**.js");
         }
         return;
     }
-    if (patterns && *patterns) {
-        if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0 || mprGetListLength(files) == 0) {
-            if (!scontains(patterns, "*")) {
-                files = mprCreateList(0, 0);
-                mprAddItem(files, patterns);
-            }
+    if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0 || mprGetListLength(files) == 0) {
+        mprLog(0, "scripts(): Cannot find any files matching %s", patterns);
+    }
+    for (ITERATE_ITEMS(files, path, next)) {
+        if (schr(path, '$')) {
+            path = stemplateJson(path, eroute->config);
         }
-        for (ITERATE_ITEMS(files, path, next)) {
-            path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
-            uri = httpUri(conn, path);
-            if (scontains(path, "-IE-") || scontains(path, "html5shiv")) {
-                espRender(conn, "    <!-- [if lt IE 9]>\n");
-                espRender(conn, "        <script src='%s' type='text/javascript'></script>\n", uri);
-                espRender(conn, "    <![endif]-->\n");
-            } else {
-                espRender(conn, "    <script src='%s' type='text/javascript'></script>\n", uri);
-            }
-        }
+        path = sjoin("~", strim(path, ".gz", MPR_TRIM_END), NULL);
+        uri = httpUri(conn, path);
+        espRender(conn, "    <script src='%s' type='text/javascript'></script>\n", uri);
     }
 }
 
@@ -797,7 +779,12 @@ PUBLIC void stylesheets(cchar *patterns)
         if (modeIs("release")) {
             stylesheets(sfmt("css/all-%s.min.css", espGetConfig(route, "version", "1.0.0")));
         } else {
-            stylesheets("css/all.less");
+            path = mprJoinPath(eroute->clientDir, "css/all.css");
+            if (mprPathExists(path, R_OK)) {
+                stylesheets("css/all.css");
+            } else {
+                stylesheets("css/all.less");
+            }
         }
         return;
     }

@@ -164,7 +164,7 @@ typedef struct EspRoute {
     struct EspRoute *top;                   /**< Top-level route for this application */
     EspProc         commonController;       /**< Common code for all controllers */
     MprHash         *env;                   /**< Environment variables for route */
-    MprJson         *config;                /**< App configuration from package.json */
+    MprJson         *config;                /**< ESP App configuration from package.json */
     MprTime         configLoaded;           /**< When package.json was last loaded */
 
     cchar           *appModulePath;         /**< App module path when compiled flat */
@@ -198,15 +198,15 @@ typedef struct EspRoute {
 } EspRoute;
 
 /**
-    Add the specified pack to the package.json packs list.
+    Add the specified pak to the package.json packs list.
     @param route HttpRoute defining the ESP application
-    @param name Desired pack name. For example: "angular-mvc"
+    @param name Desired pak name. For example: "angular-mvc"
     @param version Pack version string.
     @returns Zero if successful, otherwise a negative MPR error code.
     @ingroup EspRoute
     @stability Prototype
  */
-PUBLIC void espAddPack(HttpRoute *route, cchar *name, cchar *version);
+PUBLIC void espAddPak(HttpRoute *route, cchar *name, cchar *version);
 
 /**
     Add a route for the home page.
@@ -222,7 +222,7 @@ PUBLIC void espAddPack(HttpRoute *route, cchar *name, cchar *version);
 PUBLIC void espAddHomeRoute(HttpRoute *route);
 
 /**
-    Add a route set package
+    Add a route set
     @description This will add a set of routes. It will add a home route and optional routes depending on the route set.
     <table>
         <tr><td>Name</td><td>Method</td><td>Pattern</td><td>Target</td></tr>
@@ -423,26 +423,28 @@ PUBLIC char *espExpandCommand(HttpRoute *route, cchar *command, cchar *source, c
  */
 PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue);
 
+#if UNUSED
 /**
-    Get the pack version string
+    Get the pak version string
     @param route HttpRoute defining the ESP application
-    @param name Desired pack name. For example: "angular-mvc"
+    @param name Desired pak name. For example: "angular-mvc"
     @returns The version string. May be "*" if no version was defined.
     @ingroup EspRoute
     @stability Prototype
  */
-PUBLIC cchar *espGetPackVersion(HttpRoute *route, cchar *name);
+PUBLIC cchar *espGetPakVersion(HttpRoute *route, cchar *name);
+#endif
 
 /**
-    Test if the ESP application includes the specified pack
-    @description This tests the settings.packs for the specified pack.
+    Test if the ESP application includes the specified pak
+    @description This tests the dependencies property specified pak.
     @param route HttpRoute defining the ESP application
-    @param name Desired pack name. For example: "angular-mvc"
-    @returns True if the specified pack is supported
+    @param name Desired pak name. For example: "angular-mvc"
+    @returns True if the specified pak is supported
     @ingroup EspRoute
     @stability Prototype
  */
-PUBLIC bool espHasPack(HttpRoute *route, cchar *name);
+PUBLIC bool espHasPak(HttpRoute *route, cchar *name);
 
 /**
     Load ESP package.json configuration file 

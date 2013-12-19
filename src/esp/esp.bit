@@ -77,5 +77,31 @@ Bit.load({
                 ",
             },
         },
+
+        'all.css': {
+            path: 'paks/esp-angular-mvc/client/css/all.css',
+            files: [ 'paks/esp-angular-mvc/client/css/*.less' ],
+            build: `
+                if (Cmd.locate('recess')) {
+                    strace('Run', 'recess -compile paks/esp-angular-mvc/client/css/all.less')
+                    let result = Cmd.run('recess -compile paks/esp-angular-mvc/client/css/all.less')
+                    TARGET.path.write(result)
+                }
+            `
+        },
+
+        pakvers: {
+            build: `
+                if (Cmd.locate('pak')) {
+                    if (bit.settings.version != Path('paks/esp-angular/package.json').readJSON().version) {
+                        run('pak -dir paks/esp-angular edit version=${settings.version}')
+                        run('pak -dir paks/esp-angular-mvc edit version=${settings.version}')
+                        run('pak -dir paks/esp-server edit version=${settings.version}')
+                        run('pak -dir paks/esp-html-mvc edit version=${settings.version}')
+                        run('pak -dir paks/esp-legacy-mvc edit version=${settings.version}')
+                    }
+                }
+            `
+        }
     },
 })

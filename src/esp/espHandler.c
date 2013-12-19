@@ -1082,8 +1082,8 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     if (espLoadConfig(route) < 0) {
         return MPR_ERR_CANT_LOAD;
     }
-    espSetConfig(route, "settings.appPrefix", prefix);
-    espSetConfig(route, "settings.prefix", sjoin(prefix ? prefix : "", route->serverPrefix, NULL));
+    espSetConfig(route, "esp.appPrefix", prefix);
+    espSetConfig(route, "esp.prefix", sjoin(prefix ? prefix : "", route->serverPrefix, NULL));
 #if BIT_ESP_LEGACY
     if (eroute->legacy && (eroute->routeSet == 0 || *eroute->routeSet == '\0')) {
         eroute->routeSet = sclone("restful");
