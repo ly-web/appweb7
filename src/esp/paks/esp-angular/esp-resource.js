@@ -100,7 +100,7 @@ angular.module('esp.resource', [])
                             data[key] = value;
                         }
                     });
-                    //  MOB - should be a function
+                    //  TODO - should be a function
                     angular.forEach(data, function(value, key) {
                         if (key == 'feedback') {
                             $rootScope[key] = value;

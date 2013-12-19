@@ -3,7 +3,6 @@
  */
 
 //  TODO - should be able to have a module test.http.get
-//  MOB - incomplete
 module test.http.getmethod {
 
     const HTTP = App.config.main || "127.0.0.1:4100"

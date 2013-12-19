@@ -35,7 +35,7 @@ Bit.pack({
                     path = versions[0]
                 }
             }
-            //  MOB - split here for config
+            //  TODO - split here for config
             if (bit.platform.os == 'windows') {
                 let search = [
                     path.join('x64/Release_TS'),

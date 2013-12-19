@@ -85,7 +85,7 @@ Bit.load({
             packs: [ 'cgi' ],
         },
 
-        //  MOB
+        //  TODO
         'test.js': {
             enable: false,
             type:   'file',
@@ -103,7 +103,7 @@ Bit.load({
                     trace('Test', 'Light load tests')
                     run('utest -v -i 5 --depth ' + depth, ro)
                 }
-                //  MOB - thread tests don't work yet
+                //  TODO - thread tests don't work yet
                 if (depth >= 3) {
                     for each (t in [2, 4]) {
                         trace('Test', 'Light thread tests')

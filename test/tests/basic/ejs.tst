@@ -30,7 +30,7 @@ if (App.config.bit_ejscript) {
         */
     }
 
-    /*  MOB - not yet supported
+    /*  TODO - not yet supported
     function alias() {
         http.get(HTTP + "/SimpleAlias/ejsProgram.ejs")
         assert(http.status == 200)
@@ -128,7 +128,7 @@ if (App.config.bit_ejscript) {
 
     basic()
     forms()
-    /* MOB - not using aliases
+    /* TODO - not using aliases
         alias()
     */
     query()
