@@ -1075,16 +1075,7 @@ ifeq ($(BIT_PACK_ESP),1)
 #
 DEPS_56 += src/esp/paks/angular
 DEPS_56 += src/esp/paks/angular/angular-animate.js
-DEPS_56 += src/esp/paks/angular/angular-bootstrap-prettify.js
-DEPS_56 += src/esp/paks/angular/angular-bootstrap.js
-DEPS_56 += src/esp/paks/angular/angular-cookies.js
-DEPS_56 += src/esp/paks/angular/angular-loader.js
-DEPS_56 += src/esp/paks/angular/angular-mocks.js
-DEPS_56 += src/esp/paks/angular/angular-resource.js
 DEPS_56 += src/esp/paks/angular/angular-route.js
-DEPS_56 += src/esp/paks/angular/angular-sanitize.js
-DEPS_56 += src/esp/paks/angular/angular-scenario.js
-DEPS_56 += src/esp/paks/angular/angular-touch.js
 DEPS_56 += src/esp/paks/angular/angular.js
 DEPS_56 += src/esp/paks/angular/package.json
 DEPS_56 += src/esp/paks/esp-angular
@@ -1174,20 +1165,11 @@ DEPS_56 += src/esp/paks/esp-server/templates/migration.c
 $(CONFIG)/paks: $(DEPS_56)
 	( \
 	cd src/esp/paks; \
-	mkdir -p "../../../$(CONFIG)/paks/angular/1.2.0" ; \
-	cp angular/angular-animate.js ../../../$(CONFIG)/paks/angular/1.2.0/angular-animate.js ; \
-	cp angular/angular-bootstrap-prettify.js ../../../$(CONFIG)/paks/angular/1.2.0/angular-bootstrap-prettify.js ; \
-	cp angular/angular-bootstrap.js ../../../$(CONFIG)/paks/angular/1.2.0/angular-bootstrap.js ; \
-	cp angular/angular-cookies.js ../../../$(CONFIG)/paks/angular/1.2.0/angular-cookies.js ; \
-	cp angular/angular-loader.js ../../../$(CONFIG)/paks/angular/1.2.0/angular-loader.js ; \
-	cp angular/angular-mocks.js ../../../$(CONFIG)/paks/angular/1.2.0/angular-mocks.js ; \
-	cp angular/angular-resource.js ../../../$(CONFIG)/paks/angular/1.2.0/angular-resource.js ; \
-	cp angular/angular-route.js ../../../$(CONFIG)/paks/angular/1.2.0/angular-route.js ; \
-	cp angular/angular-sanitize.js ../../../$(CONFIG)/paks/angular/1.2.0/angular-sanitize.js ; \
-	cp angular/angular-scenario.js ../../../$(CONFIG)/paks/angular/1.2.0/angular-scenario.js ; \
-	cp angular/angular-touch.js ../../../$(CONFIG)/paks/angular/1.2.0/angular-touch.js ; \
-	cp angular/angular.js ../../../$(CONFIG)/paks/angular/1.2.0/angular.js ; \
-	cp angular/package.json ../../../$(CONFIG)/paks/angular/1.2.0/package.json ; \
+	mkdir -p "../../../$(CONFIG)/paks/angular/1.2.5" ; \
+	cp angular/angular-animate.js ../../../$(CONFIG)/paks/angular/1.2.5/angular-animate.js ; \
+	cp angular/angular-route.js ../../../$(CONFIG)/paks/angular/1.2.5/angular-route.js ; \
+	cp angular/angular.js ../../../$(CONFIG)/paks/angular/1.2.5/angular.js ; \
+	cp angular/package.json ../../../$(CONFIG)/paks/angular/1.2.5/package.json ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-angular/4.5.0" ; \
 	cp esp-angular/esp-click.js ../../../$(CONFIG)/paks/esp-angular/4.5.0/esp-click.js ; \
 	cp esp-angular/esp-field-errors.js ../../../$(CONFIG)/paks/esp-angular/4.5.0/esp-field-errors.js ; \
@@ -2212,16 +2194,7 @@ installBinary: $(DEPS_95)
 	if [ "$(BIT_PACK_ESP)" = 1 ]; then 
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/angular"
 	cp src/esp/paks/angular/angular-animate.js $(BIT_VAPP_PREFIX)/esp/angular/angular-animate.js
-	cp src/esp/paks/angular/angular-bootstrap-prettify.js $(BIT_VAPP_PREFIX)/esp/angular/angular-bootstrap-prettify.js
-	cp src/esp/paks/angular/angular-bootstrap.js $(BIT_VAPP_PREFIX)/esp/angular/angular-bootstrap.js
-	cp src/esp/paks/angular/angular-cookies.js $(BIT_VAPP_PREFIX)/esp/angular/angular-cookies.js
-	cp src/esp/paks/angular/angular-loader.js $(BIT_VAPP_PREFIX)/esp/angular/angular-loader.js
-	cp src/esp/paks/angular/angular-mocks.js $(BIT_VAPP_PREFIX)/esp/angular/angular-mocks.js
-	cp src/esp/paks/angular/angular-resource.js $(BIT_VAPP_PREFIX)/esp/angular/angular-resource.js
 	cp src/esp/paks/angular/angular-route.js $(BIT_VAPP_PREFIX)/esp/angular/angular-route.js
-	cp src/esp/paks/angular/angular-sanitize.js $(BIT_VAPP_PREFIX)/esp/angular/angular-sanitize.js
-	cp src/esp/paks/angular/angular-scenario.js $(BIT_VAPP_PREFIX)/esp/angular/angular-scenario.js
-	cp src/esp/paks/angular/angular-touch.js $(BIT_VAPP_PREFIX)/esp/angular/angular-touch.js
 	cp src/esp/paks/angular/angular.js $(BIT_VAPP_PREFIX)/esp/angular/angular.js
 	cp src/esp/paks/angular/package.json $(BIT_VAPP_PREFIX)/esp/angular/package.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular"

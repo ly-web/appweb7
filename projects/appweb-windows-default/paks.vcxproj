@@ -96,20 +96,11 @@
 
   <CustomBuildStep>
     <Command>cd ..\..\src\esp\paks
-mkdir -p "../../../windows-x86-default/paks/angular/1.2.0"
-copy angular/angular-animate.js ../../../windows-x86-default/paks/angular/1.2.0/angular-animate.js
-copy angular/angular-bootstrap-prettify.js ../../../windows-x86-default/paks/angular/1.2.0/angular-bootstrap-prettify.js
-copy angular/angular-bootstrap.js ../../../windows-x86-default/paks/angular/1.2.0/angular-bootstrap.js
-copy angular/angular-cookies.js ../../../windows-x86-default/paks/angular/1.2.0/angular-cookies.js
-copy angular/angular-loader.js ../../../windows-x86-default/paks/angular/1.2.0/angular-loader.js
-copy angular/angular-mocks.js ../../../windows-x86-default/paks/angular/1.2.0/angular-mocks.js
-copy angular/angular-resource.js ../../../windows-x86-default/paks/angular/1.2.0/angular-resource.js
-copy angular/angular-route.js ../../../windows-x86-default/paks/angular/1.2.0/angular-route.js
-copy angular/angular-sanitize.js ../../../windows-x86-default/paks/angular/1.2.0/angular-sanitize.js
-copy angular/angular-scenario.js ../../../windows-x86-default/paks/angular/1.2.0/angular-scenario.js
-copy angular/angular-touch.js ../../../windows-x86-default/paks/angular/1.2.0/angular-touch.js
-copy angular/angular.js ../../../windows-x86-default/paks/angular/1.2.0/angular.js
-copy angular/package.json ../../../windows-x86-default/paks/angular/1.2.0/package.json
+mkdir -p "../../../windows-x86-default/paks/angular/1.2.5"
+copy angular/angular-animate.js ../../../windows-x86-default/paks/angular/1.2.5/angular-animate.js
+copy angular/angular-route.js ../../../windows-x86-default/paks/angular/1.2.5/angular-route.js
+copy angular/angular.js ../../../windows-x86-default/paks/angular/1.2.5/angular.js
+copy angular/package.json ../../../windows-x86-default/paks/angular/1.2.5/package.json
 mkdir -p "../../../windows-x86-default/paks/esp-angular/4.5.0"
 copy esp-angular/esp-click.js ../../../windows-x86-default/paks/esp-angular/4.5.0/esp-click.js
 copy esp-angular/esp-field-errors.js ../../../windows-x86-default/paks/esp-angular/4.5.0/esp-field-errors.js

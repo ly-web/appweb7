@@ -2273,16 +2273,7 @@ cp -r esp.conf ../server/esp.conf
 			inputPaths = (
 ../src/esp/paks/angular,
 ../src/esp/paks/angular/angular-animate.js,
-../src/esp/paks/angular/angular-bootstrap-prettify.js,
-../src/esp/paks/angular/angular-bootstrap.js,
-../src/esp/paks/angular/angular-cookies.js,
-../src/esp/paks/angular/angular-loader.js,
-../src/esp/paks/angular/angular-mocks.js,
-../src/esp/paks/angular/angular-resource.js,
 ../src/esp/paks/angular/angular-route.js,
-../src/esp/paks/angular/angular-sanitize.js,
-../src/esp/paks/angular/angular-scenario.js,
-../src/esp/paks/angular/angular-touch.js,
 ../src/esp/paks/angular/angular.js,
 ../src/esp/paks/angular/package.json,
 ../src/esp/paks/esp-angular,
@@ -2376,20 +2367,11 @@ cp -r esp.conf ../server/esp.conf
 			shellPath = /bin/bash;
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/esp/paks
-	mkdir -p \"../../${OUT_DIR}/paks/angular/1.2.0\"
-	cp angular/angular-animate.js ../../${OUT_DIR}/paks/angular/1.2.0/angular-animate.js
-	cp angular/angular-bootstrap-prettify.js ../../${OUT_DIR}/paks/angular/1.2.0/angular-bootstrap-prettify.js
-	cp angular/angular-bootstrap.js ../../${OUT_DIR}/paks/angular/1.2.0/angular-bootstrap.js
-	cp angular/angular-cookies.js ../../${OUT_DIR}/paks/angular/1.2.0/angular-cookies.js
-	cp angular/angular-loader.js ../../${OUT_DIR}/paks/angular/1.2.0/angular-loader.js
-	cp angular/angular-mocks.js ../../${OUT_DIR}/paks/angular/1.2.0/angular-mocks.js
-	cp angular/angular-resource.js ../../${OUT_DIR}/paks/angular/1.2.0/angular-resource.js
-	cp angular/angular-route.js ../../${OUT_DIR}/paks/angular/1.2.0/angular-route.js
-	cp angular/angular-sanitize.js ../../${OUT_DIR}/paks/angular/1.2.0/angular-sanitize.js
-	cp angular/angular-scenario.js ../../${OUT_DIR}/paks/angular/1.2.0/angular-scenario.js
-	cp angular/angular-touch.js ../../${OUT_DIR}/paks/angular/1.2.0/angular-touch.js
-	cp angular/angular.js ../../${OUT_DIR}/paks/angular/1.2.0/angular.js
-	cp angular/package.json ../../${OUT_DIR}/paks/angular/1.2.0/package.json
+	mkdir -p \"../../${OUT_DIR}/paks/angular/1.2.5\"
+	cp angular/angular-animate.js ../../${OUT_DIR}/paks/angular/1.2.5/angular-animate.js
+	cp angular/angular-route.js ../../${OUT_DIR}/paks/angular/1.2.5/angular-route.js
+	cp angular/angular.js ../../${OUT_DIR}/paks/angular/1.2.5/angular.js
+	cp angular/package.json ../../${OUT_DIR}/paks/angular/1.2.5/package.json
 	mkdir -p \"../../${OUT_DIR}/paks/esp-angular/4.5.0\"
 	cp esp-angular/esp-click.js ../../${OUT_DIR}/paks/esp-angular/4.5.0/esp-click.js
 	cp esp-angular/esp-field-errors.js ../../${OUT_DIR}/paks/esp-angular/4.5.0/esp-field-errors.js

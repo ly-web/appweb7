@@ -1139,16 +1139,7 @@ src\server\esp.conf: $(DEPS_57)
 #
 DEPS_58 = $(DEPS_58) src\esp\paks\angular
 DEPS_58 = $(DEPS_58) src\esp\paks\angular\angular-animate.js
-DEPS_58 = $(DEPS_58) src\esp\paks\angular\angular-bootstrap-prettify.js
-DEPS_58 = $(DEPS_58) src\esp\paks\angular\angular-bootstrap.js
-DEPS_58 = $(DEPS_58) src\esp\paks\angular\angular-cookies.js
-DEPS_58 = $(DEPS_58) src\esp\paks\angular\angular-loader.js
-DEPS_58 = $(DEPS_58) src\esp\paks\angular\angular-mocks.js
-DEPS_58 = $(DEPS_58) src\esp\paks\angular\angular-resource.js
 DEPS_58 = $(DEPS_58) src\esp\paks\angular\angular-route.js
-DEPS_58 = $(DEPS_58) src\esp\paks\angular\angular-sanitize.js
-DEPS_58 = $(DEPS_58) src\esp\paks\angular\angular-scenario.js
-DEPS_58 = $(DEPS_58) src\esp\paks\angular\angular-touch.js
 DEPS_58 = $(DEPS_58) src\esp\paks\angular\angular.js
 DEPS_58 = $(DEPS_58) src\esp\paks\angular\package.json
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular
@@ -1237,20 +1228,11 @@ DEPS_58 = $(DEPS_58) src\esp\paks\esp-server\templates\migration.c
 
 $(CONFIG)\paks: $(DEPS_58)
 	cd src\esp\paks
-	if not exist "..\..\..\$(CONFIG)\paks\angular\1.2.0" md "..\..\..\$(CONFIG)\paks\angular\1.2.0"
-	copy /Y angular\angular-animate.js ..\..\..\$(CONFIG)\paks\angular\1.2.0\angular-animate.js
-	copy /Y angular\angular-bootstrap-prettify.js ..\..\..\$(CONFIG)\paks\angular\1.2.0\angular-bootstrap-prettify.js
-	copy /Y angular\angular-bootstrap.js ..\..\..\$(CONFIG)\paks\angular\1.2.0\angular-bootstrap.js
-	copy /Y angular\angular-cookies.js ..\..\..\$(CONFIG)\paks\angular\1.2.0\angular-cookies.js
-	copy /Y angular\angular-loader.js ..\..\..\$(CONFIG)\paks\angular\1.2.0\angular-loader.js
-	copy /Y angular\angular-mocks.js ..\..\..\$(CONFIG)\paks\angular\1.2.0\angular-mocks.js
-	copy /Y angular\angular-resource.js ..\..\..\$(CONFIG)\paks\angular\1.2.0\angular-resource.js
-	copy /Y angular\angular-route.js ..\..\..\$(CONFIG)\paks\angular\1.2.0\angular-route.js
-	copy /Y angular\angular-sanitize.js ..\..\..\$(CONFIG)\paks\angular\1.2.0\angular-sanitize.js
-	copy /Y angular\angular-scenario.js ..\..\..\$(CONFIG)\paks\angular\1.2.0\angular-scenario.js
-	copy /Y angular\angular-touch.js ..\..\..\$(CONFIG)\paks\angular\1.2.0\angular-touch.js
-	copy /Y angular\angular.js ..\..\..\$(CONFIG)\paks\angular\1.2.0\angular.js
-	copy /Y angular\package.json ..\..\..\$(CONFIG)\paks\angular\1.2.0\package.json
+	if not exist "..\..\..\$(CONFIG)\paks\angular\1.2.5" md "..\..\..\$(CONFIG)\paks\angular\1.2.5"
+	copy /Y angular\angular-animate.js ..\..\..\$(CONFIG)\paks\angular\1.2.5\angular-animate.js
+	copy /Y angular\angular-route.js ..\..\..\$(CONFIG)\paks\angular\1.2.5\angular-route.js
+	copy /Y angular\angular.js ..\..\..\$(CONFIG)\paks\angular\1.2.5\angular.js
+	copy /Y angular\package.json ..\..\..\$(CONFIG)\paks\angular\1.2.5\package.json
 	if not exist "..\..\..\$(CONFIG)\paks\esp-angular\4.5.0" md "..\..\..\$(CONFIG)\paks\esp-angular\4.5.0"
 	copy /Y esp-angular\esp-click.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.0\esp-click.js
 	copy /Y esp-angular\esp-field-errors.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.0\esp-field-errors.js
@@ -2319,16 +2301,7 @@ installBinary: $(DEPS_103)
 !IF "$(BIT_PACK_ESP)" == "1"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\angular" md "$(BIT_VAPP_PREFIX)\esp\angular"
 	copy /Y src\esp\paks\angular\angular-animate.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-animate.js"
-	copy /Y src\esp\paks\angular\angular-bootstrap-prettify.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-bootstrap-prettify.js"
-	copy /Y src\esp\paks\angular\angular-bootstrap.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-bootstrap.js"
-	copy /Y src\esp\paks\angular\angular-cookies.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-cookies.js"
-	copy /Y src\esp\paks\angular\angular-loader.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-loader.js"
-	copy /Y src\esp\paks\angular\angular-mocks.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-mocks.js"
-	copy /Y src\esp\paks\angular\angular-resource.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-resource.js"
 	copy /Y src\esp\paks\angular\angular-route.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-route.js"
-	copy /Y src\esp\paks\angular\angular-sanitize.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-sanitize.js"
-	copy /Y src\esp\paks\angular\angular-scenario.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-scenario.js"
-	copy /Y src\esp\paks\angular\angular-touch.js "$(BIT_VAPP_PREFIX)\esp\angular\angular-touch.js"
 	copy /Y src\esp\paks\angular\angular.js "$(BIT_VAPP_PREFIX)\esp\angular\angular.js"
 	copy /Y src\esp\paks\angular\package.json "$(BIT_VAPP_PREFIX)\esp\angular\package.json"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular" md "$(BIT_VAPP_PREFIX)\esp\esp-angular"
