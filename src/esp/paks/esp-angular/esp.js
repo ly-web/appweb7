@@ -1,7 +1,7 @@
 /*
     esp.js - Esp Angular Extension
  */
-'use strict';
+// 'use strict';
 /*
     The Esp service provide a central place for ESP state.
     It places a "Esp" object on the $rootScope that is inherited by all $scopes.
@@ -17,6 +17,11 @@ angular.module('esp', ['esp.click', 'esp.field-errors', 'esp.format', 'esp.input
     var e = angular.element(document.getElementById('body'));
     var esp = angular.module('esp');
     esp.$config = JSON.parse(e.attr('data-config'));
+    esp.$config = angular.extend({
+        timeouts: {
+            session: 1800,
+        },
+    }, esp.$config);
     /* URL resolution for ngRoute templates */
     esp.url = function(url) {
         return esp.$config.appPrefix + url;
@@ -210,7 +215,7 @@ angular.module('esp', ['esp.click', 'esp.field-errors', 'esp.format', 'esp.input
     /*
         Define an Http interceptor to redirect 401 responses to the login page
      */
-    $httpProvider.interceptors.push(function($location, $q, $rootScope, $window) {
+    $httpProvider.interceptors.push(function($cacheFactory, $injector, $location, $q, $rootScope, $window) {
         return {
             response: function (response) {
                 if (response.data && response.data.feedback) {
@@ -222,7 +227,7 @@ angular.module('esp', ['esp.click', 'esp.field-errors', 'esp.format', 'esp.input
                 if (response <= 0 || response.status >= 500) {
                     $rootScope.feedback = { warning: "Server Error. Please Retry." };
                 } else if (response.status === 401) {
-                    /* Must use esp module as Esp depends on this */
+                    /* Must use esp module as Esp depends on this interceptor */
                     var espModule = angular.module('esp');
                     if (espModule.$config.loginRequired) {
                         $rootScope.Esp.user = null;
@@ -230,6 +235,19 @@ angular.module('esp', ['esp.click', 'esp.field-errors', 'esp.format', 'esp.input
                     } else {
                         $rootScope.Esp.user = null;
                         $rootScope.feedback = response.data.feedback;
+                    }
+                    if (response.data && response.data.retry && !response.config.retried) {
+                        /*
+                            Server instructs retry if XSRF token does not match session value.
+                            Retry with new XSRF token.
+                         */
+                        response.config.retried = true;
+                        var http = $injector.get('$http');
+                        http(response.config).then(function(config, deferred) {
+                            deferred.resolve(response);
+                        }, function(config, deferred) {
+                            deferred.reject(response);
+                        });
                     }
                 } else if (response.status >= 400) {
                     $rootScope.feedback = { warning: "Request Error: " + response.status + ", for " + response.config.url};
