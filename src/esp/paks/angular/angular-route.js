@@ -1,5 +1,5 @@
 /**
- * @license AngularJS v1.2.5
+ * @license AngularJS v1.2.6
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -909,3 +909,4 @@ function ngViewFillContentFactory($compile, $controller, $route) {
 
 
 })(window, window.angular);
+
