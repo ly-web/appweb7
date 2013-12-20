@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" ng-csp>
 <head>
-    <title>${TITLE}</title>
+    <title>Home</title>
     <meta charset="utf-8" />
     <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
     <% stylesheets(NULL); %>
@@ -9,7 +9,7 @@
 <body data-config='<% renderConfig(); %>' id='body'>
     <nav class="navbar">
         <div class="navbar-header">
-            <a class="navbar-brand ng-cloak" href="#">${TITLE}</a>
+            <a class="navbar-brand ng-cloak" href="#"><%= getConfig("title") %></a>
         </div>
     </nav>
     <main class="container ng-cloak">

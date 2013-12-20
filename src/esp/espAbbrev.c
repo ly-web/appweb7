@@ -285,6 +285,19 @@ PUBLIC cchar *getSessionVar(cchar *key)
 }
 
 
+PUBLIC cchar *getConfig(cchar *field)
+{
+    EspRoute    *eroute;
+    cchar       *value;
+
+    eroute = getConn()->rx->route->eroute;
+    if ((value = mprGetJson(eroute->config, "value", 0)) == 0) {
+        return "";
+    }
+    return value;
+}
+
+
 #if BIT_ESP_LEGACY
 PUBLIC cchar *getTop()
 {

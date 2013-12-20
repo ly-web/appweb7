@@ -1981,6 +1981,15 @@ PUBLIC cchar *getFieldError(cchar *field);
 PUBLIC EdiRec *getRec();
 
 /**
+    Get a field from the application package.json configuration 
+    @param field Property field name in package.json. May contain dots.
+    @return The field value. Returns "" if the field is not found.
+    @ingroup EspAbbrev
+    @stability deprecated
+ */
+PUBLIC cchar *getConfig(cchar *field);
+
+/**
     Get the uploaded files
     @description Get the hash table defining the uploaded files.
         This hash is indexed by the file identifier supplied in the upload form. The hash entries are HttpUploadFile
