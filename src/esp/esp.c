@@ -59,6 +59,7 @@ typedef struct App {
     int         flat;                   /* Combine all inputs into one, flat output */ 
     int         keep;                   /* Keep source */ 
     int         generateApp;            /* Generating a new app */
+    int         force;                  /* Force the requested action, ignoring unfullfilled dependencies */
     int         overwrite;              /* Overwrite existing files if required */
     int         priorInstall;           /* Generating into an existing application directory */
     int         quiet;                  /* Don't trace progress */
@@ -216,8 +217,11 @@ PUBLIC int main(int argc, char **argv)
                 }
             }
 
-        } else if (smatch(argp, "flat") || smatch(argp, "f")) {
+        } else if (smatch(argp, "flat")) {
             app->flat = 1;
+
+        } else if (smatch(argp, "force") || smatch(argp, "f")) {
+            app->force = 1;
 
         } else if (smatch(argp, "genlink") || smatch(argp, "g")) {
             if (argind >= argc) {
@@ -250,7 +254,7 @@ PUBLIC int main(int argc, char **argv)
                 app->appName = argv[++argind];
             }
 
-        } else if (smatch(argp, "overwrite") || smatch(argp, "force")) {
+        } else if (smatch(argp, "overwrite")) {
             app->overwrite = 1;
 
         } else if (smatch(argp, "platform")) {
@@ -1818,7 +1822,7 @@ static void createMigration(cchar *name, cchar *table, cchar *comment, int field
     tail = sfmt("%s.c", name);
     for (ITERATE_ITEMS(files, dp, next)) {
         if (sends(dp->name, tail)) {
-            if (!app->overwrite) {
+            if (!app->overwrite && !app->force) {
                 trace("Exists", "A migration with the same description already exists: %s", dp->name);
                 return;
             }
@@ -2136,7 +2140,7 @@ static bool installPak(cchar *name, cchar *version, bool topLevel)
     cchar   *path;
 
     path = mprJoinPaths(app->route->documents, app->paksDir, name, NULL);
-    if (mprPathExists(path, X_OK) && !app->overwrite) {
+    if (mprPathExists(path, X_OK) && !app->overwrite && !app->force) {
         if (topLevel || app->verbose) {
             trace("Info",  "Pak %s is already installed", name);
         }
@@ -2161,7 +2165,7 @@ static bool blendPak(cchar *name, cchar *version, bool topLevel)
     int         i;
 
     path = mprJoinPaths(app->route->documents, app->paksDir, name, NULL);
-    if (mprPathExists(path, X_OK) && !app->overwrite) {
+    if (mprPathExists(path, X_OK) && !app->overwrite && !app->force) {
         /* Already installed */
         return 1;
     }
@@ -2188,7 +2192,6 @@ static bool blendPak(cchar *name, cchar *version, bool topLevel)
     vtrace("Blend", "%s configuration", name);
     return 1;
 }
-
 
 
 /*
@@ -2260,7 +2263,7 @@ static bool installPakFiles(cchar *name, cchar *version, bool topLevel)
     int         i;
 
     path = mprJoinPaths(app->route->documents, app->paksDir, name, NULL);
-    if (mprPathExists(path, X_OK) && !app->overwrite) {
+    if (mprPathExists(path, X_OK) && !app->overwrite && !app->force) {
         if (topLevel || app->verbose) {
             trace("Info",  "Pak %s is already installed", name);
         }
@@ -2474,13 +2477,14 @@ static void makeEspDir(cchar *path)
     }
 }
 
+//  TODO - msg is not used.
 
 static void makeEspFile(cchar *path, cchar *data, cchar *msg)
 {
     bool    exists;
 
     exists = mprPathExists(path, R_OK);
-    if (exists && !app->overwrite) {
+    if (exists && !app->overwrite && !app->force) {
         if (!app->generateApp) {
             trace("Exists", path);
         }
