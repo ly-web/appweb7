@@ -1,5 +1,5 @@
 /*
-    ${NAME} Controller
+    ${NAME} Controller for esp-angular-mvc
  */
 #include "esp.h"
 

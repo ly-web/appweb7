@@ -2,14 +2,15 @@
     "name": "esp-angular-mvc",
     "description": "ESP Angular MVC Application Skeleton",
     "version": "4.5.0",
+    "precious": true,
     "dependencies": {
         "esp-angular": "*"
     },
     "export": [
-        "client/**",
-        "templates/**",
         "appweb.conf",
-        "start.bit"
+        "start.bit",
+        "client/**",
+        "templates/**"
     ],
     "client-scripts": [
         "app/main.js",

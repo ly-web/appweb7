@@ -2,6 +2,7 @@
     "name": "esp-html-mvc",
     "description": "ESP Server-Side HTML MVC",
     "version": "4.5.0",
+    "precious": true,
     "dependencies": {
         "esp-server": "*"
     },

@@ -2,6 +2,7 @@
     "name": "esp-server",
     "description": "ESP Server Framework",
     "version": "4.5.0",
+    "precious": true,
     "dirs": {
         "client": "client",
         "paks": "client/paks"
