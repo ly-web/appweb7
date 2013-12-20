@@ -958,6 +958,13 @@
       <arglist>(EdiRec *rec)</arglist>
     </member>
     <member kind="function">
+      <type>cchar *</type>
+      <name>getConfig</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga9647d3deb6392c55c9c1a144da45f797</anchor>
+      <arglist>(cchar *field)</arglist>
+    </member>
+    <member kind="function">
       <type>HttpConn *</type>
       <name>getConn</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>

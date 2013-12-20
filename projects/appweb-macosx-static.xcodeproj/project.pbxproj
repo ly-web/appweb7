@@ -2288,7 +2288,6 @@ cp -r esp.conf ../server/esp.conf
 ../src/esp/paks/esp-angular/esp.js,
 ../src/esp/paks/esp-angular/package.json,
 ../src/esp/paks/esp-angular-mvc,
-../src/esp/paks/esp-angular-mvc/appweb.conf,
 ../src/esp/paks/esp-angular-mvc/client,
 ../src/esp/paks/esp-angular-mvc/client/app,
 ../src/esp/paks/esp-angular-mvc/client/app/main.js,
@@ -2306,14 +2305,15 @@ cp -r esp.conf ../server/esp.conf
 ../src/esp/paks/esp-angular-mvc/package.json,
 ../src/esp/paks/esp-angular-mvc/start.bit,
 ../src/esp/paks/esp-angular-mvc/templates,
-../src/esp/paks/esp-angular-mvc/templates/controller-singleton.c,
-../src/esp/paks/esp-angular-mvc/templates/controller.c,
-../src/esp/paks/esp-angular-mvc/templates/controller.js,
-../src/esp/paks/esp-angular-mvc/templates/edit.html,
-../src/esp/paks/esp-angular-mvc/templates/list.html,
-../src/esp/paks/esp-angular-mvc/templates/model.js,
+../src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc,
+../src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/appweb.conf,
+../src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/controller-singleton.c,
+../src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/controller.c,
+../src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/controller.js,
+../src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/edit.html,
+../src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/list.html,
+../src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/model.js,
 ../src/esp/paks/esp-html-mvc,
-../src/esp/paks/esp-html-mvc/appweb.conf,
 ../src/esp/paks/esp-html-mvc/client,
 ../src/esp/paks/esp-html-mvc/client/assets,
 ../src/esp/paks/esp-html-mvc/client/assets/favicon.ico,
@@ -2329,10 +2329,12 @@ cp -r esp.conf ../server/esp.conf
 ../src/esp/paks/esp-html-mvc/package.json,
 ../src/esp/paks/esp-html-mvc/start.bit,
 ../src/esp/paks/esp-html-mvc/templates,
-../src/esp/paks/esp-html-mvc/templates/controller-singleton.c,
-../src/esp/paks/esp-html-mvc/templates/controller.c,
-../src/esp/paks/esp-html-mvc/templates/edit.esp,
-../src/esp/paks/esp-html-mvc/templates/list.esp,
+../src/esp/paks/esp-html-mvc/templates/esp-html-mvc,
+../src/esp/paks/esp-html-mvc/templates/esp-html-mvc/appweb.conf,
+../src/esp/paks/esp-html-mvc/templates/esp-html-mvc/controller-singleton.c,
+../src/esp/paks/esp-html-mvc/templates/esp-html-mvc/controller.c,
+../src/esp/paks/esp-html-mvc/templates/esp-html-mvc/edit.esp,
+../src/esp/paks/esp-html-mvc/templates/esp-html-mvc/list.esp,
 ../src/esp/paks/esp-legacy-mvc,
 ../src/esp/paks/esp-legacy-mvc/layouts,
 ../src/esp/paks/esp-legacy-mvc/layouts/default.esp,
@@ -2349,16 +2351,18 @@ cp -r esp.conf ../server/esp.conf
 ../src/esp/paks/esp-legacy-mvc/static/js/jquery.esp.js,
 ../src/esp/paks/esp-legacy-mvc/static/js/jquery.js,
 ../src/esp/paks/esp-legacy-mvc/templates,
-../src/esp/paks/esp-legacy-mvc/templates/controller.c,
-../src/esp/paks/esp-legacy-mvc/templates/edit.esp,
-../src/esp/paks/esp-legacy-mvc/templates/list.esp,
+../src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc,
+../src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/controller.c,
+../src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/edit.esp,
+../src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/list.esp,
 ../src/esp/paks/esp-server,
-../src/esp/paks/esp-server/appweb.conf,
 ../src/esp/paks/esp-server/package.json,
 ../src/esp/paks/esp-server/templates,
-../src/esp/paks/esp-server/templates/app.c,
-../src/esp/paks/esp-server/templates/controller.c,
-../src/esp/paks/esp-server/templates/migration.c
+../src/esp/paks/esp-server/templates/esp-server,
+../src/esp/paks/esp-server/templates/esp-server/app.c,
+../src/esp/paks/esp-server/templates/esp-server/appweb.conf,
+../src/esp/paks/esp-server/templates/esp-server/controller.c,
+../src/esp/paks/esp-server/templates/esp-server/migration.c
 			);
 			outputPaths = (
 ../macosx-x64-static/paks
@@ -2367,11 +2371,11 @@ cp -r esp.conf ../server/esp.conf
 			shellPath = /bin/bash;
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/esp/paks
-	mkdir -p \"../../${OUT_DIR}/paks/angular/1.2.5\"
-	cp angular/angular-animate.js ../../${OUT_DIR}/paks/angular/1.2.5/angular-animate.js
-	cp angular/angular-route.js ../../${OUT_DIR}/paks/angular/1.2.5/angular-route.js
-	cp angular/angular.js ../../${OUT_DIR}/paks/angular/1.2.5/angular.js
-	cp angular/package.json ../../${OUT_DIR}/paks/angular/1.2.5/package.json
+	mkdir -p \"../../${OUT_DIR}/paks/angular/1.2.6\"
+	cp angular/angular-animate.js ../../${OUT_DIR}/paks/angular/1.2.6/angular-animate.js
+	cp angular/angular-route.js ../../${OUT_DIR}/paks/angular/1.2.6/angular-route.js
+	cp angular/angular.js ../../${OUT_DIR}/paks/angular/1.2.6/angular.js
+	cp angular/package.json ../../${OUT_DIR}/paks/angular/1.2.6/package.json
 	mkdir -p \"../../${OUT_DIR}/paks/esp-angular/4.5.0\"
 	cp esp-angular/esp-click.js ../../${OUT_DIR}/paks/esp-angular/4.5.0/esp-click.js
 	cp esp-angular/esp-field-errors.js ../../${OUT_DIR}/paks/esp-angular/4.5.0/esp-field-errors.js
@@ -2384,7 +2388,6 @@ cd ../src/esp/paks
 	cp esp-angular/esp.js ../../${OUT_DIR}/paks/esp-angular/4.5.0/esp.js
 	cp esp-angular/package.json ../../${OUT_DIR}/paks/esp-angular/4.5.0/package.json
 	mkdir -p \"../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0\"
-	cp esp-angular-mvc/appweb.conf ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/appweb.conf
 	mkdir -p \"../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/client\"
 	mkdir -p \"../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/client/app\"
 	cp esp-angular-mvc/client/app/main.js ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/client/app/main.js
@@ -2402,14 +2405,15 @@ cd ../src/esp/paks
 	cp esp-angular-mvc/package.json ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/package.json
 	cp esp-angular-mvc/start.bit ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/start.bit
 	mkdir -p \"../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates\"
-	cp esp-angular-mvc/templates/controller-singleton.c ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/controller-singleton.c
-	cp esp-angular-mvc/templates/controller.c ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/controller.c
-	cp esp-angular-mvc/templates/controller.js ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/controller.js
-	cp esp-angular-mvc/templates/edit.html ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/edit.html
-	cp esp-angular-mvc/templates/list.html ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/list.html
-	cp esp-angular-mvc/templates/model.js ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/model.js
+	mkdir -p \"../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc\"
+	cp esp-angular-mvc/templates/esp-angular-mvc/appweb.conf ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/appweb.conf
+	cp esp-angular-mvc/templates/esp-angular-mvc/controller-singleton.c ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/controller-singleton.c
+	cp esp-angular-mvc/templates/esp-angular-mvc/controller.c ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/controller.c
+	cp esp-angular-mvc/templates/esp-angular-mvc/controller.js ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/controller.js
+	cp esp-angular-mvc/templates/esp-angular-mvc/edit.html ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/edit.html
+	cp esp-angular-mvc/templates/esp-angular-mvc/list.html ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/list.html
+	cp esp-angular-mvc/templates/esp-angular-mvc/model.js ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/model.js
 	mkdir -p \"../../${OUT_DIR}/paks/esp-html-mvc/4.5.0\"
-	cp esp-html-mvc/appweb.conf ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/appweb.conf
 	mkdir -p \"../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/client\"
 	mkdir -p \"../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/client/assets\"
 	cp esp-html-mvc/client/assets/favicon.ico ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/client/assets/favicon.ico
@@ -2425,10 +2429,12 @@ cd ../src/esp/paks
 	cp esp-html-mvc/package.json ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/package.json
 	cp esp-html-mvc/start.bit ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/start.bit
 	mkdir -p \"../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/templates\"
-	cp esp-html-mvc/templates/controller-singleton.c ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/templates/controller-singleton.c
-	cp esp-html-mvc/templates/controller.c ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/templates/controller.c
-	cp esp-html-mvc/templates/edit.esp ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/templates/edit.esp
-	cp esp-html-mvc/templates/list.esp ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/templates/list.esp
+	mkdir -p \"../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc\"
+	cp esp-html-mvc/templates/esp-html-mvc/appweb.conf ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/appweb.conf
+	cp esp-html-mvc/templates/esp-html-mvc/controller-singleton.c ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/controller-singleton.c
+	cp esp-html-mvc/templates/esp-html-mvc/controller.c ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/controller.c
+	cp esp-html-mvc/templates/esp-html-mvc/edit.esp ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/edit.esp
+	cp esp-html-mvc/templates/esp-html-mvc/list.esp ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/list.esp
 	mkdir -p \"../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0\"
 	mkdir -p \"../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0/layouts\"
 	cp esp-legacy-mvc/layouts/default.esp ../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0/layouts/default.esp
@@ -2445,16 +2451,18 @@ cd ../src/esp/paks
 	cp esp-legacy-mvc/static/js/jquery.esp.js ../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0/static/js/jquery.esp.js
 	cp esp-legacy-mvc/static/js/jquery.js ../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0/static/js/jquery.js
 	mkdir -p \"../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0/templates\"
-	cp esp-legacy-mvc/templates/controller.c ../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0/templates/controller.c
-	cp esp-legacy-mvc/templates/edit.esp ../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0/templates/edit.esp
-	cp esp-legacy-mvc/templates/list.esp ../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0/templates/list.esp
+	mkdir -p \"../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0/templates/esp-legacy-mvc\"
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/controller.c ../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0/templates/esp-legacy-mvc/controller.c
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/edit.esp ../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0/templates/esp-legacy-mvc/edit.esp
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/list.esp ../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0/templates/esp-legacy-mvc/list.esp
 	mkdir -p \"../../${OUT_DIR}/paks/esp-server/4.5.0\"
-	cp esp-server/appweb.conf ../../${OUT_DIR}/paks/esp-server/4.5.0/appweb.conf
 	cp esp-server/package.json ../../${OUT_DIR}/paks/esp-server/4.5.0/package.json
 	mkdir -p \"../../${OUT_DIR}/paks/esp-server/4.5.0/templates\"
-	cp esp-server/templates/app.c ../../${OUT_DIR}/paks/esp-server/4.5.0/templates/app.c
-	cp esp-server/templates/controller.c ../../${OUT_DIR}/paks/esp-server/4.5.0/templates/controller.c
-	cp esp-server/templates/migration.c ../../${OUT_DIR}/paks/esp-server/4.5.0/templates/migration.c
+	mkdir -p \"../../${OUT_DIR}/paks/esp-server/4.5.0/templates/esp-server\"
+	cp esp-server/templates/esp-server/app.c ../../${OUT_DIR}/paks/esp-server/4.5.0/templates/esp-server/app.c
+	cp esp-server/templates/esp-server/appweb.conf ../../${OUT_DIR}/paks/esp-server/4.5.0/templates/esp-server/appweb.conf
+	cp esp-server/templates/esp-server/controller.c ../../${OUT_DIR}/paks/esp-server/4.5.0/templates/esp-server/controller.c
+	cp esp-server/templates/esp-server/migration.c ../../${OUT_DIR}/paks/esp-server/4.5.0/templates/esp-server/migration.c
 ";
 		};
 		AE9929FAAE993E680000001F /* ShellScript for slink.c */ = {

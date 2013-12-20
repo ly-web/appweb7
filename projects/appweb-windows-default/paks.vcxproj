@@ -96,11 +96,11 @@
 
   <CustomBuildStep>
     <Command>cd ..\..\src\esp\paks
-mkdir -p "../../../windows-x86-default/paks/angular/1.2.5"
-copy angular/angular-animate.js ../../../windows-x86-default/paks/angular/1.2.5/angular-animate.js
-copy angular/angular-route.js ../../../windows-x86-default/paks/angular/1.2.5/angular-route.js
-copy angular/angular.js ../../../windows-x86-default/paks/angular/1.2.5/angular.js
-copy angular/package.json ../../../windows-x86-default/paks/angular/1.2.5/package.json
+mkdir -p "../../../windows-x86-default/paks/angular/1.2.6"
+copy angular/angular-animate.js ../../../windows-x86-default/paks/angular/1.2.6/angular-animate.js
+copy angular/angular-route.js ../../../windows-x86-default/paks/angular/1.2.6/angular-route.js
+copy angular/angular.js ../../../windows-x86-default/paks/angular/1.2.6/angular.js
+copy angular/package.json ../../../windows-x86-default/paks/angular/1.2.6/package.json
 mkdir -p "../../../windows-x86-default/paks/esp-angular/4.5.0"
 copy esp-angular/esp-click.js ../../../windows-x86-default/paks/esp-angular/4.5.0/esp-click.js
 copy esp-angular/esp-field-errors.js ../../../windows-x86-default/paks/esp-angular/4.5.0/esp-field-errors.js
@@ -113,7 +113,6 @@ copy esp-angular/esp-titlecase.js ../../../windows-x86-default/paks/esp-angular/
 copy esp-angular/esp.js ../../../windows-x86-default/paks/esp-angular/4.5.0/esp.js
 copy esp-angular/package.json ../../../windows-x86-default/paks/esp-angular/4.5.0/package.json
 mkdir -p "../../../windows-x86-default/paks/esp-angular-mvc/4.5.0"
-copy esp-angular-mvc/appweb.conf ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/appweb.conf
 mkdir -p "../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/client"
 mkdir -p "../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/client/app"
 copy esp-angular-mvc/client/app/main.js ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/client/app/main.js
@@ -131,14 +130,15 @@ copy esp-angular-mvc/client/pages/splash.html ../../../windows-x86-default/paks/
 copy esp-angular-mvc/package.json ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/package.json
 copy esp-angular-mvc/start.bit ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/start.bit
 mkdir -p "../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates"
-copy esp-angular-mvc/templates/controller-singleton.c ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/controller-singleton.c
-copy esp-angular-mvc/templates/controller.c ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/controller.c
-copy esp-angular-mvc/templates/controller.js ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/controller.js
-copy esp-angular-mvc/templates/edit.html ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/edit.html
-copy esp-angular-mvc/templates/list.html ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/list.html
-copy esp-angular-mvc/templates/model.js ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/model.js
+mkdir -p "../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc"
+copy esp-angular-mvc/templates/esp-angular-mvc/appweb.conf ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/appweb.conf
+copy esp-angular-mvc/templates/esp-angular-mvc/controller-singleton.c ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/controller-singleton.c
+copy esp-angular-mvc/templates/esp-angular-mvc/controller.c ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/controller.c
+copy esp-angular-mvc/templates/esp-angular-mvc/controller.js ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/controller.js
+copy esp-angular-mvc/templates/esp-angular-mvc/edit.html ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/edit.html
+copy esp-angular-mvc/templates/esp-angular-mvc/list.html ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/list.html
+copy esp-angular-mvc/templates/esp-angular-mvc/model.js ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/model.js
 mkdir -p "../../../windows-x86-default/paks/esp-html-mvc/4.5.0"
-copy esp-html-mvc/appweb.conf ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/appweb.conf
 mkdir -p "../../../windows-x86-default/paks/esp-html-mvc/4.5.0/client"
 mkdir -p "../../../windows-x86-default/paks/esp-html-mvc/4.5.0/client/assets"
 copy esp-html-mvc/client/assets/favicon.ico ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/client/assets/favicon.ico
@@ -154,10 +154,12 @@ copy esp-html-mvc/client/layouts/default.esp ../../../windows-x86-default/paks/e
 copy esp-html-mvc/package.json ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/package.json
 copy esp-html-mvc/start.bit ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/start.bit
 mkdir -p "../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates"
-copy esp-html-mvc/templates/controller-singleton.c ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates/controller-singleton.c
-copy esp-html-mvc/templates/controller.c ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates/controller.c
-copy esp-html-mvc/templates/edit.esp ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates/edit.esp
-copy esp-html-mvc/templates/list.esp ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates/list.esp
+mkdir -p "../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc"
+copy esp-html-mvc/templates/esp-html-mvc/appweb.conf ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/appweb.conf
+copy esp-html-mvc/templates/esp-html-mvc/controller-singleton.c ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/controller-singleton.c
+copy esp-html-mvc/templates/esp-html-mvc/controller.c ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/controller.c
+copy esp-html-mvc/templates/esp-html-mvc/edit.esp ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/edit.esp
+copy esp-html-mvc/templates/esp-html-mvc/list.esp ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/list.esp
 mkdir -p "../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0"
 mkdir -p "../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0/layouts"
 copy esp-legacy-mvc/layouts/default.esp ../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0/layouts/default.esp
@@ -174,16 +176,18 @@ mkdir -p "../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0/static/js"
 copy esp-legacy-mvc/static/js/jquery.esp.js ../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0/static/js/jquery.esp.js
 copy esp-legacy-mvc/static/js/jquery.js ../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0/static/js/jquery.js
 mkdir -p "../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0/templates"
-copy esp-legacy-mvc/templates/controller.c ../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0/templates/controller.c
-copy esp-legacy-mvc/templates/edit.esp ../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0/templates/edit.esp
-copy esp-legacy-mvc/templates/list.esp ../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0/templates/list.esp
+mkdir -p "../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0/templates/esp-legacy-mvc"
+copy esp-legacy-mvc/templates/esp-legacy-mvc/controller.c ../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0/templates/esp-legacy-mvc/controller.c
+copy esp-legacy-mvc/templates/esp-legacy-mvc/edit.esp ../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0/templates/esp-legacy-mvc/edit.esp
+copy esp-legacy-mvc/templates/esp-legacy-mvc/list.esp ../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0/templates/esp-legacy-mvc/list.esp
 mkdir -p "../../../windows-x86-default/paks/esp-server/4.5.0"
-copy esp-server/appweb.conf ../../../windows-x86-default/paks/esp-server/4.5.0/appweb.conf
 copy esp-server/package.json ../../../windows-x86-default/paks/esp-server/4.5.0/package.json
 mkdir -p "../../../windows-x86-default/paks/esp-server/4.5.0/templates"
-copy esp-server/templates/app.c ../../../windows-x86-default/paks/esp-server/4.5.0/templates/app.c
-copy esp-server/templates/controller.c ../../../windows-x86-default/paks/esp-server/4.5.0/templates/controller.c
-copy esp-server/templates/migration.c ../../../windows-x86-default/paks/esp-server/4.5.0/templates/migration.c
+mkdir -p "../../../windows-x86-default/paks/esp-server/4.5.0/templates/esp-server"
+copy esp-server/templates/esp-server/app.c ../../../windows-x86-default/paks/esp-server/4.5.0/templates/esp-server/app.c
+copy esp-server/templates/esp-server/appweb.conf ../../../windows-x86-default/paks/esp-server/4.5.0/templates/esp-server/appweb.conf
+copy esp-server/templates/esp-server/controller.c ../../../windows-x86-default/paks/esp-server/4.5.0/templates/esp-server/controller.c
+copy esp-server/templates/esp-server/migration.c ../../../windows-x86-default/paks/esp-server/4.5.0/templates/esp-server/migration.c
 cd ..\..\..\projects\appweb-windows-default</Command>
     <Outputs>..\..\$(Cfg)\paks</Outputs>
   </CustomBuildStep>
