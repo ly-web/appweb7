@@ -8,7 +8,6 @@
         "paks": "client/paks"
     },
     "export": [
-        "appweb.conf",
         "templates/**"
     ],
     "esp": {

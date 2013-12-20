@@ -4,8 +4,8 @@
     "version": "4.5.0",
     "precious": true,
     "dependencies": {
-        "esp-server": "*",
-        "angular": "1.2.5"
+        "esp-server": "~4",
+        "angular": "~1.2"
     },
     "client-scripts": [
         "${PAKS}/esp-angular/*.js"
