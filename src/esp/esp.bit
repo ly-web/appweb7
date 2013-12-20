@@ -57,10 +57,9 @@ Bit.load({
                         }
                     }
                 }
-                /* 
-                    This does the same thing but relies on the pak command:
-                    run('pak --cache ${OUT}/paks cache ' + Path('.').files().join(' ')) 
-                 */
+                if (Cmd.locate('pak')) {
+                    run('pak -f cache ' + Path('.').files().join(' ')) 
+                }
             `
         },
 

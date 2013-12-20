@@ -90,12 +90,17 @@ static int       nextMigration;         /* Sequence number for next migration */
 
 #define ESP_FOUND_TARGET 1
 
+#define MAX_VER         1000000000
+#define VER_FACTOR      1000
+#define VER_FACTOR_MAX  "999"
+
 #define ESP_MIGRATIONS  "_EspMigrations"
 #define ESP_PAKS_DIR    "client/paks"   /* Local paks dir under client */
 
 /***************************** Forward Declarations ***************************/
 
-static bool blendPak(cchar *name, cchar *version, bool topLevel);
+static int64 asNumber(cchar *version);
+static bool blendPak(cchar *name, cchar *criteria, bool topLevel);
 static bool blendSpec(cchar *name, cchar *version, MprJson *spec);
 static void clean(int argc, char **argv);
 static void config();
@@ -108,6 +113,7 @@ static void createMigration(cchar *name, cchar *table, cchar *comment, int field
 static HttpRoute *createRoute(cchar *dir);
 static void fail(cchar *fmt, ...);
 static void fatal(cchar *fmt, ...);
+static cchar *findAcceptableVersion(cchar *name, cchar *criteria);
 static bool findHostingConfig();
 static void generate(int argc, char **argv);
 static void generateApp(int argc, char **argv);
@@ -119,14 +125,15 @@ static void generateHostingConfig();
 static void generateMigration(int argc, char **argv);
 static void generateScaffold(int argc, char **argv);
 static void generateTable(int argc, char **argv);
-static cchar *getPakVersion(cchar *name, cchar *version);
-static bool installPak(cchar *name, cchar *version, bool topLevel);
-static bool installPakFiles(cchar *name, cchar *version, bool topLevel);
 static MprList *getRoutes();
 static MprHash *getTargets(int argc, char **argv);
 static char *getTemplate(cchar *name, cchar *path, MprHash *tokens);
+static cchar *getPakVersion(cchar *name, cchar *version);
 static void initialize();
+static bool inRange(cchar *expr, cchar *version);
 static void install(int argc, char **argv);
+static bool installPak(cchar *name, cchar *criteria, bool topLevel);
+static bool installPakFiles(cchar *name, cchar *version, bool topLevel);
 static void list(int argc, char **argv);
 static MprJson *loadPackage(cchar *path);
 static void makeEspDir(cchar *dir);
@@ -141,7 +148,6 @@ static void run(int argc, char **argv);
 static bool selectResource(cchar *path, cchar *kind);
 static int sortFiles(MprDirEntry **d1, MprDirEntry **d2);
 static void trace(cchar *tag, cchar *fmt, ...);
-static cchar *trimVersion(cchar *version);
 static void uninstall(int argc, char **argv);
 static void uninstallPak(cchar *name);
 static void upgrade(int argc, char **argv);
@@ -1126,60 +1132,6 @@ static bool readHostingConfig()
 }
 
 
-
-static void uninstallPak(cchar *name) 
-{
-    MprJson     *scripts, *script, *spec, *escripts, *escript;
-    MprList     *files;
-    MprDirEntry *dp;
-    cchar       *path, *package;
-    char        *base, *cp;
-    int         i;
-
-    path = mprJoinPaths(app->route->documents, app->paksDir, name, NULL);
-    package = mprJoinPath(path, BIT_ESP_PACKAGE);
-    if (!mprPathExists(package, R_OK)) {
-        fail("Cannot find pak: \"%s\"", name);
-        return;
-    }
-    if ((spec = loadPackage(package)) == 0) {
-        fail("Cannot load: \"%s\"", package);
-        return;
-    }
-    trace("Remove", name);
-    vtrace("Remove", "Dependency in %s", BIT_ESP_PACKAGE);
-    mprRemoveJson(app->eroute->config, sfmt("dependencies.%s", name));
-
-    vtrace("Remove", "Client scripts in %s", BIT_ESP_PACKAGE);
-    scripts = mprGetJsonObj(spec, "client-scripts", MPR_JSON_TOP);
-    for (ITERATE_JSON(scripts, script, i)) {
-        if (script->type & MPR_JSON_STRING) {
-            base = sclone(script->value);
-            if ((cp = scontains(base, "/*")) != 0) {
-                *cp = '\0';
-            }
-            base = sreplace(base, "${PAKS}", "paks");
-            escripts = mprGetJsonObj(app->eroute->config, "client-scripts", MPR_JSON_TOP);
-        restart:
-            for (ITERATE_JSON(escripts, escript, i)) {
-                if (escript->type & MPR_JSON_STRING) {
-                    if (sstarts(escript->value, base)) {
-                        mprRemoveJsonChild(escripts, escript);
-                        goto restart;
-                    }
-                }
-            }
-        }
-    }
-    files = mprGetPathFiles(path, MPR_PATH_DEPTH_FIRST | MPR_PATH_DESCEND);
-    for (ITERATE_ITEMS(files, dp, i)) {
-        vtrace("Remove", dp->name);
-        mprDeletePath(dp->name);
-    }
-    mprDeletePath(path);
-}
-
-
 static int runEspCommand(HttpRoute *route, cchar *command, cchar *csource, cchar *module)
 {
     MprCmd      *cmd;
@@ -2101,7 +2053,10 @@ static void generateScaffold(int argc, char **argv)
 
 static int reverseSortFiles(MprDirEntry **d1, MprDirEntry **d2)
 {
-    return !scmp((*d1)->name, (*d2)->name);
+    int     rc;
+    
+    rc = scmp((*d1)->name, (*d2)->name);
+    return -rc;
 }
 
 
@@ -2157,7 +2112,7 @@ static bool upgradePak(cchar *name)
     if (smatch(cachedVersion, version) && !app->force) {
         trace("Info", "Installed %s is current with %s", name, version);
     } else {
-        installPak(name, version, 1);
+        installPak(name, cachedVersion, 1);
     }
     return 1;
 }
@@ -2167,9 +2122,11 @@ static bool upgradePak(cchar *name)
     Install files for a pak and all its dependencies.
     The name may contain "#version" if version is NULL. If no version is specified, use the latest.
  */
-static bool installPak(cchar *name, cchar *version, bool topLevel)
+static bool installPak(cchar *name, cchar *criteria, bool topLevel)
 {
-    cchar   *path;
+    MprJson *deps, *cp;
+    cchar   *path, *version;
+    int     i;
 
     path = mprJoinPaths(app->route->documents, app->paksDir, name, NULL);
     if (mprPathExists(path, X_OK) && !app->overwrite && !app->force) {
@@ -2177,6 +2134,20 @@ static bool installPak(cchar *name, cchar *version, bool topLevel)
             trace("Info",  "Pak %s is already installed", name);
         }
         return 1;
+    }
+    if (!criteria) {
+        deps = mprGetJsonObj(app->eroute->config, "dependencies", MPR_JSON_TOP);
+        if (deps) {
+            for (i = 0, cp = deps->children; i < deps->length; i++, cp = cp->next) {
+                if (smatch(cp->name, name)) {
+                    criteria = cp->value;
+                    break;
+                }
+            }
+        }
+    }
+    if ((version = findAcceptableVersion(name, criteria)) == 0) {
+        return 0;
     }
     if (!blendPak(name, version, topLevel)) {
         return 0;
@@ -2190,19 +2161,69 @@ static bool installPak(cchar *name, cchar *version, bool topLevel)
 }
 
 
+static void uninstallPak(cchar *name) 
+{
+    MprJson     *scripts, *script, *spec, *escripts, *escript;
+    MprList     *files;
+    MprDirEntry *dp;
+    cchar       *path, *package;
+    char        *base, *cp;
+    int         i;
+
+    path = mprJoinPaths(app->route->documents, app->paksDir, name, NULL);
+    package = mprJoinPath(path, BIT_ESP_PACKAGE);
+    if (!mprPathExists(package, R_OK)) {
+        fail("Cannot find pak: \"%s\"", name);
+        return;
+    }
+    if ((spec = loadPackage(package)) == 0) {
+        fail("Cannot load: \"%s\"", package);
+        return;
+    }
+    trace("Remove", name);
+    vtrace("Remove", "Dependency in %s", BIT_ESP_PACKAGE);
+    mprRemoveJson(app->eroute->config, sfmt("dependencies.%s", name));
+
+    vtrace("Remove", "Client scripts in %s", BIT_ESP_PACKAGE);
+    scripts = mprGetJsonObj(spec, "client-scripts", MPR_JSON_TOP);
+    for (ITERATE_JSON(scripts, script, i)) {
+        if (script->type & MPR_JSON_STRING) {
+            base = sclone(script->value);
+            if ((cp = scontains(base, "/*")) != 0) {
+                *cp = '\0';
+            }
+            base = sreplace(base, "${PAKS}", "paks");
+            escripts = mprGetJsonObj(app->eroute->config, "client-scripts", MPR_JSON_TOP);
+        restart:
+            for (ITERATE_JSON(escripts, escript, i)) {
+                if (escript->type & MPR_JSON_STRING) {
+                    if (sstarts(escript->value, base)) {
+                        mprRemoveJsonChild(escripts, escript);
+                        goto restart;
+                    }
+                }
+            }
+        }
+    }
+    files = mprGetPathFiles(path, MPR_PATH_DEPTH_FIRST | MPR_PATH_DESCEND);
+    for (ITERATE_ITEMS(files, dp, i)) {
+        vtrace("Remove", dp->name);
+        mprDeletePath(dp->name);
+    }
+    mprDeletePath(path);
+}
+
+
 static bool blendPak(cchar *name, cchar *version, bool topLevel)
 {
     MprJson     *cp, *deps, *spec;
-    cchar       *path;
+    cchar       *path, *dver;
     int         i;
 
     path = mprJoinPaths(app->route->documents, app->paksDir, name, NULL);
     if (mprPathExists(path, X_OK) && !app->overwrite && !app->force) {
         /* Already installed */
         return 1;
-    }
-    if ((version = getPakVersion(name, version)) == 0) {
-        return 0;
     }
     path = mprJoinPaths(app->paksCacheDir, name, version, BIT_ESP_PACKAGE, NULL);
     if ((spec = loadPackage(path)) == 0) {
@@ -2215,7 +2236,10 @@ static bool blendPak(cchar *name, cchar *version, bool topLevel)
     deps = mprGetJsonObj(spec, "dependencies", MPR_JSON_TOP);
     if (deps) {
         for (i = 0, cp = deps->children; i < deps->length; i++, cp = cp->next) {
-            if (!blendPak(cp->name, trimVersion(cp->value), 0)) {
+            if ((dver = findAcceptableVersion(cp->name, cp->value)) == 0) {
+                return 0;
+            }
+            if (!blendPak(cp->name, dver, 0)) {
                 return 0;
             }
         }
@@ -2248,7 +2272,8 @@ static bool blendSpec(cchar *name, cchar *version, MprJson *spec)
 {
     EspRoute    *eroute;
     MprJson     *blend, *cp, *scripts;
-    cchar       *script, *client, *paks;
+    cchar       *script, *client, *paks, *key;
+    char        *major, *minor, *patch;
     int         i;
 
     eroute = app->eroute;
@@ -2282,7 +2307,12 @@ static bool blendSpec(cchar *name, cchar *version, MprJson *spec)
     for (ITERATE_JSON(blend, cp, i)) {
         blendJson(eroute->config, cp->name, spec, cp->value);
     }
-    mprSetJson(eroute->config, sfmt("dependencies.%s", name), version, 0);
+    major = stok(sclone(version), ".", &minor);
+    minor = stok(minor, ".", &patch);
+    key = sfmt("dependencies.%s", name);
+    if (!mprGetJson(eroute->config, key, 0)) {
+        mprSetJson(eroute->config, key, sfmt("~%s.%s", major, minor), 0);
+    }
     return 1;
 }
 
@@ -2290,10 +2320,10 @@ static bool blendSpec(cchar *name, cchar *version, MprJson *spec)
     Install files for a pak and all its dependencies.
     The name may contain "#version" if version is NULL. If no version is specified, use the latest.
  */
-static bool installPakFiles(cchar *name, cchar *version, bool topLevel)
+static bool installPakFiles(cchar *name, cchar *criteria, bool topLevel)
 {
     MprJson     *deps, *spec, *cp;
-    cchar       *path, *package;
+    cchar       *path, *package, *version;
     int         i;
 
     path = mprJoinPaths(app->route->documents, app->paksDir, name, NULL);
@@ -2303,7 +2333,7 @@ static bool installPakFiles(cchar *name, cchar *version, bool topLevel)
         }
         return 1;
     }
-    if ((version = getPakVersion(name, version)) == 0) {
+    if ((version = findAcceptableVersion(name, criteria)) == 0) {
         return 0;
     }
     trace(app->upgrade ? "Upgrade" : "Install", "%s %s", name, version);
@@ -2322,7 +2352,7 @@ static bool installPakFiles(cchar *name, cchar *version, bool topLevel)
         deps = mprGetJsonObj(spec, "dependencies", MPR_JSON_TOP);
         if (deps) {
             for (i = 0, cp = deps->children; i < deps->length; i++, cp = cp->next) {
-                if (!installPakFiles(cp->name, trimVersion(cp->value), 0)) {
+                if (!installPakFiles(cp->name, cp->value, 0)) {
                     break;
                 }
             }
@@ -2732,6 +2762,9 @@ static MprJson *loadPackage(cchar *path)
 }
 
 
+/*
+    Get a version string from a name#version or from the latest cached version
+ */
 static cchar *getPakVersion(cchar *name, cchar *version)
 {
     MprDirEntry     *dp;
@@ -2755,14 +2788,119 @@ static cchar *getPakVersion(cchar *name, cchar *version)
 }
 
 
-static cchar *trimVersion(cchar *version)
+static bool acceptableVersion(cchar *criteria, cchar *version)
 {
-    ssize   index;
+    cchar   *expr;
+    char    *crit, *ortok, *andtok, *range;
+    bool    allMatched;
 
-    if ((index = sspn(version, "<>=~ \t")) > 0) {
-        return sclone(&version[index]);
+    crit = strim(sclone(criteria), "v=", MPR_TRIM_START);
+    version = strim(sclone(version), "v=", MPR_TRIM_START);
+    for (ortok = crit; (range = stok(ortok, "||", &ortok)) != 0; ) {
+        range = strim(range, " \t", 0);
+        allMatched = 1;
+        for (andtok = range; (expr = stok(andtok, "&& \t", &andtok)) != 0; ) {
+            if (!inRange(expr, version)) {
+                allMatched = 0;
+                break;
+            }
+        }
+        if (allMatched) {
+            return 1;
+        }
     }
-    return version;
+    return 0;
+}
+
+
+static bool inRange(cchar *expr, cchar *version)
+{
+    char    *op, *base, *pre, *low, *high, *preVersion;
+    int64   min, max, numberVersion;
+    ssize   i;
+
+    if ((i = strspn(expr, "<>=~ \t")) > 0) {
+        op = snclone(expr, i);
+        expr = &expr[i];
+    } else {
+        op = 0;
+    }
+    if (smatch(expr, "*")) {
+        expr = "x";
+    }
+    version = stok(sclone(version), "-", &preVersion);
+    base = stok(sclone(expr), "-", &pre);
+    if (op && (*op == '~' || *op == '^')) {
+        if (*op == '^' && schr(version, '-')) {
+            return 0;
+        }
+        base = slower(base);
+        base = stok(base, ".x", NULL);
+        return sstarts(version, base);
+    }
+    if (scontains(base, "x") && !schr(version, '-')) {
+        low = sfmt(">=%s", sreplace(base, "x", "0"));
+        high = sfmt("<%s", sreplace(base, "x", VER_FACTOR_MAX));
+        return inRange(low, version) && inRange(high, version);
+    }
+    min = 0;
+    max = MAX_VER;
+    if (!op) {
+        min = max = asNumber(base);
+    } else if (smatch(op, ">=")) {
+        min = asNumber(base);
+    } else if (*op == '>') {
+        min = asNumber(base) + 1;
+    } else if (smatch(op, "<=")) {
+        max = asNumber(base);
+    } else if (*op == '<') {
+        max = asNumber(base) - 1;
+    } else {
+        min = max = asNumber(base);
+    }
+    numberVersion = asNumber(version);
+    if (min <= numberVersion && numberVersion <= max) {
+        if ((pre && smatch(pre, preVersion)) || (!pre && !preVersion)) {
+            return 1;
+        }
+    }
+    return false;
+}
+
+
+static int64 asNumber(cchar *version)
+{
+    char    *tok;
+    int64   major, minor, patch;
+
+    major = stoi(stok(sclone(version), ".", &tok));
+    minor = stoi(stok(tok, ".", &tok));
+    patch = stoi(stok(tok, ".", &tok));
+    return (((major * VER_FACTOR) + minor) * VER_FACTOR) + patch;
+}
+
+
+static cchar *findAcceptableVersion(cchar *name, cchar *criteria)
+{
+    MprDirEntry     *dp;
+    MprList         *files;
+    int             next;
+
+    if (!criteria || smatch(criteria, "*")) {
+        criteria = "x";
+    }
+    if (schr(name, '#')) {
+        name = stok(sclone(name), "#", (char**) &criteria);
+    }
+    files = mprGetPathFiles(mprJoinPath(app->paksCacheDir, name), MPR_PATH_RELATIVE);
+    mprSortList(files, (MprSortProc) reverseSortFiles, 0);
+    for (ITERATE_ITEMS(files, dp, next)) {
+        if (acceptableVersion(criteria, dp->name)) {
+            return dp->name;
+        }
+    }
+    fail("Cannot acceptable version for: %s with criteria %s", name, criteria);
+    return 0;
 }
 
 #endif /* BIT_PACK_ESP */
