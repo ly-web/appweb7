@@ -145,6 +145,7 @@ static cchar *trimVersion(cchar *version);
 static void uninstall(int argc, char **argv);
 static void uninstallPak(cchar *name);
 static void upgrade(int argc, char **argv);
+static bool upgradePak(cchar *name);
 static void usageError();
 static void vtrace(cchar *tag, cchar *fmt, ...);
 static void why(cchar *path, cchar *fmt, ...);
@@ -768,12 +769,22 @@ static void uninstall(int argc, char **argv)
 
 static void upgrade(int argc, char **argv)
 {
-    int     i;
+    MprDirEntry     *dp;
+    MprList         *files;
+    int             i, next;
 
     app->overwrite = 1;
     app->upgrade = 1;
-    for (i = 0; i < argc; i++) {
-        installPak(argv[i], NULL, 1);
+
+    if (argc == 0) {
+        files = mprGetPathFiles(app->paksDir, MPR_PATH_RELATIVE);
+        for (ITERATE_ITEMS(files, dp, next)) {
+            upgradePak(dp->name);
+        }
+    } else {
+        for (i = 0; i < argc; i++) {
+            upgradePak(argv[i]);
+        }
     }
 }
 
@@ -2130,6 +2141,27 @@ static void fixupFile(cchar *path)
 }
 
 
+static bool upgradePak(cchar *name)
+{
+    MprJson     *spec;
+    cchar       *cachedVersion, *path, *version;
+
+    cachedVersion = getPakVersion(name, NULL);
+
+    path = mprJoinPaths(app->route->documents, app->paksDir, name, BIT_ESP_PACKAGE, NULL);
+    if ((spec = loadPackage(path)) == 0) {
+        fail("Cannot load package.json \"%s\"", path);
+        return 0;
+    }
+    version = mprGetJson(spec, "version", 0);
+    if (smatch(cachedVersion, version) && !app->force) {
+        trace("Info", "Installed %s is current with %s", name, version);
+    } else {
+        installPak(name, version, 1);
+    }
+    return 1;
+}
+
 
 /*
     Install files for a pak and all its dependencies.
@@ -2241,7 +2273,9 @@ static bool blendSpec(cchar *name, cchar *version, MprJson *spec)
             if (!(cp->type & MPR_JSON_STRING)) continue;
             script = sreplace(cp->value, "${PAKS}", paks);
             script = stemplateJson(script, eroute->config);
-            mprSetJson(eroute->config, "client-scripts[*]", script, 0);
+            if (!mprGetJson(eroute->config, sfmt("client-scripts[@ = %s]", script), 0)) {
+                mprSetJson(eroute->config, "client-scripts[*]", script, 0);
+            }
         }
     }
     blend = mprGetJsonObj(spec, "blend", MPR_JSON_TOP);
@@ -2284,11 +2318,13 @@ static bool installPakFiles(cchar *name, cchar *version, bool topLevel)
     /*
         Install required dependencies
      */
-    deps = mprGetJsonObj(spec, "dependencies", MPR_JSON_TOP);
-    if (deps) {
-        for (i = 0, cp = deps->children; i < deps->length; i++, cp = cp->next) {
-            if (!installPakFiles(cp->name, trimVersion(cp->value), 0)) {
-                break;
+    if (!app->upgrade) {
+        deps = mprGetJsonObj(spec, "dependencies", MPR_JSON_TOP);
+        if (deps) {
+            for (i = 0, cp = deps->children; i < deps->length; i++, cp = cp->next) {
+                if (!installPakFiles(cp->name, trimVersion(cp->value), 0)) {
+                    break;
+                }
             }
         }
     }
@@ -2356,7 +2392,7 @@ static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toD
     MprJson     *config, *export, *ex;
     EspRoute    *eroute;
     cchar       *base, *path, *fname;
-    char        *data, *from, *to, *fromSum, *toSum;
+    char        *fromData, *toData, *from, *to, *fromSum, *toSum;
     int         i, j, next;
 
     eroute = app->eroute;
@@ -2398,9 +2434,10 @@ static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toD
             }
         } else {
             if (app->upgrade) {
-                data = mprReadPathContents(from, 0);
-                fromSum = mprGetMD5(data);
-                toSum = mprGetMD5(mprReadPathContents(to, 0));
+                fromData = mprReadPathContents(from, 0);
+                fromSum = mprGetMD5(fromData);
+                toData = mprReadPathContents(to, 0);
+                toSum = mprGetMD5(toData);
                 if (!smatch(fromSum, toSum)) {
                     trace("Upgrade",  "File: %s", mprGetRelPath(to, 0));
                     if (mprCopyPath(from, to, 0644) < 0) {
@@ -2424,8 +2461,14 @@ static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toD
 
 static void generateHostingConfig()
 {
-    fixupFile(mprJoinPath(app->route->documents, "appweb.conf"));
-    fixupFile(mprJoinPath(app->route->documents, "hosted.conf"));
+    MprHash     *tokens;
+    char        *path, *data;
+
+    path = mprJoinPath(app->route->documents, "appweb.conf");
+    tokens = mprDeserialize(sfmt("{ LISTEN: '%s', NAME: '%s', TITLE: '%s' }", app->listen, 
+        app->appName, spascal(app->appName)));
+    data = getTemplate(app->topPak, "appweb.conf", tokens);
+    makeEspFile(path, data, "Configuration");
 }
 
 
@@ -2437,7 +2480,7 @@ static void generateAppSrc()
     path = mprJoinPath(app->eroute->srcDir, "app.c");
     tokens = mprDeserialize(sfmt("{ NAME: '%s', TITLE: '%s' }", app->appName, spascal(app->appName)));
     data = getTemplate("esp-server", "app.c", tokens);
-    makeEspFile(path, data, "Header");
+    makeEspFile(path, data, "Source");
 }
 
 
@@ -2503,7 +2546,7 @@ static void makeEspFile(cchar *path, cchar *data, cchar *msg)
 }
 
 
-static cchar *getPaks()
+static cchar *getCachedPaks()
 {
     MprDirEntry     *dp;
     MprJson         *config;
@@ -2533,17 +2576,18 @@ static char *getTemplate(cchar *name, cchar *file, MprHash *tokens)
     /*
         This will find local templates after the first generate app, but not while generating the app.
      */
-    path = sfmt("%s/templates/%s", mprGetCurrentPath(), file);
+    path = sfmt("%s/templates/%s/%s", mprGetCurrentPath(), name, file);
     if (!mprPathExists(path, R_OK)) {
         /*
-            If templates not present locally, try the cache
+            If templates not present locally, try the cache under the pak.
          */
         version = getPakVersion(name, NULL);
-        path = sfmt("%s/%s/%s/templates/%s", app->paksCacheDir, name, version, file);
+        path = sfmt("%s/%s/%s/templates/%s/%s", app->paksCacheDir, name, version, name, file);
     }
     if ((data = mprReadPathContents(path, NULL)) == 0) {
         fail("Cannot open template file \"%s\"", path);
     }
+    vtrace("Info", "Using template %s", path);
     return stemplate(data, tokens);
 }
 
@@ -2554,7 +2598,7 @@ static void usageError()
 
     name = mprGetAppName();
     initialize();
-    paks = getPaks();
+    paks = getCachedPaks();
 
     mprEprintf("\nESP Usage:\n\n"
     "  %s [options] [commands]\n\n"
