@@ -41,16 +41,16 @@ Bit.load({
         },
 
 		'ejs.mod': {
-            files: [ 'src/deps/ejs/ejs.es' ],
+            files: [ 'src/paks/ejs/ejs.es' ],
             path: "${BIN}/ejs.mod",
             home: "${TOP}",
             //  Add --debug for debug symbols
             build: "
                 trace('Compile', 'ejs.mod')
-                run('${LBIN}/ejsc --out ${BIN}/ejs.mod --optimize 9 --bind --require null src/deps/ejs/ejs.es')
+                run('${LBIN}/ejsc --out ${BIN}/ejs.mod --optimize 9 --bind --require null src/paks/ejs/ejs.es')
             ",
-            'generate-nmake': '"${LBIN}\\ejsc" --out "${BIN}/ejs.mod" --optimize 9 --bind --require null src/deps/ejs/ejs.es',
-            'generate-sh': '${LBIN}/ejsc --out ${BIN}/ejs.mod --optimize 9 --bind --require null src/deps/ejs/ejs.es',
+            'generate-nmake': '"${LBIN}\\ejsc" --out "${BIN}/ejs.mod" --optimize 9 --bind --require null src/paks/ejs/ejs.es',
+            'generate-sh': '${LBIN}/ejsc --out ${BIN}/ejs.mod --optimize 9 --bind --require null src/paks/ejs/ejs.es',
             depends: [ 'ejsc' ],
             packs: [ 'ejscript' ],
             enable: 'bit.packs.ejscript.enable',
@@ -58,17 +58,17 @@ Bit.load({
 
         'sync-ejs': {
             action: "
-                let deps = App.dir.parent
-                let ejs = deps.join('ejs')
+                let paks = App.dir.parent
+                let ejs = paks.join('ejs')
                 let tgz = bit.dir.top.join('../ejs/releases/ejs-flat.tgz')
-                let tar = deps.join('ejs.tar')
+                let tar = paks.join('ejs.tar')
                 trace('Update', 'Ejscript distribution')
                 ejs.removeAll()
                 require ejs.zlib
                 require ejs.tar
                 Zlib.uncompress(tgz, tar)
-                Tar(tar, {chdir: deps}).extract()
-                let dir = deps.files('ejs-*').sort().reverse()[0]
+                Tar(tar, {chdir: paks}).extract()
+                let dir = paks.files('ejs-*').sort().reverse()[0]
                 dir.rename(ejs)
                 tar.remove()
                 for each (n in ['Makefile', 'bit.h', 'mpr.h', 'http.h', 'deps.c', 'ejsmod.c', 'pcre.c', 'pcre.h', 

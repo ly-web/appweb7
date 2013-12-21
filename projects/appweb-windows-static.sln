@@ -254,11 +254,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test-cgiProgram", "appweb-w
 		{D58DAC33-8E20-4FDA-B15A-3BEA88BFB823} = {D58DAC33-8E20-4FDA-B15A-3BEA88BFB823}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bower.json", "appweb-windows-static\bower.json.vcxproj", "{3C91B68B-5167-4375-AE40-8F2A38CFC8D5}"
-	ProjectSection(ProjectDependencies) = postProject
-		{467DCB7C-9406-49DF-B865-A532AE2D74A8} = {467DCB7C-9406-49DF-B865-A532AE2D74A8}
-	EndProjectSection
-EndProject
 
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -540,14 +535,6 @@ Global
 {80C38BBC-CAA1-491C-B4EC-893B0DFDCB27}.Release|Win32.Build.0 = Release|Win32
 {80C38BBC-CAA1-491C-B4EC-893B0DFDCB27}.Release|x64.ActiveCfg = Release|x64
 {80C38BBC-CAA1-491C-B4EC-893B0DFDCB27}.Release|x64.Build.0 = Release|x64
-{3C91B68B-5167-4375-AE40-8F2A38CFC8D5}.Debug|Win32.ActiveCfg = Debug|Win32
-{3C91B68B-5167-4375-AE40-8F2A38CFC8D5}.Debug|Win32.Build.0 = Debug|Win32
-{3C91B68B-5167-4375-AE40-8F2A38CFC8D5}.Debug|x64.ActiveCfg = Debug|x64
-{3C91B68B-5167-4375-AE40-8F2A38CFC8D5}.Debug|x64.Build.0 = Debug|x64
-{3C91B68B-5167-4375-AE40-8F2A38CFC8D5}.Release|Win32.ActiveCfg = Release|Win32
-{3C91B68B-5167-4375-AE40-8F2A38CFC8D5}.Release|Win32.Build.0 = Release|Win32
-{3C91B68B-5167-4375-AE40-8F2A38CFC8D5}.Release|x64.ActiveCfg = Release|x64
-{3C91B68B-5167-4375-AE40-8F2A38CFC8D5}.Release|x64.Build.0 = Release|x64
 EndGlobalSection
 
   GlobalSection(SolutionProperties) = preSolution

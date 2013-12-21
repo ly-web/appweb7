@@ -6,7 +6,7 @@
     "keywords": [
         "appweb",
         "http",
-        "webserver",
+        "webserver"
     ],
     "homepage": "http://embedthis.com/products/appweb/embedded-web-server.html",
     "author": {
@@ -22,22 +22,27 @@
         "email": "dev@embedthis.com",
         "url": "http://github.com/embedthis/appweb-4/issues"
     },
-    "ignore": [
-        "**/.*",
-        "node_modules",
-        "bower_components",
-        "doc",
-        "test",
-        "releases",
-        "package",
-        "*-debug*",
-        "*-release*"
+    "licenses": [
+        {
+            "type": "GPL",
+            "url": "http://www.gnu.org/licenses/gpl-2.0.html"
+        },
+        {
+            "type": "Commercial",
+            "url": "http://embedthis.com/licensing/"
+        }
     ],
-    "licenses": [{ 
-        "type": "GPL", 
-        "url": "http://www.gnu.org/licenses/gpl-2.0.html"
-    }, {
-        "type": "Commercial", 
-        "url": "http://embedthis.com/licensing/"
-    }]
+    "dirs": {
+        "paks": "src/paks"
+    },
+    "dependencies": {
+        "bitos": "~0.8",
+        "ejs": "~2.3",
+        "est": "~0.6",
+        "http": "~4.5",
+        "mpr": "~4.5",
+        "pcre": "~1.0",
+        "sqlite": "~1.0",
+        "zlib": "~1.0"
+    }
 }

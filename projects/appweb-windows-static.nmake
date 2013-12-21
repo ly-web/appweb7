@@ -210,7 +210,6 @@ TARGETS            = $(TARGETS) test\web\auth\basic\basic.cgi
 !IF "$(BIT_PACK_CGI)" == "1"
 TARGETS            = $(TARGETS) test\cgi-bin\cgiProgram.exe
 !ENDIF
-TARGETS            = $(TARGETS) bower.json
 
 !IFNDEF SHOW
 .SILENT:
@@ -305,7 +304,6 @@ clean:
 	if exist "$(CONFIG)\bin\testAppweb.lib" del /Q "$(CONFIG)\bin\testAppweb.lib"
 	if exist "$(CONFIG)\bin\testAppweb.pdb" del /Q "$(CONFIG)\bin\testAppweb.pdb"
 	if exist "$(CONFIG)\bin\testAppweb.exp" del /Q "$(CONFIG)\bin\testAppweb.exp"
-	if exist "bower.json" del /Q "bower.json"
 	if exist "$(CONFIG)\obj\removeFiles.obj" del /Q "$(CONFIG)\obj\removeFiles.obj"
 	if exist "$(CONFIG)\obj\mprLib.obj" del /Q "$(CONFIG)\obj\mprLib.obj"
 	if exist "$(CONFIG)\obj\mprSsl.obj" del /Q "$(CONFIG)\obj\mprSsl.obj"
@@ -388,7 +386,7 @@ $(CONFIG)\bin\removeFiles.exe: $(DEPS_4)
 $(CONFIG)\inc\mpr.h: $(DEPS_5)
 	@echo '      [Copy] $(CONFIG)/inc/mpr.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y src\deps\mpr\mpr.h $(CONFIG)\inc\mpr.h
+	copy /Y src\paks\mpr\mpr.h $(CONFIG)\inc\mpr.h
 
 #
 #   bitos.h
@@ -408,9 +406,9 @@ DEPS_7 = $(DEPS_7) $(CONFIG)\inc\mpr.h
 DEPS_7 = $(DEPS_7) $(CONFIG)\inc\bitos.h
 
 $(CONFIG)\obj\mprLib.obj: \
-    src\deps\mpr\mprLib.c $(DEPS_7)
+    src\paks\mpr\mprLib.c $(DEPS_7)
 	@echo '   [Compile] $(CONFIG)/obj/mprLib.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\mprLib.obj -Fd$(CONFIG)\obj\mprLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\mprLib.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mprLib.obj -Fd$(CONFIG)\obj\mprLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\mpr\mprLib.c
 
 #
 #   libmpr
@@ -430,7 +428,7 @@ $(CONFIG)\bin\libmpr.lib: $(DEPS_8)
 $(CONFIG)\inc\est.h: $(DEPS_9)
 	@echo '      [Copy] $(CONFIG)/inc/est.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y src\deps\est\est.h $(CONFIG)\inc\est.h
+	copy /Y src\paks\est\est.h $(CONFIG)\inc\est.h
 
 #
 #   estLib.obj
@@ -440,9 +438,9 @@ DEPS_10 = $(DEPS_10) $(CONFIG)\inc\est.h
 DEPS_10 = $(DEPS_10) $(CONFIG)\inc\bitos.h
 
 $(CONFIG)\obj\estLib.obj: \
-    src\deps\est\estLib.c $(DEPS_10)
+    src\paks\est\estLib.c $(DEPS_10)
 	@echo '   [Compile] $(CONFIG)/obj/estLib.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\estLib.obj -Fd$(CONFIG)\obj\estLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\est\estLib.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\estLib.obj -Fd$(CONFIG)\obj\estLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\est\estLib.c
 
 !IF "$(BIT_PACK_EST)" == "1"
 #
@@ -466,9 +464,9 @@ DEPS_12 = $(DEPS_12) $(CONFIG)\inc\mpr.h
 DEPS_12 = $(DEPS_12) $(CONFIG)\inc\est.h
 
 $(CONFIG)\obj\mprSsl.obj: \
-    src\deps\mpr\mprSsl.c $(DEPS_12)
+    src\paks\mpr\mprSsl.c $(DEPS_12)
 	@echo '   [Compile] $(CONFIG)/obj/mprSsl.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)\src" "-I$(BIT_PACK_OPENSSL_PATH)\include" src\deps\mpr\mprSsl.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)\src" "-I$(BIT_PACK_OPENSSL_PATH)\include" src\paks\mpr\mprSsl.c
 
 #
 #   libmprssl
@@ -496,9 +494,9 @@ DEPS_14 = $(DEPS_14) $(CONFIG)\inc\bit.h
 DEPS_14 = $(DEPS_14) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\manager.obj: \
-    src\deps\mpr\manager.c $(DEPS_14)
+    src\paks\mpr\manager.c $(DEPS_14)
 	@echo '   [Compile] $(CONFIG)/obj/manager.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\manager.obj -Fd$(CONFIG)\obj\manager.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\manager.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\manager.obj -Fd$(CONFIG)\obj\manager.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\mpr\manager.c
 
 #
 #   manager
@@ -523,9 +521,9 @@ DEPS_16 = $(DEPS_16) $(CONFIG)\inc\bit.h
 DEPS_16 = $(DEPS_16) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\makerom.obj: \
-    src\deps\mpr\makerom.c $(DEPS_16)
+    src\paks\mpr\makerom.c $(DEPS_16)
 	@echo '   [Compile] $(CONFIG)/obj/makerom.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\makerom.obj -Fd$(CONFIG)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\mpr\makerom.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\makerom.obj -Fd$(CONFIG)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\mpr\makerom.c
 
 #
 #   makerom
@@ -546,12 +544,12 @@ $(CONFIG)\bin\makerom.exe: $(DEPS_17)
 #
 #   ca-crt
 #
-DEPS_18 = $(DEPS_18) src\deps\est\ca.crt
+DEPS_18 = $(DEPS_18) src\paks\est\ca.crt
 
 $(CONFIG)\bin\ca.crt: $(DEPS_18)
 	@echo '      [Copy] $(CONFIG)/bin/ca.crt'
 	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
-	copy /Y src\deps\est\ca.crt $(CONFIG)\bin\ca.crt
+	copy /Y src\paks\est\ca.crt $(CONFIG)\bin\ca.crt
 
 #
 #   pcre.h
@@ -559,7 +557,7 @@ $(CONFIG)\bin\ca.crt: $(DEPS_18)
 $(CONFIG)\inc\pcre.h: $(DEPS_19)
 	@echo '      [Copy] $(CONFIG)/inc/pcre.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y src\deps\pcre\pcre.h $(CONFIG)\inc\pcre.h
+	copy /Y src\paks\pcre\pcre.h $(CONFIG)\inc\pcre.h
 
 #
 #   pcre.obj
@@ -568,9 +566,9 @@ DEPS_20 = $(DEPS_20) $(CONFIG)\inc\bit.h
 DEPS_20 = $(DEPS_20) $(CONFIG)\inc\pcre.h
 
 $(CONFIG)\obj\pcre.obj: \
-    src\deps\pcre\pcre.c $(DEPS_20)
+    src\paks\pcre\pcre.c $(DEPS_20)
 	@echo '   [Compile] $(CONFIG)/obj/pcre.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\pcre.obj -Fd$(CONFIG)\obj\pcre.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\pcre\pcre.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\pcre.obj -Fd$(CONFIG)\obj\pcre.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\pcre\pcre.c
 
 !IF "$(BIT_PACK_PCRE)" == "1"
 #
@@ -591,7 +589,7 @@ $(CONFIG)\bin\libpcre.lib: $(DEPS_21)
 $(CONFIG)\inc\http.h: $(DEPS_22)
 	@echo '      [Copy] $(CONFIG)/inc/http.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y src\deps\http\http.h $(CONFIG)\inc\http.h
+	copy /Y src\paks\http\http.h $(CONFIG)\inc\http.h
 
 #
 #   httpLib.obj
@@ -601,9 +599,9 @@ DEPS_23 = $(DEPS_23) $(CONFIG)\inc\http.h
 DEPS_23 = $(DEPS_23) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\httpLib.obj: \
-    src\deps\http\httpLib.c $(DEPS_23)
+    src\paks\http\httpLib.c $(DEPS_23)
 	@echo '   [Compile] $(CONFIG)/obj/httpLib.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\httpLib.obj -Fd$(CONFIG)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\http\httpLib.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\httpLib.obj -Fd$(CONFIG)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\http\httpLib.c
 
 #
 #   libhttp
@@ -632,9 +630,9 @@ DEPS_25 = $(DEPS_25) $(CONFIG)\inc\bit.h
 DEPS_25 = $(DEPS_25) $(CONFIG)\inc\http.h
 
 $(CONFIG)\obj\http.obj: \
-    src\deps\http\http.c $(DEPS_25)
+    src\paks\http\http.c $(DEPS_25)
 	@echo '   [Compile] $(CONFIG)/obj/http.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\http.obj -Fd$(CONFIG)\obj\http.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)\src" "-I$(BIT_PACK_OPENSSL_PATH)\include" src\deps\http\http.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\http.obj -Fd$(CONFIG)\obj\http.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)\src" "-I$(BIT_PACK_OPENSSL_PATH)\include" src\paks\http\http.c
 
 #
 #   http
@@ -697,7 +695,7 @@ $(CONFIG)\bin\http.exe: $(DEPS_26)
 $(CONFIG)\inc\sqlite3.h: $(DEPS_27)
 	@echo '      [Copy] $(CONFIG)/inc/sqlite3.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
-	copy /Y src\deps\sqlite\sqlite3.h $(CONFIG)\inc\sqlite3.h
+	copy /Y src\paks\sqlite\sqlite3.h $(CONFIG)\inc\sqlite3.h
 
 #
 #   sqlite3.obj
@@ -706,9 +704,9 @@ DEPS_28 = $(DEPS_28) $(CONFIG)\inc\bit.h
 DEPS_28 = $(DEPS_28) $(CONFIG)\inc\sqlite3.h
 
 $(CONFIG)\obj\sqlite3.obj: \
-    src\deps\sqlite\sqlite3.c $(DEPS_28)
+    src\paks\sqlite\sqlite3.c $(DEPS_28)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite3.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite3.obj -Fd$(CONFIG)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\sqlite\sqlite3.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite3.obj -Fd$(CONFIG)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\sqlite\sqlite3.c
 
 !IF "$(BIT_PACK_SQLITE)" == "1"
 #
@@ -730,9 +728,9 @@ DEPS_30 = $(DEPS_30) $(CONFIG)\inc\bit.h
 DEPS_30 = $(DEPS_30) $(CONFIG)\inc\sqlite3.h
 
 $(CONFIG)\obj\sqlite.obj: \
-    src\deps\sqlite\sqlite.c $(DEPS_30)
+    src\paks\sqlite\sqlite.c $(DEPS_30)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite.obj -Fd$(CONFIG)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\sqlite\sqlite.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite.obj -Fd$(CONFIG)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\sqlite\sqlite.c
 
 !IF "$(BIT_PACK_SQLITE)" == "1"
 #
@@ -1359,9 +1357,9 @@ DEPS_62 = $(DEPS_62) $(CONFIG)\inc\http.h
 DEPS_62 = $(DEPS_62) $(CONFIG)\inc\ejs.slots.h
 
 $(CONFIG)\obj\ejsLib.obj: \
-    src\deps\ejs\ejsLib.c $(DEPS_62)
+    src\paks\ejs\ejsLib.c $(DEPS_62)
 	@echo '   [Compile] $(CONFIG)/obj/ejsLib.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\ejsLib.obj -Fd$(CONFIG)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\ejs\ejsLib.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejsLib.obj -Fd$(CONFIG)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejsLib.c
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 #
@@ -1397,9 +1395,9 @@ DEPS_64 = $(DEPS_64) $(CONFIG)\inc\bit.h
 DEPS_64 = $(DEPS_64) $(CONFIG)\inc\ejs.h
 
 $(CONFIG)\obj\ejs.obj: \
-    src\deps\ejs\ejs.c $(DEPS_64)
+    src\paks\ejs\ejs.c $(DEPS_64)
 	@echo '   [Compile] $(CONFIG)/obj/ejs.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\ejs.obj -Fd$(CONFIG)\obj\ejs.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\ejs\ejs.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejs.obj -Fd$(CONFIG)\obj\ejs.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejs.c
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 #
@@ -1447,9 +1445,9 @@ DEPS_66 = $(DEPS_66) $(CONFIG)\inc\bit.h
 DEPS_66 = $(DEPS_66) $(CONFIG)\inc\ejs.h
 
 $(CONFIG)\obj\ejsc.obj: \
-    src\deps\ejs\ejsc.c $(DEPS_66)
+    src\paks\ejs\ejsc.c $(DEPS_66)
 	@echo '   [Compile] $(CONFIG)/obj/ejsc.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\ejsc.obj -Fd$(CONFIG)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\ejs\ejsc.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejsc.obj -Fd$(CONFIG)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejsc.c
 
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 #
@@ -1494,7 +1492,7 @@ $(CONFIG)\bin\ejsc.exe: $(DEPS_67)
 #
 #   ejs.mod
 #
-DEPS_68 = $(DEPS_68) src\deps\ejs\ejs.es
+DEPS_68 = $(DEPS_68) src\paks\ejs\ejs.es
 DEPS_68 = $(DEPS_68) $(CONFIG)\inc\mpr.h
 DEPS_68 = $(DEPS_68) $(CONFIG)\inc\bit.h
 DEPS_68 = $(DEPS_68) $(CONFIG)\inc\bitos.h
@@ -1517,7 +1515,7 @@ DEPS_68 = $(DEPS_68) $(CONFIG)\obj\ejsc.obj
 DEPS_68 = $(DEPS_68) $(CONFIG)\bin\ejsc.exe
 
 $(CONFIG)\bin\ejs.mod: $(DEPS_68)
-	"$(LBIN)\ejsc" --out ".\$(CONFIG)\bin\ejs.mod" --optimize 9 --bind --require null src/deps/ejs/ejs.es
+	"$(LBIN)\ejsc" --out ".\$(CONFIG)\bin\ejs.mod" --optimize 9 --bind --require null src/paks/ejs/ejs.es
 !ENDIF
 
 #
@@ -2264,27 +2262,19 @@ test\cgi-bin\cgiProgram.exe: $(DEPS_100)
 #  Omit build script test-cgiProgram
 !ENDIF
 
-#
-#   bower.json
-#
-DEPS_101 = $(DEPS_101) package.json
-
-bower.json: $(DEPS_101)
-	@echo '      [Copy] bower.json'
-
 
 #
 #   stop
 #
-DEPS_102 = $(DEPS_102) compile
+DEPS_101 = $(DEPS_101) compile
 
-stop: $(DEPS_102)
+stop: $(DEPS_101)
 	@.\$(CONFIG)\bin\appman stop disable uninstall >/dev/null 2>&1 ; true
 
 #
 #   installBinary
 #
-installBinary: $(DEPS_103)
+installBinary: $(DEPS_102)
 	if not exist "$(BIT_VAPP_PREFIX)\log" md "$(BIT_VAPP_PREFIX)\log"
 	if not exist "$(BIT_VAPP_PREFIX)\cache" md "$(BIT_VAPP_PREFIX)\cache"
 	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
@@ -2474,32 +2464,32 @@ installBinary: $(DEPS_103)
 #
 #   start
 #
-DEPS_104 = $(DEPS_104) compile
-DEPS_104 = $(DEPS_104) stop
+DEPS_103 = $(DEPS_103) compile
+DEPS_103 = $(DEPS_103) stop
 
-start: $(DEPS_104)
+start: $(DEPS_103)
 	.\$(CONFIG)\bin\appman install enable start
 
 #
 #   install
 #
-DEPS_105 = $(DEPS_105) compile
-DEPS_105 = $(DEPS_105) stop
-DEPS_105 = $(DEPS_105) installBinary
-DEPS_105 = $(DEPS_105) start
+DEPS_104 = $(DEPS_104) compile
+DEPS_104 = $(DEPS_104) stop
+DEPS_104 = $(DEPS_104) installBinary
+DEPS_104 = $(DEPS_104) start
 
-install: $(DEPS_105)
+install: $(DEPS_104)
 
 
 
 #
 #   uninstall
 #
-DEPS_106 = $(DEPS_106) build
-DEPS_106 = $(DEPS_106) compile
-DEPS_106 = $(DEPS_106) stop
+DEPS_105 = $(DEPS_105) build
+DEPS_105 = $(DEPS_105) compile
+DEPS_105 = $(DEPS_105) stop
 
-uninstall: $(DEPS_106)
+uninstall: $(DEPS_105)
 	cd package
 	if exist "$(BIT_VAPP_PREFIX)\appweb.conf" del /Q "$(BIT_VAPP_PREFIX)\appweb.conf"
 	if exist "$(BIT_VAPP_PREFIX)\esp.conf" del /Q "$(BIT_VAPP_PREFIX)\esp.conf"
@@ -2526,7 +2516,7 @@ uninstall: $(DEPS_106)
 #
 #   genslink
 #
-genslink: $(DEPS_107)
+genslink: $(DEPS_106)
 	cd src\server
 	esp --static --genlink slink.c --flat compile
 	cd ..\..
@@ -2534,9 +2524,9 @@ genslink: $(DEPS_107)
 #
 #   run
 #
-DEPS_108 = $(DEPS_108) compile
+DEPS_107 = $(DEPS_107) compile
 
-run: $(DEPS_108)
+run: $(DEPS_107)
 	cd src\server
 	sudo ..\..\$(CONFIG)\bin\appweb -v
 	cd ..\..

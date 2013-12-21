@@ -197,7 +197,6 @@ endif
 ifeq ($(BIT_PACK_CGI),1)
 TARGETS            += test/cgi-bin/cgiProgram
 endif
-TARGETS            += bower.json
 
 unexport CDPATH
 
@@ -260,7 +259,6 @@ clean:
 	rm -f "$(CONFIG)/bin/libslink.a"
 	rm -f "$(CONFIG)/bin/appweb"
 	rm -f "$(CONFIG)/bin/testAppweb"
-	rm -f "bower.json"
 	rm -f "$(CONFIG)/obj/mprLib.o"
 	rm -f "$(CONFIG)/obj/mprSsl.o"
 	rm -f "$(CONFIG)/obj/manager.o"
@@ -318,7 +316,7 @@ version: $(DEPS_1)
 $(CONFIG)/inc/mpr.h: $(DEPS_2)
 	@echo '      [Copy] $(CONFIG)/inc/mpr.h'
 	mkdir -p "$(CONFIG)/inc"
-	cp src/deps/mpr/mpr.h $(CONFIG)/inc/mpr.h
+	cp src/paks/mpr/mpr.h $(CONFIG)/inc/mpr.h
 
 #
 #   bit.h
@@ -344,9 +342,9 @@ DEPS_5 += $(CONFIG)/inc/mpr.h
 DEPS_5 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/mprLib.o: \
-    src/deps/mpr/mprLib.c $(DEPS_5)
+    src/paks/mpr/mprLib.c $(DEPS_5)
 	@echo '   [Compile] $(CONFIG)/obj/mprLib.o'
-	$(CC) -c -o $(CONFIG)/obj/mprLib.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/mprLib.c
+	$(CC) -c -o $(CONFIG)/obj/mprLib.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/paks/mpr/mprLib.c
 
 #
 #   libmpr
@@ -366,7 +364,7 @@ $(CONFIG)/bin/libmpr.a: $(DEPS_6)
 $(CONFIG)/inc/est.h: $(DEPS_7)
 	@echo '      [Copy] $(CONFIG)/inc/est.h'
 	mkdir -p "$(CONFIG)/inc"
-	cp src/deps/est/est.h $(CONFIG)/inc/est.h
+	cp src/paks/est/est.h $(CONFIG)/inc/est.h
 
 #
 #   estLib.o
@@ -376,9 +374,9 @@ DEPS_8 += $(CONFIG)/inc/est.h
 DEPS_8 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/estLib.o: \
-    src/deps/est/estLib.c $(DEPS_8)
+    src/paks/est/estLib.c $(DEPS_8)
 	@echo '   [Compile] $(CONFIG)/obj/estLib.o'
-	$(CC) -c -o $(CONFIG)/obj/estLib.o -arch $(CC_ARCH) $(IFLAGS) src/deps/est/estLib.c
+	$(CC) -c -o $(CONFIG)/obj/estLib.o -arch $(CC_ARCH) $(IFLAGS) src/paks/est/estLib.c
 
 ifeq ($(BIT_PACK_EST),1)
 #
@@ -402,9 +400,9 @@ DEPS_10 += $(CONFIG)/inc/mpr.h
 DEPS_10 += $(CONFIG)/inc/est.h
 
 $(CONFIG)/obj/mprSsl.o: \
-    src/deps/mpr/mprSsl.c $(DEPS_10)
+    src/paks/mpr/mprSsl.c $(DEPS_10)
 	@echo '   [Compile] $(CONFIG)/obj/mprSsl.o'
-	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/deps/mpr/mprSsl.c
+	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/paks/mpr/mprSsl.c
 
 #
 #   libmprssl
@@ -432,9 +430,9 @@ DEPS_12 += $(CONFIG)/inc/bit.h
 DEPS_12 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/manager.o: \
-    src/deps/mpr/manager.c $(DEPS_12)
+    src/paks/mpr/manager.c $(DEPS_12)
 	@echo '   [Compile] $(CONFIG)/obj/manager.o'
-	$(CC) -c -o $(CONFIG)/obj/manager.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/manager.c
+	$(CC) -c -o $(CONFIG)/obj/manager.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/paks/mpr/manager.c
 
 #
 #   manager
@@ -459,9 +457,9 @@ DEPS_14 += $(CONFIG)/inc/bit.h
 DEPS_14 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/makerom.o: \
-    src/deps/mpr/makerom.c $(DEPS_14)
+    src/paks/mpr/makerom.c $(DEPS_14)
 	@echo '   [Compile] $(CONFIG)/obj/makerom.o'
-	$(CC) -c -o $(CONFIG)/obj/makerom.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/mpr/makerom.c
+	$(CC) -c -o $(CONFIG)/obj/makerom.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/paks/mpr/makerom.c
 
 #
 #   makerom
@@ -482,12 +480,12 @@ $(CONFIG)/bin/makerom: $(DEPS_15)
 #
 #   ca-crt
 #
-DEPS_16 += src/deps/est/ca.crt
+DEPS_16 += src/paks/est/ca.crt
 
 $(CONFIG)/bin/ca.crt: $(DEPS_16)
 	@echo '      [Copy] $(CONFIG)/bin/ca.crt'
 	mkdir -p "$(CONFIG)/bin"
-	cp src/deps/est/ca.crt $(CONFIG)/bin/ca.crt
+	cp src/paks/est/ca.crt $(CONFIG)/bin/ca.crt
 
 #
 #   pcre.h
@@ -495,7 +493,7 @@ $(CONFIG)/bin/ca.crt: $(DEPS_16)
 $(CONFIG)/inc/pcre.h: $(DEPS_17)
 	@echo '      [Copy] $(CONFIG)/inc/pcre.h'
 	mkdir -p "$(CONFIG)/inc"
-	cp src/deps/pcre/pcre.h $(CONFIG)/inc/pcre.h
+	cp src/paks/pcre/pcre.h $(CONFIG)/inc/pcre.h
 
 #
 #   pcre.o
@@ -504,9 +502,9 @@ DEPS_18 += $(CONFIG)/inc/bit.h
 DEPS_18 += $(CONFIG)/inc/pcre.h
 
 $(CONFIG)/obj/pcre.o: \
-    src/deps/pcre/pcre.c $(DEPS_18)
+    src/paks/pcre/pcre.c $(DEPS_18)
 	@echo '   [Compile] $(CONFIG)/obj/pcre.o'
-	$(CC) -c -o $(CONFIG)/obj/pcre.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/pcre/pcre.c
+	$(CC) -c -o $(CONFIG)/obj/pcre.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/paks/pcre/pcre.c
 
 ifeq ($(BIT_PACK_PCRE),1)
 #
@@ -527,7 +525,7 @@ endif
 $(CONFIG)/inc/http.h: $(DEPS_20)
 	@echo '      [Copy] $(CONFIG)/inc/http.h'
 	mkdir -p "$(CONFIG)/inc"
-	cp src/deps/http/http.h $(CONFIG)/inc/http.h
+	cp src/paks/http/http.h $(CONFIG)/inc/http.h
 
 #
 #   httpLib.o
@@ -537,9 +535,9 @@ DEPS_21 += $(CONFIG)/inc/http.h
 DEPS_21 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/httpLib.o: \
-    src/deps/http/httpLib.c $(DEPS_21)
+    src/paks/http/httpLib.c $(DEPS_21)
 	@echo '   [Compile] $(CONFIG)/obj/httpLib.o'
-	$(CC) -c -o $(CONFIG)/obj/httpLib.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/http/httpLib.c
+	$(CC) -c -o $(CONFIG)/obj/httpLib.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/paks/http/httpLib.c
 
 #
 #   libhttp
@@ -568,9 +566,9 @@ DEPS_23 += $(CONFIG)/inc/bit.h
 DEPS_23 += $(CONFIG)/inc/http.h
 
 $(CONFIG)/obj/http.o: \
-    src/deps/http/http.c $(DEPS_23)
+    src/paks/http/http.c $(DEPS_23)
 	@echo '   [Compile] $(CONFIG)/obj/http.o'
-	$(CC) -c -o $(CONFIG)/obj/http.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/deps/http/http.c
+	$(CC) -c -o $(CONFIG)/obj/http.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/paks/http/http.c
 
 #
 #   http
@@ -633,7 +631,7 @@ $(CONFIG)/bin/http: $(DEPS_24)
 $(CONFIG)/inc/sqlite3.h: $(DEPS_25)
 	@echo '      [Copy] $(CONFIG)/inc/sqlite3.h'
 	mkdir -p "$(CONFIG)/inc"
-	cp src/deps/sqlite/sqlite3.h $(CONFIG)/inc/sqlite3.h
+	cp src/paks/sqlite/sqlite3.h $(CONFIG)/inc/sqlite3.h
 
 #
 #   sqlite3.o
@@ -642,9 +640,9 @@ DEPS_26 += $(CONFIG)/inc/bit.h
 DEPS_26 += $(CONFIG)/inc/sqlite3.h
 
 $(CONFIG)/obj/sqlite3.o: \
-    src/deps/sqlite/sqlite3.c $(DEPS_26)
+    src/paks/sqlite/sqlite3.c $(DEPS_26)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite3.o'
-	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -arch $(CC_ARCH) $(IFLAGS) src/deps/sqlite/sqlite3.c
+	$(CC) -c -o $(CONFIG)/obj/sqlite3.o -arch $(CC_ARCH) $(IFLAGS) src/paks/sqlite/sqlite3.c
 
 ifeq ($(BIT_PACK_SQLITE),1)
 #
@@ -666,9 +664,9 @@ DEPS_28 += $(CONFIG)/inc/bit.h
 DEPS_28 += $(CONFIG)/inc/sqlite3.h
 
 $(CONFIG)/obj/sqlite.o: \
-    src/deps/sqlite/sqlite.c $(DEPS_28)
+    src/paks/sqlite/sqlite.c $(DEPS_28)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite.o'
-	$(CC) -c -o $(CONFIG)/obj/sqlite.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/sqlite/sqlite.c
+	$(CC) -c -o $(CONFIG)/obj/sqlite.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/paks/sqlite/sqlite.c
 
 ifeq ($(BIT_PACK_SQLITE),1)
 #
@@ -1296,9 +1294,9 @@ DEPS_60 += $(CONFIG)/inc/http.h
 DEPS_60 += $(CONFIG)/inc/ejs.slots.h
 
 $(CONFIG)/obj/ejsLib.o: \
-    src/deps/ejs/ejsLib.c $(DEPS_60)
+    src/paks/ejs/ejsLib.c $(DEPS_60)
 	@echo '   [Compile] $(CONFIG)/obj/ejsLib.o'
-	$(CC) -c -o $(CONFIG)/obj/ejsLib.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/ejs/ejsLib.c
+	$(CC) -c -o $(CONFIG)/obj/ejsLib.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/paks/ejs/ejsLib.c
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
@@ -1334,9 +1332,9 @@ DEPS_62 += $(CONFIG)/inc/bit.h
 DEPS_62 += $(CONFIG)/inc/ejs.h
 
 $(CONFIG)/obj/ejs.o: \
-    src/deps/ejs/ejs.c $(DEPS_62)
+    src/paks/ejs/ejs.c $(DEPS_62)
 	@echo '   [Compile] $(CONFIG)/obj/ejs.o'
-	$(CC) -c -o $(CONFIG)/obj/ejs.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/ejs/ejs.c
+	$(CC) -c -o $(CONFIG)/obj/ejs.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/paks/ejs/ejs.c
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
@@ -1384,9 +1382,9 @@ DEPS_64 += $(CONFIG)/inc/bit.h
 DEPS_64 += $(CONFIG)/inc/ejs.h
 
 $(CONFIG)/obj/ejsc.o: \
-    src/deps/ejs/ejsc.c $(DEPS_64)
+    src/paks/ejs/ejsc.c $(DEPS_64)
 	@echo '   [Compile] $(CONFIG)/obj/ejsc.o'
-	$(CC) -c -o $(CONFIG)/obj/ejsc.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/deps/ejs/ejsc.c
+	$(CC) -c -o $(CONFIG)/obj/ejsc.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/paks/ejs/ejsc.c
 
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
@@ -1431,7 +1429,7 @@ ifeq ($(BIT_PACK_EJSCRIPT),1)
 #
 #   ejs.mod
 #
-DEPS_66 += src/deps/ejs/ejs.es
+DEPS_66 += src/paks/ejs/ejs.es
 DEPS_66 += $(CONFIG)/inc/mpr.h
 DEPS_66 += $(CONFIG)/inc/bit.h
 DEPS_66 += $(CONFIG)/inc/bitos.h
@@ -1454,7 +1452,7 @@ DEPS_66 += $(CONFIG)/obj/ejsc.o
 DEPS_66 += $(CONFIG)/bin/ejsc
 
 $(CONFIG)/bin/ejs.mod: $(DEPS_66)
-	$(LBIN)/ejsc --out ./$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null src/deps/ejs/ejs.es
+	$(LBIN)/ejsc --out ./$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null src/paks/ejs/ejs.es
 endif
 
 #
@@ -2143,27 +2141,19 @@ test/cgi-bin/cgiProgram: $(DEPS_92)
 	)
 endif
 
-#
-#   bower.json
-#
-DEPS_93 += package.json
-
-bower.json: $(DEPS_93)
-	@echo '      [Copy] bower.json'
-
 
 #
 #   stop
 #
-DEPS_94 += compile
+DEPS_93 += compile
 
-stop: $(DEPS_94)
+stop: $(DEPS_93)
 	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
 
 #
 #   installBinary
 #
-installBinary: $(DEPS_95)
+installBinary: $(DEPS_94)
 	mkdir -p "$(BIT_APP_PREFIX)"
 	rm -f "$(BIT_APP_PREFIX)/latest"
 	ln -s "4.5.0" "$(BIT_APP_PREFIX)/latest"
@@ -2431,31 +2421,31 @@ installBinary: $(DEPS_95)
 #
 #   start
 #
-DEPS_96 += compile
-DEPS_96 += stop
+DEPS_95 += compile
+DEPS_95 += stop
 
-start: $(DEPS_96)
+start: $(DEPS_95)
 	./$(CONFIG)/bin/appman install enable start
 
 #
 #   install
 #
-DEPS_97 += compile
-DEPS_97 += stop
-DEPS_97 += installBinary
-DEPS_97 += start
+DEPS_96 += compile
+DEPS_96 += stop
+DEPS_96 += installBinary
+DEPS_96 += start
 
-install: $(DEPS_97)
+install: $(DEPS_96)
 
 
 #
 #   uninstall
 #
-DEPS_98 += build
-DEPS_98 += compile
-DEPS_98 += stop
+DEPS_97 += build
+DEPS_97 += compile
+DEPS_97 += stop
 
-uninstall: $(DEPS_98)
+uninstall: $(DEPS_97)
 	( \
 	cd package; \
 	rm -f "$(BIT_ETC_PREFIX)/appweb.conf" ; \
@@ -2480,7 +2470,7 @@ uninstall: $(DEPS_98)
 #
 #   genslink
 #
-genslink: $(DEPS_99)
+genslink: $(DEPS_98)
 	( \
 	cd src/server; \
 	esp --static --genlink slink.c --flat compile ; \
@@ -2489,9 +2479,9 @@ genslink: $(DEPS_99)
 #
 #   run
 #
-DEPS_100 += compile
+DEPS_99 += compile
 
-run: $(DEPS_100)
+run: $(DEPS_99)
 	( \
 	cd src/server; \
 	sudo ../../$(CONFIG)/bin/appweb -v ; \
@@ -2500,9 +2490,9 @@ run: $(DEPS_100)
 #
 #   test-run
 #
-DEPS_101 += compile
+DEPS_100 += compile
 
-test-run: $(DEPS_101)
+test-run: $(DEPS_100)
 	( \
 	cd test; \
 	../$(CONFIG)/bin/appweb -v ; \

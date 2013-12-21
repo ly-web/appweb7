@@ -5,14 +5,14 @@
 Bit.load({
     blend: [
         "${BITS}/embedthis.bit",
-        "src/deps/mpr/mpr.bit",
-        "src/deps/est/est.bit",
-        "src/deps/pcre/pcre.bit",
-        "src/deps/http/http.bit",
-        "src/deps/sqlite/sqlite.bit",
+        "src/paks/mpr/mpr.bit",
+        "src/paks/est/est.bit",
+        "src/paks/pcre/pcre.bit",
+        "src/paks/http/http.bit",
+        "src/paks/sqlite/sqlite.bit",
         "src/libappweb.bit",
         "src/esp/esp.bit",
-        "?src/deps/ejs/ejs.bit",
+        "?src/paks/ejs/ejs.bit",
         "src/modules/modules.bit",
         "src/utils/utils.bit",
         "src/server/server.bit",
@@ -183,12 +183,6 @@ Bit.load({
     },
 
     targets: {
-        'bower.json': {
-            type: 'file',
-            path: 'bower.json',
-            files: [ 'package.json' ],
-        },
-
         /*
             See src/server/server.bit for the appweb targets
             See src/libappweb.bit for the appweb library target
