@@ -299,11 +299,11 @@ Bit.load({
                     'src/bitos.h',
                     'src/appweb.h',
                     'src/customize.h',
-                    'src/deps/est/est.h',
-                    'src/deps/http/http.h',
-                    'src/deps/mpr/mpr.h',
-                    'src/deps/pcre/pcre.h',
-                    'src/deps/sqlite/sqlite3.h',
+                    'src/paks/est/est.h',
+                    'src/paks/http/http.h',
+                    'src/paks/mpr/mpr.h',
+                    'src/paks/pcre/pcre.h',
+                    'src/paks/sqlite/sqlite3.h',
                 ],
                 to:         '${vapp}/inc/',
                 set:        'dev',
@@ -322,9 +322,9 @@ Bit.load({
 
             },{
                 from:       [
-                    'src/deps/ejs/ejs.h',
-                    'src/deps/ejs/ejs.slots.h',
-                    'src/deps/ejs/ejsByteGoto.h',
+                    'src/paks/ejs/ejs.h',
+                    'src/paks/ejs/ejs.slots.h',
+                    'src/paks/ejs/ejsByteGoto.h',
                 ],
                 to:         '${vapp}/inc/',
                 set:        'dev',
@@ -381,7 +381,7 @@ Bit.load({
                 Source set
              */
             },{
-                from:        ['Makefile', 'make.bat', 'main.bit', 'package.json', 'bower.json' ],
+                from:        ['Makefile', 'make.bat', 'main.bit', 'package.json' ],
                 to:          '${src}/',
                 set:         'source',
 
@@ -408,39 +408,39 @@ Bit.load({
              */
             },{
                 from:        'projects/appweb-${OS}-default-bit.h', 
-                to:          '${src}/src/deps/appweb/bit.h',
+                to:          '${src}/src/paks/appweb/bit.h',
                 set:         'combo',
 
             },{
                 from:        'package/start-flat.bit',
-                to:          '${src}/src/deps/appweb/start.bit',
+                to:          '${src}/src/paks/appweb/start.bit',
                 set:         'combo',
 
             },{
                 from:        'package/Makefile-flat', 
-                to:          '${src}/src/deps/appweb/Makefile',
+                to:          '${src}/src/paks/appweb/Makefile',
                 set:         'combo',
 
             },{
                 from:        [
-                                'src/deps/mpr/mpr.h', 
-                                'src/deps/http/http.h', 
+                                'src/paks/mpr/mpr.h', 
+                                'src/paks/http/http.h', 
                                 'src/appweb.h', 
                                 'src/server/windows/appwebMonitor.h',
                                 'src/esp/edi.h', 
                                 'src/esp/mdb.h', 
                                 'src/esp/esp.h', 
-                                'src/deps/pcre/pcre.h'
+                                'src/paks/pcre/pcre.h'
                 ], 
-                to:          '${src}/src/deps/appweb/appweb.h',
+                to:          '${src}/src/paks/appweb/appweb.h',
                 cat:         true,
                 filter:      /^#inc.*appweb.*$|^#inc.*mpr.*$|^#inc.*http.*$|^#inc.*customize.*$|^#inc.*edi.*$|^#inc.*mdb.*$|^#inc.*esp.*$/mg,
                 title:       bit.settings.title + ' Library Source',
                 set:         'combo',
 
             },{
-                from:        'src/deps/**.c', 
-                to:          '${src}/src/deps/appweb/deps.c',
+                from:        'src/paks/**.c', 
+                to:          '${src}/src/paks/appweb/paks.c',
                 cat:         true,
                 filter:      /^#inc.*appweb.*$|^#inc.*mpr.*$|^#inc.*http.*$|^#inc.*customize.*$|^#inc.*edi.*$|^#inc.*mdb.*$|^#inc.*esp.*$/mg,
                 exclude:     /pcre|makerom|http\.c|sqlite|manager|ejs/,
@@ -450,42 +450,42 @@ Bit.load({
 
             },{
                 from:        'src/**.c', 
-                to:          '${src}/src/deps/appweb/appwebLib.c',
+                to:          '${src}/src/paks/appweb/appwebLib.c',
                 cat:         true,
                 filter:      /^#inc.*appweb.*$|^#inc.*mpr.*$|^#inc.*http.*$|^#inc.*customize.*$|^#inc.*edi.*$|^#inc.*mdb.*$|^#inc.*esp.*$/mg,
-                exclude:     /deps|server.appweb.c|esp\.c|ejs|samples|romFiles|pcre|appwebMonitor|sqlite|appman|makerom|utils|test|http\.c|sqlite|manager/,
+                exclude:     /paks|server.appweb.c|esp\.c|ejs|samples|romFiles|pcre|appwebMonitor|sqlite|appman|makerom|utils|test|http\.c|sqlite|manager/,
                 header:      '#include \"appweb.h\"',
                 title:       bit.settings.title + ' Library Source',
                 set:         'combo',
 
             },{
                 from:       'src/server/appweb.c',
-                to:         '${src}/src/deps/appweb/appweb.c',
+                to:         '${src}/src/paks/appweb/appweb.c',
                 set:         'combo',
 
             },{
                 from:       'src/server/appweb.conf', 
-                to:         '${src}/src/deps/appweb/appweb.conf',
+                to:         '${src}/src/paks/appweb/appweb.conf',
                 set:         'combo',
 
             },{
                 write:      "Path('src/server/appweb.conf').readString().replace(/..LIBDIR../, '')",
-                to:         '${src}/src/deps/appweb/appweb.conf',
+                to:         '${src}/src/paks/appweb/appweb.conf',
                 set:         'combo',
 
             },{
                 from:       'src/esp/esp.conf', 
-                to:         '${src}/src/deps/appweb/esp.conf',
+                to:         '${src}/src/paks/appweb/esp.conf',
                 set:         'combo',
 
             },{
-                from:       ['src/deps/pcre/pcre.c', 'src/deps/pcre/pcre.h'], 
-                to:         '${src}/src/deps/appweb/',
+                from:       ['src/paks/pcre/pcre.c', 'src/paks/pcre/pcre.h'], 
+                to:         '${src}/src/paks/appweb/',
                 set:         'combo',
 
             },{
-                from:       ['src/deps/sqlite/sqlite3.c', 'src/deps/sqlite/sqlite3.h'],
-                to:         '${src}/src/deps/sqlite/',
+                from:       ['src/paks/sqlite/sqlite3.c', 'src/paks/sqlite/sqlite3.h'],
+                to:         '${src}/src/paks/sqlite/',
                 set:         'combo',
             },
         ],
