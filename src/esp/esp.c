@@ -548,11 +548,9 @@ static void list(int argc, char **argv)
     MprDirEntry     *dp;
     MprList         *files;
     MprJson         *spec;
-    EspRoute        *eroute;
     cchar           *path;
     int             next;
 
-    eroute = app->eroute;
     files = mprGetPathFiles(app->paksDir, MPR_PATH_RELATIVE);
     for (ITERATE_ITEMS(files, dp, next)) {
         if (app->verbose) {
@@ -2864,7 +2862,7 @@ static bool inRange(cchar *expr, cchar *version)
             return 1;
         }
     }
-    return false;
+    return 0;
 }
 
 
