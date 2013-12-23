@@ -201,51 +201,53 @@ PUBLIC void espDumpGrid(EdiGrid *grid)
 }
 
 
-PUBLIC EdiGrid *ediFilterGridFields(EdiGrid *grid, cchar *fields)
+PUBLIC EdiGrid *ediFilterGridFields(EdiGrid *grid, cchar *fields, int include)
 {
     EdiRec      *first, *rec;
     MprList     *fieldList;
-    int         f, r;
+    int         f, r, inlist;
 
     if (!grid || grid->nrecords == 0) {
         return grid;
     }
     first = grid->records[0];
     fieldList = mprCreateListFromWords(fields);
+
+    /* Process list of fields to remove from the grid */
     for (f = 0; f < first->nfields; f++) {
-        if (mprLookupStringItem(fieldList, first->fields[f].name) >= 0) {
-            continue;
+        inlist = mprLookupStringItem(fieldList, first->fields[f].name) >= 0;
+        if ((inlist && !include) || (!inlist && include)) {
+            for (r = 0; r < grid->nrecords; r++) {
+                rec = grid->records[r];
+                memmove(&rec->fields[f], &rec->fields[f+1], (rec->nfields - f - 1) * sizeof(EdiField));
+                rec->nfields--;
+                /* Ensure never saved to database */
+                rec->id = 0;
+            }
+            f--;
         }
-        for (r = 0; r < grid->nrecords; r++) {
-            rec = grid->records[r];
-            memmove(&rec->fields[f], &rec->fields[f+1], (rec->nfields - f - 1) * sizeof(EdiField));
-            rec->nfields--;
-            /*
-                Ensure never saved to database
-            */
-            rec->id = 0;
-        }
-        f--;
     }
     return grid;
 }
 
 
-//  FUTURE or ediSelectRecFields
-
-PUBLIC EdiRec *ediFilterRecFields(EdiRec *rec, cchar *fields)
+PUBLIC EdiRec *ediFilterRecFields(EdiRec *rec, cchar *fields, int include)
 {
     EdiField    *fp;
     MprList     *fieldList;
+    int         inlist;
 
     if (rec == 0 || rec->nfields == 0) {
         return rec;
     }
     fieldList = mprCreateListFromWords(fields);
+
     for (fp = rec->fields; fp < &rec->fields[rec->nfields]; fp++) {
-        if (mprLookupStringItem(fieldList, fp->name) < 0) {
+        inlist = mprLookupStringItem(fieldList, fp->name) >= 0;
+        if ((inlist && !include) || (!inlist && include)) {
             fp[0] = fp[1];
             rec->nfields--;
+            fp--;
         }
     }
     /*

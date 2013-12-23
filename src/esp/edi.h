@@ -848,21 +848,25 @@ PUBLIC EdiRec *ediCreateBareRec(Edi *edi, cchar *tableName, int nfields);
     Filter the fields of a grid
     @param grid Grid to modify and filter
     @param fields Space separated list of record field names 
+    @param include Set to true to interpret the names as fields to include. If false, interpret the names
+        as fields to reject.
     @return The filtered grid. Same reference as the input grid.
     @ingroup EdiGrid
     @stability Internal
  */
-PUBLIC EdiGrid *ediFilterGridFields(EdiGrid *grid, cchar *fields);
+PUBLIC EdiGrid *ediFilterGridFields(EdiGrid *grid, cchar *fields, int include);
 
 /**
     Filter the fields of a record
     @param rec Record to modify and filter
     @param fields Space separated list of record field names 
+    @param include Set to true to interpret the names as fields to include. If false, interpret the names
+        as fields to reject.
     @return The filtered record. Same reference as the input record.
     @ingroup EdiRec
     @stability Internal
  */
-PUBLIC EdiRec *ediFilterRecFields(EdiRec *rec, cchar *fields);
+PUBLIC EdiRec *ediFilterRecFields(EdiRec *rec, cchar *fields, int include);
 
 /**
     Format a field value.
