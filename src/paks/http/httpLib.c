@@ -326,6 +326,8 @@ PUBLIC bool httpCanUser(HttpConn *conn, cchar *abilities)
 }
 
 
+//  TODO - need api to return username
+
 PUBLIC bool httpIsAuthenticated(HttpConn *conn)
 {
     return conn->rx->authenticated;
