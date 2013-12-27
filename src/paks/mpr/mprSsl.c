@@ -89,7 +89,6 @@ static ssize    flushMss(MprSocket *sp);
 static char     *getMssState(MprSocket *sp);
 static int      handshakeMss(MprSocket *sp, short cipherSuite);
 static ssize    innerRead(MprSocket *sp, char *userBuf, ssize len);
-static Socket   listenMss(MprSocket *sp, cchar *host, int port, int flags);
 static void     manageMatrixSocket(MatrixSocket *msp, int flags);
 static void     manageMatrixConfig(MatrixConfig *cfg, int flags);
 static ssize    processMssData(MprSocket *sp, char *buf, ssize size, ssize nbytes, int *readMore);

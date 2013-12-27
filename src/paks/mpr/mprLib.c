@@ -8137,6 +8137,9 @@ PUBLIC bool mprCheckPassword(cchar *plainTextPassword, cchar *passwordHash)
     rounds = stok(NULL, ":", &tok);
     salt = stok(NULL, ":", &tok);
     hash = stok(NULL, ":", &tok);
+    if (!rounds || !salt || !hash) {
+        return 0;
+    }
     given = mprCryptPassword(plainTextPassword, salt, atoi(rounds));
 
     match = slen(given) ^ slen(hash);
