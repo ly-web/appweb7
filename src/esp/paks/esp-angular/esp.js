@@ -27,7 +27,7 @@ angular.module('esp', ['esp.click', 'esp.field-errors', 'esp.format', 'esp.input
         return esp.$config.appPrefix + url;
     }
 
-}).factory('Esp', function(SessionStore, $document, $http, $location, $rootScope, $timeout) {
+}).factory('Esp', function(SessionStore, $document, $http, $injector, $location, $rootScope, $timeout, $window) {
 
     var Esp = { config: angular.module('esp').$config };
     $rootScope.Esp = Esp;
@@ -74,6 +74,20 @@ angular.module('esp', ['esp.click', 'esp.field-errors', 'esp.format', 'esp.input
 
     Esp.faclass = function(kind) {
         return fa_map[kind];
+    }
+
+    Esp.feedback = function(kind, msg) {
+        var o = {}
+        o[kind] = msg;
+        $rootScope.feedback = o;
+    }
+
+    Esp.go = function (url) {
+        if (url.indexOf("http") == 0) {
+            $window.location.href = url;
+        } else {
+            $location.path(url);
+        }
     }
 
     Esp.inform = function (str) {
@@ -164,19 +178,15 @@ angular.module('esp', ['esp.click', 'esp.field-errors', 'esp.format', 'esp.input
         Esp.login(Esp.config.login);
         Esp.user.auto = true;
     } else {
-       Esp.user = SessionStore.get('user') || null;
-       Esp.user.lastAccess = Date().now;
+        Esp.user = SessionStore.get('user') || null;
+        Esp.user.fromSession = true;
+        if ((Esp.user.lastAccess + 60) >  Date.now()) {
+            Esp.user = null;
+        }
     }
-    //  MOB - what is this array
     if (Esp.user && Esp.user.length == 0) {
         Esp.user = null;
     }
-    /*
-        Remember the referrer in route changes
-    $rootScope.$on("$routeChangeSuccess", function(scope, current, previous) {
-        Esp.referrer = previous;
-    });
-     */
 
     $rootScope.$on("$locationChangeSuccess", function(scope, current, previous) {
         Esp.referrer = previous;
@@ -189,7 +199,7 @@ angular.module('esp', ['esp.click', 'esp.field-errors', 'esp.format', 'esp.input
         delete $rootScope.feedback;
         if (Esp.user) {
             Esp.user.lastAccess = Date.now();
-            // console.log("Update last access", Esp.user.lastAccess);
+            SessionStore.put('user', Esp.user);
         }
         return true;
     });
@@ -200,6 +210,15 @@ angular.module('esp', ['esp.click', 'esp.field-errors', 'esp.format', 'esp.input
     function sessionTimeout() {
         var timeout = Esp.config.timeouts.session * 1000;
         if (Esp.user && Esp.user.lastAccess && !Esp.user.auto) {
+            if (Esp.user.fromSession) {
+                var Auth = $injector.get('Auth');
+                Auth.check({}, function(response) {
+                    if (response.error) {
+                        Esp.logout();
+                        $location.path("/");
+                    }
+                });
+            }
             if ((Date.now() - Esp.user.lastAccess) > timeout) {
                 $rootScope.feedback = { error: "Login Session Expired"};
                 console.log("Session time expired. Log out");
