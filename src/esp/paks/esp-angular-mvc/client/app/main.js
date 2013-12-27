@@ -24,5 +24,5 @@ app.config(function($routeProvider) {
     $routeProvider.when('/', { 
         templateUrl: esp.url('/pages/splash.html'),
     });
-    $routeProvider.otherwise({ redirectTo: esp.url('/') });
+    // $routeProvider.otherwise({ redirectTo: esp.url('/') });
 });
