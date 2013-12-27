@@ -398,6 +398,7 @@ endif
 DEPS_10 += $(CONFIG)/inc/bit.h
 DEPS_10 += $(CONFIG)/inc/mpr.h
 DEPS_10 += $(CONFIG)/inc/est.h
+DEPS_10 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/mprSsl.o: \
     src/paks/mpr/mprSsl.c $(DEPS_10)
@@ -1088,6 +1089,7 @@ ifeq ($(BIT_PACK_ESP),1)
 #
 DEPS_56 += src/esp/paks/angular
 DEPS_56 += src/esp/paks/angular/angular-animate.js
+DEPS_56 += src/esp/paks/angular/angular-csp.css
 DEPS_56 += src/esp/paks/angular/angular-route.js
 DEPS_56 += src/esp/paks/angular/angular.js
 DEPS_56 += src/esp/paks/angular/package.json
@@ -1184,6 +1186,7 @@ $(CONFIG)/paks: $(DEPS_56)
 	cd src/esp/paks; \
 	mkdir -p "../../../$(CONFIG)/paks/angular/1.2.6" ; \
 	cp angular/angular-animate.js ../../../$(CONFIG)/paks/angular/1.2.6/angular-animate.js ; \
+	cp angular/angular-csp.css ../../../$(CONFIG)/paks/angular/1.2.6/angular-csp.css ; \
 	cp angular/angular-route.js ../../../$(CONFIG)/paks/angular/1.2.6/angular-route.js ; \
 	cp angular/angular.js ../../../$(CONFIG)/paks/angular/1.2.6/angular.js ; \
 	cp angular/package.json ../../../$(CONFIG)/paks/angular/1.2.6/package.json ; \
@@ -2142,6 +2145,7 @@ installBinary: $(DEPS_94)
 	if [ "$(BIT_PACK_ESP)" = 1 ]; then 
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/angular"
 	cp src/esp/paks/angular/angular-animate.js $(BIT_VAPP_PREFIX)/esp/angular/angular-animate.js
+	cp src/esp/paks/angular/angular-csp.css $(BIT_VAPP_PREFIX)/esp/angular/angular-csp.css
 	cp src/esp/paks/angular/angular-route.js $(BIT_VAPP_PREFIX)/esp/angular/angular-route.js
 	cp src/esp/paks/angular/angular.js $(BIT_VAPP_PREFIX)/esp/angular/angular.js
 	cp src/esp/paks/angular/package.json $(BIT_VAPP_PREFIX)/esp/angular/package.json
@@ -2293,19 +2297,19 @@ installBinary: $(DEPS_94)
 	cp src/customize.h $(BIT_VAPP_PREFIX)/inc/customize.h
 	rm -f "$(BIT_INC_PREFIX)/appweb/customize.h"
 	ln -s "$(BIT_VAPP_PREFIX)/inc/customize.h" "$(BIT_INC_PREFIX)/appweb/customize.h"
-	cp src/deps/est/est.h $(BIT_VAPP_PREFIX)/inc/est.h
+	cp src/paks/est/est.h $(BIT_VAPP_PREFIX)/inc/est.h
 	rm -f "$(BIT_INC_PREFIX)/appweb/est.h"
 	ln -s "$(BIT_VAPP_PREFIX)/inc/est.h" "$(BIT_INC_PREFIX)/appweb/est.h"
-	cp src/deps/http/http.h $(BIT_VAPP_PREFIX)/inc/http.h
+	cp src/paks/http/http.h $(BIT_VAPP_PREFIX)/inc/http.h
 	rm -f "$(BIT_INC_PREFIX)/appweb/http.h"
 	ln -s "$(BIT_VAPP_PREFIX)/inc/http.h" "$(BIT_INC_PREFIX)/appweb/http.h"
-	cp src/deps/mpr/mpr.h $(BIT_VAPP_PREFIX)/inc/mpr.h
+	cp src/paks/mpr/mpr.h $(BIT_VAPP_PREFIX)/inc/mpr.h
 	rm -f "$(BIT_INC_PREFIX)/appweb/mpr.h"
 	ln -s "$(BIT_VAPP_PREFIX)/inc/mpr.h" "$(BIT_INC_PREFIX)/appweb/mpr.h"
-	cp src/deps/pcre/pcre.h $(BIT_VAPP_PREFIX)/inc/pcre.h
+	cp src/paks/pcre/pcre.h $(BIT_VAPP_PREFIX)/inc/pcre.h
 	rm -f "$(BIT_INC_PREFIX)/appweb/pcre.h"
 	ln -s "$(BIT_VAPP_PREFIX)/inc/pcre.h" "$(BIT_INC_PREFIX)/appweb/pcre.h"
-	cp src/deps/sqlite/sqlite3.h $(BIT_VAPP_PREFIX)/inc/sqlite3.h
+	cp src/paks/sqlite/sqlite3.h $(BIT_VAPP_PREFIX)/inc/sqlite3.h
 	rm -f "$(BIT_INC_PREFIX)/appweb/sqlite3.h"
 	ln -s "$(BIT_VAPP_PREFIX)/inc/sqlite3.h" "$(BIT_INC_PREFIX)/appweb/sqlite3.h"
 	if [ "$(BIT_PACK_ESP)" = 1 ]; then 
@@ -2320,13 +2324,13 @@ installBinary: $(DEPS_94)
 	ln -s "$(BIT_VAPP_PREFIX)/inc/mdb.h" "$(BIT_INC_PREFIX)/appweb/mdb.h"
 	fi
 	if [ "$(BIT_PACK_EJSCRIPT)" = 1 ]; then 
-	cp src/deps/ejs/ejs.h $(BIT_VAPP_PREFIX)/inc/ejs.h
+	cp src/paks/ejs/ejs.h $(BIT_VAPP_PREFIX)/inc/ejs.h
 	rm -f "$(BIT_INC_PREFIX)/appweb/ejs.h"
 	ln -s "$(BIT_VAPP_PREFIX)/inc/ejs.h" "$(BIT_INC_PREFIX)/appweb/ejs.h"
-	cp src/deps/ejs/ejs.slots.h $(BIT_VAPP_PREFIX)/inc/ejs.slots.h
+	cp src/paks/ejs/ejs.slots.h $(BIT_VAPP_PREFIX)/inc/ejs.slots.h
 	rm -f "$(BIT_INC_PREFIX)/appweb/ejs.slots.h"
 	ln -s "$(BIT_VAPP_PREFIX)/inc/ejs.slots.h" "$(BIT_INC_PREFIX)/appweb/ejs.slots.h"
-	cp src/deps/ejs/ejsByteGoto.h $(BIT_VAPP_PREFIX)/inc/ejsByteGoto.h
+	cp src/paks/ejs/ejsByteGoto.h $(BIT_VAPP_PREFIX)/inc/ejsByteGoto.h
 	rm -f "$(BIT_INC_PREFIX)/appweb/ejsByteGoto.h"
 	ln -s "$(BIT_VAPP_PREFIX)/inc/ejsByteGoto.h" "$(BIT_INC_PREFIX)/appweb/ejsByteGoto.h"
 	fi
