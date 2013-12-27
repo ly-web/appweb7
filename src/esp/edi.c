@@ -334,21 +334,17 @@ PUBLIC cchar *ediGetTableSchemaAsJson(Edi *edi, cchar *tableName)
         mprPutToBuf(buf, "      \"%s\": {\n        \"type\": \"%s\"\n      },\n", 
             mprGetItem(columns, c), ediGetTypeString(type));
     }
-    mprAdjustBufEnd(buf, -2);
-
+    if (ncols > 0) {
+        mprAdjustBufEnd(buf, -2);
+    }
     mprRemoveItemAtPos(columns, 0);
     mprPutStringToBuf(buf, "\n    },\n    \"columns\": [ ");
     for (ITERATE_ITEMS(columns, s, next)) {
         mprPutToBuf(buf, "\"%s\", ", s);
     }
-    mprAdjustBufEnd(buf, -2);
-#if UNUSED
-    mprPutStringToBuf(buf, " ],\n    \"headers\": [ ");
-    for (ITERATE_ITEMS(columns, s, next)) {
-        mprPutToBuf(buf, "\"%s\", ", spascal(s));
+    if (columns->length > 0) {
+        mprAdjustBufEnd(buf, -2);
     }
-    mprAdjustBufEnd(buf, -2);
-#endif
     mprPutStringToBuf(buf, " ]\n  }");
     mprAddNullToBuf(buf);
     schema = mprGetBufStart(buf);
