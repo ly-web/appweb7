@@ -2224,6 +2224,7 @@ PUBLIC int httpRequest(cchar *method, cchar *uri, cchar *data, char **response, 
         err = &dummy;
     }
     conn = httpCreateConn(http, NULL, NULL);
+    conn->followRedirects = 1;
     mprAddRoot(conn);
 
     /* 
@@ -18445,6 +18446,12 @@ PUBLIC char *httpGetParamsString(HttpConn *conn)
         rx->paramString = mprJsonToString(rx->params, 0);
     }
     return rx->paramString;
+}
+
+
+PUBLIC void httpRemoveParam(HttpConn *conn, cchar *var) 
+{
+    mprRemoveJson(httpGetParams(conn), var);
 }
 
 
