@@ -58,7 +58,7 @@ Bit.load({
                     }
                 }
                 if (Cmd.locate('pak')) {
-                    run('pak -f cache ' + Path('.').files().join(' ')) 
+                    run('pak -f -q cache ' + Path('.').files().join(' ')) 
                 }
             `
         },

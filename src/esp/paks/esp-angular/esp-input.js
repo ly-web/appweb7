@@ -3,7 +3,7 @@
 
     Attributes:
         ng-model="MODEL.FIELD"  Angular model field object
-        type="type"       Input control type to render (checkbox, text, textarea, date, email, tel, url, search, color, number, range)
+        type="type"       Input control type to render (checkbox, password, text, textarea, date, email, tel, url, search, color, number, range)
         label="Text"
         labelClass="Class"
         inputClass="Class"

@@ -8127,6 +8127,9 @@ PUBLIC bool mprCheckPassword(cchar *plainTextPassword, cchar *passwordHash)
     char    *tok, *hash;
     ssize   match;
 
+    if (!passwordHash || !plainTextPassword) {
+        return 0;
+    }
     if (slen(plainTextPassword) > BIT_MPR_MAX_PASSWORD) {
         return 0;
     }
