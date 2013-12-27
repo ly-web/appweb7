@@ -553,7 +553,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 eroute->flat = smatch(value, "true");
             }
             if ((value = espGetConfig(route, "esp.server.redirect", 0)) != 0) {
-                if (smatch(value, "true")) {
+                if (smatch(value, "true") || smatch(value, "secure")) {
                     HttpRoute *alias = httpCreateAliasRoute(route, "/", 0, 0);
                     httpSetRouteTarget(alias, "redirect", "0 https://");
                     httpAddRouteCondition(alias, "secure", "31536000000", HTTP_ROUTE_NOT);
