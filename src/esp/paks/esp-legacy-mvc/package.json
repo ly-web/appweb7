@@ -10,7 +10,6 @@
     ],
     "esp": {
         "server": {
-            "database": "${DATABASE}://${NAME}.${DATABASE}",
             "generate": {
                 "top": "esp-legacy-mvc",
                 "scaffold": true,

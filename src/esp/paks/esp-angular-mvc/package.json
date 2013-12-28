@@ -23,7 +23,6 @@
         },
         "json": true,
         "server": {
-            "database": "${DATABASE}://${NAME}.${DATABASE}",
             "generate": {
                 "top": "esp-angular-mvc",
                 "scaffold": true,

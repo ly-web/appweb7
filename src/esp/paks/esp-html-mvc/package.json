@@ -16,7 +16,6 @@
         "auth": "app",
         "serverPrefix": "/do",
         "server": {
-            "database": "${DATABASE}://${NAME}.${DATABASE}",
             "generate": {
                 "top": "esp-html-mvc",
                 "scaffold": true,

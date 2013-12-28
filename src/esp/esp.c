@@ -2165,6 +2165,9 @@ static bool installPak(cchar *name, cchar *criteria, bool topLevel)
     if (!blendPak(name, version, topLevel)) {
         return 0;
     }
+    if (app->database) {
+        mprSetJson(app->eroute->config, "esp.server.database", sfmt("%s://%s.%s", app->database, app->appName, app->database), 0);
+    }
     vtrace("Save", mprJoinPath(app->route->documents, BIT_ESP_PACKAGE));
     if (espSaveConfig(app->route) < 0) {
         fail("Cannot save ESP configuration");
