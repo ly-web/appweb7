@@ -18,7 +18,7 @@ The Software contains third party software under the agreements that follow.
 ###AngularJS
 AngularJS is an optional client-side Javascript library used by some ESP MVC applications.
 
-    [AngularJS](http://angularjs.org) - [MIT](http://opensource.org/licenses/MIT)
+[AngularJS](http://angularjs.org) - [MIT](http://opensource.org/licenses/MIT)
 
 ###Dtoa License
 ---
@@ -41,26 +41,26 @@ FITNESS FOR ANY PARTICULAR PURPOSE.
 
 The optional EST SSL stack includes code from TropicSSL.
 
-    TropicSSL - [BSD License](http://opensource.org/licenses/BSD-2-Clause
+TropicSSL - [BSD License](http://opensource.org/licenses/BSD-2-Clause
 
 
 ###JQuery License
 
-    [JQuery](http://jquery.org/license/) - [MIT License](http://opensource.org/licenses/MIT)
+[JQuery](http://jquery.org/license/) - [MIT License](http://opensource.org/licenses/MIT)
 
 
 ###Qsort Routine License
 
-    QSort - [BSD License](http://opensource.org/licenses/BSD-2-Clause)
+QSort - [BSD License](http://opensource.org/licenses/BSD-2-Clause)
 
 
 ###Perl Regular Expressions License
 
-    PCRE - [BSD License](http://opensource.org/licenses/BSD-2-Clause)
+PCRE - [BSD License](http://opensource.org/licenses/BSD-2-Clause)
 
 ###PHP License
 
-    [PHP](http://www.php.net) - [BSD Style](http://www.php.net/license/3_01.txt)
+[PHP](http://www.php.net) - [BSD Style](http://www.php.net/license/3_01.txt)
 
 ###RSA MD5 License
 
@@ -79,12 +79,12 @@ documentation and/or software.
 
 ###SQLite License
 
-    SQLite - [Public Domain](http://embedthis.com/licensing/index.html)
+SQLite - [Public Domain](http://embedthis.com/licensing/index.html)
 
 
 ###Zlib License
 
-    ZLIB - [MIT Style License](http://www.zlib.net/zlib_license.html)
+ZLIB - [MIT Style License](http://www.zlib.net/zlib_license.html)
 
 
 Trademarks and Copyrights
