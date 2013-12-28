@@ -63,6 +63,7 @@ Bit.load({
             `
         },
 
+        //  MOB - what is this for
         'esp-configure': {
             scripts: {
                 postconfig: "
@@ -75,21 +76,6 @@ Bit.load({
                     }
                 ",
             },
-        },
-
-        'all.css': {
-            path: 'paks/esp-angular-mvc/client/css/all.css',
-            files: [ 'paks/esp-angular-mvc/client/css/*.less' ],
-            build: `
-                if (Cmd.locate('recess')) {
-                    strace('Run', 'recess -compile paks/esp-angular-mvc/client/css/all.less')
-                    let result = Cmd.run('recess -compile paks/esp-angular-mvc/client/css/all.less')
-                    Path('paks/esp-angular-mvc/client/css/all.css').write(result)
-                    strace('Run', 'recess -compile paks/esp-html-mvc/client/css/all.less')
-                    result = Cmd.run('recess -compile paks/esp-html-mvc/client/css/all.less')
-                    Path('paks/esp-html-mvc/client/css/all.css').write(result)
-                }
-            `
         },
 
         pakvers: {

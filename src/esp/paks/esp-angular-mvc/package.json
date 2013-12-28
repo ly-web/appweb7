@@ -7,9 +7,10 @@
         "esp-angular": "~4"
     },
     "export": [
-        "start.bit",
-        "client/**",
         "templates/**"
+    ],
+    "ignore": [
+        "start.bit",
     ],
     "client-scripts": [
         "app/main.js",
@@ -28,6 +29,7 @@
                 "scaffold": true,
                 "clientModel": true,
                 "clientController": true,
+                "clientFiles": true,
                 "clientView": true,
                 "controller": true,
                 "migration": true,

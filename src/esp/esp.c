@@ -138,6 +138,7 @@ static void list(int argc, char **argv);
 static MprJson *loadPackage(cchar *path);
 static void makeEspDir(cchar *dir);
 static void makeEspFile(cchar *path, cchar *data, cchar *msg);
+static void makeFileFromTemplate(cchar *dest, cchar *name);
 static void manageApp(App *app, int flags);
 static void migrate(int argc, char **argv);
 static void process(int argc, char **argv);
@@ -1712,6 +1713,7 @@ static void generateApp(int argc, char **argv)
     if (app->error) {
         return;
     }
+    //  MOB - merge these three
     generateAppFiles(argc - 1, &argv[1]);
     generateHostingConfig();
     generateAppSrc();
@@ -2064,6 +2066,19 @@ static int sortFiles(MprDirEntry **d1, MprDirEntry **d2)
 }
 
 
+//  MOB NAMING
+static void makeFileFromTemplate(cchar *dest, cchar *name)
+{
+    MprHash     *tokens;
+    char        *data;
+
+    dest = mprJoinPath(app->route->documents, dest);
+    tokens = mprDeserialize(sfmt("{ NAME: '%s', TITLE: '%s' }", app->appName, spascal(app->appName)));
+    data = getTemplate(app->topPak, name, tokens);
+    makeEspFile(dest, data, "File");
+}
+
+
 static void fixupFile(cchar *path)
 {
     HttpRoute   *route;
@@ -2369,7 +2384,7 @@ static void generateAppFiles(int argc, char **argv)
     EspRoute    *eroute;
     HttpRoute   *route;
     MprJson     *obj;
-    cchar       *path;
+    cchar       *path, *src, *dest;
     int         i;
 
     app->generateApp = 1;
@@ -2402,13 +2417,36 @@ static void generateAppFiles(int argc, char **argv)
     for (i = 0; i < argc; i++) {
         installPak(argv[i], NULL, 1);
     }
+    app->topPak = mprGetJson(eroute->config, "esp.server.generate.top", 0);
+
+#if UNUSED
     fixupFile(mprJoinPath(eroute->clientDir, "index.esp"));
     fixupFile(mprJoinPath(eroute->layoutsDir, "default.esp"));
     if (!eroute->legacy) {
         fixupFile(mprJoinPath(eroute->appDir, "main.js"));
     }
+#else
+    if (espTestConfig(app->route, "esp.server.generate.clientFiles", "true")) {
+        makeFileFromTemplate(mprJoinPath(eroute->clientDir, "index.esp"), "index.esp");
+        makeFileFromTemplate(mprJoinPath(eroute->clientDir, "app/main.js"), "main.js");
+        makeFileFromTemplate(mprJoinPath(eroute->clientDir, "css/all.css"), "all.css");
+        makeFileFromTemplate(mprJoinPath(eroute->clientDir, "css/all.less"), "all.less");
+        makeFileFromTemplate(mprJoinPath(eroute->clientDir, "css/app.less"), "app.less");
+        makeFileFromTemplate(mprJoinPath(eroute->clientDir, "css/fix.less"), "fix.less");
+        makeFileFromTemplate(mprJoinPath(eroute->clientDir, "css/theme.less"), "theme.less");
+        makeFileFromTemplate("start.bit", "start.bit");
+        src = sfmt("%s/templates/%s/favicon.ico", app->appName, app->topPak);
+        dest = mprJoinPath(eroute->clientDir, "assets/favicon.ico");
+        makeEspDir(mprGetPathDir(dest));
+        mprCopyPath(src, dest, 0644);
+        if (smatch(app->topPak, "esp-angular-mvc")) {
+            makeFileFromTemplate(mprJoinPath(eroute->clientDir, "pages/splash.html"), "splash.html");
+        } else if (smatch(app->topPak, "esp-html-mvc")) {
+            makeFileFromTemplate(mprJoinPath(eroute->layoutsDir, "default.esp"), "default.esp");
+        }
+    }
     fixupFile(mprJoinPath(route->documents, BIT_ESP_PACKAGE));
-    app->topPak = mprGetJson(eroute->config, "esp.server.generate.top", 0);
+#endif
 }
 
 

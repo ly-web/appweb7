@@ -7,9 +7,10 @@
         "esp-server": "~4"
     },
     "export": [
-        "start.bit",
-        "client/**",
         "templates/**"
+    ],
+    "ignore": [
+        "start.bit",
     ],
     "esp": {
         "auth": "app",
@@ -21,6 +22,7 @@
                 "scaffold": true,
                 "clientModel": false,
                 "clientController": false,
+                "clientFiles": true,
                 "clientView": false,
                 "controller": true,
                 "migration": true,
