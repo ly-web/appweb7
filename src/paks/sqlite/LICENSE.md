@@ -1,20 +1,20 @@
 Embedthis SQLite Licenses
 ===
 
-This file documents the Embedthis Software Licenses. It includes the Embedthis SQLite Open Source License and licenses for third-party components within SQLite.
+This software is distributed under commercial and GPL open source licenses.
+The GPL License does not generally permit incorporating this software into
+non-open source programs. Commercial licenses for this software and support
+services are available from Embedthis Software.
 
-This software is distributed under commercial and open source licenses. You may use the GPLv2 Open Source License or you may acquire a commercial license from Embedthis Software. You agree to be fully bound by the terms of either license. The GPLv2 License does NOT generally permit incorporating this software into non-open source programs. If you are unable to comply with the GPLv2, you must acquire a commercial license to use this software.
-
-Commercial licenses for this software and support services are available from Embedthis Software at: http://embedthis.com/licensing/index.html
+* [GPL License](http://www.gnu.org/licenses/gpl-2.0.html)
+* [Embedthis Commercial License](http://embedthis.com/licensing/index.html)
 
 Third Party Licenses
-===
-
-SQLite License
 ---
 
-SQLite. The SQLite library is public domain code. See: http://www.sqlite.org/copyright.html.
+###SQLite License
 
+* [SQLite License - Public Domain](ttp://embedthis.com/licensing/index.html)
 
 Trademarks and Copyrights
 ===

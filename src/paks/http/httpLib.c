@@ -1986,7 +1986,7 @@ static HttpConn *openConnection(HttpConn *conn, struct MprSsl *ssl)
         peerName = isdigit(uri->host[0]) ? 0 : uri->host;
         if (mprUpgradeSocket(sp, ssl, peerName) < 0) {
             conn->errorMsg = sp->errorMsg;
-            mprLog(4, "Cannot upgrade socket for SSL: %s", conn->errorMsg);
+            mprLog(2, "Cannot upgrade socket for SSL: %s", conn->errorMsg);
             return 0;
         }
     }
@@ -2658,7 +2658,7 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
     }
     if (endpoint->ssl) {
         if (mprUpgradeSocket(sock, endpoint->ssl, 0) < 0) {
-            mprLog(4, "Cannot upgrade socket for SSL: %s", sock->errorMsg);
+            mprLog(2, "Cannot upgrade socket for SSL: %s", sock->errorMsg);
             mprCloseSocket(sock, 0);
             httpMonitorEvent(conn, HTTP_COUNTER_SSL_ERRORS, 1); 
             return 0;
