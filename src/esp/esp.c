@@ -1713,7 +1713,6 @@ static void generateApp(int argc, char **argv)
     if (app->error) {
         return;
     }
-    //  MOB - merge these three
     generateAppFiles(argc - 1, &argv[1]);
     generateHostingConfig();
     generateAppSrc();
@@ -2066,7 +2065,6 @@ static int sortFiles(MprDirEntry **d1, MprDirEntry **d2)
 }
 
 
-//  MOB NAMING
 static void makeFileFromTemplate(cchar *dest, cchar *name)
 {
     MprHash     *tokens;
@@ -2422,13 +2420,6 @@ static void generateAppFiles(int argc, char **argv)
     }
     app->topPak = mprGetJson(eroute->config, "esp.server.generate.top", 0);
 
-#if UNUSED
-    fixupFile(mprJoinPath(eroute->clientDir, "index.esp"));
-    fixupFile(mprJoinPath(eroute->layoutsDir, "default.esp"));
-    if (!eroute->legacy) {
-        fixupFile(mprJoinPath(eroute->appDir, "main.js"));
-    }
-#else
     if (espTestConfig(app->route, "esp.server.generate.clientFiles", "true")) {
         makeFileFromTemplate(mprJoinPath(eroute->clientDir, "index.esp"), "index.esp");
         makeFileFromTemplate(mprJoinPath(eroute->clientDir, "app/main.js"), "main.js");
@@ -2449,7 +2440,6 @@ static void generateAppFiles(int argc, char **argv)
         }
     }
     fixupFile(mprJoinPath(route->documents, BIT_ESP_PACKAGE));
-#endif
 }
 
 
