@@ -79,7 +79,7 @@ documentation and/or software.
 
 ###SQLite License
 
-SQLite - [Public Domain](http://embedthis.com/licensing/index.html)
+SQLite - [Public Domain](http://www.sqlite.org/copyright.html)
 
 
 ###Zlib License

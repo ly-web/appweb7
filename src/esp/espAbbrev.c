@@ -607,7 +607,7 @@ PUBLIC void scripts(cchar *patterns)
 
     if (!patterns || !*patterns) {
         if (modeIs("release")) {
-            name = sfmt("all-%s.min.js", espGetConfig(route, "version", "1.0.0"));
+            name = sfmt("all-%s.min.js.gz", espGetConfig(route, "version", "1.0.0"));
             scripts(name);
         } else {
             if ((cscripts = mprGetJsonObj(eroute->config, "client-scripts", 0)) != 0) {
