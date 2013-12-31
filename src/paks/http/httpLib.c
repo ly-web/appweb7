@@ -2224,7 +2224,6 @@ PUBLIC int httpRequest(cchar *method, cchar *uri, cchar *data, char **response, 
         err = &dummy;
     }
     conn = httpCreateConn(http, NULL, NULL);
-    conn->followRedirects = 1;
     mprAddRoot(conn);
 
     /* 
@@ -11660,7 +11659,7 @@ PUBLIC void httpAddClientRoute(HttpRoute *parent, cchar *prefix, cchar *name)
         name = sjoin(parent->prefix, name, NULL);
     }
     pattern = sfmt("^%s(/.*)", prefix);
-    path = mprGetRelPath(stemplate("${CLIENT_DIR}/$1", parent->vars), parent->documents);
+    path = mprGetRelPath(stemplate("${CLIENT_DIR}$1", parent->vars), parent->documents);
     route = httpDefineRoute(parent, name, "GET", pattern, path, parent->sourceName);
     httpAddRouteHandler(route, "fileHandler", "");
 }
@@ -12772,7 +12771,7 @@ static bool mapMethod(HttpConn *conn)
 static void traceRequest(HttpConn *conn, HttpPacket *packet)
 {
     MprBuf  *content;
-    cchar   *endp, *ext, *cp;
+    cchar   *endp, *ext, *cp, *uri, *queryref;
     int     len, level;
 
     ext = 0;
@@ -12781,8 +12780,11 @@ static void traceRequest(HttpConn *conn, HttpPacket *packet)
     /*
         Find the Uri extension:   "GET /path.ext HTTP/1.1"
      */
-    if ((cp = schr(content->start, ' ')) != 0) {
-        if ((cp = schr(++cp, ' ')) != 0) {
+    if ((uri = schr(content->start, ' ')) != 0) {
+        if ((cp = schr(++uri, ' ')) != 0) {
+            if ((queryref = spbrk(uri, "?#")) != 0) {
+                cp = queryref;
+            }
             for (ext = --cp; ext > content->start && *ext != '.'; ext--) ;
             ext = (*ext == '.') ? snclone(&ext[1], cp - ext) : 0;
             conn->tx->ext = ext;
@@ -17267,6 +17269,14 @@ PUBLIC HttpUri *httpCreateUri(cchar *uri, int flags)
     }
     tok = up->uri = sclone(uri);
 
+    if ((next = schr(tok, '?')) != 0) {
+        *next++ = '\0';
+        up->query = sclone(next);
+    }
+    if ((next = schr(tok, '#')) != 0) {
+        *next++ = '\0';
+        up->reference = sclone(next);
+    }
     if ((next = scontains(tok, "://")) != 0) {
         up->scheme = snclone(tok, (next - tok));
         if (smatch(up->scheme, "http")) {
@@ -17341,27 +17351,8 @@ PUBLIC HttpUri *httpCreateUri(cchar *uri, int flags)
         }
     }
     if (tok) {
-        if ((next = spbrk(tok, "#?")) == NULL) {
-            if (*tok) {
-                up->path = sclone(tok);
-            }
-        } else {
-            if (next > tok) {
-                up->path = snclone(tok, next - tok);
-            }
-            tok = next + 1;
-            if (*next == '#') {
-                if ((next = schr(tok, '?')) != NULL) {
-                    up->reference = snclone(tok, next - tok);
-                    up->query = sclone(++next);
-                } else {
-                    up->reference = sclone(tok);
-                }
-            } else {
-                up->query = sclone(tok);
-            }
-        }
-        if (up->path && (tok = srchr(up->path, '.')) != NULL) {
+        up->path = sclone(tok);
+        if ((tok = srchr(up->path, '.')) != NULL) {
             if (tok[1]) {
                 if ((next = srchr(up->path, '/')) != NULL) {
                     if (next <= tok) {
@@ -17756,11 +17747,10 @@ PUBLIC HttpUri *httpJoinUri(HttpUri *uri, int argc, HttpUri **others)
         other = others[i];
         if (other->scheme) {
             uri->scheme = sclone(other->scheme);
+            uri->port = other->port;
         }
         if (other->host) {
             uri->host = sclone(other->host);
-        }
-        if (other->port) {
             uri->port = other->port;
         }
         if (other->path) {
