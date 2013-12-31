@@ -66,6 +66,7 @@ typedef struct App {
     int         rebuild;                /* Force a rebuild */
     int         reverse;                /* Reverse migrations */
     int         show;                   /* Show compilation commands */
+    int         silent;                 /* Totall silent */
     int         singleton;              /* Generate a singleton resource controller */
     int         staticLink;             /* Use static linking */
     int         upgrade;                /* Upgrade */
@@ -148,6 +149,7 @@ static int reverseSortFiles(MprDirEntry **d1, MprDirEntry **d2);
 static void run(int argc, char **argv);
 static bool selectResource(cchar *path, cchar *kind);
 static int sortFiles(MprDirEntry **d1, MprDirEntry **d2);
+static void qtrace(cchar *tag, cchar *fmt, ...);
 static void trace(cchar *tag, cchar *fmt, ...);
 static void uninstall(int argc, char **argv);
 static void uninstallPak(cchar *name);
@@ -294,6 +296,10 @@ PUBLIC int main(int argc, char **argv)
 
         } else if (smatch(argp, "show") || smatch(argp, "s")) {
             app->show = 1;
+
+        } else if (smatch(argp, "silent")) {
+            app->silent = 1;
+            app->quiet = 1;
 
         } else if (smatch(argp, "singleton") || smatch(argp, "single")) {
             app->singleton = 1;
@@ -489,7 +495,7 @@ static void clean(int argc, char **argv)
             }
         }
     }
-    trace("Task", "Complete");
+    qtrace("Clean", "Complete");
 }
 
 
@@ -525,7 +531,7 @@ static void generate(int argc, char **argv)
         }
     }
     if (!app->error) {
-        trace("Task", "Complete");
+        qtrace("Generate", "Complete");
     }
 }
 
@@ -699,13 +705,13 @@ static void migrate(int argc, char **argv)
                 return;
             }
             if (backward) {
-                trace("Migrate", "Reverse %s", app->base);
+                qtrace("Migrate", "Reverse %s", app->base);
                 if (edi->back(edi) < 0) {
                     fail("Cannot reverse migration");
                     return;
                 }
             } else {
-                trace("Migrate", "Apply %s ", app->base);
+                qtrace("Migrate", "Apply %s ", app->base);
                 if (edi->forw(edi) < 0) {
                     fail("Cannot apply migration");
                     return;
@@ -746,7 +752,7 @@ static void run(int argc, char **argv)
         return;
     }
     cmd = mprCreateCmd(0);
-    trace("Run", "appweb -v");
+    qtrace("Run", "appweb -v");
     if (mprRunCmd(cmd, "appweb -v", NULL, NULL, NULL, NULL, -1, MPR_CMD_DETACH) != 0) {
         fail("Cannot run command: appweb -v");
         return;
@@ -831,7 +837,7 @@ static void exportCache()
     }
     appwebPaks = mprJoinPath(mprGetAppDir(), "../" BIT_ESP_PAKS);
     paks = mprGetPathFiles(appwebPaks, MPR_PATH_DESCEND | MPR_PATH_RELATIVE);
-    trace("Export", "Copying Appweb Paks to %s", app->paksCacheDir);
+    vtrace("Export", "Copying Appweb Paks to %s", app->paksCacheDir);
 
     for (ITERATE_ITEMS(paks, dp, i)) {
         src = mprJoinPath(appwebPaks, dp->name);
@@ -1252,6 +1258,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
         why(source, "%s is missing", app->module);
     }
     if (app->flatFile) {
+        trace("Catenate", "%s", source);
         mprWriteFileFmt(app->flatFile, "/*\n    Source from %s\n */\n", source);
     }
     if (kind & (ESP_CONTROlLER | ESP_MIGRATION | ESP_SRC)) {
@@ -1382,7 +1389,7 @@ static void compile(int argc, char **argv)
         }
     }
     if (app->slink) {
-        trace("Generate", app->genlink);
+        qtrace("Generate", app->genlink);
         if ((file = mprOpenFile(app->genlink, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
             fail("Cannot open %s", app->flatPath);
             return;
@@ -1406,7 +1413,7 @@ static void compile(int argc, char **argv)
         app->slink = 0;
     }
     if (!app->error) {
-        trace("Task", "Complete");
+        qtrace("Task", "Complete");
     }
 }
 
@@ -1785,7 +1792,7 @@ static void createMigration(cchar *name, cchar *table, cchar *comment, int field
     for (ITERATE_ITEMS(files, dp, next)) {
         if (sends(dp->name, tail)) {
             if (!app->overwrite && !app->force) {
-                trace("Exists", "A migration with the same description already exists: %s", dp->name);
+                qtrace("Exists", "A migration with the same description already exists: %s", dp->name);
                 return;
             }
             mprDeletePath(mprJoinPath("db/migrations/", dp->name));
@@ -1949,7 +1956,7 @@ static void generateTable(int argc, char **argv)
     }
     edi->flags &= ~EDI_SUPPRESS_SAVE;
     ediSave(edi);
-    trace("Update", "Database schema");
+    qtrace("Update", "Database schema");
 }
 
 
@@ -2121,7 +2128,7 @@ static bool upgradePak(cchar *name)
     }
     version = mprGetJson(spec, "version", 0);
     if (smatch(cachedVersion, version) && !app->force) {
-        trace("Info", "Installed %s is current with %s", name, version);
+        qtrace("Info", "Installed %s is current with %s", name, version);
     } else {
         installPak(name, cachedVersion, 1);
     }
@@ -2142,7 +2149,7 @@ static bool installPak(cchar *name, cchar *criteria, bool topLevel)
     path = mprJoinPaths(app->route->documents, app->paksDir, name, NULL);
     if (mprPathExists(path, X_OK) && !app->overwrite && !app->force) {
         if (topLevel || app->verbose) {
-            trace("Info",  "Pak %s is already installed", name);
+            qtrace("Info",  "Pak %s is already installed", name);
         }
         return 1;
     }
@@ -2166,7 +2173,7 @@ static bool installPak(cchar *name, cchar *criteria, bool topLevel)
     if (app->database) {
         mprSetJson(app->eroute->config, "esp.server.database", sfmt("%s://%s.%s", app->database, app->appName, app->database), 0);
     }
-    vtrace("Save", mprJoinPath(app->route->documents, BIT_ESP_PACKAGE));
+    trace("Save", mprJoinPath(app->route->documents, BIT_ESP_PACKAGE));
     if (espSaveConfig(app->route) < 0) {
         fail("Cannot save ESP configuration");
     }
@@ -2194,11 +2201,11 @@ static void uninstallPak(cchar *name)
         fail("Cannot load: \"%s\"", package);
         return;
     }
-    trace("Remove", name);
-    vtrace("Remove", "Dependency in %s", BIT_ESP_PACKAGE);
+    qtrace("Remove", name);
+    trace("Remove", "Dependency in %s", BIT_ESP_PACKAGE);
     mprRemoveJson(app->eroute->config, sfmt("dependencies.%s", name));
 
-    vtrace("Remove", "Client scripts in %s", BIT_ESP_PACKAGE);
+    trace("Remove", "Client scripts in %s", BIT_ESP_PACKAGE);
     scripts = mprGetJsonObj(spec, "client-scripts", MPR_JSON_TOP);
     for (ITERATE_JSON(scripts, script, i)) {
         if (script->type & MPR_JSON_STRING) {
@@ -2221,7 +2228,7 @@ static void uninstallPak(cchar *name)
     }
     files = mprGetPathFiles(path, MPR_PATH_DEPTH_FIRST | MPR_PATH_DESCEND);
     for (ITERATE_ITEMS(files, dp, i)) {
-        vtrace("Remove", dp->name);
+        trace("Remove", dp->name);
         mprDeletePath(dp->name);
     }
     mprDeletePath(path);
@@ -2343,14 +2350,14 @@ static bool installPakFiles(cchar *name, cchar *criteria, bool topLevel)
     path = mprJoinPaths(app->route->documents, app->paksDir, name, NULL);
     if (mprPathExists(path, X_OK) && !app->overwrite && !app->force) {
         if (topLevel || app->verbose) {
-            trace("Info",  "Pak %s is already installed", name);
+            qtrace("Info",  "Pak %s is already installed", name);
         }
         return 1;
     }
     if ((version = findAcceptableVersion(name, criteria)) == 0) {
         return 0;
     }
-    trace(app->upgrade ? "Upgrade" : "Install", "%s %s", name, version);
+    qtrace(app->upgrade ? "Upgrade" : "Install", "%s %s", name, version);
     path = mprJoinPaths(app->paksCacheDir, name, version, NULL);
     package = mprJoinPath(path, BIT_ESP_PACKAGE);
     if ((spec = loadPackage(package)) == 0) {
@@ -2372,7 +2379,7 @@ static bool installPakFiles(cchar *name, cchar *criteria, bool topLevel)
             }
         }
     }
-    vtrace("Info", "%s successfully installed", name);
+    trace("Info", "%s successfully installed", name);
     return 1;
 }
 
@@ -2507,7 +2514,7 @@ static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toD
                     vtrace("Same",  "File: %s", mprGetRelPath(to, 0));
                 }
             } else {
-                vtrace("Create", "%s", mprGetRelPath(to, 0));
+                trace("Create", "%s", mprGetRelPath(to, 0));
                 if (mprCopyPath(from, to, 0644) < 0) {
                     fail("Cannot copy file %s to %s", from, mprGetRelPath(to, 0));
                     return;
@@ -2523,11 +2530,13 @@ static void generateHostingConfig()
     MprHash     *tokens;
     char        *path, *data;
 
-    path = mprJoinPath(app->route->documents, "appweb.conf");
-    tokens = mprDeserialize(sfmt("{ LISTEN: '%s', NAME: '%s', TITLE: '%s' }", app->listen, 
-        app->appName, spascal(app->appName)));
-    data = getTemplate(app->topPak, "appweb.conf", tokens);
-    makeEspFile(path, data, "Configuration");
+    if (app->topPak) {
+        path = mprJoinPath(app->route->documents, "appweb.conf");
+        tokens = mprDeserialize(sfmt("{ LISTEN: '%s', NAME: '%s', TITLE: '%s' }", app->listen,
+            app->appName, spascal(app->appName)));
+        data = getTemplate(app->topPak, "appweb.conf", tokens);
+        makeEspFile(path, data, "Configuration");
+    }
 }
 
 
@@ -2569,7 +2578,7 @@ static void generateAppDb()
 static void makeEspDir(cchar *path)
 {
     if (mprPathExists(path, X_OK)) {
-        // trace("Exists",  "Directory: %s", path);
+        ;
     } else {
         if (mprMakeDir(path, 0755, -1, -1, 1) < 0) {
             app->error++;
@@ -2730,6 +2739,21 @@ static void fatal(cchar *fmt, ...)
 }
 
 
+static void qtrace(cchar *tag, cchar *fmt, ...)
+{
+    va_list     args;
+    char        *msg;
+
+    if (!app->silent) {
+        va_start(args, fmt);
+        msg = sfmtv(fmt, args);
+        tag = sfmt("[%s]", tag);
+        mprRawLog(0, "%12s %s\n", tag, msg);
+        va_end(args);
+    }
+}
+
+
 static void trace(cchar *tag, cchar *fmt, ...)
 {
     va_list     args;
@@ -2745,6 +2769,9 @@ static void trace(cchar *tag, cchar *fmt, ...)
 }
 
 
+/*
+    Trace when run with --verbose
+ */
 static void vtrace(cchar *tag, cchar *fmt, ...)
 {
     va_list     args;
