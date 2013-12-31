@@ -61,8 +61,8 @@
       <type>EdiRec *</type>
       <name>ediFilterRecFields</name>
       <anchorfile>group___edi_rec.html</anchorfile>
-      <anchor>gacb5c3c9b94a110db42d81922e79294c3</anchor>
-      <arglist>(EdiRec *rec, cchar *fields)</arglist>
+      <anchor>ga72056f840f501082ef3efac4c4454e24</anchor>
+      <arglist>(EdiRec *rec, cchar *fields, int include)</arglist>
     </member>
     <member kind="function">
       <type>EdiField *</type>
@@ -87,8 +87,8 @@
       <type>EdiGrid *</type>
       <name>ediFilterGridFields</name>
       <anchorfile>group___edi_grid.html</anchorfile>
-      <anchor>ga075e8788c10d87cc3c2a7cc7adc722fd</anchor>
-      <arglist>(EdiGrid *grid, cchar *fields)</arglist>
+      <anchor>ga0b5c39ab9aa8d6cba06403659aa9e36b</anchor>
+      <arglist>(EdiGrid *grid, cchar *fields, int include)</arglist>
     </member>
     <member kind="function">
       <type>cchar *</type>

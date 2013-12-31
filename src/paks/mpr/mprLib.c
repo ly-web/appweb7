@@ -1002,7 +1002,7 @@ PUBLIC void mprResetYield()
          */
         lock(ts->threads);
         tp->stickyYield = 0;
-        if (tp->yielded && heap->mustYield) {
+        if (tp->yielded && heap->mustYield && !heap->pauseGC) {
             tp->yielded = 0;
             unlock(ts->threads);
             mprYield(0);
@@ -1449,11 +1449,54 @@ PUBLIC void mprRelease(cvoid *ptr)
 }
 
 
+/* 
+    WARNING: this does not mark component members. If that is required, use mprAddRoot.
+ */
+PUBLIC void mprHoldBlocks(cvoid *ptr, ...)
+{
+    va_list args;
+
+    if (ptr) {
+        mprHold(ptr);
+        va_start(args, ptr);
+        while ((ptr = va_arg(args, char*)) != 0) {
+            mprHold(ptr);
+        }
+        va_end(args);
+    }
+}
+
+
+PUBLIC void mprReleaseBlocks(cvoid *ptr, ...)
+{
+    va_list args;
+
+    if (ptr) {
+        mprRelease(ptr);
+        va_start(args, ptr);
+        while ((ptr = va_arg(args, char*)) != 0) {
+            mprRelease(ptr);
+        }
+        va_end(args);
+    }
+}
+
+
+PUBLIC void mprPauseGC() {
+    mprAtomicAdd((int*) &heap->pauseGC, 1);
+}
+
+
+PUBLIC void mprResumeGC() {
+    mprAtomicAdd((int*) &heap->pauseGC, -1);
+}
+
+
 PUBLIC int mprCreateEventOutside(MprDispatcher *dispatcher, void *proc, void *data)
 {
     MprEvent    *event;
 
-    mprAtomicAdd((int*) &heap->pauseGC, 1);
+    mprPauseGC();
     mprAtomicBarrier();
     while (heap->mustYield) {
         mprNap(0);
@@ -1462,7 +1505,7 @@ PUBLIC int mprCreateEventOutside(MprDispatcher *dispatcher, void *proc, void *da
         return MPR_ERR_CANT_CREATE;
     }
     event = mprCreateEvent(dispatcher, "relay", 0, proc, data, MPR_EVENT_STATIC_DATA);
-    mprAtomicAdd((int*) &heap->pauseGC, -1);
+    mprResumeGC();
     if (!event) {
         return MPR_ERR_CANT_CREATE;
     }

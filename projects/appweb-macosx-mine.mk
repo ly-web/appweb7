@@ -151,7 +151,6 @@ endif
 ifeq ($(BIT_PACK_ESP),1)
 TARGETS            += $(CONFIG)/paks
 endif
-TARGETS            += src/esp/paks/esp-angular-mvc/client/css/all.css
 ifeq ($(BIT_PACK_EJSCRIPT),1)
 TARGETS            += $(CONFIG)/bin/libejs.dylib
 endif
@@ -1106,6 +1105,7 @@ DEPS_56 += src/esp/paks/esp-angular/esp.js
 DEPS_56 += src/esp/paks/esp-angular/package.json
 DEPS_56 += src/esp/paks/esp-angular-mvc
 DEPS_56 += src/esp/paks/esp-angular-mvc/package.json
+DEPS_56 += src/esp/paks/esp-angular-mvc/start.bit
 DEPS_56 += src/esp/paks/esp-angular-mvc/templates
 DEPS_56 += src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc
 DEPS_56 += src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/all.css
@@ -1126,27 +1126,24 @@ DEPS_56 += src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/splash.html
 DEPS_56 += src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/start.bit
 DEPS_56 += src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/theme.less
 DEPS_56 += src/esp/paks/esp-html-mvc
-DEPS_56 += src/esp/paks/esp-html-mvc/client
-DEPS_56 += src/esp/paks/esp-html-mvc/client/assets
-DEPS_56 += src/esp/paks/esp-html-mvc/client/assets/favicon.ico
-DEPS_56 += src/esp/paks/esp-html-mvc/client/css
-DEPS_56 += src/esp/paks/esp-html-mvc/client/css/all.css
-DEPS_56 += src/esp/paks/esp-html-mvc/client/css/all.less
-DEPS_56 += src/esp/paks/esp-html-mvc/client/css/app.less
-DEPS_56 += src/esp/paks/esp-html-mvc/client/css/fix.less
-DEPS_56 += src/esp/paks/esp-html-mvc/client/css/theme.less
-DEPS_56 += src/esp/paks/esp-html-mvc/client/index.esp
-DEPS_56 += src/esp/paks/esp-html-mvc/client/layouts
-DEPS_56 += src/esp/paks/esp-html-mvc/client/layouts/default.esp
 DEPS_56 += src/esp/paks/esp-html-mvc/package.json
 DEPS_56 += src/esp/paks/esp-html-mvc/start.bit
 DEPS_56 += src/esp/paks/esp-html-mvc/templates
 DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc
+DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/all.css
+DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/all.less
+DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/app.less
 DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/appweb.conf
 DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/controller-singleton.c
 DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/controller.c
+DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/default.esp
 DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/edit.esp
+DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/favicon.ico
+DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/fix.less
+DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/index.esp
 DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/list.esp
+DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/start.bit
+DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/theme.less
 DEPS_56 += src/esp/paks/esp-legacy-mvc
 DEPS_56 += src/esp/paks/esp-legacy-mvc/layouts
 DEPS_56 += src/esp/paks/esp-legacy-mvc/layouts/default.esp
@@ -1198,6 +1195,7 @@ $(CONFIG)/paks: $(DEPS_56)
 	cp esp-angular/package.json ../../../$(CONFIG)/paks/esp-angular/4.5.0/package.json ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-angular-mvc/4.5.0" ; \
 	cp esp-angular-mvc/package.json ../../../$(CONFIG)/paks/esp-angular-mvc/4.5.0/package.json ; \
+	cp esp-angular-mvc/start.bit ../../../$(CONFIG)/paks/esp-angular-mvc/4.5.0/start.bit ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-angular-mvc/4.5.0/templates" ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc" ; \
 	cp esp-angular-mvc/templates/esp-angular-mvc/all.css ../../../$(CONFIG)/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/all.css ; \
@@ -1218,27 +1216,24 @@ $(CONFIG)/paks: $(DEPS_56)
 	cp esp-angular-mvc/templates/esp-angular-mvc/start.bit ../../../$(CONFIG)/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/start.bit ; \
 	cp esp-angular-mvc/templates/esp-angular-mvc/theme.less ../../../$(CONFIG)/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/theme.less ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-html-mvc/4.5.0" ; \
-	mkdir -p "../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/client" ; \
-	mkdir -p "../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/client/assets" ; \
-	cp esp-html-mvc/client/assets/favicon.ico ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/client/assets/favicon.ico ; \
-	mkdir -p "../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/client/css" ; \
-	cp esp-html-mvc/client/css/all.css ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/client/css/all.css ; \
-	cp esp-html-mvc/client/css/all.less ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/client/css/all.less ; \
-	cp esp-html-mvc/client/css/app.less ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/client/css/app.less ; \
-	cp esp-html-mvc/client/css/fix.less ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/client/css/fix.less ; \
-	cp esp-html-mvc/client/css/theme.less ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/client/css/theme.less ; \
-	cp esp-html-mvc/client/index.esp ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/client/index.esp ; \
-	mkdir -p "../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/client/layouts" ; \
-	cp esp-html-mvc/client/layouts/default.esp ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/client/layouts/default.esp ; \
 	cp esp-html-mvc/package.json ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/package.json ; \
 	cp esp-html-mvc/start.bit ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/start.bit ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates" ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc" ; \
+	cp esp-html-mvc/templates/esp-html-mvc/all.css ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/all.css ; \
+	cp esp-html-mvc/templates/esp-html-mvc/all.less ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/all.less ; \
+	cp esp-html-mvc/templates/esp-html-mvc/app.less ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/app.less ; \
 	cp esp-html-mvc/templates/esp-html-mvc/appweb.conf ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/appweb.conf ; \
 	cp esp-html-mvc/templates/esp-html-mvc/controller-singleton.c ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/controller-singleton.c ; \
 	cp esp-html-mvc/templates/esp-html-mvc/controller.c ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/controller.c ; \
+	cp esp-html-mvc/templates/esp-html-mvc/default.esp ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/default.esp ; \
 	cp esp-html-mvc/templates/esp-html-mvc/edit.esp ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/edit.esp ; \
+	cp esp-html-mvc/templates/esp-html-mvc/favicon.ico ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/favicon.ico ; \
+	cp esp-html-mvc/templates/esp-html-mvc/fix.less ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/fix.less ; \
+	cp esp-html-mvc/templates/esp-html-mvc/index.esp ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/index.esp ; \
 	cp esp-html-mvc/templates/esp-html-mvc/list.esp ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/list.esp ; \
+	cp esp-html-mvc/templates/esp-html-mvc/start.bit ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/start.bit ; \
+	cp esp-html-mvc/templates/esp-html-mvc/theme.less ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/theme.less ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0" ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0/layouts" ; \
 	cp esp-legacy-mvc/layouts/default.esp ../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0/layouts/default.esp ; \
@@ -1269,7 +1264,6 @@ $(CONFIG)/paks: $(DEPS_56)
 	cp esp-server/templates/esp-server/migration.c ../../../$(CONFIG)/paks/esp-server/4.5.0/templates/esp-server/migration.c ; \
 	)
 endif
-
 
 
 #
@@ -2027,7 +2021,7 @@ test/web/caching/cache.cgi: $(DEPS_90)
 	( \
 	cd test; \
 	echo "#!`type -p ejs`" >web/caching/cache.cgi ; \
-	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + Date() + "\n")' >>web/caching/cache.cgi ; \
+	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n{number:" + Date().now() + "}\n")' >>web/caching/cache.cgi ; \
 	chmod +x web/caching/cache.cgi ; \
 	)
 endif
@@ -2155,6 +2149,7 @@ installBinary: $(DEPS_94)
 	cp src/esp/paks/esp-angular/package.json $(BIT_VAPP_PREFIX)/esp/esp-angular/package.json
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular-mvc"
 	cp src/esp/paks/esp-angular-mvc/package.json $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/package.json
+	cp src/esp/paks/esp-angular-mvc/start.bit $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/start.bit
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/esp-angular-mvc"
 	cp src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/all.css $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/esp-angular-mvc/all.css
 	cp src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/all.less $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/esp-angular-mvc/all.less
@@ -2173,27 +2168,24 @@ installBinary: $(DEPS_94)
 	cp src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/splash.html $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/esp-angular-mvc/splash.html
 	cp src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/start.bit $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/esp-angular-mvc/start.bit
 	cp src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/theme.less $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/esp-angular-mvc/theme.less
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/assets"
-	cp src/esp/paks/esp-html-mvc/client/assets/favicon.ico $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/assets/favicon.ico
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/css"
-	cp src/esp/paks/esp-html-mvc/client/css/all.css $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/css/all.css
-	cp src/esp/paks/esp-html-mvc/client/css/all.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/css/all.less
-	cp src/esp/paks/esp-html-mvc/client/css/app.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/css/app.less
-	cp src/esp/paks/esp-html-mvc/client/css/fix.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/css/fix.less
-	cp src/esp/paks/esp-html-mvc/client/css/theme.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/css/theme.less
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client"
-	cp src/esp/paks/esp-html-mvc/client/index.esp $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/index.esp
-	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/layouts"
-	cp src/esp/paks/esp-html-mvc/client/layouts/default.esp $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/client/layouts/default.esp
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc"
 	cp src/esp/paks/esp-html-mvc/package.json $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/package.json
 	cp src/esp/paks/esp-html-mvc/start.bit $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/start.bit
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc"
+	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/all.css $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/all.css
+	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/all.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/all.less
+	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/app.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/app.less
 	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/appweb.conf $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/appweb.conf
 	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/controller-singleton.c $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/controller-singleton.c
 	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/controller.c $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/controller.c
+	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/default.esp $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/default.esp
 	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/edit.esp $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/edit.esp
+	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/favicon.ico $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/favicon.ico
+	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/fix.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/fix.less
+	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/index.esp $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/index.esp
 	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/list.esp $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/list.esp
+	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/start.bit $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/start.bit
+	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/theme.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/theme.less
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/layouts"
 	cp src/esp/paks/esp-legacy-mvc/layouts/default.esp $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/layouts/default.esp
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc"
