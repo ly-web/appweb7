@@ -142,11 +142,17 @@ static int parseFileInner(MaState *state, cchar *path)
             return MPR_ERR_BAD_SYNTAX;
         }
         state->key = key;
-        mprTrace(8, "Line %d, Parse %s %s", state->lineNumber, key, value ? value : "");
+        mprTrace(8, "Line %d, Parse %s %s", state->lineNumber, state->key, value ? value : "");
+        /*
+            Allow directives to run commands and yield without worring about holding references.
+         */
+        mprPauseGC();
         if ((*directive)(state, key, value) < 0) {
-            mprError("Error with directive \"%s\"\nAt line %d in %s\n\n", key, state->lineNumber, state->filename);
+            mprResumeGC();
+            mprError("Error with directive \"%s\"\nAt line %d in %s\n\n", state->key, state->lineNumber, state->filename);
             return MPR_ERR_BAD_SYNTAX;
         }
+        mprResumeGC();
         state = state->top->current;
     }
     /* EOF */
