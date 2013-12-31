@@ -185,6 +185,7 @@ typedef struct EspRoute {
     cchar           *routeSet;              /**< Route set to use */
     int             flat;                   /**< Compile the application flat */
     int             keepSource;             /**< Preserve generated source */
+    int             loaded;                 /**< App has been loaded */
     int             update;                 /**< Auto-update modified ESP source */
     int             json;                   /**< Emit json responses */
 #if BIT_ESP_LEGACY

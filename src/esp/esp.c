@@ -115,7 +115,7 @@ static HttpRoute *createRoute(cchar *dir);
 static void fail(cchar *fmt, ...);
 static void fatal(cchar *fmt, ...);
 static cchar *findAcceptableVersion(cchar *name, cchar *criteria);
-static bool findHostingConfig();
+static bool findAppwebConf();
 static void generate(int argc, char **argv);
 static void generateApp(int argc, char **argv);
 static void generateAppDb();
@@ -143,7 +143,7 @@ static void makeFileFromTemplate(cchar *dest, cchar *name);
 static void manageApp(App *app, int flags);
 static void migrate(int argc, char **argv);
 static void process(int argc, char **argv);
-static bool readHostingConfig();
+static bool readAppwebConfig();
 static bool requiredRoute(HttpRoute *route);
 static int reverseSortFiles(MprDirEntry **d1, MprDirEntry **d2);
 static void run(int argc, char **argv);
@@ -406,7 +406,7 @@ static void process(int argc, char **argv)
     cmd = argv[0];
     generateApp = smatch(cmd, "generate") && argc > 1 && smatch(argv[1], "app");
     if (!generateApp) {
-        if (!readHostingConfig()) {
+        if (!readAppwebConfig()) {
             return;
         }
     }
@@ -738,7 +738,7 @@ static void migrate(int argc, char **argv)
         }
     }
     if (!onlyOne) {
-        trace("Task", "All migrations %s", backward ? "reversed" : "applied");
+        trace("Migrate", "All migrations %s", backward ? "reversed" : "applied");
     }
     app->migrations = 0;
 }
@@ -945,7 +945,7 @@ static MprList *getRoutes()
     EspRoute    *eroute;
     MprList     *routes;
     MprKey      *kp;
-    cchar       *filterRouteName, *filterRoutePrefix;
+    cchar       *config, *filterRouteName, *filterRoutePrefix, *errorMsg, *path;
     int         prev, nextRoute;
 
     if (app->error) {
@@ -1041,6 +1041,18 @@ static MprList *getRoutes()
     }
     eroute = app->eroute = app->route->eroute;
     assert(eroute);
+    /*
+        Reload package.json because we do not want the copied esp[mode] properties.
+     */
+    path = mprJoinPath(app->route->documents, BIT_ESP_PACKAGE);
+    if ((config = mprReadPathContents(path, NULL)) == 0) {
+        mprError("Cannot read ESP configuration from %s", path);
+        return 0;
+    }
+    if ((eroute->config = mprParseJsonEx(config, 0, 0, 0, &errorMsg)) == 0) {
+        mprError("Cannot parse %s: error %s", path, errorMsg);
+        return 0;
+    }
     if (eroute->config) {
         app->topPak = mprGetJson(eroute->config, "esp.server.generate.top", 0);
         app->appName = eroute->appName;
@@ -1054,7 +1066,7 @@ static MprList *getRoutes()
 
     [--config path] : ./appweb.conf : [parent]/appweb.conf
  */
-static bool findHostingConfig()
+static bool findAppwebConf()
 {
     cchar   *name, *path, *userPath, *nextPath;
 
@@ -1100,7 +1112,7 @@ static bool findHostingConfig()
 /*
     Read the appweb.conf configuration file
  */
-static bool readHostingConfig()
+static bool readAppwebConfig()
 {
     HttpStage   *stage;
 
@@ -1117,7 +1129,7 @@ static bool readHostingConfig()
     }
     appweb->staticLink = app->staticLink;
 
-    if (!findHostingConfig() || app->error) {
+    if (!findAppwebConf() || app->error) {
         return 0;
     }
     if ((app->server = maCreateServer(appweb, "default")) == 0) {
@@ -1413,7 +1425,7 @@ static void compile(int argc, char **argv)
         app->slink = 0;
     }
     if (!app->error) {
-        qtrace("Task", "Complete");
+        trace("Compile", "Complete");
     }
 }
 
