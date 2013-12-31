@@ -10,7 +10,6 @@
 
 #if BIT_PACK_ESP
 /************************************* Code ***********************************/
-//  MOB - rename Pak
 
 PUBLIC void espAddPak(HttpRoute *route, cchar *name, cchar *version)
 {
@@ -353,17 +352,6 @@ PUBLIC cchar *espGetMethod(HttpConn *conn)
 } 
 
 
-#if UNUSED
-PUBLIC cchar *espGetPakVersion(HttpRoute *route, cchar *name)
-{
-    EspRoute    *eroute;
-
-    eroute = route->eroute;
-    return mprGetJson(eroute->config, sfmt("dependencies.%s", name), 0);
-}
-#endif
-
-
 PUBLIC cchar *espGetParam(HttpConn *conn, cchar *var, cchar *defaultValue)
 {
     return httpGetParam(conn, var, defaultValue);
@@ -516,7 +504,9 @@ PUBLIC int espLoadConfig(HttpRoute *route)
     if (!eroute->config) {
 #if BIT_ESP_LEGACY
         if (!mprPathExists(cpath, R_OK)) {
-            mprLog(0, "Missing %s, switching to esp-legacy-mvc mode", cpath);
+            if (!eroute->legacy) {
+                mprLog(0, "Missing %s, switching to esp-legacy-mvc mode", cpath);
+            }
             eroute->legacy = 1;
         } else 
 #endif
@@ -653,53 +643,6 @@ PUBLIC int espLoadConfig(HttpRoute *route)
 PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value)
 {
     return httpMatchParam(conn, var, value);
-}
-
-
-/*
-    Test if a module has been updated (is stale).
-    This will unload the module if it loaded but stale.
- */
-PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile)
-{
-    MprModule   *mp;
-    MprPath     sinfo, minfo;
-
-    *recompile = 0;
-    mprGetPathInfo(module, &minfo);
-    if (!minfo.valid) {
-        *recompile = 1;
-        if ((mp = mprLookupModule(source)) != 0) {
-            if (!espUnloadModule(source, 0)) {
-                mprError("Cannot unload module %s. Connections still open. Continue using old version.", source);
-                return 0;
-            }
-        }
-        return 1;
-    }
-    mprGetPathInfo(source, &sinfo);
-    if (sinfo.valid && sinfo.mtime > minfo.mtime) {
-        if ((mp = mprLookupModule(source)) != 0) {
-            if (!espUnloadModule(source, 0)) {
-                mprError("Cannot unload module %s. Connections still open. Continue using old version.", source);
-                return 0;
-            }
-        }
-        *recompile = 1;
-        return 1;
-    }
-    if ((mp = mprLookupModule(source)) != 0) {
-        if (minfo.mtime > mp->modified) {
-            /* Module file has been updated */
-            if (!espUnloadModule(source, 0)) {
-                mprError("Cannot unload module %s. Connections still open. Continue using old version.", source);
-                return 0;
-            }
-            return 1;
-        }
-    }
-    /* Loaded module is current */
-    return 0;
 }
 
 
@@ -930,7 +873,7 @@ PUBLIC int espSaveConfig(HttpRoute *route)
 
     eroute = route->eroute;
     path = mprJoinPath(route->documents, BIT_ESP_PACKAGE);
-#if UNUSED
+#if KEEP
     mprBackupLog(path, 3);
 #endif
     return mprSaveJson(eroute->config, path, MPR_JSON_PRETTY | MPR_JSON_QUOTES);

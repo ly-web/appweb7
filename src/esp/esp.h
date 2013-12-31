@@ -167,9 +167,7 @@ typedef struct EspRoute {
     MprJson         *config;                /**< ESP App configuration from package.json */
     MprTime         configLoaded;           /**< When package.json was last loaded */
 
-    cchar           *appModulePath;         /**< App module path when compiled flat */
     cchar           *searchPath;            /**< Search path to use when locating compiler/linker */
-
     cchar           *appDir;                /**< Directory for client-side application content "app" */
     cchar           *cacheDir;              /**< Directory for cached compiled controllers and views */
     cchar           *clientDir;             /**< Directory for client-side public web content */
@@ -423,18 +421,6 @@ PUBLIC char *espExpandCommand(HttpRoute *route, cchar *command, cchar *source, c
  */
 PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue);
 
-#if UNUSED
-/**
-    Get the pak version string
-    @param route HttpRoute defining the ESP application
-    @param name Desired pak name. For example: "angular-mvc"
-    @returns The version string. May be "*" if no version was defined.
-    @ingroup EspRoute
-    @stability Prototype
- */
-PUBLIC cchar *espGetPakVersion(HttpRoute *route, cchar *name);
-#endif
-
 /**
     Test if the ESP application includes the specified pak
     @description This tests the dependencies property specified pak.
@@ -545,13 +531,6 @@ typedef struct EspReq {
     HttpNotifier    notifier;               /**< Connection Http state change notification callback */
     void            *data;                  /**< Custom data for request - must be a managed reference */
     void            *staticData;            /**< Custom data for request - must be an unmanaged reference */
-    cchar           *cacheName;             /**< Base name of intermediate compiled file */
-    cchar           *controllerFile;        /**< Controller filename */
-    cchar           *controllerPath;        /**< Path to controller source */
-    cchar           *module;                /**< Name of compiled module */
-    cchar           *source;                /**< Name of ESP source */
-    cchar           *view;                  /**< Path to view */
-    cchar           *entry;                 /**< Module entry point */
     cchar           *commandLine;           /**< Command line for compile/link */
     int             autoFinalize;           /**< Request is or will be auto-finalized */
     int             sessionProbed;          /**< Already probed for session store */
