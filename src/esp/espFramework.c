@@ -505,7 +505,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
 #if BIT_ESP_LEGACY
         if (!mprPathExists(cpath, R_OK)) {
             if (!eroute->legacy) {
-                mprLog(0, "Missing %s, switching to esp-legacy-mvc mode", cpath);
+                mprLog(0, "esp: Missing %s, switching to esp-legacy-mvc mode", cpath);
             }
             eroute->legacy = 1;
         } else 
@@ -527,6 +527,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             eroute->mode = mprGetJson(eroute->config, "esp.mode", 0);
             if (!eroute->mode) {
                 eroute->mode = sclone("debug");
+                mprLog(2, "esp: app %s running in %s mode", eroute->appName, eroute->mode);
             }
             debug = smatch(eroute->mode, "debug");
             if ((msettings = mprGetJsonObj(eroute->config, sfmt("esp.modes.%s", eroute->mode), 0)) != 0) {
@@ -541,6 +542,9 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             }
             if ((value = espGetConfig(route, "esp.flat", 0)) != 0) {
                 eroute->flat = smatch(value, "true");
+                if (eroute->flat) {
+                    mprLog(2, "esp: app %s configured for flat compilation", eroute->appName);
+                }
             }
             if ((value = espGetConfig(route, "esp.server.redirect", 0)) != 0) {
                 if (smatch(value, "true") || smatch(value, "secure")) {

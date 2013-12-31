@@ -327,7 +327,7 @@ static int runAction(HttpConn *conn)
             if (rx->flags & HTTP_POST) {
                 httpSetStatus(conn, HTTP_CODE_UNAUTHORIZED);
                 if (eroute->json) {
-                    mprLog(2, "Security token is stale. Please reload page.");
+                    mprLog(2, "esp: Security token is stale. Please reload page.");
                     espRenderString(conn, "{\"retry\": true, \"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
                     espFinalize(conn);
                 } else {
@@ -451,7 +451,11 @@ static bool loadModule(HttpRoute *route, cchar *kind, cchar *source, cchar **err
 #endif
     canonical = mprGetPortablePath(mprGetRelPath(source, route->documents));
     appName = eroute->appName ? eroute->appName : route->host->name;
-    cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", appName, canonical), -1, sjoin(kind, "_", NULL));
+    if (eroute->flat) {
+        cacheName = eroute->appName;
+    } else {
+        cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", appName, canonical), -1, sjoin(kind, "_", NULL));
+    }
     module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, cacheName, BIT_SHOBJ));
     isView = smatch(kind, "view");
 
@@ -482,7 +486,7 @@ static bool loadModule(HttpRoute *route, cchar *kind, cchar *source, cchar **err
             unlock(esp);
             return 0;
         }
-        mprLog(3, "ESP: loadModule: \"%s\", %s", kind, source);
+        mprLog(3, "esp: loadModule: \"%s\", %s", kind, source);
         if (mprLoadModule(mp) < 0) {
             mprError("Cannot load compiled esp module");
             unlock(esp);
@@ -506,15 +510,19 @@ static bool loadApp(HttpRoute *route)
     if (!eroute->appName) {
         return 1;
     }
+    if (eroute->loaded && !eroute->update) {
+        return 1;
+    }
     if (eroute->flat) {
         source = mprJoinPath(eroute->cacheDir, sfmt("%s.c", eroute->appName));
     } else {
         source = mprJoinPath(eroute->srcDir, "app.c");
     }
-    if (!eroute->flat && !loadModule(route, "app", source, &errMsg)) {
+    if (!loadModule(route, "app", source, &errMsg)) {
         mprError("%s", errMsg);
         return 0;
     }
+    eroute->loaded = 1;
     return 1;
 }
 
@@ -539,7 +547,7 @@ PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile)
             }
         }
         *recompile = 1;
-        mprLog(4, "ESP %s is newer than module %s, recompiling ...", source, module);
+        mprLog(4, "esp: %s is newer than module %s, recompiling ...", source, module);
         return 1;
     }
     mprGetPathInfo(source, &sinfo);
@@ -551,7 +559,7 @@ PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile)
             }
         }
         *recompile = 1;
-        mprLog(4, "ESP %s is newer than module %s, recompiling ...", source, module);
+        mprLog(4, "esp: %s is newer than module %s, recompiling ...", source, module);
         return 1;
     }
     if ((mp = mprLookupModule(source)) != 0) {
@@ -561,7 +569,7 @@ PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile)
                 mprError("Cannot unload module %s. Connections still open. Continue using old version.", source);
                 return 0;
             }
-            mprLog(4, "ESP module %s has been externally updated, reloading ...", module);
+            mprLog(4, "esp: module %s has been externally updated, reloading ...", module);
             return 1;
         }
     }
@@ -595,7 +603,7 @@ static bool layoutIsStale(EspRoute *eroute, cchar *source, cchar *module)
         if (layout) {
             stale = espModuleIsStale(layout, module, &recompile);
             if (stale) {
-                mprLog(4, "ESP layout %s is newer than module %s", layout, module);
+                mprLog(4, "esp: layout %s is newer than module %s", layout, module);
             }
         }
     }
@@ -1138,7 +1146,7 @@ static int finishEspAppDirective(MaState *state, cchar *key, cchar *value)
         if (!loadApp(route)) {
             return MPR_ERR_CANT_LOAD;
         }
-        if ((preload = mprGetJsonObj(eroute->config, "esp.preload", 0)) != 0) {
+        if (!eroute->flat && (preload = mprGetJsonObj(eroute->config, "esp.preload", 0)) != 0) {
             for (ITERATE_JSON(preload, item, i)) {
                 source = stok(sclone(item->value), ":", &kind);
                 if (!kind) kind = "controller";
