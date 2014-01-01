@@ -14,7 +14,8 @@
 MAIN(simpleClient, int argc, char **argv, char **envp)
 {
     Http        *http;
-    char        *err, *response;
+    HttpConn    *conn;
+    char        *err;
     int         status;
 
     /* 
@@ -32,10 +33,11 @@ MAIN(simpleClient, int argc, char **argv, char **envp)
     /* 
         Open a connection to issue the GET. Then finalize the request output - this forces the request out.
      */
-    if ((status = httpRequest("GET", "http://www.embedthis.com/index.html", NULL, &response, &err)) < 0) {
+    if ((conn = httpRequest("GET", "http://www.embedthis.com/index.html", NULL, &err)) == 0) {
         mprError("Can't get URL: %s", err);
         exit(2);
     }
+    status = httpGetStatus(conn);
     /* 
        Examine the HTTP response HTTP code. 200 is success.
      */
@@ -43,9 +45,7 @@ MAIN(simpleClient, int argc, char **argv, char **envp)
         mprError("Server responded with status %d\n", status);
         exit(1);
     } 
-    if (response) {
-        mprPrintf("Server responded with: %s\n", response);
-    }
+    mprPrintf("Server responded with: %s\n", httpReadString(conn));
     mprDestroy(MPR_EXIT_DEFAULT);
     return 0;
 }

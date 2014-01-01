@@ -148,8 +148,9 @@ PUBLIC void maRestartServer(cchar *ip, int port)
  */
 PUBLIC int maRunWebClient(cchar *method, cchar *uri, cchar *data, char **response, char **err)
 {
-    Mpr   *mpr;
-    int   code;
+    Mpr         *mpr;
+    HttpConn    *conn;
+    int         status;
 
     if (err) {
         *err = 0;
@@ -166,9 +167,13 @@ PUBLIC int maRunWebClient(cchar *method, cchar *uri, cchar *data, char **respons
         return MPR_ERR_CANT_INITIALIZE;
     }
     httpCreate(HTTP_CLIENT_SIDE);
-    code = httpRequest(method, uri, data, response, err);
+    conn = httpRequest(method, uri, data, err);
+    status = httpGetStatus(conn);
+    if (response) {
+        *response = httpReadString(conn);
+    }
     mprDestroy(MPR_EXIT_DEFAULT);
-    return code;
+    return status;
 }
 
 /*
