@@ -1,11 +1,11 @@
 /*
-    ${NAME} Controller for esp-server-mvc
+    ${UCONTROLLER} Controller (esp-server)
  */
 #include "esp.h"
 
 ${ACTIONS}
 
-ESP_EXPORT int esp_controller_${APP}_${NAME}(HttpRoute *route, MprModule *module) {
+ESP_EXPORT int esp_controller_${APP}_${CONTROLLER}(HttpRoute *route, MprModule *module) {
     ${DEFINE_ACTIONS}    
     return 0;
 }

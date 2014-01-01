@@ -356,12 +356,10 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     HttpRx      *rx;
     HttpRoute   *route;
     EspRoute    *eroute;
-    EspReq      *req;
     EspViewProc viewProc;
     cchar       *source, *errMsg;
     
     rx = conn->rx;
-    req = conn->data;
     route = rx->route;
     eroute = route->eroute;
     

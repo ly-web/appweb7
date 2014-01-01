@@ -1,5 +1,5 @@
 <%^ start
-    EdiGrid     *grid = readTable("${NAME}");
+    EdiGrid     *grid = readTable("${CONTROLLER}");
     EdiRec      *rec;
     EdiField    *fp;
 %>
@@ -17,7 +17,7 @@
     </thead>
     <tbody>
         <% for (rec = 0; (rec = ediGetNextRec(grid, rec)) != 0; ) { %>
-            <tr onclick='document.location="<%= uri("|/${NAME}/%s", rec->id) %>"'>
+            <tr onclick='document.location="<%= uri("|/${CONTROLLER}/%s", rec->id) %>"'>
                 <% for (fp = 0; (fp = ediGetNextField(rec, fp, 1)) != 0; ) { %>
                     <td><%= ediFormatField(0, fp); %></td>
                 <% } %>

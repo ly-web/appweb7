@@ -63,6 +63,18 @@ Bit.load({
             `
         },
 
+        pakcss: {
+            action: `
+                strace('Run', 'recess -compile paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/all.less')
+                let result = Cmd.run('recess -compile paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/all.less')
+                Path('paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/all.css').write(result)
+
+                strace('Run', 'recess -compile paks/esp-html-mvc/templates/esp-html-mvc/client/css/all.less')
+                let result = Cmd.run('recess -compile paks/esp-html-mvc/templates/esp-html-mvc/client/css/all.less')
+                Path('paks/esp-html-mvc/templates/esp-html-mvc/client/css/all.css').write(result)
+            `
+        },
+
         'esp-configure': {
             scripts: {
                 postconfig: "

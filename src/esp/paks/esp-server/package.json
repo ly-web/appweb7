@@ -12,6 +12,17 @@
     ],
     "esp": {
         "flat": false,
-        "serverPrefix": "/do"
+        "serverPrefix": "/do",
+        "server": {
+            "generate": {
+                "appweb": "esp-server/appweb.conf",
+                "migration": "esp-server/migration.c",
+                "controller": "esp-server/controller.c",
+                "controller-singleton": "esp-server/controller.c",
+                "files": [
+                    "esp-server/src/app.c"
+                ]
+            }
+        }
     }
 }

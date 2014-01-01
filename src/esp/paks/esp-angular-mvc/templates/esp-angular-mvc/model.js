@@ -1,8 +1,8 @@
 /*
-    ${NAME}.js - ${TITLE} model
+    ${UMODEL}.js - ${UMODEL} model (esp-angular-mvc)
  */
 'use strict';
 
-angular.module('app').factory('${TITLE}', function (EspResource) {
-    return EspResource.group("${NAME}");
+angular.module('app').factory('${UMODEL}', function (EspResource) {
+    return EspResource.group("${MODEL}");
 });

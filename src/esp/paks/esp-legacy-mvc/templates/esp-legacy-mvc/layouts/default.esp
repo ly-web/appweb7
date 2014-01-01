@@ -5,7 +5,7 @@
     <% icon(0, 0); %>
     <% stylesheet(0, 0); %>
     <% script(0, 0); %>
-    <title>${TITLE}</title>
+    <title>${APP}</title>
 </head>
 <body>
     <div class="top">

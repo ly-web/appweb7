@@ -11,7 +11,7 @@ static int backward(Edi *db) {
 ${BACKWARD}    return 0;
 }
 
-ESP_EXPORT int esp_migration_${NAME}(Edi *db)
+ESP_EXPORT int esp_migration_${MIGRATION}(Edi *db)
 {
     ediDefineMigration(db, forward, backward);
     return 0;

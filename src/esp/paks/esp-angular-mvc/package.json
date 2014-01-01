@@ -24,15 +24,17 @@
         "json": true,
         "server": {
             "generate": {
-                "top": "esp-angular-mvc",
-                "scaffold": true,
-                "clientModel": true,
-                "clientController": true,
-                "clientFiles": true,
-                "clientView": true,
-                "controller": true,
-                "migration": true,
-                "view": false
+                "appweb": "esp-angular-mvc/appweb.conf",
+                "clientModel": "esp-angular-mvc/model.js",
+                "clientController": "esp-angular-mvc/controller.js",
+                "clientList": "esp-angular-mvc/list.html",
+                "clientEdit": "esp-angular-mvc/edit.html",
+                "controller": "esp-angular-mvc/controller.c",
+                "controller-singleton": "esp-angular-mvc/controller-singleton.c",
+                "files": [
+                    "esp-angular-mvc/start.bit",
+                    "esp-angular-mvc/client/**"
+                ]
             }
         }
     }

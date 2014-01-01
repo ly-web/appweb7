@@ -1,38 +1,38 @@
 /*
-    ${TITLE} Controller
+    ${UCONTROLLER} Controller (esp-angular-mvc)
  */
 
 'use strict';
 
 /*
-    Specify the ${TITLE} controller and its dependencies.
+    Specify the ${UCONTROLLER} controller and its dependencies.
  */
-angular.module('app').controller('${TITLE}Control', function (Esp, ${TITLE}, $location, $routeParams, $scope) {
+angular.module('app').controller('${UCONTROLLER}Control', function (Esp, ${UCONTROLLER}, $location, $routeParams, $scope) {
     angular.extend($scope, $routeParams);
 
     /*
         Model calling sequence:
-            ${TITLE}.action(input-params, [output], [response-mappings], [success-callback], [failure-callback]);
-            ${TITLE} will set results to [output] and update $rootScope.feedback as appropriate.
+            ${UCONTROLLER}.action(input-params, [output], [response-mappings], [success-callback], [failure-callback]);
+            ${UCONTROLLER} will set results to [output] and update $rootScope.feedback as appropriate.
      */
     if ($scope.id) {
-        ${TITLE}.get({id: $scope.id}, $scope);
+        ${UCONTROLLER}.get({id: $scope.id}, $scope);
 
-    } else if ($location.path() == "/${NAME}/") {
-        ${TITLE}.init(null, $scope);
+    } else if ($location.path() == "/${CONTROLLER}/") {
+        ${UCONTROLLER}.init(null, $scope);
 
     } else {
-        ${TITLE}.list(null, $scope, {${LIST}: "data"});
+        ${UCONTROLLER}.list(null, $scope, {${LIST}: "data"});
     }
 
     $scope.remove = function() {
-        ${TITLE}.remove({id: $scope.id}, function(response) {
+        ${UCONTROLLER}.remove({id: $scope.id}, function(response) {
             $location.path("/");
         });
     };
 
     $scope.save = function() {
-        ${TITLE}.update($scope.${NAME}, $scope, function(response) {
+        ${UCONTROLLER}.update($scope.${CONTROLLER}, $scope, function(response) {
             if (!response.error) {
                 $location.path('/');
             }
@@ -41,14 +41,14 @@ angular.module('app').controller('${TITLE}Control', function (Esp, ${TITLE}, $lo
 });
 
 /*
-    Setup ${TITLE} routes
+    Setup ${UCONTROLLER} routes
  */
 angular.module('app').config(function($routeProvider) {
     var esp = angular.module('esp');
     var Default = {
-        controller: '${TITLE}Control',
+        controller: '${UCONTROLLER}Control',
         resolve: { action: 'Esp' },
     };
-    $routeProvider.when('/', angular.extend({}, Default, {templateUrl: esp.url('/app/${NAME}/${NAME}-list.html')}));
-    $routeProvider.when('/${NAME}/:id', angular.extend({}, Default, {templateUrl: esp.url('/app/${NAME}/${NAME}-edit.html')}));
+    $routeProvider.when('/', angular.extend({}, Default, {templateUrl: esp.url('/app/${CONTROLLER}/${CONTROLLER}-list.html')}));
+    $routeProvider.when('/${CONTROLLER}/:id', angular.extend({}, Default, {templateUrl: esp.url('/app/${CONTROLLER}/${CONTROLLER}-edit.html')}));
 });

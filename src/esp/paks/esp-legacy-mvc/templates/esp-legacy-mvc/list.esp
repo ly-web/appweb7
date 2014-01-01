@@ -1,4 +1,4 @@
-<h1>${TITLE} List</h1>
+<h1>${UCONTROLLER} List</h1>
 
-<% table(readTable("${NAME}"), "{data-esp-click: '@edit'}"); %>
-<% buttonLink("New ${TITLE}", "@init", 0); %>
+<% table(readTable("${CONTROLLER}"), "{data-esp-click: '@edit'}"); %>
+<% buttonLink("New ${UCONTROLLER}", "@init", 0); %>

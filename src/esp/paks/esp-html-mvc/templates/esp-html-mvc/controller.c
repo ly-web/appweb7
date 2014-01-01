@@ -1,57 +1,57 @@
 /*
-    ${NAME} Controller for esp-html-mvc
+    ${CONTROLLER} Controller for esp-html-mvc (esp-html-mvc)
  */
 #include "esp.h"
 
 /*
     Create a new resource in the database
  */ 
-static void create${TITLE}() { 
-    if (updateRec(createRec("${NAME}", params()))) {
-        flash("inform", "New ${NAME} Created");
-        renderView("${NAME}/${NAME}-list");
+static void create${UCONTROLLER}() { 
+    if (updateRec(createRec("${CONTROLLER}", params()))) {
+        flash("inform", "New ${CONTROLLER} Created");
+        renderView("${CONTROLLER}/${CONTROLLER}-list");
     } else {
-        flash("error", "Cannot Create ${TITLE}");
-        renderView("${NAME}/${NAME}-edit");
+        flash("error", "Cannot Create ${UCONTROLLER}");
+        renderView("${CONTROLLER}/${CONTROLLER}-edit");
     }
 }
 
 /*
     Prepare a template for editing a resource
  */
-static void edit${TITLE}() { 
-    readRec("${NAME}", param("id"));
+static void edit${UCONTROLLER}() { 
+    readRec("${CONTROLLER}", param("id"));
 }
 
 /*
     Get a resource
  */ 
-static void get${TITLE}() { 
-    readRec("${NAME}", param("id"));
-    renderView("${NAME}/${NAME}-edit");
+static void get${UCONTROLLER}() { 
+    readRec("${CONTROLLER}", param("id"));
+    renderView("${CONTROLLER}/${CONTROLLER}-edit");
 }
 
 /*
     Initialize a new resource for the client to complete
  */
-static void init${TITLE}() { 
-    createRec("${NAME}", 0);
-    renderView("${NAME}/${NAME}-edit");
+static void init${UCONTROLLER}() { 
+    createRec("${CONTROLLER}", 0);
+    renderView("${CONTROLLER}/${CONTROLLER}-edit");
 }
 
 /*
     List the resources in this group
  */ 
-static void list${TITLE}() { 
-    renderView("${NAME}/${NAME}-list");
+static void list${UCONTROLLER}() { 
+    renderView("${CONTROLLER}/${CONTROLLER}-list");
 }
 
 /*
     Remove a resource identified by the "id" parameter
  */
-static void remove${TITLE}() { 
-    if (removeRec("${NAME}", param("id"))) {
-        flash("inform", "${TITLE} Removed");
+static void remove${UCONTROLLER}() { 
+    if (removeRec("${CONTROLLER}", param("id"))) {
+        flash("inform", "${UCONTROLLER} Removed");
     }
     redirect("list");
 }
@@ -61,16 +61,16 @@ static void remove${TITLE}() {
     If "id" is not defined, this is the same as a create
     Also we tunnel delete here if the user clicked delete
  */
-static void update${TITLE}() { 
+static void update${UCONTROLLER}() { 
     if (smatch(param("submit"), "Delete")) {
         removePost();
     } else {
-        if (updateFields("${NAME}", params())) {
-            flash("inform", "${TITLE} Updated Successfully");
+        if (updateFields("${CONTROLLER}", params())) {
+            flash("inform", "${UCONTROLLER} Updated Successfully");
             redirect("list");
         } else {
-            flash("error", "Cannot Update ${TITLE}");
-            renderView("${NAME}/${NAME}-edit");
+            flash("error", "Cannot Update ${UCONTROLLER}");
+            renderView("${CONTROLLER}/${CONTROLLER}-edit");
         }
     }
 }
@@ -81,23 +81,23 @@ static void common(HttpConn *conn) {
 /*
     Dynamic module initialization
  */
-ESP_EXPORT int esp_controller_${APP}_${NAME}(HttpRoute *route, MprModule *module) {
+ESP_EXPORT int esp_controller_${APP}_${CONTROLLER}(HttpRoute *route, MprModule *module) {
     espDefineBase(route, common);
-    espDefineAction(route, "${NAME}-create", create${TITLE});
-    espDefineAction(route, "${NAME}-remove", remove${TITLE});
-    espDefineAction(route, "${NAME}-edit", edit${TITLE});
-    espDefineAction(route, "${NAME}-get", get${TITLE});
-    espDefineAction(route, "${NAME}-init", init${TITLE});
-    espDefineAction(route, "${NAME}-list", list${TITLE});
-    espDefineAction(route, "${NAME}-update", update${TITLE});
-    espDefineAction(route, "${NAME}-cmd-", list${TITLE});
+    espDefineAction(route, "${CONTROLLER}-create", create${UCONTROLLER});
+    espDefineAction(route, "${CONTROLLER}-remove", remove${UCONTROLLER});
+    espDefineAction(route, "${CONTROLLER}-edit", edit${UCONTROLLER});
+    espDefineAction(route, "${CONTROLLER}-get", get${UCONTROLLER});
+    espDefineAction(route, "${CONTROLLER}-init", init${UCONTROLLER});
+    espDefineAction(route, "${CONTROLLER}-list", list${UCONTROLLER});
+    espDefineAction(route, "${CONTROLLER}-update", update${UCONTROLLER});
+    espDefineAction(route, "${CONTROLLER}-cmd-", list${UCONTROLLER});
 ${DEFINE_ACTIONS}    
 #if SAMPLE_VALIDATIONS
     Edi *edi = espGetRouteDatabase(route);
-    ediAddValidation(edi, "present", "${NAME}", "title", 0);
-    ediAddValidation(edi, "unique", "${NAME}", "title", 0);
-    ediAddValidation(edi, "banned", "${NAME}", "body", "(swear|curse)");
-    ediAddValidation(edi, "format", "${NAME}", "phone", "/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/");
+    ediAddValidation(edi, "present", "${CONTROLLER}", "title", 0);
+    ediAddValidation(edi, "unique", "${CONTROLLER}", "title", 0);
+    ediAddValidation(edi, "banned", "${CONTROLLER}", "body", "(swear|curse)");
+    ediAddValidation(edi, "format", "${CONTROLLER}", "phone", "/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/");
 #endif
     return 0;
 }

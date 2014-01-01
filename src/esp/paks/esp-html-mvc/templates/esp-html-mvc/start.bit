@@ -1,5 +1,5 @@
 /*
-    start.bit - Bit build file
+    start.bit - Bit build file (esp-html-mvc)
  */
 
 Bit.load({

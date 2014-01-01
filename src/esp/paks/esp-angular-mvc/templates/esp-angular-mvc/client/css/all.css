@@ -1,9 +1,9 @@
 /*
-    all.less - Aggregate all stylesheets
+    all.less - Aggregate all stylesheets (esp-angular-mvc)
  */
 
 /*
-    Angular cloak fix. Must load before loading less sheets
+    Angular cloak fix.
  */
 
 [ng\:cloak],
@@ -197,7 +197,7 @@ main.container .content {
   display: none;
 }
 
-.feedback-inform.animate {
+.feedback-inform.ng-hide-remove {
   -webkit-animation: feedback-transition ease-in 10s;
 }
 

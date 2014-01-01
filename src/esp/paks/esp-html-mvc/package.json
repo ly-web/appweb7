@@ -17,15 +17,15 @@
         "serverPrefix": "/do",
         "server": {
             "generate": {
-                "top": "esp-html-mvc",
-                "scaffold": true,
-                "clientModel": false,
-                "clientController": false,
-                "clientFiles": true,
-                "clientView": false,
-                "controller": true,
-                "migration": true,
-                "view": false
+                "appweb": "esp-html-mvc/appweb.conf",
+                "clientList": "esp-html-mvc/list.esp",
+                "clientEdit": "esp-html-mvc/edit.esp",
+                "controller": "esp-html-mvc/controller.c",
+                "controller-singleton": "esp-html-mvc/controller-singleton.c",
+                "files": [
+                    "esp-html-mvc/start.bit",
+                    "esp-html-mvc/client/**"
+                ]
             }
         }
     }

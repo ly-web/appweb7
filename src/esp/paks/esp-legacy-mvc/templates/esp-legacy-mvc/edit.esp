@@ -1,4 +1,4 @@
-<h1><%= hasRec() ? "Edit" : "Create" %> ${TITLE}</h1>
+<h1><%= hasRec() ? "Edit" : "Create" %> ${UCONTROLLER}</h1>
 
 <% form(0, 0); %>
     <table border="0">

@@ -30,7 +30,6 @@ typedef struct App {
     cchar       *paksDir;               /* Local paks directory */
     cchar       *listen;                /* Listen endpoint for "esp run" */
     cchar       *platform;              /* Target platform os-arch-profile (lower) */
-    cchar       *topPak;                /* Top level pak */
     MprFile     *flatFile;              /* Output file for flat compilations */
     MprList     *flatItems;             /* Items to invoke from Init */
 
@@ -53,6 +52,9 @@ typedef struct App {
     cchar       *module;                /* Compiled module name */
     cchar       *base;                  /* Base filename */
     cchar       *entry;                 /* Module entry point */
+    cchar       *controller;            /* Controller name for generated entities (lower case) */
+    cchar       *model;                 /* Model name for generated entities (lower case) */
+    cchar       *title;                 /* Title name for generated entities */
     cchar       *table;                 /* Override table name for migrations, tables */
 
     int         error;                  /* Any processing error */
@@ -119,16 +121,17 @@ static bool findAppwebConf();
 static void generate(int argc, char **argv);
 static void generateApp(int argc, char **argv);
 static void generateAppDb();
-static void generateAppFiles(int argc, char **argv);
-static void generateAppSrc();
 static void generateController(int argc, char **argv);
-static void generateHostingConfig();
+static void genFile(cchar *path, MprHash *tokens);
+static void genKey(cchar *key, cchar *path, MprHash *tokens);
+static void generateFiles();
 static void generateMigration(int argc, char **argv);
 static void generateScaffold(int argc, char **argv);
+static void generateSetup();
 static void generateTable(int argc, char **argv);
 static MprList *getRoutes();
 static MprHash *getTargets(int argc, char **argv);
-static char *getTemplate(cchar *name, cchar *path, MprHash *tokens);
+static cchar *getTemplate(cchar *key, MprHash *tokens);
 static cchar *getPakVersion(cchar *name, cchar *version);
 static void initialize();
 static bool inRange(cchar *expr, cchar *version);
@@ -138,12 +141,13 @@ static bool installPakFiles(cchar *name, cchar *version, bool topLevel);
 static void list(int argc, char **argv);
 static MprJson *loadPackage(cchar *path);
 static void makeEspDir(cchar *dir);
-static void makeEspFile(cchar *path, cchar *data, cchar *msg);
-static void makeFileFromTemplate(cchar *dest, cchar *name);
+static void makeEspFile(cchar *path, cchar *data);
+static MprHash *makeTokens(cchar *path, MprHash *other);
 static void manageApp(App *app, int flags);
 static void migrate(int argc, char **argv);
 static void process(int argc, char **argv);
 static bool readAppwebConfig();
+static cchar *readTemplate(cchar *path, MprHash *tokens);
 static bool requiredRoute(HttpRoute *route);
 static int reverseSortFiles(MprDirEntry **d1, MprDirEntry **d2);
 static void run(int argc, char **argv);
@@ -262,6 +266,7 @@ PUBLIC int main(int argc, char **argv)
                 usageError();
             } else {
                 app->appName = argv[++argind];
+                app->title = stitle(app->appName);
             }
 
         } else if (smatch(argp, "overwrite")) {
@@ -382,9 +387,10 @@ static void manageApp(App *app, int flags)
         mprMark(app->mpr);
         mprMark(app->base);
         mprMark(app->migrations);
-        mprMark(app->entry);
-        mprMark(app->topPak);
+        mprMark(app->controller);
+        mprMark(app->model);
         mprMark(app->platform);
+        mprMark(app->title);
         mprMark(app->build);
         mprMark(app->slink);
         mprMark(app->routes);
@@ -1054,8 +1060,8 @@ static MprList *getRoutes()
         return 0;
     }
     if (eroute->config) {
-        app->topPak = mprGetJson(eroute->config, "esp.server.generate.top", 0);
         app->appName = eroute->appName;
+        app->title = stitle(app->appName);
     }
     return routes;
 }
@@ -1683,7 +1689,8 @@ static void compileFlat(HttpRoute *route)
  */
 static void generateApp(int argc, char **argv)
 {
-    cchar   *cp, *dir, *name;
+    cchar   *cp, *name;
+    int     i;
 
     name = argv[0];
     for (cp = name; *cp; cp++) {
@@ -1702,12 +1709,19 @@ static void generateApp(int argc, char **argv)
     }
     app->route = createRoute(name);
     app->eroute = app->route->eroute;
+    app->generateApp = 1;
+    app->appName = sclone(name);
+    app->title = stitle(app->appName);
 
     if (smatch(name, ".")) {
+        name = mprGetPathBase(mprGetCurrentPath());
+#if UNUSED
         dir = mprGetCurrentPath();
-        name = mprGetPathBase(dir);
-        if (chdir(mprGetPathParent(dir)) < 0) {
-            fail("Cannot change directory to %s", mprGetPathParent(dir));
+#endif
+    } else {
+        makeEspDir(app->appName);
+        if (chdir(app->appName) < 0) {
+            fail("Cannot change directory to %s", app->appName);
             return;
         }
     }
@@ -1716,7 +1730,6 @@ static void generateApp(int argc, char **argv)
         fail("Cannot open config file %s", app->configFile);
         return;
     }
-    app->appName = sclone(name);
     
     mprSetJson(app->eroute->config, "name", app->appName, 0);
     mprSetJson(app->eroute->config, "title", "app->appName", 0);
@@ -1732,9 +1745,11 @@ static void generateApp(int argc, char **argv)
     if (app->error) {
         return;
     }
-    generateAppFiles(argc - 1, &argv[1]);
-    generateHostingConfig();
-    generateAppSrc();
+    generateSetup();
+    for (i = 1; i < argc; i++) {
+        installPak(argv[i], NULL, 1);
+    }
+    generateFiles();
     generateAppDb();
 }
 
@@ -1746,7 +1761,7 @@ static void generateApp(int argc, char **argv)
  */
 static void generateMigration(int argc, char **argv)
 {
-    cchar       *stem, *table, *name;
+    cchar       *name, *stem, *table;
 
     if (argc < 2) {
         fail("Bad migration command line");
@@ -1756,7 +1771,9 @@ static void generateMigration(int argc, char **argv)
     }
     table = app->table ? app->table : sclone(argv[1]);
     stem = sfmt("Migration %s", argv[0]);
-    /* Migration name used in the filename and in the exported load symbol */
+    /* 
+        Migration name used in the filename and in the exported load symbol 
+     */
     name = sreplace(slower(stem), " ", "_");
     createMigration(name, table, stem, argc - 2, &argv[2]);
 }
@@ -1791,14 +1808,13 @@ static void createMigration(cchar *name, cchar *table, cchar *comment, int field
         def = sfmt("    ediAddColumn(db, \"%s\", \"%s\", %s, 0);\n", table, field, typeDefine);
         forward = sjoin(forward, def, NULL);
     }
+    tokens = mprDeserialize(sfmt("{ MIGRATION: '%s', TABLE: '%s', COMMENT: '%s', FORWARD: '%s', BACKWARD: '%s' }", 
+        name, table, comment, forward, backward));
+    if ((data = getTemplate("migration", tokens)) == 0) {
+        return;
+    }
     dir = mprJoinPath(app->eroute->dbDir, "migrations");
     makeEspDir(dir);
-
-    path = sfmt("%s/%s_%s.c", dir, seq, name, ".c");
-    tokens = mprDeserialize(sfmt("{ NAME: '%s', TABLE: '%s', COMMENT: '%s', FORWARD: '%s', BACKWARD: '%s' }", 
-        name, table, comment, forward, backward));
-    data = getTemplate("esp-server", "migration.c", tokens);
-
     files = mprGetPathFiles("db/migrations", MPR_PATH_RELATIVE);
     tail = sfmt("%s.c", name);
     for (ITERATE_ITEMS(files, dp, next)) {
@@ -1810,7 +1826,8 @@ static void createMigration(cchar *name, cchar *table, cchar *comment, int field
             mprDeletePath(mprJoinPath("db/migrations/", dp->name));
         }
     }
-    makeEspFile(path, data, "Migration");
+    path = sfmt("%s/%s_%s.c", dir, seq, name, ".c");
+    makeEspFile(path, data);
 }
 
 
@@ -1822,7 +1839,7 @@ static void createMigration(cchar *name, cchar *table, cchar *comment, int field
 static void generateController(int argc, char **argv)
 {
     MprHash     *tokens;
-    cchar       *actions, *defines, *name, *path, *data, *title, *action;
+    cchar       *action, *actions, *defines;
     int         i;
 
     if (argc < 1) {
@@ -1832,83 +1849,44 @@ static void generateController(int argc, char **argv)
     if (app->error) {
         return;
     }
-    name = sclone(argv[0]);
-    title = spascal(name);
-    path = mprJoinPathExt(mprJoinPath(app->eroute->controllersDir, name), ".c");
+    app->controller = sclone(argv[0]);
     defines = sclone("");
     actions = sclone("");
     for (i = 1; i < argc; i++) {
         action = argv[i];
-        defines = sjoin(defines, sfmt("    espDefineAction(route, \"%s-cmd-%s\", %s);\n", name, action, action), NULL);
+        defines = sjoin(defines, sfmt("    espDefineAction(route, \"%s-cmd-%s\", %s);\n", app->controller, action, action), NULL);
         actions = sjoin(actions, sfmt("static void %s() {\n}\n\n", action), NULL);
     }
-    tokens = mprDeserialize(sfmt("{ APP: '%s', NAME: '%s', TITLE: '%s', ACTIONS: '%s', DEFINE_ACTIONS: '%s' }", 
-        app->appName, name, title, actions, defines));
-    data = getTemplate("esp-server", "controller.c", tokens);
-    makeEspFile(path, data, "Controller");
+    tokens = makeTokens(0, mprDeserialize(sfmt("{ ACTIONS: '%s', DEFINE_ACTIONS: '%s' }", actions, defines)));
+    genKey("controller", sfmt("%s/%s.c", app->eroute->controllersDir, app->controller), tokens);
 }
 
 
-static void generateScaffoldController(cchar *name, cchar *table, int argc, char **argv)
+static void generateScaffoldController(int argc, char **argv)
 {
-    MprHash     *tokens;
-    cchar       *defines, *path, *data;
+    cchar       *key;
 
-    if (app->error) {
-        return;
-    }
-    defines = sclone("");
-    tokens = mprDeserialize(sfmt("{ APP: '%s', NAME: '%s', TABLE: '%s', TITLE: '%s', DEFINE_ACTIONS: '%s' }", 
-        app->appName, name, table, spascal(name), defines));
-    if (app->singleton) {
-        data = getTemplate(app->topPak, "controller-singleton.c", tokens);
-    } else {
-        data = getTemplate(app->topPak, "controller.c", tokens);
-    }
-    path = mprJoinPathExt(mprJoinPath(app->eroute->controllersDir, name), ".c");
-    makeEspFile(path, data, "Scaffold");
+    key = app->singleton ? "controller-singleton" : "controller";
+    genKey(key, sfmt("%s/%s.c", app->eroute->controllersDir, app->controller), 0);
 }
 
 
-static void generateClientController(cchar *name, cchar *table, int argc, char **argv)
+static void generateClientController(int argc, char **argv)
 {
-    MprHash     *tokens;
-    cchar       *defines, *path, *data, *list, *title;
-
-    if (app->error) {
-        return;
-    }
-    title = spascal(name);
-    list = smatch(name, table) ? sfmt("%ss", name) : table; 
-    path = mprJoinPathExt(mprJoinPath(app->eroute->appDir, sfmt("%s/%sControl", name, title)), "js");
-    defines = sclone("");
-    tokens = mprDeserialize(sfmt("{ APPDIR: '%s', NAME: '%s', LIST: '%s', TABLE: '%s', TITLE: '%s', DEFINE_ACTIONS: '%s', SERVICE: '%s' }",
-        app->eroute->appDir, name, list, table, title, defines, app->route->serverPrefix));
-    data = getTemplate(app->topPak, "controller.js", tokens);
-    makeEspFile(path, data, "Controller Scaffold");
+    genKey("clientController", sfmt("%s/%s/%sControl.js", app->eroute->appDir, app->controller, stitle(app->controller)), 0);
 }
 
 
-static void generateClientModel(cchar *name, int argc, char **argv)
+static void generateClientModel(int argc, char **argv)
 {
-    MprHash     *tokens;
-    cchar       *title, *path, *data;
-
-    if (app->error) {
-        return;
-    }
-    title = spascal(name);
-    path = sfmt("%s/%s/%s.js", app->eroute->appDir, name, title);
-    tokens = mprDeserialize(sfmt("{ NAME: '%s', SERVICE: '%s', TITLE: '%s'}", name, app->route->serverPrefix, title));
-    data = getTemplate(app->topPak, "model.js", tokens);
-    makeEspFile(path, data, "Scaffold Model");
+    genKey("clientModel", sfmt("%s/%s/%s.js", app->eroute->appDir, app->controller, stitle(app->controller)), 0);
 }
 
 
 /*
     Called with args: model [field:type [, field:type] ...]
  */
-static void generateScaffoldMigration(cchar *name, cchar *table, int argc, char **argv)
+static void generateScaffoldMigration(int argc, char **argv)
 {
     cchar       *comment;
 
@@ -1918,8 +1896,8 @@ static void generateScaffoldMigration(cchar *name, cchar *table, int argc, char 
     if (app->error) {
         return;
     }
-    comment = sfmt("Create Scaffold %s", spascal(name));
-    createMigration(sfmt("create_scaffold_%s", table), table, comment, argc - 1, &argv[1]);
+    comment = sfmt("Create Scaffold %s", stitle(app->controller));
+    createMigration(sfmt("create_scaffold_%s", app->table), app->table, comment, argc - 1, &argv[1]);
 }
 
 
@@ -1929,25 +1907,25 @@ static void generateScaffoldMigration(cchar *name, cchar *table, int argc, char 
 static void generateTable(int argc, char **argv)
 {
     Edi         *edi;
-    cchar       *table, *field;
+    cchar       *field;
     char        *typeString;
     int         rc, i, type;
 
     if (app->error) {
         return;
     }
-    table = app->table ? app->table : sclone(argv[0]);
+    app->table = app->table ? app->table : sclone(argv[0]);
     if ((edi = app->eroute->edi) == 0) {
         fail("Database not open. Check appweb.conf");
         return;
     }
     edi->flags |= EDI_SUPPRESS_SAVE;
-    if ((rc = ediAddTable(edi, table)) < 0) {
+    if ((rc = ediAddTable(edi, app->table)) < 0) {
         if (rc != MPR_ERR_ALREADY_EXISTS) {
-            fail("Cannot add table '%s'", table);
+            fail("Cannot add table '%s'", app->table);
         }
     } else {
-        if ((rc = ediAddColumn(edi, table, "id", EDI_TYPE_INT, EDI_AUTO_INC | EDI_INDEX | EDI_KEY)) != 0) {
+        if ((rc = ediAddColumn(edi, app->table, "id", EDI_TYPE_INT, EDI_AUTO_INC | EDI_INDEX | EDI_KEY)) != 0) {
             fail("Cannot add column 'id'");
         }
     }
@@ -1957,12 +1935,12 @@ static void generateTable(int argc, char **argv)
             fail("Unknown type '%s' for field '%s'", typeString, field);
             break;
         }
-        if ((rc = ediAddColumn(edi, table, field, type, 0)) != 0) {
+        if ((rc = ediAddColumn(edi, app->table, field, type, 0)) != 0) {
             if (rc != MPR_ERR_ALREADY_EXISTS) {
                 fail("Cannot add column '%s'", field);
                 break;
             } else {
-                ediChangeColumn(edi, table, field, type, 0);
+                ediChangeColumn(edi, app->table, field, type, 0);
             }
         }
     }
@@ -1975,47 +1953,14 @@ static void generateTable(int argc, char **argv)
 /*
     Called with args: name [field:type [, field:type] ...]
  */
-static void generateScaffoldViews(cchar *name, cchar *table, int argc, char **argv)
+static void generateScaffoldViews(int argc, char **argv)
 {
-    EspRoute    *eroute;
-    MprHash     *tokens;
-    cchar       *path, *data, *list;
-
-    if (app->error) {
-        return;
-    }
+#if UNUSED && BIT_ESP_LEGACY
     eroute = app->eroute;
-    list = smatch(name, table) ? sfmt("%ss", name) : table; 
-    tokens = mprDeserialize(sfmt("{ NAME: '%s', LIST: '%s', TABLE: '%s', TITLE: '%s', SERVICE: '%s'}", 
-        name, list, table, spascal(name), app->route->serverPrefix));
-
-    if (espTestConfig(app->route, "esp.server.generate.clientView", "true")) {
-        path = sfmt("%s/%s/%s-list.html", app->eroute->appDir, name, name);
-        data = getTemplate(app->topPak, "list.html", tokens);
-#if BIT_ESP_LEGACY
-    } else if (eroute->legacy) {
-        path = sfmt("%s/%s-list.esp", app->eroute->viewsDir, name);
-        data = getTemplate(app->topPak, "list.esp", tokens);
+    dir = eroute->legacy ? app->eroute->viewsDir : eroute->appDir;
 #endif
-    } else {
-        path = sfmt("%s/%s/%s-list.esp", app->eroute->appDir, name, name);
-        data = getTemplate(app->topPak, "list.esp", tokens);
-    }
-    makeEspFile(path, data, "Scaffold List View");
-
-    if (espTestConfig(app->route, "esp.server.generate.clientView", "true")) {
-        path = sfmt("%s/%s/%s-edit.html", app->eroute->appDir, name, name);
-        data = getTemplate(app->topPak, "edit.html", tokens);
-#if BIT_ESP_LEGACY
-    } else if (eroute->legacy) {
-        path = sfmt("%s/%s-edit.esp", app->eroute->viewsDir, name);
-        data = getTemplate(app->topPak, "edit.esp", tokens);
-#endif
-    } else {
-        path = sfmt("%s/%s/%s-edit.esp", app->eroute->appDir, name, name);
-        data = getTemplate(app->topPak, "edit.esp", tokens);
-    }
-    makeEspFile(path, data, "Scaffold Edit View");
+    genKey("clientList", "${APPDIR}/${CONTROLLER}/${CONTROLLER}-${FILENAME}", 0);
+    genKey("clientEdit", "${APPDIR}/${CONTROLLER}/${CONTROLLER}-${FILENAME}", 0);
 }
 
 
@@ -2024,8 +1969,7 @@ static void generateScaffoldViews(cchar *name, cchar *table, int argc, char **ar
  */
 static void generateScaffold(int argc, char **argv)
 {
-    char    *name, *plural;
-    cchar   *table;
+    char    *plural;
 
     if (argc < 1) {
         usageError();
@@ -2034,47 +1978,35 @@ static void generateScaffold(int argc, char **argv)
     if (app->error) {
         return;
     }
-    if (!espTestConfig(app->route, "esp.server.generate.scaffold", "true")) {
-        return;
-    }
-    name = sclone(argv[0]);
+    app->controller = sclone(argv[0]);
     /*
         This feature is undocumented.
         Having plural database table names greatly complicates things and ejsJoin is not able to follow foreign fields: NameId.
      */
-    stok(name, "-", &plural);
+    stok(sclone(app->controller), "-", &plural);
     if (plural) {
-        table = sjoin(name, plural, NULL);
+        app->table = sjoin(app->controller, plural, NULL);
     } else {
-        table = app->table ? app->table : name;
+        app->table = app->table ? app->table : app->controller;
     }
-    if (espTestConfig(app->route, "esp.server.generate.controller", "true")) {
-        generateScaffoldController(name, table, argc, argv);
-    }
-    if (espTestConfig(app->route, "esp.server.generate.clientController", "true")) {
-        generateClientController(name, table, argc, argv);
-    }
-    generateScaffoldViews(name, table, argc, argv);
-    if (espTestConfig(app->route, "esp.server.generate.clientModel", "true")) {
-        generateClientModel(name, argc, argv);
-    }
-    if (espTestConfig(app->route, "esp.server.generate.migration", "true")) {
-        generateScaffoldMigration(name, table, argc, argv);
-    }
+    generateScaffoldController(argc, argv);
+    generateClientController(argc, argv);
+    generateScaffoldViews(argc, argv);
+    generateClientModel(argc, argv);
+    generateScaffoldMigration(argc, argv);
     migrate(0, 0);
-
+#if UNUSED
+MOB -- fix
     if (espTestConfig(app->route, "esp.server.generate.clientController", "false")) {
-        trace("Info", sfmt("Use URL: %s/%s/list for a resource list", app->route->serverPrefix, name));
+        trace("Info", sfmt("Use URL: %s/%s/list for a resource list", app->route->serverPrefix, app->controller));
     }
+#endif
 }
 
 
 static int reverseSortFiles(MprDirEntry **d1, MprDirEntry **d2)
 {
-    int     rc;
-    
-    rc = scmp((*d1)->name, (*d2)->name);
-    return -rc;
+    return -scmp((*d1)->name, (*d2)->name);
 }
 
 
@@ -2084,18 +2016,7 @@ static int sortFiles(MprDirEntry **d1, MprDirEntry **d2)
 }
 
 
-static void makeFileFromTemplate(cchar *dest, cchar *name)
-{
-    MprHash     *tokens;
-    char        *data;
-
-    dest = mprJoinPath(app->route->documents, dest);
-    tokens = mprDeserialize(sfmt("{ NAME: '%s', TITLE: '%s' }", app->appName, spascal(app->appName)));
-    data = getTemplate(app->topPak, name, tokens);
-    makeEspFile(dest, data, "File");
-}
-
-
+#if UNUSED
 static void fixupFile(cchar *path)
 {
     HttpRoute   *route;
@@ -2109,9 +2030,8 @@ static void fixupFile(cchar *path)
     }
     route = app->route;
 
-    //  DEPRECATE ROUTESET and DIR
-    tokens = mprDeserialize(sfmt("{ NAME: '%s', TITLE: '%s', DATABASE: '%s', HOME: '%s', DOCUMENTS: '%s', LISTEN: '%s', BINDIR: '%s', ROUTESET: '%s', DIR: '%s' }", 
-        app->appName, spascal(app->appName), app->database, route->home, route->documents, app->listen, 
+    tokens = mprDeserialize(sfmt("{ APP: '%s', UAPP: '%s', DATABASE: '%s', HOME: '%s', DOCUMENTS: '%s', LISTEN: '%s', BINDIR: '%s', ROUTESET: '%s', DIR: '%s' }", 
+        app->appName, stitle(app->appName), app->database, route->home, route->documents, app->listen, 
         app->binDir, app->routeSet, route->documents));
     data = stemplate(data, tokens);
     tmp = mprGetTempPath(route->documents);
@@ -2124,6 +2044,7 @@ static void fixupFile(cchar *path)
         fail("Cannot rename %s to %s", tmp, path);
     }
 }
+#endif
 
 
 static bool upgradePak(cchar *name)
@@ -2166,6 +2087,7 @@ static bool installPak(cchar *name, cchar *criteria, bool topLevel)
         return 1;
     }
     if (!criteria) {
+        /* Criteria not specified. Look in dependencies to see if there is a criteria */
         deps = mprGetJsonObj(app->eroute->config, "dependencies", MPR_JSON_TOP);
         if (deps) {
             for (i = 0, cp = deps->children; i < deps->length; i++, cp = cp->next) {
@@ -2247,6 +2169,10 @@ static void uninstallPak(cchar *name)
 }
 
 
+/*
+    Blend a pak package.json configuration
+    This will recursively blend all dependencies. Order is bottom up so dependencies can define directories.
+ */
 static bool blendPak(cchar *name, cchar *version, bool topLevel)
 {
     MprJson     *cp, *deps, *spec;
@@ -2284,7 +2210,7 @@ static bool blendPak(cchar *name, cchar *version, bool topLevel)
 
 
 /*
-    Blend a key from one json object to another
+    Blend a key from one json object to another. Does not overwrite existing properties.
  */
 static void blendJson(MprJson *dest, cchar *toKey, MprJson *from, cchar *fromKey)
 {
@@ -2296,7 +2222,7 @@ static void blendJson(MprJson *dest, cchar *toKey, MprJson *from, cchar *fromKey
     if ((to = mprGetJsonObj(dest, toKey, 0)) == 0) {
         to = mprCreateJson(from->type);
     }
-    mprBlendJson(to, from, 0);
+    mprBlendJson(to, from, MPR_JSON_OVERWRITE);
     mprSetJsonObj(dest, toKey, to, 0);
 }
 
@@ -2396,21 +2322,15 @@ static bool installPakFiles(cchar *name, cchar *criteria, bool topLevel)
 }
 
 
-/*
-    esp generate app NAME|. kind [paks, ...]
- */
-static void generateAppFiles(int argc, char **argv)
+static void generateSetup()
 {
     EspRoute    *eroute;
     HttpRoute   *route;
     MprJson     *obj;
-    cchar       *path, *src, *dest;
-    int         i;
+    cchar       *path;
 
-    app->generateApp = 1;
     route = app->route;
     eroute = app->eroute;
-    makeEspDir(route->documents);
     app->routeSet = sclone("restful");
 
     /*
@@ -2426,40 +2346,16 @@ static void generateAppFiles(int argc, char **argv)
         /*
             Pre-declare to setup a consistent order
          */
-        mprSetJson(app->eroute->config, "name", app->appName, 0);
-        mprSetJson(app->eroute->config, "title", app->appName, 0);
-        mprSetJson(app->eroute->config, "description", app->appName, 0);
-        mprSetJson(app->eroute->config, "version", "0.0.0", 0);
-        mprSetJsonObj(app->eroute->config, "dependencies", mprCreateJson(0), 0);
-        mprSetJsonObj(app->eroute->config, "client-scripts", mprCreateJson(MPR_JSON_ARRAY), 0);
-        mprSetJsonObj(app->eroute->config, "dirs", mprCreateJson(0), 0);
+        mprSetJson(eroute->config, "name", app->appName, 0);
+        mprSetJson(eroute->config, "title", app->appName, 0);
+        mprSetJson(eroute->config, "description", app->appName, 0);
+        mprSetJson(eroute->config, "version", "0.0.0", 0);
+        mprSetJsonObj(eroute->config, "dependencies", mprCreateJson(0), 0);
+        mprSetJsonObj(eroute->config, "client-scripts", mprCreateJson(MPR_JSON_ARRAY), 0);
+        mprSetJsonObj(eroute->config, "dirs", mprCreateJson(0), 0);
     }
-    for (i = 0; i < argc; i++) {
-        installPak(argv[i], NULL, 1);
-    }
-    app->topPak = mprGetJson(eroute->config, "esp.server.generate.top", 0);
-
-    if (espTestConfig(app->route, "esp.server.generate.clientFiles", "true")) {
-        makeFileFromTemplate(mprJoinPath(eroute->clientDir, "index.esp"), "index.esp");
-        makeFileFromTemplate(mprJoinPath(eroute->clientDir, "app/main.js"), "main.js");
-        makeFileFromTemplate(mprJoinPath(eroute->clientDir, "css/all.css"), "all.css");
-        makeFileFromTemplate(mprJoinPath(eroute->clientDir, "css/all.less"), "all.less");
-        makeFileFromTemplate(mprJoinPath(eroute->clientDir, "css/app.less"), "app.less");
-        makeFileFromTemplate(mprJoinPath(eroute->clientDir, "css/fix.less"), "fix.less");
-        makeFileFromTemplate(mprJoinPath(eroute->clientDir, "css/theme.less"), "theme.less");
-        makeFileFromTemplate("start.bit", "start.bit");
-        src = sfmt("%s/templates/%s/favicon.ico", app->appName, app->topPak);
-        dest = mprJoinPath(eroute->clientDir, "assets/favicon.ico");
-        makeEspDir(mprGetPathDir(dest));
-        mprCopyPath(src, dest, 0644);
-        if (smatch(app->topPak, "esp-angular-mvc")) {
-            makeFileFromTemplate(mprJoinPath(eroute->clientDir, "pages/splash.html"), "splash.html");
-        } else if (smatch(app->topPak, "esp-html-mvc")) {
-            makeFileFromTemplate(mprJoinPath(eroute->layoutsDir, "default.esp"), "default.esp");
-        }
-    }
-    fixupFile(mprJoinPath(route->documents, BIT_ESP_PACKAGE));
 }
+
 
 
 static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toDir)
@@ -2537,30 +2433,32 @@ static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toD
 }
 
 
-static void generateHostingConfig()
+static void generateFiles()
 {
-    MprHash     *tokens;
-    char        *path, *data;
+    EspRoute    *eroute;
+    HttpRoute   *route;
+    MprJson     *gfiles, *pattern;
+    MprList     *files;
+    cchar       *file, *path;
+    int         jnext, next;
 
-    if (app->topPak) {
-        path = mprJoinPath(app->route->documents, "appweb.conf");
-        tokens = mprDeserialize(sfmt("{ LISTEN: '%s', NAME: '%s', TITLE: '%s' }", app->listen,
-            app->appName, spascal(app->appName)));
-        data = getTemplate(app->topPak, "appweb.conf", tokens);
-        makeEspFile(path, data, "Configuration");
+    route = app->route;
+    eroute = app->eroute;
+
+    genKey("appweb", 0, 0);
+
+    gfiles = mprGetJsonObj(app->eroute->config, "esp.server.generate.files", 0);
+    for (ITERATE_JSON(gfiles, pattern, jnext)) {
+        path = mprJoinPath("templates", pattern->value);
+        files = mprGlobPathFiles(mprGetPathDir(path), mprGetPathBase(path), MPR_PATH_DESCEND | MPR_PATH_NODIRS);
+        for (ITERATE_ITEMS(files, file, next)) {
+            genFile(file, 0);
+        }
     }
-}
-
-
-static void generateAppSrc()
-{
-    MprHash     *tokens;
-    char        *path, *data;
-
-    path = mprJoinPath(app->eroute->srcDir, "app.c");
-    tokens = mprDeserialize(sfmt("{ NAME: '%s', TITLE: '%s' }", app->appName, spascal(app->appName)));
-    data = getTemplate("esp-server", "app.c", tokens);
-    makeEspFile(path, data, "Source");
+#if UNUSED
+    //  MOB is this required
+    fixupFile(mprJoinPath(route->documents, BIT_ESP_PACKAGE));
+#endif
 }
 
 
@@ -2600,9 +2498,8 @@ static void makeEspDir(cchar *path)
     }
 }
 
-//  TODO - msg is not used.
 
-static void makeEspFile(cchar *path, cchar *data, cchar *msg)
+static void makeEspFile(cchar *path, cchar *data)
 {
     bool    exists;
 
@@ -2649,26 +2546,106 @@ static cchar *getCachedPaks()
 }
 
 
-static char *getTemplate(cchar *name, cchar *file, MprHash *tokens)
+static cchar *readTemplate(cchar *path, MprHash *tokens)
 {
-    cchar   *data, *path, *version;
+    cchar   *cp, *data, *mime;
+    ssize   size;
 
-    /*
-        This will find local templates after the first generate app, but not while generating the app.
-     */
-    path = sfmt("%s/templates/%s/%s", mprGetCurrentPath(), name, file);
-    if (!mprPathExists(path, R_OK)) {
-        /*
-            If templates not present locally, try the cache under the pak.
-         */
-        version = getPakVersion(name, NULL);
-        path = sfmt("%s/%s/%s/templates/%s/%s", app->paksCacheDir, name, version, name, file);
-    }
-    if ((data = mprReadPathContents(path, NULL)) == 0) {
+    if ((data = mprReadPathContents(path, &size)) == 0) {
         fail("Cannot open template file \"%s\"", path);
     }
     vtrace("Info", "Using template %s", path);
+    if ((mime = mprLookupMime(NULL, path)) != 0) {
+        if (sstarts(mime, "application") || sstarts(mime, "image") || sstarts(mime, "video") || sstarts(mime, "audio")) {
+            return data;
+        }
+    }
+    for (cp = data; *cp; cp++) { }
+    if ((cp - data) < size) {
+        ssize len = cp - data;
+        print("LEN %s", len);
+        return data;
+    }
     return stemplate(data, tokens);
+}
+
+
+static cchar *getTemplate(cchar *key, MprHash *tokens)
+{
+    cchar   *pattern;
+
+    if ((pattern = espGetConfig(app->route, sfmt("esp.server.generate.%s", key), 0)) != 0) {
+        return readTemplate(mprJoinPath("templates", pattern), tokens);
+    }
+    return 0;
+}
+
+
+static MprHash *makeTokens(cchar *path, MprHash *other)
+{
+    MprHash     *tokens;
+    cchar       *filename, *list;
+
+    filename = mprGetPathBase(path);
+    list = smatch(app->controller, app->table) ? sfmt("%ss", app->controller) : app->table; 
+    tokens = mprDeserialize(sfmt(
+        "{ APP: '%s', APPDIR: '%s', BINDIR: '%s', DATABASE: '%s', DOCUMENTS: '%s', FILENAME: '%s', HOME: '%s', "
+        "LIST: '%s', LISTEN: '%s', CONTROLLER: '%s', UCONTROLLER: '%s', MODEL: '%s', UMODEL: '%s', ROUTES: '%s', "
+        "SERVER: '%s', TABLE: '%s', UAPP: '%s', DEFINE_ACTIONS: '' }",
+        app->appName, app->eroute->appDir,app->binDir, app->database, app->route->documents, filename, app->route->home,
+        list, app->listen, app->controller, stitle(app->controller), app->model, stitle(app->model), app->routeSet, 
+            app->route->serverPrefix, app->table, app->title));
+    if (other) {
+        mprBlendHash(tokens, other);
+    }
+    return tokens;
+}
+
+
+static void genKey(cchar *key, cchar *path, MprHash *tokens)
+{
+    HttpRoute   *route;
+    cchar       *data, *pattern;
+
+    if (app->error) {
+        return;
+    }
+    if ((pattern = espGetConfig(app->route, sfmt("esp.server.generate.%s", key), 0)) == 0) {
+        return;
+    }
+    route = app->route;
+    if (!tokens) {
+        tokens = makeTokens(pattern, 0);
+    }
+    if ((data = getTemplate(key, tokens)) == 0) {
+        return;
+    }
+    if (!path) {
+        path = mprTrimPathComponents(pattern, 1);
+    }
+    path = stemplate(path, tokens);
+    makeEspFile(path, data);
+    trace("Generate", path);
+}
+
+
+static void genFile(cchar *path, MprHash *tokens)
+{
+    HttpRoute   *route;
+    cchar       *data;
+
+    if (app->error) {
+        return;
+    }
+    route = app->route;
+    if (!tokens) {
+        tokens = makeTokens(path, 0);
+    }
+    if ((data = readTemplate(path, tokens)) == 0) {
+        return;
+    }
+    path = mprTrimPathComponents(path, 2);
+    makeEspFile(path, data);
 }
 
 
