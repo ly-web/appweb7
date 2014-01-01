@@ -34,7 +34,7 @@ static bool pageExists(HttpConn *conn);
 static char *getModuleEntry(EspRoute *eroute, cchar *kind, cchar *source, cchar *cacheName);
 static bool layoutIsStale(EspRoute *eroute, cchar *source, cchar *module);
 static bool loadApp(HttpRoute *route);
-static bool loadModule(HttpRoute *route, cchar *kind, cchar *source, cchar **errMsg);
+static bool loadEspModule(HttpRoute *route, cchar *kind, cchar *source, cchar **errMsg);
 #endif
 
 /************************************* Code ***********************************/
@@ -301,7 +301,7 @@ static int runAction(HttpConn *conn)
 #if !BIT_STATIC
     key = mprJoinPath(eroute->controllersDir, rx->target);
     if (!eroute->flat && (eroute->update || !mprLookupKey(esp->actions, key))) {
-        if (!loadModule(route, "controller", source, &errMsg)) {
+        if (!loadEspModule(route, "controller", source, &errMsg)) {
             httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "%s", errMsg);
             return 0;
         }
@@ -373,7 +373,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     if (!eroute->flat && (eroute->update || !mprLookupKey(esp->views, mprGetPortablePath(source)))) {
         /* WARNING: GC yield */
         mprHold(source);
-        if (!loadModule(route, "view", source, &errMsg)) {
+        if (!loadEspModule(route, "view", source, &errMsg)) {
             mprRelease(source);
             httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "%s", errMsg);
             return;
@@ -430,7 +430,7 @@ static char *getModuleEntry(EspRoute *eroute, cchar *kind, cchar *source, cchar 
 /*
     WARNING: GC yield
  */
-static bool loadModule(HttpRoute *route, cchar *kind, cchar *source, cchar **errMsg)
+static bool loadEspModule(HttpRoute *route, cchar *kind, cchar *source, cchar **errMsg)
 {
     Esp         *esp;
     EspRoute    *eroute;
@@ -484,7 +484,7 @@ static bool loadModule(HttpRoute *route, cchar *kind, cchar *source, cchar **err
             unlock(esp);
             return 0;
         }
-        mprLog(3, "esp: loadModule: \"%s\", %s", kind, source);
+        mprLog(3, "esp: loadEspModule: \"%s\", %s", kind, source);
         if (mprLoadModule(mp) < 0) {
             mprError("Cannot load compiled esp module");
             unlock(esp);
@@ -516,7 +516,7 @@ static bool loadApp(HttpRoute *route)
     } else {
         source = mprJoinPath(eroute->srcDir, "app.c");
     }
-    if (!loadModule(route, "app", source, &errMsg)) {
+    if (!loadEspModule(route, "app", source, &errMsg)) {
         mprError("%s", errMsg);
         return 0;
     }
@@ -1149,7 +1149,7 @@ static int finishEspAppDirective(MaState *state, cchar *key, cchar *value)
                 source = stok(sclone(item->value), ":", &kind);
                 if (!kind) kind = "controller";
                 source = mprJoinPath(eroute->controllersDir, source);
-                if (!loadModule(state->route, kind, source, &errMsg)) {
+                if (!loadEspModule(state->route, kind, source, &errMsg)) {
                     mprError("Cannot preload esp module %s. %s", source, errMsg);
                     return MPR_ERR_CANT_LOAD;
                 }
