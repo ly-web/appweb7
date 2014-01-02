@@ -323,7 +323,7 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
     } else {
         csource = source;
     }
-    mprMakeDir(eroute->cacheDir, 0775, -1, -1, 1);
+    mprMakeDir(module, 0775, -1, -1, 1);
 
 #if BIT_WIN_LIKE
     {
