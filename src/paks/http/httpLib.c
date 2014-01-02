@@ -229,9 +229,10 @@ PUBLIC bool httpGetCredentials(HttpConn *conn, cchar **username, cchar **passwor
  */
 PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
 {
-    HttpRx      *rx;
-    HttpAuth    *auth;
-    HttpSession *session;
+    HttpRx          *rx;
+    HttpAuth        *auth;
+    HttpSession     *session;
+    HttpVerifyUser  verifyUser;
 
     rx = conn->rx;
     auth = rx->route->auth;
@@ -243,8 +244,13 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
         mprError("No AuthStore defined");
         return 0;
     }
-    if (!auth->store->verifyUser) {
-        mprError("No AuthStore verification routine defined");
+    if ((verifyUser = auth->verifyUser) == 0) {
+        if (auth->parent && (verifyUser = auth->parent->verifyUser) == 0) {
+            verifyUser = auth->store->verifyUser;
+        }
+    }
+    if (!verifyUser) {
+        mprError("No user verification routine defined");
         return 0;
     }
     if (auth->username && *auth->username) {
@@ -252,7 +258,7 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
         username = auth->username;
         password = 0;
     }
-    if (!(auth->store->verifyUser)(conn, username, password)) {
+    if (!(verifyUser)(conn, username, password)) {
         return 0;
     }
     if ((session = httpCreateSession(conn)) == 0) {
@@ -370,6 +376,7 @@ PUBLIC HttpAuth *httpCreateInheritedAuth(HttpAuth *parent)
         auth->loggedIn = parent->loggedIn;
         auth->loginPage = parent->loginPage;
         auth->username = parent->username;
+        auth->verifyUser = parent->verifyUser;
         auth->parent = parent;
     }
     return auth;
@@ -453,17 +460,9 @@ PUBLIC int httpAddAuthStore(cchar *name, HttpVerifyUser verifyUser)
 }
 
 
-PUBLIC int httpSetAuthStoreVerify(cchar *name, HttpVerifyUser verifyUser)
+PUBLIC void httpSetAuthVerify(HttpAuth *auth, HttpVerifyUser verifyUser)
 {
-    Http            *http;
-    HttpAuthStore   *store;
-
-    http = MPR->httpService;
-    if ((store = mprLookupKey(http->authStores, name)) == 0) {
-        return MPR_ERR_CANT_FIND;
-    }
-    store->verifyUser = verifyUser;
-    return 0;
+    auth->verifyUser = verifyUser;
 }
 
 
