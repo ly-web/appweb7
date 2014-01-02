@@ -323,7 +323,7 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
     } else {
         csource = source;
     }
-    mprMakeDir(module, 0775, -1, -1, 1);
+    mprMakeDir(mprGetPathBase(module), 0775, -1, -1, 1);
 
 #if BIT_WIN_LIKE
     {
