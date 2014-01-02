@@ -2436,13 +2436,11 @@ static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toD
 static void generateFiles()
 {
     EspRoute    *eroute;
-    HttpRoute   *route;
     MprJson     *gfiles, *pattern;
     MprList     *files;
     cchar       *file, *path;
     int         jnext, next;
 
-    route = app->route;
     eroute = app->eroute;
 
     genKey("appweb", 0, 0);
@@ -2604,7 +2602,6 @@ static MprHash *makeTokens(cchar *path, MprHash *other)
 
 static void genKey(cchar *key, cchar *path, MprHash *tokens)
 {
-    HttpRoute   *route;
     cchar       *data, *pattern;
 
     if (app->error) {
@@ -2613,7 +2610,6 @@ static void genKey(cchar *key, cchar *path, MprHash *tokens)
     if ((pattern = espGetConfig(app->route, sfmt("esp.server.generate.%s", key), 0)) == 0) {
         return;
     }
-    route = app->route;
     if (!tokens) {
         tokens = makeTokens(pattern, 0);
     }
@@ -2631,13 +2627,11 @@ static void genKey(cchar *key, cchar *path, MprHash *tokens)
 
 static void genFile(cchar *path, MprHash *tokens)
 {
-    HttpRoute   *route;
     cchar       *data;
 
     if (app->error) {
         return;
     }
-    route = app->route;
     if (!tokens) {
         tokens = makeTokens(path, 0);
     }
