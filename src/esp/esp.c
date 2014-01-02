@@ -2435,13 +2435,10 @@ static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toD
 
 static void generateFiles()
 {
-    EspRoute    *eroute;
     MprJson     *gfiles, *pattern;
     MprList     *files;
     cchar       *file, *path;
     int         jnext, next;
-
-    eroute = app->eroute;
 
     genKey("appweb", 0, 0);
 

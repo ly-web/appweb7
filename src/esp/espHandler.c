@@ -440,6 +440,7 @@ static bool loadEspModule(HttpRoute *route, cchar *kind, cchar *source, cchar **
 
     eroute = route->eroute;
     esp = MPR->espService;
+    *errMsg = "";
 
 #if VXWORKS
     /* 
@@ -460,7 +461,7 @@ static bool loadEspModule(HttpRoute *route, cchar *kind, cchar *source, cchar **
     lock(esp);
     if (eroute->update) {
         if (!mprPathExists(source, R_OK)) {
-            mprError("Cannot find %s \"%s\" to load", kind, source);
+            *errMsg = sfmt("Cannot find %s \"%s\" to load", kind, source);
             return 0;
         }
         if (espModuleIsStale(source, module, &recompile) || (isView && layoutIsStale(eroute, source, module))) {
@@ -480,13 +481,13 @@ static bool loadEspModule(HttpRoute *route, cchar *kind, cchar *source, cchar **
     if (mprLookupModule(source) == 0) {
         entry = getModuleEntry(eroute, kind, source, cacheName);
         if ((mp = mprCreateModule(source, module, entry, route)) == 0) {
-            mprError("Memory allocation error loading module");
+            *errMsg = "Memory allocation error loading module";
             unlock(esp);
             return 0;
         }
         mprLog(3, "esp: loadEspModule: \"%s\", %s", kind, source);
         if (mprLoadModule(mp) < 0) {
-            mprError("Cannot load compiled esp module");
+            *errMsg = "Cannot load compiled esp module";
             unlock(esp);
             return 0;
         }
