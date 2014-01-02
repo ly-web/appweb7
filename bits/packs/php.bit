@@ -27,7 +27,8 @@ Bit.pack({
                     path = bit.dir.packs.join('php')
                 } 
                 if (!path.exists) {
-                    path = App.dir.join('../packages-' + bit.platform.os + '-' + bit.platform.arch, 'php/latest')
+                    path = App.dir.join('../packages-' + bit.platform.os + '-' + bit.platform.arch, 'php')
+                    path = path.files('php*').reverse()[0]
                 }
             }
             if (bit.platform.os == 'windows') {
