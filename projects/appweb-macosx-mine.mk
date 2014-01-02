@@ -397,6 +397,7 @@ endif
 DEPS_10 += $(CONFIG)/inc/bit.h
 DEPS_10 += $(CONFIG)/inc/mpr.h
 DEPS_10 += $(CONFIG)/inc/est.h
+DEPS_10 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/mprSsl.o: \
     src/paks/mpr/mprSsl.c $(DEPS_10)
@@ -1116,7 +1117,7 @@ DEPS_56 += src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css
 DEPS_56 += src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/all.css
 DEPS_56 += src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/all.less
 DEPS_56 += src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/app.less
-DEPS_56 += src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/fix.less
+DEPS_56 += src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/fix.css
 DEPS_56 += src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/theme.less
 DEPS_56 += src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/index.esp
 DEPS_56 += src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/pages
@@ -1140,7 +1141,6 @@ DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/css
 DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/css/all.css
 DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/css/all.less
 DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/css/app.less
-DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/css/fix.less
 DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/css/theme.less
 DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/index.esp
 DEPS_56 += src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/layouts
@@ -1214,7 +1214,7 @@ $(CONFIG)/paks: $(DEPS_56)
 	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/all.css ../../../$(CONFIG)/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/css/all.css ; \
 	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/all.less ../../../$(CONFIG)/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/css/all.less ; \
 	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/app.less ../../../$(CONFIG)/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/css/app.less ; \
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/fix.less ../../../$(CONFIG)/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/css/fix.less ; \
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/fix.css ../../../$(CONFIG)/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/css/fix.css ; \
 	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/theme.less ../../../$(CONFIG)/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/css/theme.less ; \
 	cp esp-angular-mvc/templates/esp-angular-mvc/client/index.esp ../../../$(CONFIG)/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/index.esp ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/pages" ; \
@@ -1238,7 +1238,6 @@ $(CONFIG)/paks: $(DEPS_56)
 	cp esp-html-mvc/templates/esp-html-mvc/client/css/all.css ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/css/all.css ; \
 	cp esp-html-mvc/templates/esp-html-mvc/client/css/all.less ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/css/all.less ; \
 	cp esp-html-mvc/templates/esp-html-mvc/client/css/app.less ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/css/app.less ; \
-	cp esp-html-mvc/templates/esp-html-mvc/client/css/fix.less ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/css/fix.less ; \
 	cp esp-html-mvc/templates/esp-html-mvc/client/css/theme.less ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/css/theme.less ; \
 	cp esp-html-mvc/templates/esp-html-mvc/client/index.esp ../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/index.esp ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/layouts" ; \
@@ -1480,7 +1479,7 @@ DEPS_66 += $(CONFIG)/bin/ejsc
 $(CONFIG)/bin/ejs.mod: $(DEPS_66)
 	( \
 	cd src/paks/ejs; \
-	$(LBIN)/ejsc --out ../../../$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null ejs.es ; \
+	../../../$(CONFIG)/bin/ejsc --out ../../../$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null ejs.es ; \
 	)
 endif
 
@@ -2174,7 +2173,7 @@ installBinary: $(DEPS_94)
 	cp src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/all.css $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/esp-angular-mvc/client/css/all.css
 	cp src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/all.less $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/esp-angular-mvc/client/css/all.less
 	cp src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/app.less $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/esp-angular-mvc/client/css/app.less
-	cp src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/fix.less $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/esp-angular-mvc/client/css/fix.less
+	cp src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/fix.css $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/esp-angular-mvc/client/css/fix.css
 	cp src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/theme.less $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/esp-angular-mvc/client/css/theme.less
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/esp-angular-mvc/client"
 	cp src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/index.esp $(BIT_VAPP_PREFIX)/esp/esp-angular-mvc/templates/esp-angular-mvc/client/index.esp
@@ -2197,7 +2196,6 @@ installBinary: $(DEPS_94)
 	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/css/all.css $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/client/css/all.css
 	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/css/all.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/client/css/all.less
 	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/css/app.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/client/css/app.less
-	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/css/fix.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/client/css/fix.less
 	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/css/theme.less $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/client/css/theme.less
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/client"
 	cp src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/index.esp $(BIT_VAPP_PREFIX)/esp/esp-html-mvc/templates/esp-html-mvc/client/index.esp

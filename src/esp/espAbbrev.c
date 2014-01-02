@@ -797,6 +797,10 @@ PUBLIC void stylesheets(cchar *patterns)
                 stylesheets("css/all.css");
             } else {
                 stylesheets("css/all.less");
+                path = mprJoinPath(eroute->clientDir, "css/fix.css");
+                if (mprPathExists(path, R_OK)) {
+                    stylesheets("css/fix.css");
+                }
             }
         }
         return;

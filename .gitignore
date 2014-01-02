@@ -222,3 +222,4 @@ src/legacy
 samples/zzzz
 *.bak
 test/kick.conf
+test/apps.conf

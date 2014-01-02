@@ -1165,7 +1165,7 @@ DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\clie
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\all.css
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\all.less
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\app.less
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\fix.less
+DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\fix.css
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\theme.less
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\index.esp
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\pages
@@ -1189,7 +1189,6 @@ DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\all.css
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\all.less
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\app.less
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\fix.less
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\theme.less
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\index.esp
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\layouts
@@ -1262,7 +1261,7 @@ $(CONFIG)\paks: $(DEPS_58)
 	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\all.css ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.0\templates\esp-angular-mvc\client\css\all.css
 	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\all.less ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.0\templates\esp-angular-mvc\client\css\all.less
 	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\app.less ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.0\templates\esp-angular-mvc\client\css\app.less
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\fix.less ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.0\templates\esp-angular-mvc\client\css\fix.less
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\fix.css ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.0\templates\esp-angular-mvc\client\css\fix.css
 	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\theme.less ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.0\templates\esp-angular-mvc\client\css\theme.less
 	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\index.esp ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.0\templates\esp-angular-mvc\client\index.esp
 	if not exist "..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.0\templates\esp-angular-mvc\client\pages" md "..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.0\templates\esp-angular-mvc\client\pages"
@@ -1286,7 +1285,6 @@ $(CONFIG)\paks: $(DEPS_58)
 	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\all.css ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.0\templates\esp-html-mvc\client\css\all.css
 	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\all.less ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.0\templates\esp-html-mvc\client\css\all.less
 	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\app.less ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.0\templates\esp-html-mvc\client\css\app.less
-	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\fix.less ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.0\templates\esp-html-mvc\client\css\fix.less
 	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\theme.less ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.0\templates\esp-html-mvc\client\css\theme.less
 	copy /Y esp-html-mvc\templates\esp-html-mvc\client\index.esp ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.0\templates\esp-html-mvc\client\index.esp
 	if not exist "..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.0\templates\esp-html-mvc\client\layouts" md "..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.0\templates\esp-html-mvc\client\layouts"
@@ -1518,7 +1516,7 @@ DEPS_68 = $(DEPS_68) $(CONFIG)\bin\ejsc.exe
 
 $(CONFIG)\bin\ejs.mod: $(DEPS_68)
 	cd src\paks\ejs
-	"$(LBIN)\ejsc" --out "..\..\..\$(CONFIG)\bin\ejs.mod" --optimize 9 --bind --require null ejs.es
+	"..\..\..\$(CONFIG)\bin\ejsc" --out "..\..\..\$(CONFIG)\bin\ejs.mod" --optimize 9 --bind --require null ejs.es
 	cd ..\..\..
 !ENDIF
 
@@ -2330,7 +2328,7 @@ installBinary: $(DEPS_102)
 	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\all.css "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\templates\esp-angular-mvc\client\css\all.css"
 	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\all.less "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\templates\esp-angular-mvc\client\css\all.less"
 	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\app.less "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\templates\esp-angular-mvc\client\css\app.less"
-	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\fix.less "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\templates\esp-angular-mvc\client\css\fix.less"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\fix.css "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\templates\esp-angular-mvc\client\css\fix.css"
 	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\theme.less "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\templates\esp-angular-mvc\client\css\theme.less"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\templates\esp-angular-mvc\client" md "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\templates\esp-angular-mvc\client"
 	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\index.esp "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\templates\esp-angular-mvc\client\index.esp"
@@ -2353,7 +2351,6 @@ installBinary: $(DEPS_102)
 	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\all.css "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\templates\esp-html-mvc\client\css\all.css"
 	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\all.less "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\templates\esp-html-mvc\client\css\all.less"
 	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\app.less "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\templates\esp-html-mvc\client\css\app.less"
-	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\fix.less "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\templates\esp-html-mvc\client\css\fix.less"
 	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\theme.less "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\templates\esp-html-mvc\client\css\theme.less"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\templates\esp-html-mvc\client" md "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\templates\esp-html-mvc\client"
 	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\index.esp "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\templates\esp-html-mvc\client\index.esp"

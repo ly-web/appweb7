@@ -2129,7 +2129,7 @@ cp -r esp.conf ../server/esp.conf
 ../src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/all.css,
 ../src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/all.less,
 ../src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/app.less,
-../src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/fix.less,
+../src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/fix.css,
 ../src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/theme.less,
 ../src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/index.esp,
 ../src/esp/paks/esp-angular-mvc/templates/esp-angular-mvc/client/pages,
@@ -2153,7 +2153,6 @@ cp -r esp.conf ../server/esp.conf
 ../src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/css/all.css,
 ../src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/css/all.less,
 ../src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/css/app.less,
-../src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/css/fix.less,
 ../src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/css/theme.less,
 ../src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/index.esp,
 ../src/esp/paks/esp-html-mvc/templates/esp-html-mvc/client/layouts,
@@ -2231,7 +2230,7 @@ cd ../src/esp/paks
 	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/all.css ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/css/all.css
 	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/all.less ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/css/all.less
 	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/app.less ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/css/app.less
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/fix.less ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/css/fix.less
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/fix.css ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/css/fix.css
 	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/theme.less ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/css/theme.less
 	cp esp-angular-mvc/templates/esp-angular-mvc/client/index.esp ../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/index.esp
 	mkdir -p \"../../${OUT_DIR}/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/pages\"
@@ -2255,7 +2254,6 @@ cd ../src/esp/paks
 	cp esp-html-mvc/templates/esp-html-mvc/client/css/all.css ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/css/all.css
 	cp esp-html-mvc/templates/esp-html-mvc/client/css/all.less ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/css/all.less
 	cp esp-html-mvc/templates/esp-html-mvc/client/css/app.less ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/css/app.less
-	cp esp-html-mvc/templates/esp-html-mvc/client/css/fix.less ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/css/fix.less
 	cp esp-html-mvc/templates/esp-html-mvc/client/css/theme.less ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/css/theme.less
 	cp esp-html-mvc/templates/esp-html-mvc/client/index.esp ../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/index.esp
 	mkdir -p \"../../${OUT_DIR}/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/layouts\"

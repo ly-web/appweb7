@@ -127,7 +127,7 @@ mkdir -p "../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/esp-
 copy esp-angular-mvc/templates/esp-angular-mvc/client/css/all.css ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/css/all.css
 copy esp-angular-mvc/templates/esp-angular-mvc/client/css/all.less ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/css/all.less
 copy esp-angular-mvc/templates/esp-angular-mvc/client/css/app.less ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/css/app.less
-copy esp-angular-mvc/templates/esp-angular-mvc/client/css/fix.less ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/css/fix.less
+copy esp-angular-mvc/templates/esp-angular-mvc/client/css/fix.css ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/css/fix.css
 copy esp-angular-mvc/templates/esp-angular-mvc/client/css/theme.less ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/css/theme.less
 copy esp-angular-mvc/templates/esp-angular-mvc/client/index.esp ../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/index.esp
 mkdir -p "../../../windows-x86-default/paks/esp-angular-mvc/4.5.0/templates/esp-angular-mvc/client/pages"
@@ -151,7 +151,6 @@ mkdir -p "../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates/esp-htm
 copy esp-html-mvc/templates/esp-html-mvc/client/css/all.css ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/css/all.css
 copy esp-html-mvc/templates/esp-html-mvc/client/css/all.less ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/css/all.less
 copy esp-html-mvc/templates/esp-html-mvc/client/css/app.less ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/css/app.less
-copy esp-html-mvc/templates/esp-html-mvc/client/css/fix.less ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/css/fix.less
 copy esp-html-mvc/templates/esp-html-mvc/client/css/theme.less ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/css/theme.less
 copy esp-html-mvc/templates/esp-html-mvc/client/index.esp ../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/index.esp
 mkdir -p "../../../windows-x86-default/paks/esp-html-mvc/4.5.0/templates/esp-html-mvc/client/layouts"
