@@ -181,7 +181,7 @@ static void startEsp(HttpQueue *q)
         /*
             See if the esp configuration or app needs to be reloaded.
          */
-        if (espLoadConfig(route) < 0) {
+        if (eroute->appName && espLoadConfig(route) < 0) {
             httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load esp config for %s", eroute->appName);
             return;
         }

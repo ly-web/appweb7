@@ -308,7 +308,7 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
             return 0;
         }
         csource = mprJoinPathExt(mprTrimPathExt(module), ".c");
-        mprMakeDir(mprGetPathDir(csource), 0775, 0, -1, 1);
+        mprMakeDir(mprGetPathDir(csource), 0775, -1, -1, 1);
         if ((fp = mprOpenFile(csource, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
             *errMsg = sfmt("Cannot open compiled script file %s", csource);
             return 0;
