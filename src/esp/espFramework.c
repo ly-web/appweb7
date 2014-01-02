@@ -532,7 +532,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             debug = smatch(eroute->mode, "debug");
             if ((msettings = mprGetJsonObj(eroute->config, sfmt("esp.modes.%s", eroute->mode), 0)) != 0) {
                 settings = mprLookupJsonObj(eroute->config, "esp");
-                mprBlendJson(settings, msettings, 0);
+                mprBlendJson(settings, msettings, MPR_JSON_OVERWRITE);
                 mprSetJson(settings, "esp.mode", eroute->mode, 0);
             }
             if ((value = espGetConfig(route, "esp.auth", 0)) != 0) {
