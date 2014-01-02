@@ -3,7 +3,7 @@
 <head>
     <title>Home</title>
     <meta charset="utf-8" />
-    <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="@~/assets/favicon.ico" type="image/x-icon">
     <% stylesheets(NULL); %>
 </head>
 <body data-config='<% renderConfig(); %>' id='body'>

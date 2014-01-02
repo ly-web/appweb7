@@ -625,7 +625,7 @@ PUBLIC void scripts(cchar *patterns)
         if (schr(path, '$')) {
             path = stemplateJson(path, eroute->config);
         }
-        path = sjoin("~", strim(path, ".gz", MPR_TRIM_END), NULL);
+        path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
         uri = httpUri(conn, path);
         espRender(conn, "    <script src='%s' type='text/javascript'></script>\n", uri);
     }
