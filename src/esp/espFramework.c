@@ -598,7 +598,8 @@ PUBLIC int espLoadConfig(HttpRoute *route)
 #endif
             }
             if ((value = espGetConfig(route, "esp.timeouts.session", 0)) != 0) {
-                route->limits->sessionTimeout = stoi(value) * 1000;
+                route->limits->sessionTimeout = httpGetTicks(value) * 1000;
+                mprLog(2, "esp: set session timeout to %d", value);
             }
 #if DEPRECATE || 1
             if (espTestConfig(route, "esp.map", "compressed")) {
