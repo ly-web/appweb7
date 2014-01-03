@@ -57,6 +57,12 @@ angular.module('esp.input', [])
 
             scope.$watch('schema', function (val) {
                 if (element.parent().length && element.children().length == 0) {
+                    if (!value && scope[model]) {
+                        value = scope[model][field];
+                    }
+                    if (!value) {
+                        return;
+                    }
                     var dataType = scope.schema ? scope.schema.types[field].type : 'string';
                     var inputClass = (attrs.inputClass) ? attrs.inputClass : 'col-xs-6';
                     var errorHighlight = " ng-class='{\"has-error\": fieldErrors." + field + "}'";
@@ -130,9 +136,6 @@ angular.module('esp.input', [])
                     element.removeAttr('readonly');
                     $compile(newelt)(scope);
 
-                    if (!value && scope[model]) {
-                        value = scope[model][field];
-                    }
                     if (attrs.filter) {
                         var filterParts = attrs.filter.split(':');
                         var kind = filterParts[0];
@@ -142,12 +145,16 @@ angular.module('esp.input', [])
                             /* Convert to number first so formatting will work */
                             value = Date.parse(value);
                         }
-                        scope[model][field] = $filter(kind)(value, format);
+                        if (scope[model]) {
+                            scope[model][field] = $filter(kind)(value, format);
+                        }
                     } else if (type == 'date') {
                         /* Convert to RFC3399 date as required for HTML5 date input controls */
                         value = Date.parse(value);
                         value = $filter('date')(value, 'yyyy-MM-dd');
-                        scope[model][field] = value;
+                        if (scope[model]) {
+                            scope[model][field] = value;
+                        }
                     }
                 }
             });
