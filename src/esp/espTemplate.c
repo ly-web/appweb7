@@ -854,6 +854,11 @@ static int getEspToken(EspParse *parse)
                         next--;
                     }
                     done++;
+                } else {
+                    if (!addChar(parse, c)) {
+                        return ESP_TOK_ERR;
+                    }
+                    done++;
                 }
             }
             break;

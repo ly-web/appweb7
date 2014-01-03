@@ -2434,6 +2434,18 @@ PUBLIC ssize renderVar(cchar *name);
 PUBLIC void renderView(cchar *view);
 
 /**
+    Run a command
+    @description Run a command and return output. 
+    @param command Command line and arguments to run.
+    @param out Pointer to accept command standard output response. Set to null if not required.
+    @param err Pointer to accept command standard error response. Set to null if not required.
+    @param flags MprCmd flags. Use MPR_CMD_DETACH to run in the background.
+    @ingroup EspAbbrev
+    @stability Prototype
+ */
+PUBLIC int runCmd(cchar *command, char **out, char **err, int flags);
+
+/**
     Render scripts
     @description This renders script elements for all matching filenames on the server.
     @param patterns An enhanced glob-style expression pattern. The format is is a comma separated string of filename

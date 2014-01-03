@@ -1282,7 +1282,6 @@ PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprT
     if (mprWaitForCmd(cmd, BIT_ESP_EMAIL_TIMEOUT) < 0) {
         mprError("Timeout %d msec waiting for command to complete: %s", BIT_ESP_EMAIL_TIMEOUT, cmd->argv[0]);
         return MPR_ERR_CANT_COMPLETE;
-        return 0;
     }
     if ((status = mprGetCmdExitStatus(cmd)) != 0) {
         mprError("Send mail failed status %d, error %s", status, err);

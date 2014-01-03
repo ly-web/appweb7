@@ -1420,6 +1420,13 @@
       <arglist>(cchar *view)</arglist>
     </member>
     <member kind="function">
+      <type>int</type>
+      <name>runCmd</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>gafbee755daa222a7b9e9aa7eb641e9719</anchor>
+      <arglist>(cchar *command, char **out, char **err, int flags)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>script</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
