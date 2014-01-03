@@ -39,9 +39,15 @@ angular.module('esp', ['esp.click', 'esp.field-errors', 'esp.format', 'esp.input
         success: 'success',
     };
 
+    Esp.access = function(task) {
+        if (Esp.user) {
+            Esp.user.lastAccess = Date.now();
+        }
+    };
+
     Esp.bootclass = function(kind) {
         return boot_map[kind];
-    }
+    };
 
     /*
         Is this user authorized to perform the given task
@@ -180,7 +186,8 @@ angular.module('esp', ['esp.click', 'esp.field-errors', 'esp.format', 'esp.input
     } else {
         Esp.user = SessionStore.get('user') || null;
         Esp.user.fromSession = true;
-        if ((Esp.user.lastAccess + 60) >  Date.now()) {
+        var timeout = Esp.config.timeouts.session * 1000;
+        if ((Esp.user.lastAccess + timeout) <  Date.now()) {
             Esp.user = null;
         }
     }
@@ -208,17 +215,19 @@ angular.module('esp', ['esp.click', 'esp.field-errors', 'esp.format', 'esp.input
         Login session timeout
      */
     function sessionTimeout() {
-        var timeout = Esp.config.timeouts.session * 1000;
         if (Esp.user && Esp.user.lastAccess && !Esp.user.auto) {
             if (Esp.user.fromSession) {
-                var Auth = $injector.get('Auth');
-                Auth.check({}, function(response) {
+                /* Verify user still logged in */
+                var User = $injector.get('User') || $injector.get('Auth');
+                User.check({}, function(response) {
                     if (response.error) {
                         Esp.logout();
                         $location.path("/");
+                        $rootScope.feedback = { error: "Session Expired, Please Log In"};
                     }
                 });
             }
+            var timeout = Esp.config.timeouts.session * 1000;
             if ((Date.now() - Esp.user.lastAccess) > timeout) {
                 $rootScope.feedback = { error: "Login Session Expired"};
                 console.log("Session time expired. Log out");
