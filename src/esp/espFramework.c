@@ -505,7 +505,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
 #if BIT_ESP_LEGACY
         if (!mprPathExists(cpath, R_OK)) {
             if (!eroute->legacy) {
-                mprLog(0, "esp: Missing %s, switching to esp-legacy-mvc mode", cpath);
+                mprLog(2, "esp: Missing %s, switching to esp-legacy-mvc mode", cpath);
             }
             eroute->legacy = 1;
         } else 

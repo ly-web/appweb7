@@ -1051,13 +1051,15 @@ static MprList *getRoutes()
         Reload package.json because we do not want the copied esp[mode] properties.
      */
     path = mprJoinPath(app->route->documents, BIT_ESP_PACKAGE);
-    if ((config = mprReadPathContents(path, NULL)) == 0) {
-        mprError("Cannot read ESP configuration from %s", path);
-        return 0;
-    }
-    if ((eroute->config = mprParseJsonEx(config, 0, 0, 0, &errorMsg)) == 0) {
-        mprError("Cannot parse %s: error %s", path, errorMsg);
-        return 0;
+    if (mprPathExists(path, R_OK)) {
+        if ((config = mprReadPathContents(path, NULL)) == 0) {
+            mprError("Cannot read ESP configuration from %s", path);
+            return 0;
+        }
+        if ((eroute->config = mprParseJsonEx(config, 0, 0, 0, &errorMsg)) == 0) {
+            mprError("Cannot parse %s: error %s", path, errorMsg);
+            return 0;
+        }
     }
     if (eroute->config) {
         app->appName = eroute->appName;
