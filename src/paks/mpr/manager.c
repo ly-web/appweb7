@@ -818,6 +818,7 @@ typedef struct App {
     HWND         otherHwnd;          /* Existing instance window handle */
     int          restartCount;       /* Service restart count */
     int          restartWarned;      /* Has user been notified */
+    char         *company;           /* One word company name (lower case) */
     char         *serviceArgs;       /* Args to pass to service */
     cchar        *serviceHome;       /* Service home */
     cchar        *serviceName;       /* Service name */
@@ -1018,6 +1019,7 @@ static void manageApp(void *ptr, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(app->appName);
         mprMark(app->appTitle);
+        mprMark(app->company);
         mprMark(app->serviceHome);
         mprMark(app->serviceName);
         mprMark(app->serviceProgram);
