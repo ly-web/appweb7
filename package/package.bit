@@ -45,6 +45,9 @@ Bit.load({
         uninstall: {
             depends: [ 'build', 'stop' ],
             action: "
+                for each (f in bit.prefixes.cache.files()) {
+                    removeFile(f)
+                }
                 removeFile(bit.prefixes.etc.join('appweb.conf'))
                 removeFile(bit.prefixes.etc.join('esp.conf'))
                 removeFile(bit.prefixes.etc.join('mine.types'))
