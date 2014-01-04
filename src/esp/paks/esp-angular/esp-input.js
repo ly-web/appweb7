@@ -60,8 +60,8 @@ angular.module('esp.input', [])
                     if (!value && scope[model]) {
                         value = scope[model][field];
                     }
-                    if (!value) {
-                        return;
+                    if (value) {
+                        value = '';
                     }
                     var dataType = scope.schema ? scope.schema.types[field].type : 'string';
                     var inputClass = (attrs.inputClass) ? attrs.inputClass : 'col-xs-6';
