@@ -53,7 +53,6 @@ typedef struct App {
     cchar       *base;                  /* Base filename */
     cchar       *entry;                 /* Module entry point */
     cchar       *controller;            /* Controller name for generated entities (lower case) */
-    cchar       *model;                 /* Model name for generated entities (lower case) */
     cchar       *title;                 /* Title name for generated entities */
     cchar       *table;                 /* Override table name for migrations, tables */
 
@@ -388,7 +387,6 @@ static void manageApp(App *app, int flags)
         mprMark(app->base);
         mprMark(app->migrations);
         mprMark(app->controller);
-        mprMark(app->model);
         mprMark(app->platform);
         mprMark(app->title);
         mprMark(app->build);
@@ -566,14 +564,14 @@ static void list(int argc, char **argv)
 
     files = mprGetPathFiles(app->paksDir, MPR_PATH_RELATIVE);
     for (ITERATE_ITEMS(files, dp, next)) {
-        if (app->verbose) {
+        if (app->quiet) {
+            printf("%s\n", dp->name);
+        } else {
             path = mprJoinPaths(app->route->documents, app->paksDir, dp->name, BIT_ESP_PACKAGE, NULL);
             if ((spec = loadPackage(path)) == 0) {
                 fail("Cannot load package.json \"%s\"", path);
             }
             printf("%s %s\n", dp->name, mprGetJson(spec, "version", 0));
-        } else {
-            printf("%s\n", dp->name);
         }
     }
 }
@@ -2553,14 +2551,13 @@ static cchar *readTemplate(cchar *path, MprHash *tokens)
     }
     vtrace("Info", "Using template %s", path);
     if ((mime = mprLookupMime(NULL, path)) != 0) {
-        if (sstarts(mime, "application") || sstarts(mime, "image") || sstarts(mime, "video") || sstarts(mime, "audio")) {
+        if (scontains(mime, "octet-stream") || scontains(mime, "gzip") || sstarts(mime, "image") || sstarts(mime, "video") || sstarts(mime, "audio")) {
             return data;
         }
     }
+    /* Detect non-text content via premature nulls */
     for (cp = data; *cp; cp++) { }
     if ((cp - data) < size) {
-        ssize len = cp - data;
-        print("LEN %s", len);
         return data;
     }
     return stemplate(data, tokens);
@@ -2590,7 +2587,7 @@ static MprHash *makeTokens(cchar *path, MprHash *other)
         "LIST: '%s', LISTEN: '%s', CONTROLLER: '%s', UCONTROLLER: '%s', MODEL: '%s', UMODEL: '%s', ROUTES: '%s', "
         "SERVER: '%s', TABLE: '%s', UAPP: '%s', DEFINE_ACTIONS: '' }",
         app->appName, app->eroute->appDir,app->binDir, app->database, app->route->documents, filename, app->route->home,
-        list, app->listen, app->controller, stitle(app->controller), app->model, stitle(app->model), app->routeSet, 
+        list, app->listen, app->controller, stitle(app->controller), app->controller, stitle(app->controller), app->routeSet, 
             app->route->serverPrefix, app->table, app->title));
     if (other) {
         mprBlendHash(tokens, other);
@@ -2620,7 +2617,6 @@ static void genKey(cchar *key, cchar *path, MprHash *tokens)
     }
     path = stemplate(path, tokens);
     makeEspFile(path, data);
-    trace("Generate", path);
 }
 
 
