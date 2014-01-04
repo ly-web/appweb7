@@ -32,11 +32,15 @@ public function stopService(quiet: Boolean = false) {
             trace('Stop', bit.settings.title)                                                     
         }
         if (bit.platform.os == 'windows') {
-            Cmd([bit.prefixes.bin.join('appwebMonitor'), '--stop'])
+            try {
+                Cmd([bit.prefixes.bin.join('appwebMonitor'), '--stop'])
+            } catch {}
         }
         let appman = Cmd.locate(bit.prefixes.bin.join('appman'))
         if (appman) {
-            Cmd([appman, '--continue', 'stop', 'disable', 'uninstall'])
+            try {
+                Cmd([appman, '--continue', 'stop', 'disable', 'uninstall'])
+            } catch {}
         }
     }
 }
