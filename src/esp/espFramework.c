@@ -603,11 +603,11 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             }
 #if DEPRECATE || 1
             if (espTestConfig(route, "esp.map", "compressed")) {
-                httpAddRouteMapping(route, "css,html,js,less,txt,xml", "min.${1}.gz, min.${1}, ${1}.gz");
+                httpAddRouteMapping(route, "css,html,js,less,txt,xml", "${1}.gz, min.${1}.gz, min.${1}");
             }
 #endif
             if (espTestConfig(route, "esp.compressed", "true")) {
-                httpAddRouteMapping(route, "css,html,js,less,txt,xml", "min.${1}.gz, min.${1}, ${1}.gz");
+                httpAddRouteMapping(route, "css,html,js,less,txt,xml", "${1}.gz, min.${1}.gz, min.${1}");
             }
             if ((value = espGetConfig(route, "esp.cache", 0)) != 0) {
                 clientLifespan = httpGetTicks(value);
