@@ -19,6 +19,7 @@
 /*********************************** Locals ***********************************/
 
 typedef struct App {
+    cchar        *company;              /* Company name */
     cchar        *serviceName;          /* Name of appweb service */
     cchar        *serviceTitle;         /* Title of appweb service */
     cchar        *serviceWindowName;    /* Name of appweb service */
@@ -88,7 +89,8 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
     stop = 0;
     manage = 0;
     app->appInst = inst;
-    app->serviceName = sclone(BIT_COMPANY "-" BIT_PRODUCT);
+    app->company = stok(slower(BIT_COMPANY), " ", NULL);
+    app->serviceName = sjoin(app->company, "-", BIT_PRODUCT, NULL);
     app->serviceTitle = sclone(BIT_TITLE);
     app->serviceWindowName = sclone(BIT_PRODUCT "Angel");
     app->serviceWindowTitle = sclone(BIT_TITLE "Angel");
@@ -161,6 +163,7 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
 static void manageApp(App *app, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
+        mprMark(app->company);
         mprMark(app->serviceName);
         mprMark(app->serviceTitle);
         mprMark(app->serviceWindowName);
@@ -298,7 +301,7 @@ static long msgProc(HWND hwnd, UINT msg, UINT wp, LPARAM lp)
             break;
 
         case MA_MENU_DOC:
-            runBrowser("/doc/index.html");
+            runBrowser("http://embedthis.com/products/appweb/doc/index.html");
             break;
 
         case MA_MENU_MANAGE:
@@ -586,13 +589,11 @@ static int runBrowser(char *page)
     if (*page == '/') {
         page++;
     }
-    if (pathArg == 0) {
+    if (sstarts(page, "http")) {
+        fmt(cmdBuf, BIT_MAX_BUFFER, "%s %s", path, page);
+    } else if (pathArg == 0) {
         fmt(cmdBuf, BIT_MAX_BUFFER, "%s http://localhost:%d/%s", path, port, page);
-
     } else {
-        /*
-            Patch out the "%1"
-         */
         *pathArg = '\0';
         fmt(cmdBuf, BIT_MAX_BUFFER, "%s \"http://localhost:%d/%s\"", path, port, page);
     }
