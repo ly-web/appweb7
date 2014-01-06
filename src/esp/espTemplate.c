@@ -1076,6 +1076,7 @@ static int reverseSortVersions(char **s1, char **s2)
 
 static cchar *getWinSDK()
 {
+        static int traceOnce = 0;
 #if WINDOWS
     /*
         MS has made a huge mess of where and how the windows SDKs are installed. The registry key at 
@@ -1129,7 +1130,10 @@ static cchar *getWinSDK()
     if (!path) {
         path = "${WINSDK}";
     }
-    mprLog(4, "Using Windows SDK at %s", path);
+    if (!traceOnce) {
+        traceOnce = 1;
+        mprLog(4, "Using Windows SDK at %s", path);
+    }
     return strim(path, "\\", MPR_TRIM_END);
 #else
     return "";
