@@ -1081,12 +1081,9 @@ static int ignoreEncodingErrorsDirective(MaState *state, cchar *key, cchar *valu
  */
 static int includeDirective(MaState *state, cchar *key, cchar *value)
 {
-    MprList         *includes;
-    MprDirEntry     *dp;
-    void            *compiled;
-    cchar           *errMsg;
-    char            *path, *pattern;
-    int             matches[4 * 3], next, count, column;
+    MprList     *includes;
+    char        *path, *pattern, *include;
+    int         next;
 
     /*
         Must use %S and not %P because the path is relative to the appweb.conf file and not to the route home
@@ -1101,30 +1098,14 @@ static int includeDirective(MaState *state, cchar *key, cchar *value)
             return MPR_ERR_CANT_OPEN;
         }
     } else {
-        /*
-            Convert glob style to regexp
-         */
         path = mprGetPathDir(mprJoinPath(state->route->home, value));
         path = stemplate(path, state->route->vars);
         pattern = mprGetPathBase(value);
-        pattern = sreplace(pattern, ".", "\\.");
-        pattern = sreplace(pattern, "*", ".*");
-        pattern = sjoin("^", pattern, "$", NULL);
-        if ((includes = mprGetPathFiles(path, 0)) != 0) {
-            if ((compiled = pcre_compile2(pattern, 0, 0, &errMsg, &column, NULL)) == 0) {
-                mprError("Cannot compile include pattern. Error %s at column %d", errMsg, column);
-                return 0;
+        includes = mprGlobPathFiles(path, pattern, 0);
+        for (ITERATE_ITEMS(includes, include, next)) {
+            if (parseFile(state, include) < 0) {
+                return MPR_ERR_CANT_OPEN;
             }
-            for (next = 0; (dp = mprGetNextItem(includes, &next)) != 0; ) {
-                count = pcre_exec(compiled, NULL, dp->name, (int) slen(dp->name), 0, 0, matches, 
-                    sizeof(matches) / sizeof(int));
-                if (count > 0) {
-                    if (parseFile(state, mprJoinPath(path, dp->name)) < 0) {
-                        return MPR_ERR_CANT_OPEN;
-                    }
-                }
-            }
-            free(compiled);
         }
     }
     return 0;
