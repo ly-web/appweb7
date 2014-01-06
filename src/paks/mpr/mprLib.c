@@ -4280,7 +4280,7 @@ PUBLIC int mprPutCharToWideBuf(MprBuf *bp, int c)
 PUBLIC ssize mprPutFmtToWideBuf(MprBuf *bp, cchar *fmt, ...)
 {
     va_list     ap;
-    wchar     *wbuf;
+    wchar       *wbuf;
     char        *buf;
     ssize       len, space;
     ssize       rc;
@@ -4301,7 +4301,7 @@ PUBLIC ssize mprPutFmtToWideBuf(MprBuf *bp, cchar *fmt, ...)
 
 PUBLIC ssize mprPutStringToWideBuf(MprBuf *bp, cchar *str)
 {
-    wchar     *wstr;
+    wchar       *wstr;
     ssize       len;
 
     if (str) {
@@ -29593,6 +29593,39 @@ static cchar *getHive(cchar *keyPath, HKEY *hive)
 }
 
 
+PUBLIC MprList *mprListRegistry(cchar *key)
+{
+    HKEY        top, h;
+    wchar       name[BIT_MAX_PATH];
+    MprList     *list;
+    int         index, size;
+
+    assert(key && *key);
+
+    /*
+        Get the registry hive
+     */
+    if ((key = getHive(key, &top)) == 0) {
+        return 0;
+    }
+    if (RegOpenKeyEx(top, wide(key), 0, KEY_READ, &h) != ERROR_SUCCESS) {
+        return 0;
+    }
+    list = mprCreateList(0, 0);
+    index = 0; 
+    while (1) {
+        size = sizeof(name) / sizeof(wchar);
+        if (RegEnumValue(h, index, name, &size, 0, NULL, NULL, NULL) != ERROR_SUCCESS) {
+            break;
+        }
+        mprAddItem(list, sclone(multi(name)));
+        index++;
+    }
+    RegCloseKey(h);
+    return list;
+}
+
+
 PUBLIC char *mprReadRegistry(cchar *key, cchar *name)
 {
     HKEY        top, h;
@@ -29632,39 +29665,6 @@ PUBLIC char *mprReadRegistry(cchar *key, cchar *name)
     RegCloseKey(h);
     value[size] = '\0';
     return value;
-}
-
-
-PUBLIC MprList *mprListRegistry(cchar *key)
-{
-    HKEY        top, h;
-    wchar       name[BIT_MAX_PATH];
-    MprList     *list;
-    int         index, size;
-
-    assert(key && *key);
-
-    /*
-        Get the registry hive
-     */
-    if ((key = getHive(key, &top)) == 0) {
-        return 0;
-    }
-    if (RegOpenKeyEx(top, wide(key), 0, KEY_READ, &h) != ERROR_SUCCESS) {
-        return 0;
-    }
-    list = mprCreateList(0, 0);
-    index = 0; 
-    while (1) {
-        size = sizeof(name) / sizeof(wchar);
-        if (RegEnumValue(h, index, name, &size, 0, NULL, NULL, NULL) != ERROR_SUCCESS) {
-            break;
-        }
-        mprAddItem(list, sclone(multi(name)));
-        index++;
-    }
-    RegCloseKey(h);
-    return list;
 }
 
 
