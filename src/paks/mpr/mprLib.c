@@ -29634,6 +29634,40 @@ PUBLIC char *mprReadRegistry(cchar *key, cchar *name)
     return value;
 }
 
+
+PUBLIC MprList *mprListRegistry(cchar *key)
+{
+    HKEY        top, h;
+    wchar       name[BIT_MAX_PATH];
+    MprList     *list;
+    int         index, size;
+
+    assert(key && *key);
+
+    /*
+        Get the registry hive
+     */
+    if ((key = getHive(key, &top)) == 0) {
+        return 0;
+    }
+    if (RegOpenKeyEx(top, wide(key), 0, KEY_READ, &h) != ERROR_SUCCESS) {
+        return 0;
+    }
+    list = mprCreateList(0, 0);
+    index = 0; 
+    while (1) {
+        size = sizeof(name) / sizeof(wchar);
+        if (RegEnumKeyEx(h, index, name, &size, 0, NULL, NULL, NULL) != ERROR_SUCCESS) {
+            break;
+        }
+        mprAddItem(list, multi(name));
+        index++;
+    }
+    RegCloseKey(h);
+    return list;
+}
+
+
 PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
 {
     HKEY    top, h, subHandle;

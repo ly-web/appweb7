@@ -9864,6 +9864,15 @@ PUBLIC void mprSetSocketMessage(int message);
 PUBLIC char *mprReadRegistry(cchar *key, cchar *name);
 
 /**
+    List the subkeys for a key in the Windows registry
+    @param key Windows registry key to enumerate subkeys
+    @return List of subkey string names
+    @ingroup Mpr
+    @stability Prototype.
+  */
+PUBLIC MprList *mprListRegistry(cchar *key);
+
+/**
     Write a key value the Windows registry
     @param key Windows registry key to write
     @param name Windows registry name to write.

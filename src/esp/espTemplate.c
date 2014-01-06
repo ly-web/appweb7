@@ -1068,33 +1068,68 @@ static cchar *getMappedArch(cchar *arch)
 }
 
 
+static int reverseSortVersions(char **s1, char **s2)
+{
+    return -scmp(*s1, *s2);
+}
+
+
 static cchar *getWinSDK()
 {
 #if WINDOWS
-    char *versions[] = { "8.0", "7.1", "7.0A", "7.0", 0 };
     /*
-        MS has made a big mess of where and how the windows SDKs are installed. The registry key at 
+        MS has made a huge mess of where and how the windows SDKs are installed. The registry key at 
         HKLM/Software/Microsoft/Microsoft SDKs/Windows/CurrentInstallFolder can't be trusted and often
         points to the old 7.X SDKs even when 8.X is installed and active. MS have also moved the 8.X
         SDK to Windows Kits, while still using the old folder for some bits. So the old-reliable
         CurrentInstallFolder registry key is now unusable. So we must scan for explicit SDK versions 
         listed above. Ugh!
      */
-    cchar   *path, *key, **vp;
+    cchar   *path, *key, *version;
+    MprList *versions;
+    int     i;
 
-    for (vp = versions; *vp; vp++) {
-        key = sfmt("HKLM\\SOFTWARE%s\\Microsoft\\Microsoft SDKs\\Windows\\v%s", (BIT_64) ? "\\Wow6432Node" : "", *vp);
-        if ((path = mprReadRegistry(key, "InstallationFolder")) != 0) {
-            break;
+    /* 
+        General strategy is to find an "include" directory in the highest version Windows SDK.
+        First search the registry key: Windows Kits/InstalledRoots/KitsRoot*
+     */
+    key = sfmt("HKLM\\SOFTWARE%s\\Microsoft\\Windows Kits\\InstalledRootss", (BIT_64) ? "\\Wow6432Node" : "");
+    versions = mprListRegistry(key);
+    mprSortList(versions, (MprSortProc) reverseSortVersions, 0);
+    path = 0;
+    for (ITERATE_ITEMS(versions, version, i)) {
+        if (scontains(version, "KitsRoot")) {
+            path = mprReadRegistry(key, version);
+            if (mprPathExists(mprJoinPath(path, "Include"), X_OK)) {
+                break;
+            }
+            path = 0;
         }
     }
     if (!path) {
-        /* Old Windows SDK 7 registry location */
+        /* 
+            Next search the registry keys at Windows SDKs/Windows/ * /InstallationFolder
+         */
+        key = sfmt("HKLM\\SOFTWARE%s\\Microsoft\\Microsoft SDKs\\Windows", (BIT_64) ? "\\Wow6432Node" : "");
+        versions = mprListRegistry(key);
+        mprSortList(versions, (MprSortProc) reverseSortVersions, 0);
+        for (ITERATE_ITEMS(versions, version, i)) {
+            if ((path = mprReadRegistry(sfmt("%s\\%s", key, version), "InstallationFolder")) != 0) {
+                if (mprPathExists(mprJoinPath(path, "Include"), X_OK)) {
+                    break;
+                }
+                path = 0;
+            }
+        }
+    }
+    if (!path) {
+        /* Last chance: Old Windows SDK 7 registry location */
         path = mprReadRegistry("HKLM\\SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows", "CurrentInstallFolder");
     }
     if (!path) {
         path = "${WINSDK}";
     }
+    mprLog(4, "Using Windows SDK at %s", path);
     return strim(path, "\\", MPR_TRIM_END);
 #else
     return "";
@@ -1107,7 +1142,8 @@ static cchar *getVisualStudio()
 #if WINDOWS
     cchar   *path;
     int     v;
-    for (v = 13; v >= 8; v--) {
+    /* VS 2013 == 12.0 */
+    for (v = 16; v >= 8; v--) {
         if ((path = mprReadRegistry(ESP_VSKEY, sfmt("%d.0", v))) != 0) {
             path = strim(path, "\\", MPR_TRIM_END);
             break;
