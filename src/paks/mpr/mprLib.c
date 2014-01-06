@@ -29657,10 +29657,10 @@ PUBLIC MprList *mprListRegistry(cchar *key)
     index = 0; 
     while (1) {
         size = sizeof(name) / sizeof(wchar);
-        if (RegEnumKeyEx(h, index, name, &size, 0, NULL, NULL, NULL) != ERROR_SUCCESS) {
+        if (RegEnumValue(h, index, name, &size, 0, NULL, NULL, NULL) != ERROR_SUCCESS) {
             break;
         }
-        mprAddItem(list, multi(name));
+        mprAddItem(list, sclone(multi(name)));
         index++;
     }
     RegCloseKey(h);

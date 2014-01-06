@@ -1093,7 +1093,7 @@ static cchar *getWinSDK()
         General strategy is to find an "include" directory in the highest version Windows SDK.
         First search the registry key: Windows Kits/InstalledRoots/KitsRoot*
      */
-    key = sfmt("HKLM\\SOFTWARE%s\\Microsoft\\Windows Kits\\InstalledRootss", (BIT_64) ? "\\Wow6432Node" : "");
+    key = sfmt("HKLM\\SOFTWARE%s\\Microsoft\\Windows Kits\\Installed Roots", (BIT_64) ? "\\Wow6432Node" : "");
     versions = mprListRegistry(key);
     mprSortList(versions, (MprSortProc) reverseSortVersions, 0);
     path = 0;
