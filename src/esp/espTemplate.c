@@ -1068,16 +1068,18 @@ static cchar *getMappedArch(cchar *arch)
 }
 
 
+#if WINDOWS
 static int reverseSortVersions(char **s1, char **s2)
 {
     return -scmp(*s1, *s2);
 }
+#endif
 
 
 static cchar *getWinSDK()
 {
-        static int traceOnce = 0;
 #if WINDOWS
+        static int traceOnce = 0;
     /*
         MS has made a huge mess of where and how the windows SDKs are installed. The registry key at 
         HKLM/Software/Microsoft/Microsoft SDKs/Windows/CurrentInstallFolder can't be trusted and often
