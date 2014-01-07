@@ -940,6 +940,12 @@ static int copyVars(cchar **envv, int index, MprHash *vars, cchar *prefix)
             } else {
                 cp = sjoin(kp->key, "=", (char*) kp->data, NULL);
             }
+#if KEEP
+            /*
+                This will escape: &;`'\"|*?~<>^()[]{}$\\\n and also on windows \r%
+            */
+            cp = mprEscapeCmd(cp, 0);
+#endif
             envv[index] = cp;
             for (; *cp != '='; cp++) {
                 if (*cp == '-') {
