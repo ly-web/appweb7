@@ -432,7 +432,7 @@ static char *joinLine(cchar *str, ssize *lenp)
     int     count, bquote;
 
     for (count = 0, cp = str; *cp; cp++) {
-        if (*cp == '\n') {
+        if (*cp == '\n' || *cp == '\r') {
             count++;
         }
     }
