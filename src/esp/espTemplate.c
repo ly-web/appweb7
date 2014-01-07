@@ -53,7 +53,8 @@ static cchar *getLibs(cchar *os);
 static cchar *getMappedArch(cchar *arch);
 static cchar *getObjExt(cchar *os);
 static cchar *getVisualStudio();
-static cchar *getWinSDK();
+static cchar *getWinSDK(HttpRoute *route);
+static cchar *getWinVer(HttpRoute *route);
 static cchar *getVxCPU(cchar *arch);
 static bool matchToken(cchar **str, cchar *token);
 
@@ -158,7 +159,10 @@ PUBLIC char *espExpandCommand(HttpRoute *route, cchar *command, cchar *source, c
                 mprPutStringToBuf(buf, getVxCPU(arch));
 
             } else if (matchToken(&cp, "${WINSDK}")) {
-                mprPutStringToBuf(buf, getWinSDK());
+                mprPutStringToBuf(buf, getWinSDK(route));
+
+            } else if (matchToken(&cp, "${WINVER}")) {
+                mprPutStringToBuf(buf, getWinVer(route));
 
             /*
                 These vars can be also be configured from environment variables.
@@ -292,6 +296,7 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
     layout = 0;
     *errMsg = 0;
 
+    mprLog(2, "esp: compile %s", source);
     if (isView) {
         if ((page = mprReadPathContents(source, &len)) == 0) {
             *errMsg = sfmt("Cannot read %s", source);
@@ -1069,6 +1074,7 @@ static cchar *getMappedArch(cchar *arch)
 
 
 #if WINDOWS
+//  TODO - move to mpr
 static int reverseSortVersions(char **s1, char **s2)
 {
     return -scmp(*s1, *s2);
@@ -1076,10 +1082,11 @@ static int reverseSortVersions(char **s1, char **s2)
 #endif
 
 
-static cchar *getWinSDK()
+static cchar *getWinSDK(HttpRoute *route)
 {
 #if WINDOWS
-        static int traceOnce = 0;
+    EspRoute *eroute;
+
     /*
         MS has made a huge mess of where and how the windows SDKs are installed. The registry key at 
         HKLM/Software/Microsoft/Microsoft SDKs/Windows/CurrentInstallFolder can't be trusted and often
@@ -1092,6 +1099,10 @@ static cchar *getWinSDK()
     MprList *versions;
     int     i;
 
+    eroute = route->eroute;
+    if (eroute->winsdk) {
+        return eroute->winsdk;
+    }
     /* 
         General strategy is to find an "include" directory in the highest version Windows SDK.
         First search the registry key: Windows Kits/InstalledRoots/KitsRoot*
@@ -1132,14 +1143,27 @@ static cchar *getWinSDK()
     if (!path) {
         path = "${WINSDK}";
     }
-    if (!traceOnce) {
-        traceOnce = 1;
-        mprLog(4, "Using Windows SDK at %s", path);
-    }
-    return strim(path, "\\", MPR_TRIM_END);
+    mprLog(4, "Using Windows SDK at %s", path);
+    eroute->winsdk = strim(path, "\\", MPR_TRIM_END);
+    return eroute->winsdk;
 #else
     return "";
 #endif
+}
+
+
+static cchar *getWinVer(HttpRoute *route)
+{
+    MprList     *versions;
+    cchar       *winver, *winsdk;
+
+    winsdk = getWinSDK(route);
+    versions = mprGlobPathFiles(mprJoinPath(winsdk, "Lib"), "*", MPR_PATH_RELATIVE);
+    mprSortList(versions, 0, 0);
+    if ((winver = mprGetLastItem(versions)) == 0) {
+        winver = sclone("win8");
+    }
+    return winver;
 }
 
 

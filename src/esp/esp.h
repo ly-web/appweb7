@@ -183,6 +183,7 @@ typedef struct EspRoute {
 
     cchar           *database;              /**< Name of database for route */
     cchar           *routeSet;              /**< Route set to use */
+    cchar           *winsdk;                /**< Windows SDK */
     int             flat;                   /**< Compile the application flat */
     int             keepSource;             /**< Preserve generated source */
     int             loaded;                 /**< App has been loaded */
