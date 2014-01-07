@@ -381,7 +381,7 @@ static bool process(cchar *operation, bool quiet)
 
     } else if (exists("/usr/sbin/update-rc.d")) {
         path = sfmt("/etc/init.d/%s", name);
-        if (exists(path)) {
+        if (!exists(path)) {
             mprError("Cannot locate init script at: %s", path);
             return 0;
         }
