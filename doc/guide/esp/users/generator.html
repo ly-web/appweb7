@@ -354,8 +354,8 @@ esp compile /directory/of/apps
             
             <h3>Production Deployment</h3>
             <p>For deployment in a production environment, it optimal to compile the entire application including
-            all controllers, views and web pages into a single combined library. This is refered to as "combo" mode.
-            The normal mode is called "discrete" mode. To do a combo compile, set the esp.combo property in package.json
+            all controllers, views and web pages into a single combined library. This is refered to as "combined" mode.
+            The normal mode is called "discrete" mode. To do a combined compile, set the esp.combined property in package.json
             to true. </p>
             <p>When using dynamic linking, appweb automatically invokes the necessary ESP initializers when running
             ESP pages or invoking ESP controllers. However, if you are using static linking, you need to manually
@@ -461,7 +461,7 @@ ESP Usage:
                     </tr>
                     <tr>
                         <td>--genlink slink.c</td>
-                        <td>Generate a file of ESP initializers when using --static in combo mode.</td>
+                        <td>Generate a file of ESP initializers when using --static in combined mode.</td>
                     </tr>
                     <tr>
                         <td>--keep</td>

@@ -1,5 +1,5 @@
 /*
-    bit.h -- Build It Configuration Header for macosx-x64-default
+    bit.h -- Build It Configuration Header for macosx-x64-debug
 
     This header is created by Bit during configuration. To change settings, re-run
     configure or define variables in your Makefile to override these default values.
@@ -92,7 +92,7 @@
     #define BIT_HAS_ATOMIC64 1
 #endif
 #ifndef BIT_HAS_DOUBLE_BRACES
-    #define BIT_HAS_DOUBLE_BRACES 1
+    #define BIT_HAS_DOUBLE_BRACES 0
 #endif
 #ifndef BIT_HAS_DYN_LOAD
     #define BIT_HAS_DYN_LOAD 1
@@ -263,13 +263,13 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64-default -configure . -gen make"
+    #define BIT_CONFIG_CMD "bit configure"
 #endif
 #ifndef BIT_APPWEB_PRODUCT
     #define BIT_APPWEB_PRODUCT 1
 #endif
 #ifndef BIT_PROFILE
-    #define BIT_PROFILE "default"
+    #define BIT_PROFILE "debug"
 #endif
 #ifndef BIT_TUNE_SIZE
     #define BIT_TUNE_SIZE 1
@@ -306,7 +306,7 @@
     #define BIT_PACK_DSI 1
 #endif
 #ifndef BIT_PACK_EJSCRIPT
-    #define BIT_PACK_EJSCRIPT 1
+    #define BIT_PACK_EJSCRIPT 0
 #endif
 #ifndef BIT_PACK_ESP
     #define BIT_PACK_ESP 1
@@ -354,7 +354,7 @@
     #define BIT_PACK_PCRE 1
 #endif
 #ifndef BIT_PACK_PHP
-    #define BIT_PACK_PHP 1
+    #define BIT_PACK_PHP 0
 #endif
 #ifndef BIT_PACK_PMAKER
     #define BIT_PACK_PMAKER 1
@@ -363,10 +363,10 @@
     #define BIT_PACK_RECESS 1
 #endif
 #ifndef BIT_PACK_SDB
-    #define BIT_PACK_SDB 1
+    #define BIT_PACK_SDB 0
 #endif
 #ifndef BIT_PACK_SQLITE
-    #define BIT_PACK_SQLITE 1
+    #define BIT_PACK_SQLITE 0
 #endif
 #ifndef BIT_PACK_SSL
     #define BIT_PACK_SSL 1
@@ -385,4 +385,70 @@
 #endif
 #ifndef BIT_PACK_ZIP
     #define BIT_PACK_ZIP 1
+#endif
+#ifndef BIT_PACK_CGI_PATH
+    #define BIT_PACK_CGI_PATH "src/modules/cgiHandler.c"
+#endif
+#ifndef BIT_PACK_COMPILER_PATH
+    #define BIT_PACK_COMPILER_PATH "../../../../usr/bin/clang"
+#endif
+#ifndef BIT_PACK_DIR_PATH
+    #define BIT_PACK_DIR_PATH "src/dirHandler.c"
+#endif
+#ifndef BIT_PACK_DOXYGEN_PATH
+    #define BIT_PACK_DOXYGEN_PATH "../../../../usr/local/bin/doxygen"
+#endif
+#ifndef BIT_PACK_DSI_PATH
+    #define BIT_PACK_DSI_PATH "../../../../opt/bin/dsi"
+#endif
+#ifndef BIT_PACK_ESP_PATH
+    #define BIT_PACK_ESP_PATH "src/esp/espHandler.c"
+#endif
+#ifndef BIT_PACK_EST_PATH
+    #define BIT_PACK_EST_PATH "src/paks/est/estLib.c"
+#endif
+#ifndef BIT_PACK_GZIP_PATH
+    #define BIT_PACK_GZIP_PATH "../../../../usr/bin/gzip"
+#endif
+#ifndef BIT_PACK_HTMLMIN_PATH
+    #define BIT_PACK_HTMLMIN_PATH "../../../../opt/bin/htmlmin"
+#endif
+#ifndef BIT_PACK_LIB_PATH
+    #define BIT_PACK_LIB_PATH "../../../../usr/bin/ar"
+#endif
+#ifndef BIT_PACK_LINK_PATH
+    #define BIT_PACK_LINK_PATH "../../../../usr/bin/ld"
+#endif
+#ifndef BIT_PACK_MAN_PATH
+    #define BIT_PACK_MAN_PATH "../../../../usr/bin/man"
+#endif
+#ifndef BIT_PACK_MAN2HTML_PATH
+    #define BIT_PACK_MAN2HTML_PATH "../../../../opt/bin/man2html"
+#endif
+#ifndef BIT_PACK_MDB_PATH
+    #define BIT_PACK_MDB_PATH "src/esp/mdb.c"
+#endif
+#ifndef BIT_PACK_NGMIN_PATH
+    #define BIT_PACK_NGMIN_PATH "../../../../usr/local/bin/ngmin"
+#endif
+#ifndef BIT_PACK_PAK_PATH
+    #define BIT_PACK_PAK_PATH "../pak/macosx-x64-debug/bin/pak"
+#endif
+#ifndef BIT_PACK_PCRE_PATH
+    #define BIT_PACK_PCRE_PATH "src/paks/pcre"
+#endif
+#ifndef BIT_PACK_PMAKER_PATH
+    #define BIT_PACK_PMAKER_PATH "../../../../Applications/PackageMaker.app/Contents/MacOS/PackageMaker"
+#endif
+#ifndef BIT_PACK_RECESS_PATH
+    #define BIT_PACK_RECESS_PATH "../../../../usr/local/bin/recess"
+#endif
+#ifndef BIT_PACK_UGLIFYJS_PATH
+    #define BIT_PACK_UGLIFYJS_PATH "../../../../usr/local/bin/uglifyjs"
+#endif
+#ifndef BIT_PACK_UTEST_PATH
+    #define BIT_PACK_UTEST_PATH "../ejs/macosx-x64-debug/bin/utest"
+#endif
+#ifndef BIT_PACK_ZIP_PATH
+    #define BIT_PACK_ZIP_PATH "../../../../usr/bin/zip"
 #endif

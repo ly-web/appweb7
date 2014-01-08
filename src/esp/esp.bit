@@ -57,7 +57,7 @@ Bit.load({
                         }
                     }
                 }
-                if (Cmd.locate('pak')) {
+                if (Cmd.locate('pak') && !bit.generating) {
                     run('pak -f -q cache ' + Path('.').files().join(' ')) 
                 }
             `

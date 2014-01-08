@@ -2267,12 +2267,15 @@ test\cgi-bin\cgiProgram.exe: $(DEPS_100)
 DEPS_101 = $(DEPS_101) compile
 
 stop: $(DEPS_101)
+	cd .
 	@.\$(CONFIG)\bin\appman stop disable uninstall >/dev/null 2>&1 ; true
+	cd .
 
 #
 #   installBinary
 #
 installBinary: $(DEPS_102)
+	cd .
 	if not exist "$(BIT_VAPP_PREFIX)\log" md "$(BIT_VAPP_PREFIX)\log"
 	if not exist "$(BIT_VAPP_PREFIX)\cache" md "$(BIT_VAPP_PREFIX)\cache"
 	if not exist "$(BIT_VAPP_PREFIX)\bin" md "$(BIT_VAPP_PREFIX)\bin"
@@ -2495,6 +2498,7 @@ installBinary: $(DEPS_102)
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 	copy /Y $(CONFIG)\bin\ejs.mod "$(BIT_VAPP_PREFIX)\bin\ejs.mod"
 !ENDIF
+	cd .
 
 #
 #   start
@@ -2503,7 +2507,9 @@ DEPS_103 = $(DEPS_103) compile
 DEPS_103 = $(DEPS_103) stop
 
 start: $(DEPS_103)
+	cd .
 	.\$(CONFIG)\bin\appman install enable start
+	cd .
 
 #
 #   install
@@ -2514,7 +2520,9 @@ DEPS_104 = $(DEPS_104) installBinary
 DEPS_104 = $(DEPS_104) start
 
 install: $(DEPS_104)
-
+	cd .
+	
+	cd .
 
 
 #
