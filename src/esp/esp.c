@@ -136,6 +136,7 @@ static MprList *getRoutes();
 static MprHash *getTargets(int argc, char **argv);
 static cchar *getTemplate(cchar *key, MprHash *tokens);
 static cchar *getPakVersion(cchar *name, cchar *version);
+static bool identifier(cchar *name);
 static void initialize(int argc, char **argv);
 static bool inRange(cchar *expr, cchar *version);
 static void install(int argc, char **argv);
@@ -1729,21 +1730,16 @@ static void compileCombined(HttpRoute *route)
  */
 static void generateApp(int argc, char **argv)
 {
-    cchar   *cp, *name;
+    cchar   *name;
     int     i;
 
     name = argv[0];
-    for (cp = name; *cp; cp++) {
-        if (!isalnum(*cp)) {
-            break;
-        }
-    }
     if (smatch(name, ".")) {
         if (!mprPathExists(BIT_ESP_PACKAGE, R_OK)) {
             fail("Cannot find ESP application in this directory");
             return;
         }
-    } else if (!isalpha(*name) || *cp) {
+    } else if (!identifier(name)) {
         fail("Cannot generate. Application name must be a valid C identifier");
         return;
     }
@@ -2012,6 +2008,10 @@ static void generateScaffold(int argc, char **argv)
         return;
     }
     app->controller = sclone(argv[0]);
+    if (!identifier(app->controller)) {
+        fail("Cannot generate scaffold. Controller name must be a valid C identifier");
+        return;
+    }
     /*
         This feature is undocumented.
         Having plural database table names greatly complicates things and ejsJoin is not able to follow foreign fields: NameId.
@@ -2930,6 +2930,21 @@ static cchar *findAcceptableVersion(cchar *name, cchar *criteria)
     return 0;
 }
 
+
+static bool identifier(cchar *name)
+{
+    cchar   *cp;
+
+    if (!name) {
+        return 0;
+    }
+    for (cp = name; *cp; cp++) {
+        if (!isalnum(*cp)) {
+            break;
+        }
+    }
+    return *cp == '\0' && isalpha(*name);
+}
 #endif /* BIT_PACK_ESP */
 
 /*
