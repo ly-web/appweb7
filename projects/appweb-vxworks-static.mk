@@ -1145,6 +1145,7 @@ DEPS_56 += src/esp/paks/esp-legacy-mvc
 DEPS_56 += src/esp/paks/esp-legacy-mvc/package.json
 DEPS_56 += src/esp/paks/esp-legacy-mvc/templates
 DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc
+DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/appweb.conf
 DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/controller.c
 DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/edit.esp
 DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/layouts
@@ -1242,6 +1243,7 @@ $(CONFIG)/paks: $(DEPS_56)
 	cp esp-legacy-mvc/package.json ../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/package.json ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates" ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc" ; \
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/appweb.conf ../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/appweb.conf ; \
 	cp esp-legacy-mvc/templates/esp-legacy-mvc/controller.c ../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/controller.c ; \
 	cp esp-legacy-mvc/templates/esp-legacy-mvc/edit.esp ../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/edit.esp ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/layouts" ; \

@@ -164,6 +164,7 @@ mkdir -p "../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0-rc.1"
 copy esp-legacy-mvc/package.json ../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0-rc.1/package.json
 mkdir -p "../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0-rc.1/templates"
 mkdir -p "../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc"
+copy esp-legacy-mvc/templates/esp-legacy-mvc/appweb.conf ../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/appweb.conf
 copy esp-legacy-mvc/templates/esp-legacy-mvc/controller.c ../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/controller.c
 copy esp-legacy-mvc/templates/esp-legacy-mvc/edit.esp ../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/edit.esp
 mkdir -p "../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/layouts"

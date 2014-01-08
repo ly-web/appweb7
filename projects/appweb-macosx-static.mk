@@ -1138,6 +1138,7 @@ DEPS_56 += src/esp/paks/esp-legacy-mvc
 DEPS_56 += src/esp/paks/esp-legacy-mvc/package.json
 DEPS_56 += src/esp/paks/esp-legacy-mvc/templates
 DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc
+DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/appweb.conf
 DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/controller.c
 DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/edit.esp
 DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/layouts
@@ -1235,6 +1236,7 @@ $(CONFIG)/paks: $(DEPS_56)
 	cp esp-legacy-mvc/package.json ../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/package.json ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates" ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc" ; \
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/appweb.conf ../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/appweb.conf ; \
 	cp esp-legacy-mvc/templates/esp-legacy-mvc/controller.c ../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/controller.c ; \
 	cp esp-legacy-mvc/templates/esp-legacy-mvc/edit.esp ../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/edit.esp ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/layouts" ; \
@@ -2156,6 +2158,7 @@ stop: $(DEPS_93)
 	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true ; \
 	)
 
+	@echo '   [Install] Complete'
 #
 #   installBinary
 #
@@ -2182,22 +2185,22 @@ installBinary: $(DEPS_94)
 	cp $(CONFIG)/bin/http $(BIT_VAPP_PREFIX)/bin/http ; \
 	rm -f "$(BIT_BIN_PREFIX)/http" ; \
 	ln -s "$(BIT_VAPP_PREFIX)/bin/http" "$(BIT_BIN_PREFIX)/http" ; \
-	if [ "$(BIT_PACK_ESP)" = 1 ]; then true  ; \
+	if [ "$(BIT_PACK_ESP)" = 1 ]; then true ; \
 	cp $(CONFIG)/bin/esp $(BIT_VAPP_PREFIX)/bin/esp ; \
 	rm -f "$(BIT_BIN_PREFIX)/esp" ; \
 	ln -s "$(BIT_VAPP_PREFIX)/bin/esp" "$(BIT_BIN_PREFIX)/esp" ; \
 	fi ; \
-	if [ "$(BIT_PACK_SSL)" = 1 ]; then true  ; \
+	if [ "$(BIT_PACK_SSL)" = 1 ]; then true ; \
 	cp $(CONFIG)/bin/ca.crt $(BIT_VAPP_PREFIX)/bin/ca.crt ; \
 	fi ; \
-	if [ "$(BIT_PACK_OPENSSL)" = 1 ]; then true  ; \
+	if [ "$(BIT_PACK_OPENSSL)" = 1 ]; then true ; \
 	cp $(CONFIG)/bin/libssl*.dylib* $(BIT_VAPP_PREFIX)/bin/libssl*.dylib* ; \
 	cp $(CONFIG)/bin/libcrypto*.dylib* $(BIT_VAPP_PREFIX)/bin/libcrypto*.dylib* ; \
 	fi ; \
-	if [ "$(BIT_PACK_PHP)" = 1 ]; then true  ; \
+	if [ "$(BIT_PACK_PHP)" = 1 ]; then true ; \
 	cp $(CONFIG)/bin/libphp5.dylib $(BIT_VAPP_PREFIX)/bin/libphp5.dylib ; \
 	fi ; \
-	if [ "$(BIT_PACK_ESP)" = 1 ]; then true  ; \
+	if [ "$(BIT_PACK_ESP)" = 1 ]; then true ; \
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/angular" ; \
 	cp src/esp/paks/angular/angular-animate.js $(BIT_VAPP_PREFIX)/esp/angular/angular-animate.js ; \
 	cp src/esp/paks/angular/angular-csp.css $(BIT_VAPP_PREFIX)/esp/angular/angular-csp.css ; \
@@ -2263,6 +2266,7 @@ installBinary: $(DEPS_94)
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc" ; \
 	cp src/esp/paks/esp-legacy-mvc/package.json $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/package.json ; \
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/esp-legacy-mvc" ; \
+	cp src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/appweb.conf $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/esp-legacy-mvc/appweb.conf ; \
 	cp src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/controller.c $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/esp-legacy-mvc/controller.c ; \
 	cp src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/edit.esp $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/esp-legacy-mvc/edit.esp ; \
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/esp-legacy-mvc/layouts" ; \
@@ -2288,7 +2292,7 @@ installBinary: $(DEPS_94)
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-server/templates/esp-server/src" ; \
 	cp src/esp/paks/esp-server/templates/esp-server/src/app.c $(BIT_VAPP_PREFIX)/esp/esp-server/templates/esp-server/src/app.c ; \
 	fi ; \
-	if [ "$(BIT_PACK_ESP)" = 1 ]; then true  ; \
+	if [ "$(BIT_PACK_ESP)" = 1 ]; then true ; \
 	cp $(CONFIG)/bin/esp.conf $(BIT_VAPP_PREFIX)/bin/esp.conf ; \
 	fi ; \
 	mkdir -p "$(BIT_WEB_PREFIX)/bench" ; \
@@ -2334,14 +2338,14 @@ installBinary: $(DEPS_94)
 	cp src/server/mime.types $(BIT_ETC_PREFIX)/mime.types ; \
 	cp src/server/self.crt $(BIT_ETC_PREFIX)/self.crt ; \
 	cp src/server/self.key $(BIT_ETC_PREFIX)/self.key ; \
-	if [ "$(BIT_PACK_PHP)" = 1 ]; then true  ; \
+	if [ "$(BIT_PACK_PHP)" = 1 ]; then true ; \
 	cp src/server/php.ini $(BIT_ETC_PREFIX)/php.ini ; \
 	fi ; \
 	cp src/server/appweb.conf $(BIT_ETC_PREFIX)/appweb.conf ; \
 	cp src/server/sample.conf $(BIT_ETC_PREFIX)/sample.conf ; \
 	cp src/server/self.crt $(BIT_ETC_PREFIX)/self.crt ; \
 	cp src/server/self.key $(BIT_ETC_PREFIX)/self.key ; \
-	echo 'set LOG_DIR "$(BIT_LOG_PREFIX)"\nset CACHE_DIR "$(BIT_CACHE_PREFIX)"\nDocuments "$(BIT_WEB_PREFIX)\nListen 80\nListenSecure 443\n' >$(BIT_ETC_PREFIX)/install.conf ; \
+	echo 'set LOG_DIR "$(BIT_LOG_PREFIX)"\nset CACHE_DIR "$(BIT_CACHE_PREFIX)"\nDocuments "$(BIT_WEB_PREFIX)\nListen 80\n<if SSL_MODULE>\nListenSecure 443\n</if>\n' >$(BIT_ETC_PREFIX)/install.conf ; \
 	mkdir -p "$(BIT_VAPP_PREFIX)/inc" ; \
 	cp $(CONFIG)/inc/bit.h $(BIT_VAPP_PREFIX)/inc/bit.h ; \
 	mkdir -p "$(BIT_INC_PREFIX)/appweb" ; \
@@ -2371,7 +2375,7 @@ installBinary: $(DEPS_94)
 	cp src/paks/sqlite/sqlite3.h $(BIT_VAPP_PREFIX)/inc/sqlite3.h ; \
 	rm -f "$(BIT_INC_PREFIX)/appweb/sqlite3.h" ; \
 	ln -s "$(BIT_VAPP_PREFIX)/inc/sqlite3.h" "$(BIT_INC_PREFIX)/appweb/sqlite3.h" ; \
-	if [ "$(BIT_PACK_ESP)" = 1 ]; then true  ; \
+	if [ "$(BIT_PACK_ESP)" = 1 ]; then true ; \
 	cp src/esp/edi.h $(BIT_VAPP_PREFIX)/inc/edi.h ; \
 	rm -f "$(BIT_INC_PREFIX)/appweb/edi.h" ; \
 	ln -s "$(BIT_VAPP_PREFIX)/inc/edi.h" "$(BIT_INC_PREFIX)/appweb/edi.h" ; \
@@ -2382,7 +2386,7 @@ installBinary: $(DEPS_94)
 	rm -f "$(BIT_INC_PREFIX)/appweb/mdb.h" ; \
 	ln -s "$(BIT_VAPP_PREFIX)/inc/mdb.h" "$(BIT_INC_PREFIX)/appweb/mdb.h" ; \
 	fi ; \
-	if [ "$(BIT_PACK_EJSCRIPT)" = 1 ]; then true  ; \
+	if [ "$(BIT_PACK_EJSCRIPT)" = 1 ]; then true ; \
 	cp src/paks/ejs/ejs.h $(BIT_VAPP_PREFIX)/inc/ejs.h ; \
 	rm -f "$(BIT_INC_PREFIX)/appweb/ejs.h" ; \
 	ln -s "$(BIT_VAPP_PREFIX)/inc/ejs.h" "$(BIT_INC_PREFIX)/appweb/ejs.h" ; \
@@ -2393,7 +2397,7 @@ installBinary: $(DEPS_94)
 	rm -f "$(BIT_INC_PREFIX)/appweb/ejsByteGoto.h" ; \
 	ln -s "$(BIT_VAPP_PREFIX)/inc/ejsByteGoto.h" "$(BIT_INC_PREFIX)/appweb/ejsByteGoto.h" ; \
 	fi ; \
-	if [ "$(BIT_PACK_EJSCRIPT)" = 1 ]; then true  ; \
+	if [ "$(BIT_PACK_EJSCRIPT)" = 1 ]; then true ; \
 	cp $(CONFIG)/bin/ejs.mod $(BIT_VAPP_PREFIX)/bin/ejs.mod ; \
 	fi ; \
 	mkdir -p "$(BIT_VAPP_PREFIX)/doc/man1" ; \

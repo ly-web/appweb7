@@ -1259,6 +1259,7 @@ DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\package.json
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc
+DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\appweb.conf
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\controller.c
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\edit.esp
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\layouts
@@ -1355,6 +1356,7 @@ $(CONFIG)\paks: $(DEPS_58)
 	copy /Y esp-legacy-mvc\package.json ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\package.json
 	if not exist "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates" md "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates"
 	if not exist "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc" md "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc"
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\appweb.conf ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc\appweb.conf
 	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\controller.c ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc\controller.c
 	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\edit.esp ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc\edit.esp
 	if not exist "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc\layouts" md "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc\layouts"
@@ -2271,6 +2273,7 @@ stop: $(DEPS_101)
 	@.\$(CONFIG)\bin\appman stop disable uninstall >/dev/null 2>&1 ; true
 	cd .
 
+	@echo '   [Install] Complete'
 #
 #   installBinary
 #
@@ -2399,6 +2402,7 @@ installBinary: $(DEPS_102)
 	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc"
 	copy /Y src\esp\paks\esp-legacy-mvc\package.json "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\package.json"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\appweb.conf "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc\appweb.conf"
 	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\controller.c "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc\controller.c"
 	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\edit.esp "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc\edit.esp"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc\layouts" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc\layouts"
@@ -2474,7 +2478,7 @@ installBinary: $(DEPS_102)
 	copy /Y src\server\sample.conf "$(BIT_VAPP_PREFIX)\sample.conf"
 	copy /Y src\server\self.crt "$(BIT_VAPP_PREFIX)\self.crt"
 	copy /Y src\server\self.key "$(BIT_VAPP_PREFIX)\self.key"
-	echo 'set LOG_DIR "$(BIT_VAPP_PREFIX)/log"\nset CACHE_DIR "$(BIT_VAPP_PREFIX)/cache"\nDocuments "$(BIT_VAPP_PREFIX)/web\nListen 80\nListenSecure 443\n' >$(BIT_VAPP_PREFIX)/install.conf
+	echo 'set LOG_DIR "$(BIT_VAPP_PREFIX)/log"\nset CACHE_DIR "$(BIT_VAPP_PREFIX)/cache"\nDocuments "$(BIT_VAPP_PREFIX)/web\nListen 80\n<if SSL_MODULE>\nListenSecure 443\n</if>\n' >$(BIT_VAPP_PREFIX)/install.conf
 	if not exist "$(BIT_VAPP_PREFIX)\inc" md "$(BIT_VAPP_PREFIX)\inc"
 	copy /Y $(CONFIG)\inc\bit.h "$(BIT_VAPP_PREFIX)\inc\bit.h"
 	copy /Y src\bitos.h "$(BIT_VAPP_PREFIX)\inc\bitos.h"
