@@ -35,7 +35,7 @@
         <div class="contentRight">
             <h1>Quick Nav</h1>
             <ul>
-                <li><a href="#r4.4.5">Release 4.4.5</a></li>
+                <li><a href="#r4.5.0">Release 4.5.0</a></li>
                 <li><a href="#r3.4.1">Release 3.4.1</a></li>
                 <li><a href="#r2.4.4">Release 2.4.4</a></li>
             </ul>
@@ -87,6 +87,11 @@
                     </ul>
                 </li>
             </ul>
+            <h3>Minor Features</h3>
+            <ul>
+                <li>VirtualHost directives can now take multiple endpoints</li>
+                <li>Windows 8.1 support</li>
+            </ul>
             <h3>Fixes</h3>
             <ul>
                 <li>Add Reroute directive. Revert Route directive to not open previously defined routes.
@@ -122,6 +127,10 @@
                 <li>Rename APIs that send JSON from renderResult, renderGrid, renderRec to use a send prefix instead of render. 
                     This is to clarify which APIs send HTML and which send JSON. The render* APIs send HTML and raw data. 
                     The send* APIs send JSON.</li>
+                <li>The ESP compilation mode is renamed from "flat" to "combo". The two modes are: discrete and combo. When esp 
+                compiles applications it automatically reads the esp.combo property from the application's package.json 
+                file to determine the compilation mode. The esp --flat switch is removed.</li>
+                <li>Support for Windows XP and Vista now deprecated</li>
             </ul>
             <a id="r4.4.4"></a>
             <h2 class="section">Changes in 4.4.4</h2>
