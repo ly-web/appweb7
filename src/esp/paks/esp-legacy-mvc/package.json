@@ -11,6 +11,7 @@
     "esp": {
         "server": {
             "generate": {
+                "appweb": "esp-legacy-mvc/appweb.conf",
                 "clientList": "esp-legacy-mvc/list.esp",
                 "clientEdit": "esp-legacy-mvc/edit.esp",
                 "controller": "esp-legacy-mvc/controller.c",
