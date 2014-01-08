@@ -1473,11 +1473,6 @@ static void compile(int argc, char **argv)
         mprCloseFile(file);
         app->slink = 0;
     }
-#if UNUSED
-    if (!app->error) {
-        trace("Compile", "Complete");
-    }
-#endif
 }
 
 
@@ -1760,9 +1755,6 @@ static void generateApp(int argc, char **argv)
 
     if (smatch(name, ".")) {
         name = mprGetPathBase(mprGetCurrentPath());
-#if UNUSED
-        dir = mprGetCurrentPath();
-#endif
     } else {
         makeEspDir(app->appName);
         if (chdir(app->appName) < 0) {
@@ -2000,10 +1992,6 @@ static void generateTable(int argc, char **argv)
  */
 static void generateScaffoldViews(int argc, char **argv)
 {
-#if UNUSED && BIT_ESP_LEGACY
-    eroute = app->eroute;
-    dir = eroute->legacy ? app->eroute->viewsDir : eroute->appDir;
-#endif
     genKey("clientList", "${APPDIR}/${CONTROLLER}/${CONTROLLER}-${FILENAME}", 0);
     genKey("clientEdit", "${APPDIR}/${CONTROLLER}/${CONTROLLER}-${FILENAME}", 0);
 }
@@ -2040,12 +2028,6 @@ static void generateScaffold(int argc, char **argv)
     generateClientModel(argc, argv);
     generateScaffoldMigration(argc, argv);
     migrate(0, 0);
-#if UNUSED
-MOB -- fix
-    if (espTestConfig(app->route, "esp.server.generate.clientController", "false")) {
-        trace("Info", sfmt("Use URL: %s/%s/list for a resource list", app->route->serverPrefix, app->controller));
-    }
-#endif
 }
 
 
@@ -2059,37 +2041,6 @@ static int sortFiles(MprDirEntry **d1, MprDirEntry **d2)
 {
     return scmp((*d1)->name, (*d2)->name);
 }
-
-
-#if UNUSED
-static void fixupFile(cchar *path)
-{
-    HttpRoute   *route;
-    MprHash     *tokens;
-    ssize       len;
-    char        *data, *tmp;
-
-    if ((data = mprReadPathContents(path, &len)) == 0) {
-        /* Fail silently */
-        return;
-    }
-    route = app->route;
-
-    tokens = mprDeserialize(sfmt("{ APP: '%s', UAPP: '%s', DATABASE: '%s', HOME: '%s', DOCUMENTS: '%s', LISTEN: '%s', BINDIR: '%s', ROUTESET: '%s', DIR: '%s' }", 
-        app->appName, stitle(app->appName), app->database, route->home, route->documents, app->listen, 
-        app->binDir, app->routeSet, route->documents));
-    data = stemplate(data, tokens);
-    tmp = mprGetTempPath(route->documents);
-    if (mprWritePathContents(tmp, data, slen(data), 0644) < 0) {
-        fail("Cannot write %s", path);
-        return;
-    }
-    unlink(path);
-    if (rename(tmp, path) < 0) {
-        fail("Cannot rename %s to %s", tmp, path);
-    }
-}
-#endif
 
 
 static bool upgradePak(cchar *name)
@@ -2495,10 +2446,6 @@ static void generateFiles()
             genFile(file, 0);
         }
     }
-#if UNUSED
-    //  MOB is this required
-    fixupFile(mprJoinPath(route->documents, BIT_ESP_PACKAGE));
-#endif
 }
 
 

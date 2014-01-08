@@ -320,39 +320,6 @@ static int sdbAddTable(Edi *edi, cchar *tableName)
 }
 
 
-#if UNUSED
-static int sdbAddValidation(Edi *edi, cchar *tableName, cchar *columnName, EdiValidation *vp)
-{
-    Sdb             *sdb;
-    MprList         *validations;
-    EdiValidation   *prior;
-    cchar           *vkey;
-    int             next;
-
-    assert(edi);
-    assert(tableName && *tableName);
-    assert(columnName && *columnName);
-    assert(vp);
-
-    sdb = (Sdb*) edi;
-    vkey = sfmt("%s.%s", tableName, columnName);
-    if ((validations = mprLookupKey(sdb->edi.validations, vkey)) == 0) {
-        validations = mprCreateList(0, MPR_LIST_STABLE);
-        mprAddKey(sdb->edi.validations, vkey, validations);
-    }
-    for (ITERATE_ITEMS(validations, prior, next)) {
-        if (prior->vfn == vp->vfn) {
-            break;
-        }
-    }
-    if (!prior) {
-        mprAddItem(validations, vp);
-    }
-    return 0;
-}
-#endif
-
-
 static int sdbChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags)
 {
     mprError("SDB does not support changing columns");
@@ -619,31 +586,6 @@ static int sdbSave(Edi *edi)
 }
 
 
-#if UNUSED
-static bool sdbValidateRec(Edi *edi, EdiRec *rec)
-{
-    Sdb         *sdb;
-    EdiField    *fp;
-    bool        pass;
-    int         c;
-
-    if (!rec) {
-        return 0;
-    }
-    sdb = (Sdb*) edi;
-    pass = 1;
-    for (c = 0; c < rec->nfields; c++) {
-        fp = &rec->fields[c];
-        if (!validateField(sdb, rec, rec->tableName, fp->name, fp->value)) {
-            pass = 0;
-            /* Keep going */
-        }
-    }
-    return pass;
-}
-#endif
-
-
 /*
     Map values before storing in the database
     While not required, it is prefereable to normalize the storage of some values.
@@ -889,37 +831,6 @@ static EdiGrid *queryv(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list var
     }
     return grid;
 }
-
-
-#if UNUSED
-static bool validateField(Sdb *sdb, EdiRec *rec, cchar *columnName, cchar *value)
-{
-    EdiValidation   *vp;
-    MprList         *validations;
-    cchar           *error, *vkey;
-    int             next;
-    bool            pass;
-
-    assert(sdb);
-    assert(rec);
-    assert(columnName && *columnName);
-
-    pass = 1;
-    vkey = sfmt("%s.%s", rec->tableName, columnName);
-    if ((validations = mprLookupKey(sdb->edi.validations, vkey)) != 0) {
-        for (ITERATE_ITEMS(validations, vp, next)) {
-            if ((error = (*vp->vfn)(vp, rec, columnName, value)) != 0) {
-                if (rec->errors == 0) {
-                    rec->errors = mprCreateHash(0, MPR_HASH_STABLE);
-                }
-                mprAddKey(rec->errors, columnName, sfmt("%s %s", columnName, error));
-                pass = 0;
-            }
-        }
-    }
-    return pass;
-}
-#endif
 
 
 static EdiRec *createBareRec(Edi *edi, cchar *tableName, int nfields)

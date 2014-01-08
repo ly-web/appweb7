@@ -328,39 +328,6 @@ static int mdbAddTable(Edi *edi, cchar *tableName)
 }
 
 
-#if UNUSED
-static int mdbAddValidation(Edi *edi, cchar *tableName, cchar *columnName, EdiValidation *vp)
-{
-    Mdb             *mdb;
-    MprList         *validations;
-    EdiValidation   *prior;
-    cchar           *vkey;
-    int             next;
-
-    assert(edi);
-    assert(tableName && *tableName);
-    assert(columnName && *columnName);
-    assert(vp);
-
-    mdb = (Mdb*) edi;
-    vkey = sfmt("%s.%s", tableName, columnName);
-    if ((validations = mprLookupKey(mdb->edi.validations, vkey)) == 0) {
-        validations = mprCreateList(0, MPR_LIST_STABLE);
-        mprAddKey(mdb->edi.validations, vkey, validations);
-    }
-    for (ITERATE_ITEMS(validations, prior, next)) {
-        if (prior->vfn == vp->vfn) {
-            break;
-        }
-    }
-    if (!prior) {
-        mprAddItem(validations, vp);
-    }
-    return 0;
-}
-#endif
-
-
 static int mdbChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags)
 {
     Mdb         *mdb;
@@ -864,31 +831,6 @@ static int mdbRenameColumn(Edi *edi, cchar *tableName, cchar *columnName, cchar 
     unlock(edi);
     return 0;
 }
-
-
-#if UNUSED
-static bool mdbValidateRec(Edi *edi, EdiRec *rec)
-{
-    Mdb         *mdb;
-    EdiField    *fp;
-    bool        pass;
-    int         c;
-
-    if (!rec) {
-        return 0;
-    }
-    mdb = (Mdb*) edi;
-    pass = 1;
-    for (c = 0; c < rec->nfields; c++) {
-        fp = &rec->fields[c];
-        if (!ediValidateField(mdb, rec, fp->name, fp->value)) {
-            pass = 0;
-            /* Keep going */
-        }
-    }
-    return pass;
-}
-#endif
 
 
 static int mdbUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
@@ -1395,9 +1337,6 @@ static void manageCol(MdbCol *col, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(col->name);
-        #if UNUSED
-        mprMark(col->validations);
-        #endif
     }
 }
 
@@ -1530,38 +1469,6 @@ static int updateFieldValue(MdbRow *row, MdbCol *col, cchar *value)
     }
     return 0;
 }
-
-#if UNUSED
-static bool validateField(Mdb *mdb, EdiRec *rec, cchar *tableName, cchar *columnName, cchar *value)
-{
-    EdiValidation   *vp;
-    MprList         *validations;
-    cchar           *error, *vkey;
-    int             next;
-    bool            pass;
-
-    assert(mdb);
-    assert(rec);
-    assert(tableName && *tableName);
-    assert(columnName && *columnName);
-
-    pass = 1;
-    vkey = sfmt("%s.%s", tableName, columnName);
-    if ((validations = mprLookupKey(mdb->edi.validations, vkey)) != 0) {
-        for (ITERATE_ITEMS(validations, vp, next)) {
-            if ((error = (*vp->vfn)(vp, rec, columnName, value)) != 0) {
-                if (rec->errors == 0) {
-                    rec->errors = mprCreateHash(0, MPR_HASH_STABLE);
-                }
-                mprAddKey(rec->errors, columnName, sfmt("%s %s", columnName, error));
-                pass = 0;
-            }
-        }
-    }
-    return pass;
-}
-#endif
-
 
 /*********************************** Support *******************************/
 /*

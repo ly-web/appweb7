@@ -219,9 +219,6 @@ typedef struct EdiProvider {
     int       (*addColumn)(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags);
     int       (*addIndex)(Edi *edi, cchar *tableName, cchar *columnName, cchar *indexName);
     int       (*addTable)(Edi *edi, cchar *tableName);
-#if UNUSED
-    int       (*addValidation)(Edi *edi, cchar *tableName, cchar *columnName, EdiValidation *vp);
-#endif
     int       (*changeColumn)(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags);
     void      (*close)(Edi *edi);
     EdiRec    *(*createRec)(Edi *edi, cchar *tableName);
@@ -246,9 +243,6 @@ typedef struct EdiProvider {
     int       (*save)(Edi *edi);
     int       (*updateField)(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName, cchar *value);
     int       (*updateRec)(Edi *edi, EdiRec *rec);
-#if UNUSED
-    bool      (*validateRec)(Edi *edi, EdiRec *rec);
-#endif
 } EdiProvider;
 
 /*************************** EDI Interface Wrappers **************************/

@@ -31,9 +31,6 @@ extern "C" {
     Per column structure
  */
 typedef struct MdbCol {
-#if UNUSED
-    MprList         *validations;       /* List of column validations */
-#endif
     char            *name;              /* Column name */
     int             type;               /* Column type */
     int             flags;              /* Column flags */
@@ -82,9 +79,6 @@ typedef struct MdbTable {
  */
 typedef struct Mdb {
     Edi             edi;                /**< EDI database interface structure */
-#if UNUSED
-    MprMutex        *mutex;             /**< Multithread lock for Schema modifications only */
-#endif
     MprList         *tables;            /**< List of tables */
 
     /*
