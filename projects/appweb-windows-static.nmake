@@ -2492,9 +2492,7 @@ DEPS_104 = $(DEPS_104) installBinary
 DEPS_104 = $(DEPS_104) start
 
 install: $(DEPS_104)
-	cd .
-	
-	cd .
+#  Omit build script install
 
 
 #
