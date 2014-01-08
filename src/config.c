@@ -2390,29 +2390,30 @@ static int userAccountDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    <VirtualHost ip[:port]>
+    <VirtualHost ip[:port] ...>
  */
 static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
 {
-    char            *ip;
-    int             port;
-
     state = maPushState(state);
     if (state->enabled) {
-        mprParseSocketAddress(value, &ip, &port, NULL, -1);
         /*
             Inherit the current default route configuration (only)
             Other routes are not inherited due to the reset routes below
          */
         state->route = httpCreateInheritedRoute(httpGetHostDefaultRoute(state->host));
         state->route->ssl = 0;
+        state->auth = state->route->auth;
         state->host = httpCloneHost(state->host);
         httpResetRoutes(state->host);
         httpSetRouteHost(state->route, state->host);
         httpSetHostDefaultRoute(state->host, state->route);
-        httpSetHostIpAddr(state->host, ip, port);
+
+        /* Set a default host and route name */
+        httpSetHostName(state->host, stok(sclone(value), " \t,", NULL));
         httpSetRouteName(state->route, sfmt("default-%s", state->host->name));
-        state->auth = state->route->auth;
+
+        /* Save the endpoints until the close of the vhost. Do this so the vhost block can do the Listen */
+        state->endpoints = sclone(value);
     }
     return 0;
 }
@@ -2424,13 +2425,20 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
 static int closeVirtualHostDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpEndpoint    *endpoint;
+    char            *address, *ip, *addresses, *tok;
+    int             port;
 
-    if (state->enabled) {
-        if ((endpoint = httpLookupEndpoint(state->http, state->host->ip, state->host->port)) == 0) {
-            mprError("Cannot find listen directive for virtual host %s", state->host->name);
-            return MPR_ERR_BAD_SYNTAX;
-        } else {
-            httpAddHostToEndpoint(endpoint, state->host);
+    if (state->enabled && state->endpoints) {
+        addresses = state->endpoints;
+        while ((address = stok(addresses, " \t,", &tok)) != 0) {
+            addresses = 0;
+            mprParseSocketAddress(address, &ip, &port, NULL, -1);
+            if ((endpoint = httpLookupEndpoint(state->http, ip, port)) == 0) {
+                mprError("Cannot find listen directive for virtual host %s", address);
+                return MPR_ERR_BAD_SYNTAX;
+            } else {
+                httpAddHostToEndpoint(endpoint, state->host);
+            }
         }
     }
     closeDirective(state, key, value);
@@ -2514,14 +2522,14 @@ PUBLIC bool maValidateServer(MaServer *server)
     assert(defaultHost);
 
     /*
-        Add the default host to the endpoints
+        Add the default host to the unassigned endpoints
      */
     for (nextEndpoint = 0; (endpoint = mprGetNextItem(http->endpoints, &nextEndpoint)) != 0; ) {
         if (mprGetListLength(endpoint->hosts) == 0) {
             /* Add the defaultHost */
             httpAddHostToEndpoint(endpoint, defaultHost);
-            if (!defaultHost->ip) {
-                httpSetHostIpAddr(defaultHost, endpoint->ip, endpoint->port);
+            if (!defaultHost->name) {
+                httpSetHostName(defaultHost, sfmt("%s:%d", endpoint->ip, endpoint->port));
             }
         }
     }
@@ -2763,6 +2771,7 @@ static void manageState(MaState *state, int flags)
         mprMark(state->prev);
         mprMark(state->top);
         mprMark(state->current);
+        mprMark(state->endpoints);
     }
 }
 

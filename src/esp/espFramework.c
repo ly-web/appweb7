@@ -527,7 +527,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             eroute->mode = mprGetJson(eroute->config, "esp.mode", 0);
             if (!eroute->mode) {
                 eroute->mode = sclone("debug");
-                mprLog(2, "esp: app %s running in %s mode", eroute->appName, eroute->mode);
+                mprLog(2, "esp: application \"%s\" running in \"%s\" mode", eroute->appName, eroute->mode);
             }
             debug = smatch(eroute->mode, "debug");
             if ((msettings = mprGetJsonObj(eroute->config, sfmt("esp.modes.%s", eroute->mode), 0)) != 0) {
@@ -599,7 +599,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             }
             if ((value = espGetConfig(route, "esp.timeouts.session", 0)) != 0) {
                 route->limits->sessionTimeout = httpGetTicks(value) * 1000;
-                mprLog(2, "esp: set session timeout to %d", value);
+                mprLog(2, "esp: set session timeout to %s", value);
             }
 #if DEPRECATE || 1
             if (espTestConfig(route, "esp.map", "compressed")) {

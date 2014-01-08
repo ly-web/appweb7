@@ -435,6 +435,7 @@ typedef struct MaState {
     char        *key;                   /**< Current directive being parsed */
     char        *configDir;             /**< Directory containing config file */
     char        *filename;              /**< Config file name */
+    char        *endpoints;             /**< Virtual host endpoints */
     int         lineNumber;             /**< Current line number */
     int         enabled;                /**< True if the current block is enabled */
     int         flags;                  /**< Parsing flags */
