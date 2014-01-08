@@ -7,7 +7,6 @@ esp \- ESP Application Generator for Server-Side Web Applications.
 [\fI--chdir dir]\fR] 
 [\fI--config configFile]\fR] 
 [\fI--database DB]\fR] 
-[\fI--flat\fR]
 [\fI--genlink slink.c\fR]
 [\fI--keep\fR]
 [\fI--listen [ip:]port\fR]
@@ -197,12 +196,9 @@ matching the filter pathnames are compiled.
 
 .RE
 .PP
-To compile the entire application and produce a single shared library file:
+To compile the entire application and produce a single combined shared library file, set the "esp.combo" to true in
+the package.json file.
 .RS 5
-
- \fBesp --flat compile \fR.
-
-If using this option, you need to specify "flat=true" on your EspApp directive in the appweb.conf configuration file.
 
 .SH CROSS-COMPILING
 To compile for a target system of a different architecture, you must specify the target. 
@@ -259,9 +255,6 @@ Use the specified config file instead of appweb.conf
 .TP 6
 \fB\--database Database provider\fR
 Use the specified database provider. Set to "mdb" or "sdb" for SQLite.
-.TP 6
-\fB\--flat\fR
-Compile the application flat into a single shared library file.
 .TP 6
 \fB\--genlink slink.c\fR
 Generate a static link initialization file for ESP pages and applications. 

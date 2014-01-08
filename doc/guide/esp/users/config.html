@@ -247,8 +247,8 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
     mode: "debug",
     modes: {
         debug: {
-            // Application compiled flat via "esp --flat compile"
-            flat: false,
+            // Application compiled in discrete vs combo mode
+            combo: false,
             // Display server-side errors in the browser
             showErrors: true,
             // Keep intermediate source for views in the cache directory
@@ -396,7 +396,7 @@ EspCompile cc -shared ${DEBUG} -Wall -Wno-unused-result \
                         <tr><td><a href="../../appweb/users/dir/esp.html#espLink">EspLink</a></td>
                             <td>Link command for ESP controllers and pages</td></tr>
                         <tr><td><a href="../../appweb/users/dir/esp.html#espLoad">EspLoad</a></td>
-                            <td>Pre-load an ESP application that has been compiled flat</td></tr>
+                            <td>Pre-load an ESP application</td></tr>
                         <tr><td><a href="../../appweb/users/dir/esp.html#espPermResource">EspPermResource</a></td>
                             <td>Create a set of routes for a permanent resource</td></tr>
                         <tr><td><a href="../../appweb/users/dir/esp.html#espResource">EspResource</a></td>

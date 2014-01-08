@@ -11,7 +11,7 @@
         "templates/**"
     ],
     "esp": {
-        "flat": false,
+        "combo": false,
         "update": true,
         "serverPrefix": "/do",
         "server": {

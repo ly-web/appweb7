@@ -165,7 +165,7 @@ src/                        # Other application "C" code
             per-page transition would be slow. ESP for Angular optimizes this by compiling 
             HTML pages into Javascript and then combining with all other all scripts into a single,
              minified, compressed script file. Similarly, CSS and Less sheets are aggregated, 
-            minified, and compressed into a single file. Further, the C code can be "flatened" 
+            minified, and compressed into a single file. Further, the C code can be "combined" 
             into one source file which is compiled into a single binary. The end result is a 
             highly optimized application that starts quickly and transitions from view to view 
             without delay.</p>
@@ -255,7 +255,7 @@ src/                        # Other application "C" code
             to be copied to <em>settings</em>. The debug/release collection has by default the following properties:
 <pre>
 debug: {
-    flat: false,        # Select "esp -flat compile" output
+    combo: false,       # Run in descrete vs combined mode
     showErrors: true,   # Show debug errors in the client browser
     keepSource: true,   # Keep intermediate source in "cache"
     update: true,       # Dynamically reload modified code

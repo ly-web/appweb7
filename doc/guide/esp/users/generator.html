@@ -352,23 +352,19 @@ esp compile /directory/of/apps
             if the intermediate C source code generated from the ESP will be preserved.  This can sometimes be helpful
             for debugging. You also keep the generated source via the <em>esp --keep compile</em> option.</p> 
             
-            <h3>Compile Application as One Module</h3>
-            <p>For deployment in a production environment, it can be useful to compile the entire application including
-            all controllers, views and web pages into a single module file. Use the <em>--flat</em> esp option to
-            achieve this:</p> 
-            <pre>
-esp --flat compile
-</pre>
-            <p>If you compile flat, you will need to add an <em>EspLoad</em> directive to the appweb.conf. This tells
-            ESP to pre-load the application and where to locate the module file.</p>
-<pre>EspLoad NAME PATH</pre>
+            <h3>Production Deployment</h3>
+            <p>For deployment in a production environment, it optimal to compile the entire application including
+            all controllers, views and web pages into a single combined library. This is refered to as "combo" mode.
+            The normal mode is called "discrete" mode. To do a combo compile, set the esp.combo property in package.json
+            to true. </p>
+
             <p>When using dynamic linking, appweb automatically invokes the necessary ESP initializers when running
             ESP pages or invoking ESP controllers. However, if you are using static linking, you need to manually
             call these ESP initializers. You can generate the necessary initialization calls via the esp <em>--genlink
                 slink.c</em> switch. The generated code should be linked with your appweb main program replacing the default
             slink.c file.</p>
             <pre>
-esp --flat --static --genlink slink.c
+esp --static --genlink slink.c
 </pre>
             <h3>Cross Compiling</h3>
             <p>When <em>esp compile</em> is invoked, it selects its compile and link rules from the <em>esp.conf</em>
@@ -415,8 +411,7 @@ ESP Usage:
     --chdir dir                # Change to the named directory first
     --config configFile        # Use named config file instead appweb.conf
     --database name            # Database provider 'mdb|sqlite' 
-    --flat                     # Compile into a single module
-    --genlink                  # Generate a static link module for flat compilations
+    --genlink                  # Generate a static link module
     --host OS                  # Target O/S
     --keep                     # Keep intermediate source
     --listen [ip:]port         # Listen on specified address 
@@ -466,12 +461,8 @@ ESP Usage:
                         the only connector supported.</td>
                     </tr>
                     <tr>
-                        <td>--flat</td>
-                        <td>Compile entire application into a single module. Same as "esp compile flat".</td>
-                    </tr>
-                    <tr>
                         <td>--genlink slink.c</td>
-                        <td>Generate a file of ESP initializers when using --static and --flat".</td>
+                        <td>Generate a file of ESP initializers when using --static in combo mode.</td>
                     </tr>
                     <tr>
                         <td>--keep</td>
@@ -488,7 +479,7 @@ ESP Usage:
                     </tr>
                     <tr>
                         <td>--name</td>
-                        <td>Name for the application when compiling flat.</td>
+                        <td>Name for the application when compiling static.</td>
                     </tr>
                     <tr>
                         <td>--overwrite</td>
