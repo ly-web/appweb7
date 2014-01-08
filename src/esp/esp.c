@@ -30,10 +30,10 @@ typedef struct App {
     cchar       *listen;                /* Listen endpoint for "esp run" */
     cchar       *platform;              /* Target platform os-arch-profile (lower) */
 
-    int         combo;                   /* Combine all inputs into one, combo output */ 
-    cchar       *comboPath;              /* Output filename for combo compilations */
-    MprFile     *comboFile;              /* Output file for combo compilations */
-    MprList     *comboItems;             /* Items to invoke from Init */
+    int         combined;                   /* Combine all inputs into one, combined output */ 
+    cchar       *combinedPath;              /* Output filename for combined compilations */
+    MprFile     *combinedFile;              /* Output file for combined compilations */
+    MprList     *combinedItems;             /* Items to invoke from Init */
 
     MprList     *routes;                /* Routes to process */
     EspRoute    *eroute;                /* Selected ESP route to build */
@@ -112,7 +112,7 @@ static void config();
 static void compile(int argc, char **argv);
 static void compileFile(HttpRoute *route, cchar *source, int kind);
 static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toDir);
-static void compileCombo(HttpRoute *route);
+static void compileCombined(HttpRoute *route);
 static void compileItems(HttpRoute *route);
 static void createMigration(cchar *name, cchar *table, cchar *comment, int fieldCount, char **fields);
 static HttpRoute *createRoute(cchar *dir);
@@ -379,9 +379,9 @@ static void manageApp(App *app, int flags)
         mprMark(app->files);
         mprMark(app->filterRouteName);
         mprMark(app->filterRoutePrefix);
-        mprMark(app->comboFile);
-        mprMark(app->comboItems);
-        mprMark(app->comboPath);
+        mprMark(app->combinedFile);
+        mprMark(app->combinedItems);
+        mprMark(app->combinedPath);
         mprMark(app->genlink);
         mprMark(app->binDir);
         mprMark(app->paksCacheDir);
@@ -1291,8 +1291,8 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
     defaultLayout = (eroute->layoutsDir) ? mprJoinPath(eroute->layoutsDir, "default.esp") : 0;
     mprMakeDir(eroute->cacheDir, 0755, -1, -1, 1);
 
-    if (app->combo) {
-        why(source, "combo mode forces complete rebuild");
+    if (app->combined) {
+        why(source, "combined mode forces complete rebuild");
 
     } else if (app->rebuild) {
         why(source, "due to forced rebuild");
@@ -1325,28 +1325,28 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
     } else {
         why(source, "%s is missing", app->module);
     }
-    if (app->comboFile) {
+    if (app->combinedFile) {
         trace("Catenate", "%s", source);
-        mprWriteFileFmt(app->comboFile, "/*\n    Source from %s\n */\n", source);
+        mprWriteFileFmt(app->combinedFile, "/*\n    Source from %s\n */\n", source);
     }
     if (kind & (ESP_CONTROlLER | ESP_MIGRATION | ESP_SRC)) {
         app->csource = source;
-        if (app->comboFile) {
+        if (app->combinedFile) {
             if ((data = mprReadPathContents(source, &len)) == 0) {
                 fail("Cannot read %s", source);
                 return;
             }
-            if (mprWriteFile(app->comboFile, data, slen(data)) < 0) {
-                fail("Cannot write compiled script file %s", app->comboFile->path);
+            if (mprWriteFile(app->combinedFile, data, slen(data)) < 0) {
+                fail("Cannot write compiled script file %s", app->combinedFile->path);
                 return;
             }
-            mprWriteFileFmt(app->comboFile, "\n\n");
+            mprWriteFileFmt(app->combinedFile, "\n\n");
             if (kind & ESP_SRC) {
-                mprAddItem(app->comboItems, sfmt("esp_app_%s", eroute->appName));
+                mprAddItem(app->combinedItems, sfmt("esp_app_%s", eroute->appName));
             } else if (eroute->appName && *eroute->appName) {
-                mprAddItem(app->comboItems, sfmt("esp_controller_%s_%s", eroute->appName, mprTrimPathExt(mprGetPathBase(source))));
+                mprAddItem(app->combinedItems, sfmt("esp_controller_%s_%s", eroute->appName, mprTrimPathExt(mprGetPathBase(source))));
             } else {
-                mprAddItem(app->comboItems, sfmt("esp_controller_%s", mprTrimPathExt(mprGetPathBase(source))));
+                mprAddItem(app->combinedItems, sfmt("esp_controller_%s", mprTrimPathExt(mprGetPathBase(source))));
             }
         }
     }
@@ -1361,13 +1361,13 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
             return;
         }
         len = slen(script);
-        if (app->comboFile) {
-            if (mprWriteFile(app->comboFile, script, len) < 0) {
-                fail("Cannot write compiled script file %s", app->comboFile->path);
+        if (app->combinedFile) {
+            if (mprWriteFile(app->combinedFile, script, len) < 0) {
+                fail("Cannot write compiled script file %s", app->combinedFile->path);
                 return;
             }
-            mprWriteFileFmt(app->comboFile, "\n\n");
-            mprAddItem(app->comboItems, sfmt("esp_%s", app->cacheName));
+            mprWriteFileFmt(app->combinedFile, "\n\n");
+            mprAddItem(app->combinedItems, sfmt("esp_%s", app->cacheName));
 
         } else {
             app->csource = mprJoinPathExt(mprTrimPathExt(app->module), ".c");
@@ -1379,7 +1379,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
             }
         }
     }
-    if (!app->comboFile) {
+    if (!app->combinedFile) {
         /*
             WARNING: GC yield here
          */
@@ -1425,18 +1425,18 @@ static void compile(int argc, char **argv)
     if (app->error) {
         return;
     }
-    app->combo = app->eroute->combo;
-    vtrace("Info", "Compiling in %s mode", app->combo ? "combined" : "discrete");
+    app->combined = app->eroute->combined;
+    vtrace("Info", "Compiling in %s mode", app->combined ? "combined" : "discrete");
 
-    if (app->combo && app->genlink) {
+    if (app->combined && app->genlink) {
         app->slink = mprCreateList(0, MPR_LIST_STABLE);
     }
     for (ITERATE_ITEMS(app->routes, route, next)) {
         eroute = route->eroute;
         mprMakeDir(eroute->cacheDir, 0755, -1, -1, 1);
         mprTrace(2, "Build with route \"%s\" at %s", route->name, route->documents);
-        if (app->combo) {
-            compileCombo(route);
+        if (app->combined) {
+            compileCombined(route);
         } else {
             compileItems(route);
         }
@@ -1452,7 +1452,7 @@ static void compile(int argc, char **argv)
     if (app->slink) {
         qtrace("Generate", app->genlink);
         if ((file = mprOpenFile(app->genlink, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
-            fail("Cannot open %s", app->comboPath);
+            fail("Cannot open %s", app->combinedPath);
             return;
         }
         mprWriteFileFmt(file, "/*\n    %s -- Generated Appweb Static Initialization\n */\n", app->genlink);
@@ -1608,9 +1608,9 @@ static void compileItems(HttpRoute *route)
 
 
 /*
-    Compile all the items for a route into a combo (single) output file
+    Compile all the items for a route into a combined (single) output file
  */
-static void compileCombo(HttpRoute *route)
+static void compileCombined(HttpRoute *route)
 {
     MprDirEntry     *dp;
     MprKeyValue     *kp;
@@ -1623,10 +1623,10 @@ static void compileCombo(HttpRoute *route)
     name = app->appName ? app->appName : mprGetPathBase(route->documents);
 
     /*
-        Combo ... Catenate all source
+        Combined ... Catenate all source
      */
-    app->comboItems = mprCreateList(-1, MPR_LIST_STABLE);
-    app->comboPath = mprJoinPath(eroute->cacheDir, sjoin(name, ".c", NULL));
+    app->combinedItems = mprCreateList(-1, MPR_LIST_STABLE);
+    app->combinedPath = mprJoinPath(eroute->cacheDir, sjoin(name, ".c", NULL));
 
     app->build = mprCreateList(0, MPR_LIST_STABLE);
     path = mprJoinPath(app->eroute->srcDir, "app.c");
@@ -1676,12 +1676,12 @@ static void compileCombo(HttpRoute *route)
         }
     }
     if (mprGetListLength(app->build) > 0) {
-        if ((app->comboFile = mprOpenFile(app->comboPath, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
-            fail("Cannot open %s", app->comboPath);
+        if ((app->combinedFile = mprOpenFile(app->combinedPath, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
+            fail("Cannot open %s", app->combinedPath);
             return;
         }
-        mprWriteFileFmt(app->comboFile, "/*\n    Combo compilation of %s\n */\n\n", name);
-        mprWriteFileFmt(app->comboFile, "#include \"esp.h\"\n\n");
+        mprWriteFileFmt(app->combinedFile, "/*\n    Combined compilation of %s\n */\n\n", name);
+        mprWriteFileFmt(app->combinedFile, "#include \"esp.h\"\n\n");
 
         for (ITERATE_ITEMS(app->build, kp, next)) {
             if (smatch(kp->value, "src")) {
@@ -1698,28 +1698,28 @@ static void compileCombo(HttpRoute *route)
         if (app->slink) {
             mprAddItem(app->slink, route);
         }
-        mprWriteFileFmt(app->comboFile, "\nESP_EXPORT int esp_app_%s_combo(HttpRoute *route, MprModule *module) {\n", name);
-        for (next = 0; (line = mprGetNextItem(app->comboItems, &next)) != 0; ) {
-            mprWriteFileFmt(app->comboFile, "    %s(route, module);\n", line);
+        mprWriteFileFmt(app->combinedFile, "\nESP_EXPORT int esp_app_%s_combined(HttpRoute *route, MprModule *module) {\n", name);
+        for (next = 0; (line = mprGetNextItem(app->combinedItems, &next)) != 0; ) {
+            mprWriteFileFmt(app->combinedFile, "    %s(route, module);\n", line);
         }
-        mprWriteFileFmt(app->comboFile, "    return 0;\n}\n");
-        mprCloseFile(app->comboFile);
+        mprWriteFileFmt(app->combinedFile, "    return 0;\n}\n");
+        mprCloseFile(app->combinedFile);
 
         app->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, name, BIT_SHOBJ));
         qtrace("Compile", "%s", name);
-        if (runEspCommand(route, eroute->compile, app->comboPath, app->module) < 0) {
+        if (runEspCommand(route, eroute->compile, app->combinedPath, app->module) < 0) {
             return;
         }
         if (eroute->link) {
             trace("Link", "%s", mprGetRelPath(mprTrimPathExt(app->module), NULL));
-            if (runEspCommand(route, eroute->link, app->comboPath, app->module) < 0) {
+            if (runEspCommand(route, eroute->link, app->combinedPath, app->module) < 0) {
                 return;
             }
         }
     }
-    app->comboItems = 0;
-    app->comboFile = 0;
-    app->comboPath = 0;
+    app->combinedItems = 0;
+    app->combinedFile = 0;
+    app->combinedPath = 0;
     app->build = 0;
 }
 
@@ -2644,13 +2644,13 @@ static void usageError()
     "    --chdir dir                # Change to the named directory first\n"
     "    --config configFile        # Use named config file instead appweb.conf\n"
     "    --database name            # Database provider 'mdb|sdb' \n"
-    "    --combo                    # Compile into a single module\n"
-    "    --genlink filename         # Generate a static link module for combo compilations\n"
+    "    --combined                    # Compile into a single module\n"
+    "    --genlink filename         # Generate a static link module for combined compilations\n"
     "    --keep                     # Keep intermediate source\n"
     "    --listen [ip:]port         # Listen on specified address \n"
     "    --log logFile:level        # Log to file file at verbosity level\n"
     "    --mode [debug|release|..]  # Edit package.json and set esp.mode\n"
-    "    --name appName             # Name for the app when compiling combo\n"
+    "    --name appName             # Name for the app when compiling combined\n"
     "    --overwrite                # Overwrite existing files \n"
     "    --quiet                    # Don't emit trace \n"
     "    --platform os-arch-profile # Target platform\n"
