@@ -11,11 +11,12 @@ appweb\- Embedded HTTP Web Server
 [\fI--chroot directory\fR]
 [\fI--debugger\fR]
 [\fI--exe path\fR]
-[\fI--log logSpec\fR]
 [\fI--home directory\fR] 
+[\fI--log logSpec\fR]
+[\fI--name uniqueName\fR]
 [\fI--threads threads\fR]
-[\fI--verbose\fR]
 [\fI--version\fR]
+[\fI--verbose\fR]
 .SH DESCRIPTION
 Appweb is a compact embedded HTTP web server.  It is a fast, small-footprint, multi-threaded, standards-based, 
 portable server developed for use by embedded devices and applications.  It can run as a stand-alone 
@@ -62,6 +63,9 @@ The syntax is:
 .TP
 \fB\--home directory\fR
 Define the server home directory for Appweb.
+.TP
+\fB\--name NAME\fR
+Define a unique name for this instance of Appweb. Useful for ps -ef listings.
 .TP
 \fB\--verbose\fR
 Shorthand for --log stdout:4. The \fB-v\fR option is an alias for --verbose.
