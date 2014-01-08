@@ -17,8 +17,9 @@
                 "controller": "esp-legacy-mvc/controller.c",
                 "controller-singleton": "esp-legacy-mvc/controller.c",
                 "files": [
-                    "esp-angular-mvc/layouts/**",
-                    "esp-angular-mvc/static/**"
+                    "esp-legacy-mvc/layouts/**",
+                    "esp-legacy-mvc/static/**",
+                    "esp-legacy-mvc/src/app.c"
                 ]
             }
         }
