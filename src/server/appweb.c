@@ -505,18 +505,21 @@ static int unixSecurityChecks(cchar *program, cchar *home)
  */ 
 static int writePort(MaServer *server)
 {
-    HttpHost    *host;
-    char        numBuf[16], *path;
-    int         fd, len;
+    HttpEndpoint    *endpoint;
+    char            numBuf[16], *path;
+    int             fd, len;
 
-    host = mprGetFirstItem(server->http->hosts);
+    if ((endpoint = mprGetFirstItem(server->http->endpoints)) == 0) {
+        mprError("No configured endpoints");
+        return MPR_ERR_CANT_ACCESS;
+    }
     //  FUTURE - should really go to a BIT_LOG_DIR (then fix uninstall.sh)
     path = mprJoinPath(mprGetAppDir(), "../.port.log");
     if ((fd = open(path, O_CREAT | O_WRONLY | O_TRUNC, 0666)) < 0) {
         mprError("Could not create port file %s", path);
         return MPR_ERR_CANT_CREATE;
     }
-    fmt(numBuf, sizeof(numBuf), "%d", host->port);
+    fmt(numBuf, sizeof(numBuf), "%d", endpoint->port);
 
     len = (int) strlen(numBuf);
     numBuf[len++] = '\n';
