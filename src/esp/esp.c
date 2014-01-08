@@ -50,7 +50,9 @@ typedef struct App {
     cchar       *genlink;               /* Static link resolution file */
     cchar       *filterRouteName;       /* Name of route to use for ESP configuration */
     cchar       *filterRoutePrefix;     /* Prefix of route to use for ESP configuration */
+    cchar       *log;                   /* Arg for --log */
     cchar       *routeSet;              /* Desired route set package */
+    cchar       *mode;                  /* New esp.mode to use */
     cchar       *module;                /* Compiled module name */
     cchar       *base;                  /* Base filename */
     cchar       *entry;                 /* Module entry point */
@@ -114,10 +116,11 @@ static void compileCombo(HttpRoute *route);
 static void compileItems(HttpRoute *route);
 static void createMigration(cchar *name, cchar *table, cchar *comment, int fieldCount, char **fields);
 static HttpRoute *createRoute(cchar *dir);
+static void editProperty(cchar *key, cchar *value);
 static void fail(cchar *fmt, ...);
 static void fatal(cchar *fmt, ...);
 static cchar *findAcceptableVersion(cchar *name, cchar *criteria);
-static bool findAppwebConf();
+static void findAppwebConf();
 static void generate(int argc, char **argv);
 static void generateApp(int argc, char **argv);
 static void generateAppDb();
@@ -133,7 +136,7 @@ static MprList *getRoutes();
 static MprHash *getTargets(int argc, char **argv);
 static cchar *getTemplate(cchar *key, MprHash *tokens);
 static cchar *getPakVersion(cchar *name, cchar *version);
-static void initialize();
+static void initialize(int argc, char **argv);
 static bool inRange(cchar *expr, cchar *version);
 static void install(int argc, char **argv);
 static bool installPak(cchar *name, cchar *criteria, bool topLevel);
@@ -146,12 +149,13 @@ static MprHash *makeTokens(cchar *path, MprHash *other);
 static void manageApp(App *app, int flags);
 static void migrate(int argc, char **argv);
 static void process(int argc, char **argv);
-static bool readAppwebConfig();
+static void readAppwebConfig();
 static cchar *readTemplate(cchar *path, MprHash *tokens);
 static bool requiredRoute(HttpRoute *route);
 static int reverseSortFiles(MprDirEntry **d1, MprDirEntry **d2);
 static void run(int argc, char **argv);
 static bool selectResource(cchar *path, cchar *kind);
+static void setMode(cchar *mode);
 static int sortFiles(MprDirEntry **d1, MprDirEntry **d2);
 static void qtrace(cchar *tag, cchar *fmt, ...);
 static void trace(cchar *tag, cchar *fmt, ...);
@@ -168,7 +172,7 @@ static void why(cchar *path, cchar *fmt, ...);
 PUBLIC int main(int argc, char **argv)
 {
     Mpr     *mpr;
-    cchar   *argp, *logSpec;
+    cchar   *argp;
     int     argind, rc;
 
     if ((mpr = mprCreate(argc, argv, 0)) == NULL) {
@@ -180,9 +184,9 @@ PUBLIC int main(int argc, char **argv)
     mprAddRoot(app);
     mprAddStandardSignals();
 
-    logSpec = "stderr:0";
     argc = mpr->argc;
     argv = (char**) mpr->argv;
+    app->log = sclone("stderr:0");
     app->mpr = mpr;
     app->configFile = 0;
     app->listen = sclone(ESP_LISTEN);
@@ -230,10 +234,6 @@ PUBLIC int main(int argc, char **argv)
                     usageError();
                 }
             }
-#if UNUSED
-        } else if (smatch(argp, "combo")) {
-            app->combo = 1;
-#endif
 
         } else if (smatch(argp, "force") || smatch(argp, "f")) {
             app->force = 1;
@@ -259,7 +259,14 @@ PUBLIC int main(int argc, char **argv)
             if (argind >= argc) {
                 usageError();
             } else {
-                logSpec = argv[++argind];
+                app->log = sclone(argv[++argind]);
+            }
+
+        } else if (smatch(argp, "mode")) {
+            if (argind >= argc) {
+                usageError();
+            } else {
+                app->mode = sclone(argv[++argind]);
             }
 
         } else if (smatch(argp, "name")) {
@@ -335,25 +342,21 @@ PUBLIC int main(int argc, char **argv)
             usageError();
         }
     }
+    initialize(argc - argind, &argv[argind]);
     if (app->error) {
         return app->error;
+    }
+    if (app->mode) {
+        setMode(app->mode);
+        if (argc == argind) {
+            return app->error;
+        }
     }
     if ((argc - argind) == 0) {
         usageError();
         return app->error;
     }
-    mprStartLogging(logSpec, 0);
-    mprSetCmdlineLogging(1);
-
-    if (mprStart() < 0) {
-        mprError("Cannot start MPR for %s", mprGetAppName());
-        mprDestroy(MPR_EXIT_DEFAULT);
-        return MPR_ERR_CANT_INITIALIZE;
-    }
-    httpCreate(HTTP_SERVER_SIDE | HTTP_UTILITY);
-
     if (!app->error) {
-        initialize();
         process(argc - argind, &argv[argind]);
     }
     rc = app->error;
@@ -384,6 +387,7 @@ static void manageApp(App *app, int flags)
         mprMark(app->paksCacheDir);
         mprMark(app->paksDir);
         mprMark(app->listen);
+        mprMark(app->log);
         mprMark(app->module);
         mprMark(app->mpr);
         mprMark(app->base);
@@ -393,6 +397,7 @@ static void manageApp(App *app, int flags)
         mprMark(app->title);
         mprMark(app->build);
         mprMark(app->slink);
+        mprMark(app->mode);
         mprMark(app->routes);
         mprMark(app->routeSet);
         mprMark(app->server);
@@ -405,17 +410,10 @@ static void manageApp(App *app, int flags)
 static void process(int argc, char **argv)
 {
     cchar       *cmd;
-    bool        generateApp;
 
     assert(argc >= 1);
-
     cmd = argv[0];
-    generateApp = smatch(cmd, "generate") && argc > 1 && smatch(argv[1], "app");
-    if (!generateApp) {
-        if (!readAppwebConfig()) {
-            return;
-        }
-    }
+
     if (smatch(cmd, "config")) {
         config();
 
@@ -428,6 +426,9 @@ static void process(int argc, char **argv)
         app->targets = getTargets(argc - 1, &argv[1]);
         app->routes = getRoutes();
         compile(argc -1, &argv[1]);
+
+    } else if (smatch(cmd, "debug")) {
+        setMode("debug");
 
     } else if (smatch(cmd, "generate")) {
         generate(argc - 1, &argv[1]);
@@ -443,6 +444,9 @@ static void process(int argc, char **argv)
     } else if (smatch(cmd, "migrate")) {
         app->routes = getRoutes();
         migrate(argc - 1, &argv[1]);
+
+    } else if (smatch(cmd, "release")) {
+        setMode("release");
 
     } else if (smatch(cmd, "run")) {
         app->routes = getRoutes();
@@ -750,6 +754,33 @@ static void migrate(int argc, char **argv)
 }
 
 
+static void setMode(cchar *mode)
+{
+    int     quiet;
+
+    app->targets = getTargets(0, NULL);
+    app->routes = getRoutes();
+    editProperty("esp.mode", mode);
+    quiet = app->quiet;
+    app->quiet = 1;
+    clean(0, NULL);
+    app->quiet = quiet;
+}
+
+
+/*
+    Edit a property in the package.json
+ */
+static void editProperty(cchar *key, cchar *value)
+{
+    qtrace("Set", sfmt("%s to %s", key, value));
+    espSetConfig(app->route, key, value);
+    if (espSaveConfig(app->route) < 0) {
+        fail("Cannot save package.json");
+    }
+}
+
+
 static void run(int argc, char **argv)
 {
     MprCmd      *cmd;
@@ -864,10 +895,24 @@ static void exportCache()
 }
 
 
-static void initialize()
+static void initialize(int argc, char **argv)
 {
     MprPath     src, dest;
     cchar       *appwebPaks, *home;
+
+    if (app->error) {
+        return;
+    }
+    mprStartLogging(app->log, 0);
+    mprSetCmdlineLogging(1);
+    
+    if (mprStart() < 0) {
+        mprError("Cannot start MPR for %s", mprGetAppName());
+        mprDestroy(MPR_EXIT_DEFAULT);
+        app->error = 1;
+        return;
+    }
+    httpCreate(HTTP_SERVER_SIDE | HTTP_UTILITY);
 
     app->currentDir = mprGetCurrentPath();
     app->binDir = mprGetAppDir();
@@ -887,6 +932,9 @@ static void initialize()
         }
     } else {
         app->paksCacheDir = mprJoinPath(mprGetAppDir(), "../" BIT_ESP_PAKS);
+    }
+    if (argc < 2 || !smatch(argv[0], "generate") || !smatch(argv[1], "app")) {
+        readAppwebConfig();
     }
 }
 
@@ -1074,7 +1122,7 @@ static MprList *getRoutes()
 
     [--config path] : ./appweb.conf : [parent]/appweb.conf
  */
-static bool findAppwebConf()
+static void findAppwebConf()
 {
     cchar   *name, *path, *userPath, *nextPath;
 
@@ -1087,7 +1135,7 @@ static bool findAppwebConf()
     if (!mprPathExists(app->configFile, R_OK)) {
         if (userPath) {
             fail("Cannot open config file %s", app->configFile);
-            return 0;
+            return;
         }
         for (path = mprGetCurrentPath(); path; path = nextPath) {
             mprLog(1, "Probe for \"%s\"", path);
@@ -1103,57 +1151,55 @@ static bool findAppwebConf()
         }
         if (!app->configFile) {
             fail("Cannot find appweb.config. Run in directory of a generated application or use --config");
-            return 0;
+            return;
         }
     }
     app->serverRoot = mprGetAbsPath(mprGetPathDir(app->configFile));
     if (!userPath) {
         if (chdir(mprGetPathDir(app->configFile)) < 0) {
             fail("Cannot change directory to %s", mprGetPathDir(app->configFile));
-            return 0;
+            return;
         }
     }
-    return 1;
 }
 
 
 /*
     Read the appweb.conf configuration file
  */
-static bool readAppwebConfig()
+static void readAppwebConfig()
 {
     HttpStage   *stage;
 
     if ((app->appweb = maCreateAppweb()) == 0) {
         fail("Cannot create HTTP service for %s", mprGetAppName());
-        return 0;
+        return;
     }
     appweb = MPR->appwebService = app->appweb;
     appweb->skipModules = 1;
     http = app->appweb->http;
     if (maSetPlatform(app->platform) < 0) {
         fail("Cannot find platform %s", app->platform);
-        return 0;
+        return;
     }
     appweb->staticLink = app->staticLink;
-
-    if (!findAppwebConf() || app->error) {
-        return 0;
+    findAppwebConf();
+    if (app->error) {
+        return;
     }
     if ((app->server = maCreateServer(appweb, "default")) == 0) {
         fail("Cannot create HTTP server for %s", mprGetAppName());
-        return 0;
+        return;
     }
     if (maParseConfig(app->server, app->configFile, MA_PARSE_NON_SERVER) < 0) {
         fail("Cannot configure the server, exiting.");
-        return 0;
+        return;
     }
     if ((stage = httpLookupStage(http, "espHandler")) == 0) {
         fail("Cannot find ESP handler in %s", app->configFile);
-        return 0;
+        return;
     }
     esp = stage->stageData;
-    return !app->error;
 }
 
 
@@ -1337,7 +1383,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
         /*
             WARNING: GC yield here
          */
-        trace("Compile", "%s", app->csource);
+        qtrace("Compile", "%s", app->csource);
         if (!eroute->compile) {
             fail("Missing EspCompile directive for %s", app->csource);
             return;
@@ -1379,7 +1425,7 @@ static void compile(int argc, char **argv)
     if (app->error) {
         return;
     }
-    app->combo = espTestConfig(app->route, "esp.combo", "true");
+    app->combo = app->eroute->combo;
     vtrace("Info", "Compiling in %s mode", app->combo ? "combined" : "discrete");
 
     if (app->combo && app->genlink) {
@@ -1427,9 +1473,11 @@ static void compile(int argc, char **argv)
         mprCloseFile(file);
         app->slink = 0;
     }
+#if UNUSED
     if (!app->error) {
         trace("Compile", "Complete");
     }
+#endif
 }
 
 
@@ -1663,7 +1711,7 @@ static void compileCombo(HttpRoute *route)
         mprCloseFile(app->comboFile);
 
         app->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, name, BIT_SHOBJ));
-        trace("Compile", "%s", name);
+        qtrace("Compile", "%s", name);
         if (runEspCommand(route, eroute->compile, app->comboPath, app->module) < 0) {
             return;
         }
@@ -2640,7 +2688,7 @@ static void usageError()
     cchar   *name, *paks;
 
     name = mprGetAppName();
-    initialize();
+    initialize(0, NULL);
     paks = getCachedPaks();
 
     mprEprintf("\nESP Usage:\n\n"
@@ -2649,11 +2697,12 @@ static void usageError()
     "    --chdir dir                # Change to the named directory first\n"
     "    --config configFile        # Use named config file instead appweb.conf\n"
     "    --database name            # Database provider 'mdb|sdb' \n"
-    "    --combo                     # Compile into a single module\n"
+    "    --combo                    # Compile into a single module\n"
     "    --genlink filename         # Generate a static link module for combo compilations\n"
     "    --keep                     # Keep intermediate source\n"
     "    --listen [ip:]port         # Listen on specified address \n"
     "    --log logFile:level        # Log to file file at verbosity level\n"
+    "    --mode [debug|release|..]  # Edit package.json and set esp.mode\n"
     "    --name appName             # Name for the app when compiling combo\n"
     "    --overwrite                # Overwrite existing files \n"
     "    --quiet                    # Don't emit trace \n"

@@ -540,10 +540,10 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                     mprError("The %s AuthStore is not available on this platform", value);
                 }
             }
-            if ((value = espGetConfig(route, "esp.flat", 0)) != 0) {
-                eroute->flat = smatch(value, "true");
-                if (eroute->flat) {
-                    mprLog(2, "esp: app %s configured for flat compilation", eroute->appName);
+            if ((value = espGetConfig(route, "esp.combo", 0)) != 0) {
+                eroute->combo = smatch(value, "true");
+                if (eroute->combo) {
+                    mprLog(2, "esp: app %s configured for combo compilation", eroute->appName);
                 }
             }
             if ((value = espGetConfig(route, "esp.server.redirect", 0)) != 0) {

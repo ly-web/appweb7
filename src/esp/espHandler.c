@@ -300,7 +300,7 @@ static int runAction(HttpConn *conn)
 
 #if !BIT_STATIC
     key = mprJoinPath(eroute->controllersDir, rx->target);
-    if (!eroute->flat && (eroute->update || !mprLookupKey(esp->actions, key))) {
+    if (!eroute->combo && (eroute->update || !mprLookupKey(esp->actions, key))) {
         if (!loadEspModule(route, "controller", source, &errMsg)) {
             httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "%s", errMsg);
             return 0;
@@ -370,7 +370,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         source = conn->tx->filename;
     }
 #if !BIT_STATIC
-    if (!eroute->flat && (eroute->update || !mprLookupKey(esp->views, mprGetPortablePath(source)))) {
+    if (!eroute->combo && (eroute->update || !mprLookupKey(esp->views, mprGetPortablePath(source)))) {
         /* WARNING: GC yield */
         mprHold(source);
         if (!loadEspModule(route, "view", source, &errMsg)) {
@@ -405,8 +405,8 @@ static char *getModuleEntry(EspRoute *eroute, cchar *kind, cchar *source, cchar 
         entry = sfmt("esp_%s", cacheName);
 
     } else if (smatch(kind, "app")) {
-        if (eroute->flat) {
-            entry = sfmt("esp_%s_%s_flat", kind, eroute->appName);
+        if (eroute->combo) {
+            entry = sfmt("esp_%s_%s_combo", kind, eroute->appName);
         } else {
             entry = sfmt("esp_%s_%s", kind, eroute->appName);
         }
@@ -450,7 +450,7 @@ static bool loadEspModule(HttpRoute *route, cchar *kind, cchar *source, cchar **
 #endif
     canonical = mprGetPortablePath(mprGetRelPath(source, route->documents));
     appName = eroute->appName ? eroute->appName : route->host->name;
-    if (eroute->flat) {
+    if (eroute->combo) {
         cacheName = eroute->appName;
     } else {
         cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", appName, canonical), -1, sjoin(kind, "_", NULL));
@@ -512,7 +512,7 @@ static bool loadApp(HttpRoute *route)
     if (eroute->loaded && !eroute->update) {
         return 1;
     }
-    if (eroute->flat) {
+    if (eroute->combo) {
         source = mprJoinPath(eroute->cacheDir, sfmt("%s.c", eroute->appName));
     } else {
         source = mprJoinPath(eroute->srcDir, "app.c");
@@ -979,7 +979,7 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
         auth=STORE 
         database=DATABASE 
         dir=DIR 
-        flat=true|false
+        combo=true|false
         name=NAME 
         prefix=PREFIX 
         routes=ROUTES 
@@ -990,12 +990,12 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpRoute   *route;
     EspRoute    *eroute;
-    cchar       *auth, *database, *name, *prefix, *dir, *routeSet, *flat;
+    cchar       *auth, *database, *name, *prefix, *dir, *routeSet, *combo;
     char        *option, *ovalue, *tok;
 
     dir = ".";
     routeSet = 0;
-    flat = "false";
+    combo = "false";
     prefix = 0;
     database = 0;
     auth = 0;
@@ -1011,8 +1011,12 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
                 database = ovalue;
             } else if (smatch(option, "dir")) {
                 dir = ovalue;
+            } else if (smatch(option, "combo")) {
+                combo = ovalue;
+#if DEPRECATED || 1
             } else if (smatch(option, "flat")) {
-                flat = ovalue;
+                combo = ovalue;
+#endif
             } else if (smatch(option, "name")) {
                 name = ovalue;
             } else if (smatch(option, "prefix")) {
@@ -1057,7 +1061,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_MEMORY;
     }
     eroute->top = eroute;
-    eroute->flat = scaselessmatch(flat, "true") || smatch(flat, "1");
+    eroute->combo = scaselessmatch(combo, "true") || smatch(combo, "1");
     if (name) {
         eroute->appName = sclone(name);
     }
@@ -1143,7 +1147,7 @@ static int finishEspAppDirective(MaState *state, cchar *key, cchar *value)
         if (!loadApp(route)) {
             return MPR_ERR_CANT_LOAD;
         }
-        if (!eroute->flat && (preload = mprGetJsonObj(eroute->config, "esp.preload", 0)) != 0) {
+        if (!eroute->combo && (preload = mprGetJsonObj(eroute->config, "esp.preload", 0)) != 0) {
             for (ITERATE_JSON(preload, item, i)) {
                 source = stok(sclone(item->value), ":", &kind);
                 if (!kind) kind = "controller";

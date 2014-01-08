@@ -160,7 +160,7 @@ PUBLIC void espInitHtmlOptions(Esp *esp);
     @see Esp
  */
 typedef struct EspRoute {
-    char            *appName;               /**< App module name when compiled flat */
+    char            *appName;               /**< App module name when compiled combo */
     struct EspRoute *top;                   /**< Top-level route for this application */
     EspProc         commonController;       /**< Common code for all controllers */
     MprHash         *env;                   /**< Environment variables for route */
@@ -184,7 +184,7 @@ typedef struct EspRoute {
     cchar           *database;              /**< Name of database for route */
     cchar           *routeSet;              /**< Route set to use */
     cchar           *winsdk;                /**< Windows SDK */
-    int             flat;                   /**< Compile the application flat */
+    int             combo;                  /**< Compile the application combo */
     int             keepSource;             /**< Preserve generated source */
     int             loaded;                 /**< App has been loaded */
     int             update;                 /**< Auto-update modified ESP source */

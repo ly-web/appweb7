@@ -250,7 +250,7 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
         }
     }
     if (!verifyUser) {
-        mprError("No user verification routine defined");
+        mprError("No user verification routine defined on route %s", rx->route->name);
         return 0;
     }
     if (auth->username && *auth->username) {
