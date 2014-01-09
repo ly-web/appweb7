@@ -9,8 +9,8 @@ APPWEB(1)                        User Commands                       APPWEB(1)
        <B>appweb [options] [IP][:port] [documentRoot]</B>
 
        <B>appweb  </B>[<I>--config  configFile</I>] [<I>--chroot directory</I>] [<I>--debugger</I>] [<I>--exe</I>
-       <I>path</I>] [<I>--log logSpec</I>] [<I>--home directory</I>]  [<I>--threads  threads</I>]  [<I>--ver-</I>
-       <I>bose</I>] [<I>--version</I>]
+       <I>path</I>] [<I>--home directory</I>] [<I>--log logSpec</I>] [<I>--name uniqueName</I>] [<I>--threads</I>
+       <I>threads</I>] [<I>--version</I>] [<I>--verbose</I>]
 
 <B>DESCRIPTION</B>
        Appweb  is  a  compact  embedded HTTP web server.  It is a fast, small-
@@ -69,8 +69,12 @@ APPWEB(1)                        User Commands                       APPWEB(1)
        <B>--home directory</B>
               Define the server home directory for Appweb.
 
+       <B>--name NAME</B>
+              Define  a unique name for this instance of Appweb. Useful for ps
+              -ef listings.
+
        <B>--verbose</B>
-              Shorthand  for  --log  stdout:4.  The  <B>-v </B>option is an alias for
+              Shorthand for --log stdout:4. The <B>-v  </B>option  is  an  alias  for
               --verbose.
 
        <B>--version</B>

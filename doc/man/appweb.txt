@@ -10,8 +10,8 @@ SYNOPSIS
        appweb [options] [IP][:port] [documentRoot]
 
        appweb  [--config  configFile] [--chroot directory] [--debugger] [--exe
-       path] [--log logSpec] [--home directory]  [--threads  threads]  [--ver-
-       bose] [--version]
+       path] [--home directory] [--log logSpec] [--name uniqueName] [--threads
+       threads] [--version] [--verbose]
 
 DESCRIPTION
        Appweb  is  a  compact  embedded HTTP web server.  It is a fast, small-
@@ -70,8 +70,12 @@ OPTIONS
        --home directory
               Define the server home directory for Appweb.
 
+       --name NAME
+              Define  a unique name for this instance of Appweb. Useful for ps
+              -ef listings.
+
        --verbose
-              Shorthand  for  --log  stdout:4.  The  -v option is an alias for
+              Shorthand for --log stdout:4. The -v  option  is  an  alias  for
               --verbose.
 
        --version
