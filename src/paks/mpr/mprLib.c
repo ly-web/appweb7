@@ -26247,12 +26247,10 @@ PUBLIC MprTicks mprGetTicks()
     if ((diff = (result - lastTicks)) < 0) {
         /*
             Handle time reversals. Don't handle jumps forward. Sorry.
+            Note: this is not time day, so it should not matter.
          */
-        result = mprGetTime() + adjustTicks;
-        if ((diff = (result - lastTicks)) < 0) {
-            adjustTicks += diff;
-            result -= diff;
-        }
+        adjustTicks -= diff;
+        result -= diff;
     }
     lastTicks = result;
     mprSpinUnlock(&ticksSpin);
