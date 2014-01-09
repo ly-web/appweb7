@@ -7513,7 +7513,7 @@ static void readyPass(HttpQueue *q)
 static void readyError(HttpQueue *q)
 {
     if (!q->conn->error) {
-        httpError(q->conn, HTTP_CODE_SERVICE_UNAVAILABLE, "The requested resource is not available");
+        httpError(q->conn, HTTP_CODE_NOT_FOUND, "The requested resource is not available");
     }
     httpFinalize(q->conn);
 }
