@@ -86,6 +86,7 @@ static void startDir(HttpQueue *q)
     MprList         *list;
     MprDirEntry     *dp;
     Dir             *dir;
+    cchar           *path;
     uint            nameSize;
     int             next;
 
@@ -122,7 +123,8 @@ static void startDir(HttpQueue *q)
     }
     nameSize = max(nameSize, 22);
 
-    outputHeader(q, rx->pathInfo, nameSize);
+    path = rx->route->prefix ? sjoin(rx->route->prefix, rx->pathInfo, NULL) : rx->pathInfo;
+    outputHeader(q, path, nameSize);
     for (next = 0; (dp = mprGetNextItem(list, &next)) != 0; ) {
         outputLine(q, dp, tx->filename, nameSize);
     }
