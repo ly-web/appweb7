@@ -1835,7 +1835,7 @@ static void outgoingChunkService(HttpQueue *q)
                 tx->chunkSize = min(conn->limits->chunkSize, q->max);
             }
         }
-        if (tx->flags & HTTP_TX_USE_OWN_HEADERS) {
+        if (tx->flags & HTTP_TX_USE_OWN_HEADERS || conn->http10) {
             tx->chunkSize = -1;
         }
     }
@@ -13228,7 +13228,7 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
 
         case 't':
             if (strcasecmp(key, "transfer-encoding") == 0) {
-                if (scaselesscmp(value, "chunked") == 0) {
+                if (scaselesscmp(value, "chunked") == 0 && !conn->http10) {
                     /*
                         remainingContent will be revised by the chunk filter as chunks are processed and will 
                         be set to zero when the last chunk has been received.
@@ -16312,9 +16312,10 @@ static void setHeaders(HttpConn *conn, HttpPacket *packet)
 
     } else if (conn->endpoint) {
         /* Server must not emit a content length header for 1XX, 204 and 304 status */
-        if (!((100 <= tx->status && tx->status <= 199) || tx->status == 204 || 
-                tx->status == 304 || tx->flags & HTTP_TX_NO_LENGTH)) {
-            httpAddHeader(conn, "Content-Length", "%Ld", length);
+        if (!((100 <= tx->status && tx->status <= 199) || tx->status == 204 || tx->status == 304 || tx->flags & HTTP_TX_NO_LENGTH)) {
+            if (length >= 0) {
+                httpAddHeader(conn, "Content-Length", "%Ld", length);
+            }
         }
 
     } else if (tx->length > 0) {
