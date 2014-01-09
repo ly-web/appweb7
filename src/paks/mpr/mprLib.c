@@ -9667,8 +9667,6 @@ static uchar charMatch[256] = {
  */
 #define MAX_PORT_LEN 8
 
-#define MIME_HASH_SIZE 67
-
 /************************************ Code ************************************/
 /*
     Uri encode by encoding special characters with hex equivalents. Return an allocated string.
@@ -15568,6 +15566,8 @@ static char *standardMimeTypes[] = {
     0,       0,
 };
 
+#define MIME_HASH_SIZE 67
+
 /********************************** Forward ***********************************/
 
 static void addStandardMimeTypes(MprHash *table);
@@ -15587,7 +15587,7 @@ PUBLIC MprHash *mprCreateMimeTypes(cchar *path)
         if ((file = mprOpenFile(path, O_RDONLY | O_TEXT, 0)) == 0) {
             return 0;
         }
-        if ((table = mprCreateHash(47, 0)) == 0) {
+        if ((table = mprCreateHash(MIME_HASH_SIZE, MPR_HASH_CASELESS)) == 0) {
             mprCloseFile(file);
             return 0;
         }
@@ -15613,7 +15613,7 @@ PUBLIC MprHash *mprCreateMimeTypes(cchar *path)
     } else 
 #endif
     {
-        if ((table = mprCreateHash(59, 0)) == 0) {
+        if ((table = mprCreateHash(MIME_HASH_SIZE, MPR_HASH_CASELESS)) == 0) {
             return 0;
         }
         addStandardMimeTypes(table);
