@@ -29422,7 +29422,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
         mp->modified = info.mtime;
         baseName = mprGetPathBase(mp->path);
         mprLog(2, "Loading native module %s", baseName);
-        if ((handle = GetModuleHandle(wide(baseName))) == 0 && (handle = LoadLibrary(wide(mp->path))) == 0) {
+        if ((handle = LoadLibrary(wide(mp->path))) == 0) {
             mprError("Cannot load module %s\nReason: \"%d\"\n", mp->path, mprGetOsError());
             return MPR_ERR_CANT_READ;
         } 
