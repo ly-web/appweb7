@@ -128,9 +128,14 @@ static void openFileHandler(HttpQueue *q)
                 }
             }
         }
-
     } else if (rx->flags & HTTP_OPTIONS) {
         httpHandleOptions(q->conn);
+
+    } else if (rx->flags & (HTTP_DELETE | HTTP_PUT)) {
+        ;
+
+    } else {
+        httpError(conn, HTTP_CODE_BAD_METHOD, "Unsupported method");
     }
 }
 
