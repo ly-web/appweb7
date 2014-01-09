@@ -6794,7 +6794,7 @@ PUBLIC int mprWaitForCond(MprCond *cp, MprTicks timeout)
             }
         }
 #endif
-    } while (!cp->triggered && rc == 0 && (now && (now = mprGetTicks()) < expire));
+    } while (!cp->triggered && rc == 0 && (!now || (now = mprGetTicks()) < expire));
 
     if (cp->triggered) {
         cp->triggered = 0;
