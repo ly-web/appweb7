@@ -3360,6 +3360,7 @@ PUBLIC int mprInitWindow()
     hwnd = CreateWindow(name, title, WS_OVERLAPPED, CW_USEDEFAULT, 0, 0, 0, NULL, NULL, 0, NULL);
     if (!hwnd) {
         mprError("Cannot create window");
+        UnregisterClass(name, 0);
         return -1;
     }
     ws->hwnd = hwnd;
@@ -27953,7 +27954,15 @@ static void manageWaitService(MprWaitService *ws, int flags)
         mprMark(ws->spin);
     }
 #if MPR_EVENT_ASYNC
-    /* Nothing to manage */
+    if (flags & MPR_MANAGE_FREE) {
+        wchar *name = (wchar*) wide(mprGetAppName());
+        /* Clean up the Win32 registered class and window. */
+        if (ws->hwnd) {
+            DestroyWindow(ws->hwnd);
+            UnregisterClass(name, 0);
+            ws->hwnd = NULL;
+        }
+    }
 #endif
 #if MPR_EVENT_KQUEUE
     mprManageKqueue(ws, flags);
