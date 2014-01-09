@@ -197,6 +197,8 @@ PUBLIC bool httpLoggedIn(HttpConn *conn)
     Get the username and password credentials. If using an in-protocol auth scheme like basic|digest, the
     rx->authDetails will contain the credentials and the parseAuth callback will be invoked to parse.
     Otherwise, it is expected that "username" and "password" fields are present in the request parameters.
+
+    This is called by authCondition which thereafter calls httpLogin
  */
 PUBLIC bool httpGetCredentials(HttpConn *conn, cchar **username, cchar **password)
 {
@@ -209,7 +211,7 @@ PUBLIC bool httpGetCredentials(HttpConn *conn, cchar **username, cchar **passwor
     auth = conn->rx->route->auth;
     if (auth->type) {
         if (conn->authType && !smatch(conn->authType, auth->type->name)) {
-            httpError(conn, HTTP_CODE_BAD_REQUEST, "Access denied. Wrong authentication protocol type.");
+            /* Do not call httpError so that a 401 response will be sent with WWW-Authenticate header */
             return 0;
         }
         if (auth->type->parseAuth && (auth->type->parseAuth)(conn, username, password) < 0) {
