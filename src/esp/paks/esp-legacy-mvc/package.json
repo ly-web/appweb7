@@ -16,6 +16,7 @@
                 "clientEdit": "esp-legacy-mvc/edit.esp",
                 "controller": "esp-legacy-mvc/controller.c",
                 "controller-singleton": "esp-legacy-mvc/controller.c",
+                "migration": "esp-legacy-mvc/migration.c",
                 "files": [
                     "esp-legacy-mvc/layouts/**",
                     "esp-legacy-mvc/static/**",

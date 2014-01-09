@@ -142,16 +142,17 @@ static bool inRange(cchar *expr, cchar *version);
 static void install(int argc, char **argv);
 static bool installPak(cchar *name, cchar *criteria, bool topLevel);
 static bool installPakFiles(cchar *name, cchar *version, bool topLevel);
+static bool isBinary(cchar *path);
 static void list(int argc, char **argv);
 static MprJson *loadPackage(cchar *path);
 static void makeEspDir(cchar *dir);
-static void makeEspFile(cchar *path, cchar *data);
+static void makeEspFile(cchar *path, cchar *data, ssize len);
 static MprHash *makeTokens(cchar *path, MprHash *other);
 static void manageApp(App *app, int flags);
 static void migrate(int argc, char **argv);
 static void process(int argc, char **argv);
 static void readAppwebConfig();
-static cchar *readTemplate(cchar *path, MprHash *tokens);
+static cchar *readTemplate(cchar *path, MprHash *tokens, ssize *len);
 static bool requiredRoute(HttpRoute *route);
 static int reverseSortFiles(MprDirEntry **d1, MprDirEntry **d2);
 static void run(int argc, char **argv);
@@ -1860,7 +1861,7 @@ static void createMigration(cchar *name, cchar *table, cchar *comment, int field
         }
     }
     path = sfmt("%s/%s_%s.c", dir, seq, name, ".c");
-    makeEspFile(path, data);
+    makeEspFile(path, data, 0);
 }
 
 
@@ -1988,8 +1989,13 @@ static void generateTable(int argc, char **argv)
  */
 static void generateScaffoldViews(int argc, char **argv)
 {
-    genKey("clientList", "${APPDIR}/${CONTROLLER}/${CONTROLLER}-${FILENAME}", 0);
-    genKey("clientEdit", "${APPDIR}/${CONTROLLER}/${CONTROLLER}-${FILENAME}", 0);
+    if (app->eroute->legacy) {
+        genKey("clientList", "${VIEWSDIR}/${CONTROLLER}-${FILENAME}", 0);
+        genKey("clientEdit", "${VIEWSDIR}/${CONTROLLER}-${FILENAME}", 0);
+    } else {
+        genKey("clientList", "${APPDIR}/${CONTROLLER}/${CONTROLLER}-${FILENAME}", 0);
+        genKey("clientEdit", "${APPDIR}/${CONTROLLER}/${CONTROLLER}-${FILENAME}", 0);
+    }
 }
 
 
@@ -2486,7 +2492,7 @@ static void makeEspDir(cchar *path)
 }
 
 
-static void makeEspFile(cchar *path, cchar *data)
+static void makeEspFile(cchar *path, cchar *data, ssize len)
 {
     bool    exists;
 
@@ -2498,7 +2504,10 @@ static void makeEspFile(cchar *path, cchar *data)
         return;
     }
     makeEspDir(mprGetPathDir(path));
-    if (mprWritePathContents(path, data, slen(data), 0644) < 0) {
+    if (len <= 0) {
+        len = slen(data);
+    }
+    if (mprWritePathContents(path, data, len, 0644) < 0) {
         fail("Cannot write %s", path);
         return;
     }
@@ -2533,26 +2542,43 @@ static cchar *getCachedPaks()
 }
 
 
-static cchar *readTemplate(cchar *path, MprHash *tokens)
+static bool isBinary(cchar *path)
 {
-    cchar   *cp, *data, *mime;
+    cchar   *mime;
+
+    if ((mime = mprLookupMime(NULL, path)) != 0) {
+        if (scontains(mime, "octet-stream") || scontains(mime, "gzip") || sstarts(mime, "image") || sstarts(mime, "video") || sstarts(mime, "audio")) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+static cchar *readTemplate(cchar *path, MprHash *tokens, ssize *len)
+{
+    cchar   *cp, *data;
     ssize   size;
 
     if ((data = mprReadPathContents(path, &size)) == 0) {
         fail("Cannot open template file \"%s\"", path);
+        return 0;
     }
-    vtrace("Info", "Using template %s", path);
-    if ((mime = mprLookupMime(NULL, path)) != 0) {
-        if (scontains(mime, "octet-stream") || scontains(mime, "gzip") || sstarts(mime, "image") || sstarts(mime, "video") || sstarts(mime, "audio")) {
-            return data;
-        }
+    if (len) {
+        *len = size;
     }
     /* Detect non-text content via premature nulls */
     for (cp = data; *cp; cp++) { }
     if ((cp - data) < size) {
+        /* Skip template as the data looks lik binary */
         return data;
     }
-    return stemplate(data, tokens);
+    vtrace("Info", "Using template %s", path);
+    data = stemplate(data, tokens);
+    if (len) {
+        *len = slen(data);
+    }
+    return data;
 }
 
 
@@ -2561,7 +2587,7 @@ static cchar *getTemplate(cchar *key, MprHash *tokens)
     cchar   *pattern;
 
     if ((pattern = espGetConfig(app->route, sfmt("esp.server.generate.%s", key), 0)) != 0) {
-        return readTemplate(mprJoinPath("templates", pattern), tokens);
+        return readTemplate(mprJoinPath("templates", pattern), tokens, NULL);
     }
     return 0;
 }
@@ -2577,10 +2603,10 @@ static MprHash *makeTokens(cchar *path, MprHash *other)
     tokens = mprDeserialize(sfmt(
         "{ APP: '%s', APPDIR: '%s', BINDIR: '%s', DATABASE: '%s', DOCUMENTS: '%s', FILENAME: '%s', HOME: '%s', "
         "LIST: '%s', LISTEN: '%s', CONTROLLER: '%s', UCONTROLLER: '%s', MODEL: '%s', UMODEL: '%s', ROUTES: '%s', "
-        "SERVER: '%s', TABLE: '%s', UAPP: '%s', DEFINE_ACTIONS: '' }",
-        app->appName, app->eroute->appDir,app->binDir, app->database, app->route->documents, filename, app->route->home,
+        "SERVER: '%s', TABLE: '%s', UAPP: '%s', DEFINE_ACTIONS: '', VIEWSDIR: '%s' }",
+        app->appName, app->eroute->appDir, app->binDir, app->database, app->route->documents, filename, app->route->home,
         list, app->listen, app->controller, stitle(app->controller), app->controller, stitle(app->controller), app->routeSet, 
-            app->route->serverPrefix, app->table, app->title));
+            app->route->serverPrefix, app->table, app->title, app->eroute->viewsDir));
     if (other) {
         mprBlendHash(tokens, other);
     }
@@ -2608,25 +2634,33 @@ static void genKey(cchar *key, cchar *path, MprHash *tokens)
         path = mprTrimPathComponents(pattern, 1);
     }
     path = stemplate(path, tokens);
-    makeEspFile(path, data);
+    makeEspFile(path, data, 0);
 }
 
 
 static void genFile(cchar *path, MprHash *tokens)
 {
-    cchar       *data;
+    cchar   *dest, *data;
+    ssize   len;
 
     if (app->error) {
         return;
     }
-    if (!tokens) {
-        tokens = makeTokens(path, 0);
+    dest = mprTrimPathComponents(path, 2);
+    if (isBinary(path)) {
+        if ((data = mprReadPathContents(path, &len)) == 0) {
+            fail("Cannot open template file \"%s\"", path);
+            return;
+        }
+    } else {
+        if (!tokens) {
+            tokens = makeTokens(path, 0);
+        }
+        if ((data = readTemplate(path, tokens, &len)) == 0) {
+            return;
+        }
     }
-    if ((data = readTemplate(path, tokens)) == 0) {
-        return;
-    }
-    path = mprTrimPathComponents(path, 2);
-    makeEspFile(path, data);
+    makeEspFile(dest, data, len);
 }
 
 
