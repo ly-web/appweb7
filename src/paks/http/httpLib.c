@@ -2732,6 +2732,7 @@ static void readEvent(HttpConn *conn)
             break;
         }
         mprYield(0);
+        conn->lastActivity = conn->http->now;
     } while (conn->endpoint && prepForNext(conn));
 }
 
