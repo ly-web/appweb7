@@ -424,7 +424,7 @@ static int manageDir(HttpConn *conn)
     HttpRx      *rx;
     HttpTx      *tx;
     HttpRoute   *route;
-    HttpUri     *prior;
+    HttpUri     *req;
     MprPath     *info;
     cchar       *index, *pathInfo, *uri;
     char        *path;
@@ -432,19 +432,19 @@ static int manageDir(HttpConn *conn)
 
     rx = conn->rx;
     tx = conn->tx;
-    prior = rx->parsedUri;
+    req = rx->parsedUri;
     route = rx->route;
     info = &tx->fileInfo;
 
     /*
         Manage requests for directories
      */
-    if (!sends(rx->pathInfo, "/")) {
+    if (!sends(req->path, "/")) {
         /*
-           Append "/" and do an external redirect
+           Append "/" and do an external redirect. Use the original request URI.
          */
-        pathInfo = sjoin(rx->pathInfo, "/", NULL);
-        uri = httpFormatUri(prior->scheme, prior->host, prior->port, pathInfo, prior->reference, prior->query, 0);
+        pathInfo = sjoin(req->path, "/", NULL);
+        uri = httpFormatUri(req->scheme, req->host, req->port, pathInfo, req->reference, req->query, 0);
         httpRedirect(conn, HTTP_CODE_MOVED_PERMANENTLY, uri);
         return HTTP_ROUTE_OK;
     }
@@ -459,8 +459,7 @@ static int manageDir(HttpConn *conn)
             path = mprJoinPath(tx->filename, index);
             if (mprPathExists(path, R_OK)) {
                 pathInfo = sjoin(rx->scriptName, rx->pathInfo, index, NULL);
-                uri = httpFormatUri(prior->scheme, prior->host, prior->port, pathInfo, prior->reference,
-                    prior->query, 0);
+                uri = httpFormatUri(req->scheme, req->host, req->port, pathInfo, req->reference, req->query, 0);
                 httpSetUri(conn, uri);
                 tx->filename = path;
                 tx->ext = httpGetExt(conn);

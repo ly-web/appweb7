@@ -7,6 +7,7 @@ let http: Http = new Http
 let prefix = HTTP + "/angular"
 
 //  /angular
+http.followRedirects = true
 http.get(prefix)
 assert(http.status == 200)
 assert(http.response.contains("<title>Blog</title>"))
