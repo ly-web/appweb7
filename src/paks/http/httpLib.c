@@ -2685,6 +2685,10 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
  */
 PUBLIC void httpEvent(HttpConn *conn, MprEvent *event)
 {
+    if (!conn->http) {
+        /* Connection has been destroyed */
+        return;
+    }
     assert(conn->sock);
     mprTrace(6, "httpEvent for fd %d, mask %d", conn->sock->fd, event->mask);
     conn->lastActivity = conn->http->now;
