@@ -3435,10 +3435,10 @@ PUBLIC void httpDigestLogin(HttpConn *conn)
     if (smatch(auth->qop, "none")) {
         httpSetHeader(conn, "WWW-Authenticate", "Digest realm=\"%s\", nonce=\"%s\"", auth->realm, nonce);
     } else {
-        /* Value of null defaults to "auth" */
+        /* qop value of null defaults to "auth" */
         httpSetHeader(conn, "WWW-Authenticate", "Digest realm=\"%s\", domain=\"%s\", "
             "qop=\"auth\", nonce=\"%s\", opaque=\"%s\", algorithm=\"MD5\", stale=\"FALSE\"", 
-            auth->realm, conn->host->name, nonce, opaque);
+            auth->realm, "/", nonce, opaque);
     }
     httpSetContentType(conn, "text/plain");
     httpError(conn, HTTP_CODE_UNAUTHORIZED, "Access Denied. Login required");
