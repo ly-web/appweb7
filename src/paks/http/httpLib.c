@@ -11233,16 +11233,29 @@ static int authCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
     if (!httpLoggedIn(conn)) {
         httpGetCredentials(conn, &username, &password);
         if (!httpLogin(conn, username, password)) {
-            if (!conn->tx->finalized && route->auth && route->auth->type) {
-                (route->auth->type->askLogin)(conn);
+            if (!conn->tx->finalized) {
+                if (route->auth && route->auth->type) {
+                    (route->auth->type->askLogin)(conn);
+                } else {
+                    httpError(conn, HTTP_CODE_UNAUTHORIZED, "Access Denied. Login required");
+                }
+                /* Request has been denied and a response generated. So OK to accept this route. */
             }
-            /* Request has been denied and a response generated. So OK to accept this route. */
             return HTTP_ROUTE_OK;
         }
     }
     if (!httpCanUser(conn, NULL)) {
-        httpError(conn, HTTP_CODE_FORBIDDEN, "Access denied. User is not authorized for access.");
+        mprLog(2, "Access denied. User is not authorized for access.");
+        if (!conn->tx->finalized) {
+            if (route->auth && route->auth->type) {
+                (route->auth->type->askLogin)(conn);
+                /* Request has been denied and a response generated. So OK to accept this route. */
+            } else {
+                httpError(conn, HTTP_CODE_UNAUTHORIZED, "Access denied. User is not authorized for access.");
+            }
+        }
     }
+    /* OK to accept route. This does not mean the request was authenticated - an error may have been already generated */
     return HTTP_ROUTE_OK;
 }
 
