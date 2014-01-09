@@ -80,7 +80,7 @@ static void openFileHandler(HttpQueue *q)
             } else {
                 mprLog(2, "fileHandler: Cannot find filename %s", tx->filename);
             }
-            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find %s", rx->uri);
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find document");
             return;
         } 
         if (!tx->etag) {
@@ -104,7 +104,8 @@ static void openFileHandler(HttpQueue *q)
             tx->length = -1;
         }
         if (!tx->fileInfo.isReg && !tx->fileInfo.isLink) {
-            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot locate document: %s", rx->uri);
+            mprError("Document is not a regular file");
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot serve document");
             
         } else if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
             httpError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE,
@@ -120,11 +121,11 @@ static void openFileHandler(HttpQueue *q)
                 tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
                 if (tx->file == 0) {
                     if (rx->referrer) {
-                        httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document: %s from %s", 
-                            tx->filename, rx->referrer);
+                        mprLog(2, "fileHandler: Cannot find filename %s from referrer %s", tx->filename, rx->referrer);
                     } else {
-                        httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document: %s from %s", tx->filename);
+                        mprLog(2, "fileHandler: Cannot find filename %s", tx->filename);
                     }
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find document");
                 }
             }
         }
@@ -408,11 +409,11 @@ static void handleDeleteRequest(HttpQueue *q)
     assert(tx->fileInfo.checked);
 
     if (!tx->fileInfo.isReg) {
-        httpError(conn, HTTP_CODE_NOT_FOUND, "URI not found");
+        httpError(conn, HTTP_CODE_NOT_FOUND, "Document not found");
         return;
     }
     if (mprDeletePath(tx->filename) < 0) {
-        httpError(conn, HTTP_CODE_NOT_FOUND, "Can't remove URI");
+        httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot remove document");
         return;
     }
     httpSetStatus(conn, HTTP_CODE_NO_CONTENT);
