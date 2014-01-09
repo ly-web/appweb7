@@ -1265,6 +1265,9 @@ DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\edit.e
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\layouts
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\layouts\default.esp
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\list.esp
+DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\migration.c
+DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\src
+DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\src\app.c
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\css
 DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\css\all.css
@@ -1362,6 +1365,9 @@ $(CONFIG)\paks: $(DEPS_58)
 	if not exist "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc\layouts" md "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc\layouts"
 	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\layouts\default.esp ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc\layouts\default.esp
 	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\list.esp ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc\list.esp
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\migration.c ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc\migration.c
+	if not exist "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc\src" md "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc\src"
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\src\app.c ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc\src\app.c
 	if not exist "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc\static" md "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc\static"
 	if not exist "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc\static\css" md "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc\static\css"
 	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\css\all.css ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.0-rc.1\templates\esp-legacy-mvc\static\css\all.css
@@ -2273,7 +2279,6 @@ stop: $(DEPS_101)
 	@.\$(CONFIG)\bin\appman stop disable uninstall >/dev/null 2>&1 ; true
 	cd .
 
-	@echo '   [Install] Complete'
 #
 #   installBinary
 #
@@ -2408,6 +2413,9 @@ installBinary: $(DEPS_102)
 	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc\layouts" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc\layouts"
 	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\layouts\default.esp "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc\layouts\default.esp"
 	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\list.esp "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc\list.esp"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\migration.c "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc\migration.c"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc\src" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc\src"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\src\app.c "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc\src\app.c"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc\static\css" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc\static\css"
 	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\css\all.css "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc\static\css\all.css"
 	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc\static\images" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\templates\esp-legacy-mvc\static\images"

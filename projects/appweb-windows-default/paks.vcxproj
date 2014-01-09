@@ -170,6 +170,9 @@ copy esp-legacy-mvc/templates/esp-legacy-mvc/edit.esp ../../../windows-x86-defau
 mkdir -p "../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/layouts"
 copy esp-legacy-mvc/templates/esp-legacy-mvc/layouts/default.esp ../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/layouts/default.esp
 copy esp-legacy-mvc/templates/esp-legacy-mvc/list.esp ../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/list.esp
+copy esp-legacy-mvc/templates/esp-legacy-mvc/migration.c ../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/migration.c
+mkdir -p "../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/src"
+copy esp-legacy-mvc/templates/esp-legacy-mvc/src/app.c ../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/src/app.c
 mkdir -p "../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/static"
 mkdir -p "../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/static/css"
 copy esp-legacy-mvc/templates/esp-legacy-mvc/static/css/all.css ../../../windows-x86-default/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/static/css/all.css

@@ -2291,6 +2291,9 @@ cp -r esp.conf ../server/esp.conf
 ../src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/layouts,
 ../src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/layouts/default.esp,
 ../src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/list.esp,
+../src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/migration.c,
+../src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/src,
+../src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/src/app.c,
 ../src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/static,
 ../src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/static/css,
 ../src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/static/css/all.css,
@@ -2393,6 +2396,9 @@ cd ../src/esp/paks
 	mkdir -p \"../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/layouts\"
 	cp esp-legacy-mvc/templates/esp-legacy-mvc/layouts/default.esp ../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/layouts/default.esp
 	cp esp-legacy-mvc/templates/esp-legacy-mvc/list.esp ../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/list.esp
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/migration.c ../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/migration.c
+	mkdir -p \"../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/src\"
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/src/app.c ../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/src/app.c
 	mkdir -p \"../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/static\"
 	mkdir -p \"../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/static/css\"
 	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/css/all.css ../../${OUT_DIR}/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/static/css/all.css

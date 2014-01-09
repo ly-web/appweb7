@@ -1159,6 +1159,9 @@ DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/edit.esp
 DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/layouts
 DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/layouts/default.esp
 DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/list.esp
+DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/migration.c
+DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/src
+DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/src/app.c
 DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/static
 DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/static/css
 DEPS_56 += src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/static/css/all.css
@@ -1257,6 +1260,9 @@ $(CONFIG)/paks: $(DEPS_56)
 	mkdir -p "../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/layouts" ; \
 	cp esp-legacy-mvc/templates/esp-legacy-mvc/layouts/default.esp ../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/layouts/default.esp ; \
 	cp esp-legacy-mvc/templates/esp-legacy-mvc/list.esp ../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/list.esp ; \
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/migration.c ../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/migration.c ; \
+	mkdir -p "../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/src" ; \
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/src/app.c ../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/src/app.c ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/static" ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/static/css" ; \
 	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/css/all.css ../../../$(CONFIG)/paks/esp-legacy-mvc/4.5.0-rc.1/templates/esp-legacy-mvc/static/css/all.css ; \
@@ -2112,7 +2118,6 @@ stop: $(DEPS_93)
 	@./$(CONFIG)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true ; \
 	)
 
-	@echo '   [Install] Complete'
 #
 #   installBinary
 #
@@ -2254,6 +2259,9 @@ installBinary: $(DEPS_94)
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/esp-legacy-mvc/layouts" ; \
 	cp src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/layouts/default.esp $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/esp-legacy-mvc/layouts/default.esp ; \
 	cp src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/list.esp $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/esp-legacy-mvc/list.esp ; \
+	cp src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/migration.c $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/esp-legacy-mvc/migration.c ; \
+	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/esp-legacy-mvc/src" ; \
+	cp src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/src/app.c $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/esp-legacy-mvc/src/app.c ; \
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/esp-legacy-mvc/static/css" ; \
 	cp src/esp/paks/esp-legacy-mvc/templates/esp-legacy-mvc/static/css/all.css $(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/esp-legacy-mvc/static/css/all.css ; \
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-legacy-mvc/templates/esp-legacy-mvc/static/images" ; \
