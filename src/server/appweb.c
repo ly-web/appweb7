@@ -307,7 +307,7 @@ static int createEndpoints(int argc, char **argv)
         return MPR_ERR_CANT_CREATE;
     }
     loadStaticModules();
-    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
+    mprGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
 
     if (argc > argind) {
         app->documents = sclone(argv[argind++]);
@@ -339,7 +339,7 @@ static int createEndpoints(int argc, char **argv)
 #elif BIT_UNIX_LIKE
     addSignals();
 #endif
-    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
+    mprGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
     return 0;
 }
 

@@ -4781,7 +4781,7 @@ PUBLIC HttpStatusCode HttpStatusCodes[] = {
 static void httpTimer(Http *http, MprEvent *event);
 static bool isIdle();
 static void manageHttp(Http *http, int flags);
-static void terminateHttp(int how, int status);
+static void terminateHttp(int state, int how, int status);
 static void updateCurrentDate(Http *http);
 
 /*********************************** Code *************************************/
@@ -5145,8 +5145,6 @@ static void httpTimer(Http *http, MprEvent *event)
     MprKey      *kp;
     int         removed, next, active, abort, period;
 
-    assert(event);
-
     updateCurrentDate(http);
 
     /* 
@@ -5158,7 +5156,7 @@ static void httpTimer(Http *http, MprEvent *event)
     for (active = 0, next = 0; (conn = mprGetNextItem(http->connections, &next)) != 0; active++) {
         limits = conn->limits;
         if (!conn->timeoutEvent) {
-            abort = 0;
+            abort = mprIsStopping();
             if (conn->endpoint && HTTP_STATE_BEGIN < conn->state && conn->state < HTTP_STATE_PARSED && 
                     (conn->started + limits->requestParseTimeout) < http->now) {
                 abort = 1;
@@ -5216,14 +5214,16 @@ static void httpTimer(Http *http, MprEvent *event)
     unlock(http->addresses);
 
     if (active == 0) {
-        mprRemoveEvent(event);
+        if (event) {
+            mprRemoveEvent(event);
+        }
         http->timer = 0;
         /*
             Going to sleep now, so schedule a GC to free as much as possible.
          */
-        mprRequestGC(MPR_GC_FORCE | MPR_GC_NO_BLOCK);
+        mprGC(MPR_GC_FORCE | MPR_GC_NO_BLOCK);
     } else {
-        mprRequestGC(MPR_GC_NO_BLOCK);
+        mprGC(MPR_GC_NO_BLOCK);
     }
     unlock(http->connections);
 
@@ -5254,19 +5254,28 @@ PUBLIC void httpSetTimestamp(MprTicks period)
 }
 
 
-static void terminateHttp(int how, int status)
+/*
+    Http terminator called via mprTerminate or as part of shutdown via mprDestroy
+ */
+static void terminateHttp(int state, int how, int status)
 {
     Http            *http;
     HttpEndpoint    *endpoint;
     int             next;
 
-    /*
-        Stop listening for new requests
-     */
-    http = (Http*) mprGetMpr()->httpService;
-    if (http) {
-        for (ITERATE_ITEMS(http->endpoints, endpoint, next)) {
-            httpStopEndpoint(endpoint);
+    if ((http = MPR->httpService) != 0) {
+        if (state == MPR_STOPPING) {
+            for (ITERATE_ITEMS(http->endpoints, endpoint, next)) {
+                /* Close the listening endpoints - this stops all new requests */
+                httpStopEndpoint(endpoint);
+            }
+            if (!(how & MPR_EXIT_GRACEFUL)) {
+                /* Abort running requests by simulating a timeout expiry */
+                httpTimer(http, 0);
+            }
+
+        } else if (state == MPR_STOPPING_CORE) {
+            httpDestroy(http);
         }
     }
 }
@@ -5280,27 +5289,27 @@ static bool isIdle()
     int             next;
     static MprTicks lastTrace = 0;
 
-    http = (Http*) mprGetMpr()->httpService;
-    now = http->now;
-
-    lock(http->connections);
-    for (next = 0; (conn = mprGetNextItem(http->connections, &next)) != 0; ) {
-        if (conn->state != HTTP_STATE_BEGIN) {
-            if (lastTrace < now) {
-                if (conn->rx) {
-                    mprLog(1, "  Request %s is still active", conn->rx->uri ? conn->rx->uri : conn->rx->pathInfo);
-                } else {
-                    mprLog(1, "Waiting for connection to close");
-                    conn->started = 0;
-                    conn->timeoutEvent = mprCreateEvent(conn->dispatcher, "connTimeout", 0, httpConnTimeout, conn, 0);
+    if ((http = (Http*) mprGetMpr()->httpService) != 0) {
+        lock(http->connections);
+        now = http->now;
+        for (next = 0; (conn = mprGetNextItem(http->connections, &next)) != 0; ) {
+            if (conn->state != HTTP_STATE_BEGIN) {
+                if (lastTrace < now) {
+                    if (conn->rx) {
+                        mprLog(2, "http: Request for \"%s\" is still active", conn->rx->uri ? conn->rx->uri : conn->rx->pathInfo);
+                    } else {
+                        mprLog(2, "Waiting for connection to close");
+                        conn->started = 0;
+                        conn->timeoutEvent = mprCreateEvent(conn->dispatcher, "connTimeout", 0, httpConnTimeout, conn, 0);
+                    }
+                    lastTrace = now;
                 }
-                lastTrace = now;
+                unlock(http->connections);
+                return 0;
             }
-            unlock(http->connections);
-            return 0;
         }
+        unlock(http->connections);
     }
-    unlock(http->connections);
     if (!mprServicesAreIdle()) {
         if (lastTrace < now) {
             mprLog(3, "Waiting for MPR services complete");

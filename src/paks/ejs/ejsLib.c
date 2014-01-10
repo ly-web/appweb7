@@ -34901,7 +34901,7 @@ PUBLIC void ejsConfigureFunctionType(Ejs *ejs)
  */
 static EjsBoolean *gc_enabled(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **argv)
 {
-    return ((mprGetMpr()->heap->enabled) ? ESV(true): ESV(false));
+    return ((mprGetMpr()->heap->gcEnabled) ? ESV(true): ESV(false));
 }
 
 
@@ -34911,24 +34911,20 @@ static EjsBoolean *gc_enabled(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **argv
 static EjsObj *gc_set_enabled(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **argv)
 {
     assert(argc == 1 && ejsIs(ejs, argv[0], Boolean));
-    mprGetMpr()->heap->enabled = ejsGetBoolean(ejs, argv[0]);
+    mprGetMpr()->heap->gcEnabled = ejsGetBoolean(ejs, argv[0]);
     return 0;
 }
 
 
 /*
-    run(deep: Boolean = false)
-    TODO -- change args to be a string "check", "all"
+    run()
  */
 static EjsObj *gc_run(Ejs *ejs, EjsObj *thisObj, int argc, EjsObj **argv)
 {
-    int     deep;
-
     assert(!ejs->state->paused);
     
     if (!ejs->state->paused) {
-        deep = ((argc == 1) && ejsIs(ejs, argv[1], Boolean));
-        mprRequestGC(MPR_GC_FORCE | (deep ? MPR_GC_COMPLETE : 0));
+        mprGC(MPR_GC_FORCE);
     }
     return 0;
 }
@@ -57927,8 +57923,7 @@ static ssize writeResponseData(Ejs *ejs, EjsRequest *req, cchar *buf, ssize len)
         httpSetResponded(req->conn);
         return written;
     } else {
-        //  TODO - or should this be non-blocking
-        return httpWriteBlock(req->conn->writeq, buf, len, HTTP_BLOCK);
+        return httpWriteBlock(req->conn->writeq, buf, len, HTTP_BUFFER);
     }
 }
 

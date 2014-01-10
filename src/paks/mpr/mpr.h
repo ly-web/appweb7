@@ -519,7 +519,6 @@ PUBLIC int mprWaitForMultiCond(MprCond *cond, MprTicks timeout);
 typedef struct MprMutex {
     #if BIT_WIN_LIKE
         CRITICAL_SECTION cs;            /**< Internal mutex critical section */
-        bool             freed;
     #elif VXWORKS
         SEM_ID           cs;
     #elif BIT_UNIX_LIKE
@@ -542,7 +541,6 @@ typedef struct MprSpin {
         MprMutex                cs;
     #elif BIT_WIN_LIKE
         CRITICAL_SECTION        cs;            /**< Internal mutex critical section */
-        bool                    freed;
     #elif VXWORKS
         #if KEEP && SPIN_LOCK_TASK_INIT
             spinlockTask_t      cs;
@@ -658,7 +656,7 @@ PUBLIC void mprManageSpinLock(MprSpin *lock, int flags);
         #define mprSpinLock(lock)   if (lock) pthread_mutex_lock(&((lock)->cs))
         #define mprSpinUnlock(lock) if (lock) pthread_mutex_unlock(&((lock)->cs))
     #elif BIT_WIN_LIKE
-        #define mprSpinLock(lock)   if (lock && (!((MprSpin*)(lock))->freed)) EnterCriticalSection(&((lock)->cs))
+        #define mprSpinLock(lock)   if (lock) EnterCriticalSection(&((lock)->cs))
         #define mprSpinUnlock(lock) if (lock) LeaveCriticalSection(&((lock)->cs))
     #elif VXWORKS
         #define mprSpinLock(lock)   if (lock) semTake((lock)->cs, WAIT_FOREVER)
@@ -672,7 +670,7 @@ PUBLIC void mprManageSpinLock(MprSpin *lock, int flags);
         #define mprLock(lock)       if (lock) pthread_mutex_lock(&((lock)->cs))
         #define mprUnlock(lock)     if (lock) pthread_mutex_unlock(&((lock)->cs))
     #elif BIT_WIN_LIKE
-        #define mprLock(lock)       if (lock && !(((MprSpin*)(lock))->freed)) EnterCriticalSection(&((lock)->cs))
+        #define mprLock(lock)       if (lock) EnterCriticalSection(&((lock)->cs))
         #define mprUnlock(lock)     if (lock) LeaveCriticalSection(&((lock)->cs))
     #elif VXWORKS
         #define mprLock(lock)       if (lock) semTake((lock)->cs, WAIT_FOREVER)
@@ -910,7 +908,7 @@ PUBLIC void mprAtomicAdd64(volatile int64 *target, int64 value);
     @see MprFreeMem MprHeap MprManager MprMemNotifier MprRegion mprAddRoot mprAlloc mprAllocMem mprAllocObj 
         mprAllocZeroed mprCreateMemService mprDestroyMemService mprEnableGC mprGetBlockSize mprGetMem 
         mprGetMemStats mprGetMpr mprGetPageSize mprHasMemError mprHold mprIsParentPathOf mprIsValid mprMark 
-        mprMemcmp mprMemcpy mprMemdup mprPrintMem mprRealloc mprRelease mprRemoveRoot mprRequestGC mprResetMemError 
+        mprMemcmp mprMemcpy mprMemdup mprPrintMem mprRealloc mprRelease mprRemoveRoot mprGC mprResetMemError 
         mprRevive mprSetAllocLimits mprSetManager mprSetMemError mprSetMemLimits mprSetMemNotifier mprSetMemPolicy 
         mprSetName mprVerifyMem mprVirtAlloc mprVirtFree 
  */
@@ -1186,9 +1184,10 @@ typedef struct MprHeap {
     int              regionSize;            /**< Memory allocation region size */
     int              compact;               /**< Next GC sweep should do a full compact */
     int              collecting;            /**< Manual GC is running */
-    int              enabled;               /**< GC is enabled */
+    int              freedBlocks;           /**< True if the last sweep freed blocks */
     int              flags;                 /**< GC operational control flags */
     int              from;                  /**< Eligible mprCollectGarbage flags */
+    int              gcEnabled;             /**< GC is enabled */
     int              gcRequested;           /**< GC has been requested */
     int              hasError;              /**< Memory allocation error */
     int              iteration;             /**< GC iteration counter (debug only) */
@@ -1594,23 +1593,31 @@ PUBLIC void *mprAllocFast(size_t usize);
 PUBLIC void mprAddRoot(cvoid *ptr);
 
 /*
-    Flags for mprRequestGC
+    Flags for mprGC
  */
-#define MPR_CG_DEFAULT      0x0     /**< mprRequestGC flag to run GC if necessary. Will yield and block for GC. */
-#define MPR_GC_COMPLETE     0x1     /**< mprRequestGC flag to wait until the GC entirely complete including sweeper. Implies FORCE. */
-#define MPR_GC_NO_BLOCK     0x2     /**< mprRequestGC flag and to not wait for the GC complete */
-#define MPR_GC_FORCE        0x4     /**< mprRequestGC flag to force a GC whether it is required or not */
+#define MPR_CG_DEFAULT      0x0     /**< mprGC flag to run GC if necessary. Will trigger GC and yield. Will
+                                         block if GC is required. */
+#define MPR_GC_FORCE        0x1     /**< mprGC flag to force start a GC sweep whether it is required or not */
+#define MPR_GC_NO_BLOCK     0x2     /**< mprGC flag to run GC if ncessary and return without yielding. Will not block. */
+#define MPR_GC_COMPLETE     0x4     /**< mprGC flag to force start a GC and wait until the GC cycle fully completes 
+                                         including sweep phase */
 
 /**
     Collect garbage
     @description Initiates garbage collection to free unreachable memory blocks.
-    Use mprRequestGC(MPR_GC_FORCE) to free all unused memory blocks.
-    @param flags Flags to control the collection. Set flags to MPR_GC_FORCE to force one sweep. Set to zero
+    It is normally not required for users to invoke this routine as the garbage collector will be scheduled as required.
+    @param flags Flags to control the collection. Set flags to MPR_GC_FORCE to force a collection. Set to MPR_GC_DEFAULT
     to perform a conditional sweep where the sweep is only performed if there is sufficient garbage to warrant a collection.
+    Set to MPR_GC_NO_BLOCK to run GC if necessary and return without yielding. Use MPR_GC_COMPLETE to force a GC and wait
+    until the GC cycle fully completes including the sweep phase.
     @ingroup MprMem
     @stability Stable.
   */
-PUBLIC void mprRequestGC(int flags);
+PUBLIC void mprGC(int flags);
+
+#if DEPRECATED
+#define mprRequestGC mprGC
+#endif
 
 /**
     Enable or disable the garbage collector
@@ -4513,6 +4520,7 @@ PUBLIC void mprSetPathNewline(cchar *path, cchar *newline);
     File I/O Module
     @description MprFile is the cross platform File I/O abstraction control structure. An instance will be
          created when a file is created or opened via #mprOpenFile.
+         Note: Individual files are not thread-safe and should only be used by one file.
     @stability Stable.
     @see MprFile mprAttachFileFd mprCloseFile mprDisableFileBuffering mprEnableFileBuffering mprFlushFile mprGetFileChar 
         mprGetFilePosition mprGetFileSize mprGetStderr mprGetStdin mprGetStdout mprOpenFile 
@@ -4520,7 +4528,6 @@ PUBLIC void mprSetPathNewline(cchar *path, cchar *newline);
         mprWriteFileFmt mprWriteFileString 
         mprGetFileFd
     @defgroup MprFile MprFile
-    @stability Internal
  */
 typedef struct MprFile {
     char            *path;              /**< Filename */
@@ -6700,7 +6707,7 @@ typedef struct MprThread {
 #endif
     int             stickyYield;        /**< Yielded does not auto-clear after GC */
     int             yielded;            /**< Thread has yielded to GC */
-    int             waitForGC;          /**< Yield untill sweeper is complete */
+    int             waitForSweeper;     /**< Yield untill the GC sweeper is complete */
     int             waiting;            /**< Waiting in mprYield */
 } MprThread;
 
@@ -6823,16 +6830,14 @@ PUBLIC void mprSetThreadPriority(MprThread *thread, int priority);
  */
 PUBLIC int mprStartThread(MprThread *thread);
 
-#define MPR_YIELD_DEFAULT   0x0     /**< mprYield flag to yield and if GC is required, block for GC */
-#define MPR_YIELD_COMPLETE  0x1     /**< mprYield flag to wait until the GC entirely complete including sweeper */
-#define MPR_YIELD_STICKY    0x2     /**< mprYield flag to yield and remain yielded until reset. Does not block by default. */
-#define MPR_YIELD_BLOCK     0x4     /**< mprYield flag to yield and wait until the next GC starts and resumes user threads 
-                                         regardless of whether GC is currently required. */
+#define MPR_YIELD_DEFAULT   0x0     /**< mprYield flag if GC is required, yield and wait for mark phase to coplete, 
+                                         otherwise return without blocking.*/
+#define MPR_YIELD_COMPLETE  0x1     /**< mprYield flag to wait until the GC entirely completes including sweep phase */
+#define MPR_YIELD_STICKY    0x2     /**< mprYield flag to yield and remain yielded until reset. Does not block */
+
 #if DEPRECATED
-/* 
-    MPR_YIELD_STICKY now implies no block 
- */
 #define MPR_YIELD_NO_BLOCK  0
+#define MPR_YIELD_BLOCK     0x1     /**< mprYield flag to yield and wait until the next GC starts regardless */
 #endif
 
 /**
@@ -6840,9 +6845,10 @@ PUBLIC int mprStartThread(MprThread *thread);
     @description Long running threads should regularly call mprYield to allow the garbage collector to run.
     All transient memory must have references from "managed" objects (see mprAlloc) to ensure required memory is
     retained.
-    @param flags Set to MPR_YIELD_BLOCK to wait until the garbage collection is complete. This is not normally required.
-    Set to MPR_YIELD_STICKY to remain in the yielded state. This is useful when sleeping or blocking waiting for I/O.
-    #mprResetYield must be called after setting a sticky yield.
+    @param flags Set to MPR_YIELD_WAIT to wait until the next collection is run. Set to MPR_YIELD_COMPLETE to wait until 
+    the garbage collection is fully complete including sweep phase. This is not normally required as the sweeper runs
+    in parallel with user threads. Set to MPR_YIELD_STICKY to remain in the yielded state. This is useful when sleeping 
+    or blocking waiting for I/O. #mprResetYield must be called after setting a sticky yield.
     @stability Stable
  */
 PUBLIC void mprYield(int flags);
@@ -9174,7 +9180,22 @@ PUBLIC int mprSetMimeProgram(MprHash *table, cchar *mimeType, cchar *program);
 #define MPR_LOG_ANEW                0x20    /**< Start anew on boot (rotate) */
 
 typedef bool (*MprIdleCallback)();
-typedef void (*MprTerminator)(int how, int status);
+
+/**
+    Terminator Callback
+    @description Services can create terminators such that when the MPR terminates, terminator callbacks will be invoked 
+    to give the service notice of impending exit. The terminator will be called twice. The first time with state set to
+    MPR_STOPPING whereupon the terminator should stop servicing new requests and allow existing requests to complete 
+    if the "how" parameter is set to MPR_EXIT_GRACEFUL. If how is set to MPR_EXIT_IMMEDIATE, all requests should be 
+    immediately terminated. The second time the terminator is called, state will be set to MPR_STOPPING_CORE. In 
+    response the terminator should stop all requests and release all resources.
+    @param state Set to MPR_STOPPING or MPR_STOPPING_CORE
+    @param how Flags word including the flags: MPR_EXIT_GRACEFUL, MPR_EXIT_IMMEDIATE, MPR_EXIT_NORMAL, MPR_EXIT_RESTART.
+    @param status The desired application exit status
+    @ingroup Mpr
+    @stability Evolving
+  */
+typedef void (*MprTerminator)(int state, int how, int status);
 
 /**
     Primary MPR application control structure
@@ -9295,8 +9316,12 @@ PUBLIC void mprNop(void *ptr);
 
 /**
     Add a terminator callback
-    @description When the MPR terminates, all terminator callbacks are invoked to give the application notice of
-    impending exit.
+    @description Services can create terminators such that when the MPR terminates, terminator callbacks will be invoked 
+    to give the service notice of impending exit. The terminator will be called twice. The first time with state set to
+    MPR_STOPPING whereupon the terminator should stop servicing new requests and allow existing requests to complete 
+    if the "how" parameter is set to MPR_EXIT_GRACEFUL. If how is set to MPR_EXIT_IMMEDIATE, all requests should be 
+    immediately terminated. The second time the terminator is called, state will be set to MPR_STOPPING_CORE. In 
+    response the terminator should stop all requests and release all resources.
     @param terminator MprTerminator callback function
     @ingroup Mpr
     @stability Stable.
@@ -9323,8 +9348,11 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags);
     Set to MPR_EXIT_IMMEDIATE for an immediate abortive shutdown. Finalizers will not be run. Use MPR_EXIT_NORMAL to 
     allow garbage collection and finalizers to run. Use MPR_EXIT_GRACEFUL to allow all current requests and commands 
     to complete before exiting.
+    @return True if the MPR can be destroyed. Returns false if some threads will not exit.
+    @ingroup Mpr
+    @stability Evolving.
  */
-PUBLIC void mprDestroy(int how);
+PUBLIC bool mprDestroy(int how);
 
 /**
     Reference to a permanent preallocated empty string.
@@ -9524,6 +9552,7 @@ PUBLIC bool mprIsIdle();
 
 /**
     Test if the application is stopping
+    If mprIsStopping is true, no new requests should be accepted and current request should complete if possible.
     @return True if the application is in the process of exiting
     @ingroup Mpr
     @stability Stable.
@@ -9532,6 +9561,7 @@ PUBLIC bool mprIsStopping();
 
 /**
     Test if the application is stopping and core services are being terminated
+    All request should immediately terminate.
     @return True if the application is in the process of exiting and core services should also exit.
     @ingroup Mpr
     @stability Stable.

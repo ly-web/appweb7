@@ -4961,10 +4961,8 @@ module ejs {
             run the garbage collector even if the $enable property is set to false. 
             It is normally not required to manually call the $run method as the ejs virtual machine runtime will 
             automatically run the garbage collector as required.
-            @param deep If set to true, will collect from all generations. The default is to collect only the youngest
-                geneartion of objects.
          */
-        native static function run(deep: Boolean = false): void
+        native static function run(): void
 
         /**
             Verify memory. In debug builds, this call verifies all memory blocks by checking a per-block signature.

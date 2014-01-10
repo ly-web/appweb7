@@ -1371,11 +1371,6 @@
 #define ES_GC_NUM_INSTANCE_PROP                                        0
 #define ES_GC_NUM_INHERITED_PROP                                       0
 
-/*
-    Local slots for methods in type "GC" 
- */
-#define ES_GC_run_deep                                                 0
-
 
 /*
     Class property slots for the "Http" type 
@@ -2617,7 +2612,7 @@
 #define ES_XMLList_NUM_INSTANCE_PROP                                   20
 #define ES_XMLList_NUM_INHERITED_PROP                                  0
 
-#define _ES_CHECKSUM_ejs   1520229
+#define _ES_CHECKSUM_ejs   1519814
 
 #endif
 
