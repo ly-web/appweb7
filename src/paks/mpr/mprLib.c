@@ -3164,7 +3164,7 @@ PUBLIC void mprNop(void *ptr) {
 #if MPR_EVENT_ASYNC
 /***************************** Forward Declarations ***************************/
 
-static LRESULT msgProc(HWND hwnd, UINT msg, UINT wp, LPARAM lp);
+static LRESULT CALLBACK msgProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
 
 /************************************ Code ************************************/
 
