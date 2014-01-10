@@ -3372,7 +3372,7 @@ PUBLIC int mprInitWindow()
 /*
     Windows message processing loop for wakeup and socket messages
  */
-static LRESULT msgProc(HWND hwnd, UINT msg, UINT wp, LPARAM lp)
+static LRESULT CALLBACK msgProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
     MprWaitService      *ws;
     int                 sock, winMask;
@@ -3383,7 +3383,7 @@ static LRESULT msgProc(HWND hwnd, UINT msg, UINT wp, LPARAM lp)
         mprTerminate(MPR_EXIT_DEFAULT, -1);
 
     } else if (msg && msg == ws->socketMessage) {
-        sock = wp;
+        sock = (int) wp;
         winMask = LOWORD(lp);
         mprServiceWinIO(MPR->waitService, sock, winMask);
 
