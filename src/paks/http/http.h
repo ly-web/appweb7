@@ -3112,6 +3112,26 @@ typedef struct HttpAuthStore {
     HttpVerifyUser  verifyUser;             /**< Default user verification routine */
 } HttpAuthStore;
 
+/**
+    Per-request digest authorization data
+    @see HttpAuth
+    @ingroup HttpAuth
+    @stability Evolving
+ */
+typedef struct HttpDigest 
+{
+    char    *algorithm;
+    char    *cnonce;
+    char    *domain;
+    char    *nc;
+    char    *nonce;
+    char    *opaque;
+    char    *qop;
+    char    *realm;
+    char    *stale;
+    char    *uri;
+} HttpDigest;
+
 /** 
     User Authorization. A user has a name, password and a set of roles. These roles define a set of abilities.
     @see HttpAuth
