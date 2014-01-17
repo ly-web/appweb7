@@ -366,7 +366,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     if (name) {
         source = mprJoinPathExt(mprJoinPath(eroute->viewsDir, name), ".esp");
     } else {
-        httpMapRequest(conn);
+        httpMapFile(conn);
         source = conn->tx->filename;
     }
 #if !BIT_STATIC

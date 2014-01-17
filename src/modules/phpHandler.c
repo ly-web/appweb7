@@ -143,7 +143,7 @@ static void openPhp(HttpQueue *q)
     q->max = q->pair->max = MAXINT;
     mprTrace(5, "Open php handler");
     httpTrimExtraPath(q->conn);
-    httpMapRequest(q->conn);
+    httpMapFile(q->conn);
     if (!q->stage->stageData) {
         if (initializePhp(q->conn->http) < 0) {
             httpError(q->conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "PHP initialization failed");

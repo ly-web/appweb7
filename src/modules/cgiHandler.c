@@ -71,7 +71,7 @@ static void openCgi(HttpQueue *q)
         return;
     }
     httpTrimExtraPath(conn);
-    httpMapRequest(conn);
+    httpMapFile(conn);
     httpCreateCGIParams(conn);
     if ((cgi = mprAllocObj(Cgi, manageCgi)) == 0) {
         return;
