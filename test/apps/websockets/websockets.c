@@ -106,6 +106,7 @@ static void big_response()
 {
     HttpConn    *conn;
     MprBuf      *buf;
+    ssize       wrote;
     int         i, count;
 
     conn = getConn();
@@ -115,6 +116,7 @@ static void big_response()
         First message is big, but in a single send. The middleware should break this into frames unless you call:
             httpSetWebSocketPreserveFrames(conn, 1);
         This will regard each call to httpSendBlock as a frame.
+        NOTE: this is not an ideal pattern (so don't copy it).
      */
     buf = mprCreateBuf(0, 0);
     for (i = 0; i < count; i++) {
@@ -125,10 +127,10 @@ static void big_response()
     httpSetWebSocketData(conn, buf);
     
     /*
-        Note: this will buffer the entire message. To use less memory, use HTTP_NON_BLOCK as flags and be prepared 
-        for httpSendBlock returning having written less than the requested amount of data
+        Note: this will block while writing the entire message. It may be quicker to use HTTP_BUFFER but will use more memory.
+        Not point using HTTP_NON_BLOCK as we need to close after sending the message.
      */
-    if (httpSendBlock(conn, WS_MSG_TEXT, mprGetBufStart(buf), mprGetBufLength(buf), 0) < 0) {
+    if ((wrote = httpSendBlock(conn, WS_MSG_TEXT, mprGetBufStart(buf), mprGetBufLength(buf), HTTP_BLOCK)) < 0) {
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot send big message");
         return;
     }
