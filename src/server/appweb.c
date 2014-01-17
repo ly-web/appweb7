@@ -172,10 +172,11 @@ MAIN(appweb, int argc, char **argv, char **envp)
             mprPrintf("%s-%s\n", BIT_VERSION, BIT_BUILD_NUMBER);
             exit(0);
 
-        } else {
-            if (!smatch(argp, "?")) {
-                mprError("Unknown switch \"%s\"", argp);
-            }
+        } else if (*argp == '-' && isdigit((uchar) argp[1])) {
+            verbose = (int) stoi(&argp[1]);
+
+        } else if (!smatch(argp, "?")) {
+            mprError("Unknown switch \"%s\"", argp);
             usageError();
             exit(5);
         }
