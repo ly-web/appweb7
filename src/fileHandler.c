@@ -129,12 +129,8 @@ static void openFileHandler(HttpQueue *q)
                 }
             }
         }
-    } else if (rx->flags & HTTP_OPTIONS) {
-        httpHandleOptions(q->conn);
-
-    } else if (rx->flags & (HTTP_DELETE | HTTP_PUT)) {
+    } else if (rx->flags & (HTTP_DELETE | HTTP_OPTIONS | HTTP_PUT)) {
         ;
-
     } else {
         httpError(conn, HTTP_CODE_BAD_METHOD, "Unsupported method");
     }
@@ -170,6 +166,9 @@ static void startFileHandler(HttpQueue *q)
         
     } else if (rx->flags & HTTP_DELETE) {
         handleDeleteRequest(q);
+        
+    } else if (rx->flags & HTTP_OPTIONS) {
+        httpHandleOptions(q->conn);
         
     } else if (!(tx->flags & HTTP_TX_NO_BODY)) {
         /* Create a single data packet based on the entity length */
@@ -243,6 +242,10 @@ static int prepPacket(HttpQueue *q, HttpPacket *packet)
     HttpQueue   *nextQ;
     ssize       size, nbytes;
 
+    if (mprNeedYield()) {
+        httpScheduleQueue(q);
+        return 0;
+    }
     nextQ = q->nextQ;
     if (packet->esize > nextQ->packetSize) {
         httpPutBackPacket(q, httpSplitPacket(packet, nextQ->packetSize));
@@ -271,8 +274,8 @@ static int prepPacket(HttpQueue *q, HttpPacket *packet)
 
 /*  
     The service callback will be invoked to service outgoing packets on the service queue. It will only be called 
-    once all incoming data has been received and then there after when the downstream queues drain sufficiently to
-    absorb more data. This routine may flow control if the downstream stage cannot accept all the file data. It will
+    once all incoming data has been received and then when the downstream queues drain sufficiently to absorb 
+    more data. This routine may flow control if the downstream stage cannot accept all the file data. It will
     then be re-called as required to send more data.
  */
 static void outgoingFileService(HttpQueue *q)
@@ -298,7 +301,6 @@ static void outgoingFileService(HttpQueue *q)
             mprTrace(7, "OutgoingFileService readData %d", rc);
         }
         httpPutPacketToNext(q, packet);
-        mprYield(0);
     }
     mprTrace(7, "OutgoingFileService complete");
 }
@@ -350,7 +352,6 @@ static void incomingFile(HttpQueue *q, HttpPacket *packet)
     } else if (mprWriteFile(file, mprGetBufStart(buf), len) != len) {
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't PUT to %s", tx->filename);
     }
-    mprYield(0);
 }
 
 

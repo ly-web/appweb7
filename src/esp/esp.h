@@ -1033,6 +1033,7 @@ PUBLIC bool espIsFinalized(HttpConn *conn);
  */
 PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value);
 
+//  MOB - does this block
 /**
     Read receive body content.
     @description Read body content from the client
@@ -2256,6 +2257,7 @@ PUBLIC EdiRec *readRecByKey(cchar *tableName, cchar *key);
  */
 PUBLIC EdiGrid *readTable(cchar *tableName);
 
+//  MOB - does this block
 /**
     Read receive body content
     @description Read body content from the client

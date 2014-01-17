@@ -203,9 +203,8 @@ static void startCgi(HttpQueue *q)
 
 #if BIT_WIN_LIKE
 /*
-    Windows can't select on named pipes. So poll for events.
-    This runs on the connection dispatcher thread. Don't actually service events here. Otherwise it becomes too
-    complex with nested calls to mprWaitForEvent().
+    Windows can't select on named pipes. So poll for events. This runs on the connection dispatcher thread. 
+    Don't actually service events here. Otherwise it becomes too complex with nested calls.
  */
 static void waitForCgi(Cgi *cgi, MprEvent *event)
 {
@@ -305,7 +304,6 @@ static void browserToCgiService(HttpQueue *q)
     } else {
         mprDisableCmdEvents(cmd, MPR_CMD_STDIN);
     }
-    mprYield(0);
 }
 
 
@@ -343,7 +341,6 @@ static void cgiToBrowserService(HttpQueue *q)
     }
     mprTrace(6, "CGI: cgiToBrowserService pid %d, q->count %d, q->flags %x, blocked %d", 
         cmd->pid, q->count, q->flags, conn->tx->writeBlocked);
-    mprYield(0);
 }
 
 
@@ -386,26 +383,14 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
     if (cmd->complete || cgi->location) {
         cgi->location = 0;
         httpFinalize(conn);
-        httpServiceQueues(conn);
-        httpPumpRequest(conn, NULL);
-        /* WARNING: this will complete this request and prep for the next */
-        httpAfterEvent(conn);
+        mprCreateEvent(conn->dispatcher, "cgiComplete", 0, httpIOEvent, conn, 0);
         return;
     } 
-    httpServiceQueues(conn);
-    if (channel >= 0 && conn->state <= HTTP_STATE_FINALIZED) {
-        httpEnableConnEvents(conn);
-        mprTrace(6, "CGI: ENABLE CONN: cgiCallback mask %x", conn->sock->handler ? conn->sock->handler->desiredMask : 0);
-    }
     suspended = httpIsQueueSuspended(conn->writeq);
     mprTrace(6, "CGI: %s CGI: cgiCallback. Conn->writeq %d", suspended ? "DISABLE" : "ENABLE", conn->writeq->count);
     assert(!suspended || conn->tx->writeBlocked);
     mprEnableCmdOutputEvents(cmd, !suspended);
-
-    if (conn->state == HTTP_STATE_FINALIZED) {
-        httpPumpRequest(conn, NULL);
-        /* WARNING: the request may be completed here */
-    }
+    mprCreateEvent(conn->dispatcher, "cgi", 0, httpIOEvent, conn, 0);
 }
 
 

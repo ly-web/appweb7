@@ -6361,7 +6361,7 @@ PUBLIC MprHash *mprDeserializeInto(cchar *str, MprHash *hash);
     Lookup a parsed JSON object for a key value
     @param obj Parsed JSON object returned by mprJsonParser
     @param key Property name to search for. This may include ".". For example: "settings.mode".
-        See $mprJsonQuery for a full description of key formats.
+        See #mprJsonQuery for a full description of key formats.
     @param flags Include MPR_JSON_SIMPLE for simple property names without embedded query expressions.
         Include MPR_JSON_TOP for properties at the top level (without embedded ".").
     @return Returns the property value as an object, otherwise NULL if not found or not the correct type.
@@ -6377,7 +6377,7 @@ PUBLIC MprJson *mprGetJsonObj(MprJson *obj, cchar *key, int flags);
     @description This routine is useful to querying leaf property values in a JSON object.
     @param obj Parsed JSON object returned by mprParseJson
     @param key Property name to search for. This may include ".". For example: "settings.mode".
-        See $mprJsonQuery for a full description of key formats.
+        See #mprJsonQuery for a full description of key formats.
     @param flags Include MPR_JSON_SIMPLE for simple property names without embedded query expressions.
         Include MPR_JSON_TOP for properties at the top level (without embedded ".").
     @return A string property value or NULL if not found or not a string property type.
@@ -6413,9 +6413,10 @@ PUBLIC MprJson *mprHashToJson(MprHash *hash);
  */
 PUBLIC MprHash *mprJsonToHash(MprJson *json);
 
-/*
+/**
     Query a JSON object for a property key path and execute the given command.
     The JSON object may be a string, array or object.
+    @param obj JSON object to examine.
     @param keyPath The keyPath is a multipart property string that specifies which property or
         properties to examine. Examples are:
         <pre>
@@ -6432,7 +6433,7 @@ PUBLIC MprHash *mprJsonToHash(MprJson *json);
         people..[name == 'john']    //  Elipsis descends down multiple levels
         </pre>
     @param value If a value is provided, the property described by the keyPath is set to the value.
-    @flags If flags includes MPR_JSON_REMOVE, the property described by the keyPath is removed.
+    @param flags If flags includes MPR_JSON_REMOVE, the property described by the keyPath is removed.
         If flags includes MPR_JSON_SIMPLE, the property is not parsed for expressions.
         Otherwise the the properties described by the keyPath are cloned and returned as a 
         children of a container object.
@@ -6555,7 +6556,7 @@ PUBLIC MprJson *mprQueryJson(MprJson *obj, cchar *key, int flags);
     Remove a property from a JSON object
     @param obj Parsed JSON object returned by mprParseJson
     @param key Property name to remove for. This may include ".". For example: "settings.mode".
-        See $mprJsonQuery for a full description of key formats.
+        See #mprJsonQuery for a full description of key formats.
     @return Returns a JSON object list of all removed properties
     @ingroup MprJson
     @stability Prototype
@@ -6610,7 +6611,7 @@ PUBLIC void mprSetJsonError(MprJsonParser *jp, cchar *fmt, ...);
     @description This call takes a multipart property name and will operate at any level of depth in the JSON object.
     @param obj Parsed JSON object returned by mprParseJson
     @param key Property name to add/update. This may include ".". For example: "settings.mode".
-        See $mprJsonQuery for a full description of key formats.
+        See #mprJsonQuery for a full description of key formats.
     @param value Property value to set.
     @param flags Include MPR_JSON_SIMPLE for simple property names without embedded query expressions.
         Include MPR_JSON_TOP for properties at the top level (without embedded "."). Include MPR_JSON_DUPLICATE to permit
@@ -6626,7 +6627,7 @@ PUBLIC int mprSetJsonObj(MprJson *obj, cchar *key, MprJson *value, int flags);
     @description This call takes a multipart property name and will operate at any level of depth in the JSON object.
     @param obj Parsed JSON object returned by mprParseJson
     @param key Property name to add/update. This may include ".". For example: "settings.mode".
-        See $mprJsonQuery for a full description of key formats.
+        See #mprJsonQuery for a full description of key formats.
     @param flags Include MPR_JSON_SIMPLE for simple property names without embedded query expressions.
         Include MPR_JSON_TOP for properties at the top level (without embedded "."). Include MPR_JSON_DUPLICATE to permit
         duplicate values with the same property name.
@@ -6682,7 +6683,7 @@ PUBLIC void mprStopThreadService();
         thread primitives with the locking and synchronization primitives offered by #MprMutex, #MprSpin and 
         #MprCond - you can create cross platform multi-threaded applications.
     @see MprThread MprThreadProc MprThreadService mprCreateThread mprGetCurrentOsThread mprGetCurrentThread 
-        mprGetCurrentThreadName mprGetThreadName mprGetThreadPriority mprResetYield mprSetCurrentThreadPriority 
+        mprGetCurrentThreadName mprGetThreadName mprGetThreadPriority mprNeedYield mprResetYield mprSetCurrentThreadPriority 
         mprSetThreadPriority mprStartThread mprYield 
     @defgroup MprThread MprThread
     @stability Internal
@@ -6853,6 +6854,17 @@ PUBLIC int mprStartThread(MprThread *thread);
  */
 PUBLIC void mprYield(int flags);
 
+#if DOXYGEN
+/**
+    Test if a thread should call mprYield
+    @description This call tests if a garbage collection is required.
+    @stability Prototype
+ */
+PUBLIC bool mprNeedYield();
+#else
+#define mprNeedYield() (MPR->heap->mustYield && !MPR->heap->pauseGC)
+#endif
+
 /**
     Reset a sticky yield
     @description This call resets a sticky yield established with #mprYield.
@@ -6949,6 +6961,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout);
 
 /**
     Wait for I/O on a file descriptor. No processing of the I/O event is done.
+    @description This routine yields to the garbage collector by calling #mprYield. Callers must retain all required memory.
     @param fd File descriptor to examine
     @param mask Mask of events of interest (MPR_READABLE | MPR_WRITABLE)
     @param timeout Timeout in milliseconds to wait for an event.
@@ -7273,7 +7286,7 @@ PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider);
     @see MprSocket MprSocketPrebind MprSocketProc MprSocketProvider MprSocketService mprAddSocketHandler 
         mprCloseSocket mprConnectSocket mprCreateSocket mprCreateSocketService mprCreateSsl mprCloneSsl
         mprDisconnectSocket mprEnableSocketEvents mprFlushSocket mprGetSocketBlockingMode mprGetSocketError 
-        mprGetSocketFd mprGetSocketInfo mprGetSocketPort mprGetSocketState mprHasSecureSockets mprIsSocketEof
+        mprGetSocketHandle mprGetSocketInfo mprGetSocketPort mprGetSocketState mprHasSecureSockets mprIsSocketEof
         mprIsSocketSecure mprListenOnSocket mprLoadSsl mprParseIp mprReadSocket mprSendFileToSocket mprSetSecureProvider
         mprSetSocketBlockingMode mprSetSocketCallback mprSetSocketEof mprSetSocketNoDelay mprSetSslCaFile mprSetSslCaPath
         mprSetSslCertFile mprSetSslCiphers mprSetSslKeyFile mprSetSslSslProtocols mprSetSslVerifySslClients mprWriteSocket
@@ -7333,8 +7346,17 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen);
     @ingroup MprSocket
     @stability Stable
  */
-PUBLIC MprWaitHandler *mprAddSocketHandler(MprSocket *sp, int mask, MprDispatcher *dispatcher, void *proc, 
-        void *data, int flags);
+PUBLIC MprWaitHandler *mprAddSocketHandler(MprSocket *sp, int mask, MprDispatcher *dispatcher, void *proc, void *data, int flags);
+
+/**
+    Clone a socket object
+    @description Create an exact copy of a socket object. On return both socket objects share the same O/S socket handle.
+    If the original socket has an SSL configuration, the new socket will share the same SSL configuration object.
+    @return A new socket object
+    @ingroup MprSocket
+    @stability Prototype
+ */
+PUBLIC MprSocket *mprCloneSocket(MprSocket *sp);
 
 /**
     Close a socket
@@ -7432,7 +7454,11 @@ PUBLIC int mprGetSocketError(MprSocket *sp);
     @ingroup MprSocket
     @stability Stable
  */
-PUBLIC Socket mprGetSocketFd(MprSocket *sp);
+PUBLIC Socket mprGetSocketHandle(MprSocket *sp);
+
+#if DEPRECATE || 1
+#define mprGetSocketFd mprGetSocketHandle
+#endif
 
 /**
     Get the socket for an IP:Port address
@@ -7689,6 +7715,16 @@ PUBLIC bool mprSocketHasBufferedRead(MprSocket *sp);
     @stability Stable
  */
 PUBLIC bool mprSocketHasBufferedWrite(MprSocket *sp);
+
+/**
+    Steal the socket handle
+    @description Return the socket handle and set the MprSocket handle to the invalid socket.
+    This enables callers to use the O/S socket handle for their own purposes.
+    @param sp Socket object returned from #mprCreateSocket
+    @ingroup MprSocket
+    @stability Prototype
+ */
+PUBLIC Socket mprStealSocketHandle(MprSocket *sp);
 
 /**
     Upgrade a socket to use SSL/TLS
@@ -9532,7 +9568,7 @@ PUBLIC bool mprIsExiting();
 /**
     Determine if the MPR has finished. 
     @description This is true if the MPR services have been shutdown completely. This is typically
-    used to determine if the App has been gracefully shutdown.
+        used to determine if the App has been gracefully shutdown.
     @returns True if the App has been instructed to exit and all the MPR services have completed.
     @ingroup Mpr
     @stability Stable.
@@ -9552,7 +9588,8 @@ PUBLIC bool mprIsIdle();
 
 /**
     Test if the application is stopping
-    If mprIsStopping is true, no new requests should be accepted and current request should complete if possible.
+    If mprIsStopping is true, the application has commenced a shutdown. No new requests should be accepted and current request 
+    should complete if possible. Use #mprIsFinished to test if the application has completed its shutdown. 
     @return True if the application is in the process of exiting
     @ingroup Mpr
     @stability Stable.
