@@ -269,6 +269,7 @@ static void outputHeader(HttpQueue *q, cchar *path, int nameSize)
 
     dir = q->conn->data;
     fancy = 1;
+    path = mprEscapeHtml(path);
 
     httpWrite(q, "<!DOCTYPE HTML PUBLIC \"-/*W3C//DTD HTML 3.2 Final//EN\">\r\n");
     httpWrite(q, "<html>\r\n <head>\r\n  <title>Index of %s</title>\r\n", path);
@@ -366,6 +367,7 @@ static void outputLine(HttpQueue *q, MprDirEntry *ep, cchar *path, int nameSize)
     char        *dirSuffix;
     char        *months[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
+    path = mprEscapeHtml(path);
     dir = q->conn->data;
     if (ep->size >= (1024 * 1024 * 1024)) {
         fmtNum(sizeBuf, sizeof(sizeBuf), (int) ep->size, 1024 * 1024 * 1024, "G");
