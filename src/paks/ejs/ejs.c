@@ -265,6 +265,10 @@ MAIN(ejsMain, int argc, char **argv, char **envp)
                 warnLevel = atoi(argv[++nextArg]);
             }
 
+        } else if (*argp == '-' && isdigit((uchar) argp[1])) {
+            mprStartLogging(sfmt("stderr:%s", &argp[1]), 0);
+            mprSetCmdlineLogging(1);
+
         } else {
             err++;
             break;

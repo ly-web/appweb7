@@ -1033,10 +1033,10 @@ PUBLIC bool espIsFinalized(HttpConn *conn);
  */
 PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value);
 
-//  MOB - does this block
 /**
     Read receive body content.
-    @description Read body content from the client
+        Use httpReadBlock for more options to read data.
+    @description Read body content from the client. This call does not block.
     @param conn HttpConn connection object
     @param buf Buffer to accept content data
     @param size Size of the buffer
@@ -2257,10 +2257,10 @@ PUBLIC EdiRec *readRecByKey(cchar *tableName, cchar *key);
  */
 PUBLIC EdiGrid *readTable(cchar *tableName);
 
-//  MOB - does this block
 /**
     Read receive body content
-    @description Read body content from the client
+    @description Read body content from the client. This will not block by default.
+        Use httpReadBlock for more options to read data.
     @param buf Buffer to accept content data
     @param size Size of the buffer
     @return A count of bytes read into the buffer

@@ -35684,7 +35684,9 @@ static EjsObj *http_set_ca(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
 static EjsObj *http_close(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
 {
     if (hp->conn) {
-        httpFinalize(hp->conn);
+        if (hp->conn->state > HTTP_STATE_BEGIN) {
+            httpFinalize(hp->conn);
+        }
         sendHttpCloseEvent(ejs, hp);
         httpDestroyConn(hp->conn);
         //  TODO OPT - Better to do this on demand. This consumes a conn until GC.
@@ -36663,8 +36665,7 @@ static EjsHttp *startHttpRequest(Ejs *ejs, EjsHttp *hp, char *method, int argc, 
         return 0;
     }
     if (mprGetBufLength(hp->requestContent) > 0) {
-        nbytes = httpWriteBlock(conn->writeq, mprGetBufStart(hp->requestContent), mprGetBufLength(hp->requestContent),
-            HTTP_BLOCK);
+        nbytes = httpWriteBlock(conn->writeq, mprGetBufStart(hp->requestContent), mprGetBufLength(hp->requestContent), HTTP_BLOCK);
         if (nbytes < 0) {
             ejsThrowIOError(ejs, "Cannot write request data for \"%s\"", hp->uri);
             return 0;
@@ -36811,7 +36812,7 @@ static void httpEvent(HttpConn *conn, MprEvent *event)
     hp = conn->context;
     ejs = hp->ejs;
 
-    httpEvent(conn, event);
+    httpIOEvent(conn, event);
     if (event->mask & MPR_WRITABLE) {
         if (hp->data) {
             writeHttpData(ejs, hp);
@@ -36996,7 +36997,8 @@ static bool waitForState(EjsHttp *hp, int state, MprTicks timeout, int throw)
     success = count = 0;
     mark = mprGetTicks();
     remaining = timeout;
-    while (conn->state < state && count <= conn->retries && redirectCount < 16 && !conn->error && !ejs->exiting && !mprIsStopping(conn)) {
+    while (conn->state < state && count <= conn->retries && redirectCount < 16 && !conn->error && 
+            !ejs->exiting && !mprIsStopping(conn)) {
         count++;
         if ((rc = httpWait(conn, HTTP_STATE_PARSED, remaining)) == 0) {
             if (httpNeedRetry(conn, &url)) {
@@ -57706,9 +57708,9 @@ static EjsObj *req_finalize(Ejs *ejs, EjsRequest *req, int argc, EjsObj **argv)
 {
     if (req->conn) {
         if (!req->writeBuffer || req->writeBuffer == ESV(null)) {
-            //  TODO - should separate these 
-            // httpFinalize(req->conn);
             httpFinalize(req->conn);
+            httpFlush(req->conn);
+            httpEnableConnEvents(req->conn);
         } else {
             httpSetResponded(req->conn);
         }
