@@ -133,10 +133,6 @@ static sapi_module_struct phpSapiBlock = {
  */
 static void openPhp(HttpQueue *q)
 {
-    HttpRx      *rx;
-
-    rx = q->conn->rx;
-
     /*
         PHP will buffer all input. i.e. does not stream. The normal Limits still apply.
      */
@@ -279,7 +275,7 @@ static void flushOutput(void *server_context)
 
     conn = (HttpConn*) server_context;
     if (conn) {
-        httpServiceQueues(conn);
+        httpServiceQueues(conn, HTTP_NON_BLOCK);
     }
 }
 
