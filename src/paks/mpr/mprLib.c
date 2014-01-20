@@ -17911,7 +17911,7 @@ PUBLIC char *mprGetWinPath(cchar *path)
 }
 
 
-PUBLIC bool mprIsParentPathOf(cchar *dir, cchar *path)
+PUBLIC bool mprIsPathContained(cchar *path, cchar *dir)
 {
     ssize   len;
     char    *base;
@@ -17923,6 +17923,32 @@ PUBLIC bool mprIsParentPathOf(cchar *dir, cchar *path)
         base = sclone(path);
         base[len] = '\0';
         if (mprSamePath(dir, base)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+#if DEPRECATED || 1
+PUBLIC bool mprIsParentPathOf(cchar *dir, cchar *path)
+{
+    return mprIsPathContained(path, dir);
+}
+#endif
+
+
+PUBLIC bool mprIsAbsPathContained(cchar *path, cchar *dir)
+{
+    MprFileSystem   *fs;
+    ssize            len;
+
+    assert(mprIsPathAbs(path));
+    assert(mprIsPathAbs(dir));
+    len = slen(dir);
+    if (len <= slen(path)) {
+        fs = mprLookupFileSystem(path);
+        if (mprSamePathCount(dir, path, len) && (path[len] == '\0' || isSep(fs, path[len]))) {
             return 1;
         }
     }

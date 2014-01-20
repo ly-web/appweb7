@@ -8832,16 +8832,16 @@ PUBLIC void httpMapFile(HttpConn *conn)
         filename = mprJoinPath(lang->path, filename);
     }
     filename = mprJoinPath(route->documents, filename);
+    if (!tx->bypassDocuments) {
+        if (!mprIsAbsPathContained(filename, route->documents)) {
+            info->checked = 1;
+            info->valid = 0;
+            httpError(conn, HTTP_CODE_BAD_REQUEST, "Bad URL");
+            return;
+        }
+    }
 #if BIT_ROM
     filename = mprGetRelPath(filename, NULL);
-#endif
-#if BIT_WIN_LIKE || BIT_EXTRA_SECURITY
-    if (!mprIsParentPathOf(route->documents, filename)) {
-        info->checked = 1;
-        info->valid = 0;
-        httpError(conn, HTTP_CODE_BAD_REQUEST, "Bad URL");
-        return;
-    }
 #endif
     /*
         Change the filename if using mapping. Typically used to prefer compressed or minified content.
@@ -8877,7 +8877,7 @@ PUBLIC void httpMapFile(HttpConn *conn)
         }
     }
 #endif
-    httpSetFilename(conn, filename);
+    httpSetFilename(conn, filename, !tx->bypassDocuments);
 }
 
 
@@ -15585,7 +15585,6 @@ PUBLIC HttpTx *httpCreateTx(HttpConn *conn, MprHash *headers)
     tx->length = -1;
     tx->entityLength = -1;
     tx->chunkSize = -1;
-
     tx->queue[HTTP_QUEUE_TX] = httpCreateQueueHead(conn, "TxHead");
     conn->writeq = tx->queue[HTTP_QUEUE_TX]->nextQ;
     tx->queue[HTTP_QUEUE_RX] = httpCreateQueueHead(conn, "RxHead");
@@ -16288,7 +16287,7 @@ PUBLIC void httpSetEntityLength(HttpConn *conn, int64 len)
 /*
     Set the filename. The filename may be outside the route documents. So caller must take care.
  */
-PUBLIC void httpSetFilename(HttpConn *conn, cchar *filename)
+PUBLIC void httpSetFilename(HttpConn *conn, cchar *filename, bool bypass)
 {
     HttpTx      *tx;
     MprPath     *info;
@@ -16296,6 +16295,7 @@ PUBLIC void httpSetFilename(HttpConn *conn, cchar *filename)
     assert(conn);
 
     tx = conn->tx;
+    tx->bypassDocuments = bypass;
     info = &tx->fileInfo;
     tx->filename = sclone(filename);
     if ((tx->ext = httpGetPathExt(tx->filename)) == 0) {

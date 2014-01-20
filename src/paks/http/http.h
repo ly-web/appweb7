@@ -5925,6 +5925,7 @@ typedef struct HttpTx {
     int             status;                 /**< HTTP response status */
     int             responded;              /**< The request has started to respond. Some output has been initiated. */
     int             started;                /**< Handler has started */
+    int             bypassDocuments;        /**< Bypass check serving documents outside the document root */
     MprOff          bytesWritten;           /**< Bytes written including headers */
     MprOff          entityLength;           /**< Original content length before range subsetting */
     ssize           chunkSize;              /**< Chunk size to use when using transfer encoding. Zero for unchunked. */
@@ -6331,14 +6332,16 @@ PUBLIC void httpSetEntityLength(HttpConn *conn, MprOff len);
 /**
     Set the filename.
     @description This sets the HttpTx filename, ext, etag and info fields. This filename may be virtual or may be 
-        outside the documents root directory. Use httpMapFile if you wish validation that the filename is within
+        outside the documents root directory. If it is not a file under the route documents directory, set the 
+        bypass parameter to true. Use httpMapFile if you wish validation that the filename is within
         the documents root.
     @param conn HttpConn connection object 
     @param filename Tx filename to define.
+    @param bypass Set to true if the filename should not be checked to be inside the route documents directory.
     @ingroup HttpTx
     @stability Evolving
  */
-PUBLIC void httpSetFilename(HttpConn *conn, cchar *filename);
+PUBLIC void httpSetFilename(HttpConn *conn, cchar *filename, bool bypass);
 
 /**
     Set the handler for this request
