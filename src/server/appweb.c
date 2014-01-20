@@ -219,7 +219,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
     }
     status = mprGetExitStatus();
     mprLog(1, "Stopping Appweb ...");
-    maStopAppweb(app->appweb);
     mprDestroy(MPR_EXIT_DEFAULT);
     return status;
 }
