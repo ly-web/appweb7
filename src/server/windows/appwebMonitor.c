@@ -59,7 +59,7 @@ static int      findInstance();
 static int      initWindow();
 static void     logHandler(int flags, int level, cchar *msg);
 static void     manageApp(App *app, int flags);
-static long     msgProc(HWND hwnd, UINT msg, UINT wp, LPARAM lp);
+static long     msgProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
 static int      openMonitorIcon();
 static uint     queryService();
 static int      runBrowser(char *page);
@@ -281,7 +281,7 @@ BOOL CALLBACK dialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 }
 
 
-static long msgProc(HWND hwnd, UINT msg, UINT wp, LPARAM lp)
+static long msgProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
     MprThread   *tp;
     char        buf[BIT_MAX_FNAME];
