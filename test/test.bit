@@ -161,7 +161,7 @@ Bit.load({
                         }
                         let s = bit.settings
                         trace('Test', 'appweb -V')
-                        assert(Cmd.run([bit.prefixes.bin.join('appweb'), '-V']).trim() == s.version + '-' + s.buildNumber)
+                        assert(Cmd.run([bit.prefixes.bin.join('appweb'), '-V']).trim() == s.version)
                         trace('Test', 'appweb running')
                         assert(Cmd.ps(/appweb/))
                         let http = new Http
