@@ -2622,8 +2622,6 @@ PUBLIC void httpConnTimeout(HttpConn *conn)
             mprTrace(2, "  State %d, uri %s", conn->state, conn->rx->uri);
         }
     }
-    assert(conn->connError);
-
     if (!conn->sock || conn->sock->fd == INVALID_SOCKET) {
         //  TODO - remove this code. Should never happen
         assert(0);
@@ -2834,7 +2832,7 @@ PUBLIC void httpIOEvent(HttpConn *conn, MprEvent *event)
         return;
     }
     mprTrace(6, "httpIOEvent for fd %d, mask %d", conn->sock->fd, event->mask);
-    if (event->mask & MPR_WRITABLE) {
+    if (event->mask & MPR_WRITABLE && conn->connectorq) {
         httpResumeQueue(conn->connectorq);
     }
     if (event->mask & MPR_READABLE) {
@@ -7567,9 +7565,10 @@ PUBLIC bool httpFlushQueue(HttpQueue *q, int flags)
 
 PUBLIC void httpResumeQueue(HttpQueue *q)
 {
-    mprTrace(7, "Resume q %s", q->name);
-    q->flags &= ~HTTP_QUEUE_SUSPENDED;
-    httpScheduleQueue(q);
+    if (q) {
+        q->flags &= ~HTTP_QUEUE_SUSPENDED;
+        httpScheduleQueue(q);
+    }
 }
 
 
@@ -14383,7 +14382,7 @@ static void httpTimer(Http *http, MprEvent *event)
         limits = conn->limits;
         if (!conn->timeoutEvent) {
             abort = mprIsStopping();
-            if (httpServerConn(conn) && HTTP_STATE_BEGIN < conn->state && conn->state < HTTP_STATE_PARSED && 
+            if (httpServerConn(conn) && (HTTP_STATE_CONNECTED < conn->state && conn->state < HTTP_STATE_PARSED) && 
                     (conn->started + limits->requestParseTimeout) < http->now) {
                 conn->timeout = HTTP_PARSE_TIMEOUT;
                 abort = 1;
