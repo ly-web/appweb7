@@ -1340,9 +1340,9 @@
     </member>
     <member kind="function">
       <type>MprSocket *</type>
-      <name>httpStealConn</name>
+      <name>httpStealSocket</name>
       <anchorfile>group___http_conn.html</anchorfile>
-      <anchor>ga269af9eeb75763738059d298b48f1032</anchor>
+      <anchor>gadb3cbb5f0dc3e97c3a13a319f4103b19</anchor>
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
