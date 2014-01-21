@@ -651,6 +651,9 @@ PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value)
 }
 
 
+/*
+    Read rx data in non-blocking mode. Use standard connection timeouts. 
+ */
 PUBLIC ssize espReceive(HttpConn *conn, char *buf, ssize len)
 {
     return httpRead(conn, buf, len);

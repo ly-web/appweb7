@@ -347,7 +347,7 @@ static void cgiToBrowserService(HttpQueue *q)
 /*
     Read the output data from the CGI script and return it to the client. This is called by the MPR in response to
     I/O events from the CGI process for stdout/stderr data from the CGI script and for EOF from the CGI's stdin.
-    This event runs on the connection's dispatcher. (ie. single threaded and safe)
+    IMPORTANT: This event runs on the connection's dispatcher. (ie. single threaded and safe)
  */
 static void cgiCallback(MprCmd *cmd, int channel, void *data)
 {
