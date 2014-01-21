@@ -1530,7 +1530,6 @@ static void relayOutsideEvent(void *data, struct MprEvent *event)
  */
 PUBLIC int mprCreateEventOutside(MprDispatcher *dispatcher, void *proc, void *data, int flags)
 {
-    MprEvent        *event;
     OutsideEvent    outside;
 
     memset(&outside, 0, sizeof(outside));
@@ -1550,7 +1549,7 @@ PUBLIC int mprCreateEventOutside(MprDispatcher *dispatcher, void *proc, void *da
     if (flags & MPR_EVENT_BLOCK) {
         outside.cond = mprCreateCond();
     }
-    event = mprCreateEvent(dispatcher, "relay", 0, relayOutsideEvent, &outside, MPR_EVENT_STATIC_DATA);
+    mprCreateEvent(dispatcher, "relay", 0, relayOutsideEvent, &outside, MPR_EVENT_STATIC_DATA);
     if (flags & MPR_EVENT_BLOCK) {
         mprWaitForCond(outside.cond, -1);
     }
