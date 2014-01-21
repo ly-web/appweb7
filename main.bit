@@ -35,7 +35,7 @@ Bit.load({
     ],
 
     settings: {
-        bit: '0.9.1',
+        bit: '0.9.3',
 
         /*
             Installation prefix set
@@ -96,6 +96,7 @@ Bit.load({
             db: true,                                                                                     
             mail: true,                                                                                   
             mapper: true,                                                                                 
+            shell: true,
             tar: true,                                                                                     
             template: true,                                                                               
             web: true,                                                                                    

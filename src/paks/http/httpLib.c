@@ -7549,12 +7549,6 @@ PUBLIC bool httpFlushQueue(HttpQueue *q, int flags)
             httpResumeQueue(conn->connectorq);
             httpServiceQueues(conn, flags);
         }
-#if BIT_DEBUG
-        if (!httpRequestExpired(conn, 0)) {
-            assert(q->count == 0);
-            assert(conn->connectorq->count == 0 || mprSocketHandshaking(conn->sock));
-        }
-#endif
     }
     return (q->count < q->max) ? 1 : 0;
 }

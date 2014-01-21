@@ -333,7 +333,7 @@ PUBLIC int main(int argc, char **argv)
             app->verbose = 1;
 
         } else if (smatch(argp, "version") || smatch(argp, "V")) {
-            mprPrintf("%s %s-%s\n", mprGetAppTitle(), BIT_VERSION, BIT_BUILD_NUMBER);
+            mprPrintf("%s %s\n", mprGetAppTitle(), BIT_VERSION);
             exit(0);
 
         } else if (smatch(argp, "why") || smatch(argp, "w")) {
