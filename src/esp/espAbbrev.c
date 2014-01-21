@@ -870,6 +870,10 @@ PUBLIC bool updateFields(cchar *tableName, MprJson *params)
 
 PUBLIC bool updateRec(EdiRec *rec)
 {
+    if (!rec) {
+        feedback("error", "Cannot save record");
+        return 0;
+    }
     setRec(rec);
     if (ediUpdateRec(getDatabase(), rec) < 0) {
         feedback("error", "Cannot save %s", spascal(rec->tableName));
