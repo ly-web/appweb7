@@ -8690,6 +8690,9 @@ PUBLIC void ejsSetDispatcher(Ejs *ejs, MprDispatcher *dispatcher);
  */
 PUBLIC void ejsDestroyVM(Ejs *ejs);
 
+//  MOB
+PUBLIC void ejsDestroy(Ejs *ejs);
+
 /**
     Evaluate a file
     @description Evaluate a file containing an Ejscript. This requires linking with the Ejscript compiler library (libec). 
