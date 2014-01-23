@@ -5069,6 +5069,7 @@ static void manageCmdService(MprCmdService *cs, int flags)
         mprMark(cs->mutex);
 
     } else if (flags & MPR_MANAGE_FREE) {
+        /* OPT - should not be required */
         cs->cmds = 0;
         cs->mutex = 0;
     }
@@ -9258,32 +9259,20 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
                 queueDispatcher(es->pendingQ, dp);
                 continue;
             }
-#if UNUSED
-            /* Moved below so we service all pending events instead of just one */
-            if (justOne) {
-                expires = 0;
-                break;
-            }
-#endif
         } 
         if (flags & MPR_SERVICE_NO_BLOCK) {
             expires = 0;
-            break;
         }
         if (es->eventCount == eventCount) {
             lock(es);
             delay = getIdleTicks(es, expires - es->now);
-            if (delay > 0) {
-                es->willAwake = es->now + delay;
-                es->waiting = 1;
-                unlock(es);
-                /*
-                    Wait for something to happen
-                 */
-                mprWaitForIO(MPR->waitService, delay);
-            } else {
-                unlock(es);
-            }
+            es->willAwake = es->now + delay;
+            es->waiting = 1;
+            unlock(es);
+            /*
+                Service IO events
+             */
+            mprWaitForIO(MPR->waitService, delay);
         }
         es->now = mprGetTicks();
         if ((flags & MPR_SERVICE_NO_BLOCK) || mprIsStopping()) {
@@ -9660,7 +9649,7 @@ static MprTicks getIdleTicks(MprEventService *es, MprTicks timeout)
         delay = min(delay, timeout);
         es->delay = 0;
     }
-    return delay;
+    return delay < 0 ? 0 : delay;
 }
 
 
@@ -13641,13 +13630,11 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     struct kevent   events[BIT_MAX_EVENTS];
     int             nevents;
 
-    assert(timeout > 0);
-
     if (ws->needRecall) {
         mprDoWaitRecall(ws);
         return;
     }
-    if (timeout < 0) {
+    if (timeout < 0 || timeout > MAXINT) {
         timeout = MAXINT;
     }
 #if BIT_DEBUG
@@ -14700,36 +14687,18 @@ PUBLIC char *mprListToString(MprList *list, cchar *join)
 /***************************** Forward Declarations ***************************/
 
 static void manageLock(MprMutex *lock, int flags);
+static void manageSpinLock(MprSpin *lock, int flags);
 
 /************************************ Code ************************************/
 
 PUBLIC MprMutex *mprCreateLock()
 {
     MprMutex    *lock;
-#if BIT_UNIX_LIKE
-    pthread_mutexattr_t attr;
-#endif
+
     if ((lock = mprAllocObjNoZero(MprMutex, manageLock)) == 0) {
         return 0;
     }
-#if BIT_UNIX_LIKE
-    pthread_mutexattr_init(&attr);
-    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
-    pthread_mutex_init(&lock->cs, &attr);
-    pthread_mutexattr_destroy(&attr);
-#elif WINCE
-    InitializeCriticalSection(&lock->cs);
-#elif BIT_WIN_LIKE
-    InitializeCriticalSectionAndSpinCount(&lock->cs, BIT_MPR_SPIN_COUNT);
-#elif VXWORKS
-    /* Removed SEM_INVERSION_SAFE */
-    lock->cs = semMCreate(SEM_Q_PRIORITY | SEM_DELETE_SAFE);
-    if (lock->cs == 0) {
-        assert(0);
-        return 0;
-    }
-#endif
-    return lock;
+    return mprInitLock(lock);
 }
 
 
@@ -14740,6 +14709,7 @@ static void manageLock(MprMutex *lock, int flags)
 #if BIT_UNIX_LIKE
         pthread_mutex_destroy(&lock->cs);
 #elif BIT_WIN_LIKE
+        lock->freed = 1;
         DeleteCriticalSection(&lock->cs);
 #elif VXWORKS
         semDelete(lock->cs);
@@ -14760,15 +14730,14 @@ PUBLIC MprMutex *mprInitLock(MprMutex *lock)
 #elif WINCE
     InitializeCriticalSection(&lock->cs);
 
+#elif BIT_WIN_LIKE && !BIT_DEBUG && CRITICAL_SECTION_NO_DEBUG_INFO
+    InitializeCriticalSectionEx(&lock->cs, BIT_MPR_SPIN_COUNT, CRITICAL_SECTION_NO_DEBUG_INFO);
+
 #elif BIT_WIN_LIKE
     InitializeCriticalSectionAndSpinCount(&lock->cs, BIT_MPR_SPIN_COUNT);
 
 #elif VXWORKS
     lock->cs = semMCreate(SEM_Q_PRIORITY | SEM_DELETE_SAFE);
-    if (lock->cs == 0) {
-        assert(0);
-        return 0;
-    }
 #endif
     return lock;
 }
@@ -14801,14 +14770,14 @@ PUBLIC MprSpin *mprCreateSpinLock()
 {
     MprSpin    *lock;
 
-    if ((lock = mprAllocObjNoZero(MprSpin, mprManageSpinLock)) == 0) {
+    if ((lock = mprAllocObjNoZero(MprSpin, manageSpinLock)) == 0) {
         return 0;
     }
     return mprInitSpinLock(lock);
 }
 
 
-PUBLIC void mprManageSpinLock(MprSpin *lock, int flags)
+static void manageSpinLock(MprSpin *lock, int flags)
 {
     if (flags & MPR_MANAGE_FREE) {
         assert(lock);
@@ -14819,6 +14788,7 @@ PUBLIC void mprManageSpinLock(MprSpin *lock, int flags)
 #elif BIT_UNIX_LIKE
         pthread_mutex_destroy(&lock->cs);
 #elif BIT_WIN_LIKE
+        lock->freed = 1;
         DeleteCriticalSection(&lock->cs);
 #elif VXWORKS
         semDelete(lock->cs);
@@ -14832,37 +14802,35 @@ PUBLIC void mprManageSpinLock(MprSpin *lock, int flags)
  */
 PUBLIC MprSpin *mprInitSpinLock(MprSpin *lock)
 {
-#if BIT_UNIX_LIKE && !BIT_HAS_SPINLOCK && !MACOSX
-    pthread_mutexattr_t attr;
-#endif
-
 #if USE_MPR_LOCK
     mprInitLock(&lock->cs);
+
 #elif MACOSX
     lock->cs = OS_SPINLOCK_INIT;
+
 #elif BIT_UNIX_LIKE && BIT_HAS_SPINLOCK
     pthread_spin_init(&lock->cs, 0);
+
 #elif BIT_UNIX_LIKE
+    pthread_mutexattr_t attr;
     pthread_mutexattr_init(&attr);
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
     pthread_mutex_init(&lock->cs, &attr);
     pthread_mutexattr_destroy(&attr);
+
 #elif WINCE
     InitializeCriticalSection(&lock->cs);
+
+#elif BIT_WIN_LIKE && !BIT_DEBUG && CRITICAL_SECTION_NO_DEBUG_INFO
+    InitializeCriticalSectionEx(&lock->cs, BIT_MPR_SPIN_COUNT, CRITICAL_SECTION_NO_DEBUG_INFO);
+
 #elif BIT_WIN_LIKE
     InitializeCriticalSectionAndSpinCount(&lock->cs, BIT_MPR_SPIN_COUNT);
+
 #elif VXWORKS
-    #if KEEP
-        spinLockTaskInit(&lock->cs, 0);
-    #else
-        /* Removed SEM_INVERSION_SAFE */
-        lock->cs = semMCreate(SEM_Q_PRIORITY | SEM_DELETE_SAFE);
-        if (lock->cs == 0) {
-            assert(0);
-            return 0;
-        }
-    #endif
+    lock->cs = semMCreate(SEM_Q_PRIORITY | SEM_DELETE_SAFE);
 #endif /* VXWORKS */
+
 #if BIT_DEBUG
     lock->owner = 0;
 #endif
@@ -14888,7 +14856,7 @@ PUBLIC bool mprTrySpinLock(MprSpin *lock)
 #elif BIT_UNIX_LIKE
     rc = pthread_mutex_trylock(&lock->cs) != 0;
 #elif BIT_WIN_LIKE
-    rc = TryEnterCriticalSection(&lock->cs) == 0;
+    rc = (lock->freed) ? 0 : (TryEnterCriticalSection(&lock->cs) == 0);
 #elif VXWORKS
     rc = semTake(lock->cs, NO_WAIT) != OK;
 #endif
@@ -14940,7 +14908,9 @@ PUBLIC void mprLock(MprMutex *lock)
 #if BIT_UNIX_LIKE
     pthread_mutex_lock(&lock->cs);
 #elif BIT_WIN_LIKE
-    EnterCriticalSection(&lock->cs);
+    if (!lock->freed) {
+        EnterCriticalSection(&lock->cs);
+    }
 #elif VXWORKS
     semTake(lock->cs, WAIT_FOREVER);
 #endif
@@ -14990,7 +14960,9 @@ PUBLIC void mprSpinLock(MprSpin *lock)
 #elif BIT_UNIX_LIKE
     pthread_mutex_lock(&lock->cs);
 #elif BIT_WIN_LIKE
-    EnterCriticalSection(&lock->cs);
+    if (!lock->freed) {
+        EnterCriticalSection(&lock->cs);
+    }
 #elif VXWORKS
     semTake(lock->cs, WAIT_FOREVER);
 #endif
