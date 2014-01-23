@@ -2829,7 +2829,7 @@ PUBLIC void httpIOEvent(HttpConn *conn, MprEvent *event)
         return;
     }
     mprTrace(6, "httpIOEvent for fd %d, mask %d", conn->sock->fd, event->mask);
-    if (event->mask & MPR_WRITABLE && conn->connectorq) {
+    if ((event->mask & MPR_WRITABLE) && conn->connectorq) {
         httpResumeQueue(conn->connectorq);
     }
     if (event->mask & MPR_READABLE) {
@@ -2888,7 +2888,7 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
     if (rx) {
         if (conn->connError || 
            (tx->writeBlocked) || 
-           (conn->connectorq && conn->connectorq->count > 0) || 
+           (conn->connectorq && (conn->connectorq->count > 0 || conn->connectorq->ioCount)) || 
            (httpQueuesNeedService(conn)) || 
            (mprSocketHasBufferedWrite(sp)) ||
            (tx->finalized && conn->state < HTTP_STATE_FINALIZED)) {
