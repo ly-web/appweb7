@@ -3735,7 +3735,7 @@ PUBLIC HttpEndpoint *httpCreateEndpoint(cchar *ip, int port, MprDispatcher *disp
     http = MPR->httpService;
     endpoint->http = http;
     endpoint->async = 1;
-    endpoint->http = MPR->httpService;
+    endpoint->http = http;
     endpoint->port = port;
     endpoint->ip = sclone(ip);
     endpoint->dispatcher = dispatcher;
@@ -14196,7 +14196,9 @@ PUBLIC void httpAddEndpoint(Http *http, HttpEndpoint *endpoint)
 
 PUBLIC void httpRemoveEndpoint(Http *http, HttpEndpoint *endpoint)
 {
-    mprRemoveItem(http->endpoints, endpoint);
+    if (http) {
+        mprRemoveItem(http->endpoints, endpoint);
+    }
 }
 
 
