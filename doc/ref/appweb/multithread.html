@@ -92,11 +92,13 @@
             are event queues on which all I/O and other event activity for a request can be queued and serviced. 
             Each request has its own dispatcher and so events for a request are serialized.  When a network I/O event
             is received by Appweb for a request, an event is queued on the request's dispatcher. If the request is 
-            currently active (using a thread from the thread pool), the event is queued and no further action is taken. 
+            currently active (using a thread from the thread pool), the event is queued and no immediate action is taken. 
             When the request has finished its current activity, it will service events on its dispatcher queue and 
             eventually service the I/O event. If the request is currently idle, a thread is assigned from the thread 
             pool for the request, and the thread is resumed to service the request's dispatcher queue. This greatly 
             simplifies Appweb as all activity for a request is thus serialized via the dispatcher queue.</p>
+            <p>By using event dispatchers, multithread locking is not required on every API &mdash; because activity
+            is serialized by the dispatcher. This significantly boosts performance and reduces the risk of lock contention.</p>
             <a id="multithreaded"></a>
             <h3>Multithreaded Appweb</h3>
             <p>By using request dispatchers, Appweb serializes all request activity, yet it can support many 
