@@ -76989,9 +76989,6 @@ static void manageEjsService(EjsService *sp, int flags)
 PUBLIC void ejsDestroy(Ejs *ejs)
 {
     if (ejs) {
-        if (ejs->http) {
-            httpStopConnections(ejs);
-        }
         ejsDestroyVM(ejs);
     }
     MPR->ejsService = 0;
@@ -77137,6 +77134,9 @@ void ejsDestroyVM(Ejs *ejs)
         ejs->result = 0;
         if (ejs->dispatcher) {
             mprDestroyDispatcher(ejs->dispatcher);
+        }
+        if (ejs->http) {
+            httpStopConnections(ejs);
         }
     }
     mprTrace(6, "ejs: destroy VM");
