@@ -1518,7 +1518,10 @@ static void relayOutsideEvent(void *data, struct MprEvent *event)
 
     op = data;
     (op->proc)(op->data);
-    mprSignalCond(op->cond);
+    if (op->cond) {
+        mprSignalCond(op->cond);
+        mprRelease(op->cond);
+    }
 }
 
 
@@ -1531,11 +1534,13 @@ static void relayOutsideEvent(void *data, struct MprEvent *event)
  */
 PUBLIC int mprCreateEventOutside(MprDispatcher *dispatcher, void *proc, void *data, int flags)
 {
-    OutsideEvent    outside;
+    OutsideEvent    *op;
 
-    memset(&outside, 0, sizeof(outside));
-    outside.proc = proc;
-    outside.data = data;
+    if ((op = mprAlloc(sizeof(OutsideEvent))) == 0) {
+        return MPR_ERR_MEMORY;
+    }
+    op->proc = proc;
+    op->data = data;
 
     if (!mprPauseGC()) {
         return MPR_ERR_BAD_STATE;
@@ -1548,13 +1553,15 @@ PUBLIC int mprCreateEventOutside(MprDispatcher *dispatcher, void *proc, void *da
         mprAtomicBarrier();
     }
     if (flags & MPR_EVENT_BLOCK) {
-        outside.cond = mprCreateCond();
+        op->cond = mprCreateCond();
+        mprHold(op->cond);
     }
-    mprCreateEvent(dispatcher, "relay", 0, relayOutsideEvent, &outside, MPR_EVENT_STATIC_DATA);
-    if (flags & MPR_EVENT_BLOCK) {
-        mprWaitForCond(outside.cond, -1);
-    }
+    mprCreateEvent(dispatcher, "relay", 0, relayOutsideEvent, op, 0);
+
     mprResumeGC();
+    if (flags & MPR_EVENT_BLOCK) {
+        mprWaitForCond(op->cond, -1);
+    }
     return 0;
 }
 
