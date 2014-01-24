@@ -26414,7 +26414,7 @@ PUBLIC MprTime mprGetTime()
 #endif
 
 /*
-    Ugh! Aparently monotonic clocks are broken on VxWorks prior to 6.7
+    Ugh! Apparently monotonic clocks are broken on VxWorks prior to 6.7
  */
 #if CLOCK_MONOTONIC_RAW
     #if BIT_UNIX_LIKE

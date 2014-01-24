@@ -2503,7 +2503,6 @@ PUBLIC HttpConn *httpCreateConn(Http *http, HttpEndpoint *endpoint, MprDispatche
 
 /*
     Destroy a connection. This removes the connection from the list of connections. Should GC after that.
-    This should only EVER be called from the top-level event loop from httpIOEvent.
  */
 PUBLIC void httpDestroyConn(HttpConn *conn)
 {
@@ -2628,7 +2627,7 @@ PUBLIC void httpConnTimeout(HttpConn *conn)
         if (conn->state < HTTP_STATE_FIRST) {
             httpDisconnect(conn);
             if (msg) {
-                mprError(msg);
+                mprLog(5, msg);
             }
         } else {
             httpError(conn, HTTP_CODE_REQUEST_TIMEOUT, msg);
@@ -14545,7 +14544,9 @@ PUBLIC void httpAddConn(Http *http, HttpConn *conn)
 
 PUBLIC void httpRemoveConn(Http *http, HttpConn *conn)
 {
-    mprRemoveItem(http->connections, conn);
+    if (http) {
+        mprRemoveItem(http->connections, conn);
+    }
 }
 
 

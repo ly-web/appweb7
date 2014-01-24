@@ -631,13 +631,6 @@ PUBLIC MprSpin *mprInitSpinLock(MprSpin *lock);
  */
 PUBLIC bool mprTrySpinLock(MprSpin *lock);
 
-#if UNUSED
-/*
-    Internal
- */
-PUBLIC void mprManageSpinLock(MprSpin *lock, int flags);
-#endif
-
 /*
     For maximum performance, use the spin lock/unlock routines macros
  */
@@ -6995,6 +6988,7 @@ PUBLIC int  mprStartWaitService(MprWaitService *ws);
 PUBLIC int  mprStopWaitService(MprWaitService *ws);
 PUBLIC void mprSetWaitServiceThread(MprWaitService *ws, MprThread *thread);
 PUBLIC int  mprInitWindow();
+PUBLIC void mprTermWindow();
 PUBLIC void mprWakeNotifier();
 #if MPR_EVENT_KQUEUE
     PUBLIC void mprManageKqueue(MprWaitService *ws, int flags);
