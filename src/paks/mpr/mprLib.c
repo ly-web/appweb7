@@ -8724,6 +8724,8 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
     if (sends(path, "/")) {
         /* Windows stat fails with a trailing "/" */
         path = strim(path, "/", MPR_TRIM_END);
+    } else if (sends(path, "\\")) {
+        path = strim(path, "\\", MPR_TRIM_END);
     }
     if (_stat64(path, &s) < 0) {
 #if BIT_WIN && KEEP
