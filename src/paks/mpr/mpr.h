@@ -5947,9 +5947,6 @@ PUBLIC MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTicks
         \n\n
         While creating and queuing the event, this routine pauses the garbage collector. If the collector is running, it 
         waits until it completes before creating the event. This may necessitate a small delay before running the event.
-        If MPR_EVENT_BLOCK is specified, the callback will be run with the collector paused. In this case only, if the 
-        callback needs to block or run for a longer period of time, it should resume GC by calling #mprResumeGC and 
-        #mprYield to give the GC a chance to run. Before returning, it should re-pause the collector by calling #mprPauseGC.
     NOTE: the event callback proc may run to completion before this function returns.
     @param dispatcher Dispatcher object created via mprCreateDispatcher
     @param proc Callback function to invoke when the event is run
