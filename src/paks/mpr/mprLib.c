@@ -2832,6 +2832,7 @@ static void serviceEventsThread(void *data, MprThread *tp)
     mprSignalCond(MPR->cond);
     mprServiceEvents(-1, 0);
     mprRescheduleDispatcher(MPR->dispatcher);
+    mprTermWindow();
 }
 
 
@@ -3278,8 +3279,6 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 {
     int     winMask;
 
-    assert(ws->hwnd);
-
     lock(ws);
     winMask = 0;
     if (wp->desiredMask != mask) {
@@ -3356,8 +3355,6 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     MSG     msg;
 
-    assert(ws->hwnd);
-
     if (timeout < 0 || timeout > MAXINT) {
         timeout = MAXINT;
     }
@@ -3370,9 +3367,12 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
         mprDoWaitRecall(ws);
         return;
     }
-    SetTimer(ws->hwnd, 0, (UINT) timeout, NULL);
-
     mprYield(MPR_YIELD_STICKY);
+
+    /*
+        Timer must be after yield
+     */
+    SetTimer(ws->hwnd, 0, (UINT) timeout, NULL);
     if (GetMessage(&msg, NULL, 0, 0) == 0) {
         mprResetYield();
         mprTerminate(MPR_EXIT_DEFAULT, -1);
@@ -3443,6 +3443,7 @@ PUBLIC void mprWakeNotifier()
 
 /*
     Create a default window if the application has not already created one.
+    Windows are meant to be per-thread, but this creates a window for mprServiceEvents.
  */ 
 PUBLIC int mprInitWindow()
 {
@@ -3456,8 +3457,8 @@ PUBLIC int mprInitWindow()
     if (ws->hwnd) {
         return 0;
     }
-    name = (wchar*) wide(mprGetAppName());
-    title = (wchar*) wide(mprGetAppTitle());
+    name                = (wchar*) wide(mprGetAppName());
+    title               = (wchar*) wide(mprGetAppTitle());
     wc.style            = CS_HREDRAW | CS_VREDRAW;
     wc.hbrBackground    = (HBRUSH) (COLOR_WINDOW+1);
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
@@ -3482,6 +3483,18 @@ PUBLIC int mprInitWindow()
     ws->hwnd = hwnd;
     ws->socketMessage = MPR_SOCKET_MESSAGE;
     return 0;
+}
+
+
+PUBLIC void mprTermWindow()
+{
+    MprWaitService  *ws;
+
+    ws = MPR->waitService;
+    if (ws->hwnd) {
+        UnregisterClass(wide(mprGetAppName()), 0);
+        ws->hwnd = 0;
+    }
 }
 
 
@@ -9244,8 +9257,6 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
         return 0;
     }
     MPR->eventing = 1;
-    mprInitWindow();
-
     es = MPR->eventService;
     beginEventCount = eventCount = es->eventCount;
     es->now = mprGetTicks();
@@ -18919,6 +18930,11 @@ PUBLIC int mprInitWindow()
 }
 
 
+PUBLIC void mprTermWindow()
+{
+}
+
+
 PUBLIC void mprSetFilesLimit(int limit)
 {
     struct rlimit r;
@@ -28074,6 +28090,12 @@ PUBLIC int mprInitWindow()
 {
     return 0;
 }
+
+
+PUBLIC void mprTermWindow()
+{
+}
+
 
 
 /*
