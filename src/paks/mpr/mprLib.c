@@ -26466,18 +26466,33 @@ PUBLIC MprTicks mprGetTicks()
     clock_gettime(CLOCK_MONOTONIC, &tv);
     return (MprTicks) (((MprTicks) tv.tv_sec) * 1000) + (tv.tv_nsec / (1000 * 1000));
 #else
-    static MprTime lastTicks;
+    /*
+        Last chance. Need to resort to mprGetTime which is subject to user and seasonal adjustments.
+        This code will prevent it going backwards, but may suffer large jumps forward.
+     */
+    static MprTime lastTicks = 0;
     static MprTime adjustTicks = 0;
     static MprSpin ticksSpin;
     MprTime     result, diff;
 
     if (lastTicks == 0) {
         /* This will happen at init time when single threaded */
+#if BIT_WIN_LIKE
+        lastTicks = GetTickCount();
+#else
         lastTicks = mprGetTime();
+#endif
         mprInitSpinLock(&ticksSpin);
     }
     mprSpinLock(&ticksSpin);
+#if BIT_WIN_LIKE
+    /*
+        GetTickCount will wrap in 49.7 days
+     */
+    result = GetTickCount() + adjustTicks;
+#else
     result = mprGetTime() + adjustTicks;
+#endif
     if ((diff = (result - lastTicks)) < 0) {
         /*
             Handle time reversals. Don't handle jumps forward. Sorry.
