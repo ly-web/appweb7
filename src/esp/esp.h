@@ -53,6 +53,11 @@ extern "C" {
     #define ESP_VSKEY "HKLM\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7"
 #endif
 
+#if DEPRECATED || 1
+#define httpAddHomeRoute espAddHomeRoute
+#define httpAddRouteSet espAddRouteSet
+#endif
+
 /********************************** Defines ***********************************/
 /**
     Procedure callback

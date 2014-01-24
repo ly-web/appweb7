@@ -185,11 +185,13 @@ static void startEsp(HttpQueue *q)
             httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load esp config for %s", eroute->appName);
             return;
         }
+#if !BIT_STATIC
         /* WARNING: GC yield */
         if (!loadApp(route)) {
             httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load esp module for %s", eroute->appName);
             return;
         }
+#endif
         /* WARNING: GC yield */
         if (!runAction(conn)) {
             pruneFlash(conn);
@@ -272,7 +274,6 @@ static int runAction(HttpConn *conn)
     EspRoute    *eroute;
     EspReq      *req;
     EspAction   action;
-    cchar       *errMsg;
     char        *actionName, *key, *filename, *source;
 
     rx = conn->rx;
@@ -301,6 +302,7 @@ static int runAction(HttpConn *conn)
 #if !BIT_STATIC
     key = mprJoinPath(eroute->controllersDir, rx->target);
     if (!eroute->combined && (eroute->update || !mprLookupKey(esp->actions, key))) {
+        cchar *errMsg;
         if (!loadEspModule(route, "controller", source, &errMsg)) {
             httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "%s", errMsg);
             return 0;
@@ -357,7 +359,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     HttpRoute   *route;
     EspRoute    *eroute;
     EspViewProc viewProc;
-    cchar       *source, *errMsg;
+    cchar       *source;
     
     rx = conn->rx;
     route = rx->route;
@@ -371,6 +373,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     }
 #if !BIT_STATIC
     if (!eroute->combined && (eroute->update || !mprLookupKey(esp->views, mprGetPortablePath(source)))) {
+        cchar *errMsg;
         /* WARNING: GC yield */
         mprHold(source);
         if (!loadEspModule(route, "view", source, &errMsg)) {
@@ -607,6 +610,12 @@ static bool layoutIsStale(EspRoute *eroute, cchar *source, cchar *module)
         }
     }
     return stale;
+}
+#else
+
+PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile)
+{
+    return 0;
 }
 #endif /* BIT_STATIC */
 
@@ -1125,10 +1134,6 @@ static int finishEspAppDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpRoute   *route;
     EspRoute    *eroute;
-    MprJson     *preload, *item;
-    cchar       *errMsg, *source;
-    char        *kind;
-    int         i;
 
     /*
         The order of route finalization will be from the inside. Route finalization causes the route to be added
@@ -1142,6 +1147,10 @@ static int finishEspAppDirective(MaState *state, cchar *key, cchar *value)
     }
 #if !BIT_STATIC
     if (!state->appweb->skipModules) {
+        MprJson *preload, *item;
+        cchar   *errMsg, *source;
+        char    *kind;
+        int     i;
         /*
             Note: the config parser pauses GC, so this will never yield
          */
