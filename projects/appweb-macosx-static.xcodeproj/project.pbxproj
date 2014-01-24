@@ -1537,7 +1537,6 @@
 				AE9929FAAE993E6800000170 /* bit.h */,
 				AE9929FAAE993E6800000171 /* mpr.h */,
 				AE9929FAAE993E6800000173 /* est.h */,
-				AE9929FAAE993E6800000172 /* bitos.h */,
 				AE9929FAAE993E680000005A /* mprSsl.c */,
 			);
             name = "libmprssl";
