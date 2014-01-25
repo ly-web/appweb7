@@ -70,12 +70,13 @@ static void openCgi(HttpQueue *q)
         mprLog(2, "Too many concurrent processes %d/%d", nproc, conn->limits->processMax);
         return;
     }
+    if ((cgi = mprAllocObj(Cgi, manageCgi)) == 0) {
+        /* Normal mem handler recovery */ 
+        return;
+    }
     httpTrimExtraPath(conn);
     httpMapFile(conn);
     httpCreateCGIParams(conn);
-    if ((cgi = mprAllocObj(Cgi, manageCgi)) == 0) {
-        return;
-    }
     q->queueData = q->pair->queueData = cgi;
     cgi->conn = conn;
     cgi->readq = httpCreateQueue(conn, conn->http->cgiConnector, HTTP_QUEUE_RX, 0);
