@@ -80,34 +80,24 @@
             </ul>
             <p>The following operating systems may be supported by recompiling Appweb from source.</p>
             <ul>
-                <li>FreeBSD</li>
+                <li>FreeBSD 10.X</li>
                 <li>Linux 2.6 and later</li>
                 <li>MAC OS X 10.7 and later </li>
                 <li>VxWorks 6.X</li>
                 <li>Windows 7 and later</li>
             </ul>
             <p>The following CPU architectures are supported: arm, mips, ppc, xscale, x86, x64, sparc.</p>
+
             <h2 class="section">Run-time System Requirements</h2>
-            <p>To install Appweb on a development system, your system will need at least the following:</p>
-            <ul>
-                <li>40 MB Disk</li>
-                <li>1GB MB RAM</li>
-            </ul>
             <p>To deploy Appweb in an embedded environment, you will need at least the following:</p>
             <ul>
-                <li>1-2 MB Disk/ROM space</li>
-                <li>1-2 MB RAM</li>
+                <li>1-2 MB Disk/ROM space &mdash; depending on the application size</li>
+                <li>1-4 MB RAM</li>
             </ul>
-            <p>To develop with the ESP web framework, you will need a "C" compiler installed. Production use of ESP 
-            does not require a "C" language compiler. These are the supported compilers:</p>
+            <p>To install and build Appweb from source on a development system, your system will need at least the following:</p>
             <ul>
-                <li>Windows &mdash; Visual Studio 10 (express editions are fine)</li>
-                <li>MAC OS X &mdash; Xcode</li>
-                <li>Linux &mdash; the gcc compiler</li>
-            </ul>
-            <p>To rebuild Appweb from source code, you will need at least</p>
-            <ul>
-                <li>60 MB disk space</li>
+                <li>250 MB Disk space</li>
+                <li>1GB MB RAM</li>
             </ul>
             <h2 class="section">Development Environment Hardware Platform Support</h2>
             <p>If you wish to build Appweb from source code, you will need to use a "C" compiler and associated
@@ -115,24 +105,10 @@
             compile and build samples and source code.</p>
             <ul>
                 <li>Linux GNU tools</li>
-                <li>Windows Visual Studio (Visual Studio 2010 and Visual Studio 2010 Express).</li>
+                <li>Windows Visual Studio 10 (express editions are fine).</li>
+                <li>MAC Xcode.</li>
                 <li>WindRiver Tornado Development Tools.</li>
             </ul>
-            <a id="issues"></a> 
-            <h2 class="section">Known Issues</h2>
-            <ol><li>The Mocana NanoSSL does not support:
-                    <ul>
-                        <li>Client mode SSL</li>
-                        <li>Run-time cipher selection via SSLCipherSuite</li>
-                        <li>Client certificate mutual authentication</li>
-                        <li>Routing based on client certificate fields</li>
-                    </ul>
-                </li>
-                <li>The MatrixSSL does not support:
-                <ul>
-                    <li>Run-time cipher selection via SSLCipherSuite</li>
-                </ul>
-            </ol>
             
             <a id="hints"></a>
             <h2 class="section">Helpful Hints</h2>
