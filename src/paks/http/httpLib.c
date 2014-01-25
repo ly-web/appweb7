@@ -8901,7 +8901,8 @@ PUBLIC void httpMapFile(HttpConn *conn)
     if (lang && lang->path) {
         filename = mprJoinPath(lang->path, filename);
     }
-    filename = mprJoinPath(conn->rx->route->documents, mapContent(conn, filename));
+    filename = mprJoinPath(conn->rx->route->documents, filename);
+    filename = mapContent(conn, filename);
 #if BIT_ROM
     filename = mprGetRelPath(filename, NULL);
 #endif
