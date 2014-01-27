@@ -2532,7 +2532,9 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
     mpr->nonBlock = mprCreateDispatcher("nonblock", 0);
     mprSetDispatcherImmediate(mpr->nonBlock);
 
-    if (!(flags & MPR_USER_EVENTS_THREAD)) {
+    if (flags & MPR_USER_EVENTS_THREAD) {
+        mprSetNotifierThread(tp);
+    } else {
         mprRunDispatcher(mpr->dispatcher);
         mprStartEventsThread();
     }
