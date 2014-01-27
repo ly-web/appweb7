@@ -77,7 +77,7 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
     int     argc, err, nextArg, manage, stop;
 
     argc = mprParseArgs(command, &argv[1], BIT_MAX_ARGC - 1) + 1;
-    if (mprCreate(argc, argv, MPR_USER_EVENTS_THREAD) == NULL) {
+    if (mprCreate(argc, argv, MPR_USER_EVENTS_THREAD | MPR_NO_WINDOW) == NULL) {
         exit(1);
     }
     if ((app = mprAllocObj(App, manageApp)) == NULL) {
@@ -132,6 +132,7 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
         mprError("Application %s is already active.", mprGetAppTitle());
         return MPR_ERR_BUSY;
     }
+    mprSetNotifierThread(0);
 #if UNUSED
     if (mprInitWindow() < 0) {
         mprError("Can't initialize application Window");
@@ -218,45 +219,6 @@ static int findInstance()
     }
     return 0;
 }
-
-
-#if UNUSED
-/*
-    Initialize the applications's window
- */ 
-static int initWindow()
-{
-    WNDCLASS    wc;
-    int         rc;
-
-    wc.style            = CS_HREDRAW | CS_VREDRAW;
-    wc.hbrBackground    = (HBRUSH) (COLOR_WINDOW+1);
-    wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
-    wc.cbClsExtra       = 0;
-    wc.cbWndExtra       = 0;
-    wc.hInstance        = (HINSTANCE) app->appInst;
-    wc.hIcon            = NULL;
-    wc.lpfnWndProc      = (WNDPROC) msgProc;
-    wc.lpszMenuName     = wc.lpszClassName = mprGetAppName();
-
-    rc = RegisterClass(&wc);
-    if (rc == 0) {
-        mprError("Can't register windows class: %d", GetLastError());
-        return -1;
-    }
-    app->appHwnd = CreateWindow(mprGetAppName(), mprGetAppTitle(), 
-        WS_OVERLAPPED, CW_USEDEFAULT, 0, 0, 0, NULL, NULL, app->appInst, NULL);
-    if (! app->appHwnd) {
-        mprError("Can't create window");
-        return -1;
-    }
-    if (app->taskBarIcon > 0) {
-        ShowWindow(app->appHwnd, SW_MINIMIZE);
-        UpdateWindow(app->appHwnd);
-    }
-    return 0;
-}
-#endif
 
 
 static void stopMonitor()
