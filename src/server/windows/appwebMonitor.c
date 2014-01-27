@@ -77,7 +77,7 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
     int     argc, err, nextArg, manage, stop;
 
     argc = mprParseArgs(command, &argv[1], BIT_MAX_ARGC - 1) + 1;
-    if (mprCreate(argc, argv, MPR_USER_EVENTS_THREAD | MPR_NO_WINDOW) == NULL) {
+    if (mprCreate(argc, argv, MPR_USER_EVENTS_THREAD) == NULL) {
         exit(1);
     }
     if ((app = mprAllocObj(App, manageApp)) == NULL) {
@@ -132,10 +132,12 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
         mprError("Application %s is already active.", mprGetAppTitle());
         return MPR_ERR_BUSY;
     }
+#if UNUSED
     if (mprInitWindow() < 0) {
         mprError("Can't initialize application Window");
         return MPR_ERR_CANT_INITIALIZE;
     }
+#endif
     app->appHwnd = mprGetHwnd();
     mprSetWinMsgCallback(msgProc);
     if (app->taskBarIcon > 0) {
