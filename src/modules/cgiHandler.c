@@ -465,9 +465,6 @@ static void readFromCgi(Cgi *cgi, int channel)
             httpPutPacket(q, packet);
         }
     }
-    if (writeq->count > writeq->max) {
-        assert(q->flags & HTTP_QUEUE_SUSPENDED);
-    }
 }
 
 
