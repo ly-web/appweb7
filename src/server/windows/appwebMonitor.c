@@ -133,12 +133,6 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
         return MPR_ERR_BUSY;
     }
     mprSetNotifierThread(0);
-#if UNUSED
-    if (mprInitWindow() < 0) {
-        mprError("Can't initialize application Window");
-        return MPR_ERR_CANT_INITIALIZE;
-    }
-#endif
     app->appHwnd = mprGetHwnd();
     mprSetWinMsgCallback(msgProc);
     if (app->taskBarIcon > 0) {
@@ -286,7 +280,7 @@ static long msgProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
             /*
                 Single-threaded users beware. This blocks !!
              */
-            fmt(buf, sizeof(buf), "%s %s-%s", BIT_TITLE, BIT_VERSION, BIT_BUILD_NUMBER);
+            fmt(buf, sizeof(buf), "%s %s", BIT_TITLE, BIT_VERSION);
             MessageBoxEx(hwnd, buf, mprGetAppTitle(), MB_OK, 0);
             break;
 
