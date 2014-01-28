@@ -190,6 +190,9 @@
 #ifndef BIT_WARN_UNUSED
     #define BIT_WARN_UNUSED 0
 #endif
+#ifndef BIT_WHO
+    #define BIT_WHO "embedthis"
+#endif
 #ifndef BIT_WITHOUT_ALL
     #define BIT_WITHOUT_ALL "cgi,dir,doxygen,dsi,ejscript,esp,man,man2html,pmaker,php,sqlite,ssl"
 #endif
