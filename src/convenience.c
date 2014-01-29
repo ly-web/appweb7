@@ -9,6 +9,7 @@
 #include    "appweb.h"
 
 /************************************ Code ************************************/
+//  TODO: REFACTOR with an inner function
 /*  
     Create a web server described by a config file. 
  */
@@ -54,6 +55,7 @@ PUBLIC int maRunWebServer(cchar *configFile)
 }
 
 
+//  TODO: REFACTOR with an inner function
 /*
     Run a web server not based on a config file.
  */
