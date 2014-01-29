@@ -59,9 +59,6 @@ typedef struct App {
     char    *serviceArgs;               /* Args to pass to service */
     char    *serviceHome;               /* Service home */
     char    *serviceName;               /* Basename of service program */
-#if UNUSED
-    char    *serviceTitle;              /* Readable service title */
-#endif
     char    *serviceProgram;            /* Program to start */
     MprSignal *sigchld;                 /* Child death signal handler */
 } App;
@@ -240,7 +237,7 @@ PUBLIC int main(int argc, char *argv[])
             "    install              # Install the service\n"
             "    run                  # Run and watch over the service\n"
             "    start                # Start the service\n"
-            "    stop                 # Start the service\n"
+            "    stop                 # Stop the service\n"
             "    uninstall            # Uninstall the service\n"
             , mprGetAppName());
         return -1;
@@ -262,9 +259,6 @@ PUBLIC int main(int argc, char *argv[])
         status = 2;
 
     } else {
-#if UNUSED
-        mprStartEventsThread();
-#endif
         for (; nextArg < argc; nextArg++) {
             if (!process(argv[nextArg], 0) && !app->continueOnErrors) {
                 status = 3;
@@ -291,16 +285,10 @@ static void manageApp(void *ptr, int flags)
         mprMark(app->serviceHome);
         mprMark(app->serviceName);
         mprMark(app->serviceProgram);
-#if UNUSED
-        mprMark(app->serviceTitle);
-#endif
     }
 }
 
 
-/*
-    Unix
- */
 static void setAppDefaults()
 {
     app->company = stok(slower(BIT_COMPANY), " ", NULL);
@@ -889,7 +877,7 @@ static void WINAPI serviceMain(ulong argc, wchar **argv);
 int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *args, int junk2)
 {
     char    *argv[BIT_MAX_ARGC], *argp;
-    int     argc, err, nextArg;
+    int     argc, err, nextArg, status;
 
 	argv[0] = BIT_NAME "Manager";
     argc = mprParseArgs(args, &argv[1], BIT_MAX_ARGC - 1) + 1;
@@ -902,11 +890,7 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *args, int junk2)
     setWinDefaults(inst);
     mprSetLogHandler(logHandler);
     mprSetWinMsgCallback((MprMsgCallback) msgProc);
-#if UNUSED
-    if ((argc = mprMakeArgv(args, &argv, MPR_ARGV_ARGS_ONLY)) < 0) {
-        return MPR_ERR_BAD_ARGS;
-    }
-#endif
+
     for (err = 0, nextArg = 1; nextArg < argc; nextArg++) {
         argp = argv[nextArg];
         if (*argp != '-' || strcmp(argp, "--") == 0) {
@@ -1010,27 +994,27 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *args, int junk2)
         }
     }
     app->serviceTitle = sfmt("%s %s", stitle(app->company), stitle(app->serviceName));
+    status = 0;
 
     if (mprStart() < 0) {
         mprError("Cannot start MPR for %s", mprGetAppName());
+        status = 1;
+
     } else {
-#if UNUSED
-		mprRunDispatcher(mpr->dispatcher);
-        mprStartEventsThread();
-#endif
         if (nextArg >= argc) {
             if (!process("run")) {
-                return MPR_ERR_CANT_COMPLETE;
+                status = 2;
             }
 
         } else for (; nextArg < argc; nextArg++) {
             if (!process(argv[nextArg]) && !app->continueOnErrors) {
-                return MPR_ERR_CANT_COMPLETE;
+                status = 3;
+                break;
             }
         }
     }
     mprDestroy(MPR_EXIT_DEFAULT);
-    return 0;
+    return status;
 }
 
 
@@ -1380,6 +1364,7 @@ static bool installService()
         mprError("Cannot write service Description key to registry");
         return 0;
     }
+
     /*
         Write the home directory
      */
@@ -1579,14 +1564,10 @@ static void setWinDefaults(HINSTANCE inst)
 {
     app->appInst = inst;
     app->heartBeatPeriod = HEART_BEAT_PERIOD;
-    app->company = stok(slower(BIT_COMPANY), " ", NULL);
-    app->serviceProgram = sjoin(mprGetAppDir(), "\\", BIT_PRODUCT, ".exe", NULL);
+    app->company = sclone(BIT_COMPANY);
     app->serviceName = sclone(SERVICE_NAME);
+    app->serviceProgram = sjoin(mprGetAppDir(), "\\", BIT_PRODUCT, ".exe", NULL);
     app->serviceHome = NULL;
-#if UNUSED
-    app->serviceName = sjoin(app->company, "-", BIT_PRODUCT, NULL);
-    app->serviceTitle = sfmt("%s-%s", stitle(app->company), stitle(app->serviceName));
-#endif
     app->serviceStopped = 0;
 }
 
