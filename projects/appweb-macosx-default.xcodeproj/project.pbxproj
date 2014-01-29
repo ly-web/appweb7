@@ -2473,7 +2473,7 @@ fi";
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0430;
-				ORGANIZATIONNAME = "Embedthis Software";
+				ORGANIZATIONNAME = "embedthis";
 			};
 			buildConfigurationList = 8835A6E48835BCEC00000002 /* Build configuration list for PBXProject "appweb" */;
 			compatibilityVersion = "Xcode 3.2";

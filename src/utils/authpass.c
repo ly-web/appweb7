@@ -37,7 +37,6 @@ PUBLIC int main(int argc, char *argv[])
     int         i, errflg, create, nextArg;
 
     mpr = mprCreate(argc, argv, 0);
-    mprSetAppName(argv[0], NULL, NULL);
     programName = mprGetAppName(mpr);
 
     username = 0;
