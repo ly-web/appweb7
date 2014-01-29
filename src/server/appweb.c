@@ -86,8 +86,9 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if ((mpr = mprCreate(argc, argv, MPR_USER_EVENTS_THREAD)) == NULL) {
         exit(1);
     }
+#if UNUSED
     mprSetAppName(BIT_PRODUCT, BIT_TITLE, BIT_VERSION);
-
+#endif
     if ((app = mprAllocObj(AppwebApp, manageApp)) == NULL) {
         exit(2);
     }
@@ -211,14 +212,10 @@ MAIN(appweb, int argc, char **argv, char **envp)
         mprError("Cannot start HTTP service, exiting.");
         exit(9);
     }
-    /*
-        Service I/O events until instructed to exit
-     */
-    while (!mprIsStopping()) {
-        mprServiceEvents(-1, 0);
-    }
-    status = mprGetExitStatus();
+    mprServiceEvents(-1, 0);
+
     mprLog(1, "Stopping Appweb ...");
+    status = mprGetExitStatus();
     mprDestroy(MPR_EXIT_DEFAULT);
     return status;
 }

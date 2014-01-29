@@ -6956,7 +6956,8 @@ typedef struct MprWaitService {
     int             wakeRequested;          /* Wakeup of the wait service has been requested */
     MprList         *handlerMap;            /* Map of fds to handlers */
 #if MPR_EVENT_ASYNC
-    HWND            hwnd;                   /* Window handle */
+    ATOM            wclass;                 /* Window class */
+    HWND            hwnd;                   /* Window handle for service events thread */
     int             nfd;                    /* Last used entry in the handlerMap array */
     int             fdmax;                  /* Size of the fds array */
     int             socketMessage;          /* Message id for socket events */
@@ -6998,12 +6999,12 @@ PUBLIC void mprWakeNotifier();
 #if BIT_WIN_LIKE
     PUBLIC void mprSetWinMsgCallback(MprMsgCallback callback);
     PUBLIC void mprServiceWinIO(MprWaitService *ws, int sockFd, int winMask);
-    PUBLIC HWND mprCreateWindow(MprThread *tp, bool *created);
-    PUBLIC void mprDestroyWindow(MprThread *tp);
+    PUBLIC HWND mprCreateWindow(MprThread *tp);
+    PUBLIC void mprDestroyWindow(HWND hwnd);
     PUBLIC HWND mprGetWindow(bool *created);
-    PUBLIC int  mprCreateWindowClass();
-    PUBLIC void mprDestroyWindowClass();
-    PUBLIC void mprSetNotifierThread(MprThread *tp);
+    PUBLIC ATOM  mprCreateWindowClass();
+    PUBLIC void mprDestroyWindowClass(ATOM wclass);
+    PUBLIC HWND mprSetNotifierThread(MprThread *tp);
 #else
     #define mprSetNotifierThread(tp)
 #endif

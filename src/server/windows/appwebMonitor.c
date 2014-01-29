@@ -21,12 +21,9 @@
 typedef struct App {
     cchar        *company;              /* Company name */
     cchar        *serviceName;          /* Name of appweb service */
-    cchar        *serviceTitle;         /* Title of appweb service */
-    cchar        *serviceWindowName;    /* Name of appweb service */
-    cchar        *serviceWindowTitle;   /* Title of appweb service */
     int          taskBarIcon;           /* Icon in the task bar */
     HINSTANCE    appInst;               /* Current application instance */
-    HWND         appHwnd;               /* Application window handle */
+    HWND         hwnd;                  /* Application window handle */
     HMENU        subMenu;               /* As the name says */
     HMENU        monitorMenu;           /* As the name says */
 } App;
@@ -51,7 +48,6 @@ static SERVICE_TABLE_ENTRY      svcTable[] = {
 
 /***************************** Forward Declarations ***************************/
 
-static void     eventLoop();
 static void     closeMonitorIcon();
 static int      getAppwebPort();
 static char     *getBrowserPath(int size);
@@ -76,7 +72,9 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
     char    *argv[BIT_MAX_ARGC], *argp;
     int     argc, err, nextArg, manage, stop;
 
+	argv[0] = BIT_NAME "Monitor";
     argc = mprParseArgs(command, &argv[1], BIT_MAX_ARGC - 1) + 1;
+
     if (mprCreate(argc, argv, MPR_USER_EVENTS_THREAD | MPR_NO_WINDOW) == NULL) {
         exit(1);
     }
@@ -89,14 +87,10 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
     stop = 0;
     manage = 0;
     app->appInst = inst;
-    app->company = stok(slower(BIT_COMPANY), " ", NULL);
+    app->company = sclone(BIT_COMPANY);
     app->serviceName = sjoin(app->company, "-", BIT_PRODUCT, NULL);
-    app->serviceTitle = sclone(BIT_TITLE);
-    app->serviceWindowName = sclone(BIT_PRODUCT "Angel");
-    app->serviceWindowTitle = sclone(BIT_TITLE "Angel");
-
-    mprSetAppName(BIT_PRODUCT "Monitor", BIT_TITLE " Monitor", BIT_VERSION);
     mprSetLogHandler(logHandler);
+
     chdir(mprGetAppDir());
 
     /*
@@ -132,12 +126,12 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
         mprError("Application %s is already active.", mprGetAppTitle());
         return MPR_ERR_BUSY;
     }
-    mprSetNotifierThread(0);
-    app->appHwnd = mprGetHwnd();
+    app->hwnd = mprSetNotifierThread(0);
     mprSetWinMsgCallback(msgProc);
+
     if (app->taskBarIcon > 0) {
-        ShowWindow(app->appHwnd, SW_MINIMIZE);
-        UpdateWindow(app->appHwnd);
+        ShowWindow(app->hwnd, SW_MINIMIZE);
+        UpdateWindow(app->hwnd);
     }
     if (manage) {
         /*
@@ -149,7 +143,7 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
         if (openMonitorIcon() < 0) {
             mprError("Can't open %s tray", mprGetAppName());
         } else {
-            eventLoop();
+            mprServiceEvents(-1, 0);
             closeMonitorIcon();
         }
     }
@@ -162,36 +156,6 @@ static void manageApp(App *app, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(app->company);
         mprMark(app->serviceName);
-        mprMark(app->serviceTitle);
-        mprMark(app->serviceWindowName);
-        mprMark(app->serviceWindowTitle);
-    } else if (flags & MPR_MANAGE_FREE) {
-    }
-}
-
-
-/*
-    Sample main event loop. This demonstrates how to integrate Mpr with your
-    applications event loop using select()
- */
-void eventLoop()
-{
-    MSG     msg;
-
-    /*
-        If single threaded or if you desire control over the event loop, you 
-        should code an event loop similar to that below:
-     */
-    while (!mprIsStopping()) {		
-        /*
-            Socket events will be serviced in the msgProc
-         */
-        if (GetMessage(&msg, NULL, 0, 0) == 0) {
-            /*  WM_QUIT received */
-            break;
-        }
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
     }
 }
 
@@ -203,7 +167,7 @@ static int findInstance()
 {
     HWND    hwnd;
 
-    hwnd = FindWindow(mprGetAppName(), mprGetAppTitle());
+    hwnd = FindWindow(mprGetAppName(), mprGetAppName());
     if (hwnd) {
         if (IsIconic(hwnd)) {
             ShowWindow(hwnd, SW_RESTORE);
@@ -219,7 +183,7 @@ static void stopMonitor()
 {
     HWND    hwnd;
 
-    hwnd = FindWindow(mprGetAppName(), mprGetAppTitle());
+    hwnd = FindWindow(mprGetAppName(), mprGetAppName());
     if (hwnd) {
         PostMessage(hwnd, WM_QUIT, 0, 0L);
     }
@@ -331,7 +295,7 @@ static int openMonitorIcon()
         return MPR_ERR_CANT_INITIALIZE;
     }
     data.uID = APPWEB_MONITOR_ID;
-    data.hWnd = app->appHwnd;
+    data.hWnd = app->hwnd;
     data.hIcon = iconHandle;
     data.cbSize = sizeof(NOTIFYICONDATA);
     data.uCallbackMessage = APPWEB_MONITOR_MESSAGE;
@@ -354,7 +318,7 @@ static void closeMonitorIcon()
     NOTIFYICONDATA  data;
 
     data.uID = APPWEB_MONITOR_ID;
-    data.hWnd = app->appHwnd;
+    data.hWnd = app->hwnd;
     data.cbSize = sizeof(NOTIFYICONDATA);
     Shell_NotifyIcon(NIM_DELETE, &data);
     if (app->monitorMenu) {
@@ -410,10 +374,10 @@ static int monitorEvent(HWND hwnd, WPARAM wp, LPARAM lp)
         p.x = pos.x;
         p.y = windowRect.bottom - 20;
 
-        SetForegroundWindow(app->appHwnd);
-        TrackPopupMenu(app->subMenu, TPM_RIGHTALIGN | TPM_RIGHTBUTTON, p.x, p.y, 0, app->appHwnd, NULL);
+        SetForegroundWindow(app->hwnd);
+        TrackPopupMenu(app->subMenu, TPM_RIGHTALIGN | TPM_RIGHTBUTTON, p.x, p.y, 0, app->hwnd, NULL);
         /* Required Windows work-around */
-        PostMessage(app->appHwnd, WM_NULL, 0, 0);
+        PostMessage(app->hwnd, WM_NULL, 0, 0);
         return 0;
     }
 
@@ -459,7 +423,7 @@ static void updateMenu(int id, char *text, int enable, int check)
     } else if (check < 0) {
         rc = CheckMenuItem(app->subMenu, id, MF_BYCOMMAND | MF_UNCHECKED);
     }
-    rc = DrawMenuBar(app->appHwnd);
+    rc = DrawMenuBar(app->hwnd);
 }
 
 
@@ -480,7 +444,7 @@ static void shutdownAppweb()
     HWND    hwnd;
     int     i;
 
-    hwnd = FindWindow(app->serviceWindowName, app->serviceWindowTitle);
+    hwnd = FindWindow(MPR->name, MPR->name);
     if (hwnd) {
         PostMessage(hwnd, WM_QUIT, 0, 0L);
         /*
@@ -488,11 +452,11 @@ static void shutdownAppweb()
          */
         for (i = 0; hwnd && i < 100; i++) {
             mprSleep(100);
-            hwnd = FindWindow(app->serviceWindowName, app->serviceWindowTitle);
+            hwnd = FindWindow(MPR->name, MPR->name);
         }
 
     } else {
-        mprError("Can't find %s to kill", app->serviceWindowTitle);
+        mprError("Can't find %s to kill", MPR->name);
         return;
     }
 }
