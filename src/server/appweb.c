@@ -86,9 +86,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if ((mpr = mprCreate(argc, argv, MPR_USER_EVENTS_THREAD)) == NULL) {
         exit(1);
     }
-#if UNUSED
-    mprSetAppName(BIT_PRODUCT, BIT_TITLE, BIT_VERSION);
-#endif
     if ((app = mprAllocObj(AppwebApp, manageApp)) == NULL) {
         exit(2);
     }
