@@ -1326,7 +1326,7 @@ static bool installService()
     int         serviceType;
 
     mgr = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
-    if (! mgr) {
+    if (!mgr) {
         mprError("Cannot open service manager");
         return 0;
     }
@@ -1399,7 +1399,7 @@ static bool removeService(int removeFromScmDb)
     app->exiting = 1;
 
     mgr = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
-    if (! mgr) {
+    if (!mgr) {
         mprError("Cannot open service manager");
         return 0;
     }
@@ -1442,7 +1442,7 @@ static bool enableService(int enable)
     int         flag;
 
     mgr = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
-    if (! mgr) {
+    if (!mgr) {
         mprError("Cannot open service manager");
         return 0;
     }
@@ -1475,7 +1475,7 @@ static bool startService()
     app->exiting = 0;
 
     mgr = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
-    if (! mgr) {
+    if (!mgr) {
         mprError("Cannot open service manager");
         return 0;
     }
