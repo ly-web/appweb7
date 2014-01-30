@@ -16639,7 +16639,7 @@ PUBLIC cchar *mprGetModuleSearchPath()
  */
 PUBLIC int mprLoadModule(MprModule *mp)
 {
-#if BIT_HAS_DYN_LOAD && !BIT_STATIC
+#if BIT_HAS_DYN_LOAD
     assert(mp);
 
     if (mprLoadNativeModule(mp) < 0) {
@@ -16648,6 +16648,7 @@ PUBLIC int mprLoadModule(MprModule *mp)
     mprStartModule(mp);
     return 0;
 #else
+    mprError("mprLoadModule: %s failed", mp->name);
     mprError("Product built without the ability to load modules dynamically");
     return MPR_ERR_BAD_STATE;
 #endif
@@ -16660,7 +16661,7 @@ PUBLIC int mprUnloadModule(MprModule *mp)
     if (mprStopModule(mp) < 0) {
         return MPR_ERR_NOT_READY;
     }
-#if BIT_HAS_DYN_LOAD && !BIT_STATIC
+#if BIT_HAS_DYN_LOAD
     if (mp->handle) {
         if (mprUnloadNativeModule(mp) != 0) {
             mprError("Cannot unload module %s", mp->name);
@@ -18899,12 +18900,10 @@ PUBLIC int mprGetRandomBytes(char *buf, ssize length, bool block)
 }
 
 
-#if BIT_HAS_DYN_LOAD && !BIT_STATIC
+#if BIT_HAS_DYN_LOAD
 PUBLIC int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
-    MprPath         info;
-    char            *at;
     void            *handle;
 
     assert(mp);
@@ -18922,6 +18921,12 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
 #endif
 #endif
     if (!mp->entry || !dlsym(handle, mp->entry)) {
+#if BIT_STATIC
+        mprError("Cannot load module %s, product built static", mp->name);
+        return MPR_ERR_BAD_STATE;
+#else
+        MprPath info;
+        char    *at;
         if ((at = mprSearchForModule(mp->path)) == 0) {
             mprError("Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
                 mprGetModuleSearchPath());
@@ -18936,6 +18941,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
             return MPR_ERR_CANT_OPEN;
         } 
         mp->handle = handle;
+#endif /* !BIT_STATIC */
 
     } else if (mp->entry) {
         mprLog(2, "Activating native module %s", mp->name);
@@ -28060,7 +28066,6 @@ PUBLIC int mprGetRandomBytes(char *buf, int length, bool block)
 }
 
 
-#if !BIT_STATIC
 PUBLIC int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
@@ -28127,7 +28132,6 @@ PUBLIC int mprUnloadNativeModule(MprModule *mp)
     unldByModuleId((MODULE_ID) mp->handle, 0);
     return 0;
 }
-#endif /* !BIT_STATIC */
 
 
 PUBLIC void mprNap(MprTicks milliseconds)
@@ -29717,12 +29721,9 @@ PUBLIC int mprGetRandomBytes(char *buf, ssize length, bool block)
 }
 
 
-#if !BIT_STATIC
 PUBLIC int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
-    MprPath         info;
-    char            *at, *baseName;
     void            *handle;
 
     assert(mp);
@@ -29731,6 +29732,12 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
         handle = GetModuleHandle(NULL);
     }
     if (!handle || !mp->entry || !GetProcAddress(handle, mp->entry)) {
+#if BIT_STATIC
+        mprError("Cannot load module %s, product built static", mp->name);
+        return MPR_ERR_BAD_STATE;
+#else
+        MprPath info;
+        char    *at, *baseName;
         if ((at = mprSearchForModule(mp->path)) == 0) {
             mprError("Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
                 mprGetModuleSearchPath());
@@ -29746,6 +29753,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
             return MPR_ERR_CANT_READ;
         } 
         mp->handle = handle;
+#endif /* !BIT_STATIC */
 
     } else if (mp->entry) {
         mprLog(2, "Activating native module %s", mp->name);
@@ -29775,7 +29783,6 @@ PUBLIC int mprUnloadNativeModule(MprModule *mp)
     }
     return 0;
 }
-#endif /* !BIT_STATIC */
 
 
 PUBLIC void mprSetInst(HINSTANCE inst)

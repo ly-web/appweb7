@@ -610,7 +610,7 @@ PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
     } else {
         path = sclone(libname);
     }
-    fmt(entryPoint, sizeof(entryPoint), "ma%sInit", name);
+    fmt(entryPoint, sizeof(entryPoint), "ma%sInit", stitle(name));
     entryPoint[2] = toupper((uchar) entryPoint[2]);
     if ((module = mprCreateModule(name, path, entryPoint, MPR->httpService)) == 0) {
         return 0;

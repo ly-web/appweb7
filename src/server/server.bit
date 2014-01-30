@@ -5,8 +5,8 @@
 Bit.load({
     targets: {
         'genslink': {
-            action: "run('esp --static --genlink slink.c --flat compile')",
-            generate: "esp --static --genlink slink.c --flat compile",
+            action: "run('esp --static --genlink slink.c compile')",
+            generate: "esp --static --genlink slink.c compile",
         },
 
         'slink.c': {

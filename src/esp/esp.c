@@ -1181,7 +1181,7 @@ static void readAppwebConfig()
     appweb->skipModules = 1;
     http = app->appweb->http;
     if (maSetPlatform(app->platform) < 0) {
-        fail("Cannot find platform %s", app->platform);
+        fail("Cannot find suitable platform %s", app->platform ? app->platform : appweb->localPlatform);
         return;
     }
     appweb->staticLink = app->staticLink;
@@ -1430,7 +1430,7 @@ static void compile(int argc, char **argv)
     app->combined = app->eroute->combined;
     vtrace("Info", "Compiling in %s mode", app->combined ? "combined" : "discrete");
 
-    if (app->combined && app->genlink) {
+    if (app->genlink) {
         app->slink = mprCreateList(0, MPR_LIST_STABLE);
     }
     for (ITERATE_ITEMS(app->routes, route, next)) {
@@ -1462,14 +1462,14 @@ static void compile(int argc, char **argv)
         for (ITERATE_ITEMS(app->slink, route, next)) {
             eroute = route->eroute;
             name = app->appName ? app->appName : mprGetPathBase(route->documents);
-            mprWriteFileFmt(file, "extern int esp_app_%s(HttpRoute *route, MprModule *module);", name);
+            mprWriteFileFmt(file, "extern int esp_app_%s_combined(HttpRoute *route, MprModule *module);", name);
             mprWriteFileFmt(file, "    /* SOURCE %s */\n",
                 mprGetRelPath(mprJoinPath(eroute->cacheDir, sjoin(name, ".c", NULL)), NULL));
         }
         mprWriteFileFmt(file, "\nPUBLIC void appwebStaticInitialize()\n{\n");
         for (ITERATE_ITEMS(app->slink, route, next)) {
             name = app->appName ? app->appName : mprGetPathBase(route->documents);
-            mprWriteFileFmt(file, "    espStaticInitialize(esp_app_%s, \"%s\", \"%s\");\n", name, name, route->name);
+            mprWriteFileFmt(file, "    espStaticInitialize(esp_app_%s_combined, \"%s\", \"%s\");\n", name, name, route->name);
         }
         mprWriteFileFmt(file, "}\n");
         mprCloseFile(file);
@@ -2678,7 +2678,7 @@ static void usageError()
     "    --chdir dir                # Change to the named directory first\n"
     "    --config configFile        # Use named config file instead appweb.conf\n"
     "    --database name            # Database provider 'mdb|sdb' \n"
-    "    --combined                    # Compile into a single module\n"
+    "    --combined                 # Compile into a single module\n"
     "    --genlink filename         # Generate a static link module for combined compilations\n"
     "    --keep                     # Keep intermediate source\n"
     "    --listen [ip:]port         # Listen on specified address \n"
