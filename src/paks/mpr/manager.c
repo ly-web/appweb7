@@ -1614,7 +1614,7 @@ static void gracefulShutdown(MprTicks timeout)
 {
     HWND    hwnd;
 
-    hwnd = FindWindow(mprGetAppName(), mprGetAppName());
+    hwnd = FindWindow(BIT_NAME, BIT_NAME);
     if (hwnd) {
         PostMessage(hwnd, WM_QUIT, 0, 0L);
 
@@ -1624,7 +1624,7 @@ static void gracefulShutdown(MprTicks timeout)
         while (timeout > 0 && hwnd) {
             mprSleep(100);
             timeout -= 100;
-            hwnd = FindWindow(mprGetAppName(), mprGetAppName());
+            hwnd = FindWindow(BIT_NAME, BIT_NAME);
             if (hwnd == 0) {
                 return;
             }

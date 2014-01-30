@@ -1,12 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1d56b688-40e8-4211-8073-ea86d35a1153}</ProjectGuid>
     <RootNamespace />
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
-
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -25,27 +23,28 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
-
   <Import Project="$(VCTargetsPath)Microsoft.Cpp.Default.props" />
   <Import Project="$(VCTargetsPath)Microsoft.Cpp.props" />
-
   <ImportGroup Label="PropertySheets" />
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="product.props" />
@@ -67,35 +66,28 @@
     <Import Project="release.props" />
     <Import Project="x64.props" />
   </ImportGroup>
-
   <PropertyGroup>
     <_ProjectFileVersion>10</_ProjectFileVersion>
-
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BinDir)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ObjDir)\paks\</IntDir>
     <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PreBuildEvent</CustomBuildBeforeTargets>
-
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BinDir)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ObjDir)\paks\</IntDir>
     <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PreBuildEvent</CustomBuildBeforeTargets>
-
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(BinDir)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ObjDir)\paks\</IntDir>
     <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PreBuildEvent</CustomBuildBeforeTargets>
-
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(BinDir)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ObjDir)\paks\</IntDir>
     <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PreBuildEvent</CustomBuildBeforeTargets>
   </PropertyGroup>
-
   <ItemDefinitionGroup>
-  <Link>
-    <AdditionalDependencies>;%(AdditionalDependencies)</AdditionalDependencies>
-    <AdditionalLibraryDirectories>$(OutDir);;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-  </Link>
-
-  <CustomBuildStep>
-    <Command>cd ..\..\src\esp\paks
+    <Link>
+      <AdditionalDependencies>;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <CustomBuildStep>
+      <Command>cd ..\..\src\esp\paks
 if not exist "\Users\mob\git\appweb\windows-x86-default\paks\angular\1.2.6" md "\Users\mob\git\appweb\windows-x86-default\paks\angular\1.2.6"
 copy /Y angular\angular-animate.js \Users\mob\git\appweb\windows-x86-default\paks\angular\1.2.6\angular-animate.js
 copy /Y angular\angular-csp.css \Users\mob\git\appweb\windows-x86-default\paks\angular\1.2.6\angular-csp.css
@@ -194,12 +186,10 @@ copy /Y esp-server\templates\esp-server\migration.c \Users\mob\git\appweb\window
 if not exist "\Users\mob\git\appweb\windows-x86-default\paks\esp-server\4.5.0-rc.3\templates\esp-server\src" md "\Users\mob\git\appweb\windows-x86-default\paks\esp-server\4.5.0-rc.3\templates\esp-server\src"
 copy /Y esp-server\templates\esp-server\src\app.c \Users\mob\git\appweb\windows-x86-default\paks\esp-server\4.5.0-rc.3\templates\esp-server\src\app.c
 cd ..\..\..\projects\appweb-windows-default</Command>
-    <Outputs>..\..\$(Cfg)\paks</Outputs>
-  </CustomBuildStep>
+      <Outputs>..\..\$(Cfg)\paks</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
-
   <Import Project="$(VCTargetsPath)Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-
 </Project>
