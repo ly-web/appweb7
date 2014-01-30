@@ -328,9 +328,6 @@ PUBLIC int maSetPlatform(cchar *platformPath)
     cchar           *platform, *dir, *junk, *appwebExe, *path;
     int             next, i;
 
-#if UNUSED
-    int notrace = !platformPath;
-#endif
     appweb = MPR->appwebService;
     if (!platformPath) {
         platformPath = appweb->localPlatform;
@@ -391,13 +388,7 @@ PUBLIC int maSetPlatform(cchar *platformPath)
         return MPR_ERR_BAD_ARGS;
     }
     appweb->platformDir = mprGetAbsPath(appweb->platformDir);
-#if UNUSED
-    if (!notrace) {
-#endif
-        mprLog(1, "Using platform %s at \"%s\"", appweb->platform, appweb->platformDir);
-#if UNUSED
-    }
-#endif
+    mprLog(1, "Using platform %s at \"%s\"", appweb->platform, appweb->platformDir);
     return 0;
 }
 
