@@ -2493,7 +2493,7 @@ uninstall: $(DEPS_97)
 genslink: $(DEPS_98)
 	( \
 	cd src/server; \
-	esp --static --genlink slink.c --flat compile ; \
+	esp --static --genlink slink.c compile ; \
 	)
 
 #

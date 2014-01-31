@@ -2570,7 +2570,7 @@ uninstall: $(DEPS_105)
 #
 genslink: $(DEPS_106)
 	cd src\server
-	esp --static --genlink slink.c --flat compile
+	esp --static --genlink slink.c compile
 	cd ..\..
 
 #

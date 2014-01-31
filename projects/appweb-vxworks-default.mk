@@ -2015,7 +2015,7 @@ uninstall: $(DEPS_95)
 genslink: $(DEPS_96)
 	( \
 	cd src/server; \
-	esp --static --genlink slink.c --flat compile ; \
+	esp --static --genlink slink.c compile ; \
 	)
 
 
