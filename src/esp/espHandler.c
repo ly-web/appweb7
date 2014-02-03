@@ -1745,6 +1745,9 @@ static int unloadEsp(MprModule *mp)
     if (esp->inUse) {
        return MPR_ERR_BUSY;
     }
+    if (mprIsStopping()) {
+        return 0;
+    }
     if ((stage = httpLookupStage(MPR->httpService, mp->name)) != 0) {
         stage->flags |= HTTP_STAGE_UNLOADED;
     }

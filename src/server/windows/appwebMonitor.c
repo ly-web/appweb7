@@ -147,6 +147,7 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
             closeMonitorIcon();
         }
     }
+    mprDestroy(MPR_EXIT_IMMEDIATE);
     return 0;
 }
 
@@ -211,7 +212,7 @@ static long msgProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
     switch (msg) {
     case WM_DESTROY:
     case WM_QUIT:
-        mprTerminate(MPR_EXIT_GRACEFUL, -1);
+        mprShutdown(MPR_EXIT_GRACEFUL, -1);
         break;
     
     case APPWEB_MONITOR_MESSAGE:
