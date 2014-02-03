@@ -2602,6 +2602,9 @@ static bool conditionalDefinition(MaState *state, cchar *key)
     } else if (scaselessmatch(key, "static")) {
         result = state->appweb->staticLink;
 
+    } else if (scaselessmatch(key, "IPv6")) {
+        result = mprHasIPv6();
+
     } else if (state->appweb->skipModules) {
         /* ESP utility needs to be able to load mod_esp */
         if (sstarts(mprGetAppName(), "esp") && scaselessmatch(key, "ESP_MODULE")) {
