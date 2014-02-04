@@ -3349,11 +3349,11 @@ PUBLIC int httpAddAuthStore(cchar *name, HttpVerifyUser verifyUser);
     This boosts performance because subsequent requests that quote the cookie can bypass authentication.
     This API permits the default behavior to be suppressed and thus no cookie or session will be created.
     @param store AuthStore object created via #httpCreateAuthStore.
-    @param noSessions Set to true to suppress creation of sessions or cookies.
+    @param noSession Set to true to suppress creation of sessions or cookies.
     @ingroup HttpAuth
     @stability Prototype
  */
-PUBLIC void httpSetAuthStoreSessions(HttpAuthStore *store, bool noSessions);
+PUBLIC void httpSetAuthStoreSessions(HttpAuthStore *store, bool noSession);
 
 /**
     Set the verify callback for a authentication store
