@@ -3362,12 +3362,12 @@ PUBLIC void mprNop(void *ptr) {
 }
 
 
-#if BIT_UNIX_LIKE
 /*
     This should not be called after mprCreate() as it will orphan the GC and events threads.
  */
 PUBLIC int mprDaemon()
 {
+#if BIT_UNIX_LIKE
     struct sigaction    act, old;
     int                 i, pid, status;
 
@@ -3438,8 +3438,9 @@ PUBLIC int mprDaemon()
         return MPR_ERR_BAD_STATE;
     }
     exit(0);
-}
 #endif
+    return 0;
+}
 
 
 /*

@@ -9529,16 +9529,14 @@ PUBLIC void mprAddTerminator(MprTerminator terminator);
  */
 PUBLIC Mpr *mprCreate(int argc, char **argv, int flags);
 
-#if BIT_UNIX_LIKE || DOXYGEN
 /**
-    Convert the process into a daemon
+    Convert the process into a daemon on unix systems
     @description This converts the current process into a detached child without a parent.
     @returns Zero if successful. Otherwise a negative MPR error code.
     @ingroup Mpr
     @stability Prototype
  */
 PUBLIC int mprDaemon();
-#endif
 
 /**
     Destroy the MPR and all services using the MPR.
