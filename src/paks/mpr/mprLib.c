@@ -3362,6 +3362,7 @@ PUBLIC void mprNop(void *ptr) {
 }
 
 
+#if BIT_UNIX_LIKE
 /*
     This should not be called after mprCreate() as it will orphan the GC and events threads.
  */
@@ -3438,6 +3439,7 @@ PUBLIC int mprDaemon()
     }
     exit(0);
 }
+#endif
 
 
 /*

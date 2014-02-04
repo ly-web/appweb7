@@ -9529,6 +9529,7 @@ PUBLIC void mprAddTerminator(MprTerminator terminator);
  */
 PUBLIC Mpr *mprCreate(int argc, char **argv, int flags);
 
+#if BIT_UNIX_LIKE || DOXYGEN
 /**
     Convert the process into a daemon
     @description This converts the current process into a detached child without a parent.
@@ -9537,6 +9538,7 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags);
     @stability Prototype
  */
 PUBLIC int mprDaemon();
+#endif
 
 /**
     Destroy the MPR and all services using the MPR.
