@@ -53,7 +53,6 @@ typedef struct App {
     char    *pidPath;                   /* Path to the manager pid for this service */
     int     restartCount;               /* Service restart count */
     int     restartWarned;              /* Has user been notified */
-    int     runAsDaemon;                /* Run as a daemon */
     int     servicePid;                 /* Process ID for the service */
     char    *company;                   /* One word company name (lower case) */
     char    *serviceArgs;               /* Args to pass to service */
@@ -67,9 +66,8 @@ static App *app;
 
 /***************************** Forward Declarations ***************************/
 
-static void cleanup();
+static void killService();
 static bool killPid();
-static int  makeDaemon();
 static void manageApp(void *unused, int flags);
 static int  readPid();
 static bool process(cchar *operation, bool quiet);
@@ -83,9 +81,15 @@ static int  writePid(int pid);
 PUBLIC int main(int argc, char *argv[])
 {
     char    *argp, *value;
-    int     err, nextArg, status;
+    int     err, nextArg, flags;
 
-    mprCreate(argc, argv, 0);
+    flags = 0;
+    for (err = 0, nextArg = 1; nextArg < argc && !err; nextArg++) {
+        if (smatch(argv[nextArg], "--daemon")) {
+            flags |= MPR_DAEMON;
+        }
+    }
+    mprCreate(argc, argv, flags);
     app = mprAllocObj(App, manageApp);
     mprAddRoot(app);
     mprAddTerminator(terminating);
@@ -114,8 +118,7 @@ PUBLIC int main(int argc, char *argv[])
             app->continueOnErrors = 1;
 
         } else if (strcmp(argp, "--daemon") == 0) {
-            app->runAsDaemon++;
-
+            /* Processed above */
 #if KEEP
         } else if (strcmp(argp, "--heartBeat") == 0) {
             /*
@@ -246,28 +249,24 @@ PUBLIC int main(int argc, char *argv[])
     if (!app->pidPath) {
         app->pidPath = sjoin(app->pidDir, "/", app->serviceName, ".pid", NULL);
     }
-    if (app->runAsDaemon) {
-        makeDaemon();
-    }
-    status = 0;
     if (getuid() != 0) {
         mprError("Must run with administrator privilege. Use sudo.");
-        status = 1;
+        mprSetExitStatus(1);
 
     } else if (mprStart() < 0) {
         mprError("Cannot start MPR for %s", mprGetAppName());
-        status = 2;
+        mprSetExitStatus(2);
 
     } else {
-        for (; nextArg < argc; nextArg++) {
-            if (!process(argv[nextArg], 0) && !app->continueOnErrors) {
-                status = 3;
+        for (; nextArg < MPR->argc; nextArg++) {
+            if (!process(MPR->argv[nextArg], 0) && !app->continueOnErrors) {
+                mprSetExitStatus(3);
                 break;
             }
         }
     }
-    mprDestroy(MPR_EXIT_DEFAULT);
-    return status;
+    mprDestroy(MPR_EXIT_IMMEDIATE);
+    return mprGetExitStatus();
 }
 
 
@@ -287,6 +286,8 @@ static void manageApp(void *ptr, int flags)
         mprMark(app->serviceProgram);
     }
 }
+
+
 
 
 static void setAppDefaults()
@@ -310,14 +311,14 @@ static void setAppDefaults()
 }
 
 
+/*
+    Called in response to mprShutdown and mprDestroy
+ */
 static void terminating(int state, int how, int status)
 {
-    /*
-        A little unconventional but we do actually kill the managed process here if stopping
-        This is because main() => runService => waitPid
-     */
     if (state >= MPR_STOPPING) {
-        cleanup();
+        /* Must kill here to wake up the main thread waiting on the service */
+        killService();
     }
 }
 
@@ -567,7 +568,7 @@ static void runService()
     int         err, i, status, ac, next;
 
     app->servicePid = 0;
-    atexit(cleanup);
+    atexit(killService);
 
     mprLog(1, "Watching over %s", app->serviceProgram);
 
@@ -668,7 +669,7 @@ static void runService()
 }
 
 
-static void cleanup()
+static void killService()
 {
     if (app->servicePid > 0) {
         mprLog(1, "Killing %s at pid %d with signal %d", app->serviceProgram, app->servicePid, app->signal);
@@ -733,6 +734,7 @@ static int writePid(int pid)
 }
 
 
+#if UNUSED
 /*
     Convert this Manager to a Deaemon
  */
@@ -767,12 +769,13 @@ static int makeDaemon()
         return MPR_ERR;
 
     } else if (pid == 0) {
+        /* Child of first fork */
         if ((pid = fork()) < 0) {
             mprError("Second fork failed");
             exit(127);
 
         } else if (pid > 0) {
-            /* Parent of second child -- must exit */
+            /* Parent of second child -- must exit. This is waited for below */
             exit(0);
         }
 
@@ -789,7 +792,7 @@ static int makeDaemon()
     }
 
     /*
-        Original process waits for first child here. Must get child death notification with a successful exit status
+        Original (parent) process waits for first child here. Must get child death notification with a successful exit status.
      */
     while (waitpid(pid, &status, 0) != pid) {
         if (errno == EINTR) {
@@ -809,6 +812,7 @@ static int makeDaemon()
     }
     exit(0);
 }
+#endif
 
 
 #elif BIT_WIN_LIKE
@@ -1637,7 +1641,7 @@ static void gracefulShutdown(MprTicks timeout)
         }
     }
     if (app->servicePid) {
-        TerminateProcess((HANDLE) app->servicePid, MPR_EXIT_GRACEFUL);
+        TerminateProcess((HANDLE) app->servicePid, 0);
         app->servicePid = 0;
     }
 }
