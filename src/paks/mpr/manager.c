@@ -312,7 +312,11 @@ static void setAppDefaults()
 
 static void terminating(int state, int how, int status)
 {
-    if (state >= MPR_STOPPED) {
+    /*
+        A little unconventional but we do actually kill the managed process here if stopping
+        This is because main() => runService => waitPid
+     */
+    if (state >= MPR_STOPPING) {
         cleanup();
     }
 }
@@ -881,7 +885,7 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *args, int junk2)
     char    *argv[BIT_MAX_ARGC], *argp;
     int     argc, err, nextArg, status;
 
-	argv[0] = BIT_NAME "Manager";
+    argv[0] = BIT_NAME "Manager";
     argc = mprParseArgs(args, &argv[1], BIT_MAX_ARGC - 1) + 1;
 
     mpr = mprCreate(argc, argv, 0);
