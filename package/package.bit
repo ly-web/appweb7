@@ -30,7 +30,7 @@ Bit.load({
                 trace('Info', 'Documents directory ' + bit.prefixes.web)
                 trace('Info', 'Executables directory ' + bit.prefixes.vapp.join('bin'))
                 trace('Info', 'Use \"man appweb\" for usage')
-                let pid = Cmd.ps('appweb')
+                let pid = Cmd.ps(/bin.appweb$/)
                 if (pid && pid.length > 0) {
                     trace('Info', bit.settings.title + ' PID: ' + pid[0].pid)
                 }
