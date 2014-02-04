@@ -102,6 +102,8 @@
                 <li>Add more session hijack protection
                     <a href="https://github.com/embedthis/appweb-4/issues/283">[issue 283]</a></li>
                 <li>Add IPv6 conditional directive IPv6
+                    <a href="https://github.com/embedthis/appweb-4/issues/284">[issue 284]</a></li>
+                <li>Shutdown Issues
                     <a href="https://github.com/embedthis/appweb-4/issues/285">[issue 285]</a></li>
             </ul>
             <h3>Fixes</h3>
@@ -200,7 +202,11 @@
                 <li>The ESP compilation mode is renamed from "flat" to "combined". The two modes are: discrete and combined. When esp 
                 compiles applications it automatically reads the esp.combined property from the application's package.json 
                 file to determine the compilation mode. The esp --flat switch is removed.</li>
-                <li>Support for Windows XP and Vista now deprecated</li>
+                <li>The MprTerminator type has an additional parameter: MPR state. The terminators are invoked twice to
+                notify when the a shutdown is commenced and when the MPR is being destroyed. Terminators should test the
+                state argument against MPR_STOPPING and MPR_STOPPED.</li>
+                <li>Support for Windows XP and Vista deprecated. Contact support@embedthis.com if you require XP or Vista
+                    support.</li>
             </ul>
             <a id="r4.4.4"></a>
             <h2 class="section">Changes in 4.4.4</h2>
