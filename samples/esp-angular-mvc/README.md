@@ -42,9 +42,9 @@ or
 
     esp run
 
-The server listens on port 4000. Browse to: 
+The server listens on port 8080. Browse to: 
  
-     http://localhost:4000/
+     http://localhost:8080/
 
 This will run the application in debug mode which will individually load HTML views, script and Less stylesheets
 as required. If you change the "debug" property in esp.config to "release" and restart the server, the application 
@@ -70,7 +70,7 @@ Code:
 * [db](db) - Database directory for the blog application
 * [db/blog.mdb](db/blog.mdb) - Blog database 
 * [db/migrations](db/migrations) - Database base migrations to create / destroy the database schema
-* [esp.json](esp.json) - ESP configuration file
+* [package.json](package.json) - ESP configuration file
 * [start.bit](start.bit) - Bit build instructions
 * [templates](templates) - ESP generator application templates
 

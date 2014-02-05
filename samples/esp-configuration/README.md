@@ -7,7 +7,7 @@ Please read package.json.
 
 Code:
 ---
-* [esp.json](esp.json) - Sample esp.json configuration file
+* [package.json](package.json) - Sample package.json configuration file
 
 Documentation:
 ---
