@@ -30,10 +30,10 @@ typedef struct App {
     cchar       *listen;                /* Listen endpoint for "esp run" */
     cchar       *platform;              /* Target platform os-arch-profile (lower) */
 
-    int         combined;                   /* Combine all inputs into one, combined output */ 
-    cchar       *combinedPath;              /* Output filename for combined compilations */
-    MprFile     *combinedFile;              /* Output file for combined compilations */
-    MprList     *combinedItems;             /* Items to invoke from Init */
+    int         combined;               /* Combine all inputs into one, combined output */ 
+    cchar       *combinedPath;          /* Output filename for combined compilations */
+    MprFile     *combinedFile;          /* Output file for combined compilations */
+    MprList     *combinedItems;         /* Items to invoke from Init */
 
     MprList     *routes;                /* Routes to process */
     EspRoute    *eroute;                /* Selected ESP route to build */
@@ -2037,9 +2037,34 @@ static void generateScaffold(int argc, char **argv)
 }
 
 
+/*
+    Sort versions in decreasing version order.
+    Ensure that pre-releases are sorted before production releases
+ */
 static int reverseSortFiles(MprDirEntry **d1, MprDirEntry **d2)
 {
-    return -scmp((*d1)->name, (*d2)->name);
+    char    *base1, *base2, *b1, *b2, *p1, *p2;
+    int     rc;
+
+    base1 = mprGetPathBase((*d1)->name);
+    base2 = mprGetPathBase((*d2)->name);
+
+    if (smatch(base1, base2)) {
+        return 0;
+    }
+    b1 = stok(base1, "-", &p1);
+    b2 = stok(base2, "-", &p2);
+    rc = scmp(b1, b2);
+    if (rc == 0) {
+        if (!p1) {
+            rc = 1;
+        } else if (!p2) {
+            rc = -1;
+        } else {
+            rc = scmp(p1, p2);
+        }
+    }
+    return -rc;
 }
 
 
