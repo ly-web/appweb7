@@ -1,154 +1,98 @@
 /*
-    app.less - Layer2 stylesheet
+    app.less - Default ESP angular-mvc style sheet.
  */
 
 body {
-    //  THEME
-    background: #F2F2F2;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.428571429;
+    color: #222233;
+    background-color: #ffffff;
+    margin: 0;
+    padding: 0;
+}
+
+main.container {
+    .content {
+        padding-left: 20px;
+        background: white;
+    }
 }
 
 .navbar {
+    position: relative;
+    z-index: 1000;
+    min-height: 40px;
+    margin: 0;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    background-color: #222222;
+    border-color: #080808;
+    padding: 0;
     .navbar-header {
         width: 200px;
     }
-    i, .glyphicon {
+    .navbar-brand {
+        float: left;
+        width: 200px;
+        padding: 10px 10px;
+        font-size: @font-size-base;
         font-size: 14px;
-    }
-    .form-control {
-        //  MOB - use  navbar-inverse-search-bg etc from theme.
-        background-color: #141414;
-        border-color: #141414;
-        width: 220px;
-        &:focus {
-            background-color: #FFFFFF;
-            -webkit-transition: all .3s linear;
-            //position: relative;
-        }
-    }
-    .glyphicon-search {
-        color: #777777;
-        position: relative;
-        top: 6px;
-        left: -28px;
-    }
-    li {
-        border-left: 1px solid #101417;
-    }
-    .dropdown li {
-        border: none;
+        line-height: 20px;
+        color: #999999;
     }
 }
 
-.home {
-    .container {
-    }
-    .sidebar {
-        -margin-top: -20px;
-        -padding-bottom: 20px;
-        -background: #EEEEEE;
-        padding-top: 40px;
-        width: 140px;
-        color: #888;
-        .glyphicon, i {
-            font-size: 22px;
-            color: #888;
-        }
-        .menu-item {
-            font-size: 14px;
-            color: #888;
-            display: block;
-        }
-    }
-    .content {
-        padding-left: 20px;
-        background: #FFFFFF;
-    }
-    footer {
-        background: #111111;
-        color: #BBBBBB;
-        font-size: 12px;
-        .powered {
-            text-align: right;
-        }
-    }
-}
-
-.modal-backdrop {
-    background-image: url('../assets/background.jpg');
-}
-
-.login {
-    &.modal-dialog {
-        width: 400px;
-    }
-    .modal-header {
-        text-align: center;
-    }
-    .modal-content {
-        padding: 20px;
-    }
-    .forgot-password {
-        text-align: right;
-    }
-    .remember-me {
-        font-size: @font-size-small;
-    }
-}
-
-.log {
-    padding-bottom: 0px;
-    width: 400px;
-    color: @gray;
-    li {
-        padding: 8px 0 8px 0;
-        &:hover {
-            background: @gray-lighter;
-        }
-    }
-    .divider {
-        margin: 0;
-        padding: 0;
-    }
-    .header {
-        padding: 8px 20px 4px 20px;
-        font-weight: bold;
-    }
-    .footer {
-        margin: 12px 0 0 0;
-        background: @gray-lighter;
-    }
-    .icon {
-        font-size: @font-size-large;
-        padding-right: 10px;
-    }
-    .message {
-        padding: 4px 20px 4px 20px;
-        font-size: @font-size-small;
-        text-decoration: none;
-        color: @gray;
-    }
-    .time {
-        //  THEME
-        float: right;
-        padding-right: 20px;
-        font-style: italic;
-        font-size: 11px;
-    }
-}
-
-[ng-click] {
+.btn {
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.428571429;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
     cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: 4px;
 }
 
-UNUSED.shadow {
-    .drop-shadow();
+.btn-primary {
+    color: #ffffff;
+    background-color: #428bca;
+    border-color: #357ebd;
 }
 
+.col-md-10 {
+    width: 83.33333333333334%;
+}
 
-TABLE_ONLY.collapse {
-    :empty {
-        display: none;
-    }
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-control {
+    display: block;
+    width: 100%;
+    height: 34px;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.428571429;
+    color: #555555;
+    vertical-align: middle;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+       -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    -webkit-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+    -webkit-transition: all border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s ease-out;
+       -moz-transition: all border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s ease-out;
+         -o-transition: all border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s ease-out;
+            transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+    transition: all border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s ease-out;
 }
 
 .form-error {
@@ -157,11 +101,10 @@ TABLE_ONLY.collapse {
     padding-bottom: 10px;
     text-indent: 10px;
     border: 2px solid @error-color;
-    .rounded(6px);
-    .drop-shadow();
     h2 {
         margin: 0 0 10px 0;
-        font-size: 12pt;
+        padding: 10px 0 10px 0;
+        font-size: @font-size-small;
         color: white;
         background-color: @error-color;
     }
@@ -174,20 +117,14 @@ TABLE_ONLY.collapse {
     border: 2px solid @error-color !important;
 }
 
-//  MOB - can this be nested?
 .feedback {
     position: absolute;
     top: 0;
     left: 50%;
     width: 500px;
     height: 41px;
-    margin: 0;
-    margin-left: -250px;
+    margin: 0 0 0 -250px;
     padding: 8px 3px 3px 3px;
-    font-size: 110%;
-    .rounded(7px);
-    .border-radius(0, 7px, 7px, 0);
-    .drop-shadow();
     color: white;
     text-align: center;
     z-index: 2000;
@@ -198,22 +135,43 @@ TABLE_ONLY.collapse {
 
 .feedback-error {
     .feedback();
-    .gradient(@feedback-error-background, lighten(@feedback-error-background, 10%), darken(@feedback-error-background, 10%));
     font-weight: bold;
 }
 
 .feedback-warning {
     .feedback();
-    .gradient(@feedback-warning-background, lighten(@feedback-warning-background, 10%), darken(@feedback-warning-background, 10%));
 }
 
 .feedback-inform {
     .feedback();
-    .gradient(@feedback-inform-background, lighten(@feedback-inform-background, 10%), darken(@feedback-inform-background, 10%));
     opacity: 0;
     top: -100px;
     &.ng-hide-remove {
         -webkit-animation: feedback-transition ease-in 10s;
+    }
+}
+
+.table-bordered, td, th {
+    border: 1px solid #DDDDDD;
+    padding: 5px;
+}
+
+.table-striped > tbody > tr:nth-child(odd) > td,
+.table-striped > tbody > tr:nth-child(odd) > th {
+    background-color: #f5f5f5;
+}
+
+a {
+    text-decoration: none;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+    margin-bottom: 20px;
+    th {
+        text-align: left;
     }
 }
 
@@ -224,6 +182,6 @@ TABLE_ONLY.collapse {
     100% { opacity: 0.0; top: -100px; }
 }
 
-_UNUSED_td.centered {
-    text-align: center;
+[ng-click],[esp-click],[onclick] {
+    cursor: pointer;
 }

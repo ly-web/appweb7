@@ -117,7 +117,7 @@ PUBLIC void ediAddFieldError(struct EdiRec *rec, cchar *field, cchar *fmt, ...);
 #define EDI_KEY             0x2         /**< Field flag -- Column is the ID key */
 #define EDI_INDEX           0x4         /**< Field flag -- Column is indexed */
 #define EDI_FOREIGN         0x8         /**< Field flag -- Column is a foreign key */
-#define EDI_NOT_NULL        0x8         /**< Field flag -- Column must not be null (not implemented) */
+#define EDI_NOT_NULL        0x10        /**< Field flag -- Column must not be null (not implemented) */
  
 /**
     EDI Record field structure
@@ -145,6 +145,7 @@ typedef struct EdiRec {
     cchar           *tableName;         /**< Base table name for record */
     cchar           *id;                /**< Record key ID */
     int             nfields;            /**< Number of fields in record */
+    int             index;              /**< Grid index for iteration */
     EdiField        fields[ARRAY_FLEX]; /**< Field records */
 } EdiRec;
 
@@ -160,8 +161,8 @@ typedef struct EdiRec {
 typedef struct EdiGrid {
     struct Edi      *edi;               /**< Database handle */
     cchar           *tableName;         /**< Base table name for grid */
-    int             nrecords;           /**< Number of records in grid */
     int             flags;              /**< Grid flags */
+    int             nrecords;           /**< Number of records in grid */
     EdiRec          *records[ARRAY_FLEX];/**< Grid records */
 } EdiGrid;
 
@@ -173,13 +174,7 @@ typedef struct EdiGrid {
 #define EDI_NO_SAVE         0x4         /**< Prevent saving to disk */
 #define EDI_LITERAL         0x8         /**< Literal schema in ediOpen source parameter */
 #define EDI_SUPPRESS_SAVE   0x10        /**< Temporarily suppress auto-save */
-
-#if KEEP
-/*
-    Database flags
- */
-#define EDI_NOSAVE      0x1             /**< ediOpen flag -- Don't save the database on modifications */
-#endif
+#define EDI_PRIVATE         0x20        /**< Create private clone of the database */
 
 typedef int (*EdiMigration)(struct Edi *db);
 
@@ -206,6 +201,8 @@ PUBLIC void ediDefineMigration(struct Edi *edi, EdiMigration forw, EdiMigration 
 typedef struct Edi {
     struct EdiProvider *provider;       /**< Database provider */
     MprHash         *schemaCache;       /**< Cache of table schema in JSON */
+    MprHash         *validations;       /**< Validations */
+    MprMutex        *mutex;             /**< Multithread lock */
     cchar           *path;              /**< Database path */
     int             flags;              /**< Database flags */
     EdiMigration    forw;               /**< Forward migration callback */
@@ -222,7 +219,6 @@ typedef struct EdiProvider {
     int       (*addColumn)(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags);
     int       (*addIndex)(Edi *edi, cchar *tableName, cchar *columnName, cchar *indexName);
     int       (*addTable)(Edi *edi, cchar *tableName);
-    int       (*addValidation)(Edi *edi, cchar *tableName, cchar *columnName, EdiValidation *vp);
     int       (*changeColumn)(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags);
     void      (*close)(Edi *edi);
     EdiRec    *(*createRec)(Edi *edi, cchar *tableName);
@@ -230,7 +226,7 @@ typedef struct EdiProvider {
     MprList   *(*getColumns)(Edi *edi, cchar *tableName);
     int       (*getColumnSchema)(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid);
     MprList   *(*getTables)(Edi *edi);
-    int       (*getTableSchema)(Edi *edi, cchar *tableName, int *numRows, int *numCols);
+    int       (*getTableDimensions)(Edi *edi, cchar *tableName, int *numRows, int *numCols);
     int       (*load)(Edi *edi, cchar *path);
     int       (*lookupField)(Edi *edi, cchar *tableName, cchar *fieldName);
     Edi       *(*open)(cchar *path, int flags);
@@ -247,7 +243,6 @@ typedef struct EdiProvider {
     int       (*save)(Edi *edi);
     int       (*updateField)(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName, cchar *value);
     int       (*updateRec)(Edi *edi, EdiRec *rec);
-    bool      (*validateRec)(Edi *edi, EdiRec *rec);
 } EdiProvider;
 
 /*************************** EDI Interface Wrappers **************************/
@@ -281,7 +276,8 @@ PUBLIC int ediAddIndex(Edi *edi, cchar *tableName, cchar *columnName, cchar *ind
 /**
     Add a table to a database
     @param edi Database handle
-    @param tableName Database table name
+    @param tableName Database table name. Table names should be singular. Certain routines like ediJoin rely on being
+    able to map foreign key fields of the form NameId by converting the Name to a database table.
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup Edi
     @stability Evolving
@@ -294,6 +290,7 @@ PUBLIC int ediAddTable(Edi *edi, cchar *tableName);
         using builtin validators.
     @param edi Database handle
     @param name Validation name. Select from: 
+        @arg banned -- to validate field data against a regular express for banned content.
         @arg boolean -- to validate field data as "true" or "false"
         @arg date -- to validate field data as a date or time.
         @arg format -- to validate field data against a regular expression supplied in the "data" argument
@@ -412,6 +409,43 @@ PUBLIC int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int
 PUBLIC cchar *ediGetRecSchemaAsJson(EdiRec *rec);
 
 /**
+    Get the next field in a record
+    This is used as an iterator. For the first call, set fp to NULL.
+    @param rec Record whose fields are iterated
+    @param fp Field pointer
+    @param offset Initial offset. Set to 1 to step over the ID field.
+    @return The next field object. Returns NULL after the last field.
+    @ingroup EdiRec
+    @stability Prototype
+ */
+PUBLIC EdiField *ediGetNextField(EdiRec *rec, EdiField *fp, int offset);
+
+/**
+    Get the next record in a grid
+    This is used as an iterator. For the first call, set rec to NULL.
+    @param grid Grid whose records are iterated
+    @param rec Record pointer
+    @return The next record object. Returns NULL after the last record.
+    @ingroup EdiGrid
+    @stability Prototype
+ */
+PUBLIC EdiRec *ediGetNextRec(EdiGrid *grid, EdiRec *rec);
+
+/**
+    Get table dimensions information.
+    @param edi Database handle
+    @param tableName Database table name
+    @param numRows Output parameter to receive the number of rows in the table
+        Set to null if this data is not required.
+    @param numCols Output parameter to receive the number of columns in the table
+        Set to null if this data is not required.
+    @return Zero if successful. Otherwise a negative MPR error code.
+    @ingroup Edi
+    @stability Evolving
+ */
+PUBLIC int ediGetTableDimensions(Edi *edi, cchar *tableName, int *numRows, int *numCols);
+
+/**
     Get a table schema and format as JSON
     @param edi Database handle
     @param tableName Name of table to examine
@@ -496,6 +530,15 @@ PUBLIC EdiProvider *ediLookupProvider(cchar *providerName);
     @stability Evolving
  */
 PUBLIC Edi *ediOpen(cchar *source, cchar *provider, int flags);
+
+/**
+    Clone a database
+    @param edi Database to clone
+    @return A copy of the database
+    @ingroup Edi
+    @stability Internal
+ */
+PUBLIC Edi *ediClone(Edi *edi);
 
 /**
     Run a query.
@@ -715,18 +758,22 @@ PUBLIC EdiRec *ediSetField(EdiRec *rec, cchar *fieldName, cchar *value);
 PUBLIC EdiRec *ediSetFields(EdiRec *rec, MprJson *data);
 
 /**
-    Get table schema information.
+    Control whether the database accepts updates.
     @param edi Database handle
-    @param tableName Database table name
-    @param numRows Output parameter to receive the number of rows in the table
-        Set to null if this data is not required.
-    @param numCols Output parameter to receive the number of columns in the table
-        Set to null if this data is not required.
-    @return Zero if successful. Otherwise a negative MPR error code.
+    @param on Set to true to make the database readonly, i.e. to disable all updates.
     @ingroup Edi
-    @stability Evolving
+    @stability Prototype
  */
-PUBLIC int ediGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numCols);
+PUBLIC void ediSetReadonly(Edi *edi, bool on);
+
+/**
+    Create a private database for each client.
+    @param edi Database handle
+    @param on Set to true to clone the database for each connected client.
+    @ingroup Edi
+    @stability Internal
+ */
+PUBLIC void ediSetPrivate(Edi *edi, bool on);
 
 /**
     Write a value to a database table field
@@ -790,6 +837,30 @@ PUBLIC EdiGrid *ediCreateBareGrid(Edi *edi, cchar *tableName, int nrows);
     @stability Evolving
  */
 PUBLIC EdiRec *ediCreateBareRec(Edi *edi, cchar *tableName, int nfields);
+
+/**
+    Filter the fields of a grid
+    @param grid Grid to modify and filter
+    @param fields Space separated list of record field names 
+    @param include Set to true to interpret the names as fields to include. If false, interpret the names
+        as fields to reject.
+    @return The filtered grid. Same reference as the input grid.
+    @ingroup EdiGrid
+    @stability Internal
+ */
+PUBLIC EdiGrid *ediFilterGridFields(EdiGrid *grid, cchar *fields, int include);
+
+/**
+    Filter the fields of a record
+    @param rec Record to modify and filter
+    @param fields Space separated list of record field names 
+    @param include Set to true to interpret the names as fields to include. If false, interpret the names
+        as fields to reject.
+    @return The filtered record. Same reference as the input record.
+    @ingroup EdiRec
+    @stability Internal
+ */
+PUBLIC EdiRec *ediFilterRecFields(EdiRec *rec, cchar *fields, int include);
 
 /**
     Format a field value.
@@ -971,7 +1042,7 @@ PUBLIC void sdbInit();
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

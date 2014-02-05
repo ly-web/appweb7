@@ -2,13 +2,13 @@
 #
 #	uninstall: Appweb uninstall script
 #
-#	Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+#	Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 #
 #	Usage: uninstall [configFile]
 #
 ################################################################################
 #
-#	Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+#	Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 #	The latest version of this code is available at http://embedthis.com
 #
 #	This software is open source; you can redistribute it and/or modify it 
@@ -35,7 +35,6 @@ PRODUCT="${settings.product}"
 COMPANY="${settings.company}"
 NAME="${settings.title}"
 VERSION="${settings.version}"
-NUMBER="${settings.buildNumber}"
 OS="${platform.os}"
 
 ROOT_PREFIX="${prefixes.root}"
@@ -215,6 +214,9 @@ postClean() {
     rm -f "${APP_PREFIX}/latest"
     cleanDir "${APP_PREFIX}"
     cleanDir "${INC_PREFIX}/${PRODUCT}"
+    if [ $OS = macosx ] ; then
+        pkgutil --forget com.${COMPANY}.${PRODUCT}.pkg 2>/dev/null
+    fi
 }
 
 
@@ -290,7 +292,7 @@ setup() {
         exit 0
     fi
     binDir=${binDir:-$APP_PREFIX}
-    [ "$headless" != 1 ] && echo -e "\n$NAME ${VERSION}-${NUMBER} Removal\n"
+    [ "$headless" != 1 ] && echo -e "\n$NAME ${VERSION} Removal\n"
 }
 
 

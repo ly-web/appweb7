@@ -325,11 +325,10 @@ PUBLIC int maSetPlatform(cchar *platformPath)
 {
     MaAppweb        *appweb;
     MprDirEntry     *dp;
-    cchar           *platform, *dir, *junk, *appwebExe;
-    int             next, i, notrace;
+    cchar           *platform, *dir, *junk, *appwebExe, *path;
+    int             next, i;
 
     appweb = MPR->appwebService;
-    notrace = !platformPath;
     if (!platformPath) {
         platformPath = appweb->localPlatform;
     }
@@ -337,7 +336,7 @@ PUBLIC int maSetPlatform(cchar *platformPath)
     
     platform = mprGetPathBase(platformPath);
 
-    if (mprPathExists(platformPath, X_OK) && mprIsPathDir(platformPath)) {
+    if (mprPathExists(mprJoinPath(platformPath, "appweb" BIT_EXE), X_OK)) {
         appweb->platform = platform;
         appweb->platformDir = sclone(platformPath);
 
@@ -371,9 +370,12 @@ PUBLIC int maSetPlatform(cchar *platformPath)
         for (i = 0; !mprSamePath(dir, "/") && i < 64; i++) {
             for (ITERATE_ITEMS(mprGetPathFiles(dir, 0), dp, next)) {
                 if (dp->isDir && sstarts(mprGetPathBase(dp->name), platform)) {
-                    appweb->platform = mprGetPathBase(dp->name);
-                    appweb->platformDir = mprJoinPath(dir, dp->name);
-                    break;
+                    path = mprJoinPath(dir, dp->name);
+                    if (mprPathExists(mprJoinPath(path, "bin/appweb" BIT_EXE), X_OK)) {
+                        appweb->platform = mprGetPathBase(dp->name);
+                        appweb->platformDir = mprJoinPath(dir, dp->name);
+                        break;
+                    }
                 }
             }
             dir = mprGetPathParent(dir);
@@ -386,9 +388,7 @@ PUBLIC int maSetPlatform(cchar *platformPath)
         return MPR_ERR_BAD_ARGS;
     }
     appweb->platformDir = mprGetAbsPath(appweb->platformDir);
-    if (!notrace) {
-        mprLog(1, "Using platform %s at \"%s\"", appweb->platform, appweb->platformDir);
-    }
+    mprLog(1, "Using platform %s at \"%s\"", appweb->platform, appweb->platformDir);
     return 0;
 }
 
@@ -601,7 +601,7 @@ PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
     } else {
         path = sclone(libname);
     }
-    fmt(entryPoint, sizeof(entryPoint), "ma%sInit", name);
+    fmt(entryPoint, sizeof(entryPoint), "ma%sInit", stitle(name));
     entryPoint[2] = toupper((uchar) entryPoint[2]);
     if ((module = mprCreateModule(name, path, entryPoint, MPR->httpService)) == 0) {
         return 0;
@@ -622,7 +622,7 @@ PUBLIC HttpAuth *maGetDefaultAuth(MaServer *server)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

@@ -2,7 +2,7 @@ ESP Controller Sample
 ===
 
 This sample shows how to create and configure ESP controllers. The controller is in 
-controller.c. It registers one action that is run in response to the URI: /test/hello.
+service.c. It registers one action that is run in response to the URI: /test/hello.
 
 Requirements
 ---
@@ -23,13 +23,13 @@ The server listens on port 8080. Browse to:
 
 This then returns "Hello World" to the client.
 
-If you modify the controller.c it will be automatically recompiled and reloaded when 
+If you modify the service.c it will be automatically recompiled and reloaded when 
 next accessed.
 
 Code:
 ---
-* [controller.c](controller.c) - ESP controller source
 * [appweb.conf](appweb.conf) - Appweb server configuration file
+* [service.c](service.c) - ESP controller source
 * [start.bit](start.bit) - Bit build instructions
 
 Documentation:

@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.4.4 Documentation</title>
+    <title>Embedthis Appweb 4.5.0-rc.3 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.4.4</div>
+                <div class="version">Embedthis Appweb 4.5.0-rc.3</div>
             </div>
         </div>
         <div class="crumbs">
@@ -38,6 +38,8 @@
             <ul>
                 <li><a href="#action">Action</a></li>
                 <li><a href="#addType">AddType</a></li>
+                <li><a href="#cgiEscape">CgiEscape</a></li>
+                <li><a href="#cgiPrefix">CgiPrefix</a></li>
                 <li><a href="#chroot">Chroot</a></li>
                 <li><a href="#groupAccount">GroupAccount</a></li>
                 <li><a href="#home">Home</a></li>
@@ -130,6 +132,78 @@
                             has been specified for this mime type, the associate program will be run using the CGI
                             protocol to process the URL.</p>
                         </td>
+                    </tr>
+                </tbody>
+            </table>
+            <a id="cgiEscape"></a>
+            <h2>CgiEscape</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Escape environment variables passed to CGI programs for special shell characters.
+                        If using shell scripts as CGI programs, this directive will escape all special 
+                            shell characters to make scripting easier and more secure. This will escape 
+                           (with \) the following characters: &;`'\"|*?~<>^()[]{}$\\\n and also on windows \r%.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>CgiEscape on|off</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>CgiEscape on</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>Shell script variables should always be uses inside quotes. 
+                            For example: use "${filename}" not $filename. This permits filenames with spaces and special 
+                            characters from being incorrectly interpreted by the shell.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="security">Security</td>
+                        <td>Failing to escape CGI variables and then using $name to reference variables can cause
+                            a security vulnerability by permitting user supplied data to inject shell special characters
+                            into the variable value. This will then be interpreted by the shell when the variable is 
+                            referenced. </td>
+                    </tr>
+                </tbody>
+            </table> 
+            <a id="cgiPrefix"></a>
+            <h2>CgiPrefix</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define a prefix to prepend to URI query parameters and form variables that are passed to
+                        CGI programs in the environment.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>CgiPrefix String</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>CgiPrefix CGI_</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>If using shell scripts as CGI programs, you should ensure important shell variables like IFS, SHELL and PATH are not overwritten or corrupted by user supplied URI query or form variables. Use a prefix to ensure parameters have their own namespace. The default appweb.conf defines the "CGI_" prefix.</td>
+                    </tr>
+                    <tr>
+                        <td class="security">Security</td>
+                        <td>Failing to define 
+                            When coupled with lowering the privilege for the <a href="#userAccount">UserAccount</a> and 
+                            <a href="#groupAccount">GroupAccount</a> potential security exposures can be minimized.</td>
                     </tr>
                 </tbody>
             </table>
@@ -477,7 +551,7 @@
 <!-- BeginDsi "dsi/bottom.html" -->
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2013.
+            <a href="../../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2014.
             All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>

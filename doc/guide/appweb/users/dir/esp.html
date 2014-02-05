@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.4.4 Documentation</title>
+    <title>Embedthis Appweb 4.5.0-rc.3 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.4.4</div>
+                <div class="version">Embedthis Appweb 4.5.0-rc.3</div>
             </div>
         </div>
         <div class="crumbs">
@@ -44,6 +44,7 @@
                 <li><a href="#espKeepSource">EspKeepSource</a></li>
                 <li><a href="#espLink">EspLink</a></li>
                 <li><a href="#espLoad">EspLoad</a></li>
+                <li><a href="#espPermResource">EspPermResource</a></li>
                 <li><a href="#espResource">EspResource</a></li>
                 <li><a href="#espResourceGroup">EspResourceGroup</a></li>
                 <li><a href="#espRoute">EspRoute</a></li>
@@ -238,7 +239,7 @@ EspDb sdb://test.sdb</pre>
                             <ul>
                                 <li>mdb &mdash; The MDB is the Memory Database and it provides a high-performance,
                                 non-SQL,  in-memory data store.
-                                See ... <!-- MOB --> for more details.</li>
+                                See ... <!-- TODO --> for more details.</li>
                                 <li>sdb &mdash; This requests the SQLite database</li>
                             </ul>
                             <p>The database path can be a relative or absolute path. If relative, it will be relative to
@@ -250,7 +251,7 @@ EspDb sdb://test.sdb</pre>
                 </tbody>
             </table>
             <a id="espDir"></a>
-            <h2>EspDb</h2>
+            <h2>EspDir</h2>
             <table class="directive" title="directive">
                 <thead>
                     <tr>
@@ -483,6 +484,50 @@ EspLoad blog cache/app.dylib
                             configuration file to be used across multiple platforms.</p>
                             <p>See the <a href="../../../esp/users/generator.html">ESP Generator</a> documentation for more
                             details.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <a id="espPermResource"></a>
+            <h2>EspPermResource</h2>
+            <table class="directive" title="directive">
+                <thead>
+                    <tr>
+                        <th class="pivot">Description</th>
+                        <th>Create a set of routes for a permanent resource</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>EspPermResource name [, name] ...</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, Virtual host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>
+<pre>EspPermResource system profile status</pre>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The EspPermResource directive creates a set of routes suitable for a permanent resource.
+                            The routes created are <a href="http://en.wikipedia.org/wiki/Representational_state_transfer#RESTful_web_services">RESTful</a> routes that are designed to mesh well with ESP MVC applications. They provide clean URIs
+                            that allow the basic operations on a resource.</p>
+                            For example, this command will generate the following routes:
+<pre>EspPermResource system
+LogRoutes
+# Prints ...
+<b>
+Name            Method   Pattern                         Target
+/system/get     GET      ^/{controller=system}(/)*$      system-get    
+/system/update  POST     ^/{controller=system}(/)*$      system-update 
+/system/default GET,POST ^/{controller=system}/{action}$ system-$2 
+</b>
+</pre>
                         </td>
                     </tr>
                 </tbody>
@@ -773,7 +818,7 @@ Name               Method   Pattern
 <!-- BeginDsi "dsi/bottom.html" -->
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2013.
+            <a href="../../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2014.
             All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>

@@ -31,7 +31,6 @@ extern "C" {
     Per column structure
  */
 typedef struct MdbCol {
-    MprList         *validations;       /* List of column validations */
     char            *name;              /* Column name */
     int             type;               /* Column type */
     int             flags;              /* Column flags */
@@ -80,7 +79,6 @@ typedef struct MdbTable {
  */
 typedef struct Mdb {
     Edi             edi;                /**< EDI database interface structure */
-    MprMutex        *mutex;             /**< Multithread lock for Schema modifications only */
     MprList         *tables;            /**< List of tables */
 
     /*
@@ -90,6 +88,7 @@ typedef struct Mdb {
     MdbCol          *loadCol;           /* Current column */
     MdbRow          *loadRow;           /* Current row */
     MprList         *loadStack;         /* State stack */
+    MprHash         *validations;       /**< Validations */
     int             loadCid;            /* Current column index to load */
     int             loadState;          /* Current state */
     int             loadNcols;          /* Expected number of cols */
@@ -107,7 +106,7 @@ typedef struct Mdb {
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

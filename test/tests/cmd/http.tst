@@ -13,7 +13,7 @@ function run(args): String {
     try {
         let cmd = Cmd(command + args)
         if (cmd.status != 0) {
-            //  MOB - temp for http
+            //  TODO - temp for http
             if (cmd.status < 0 && Config.OS == 'windows') {
                 assert(true)
                 return cmd.response

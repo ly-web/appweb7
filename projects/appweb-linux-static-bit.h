@@ -7,14 +7,20 @@
 
 
 /* Settings */
+#ifndef BIT_AUTHOR
+    #define BIT_AUTHOR "Embedthis Software"
+#endif
 #ifndef BIT_BIT
-    #define BIT_BIT "0.8.7"
+    #define BIT_BIT "0.9.3"
 #endif
 #ifndef BIT_BUILD_NUMBER
-    #define BIT_BUILD_NUMBER "0"
+    #define BIT_BUILD_NUMBER 0
 #endif
 #ifndef BIT_COMPANY
-    #define BIT_COMPANY "Embedthis"
+    #define BIT_COMPANY "embedthis"
+#endif
+#ifndef BIT_COMPATIBLE
+    #define BIT_COMPATIBLE "4.5.0"
 #endif
 #ifndef BIT_CONFIG_FILE
     #define BIT_CONFIG_FILE "appweb.conf"
@@ -25,8 +31,11 @@
 #ifndef BIT_DEPTH
     #define BIT_DEPTH 1
 #endif
+#ifndef BIT_DESCRIPTION
+    #define BIT_DESCRIPTION "Embedthis Appweb Embedded Web Server"
+#endif
 #ifndef BIT_DISCOVER
-    #define BIT_DISCOVER "cgi,dir,doxygen,dsi,esp,man,man2html,mdb,pmaker,ssl,utest,zip"
+    #define BIT_DISCOVER "cgi,dir,doxygen,dsi,esp,gzip,htmlmin,man,man2html,mdb,ngmin,pak,pmaker,recess,ssl,uglifyjs,utest,zip"
 #endif
 #ifndef BIT_EJS_DB
     #define BIT_EJS_DB 1
@@ -36,6 +45,9 @@
 #endif
 #ifndef BIT_EJS_MAPPER
     #define BIT_EJS_MAPPER 1
+#endif
+#ifndef BIT_EJS_SHELL
+    #define BIT_EJS_SHELL 1
 #endif
 #ifndef BIT_EJS_TAR
     #define BIT_EJS_TAR 1
@@ -51,6 +63,9 @@
 #endif
 #ifndef BIT_EJS_ONE_MODULE
     #define BIT_EJS_ONE_MODULE 1
+#endif
+#ifndef BIT_ESP_LEGACY
+    #define BIT_ESP_LEGACY 1
 #endif
 #ifndef BIT_EST_CAMELLIA
     #define BIT_EST_CAMELLIA 0
@@ -75,6 +90,9 @@
 #endif
 #ifndef BIT_EST_XTEA
     #define BIT_EST_XTEA 0
+#endif
+#ifndef BIT_EXTRA_SECURITY
+    #define BIT_EXTRA_SECURITY 0
 #endif
 #ifndef BIT_HAS_ATOMIC
     #define BIT_HAS_ATOMIC 0
@@ -136,6 +154,12 @@
 #ifndef BIT_MPR_MANAGER
     #define BIT_MPR_MANAGER "appman"
 #endif
+#ifndef BIT_MPR_SSL_RENEGOTIATE
+    #define BIT_MPR_SSL_RENEGOTIATE 1
+#endif
+#ifndef BIT_NAME
+    #define BIT_NAME "appweb"
+#endif
 #ifndef BIT_PACKS
     #define BIT_PACKS "bits/packs"
 #endif
@@ -167,7 +191,7 @@
     #define BIT_TUNE "size"
 #endif
 #ifndef BIT_VERSION
-    #define BIT_VERSION "4.4.4"
+    #define BIT_VERSION "4.5.0-rc.3"
 #endif
 #ifndef BIT_WARN64TO32
     #define BIT_WARN64TO32 0
@@ -196,7 +220,7 @@
     #define BIT_APP_PREFIX "/usr/local/lib/appweb"
 #endif
 #ifndef BIT_VAPP_PREFIX
-    #define BIT_VAPP_PREFIX "/usr/local/lib/appweb/4.4.4"
+    #define BIT_VAPP_PREFIX "/usr/local/lib/appweb/4.5.0-rc.3"
 #endif
 #ifndef BIT_BIN_PREFIX
     #define BIT_BIN_PREFIX "/usr/local/bin"
@@ -229,7 +253,7 @@
     #define BIT_CACHE_PREFIX "/var/spool/appweb/cache"
 #endif
 #ifndef BIT_SRC_PREFIX
-    #define BIT_SRC_PREFIX "appweb-4.4.4"
+    #define BIT_SRC_PREFIX "appweb-4.5.0-rc.3"
 #endif
 
 /* Suffixes */
@@ -268,13 +292,13 @@
     #define BIT_MAJOR_VERSION 4
 #endif
 #ifndef BIT_MINOR_VERSION
-    #define BIT_MINOR_VERSION 4
+    #define BIT_MINOR_VERSION 5
 #endif
 #ifndef BIT_PATCH_VERSION
-    #define BIT_PATCH_VERSION 4
+    #define BIT_PATCH_VERSION 0-rc
 #endif
 #ifndef BIT_VNUM
-    #define BIT_VNUM 400040004
+    #define BIT_VNUM 400050000-rc
 #endif
 
 /* Packs */
@@ -302,6 +326,12 @@
 #ifndef BIT_PACK_EST
     #define BIT_PACK_EST 1
 #endif
+#ifndef BIT_PACK_GZIP
+    #define BIT_PACK_GZIP 1
+#endif
+#ifndef BIT_PACK_HTMLMIN
+    #define BIT_PACK_HTMLMIN 1
+#endif
 #ifndef BIT_PACK_LIB
     #define BIT_PACK_LIB 1
 #endif
@@ -323,8 +353,14 @@
 #ifndef BIT_PACK_NANOSSL
     #define BIT_PACK_NANOSSL 0
 #endif
+#ifndef BIT_PACK_NGMIN
+    #define BIT_PACK_NGMIN 1
+#endif
 #ifndef BIT_PACK_OPENSSL
     #define BIT_PACK_OPENSSL 0
+#endif
+#ifndef BIT_PACK_PAK
+    #define BIT_PACK_PAK 1
 #endif
 #ifndef BIT_PACK_PCRE
     #define BIT_PACK_PCRE 1
@@ -335,6 +371,9 @@
 #ifndef BIT_PACK_PMAKER
     #define BIT_PACK_PMAKER 1
 #endif
+#ifndef BIT_PACK_RECESS
+    #define BIT_PACK_RECESS 1
+#endif
 #ifndef BIT_PACK_SDB
     #define BIT_PACK_SDB 1
 #endif
@@ -343,6 +382,9 @@
 #endif
 #ifndef BIT_PACK_SSL
     #define BIT_PACK_SSL 1
+#endif
+#ifndef BIT_PACK_UGLIFYJS
+    #define BIT_PACK_UGLIFYJS 1
 #endif
 #ifndef BIT_PACK_UTEST
     #define BIT_PACK_UTEST 1

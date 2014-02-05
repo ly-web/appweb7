@@ -29,7 +29,6 @@ Code:
 * [index.esp](index.esp) - ESP page to serve. Uses layout.esp as a template.
 * [layout.esp](index.esp) - ESP layout template
 * [start.bit](start.bit) - Bit build instructions
-* [cache](cache) - Compiled ESP modules 
 
 Documentation:
 ---
@@ -41,7 +40,8 @@ Documentation:
 
 See Also:
 ---
-* [esp-mvc - ESP MVC Application](../esp-mvc/README.md)
+* [esp-angular-mvc - ESP Angular MVC Application](../esp-angular-mvc/README.md)
+* [esp-html-mvc - ESP MVC Application](../esp-html-mvc/README.md)
 * [esp-page - ESP Page](../esp-page/README.md)
 * [secure-server - Secure server](../secure-server/README.md)
 * [simple-server - Simple server and embedding API](../simple-server/README.md)

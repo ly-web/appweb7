@@ -1,0 +1,30 @@
+{
+    "name": "esp-html-mvc",
+    "description": "ESP Server-Side HTML MVC Sample",
+    "version": "1.0.0",
+    "esp": {
+        "auth": "app",
+        "scripts": {
+            "less": [ "*" ]
+        },
+        "serverPrefix": "/do",
+        "formats": {
+            "date": "yyyy-MM-dd",
+            "float": 2
+        },
+        "redirect": "secure"
+        "server": {
+            "database": "mdb://blog.mdb"
+        }
+    },
+    "generate": {
+        "top": "html-mvc",
+        "scaffold": true,
+        "clientModel": false,
+        "clientController": false,
+        "clientView": false,
+        "controller": true,
+        "migration": true,
+        "view": false
+    }
+}

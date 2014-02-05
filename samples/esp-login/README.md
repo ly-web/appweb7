@@ -1,13 +1,22 @@
 Esp-login Sample
 ===
 
-This sample shows how to configure form-based login using ESP. This configuration uses:
+This sample shows how to configure a simple form-based login using ESP. 
+Note: this does not implement typical UI elements of warning the user, other than a basic alert.
+
+This sample uses:
 
 * SSL for encryption of traffic
 * Redirection of all traffic over SSL
 * Login authentication 
+* Blowfish encryption for secure password hashing
 
 This sample uses a self-signed certificate. In your application, you will need a real certificate.
+
+Notes:
+The password database is kept in a flat file called auth.conf. The password was created via:
+
+    authpass --cipher blowfish --password pass5 auth.conf example.com ralph
 
 Requirements
 ---
@@ -27,7 +36,9 @@ The server listens on port 8080 for HTTP traffice and 4443 for SSL. Browse to:
      http://localhost:8080/
 
 This will redirect to SSL (you will get a warning due to the self-signed certificate).
-Continue and you will be prompted to login. The test username/password is joshua/pass1.
+Continue and you will be prompted to login. The test username/password is:
+
+    ralph/pass5
 
 Code:
 ---

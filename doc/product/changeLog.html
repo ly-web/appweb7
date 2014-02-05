@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.4.4 Documentation</title>
+    <title>Embedthis Appweb 4.5.0-rc.3 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.4.4</div>
+                <div class="version">Embedthis Appweb 4.5.0-rc.3</div>
             </div>
         </div>
         <div class="crumbs">
@@ -35,7 +35,7 @@
         <div class="contentRight">
             <h1>Quick Nav</h1>
             <ul>
-                <li><a href="#r4.4.4">Release 4.4.4</a></li>
+                <li><a href="#r4.5.0">Release 4.5.0</a></li>
                 <li><a href="#r3.4.1">Release 3.4.1</a></li>
                 <li><a href="#r2.4.4">Release 2.4.4</a></li>
             </ul>
@@ -64,6 +64,150 @@
             Please see the <a href="http://github.com/embedthis/appweb-4/issues">Appweb Issue Database</a> 
             for the official product issue list and for comprehensive CVE dispositions.</p>
         
+            <a id="r4.5.0"></a>
+            <h2 class="section">Changes in 4.5.0</h2>
+            <h3>Major Features</h3>
+            <ul>
+                <li>Big upgrade for ESP application frameworks.
+                    <a href="https://github.com/embedthis/appweb-4/issues/237">[issue 237]</a>.
+                    Changes include:
+                    <ul>
+                        <li>Complete support for ESP <a href="http://angularjs.org">AngularJS</a> MVC applications.</li>
+                        <li>New simplified support for server-side ESP MVC (esp-html-mvc) applications.</li>
+                        <li>Add support for Pak extension packages</li>
+                        <li>Enhanced ESP application generator with install, uninstall and upgrade options.</li>
+                        <li>Universal configuration file for ESP applications in "package.json".</li>
+                        <li>Updated and extended samples.</li>
+                        <li>Simplify generated client-side controllers</li>
+                        <li>Add routePrefix to package.json and update esp.js to automatically parse and include in all routes</li>
+                        <li>Add esp-click attribute for elements without hrefs</li>
+                        <li>Add esp-resource to communicate with ESP server-side controllers</li>
+                        <li>Add esp-confirm for modal confirmations</li>
+                        <li>New JSON parser</li>
+                    </ul>
+                </li>
+            </ul>
+            <h3>Minor Features</h3>
+            <ul>
+                <li>VirtualHost directives can now take multiple endpoints</li>
+                <li>Windows 8.1 support</li>
+                <li>Add CgiPrefix directive to use in front of URI parameters and form variables in CGI programs.
+                    <a href="https://github.com/embedthis/appweb-4/issues/282">[issue 282]</a></li>
+                <li>Add CgiEscape directive to escape shell special characters
+                    <a href="https://github.com/embedthis/appweb-4/issues/283">[issue 283]</a></li>
+                <li>Make DigestData struct public
+                    <a href="https://github.com/embedthis/appweb-4/issues/275">[issue 275]</a></li>
+                <li>MprStealConn - need more flexibility
+                    <a href="https://github.com/embedthis/appweb-4/issues/278">[issue 278]</a></li>
+                <li>Add more session hijack protection
+                    <a href="https://github.com/embedthis/appweb-4/issues/283">[issue 283]</a></li>
+                <li>Add IPv6 conditional directive IPv6
+                    <a href="https://github.com/embedthis/appweb-4/issues/284">[issue 284]</a></li>
+                <li>Shutdown Issues
+                    <a href="https://github.com/embedthis/appweb-4/issues/285">[issue 285]</a></li>
+            </ul>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Missing sendfile64 on on Linux 2.4 systems
+                    <a href="https://github.com/embedthis/appweb-4/issues/244">[issue 244]</a></li>
+                <li>Add Reroute directive. Revert Route directive to not open previously defined routes.
+                    <a href="https://github.com/embedthis/appweb-4/issues/238">[issue 238]</a></li>
+                <li>Add BIT_MPR_SSL_RENEGOTIATE option (config: mpr.ssl.renegotiate) to control SSL renegotiation.
+                    Renegotiation is enabled by default. 
+                    <a href="https://github.com/embedthis/appweb-4/issues/240">[issue 240]</a></li>
+                <li>JSON parser handling of embedded quotes and backslashes
+                <li>Mdb database saving of field values in JSON with embedded quotes and backslashes </li>
+                <li>Improve XSRF security token handling adding transparent regeneration if possible. </li>
+                <li>Early detection of bad characters in URIs. This tightens request URI validation 
+                    of invalid URIs that were previously permitted.</li>
+                <li>Add missing bower.json
+                    <a href="https://github.com/embedthis/appweb-4/issues/253">[issue 253]</a></li>
+                <li>Return 401 for bad authentication scheme
+                    <a href="https://github.com/embedthis/appweb-4/issues/254">[issue 254]</a></li>
+                <li>Add documentation on new httpWriteBlock behavior
+                    <a href="https://github.com/embedthis/appweb-4/issues/255">[issue 255]</a></li>
+                <li>Update conn->lastActivity in readEvent
+                    <a href="https://github.com/embedthis/appweb-4/issues/256">[issue 256]</a></li>
+                <li>Use 401 when user fails authorization
+                    <a href="https://github.com/embedthis/appweb-4/issues/257">[issue 257]</a></li>
+                <li>Return valid authentication domain
+                    <a href="https://github.com/embedthis/appweb-4/issues/258">[issue 258]</a></li>
+                <li>Fix off-by-one in httpFilterChunkData
+                    <a href="https://github.com/embedthis/appweb-4/issues/259">[issue 259]</a></li>
+                <li>Free Win32 resources on shutdown and error
+                    <a href="https://github.com/embedthis/appweb-4/issues/260">[issue 260]</a></li>
+                <li>Fixing crash on disconnect
+                    <a href="https://github.com/embedthis/appweb-4/issues/261">[issue 261]</a></li>
+                <li>Allow module-defined AuthStores
+                    <a href="https://github.com/embedthis/appweb-4/issues/262">[issue 262]</a></li>
+                <li>Reject unknown methods in fileHandler with 405
+                    <a href="https://github.com/embedthis/appweb-4/issues/263">[issue 263]</a></li>
+                <li>Use original URI to build trailing slash redirects
+                    <a href="https://github.com/embedthis/appweb-4/issues/264">[issue 264]</a></li>
+                <li>Don't chunk HTTP/1.0 responses
+                    <a href="https://github.com/embedthis/appweb-4/issues/265">[issue 265]</a></li>
+                <li>Use full URI path in dirHandler index titles
+                    <a href="https://github.com/embedthis/appweb-4/issues/266">[issue 266]</a></li>
+                <li>Send 404 from the errorHandler instead of 501
+                    <a href="https://github.com/embedthis/appweb-4/issues/267">[issue 267]</a></li>
+                <li>Always increment module refcount when loading
+                    <a href="https://github.com/embedthis/appweb-4/issues/268">[issue 268]</a></li>
+                <li>Use case-insensitive keys for the MIME types table
+                    <a href="https://github.com/embedthis/appweb-4/issues/269">[issue 269]</a></li>
+                <li>Fix arithmetic error in mprGetTicks (windows)
+                    <a href="https://github.com/embedthis/appweb-4/issues/270">[issue 270]</a></li>
+                <li>Fix mprWaitForCond with no timeout
+                    <a href="https://github.com/embedthis/appweb-4/issues/271">[issue 271]</a></li>
+                <li>Remove extra httpError format specifie
+                    <a href="https://github.com/embedthis/appweb-4/issues/272">[issue 272]</a></li>
+                <li>Fixing WNDPROC declaration
+                    <a href="https://github.com/embedthis/appweb-4/issues/273">[issue 273]</a></li>
+                <li>Windows mprWaitForSingleIO not returning event mask
+                    <a href="https://github.com/embedthis/appweb-4/issues/274">[issue 274]</a></li>
+                <li>Make DigestData struct public
+                    <a href="https://github.com/embedthis/appweb-4/issues/275">[issue 275]</a></li>
+                <li>Remove accesses to CRITICAL_SECTION's SpinCount
+                    <a href="https://github.com/embedthis/appweb-4/issues/276">[issue 276]</a></li>
+                <li>Document when and where mprYield will occur
+                    <a href="https://github.com/embedthis/appweb-4/issues/277">[issue 277]</a></li>
+                <li>Delay LimitRequestBody test after routing
+                    <a href="https://github.com/embedthis/appweb-4/issues/279">[issue 279]</a></li>
+                <li>Enable serving files outside document root
+                    <a href="https://github.com/embedthis/appweb-4/issues/280">[issue 280]</a></li>
+                <li>mprCreateEventOutside needs to work when MPR is shutting down
+                    <a href="https://github.com/embedthis/appweb-4/issues/281">[issue 281]</a></li>
+            </ul>
+            <h3>Incompatible Changes</h3>
+            <ul>
+                <li>Rename libsqlite3 to libsql to avoid clashing with existing SQLite libraries.
+                    <a href="https://github.com/embedthis/appweb-4/issues/242">[issue 242]</a></li>
+                <li>Rename readRecsWhere to readWhere to be consistent with EDI API.
+                    <a href="https://github.com/embedthis/appweb-4/issues/236">[issue 236]</a></li>
+                <li>Add body argument to mprRunCmd to write data to spawned command.
+                    <a href="https://github.com/embedthis/appweb-4/issues/239">[issue 239]</a></li>
+                <li>Rename config.json to package.json
+                <li>Deprecate the prior ESP MVC skeleton. It is renamed to esp-legacy-mvc.  </li>
+                <li>Move views by default under client/app. The EspDir directive can be used to modify the views directory.</li>
+                <li>Move layouts under client/layouts. The Espdir directive can be used to modify the layouts directory.</li>
+                <li>Renamed the old ESP pack from angular-mvc to esp-angular-mvc. All ESP packs now take an "esp-" prefix.</li>
+                <li>Changed default generated application skeleton from "esp-legacy-mvc" to "server". This permits the generation 
+                    of non-MVC applications that consist only of server-side controllers.</li>
+                <li>Fix calls to renderFlash with incorrect arg count</li>
+                <li>Change ESP server-side controller entry point from esp_module_NAME, to esp_controller_APP_CONTROLLER.
+                    Also, ESP application source modules include the app name in the entry point. This is to resolve init 
+                    entry point name clashes when hosting multiple applications.</li>
+                <li>Rename APIs that send JSON from renderResult, renderGrid, renderRec to use a send prefix instead of render. 
+                    This is to clarify which APIs send HTML and which send JSON. The render* APIs send HTML and raw data. 
+                    The send* APIs send JSON.</li>
+                <li>The ESP compilation mode is renamed from "flat" to "combined". The two modes are: discrete and combined. When esp 
+                compiles applications it automatically reads the esp.combined property from the application's package.json 
+                file to determine the compilation mode. The esp --flat switch is removed.</li>
+                <li>The MprTerminator type has an additional parameter: MPR state. The terminators are invoked twice to
+                notify when the a shutdown is commenced and when the MPR is being destroyed. Terminators should test the
+                state argument against MPR_STOPPING and MPR_STOPPED.</li>
+                <li>Support for Windows XP and Vista deprecated. Contact support@embedthis.com if you require XP or Vista
+                    support.</li>
+            </ul>
             <a id="r4.4.4"></a>
             <h2 class="section">Changes in 4.4.4</h2>
             <h3>Fixes</h3>
@@ -851,7 +995,7 @@
             <h2 class="section">Changes in 3.2.2</h2>
             <h3>Minor Features</h3>
             <ul>
-                <li>Solaris and FreeBSD ports</li>
+                <li>FreeBSD ports</li>
                 <li>Http request and response body tracing. New configuration directives LogTrace and LogTraceFilter.</li>
             </ul>
             <h3>Key Fixes</h3>
@@ -1055,7 +1199,7 @@
                 <li>Windows CE support</li>
                 <li>FreeBSD support</li>
                 <li>MAC OSX support</li>
-                <li>Windows 7 and Vista support</li>
+                <li>Windows 7 support</li>
                 <li>OpenWrt platform support</li>
                 <li>IPv6 network support</li>
                 <li>Project files for MAC OS Xcode and Microsoft Visual Studio</li>
@@ -1701,7 +1845,7 @@
                 <li>Aliases are now per host instead of being per server.</li>
                 <li>Allow Aliases to come before or after directory blocks that describe the alias destination.</li>
                 <li>Build system improvements for building external packages</li>
-                <li>Improved 64-bit and Solaris support.</li>
+                <li>Improved 64-bit support.</li>
             </ul>
             <h3>Fixes</h3>
             <ul>
@@ -1769,7 +1913,7 @@
                 <li>Enhanced C-API</li>
                 <li>httpClient supports single threaded operation.</li>
                 <li>New compact libminiStdc++ library to replace libstdc++ reduces memory footprint.</li>
-                <li>Experimental ports for Solaris and MAC</li>
+                <li>Experimental ports for MAC</li>
                 <li>Upgraded PHP and OpenSSL versions</li>
             </ul>
             <h3>Fixes</h3>
@@ -1852,7 +1996,6 @@
                 <li>Enhanced C-API</li>
                 <li>Authorization APIs for modifying user and group auth details at run-time</li>
                 <li>Added a fully static appweb program</li>
-                <li>First pass Solaris port</li>
                 <li>Experimental fFile upload (Nick again)</li>
             </ul>
             <h3>Minor Features</h3>
@@ -2149,7 +2292,7 @@
 <!-- BeginDsi "dsi/bottom.html" -->
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2013.
+            <a href="../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2014.
             All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>

@@ -13,7 +13,7 @@
   </ItemDefinitionGroup>
 
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{a50b91b3-a2a3-4215-8ab3-48923d60ae0b}</ProjectGuid>
+    <ProjectGuid>{c79c5e99-2905-4ef9-a40a-89dd8458e116}</ProjectGuid>
     <RootNamespace />
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -100,7 +100,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <ClCompile Include="..\..\src\deps\mpr\makerom.c" />
+    <ClCompile Include="..\..\src\paks\mpr\makerom.c" />
   </ItemGroup>
 
   <ItemDefinitionGroup>
@@ -112,7 +112,7 @@
 
 <ItemGroup>
   <ProjectReference Include="libmpr.vcxproj">
-  <Project>f4787371-4146-4f7e-849c-27153d4bd0c2</Project>
+  <Project>b878be55-becb-4c83-8e95-6ad11ba24206</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>

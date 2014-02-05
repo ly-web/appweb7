@@ -32,11 +32,15 @@ public function stopService(quiet: Boolean = false) {
             trace('Stop', bit.settings.title)                                                     
         }
         if (bit.platform.os == 'windows') {
-            Cmd([bit.prefixes.bin.join('appwebMonitor'), '--stop'])
+            try {
+                Cmd([bit.prefixes.bin.join('appwebMonitor'), '--stop'])
+            } catch {}
         }
         let appman = Cmd.locate(bit.prefixes.bin.join('appman'))
         if (appman) {
-            Cmd([appman, '--continue', 'stop', 'disable', 'uninstall'])
+            try {
+                Cmd([appman, '--continue', 'stop', 'disable', 'uninstall'])
+            } catch {}
         }
     }
 }
@@ -45,8 +49,8 @@ public function stopService(quiet: Boolean = false) {
 /*
     @copy   default
   
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2014. All Rights Reserved.
   
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a

@@ -58,6 +58,20 @@
     <title>EdiRec</title>
     <filename>group___edi_rec.html</filename>
     <member kind="function">
+      <type>EdiRec *</type>
+      <name>ediFilterRecFields</name>
+      <anchorfile>group___edi_rec.html</anchorfile>
+      <anchor>ga72056f840f501082ef3efac4c4454e24</anchor>
+      <arglist>(EdiRec *rec, cchar *fields, int include)</arglist>
+    </member>
+    <member kind="function">
+      <type>EdiField *</type>
+      <name>ediGetNextField</name>
+      <anchorfile>group___edi_rec.html</anchorfile>
+      <anchor>gad8a96a0785fa3cfd81f99eb75c02bbee</anchor>
+      <arglist>(EdiRec *rec, EdiField *fp, int offset)</arglist>
+    </member>
+    <member kind="function">
       <type>cchar *</type>
       <name>ediGetRecSchemaAsJson</name>
       <anchorfile>group___edi_rec.html</anchorfile>
@@ -70,11 +84,25 @@
     <title>EdiGrid</title>
     <filename>group___edi_grid.html</filename>
     <member kind="function">
+      <type>EdiGrid *</type>
+      <name>ediFilterGridFields</name>
+      <anchorfile>group___edi_grid.html</anchorfile>
+      <anchor>ga0b5c39ab9aa8d6cba06403659aa9e36b</anchor>
+      <arglist>(EdiGrid *grid, cchar *fields, int include)</arglist>
+    </member>
+    <member kind="function">
       <type>cchar *</type>
       <name>ediGetGridSchemaAsJson</name>
       <anchorfile>group___edi_grid.html</anchorfile>
       <anchor>gaec44a7575ea84f98f8a6a89d88d67df0</anchor>
       <arglist>(EdiGrid *grid)</arglist>
+    </member>
+    <member kind="function">
+      <type>EdiRec *</type>
+      <name>ediGetNextRec</name>
+      <anchorfile>group___edi_grid.html</anchorfile>
+      <anchor>ga4ea5088bc3e4cc1206310bc46236bb03</anchor>
+      <arglist>(EdiGrid *grid, EdiRec *rec)</arglist>
     </member>
     <member kind="function">
       <type>EdiGrid *</type>
@@ -122,6 +150,13 @@
       <anchorfile>group___edi.html</anchorfile>
       <anchor>gaf35d7f7eba6e1ea718e0169987807f61</anchor>
       <arglist>(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags)</arglist>
+    </member>
+    <member kind="function">
+      <type>Edi *</type>
+      <name>ediClone</name>
+      <anchorfile>group___edi.html</anchorfile>
+      <anchor>gaed4dfcec9716bc48818a51b446921bd6</anchor>
+      <arglist>(Edi *edi)</arglist>
     </member>
     <member kind="function">
       <type>EdiGrid *</type>
@@ -222,18 +257,18 @@
       <arglist>(EdiRec *rec)</arglist>
     </member>
     <member kind="function">
+      <type>int</type>
+      <name>ediGetTableDimensions</name>
+      <anchorfile>group___edi.html</anchorfile>
+      <anchor>ga159e08f49d49361fd64b40e5df18b644</anchor>
+      <arglist>(Edi *edi, cchar *tableName, int *numRows, int *numCols)</arglist>
+    </member>
+    <member kind="function">
       <type>MprList *</type>
       <name>ediGetTables</name>
       <anchorfile>group___edi.html</anchorfile>
       <anchor>gafe0368e00f99402ec33a3058fb8aec00</anchor>
       <arglist>(Edi *edi)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>ediGetTableSchema</name>
-      <anchorfile>group___edi.html</anchorfile>
-      <anchor>ga0b179dce91f770f00b31fd7f009e7c89</anchor>
-      <arglist>(Edi *edi, cchar *tableName, int *numRows, int *numCols)</arglist>
     </member>
     <member kind="function">
       <type>cchar *</type>
@@ -444,6 +479,20 @@
       <anchorfile>group___edi.html</anchorfile>
       <anchor>ga916af8d529a028643e87b3b8c8973a85</anchor>
       <arglist>(EdiRec *rec, MprJson *data)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>ediSetPrivate</name>
+      <anchorfile>group___edi.html</anchorfile>
+      <anchor>ga8a81197882a1574b7bd5a89dd725d238</anchor>
+      <arglist>(Edi *edi, bool on)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>ediSetReadonly</name>
+      <anchorfile>group___edi.html</anchorfile>
+      <anchor>ga04c6635bccb8f8c2a1b2d5e3bad74bd3</anchor>
+      <arglist>(Edi *edi, bool on)</arglist>
     </member>
     <member kind="function">
       <type>int</type>

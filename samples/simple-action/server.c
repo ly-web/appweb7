@@ -26,7 +26,7 @@ static void myaction(HttpConn *conn)
     /*
         Add desired headers. "Set" will overwrite, add will create if not already defined.
      */
-    httpAddHeaderString(conn, "Content-Type", "text/plain");
+    httpAddHeaderString(conn, "Content-Type", "text/html");
     httpSetHeaderString(conn, "Cache-Control", "no-cache");
 
     httpWrite(q, "<html><title>simpleAction</title><body>\r\n");
@@ -91,7 +91,7 @@ int main(int argc, char **argv, char **envp)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

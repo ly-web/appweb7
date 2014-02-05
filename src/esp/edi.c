@@ -16,6 +16,7 @@ static void addValidations();
 static void formatFieldForJson(MprBuf *buf, EdiField *fp);
 static void manageEdiService(EdiService *es, int flags);
 static void manageEdiGrid(EdiGrid *grid, int flags);
+static bool validateField(Edi *edi, EdiRec *rec, cchar *columnName, cchar *value);
 
 /************************************* Code ***********************************/
 
@@ -91,10 +92,12 @@ static void manageValidation(EdiValidation *vp, int flags)
 PUBLIC int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *columnName, cvoid *data)
 {
     EdiService          *es;
-    EdiValidation       *vp; 
-    cchar               *errMsg;
-    int                 column;
+    EdiValidation       *prior, *vp; 
+    MprList             *validations;
+    cchar               *errMsg, *vkey;
+    int                 column, next;
 
+    //  FUTURE - should not be attached to "es". Should be unique per database.
     es = MPR->ediService;
     if ((vp = mprAllocObj(EdiValidation, manageValidation)) == 0) {
         return MPR_ERR_MEMORY;
@@ -104,7 +107,7 @@ PUBLIC int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *colu
         mprError("Cannot find validation '%s'", name);
         return MPR_ERR_CANT_FIND;
     }
-    if (smatch(name, "format")) {
+    if (smatch(name, "format") || smatch(name, "banned")) {
         if (!data || ((char*) data)[0] == '\0') {
             mprError("Bad validation format pattern for %s", name);
             return MPR_ERR_BAD_SYNTAX;
@@ -116,7 +119,52 @@ PUBLIC int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *colu
         data = 0;
     }
     vp->data = data;
-    return edi->provider->addValidation(edi, tableName, columnName, vp);
+    vkey = sfmt("%s.%s", tableName, columnName);
+
+    lock(edi);
+    if ((validations = mprLookupKey(edi->validations, vkey)) == 0) {
+        validations = mprCreateList(0, MPR_LIST_STABLE);
+        mprAddKey(edi->validations, vkey, validations);
+    }
+    for (ITERATE_ITEMS(validations, prior, next)) {
+        if (prior->vfn == vp->vfn) {
+            break;
+        }
+    }
+    if (!prior) {
+        mprAddItem(validations, vp);
+    }
+    unlock(edi);
+    return 0;
+}
+
+
+static bool validateField(Edi *edi, EdiRec *rec, cchar *columnName, cchar *value)
+{
+    EdiValidation   *vp;
+    MprList         *validations;
+    cchar           *error, *vkey;
+    int             next;
+    bool            pass;
+
+    assert(edi);
+    assert(rec);
+    assert(columnName && *columnName);
+
+    pass = 1;
+    vkey = sfmt("%s.%s", rec->tableName, columnName);
+    if ((validations = mprLookupKey(edi->validations, vkey)) != 0) {
+        for (ITERATE_ITEMS(validations, vp, next)) {
+            if ((error = (*vp->vfn)(vp, rec, columnName, value)) != 0) {
+                if (rec->errors == 0) {
+                    rec->errors = mprCreateHash(0, MPR_HASH_STABLE);
+                }
+                mprAddKey(rec->errors, columnName, sfmt("%s %s", columnName, error));
+                pass = 0;
+            }
+        }
+    }
+    return pass;
 }
 
 
@@ -145,10 +193,68 @@ PUBLIC int ediDelete(Edi *edi, cchar *path)
 }
 
 
+//  FUTURE - rename edi
 PUBLIC void espDumpGrid(EdiGrid *grid)
 {
     mprLog(0, "Grid: %s\nschema: %s,\ndata: %s", grid->tableName, ediGetTableSchemaAsJson(grid->edi, grid->tableName),
         ediGridAsJson(grid, MPR_JSON_PRETTY));
+}
+
+
+PUBLIC EdiGrid *ediFilterGridFields(EdiGrid *grid, cchar *fields, int include)
+{
+    EdiRec      *first, *rec;
+    MprList     *fieldList;
+    int         f, r, inlist;
+
+    if (!grid || grid->nrecords == 0) {
+        return grid;
+    }
+    first = grid->records[0];
+    fieldList = mprCreateListFromWords(fields);
+
+    /* Process list of fields to remove from the grid */
+    for (f = 0; f < first->nfields; f++) {
+        inlist = mprLookupStringItem(fieldList, first->fields[f].name) >= 0;
+        if ((inlist && !include) || (!inlist && include)) {
+            for (r = 0; r < grid->nrecords; r++) {
+                rec = grid->records[r];
+                memmove(&rec->fields[f], &rec->fields[f+1], (rec->nfields - f - 1) * sizeof(EdiField));
+                rec->nfields--;
+                /* Ensure never saved to database */
+                rec->id = 0;
+            }
+            f--;
+        }
+    }
+    return grid;
+}
+
+
+PUBLIC EdiRec *ediFilterRecFields(EdiRec *rec, cchar *fields, int include)
+{
+    EdiField    *fp;
+    MprList     *fieldList;
+    int         inlist;
+
+    if (rec == 0 || rec->nfields == 0) {
+        return rec;
+    }
+    fieldList = mprCreateListFromWords(fields);
+
+    for (fp = rec->fields; fp < &rec->fields[rec->nfields]; fp++) {
+        inlist = mprLookupStringItem(fieldList, fp->name) >= 0;
+        if ((inlist && !include) || (!inlist && include)) {
+            fp[0] = fp[1];
+            rec->nfields--;
+            fp--;
+        }
+    }
+    /*
+        Ensure never saved to database
+     */
+    rec->id = 0;
+    return rec;
 }
 
 
@@ -161,6 +267,48 @@ PUBLIC MprList *ediGetColumns(Edi *edi, cchar *tableName)
 PUBLIC int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid)
 {
     return edi->provider->getColumnSchema(edi, tableName, columnName, type, flags, cid);
+}
+
+
+PUBLIC EdiField *ediGetNextField(EdiRec *rec, EdiField *fp, int offset)
+{
+    if (rec == 0 || rec->nfields <= 0) {
+        return 0;
+    }
+    if (fp == 0) {
+        if (offset >= rec->nfields) {
+            return 0;
+        }
+        fp = &rec->fields[offset];
+    } else {
+        if (++fp >= &rec->fields[rec->nfields]) {
+            fp = 0;  
+        }
+    }
+    return fp;
+}
+
+
+PUBLIC EdiRec *ediGetNextRec(EdiGrid *grid, EdiRec *rec)
+{
+    int     index;
+
+    if (grid == 0 || grid->nrecords <= 0) {
+        return 0;
+    }
+    if (rec == 0) {
+        rec = grid->records[0];
+        rec->index = 0;
+    } else {
+        index = rec->index + 1;
+        if (index >= grid->nrecords) {
+            rec = 0;  
+        } else {
+            rec = grid->records[index];
+            rec->index = index;
+        }
+    }
+    return rec;
 }
 
 
@@ -178,7 +326,7 @@ PUBLIC cchar *ediGetTableSchemaAsJson(Edi *edi, cchar *tableName)
         return schema;
     }
     buf = mprCreateBuf(0, 0);
-    ediGetTableSchema(edi, tableName, NULL, &ncols);
+    ediGetTableDimensions(edi, tableName, NULL, &ncols);
     columns = ediGetColumns(edi, tableName);
     mprPutStringToBuf(buf, "{\n    \"types\": {\n");
     for (c = 0; c < ncols; c++) {
@@ -186,19 +334,17 @@ PUBLIC cchar *ediGetTableSchemaAsJson(Edi *edi, cchar *tableName)
         mprPutToBuf(buf, "      \"%s\": {\n        \"type\": \"%s\"\n      },\n", 
             mprGetItem(columns, c), ediGetTypeString(type));
     }
-    mprAdjustBufEnd(buf, -2);
-
+    if (ncols > 0) {
+        mprAdjustBufEnd(buf, -2);
+    }
     mprRemoveItemAtPos(columns, 0);
     mprPutStringToBuf(buf, "\n    },\n    \"columns\": [ ");
     for (ITERATE_ITEMS(columns, s, next)) {
         mprPutToBuf(buf, "\"%s\", ", s);
     }
-    mprAdjustBufEnd(buf, -2);
-    mprPutStringToBuf(buf, " ],\n    \"headers\": [ ");
-    for (ITERATE_ITEMS(columns, s, next)) {
-        mprPutToBuf(buf, "\"%s\", ", spascal(s));
+    if (columns->length > 0) {
+        mprAdjustBufEnd(buf, -2);
     }
-    mprAdjustBufEnd(buf, -2);
     mprPutStringToBuf(buf, " ]\n  }");
     mprAddNullToBuf(buf);
     schema = mprGetBufStart(buf);
@@ -292,9 +438,9 @@ PUBLIC MprList *ediGetTables(Edi *edi)
 }
 
 
-PUBLIC int ediGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numCols)
+PUBLIC int ediGetTableDimensions(Edi *edi, cchar *tableName, int *numRows, int *numCols)
 {
-    return edi->provider->getTableSchema(edi, tableName, numRows, numCols);
+    return edi->provider->getTableDimensions(edi, tableName, numRows, numCols);
 }
 
 
@@ -391,6 +537,20 @@ PUBLIC Edi *ediOpen(cchar *path, cchar *providerName, int flags)
         return 0;
     }
     return provider->open(path, flags);
+}
+
+
+PUBLIC Edi *ediClone(Edi *edi)
+{
+    Edi     *cloned;
+
+    if (!edi) {
+        return 0;
+    }
+    if ((cloned = edi->provider->open(edi->path, edi->flags)) != 0) {
+        cloned->validations = edi->validations;
+    }
+    return cloned;
 }
 
 
@@ -542,11 +702,23 @@ PUBLIC int ediUpdateRec(Edi *edi, EdiRec *rec)
 
 PUBLIC bool ediValidateRec(EdiRec *rec)
 {
+    EdiField    *fp;
+    bool        pass;
+    int         c;
+
     assert(rec->edi);
     if (rec == 0 || rec->edi == 0) {
         return 0;
     }
-    return rec->edi->provider->validateRec(rec->edi, rec);
+    pass = 1;
+    for (c = 0; c < rec->nfields; c++) {
+        fp = &rec->fields[c];
+        if (!validateField(rec->edi, rec, fp->name, fp->value)) {
+            pass = 0;
+            /* Keep going */
+        }
+    }
+    return pass;
 }
 
 
@@ -704,7 +876,7 @@ static MprList *joinColumns(MprList *cols, EdiGrid *grid, MprHash *grids, int jo
     }
     rec = grid->records[0];
     for (fp = rec->fields; fp < &rec->fields[rec->nfields]; fp++) {
-#if FUTURE
+#if KEEP
         if (fp->flags & EDI_FOREIGN && follow)
 #else
         if (sends(fp->name, "Id") && follow) 
@@ -1217,6 +1389,17 @@ static cchar *checkFormat(EdiValidation *vp, EdiRec *rec, cchar *fieldName, ccha
 }
 
 
+static cchar *checkBanned(EdiValidation *vp, EdiRec *rec, cchar *fieldName, cchar *value)
+{
+    int     matched[BIT_MAX_ROUTE_MATCHES * 2];
+
+    if (pcre_exec(vp->mdata, NULL, value, (int) slen(value), 0, 0, matched, sizeof(matched) / sizeof(int)) > 0) {
+        return "contains banned content";
+    }
+    return 0;
+}
+
+
 static cchar *checkInteger(EdiValidation *vp, EdiRec *rec, cchar *fieldName, cchar *value)
 {
     if (value && *value) {
@@ -1292,6 +1475,24 @@ PUBLIC void ediDefineMigration(Edi *edi, EdiMigration forw, EdiMigration back)
 }
 
 
+PUBLIC void ediSetPrivate(Edi *edi, bool on)
+{
+    edi->flags &= ~EDI_PRIVATE;
+    if (on) {
+        edi->flags |= EDI_PRIVATE;
+    }
+}
+
+
+PUBLIC void ediSetReadonly(Edi *edi, bool on)
+{
+    edi->flags &= ~EDI_NO_SAVE;
+    if (on) {
+        edi->flags |= EDI_NO_SAVE;
+    }
+}
+
+
 static void addValidations()
 {
     EdiService  *es;
@@ -1301,6 +1502,7 @@ static void addValidations()
     es->validations = mprCreateHash(0, MPR_HASH_STATIC_VALUES);
     ediDefineValidation("boolean", checkBoolean);
     ediDefineValidation("format", checkFormat);
+    ediDefineValidation("banned", checkBanned);
     ediDefineValidation("integer", checkInteger);
     ediDefineValidation("number", checkNumber);
     ediDefineValidation("present", checkPresent);
@@ -1313,7 +1515,7 @@ static void addValidations()
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

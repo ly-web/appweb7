@@ -1,0 +1,29 @@
+/*
+    start.bit - Bit build file (esp-html-mvc)
+ */
+
+Bit.load({
+    settings: {
+        bit: '0.9.0',
+    },
+    targets: {
+        comp: {
+            build: `
+                let flat = Path('package.json').readJSON().esp.flat
+                if (flat) {
+                    run('esp -flat -r -q compile')
+                } else {
+                    run('esp -r -q compile')
+                }
+            `,
+        },
+        run: {
+            depends: ['comp'],
+            run: 'appweb -v',
+        },
+        cleanCache: {
+            type: 'clean',
+            action: "rm('cache/*')",
+        },
+    },
+})

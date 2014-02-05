@@ -1,0 +1,41 @@
+{
+    "name": "blog",
+    "dependencies": {
+        "esp-server": "*",
+        "angular": "*",
+        "esp-angular": "*",
+        "less": "*",
+        "more": "*",
+        "esp-angular-mvc": "*"
+    },
+    "esp": {
+        "scripts": {
+            "angular": [
+                "angular.js",
+                "angular-animate.js",
+                "angular-route.js"
+            ],
+            "esp-angular": [ "*" ],
+            "less": [ "*" ],
+        },
+        "serverPrefix": "/do",
+        "formats": {
+            "date": "yyyy-MM-dd",
+            "float": 2
+        },
+        "json": true,
+        "server": {
+            "database": "mdb://blog.mdb"
+        }
+    },
+    "generate": {
+        "top": "angular-mvc",
+        "scaffold": true,
+        "clientModel": true,
+        "clientController": true,
+        "clientView": true,
+        "controller": true,
+        "migration": true,
+        "view": false
+    }
+}

@@ -35,7 +35,7 @@ static int rewriteFileHandler(HttpConn *conn)
     tx = conn->tx;
     info = &tx->fileInfo;
 
-    httpMapFile(conn, rx->route);
+    httpMapFile(conn);
     assert(info->checked);
 
     if (rx->flags & (HTTP_DELETE | HTTP_PUT)) {
@@ -80,7 +80,7 @@ static void openFileHandler(HttpQueue *q)
             } else {
                 mprLog(2, "fileHandler: Cannot find filename %s", tx->filename);
             }
-            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find %s", rx->uri);
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find document");
             return;
         } 
         if (!tx->etag) {
@@ -104,7 +104,8 @@ static void openFileHandler(HttpQueue *q)
             tx->length = -1;
         }
         if (!tx->fileInfo.isReg && !tx->fileInfo.isLink) {
-            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot locate document: %s", rx->uri);
+            mprError("Document is not a regular file");
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot serve document");
             
         } else if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
             httpError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE,
@@ -120,17 +121,18 @@ static void openFileHandler(HttpQueue *q)
                 tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
                 if (tx->file == 0) {
                     if (rx->referrer) {
-                        httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document: %s from %s", 
-                            tx->filename, rx->referrer);
+                        mprLog(2, "fileHandler: Cannot find filename %s from referrer %s", tx->filename, rx->referrer);
                     } else {
-                        httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document: %s from %s", tx->filename);
+                        mprLog(2, "fileHandler: Cannot find filename %s", tx->filename);
                     }
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find document");
                 }
             }
         }
-
-    } else if (rx->flags & HTTP_OPTIONS) {
-        httpHandleOptions(q->conn);
+    } else if (rx->flags & (HTTP_DELETE | HTTP_OPTIONS | HTTP_PUT)) {
+        ;
+    } else {
+        httpError(conn, HTTP_CODE_BAD_METHOD, "Unsupported method");
     }
 }
 
@@ -164,6 +166,9 @@ static void startFileHandler(HttpQueue *q)
         
     } else if (rx->flags & HTTP_DELETE) {
         handleDeleteRequest(q);
+        
+    } else if (rx->flags & HTTP_OPTIONS) {
+        httpHandleOptions(q->conn);
         
     } else if (!(tx->flags & HTTP_TX_NO_BODY)) {
         /* Create a single data packet based on the entity length */
@@ -237,6 +242,10 @@ static int prepPacket(HttpQueue *q, HttpPacket *packet)
     HttpQueue   *nextQ;
     ssize       size, nbytes;
 
+    if (mprNeedYield()) {
+        httpScheduleQueue(q);
+        return 0;
+    }
     nextQ = q->nextQ;
     if (packet->esize > nextQ->packetSize) {
         httpPutBackPacket(q, httpSplitPacket(packet, nextQ->packetSize));
@@ -265,8 +274,8 @@ static int prepPacket(HttpQueue *q, HttpPacket *packet)
 
 /*  
     The service callback will be invoked to service outgoing packets on the service queue. It will only be called 
-    once all incoming data has been received and then there after when the downstream queues drain sufficiently to
-    absorb more data. This routine may flow control if the downstream stage cannot accept all the file data. It will
+    once all incoming data has been received and then when the downstream queues drain sufficiently to absorb 
+    more data. This routine may flow control if the downstream stage cannot accept all the file data. It will
     then be re-called as required to send more data.
  */
 static void outgoingFileService(HttpQueue *q)
@@ -292,7 +301,6 @@ static void outgoingFileService(HttpQueue *q)
             mprTrace(7, "OutgoingFileService readData %d", rc);
         }
         httpPutPacketToNext(q, packet);
-        mprYield(0);
     }
     mprTrace(7, "OutgoingFileService complete");
 }
@@ -344,7 +352,6 @@ static void incomingFile(HttpQueue *q, HttpPacket *packet)
     } else if (mprWriteFile(file, mprGetBufStart(buf), len) != len) {
         httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't PUT to %s", tx->filename);
     }
-    mprYield(0);
 }
 
 
@@ -356,7 +363,7 @@ static void handlePutRequest(HttpQueue *q)
     HttpConn    *conn;
     HttpTx      *tx;
     MprFile     *file;
-    char        *path;
+    cchar       *path;
 
     assert(q->pair->queueData == 0);
 
@@ -403,11 +410,11 @@ static void handleDeleteRequest(HttpQueue *q)
     assert(tx->fileInfo.checked);
 
     if (!tx->fileInfo.isReg) {
-        httpError(conn, HTTP_CODE_NOT_FOUND, "URI not found");
+        httpError(conn, HTTP_CODE_NOT_FOUND, "Document not found");
         return;
     }
     if (mprDeletePath(tx->filename) < 0) {
-        httpError(conn, HTTP_CODE_NOT_FOUND, "Can't remove URI");
+        httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot remove document");
         return;
     }
     httpSetStatus(conn, HTTP_CODE_NO_CONTENT);
@@ -419,7 +426,7 @@ static int manageDir(HttpConn *conn)
     HttpRx      *rx;
     HttpTx      *tx;
     HttpRoute   *route;
-    HttpUri     *prior;
+    HttpUri     *req;
     MprPath     *info;
     cchar       *index, *pathInfo, *uri;
     char        *path;
@@ -427,19 +434,19 @@ static int manageDir(HttpConn *conn)
 
     rx = conn->rx;
     tx = conn->tx;
-    prior = rx->parsedUri;
+    req = rx->parsedUri;
     route = rx->route;
     info = &tx->fileInfo;
 
     /*
         Manage requests for directories
      */
-    if (!sends(rx->pathInfo, "/")) {
+    if (!sends(req->path, "/")) {
         /*
-           Append "/" and do an external redirect
+           Append "/" and do an external redirect. Use the original request URI.
          */
-        pathInfo = sjoin(rx->pathInfo, "/", NULL);
-        uri = httpFormatUri(prior->scheme, prior->host, prior->port, pathInfo, prior->reference, prior->query, 0);
+        pathInfo = sjoin(req->path, "/", NULL);
+        uri = httpFormatUri(req->scheme, req->host, req->port, pathInfo, req->reference, req->query, 0);
         httpRedirect(conn, HTTP_CODE_MOVED_PERMANENTLY, uri);
         return HTTP_ROUTE_OK;
     }
@@ -454,8 +461,7 @@ static int manageDir(HttpConn *conn)
             path = mprJoinPath(tx->filename, index);
             if (mprPathExists(path, R_OK)) {
                 pathInfo = sjoin(rx->scriptName, rx->pathInfo, index, NULL);
-                uri = httpFormatUri(prior->scheme, prior->host, prior->port, pathInfo, prior->reference,
-                    prior->query, 0);
+                uri = httpFormatUri(req->scheme, req->host, req->port, pathInfo, req->reference, req->query, 0);
                 httpSetUri(conn, uri);
                 tx->filename = path;
                 tx->ext = httpGetExt(conn);
@@ -507,7 +513,7 @@ PUBLIC int maOpenFileHandler(Http *http)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

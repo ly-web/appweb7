@@ -9,7 +9,7 @@ The sample is implemented as an ESP controler with one action. A test web
 page initiates the client WebSocket request to retrieve the file. To run, 
 browse to:
 
-    http://localhost:8080/test.html
+    http://localhost:8080/index.html
 
 Requirements
 ---
@@ -27,7 +27,7 @@ To run:
 
 The server listens on port 8080. Browse to: 
  
-     http://localhost:8080/test.html
+     http://localhost:8080/index.html
 
 This opens a web socket and and listens for WebSocket data sent by the server. 
 It will display the received data in the browser window.
@@ -38,7 +38,7 @@ Code:
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [echo.c](echo.c) - WebSockets echo server code
 * [start.bit](start.bit) - Bit build instructions
-* [web](web) - Directory containing the test.html web page
+* [web](web) - Directory containing the index.html web page
 
 Documentation:
 ---
@@ -52,8 +52,9 @@ Documentation:
 
 See Also:
 ---
+* [esp-angular-mvc - ESP Angular MVC Application](../esp-angular-mvc/README.md)
 * [esp-controller - Serving ESP controllers](../esp-controller/README.md)
-* [esp-mvc - Serving ESP MVC applications](../esp-mvc/README.md)
+* [esp-html-mvc - ESP MVC Application](../esp-html-mvc/README.md)
 * [esp-page - Serving ESP pages](../esp-page/README.md)
 * [secure-server - Secure server](../secure-server/README.md)
 * [simple-server - Simple server and embedding API](../simple-server/README.md)

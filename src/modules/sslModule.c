@@ -248,7 +248,7 @@ PUBLIC int maSslModuleInit(Http *http, MprModule *module)
     maAddDirective(appweb, "SSLVerifyDepth", sslVerifyDepthDirective);
 #if BIT_STATIC
     /*
-        Pull in the libmprssl code at link time. Nother here at run-time.
+        Pull in the libmprssl code at link time.
      */
     extern MprModuleEntry mprSslInit;
     mprNop(mprSslInit);
@@ -266,7 +266,7 @@ PUBLIC int maSslModuleInit(Http *http, MprModule *mp)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

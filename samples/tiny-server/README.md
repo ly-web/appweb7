@@ -1,9 +1,11 @@
 Tiny Server Sample
 ===
 
-This sample shows how to shrink Appweb using various appweb.conf configuration directives.
+This sample shows how to run Appweb while limit resources to be as small as possible
+using appweb.conf configuration directives.
 
-To really shrink appweb, configure without all features, and then re-add only those you need:
+To really shrink appweb, configure appweb from source without all features, and then 
+re-add only those you need:
 
     ./configure --without all --with esp
     bit
@@ -29,7 +31,6 @@ Code:
 ---
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [auth.conf](auth.conf) - User/Password/Role authorization file
-* [esp.conf](esp.conf) - ESP compiler rules
 * [index.html](index.html) - web page to serve
 * [web](web) - Web content to serve
 * [start.bit](start.bit) - Bit build instructions

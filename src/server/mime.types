@@ -11,6 +11,7 @@ application/sdp sdp
 application/smil smi smil
 application/vnd.mif mif
 application/vnd.ms-excel xls
+application/vnd.ms-fontobject eof
 application/vnd.ms-powerpoint ppt
 application/vnd.rn-realmedia rm
 application/vnd.wap.wbxml wbxml
@@ -24,6 +25,8 @@ application/x-cpio cpio
 application/x-csh csh
 application/x-director dcr dir dxr
 application/x-dvi dvi
+application/x-font-ttf ttf
+application/x-font-opentype otf
 application/x-futuresplash spl
 application/x-gtar gtar
 application/x-gzip gz tgz
@@ -73,6 +76,7 @@ image/gif gif
 image/ief ief
 image/jpeg jpeg jpg jpe
 image/png png
+image/svg+xml svg
 image/tiff tiff tif
 image/vnd.djvu djvu djv
 image/vnd.rn-realpix rp

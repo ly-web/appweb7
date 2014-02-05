@@ -25,7 +25,7 @@ static void incomingSpy(HttpQueue *q, HttpPacket *packet)
 {
     if (packet->content == 0) {
         /*
-            End of input
+            End of input. Set a greeting response header if the input says hello.
          */
         if (q->first && q->first->content && scontains(q->first->content->start, "hello")) {
             httpSetHeader(q->conn, "X-Greeting", "found");
@@ -56,7 +56,7 @@ MprModule *maSpyFilterInit(Http *http, MprModule *module)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

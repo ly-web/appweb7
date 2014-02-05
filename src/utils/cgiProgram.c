@@ -26,7 +26,7 @@
     #define _VSB_CONFIG_FILE "vsbConfig.h"
 #endif
 #if _WIN32 || WINCE
-/* Work-around to allow the windows 7.* SDK to be used with VS 2013 */
+/* Work-around to allow the windows 7.* SDK to be used with VS 2014 */
 #if _MSC_VER >= 1700
     #define SAL_SUPP_H
     #define SPECSTRING_SUPP_H
@@ -47,27 +47,27 @@
 #include <io.h>
 #include <windows.h>
 
-	#define access   _access
-	#define close    _close
-	#define fileno   _fileno
-	#define fstat    _fstat
-	#define getpid   _getpid
-	#define open     _open
-	#define putenv   _putenv
-	#define read     _read
-	#define stat     _stat
-	#define umask    _umask
-	#define unlink   _unlink
-	#define write    _write
-	#define strdup   _strdup
-	#define lseek    _lseek
-	#define getcwd   _getcwd
-	#define chdir    _chdir
-	#define strnset  _strnset
-	#define chmod    _chmod
-	
-	#define mkdir(a,b)  _mkdir(a)
-	#define rmdir(a)    _rmdir(a)
+    #define access   _access
+    #define close    _close
+    #define fileno   _fileno
+    #define fstat    _fstat
+    #define getpid   _getpid
+    #define open     _open
+    #define putenv   _putenv
+    #define read     _read
+    #define stat     _stat
+    #define umask    _umask
+    #define unlink   _unlink
+    #define write    _write
+    #define strdup   _strdup
+    #define lseek    _lseek
+    #define getcwd   _getcwd
+    #define chdir    _chdir
+    #define strnset  _strnset
+    #define chmod    _chmod
+    
+    #define mkdir(a,b)  _mkdir(a)
+    #define rmdir(a)    _rmdir(a)
     typedef int ssize_t;
 #else
 #include <unistd.h>
@@ -657,7 +657,7 @@ int _exit() {
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

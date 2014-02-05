@@ -26,13 +26,18 @@ MAIN(simpleClient, int argc, char **argv, char **envp)
         return 255;
     }
     printf("Server responded with: %s\n", response);
+    /*
+        Alternatively if you already have the MPR initialized, you can use the httpRequest API:
+
+        conn = httpRequest(method, uri, data, err);
+     */
     return 0;
 }
 
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

@@ -21,6 +21,9 @@ Appweb listens on port 8080. Browse to:
  
      http://localhost:8080/
 
+To send data to the handler, use:
+    http --form 'name=john' 8080
+
 Code:
 ---
 * [cppHandler.c](cppHandler.c) - Simple handler

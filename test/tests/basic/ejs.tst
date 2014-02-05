@@ -30,7 +30,7 @@ if (App.config.bit_ejscript) {
         */
     }
 
-    /*  MOB - not yet supported
+    /*  TODO - not yet supported
     function alias() {
         http.get(HTTP + "/SimpleAlias/ejsProgram.ejs")
         assert(http.status == 200)
@@ -120,15 +120,15 @@ if (App.config.bit_ejscript) {
         assert(params["a a"] == "1 1")
         assert(params["b b"] == "2 2")
 
-        http.get(HTTP + "/ejsProgram.ejs?a|b+c#d+e?f+g#h+i'j+kl+m%20n=1234")
+        http.get(HTTP + "/ejsProgram.ejs?a,b+c#d+e?f+g#h+i'j+kl+m%20n=1234")
         let resp = deserialize(http.response)
-        assert(resp.params["a|b c#d e?f g#h i'j kl m n"] == 1234)
-        assert(resp.query == "a|b+c#d+e?f+g#h+i\'j+kl+m%20n=1234")
+        assert(resp.params["a,b c#d e?f g#h i'j kl m n"] == 1234)
+        assert(resp.query == "a,b+c#d+e?f+g#h+i\'j+kl+m%20n=1234")
     }
 
     basic()
     forms()
-    /* MOB - not using aliases
+    /* TODO - not using aliases
         alias()
     */
     query()

@@ -24,7 +24,6 @@
 typedef struct Sdb {
     Edi             edi;            /**< EDI database interface structure */
     sqlite3         *db;            /**< SQLite database handle */
-    MprHash         *validations;   /**< Validations */
     MprHash         *schemas;       /**< Table schemas */
 } Sdb;
 
@@ -63,6 +62,7 @@ static char *dataTypeToSqlType[] = {
 
 /************************************ Forwards ********************************/
 
+static void cloneValidations(Edi *edi, Edi *base);
 static EdiRec *createBareRec(Edi *edi, cchar *tableName, int nfields);
 static EdiField makeRecField(cchar *value, cchar *name, int type);
 static void manageSdb(Sdb *sdb, int flags);
@@ -84,7 +84,7 @@ static int sdbRemoveRec(Edi *edi, cchar *tableName, cchar *key);
 static MprList *sdbGetColumns(Edi *edi, cchar *tableName);
 static int sdbGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid);
 static MprList *sdbGetTables(Edi *edi);
-static int sdbGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numCols);
+static int sdbGetTableDimensions(Edi *edi, cchar *tableName, int *numRows, int *numCols);
 static int sdbLookupField(Edi *edi, cchar *tableName, cchar *fieldName);
 static Edi *sdbOpen(cchar *path, int flags);
 PUBLIC EdiGrid *sdbQuery(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list vargs);
@@ -100,16 +100,14 @@ static int sdbSave(Edi *edi);
 static void sdbTrace(Edi *edi, int level, cchar *fmt, ...);
 static int sdbUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName, cchar *value);
 static int sdbUpdateRec(Edi *edi, EdiRec *rec);
-static bool sdbValidateRec(Edi *edi, EdiRec *rec);
-static bool validateField(Sdb *sdb, EdiRec *rec, cchar *tableName, cchar *columnName, cchar *value);
 static bool validName(cchar *str);
 
 static EdiProvider SdbProvider = {
     "sdb",
-    sdbAddColumn, sdbAddIndex, sdbAddTable, sdbAddValidation, sdbChangeColumn, sdbClose, sdbCreateRec, sdbDelete, 
-    sdbGetColumns, sdbGetColumnSchema, sdbGetTables, sdbGetTableSchema, NULL, sdbLookupField, sdbOpen, sdbQuery, 
+    sdbAddColumn, sdbAddIndex, sdbAddTable, sdbChangeColumn, sdbClose, sdbCreateRec, sdbDelete, 
+    sdbGetColumns, sdbGetColumnSchema, sdbGetTables, sdbGetTableDimensions, NULL, sdbLookupField, sdbOpen, sdbQuery, 
     sdbReadField, sdbReadRec, sdbReadWhere, sdbRemoveColumn, sdbRemoveIndex, sdbRemoveRec, sdbRemoveTable, 
-    sdbRenameTable, sdbRenameColumn, sdbSave, sdbUpdateField, sdbUpdateRec, sdbValidateRec,
+    sdbRenameTable, sdbRenameColumn, sdbSave, sdbUpdateField, sdbUpdateRec,
 };
 
 /************************************* Code ***********************************/
@@ -134,8 +132,9 @@ static Sdb *sdbCreate(cchar *path, int flags)
     sdb->edi.provider = &SdbProvider;
     sdb->edi.path = sclone(path);
     sdb->edi.schemaCache = mprCreateHash(0, 0);
+    sdb->edi.validations = mprCreateHash(0, 0);
+    sdb->edi.mutex = mprCreateLock();
     sdb->schemas = mprCreateHash(0, MPR_HASH_STABLE);
-    sdb->validations = mprCreateHash(0, MPR_HASH_STABLE);
     return sdb;
 }
 
@@ -146,8 +145,9 @@ static void manageSdb(Sdb *sdb, int flags)
         mprMark(sdb->edi.path);
         mprMark(sdb->edi.schemaCache);
         mprMark(sdb->edi.errMsg);
+        mprMark(sdb->edi.mutex);
+        mprMark(sdb->edi.validations);
         mprMark(sdb->schemas);
-        mprMark(sdb->validations);
 
     } else if (flags & MPR_MANAGE_FREE) {
         sdbClose((Edi*) sdb);
@@ -317,38 +317,6 @@ static int sdbAddTable(Edi *edi, cchar *tableName)
      */
     removeSchema(edi, tableName);
     return query(edi, sfmt("CREATE TABLE %s (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL);", tableName), NULL) != 0;
-
-}
-
-
-static int sdbAddValidation(Edi *edi, cchar *tableName, cchar *columnName, EdiValidation *vp)
-{
-    Sdb             *sdb;
-    MprList         *validations;
-    EdiValidation   *prior;
-    cchar           *vkey;
-    int             next;
-
-    assert(edi);
-    assert(tableName && *tableName);
-    assert(columnName && *columnName);
-    assert(vp);
-
-    sdb = (Sdb*) edi;
-    vkey = sfmt("%s.%s", tableName, columnName);
-    if ((validations = mprLookupKey(sdb->validations, vkey)) == 0) {
-        validations = mprCreateList(0, MPR_LIST_STABLE);
-        mprAddKey(sdb->validations, vkey, validations);
-    }
-    for (ITERATE_ITEMS(validations, prior, next)) {
-        if (prior->vfn == vp->vfn) {
-            break;
-        }
-    }
-    if (!prior) {
-        mprAddItem(validations, vp);
-    }
-    return 0;
 }
 
 
@@ -437,7 +405,7 @@ static MprList *sdbGetTables(Edi *edi)
 }
 
 
-static int sdbGetTableSchema(Edi *edi, cchar *tableName, int *numRows, int *numCols)
+static int sdbGetTableDimensions(Edi *edi, cchar *tableName, int *numRows, int *numCols)
 {
     EdiGrid     *grid;
     EdiRec      *schema;
@@ -618,29 +586,6 @@ static int sdbSave(Edi *edi)
 }
 
 
-static bool sdbValidateRec(Edi *edi, EdiRec *rec)
-{
-    Sdb         *sdb;
-    EdiField    *fp;
-    bool        pass;
-    int         c;
-
-    if (!rec) {
-        return 0;
-    }
-    sdb = (Sdb*) edi;
-    pass = 1;
-    for (c = 0; c < rec->nfields; c++) {
-        fp = &rec->fields[c];
-        if (!validateField(sdb, rec, rec->tableName, fp->name, fp->value)) {
-            pass = 0;
-            /* Keep going */
-        }
-    }
-    return pass;
-}
-
-
 /*
     Map values before storing in the database
     While not required, it is prefereable to normalize the storage of some values.
@@ -697,7 +642,7 @@ static int sdbUpdateRec(Edi *edi, EdiRec *rec)
     cchar       **argv;
     int         argc, f;
 
-    if (!sdbValidateRec(edi, rec)) {
+    if (!ediValidateRec(rec)) {
         return MPR_ERR_CANT_WRITE;
     }
     if ((argv = mprAlloc(((rec->nfields * 2) + 2) * sizeof(cchar*))) == 0) {
@@ -888,36 +833,6 @@ static EdiGrid *queryv(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list var
 }
 
 
-static bool validateField(Sdb *sdb, EdiRec *rec, cchar *tableName, cchar *columnName, cchar *value)
-{
-    EdiValidation   *vp;
-    MprList         *validations;
-    cchar           *error, *vkey;
-    int             next;
-    bool            pass;
-
-    assert(sdb);
-    assert(rec);
-    assert(tableName && *tableName);
-    assert(columnName && *columnName);
-
-    pass = 1;
-    vkey = sfmt("%s.%s", tableName, columnName);
-    if ((validations = mprLookupKey(sdb->validations, vkey)) != 0) {
-        for (ITERATE_ITEMS(validations, vp, next)) {
-            if ((error = (*vp->vfn)(vp, rec, columnName, value)) != 0) {
-                if (rec->errors == 0) {
-                    rec->errors = mprCreateHash(0, MPR_HASH_STABLE);
-                }
-                mprAddKey(rec->errors, columnName, sfmt("%s %s", columnName, error));
-                pass = 0;
-            }
-        }
-    }
-    return pass;
-}
-
-
 static EdiRec *createBareRec(Edi *edi, cchar *tableName, int nfields)
 {
     EdiRec  *rec;
@@ -1104,7 +1019,7 @@ PUBLIC void sdbDummy() {}
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

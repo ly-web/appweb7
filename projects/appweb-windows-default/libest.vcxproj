@@ -13,7 +13,7 @@
   </ItemDefinitionGroup>
 
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{bd317f6c-463f-4d3e-8305-d48f695faf85}</ProjectGuid>
+    <ProjectGuid>{65f5f0d9-39cb-4a86-9dd5-8fc9f27acd00}</ProjectGuid>
     <RootNamespace />
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -100,7 +100,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <ClCompile Include="..\..\src\deps\est\estLib.c" />
+    <ClCompile Include="..\..\src\paks\est\estLib.c" />
   </ItemGroup>
 
   <ItemGroup>
@@ -114,7 +114,7 @@
   </Link>
 
   <CustomBuildStep>
-    <Command>cd ..\..\src\deps\est
+    <Command>cd ..\..\src\paks\est
 copy /Y est.h $(IncDir)
 cd ..\..\..\projects\appweb-windows-default</Command>
     <Outputs>$(BinDir)\libest.dll</Outputs>

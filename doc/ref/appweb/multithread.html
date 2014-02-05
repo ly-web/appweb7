@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.4.4 Documentation</title>
+    <title>Embedthis Appweb 4.5.0-rc.3 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.4.4</div>
+                <div class="version">Embedthis Appweb 4.5.0-rc.3</div>
             </div>
         </div>
         <div class="crumbs">
@@ -92,11 +92,13 @@
             are event queues on which all I/O and other event activity for a request can be queued and serviced. 
             Each request has its own dispatcher and so events for a request are serialized.  When a network I/O event
             is received by Appweb for a request, an event is queued on the request's dispatcher. If the request is 
-            currently active (using a thread from the thread pool), the event is queued and no further action is taken. 
+            currently active (using a thread from the thread pool), the event is queued and no immediate action is taken. 
             When the request has finished its current activity, it will service events on its dispatcher queue and 
             eventually service the I/O event. If the request is currently idle, a thread is assigned from the thread 
             pool for the request, and the thread is resumed to service the request's dispatcher queue. This greatly 
             simplifies Appweb as all activity for a request is thus serialized via the dispatcher queue.</p>
+            <p>By using event dispatchers, multithread locking is not required on every API &mdash; because activity
+            is serialized by the dispatcher. This significantly boosts performance and reduces the risk of lock contention.</p>
             <a id="multithreaded"></a>
             <h3>Multithreaded Appweb</h3>
             <p>By using request dispatchers, Appweb serializes all request activity, yet it can support many 
@@ -124,7 +126,7 @@
 <!-- BeginDsi "dsi/bottom.html" -->
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2013.
+            <a href="../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2014.
             All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>

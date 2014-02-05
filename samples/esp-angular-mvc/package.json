@@ -1,0 +1,41 @@
+{
+    "name": "esp-angular-mvc",
+    "description": "Sample for esp-angular-mvc",
+    "version": "1.0.0",
+    "dependencies": {
+        "esp-angular": "*",
+        "less": "*",
+        "more": "*"
+    },
+    "esp": {
+        "scripts": {
+            "jquery": ["jquery.js"],
+            "angular": [
+                "angular.js",
+                "angular-animate.js",
+                "angular-route.js"
+            ],
+            "esp-angular": ["*"],
+            "less": ["*"],
+        },
+        "serverPrefix": "/do",
+        "formats": {
+            "date": "yyyy-MM-dd",
+            "float": 2
+        },
+        "json": true
+        "server": {
+            "database": "mdb://blog.mdb"
+        },
+    },
+    "generate": {
+        "top": "angular-mvc",
+        "scaffold": true,
+        "clientModel": true,
+        "clientController": true,
+        "clientView": true,
+        "controller": true,
+        "migration": true,
+        "view": false
+    }
+}

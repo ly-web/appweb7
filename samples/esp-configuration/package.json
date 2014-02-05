@@ -1,0 +1,151 @@
+/*
+    esp.json - ESP configuration file
+
+    This configuration file is made available to the server-side and client-side ESP application.
+    The "server" properties are not passed to the client.
+
+    The format of this file is an enhanced JSON file. Property keys do not need to be enclosed in quotes.
+    Also the last property in a collection may be terminated with a comma.
+{
+    "name": "blog",
+    "description": "blog",
+    "version": "1.0.0",
+
+    "esp": {
+        /* 
+            Name of the Auth Store to use, "app" means user credentials are stored in a server-side application database
+         */
+        "auth": "app",
+        
+        /*
+            Components used by this application.
+         */
+        "scripts": {
+            "angular": [
+                "angular.js",
+                "angular-animate.js",
+                "angular-route.js"
+            ],
+            "esp-angular": [ "*" ],
+            "less": [ "*" ],
+        },
+
+        /*
+            Default presentation formats for various types
+         */
+        "formats": {
+            "date": "yyyy-MM-dd",
+            "float": 2,
+        },
+
+        /*
+            Expect requests and responses in JSON format
+         */
+        "json": true,
+
+        /*
+            Set if a login is required to the login home page
+         */
+        "loginRequired": "",
+
+        /*
+            Redirect all traffic over HTTPS
+         */
+        "redirect": "secure"
+
+        /*
+            Default refresh period to use for dynamic data polling
+         */
+        "refresh": 1000,
+
+        /*
+            Routing prefix for server-side URIs
+         */
+        "serverPrefix": "/do",
+
+        /*
+            Default timeouts (secs)
+         */
+        "timeouts": {
+            "session": 1800,
+        },
+
+        /*
+            Set to include a XSRF token to minimize CSRF vulnerabilies
+         */
+        "xsrf": true,
+
+        /*
+            Server side properties not passed to the client
+         */
+        "server": {
+            "database": "mdb://blog.mdb"
+        },
+    },
+
+    /*
+        Application mode. This selects a set of properties below and copies them to settings
+     */
+    "mode": "debug",
+    "modes": {
+        "debug": {
+            /*
+                Application compiled flat via "esp --flat compile"
+             */
+            "flat": false,
+
+            /*
+                Display server-side errors in the browser
+             */
+            "showErrors": true,
+
+            /*
+                Keep intermediate source for views in the cache directory
+             */
+            "keepSource": true,
+
+            /*
+                Transparently recompile updated views, controllers and source
+             */
+            "update": true,
+
+            /*
+                Automatic login credentials.
+             */
+            "login": {
+                "name": "",
+                "abilities": {
+                    "edit": true,
+                    "view": true,
+                },
+            },
+        },
+        "release": {
+            "flat": true,
+            "map": "compressed",
+            "showErrors": false,
+            "update": false,
+            "keepSource": false,
+            "login": {
+                "name": "",
+                "abilities": {
+                    "edit": true,
+                    "view": true,
+                },
+            },
+        },
+    },
+    /*
+        Generation hints for "esp generate"
+     */
+    "generate": {
+        "top": "html-mvc",
+        "scaffold": true,
+        "clientModel": false,
+        "clientController": false,
+        "clientView": false,
+        "controller": true,
+        "migration": true,
+        "view": false
+    },
+},

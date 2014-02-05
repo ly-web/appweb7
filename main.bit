@@ -5,14 +5,14 @@
 Bit.load({
     blend: [
         "${BITS}/embedthis.bit",
-        "src/deps/mpr/mpr.bit",
-        "src/deps/est/est.bit",
-        "src/deps/pcre/pcre.bit",
-        "src/deps/http/http.bit",
-        "src/deps/sqlite/sqlite.bit",
+        "src/paks/mpr/mpr.bit",
+        "src/paks/est/est.bit",
+        "src/paks/pcre/pcre.bit",
+        "src/paks/http/http.bit",
+        "src/paks/sqlite/sqlite.bit",
         "src/libappweb.bit",
         "src/esp/esp.bit",
-        "?src/deps/ejs/ejs.bit",
+        "?src/paks/ejs/ejs.bit",
         "src/modules/modules.bit",
         "src/utils/utils.bit",
         "src/server/server.bit",
@@ -35,12 +35,7 @@ Bit.load({
     ],
 
     settings: {
-        product: 'appweb',
-        title: 'Embedthis Appweb',
-        company: 'Embedthis',
-        version: '4.4.4',
-        buildNumber: '0',
-        bit: '0.8.7',
+        bit: '0.9.3',
 
         /*
             Installation prefix set
@@ -73,7 +68,8 @@ Bit.load({
         /*
             Optional packs to automatically discover and configure
          */
-        '+discover': [ 'cgi', 'dir', 'doxygen', 'dsi', 'esp', 'man', 'man2html', 'mdb', 'pmaker', 'ssl', 'utest', 'zip' ],
+        '+discover': [ 'cgi', 'dir', 'doxygen', 'dsi', 'esp', 'gzip', 'htmlmin', 'man', 'man2html', 'mdb', 'ngmin', 'pak', 
+                'pmaker', 'recess', 'ssl', 'uglifyjs', 'utest', 'zip' ],
 
         /*
             Packs to disable when using --without all
@@ -85,6 +81,11 @@ Bit.load({
          */
         static: false,
 
+        /*
+            Enable extra security measures that are not required, but have a small performance penalty.
+         */
+        extraSecurity: false,
+
         http: {
             /* Use PAM (Plugable Authentication Module) to store passwords */
             pam: true,
@@ -95,10 +96,16 @@ Bit.load({
             db: true,                                                                                     
             mail: true,                                                                                   
             mapper: true,                                                                                 
+            shell: true,
             tar: true,                                                                                     
             template: true,                                                                               
             web: true,                                                                                    
             zlib: true,
+        },
+
+        esp: {
+            /* Reverse this in 5.0 */
+            legacy: true,
         },
 
         /*
@@ -121,17 +128,19 @@ Bit.load({
                 The default is to enable logging for both debug and release builds.
              */
             logging: true,
-
             manager: 'appman',
 
             /*
                 Enable debug trace and asserts to the log file.
                 This is enabled by default for debug builds. 
+                tracing: true,
              */
-            // tracing: true,
 
             alloc: {
                 // cache: 10000000,     /* Keep up to this amount of heap cached for fast allocation */
+            },
+            ssl: {
+                renegotiate: true,     /* Enable/Disable SSL renegotiation (defaults to true) */
             },
         },
 
@@ -183,6 +192,7 @@ Bit.load({
         projects: {
             action: "genProjects('')",
         },
+
         mine: {
             action: "genProjects('-with ejscript -with est -with sdb', 'mine', Config.OS + '-' + Config.CPU)",
         },

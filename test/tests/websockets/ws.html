@@ -12,7 +12,7 @@
     // ws = new WebSocket('ws://node.remysharp.com:8001');
     ws = new WebSocket('ws://localhost:4100/websockets/basic/send', ['chat']);
 
-    //  MOB - can't send here until handshake received
+    //  TODO - can't send here until handshake received
     // ws.send(JSON.stringify('Hello WebSockets World'));
 
     ws.onopen = function (event) {

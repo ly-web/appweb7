@@ -1,7 +1,7 @@
 /*
     chunk.tst - Test chunked transfer encoding for response data
 
-    MOB - incomplete
+    TODO - incomplete
  */
 
 const HTTP = App.config.uris.http || "127.0.0.1:4100"

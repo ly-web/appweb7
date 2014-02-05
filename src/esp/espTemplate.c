@@ -20,9 +20,11 @@
 #define ESP_TOK_PARAM           2            /* @@param */
 #define ESP_TOK_FIELD           3            /* @#field */
 #define ESP_TOK_VAR             4            /* @!var */
-#define ESP_TOK_LITERAL         5            /* literal HTML */
-#define ESP_TOK_EXPR            6            /* <%= expression %> */
-#define ESP_TOK_CONTROL         7            /* <%@ control */
+#define ESP_TOK_HOME            5            /* @~ Home ULR */
+#define ESP_TOK_SERVER          6            /* @^ Server URL  */
+#define ESP_TOK_LITERAL         7            /* literal HTML */
+#define ESP_TOK_EXPR            8            /* <%= expression %> */
+#define ESP_TOK_CONTROL         9            /* <%@ control */
 
 /**
     ESP page parser structure
@@ -51,7 +53,8 @@ static cchar *getLibs(cchar *os);
 static cchar *getMappedArch(cchar *arch);
 static cchar *getObjExt(cchar *os);
 static cchar *getVisualStudio();
-static cchar *getWinSDK();
+static cchar *getWinSDK(HttpRoute *route);
+static cchar *getWinVer(HttpRoute *route);
 static cchar *getVxCPU(cchar *arch);
 static bool matchToken(cchar **str, cchar *token);
 
@@ -156,7 +159,10 @@ PUBLIC char *espExpandCommand(HttpRoute *route, cchar *command, cchar *source, c
                 mprPutStringToBuf(buf, getVxCPU(arch));
 
             } else if (matchToken(&cp, "${WINSDK}")) {
-                mprPutStringToBuf(buf, getWinSDK());
+                mprPutStringToBuf(buf, getWinSDK(route));
+
+            } else if (matchToken(&cp, "${WINVER}")) {
+                mprPutStringToBuf(buf, getWinVer(route));
 
             /*
                 These vars can be also be configured from environment variables.
@@ -249,7 +255,7 @@ static int runCommand(HttpRoute *route, MprDispatcher *dispatcher, cchar *comman
         WARNING: GC will run here
      */
     mprHold((void*) commandLine);
-    rc = mprRunCmd(cmd, commandLine, env, &out, &err, -1, 0);
+    rc = mprRunCmd(cmd, commandLine, env, NULL, &out, &err, -1, 0);
     mprRelease((void*) commandLine);
 
     if (rc != 0) {
@@ -257,9 +263,9 @@ static int runCommand(HttpRoute *route, MprDispatcher *dispatcher, cchar *comman
             /* Windows puts errors to stdout Ugh! */
             err = out;
         }
-        mprError("ESP: Cannot run command %s, error %s", commandLine, err);
+        mprError("ESP: Cannot run command: %s, error %s", commandLine, err);
         if (route->flags & HTTP_ROUTE_SHOW_ERRORS) {
-            *errMsg = sfmt("Cannot run command %s, error %s", commandLine, err);
+            *errMsg = sfmt("Cannot run command: %s, error %s", commandLine, err);
         } else {
             *errMsg = "Cannot compile view";
         }
@@ -290,6 +296,7 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
     layout = 0;
     *errMsg = 0;
 
+    mprLog(2, "esp: compile %s", source);
     if (isView) {
         if ((page = mprReadPathContents(source, &len)) == 0) {
             *errMsg = sfmt("Cannot read %s", source);
@@ -306,7 +313,7 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
             return 0;
         }
         csource = mprJoinPathExt(mprTrimPathExt(module), ".c");
-        mprMakeDir(mprGetPathDir(csource), 0775, 0, -1, 1);
+        mprMakeDir(mprGetPathDir(csource), 0775, -1, -1, 1);
         if ((fp = mprOpenFile(csource, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
             *errMsg = sfmt("Cannot open compiled script file %s", csource);
             return 0;
@@ -321,7 +328,7 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
     } else {
         csource = source;
     }
-    mprMakeDir(eroute->cacheDir, 0775, -1, -1, 1);
+    mprMakeDir(mprGetPathDir(module), 0775, -1, -1, 1);
 
 #if BIT_WIN_LIKE
     {
@@ -425,7 +432,7 @@ static char *joinLine(cchar *str, ssize *lenp)
     int     count, bquote;
 
     for (count = 0, cp = str; *cp; cp++) {
-        if (*cp == '\n') {
+        if (*cp == '\n' || *cp == '\r') {
             count++;
         }
     }
@@ -472,8 +479,11 @@ static char *joinLine(cchar *str, ssize *lenp)
         %>                  End esp section
         -%>                 End esp section and trim trailing newline
 
-        @@var               Substitue the value of a variable. Var can also be simple expressions (without spaces)
+        @@var               Substitue the value of a parameter. 
+        @!var               Substitue the value of a variable. Var can also be simple expressions (without spaces)
         @#field             Lookup the current record for the value of the field.
+        @~                  Home URL for the application
+        @|                  Top level server side URL
 
  */
 PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
@@ -509,7 +519,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
 
     while (tid != ESP_TOK_EOF) {
         token = mprGetBufStart(parse.token);
-#if FUTURE
+#if KEEP
         if (state->lineNumber != lastLine) {
             mprPutToBuf(script, "\n# %d \"%s\"\n", state->lineNumber, path);
         }
@@ -538,7 +548,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         case ESP_TOK_CONTROL:
             control = stok(token, " \t\r\n", &token);
             if (scmp(control, "content") == 0) {
-                mprPutStringToBuf(body, CONTENT_MARKER);
+                mprPutStringToBuf(body, ESP_CONTENT_MARKER);
 
             } else if (scmp(control, "include") == 0) {
                 if (token == 0) {
@@ -594,7 +604,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                 if (token == 0) { 
                     token = "";
                 }
-                /* If users want a format and safe, use %S or renderSafe() */
+                /* Default without format is safe. If users want a format and safe, use %S or renderSafe() */
                 token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
                 mprPutToBuf(body, "  espRender(conn, \"%s\", %s);\n", fmt, token);
             } else {
@@ -621,6 +631,16 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             mprPutToBuf(body, "  espRenderString(conn, %s);\n", token);
             break;
 
+        case ESP_TOK_HOME:
+            /* @~ Home URL */
+            mprPutToBuf(body, "  espRenderString(conn, conn->rx->route->prefix);");
+            break;
+
+        case ESP_TOK_SERVER:
+            /* @^ Server URL */
+            mprPutToBuf(body, "  espRenderString(conn, sjoin(conn->rx->route->prefix ? conn->rx->route->prefix : \"\", conn->rx->route->serverPrefix, NULL));");
+            break;
+
         case ESP_TOK_LITERAL:
             line = joinLine(token, &len);
             mprPutToBuf(body, "  espRenderBlock(conn, \"%s\", %d);\n", line, len);
@@ -642,12 +662,12 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             return 0;
         }
 #if BIT_DEBUG
-        if (!scontains(layoutCode, CONTENT_MARKER)) {
+        if (!scontains(layoutCode, ESP_CONTENT_MARKER)) {
             *err = sfmt("Layout page is missing content marker: %s", layout);
             return 0;
         }
 #endif
-        bodyCode = sreplace(layoutCode, CONTENT_MARKER, mprGetBufStart(body));
+        bodyCode = sreplace(layoutCode, ESP_CONTENT_MARKER, mprGetBufStart(body));
     } else {
         bodyCode = mprGetBufStart(body);
     }
@@ -791,7 +811,33 @@ static int getEspToken(EspParse *parse)
         case '@':
             if ((next == start) || next[-1] != '\\') {
                 t = next[1];
-                if (t == '@' || t == '#' || t == '!') {
+                if (t == '~') {
+                    next += 2;
+                    if (mprGetBufLength(parse->token) > 0) {
+                        next -= 3;
+                    } else {
+                        tid = ESP_TOK_HOME;
+                        if (!addChar(parse, c)) {
+                            return ESP_TOK_ERR;
+                        }
+                        next--;
+                    }
+                    done++;
+
+                } else if (t == BIT_SERVER_PREFIX_CHAR) {
+                    next += 2;
+                    if (mprGetBufLength(parse->token) > 0) {
+                        next -= 3;
+                    } else {
+                        tid = ESP_TOK_SERVER;
+                        if (!addChar(parse, c)) {
+                            return ESP_TOK_ERR;
+                        }
+                        next--;
+                    }
+                    done++;
+
+                } else if (t == '@' || t == '#' || t == '!') {
                     next += 2;
                     if (mprGetBufLength(parse->token) > 0) {
                         next -= 3;
@@ -811,6 +857,11 @@ static int getEspToken(EspParse *parse)
                             }
                         }
                         next--;
+                    }
+                    done++;
+                } else {
+                    if (!addChar(parse, c)) {
+                        return ESP_TOK_ERR;
                     }
                     done++;
                 }
@@ -1022,37 +1073,97 @@ static cchar *getMappedArch(cchar *arch)
 }
 
 
-static cchar *getWinSDK()
+#if WINDOWS
+//  TODO - move to mpr
+static int reverseSortVersions(char **s1, char **s2)
+{
+    return -scmp(*s1, *s2);
+}
+#endif
+
+
+static cchar *getWinSDK(HttpRoute *route)
 {
 #if WINDOWS
-    char *versions[] = { "8.0", "7.1", "7.0A", "7.0", 0 };
+    EspRoute *eroute;
+
     /*
-        MS has made a big mess of where and how the windows SDKs are installed. The registry key at 
+        MS has made a huge mess of where and how the windows SDKs are installed. The registry key at 
         HKLM/Software/Microsoft/Microsoft SDKs/Windows/CurrentInstallFolder can't be trusted and often
         points to the old 7.X SDKs even when 8.X is installed and active. MS have also moved the 8.X
         SDK to Windows Kits, while still using the old folder for some bits. So the old-reliable
         CurrentInstallFolder registry key is now unusable. So we must scan for explicit SDK versions 
         listed above. Ugh!
      */
-    cchar   *path, *key, **vp;
+    cchar   *path, *key, *version;
+    MprList *versions;
+    int     i;
 
-    for (vp = versions; *vp; vp++) {
-        key = sfmt("HKLM\\SOFTWARE%s\\Microsoft\\Microsoft SDKs\\Windows\\v%s", (BIT_64) ? "\\Wow6432Node" : "", *vp);
-        if ((path = mprReadRegistry(key, "InstallationFolder")) != 0) {
-            break;
+    eroute = route->eroute;
+    if (eroute->winsdk) {
+        return eroute->winsdk;
+    }
+    /* 
+        General strategy is to find an "include" directory in the highest version Windows SDK.
+        First search the registry key: Windows Kits/InstalledRoots/KitsRoot*
+     */
+    key = sfmt("HKLM\\SOFTWARE%s\\Microsoft\\Windows Kits\\Installed Roots", (BIT_64) ? "\\Wow6432Node" : "");
+    versions = mprListRegistry(key);
+    mprSortList(versions, (MprSortProc) reverseSortVersions, 0);
+    path = 0;
+    for (ITERATE_ITEMS(versions, version, i)) {
+        if (scontains(version, "KitsRoot")) {
+            path = mprReadRegistry(key, version);
+            if (mprPathExists(mprJoinPath(path, "Include"), X_OK)) {
+                break;
+            }
+            path = 0;
         }
     }
     if (!path) {
-        /* Old Windows SDK 7 registry location */
+        /* 
+            Next search the registry keys at Windows SDKs/Windows/ * /InstallationFolder
+         */
+        key = sfmt("HKLM\\SOFTWARE%s\\Microsoft\\Microsoft SDKs\\Windows", (BIT_64) ? "\\Wow6432Node" : "");
+        versions = mprListRegistry(key);
+        mprSortList(versions, (MprSortProc) reverseSortVersions, 0);
+        for (ITERATE_ITEMS(versions, version, i)) {
+            if ((path = mprReadRegistry(sfmt("%s\\%s", key, version), "InstallationFolder")) != 0) {
+                if (mprPathExists(mprJoinPath(path, "Include"), X_OK)) {
+                    break;
+                }
+                path = 0;
+            }
+        }
+    }
+    if (!path) {
+        /* Last chance: Old Windows SDK 7 registry location */
         path = mprReadRegistry("HKLM\\SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows", "CurrentInstallFolder");
     }
     if (!path) {
         path = "${WINSDK}";
     }
-    return strim(path, "\\", MPR_TRIM_END);
+    mprLog(4, "Using Windows SDK at %s", path);
+    eroute->winsdk = strim(path, "\\", MPR_TRIM_END);
+    return eroute->winsdk;
 #else
     return "";
 #endif
+}
+
+
+static cchar *getWinVer(HttpRoute *route)
+{
+    MprList     *versions;
+    cchar       *winver, *winsdk;
+
+    winsdk = getWinSDK(route);
+    versions = mprGlobPathFiles(mprJoinPath(winsdk, "Lib"), "*", MPR_PATH_RELATIVE);
+    mprSortList(versions, 0, 0);
+    if ((winver = mprGetLastItem(versions)) == 0) {
+        winver = sclone("win8");
+    }
+    return winver;
 }
 
 
@@ -1061,7 +1172,8 @@ static cchar *getVisualStudio()
 #if WINDOWS
     cchar   *path;
     int     v;
-    for (v = 13; v >= 8; v--) {
+    /* VS 2013 == 12.0 */
+    for (v = 16; v >= 8; v--) {
         if ((path = mprReadRegistry(ESP_VSKEY, sfmt("%d.0", v))) != 0) {
             path = strim(path, "\\", MPR_TRIM_END);
             break;
@@ -1132,7 +1244,7 @@ static cchar *getCompilerPath(cchar *os, cchar *arch)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

@@ -34,7 +34,7 @@ assert(http.status == 200)
 
 http.setCredentials("mary", "pass2")
 http.get(HTTP + "/auth/basic/joshua/user.html")
-assert(http.status == 403)
+assert(http.status == 401)
 
 if (App.config.bit_cgi && global.test && test.hostOs != "VXWORKS") {
     // Requires /bin/sh 

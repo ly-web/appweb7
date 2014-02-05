@@ -45,7 +45,7 @@ static void openEjs(HttpQueue *q)
         return;
     }
     /*
-        TODO OPT - check this pool is usable over all routes
+        FUTURE OPT - check this pool is usable over all routes
      */
     if (!route->context) {
         if (route->script == 0 && route->scriptPath == 0) {
@@ -170,7 +170,7 @@ PUBLIC int maEjsHandlerInit(Http *http, MprModule *module)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

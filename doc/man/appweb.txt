@@ -10,8 +10,8 @@ SYNOPSIS
        appweb [options] [IP][:port] [documentRoot]
 
        appweb  [--config  configFile] [--chroot directory] [--debugger] [--exe
-       path] [--log logSpec] [--home directory]  [--threads  threads]  [--ver-
-       bose] [--version]
+       path] [--home directory] [--log logSpec] [--name uniqueName] [--threads
+       threads] [--version] [--verbose]
 
 DESCRIPTION
        Appweb  is  a  compact  embedded HTTP web server.  It is a fast, small-
@@ -70,13 +70,12 @@ OPTIONS
        --home directory
               Define the server home directory for Appweb.
 
-       --threads numThreads
-              Specify  the  maximum  number  of  threads to use for the appweb
-              thread pool. This overrides the ThreadLimit  configuration  file
-              directive.
+       --name NAME
+              Define  a unique name for this instance of Appweb. Useful for ps
+              -ef listings.
 
        --verbose
-              Shorthand  for  --log  stdout:4.  The  -v option is an alias for
+              Shorthand for --log stdout:4. The -v  option  is  an  alias  for
               --verbose.
 
        --version
@@ -93,11 +92,11 @@ REPORTING BUGS
        Report bugs to <dev@embedthis.com>.
 
 COPYRIGHT
-       Copyright (C) 2003-2013 Embedthis Software.
+       Copyright (C) 2003-2014 Embedthis Software.
 
 SEE ALSO
-       http
+       appman authpass esp http
 
 
 
-appweb                            March 2013                         APPWEB(1)
+appweb                            March 2014                         APPWEB(1)

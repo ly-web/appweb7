@@ -1,4 +1,4 @@
-.TH APPWEB "1" "March 2013" "appweb" "User Commands"
+.TH APPWEB "1" "March 2014" "appweb" "User Commands"
 .SH NAME
 appweb\- Embedded HTTP Web Server
 .SH SYNOPSIS
@@ -11,11 +11,12 @@ appweb\- Embedded HTTP Web Server
 [\fI--chroot directory\fR]
 [\fI--debugger\fR]
 [\fI--exe path\fR]
-[\fI--log logSpec\fR]
 [\fI--home directory\fR] 
+[\fI--log logSpec\fR]
+[\fI--name uniqueName\fR]
 [\fI--threads threads\fR]
-[\fI--verbose\fR]
 [\fI--version\fR]
+[\fI--verbose\fR]
 .SH DESCRIPTION
 Appweb is a compact embedded HTTP web server.  It is a fast, small-footprint, multi-threaded, standards-based, 
 portable server developed for use by embedded devices and applications.  It can run as a stand-alone 
@@ -63,9 +64,8 @@ The syntax is:
 \fB\--home directory\fR
 Define the server home directory for Appweb.
 .TP
-\fB\--threads numThreads\fR
-Specify the maximum number of threads to use for the appweb thread pool. This 
-overrides the ThreadLimit configuration file directive.
+\fB\--name NAME\fR
+Define a unique name for this instance of Appweb. Useful for ps -ef listings.
 .TP
 \fB\--verbose\fR
 Shorthand for --log stdout:4. The \fB-v\fR option is an alias for --verbose.
@@ -87,7 +87,7 @@ Output the product version number.
 .SH "REPORTING BUGS"
 Report bugs to <dev@embedthis.com>.
 .SH COPYRIGHT
-Copyright \(co 2003-2013 Embedthis Software.
+Copyright \(co 2003-2014 Embedthis Software.
 .br
 .SH "SEE ALSO"
-http
+appman authpass esp http 

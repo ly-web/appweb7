@@ -1,4 +1,0 @@
-{
-    name: "html5shiv",
-    description: "Javascript polyfill for IE 8 and before",
-}

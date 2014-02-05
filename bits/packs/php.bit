@@ -21,23 +21,21 @@ Bit.pack({
             }
         },
         path: function (pack) {
-            let cfg
             let path: Path? = pack.withpath
             if (!path) {
-                if (bit.dir.packs.join('php/latest').exists && Config.OS != 'windows') {
-                    path = bit.dir.packs.join('php/latest')
-                } else {
-                    let phpver = Config.OS == 'windows' ? 'php-5.4*' : 'php-5.3*'
-                    let versions = sortVersions(bit.dir.packs.join('php').files(phpver))
-                    if (versions.length == 0) {
-                        throw 'Cannot find php'
+                if (bit.dir.packs) {
+                    path = bit.dir.packs.join('php')
+                } 
+                if (!path.exists) {
+                    path = App.dir.join('../packages-' + bit.platform.os + '-' + bit.platform.arch, 'php')
+                    path = path.files('php*').reverse()[0]
+                    if (!path || !path.exists) {
+                        path = '.'
                     }
-                    path = versions[0]
                 }
             }
-            //  MOB - split here for config
             if (bit.platform.os == 'windows') {
-                let search = [
+                search = [
                     path.join('x64/Release_TS'),
                     path.join('x64/Release'),
                     path.join('Release_TS'),
@@ -55,7 +53,7 @@ Bit.pack({
                 pack.imports = lib.parent.files('php5ts.*')
 
             } else {
-                let search = [path.join('libs'), '/usr/lib', '/lib'] + Path('/lib').files('*-linux-gnu')
+                search = [path.join('libs'), '/usr/lib', '/lib'] + Path('/lib').files('*-linux-gnu')
                 let lib = probe('libphp5.' + bit.ext.shobj, {fullpath: true, search: search}).absolute
                 let incdir = probe('php.h', {search: [path.join('main'), '/usr/include']}).absolute.parent
                 pack.includes = [ incdir, incdir.join('main'), incdir.join('Zend'), incdir.join('TSRM') ],

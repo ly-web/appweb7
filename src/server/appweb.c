@@ -11,7 +11,6 @@
             --home path             # Set the home working directory
             --log logFile:level     # Log to file file at verbosity level
             --name uniqueName       # Name for this instance
-            --threads maxThreads    # Set maximum worker threads
             --version               # Output version information
             -v                      # Same as --log stderr:2
  */
@@ -87,8 +86,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if ((mpr = mprCreate(argc, argv, MPR_USER_EVENTS_THREAD)) == NULL) {
         exit(1);
     }
-    mprSetAppName(BIT_PRODUCT, BIT_TITLE, BIT_VERSION);
-
     if ((app = mprAllocObj(AppwebApp, manageApp)) == NULL) {
         exit(2);
     }
@@ -170,13 +167,14 @@ MAIN(appweb, int argc, char **argv, char **envp)
             verbose++;
 
         } else if (smatch(argp, "--version") || smatch(argp, "-V")) {
-            mprPrintf("%s-%s\n", BIT_VERSION, BIT_BUILD_NUMBER);
+            mprPrintf("%s\n", BIT_VERSION);
             exit(0);
 
-        } else {
-            if (!smatch(argp, "?")) {
-                mprError("Unknown switch \"%s\"", argp);
-            }
+        } else if (*argp == '-' && isdigit((uchar) argp[1])) {
+            verbose = (int) stoi(&argp[1]) - 1;
+
+        } else if (!smatch(argp, "?")) {
+            mprError("Unknown switch \"%s\"", argp);
             usageError();
             exit(5);
         }
@@ -211,15 +209,10 @@ MAIN(appweb, int argc, char **argv, char **envp)
         mprError("Cannot start HTTP service, exiting.");
         exit(9);
     }
-    /*
-        Service I/O events until instructed to exit
-     */
-    while (!mprIsStopping()) {
-        mprServiceEvents(-1, 0);
-    }
-    status = mprGetExitStatus();
+    mprServiceEvents(-1, 0);
+
     mprLog(1, "Stopping Appweb ...");
-    maStopAppweb(app->appweb);
+    status = mprGetExitStatus();
     mprDestroy(MPR_EXIT_DEFAULT);
     return status;
 }
@@ -308,7 +301,7 @@ static int createEndpoints(int argc, char **argv)
         return MPR_ERR_CANT_CREATE;
     }
     loadStaticModules();
-    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
+    mprGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
 
     if (argc > argind) {
         app->documents = sclone(argv[argind++]);
@@ -340,7 +333,7 @@ static int createEndpoints(int argc, char **argv)
 #elif BIT_UNIX_LIKE
     addSignals();
 #endif
-    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
+    mprGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
     return 0;
 }
 
@@ -389,7 +382,6 @@ static void usageError(Mpr *mpr)
         "    --home directory       # Change to directory to run\n"
         "    --log logFile:level    # Log to file file at verbosity level\n"
         "    --name uniqueName      # Unique name for this instance\n"
-        "    --threads maxThreads   # Set maximum worker threads\n"
         "    --verbose              # Same as --log stderr:2\n"
         "    --version              # Output version information\n\n",
         mprGetAppTitle(), name, name, name);
@@ -507,18 +499,21 @@ static int unixSecurityChecks(cchar *program, cchar *home)
  */ 
 static int writePort(MaServer *server)
 {
-    HttpHost    *host;
-    char        numBuf[16], *path;
-    int         fd, len;
+    HttpEndpoint    *endpoint;
+    char            numBuf[16], *path;
+    int             fd, len;
 
-    host = mprGetFirstItem(server->http->hosts);
-    //  TODO - should really go to a BIT_LOG_DIR (then fix uninstall.sh)
+    if ((endpoint = mprGetFirstItem(server->http->endpoints)) == 0) {
+        mprError("No configured endpoints");
+        return MPR_ERR_CANT_ACCESS;
+    }
+    //  FUTURE - should really go to a BIT_LOG_DIR (then fix uninstall.sh)
     path = mprJoinPath(mprGetAppDir(), "../.port.log");
     if ((fd = open(path, O_CREAT | O_WRONLY | O_TRUNC, 0666)) < 0) {
         mprError("Could not create port file %s", path);
         return MPR_ERR_CANT_CREATE;
     }
-    fmt(numBuf, sizeof(numBuf), "%d", host->port);
+    fmt(numBuf, sizeof(numBuf), "%d", endpoint->port);
 
     len = (int) strlen(numBuf);
     numBuf[len++] = '\n';
@@ -567,7 +562,7 @@ double  __dummy_appweb_floating_point_resolution(double a, double b, int64 c, in
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

@@ -133,17 +133,13 @@ static sapi_module_struct phpSapiBlock = {
  */
 static void openPhp(HttpQueue *q)
 {
-    HttpRx      *rx;
-
-    rx = q->conn->rx;
-
     /*
         PHP will buffer all input. i.e. does not stream. The normal Limits still apply.
      */
     q->max = q->pair->max = MAXINT;
     mprTrace(5, "Open php handler");
     httpTrimExtraPath(q->conn);
-    httpMapFile(q->conn, rx->route);
+    httpMapFile(q->conn);
     if (!q->stage->stageData) {
         if (initializePhp(q->conn->http) < 0) {
             httpError(q->conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "PHP initialization failed");
@@ -193,7 +189,7 @@ static void readyPhp(HttpQueue *q)
             SG(request_info).auth_digest = estrdup(value);
         }
         SG(request_info).content_type = rx->mimeType;
-        SG(request_info).path_translated = tx->filename;
+        SG(request_info).path_translated = (char*) tx->filename;
         SG(request_info).content_length = (long) (ssize) rx->length;
         SG(sapi_headers).http_response_code = HTTP_CODE_OK;
         SG(request_info).query_string = rx->parsedUri->query;
@@ -279,7 +275,7 @@ static void flushOutput(void *server_context)
 
     conn = (HttpConn*) server_context;
     if (conn) {
-        httpServiceQueues(conn);
+        httpServiceQueues(conn, HTTP_NON_BLOCK);
     }
 }
 
@@ -293,7 +289,7 @@ static int writeBlock(cchar *str, uint len TSRMLS_DC)
     if (conn == 0) {
         return -1;
     }
-    written = httpWriteBlock(conn->tx->queue[HTTP_QUEUE_TX]->nextQ, str, len, HTTP_BLOCK);
+    written = httpWriteBlock(conn->tx->queue[HTTP_QUEUE_TX]->nextQ, str, len, HTTP_BUFFER);
     mprTrace(6, "phpHandler: write response %d bytes", written);
     if (written <= 0) {
         php_handle_aborted_connection();
@@ -410,11 +406,11 @@ static int writeHeader(sapi_header_struct *sapiHeader, sapi_headers_struct *sapi
 #if PHP_MAJOR_VERSION >=5 && PHP_MINOR_VERSION >= 3
     switch(op) {
         case SAPI_HEADER_DELETE_ALL:
-            //  TODO - not supported
+            //  FUTURE - not supported
             return 0;
 
         case SAPI_HEADER_DELETE:
-            //  TODO - not supported
+            //  FUTURE - not supported
             return 0;
 
         case SAPI_HEADER_REPLACE:
@@ -572,7 +568,7 @@ PUBLIC int maPhpHandlerInit(Http *http, MprModule *module)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

@@ -47,7 +47,7 @@ typedef struct MaAppweb {
     cchar               *group;                 /**< O/S application group name */
     cchar               *localPlatform;         /**< Local (dev) platform os-arch-profile (lower case) */
     cchar               *platform;              /**< Target platform os-arch-profile (lower case) */
-    cchar               *platformDir;           /**< Path to platform */
+    cchar               *platformDir;           /**< Path to platform directory containing binaries */
     cchar               *user;                  /**< O/S application user name */
     int                 uid;                    /**< User Id */
     int                 gid;                    /**< Group Id */
@@ -435,6 +435,7 @@ typedef struct MaState {
     char        *key;                   /**< Current directive being parsed */
     char        *configDir;             /**< Directory containing config file */
     char        *filename;              /**< Config file name */
+    char        *endpoints;             /**< Virtual host endpoints */
     int         lineNumber;             /**< Current line number */
     int         enabled;                /**< True if the current block is enabled */
     int         flags;                  /**< Parsing flags */
@@ -598,7 +599,7 @@ PUBLIC char *maGetNextToken(char *s, char **tok);
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

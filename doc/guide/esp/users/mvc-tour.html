@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.4.4 Documentation</title>
+    <title>Embedthis Appweb 4.5.0-rc.3 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.4.4</div>
+                <div class="version">Embedthis Appweb 4.5.0-rc.3</div>
             </div>
         </div>
         <div class="crumbs">
@@ -98,7 +98,7 @@ home&gt; <b>esp generate app blog angular-mvc</b>
             the application, and then created subdirectories for various parts of the application. Initially, some of
             these directories are empty, but they will be used as your application grows.</p>
             <p>The command created two configuration files that control how your application will run. The first, 
-            <em>appweb.conf</em> configures Appweb to host your application. The second, <em>config.json</em> is the
+            <em>appweb.conf</em> configures Appweb to host your application. The second, <em>package.json</em> is the
             ESP configuration file for your application. </p>
             <h2>Conventions</h2>
             <p>The ESP web framework follows the <i>"convention over
@@ -166,7 +166,7 @@ appweb: 2: Using config file: "/Users/mob/git/apps/demo/appweb.conf"
 appweb: 2: Loading native module libmod_esp.dylib
 appweb: 2: Loading native module app_d9ae850162d60511cf2c50ebea6595b1.dylib
 appweb: 2: Started HTTP  service on "127.0.0.1:4800"
-appweb: 1: Started at Mon Sep 23 12:53:26 2013 PDT with max 5 threads
+appweb: 1: Started at Mon Sep 23 12:53:26 2014 PDT with max 5 threads
 </pre>
             <p>Then enter <em>localhost:4000</em> in your browser. You should see your first application home
             page.</p>
@@ -188,9 +188,9 @@ home/blog&gt; <b>esp generate scaffold post title:string body:text</b>
     [Create] client/app/post/post-edit.html
     [Create] client/app/post/Post.js
     [Create] Directory: db/migrations
-    [Create] db/migrations/201309231500250_create_scaffold_post.c
-   [Compile] db/migrations/201309231500250_create_scaffold_post.c
-   [Migrate] Apply 201309231500250_create_scaffold_post.c 
+    [Create] db/migrations/201409231500250_create_scaffold_post.c
+   [Compile] db/migrations/201409231500250_create_scaffold_post.c
+   [Migrate] Apply 201409231500250_create_scaffold_post.c 
       [Task] All migrations applied
       [Task] Complete
 </pre>
@@ -320,7 +320,7 @@ ESP_EXPORT int esp_controller_post(EspRoute *eroute, MprModule *module)
 <!-- BeginDsi "dsi/bottom.html" -->
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2013.
+            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2014.
             All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>

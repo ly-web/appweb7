@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.4.4 Documentation</title>
+    <title>Embedthis Appweb 4.5.0-rc.3 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.4.4</div>
+                <div class="version">Embedthis Appweb 4.5.0-rc.3</div>
             </div>
         </div>
         <div class="crumbs">
@@ -153,11 +153,12 @@ feedback("custom", "Error code %d", code);
             <a id="flash"></a>
             <h2 class="section">Flash Storage</h2>
             <p>ESP also provides a layer over session storage called "flash" storage that is useful for passing
-            information into the next controller and request action. Thereafter, the flash information is automatically removed.
-            Using bare session state for this is problematic as the message can easily propagate to subsequent requests 
-            other than the immediate next request. Flash messages will be automatically removed message after the next 
-            controller action and before its view page. To be crystal-clear: flash messages are available in the view page 
-            after a controller action and into the immediate next controller action.</p>
+            information into the next controller and request action. Thereafter, the flash information is 
+            automatically removed. Using bare session state for this is problematic as the message can easily 
+            propagate to subsequent requests other than the immediate next request. Flash messages will be 
+            automatically removed message after the next request. Flash messages can thus be used to pass feedback
+            messages into the next request, even the current request issues a redirection response to the current 
+            request.</p>
             <h3>Defining Flash Messages</h3>
             <p>To issue a flash message for the next web page, use the
             <a href="../../../api/esp.html#group___esp_abbrev_1ga71d13cb7c477077d3fa31d855442deff">flash</a>
@@ -196,12 +197,14 @@ flash("custom", "Error code %d", code);
             <p>Because session data may be stored remotely, ESP does not offer a callback when session state expires.
             Rather, you can test if session state has expired by calling 
             <a href="../../../api/esp.html#group___esp_req_1ga63a13780299e2781dca728d4087165bb">espGetSessionID</a>.</p>
+            <p>The best design is to run a client-side session expiry inactivity timer which warns the user 
+            when the session is about to expire.</p>
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2013.
+            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2014.
             All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>

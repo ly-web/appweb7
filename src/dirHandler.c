@@ -19,7 +19,7 @@
     Handler configuration
  */
 typedef struct Dir {
-#if FUTURE
+#if KEEP
     MprList         *dirList;
     cchar           *defaultIcon;
     MprList         *extList;
@@ -86,6 +86,7 @@ static void startDir(HttpQueue *q)
     MprList         *list;
     MprDirEntry     *dp;
     Dir             *dir;
+    cchar           *path;
     uint            nameSize;
     int             next;
 
@@ -101,6 +102,7 @@ static void startDir(HttpQueue *q)
     }
     httpSetHeaderString(conn, "Cache-Control", "no-cache");
     httpSetHeaderString(conn, "Last-Modified", conn->http->currentDate);
+    httpSetHeaderString(conn, "Content-Type", "text/html");
     parseQuery(conn);
 
     if ((list = mprGetPathFiles(tx->filename, MPR_PATH_RELATIVE)) == 0) {
@@ -121,7 +123,8 @@ static void startDir(HttpQueue *q)
     }
     nameSize = max(nameSize, 22);
 
-    outputHeader(q, rx->pathInfo, nameSize);
+    path = rx->route->prefix ? sjoin(rx->route->prefix, rx->pathInfo, NULL) : rx->pathInfo;
+    outputHeader(q, path, nameSize);
     for (next = 0; (dp = mprGetNextItem(list, &next)) != 0; ) {
         outputLine(q, dp, tx->filename, nameSize);
     }
@@ -266,6 +269,7 @@ static void outputHeader(HttpQueue *q, cchar *path, int nameSize)
 
     dir = q->conn->data;
     fancy = 1;
+    path = mprEscapeHtml(path);
 
     httpWrite(q, "<!DOCTYPE HTML PUBLIC \"-/*W3C//DTD HTML 3.2 Final//EN\">\r\n");
     httpWrite(q, "<html>\r\n <head>\r\n  <title>Index of %s</title>\r\n", path);
@@ -363,6 +367,7 @@ static void outputLine(HttpQueue *q, MprDirEntry *ep, cchar *path, int nameSize)
     char        *dirSuffix;
     char        *months[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
+    path = mprEscapeHtml(path);
     dir = q->conn->data;
     if (ep->size >= (1024 * 1024 * 1024)) {
         fmtNum(sizeBuf, sizeof(sizeBuf), (int) ep->size, 1024 * 1024 * 1024, "G");
@@ -513,7 +518,7 @@ static int matchDirPattern(cchar *pattern, cchar *file)
 }
 
 
-#if FUTURE
+#if KEEP
 static int addIconDirective(MaState *state, cchar *key, cchar *value)
 {
     if (!maTokenize(state, value, "%S %W", &path, &dir->extList)) {
@@ -615,7 +620,7 @@ static int optionsDirective(MaState *state, cchar *key, cchar *value)
 static void manageDir(Dir *dir, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-#if FUTURE
+#if KEEP
         mprMark(dir->dirList);
         mprMark(dir->defaultIcon);
         mprMark(dir->extList);
@@ -719,7 +724,7 @@ PUBLIC int maOpenDirHandler(Http *http)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

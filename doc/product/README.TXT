@@ -26,10 +26,10 @@ System Requirements
 
 Operating System Support
 
-    * Windows XP, Vista, Windows-7 (x86,x64)
-    * Mac OS X 10.6+ (x64)
-    * Linux 2.4, 2.6 (x86,x64,arm,ppc,sparc,xscale,mips)
-    * VxWorks (x86,arm,ppc,sparc,xscale,mips)
+    * Windows-7, Windows-8 (x86,x64)
+    * Mac OS X 10.8+ (x64)
+    * Linux 2.6 (x86,x64,arm,ppc,mips)
+    * VxWorks (x86,arm,ppc,mips)
 
 To install Appweb, your development system will need at least the following:
 
@@ -62,7 +62,7 @@ If you wish to embed Appweb in your application or build Appweb from source code
 
     * Linux/Unix GNU Tools
 
-    * Windows Visual Studio 2010
+    * Windows Visual Studio 2010 or later
 
     * WindRiver Tornado Development Tools
 
@@ -144,7 +144,7 @@ License and Copyright Information
 
 This software is supplied under license. Both a GNU and commercial license are available. Please read LICENSE.TXT for details. This documentation and the software described in this document may be used and copied only in accordance with the terms of the accompanying license agreement. Product and technical information in this document is subject to change without notice and does not represent a commitment on the part of Embedthis Software LLC.
 
-Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
 Embedthis is a trademark of Embedthis Software LLC. Embedthis, Appweb and Ejscript are trademarks of Embedthis Software. All other brand or product names are the trademarks or registered trademarks of their respective holders.
 

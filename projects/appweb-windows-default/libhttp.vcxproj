@@ -13,7 +13,7 @@
   </ItemDefinitionGroup>
 
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{008515e4-4d04-4211-aa5a-121a28c1f1b0}</ProjectGuid>
+    <ProjectGuid>{3f525f82-92e8-4897-8a53-f03027b478ff}</ProjectGuid>
     <RootNamespace />
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -100,7 +100,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <ClCompile Include="..\..\src\deps\http\httpLib.c" />
+    <ClCompile Include="..\..\src\paks\http\httpLib.c" />
   </ItemGroup>
 
   <ItemGroup>
@@ -114,7 +114,7 @@
   </Link>
 
   <CustomBuildStep>
-    <Command>cd ..\..\src\deps\http
+    <Command>cd ..\..\src\paks\http
 copy /Y http.h $(IncDir)
 cd ..\..\..\projects\appweb-windows-default</Command>
     <Outputs>$(BinDir)\libhttp.dll</Outputs>
@@ -123,14 +123,14 @@ cd ..\..\..\projects\appweb-windows-default</Command>
 
 <ItemGroup>
   <ProjectReference Include="libmpr.vcxproj">
-  <Project>f4787371-4146-4f7e-849c-27153d4bd0c2</Project>
+  <Project>b878be55-becb-4c83-8e95-6ad11ba24206</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>
 
 <ItemGroup>
   <ProjectReference Include="libpcre.vcxproj">
-  <Project>45c38ee0-1b7f-4ba6-a5b8-18093b5c830d</Project>
+  <Project>e3b596c4-5e58-4d8d-a280-7e2d91641357</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>

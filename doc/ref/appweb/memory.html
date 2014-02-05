@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.4.4 Documentation</title>
+    <title>Embedthis Appweb 4.5.0-rc.3 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.4.4</div>
+                <div class="version">Embedthis Appweb 4.5.0-rc.3</div>
             </div>
         </div>
         <div class="crumbs">
@@ -69,7 +69,7 @@
             It is faster than most general purpose malloc allocators for these workloads. It is deterministic and 
             allocates and frees memory in constant time O(1). It exhibits very low fragmentation and accurate 
             coalescing.</p>
-            <p>The allocator uses a garbage collector for locating unused memory. The collector is a generational, 
+            <p>The allocator uses a garbage collector (GC) for locating unused memory. The collector is a generational, 
             cooperative and non-compacting collector.  The use of a garbage collector is somewhat unusual in a C program. 
             However, garbage collection is especially well suited for long running applications like a web server,
             as it eliminates most memory leaks. Unlike traditional memory allocation where <em>free</em> must be called
@@ -122,6 +122,43 @@
             will be marked as active by mprMark() during a collection cycle by the parent block's manager function. 
             Manager functions are defined when allocating blocks that will hold managed references. See below for more
             details.</p>
+            <a id="yielding"></a>
+            <h3>Yielding</h3>
+            <p>There are two kinds of yield:<ul>
+                <li>Short yields &mdash; used to yield to the GC once </li>
+                <li>Long or sticky yields &mdash; used to put the thread into a semi-permanent yielded state</li>
+            </ul>
+            <p>A short yield is achived by calling mprYield(0) which will test if garbage collection is required and
+            if so, will wait until the collection is complete. If no collection is required, the call returns immediately
+            without blocking.</p>
+            <p>A long yield is achieved by calling mprYield(MPR_YIELD_STICKY). This will yield to the garbage collector and
+            immediately return leaving the thread in a "yielded" state. This is used when the application must sleep or block
+            waiting for some event. When the thread resumes, it must call mprResetYield() to resume normal operation.</p>
+            <p>For high-performance needs, the mprNeedYield() macro may be used to test if yielding is required before
+                calling mprYield.</p>
+            <p>User code or handlers may yield at anytime provided they have secured all their temporary memory.</p>
+            <a id="yielding-functions"></a>
+            <h3>Yielding Functions</h3>
+            <p>The following functions are the only functions in Appweb that yield:</p>
+            <li>httpFlushQueue(, HTTP_BLOCK)</li>
+            <li>httpConnect used for client requests</li>
+            <li>httpRead() used for client requests and to read responses </li>
+            <li>httpReadBlock(, HTTP_BLOCK) used for client requests and to read responses </li>
+            <li>httpSendBlock(, HTTP_BLOCK)</li>
+            <li>httpWait() used for client requests</li>
+            <li>httpWriteBlock(, HTTP_BLOCK)</li>
+            <li>httpWriteUploadData client side</li>
+            <li>mprDestroy</li>
+            <li>mprGC</li>
+            <li>mprSleep</li>
+            <li>mprWaitForSingleIO</li>
+            <li>mprWaitForIO</li>
+            <li>mprWaitForEvent</li>
+            <li>mprWaitTillIdle</li>
+            <li>mprYield</li>
+            </ul>
+            <p>When calling any of these routines, you must be prepared for the GC to run and so you must have
+            secured all temporary allocations.</p> 
             <a id="phases"></a>
             <h3>Collection Phases</h3>
             <p>The collector reclaims memory in three phases: Wait, Mark and Sweep. The Wait phase waits for all
@@ -158,12 +195,14 @@ blk-&gt;privateMalloc = malloc(1024);
             during the garbage collector mark phase. To do this, you must ensure the reference is marked via mprMark
             during some other object's manager function. Alternatively, you can call mprAddRoot to specify that this
             reference is a top level root of a new memory tree. You should do this sparingly. It is more effective
-            to mark the reference from another manager routine.</p>
+            to mark the reference from another manager routine. If you have a single memory allocation that you need
+            to retain, you can use mprHold to retain and mprRelease when you do not require the memory anymore.</p>
             <p>If you only require the allocated structure temporarily, you do not need to retain a reference or call
             mprAddRoot. In this manner, the memory will be automatically collected during the next garbage collection
             sweep because there will not be a managed (marked) reference to the block.</p>
-            <p>The mprAllocMem may be used to allocate a block of memory and reserve room for a manager function. Then use
-            mprSetManager to define a manager function.</p>
+            <p>The mprAllocMem may be used to allocate a block of memory and reserve room for a manager function. 
+           Then use mprSetManager to define a manager function.</p>
+           
             <a id="managers"></a>
             <h3>Managers</h3>
             <p>A manager function is invoked by the collector during each collector Mark phase of the collection cycle.
@@ -206,12 +245,15 @@ void manageBlock(MyBlock *blk, int flags)
             <h3>Define a Manager</h3>
             <p>If you allocate a managed structure that has references to managed memory, you should define a manager
             function that invokes mprMark on the structure elements that are managed references.</p>
+            <h3>Yield in Long Loops</h3>
+            <p>Insert calls to mprYield if your code allocates a lot of memory in a tight loop. You should not run
+            for more than 1/10 second without yielding.</p>
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2013.
+            <a href="../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2014.
             All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>

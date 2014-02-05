@@ -36,10 +36,10 @@ http.finalize()
 assert(http.status == 200)
 let len = http.response.match(/Post Data ([0-9]+) bytes/)[1]
 if (len != written) {
-    //MOB print("written", written)
-    //MOB print("RECEIVED", len)
+    //TODO print("written", written)
+    //TODO print("RECEIVED", len)
     //dump(http.response)
 }
-//MOB print(len)
-//MOB print(written)
+//TODO print(len)
+//TODO print(written)
 assert(len == written)

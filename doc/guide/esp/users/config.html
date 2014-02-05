@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.4.4 Documentation</title>
+    <title>Embedthis Appweb 4.5.0-rc.3 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.4.4</div>
+                <div class="version">Embedthis Appweb 4.5.0-rc.3</div>
             </div>
         </div>
         <div class="crumbs">
@@ -138,14 +138,17 @@
                 <li>ESP WebSockets</li>
             </ol>
             <p>These may be used in isolation or may be combined in a single application. For configuration, we'll 
-            consider each separately for clarity.</p>
+                consider each separately for clarity.</p>
             <a id="pages"></a>
             <h2>ESP Pages</h2>
             <p>There is no additional configuration require to support ESP pages, other than configuring the ESP module
             and handler as described above. For stand-alone ESP pages, layout pages are not used by default unless a 
             <em>&lt;% layout "filename" %&gt;</em> directive is included at
-            the top of the page. For ESP MVC applications, the <em>layouts/default.esp</em> layout is used if present,
-            unless a <em>&lt;% layout "" %&gt;</em> directive instructs ESP to not use any layout.</p>
+            the top of the page. For ESP MVC applications, the <em>client/layouts/default.esp</em> page is used 
+            if present, unless a <em>&lt;% layout "" %&gt;</em> directive instructs ESP to not use any layout.
+            In MVC applications, ESP pages may be placed anywhere under the "client" directory which defines the set
+            of public resources for the browser to access and download. In prior Appweb versions, some ESP pages
+            were grouped under a "views" directory. This is no-longer required.</p>
             <a id="controllers"></a>
             <h2>ESP Controllers</h2>
             <p>ESP Controllers may be used as part of an ESP MVC application or they may be used stand-alone outside
@@ -158,7 +161,7 @@
     Target     run greetings-$1
 &lt;/Route&gt;
 </pre>
-            <p>This defines a controller in <em>src/greeting.c</em> to respond to URIs that begin with <em>/greetings</em>.
+            <p>This defines a controller in <em>greeting.c</em> to respond to URIs that begin with <em>/greetings</em>.
             <p>Controllers are dynamically loaded and reloaded as required. Controllers contain one or more actions and have
             a module initialization routine that defines the actions for ESP to support. For example:</p>
 <pre>
@@ -185,53 +188,94 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
             <p>If your MVC application uses RESTful routes and follows the ESP defaults, the one-liner 
             <a href="../../appweb/users/dir/esp.html#espApp">EspApp</a>
             directive is typically all you need. This directive takes the following arguments:</p>
-            <pre>Esp name="NAME" prefix="URI" dir="Directory"</pre>
-            <p>This defines an ESP application at the given directory that will receive all
+            <pre>&lt;EspApp name="NAME" prefix="URI" dir="Directory" routes="RouteSet"&gt;
+   ...
+&lt;EspApp&gt;</pre>
+            <p>This defines an ESP application at the given directory that will receive 
             requests that begin with specified URI prefix. This will define a new Route block, inheriting the existing
-            configuration. For example, a "blog" application stored in the "./blog" directory using RESTful routes.</p>
-            <pre>EspApp prefix="/myblog" dir="./blog" routes="restful"</pre>
+            ESP and route configuration. For example, this directive defines a "blog" application stored in the "./blog" directory.</p>
+            <pre>&lt;EspApp prefix="/myblog" dir="./blog" routes="esp-html-mvc"&gt;
+    ...
+&lt;EspApp&gt;</pre>
             <p>With this configuration, Appweb will send client requests begin with the URI <em>/myblog</em> 
             to this ESP application at "./blog".</p>
-            <p>The EspApp directive is really a convenience
-            directive that is equivalent to a set of lower-level directives. For example, the previous EspApp
-            directive is equivalent to:</p>
-<pre>
-&lt;Route ^/myblog &gt;
-    Prefix /myblog
-    Documents ./blog
-    AddHandler espHandler
-    EspDir mvc
-    EspRouteSet restful                                                                                
-&lt;/Route&gt;  
-</pre>
+            <p>Inside the EspApp directory, you can define other routes, configure caching, define resource limits
+             or use most Appweb directives.</p>
             <h3>Separate Config</h3>
             <p>To modularize each ESP application, it is best practice to create a separate config file for each 
             application. This per-application config file should be saved to the <em>/etc/appweb/apps</em> or 
             on Windows, the <em>Embedthis Appweb/apps</em> directory. When Appweb is started or restarted, it will
             parse all the config files under the <em>apps</em>. Installing or removing a config file for each 
             application under the <em>apps</em> directory is a simple way to add/remove an application.</p>
-            <h3>Config.json</h3>
-            <p>ESP MVC applications use a <em>config.json</em> configuration file to define applications-specific
+            <a name="json"></a>
+            <h2 class="section">ESP Configuration File</h2>
+            <p>ESP MVC applications use a <em>package.json</em> configuration file to define applications-specific
             configuration data. This file is a JSON property file that is made available to server-side controllers and
             portions to client-side scripts. For example:</p>
             <pre>
 {
-  server: {
-    authStore: "app",
-    database: "sdb://blog.sdb"
-  }
-  settings: {
-    timeouts: {
-      session: 1800
+    settings: {
+        // Name of the Auth Store. "app" means server-side auth database
+        auth: "app",
+        
+        // Components used by this application.
+        components: {
+            'esp-server': {},
+            'less': {scripts: ["*"]},
+            'esp-html-mvc': {},
+        },
+        // Default presentation formats for various types
+        formats: {
+            date: "yyyy-MM-dd",
+            float: 2,
+            int: 0,
+        },
+        // Redirect all traffic over HTTPS
+        redirect: "secure"
+        // Routing prefix for server-side URIs
+        serverPrefix: "/do",
+        // Default timeouts (secs)
+        timeouts: {
+            session: 1800,
+        },
+        // Set to include a XSRF token to minimize CSRF vulnerabilies
+        xsrf: true,
     },
-    formats: {
-      date: "yyyy-MM-dd",
-      float: 2,
-      int: 0
+    
+    // Application mode selects debug or release properties and 
+    // copies them to settings
+    mode: "debug",
+    modes: {
+        debug: {
+            // Application compiled in combined vs discrete mode
+            combined: false,
+            // Display server-side errors in the browser
+            showErrors: true,
+            // Keep intermediate source for views in the cache directory
+            keepSource: true,
+            // Transparently recompile updated views, controllers and source
+            update: true,
+            
+            // Automatic login credentials.
+            login: {
+                name: "",
+                abilities: {
+                    edit: true,
+                    view: true,
+                },
+            },
+        },
+        release: {
+            //  Same fields as per debug
+        },
     },
-    redirect: "secure"
-  },
-}</pre>
+    // Server side properties not passed to the client
+    server: {
+        // Server side database.
+        database: "mdb://blog.mdb"
+    },
+},
+</pre>
             <p>The client only receives the "settings" collection. Other collections such as the "server" collection
             are not passed to the client.</p>
             <a id="routing"></a>
@@ -244,13 +288,21 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
             these resources are mapped onto HTTP methods and URIs in a simple and clear manner.</p>
             <p>ESP provides two directives to create URI routes for resources: </p>
                 <ul>
+                    <li>EspPermResource &mdash; Create routes for a permanent resource (no create or delete)</li>
                     <li>EspResource &mdash; Create routes for a singleton resource</li>
                     <li>EspResourceGroup &mdash; Create routes for a group of resources</li>
                 </ul>
+            <h3>EspPermResource</h3>
+            <p>The EspPermResource directive is used to create a RESTful set of routes to manage a permanent resource.
+            A permanent resource is a resource that cannot be created or destroyed. It may be modifified and has 
+            one or more related properties that are managed as a unit. 
+            These routes define URI routes for get, update and custom actions.
+            See the <a href="../../appweb/users/dir/esp.html#espPermResource">EspPermResource</a> reference
+            for details of the actual routes created.</p>
             <h3>EspResource</h3>
             <p>The EspResource directive is used to create a RESTful set of routes to manage a singleton resource.
             A singleton resource is one or more related properties that are managed as a unit, like the WIFI network
-            name and password. These routes define URI routes for create, destroy, edit, init, show and  
+            name and password. These routes define URI routes for create, edit, get, init, remove, show and  
             update functions. See the <a href="../../appweb/users/dir/esp.html#espResource">EspResource</a> reference
             for details of the actual routes created.</p>
             <h3>EspResourceGroup</h3>
@@ -261,8 +313,8 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
             for details of the actual routes created.</p>
             <h3>EspRoute</h3>
             <p>For more control over individual routes, you can use the 
-            <a href="../../appweb/users/dir/esp.html#espRoute">EspRoute</a> directive that will create a route for a URI and 
-               map the URI to an ESP controller and action. For example: </p>
+            <a href="../../appweb/users/dir/esp.html#espRoute">EspRoute</a> directive that will create a route for a 
+                URI and map the URI to an ESP controller and action. For example: </p>
                 <pre>EspRoute name="/admin" methods="POST" prefix="^/wifi/admin/login"
  &nbsp; &rarr; target="admin-login" source="admin.c"</pre>
             <p>This will map <em>/wifi/admin/login</em> URI to the <em>admin</em> controller for the
@@ -280,7 +332,7 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
             <a id="database"></a>
             <h2 class="section">Databases</h2>
             <p>Databases can be specified and pre-opened via the <em>EspDb</em> directive or via the 
-                <em>server.database</em> property in the <em>config.json</em> for ESP MVC applications. Pre-opening a
+                <em>server.database</em> property in the <em>package.json</em> for ESP MVC applications. Pre-opening a
             database connection for an ESP application or route within an application eliminates the run-time delay 
             connecting to the database. </p>
             <p>ESP supports multiple database engines through a single Embedded Database Interface. Support is included for
@@ -344,7 +396,9 @@ EspCompile cc -shared ${DEBUG} -Wall -Wno-unused-result \
                         <tr><td><a href="../../appweb/users/dir/esp.html#espLink">EspLink</a></td>
                             <td>Link command for ESP controllers and pages</td></tr>
                         <tr><td><a href="../../appweb/users/dir/esp.html#espLoad">EspLoad</a></td>
-                            <td>Pre-load an ESP application that has been compiled flat</td></tr>
+                            <td>Pre-load an ESP application</td></tr>
+                        <tr><td><a href="../../appweb/users/dir/esp.html#espPermResource">EspPermResource</a></td>
+                            <td>Create a set of routes for a permanent resource</td></tr>
                         <tr><td><a href="../../appweb/users/dir/esp.html#espResource">EspResource</a></td>
                             <td>Create a set of routes for a singleton resource</td></tr>
                         <tr><td><a href="../../appweb/users/dir/esp.html#espResourceGroup">EspResourceGroup</a></td>
@@ -364,7 +418,7 @@ EspCompile cc -shared ${DEBUG} -Wall -Wno-unused-result \
 <!-- BeginDsi "dsi/bottom.html" -->
 	<div class="bottom">
 		<p class="footnote"> 
-            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2013.
+            <a href="../../../product/copyright.html" >&copy; Embedthis Software LLC, 2003-2014.
             All rights reserved. Embedthis, Appweb, ESP, Ejscript and Embedthis GoAhead are trademarks of Embedthis Software LLC.</a>
 		</p>
 	</div>

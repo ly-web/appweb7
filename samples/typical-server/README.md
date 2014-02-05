@@ -26,7 +26,6 @@ Code:
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [auth.conf](auth.conf) - User/Password/Role authorization file
 * [cgi-bin](cgi-bin) - Directory for CGI programs
-* [esp.conf](esp.conf) - ESP compiler rules
 * [web](web) - Web content to serve
 * [start.bit](start.bit) - Bit build instructions
 

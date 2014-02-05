@@ -13,7 +13,7 @@
   </ItemDefinitionGroup>
 
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{fd5d9f26-11fe-453b-bcc1-e10dcdaa4b4f}</ProjectGuid>
+    <ProjectGuid>{083a3cfb-2c82-4ac3-88fd-84d42a7fb829}</ProjectGuid>
     <RootNamespace />
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -102,6 +102,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\esp\edi.c" />
     <ClCompile Include="..\..\src\esp\espAbbrev.c" />
+    <ClCompile Include="..\..\src\esp\espDeprecated.c" />
     <ClCompile Include="..\..\src\esp\espFramework.c" />
     <ClCompile Include="..\..\src\esp\espHandler.c" />
     <ClCompile Include="..\..\src\esp\espHtml.c" />
@@ -140,7 +141,7 @@ cd ..\..\projects\appweb-windows-static</Command>
 
 <ItemGroup>
   <ProjectReference Include="libappweb.vcxproj">
-  <Project>f26c83ba-b70a-4123-97dd-0bc68b7e6b87</Project>
+  <Project>6f3faad3-bfea-4af7-b4d9-514e9e44ad75</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>

@@ -142,11 +142,18 @@ static int parseFileInner(MaState *state, cchar *path)
             return MPR_ERR_BAD_SYNTAX;
         }
         state->key = key;
-        mprTrace(8, "Line %d, Parse %s %s", state->lineNumber, key, value ? value : "");
+        mprTrace(8, "Line %d, Parse %s %s", state->lineNumber, state->key, value ? value : "");
+        /*
+            Allow directives to run commands and yield without worring about holding references.
+         */
+        mprPauseGC();
         if ((*directive)(state, key, value) < 0) {
-            mprError("Error with directive \"%s\"\nAt line %d in %s\n\n", key, state->lineNumber, state->filename);
+            mprResumeGC();
+            mprError("Error with directive \"%s\"\nAt line %d in %s\n\n", state->key, state->lineNumber, state->filename);
             return MPR_ERR_BAD_SYNTAX;
         }
+        mprResumeGC();
+        mprYield(0);
         state = state->top->current;
     }
     /* EOF */
@@ -363,12 +370,17 @@ static int addHandlerDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_CANT_CREATE;
     }
     if (smatch(handler, "espHandler") && !espLoaded) {
-        path = httpMakePath(state->route, state->configDir, "${BIN_DIR}/esp.conf");
+        path = "./esp.conf";
+        if (!mprPathExists("esp.conf", R_OK)) {
+            path = httpMakePath(state->route, state->configDir, "${BIN_DIR}/esp.conf");
+        }
         if (mprPathExists(path, R_OK)) {
             espLoaded = 1;
             if (parseFile(state, path) < 0) {
                 return MPR_ERR_CANT_OPEN;
             }
+        } else {
+            mprLog(0, "Cannot find esp.conf at %s", path);
         }
     }
     return 0;
@@ -634,27 +646,40 @@ static int cacheDirective(MaState *state, cchar *key, cchar *value)
 static int chrootDirective(MaState *state, cchar *key, cchar *value)
 {
 #if BIT_UNIX_LIKE
-    char    *path;
+    MprKey  *kp;
+    cchar   *oldConfigDir;
+    char    *home;
     
-    path = httpMakePath(state->route, state->configDir, value);
-    if (chdir(path) < 0) {
-        mprError("Cannot change working directory to %s", path);
+    home = httpMakePath(state->route, state->configDir, value);
+    if (chdir(home) < 0) {
+        mprError("Cannot change working directory to %s", home);
         return MPR_ERR_CANT_OPEN;
     }
     if (state->http->flags & HTTP_UTILITY) {
-        mprLog(MPR_CONFIG, "Change directory to: \"%s\"", path);
+        /* Not running a web server but rather a utility like the "esp" generator program */
+        mprLog(MPR_CONFIG, "Change directory to: \"%s\"", home);
     } else {
-        if (chroot(path) < 0) {
+        if (chroot(home) < 0) {
             if (errno == EPERM) {
                 mprError("Must be super user to use chroot\n");
             } else {
-                mprError("Cannot change change root directory to %s, errno %d\n", path, errno);
+                mprError("Cannot change change root directory to %s, errno %d\n", home, errno);
             }
             return MPR_ERR_BAD_SYNTAX;
         }
-        state->route->documents = mprGetRelPath(state->route->documents, path);
+        /*
+            Remap directories
+         */
+        oldConfigDir = state->configDir;
+        state->configDir = mprGetAbsPath(mprGetRelPath(state->configDir, home));
+        state->route->documents = mprGetAbsPath(mprGetRelPath(state->route->documents, home));
         state->route->home = state->route->documents;
-        mprLog(MPR_CONFIG, "Chroot to: \"%s\"", path);
+        for (ITERATE_KEYS(state->route->vars, kp)) {
+            if (sstarts(kp->data, oldConfigDir)) {
+                kp->data = mprGetAbsPath(mprGetRelPath(kp->data, oldConfigDir));
+            }
+        }
+        mprLog(MPR_CONFIG, "Chroot to: \"%s\"", home);
     }
     return 0;
 #else
@@ -853,10 +878,11 @@ static int directoryIndexDirective(MaState *state, cchar *key, cchar *value)
 static int documentsDirective(MaState *state, cchar *key, cchar *value)
 {
     cchar   *path;
+
     if (!maTokenize(state, value, "%T", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    path = mprGetAbsPath(mprJoinPath(state->configDir, httpExpandRouteVars(state->route, path)));
+    path = mprJoinPath(state->configDir, httpExpandRouteVars(state->route, path));
     httpSetRouteDocuments(state->route, path);
     return 0;
 }
@@ -1056,12 +1082,9 @@ static int ignoreEncodingErrorsDirective(MaState *state, cchar *key, cchar *valu
  */
 static int includeDirective(MaState *state, cchar *key, cchar *value)
 {
-    MprList         *includes;
-    MprDirEntry     *dp;
-    void            *compiled;
-    cchar           *errMsg;
-    char            *path, *pattern;
-    int             matches[4 * 3], next, count, column;
+    MprList     *includes;
+    char        *path, *pattern, *include;
+    int         next;
 
     /*
         Must use %S and not %P because the path is relative to the appweb.conf file and not to the route home
@@ -1076,30 +1099,14 @@ static int includeDirective(MaState *state, cchar *key, cchar *value)
             return MPR_ERR_CANT_OPEN;
         }
     } else {
-        /*
-            Convert glob style to regexp
-         */
         path = mprGetPathDir(mprJoinPath(state->route->home, value));
         path = stemplate(path, state->route->vars);
         pattern = mprGetPathBase(value);
-        pattern = sreplace(pattern, ".", "\\.");
-        pattern = sreplace(pattern, "*", ".*");
-        pattern = sjoin("^", pattern, "$", NULL);
-        if ((includes = mprGetPathFiles(path, 0)) != 0) {
-            if ((compiled = pcre_compile2(pattern, 0, 0, &errMsg, &column, NULL)) == 0) {
-                mprError("Cannot compile include pattern. Error %s at column %d", errMsg, column);
-                return 0;
+        includes = mprGlobPathFiles(path, pattern, 0);
+        for (ITERATE_ITEMS(includes, include, next)) {
+            if (parseFile(state, include) < 0) {
+                return MPR_ERR_CANT_OPEN;
             }
-            for (next = 0; (dp = mprGetNextItem(includes, &next)) != 0; ) {
-                count = pcre_exec(compiled, NULL, dp->name, (int) slen(dp->name), 0, 0, matches, 
-                    sizeof(matches) / sizeof(int));
-                if (count > 0) {
-                    if (parseFile(state, mprJoinPath(path, dp->name)) < 0) {
-                        return MPR_ERR_CANT_OPEN;
-                    }
-                }
-            }
-            free(compiled);
         }
     }
     return 0;
@@ -1602,7 +1609,7 @@ static int limitWorkersDirective(MaState *state, cchar *key, cchar *value)
 /*
     Map "ext,ext,..." "newext, newext, newext"
     Map compressed
-    Example: Map "js,css,less" min.${1}.gz, min.${1}, ${1}.gz
+    Example: Map "css,html,js,less,xml" min.${1}.gz, min.${1}, ${1}.gz
  */
 static int mapDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1612,8 +1619,7 @@ static int mapDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (smatch(extensions, "compressed")) {
-        httpAddRouteMapping(state->route, "js,css,less", "min.${1}.gz, min.${1}, ${1}.gz");
-        httpAddRouteMapping(state->route, "html,txt,xml", "${1}.gz");
+        httpAddRouteMapping(state->route, "css,html,js,less,txt,xml", "${1}.gz, min.${1}.gz, min.${1}");
     } else {
         httpAddRouteMapping(state->route, extensions, mappings);
     }
@@ -1703,6 +1709,16 @@ static int monitorDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    Name routeName
+ */
+static int nameDirective(MaState *state, cchar *key, cchar *value)
+{
+    httpSetRouteName(state->route, value);
+    return 0;
+}
+
+
+/*
     NameVirtualHost ip[:port]
  */
 static int nameVirtualHostDirective(MaState *state, cchar *key, cchar *value)
@@ -1758,6 +1774,7 @@ static int paramDirective(MaState *state, cchar *key, cchar *value)
 static int prefixDirective(MaState *state, cchar *key, cchar *value)
 {
     httpSetRoutePrefix(state->route, value);
+    httpSetRouteVar(state->route, "PREFIX", value);
     return 0;
 }
 
@@ -1937,6 +1954,38 @@ static int requireDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    <Reroute pattern>
+    Open an existing route
+ */
+static int rerouteDirective(MaState *state, cchar *key, cchar *value)
+{
+    HttpRoute   *route;
+    cchar       *pattern;
+    int         not;
+
+    state = maPushState(state);
+    if (state->enabled) {
+        if (!maTokenize(state, value, "%!%S", &not, &pattern)) {
+            return MPR_ERR_BAD_SYNTAX;
+        }
+        if (strstr(pattern, "${")) {
+            pattern = sreplace(pattern, "${inherit}", state->route->pattern);
+        }
+        pattern = httpExpandRouteVars(state->route, pattern);
+        if ((route = httpLookupRouteByPattern(state->host, pattern)) != 0) {
+            state->route = route;
+        } else {
+            mprError("Cannot open route %s", pattern);
+            return MPR_ERR_CANT_OPEN;
+        }
+        /* Routes are added when the route block is closed (see closeDirective) */
+        state->auth = state->route->auth;
+    }
+    return 0;
+}
+
+
+/*
     Reset routes
     Reset pipeline
  */
@@ -1995,8 +2044,7 @@ static int roleDirective(MaState *state, cchar *key, cchar *value)
  */
 static int routeDirective(MaState *state, cchar *key, cchar *value)
 {
-    HttpRoute   *route;
-    char        *pattern;
+    cchar       *pattern;
     int         not;
 
     state = maPushState(state);
@@ -2007,26 +2055,13 @@ static int routeDirective(MaState *state, cchar *key, cchar *value)
         if (strstr(pattern, "${")) {
             pattern = sreplace(pattern, "${inherit}", state->route->pattern);
         }
-        if ((route = httpLookupRouteByPattern(state->host, pattern)) != 0) {
-            state->route = route;
-        } else {
-            state->route = httpCreateInheritedRoute(state->route);
-            httpSetRoutePattern(state->route, pattern, not ? HTTP_ROUTE_NOT : 0);
-            httpSetRouteHost(state->route, state->host);
-        }
+        pattern = httpExpandRouteVars(state->route, pattern);
+        state->route = httpCreateInheritedRoute(state->route);
+        httpSetRoutePattern(state->route, pattern, not ? HTTP_ROUTE_NOT : 0);
+        httpSetRouteHost(state->route, state->host);
         /* Routes are added when the route block is closed (see closeDirective) */
         state->auth = state->route->auth;
     }
-    return 0;
-}
-
-
-/*
-    Name routeName
- */
-static int nameDirective(MaState *state, cchar *key, cchar *value)
-{
-    httpSetRouteName(state->route, value);
     return 0;
 }
 
@@ -2335,7 +2370,7 @@ static int userDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S %S ?*", &name, &password, &abilities)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (httpAddUser(state->auth, name, password, abilities) < 0) {
+    if (httpAddUser(state->auth, name, password, abilities) == 0) {
         mprError("Cannot add user %s", name);
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -2356,29 +2391,30 @@ static int userAccountDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    <VirtualHost ip[:port]>
+    <VirtualHost ip[:port] ...>
  */
 static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
 {
-    char            *ip;
-    int             port;
-
     state = maPushState(state);
     if (state->enabled) {
-        mprParseSocketAddress(value, &ip, &port, NULL, -1);
         /*
             Inherit the current default route configuration (only)
             Other routes are not inherited due to the reset routes below
          */
         state->route = httpCreateInheritedRoute(httpGetHostDefaultRoute(state->host));
         state->route->ssl = 0;
+        state->auth = state->route->auth;
         state->host = httpCloneHost(state->host);
         httpResetRoutes(state->host);
         httpSetRouteHost(state->route, state->host);
         httpSetHostDefaultRoute(state->host, state->route);
-        httpSetHostIpAddr(state->host, ip, port);
+
+        /* Set a default host and route name */
+        httpSetHostName(state->host, stok(sclone(value), " \t,", NULL));
         httpSetRouteName(state->route, sfmt("default-%s", state->host->name));
-        state->auth = state->route->auth;
+
+        /* Save the endpoints until the close of the vhost. Do this so the vhost block can do the Listen */
+        state->endpoints = sclone(value);
     }
     return 0;
 }
@@ -2390,13 +2426,20 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
 static int closeVirtualHostDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpEndpoint    *endpoint;
+    char            *address, *ip, *addresses, *tok;
+    int             port;
 
-    if (state->enabled) {
-        if ((endpoint = httpLookupEndpoint(state->http, state->host->ip, state->host->port)) == 0) {
-            mprError("Cannot find listen directive for virtual host %s", state->host->name);
-            return MPR_ERR_BAD_SYNTAX;
-        } else {
-            httpAddHostToEndpoint(endpoint, state->host);
+    if (state->enabled && state->endpoints) {
+        addresses = state->endpoints;
+        while ((address = stok(addresses, " \t,", &tok)) != 0) {
+            addresses = 0;
+            mprParseSocketAddress(address, &ip, &port, NULL, -1);
+            if ((endpoint = httpLookupEndpoint(state->http, ip, port)) == 0) {
+                mprError("Cannot find listen directive for virtual host %s", address);
+                return MPR_ERR_BAD_SYNTAX;
+            } else {
+                httpAddHostToEndpoint(endpoint, state->host);
+            }
         }
     }
     closeDirective(state, key, value);
@@ -2480,14 +2523,14 @@ PUBLIC bool maValidateServer(MaServer *server)
     assert(defaultHost);
 
     /*
-        Add the default host to the endpoints
+        Add the default host to the unassigned endpoints
      */
     for (nextEndpoint = 0; (endpoint = mprGetNextItem(http->endpoints, &nextEndpoint)) != 0; ) {
         if (mprGetListLength(endpoint->hosts) == 0) {
             /* Add the defaultHost */
             httpAddHostToEndpoint(endpoint, defaultHost);
-            if (!defaultHost->ip) {
-                httpSetHostIpAddr(defaultHost, endpoint->ip, endpoint->port);
+            if (!defaultHost->name) {
+                httpSetHostName(defaultHost, sfmt("%s:%d", endpoint->ip, endpoint->port));
             }
         }
     }
@@ -2558,6 +2601,9 @@ static bool conditionalDefinition(MaState *state, cchar *key)
 
     } else if (scaselessmatch(key, "static")) {
         result = state->appweb->staticLink;
+
+    } else if (scaselessmatch(key, "IPv6")) {
+        result = mprHasIPv6();
 
     } else if (state->appweb->skipModules) {
         /* ESP utility needs to be able to load mod_esp */
@@ -2729,6 +2775,7 @@ static void manageState(MaState *state, int flags)
         mprMark(state->prev);
         mprMark(state->top);
         mprMark(state->current);
+        mprMark(state->endpoints);
     }
 }
 
@@ -2984,6 +3031,8 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "RequestParseTimeout", requestParseTimeoutDirective);
     maAddDirective(appweb, "RequestTimeout", requestTimeoutDirective);
     maAddDirective(appweb, "Require", requireDirective);
+    maAddDirective(appweb, "<Reroute", rerouteDirective);
+    maAddDirective(appweb, "</Reroute", closeDirective);
     maAddDirective(appweb, "Reset", resetDirective);
     maAddDirective(appweb, "Role", roleDirective);
     maAddDirective(appweb, "<Route", routeDirective);
@@ -3068,7 +3117,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

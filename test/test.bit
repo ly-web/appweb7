@@ -31,12 +31,12 @@ Bit.load({
             build: "
                 let path = Path('web/caching/cache.cgi')
                 path.write('#!' + App.exeDir.join('ejs') + '\n' + 
-                    'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n\" + Date() + \"\n\")')
+                    'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n{number:\" + Date().now() + \"}\n\")')
                 path.setAttributes({permissions: 0755})
             ",
             'generate-sh': "\
                 echo \"#!`type -p ejs`\" >web/caching/cache.cgi
-                echo 'print(\"HTTP/1.0 200 OK\\nContent-Type: text/plain\\n\\n\" + Date() + \"\\n\")' >>web/caching/cache.cgi
+                echo 'print(\"HTTP/1.0 200 OK\\nContent-Type: text/plain\\n\\n{number:\" + Date().now() + \"}\\n\")' >>web/caching/cache.cgi
                 chmod +x web/caching/cache.cgi
             ",
             platforms: [ 'local' ],
@@ -85,7 +85,7 @@ Bit.load({
             packs: [ 'cgi' ],
         },
 
-        //  MOB
+        //  TODO
         'test.js': {
             enable: false,
             type:   'file',
@@ -103,7 +103,7 @@ Bit.load({
                     trace('Test', 'Light load tests')
                     run('utest -v -i 5 --depth ' + depth, ro)
                 }
-                //  MOB - thread tests don't work yet
+                //  TODO - thread tests don't work yet
                 if (depth >= 3) {
                     for each (t in [2, 4]) {
                         trace('Test', 'Light thread tests')
@@ -161,7 +161,7 @@ Bit.load({
                         }
                         let s = bit.settings
                         trace('Test', 'appweb -V')
-                        assert(Cmd.run([bit.prefixes.bin.join('appweb'), '-V']).trim() == s.version + '-' + s.buildNumber)
+                        assert(Cmd.run([bit.prefixes.bin.join('appweb'), '-V']).trim() == s.version)
                         trace('Test', 'appweb running')
                         assert(Cmd.ps(/appweb/))
                         let http = new Http

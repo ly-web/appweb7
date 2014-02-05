@@ -26,12 +26,12 @@ APPWEB_NAME="Embedthis Appweb"
 APPWEB_CMD="/usr/local/bin/${NAME}"
 APPWEB_DIR="/etc/appweb"
 
+PATH=/sbin:$PATH
 PIDFILE=${PIDFILE-/var/run/$NAME.pid}
 LOCKFILE=${LOCKFILE-/var/lock/$NAME}
 
 MANAGER_CMD=/usr/local/bin/appman
 MANAGER_SWITCHES="--daemon --program $APPWEB_CMD --home $APPWEB_DIR --pidfile $PIDFILE run"
-MANAGER_TIMEOUT=10
 
 #
 #   Source utility functions
@@ -81,7 +81,7 @@ stop() {
     elif type killproc >/dev/null 2>&1 ; then
         # Note: killproc exists on debian also.
         echo -n $"Stopping ${APPWEB_NAME}: "
-        killproc -p ${PIDFILE} -d ${MANAGER_TIMEOUT} ${MANAGER_CMD}
+        killproc -p ${PIDFILE} ${MANAGER_CMD}
         RETVAL=$?
         [ ${RETVAL} = 0 ] && rm -f $LOCKFILE $PIDFILE
     fi
@@ -125,7 +125,7 @@ exit $?
 
 ################################################################################
 #
-#   Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+#   Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 #   The latest version of this code is available at http://embedthis.com
 #
 #   This software is open source; you can redistribute it and/or modify it 

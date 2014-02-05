@@ -24,6 +24,14 @@ PUBLIC void addHeader(cchar *key, cchar *fmt, ...)
 }
 
 
+PUBLIC void addParam(cchar *key, cchar *value)
+{
+    if (!param(key)) {
+        setParam(key, value);
+    }
+}
+
+
 PUBLIC bool canUser(cchar *abilities, bool warn)
 {
     HttpConn    *conn;
@@ -33,8 +41,8 @@ PUBLIC bool canUser(cchar *abilities, bool warn)
         return 1;
     }
     if (warn) {
-        feedback("error", "Access Denied. Insufficient privilege.");
-        renderResult(0);
+        setStatus(HTTP_CODE_UNAUTHORIZED);
+        sendResult(feedback("error", "Access Denied. Insufficient Privilege."));
     }
     return 0;
 }
@@ -77,13 +85,17 @@ PUBLIC void dontAutoFinalize()
 }
 
 
-PUBLIC void feedback(cchar *kind, cchar *fmt, ...)
+PUBLIC bool feedback(cchar *kind, cchar *fmt, ...)
 {
     va_list     args;
 
     va_start(args, fmt);
     espSetFeedbackv(getConn(), kind, fmt, args);
     va_end(args);
+    /*
+        Return true if there is not an error feedback message
+     */
+    return getFeedback("error") == 0;
 }
 
 
@@ -109,16 +121,20 @@ PUBLIC void flush()
 }
 
 
+#if BIT_ESP_LEGACY
 PUBLIC cchar *getAppUri()
 {
     return espGetTop(getConn());
 }
+#endif
 
 
 PUBLIC MprList *getColumns(EdiRec *rec)
 {
     if (rec == 0) {
-        return 0;
+        if ((rec = getRec()) == 0) {
+            return 0;
+        }
     }
     return ediGetColumns(getDatabase(), rec->tableName);
 }
@@ -174,7 +190,7 @@ PUBLIC cchar *getDocuments()
 }
 
 
-#if DEPRECATED || 1
+#if BIT_ESP_LEGACY
 PUBLIC cchar *getDir()
 {
     return getDocuments();
@@ -203,6 +219,18 @@ PUBLIC cchar *getFlash(cchar *kind)
 PUBLIC cchar *getField(EdiRec *rec, cchar *field)
 {
     return ediGetFieldValue(rec, field);
+}
+
+
+PUBLIC cchar *getFieldError(cchar *field)
+{
+    return mprLookupKey(getRec()->errors, field);
+}
+
+
+PUBLIC EdiGrid *getGrid()
+{
+    return getConn()->grid;
 }
 
 
@@ -236,6 +264,12 @@ PUBLIC cchar *getReferrer()
 }
 
 
+PUBLIC EspReq *getReq()
+{
+    return getConn()->data;
+}
+
+
 /*
     Get a session and return the session ID. Creates a session if one does not already exist.
  */
@@ -249,6 +283,27 @@ PUBLIC cchar *getSessionVar(cchar *key)
 {
     return httpGetSessionVar(getConn(), key, 0);
 }
+
+
+PUBLIC cchar *getConfig(cchar *field)
+{
+    EspRoute    *eroute;
+    cchar       *value;
+
+    eroute = getConn()->rx->route->eroute;
+    if ((value = mprGetJson(eroute->config, "value", 0)) == 0) {
+        return "";
+    }
+    return value;
+}
+
+
+#if BIT_ESP_LEGACY
+PUBLIC cchar *getTop()
+{
+    return getAppUri();
+}
+#endif
 
 
 PUBLIC MprHash *getUploads()
@@ -370,6 +425,9 @@ PUBLIC EdiRec *readRecWhere(cchar *tableName, cchar *fieldName, cchar *operation
 
 PUBLIC EdiRec *readRec(cchar *tableName, cchar *key)
 {
+    if (key == 0 || *key == 0) {
+        key = "1";
+    }
     return setRec(ediReadRec(getDatabase(), tableName, key));
 }
 
@@ -380,10 +438,21 @@ PUBLIC EdiRec *readRecByKey(cchar *tableName, cchar *key)
 }
 
 
-PUBLIC EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
+PUBLIC EdiGrid *readWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
 {
     return setGrid(ediReadWhere(getDatabase(), tableName, fieldName, operation, value));
 }
+
+
+#if BIT_ESP_LEGACY
+/* 
+    Deprecated in 4.4.1 
+ */
+PUBLIC EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
+{
+    return readWhere(tableName, fieldName, operation, value);
+}
+#endif
 
 
 PUBLIC EdiGrid *readTable(cchar *tableName)
@@ -413,8 +482,10 @@ PUBLIC void removeCookie(cchar *name)
 PUBLIC bool removeRec(cchar *tableName, cchar *key)
 {
     if (ediRemoveRec(getDatabase(), tableName, key) < 0) {
+        feedback("error", "Cannot delete %s", spascal(tableName));
         return 0;
     }
+    feedback("inform", "Deleted %s", spascal(tableName));
     return 1;
 }
 
@@ -445,6 +516,25 @@ PUBLIC ssize renderCached()
 }
 
 
+PUBLIC ssize renderConfig()
+{
+    HttpConn    *conn;
+    EspRoute    *eroute;
+    MprJson     *obj;
+
+    conn = getConn();
+    eroute = conn->rx->route->eroute;
+    obj = mprLookupJsonObj(eroute->config, "esp");
+    if (obj) {
+        //  TODO OPT
+        obj = mprCloneJson(obj);
+        mprRemoveJson(obj, "server");
+        return renderString(mprJsonToString(obj, MPR_JSON_QUOTES));
+    }
+    return 0;
+}
+
+
 PUBLIC void renderError(int status, cchar *fmt, ...)
 {
     va_list     args;
@@ -466,24 +556,6 @@ PUBLIC ssize renderFile(cchar *path)
 PUBLIC void renderFlash(cchar *kind)
 {
     espRenderFlash(getConn(), kind);
-}
-
-
-PUBLIC ssize renderGrid(EdiGrid *grid)
-{
-    return espRenderGrid(getConn(), grid, 0);
-}
-
-
-PUBLIC ssize renderRec(EdiRec *rec)
-{
-    return espRenderRec(getConn(), rec, 0);
-}
-
-
-PUBLIC void renderResult(int status)
-{
-    espRenderResult(getConn(), status);
 }
 
 
@@ -513,9 +585,24 @@ PUBLIC void renderView(cchar *view)
 }
 
 
-PUBLIC void renderSecurityToken()
+PUBLIC int runCmd(cchar *command, char **out, char **err, int flags)
 {
-    espSecurityToken(getConn());
+    MprCmd  *cmd;
+    int     status;
+
+    cmd = mprCreateCmd(0);
+    if (mprRunCmd(cmd, command, NULL, NULL, out, err, -1, flags) != 0) {
+        return MPR_ERR_CANT_OPEN;
+    }
+    mprWaitForCmd(cmd, -1);
+
+    if (mprWaitForCmd(cmd, -1) < 0) {
+        return MPR_ERR_CANT_COMPLETE;
+    }
+    if ((status = mprGetCmdExitStatus(cmd)) != 0) {
+        return MPR_ERR_CANT_WRITE;
+    }
+    return status;
 }
 
 
@@ -530,47 +617,67 @@ PUBLIC void scripts(cchar *patterns)
     HttpRoute   *route;
     EspRoute    *eroute;
     MprList     *files;
-    MprJson     *components, *component;
-    cchar       *indent, *uri, *path;
-    int         next, i;
+    MprJson     *cscripts, *script;
+    cchar       *name, *uri, *path;
+    int         next, ci;
 
     conn = getConn();
     route = conn->rx->route;
     eroute = route->eroute;
     patterns = httpExpandRouteVars(route, patterns);
 
-    if (patterns == NULL) {
-        if ((components = mprGetJson(eroute->config, "settings.components", 0)) != 0) {
-            for (ITERATE_JSON(components, component, i)) {
-                if (component->type == MPR_JSON_VALUE) {
-                    scripts(sfmt("%s/lib/%s/**.js", eroute->clientDir, component->value));
+    if (!patterns || !*patterns) {
+        if (modeIs("release")) {
+            name = sfmt("all-%s.min.js.gz", espGetConfig(route, "version", "1.0.0"));
+            scripts(name);
+        } else {
+            if ((cscripts = mprGetJsonObj(eroute->config, "client-scripts", 0)) != 0) {
+                for (ITERATE_JSON(cscripts, script, ci)) {
+                    scripts(script->value);
                 }
             }
         }
-    }
-
-    if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0) {
-        mprError("No scripts defined for current application mode");
         return;
     }
-    indent = "";
+    if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0 || mprGetListLength(files) == 0) {
+        mprLog(0, "scripts(): Cannot find any files matching %s", patterns);
+    }
     for (ITERATE_ITEMS(files, path, next)) {
-        uri = httpUri(conn, path, NULL);
-        if (scontains(path, "-IE-") || scontains(path, "html5shiv")) {
-            espRender(conn, "%s<!-- [if lt IE 9]>\n", indent);
-            espRender(conn, "%s<script src='%s' type='text/javascript'></script>\n", indent, uri);
-            espRender(conn, "%s<![endif]-->\n", indent);
-        } else {
-            espRender(conn, "%s<script src='%s' type='text/javascript'></script>\n", indent, uri);
+        if (schr(path, '$')) {
+            path = stemplateJson(path, eroute->config);
         }
-        indent = "    ";
+        path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
+        uri = httpUri(conn, path);
+        espRender(conn, "    <script src='%s' type='text/javascript'></script>\n", uri);
     }
 }
 
 
+/*
+    Add a security token to the response. The token is generated as a HTTP header and session cookie.
+    Note that views will automatically add security tokens to views.
+ */
 PUBLIC void securityToken()
 {
-    espSecurityToken(getConn());
+    httpAddSecurityToken(getConn());
+}
+
+
+PUBLIC ssize sendGrid(EdiGrid *grid)
+{
+    return espSendGrid(getConn(), grid, 0);
+}
+
+
+PUBLIC ssize sendRec(EdiRec *rec)
+{
+    return espSendRec(getConn(), rec, 0);
+}
+
+
+PUBLIC void sendResult(bool status)
+{
+    espSendResult(getConn(), status);
 }
 
 
@@ -683,6 +790,59 @@ PUBLIC void showRequest()
 }
 
 
+/*
+    <% stylesheets(patterns); %>
+
+    Where patterns may contain *, ** and !pattern for exclusion
+ */
+PUBLIC void stylesheets(cchar *patterns)
+{
+    HttpConn    *conn;
+    HttpRoute   *route;
+    EspRoute    *eroute;
+    MprList     *files;
+    cchar       *uri, *path, *kind;
+    int         next;
+
+    conn = getConn();
+    route = conn->rx->route;
+    eroute = route->eroute;
+    patterns = httpExpandRouteVars(route, patterns);
+
+    if (!patterns || !*patterns) {
+        if (modeIs("release")) {
+            stylesheets(sfmt("css/all-%s.min.css", espGetConfig(route, "version", "1.0.0")));
+        } else {
+            path = mprJoinPath(eroute->clientDir, "css/all.css");
+            if (mprPathExists(path, R_OK)) {
+                stylesheets("css/all.css");
+            } else {
+                stylesheets("css/all.less");
+                path = mprJoinPath(eroute->clientDir, "css/fix.css");
+                if (mprPathExists(path, R_OK)) {
+                    stylesheets("css/fix.css");
+                }
+            }
+        }
+        return;
+    }
+    if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0 || mprGetListLength(files) == 0) {
+        files = mprCreateList(0, 0);
+        mprAddItem(files, patterns);
+    }
+    for (ITERATE_ITEMS(files, path, next)) {
+        path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
+        uri = httpUri(conn, path);
+        kind = mprGetPathExt(path);
+        if (smatch(kind, "css")) {
+            espRender(conn, "    <link rel='stylesheet' type='text/css' href='%s' />\n", uri);
+        } else {
+            espRender(conn, "    <link rel='stylesheet/%s' type='text/css' href='%s' />\n", kind, uri);
+        }
+    }
+}
+
+
 PUBLIC void updateCache(cchar *uri, cchar *data, int lifesecs)
 {
     espUpdateCache(getConn(), uri, data, lifesecs);
@@ -700,17 +860,27 @@ PUBLIC bool updateFields(cchar *tableName, MprJson *params)
     EdiRec  *rec;
     cchar   *key;
 
-    key = mprLookupJsonValue(params, "id");
+    key = mprLookupJson(params, "id");
     if ((rec = ediSetFields(ediReadRec(getDatabase(), tableName, key), params)) == 0) {
         return 0;
     }
-    return ediUpdateRec(getDatabase(), rec) == 0;
+    return updateRec(rec);
 }
 
 
 PUBLIC bool updateRec(EdiRec *rec)
 {
-    return ediUpdateRec(getDatabase(), rec) == 0;
+    if (!rec) {
+        feedback("error", "Cannot save record");
+        return 0;
+    }
+    setRec(rec);
+    if (ediUpdateRec(getDatabase(), rec) < 0) {
+        feedback("error", "Cannot save %s", spascal(rec->tableName));
+        return 0;
+    }
+    feedback("inform", "Saved %s", spascal(rec->tableName));
+    return 1;
 }
 
 
@@ -719,188 +889,25 @@ PUBLIC bool updateRecFromParams(cchar *table)
     return updateRec(setFields(readRec(table, param("id")), params()));
 }
 
-/************************************ Deprecated ****************************/
-#if BIT_ESP_LEGACY
-/*
-    Deprecated in 4.4
- */
 
-PUBLIC void alert(cchar *text, cchar *optionString)
-{
-    espAlert(getConn(), text, optionString);
-}
-
-
-PUBLIC void anchor(cchar *text, cchar *uri, cchar *optionString) 
-{
-    espAnchor(getConn(), text, uri, optionString);
-}
-
-
-PUBLIC void button(cchar *name, cchar *value, cchar *optionString)
-{
-    espButton(getConn(), name, value, optionString);
-}
-
-
-PUBLIC void buttonLink(cchar *text, cchar *uri, cchar *optionString)
-{
-    espButtonLink(getConn(), text, uri, optionString);
-}
-
-
-PUBLIC void checkbox(cchar *field, cchar *checkedValue, cchar *optionString) 
-{
-    espCheckbox(getConn(), field, checkedValue, optionString);
-}
-
-
-PUBLIC void division(cchar *body, cchar *optionString) 
-{
-    espDivision(getConn(), body, optionString);
-}
-
-
-PUBLIC void endform() 
-{
-    espEndform(getConn());
-}
-
-
-PUBLIC void form(void *record, cchar *optionString)
-{
-    HttpConn    *conn;
-
-    conn = getConn();
-    if (record == 0) {
-        record = conn->record;
-    }
-    espForm(conn, record, optionString); 
-}
-
-
-PUBLIC void icon(cchar *uri, cchar *optionString)
-{
-    espIcon(getConn(), uri, optionString);
-}
-
-
-PUBLIC void image(cchar *src, cchar *optionString)
-{
-    espImage(getConn(), src, optionString);
-}
-
-
-PUBLIC void input(cchar *name, cchar *optionString)
-{
-    espInput(getConn(), name, optionString);
-}
-
-
-PUBLIC void label(cchar *text, cchar *optionString)
-{
-    espLabel(getConn(), text, optionString);
-}
-
-
-PUBLIC void dropdown(cchar *name, EdiGrid *choices, cchar *optionString) 
-{
-    espDropdown(getConn(), name, choices, optionString);
-}
-
-
-PUBLIC void mail(cchar *name, cchar *address, cchar *optionString) 
-{
-    espMail(getConn(), name, address, optionString);
-}
-
-
-PUBLIC void progress(cchar *data, cchar *optionString)
-{
-    espProgress(getConn(), data, optionString);
-}
-
-
-/*
-    radio("priority", "{low: 0, med: 1, high: 2}", NULL)
-    radio("priority", "{low: 0, med: 1, high: 2}", "{value:'2'}")
- */
-PUBLIC void radio(cchar *name, void *choices, cchar *optionString)
-{
-    espRadio(getConn(), name, choices, optionString);
-}
-
-
-PUBLIC void refresh(cchar *on, cchar *off, cchar *optionString)
-{
-    espRefresh(getConn(), on, off, optionString);
-}
-
-
-PUBLIC void script(cchar *uri, cchar *optionString)
-{
-    espScript(getConn(), uri, optionString);
-}
-
-
-PUBLIC void stylesheet(cchar *uri, cchar *optionString) 
-{
-    espStylesheet(getConn(), uri, optionString);
-}
-
-
-PUBLIC void table(EdiGrid *grid, cchar *optionString)
-{
-    if (grid == 0) {
-        grid = getGrid();
-    }
-    espTable(getConn(), grid, optionString);
-}
-
-
-PUBLIC void tabs(EdiGrid *grid, cchar *optionString)
-{
-    espTabs(getConn(), grid, optionString);
-}
-
-
-PUBLIC void text(cchar *field, cchar *optionString)
-{
-    espText(getConn(), field, optionString);
-}
-
-
-PUBLIC EdiGrid *getGrid()
-{
-    return getConn()->grid;
-}
-
-
-PUBLIC cchar *getTop()
-{
-    return getAppUri();
-}
-
-
-#if DEPRECATE || 1
-PUBLIC void inform(cchar *fmt, ...)
+PUBLIC cchar *uri(cchar *target, ...)
 {
     va_list     args;
+    cchar       *uri;
 
-    va_start(args, fmt);
-    espSetFlashv(getConn(), "inform", fmt, args);
+    va_start(args, target);
+    uri = sfmtv(target, args);
     va_end(args);
+    return httpUri(getConn(), uri);
 }
-#endif
 
 
-#endif /* BIT_ESP_LEGACY */
 #endif /* BIT_PACK_ESP */
 
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

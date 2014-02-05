@@ -30,8 +30,9 @@ static void browserToCgiService(HttpQueue *q);
 static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp);
 static void cgiCallback(MprCmd *cmd, int channel, void *data);
 static void cgiToBrowserData(HttpQueue *q, HttpPacket *packet);
-static int copyParams(cchar **envv, int index, MprJson *params, cchar *prefix);
-static int copyVars(cchar **envv, int index, MprHash *vars, cchar *prefix);
+static void copyInner(HttpConn *conn, cchar **envv, int index, cchar *key, cchar *value, cchar *prefix);
+static int copyParams(HttpConn *conn, cchar **envv, int index, MprJson *params, cchar *prefix);
+static int copyVars(HttpConn *conn, cchar **envv, int index, MprHash *vars, cchar *prefix);
 static char *getCgiToken(MprBuf *buf, cchar *delim);
 static void manageCgi(Cgi *cgi, int flags);
 static bool parseFirstCgiResponse(Cgi *cgi, HttpPacket *packet);
@@ -46,7 +47,7 @@ static void readFromCgi(Cgi *cgi, int channel);
 #endif
 
 #if BIT_WIN_LIKE || VXWORKS
-    static void findExecutable(HttpConn *conn, char **program, char **script, char **bangScript, char *fileName);
+    static void findExecutable(HttpConn *conn, char **program, char **script, char **bangScript, cchar *fileName);
 #endif
 #if BIT_WIN_LIKE
     static void checkCompletion(HttpQueue *q, MprEvent *event);
@@ -59,25 +60,24 @@ static void readFromCgi(Cgi *cgi, int channel);
  */
 static void openCgi(HttpQueue *q)
 {
-    HttpRx      *rx;
     HttpConn    *conn;
     Cgi         *cgi;
     int         nproc;
 
     conn = q->conn;
-    rx = conn->rx;
     mprTrace(5, "Open CGI handler");
     if ((nproc = (int) httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_PROCESSES, 1)) >= conn->limits->processMax) {
         httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Server overloaded");
         mprLog(2, "Too many concurrent processes %d/%d", nproc, conn->limits->processMax);
         return;
     }
-    httpTrimExtraPath(conn);
-    httpMapFile(conn, rx->route);
-    httpCreateCGIParams(conn);
     if ((cgi = mprAllocObj(Cgi, manageCgi)) == 0) {
+        /* Normal mem handler recovery */ 
         return;
     }
+    httpTrimExtraPath(conn);
+    httpMapFile(conn);
+    httpCreateCGIParams(conn);
     q->queueData = q->pair->queueData = cgi;
     cgi->conn = conn;
     cgi->readq = httpCreateQueue(conn, conn->http->cgiConnector, HTTP_QUEUE_RX, 0);
@@ -131,6 +131,7 @@ static void startCgi(HttpQueue *q)
 {
     HttpRx          *rx;
     HttpTx          *tx;
+    HttpRoute       *route;
     HttpConn        *conn;
     MprCmd          *cmd;
     Cgi             *cgi;
@@ -143,6 +144,7 @@ static void startCgi(HttpQueue *q)
     cgi = q->queueData;
     conn = q->conn;
     rx = conn->rx;
+    route = rx->route;
     tx = conn->tx;
     mprTrace(5, "CGI: Start");
 
@@ -177,9 +179,9 @@ static void startCgi(HttpQueue *q)
      */
     varCount = mprGetHashLength(rx->headers) + mprGetHashLength(rx->svars) + mprGetJsonLength(rx->params);
     if ((envv = mprAlloc((varCount + 1) * sizeof(char*))) != 0) {
-        count = copyParams(envv, 0, rx->params, "");
-        count = copyVars(envv, count, rx->svars, "");
-        count = copyVars(envv, count, rx->headers, "HTTP_");
+        count = copyParams(conn, envv, 0, rx->params, route->envPrefix);
+        count = copyVars(conn, envv, count, rx->svars, "");
+        count = copyVars(conn, envv, count, rx->headers, "HTTP_");
         assert(count <= varCount);
     }
 #if !VXWORKS
@@ -205,9 +207,8 @@ static void startCgi(HttpQueue *q)
 
 #if BIT_WIN_LIKE
 /*
-    Windows can't select on named pipes. So poll for events.
-    This runs on the connection dispatcher thread. Don't actually service events here. Otherwise it becomes too
-    complex with nested calls to mprWaitForEvent().
+    Windows can't select on named pipes. So poll for events. This runs on the connection dispatcher thread. 
+    Don't actually service events here. Otherwise it becomes too complex with nested calls.
  */
 static void waitForCgi(Cgi *cgi, MprEvent *event)
 {
@@ -307,7 +308,6 @@ static void browserToCgiService(HttpQueue *q)
     } else {
         mprDisableCmdEvents(cmd, MPR_CMD_STDIN);
     }
-    mprYield(0);
 }
 
 
@@ -345,14 +345,13 @@ static void cgiToBrowserService(HttpQueue *q)
     }
     mprTrace(6, "CGI: cgiToBrowserService pid %d, q->count %d, q->flags %x, blocked %d", 
         cmd->pid, q->count, q->flags, conn->tx->writeBlocked);
-    mprYield(0);
 }
 
 
 /*
     Read the output data from the CGI script and return it to the client. This is called by the MPR in response to
     I/O events from the CGI process for stdout/stderr data from the CGI script and for EOF from the CGI's stdin.
-    This event runs on the connection's dispatcher. (ie. single threaded and safe)
+    IMPORTANT: This event runs on the connection's dispatcher. (ie. single threaded and safe)
  */
 static void cgiCallback(MprCmd *cmd, int channel, void *data)
 {
@@ -388,26 +387,14 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
     if (cmd->complete || cgi->location) {
         cgi->location = 0;
         httpFinalize(conn);
-        httpServiceQueues(conn);
-        httpPumpRequest(conn, NULL);
-        /* WARNING: this will complete this request and prep for the next */
-        httpAfterEvent(conn);
+        mprCreateEvent(conn->dispatcher, "cgiComplete", 0, httpIOEvent, conn, 0);
         return;
     } 
-    httpServiceQueues(conn);
-    if (channel >= 0 && conn->state <= HTTP_STATE_FINALIZED) {
-        httpEnableConnEvents(conn);
-        mprTrace(6, "CGI: ENABLE CONN: cgiCallback mask %x", conn->sock->handler ? conn->sock->handler->desiredMask : 0);
-    }
     suspended = httpIsQueueSuspended(conn->writeq);
     mprTrace(6, "CGI: %s CGI: cgiCallback. Conn->writeq %d", suspended ? "DISABLE" : "ENABLE", conn->writeq->count);
     assert(!suspended || conn->tx->writeBlocked);
     mprEnableCmdOutputEvents(cmd, !suspended);
-
-    if (conn->state == HTTP_STATE_FINALIZED) {
-        httpPumpRequest(conn, NULL);
-        /* WARNING: the request may be completed here */
-    }
+    mprCreateEvent(conn->dispatcher, "cgi", 0, httpIOEvent, conn, 0);
 }
 
 
@@ -463,7 +450,7 @@ static void readFromCgi(Cgi *cgi, int channel)
             mprAdjustBufEnd(packet->content, nbytes);
         }
         if (channel == MPR_CMD_STDERR) {
-            //  MOB - should be an option to keep going despite stderr output
+            //  FUTURE - should be an option to keep going despite stderr output
             mprError("CGI: Error for \"%s\"\n\n%s", conn->rx->uri, mprGetBufStart(packet->content));
             httpSetStatus(conn, HTTP_CODE_SERVICE_UNAVAILABLE);
             cgi->seenHeader = 1;
@@ -618,8 +605,8 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
     HttpRx      *rx;
     HttpTx      *tx;
     char        **argv;
-    char        *fileName, *indexQuery, *cp, *tok;
-    cchar       *actionProgram;
+    char        *indexQuery, *cp, *tok;
+    cchar       *actionProgram, *fileName;
     size_t      len;
     int         argc, argind, i;
 
@@ -740,7 +727,7 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
     /*
         ISINDEX queries. Only valid if there is not a "=" in the query. If this is so, then we must not
         have these args in the query env also?
-        TODO - should query vars be set in the env?
+        FUTURE - should query vars be set in the env?
      */
     if (indexQuery) {
         indexQuery = sclone(indexQuery);
@@ -771,15 +758,15 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
     we just return in program the fileName we were passed in. script will be set if we are modifying the program 
     to run and we have extracted the name of the file to run as a script.
  */
-static void findExecutable(HttpConn *conn, char **program, char **script, char **bangScript, char *fileName)
+static void findExecutable(HttpConn *conn, char **program, char **script, char **bangScript, cchar *fileName)
 {
     HttpRx      *rx;
     HttpTx      *tx;
     HttpRoute   *route;
     MprKey      *kp;
     MprFile     *file;
-    cchar       *actionProgram, *ext, *cmdShell, *cp, *start;
-    char        *tok, buf[BIT_MAX_FNAME + 1], *path;
+    cchar       *actionProgram, *ext, *cmdShell, *cp, *start, *path;
+    char        *tok, buf[BIT_MAX_FNAME + 1];
 
     rx = conn->rx;
     tx = conn->tx;
@@ -927,27 +914,38 @@ static void traceCGIData(MprCmd *cmd, char *src, ssize size)
 #endif
 
 
-static int copyVars(cchar **envv, int index, MprHash *vars, cchar *prefix)
+static void copyInner(HttpConn *conn, cchar **envv, int index, cchar *key, cchar *value, cchar *prefix)
+{
+    char    *cp;
+
+    if (prefix) {
+        cp = sjoin(prefix, key, "=", value, NULL);
+    } else {
+        cp = sjoin(key, "=", value, NULL);
+    }
+    if (conn->rx->route->flags & HTTP_ROUTE_ENV_ESCAPE) {
+        /*
+            This will escape: &;`'\"|*?~<>^()[]{}$\\\n and also on windows \r%
+         */
+        cp = mprEscapeCmd(cp, 0);
+    }
+    envv[index] = cp;
+    for (; *cp != '='; cp++) {
+        if (*cp == '-') {
+            *cp = '_';
+        } else {
+            *cp = toupper((uchar) *cp);
+        }
+    }
+}
+
+static int copyVars(HttpConn *conn, cchar **envv, int index, MprHash *vars, cchar *prefix)
 {
     MprKey  *kp;
-    char    *cp;
 
     for (ITERATE_KEYS(vars, kp)) {
         if (kp->data) {
-            if (prefix) {
-                cp = sjoin(prefix, kp->key, "=", (char*) kp->data, NULL);
-            } else {
-                cp = sjoin(kp->key, "=", (char*) kp->data, NULL);
-            }
-            envv[index] = cp;
-            for (; *cp != '='; cp++) {
-                if (*cp == '-') {
-                    *cp = '_';
-                } else {
-                    *cp = toupper((uchar) *cp);
-                }
-            }
-            index++;
+            copyInner(conn, envv, index++, kp->key, kp->data, prefix);
         }
     }
     envv[index] = 0;
@@ -955,32 +953,18 @@ static int copyVars(cchar **envv, int index, MprHash *vars, cchar *prefix)
 }
 
 
-//  MOB - rethink. duplicates copyVars
-static int copyParams(cchar **envv, int index, MprJson *params, cchar *prefix)
+static int copyParams(HttpConn *conn, cchar **envv, int index, MprJson *params, cchar *prefix)
 {
     MprJson     *param;
-    char        *cp;
     int         i;
 
     for (ITERATE_JSON(params, param, i)) {
-        if (prefix) {
-            cp = sjoin(prefix, param->name, "=", param->value, NULL);
-        } else {
-            cp = sjoin(param->name, "=", param->value, NULL);
-        }
-        envv[index] = cp;
-        for (; *cp != '='; cp++) {
-            if (*cp == '-') {
-                *cp = '_';
-            } else {
-                *cp = toupper((uchar) *cp);
-            }
-        }
-        index++;
+        copyInner(conn, envv, index++, param->name, param->value, prefix);
     }
     envv[index] = 0;
     return index;
 }
+
 
 static int actionDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -992,6 +976,31 @@ static int actionDirective(MaState *state, cchar *key, cchar *value)
     mprSetMimeProgram(state->route->mimeTypes, mimeType, program);
     return 0;
 }
+
+
+static int cgiEscapeDirective(MaState *state, cchar *key, cchar *value)
+{
+    bool    on;
+
+    if (!maTokenize(state, value, "%B", &on)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpSetRouteEnvEscape(state->route, on);
+    return 0;
+}
+
+
+static int cgiPrefixDirective(MaState *state, cchar *key, cchar *value)
+{
+    cchar   *prefix;
+
+    if (!maTokenize(state, value, "%S", &prefix)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpSetRouteEnvPrefix(state->route, prefix);
+    return 0;
+}
+
 
 
 static int scriptAliasDirective(MaState *state, cchar *key, cchar *value)
@@ -1043,6 +1052,8 @@ PUBLIC int maCgiHandlerInit(Http *http, MprModule *module)
     appweb = httpGetContext(http);
     maAddDirective(appweb, "Action", actionDirective);
     maAddDirective(appweb, "ScriptAlias", scriptAliasDirective);
+    maAddDirective(appweb, "CgiEscape", cgiEscapeDirective);
+    maAddDirective(appweb, "CgiPrefix", cgiPrefixDirective);
     return 0;
 }
 
@@ -1051,7 +1062,7 @@ PUBLIC int maCgiHandlerInit(Http *http, MprModule *module)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

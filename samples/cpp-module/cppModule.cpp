@@ -43,7 +43,7 @@ int maSimpleModuleInit(Http *http, MprModule *mp)
     }
     /*
         Create an appweb.conf custom directive
-    */
+     */
     appweb = (MaAppweb*) httpGetContext(http);
     maAddDirective(appweb, "CustomConfig", customConfig);
     return 0;
@@ -57,7 +57,7 @@ int maSimpleModuleInit(Http *http, MprModule *mp)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

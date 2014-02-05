@@ -6,7 +6,7 @@ This sample shows how to configure ESP for file upload.
 The sample includes an upload web form: web/upload/upload-form.html. This form will
 post the uploaded file to the web/upload/upload.esp page.
 
-For security, file upload is restricted to URIsstarting with /upload.
+For security, file upload is restricted to URIs starting with /upload.
 
 Requirements
 ---
@@ -44,8 +44,9 @@ Documentation:
 
 See Also:
 ---
+* [esp-angular-mvc - ESP Angular MVC Application](../esp-angular-mvc/README.md)
 * [esp-controller - Creating ESP controllers](../esp-controller/README.md)
-* [esp-mvc - Stand-alone ESP MVC sample](../esp-mvc/README.md)
+* [esp-html-mvc - ESP MVC Application](../esp-html-mvc/README.md)
 * [esp-page - Serving ESP pages](../esp-page/README.md)
 * [secure-server - Secure server](../secure-server/README.md)
 * [simple-server - Simple server and embedding API](../simple-server/README.md)
