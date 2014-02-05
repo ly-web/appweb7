@@ -11024,7 +11024,7 @@ This will define a &quot;Content-Length: NNN&quot; request header and set Tx.len
     <tr><td class="param">name</td><td>Cookie name.</td>
     <tr><td class="param">value</td><td>Cookie value.</td>
     <tr><td class="param">path</td><td>URI path to which the cookie applies.</td>
-    <tr><td class="param">domain</td><td>Domain in which the cookie applies. Must have 2-3 dots.</td>
+    <tr><td class="param">domain</td><td>Domain in which the cookie applies. Must have 2-3 dots. If null, a domain is created using the current request host header. If set to the empty string, the domain field is omitted. If the domain is a numerical IP address or localhost, the domain will not be included as the browsers do not support this pattern consistently.</td>
     <tr><td class="param">lifespan</td><td>Duration for the cookie to persist in msec.</td>
     <tr><td class="param">flags</td><td>Cookie options mask. The following options are supported: <ul><li>HTTP_COOKIE_SECURE - Set the &apos;Secure&apos; attribute on the cookie. </li><li>HTTP_COOKIE_HTTP - Set the &apos;HttpOnly&apos; attribute on the cookie. See RFC 6265 for details about the &apos;Secure&apos; and &apos;HttpOnly&apos; cookie attributes.</li></ul></td>
     </table></dd></dl>
