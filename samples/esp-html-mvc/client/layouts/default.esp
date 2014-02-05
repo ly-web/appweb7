@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>${TITLE}</title>
+    <title>Blog</title>
     <meta charset="utf-8" />
     <link rel="icon" href="@~/assets/favicon.ico" type="image/x-icon">
     <% stylesheets(NULL); %>
@@ -9,7 +9,7 @@
 <body id='body' data-config='<% renderConfig(); %>'>
     <nav class="navbar">
         <div class="navbar-header">
-            <a class="navbar-brand" href="@~">${TITLE}</a>
+            <a class="navbar-brand" href="@~">Blog</a>
         </div>
     </nav>
     <main class="container">
