@@ -390,7 +390,8 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     }
     httpAddHeaderString(conn, "Content-Type", "text/html");
     if (rx->route->flags & HTTP_ROUTE_XSRF) {
-        httpAddSecurityToken(conn);
+        /* Add a new unique security token */
+        httpAddSecurityToken(conn, 1);
     }
     /* WARNING: GC yield */
     (viewProc)(conn);

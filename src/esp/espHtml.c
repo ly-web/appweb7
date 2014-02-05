@@ -100,7 +100,7 @@ PUBLIC void inputSecurityToken()
     HttpConn    *conn;
 
     conn = getConn();
-    espRender(conn, "    <input name='%s' type='hidden' value='%s' />\r\n", BIT_XSRF_PARAM, httpGetSecurityToken(conn));
+    espRender(conn, "    <input name='%s' type='hidden' value='%s' />\r\n", BIT_XSRF_PARAM, httpGetSecurityToken(conn, 0));
 }
 
 

@@ -659,7 +659,7 @@ PUBLIC void scripts(cchar *patterns)
  */
 PUBLIC void securityToken()
 {
-    httpAddSecurityToken(getConn());
+    httpAddSecurityToken(getConn(), 0);
 }
 
 
