@@ -1,9 +1,9 @@
 ESP Configuration Sample
 ===
 
-This sample documents the various fields in the esp.json configuration file.
+This sample documents the various fields in the package.json configuration file.
 
-Please read esp.json.
+Please read package.json.
 
 Code:
 ---
