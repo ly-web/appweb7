@@ -17,7 +17,7 @@ The app contains:
 
 This app was generated, then edited for simplicity via:
 
-    esp generate app blog angular-mvc
+    esp generate app blog esp-angular-mvc
     cd blog
     esp generate scaffold post title:string body:text
     cd ..
@@ -42,9 +42,9 @@ or
 
     esp run
 
-The server listens on port 8080. Browse to: 
+The server listens on port 4000. Browse to: 
  
-     http://localhost:8080/
+     http://localhost:4000/
 
 This will run the application in debug mode which will individually load HTML views, script and Less stylesheets
 as required. If you change the "debug" property in esp.config to "release" and restart the server, the application 

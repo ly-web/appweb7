@@ -1,5 +1,5 @@
 /*
-    app.c -- Blog Application Module (esp-server)
+    app.c -- ${UAPP} Application Module (esp-server)
 
     This module is loaded when Appweb starts.
  */
@@ -11,7 +11,7 @@
 static void base(HttpConn *conn) {
 }
 
-ESP_EXPORT int esp_app_blog(HttpRoute *route, MprModule *module) {
+ESP_EXPORT int esp_app_${APP}(HttpRoute *route, MprModule *module) {
     espDefineBase(route, base);
     return 0;
 }

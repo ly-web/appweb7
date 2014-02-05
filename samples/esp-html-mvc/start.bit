@@ -20,19 +20,10 @@ Bit.load({
             flat: true,
             compress: true,
         },
-        c: {
-            flat: true,
-        },
     },
     targets: {
         comp: {
-            build: "
-                if (bit.settings.c.flat) {
-                    run('esp -flat -r -q compile')
-                } else {
-                    run('esp -r -q compile')
-                }
-            ",
+            build: `run('esp -r -q compile')`,
         },
         run: {
             depends: ['comp'],
