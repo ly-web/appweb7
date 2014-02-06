@@ -14879,16 +14879,13 @@ static int defaultSort(char **q1, char **q2, void *ctx)
 }
 
 
-PUBLIC MprList *mprSortList(MprList *lp, MprSortProc compare, void *ctx)
+PUBLIC MprList *mprSortList(MprList *lp, MprSortProc cmp, void *ctx)
 {
     if (!lp) {
         return 0;
     }
     lock(lp);
-    if (!compare) {
-        compare = (MprSortProc) defaultSort;
-    }
-    mprSort(lp->items, lp->length, sizeof(void*), compare, ctx);
+    mprSort(lp->items, lp->length, sizeof(void*), cmp, ctx);
     unlock(lp);
     return lp;
 }
@@ -14919,96 +14916,82 @@ PUBLIC MprKeyValue *mprCreateKeyPair(cchar *key, cchar *value, int flags)
 
 static void swapElt(char *a, char *b, ssize width)
 {
-    char tmp;
+    char    tmp;
 
-    if (a != b) {
-        while (width--) {
-            tmp = *a;
-            *a++ = *b;
-            *b++ = tmp;
-        }
-    }
-}
-
-
-static void shortsort(char *lo, char *hi, ssize width, MprSortProc comp, void *ctx)
-{
-    char    *p, *max;
-
-    while (hi > lo) {
-        max = lo;
-        for (p = lo + width; p <= hi; p += width) {
-            if (comp(p, max, ctx) > 0) {
-                max = p;
-            }
-        }
-        swapElt(max, hi, width);
-        hi -= width;
-    }
-}
-
-
-PUBLIC void mprSort(void *base, ssize num, ssize width, MprSortProc comp, void *ctx) 
-{
-    char    *lo, *hi, *mid, *l, *h, *lostk[30], *histk[30];
-    ssize   size;
-    int     stkptr;
-
-    if (num < 2 || width == 0) {
+    if (a == b) {
         return;
     }
-    stkptr = 0;
-    lo = base;
-    hi = (char *) base + width * (num - 1);
+    while (width--) {
+        tmp = *a;
+        *a++ = *b;
+        *b++ = tmp;
+    }
+}
 
-recurse:
-    size = (int) (hi - lo) / width + 1;
-    if (size <= 8) {
-        shortsort(lo, hi, width, comp, ctx);
-    } else {
-        mid = lo + (size / 2) * width;
-        swapElt(mid, lo, width);
-        l = lo;
-        h = hi + width;
 
-        for (;;) {
-            do { l += width; } while (l <= hi && comp(l, lo, ctx) <= 0);
-            do { h -= width; } while (h > lo && comp(h, lo, ctx) >= 0);
-            if (h < l) break;
-            swapElt(l, h, width);
-        }
-        swapElt(lo, h, width);
+#if KEEP && UNUSED
 
-        if (h - 1 - lo >= hi - l) {
-            if (lo + width < h) {
-                lostk[stkptr] = lo;
-                histk[stkptr] = h - width;
-                ++stkptr;
+tt((char**) array, nelt, (char**) left, (char**) right);
+
+static void tt(char **array, ssize nelt, char **left, char **right)
+{
+    int     i;
+
+    return;
+    printf("\n");
+    for (i = 0; i < nelt; i++) {
+        printf("%s ", array[i]);
+    }
+    printf("\n");
+    for (i = 0; i < nelt; i++) {
+        if (&array[i] == left) {
+            if (&array[i] == right) {
+                print("LR");
+            } else {
+                printf("L ");
             }
-            if (l < hi) {
-                lo = l;
-                goto recurse;
-            }
+        } else if (&array[i] == right) {
+            printf("R ");
         } else {
-            if (l < hi) {
-                lostk[stkptr] = l;
-                histk[stkptr] = hi;
-                ++stkptr;
-            }
-            if (lo + width < h) {
-                hi = h - width;
-                goto recurse;
-            }
+            printf("  ");
         }
     }
-    --stkptr;
-    if (stkptr >= 0) {
-        lo = lostk[stkptr];
-        hi = histk[stkptr];
-        goto recurse;
-    } else {
+    printf("\n");
+}
+#endif
+
+
+PUBLIC void mprSort(void *base, ssize nelt, ssize esize, MprSortProc cmp, void *ctx) 
+{
+    char    *array, *pivot, *left, *right;
+
+    if (nelt < 2 || esize <= 0) {
         return;
     }
+    if (!cmp) {
+        cmp = (MprSortProc) defaultSort;
+    }
+    array = base;
+    left = array;
+    right = array + ((nelt - 1) * esize);
+    pivot = array + ((nelt / 2) * esize);
+
+    while (left <= right) {
+        while (cmp(left, pivot, ctx) < 0) {
+            left += esize;
+        }
+        while (cmp(right, pivot, ctx) > 0) {
+            right -= esize;
+        }
+        if (left <= right) {
+            swapElt(left, right, esize);
+            left += esize;
+            right -= esize;
+        }
+    }
+    /* left and right are swapped */
+    mprSort(array, (right - array) / esize + 1, esize, cmp, ctx);
+    mprSort(left, nelt - ((left - array) / esize), esize, cmp, ctx);
 }
 
 
