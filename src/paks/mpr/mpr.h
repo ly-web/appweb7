@@ -9154,6 +9154,21 @@ PUBLIC void mprGetCacheStats(MprCache *cache, int *numKeys, ssize *mem);
 PUBLIC int64 mprIncCache(MprCache *cache, cchar *key, int64 amount);
 
 /**
+    Lookup an item in the cache.
+    @description Same as mprReadCache but will not update the last accessed time.
+    @param cache The cache instance object returned from #mprCreateCache.
+    @param key Cache item key
+    @param modified Optional MprTime value reference to receive the last modified time of the cache item. Set to null
+        if not required.
+    @param version Optional int64 value reference to receive the version number of the cache item. Set to null
+        if not required. Cache items have a version number that is incremented every time the item is updated.
+    @return The cache item value
+    @ingroup MprCache
+    @stability Evolving
+  */
+PUBLIC char *mprLookupCache(MprCache *cache, cchar *key, MprTime *modified, int64 *version);
+
+/**
     Prune the cache
     @description Prune the cache and discard all cached items
     @param cache The cache instance object returned from #mprCreateCache.

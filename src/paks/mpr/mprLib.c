@@ -4915,6 +4915,39 @@ PUBLIC int64 mprIncCache(MprCache *cache, cchar *key, int64 amount)
 }
 
 
+PUBLIC char *mprLookupCache(MprCache *cache, cchar *key, MprTime *modified, int64 *version)
+{
+    CacheItem   *item;
+    char        *result;
+
+    assert(cache);
+    assert(key);
+
+    if (cache->shared) {
+        cache = cache->shared;
+        assert(cache == shared);
+    }
+    lock(cache);
+    if ((item = mprLookupKey(cache->store, key)) == 0) {
+        unlock(cache);
+        return 0;
+    }
+    if (item->expires && item->expires <= mprGetTicks()) {
+        unlock(cache);
+        return 0;
+    }
+    if (version) {
+        *version = item->version;
+    }
+    if (modified) {
+        *modified = item->lastModified;
+    }
+    result = item->data;
+    unlock(cache);
+    return result;
+}
+
+
 PUBLIC char *mprReadCache(MprCache *cache, cchar *key, MprTime *modified, int64 *version)
 {
     CacheItem   *item;
@@ -5196,10 +5229,10 @@ static void pruneCache(MprCache *cache, MprEvent *event)
          */
         for (kp = 0; (kp = mprGetNextKey(cache->store, kp)) != 0; ) {
             item = (CacheItem*) kp->data;
-            mprTrace(6, "Cache: \"%s\" lifespan %Ld, expires in %Ld secs", item->key, 
+            mprTrace(5, "Cache: \"%s\" lifespan %Ld, expires in %Ld secs", item->key, 
                     item->lifespan / 1000, (item->expires - when) / 1000);
             if (item->expires && item->expires <= when) {
-                mprTrace(5, "Cache prune expired key %s", kp->key);
+                mprLog(3, "Cache prune expired key %s", kp->key);
                 removeItem(cache, item);
             }
         }
@@ -5219,7 +5252,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
                 for (kp = 0; (kp = mprGetNextKey(cache->store, kp)) != 0; ) {
                     item = (CacheItem*) kp->data;
                     if (item->expires && item->expires <= when) {
-                        mprTrace(5, "Cache too big execess keys %Ld, mem %Ld, prune key %s", 
+                        mprLog(3, "Cache too big, execess keys %Ld, mem %Ld, prune key %s", 
                             excessKeys, (cache->maxMem - cache->usedMem), kp->key);
                         removeItem(cache, item);
                     }
