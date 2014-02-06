@@ -322,7 +322,8 @@ PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
     @stability Evolving
     @internal
  */
-PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *source, cchar *module, cchar *cacheName, int isView, char **errMsg);
+PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *source, cchar *module, cchar *cacheName, 
+    int isView, char **errMsg);
 
 /**
     Convert an ESP web page into C code
@@ -1806,6 +1807,14 @@ PUBLIC cchar *getContentType();
 PUBLIC void *getData();
 
 /**
+    Get the connection dispatcher object
+    @return MprDispatcher connection dispatcher instance object.
+    @ingroup EspAbbrev
+    @stability Prototype
+ */
+PUBLIC MprDispatcher *getDispatcher();
+
+/**
     Get a flash message defined via #flash
     @param kind Kind of flash message to retrieve.
     @return Reference to private data
@@ -2445,13 +2454,14 @@ PUBLIC void renderView(cchar *view);
     Run a command
     @description Run a command and return output. 
     @param command Command line and arguments to run.
-    @param out Pointer to accept command standard output response. Set to null if not required.
-    @param err Pointer to accept command standard error response. Set to null if not required.
+    @param output Pointer to accept command standard output response. Set to null if not required.
+    @param error Pointer to accept command standard error response. Set to null if not required.
     @param flags MprCmd flags. Use MPR_CMD_DETACH to run in the background.
+    @param timeout Time in milliseconds to wait for the command to complete and exit.
     @ingroup EspAbbrev
     @stability Prototype
  */
-PUBLIC int runCmd(cchar *command, char **out, char **err, int flags);
+PUBLIC int runCmd(cchar *command, char *input, char **output, char **error, MprTicks timeout, int flags);
 
 /**
     Render scripts
