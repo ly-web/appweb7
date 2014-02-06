@@ -598,7 +598,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
 #endif
             }
             if ((value = espGetConfig(route, "esp.timeouts.session", 0)) != 0) {
-                route->limits->sessionTimeout = httpGetTicks(value) * 1000;
+                route->limits->sessionTimeout = httpGetTicks(value);
                 mprLog(2, "esp: set session timeout to %s", value);
             }
 #if DEPRECATE || 1
