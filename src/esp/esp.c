@@ -919,6 +919,9 @@ static void initialize(int argc, char **argv)
     app->currentDir = mprGetCurrentPath();
     app->binDir = mprGetAppDir();
 
+    /*
+        Export the /usr/local/lib/appweb/esp contents to ~/.paks (one time only)
+     */
     if ((home = getenv("HOME")) != 0) {
         app->paksCacheDir = mprJoinPath(home, ".paks");
         appwebPaks = mprJoinPath(mprGetAppDir(), "../" BIT_ESP_PAKS);
@@ -929,7 +932,7 @@ static void initialize(int argc, char **argv)
         }
         mprGetPathInfo(mprJoinPath(appwebPaks, "esp-server"), &src);
         mprGetPathInfo(mprJoinPath(app->paksCacheDir, "esp-server"), &dest);
-        if (src.mtime >= dest.mtime) {
+        if (!dest.valid || (src.mtime >= dest.mtime)) {
             exportCache();
         }
     } else {
@@ -2985,7 +2988,7 @@ static cchar *findAcceptableVersion(cchar *name, cchar *criteria)
             return dp->name;
         }
     }
-    fail("Cannot acceptable version for: %s with criteria %s", name, criteria);
+    fail("Cannot find acceptable version for: %s with criteria %s in %s", name, criteria, app->paksCacheDir);
     return 0;
 }
 
