@@ -17,9 +17,11 @@ Steps:
 
 2. Deploy 
 
-    bit --sets core --deploy dir
+    bit --sets core,libs,esp --deploy dir
 
 This will copy the required Appweb files to deploy into the nominated directory.
+
+Other sets include: 'web', 'service', 'php', 'utils', 'test', 'dev', 'doc', 'package'
 
 Documentation:
 ---
