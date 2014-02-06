@@ -75,11 +75,12 @@ static void openEjs(HttpQueue *q)
         the Http pipeline needed them (first time). The loading of ejs.web above will have fully initialized them.
      */
     httpAssignQueue(q, conn->http->ejsHandler, HTTP_QUEUE_TX);
-
+#if UNUSED
     /*
         Temporary stats. Store the pool structure.
      */
     conn->http->activeVMs = pool->count + (pool->template ? 1 : 0);
+#endif
 }
 
 
