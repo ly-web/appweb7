@@ -14651,6 +14651,7 @@ PUBLIC void httpGetStats(HttpStats *sp)
     MprKey              *kp;
     MprMemStats         *ap;
     MprWorkerStats      wstats;
+    ssize               memSessions;
 
     memset(sp, 0, sizeof(*sp));
     http = MPR->httpService;
@@ -14671,10 +14672,11 @@ PUBLIC void httpGetStats(HttpStats *sp)
     sp->workersYielded = wstats.yielded;
     sp->workersMax = wstats.max;
 
-    sp->activeVMs = http->activeVMs;
     sp->activeConnections = mprGetListLength(http->connections);
     sp->activeProcesses = http->activeProcesses;
-    sp->activeSessions = http->activeSessions;
+
+    mprGetCacheStats(http->sessionCache, &sp->activeSessions, &memSessions);
+    sp->memSessions = memSessions;
 
     lock(http->addresses);
     for (ITERATE_KEY_DATA(http->addresses, kp, address)) {
@@ -14682,10 +14684,10 @@ PUBLIC void httpGetStats(HttpStats *sp)
         sp->activeClients++;
     }
     unlock(http->addresses);
+
     sp->totalRequests = http->totalRequests;
     sp->totalConnections = http->totalConnections;
     sp->totalSweeps = MPR->heap->iteration;
-
 }
 
 
@@ -14710,6 +14712,7 @@ PUBLIC char *httpStatsReport(int flags)
     mprPutToBuf(buf, "Heap        %8.1f MB, %5.1f%% mem\n", s.heap / mb, s.heap / (double) s.mem * 100.0);
     mprPutToBuf(buf, "Heap-used   %8.1f MB, %5.1f%% used\n", s.heapUsed / mb, s.heapUsed / (double) s.heap * 100.0);
     mprPutToBuf(buf, "Heap-free   %8.1f MB, %5.1f%% free\n", s.heapFree / mb, s.heapFree / (double) s.heap * 100.0);
+    mprPutToBuf(buf, "Sessions    %8.1f MB\n", s.memSessions / mb);
 
     mprPutCharToBuf(buf, '\n');
     mprPutToBuf(buf, "CPUs        %8d\n", s.cpus);
@@ -14725,7 +14728,6 @@ PUBLIC char *httpStatsReport(int flags)
     mprPutToBuf(buf, "Processes   %8d active\n", s.activeProcesses);
     mprPutToBuf(buf, "Requests    %8d active\n", s.activeRequests);
     mprPutToBuf(buf, "Sessions    %8d active\n", s.activeSessions);
-    mprPutToBuf(buf, "VMs         %8d active\n", s.activeVMs);
     mprPutCharToBuf(buf, '\n');
 
     mprPutToBuf(buf, "Workers     %8d busy - %d yielded, %d idle, %d max\n", 

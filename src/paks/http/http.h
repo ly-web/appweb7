@@ -553,7 +553,6 @@ typedef struct Http {
     uint64          totalConnections;       /**< Total connections accepted */
     uint64          totalRequests;          /**< Total requests served */
 
-    int             activeVMs;              /**< Number of ejs VMs */
     int             flags;                  /**< Open flags */
     void            *context;               /**< Embedding context */
     MprTicks        currentTime;            /**< When currentDate was last calculated (ticks) */
@@ -765,6 +764,7 @@ typedef struct HttpStats {
     uint64  mem;                        /**< Current application memory */
     uint64  memRedline;                 /**< Memory heap warnHeap limit */
     uint64  memMax;                     /**< Memory heap maximum permitted */
+    uint64  memSessions;                /**< Memory used for sessions */ 
 
     uint64  heap;                       /**< Current application heap memory */
     uint64  heapUsed;                   /**< Current heap memory in use */
@@ -780,7 +780,6 @@ typedef struct HttpStats {
     int     activeProcesses;            /**< Current active processes */
     int     activeRequests;             /**< Current active requests */
     int     activeSessions;             /**< Current active sessions */
-    int     activeVMs;                  /**< Current ejs VMs */
 
     uint64  totalSweeps;                /**< Total GC sweeps */
     uint64  totalRequests;              /**< Total requests served */
