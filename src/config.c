@@ -1606,6 +1606,98 @@ static int limitWorkersDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+static int userToID(cchar *user)
+{
+#if BIT_UNIX_LIKE
+    struct passwd   *pp;
+    if ((pp = getpwnam(user)) == 0) {
+        mprError("Bad user: %s", user);
+        return 0;
+    }
+    return pp->pw_uid;
+#else
+    return 0;
+#endif
+}
+
+
+static int groupToID(cchar *group)
+{
+#if BIT_UNIX_LIKE
+    struct group    *gp;
+    if ((gp = getgrnam(group)) == 0) {
+        mprError("Bad group: %s", group);
+        return MPR_ERR_CANT_ACCESS;
+    }
+    return gp->gr_gid;
+#else
+    return 0;
+#endif
+}
+
+
+/*
+    MakeDir owner:group:perms dir, ...
+ */
+static int makeDirDirective(MaState *state, cchar *key, cchar *value)
+{
+    MprPath info;
+    char    *auth, *dirs, *path, *perms, *tok;
+    cchar   *dir, *group, *owner;
+    int     gid, mode, uid; 
+
+    if (!maTokenize(state, value, "%S ?*", &auth, &dirs)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    uid = gid = 0;
+    mode = 0750;
+    if (schr(auth, ':')) {
+        owner = stok(auth, ":", &tok);
+        if (owner && *owner) {
+            if (snumber(owner)) {
+                uid = (int) stoi(owner);
+            } else if (smatch(owner, "APPWEB")) {
+                uid = state->appweb->uid;
+            } else {
+                uid = userToID(owner);
+            }
+        }
+        group = stok(tok, ":", &perms);
+        if (group && *group) {
+            if (snumber(group)) {
+                gid = (int) stoi(group);
+            } else if (smatch(owner, "APPWEB")) {
+                gid = state->appweb->gid;
+            } else {
+                gid = groupToID(group);
+            }
+        }
+        if (perms && snumber(perms)) {
+            mode = (int) stoiradix(perms, -1, NULL);
+        } else {
+            mode = 0;
+        }
+        if (gid < 0 || uid < 0) {
+            return MPR_ERR_BAD_SYNTAX;
+        }
+    } else {
+        dirs = auth;
+        auth = 0;
+    }
+    tok = dirs;
+    for (tok = sclone(dirs); (dir = stok(tok, ",", &tok)) != 0; ) {
+        path = httpMakePath(state->route, state->configDir, dir);
+        if (mprGetPathInfo(path, &info) == 0 && info.isDir) {
+            continue;
+        }
+        if (mprMakeDir(path, mode, uid, gid, 1) < 0) {
+            return MPR_ERR_BAD_SYNTAX;
+        }
+    }
+    return 0;
+}
+
+
 /*
     Map "ext,ext,..." "newext, newext, newext"
     Map compressed
@@ -3014,6 +3106,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "LogRoutes", logRoutesDirective);
     maAddDirective(appweb, "LoadModulePath", loadModulePathDirective);
     maAddDirective(appweb, "LoadModule", loadModuleDirective);
+    maAddDirective(appweb, "MakeDir", makeDirDirective);
     maAddDirective(appweb, "Map", mapDirective);
     maAddDirective(appweb, "MemoryPolicy", memoryPolicyDirective);
     maAddDirective(appweb, "Methods", methodsDirective);
