@@ -5652,6 +5652,15 @@ PUBLIC int mprIsCmdComplete(MprCmd *cmd)
 }
 
 
+PUBLIC int mprRun(MprDispatcher *dispatcher, cchar *command, cchar *input, char **output, char **error, MprTicks timeout)
+{
+    MprCmd  *cmd;
+   
+    cmd = mprCreateCmd(dispatcher);
+    return mprRunCmd(cmd, command, NULL, input, output, error, timeout, MPR_CMD_IN  | MPR_CMD_OUT | MPR_CMD_ERR);
+}
+
+
 /*
     Run a simple blocking command. See arg usage below in mprRunCmdV.
  */
