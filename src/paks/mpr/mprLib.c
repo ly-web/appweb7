@@ -1014,9 +1014,6 @@ PUBLIC void mprResetYield()
          */
         lock(ts->threads);
         tp->stickyYield = 0;
-#if UNUSED
-        if (tp->yielded && heap->mustYield && !pauseGC)
-#endif
         if (heap->marking && !pauseGC) {
             tp->yielded = 0;
             unlock(ts->threads);
@@ -9800,24 +9797,6 @@ PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, Mpr
 }
 
 
-#if UNUSED
-/*
-    Internal use only. Run the "main" dispatcher if not using a user events thread. 
- */
-PUBLIC int mprRunDispatcher(MprDispatcher *dispatcher)
-{
-    assert(dispatcher);
-    if (isRunning(dispatcher) && (dispatcher->owner && dispatcher->owner != mprGetCurrentOsThread())) {
-        mprError("Relay to a running dispatcher owned by another thread");
-        return MPR_ERR_BAD_STATE;
-    }
-    dispatcher->owner = mprGetCurrentOsThread();
-    queueDispatcher(dispatcher->service->runQ, dispatcher);
-    return 0;
-}
-#endif
-
-
 /*
     Schedule a dispatcher to run but don't disturb an already running dispatcher. If the event queue is empty, 
     the dispatcher is moved to the idleQ. If there is a past-due event, it is moved to the readyQ. If there is a future 
@@ -10967,9 +10946,6 @@ PUBLIC void mprRemoveEvent(MprEvent *event)
             mprDequeueEvent(event);
         }
         event->dispatcher = 0;
-#if UNUSED
-        event->flags &= ~MPR_EVENT_CONTINUOUS;
-#endif
         if (event->due == es->willAwake && dispatcher->eventQ->next != dispatcher->eventQ) {
             mprScheduleDispatcher(dispatcher);
         }

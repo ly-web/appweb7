@@ -9434,9 +9434,6 @@ typedef struct Mpr {
     int             exitStatus;             /**< Proposed program exit status */
     int             flags;                  /**< Misc flags */
     int             hasError;               /**< Mpr has an initialization error */
-#if UNUSED
-    int             state;                  /**< Processing state */
-#endif
     int             verifySsl;              /**< Default verification of SSL certificates */
 
     bool            cmdlineLogging;         /**< App has specified --log on the command line */
