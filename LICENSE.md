@@ -20,6 +20,7 @@ AngularJS is an optional client-side Javascript library used by some ESP MVC app
 
 [AngularJS](http://angularjs.org) - [MIT](http://opensource.org/licenses/MIT)
 
+
 ###Dtoa License
 ---
 
@@ -41,26 +42,13 @@ FITNESS FOR ANY PARTICULAR PURPOSE.
 
 The optional EST SSL stack includes code from TropicSSL.
 
-TropicSSL - [BSD License](http://opensource.org/licenses/BSD-2-Clause
-
-
-###JQuery License
-
-[JQuery](http://jquery.org/license/) - [MIT License](http://opensource.org/licenses/MIT)
-
-
-###Qsort Routine License
-
-QSort - [BSD License](http://opensource.org/licenses/BSD-2-Clause)
+TropicSSL - [BSD License](http://opensource.org/licenses/BSD-2-Clause)
 
 
 ###Perl Regular Expressions License
 
 PCRE - [BSD License](http://opensource.org/licenses/BSD-2-Clause)
 
-###PHP License
-
-[PHP](http://www.php.net) - [BSD Style](http://www.php.net/license/3_01.txt)
 
 ###RSA MD5 License
 

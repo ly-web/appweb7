@@ -21,7 +21,14 @@
     coalescing allocator that will return memory back to the O/S if not required. It is optimized for frequent 
     allocations of small blocks (< 4K) and uses a scheme of free queues for fast allocation. 
     \n\n
-    Not all of these APIs are thread-safe. 
+    The MPR provides a high-performance thread-pool to share threads as required to service clients. 
+    When a client request arrives, the MPR allocates an event queue called a dispatcher. This dispatcher then serializes 
+    all activity for the request so that it essentially runs single-threaded  This simplifies the code as most 
+    interactions do not need to be lock protected. When a request has activity, it borrows a thread from the thread pool, 
+    does its work and then returns the thread to the thread pool. This all happens very quickly, so a small pool of 
+    threads are effectivelyshared over many requests. Thread are free to block if required, but typically non-blocking
+    patterns are more economical. If you have non-MPR threads that need to call into the MPR, you must synchronize
+    such calls via #mprCreateEventOutside.
  */
 
 #ifndef _h_MPR
@@ -481,6 +488,10 @@ PUBLIC int mprWaitForCond(MprCond *cond, MprTicks timeout);
     @description Signal a condition variable and set it to the \a triggered status. Existing or future caller of
         #mprWaitForCond will be awakened. The condition variable will be automatically reset when the waiter awakes.
         Should only be used for single waiters. Use mprSignalMultiCond for use with multiple waiters.
+        \n\n
+        This API (like nearly all MPR APIs) must only be used by MPR threads and not by non-MPR (foreign) threads. 
+        If you need to synchronize active of MPR threads with non-MPR threads, use #mprCreateEventOutside which can be called from
+        foreign threads.
     @param cond Condition variable object created via #mprCreateCond
     @ingroup MprSync
     @stability Stable.

@@ -14541,24 +14541,8 @@ PUBLIC int mprRemoveItemAtPos(MprList *lp, int index)
     }
     lock(lp);
     items = lp->items;
-#if KEEP
-    void    **ip;
-    if (index == (lp->length - 1)) {
-        /* Scan backwards to find last non-null item */
-        for (ip = &items[index - 1]; ip >= items && *ip == 0; ip--) ;
-        lp->length = ++ip - items;
-        assert(lp->length >= 0);
-    } else {
-        /* Copy down following items */
-        for (ip = &items[index]; ip < &items[lp->length]; ip++) {
-            *ip = ip[1];
-        }
-        lp->length--;
-    }
-#else
     memmove(&items[index], &items[index + 1], (lp->length - index - 1) * sizeof(void*));
     lp->length--;
-#endif
     lp->items[lp->length] = 0;
     assert(lp->length >= 0);
     unlock(lp);
