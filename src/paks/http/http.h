@@ -3960,6 +3960,7 @@ typedef struct HttpRoute {
     HttpTrace       trace[2];               /**< Default route request tracing */
     int             traceMask;              /**< Request/response trace mask */
 
+    cchar           *cookie;                /**< Cookie name for session data */
     cchar           *corsOrigin;            /**< CORS permissible client origins */
     cchar           *corsHeaders;           /**< Headers to add for Access-Control-Expose-Headers */
     cchar           *corsMethods;           /**< Methods to add for Access-Control-Allow-Methods */
@@ -4802,6 +4803,15 @@ PUBLIC void httpSetRouteIgnoreEncodingErrors(HttpRoute *route, bool on);
     @stability Evolving
  */
 PUBLIC void httpSetRouteMethods(HttpRoute *route, cchar *methods);
+
+/**
+    Set the route session cookie
+    @param route Route to modify
+    @param cookie Session cookie name
+    @ingroup HttpRoute
+    @stability Prototype
+ */
+PUBLIC void httpSetRouteCookie(HttpRoute *route, cchar *cookie);
 
 /**
     Set the route name

@@ -2188,11 +2188,28 @@ static int serverNameDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    SessionCookie [visible]
+    SessionCookie [name=NAME] [visible=true]
  */
 static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
 {
-    httpSetRouteSessionVisibility(state->route, scaselessmatch(value, "visible"));
+    char    *name, *options, *option, *ovalue, *tok;
+
+    if (!maTokenize(state, value, "%*", &options)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    for (option = maGetNextArg(options, &tok); option; option = maGetNextArg(tok, &tok)) {
+        option = stok(option, " =\t,", &ovalue);
+        ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
+        if (!ovalue || *ovalue == '\0') continue;
+        if (smatch(option, "visible")) {
+            httpSetRouteSessionVisibility(state->route, scaselessmatch(ovalue, "visible"));
+        } else if (smatch(option, "name")) {
+            httpSetRouteCookie(state->route, ovalue);
+        } else {
+            mprError("Unknown SessionCookie option %s", option);
+            return MPR_ERR_BAD_SYNTAX;
+        }
+    }
     return 0;
 }
 

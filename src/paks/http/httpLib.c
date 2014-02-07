@@ -8357,6 +8357,7 @@ PUBLIC HttpRoute *httpCreateInheritedRoute(HttpRoute *parent)
     route->sourceName = parent->sourceName;
     route->ssl = parent->ssl;
     route->target = parent->target;
+    route->cookie = parent->cookie;
     route->targetRule = parent->targetRule;
     route->tokens = parent->tokens;
     route->updates = parent->updates;
@@ -8443,6 +8444,7 @@ static void manageRoute(HttpRoute *route, int flags)
         mprMark(route->corsOrigin);
         mprMark(route->corsHeaders);
         mprMark(route->corsMethods);
+        mprMark(route->cookie);
 
     } else if (flags & MPR_MANAGE_FREE) {
         if (route->patternCompiled && (route->flags & HTTP_ROUTE_FREE_PATTERN)) {
@@ -9596,6 +9598,14 @@ PUBLIC void httpSetRouteMethods(HttpRoute *route, cchar *methods)
 {
     route->methods = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_STATIC_VALUES | MPR_HASH_STABLE);
     httpAddRouteMethods(route, methods);
+}
+
+
+PUBLIC void httpSetRouteCookie(HttpRoute *route, cchar *cookie)
+{
+    assert(route);
+    assert(cookie && *cookie);
+    route->cookie = cookie;
 }
 
 
@@ -14872,19 +14882,23 @@ PUBLIC void httpSetSessionNotify(MprCacheProc callback)
 PUBLIC void httpDestroySession(HttpConn *conn)
 {
     Http        *http;
+    HttpRx      *rx;
     HttpSession *sp;
+    cchar       *cookie;
 
     http = conn->http;
+    rx = conn->rx;
     assert(http);
 
     lock(http);
     if ((sp = httpGetSession(conn, 0)) != 0) {
-        httpRemoveCookie(conn, HTTP_SESSION_COOKIE);
+        cookie = rx->route->cookie ? rx->route->cookie : HTTP_SESSION_COOKIE;
+        httpRemoveCookie(conn, rx->route->cookie);
         mprExpireCacheItem(sp->cache, sp->id, 0);
         sp->id = 0;
-        conn->rx->session = 0;
+        rx->session = 0;
     }
-    conn->rx->sessionProbed = 0;
+    rx->sessionProbed = 0;
     unlock(http);
 }
 
@@ -14906,7 +14920,7 @@ PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create)
 {
     Http        *http;
     HttpRx      *rx;
-    cchar       *data, *id;
+    cchar       *cookie, *data, *id;
     static int  nextSession = 0;
     int         flags;
 
@@ -14940,7 +14954,8 @@ PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create)
 
             rx->session = allocSessionObj(conn, id, NULL);
             flags = (rx->route->flags & HTTP_ROUTE_VISIBLE_SESSION) ? 0 : HTTP_COOKIE_HTTP;
-            httpSetCookie(conn, HTTP_SESSION_COOKIE, rx->session->id, "/", NULL, rx->session->lifespan, flags);
+            cookie = rx->route->cookie ? rx->route->cookie : HTTP_SESSION_COOKIE;
+            httpSetCookie(conn, cookie, rx->session->id, "/", NULL, rx->session->lifespan, flags);
 
             if ((rx->route->flags & HTTP_ROUTE_XSRF) && rx->securityToken) {
                 httpSetSessionVar(conn, BIT_XSRF_COOKIE, rx->securityToken);
@@ -15082,6 +15097,7 @@ PUBLIC int httpWriteSession(HttpConn *conn)
 PUBLIC cchar *httpGetSessionID(HttpConn *conn)
 {
     HttpRx  *rx;
+    cchar   *cookie;
 
     assert(conn);
     rx = conn->rx;
@@ -15096,7 +15112,8 @@ PUBLIC cchar *httpGetSessionID(HttpConn *conn)
         return 0;
     }
     rx->sessionProbed = 1;
-    return httpGetCookie(conn, HTTP_SESSION_COOKIE);
+    cookie = rx->route->cookie ? rx->route->cookie : HTTP_SESSION_COOKIE;
+    return httpGetCookie(conn, cookie);
 }
 
 

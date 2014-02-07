@@ -1489,13 +1489,13 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
                 <thead>
                     <tr>
                         <th class="pivot">Description</th>
-                        <th>Controls the visibility of the session cookie in the browser.</th>
+                        <th>Sets the Session cookie options.</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>SessionCookie [visible|invisible]</td>
+                        <td>SessionCookie name=NAME visible=[true|false]</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -1503,12 +1503,13 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>SessionCookie visible</td>
+                        <td>SessionCookie name=myapp visible=true</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>
-                            <p>This directive controls whether the session cookie is readable by Javascript in the browser.
+                            <p>This directive can define a unique name to use for the session cookie used by the route.</p>
+                            <p>It is also possible to set if the cookie is readable by Javascript in the browser.
                             By default, the session cookie is not visible to Javascript. It is desirable to keep the session
                             cookie invisible to minimize XSS security vulnerabilities.</p>
                             <p>Appweb implements this by adding the <i>"httpOnly"</i> option on the "Set-Cookie" response header.</p>

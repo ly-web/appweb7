@@ -77,13 +77,19 @@ static void openEsp(HttpQueue *q)
         return;
     }
     if (!eroute) {
-        eroute = allocEspRoute(route);
+        httpError(conn, 0, "Cannot find a suitable ESP route");
         return;
     }
     conn->data = req;
     req->esp = esp;
     req->route = route;
     req->autoFinalize = 1;
+    /*
+        If a cookie is not explicitly set, use the application name for the session cookie
+     */
+    if (!route->cookie && eroute->appName && *eroute->appName) {
+        route->cookie = eroute->appName;
+    }
 }
 
 
@@ -839,7 +845,6 @@ static EspRoute *getEroute(HttpRoute *route)
             return route->eroute;
         }
     }
-
     /*
         Lookup up the route chain for any configured EspRoutes
      */
