@@ -2192,7 +2192,7 @@ static int serverNameDirective(MaState *state, cchar *key, cchar *value)
  */
 static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
 {
-    char    *name, *options, *option, *ovalue, *tok;
+    char    *options, *option, *ovalue, *tok;
 
     if (!maTokenize(state, value, "%*", &options)) {
         return MPR_ERR_BAD_SYNTAX;
