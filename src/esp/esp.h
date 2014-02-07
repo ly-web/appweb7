@@ -181,6 +181,7 @@ typedef struct EspRoute {
     cchar           *layoutsDir;            /**< Directory for view layouts */
     cchar           *srcDir;                /**< Directory for server-side source */
     cchar           *viewsDir;              /**< Directory for server-side views */
+    cchar           *currentSession;        /**< Current login session when enforcing a single login */
 
     cchar           *compile;               /**< Compile template */
     cchar           *link;                  /**< Link template */
@@ -491,7 +492,6 @@ PUBLIC void espSetData(HttpConn *conn, void *data);
     @stability Prototype
  */
 PUBLIC bool espTestConfig(HttpRoute *route, cchar *key, cchar *desired);
-
 
 /*
     Internal
@@ -1000,6 +1000,15 @@ PUBLIC bool espHasGrid(HttpConn *conn);
 PUBLIC bool espHasRec(HttpConn *conn);
 
 /**
+    Test if the connection is being made on behalf of the current, single authenticated user.
+    @description Set esp.login.single to true to enable current session tracking.
+    @return true if the 
+    @stability Prototype
+    @ingroup EspReq
+ */
+PUBLIC bool espIsCurrentSession(HttpConn *conn);
+
+/**
     Test if the receive input stream is at end-of-file.
     @param conn HttpConn connection object
     @return "True" if there is no more receive data to read
@@ -1334,6 +1343,18 @@ PUBLIC void espSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path,
     @stability Evolving
  */
 PUBLIC void espSetContentType(HttpConn *conn, cchar *mimeType);
+
+/**
+    Set this authenticated session as the current session.
+    @description Set esp.login.single to true to enable current session tracking.
+    @return true if the 
+    @stability Prototype
+    @ingroup EspReq
+ */
+PUBLIC void espSetCurrentSession(HttpConn *conn);
+
+//  MOB - do we need abbrev versions
+PUBLIC void espClearCurrentSession(HttpConn *conn);
 
 /**
     Set a feedback message

@@ -257,6 +257,12 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
         mprError("No user verification routine defined on route %s", rx->route->name);
         return 0;
     }
+    if (!auth->store->noSession) {
+        if ((session = httpCreateSession(conn)) == 0) {
+            /* Too many sessions */
+            return 0;
+        }
+    }
     if (auth->username && *auth->username) {
         /* If using auto-login, replace the username */
         username = auth->username;
@@ -266,9 +272,6 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
         return 0;
     }
     if (!auth->store->noSession) {
-        if ((session = httpCreateSession(conn)) == 0) {
-            return 0;
-        }
         httpSetSessionVar(conn, HTTP_SESSION_USERNAME, username);
         httpSetSessionVar(conn, HTTP_SESSION_IP, conn->ip);
     }
@@ -14956,6 +14959,7 @@ PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create)
             flags = (rx->route->flags & HTTP_ROUTE_VISIBLE_SESSION) ? 0 : HTTP_COOKIE_HTTP;
             cookie = rx->route->cookie ? rx->route->cookie : HTTP_SESSION_COOKIE;
             httpSetCookie(conn, cookie, rx->session->id, "/", NULL, rx->session->lifespan, flags);
+            mprLog(3, "session: create new cookie %s=%s", cookie, rx->session->id);
 
             if ((rx->route->flags & HTTP_ROUTE_XSRF) && rx->securityToken) {
                 httpSetSessionVar(conn, BIT_XSRF_COOKIE, rx->securityToken);

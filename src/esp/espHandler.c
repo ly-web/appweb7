@@ -658,6 +658,7 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->compile);
         mprMark(eroute->config);
         mprMark(eroute->controllersDir);
+        mprMark(eroute->currentSession);
         mprMark(eroute->database);
         mprMark(eroute->dbDir);
         mprMark(eroute->edi);
