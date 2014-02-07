@@ -77,10 +77,10 @@ MAIN(appweb, int argc, char **argv, char **envp)
     Mpr     *mpr;
     cchar   *argp, *jail;
     char    *logSpec;
-    int     argind, status, verbose;
+    int     argind, status, level;
 
     jail = 0;
-    verbose = 0;
+    level = 0;
     logSpec = 0;
 
     if ((mpr = mprCreate(argc, argv, MPR_USER_EVENTS_THREAD)) == NULL) {
@@ -164,14 +164,14 @@ MAIN(appweb, int argc, char **argv, char **envp)
             app->workers = atoi(argv[++argind]);
 
         } else if (smatch(argp, "--verbose") || smatch(argp, "-v")) {
-            verbose++;
+            level = 2;
 
         } else if (smatch(argp, "--version") || smatch(argp, "-V")) {
             mprPrintf("%s\n", BIT_VERSION);
             exit(0);
 
         } else if (*argp == '-' && isdigit((uchar) argp[1])) {
-            verbose = (int) stoi(&argp[1]) - 1;
+            level = (int) stoi(&argp[1]);
 
         } else if (!smatch(argp, "?")) {
             mprError("Unknown switch \"%s\"", argp);
@@ -184,8 +184,8 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if (logSpec) {
         mprStartLogging(logSpec, 1);
         mprSetCmdlineLogging(1);
-    } else if (verbose) {
-        mprStartLogging(sfmt("stderr:%d", verbose + 1), 1);
+    } else if (level) {
+        mprStartLogging(sfmt("stderr:%d", level), 1);
         mprSetCmdlineLogging(1);
     }
     if (mprStart() < 0) {
