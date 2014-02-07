@@ -1690,6 +1690,7 @@ static int makeDirDirective(MaState *state, cchar *key, cchar *value)
         if (mprGetPathInfo(path, &info) == 0 && info.isDir) {
             continue;
         }
+        mprLog(MPR_CONFIG, "Create directory: \"%s\"", path);
         if (mprMakeDir(path, mode, uid, gid, 1) < 0) {
             return MPR_ERR_BAD_SYNTAX;
         }
