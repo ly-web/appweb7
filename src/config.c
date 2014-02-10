@@ -706,7 +706,7 @@ static int closeDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-#if DEPRECATE || 1
+#if DEPRECATED || 1
 /*
     Compress [gzip|none]
  */
@@ -2189,6 +2189,8 @@ static int serverNameDirective(MaState *state, cchar *key, cchar *value)
 
 /*
     SessionCookie [name=NAME] [visible=true]
+    DEPRECATED:
+        SessionCookie visible|invisible
  */
 static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -2197,6 +2199,13 @@ static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%*", &options)) {
         return MPR_ERR_BAD_SYNTAX;
     }
+#if DEPRECATED || 1
+    if (scaselessmatch(value, "visible")) {
+        httpSetRouteSessionVisibility(state->route, 1);
+    } else if (scaselessmatch(value, "invisible")) {
+        httpSetRouteSessionVisibility(state->route, 0);
+    }
+#endif
     for (option = maGetNextArg(options, &tok); option; option = maGetNextArg(tok, &tok)) {
         option = stok(option, " =\t,", &ovalue);
         ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
