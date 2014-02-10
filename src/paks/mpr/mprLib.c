@@ -25453,9 +25453,6 @@ static void manageThreadService(MprThreadService *ts, int flags)
         mprMark(ts->threads);
         mprMark(ts->mainThread);
         mprMark(ts->pauseThreads);
-
-    } else if (flags & MPR_MANAGE_FREE) {
-        mprStopThreadService();
     }
 }
 
