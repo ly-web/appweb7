@@ -15755,7 +15755,6 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
         }
         fmt(buf, sizeof(buf), "%s: %s: %s\n", prefix, tag, msg);
         mprWriteToOsLog(buf, flags, level);
-        fmt(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
         mprWriteFileString(file, buf);
     }
 }
