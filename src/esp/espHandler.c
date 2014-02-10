@@ -335,7 +335,7 @@ static int runAction(HttpConn *conn)
             if (rx->flags & HTTP_POST) {
                 httpSetStatus(conn, HTTP_CODE_UNAUTHORIZED);
                 if (eroute->json) {
-                    mprLog(2, "esp: Security token is stale. Please reload page.");
+                    mprLog(2, "esp: Stale security token.");
                     espRenderString(conn, "{\"retry\": true, \"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
                     espFinalize(conn);
                 } else {
