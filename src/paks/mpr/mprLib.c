@@ -21115,7 +21115,7 @@ static void signalEvent(MprSignal *sp, MprEvent *event)
     if (sp->flags & MPR_SIGNAL_BEFORE) {
         (sp->handler)(sp->data, sp);
     } 
-    if (sp->sigaction) {
+    if (sp->sigaction && (sp->sigaction != SIG_IGN && sp->sigaction != SIG_DFL)) {
         /*
             Call the original (foreign) action handler. Cannot pass on siginfo, because there is no reliable and scalable
             way to save siginfo state when the signalHandler is reentrant for a given signal across multiple threads.
