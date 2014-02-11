@@ -2225,6 +2225,7 @@ cp -r esp.conf ../server/esp.conf
 ../src/esp/paks/angular/package.json,
 ../src/esp/paks/esp-angular,
 ../src/esp/paks/esp-angular/esp-click.js,
+../src/esp/paks/esp-angular/esp-edit.js,
 ../src/esp/paks/esp-angular/esp-field-errors.js,
 ../src/esp/paks/esp-angular/esp-format.js,
 ../src/esp/paks/esp-angular/esp-input-group.js,
@@ -2330,6 +2331,7 @@ cd ../src/esp/paks
 	cp angular/package.json ../../${OUT_DIR}/paks/angular/1.2.6/package.json
 	mkdir -p \"../../${OUT_DIR}/paks/esp-angular/4.5.0\"
 	cp esp-angular/esp-click.js ../../${OUT_DIR}/paks/esp-angular/4.5.0/esp-click.js
+	cp esp-angular/esp-edit.js ../../${OUT_DIR}/paks/esp-angular/4.5.0/esp-edit.js
 	cp esp-angular/esp-field-errors.js ../../${OUT_DIR}/paks/esp-angular/4.5.0/esp-field-errors.js
 	cp esp-angular/esp-format.js ../../${OUT_DIR}/paks/esp-angular/4.5.0/esp-format.js
 	cp esp-angular/esp-input-group.js ../../${OUT_DIR}/paks/esp-angular/4.5.0/esp-input-group.js

@@ -104,6 +104,7 @@ copy /Y angular\angular.js \Users\mob\git\appweb\windows-x86-static\paks\angular
 copy /Y angular\package.json \Users\mob\git\appweb\windows-x86-static\paks\angular\1.2.6\package.json
 if not exist "\Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.0" md "\Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.0"
 copy /Y esp-angular\esp-click.js \Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.0\esp-click.js
+copy /Y esp-angular\esp-edit.js \Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.0\esp-edit.js
 copy /Y esp-angular\esp-field-errors.js \Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.0\esp-field-errors.js
 copy /Y esp-angular\esp-format.js \Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.0\esp-format.js
 copy /Y esp-angular\esp-input-group.js \Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.0\esp-input-group.js

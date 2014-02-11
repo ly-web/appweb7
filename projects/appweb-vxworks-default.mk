@@ -1051,6 +1051,7 @@ DEPS_56 += src/esp/paks/angular/angular.js
 DEPS_56 += src/esp/paks/angular/package.json
 DEPS_56 += src/esp/paks/esp-angular
 DEPS_56 += src/esp/paks/esp-angular/esp-click.js
+DEPS_56 += src/esp/paks/esp-angular/esp-edit.js
 DEPS_56 += src/esp/paks/esp-angular/esp-field-errors.js
 DEPS_56 += src/esp/paks/esp-angular/esp-format.js
 DEPS_56 += src/esp/paks/esp-angular/esp-input-group.js
@@ -1152,6 +1153,7 @@ $(CONFIG)/paks: $(DEPS_56)
 	cp angular/package.json ../../../$(CONFIG)/paks/angular/1.2.6/package.json ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-angular/4.5.0" ; \
 	cp esp-angular/esp-click.js ../../../$(CONFIG)/paks/esp-angular/4.5.0/esp-click.js ; \
+	cp esp-angular/esp-edit.js ../../../$(CONFIG)/paks/esp-angular/4.5.0/esp-edit.js ; \
 	cp esp-angular/esp-field-errors.js ../../../$(CONFIG)/paks/esp-angular/4.5.0/esp-field-errors.js ; \
 	cp esp-angular/esp-format.js ../../../$(CONFIG)/paks/esp-angular/4.5.0/esp-format.js ; \
 	cp esp-angular/esp-input-group.js ../../../$(CONFIG)/paks/esp-angular/4.5.0/esp-input-group.js ; \

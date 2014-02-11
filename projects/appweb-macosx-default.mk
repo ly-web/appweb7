@@ -1092,6 +1092,7 @@ DEPS_56 += src/esp/paks/angular/angular.js
 DEPS_56 += src/esp/paks/angular/package.json
 DEPS_56 += src/esp/paks/esp-angular
 DEPS_56 += src/esp/paks/esp-angular/esp-click.js
+DEPS_56 += src/esp/paks/esp-angular/esp-edit.js
 DEPS_56 += src/esp/paks/esp-angular/esp-field-errors.js
 DEPS_56 += src/esp/paks/esp-angular/esp-format.js
 DEPS_56 += src/esp/paks/esp-angular/esp-input-group.js
@@ -1193,6 +1194,7 @@ $(CONFIG)/paks: $(DEPS_56)
 	cp angular/package.json ../../../$(CONFIG)/paks/angular/1.2.6/package.json ; \
 	mkdir -p "../../../$(CONFIG)/paks/esp-angular/4.5.0" ; \
 	cp esp-angular/esp-click.js ../../../$(CONFIG)/paks/esp-angular/4.5.0/esp-click.js ; \
+	cp esp-angular/esp-edit.js ../../../$(CONFIG)/paks/esp-angular/4.5.0/esp-edit.js ; \
 	cp esp-angular/esp-field-errors.js ../../../$(CONFIG)/paks/esp-angular/4.5.0/esp-field-errors.js ; \
 	cp esp-angular/esp-format.js ../../../$(CONFIG)/paks/esp-angular/4.5.0/esp-format.js ; \
 	cp esp-angular/esp-input-group.js ../../../$(CONFIG)/paks/esp-angular/4.5.0/esp-input-group.js ; \
@@ -2195,6 +2197,7 @@ installBinary: $(DEPS_94)
 	cp src/esp/paks/angular/package.json $(BIT_VAPP_PREFIX)/esp/angular/package.json ; \
 	mkdir -p "$(BIT_VAPP_PREFIX)/esp/esp-angular" ; \
 	cp src/esp/paks/esp-angular/esp-click.js $(BIT_VAPP_PREFIX)/esp/esp-angular/esp-click.js ; \
+	cp src/esp/paks/esp-angular/esp-edit.js $(BIT_VAPP_PREFIX)/esp/esp-angular/esp-edit.js ; \
 	cp src/esp/paks/esp-angular/esp-field-errors.js $(BIT_VAPP_PREFIX)/esp/esp-angular/esp-field-errors.js ; \
 	cp src/esp/paks/esp-angular/esp-format.js $(BIT_VAPP_PREFIX)/esp/esp-angular/esp-format.js ; \
 	cp src/esp/paks/esp-angular/esp-input-group.js $(BIT_VAPP_PREFIX)/esp/esp-angular/esp-input-group.js ; \
