@@ -14903,7 +14903,7 @@ PUBLIC void httpDestroySession(HttpConn *conn)
     lock(http);
     if ((sp = httpGetSession(conn, 0)) != 0) {
         cookie = rx->route->cookie ? rx->route->cookie : HTTP_SESSION_COOKIE;
-        httpRemoveCookie(conn, rx->route->cookie);
+        httpRemoveCookie(conn, cookie);
         mprExpireCacheItem(sp->cache, sp->id, 0);
         sp->id = 0;
         rx->session = 0;
