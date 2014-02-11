@@ -640,6 +640,7 @@ static int sdbUpdateRec(Edi *edi, EdiRec *rec)
     MprBuf      *buf;
     EdiField    *fp;
     cchar       **argv;
+    va_list     vargs;
     int         argc, f;
 
     if (!ediValidateRec(rec)) {
@@ -680,9 +681,12 @@ static int sdbUpdateRec(Edi *edi, EdiRec *rec)
     }
     argv[argc] = NULL;
 
-    if (queryv(edi, mprGetBufStart(buf), argc, argv, NULL) == 0) {
+    va_start(vargs, NULL);
+    if (queryv(edi, mprGetBufStart(buf), argc, argv, vargs) == 0) {
+        va_end(vargs);
         return MPR_ERR_CANT_WRITE;
     }
+    va_end(vargs);
     return 0;
 }
 
@@ -755,7 +759,7 @@ static EdiGrid *queryv(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list var
             cmd = tail;
             continue;
         }
-        if (vargs) {
+        if (argc == 0) {
             for (index = 0; (arg = va_arg(vargs, cchar*)) != 0; index++) {
                 if (sqlite3_bind_text(stmt, index + 1, arg, -1, 0) != SQLITE_OK) {
                     sdbError(edi, "SDB: cannot bind to arg: %d, %s, error: %s", index + 1, arg, sqlite3_errmsg(db));
