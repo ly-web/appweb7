@@ -182,6 +182,25 @@ table {
     100% { opacity: 0.0; top: -100px; }
 }
 
-[ng-click],[esp-click],[onclick] {
+[ng-click],[esp-click],[esp-edit],[onclick] {
     cursor: pointer;
+}
+
+/*
+    angular-ui fixes
+ */
+.modal {
+    display: block;
+}
+
+/*
+    angular csp fixes
+ */
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak,
+.ng-hide {
+  display: none !important;
+}
+
+ng\:form {
+  display: block;
 }

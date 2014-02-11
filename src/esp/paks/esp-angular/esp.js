@@ -7,7 +7,7 @@
     It places a "Esp" object on the $rootScope that is inherited by all $scopes.
     Alternatively, injecting the Esp service provides direct access using the Esp service object.
  */
-angular.module('esp', ['esp.click', 'esp.field-errors', 'esp.format', 'esp.input-group', 'esp.input', 
+angular.module('esp', ['esp.click', 'esp.edit', 'esp.field-errors', 'esp.format', 'esp.input-group', 'esp.input', 
                        'esp.resource', 'esp.session', 'esp.titlecase'])
 
 .config(function() {
