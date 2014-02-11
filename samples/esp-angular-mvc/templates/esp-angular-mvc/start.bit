@@ -9,12 +9,7 @@ Bit.load({
     targets: {
         comp: {
             build: `
-                let flat = Path('package.json').readJSON().esp.flat
-                if (flat) {
-                    run('esp -flat -r -q compile')
-                } else {
-                    run('esp -r -q compile')
-                }
+                run('esp -r -q compile')
             `,
         },
         run: {
