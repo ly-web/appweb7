@@ -1,41 +1,52 @@
 {
-    "name": "esp-angular-mvc",
-    "description": "Sample for esp-angular-mvc",
-    "version": "1.0.0",
+    "name": "blog",
+    "title": "blog",
+    "description": "blog",
+    "version": "0.0.0",
     "dependencies": {
-        "esp-angular": "*",
-        "less": "*",
-        "more": "*"
+        "esp-server": "~4.5",
+        "angular": "~1.2",
+        "esp-angular": "~4.5",
+        "esp-angular-mvc": "~4.5"
+    },
+    "client-scripts": [
+        "paks/angular/angular.js",
+        "paks/angular/angular-animate.js",
+        "paks/angular/angular-route.js",
+        "paks/esp-angular/*.js",
+        "app/main.js",
+        "app/*/**.js*"
+    ],
+    "dirs": {
+        "client": "client",
+        "paks": "client/paks"
     },
     "esp": {
-        "scripts": {
-            "jquery": ["jquery.js"],
-            "angular": [
-                "angular.js",
-                "angular-animate.js",
-                "angular-route.js"
-            ],
-            "esp-angular": ["*"],
-            "less": ["*"],
-        },
+        "combined": false,
+        "update": true,
         "serverPrefix": "/do",
+        "server": {
+            "generate": {
+                "appweb": "esp-angular-mvc/appweb.conf",
+                "migration": "esp-server/migration.c",
+                "controller": "esp-angular-mvc/controller.c",
+                "controller-singleton": "esp-angular-mvc/controller-singleton.c",
+                "files": [
+                    "esp-server/src/app.c",
+                    "esp-angular-mvc/start.bit",
+                    "esp-angular-mvc/client/**"
+                ],
+                "clientModel": "esp-angular-mvc/model.js",
+                "clientController": "esp-angular-mvc/controller.js",
+                "clientList": "esp-angular-mvc/list.html",
+                "clientEdit": "esp-angular-mvc/edit.html"
+            },
+            "database": "mdb://blog.mdb"
+        },
         "formats": {
             "date": "yyyy-MM-dd",
             "float": 2
         },
         "json": true
-        "server": {
-            "database": "mdb://blog.mdb"
-        },
-    },
-    "generate": {
-        "top": "angular-mvc",
-        "scaffold": true,
-        "clientModel": true,
-        "clientController": true,
-        "clientView": true,
-        "controller": true,
-        "migration": true,
-        "view": false
     }
 }

@@ -1,5 +1,5 @@
 /*
-    app.c -- Blog Application Module
+    app.c -- Blog Application Module (esp-server)
 
     This module is loaded when Appweb starts.
  */

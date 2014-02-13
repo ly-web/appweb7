@@ -882,7 +882,7 @@ PUBLIC void form(EdiRec *record, cchar *optionString)
     }
     if (!httpGetOption(options, "insecure", 0)) {
         if ((token = httpGetOption(options, "securityToken", 0)) == 0) {
-            token = httpGetSecurityToken(conn);
+            token = httpGetSecurityToken(conn, 0);
         }
         espRender(conn, "    <input name='%s' type='hidden' value='%s' />\r\n", BIT_XSRF_PARAM, token);
     }

@@ -25,10 +25,11 @@ Bit.load({
         home: bit.dir.src,
         packages:   {
             install: {
-                inherit:    'embedthis-manifest',
-                prefixes:   [ 'root', 'app', 'vapp', 'bin', 'inc', 'man', 'etc', 'web', 'log', 'spool', 'cache'],
-                sets:       [ 'core', 'libs', 'web', 'service', 'esp', 'php', 'utils', 'test', 'dev', 'doc' ],
-                platforms:  [ 'unix', 'windows' ],
+                inherit:        'embedthis-manifest',
+                prefixes:       [ 'root', 'app', 'vapp', 'bin', 'inc', 'man', 'etc', 'web', 'log', 'spool', 'cache'],
+                sets:           [ 'core', 'libs', 'web', 'service', 'esp', 'php', 'utils', 'test', 'dev', 'doc' ],
+                'sets-cross':   [ 'core', 'libs' ],
+                platforms:      [ 'unix', 'windows' ],
             },
             binary: {
                 inherit:    'embedthis-manifest',

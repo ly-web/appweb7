@@ -1014,9 +1014,6 @@ PUBLIC void mprResetYield()
          */
         lock(ts->threads);
         tp->stickyYield = 0;
-#if UNUSED
-        if (tp->yielded && heap->mustYield && !pauseGC)
-#endif
         if (heap->marking && !pauseGC) {
             tp->yielded = 0;
             unlock(ts->threads);
@@ -1925,9 +1922,21 @@ PUBLIC void *mprCopyName(void *dest, void *src)
 
 /********************************************* Misc ***************************************************/
 
+static void printMemWarn(size_t used, bool critical)
+{
+    static int once = 0;
+
+    if (once++ == 0 || critical) {
+        mprLog(0, "%s: Memory used %,d, redline %,d, limit %,d.", MPR->name, (int) used, (int) heap->stats.warnHeap,
+            (int) heap->stats.maxHeap);
+    }
+}
+
+
 static void allocException(int cause, size_t size)
 {
-    size_t  used;
+    size_t      used;
+    static int  once = 0;
 
     INC(errors);
     if (heap->stats.inMemException || mprIsStopping()) {
@@ -1939,21 +1948,24 @@ static void allocException(int cause, size_t size)
     if (cause == MPR_MEM_FAIL) {
         heap->hasError = 1;
         mprError("%s: Cannot allocate memory block of size %,Ld bytes.", MPR->name, size);
+        printMemWarn(used, 1);
 
     } else if (cause == MPR_MEM_TOO_BIG) {
         heap->hasError = 1;
         mprError("%s: Cannot allocate memory block of size %,Ld bytes.", MPR->name, size);
+        printMemWarn(used, 1);
 
     } else if (cause == MPR_MEM_WARNING) {
-        mprError("%s: Memory request for %,Ld bytes exceeds memory red-line.", MPR->name, size);
+        if (once++ == 0) {
+            mprWarn("%s: Memory request for %,Ld bytes exceeds memory red-line.", MPR->name, size);
+        }
         mprPruneCache(NULL);
+        printMemWarn(used, 0);
 
     } else if (cause == MPR_MEM_LIMIT) {
         mprError("%s: Memory request for %,d bytes exceeds memory limit.", MPR->name, size);
+        printMemWarn(used, 1);
     }
-    mprError("%s: Memory used %,d, redline %,d, limit %,d.", MPR->name, (int) used, (int) heap->stats.warnHeap,
-        (int) heap->stats.maxHeap);
-    mprError("%s: Consider increasing memory limit.", MPR->name);
 
     if (heap->notifier) {
         (heap->notifier)(cause, heap->allocPolicy,  size, used);
@@ -1966,9 +1978,12 @@ static void allocException(int cause, size_t size)
         mprShutdown(MPR_EXIT_ABORT, 2);
 
     } else if (cause & MPR_MEM_LIMIT) {
+        /*
+            Over memory max limit
+         */
         if (heap->allocPolicy == MPR_ALLOC_POLICY_RESTART) {
-            mprError("Application restarting due to low memory condition.");
-            mprShutdown(MPR_EXIT_GRACEFUL | MPR_EXIT_RESTART, 1);
+            mprError("Application exiting gracefully due to low memory condition.");
+            mprShutdown(MPR_EXIT_GRACEFUL, 1);
 
         } else if (heap->allocPolicy == MPR_ALLOC_POLICY_EXIT) {
             mprError("Application exiting immediately due to memory depletion.");
@@ -2652,6 +2667,7 @@ static void shutdownMonitor(void *data, MprEvent *event)
     }
     if (mprIsIdle(1)) {
         if (mprState <= MPR_STOPPING) {
+            mprLog(2, "Shutdown proceeding, system is idle");
             mprState = MPR_STOPPED;
         }
     } else if (remaining <= 0) {
@@ -2686,7 +2702,9 @@ PUBLIC void mprShutdown(int how, int status)
     }
     MPR->shutdownStarted = mprGetTicks();
     MPR->exitStatus = status;
-
+    if (mprGetDebugMode()) {
+        MPR->exitTimeout = MPR_MAX_TIMEOUT;
+    }
     if (!(how & MPR_EXIT_DEFAULT)) {
         MPR->exitStrategy = how;
     }
@@ -4915,6 +4933,39 @@ PUBLIC int64 mprIncCache(MprCache *cache, cchar *key, int64 amount)
 }
 
 
+PUBLIC char *mprLookupCache(MprCache *cache, cchar *key, MprTime *modified, int64 *version)
+{
+    CacheItem   *item;
+    char        *result;
+
+    assert(cache);
+    assert(key);
+
+    if (cache->shared) {
+        cache = cache->shared;
+        assert(cache == shared);
+    }
+    lock(cache);
+    if ((item = mprLookupKey(cache->store, key)) == 0) {
+        unlock(cache);
+        return 0;
+    }
+    if (item->expires && item->expires <= mprGetTicks()) {
+        unlock(cache);
+        return 0;
+    }
+    if (version) {
+        *version = item->version;
+    }
+    if (modified) {
+        *modified = item->lastModified;
+    }
+    result = item->data;
+    unlock(cache);
+    return result;
+}
+
+
 PUBLIC char *mprReadCache(MprCache *cache, cchar *key, MprTime *modified, int64 *version)
 {
     CacheItem   *item;
@@ -5196,10 +5247,10 @@ static void pruneCache(MprCache *cache, MprEvent *event)
          */
         for (kp = 0; (kp = mprGetNextKey(cache->store, kp)) != 0; ) {
             item = (CacheItem*) kp->data;
-            mprTrace(6, "Cache: \"%s\" lifespan %Ld, expires in %Ld secs", item->key, 
+            mprTrace(5, "Cache: \"%s\" lifespan %Ld, expires in %Ld secs", item->key, 
                     item->lifespan / 1000, (item->expires - when) / 1000);
             if (item->expires && item->expires <= when) {
-                mprTrace(5, "Cache prune expired key %s", kp->key);
+                mprLog(3, "Cache prune expired key %s", kp->key);
                 removeItem(cache, item);
             }
         }
@@ -5219,7 +5270,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
                 for (kp = 0; (kp = mprGetNextKey(cache->store, kp)) != 0; ) {
                     item = (CacheItem*) kp->data;
                     if (item->expires && item->expires <= when) {
-                        mprTrace(5, "Cache too big execess keys %Ld, mem %Ld, prune key %s", 
+                        mprLog(3, "Cache too big, execess keys %Ld, mem %Ld, prune key %s", 
                             excessKeys, (cache->maxMem - cache->usedMem), kp->key);
                         removeItem(cache, item);
                     }
@@ -5619,6 +5670,15 @@ PUBLIC void mprFinalizeCmd(MprCmd *cmd)
 PUBLIC int mprIsCmdComplete(MprCmd *cmd)
 {
     return cmd->complete;
+}
+
+
+PUBLIC int mprRun(MprDispatcher *dispatcher, cchar *command, cchar *input, char **output, char **error, MprTicks timeout)
+{
+    MprCmd  *cmd;
+   
+    cmd = mprCreateCmd(dispatcher);
+    return mprRunCmd(cmd, command, NULL, input, output, error, timeout, MPR_CMD_IN  | MPR_CMD_OUT | MPR_CMD_ERR);
 }
 
 
@@ -9767,24 +9827,6 @@ PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, Mpr
 }
 
 
-#if UNUSED
-/*
-    Internal use only. Run the "main" dispatcher if not using a user events thread. 
- */
-PUBLIC int mprRunDispatcher(MprDispatcher *dispatcher)
-{
-    assert(dispatcher);
-    if (isRunning(dispatcher) && (dispatcher->owner && dispatcher->owner != mprGetCurrentOsThread())) {
-        mprError("Relay to a running dispatcher owned by another thread");
-        return MPR_ERR_BAD_STATE;
-    }
-    dispatcher->owner = mprGetCurrentOsThread();
-    queueDispatcher(dispatcher->service->runQ, dispatcher);
-    return 0;
-}
-#endif
-
-
 /*
     Schedule a dispatcher to run but don't disturb an already running dispatcher. If the event queue is empty, 
     the dispatcher is moved to the idleQ. If there is a past-due event, it is moved to the readyQ. If there is a future 
@@ -10934,9 +10976,6 @@ PUBLIC void mprRemoveEvent(MprEvent *event)
             mprDequeueEvent(event);
         }
         event->dispatcher = 0;
-#if UNUSED
-        event->flags &= ~MPR_EVENT_CONTINUOUS;
-#endif
         if (event->due == es->willAwake && dispatcher->eventQ->next != dispatcher->eventQ) {
             mprScheduleDispatcher(dispatcher);
         }
@@ -14508,24 +14547,8 @@ PUBLIC int mprRemoveItemAtPos(MprList *lp, int index)
     }
     lock(lp);
     items = lp->items;
-#if KEEP
-    void    **ip;
-    if (index == (lp->length - 1)) {
-        /* Scan backwards to find last non-null item */
-        for (ip = &items[index - 1]; ip >= items && *ip == 0; ip--) ;
-        lp->length = ++ip - items;
-        assert(lp->length >= 0);
-    } else {
-        /* Copy down following items */
-        for (ip = &items[index]; ip < &items[lp->length]; ip++) {
-            *ip = ip[1];
-        }
-        lp->length--;
-    }
-#else
     memmove(&items[index], &items[index + 1], (lp->length - index - 1) * sizeof(void*));
     lp->length--;
-#endif
     lp->items[lp->length] = 0;
     assert(lp->length >= 0);
     unlock(lp);
@@ -14846,16 +14869,13 @@ static int defaultSort(char **q1, char **q2, void *ctx)
 }
 
 
-PUBLIC MprList *mprSortList(MprList *lp, MprSortProc compare, void *ctx)
+PUBLIC MprList *mprSortList(MprList *lp, MprSortProc cmp, void *ctx)
 {
     if (!lp) {
         return 0;
     }
     lock(lp);
-    if (!compare) {
-        compare = (MprSortProc) defaultSort;
-    }
-    mprSort(lp->items, lp->length, sizeof(void*), compare, ctx);
+    mprSort(lp->items, lp->length, sizeof(void*), cmp, ctx);
     unlock(lp);
     return lp;
 }
@@ -14886,96 +14906,82 @@ PUBLIC MprKeyValue *mprCreateKeyPair(cchar *key, cchar *value, int flags)
 
 static void swapElt(char *a, char *b, ssize width)
 {
-    char tmp;
+    char    tmp;
 
-    if (a != b) {
-        while (width--) {
-            tmp = *a;
-            *a++ = *b;
-            *b++ = tmp;
-        }
-    }
-}
-
-
-static void shortsort(char *lo, char *hi, ssize width, MprSortProc comp, void *ctx)
-{
-    char    *p, *max;
-
-    while (hi > lo) {
-        max = lo;
-        for (p = lo + width; p <= hi; p += width) {
-            if (comp(p, max, ctx) > 0) {
-                max = p;
-            }
-        }
-        swapElt(max, hi, width);
-        hi -= width;
-    }
-}
-
-
-PUBLIC void mprSort(void *base, ssize num, ssize width, MprSortProc comp, void *ctx) 
-{
-    char    *lo, *hi, *mid, *l, *h, *lostk[30], *histk[30];
-    ssize   size;
-    int     stkptr;
-
-    if (num < 2 || width == 0) {
+    if (a == b) {
         return;
     }
-    stkptr = 0;
-    lo = base;
-    hi = (char *) base + width * (num - 1);
+    while (width--) {
+        tmp = *a;
+        *a++ = *b;
+        *b++ = tmp;
+    }
+}
 
-recurse:
-    size = (int) (hi - lo) / width + 1;
-    if (size <= 8) {
-        shortsort(lo, hi, width, comp, ctx);
-    } else {
-        mid = lo + (size / 2) * width;
-        swapElt(mid, lo, width);
-        l = lo;
-        h = hi + width;
 
-        for (;;) {
-            do { l += width; } while (l <= hi && comp(l, lo, ctx) <= 0);
-            do { h -= width; } while (h > lo && comp(h, lo, ctx) >= 0);
-            if (h < l) break;
-            swapElt(l, h, width);
-        }
-        swapElt(lo, h, width);
+#if KEEP && UNUSED
 
-        if (h - 1 - lo >= hi - l) {
-            if (lo + width < h) {
-                lostk[stkptr] = lo;
-                histk[stkptr] = h - width;
-                ++stkptr;
+tt((char**) array, nelt, (char**) left, (char**) right);
+
+static void tt(char **array, ssize nelt, char **left, char **right)
+{
+    int     i;
+
+    return;
+    printf("\n");
+    for (i = 0; i < nelt; i++) {
+        printf("%s ", array[i]);
+    }
+    printf("\n");
+    for (i = 0; i < nelt; i++) {
+        if (&array[i] == left) {
+            if (&array[i] == right) {
+                print("LR");
+            } else {
+                printf("L ");
             }
-            if (l < hi) {
-                lo = l;
-                goto recurse;
-            }
+        } else if (&array[i] == right) {
+            printf("R ");
         } else {
-            if (l < hi) {
-                lostk[stkptr] = l;
-                histk[stkptr] = hi;
-                ++stkptr;
-            }
-            if (lo + width < h) {
-                hi = h - width;
-                goto recurse;
-            }
+            printf("  ");
         }
     }
-    --stkptr;
-    if (stkptr >= 0) {
-        lo = lostk[stkptr];
-        hi = histk[stkptr];
-        goto recurse;
-    } else {
+    printf("\n");
+}
+#endif
+
+
+PUBLIC void mprSort(void *base, ssize nelt, ssize esize, MprSortProc cmp, void *ctx) 
+{
+    char    *array, *pivot, *left, *right;
+
+    if (nelt < 2 || esize <= 0) {
         return;
     }
+    if (!cmp) {
+        cmp = (MprSortProc) defaultSort;
+    }
+    array = base;
+    left = array;
+    right = array + ((nelt - 1) * esize);
+    pivot = array + ((nelt / 2) * esize);
+
+    while (left <= right) {
+        while (cmp(left, pivot, ctx) < 0) {
+            left += esize;
+        }
+        while (cmp(right, pivot, ctx) > 0) {
+            right -= esize;
+        }
+        if (left <= right) {
+            swapElt(left, right, esize);
+            left += esize;
+            right -= esize;
+        }
+    }
+    /* left and right are swapped */
+    mprSort(array, (right - array) / esize + 1, esize, cmp, ctx);
+    mprSort(left, nelt - ((left - array) / esize), esize, cmp, ctx);
 }
 
 
@@ -15749,7 +15755,6 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
         }
         fmt(buf, sizeof(buf), "%s: %s: %s\n", prefix, tag, msg);
         mprWriteToOsLog(buf, flags, level);
-        fmt(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
         mprWriteFileString(file, buf);
     }
 }
@@ -21130,7 +21135,7 @@ static void signalEvent(MprSignal *sp, MprEvent *event)
     if (sp->flags & MPR_SIGNAL_BEFORE) {
         (sp->handler)(sp->data, sp);
     } 
-    if (sp->sigaction) {
+    if (sp->sigaction && (sp->sigaction != SIG_IGN && sp->sigaction != SIG_DFL)) {
         /*
             Call the original (foreign) action handler. Cannot pass on siginfo, because there is no reliable and scalable
             way to save siginfo state when the signalHandler is reentrant for a given signal across multiple threads.
@@ -25448,9 +25453,6 @@ static void manageThreadService(MprThreadService *ts, int flags)
         mprMark(ts->threads);
         mprMark(ts->mainThread);
         mprMark(ts->pauseThreads);
-
-    } else if (flags & MPR_MANAGE_FREE) {
-        mprStopThreadService();
     }
 }
 

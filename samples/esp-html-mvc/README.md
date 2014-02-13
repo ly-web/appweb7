@@ -58,7 +58,7 @@ Code:
 * [db](db) - Database directory for the blog application
 * [db/blog.mdb](db/blog.mdb) - Blog database 
 * [db/migrations](db/migrations) - Database base migrations to create / destroy the database schema
-* [esp.json](esp.json) - ESP configuration file
+* [package.json](package.json) - ESP configuration file
 * [start.bit](start.bit) - Bit build instructions
 
 Documentation:

@@ -12,7 +12,7 @@ Bit.load({
             action: "rm('error.log*')",
         },
         run: {
-            run: 'appweb',
+            run: 'appweb -v',
         },
     },
     packDefaults: { appweb: true },

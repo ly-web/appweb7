@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.5.0-rc.3 Documentation</title>
+    <title>Embedthis Appweb 4.5.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.5.0-rc.3</div>
+                <div class="version">Embedthis Appweb 4.5.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -115,11 +115,10 @@
             <p>ESP supports an "edit-and-continue" development style where you can make modifications to ESP controllers
             and pages and when you click reload in your browser, the controller or page will be transparently 
             recompiled and reloaded. This can be a great boost for development productivity.</p>
-            <p>If Appweb and ESP are built in debug mode (by configuring with <em>./configure --debug</em>) then ESP
-            will automatically rebuild modified ESP pages and controllers. If Appweb and ESP are built in release mode,
-            the default is to not reload. This default behavior can be modified via the
-            <em>EspUpdate</em> directive. Setting the directive to "<em>on</em>" will enable the transparent 
-            recompilation and reloading of modified items.</p>
+            <p>If your ESP application is running in debug mode, then ESP
+            will automatically rebuild modified ESP pages and controllers. If your ESP application is running release mode,
+            the default is to not reload. This default behavior can be modified via the package.json esp.mode setting.
+            or the <em>EspUpdate</em> appweb.conf directive. </p>
             <pre>EspUpdate on</pre>
             <a id="keep"></a>
             <h3>Keep Source</h3>
@@ -214,70 +213,85 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
             portions to client-side scripts. For example:</p>
             <pre>
 {
-    settings: {
+    // Paks used by this application.
+    "dependencies": {
+        "angular": "~1.2",
+        "angular-bootstrap": "~0.7",
+        "bootstrap": ">=3.0.0",
+        "esp-angular": "~*",
+        "esp-angular-mvc": "*",
+        "esp-server": "*",
+        "font-awesome": "~4",
+        "html5shiv": ">=3.6.2",
+        "less": ">=1.3.3",
+    },
+    "client-scripts": [
+        "paks/angular/angular.js",
+        "paks/angular/angular-animate.js",
+        "paks/angular/angular-route.js",
+        "paks/angular-bootstrap/*.js",
+        "paks/esp-angular/*.js",
+        "app/main.js",
+        "app/*/**.js*",
+        "paks/esp-gui/*.js",
+        "paks/html5/html5shiv.js",
+        "paks/less/less.js",
+    ],
+    esp: {
         // Name of the Auth Store. "app" means server-side auth database
         auth: "app",
-        
-        // Components used by this application.
-        components: {
-            'esp-server': {},
-            'less': {scripts: ["*"]},
-            'esp-html-mvc': {},
-        },
         // Default presentation formats for various types
         formats: {
             date: "yyyy-MM-dd",
             float: 2,
             int: 0,
         },
-        // Redirect all traffic over HTTPS
-        redirect: "secure"
-        // Routing prefix for server-side URIs
+        server: {
+            // Redirect all traffic over HTTPS
+            redirect: "secure"
+            // Server side database
+            database: "mdb://blog.mdb"
+        },
+        // URI prefix for all server-side URIs
         serverPrefix: "/do",
+
         // Default timeouts (secs)
         timeouts: {
             session: 1800,
         },
         // Set to include a XSRF token to minimize CSRF vulnerabilies
         xsrf: true,
-    },
-    
-    // Application mode selects debug or release properties and 
-    // copies them to settings
-    mode: "debug",
-    modes: {
-        debug: {
-            // Application compiled in combined vs discrete mode
-            combined: false,
-            // Display server-side errors in the browser
-            showErrors: true,
-            // Keep intermediate source for views in the cache directory
-            keepSource: true,
-            // Transparently recompile updated views, controllers and source
-            update: true,
-            
-            // Automatic login credentials.
-            login: {
-                name: "",
-                abilities: {
-                    edit: true,
-                    view: true,
+
+        // Application mode selects debug or release properties and 
+        // copies them to esp
+        mode: "debug",
+        modes: {
+            debug: {
+                // Application compiled in combined vs discrete mode
+                combined: false,
+                // Display server-side errors in the browser
+                showErrors: true,
+                // Keep intermediate source for views in the cache directory
+                keepSource: true,
+                // Transparently recompile views, controllers and source
+                update: true,
+                // Automatic login credentials.
+                login: {
+                    name: "",
+                    abilities: {
+                        edit: true,
+                        view: true,
+                    },
                 },
             },
+            release: {
+                //  Same fields as per debug
+            },
         },
-        release: {
-            //  Same fields as per debug
-        },
-    },
-    // Server side properties not passed to the client
-    server: {
-        // Server side database.
-        database: "mdb://blog.mdb"
     },
 },
 </pre>
-            <p>The client only receives the "settings" collection. Other collections such as the "server" collection
-            are not passed to the client.</p>
+            <p>The client does not receive the "esp.server" collection. </p>
             <a id="routing"></a>
             <h2 class="section">ESP Routing</h2>
             <p>So far, we've covered the basics, but ESP provides very powerful routing and directives 
@@ -374,8 +388,7 @@ EspCompile cc -shared ${DEBUG} -Wall -Wno-unused-result \
             
             <a id="directives"></a>
             <h2 class="section">Directives List</h2>
-            <p>The following is a list of the various ESP directives and their purpose. Click on the "purpose" text, to
-            see the appropriate directive reference.</p>
+            <p>The following is a list of the various ESP directives and their purpose.</p>
             <table title="directives">
                 <thead>
                     <tr><th>Directive</th><th>Purpose</th></tr>

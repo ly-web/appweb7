@@ -184,6 +184,17 @@ PUBLIC Edi *getDatabase()
 }
 
 
+PUBLIC MprDispatcher *getDispatcher()
+{
+    HttpConn    *conn;
+
+    if ((conn = getConn()) == 0) {
+        return 0;
+    }
+    return conn->dispatcher;
+}
+
+
 PUBLIC cchar *getDocuments()
 {
     return getConn()->rx->route->documents;
@@ -585,24 +596,20 @@ PUBLIC void renderView(cchar *view)
 }
 
 
-PUBLIC int runCmd(cchar *command, char **out, char **err, int flags)
+#if KEEP
+PUBLIC int runCmd(cchar *command, char *input, char **output, char **error, MprTime timeout, int flags)
+{
+    return mprRun(getDispatcher(), command, input, output, error, timeout, MPR_CMD_IN  | MPR_CMD_OUT | MPR_CMD_ERR | flags);
+}
+#endif
+
+
+PUBLIC int runCmd(cchar *command, char *input, char **output, char **error, MprTime timeout, int flags)
 {
     MprCmd  *cmd;
-    int     status;
 
-    cmd = mprCreateCmd(0);
-    if (mprRunCmd(cmd, command, NULL, NULL, out, err, -1, flags) != 0) {
-        return MPR_ERR_CANT_OPEN;
-    }
-    mprWaitForCmd(cmd, -1);
-
-    if (mprWaitForCmd(cmd, -1) < 0) {
-        return MPR_ERR_CANT_COMPLETE;
-    }
-    if ((status = mprGetCmdExitStatus(cmd)) != 0) {
-        return MPR_ERR_CANT_WRITE;
-    }
-    return status;
+    cmd = mprCreateCmd(getDispatcher());
+    return mprRunCmd(cmd, command, NULL, input, output, error, timeout, MPR_CMD_IN  | MPR_CMD_OUT | MPR_CMD_ERR | flags);
 }
 
 
@@ -659,7 +666,7 @@ PUBLIC void scripts(cchar *patterns)
  */
 PUBLIC void securityToken()
 {
-    httpAddSecurityToken(getConn());
+    httpAddSecurityToken(getConn(), 0);
 }
 
 

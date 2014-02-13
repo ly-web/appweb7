@@ -1,15 +1,63 @@
 /*
-    esp.json - ESP configuration file
+    package.json - ESP configuration file
 
     This configuration file is made available to the server-side and client-side ESP application.
-    The "server" properties are not passed to the client.
+    The "esp.server" properties are not passed to the client.
 
-    The format of this file is an enhanced JSON file. Property keys do not need to be enclosed in quotes.
+    The format of this file is CommonJS package.json file with esp sections. It is an enhanced 
+    JSON file. Property keys do not need to be enclosed in quotes.
     Also the last property in a collection may be terminated with a comma.
 {
     "name": "blog",
     "description": "blog",
     "version": "1.0.0",
+
+    /*
+        List of dependent paks. Uses SemVer versioning. 
+        See Pak http://embedthis.com/products/pak/doc/index.html for details.
+     */
+    "dependencies": {
+        "angular": "~1.2",
+        "angular-bootstrap": "~0.7",
+        "bootstrap": ">=3.0.0",
+        "esp-angular": "~*",
+        "esp-angular-mvc": "*",
+        "esp-best": "~0.8",
+        "esp-gui": "~0.8",
+        "esp-mgr": "~0.8",
+        "esp-server": "*",
+        "font-awesome": "~4",
+        "html5shiv": ">=3.6.2",
+        "less": ">=1.3.3",
+        "more": "*",
+        "respond": "~1.1.0"
+    },
+
+    /*
+        Set the paks directory
+     */
+    "dirs": {
+        "client": "client",
+        "paks": "client/paks"
+    },
+
+    /*
+        List of scripts to serve to the client via the scripts() API
+        Also used when building the app to create a single, combined, minified, compressed JS file.
+     */
+    "client-scripts": [
+        "paks/angular/angular.js",
+        "paks/angular/angular-animate.js",
+        "paks/angular/angular-route.js",
+        "paks/angular-bootstrap/*.js",
+        "paks/esp-angular/*.js",
+        "app/main.js",
+        "app/*/**.js*",
+        "paks/esp-gui/*.js",
+        "paks/html5/html5shiv.js",
+        "paks/less/less.js",
+        "paks/respond/respond.js"
+    ],
 
     "esp": {
         /* 
@@ -17,19 +65,6 @@
          */
         "auth": "app",
         
-        /*
-            Components used by this application.
-         */
-        "scripts": {
-            "angular": [
-                "angular.js",
-                "angular-animate.js",
-                "angular-route.js"
-            ],
-            "esp-angular": [ "*" ],
-            "less": [ "*" ],
-        },
-
         /*
             Default presentation formats for various types
          */
@@ -47,11 +82,6 @@
             Set if a login is required to the login home page
          */
         "loginRequired": "",
-
-        /*
-            Redirect all traffic over HTTPS
-         */
-        "redirect": "secure"
 
         /*
             Default refresh period to use for dynamic data polling
@@ -80,72 +110,93 @@
          */
         "server": {
             "database": "mdb://blog.mdb"
-        },
-    },
-
-    /*
-        Application mode. This selects a set of properties below and copies them to settings
-     */
-    "mode": "debug",
-    "modes": {
-        "debug": {
-            /*
-                Application compiled flat via "esp --flat compile"
-             */
-            "flat": false,
 
             /*
-                Display server-side errors in the browser
+                Redirect all traffic over HTTPS
              */
-            "showErrors": true,
+            "redirect": "secure"
 
             /*
-                Keep intermediate source for views in the cache directory
+                Templates used for "esp generate"
              */
-            "keepSource": true,
-
-            /*
-                Transparently recompile updated views, controllers and source
-             */
-            "update": true,
-
-            /*
-                Automatic login credentials.
-             */
-            "login": {
-                "name": "",
-                "abilities": {
-                    "edit": true,
-                    "view": true,
-                },
+            "generate": {
+                "appweb": "esp-angular-mvc/appweb.conf",
+                "migration": "esp-server/migration.c",
+                "controller": "esp-angular-mvc/controller.c",
+                "controller-singleton": "esp-angular-mvc/controller-singleton.c",
+                "files": [
+                    "esp-server/src/app.c",
+                    "esp-angular-mvc/start.bit",
+                    "esp-angular-mvc/client/**"
+                ],
+                "clientModel": "esp-angular-mvc/model.js",
+                "clientController": "esp-angular-mvc/controller.js",
+                "clientList": "esp-angular-mvc/list.html",
+                "clientEdit": "esp-angular-mvc/edit.html"
             },
         },
-        "release": {
-            "flat": true,
-            "map": "compressed",
-            "showErrors": false,
-            "update": false,
-            "keepSource": false,
-            "login": {
-                "name": "",
-                "abilities": {
-                    "edit": true,
-                    "view": true,
+        /*
+            Application mode. This selects a set of properties below and copies them to esp
+         */
+        "mode": "debug",
+        "modes": {
+            "debug": {
+                /*
+                    Cache html,gif,jpeg,jpg,png,pdf,ico,js,txt,less files on the client for this number of seconds
+                 */
+                "cache": 60,
+
+                /*
+                    Application compiled combined into a single file
+                 */
+                "combined": false,
+
+                /*  
+                    Server minified and compressed content for: css,html,js,less,txt,xml
+                 */
+                "compressed": false,
+
+                /*
+                    Display server-side errors in the browser
+                 */
+                "showErrors": true,
+
+                /*
+                    Keep intermediate source for views in the cache directory
+                 */
+                "keepSource": true,
+
+                /*
+                    Transparently recompile updated views, controllers and source
+                 */
+                "update": true,
+
+                /*
+                    Automatic login credentials.
+                 */
+                "login": {
+                    "name": "",
+                    "abilities": {
+                        "edit": true,
+                        "view": true,
+                    },
                 },
             },
-        },
-    },
-    /*
-        Generation hints for "esp generate"
-     */
-    "generate": {
-        "top": "html-mvc",
-        "scaffold": true,
-        "clientModel": false,
-        "clientController": false,
-        "clientView": false,
-        "controller": true,
-        "migration": true,
-        "view": false
+            "release": {
+                "combined": true,
+                "cache": 86400,
+                "compressed": true,
+                "showErrors": false,
+                "update": false,
+                "keepSource": false,
+                "login": {
+                    "name": "",
+                    "abilities": {
+                        "edit": true,
+                        "view": true,
+                    },
+                },
+            },
+        }
     },
 },

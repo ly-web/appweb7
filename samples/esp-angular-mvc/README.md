@@ -17,7 +17,7 @@ The app contains:
 
 This app was generated, then edited for simplicity via:
 
-    esp generate app blog angular-mvc
+    esp generate app blog esp-angular-mvc
     cd blog
     esp generate scaffold post title:string body:text
     cd ..
@@ -70,7 +70,7 @@ Code:
 * [db](db) - Database directory for the blog application
 * [db/blog.mdb](db/blog.mdb) - Blog database 
 * [db/migrations](db/migrations) - Database base migrations to create / destroy the database schema
-* [esp.json](esp.json) - ESP configuration file
+* [package.json](package.json) - ESP configuration file
 * [start.bit](start.bit) - Bit build instructions
 * [templates](templates) - ESP generator application templates
 

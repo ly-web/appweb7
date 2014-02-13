@@ -181,6 +181,7 @@ typedef struct EspRoute {
     cchar           *layoutsDir;            /**< Directory for view layouts */
     cchar           *srcDir;                /**< Directory for server-side source */
     cchar           *viewsDir;              /**< Directory for server-side views */
+    cchar           *currentSession;        /**< Current login session when enforcing a single login */
 
     cchar           *compile;               /**< Compile template */
     cchar           *link;                  /**< Link template */
@@ -322,7 +323,8 @@ PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
     @stability Evolving
     @internal
  */
-PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *source, cchar *module, cchar *cacheName, int isView, char **errMsg);
+PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *source, cchar *module, cchar *cacheName, 
+    int isView, char **errMsg);
 
 /**
     Convert an ESP web page into C code
@@ -490,7 +492,6 @@ PUBLIC void espSetData(HttpConn *conn, void *data);
     @stability Prototype
  */
 PUBLIC bool espTestConfig(HttpRoute *route, cchar *key, cchar *desired);
-
 
 /*
     Internal
@@ -999,6 +1000,15 @@ PUBLIC bool espHasGrid(HttpConn *conn);
 PUBLIC bool espHasRec(HttpConn *conn);
 
 /**
+    Test if the connection is being made on behalf of the current, single authenticated user.
+    @description Set esp.login.single to true to enable current session tracking.
+    @return true if the 
+    @stability Prototype
+    @ingroup EspReq
+ */
+PUBLIC bool espIsCurrentSession(HttpConn *conn);
+
+/**
     Test if the receive input stream is at end-of-file.
     @param conn HttpConn connection object
     @return "True" if there is no more receive data to read
@@ -1333,6 +1343,18 @@ PUBLIC void espSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path,
     @stability Evolving
  */
 PUBLIC void espSetContentType(HttpConn *conn, cchar *mimeType);
+
+/**
+    Set this authenticated session as the current session.
+    @description Set esp.login.single to true to enable current session tracking.
+    @return true if the 
+    @stability Prototype
+    @ingroup EspReq
+ */
+PUBLIC void espSetCurrentSession(HttpConn *conn);
+
+//  MOB - do we need abbrev versions
+PUBLIC void espClearCurrentSession(HttpConn *conn);
 
 /**
     Set a feedback message
@@ -1804,6 +1826,14 @@ PUBLIC cchar *getContentType();
     @stability prototype
  */
 PUBLIC void *getData();
+
+/**
+    Get the connection dispatcher object
+    @return MprDispatcher connection dispatcher instance object.
+    @ingroup EspAbbrev
+    @stability Prototype
+ */
+PUBLIC MprDispatcher *getDispatcher();
 
 /**
     Get a flash message defined via #flash
@@ -2445,13 +2475,14 @@ PUBLIC void renderView(cchar *view);
     Run a command
     @description Run a command and return output. 
     @param command Command line and arguments to run.
-    @param out Pointer to accept command standard output response. Set to null if not required.
-    @param err Pointer to accept command standard error response. Set to null if not required.
+    @param output Pointer to accept command standard output response. Set to null if not required.
+    @param error Pointer to accept command standard error response. Set to null if not required.
     @param flags MprCmd flags. Use MPR_CMD_DETACH to run in the background.
+    @param timeout Time in milliseconds to wait for the command to complete and exit.
     @ingroup EspAbbrev
     @stability Prototype
  */
-PUBLIC int runCmd(cchar *command, char **out, char **err, int flags);
+PUBLIC int runCmd(cchar *command, char *input, char **output, char **error, MprTicks timeout, int flags);
 
 /**
     Render scripts

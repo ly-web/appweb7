@@ -7,7 +7,7 @@
     It places a "Esp" object on the $rootScope that is inherited by all $scopes.
     Alternatively, injecting the Esp service provides direct access using the Esp service object.
  */
-angular.module('esp', ['esp.click', 'esp.field-errors', 'esp.format', 'esp.input-group', 'esp.input', 
+angular.module('esp', ['esp.click', 'esp.edit', 'esp.field-errors', 'esp.format', 'esp.input-group', 'esp.input', 
                        'esp.resource', 'esp.session', 'esp.titlecase'])
 
 .config(function() {
@@ -223,7 +223,7 @@ angular.module('esp', ['esp.click', 'esp.field-errors', 'esp.format', 'esp.input
                     if (response.error) {
                         Esp.logout();
                         $location.path("/");
-                        $rootScope.feedback = { error: "Session Expired, Please Log In"};
+                        $rootScope.feedback = { warning: "Session Expired, Please Log In"};
                     }
                 });
             }
@@ -260,6 +260,16 @@ angular.module('esp', ['esp.click', 'esp.field-errors', 'esp.format', 'esp.input
                 if (response <= 0 || response.status >= 500) {
                     $rootScope.feedback = { warning: "Server Error. Please Retry." };
                 } else if (response.status === 401) {
+                    if (response.data && response.data.retry && !response.config.retried) {
+                        /*
+                            Server instructs retry if XSRF token does not match session value.
+                            Retry with new XSRF token.
+                         */
+                        response.config.retried = true;
+                        var http = $injector.get('$http');
+                        $rootScope.feedback = null;
+                        return http(response.config);
+                    }
                     /* Must use esp module as Esp depends on this interceptor */
                     var espModule = angular.module('esp');
                     if (espModule.$config.loginRequired) {
@@ -268,19 +278,6 @@ angular.module('esp', ['esp.click', 'esp.field-errors', 'esp.format', 'esp.input
                     } else {
                         $rootScope.Esp.user = null;
                         $rootScope.feedback = response.data.feedback;
-                    }
-                    if (response.data && response.data.retry && !response.config.retried) {
-                        /*
-                            Server instructs retry if XSRF token does not match session value.
-                            Retry with new XSRF token.
-                         */
-                        response.config.retried = true;
-                        var http = $injector.get('$http');
-                        http(response.config).then(function(config, deferred) {
-                            deferred.resolve(response);
-                        }, function(config, deferred) {
-                            deferred.reject(response);
-                        });
                     }
                 } else if (response.status >= 400) {
                     $rootScope.feedback = { warning: "Request Error: " + response.status + ", for " + response.config.url};

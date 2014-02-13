@@ -553,7 +553,6 @@ typedef struct Http {
     uint64          totalConnections;       /**< Total connections accepted */
     uint64          totalRequests;          /**< Total requests served */
 
-    int             activeVMs;              /**< Number of ejs VMs */
     int             flags;                  /**< Open flags */
     void            *context;               /**< Embedding context */
     MprTicks        currentTime;            /**< When currentDate was last calculated (ticks) */
@@ -765,6 +764,7 @@ typedef struct HttpStats {
     uint64  mem;                        /**< Current application memory */
     uint64  memRedline;                 /**< Memory heap warnHeap limit */
     uint64  memMax;                     /**< Memory heap maximum permitted */
+    uint64  memSessions;                /**< Memory used for sessions */ 
 
     uint64  heap;                       /**< Current application heap memory */
     uint64  heapUsed;                   /**< Current heap memory in use */
@@ -780,7 +780,6 @@ typedef struct HttpStats {
     int     activeProcesses;            /**< Current active processes */
     int     activeRequests;             /**< Current active requests */
     int     activeSessions;             /**< Current active sessions */
-    int     activeVMs;                  /**< Current ejs VMs */
 
     uint64  totalSweeps;                /**< Total GC sweeps */
     uint64  totalRequests;              /**< Total requests served */
@@ -3961,6 +3960,7 @@ typedef struct HttpRoute {
     HttpTrace       trace[2];               /**< Default route request tracing */
     int             traceMask;              /**< Request/response trace mask */
 
+    cchar           *cookie;                /**< Cookie name for session data */
     cchar           *corsOrigin;            /**< CORS permissible client origins */
     cchar           *corsHeaders;           /**< Headers to add for Access-Control-Expose-Headers */
     cchar           *corsMethods;           /**< Methods to add for Access-Control-Allow-Methods */
@@ -4805,6 +4805,15 @@ PUBLIC void httpSetRouteIgnoreEncodingErrors(HttpRoute *route, bool on);
 PUBLIC void httpSetRouteMethods(HttpRoute *route, cchar *methods);
 
 /**
+    Set the route session cookie
+    @param route Route to modify
+    @param cookie Session cookie name
+    @ingroup HttpRoute
+    @stability Prototype
+ */
+PUBLIC void httpSetRouteCookie(HttpRoute *route, cchar *cookie);
+
+/**
     Set the route name
     @description Symbolic route names are used by httpUri and when displaying route tables.
     @param route Route to modify
@@ -5329,26 +5338,29 @@ PUBLIC bool httpCheckSecurityToken(HttpConn *conn);
 
 /**
     Get a unique security token.
-    @description This will get an existing security token or create a new token if none exist for the current request.
-        The security token will be stored in the session state for validation by subsequent requests.
+    @description This will get an existing security token or create a new token if one does not exist.
+        If recreate is true, the security token will be recreated.
+        Use #httpAddSecurityToken to add the token to the response headers.
     @param conn HttpConn connection object
+    @param recreate Set to true to recreate the security token.
     @return The security token string
     @ingroup HttpSession
     @stability Prototype
 */
-PUBLIC cchar *httpGetSecurityToken(HttpConn *conn);
+PUBLIC cchar *httpGetSecurityToken(HttpConn *conn, bool recreate);
 
 /**
     Add the security token to the response.
     @description To minimize form replay attacks, a security token may be required for POST requests on a route.
     This call will set a security token in the response as a response header and as a response cookie.  
     Client-side Javascript must then send this token as a request header in subsquent POST requests.
-    To configure a route to require security tokens, call #httpSetRouteXsrf.
+    To configure a route to require security tokens, use #httpSetRouteXsrf.
     @param conn Http connection object
+    @param recreate Set to true to recreate the security token.
     @ingroup HttpSession
     @stability Prototype
 */
-PUBLIC int httpAddSecurityToken(HttpConn *conn);
+PUBLIC int httpAddSecurityToken(HttpConn *conn, bool recreate);
 
 #if DEPRECATED || 1
 #define httpRenderSecurityToken httpAddSecurityToken
@@ -5489,6 +5501,7 @@ typedef struct HttpRx {
 
     /* 
         Header values
+        TODO - these should be cchar
      */
     char            *accept;                /**< Accept header */
     char            *acceptCharset;         /**< Accept-Charset header */
@@ -5791,7 +5804,8 @@ PUBLIC bool httpMatchParam(HttpConn *conn, cchar *var, cchar *expected);
 
 /** 
     Read rx body data. 
-    @description This routine will read body data.
+    @description This routine will read body data from the connection read queue (HttpConn.readq) which is at the head
+    of the response pipeline.
     \n\n
     This call will block depending on whether the connection is in async or sync mode. Sync mode is 
     the default for client connections and async for server connections.
@@ -5804,6 +5818,9 @@ PUBLIC bool httpMatchParam(HttpConn *conn, cchar *var, cchar *expected);
     \n\n
     This call will block for at most the timeout specified by the connection inactivity timeout defined in 
     HttpConn.limits.inactivityTimeout. Use #httpSetTimeout to change the timeout value.
+    \n\n
+    Server applications often prefer to access packets directly from the connection readq which offers a higher performance
+    interface.
 
     @param conn HttpConn connection object created via #httpCreateConn
     @param buffer Buffer to receive read data
@@ -5827,6 +5844,10 @@ PUBLIC ssize httpRead(HttpConn *conn, char *buffer, ssize size);
     \n\n
     This call will block for at most the timeout specified by the connection inactivity timeout defined in 
     HttpConn.limits.inactivityTimeout. Use #httpSetTimeout to change the timeout value.
+    \n\n
+    Server applications should not call httpReadBlock in blocking mode as it will consume a valuable thread.
+    Rather, server apps should perform non-blocking reads or access packets directly from the connection readq 
+   which offers a higher performance interface.
 
     @param conn HttpConn connection object created via #httpCreateConn
     @param buffer Buffer to receive read data
@@ -6386,7 +6407,10 @@ PUBLIC void httpSetContentType(HttpConn *conn, cchar *mimeType);
     @param name Cookie name
     @param value Cookie value
     @param path URI path to which the cookie applies
-    @param domain Domain in which the cookie applies. Must have 2-3 dots.
+    @param domain Domain in which the cookie applies. Must have 2-3 dots. If null, a domain is created using the
+        current request host header. If set to the empty string, the domain field is omitted.
+        If the domain is a numerical IP address or localhost, the domain will not be included as the browsers do not support this
+        pattern consistently.
     @param lifespan Duration for the cookie to persist in msec
     @param flags Cookie options mask. The following options are supported:
         @li HTTP_COOKIE_SECURE   - Set the 'Secure' attribute on the cookie.

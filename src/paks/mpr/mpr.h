@@ -8,9 +8,9 @@
     @file mpr.h
     The Multithreaded Portable Runtime (MPR) is a portable runtime library for embedded applications.
     \n\n
-    The MPR provides management for logging, error handling, events, files, http, memory, ssl, sockets, strings, 
-    xml parsing, and date/time functions. It also provides a foundation of safe routines for secure programming, 
-    that help to prevent buffer overflows and other security threats. The MPR is a library and a C API that can 
+    @description The MPR provides management for logging, error handling, events, files, http, memory, ssl, 
+    sockets, strings, xml parsing, and date/time functions. It also provides a foundation of safe routines for secure 
+    programming, that help to prevent buffer overflows and other security threats. The MPR is a library and a C API that can
     be used in both C and C++ programs.
     \n\n
     The MPR uses a set extended typedefs for common types. These include: bool, cchar, cvoid, uchar, short, ushort, 
@@ -21,7 +21,14 @@
     coalescing allocator that will return memory back to the O/S if not required. It is optimized for frequent 
     allocations of small blocks (< 4K) and uses a scheme of free queues for fast allocation. 
     \n\n
-    Not all of these APIs are thread-safe. 
+    The MPR provides a high-performance thread-pool to share threads as required to service clients. 
+    When a client request arrives, the MPR allocates an event queue called a dispatcher. This dispatcher then serializes 
+    all activity for the request so that it essentially runs single-threaded  This simplifies the code as most 
+    interactions do not need to be lock protected. When a request has activity, it borrows a thread from the thread pool, 
+    does its work and then returns the thread to the thread pool. This all happens very quickly, so a small pool of 
+    threads are effectivelyshared over many requests. Thread are free to block if required, but typically non-blocking
+    patterns are more economical. If you have non-MPR threads that need to call into the MPR, you must synchronize
+    such calls via #mprCreateEventOutside.
  */
 
 #ifndef _h_MPR
@@ -481,6 +488,10 @@ PUBLIC int mprWaitForCond(MprCond *cond, MprTicks timeout);
     @description Signal a condition variable and set it to the \a triggered status. Existing or future caller of
         #mprWaitForCond will be awakened. The condition variable will be automatically reset when the waiter awakes.
         Should only be used for single waiters. Use mprSignalMultiCond for use with multiple waiters.
+        \n\n
+        This API (like nearly all MPR APIs) must only be used by MPR threads and not by non-MPR (foreign) threads. 
+        If you need to synchronize active of MPR threads with non-MPR threads, use #mprCreateEventOutside which can be called from
+        foreign threads.
     @param cond Condition variable object created via #mprCreateCond
     @ingroup MprSync
     @stability Stable.
@@ -927,6 +938,8 @@ typedef struct MprMem {
 #if BIT_64
     uchar       filler[4];
 #endif
+#else
+    uchar       filler[1];
 #endif
 } MprMem;
 
@@ -1065,10 +1078,13 @@ typedef struct MprFreeQueue {
 
 /**
     Memory allocation error callback. Notifiers are called if a low memory condition exists.
-    @param policy Memory depletion policy. Set to one of MPR_ALLOC_POLICY_NOTHING, MPR_ALLOC_POLICY_PRUNE,
-    MPR_ALLOC_POLICY_RESTART or MPR_ALLOC_POLICY_EXIT.  @param cause Cause of the memory allocation condition. If flags is
-    set to MPR_MEM_LOW, the memory pool is low, but the allocation succeeded. If flags contain MPR_MEM_DEPLETED, the
-    allocation failed.
+    @param cause Set to the cause of the memory error. Set to #MPR_MEM_WARNING if the allocation will exceed the warnHeap
+        limit. Set to #MPR_MEM_LIMIT if it would exceed the maxHeap memory limit. Set to #MPR_MEM_FAIL if the allocation failed.
+        Set to #MPR_MEM_TOO_BIG if the allocation block size is too large.
+        Allocations will be rejected for MPR_MEM_FAIL and MPR_MEM_TOO_BIG, otherwise the allocations will proceed and the 
+        memory notifier will be invoked.
+    @param policy Memory depletion policy. Set to one of #MPR_ALLOC_POLICY_NOTHING, #MPR_ALLOC_POLICY_PRUNE,
+        #MPR_ALLOC_POLICY_RESTART or #MPR_ALLOC_POLICY_EXIT.  
     @param size Size of the allocation that triggered the low memory condition.
     @param total Total memory currently in use
     @ingroup MprMem
@@ -1582,6 +1598,7 @@ PUBLIC void *mprAllocFast(size_t usize);
 /******************************** Garbage Coolector ***************************/
 /**
     Add a memory block as a root for garbage collection
+    @description Remove the root when no longer required via #mprAddRoot.
     @param ptr Any memory pointer
     @ingroup MprMem
     @stability Stable.
@@ -1694,7 +1711,8 @@ PUBLIC void mprRelease(cvoid *ptr);
 PUBLIC void mprReleaseBlocks(cvoid *ptr, ...);
 
 /**
-    remove a memory block as a root for garbage collection
+    Remove a memory block as a root for garbage collection
+    @description The memory block should have previously been added as a root via #mprAddRoot.
     @param ptr Any memory pointer
     @ingroup MprMem
     @stability Stable.
@@ -8885,6 +8903,20 @@ PUBLIC ssize mprReadCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize);
 PUBLIC int mprReapCmd(MprCmd *cmd, MprTicks timeout);
 
 /**
+    Run a simple blocking command using a string command line. 
+    @param dispatcher MprDispatcher event queue to use for waiting. Set to NULL to use the default MPR dispatcher.
+    @param command Command line to run
+    @param input Command input. Data to write to the command which will be received on the comamnds stdin.
+    @param output Reference to a string to receive the stdout from the command.
+    @param error Reference to a string to receive the stderr from the command.
+    @param timeout Time in milliseconds to wait for the command to complete and exit.
+    @return Command exit status, or negative MPR error code.
+    @ingroup MprCmd
+    @stability Prototype
+ */
+PUBLIC int mprRun(MprDispatcher *dispatcher, cchar *command, cchar *input, char **output, char **error, MprTicks timeout);
+
+/**
     Run a command using a string command line. This starts the command via mprStartCmd() and waits for its completion.
     @param cmd MprCmd object created via mprCreateCmd
     @param command Command line to run
@@ -8898,6 +8930,8 @@ PUBLIC int mprReapCmd(MprCmd *cmd, MprTicks timeout);
         MPR_CMD_NEW_SESSION     Create a new session on Unix
         MPR_CMD_SHOW            Show the commands window on Windows
         MPR_CMD_IN              Connect to stdin
+        MPR_CMD_OUT             Capture stdout
+        MPR_CMD_ERR             Capture stderr
         MPR_CMD_EXACT_ENV       Use the exact environment supplied. Don't inherit and blend with existing environment.
     @return Command exit status, or negative MPR error code.
     @ingroup MprCmd
@@ -8920,6 +8954,8 @@ PUBLIC int mprRunCmd(MprCmd *cmd, cchar *command, cchar **envp, cchar *in, char 
         MPR_CMD_NEW_SESSION     Create a new session on Unix
         MPR_CMD_SHOW            Show the commands window on Windows
         MPR_CMD_IN              Connect to stdin
+        MPR_CMD_OUT             Capture stdout
+        MPR_CMD_ERR             Capture stderr
     @return Zero if successful. Otherwise a negative MPR error code.
     @ingroup MprCmd
     @stability Stable
@@ -9150,6 +9186,21 @@ PUBLIC void mprGetCacheStats(MprCache *cache, int *numKeys, ssize *mem);
     @stability Evolving
  */
 PUBLIC int64 mprIncCache(MprCache *cache, cchar *key, int64 amount);
+
+/**
+    Lookup an item in the cache.
+    @description Same as mprReadCache but will not update the last accessed time.
+    @param cache The cache instance object returned from #mprCreateCache.
+    @param key Cache item key
+    @param modified Optional MprTime value reference to receive the last modified time of the cache item. Set to null
+        if not required.
+    @param version Optional int64 value reference to receive the version number of the cache item. Set to null
+        if not required. Cache items have a version number that is incremented every time the item is updated.
+    @return The cache item value
+    @ingroup MprCache
+    @stability Evolving
+  */
+PUBLIC char *mprLookupCache(MprCache *cache, cchar *key, MprTime *modified, int64 *version);
 
 /**
     Prune the cache
@@ -9406,9 +9457,6 @@ typedef struct Mpr {
     int             exitStatus;             /**< Proposed program exit status */
     int             flags;                  /**< Misc flags */
     int             hasError;               /**< Mpr has an initialization error */
-#if UNUSED
-    int             state;                  /**< Processing state */
-#endif
     int             verifySsl;              /**< Default verification of SSL certificates */
 
     bool            cmdlineLogging;         /**< App has specified --log on the command line */

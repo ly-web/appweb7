@@ -598,7 +598,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
 #endif
             }
             if ((value = espGetConfig(route, "esp.timeouts.session", 0)) != 0) {
-                route->limits->sessionTimeout = httpGetTicks(value) * 1000;
+                route->limits->sessionTimeout = httpGetTicks(value);
                 mprLog(2, "esp: set session timeout to %s", value);
             }
 #if DEPRECATE || 1
@@ -994,7 +994,7 @@ PUBLIC void espSetFeedbackv(HttpConn *conn, cchar *kind, cchar *fmt, va_list arg
         req->feedback = mprCreateHash(0, MPR_HASH_STABLE);
     }
     if ((prior = mprLookupKey(req->feedback, kind)) != 0) {
-        mprAddKey(req->feedback, kind, sjoin(prior, "\n", msg, NULL));
+        mprAddKey(req->feedback, kind, sjoin(prior, ", ", msg, NULL));
     } else {
         mprAddKey(req->feedback, kind, sclone(msg));
     }
@@ -1289,6 +1289,53 @@ PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprT
     return 0;
 }
    
+
+PUBLIC void espClearCurrentSession(HttpConn *conn)
+{
+    EspRoute    *eroute;
+
+    eroute = conn->rx->route->eroute;
+    if (eroute->currentSession) {
+        mprLog(4, "esp: clear current session %s", eroute->currentSession);
+    }
+    eroute->currentSession = 0;
+}
+
+
+/*
+    Remember this connections session as the current session. Use for single login tracking
+ */
+PUBLIC void espSetCurrentSession(HttpConn *conn)
+{
+    EspRoute    *eroute;
+
+    eroute = conn->rx->route->eroute;
+    eroute->currentSession = httpGetSessionID(conn);
+    mprLog(4, "esp: set current session %s", eroute->currentSession);
+}
+
+
+/*
+    Test if this connection is the current session. Use for single login tracking.
+ */
+PUBLIC bool espIsCurrentSession(HttpConn *conn)
+{
+    EspRoute    *eroute;
+
+    eroute = conn->rx->route->eroute;
+    if (eroute->currentSession) {
+        if (smatch(httpGetSessionID(conn), eroute->currentSession)) {
+            return 1;
+        }
+        if (httpLookupSessionID(eroute->currentSession)) {
+            /* Session is still current */
+            return 0;
+        }
+        /* Session has expired */
+        eroute->currentSession = 0;
+    }
+    return 1;
+}
 
 #endif /* BIT_PACK_ESP */
 /*

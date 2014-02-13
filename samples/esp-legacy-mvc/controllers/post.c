@@ -1,14 +1,11 @@
 /*
-    Blog post controller
+    Post Controller for esp-legacy-mvc
  */
- #include "esp.h"
+#include "esp.h"
 
-/*
-    Create a post
- */
 static void create() { 
     if (updateRec(createRec("post", params()))) {
-        inform("New post created");
+        flash("inform", "New Post created");
         renderView("post-list");
     } else {
         renderView("post-edit");
@@ -17,7 +14,7 @@ static void create() {
 
 static void destroy() { 
     if (removeRec("post", param("id"))) {
-        inform("Post removed");
+        flash("inform", "Post removed");
     }
     renderView("post-list");
 }
@@ -40,18 +37,14 @@ static void show() {
 
 static void update() { 
     if (updateFields("post", params())) {
-        inform("Post updated successfully.");
+        flash("inform", "Post updated successfully.");
         renderView("post-list");
     } else {
         renderView("post-edit");
     }
 }
 
-/*
-    Define controller actions. This bind each RESTful URI route to the C function.
- */
-ESP_EXPORT int esp_controller_blog_post(HttpRoute *route, MprModule *module) 
-{
+ESP_EXPORT int esp_controller_blog_post(HttpRoute *route, MprModule *module) {
     espDefineAction(route, "post-create", create);
     espDefineAction(route, "post-destroy", destroy);
     espDefineAction(route, "post-edit", edit);
@@ -59,5 +52,13 @@ ESP_EXPORT int esp_controller_blog_post(HttpRoute *route, MprModule *module)
     espDefineAction(route, "post-list", list);
     espDefineAction(route, "post-show", show);
     espDefineAction(route, "post-update", update);
+
+#if SAMPLE_VALIDATIONS
+    Edi *edi = espGetRouteDatabase(route);
+    ediAddValidation(edi, "present", "post", "title", 0);
+    ediAddValidation(edi, "unique", "post", "title", 0);
+    ediAddValidation(edi, "banned", "post", "body", "(swear|curse)");
+    ediAddValidation(edi, "format", "post", "phone", "/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/");
+#endif
     return 0;
 }
