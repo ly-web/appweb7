@@ -436,6 +436,13 @@
     </member>
     <member kind="function">
       <type>bool</type>
+      <name>espIsCurrentSession</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>gab41302669720bac29959211f2560797a</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
       <name>espIsEof</name>
       <anchorfile>group___esp_req.html</anchorfile>
       <anchor>gac50e125f397c0dce5072fab8f551cd32</anchor>
@@ -636,6 +643,13 @@
       <anchorfile>group___esp_req.html</anchorfile>
       <anchor>ga58039e1fafe24481848bf1b47a2d444f</anchor>
       <arglist>(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *domain, MprTicks lifespan, bool isSecure)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>espSetCurrentSession</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>ga3311af6602f80872182db7112b832f5e</anchor>
+      <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -1004,6 +1018,13 @@
       <name>getDatabase</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>ga9aa7c416a3ac3b6d732c1325e3f2ef15</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>MprDispatcher *</type>
+      <name>getDispatcher</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga93b589637883c1707073619898354ff1</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
@@ -1423,8 +1444,8 @@
       <type>int</type>
       <name>runCmd</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
-      <anchor>gafbee755daa222a7b9e9aa7eb641e9719</anchor>
-      <arglist>(cchar *command, char **out, char **err, int flags)</arglist>
+      <anchor>ga1d226bb7d309a4586b862d409f53ab9f</anchor>
+      <arglist>(cchar *command, char *input, char **output, char **error, MprTicks timeout, int flags)</arglist>
     </member>
     <member kind="function">
       <type>void</type>

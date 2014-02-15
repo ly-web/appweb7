@@ -231,7 +231,6 @@ void manageBlock(MyBlock *blk, int flags)
             so there is typically little to do during the collection/free phase other than close and release external
             resources. Note that it is safe to call mprMark with NULL reference. This is a convenient pattern so you do not
             need to test if the element is null or not.</p>
-
             <h3>Order of Invocation</h3>
             <p>During the mark phase, managers are called recursively from parent calls to mprMark. Thus the blocks are
             visited top down. During the sweep phase, managers are called in any order, i.e. children may be visted before
@@ -239,7 +238,6 @@ void manageBlock(MyBlock *blk, int flags)
             blocks to be freed will only be unpinned once all managers have been invoked. So whether the child or parent
             is visited last, the memory for both will be accessible until the end of the sweep phase when all freed blocks
             are released.</p>
-
             <h2>Convenient References</h2>
             <p>Appweb defines two empty fields that can be used by request handlers to hold managed references. The
             <em>HttpConn.data</em> field is marked by the HttpConn manager. A handler can store a managed-memory reference

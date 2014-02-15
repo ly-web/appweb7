@@ -2475,6 +2475,7 @@ PUBLIC void renderView(cchar *view);
     Run a command
     @description Run a command and return output. 
     @param command Command line and arguments to run.
+    @param input Input data to pass to the command. Set to null if not required.
     @param output Pointer to accept command standard output response. Set to null if not required.
     @param error Pointer to accept command standard error response. Set to null if not required.
     @param flags MprCmd flags. Use MPR_CMD_DETACH to run in the background.
