@@ -2703,6 +2703,13 @@
     </member>
     <member kind="function">
       <type>void</type>
+      <name>mprDestroyWaitHandler</name>
+      <anchorfile>group___mpr_wait_handler.html</anchorfile>
+      <anchor>gae7af42e3a8ef70c3a9f6879b91e0697d</anchor>
+      <arglist>(MprWaitHandler *wp)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
       <name>mprDisableCmdEvents</name>
       <anchorfile>group___mpr_cmd.html</anchorfile>
       <anchor>ga66cccaaaa550e9d2cf381ff8854c2d7a</anchor>
@@ -4301,8 +4308,8 @@
       <type>int</type>
       <name>mprNotifyOn</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a7d645142ebb3d7f1f2df54f7170f5b08</anchor>
-      <arglist>(MprWaitService *ws, MprWaitHandler *wp, int mask)</arglist>
+      <anchor>ac3ea30ea8cd57eb5767f1d2ae87b13d2</anchor>
+      <arglist>(MprWaitHandler *wp, int mask)</arglist>
     </member>
     <member kind="function">
       <type>MprFile *</type>
@@ -9064,6 +9071,13 @@
       <anchorfile>group___mpr_wait_handler.html</anchorfile>
       <anchor>ga7ef6b4168e5cab0192d6b72e094b2c6e</anchor>
       <arglist>(int fd, int mask, MprDispatcher *dispatcher, void *proc, void *data, int flags)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>mprDestroyWaitHandler</name>
+      <anchorfile>group___mpr_wait_handler.html</anchorfile>
+      <anchor>gae7af42e3a8ef70c3a9f6879b91e0697d</anchor>
+      <arglist>(MprWaitHandler *wp)</arglist>
     </member>
     <member kind="function">
       <type>void</type>

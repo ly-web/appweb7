@@ -2605,11 +2605,6 @@ static void manageConn(HttpConn *conn, int flags)
         mprMark(conn->authData);
         mprMark(conn->username);
         mprMark(conn->password);
-
-    } else if (flags & MPR_MANAGE_FREE) {
-        if (!conn->destroyed) {
-            httpDestroyConn(conn);
-        }
     }
 }
 
@@ -3808,12 +3803,6 @@ PUBLIC HttpEndpoint *httpCreateEndpoint(cchar *ip, int port, MprDispatcher *disp
 
 PUBLIC void httpDestroyEndpoint(HttpEndpoint *endpoint)
 {
-#if KEEP
-    /*
-        Connections may survive and endpoint being closed
-     */
-    destroyEndpointConnections(endpoint);
-#endif
     if (endpoint->sock) {
         mprCloseSocket(endpoint->sock, 0);
         endpoint->sock = 0;
@@ -3834,9 +3823,6 @@ static int manageEndpoint(HttpEndpoint *endpoint, int flags)
         mprMark(endpoint->dispatcher);
         mprMark(endpoint->ssl);
         mprMark(endpoint->mutex);
-
-    } else if (flags & MPR_MANAGE_FREE) {
-        httpDestroyEndpoint(endpoint);
     }
     return 0;
 }
@@ -4581,10 +4567,6 @@ static void manageHost(HttpHost *host, int flags)
         mprMark(host->defaultEndpoint);
         mprMark(host->secureEndpoint);
         mprMark(host->streams);
-
-    } else if (flags & MPR_MANAGE_FREE) {
-        /* The http->hosts list is static. ie. The hosts won't be marked via http->hosts */
-        httpRemoveHost(MPR->httpService, host);
     }
 }
 
@@ -8455,7 +8437,6 @@ static void manageRoute(HttpRoute *route, int flags)
     } else if (flags & MPR_MANAGE_FREE) {
         if (route->patternCompiled && (route->flags & HTTP_ROUTE_FREE_PATTERN)) {
             free(route->patternCompiled);
-            route->patternCompiled = 0;
         }
     }
 }
@@ -10841,7 +10822,6 @@ static void manageRouteOp(HttpRouteOp *op, int flags)
     } else if (flags & MPR_MANAGE_FREE) {
         if (op->flags & HTTP_ROUTE_FREE) {
             free(op->mdata);
-            op->mdata = 0;
         }
     }
 }
@@ -11691,11 +11671,6 @@ static void manageRx(HttpRx *rx, int flags)
         mprMark(rx->uploadDir);
         mprMark(rx->target);
         mprMark(rx->webSocket);
-
-    } else if (flags & MPR_MANAGE_FREE) {
-        if (rx->conn) {
-            rx->conn->rx = 0;
-        }
     }
 }
 
@@ -14008,7 +13983,7 @@ PUBLIC Http *httpCreate(int flags)
     http->protocol = sclone("HTTP/1.1");
     http->mutex = mprCreateLock();
     http->stages = mprCreateHash(-1, MPR_HASH_STABLE);
-    http->hosts = mprCreateList(-1, MPR_LIST_STATIC_VALUES | MPR_LIST_STABLE);
+    http->hosts = mprCreateList(-1, MPR_LIST_STABLE);
     http->connections = mprCreateList(-1, MPR_LIST_STATIC_VALUES);
     http->authTypes = mprCreateHash(-1, MPR_HASH_CASELESS | MPR_HASH_UNIQUE | MPR_HASH_STABLE);
     http->authStores = mprCreateHash(-1, MPR_HASH_CASELESS | MPR_HASH_UNIQUE | MPR_HASH_STABLE);
@@ -14035,7 +14010,7 @@ PUBLIC Http *httpCreate(int flags)
     mprAddTerminator(terminateHttp);
 
     if (flags & HTTP_SERVER_SIDE) {
-        http->endpoints = mprCreateList(-1, MPR_LIST_STATIC_VALUES | MPR_LIST_STABLE);
+        http->endpoints = mprCreateList(-1, MPR_LIST_STABLE);
         http->counters = mprCreateList(-1, MPR_LIST_STABLE);
         http->monitors = mprCreateList(-1, MPR_LIST_STABLE);
         http->routeTargets = mprCreateHash(-1, MPR_HASH_STATIC_VALUES | MPR_HASH_STABLE);
@@ -14081,8 +14056,6 @@ static void manageHttp(Http *http, int flags)
         mprMark(http->routeConditions);
         mprMark(http->routeUpdates);
         mprMark(http->sessionCache);
-        /* Don't mark convenience stage references as they will be in http->stages */
-
         mprMark(http->clientLimits);
         mprMark(http->serverLimits);
         mprMark(http->clientRoute);
@@ -15724,9 +15697,6 @@ static void manageTx(HttpTx *tx, int flags)
         mprMark(tx->queue[1]);
         mprMark(tx->rangeBoundary);
         mprMark(tx->webSockKey);
-
-    } else if (flags & MPR_MANAGE_FREE) {
-        httpDestroyTx(tx);
     }
 }
 

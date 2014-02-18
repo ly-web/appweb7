@@ -97,11 +97,15 @@ static void manageCgi(Cgi *cgi, int flags)
         mprMark(cgi->cmd);
         mprMark(cgi->headers);
         mprMark(cgi->location);
+#if UNUSED
     } else {
+        assert(!cgi->cmd);
         if (cgi->cmd) {
             /* Just for safety */
+            //  MOB 
             mprDestroyCmd(cgi->cmd);
         }
+#endif
     }
 }
 
@@ -117,6 +121,7 @@ static void closeCgi(HttpQueue *q)
         if (cmd) {
             mprSetCmdCallback(cmd, NULL, NULL);
             mprDestroyCmd(cmd);
+            cgi->cmd = 0;
         }
         httpMonitorEvent(q->conn, HTTP_COUNTER_ACTIVE_PROCESSES, -1);
     }

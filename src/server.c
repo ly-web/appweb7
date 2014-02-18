@@ -58,9 +58,6 @@ static void manageAppweb(MaAppweb *appweb, int flags)
         mprMark(appweb->localPlatform);
         mprMark(appweb->platform);
         mprMark(appweb->platformDir);
-
-    } else if (flags & MPR_MANAGE_FREE) {
-        maStopAppweb(appweb);
     }
 }
 
@@ -130,9 +127,6 @@ static void manageServer(MaServer *server, int flags)
         mprMark(server->limits);
         mprMark(server->endpoints);
         mprMark(server->state);
-
-    } else if (flags & MPR_MANAGE_FREE) {
-        maStopServer(server);
     }
 }
 

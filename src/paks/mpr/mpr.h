@@ -7098,7 +7098,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout);
     @description Wait handlers provide callbacks for when I/O events occur. They provide a wait to service many
         I/O file descriptors without requiring a thread per descriptor.
     @see MprEvent MprWaitHandler mprCreateWaitHandler mprQueueIOEvent mprRecallWaitHandler mprRecallWaitHandlerByFd 
-        mprRemoveWaitHandler mprWaitOn 
+        mprDestroyWaitHandler mprWaitOn 
     @defgroup MprWaitHandler MprWaitHandler
     @stability Internal
  */
@@ -7108,13 +7108,11 @@ typedef struct MprWaitHandler {
     int             fd;                 /**< O/S File descriptor (sp->sock) */
     int             notifierIndex;      /**< Index for notifier */
     int             flags;              /**< Control flags */
-    void            *handlerData;       /**< Argument to pass to proc */
+    void            *handlerData;       /**< Argument to pass to proc - managed reference */
     MprEvent        *event;             /**< Event object to process I/O events */
     MprWaitService  *service;           /**< Wait service pointer */
     MprDispatcher   *dispatcher;        /**< Event dispatcher to use for I/O events */
     MprEventProc    proc;               /**< Callback event procedure */
-    struct MprWaitHandler *next;        /**< List linkage */
-    struct MprWaitHandler *prev;
     struct MprWorker *requiredWorker;   /**< Designate the required worker thread to run the callback */
     struct MprThread *thread;           /**< Thread executing the callback, set even if worker is null */
     MprCond         *callbackComplete;  /**< Signalled when a callback is complete */
@@ -7136,6 +7134,22 @@ typedef struct MprWaitHandler {
     @stability Stable
  */
 PUBLIC MprWaitHandler *mprCreateWaitHandler(int fd, int mask, MprDispatcher *dispatcher, void *proc, void *data, int flags);
+
+/**
+    Destroy a wait handler
+    @param wp Wait handler object
+    @ingroup MprWaitHandler
+    @stability Evolving
+ */
+PUBLIC void mprDestroyWaitHandler(MprWaitHandler *wp);
+
+/**
+    Remove a wait handler from the wait service
+    @param wp Wait handler object
+    @ingroup MprWaitHandler
+    @stability Stable
+ */
+PUBLIC void mprRemoveWaitHandler(MprWaitHandler *wp);
 
 /**
     Queue an IO event for dispatch on the wait handler dispatcher
@@ -7165,15 +7179,6 @@ PUBLIC void mprRecallWaitHandler(MprWaitHandler *wp);
 PUBLIC void mprRecallWaitHandlerByFd(Socket fd);
 
 /**
-    Disconnect a wait handler from its underlying file descriptor. This is used to prevent further I/O wait events while
-    still preserving the wait handler.
-    @param wp Wait handler object
-    @ingroup MprWaitHandler
-    @stability Stable
- */
-PUBLIC void mprRemoveWaitHandler(MprWaitHandler *wp);
-
-/**
     Subscribe for desired wait events
     @description Subscribe to the desired wait events for a given wait handler.
     @param wp Wait handler created via #mprCreateWaitHandler
@@ -7198,14 +7203,13 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws);
 
 /**
     Begin I/O notification services on a wait handler
-    @param ws Wait Service object
     @param wp Wait handler associated with the file descriptor
     @param mask Mask of events of interest. This is made by oring MPR_READABLE and MPR_WRITABLE
     @return Zero if successful, otherwise a negative MPR error code.
     @ingroup MprWaithHandler
     @stability Internal
  */
-PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask);
+PUBLIC int mprNotifyOn(MprWaitHandler *wp, int mask);
 
 /********************************** Sockets ***********************************/
 /**
