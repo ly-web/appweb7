@@ -207,18 +207,25 @@ struct  MprXml;
 #define MPR_MAX_FILE            256
 
 /*
-    Event notification mechanism
+    Event notification mechanisms
  */
-#if MACOSX || SOLARIS
-    #define MPR_EVENT_KQUEUE    1
-#elif WINDOWS
-    #define MPR_EVENT_ASYNC     1
-#elif VXWORKS
-    #define MPR_EVENT_SELECT    1
-#elif (LINUX || BIT_BSD_LIKE) && (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0))
-    #define MPR_EVENT_EPOLL     1
-#else
-    #define MPR_EVENT_SELECT    1
+#define MPR_EVENT_ASYNC         1           /**< Windows async select */
+#define MPR_EVENT_EPOLL         2           /**< epoll_wait */
+#define MPR_EVENT_KQUEUE        3           /**< BSD kqueue */
+#define MPR_EVENT_SELECT        4           /**< traditional select() */
+
+#ifndef BIT_EVENT_NOTIFIER
+    #if MACOSX || SOLARIS
+        #define BIT_EVENT_NOTIFIER MPR_EVENT_KQUEUE
+    #elif WINDOWS
+        #define BIT_EVENT_NOTIFIER MPR_EVENT_ASYNC
+    #elif VXWORKS
+        #define BIT_EVENT_NOTIFIER MPR_EVENT_SELECT
+    #elif (LINUX || BIT_BSD_LIKE) && (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0))
+        #define BIT_EVENT_NOTIFIER MPR_EVENT_EPOLL
+    #else
+        #define BIT_EVENT_NOTIFIER MPR_EVENT_SELECT
+    #endif
 #endif
 
 /**
@@ -7005,19 +7012,19 @@ typedef struct MprWaitService {
     int             needRecall;             /* A handler needs a recall due to buffered data */
     int             wakeRequested;          /* Wakeup of the wait service has been requested */
     MprList         *handlerMap;            /* Map of fds to handlers */
-#if MPR_EVENT_ASYNC
+#if BIT_EVENT_NOTIFIER == MPR_EVENT_ASYNC
     ATOM            wclass;                 /* Window class */
     HWND            hwnd;                   /* Window handle */
     int             nfd;                    /* Last used entry in the handlerMap array */
     int             fdmax;                  /* Size of the fds array */
     int             socketMessage;          /* Message id for socket events */
     MprMsgCallback  msgCallback;            /* Message handler callback */
-#elif MPR_EVENT_EPOLL
+#elif BIT_EVENT_NOTIFIER == MPR_EVENT_EPOLL
     int             epoll;                  /* Epoll descriptor */
     int             breakFd[2];             /* Event or pipe to wakeup */
-#elif MPR_EVENT_KQUEUE
+#elif BIT_EVENT_NOTIFIER == MPR_EVENT_KQUEUE
     int             kq;                     /* Kqueue() return descriptor */
-#elif MPR_EVENT_SELECT
+#elif BIT_EVENT_NOTIFIER == MPR_EVENT_SELECT
     fd_set          readMask;               /* Current read events mask */
     fd_set          writeMask;              /* Current write events mask */
     int             highestFd;              /* Highest socket in masks + 1 */

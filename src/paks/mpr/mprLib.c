@@ -3502,7 +3502,8 @@ PUBLIC int mprDaemon()
 
 
 
-#if MPR_EVENT_ASYNC
+#if BIT_EVENT_NOTIFIER == MPR_EVENT_ASYNC
+
 /***************************** Forward Declarations ***************************/
 
 static LRESULT CALLBACK msgProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
@@ -10457,7 +10458,7 @@ PUBLIC char *mprEscapeSQL(cchar *cmd)
 
 
 
-#if MPR_EVENT_EPOLL
+#if BIT_EVENT_NOTIFIER == MPR_EVENT_EPOLL
 /********************************** Forwards **********************************/
 
 static void serviceIO(MprWaitService *ws, struct epoll_event *events, int count);
@@ -10686,8 +10687,9 @@ static void serviceIO(MprWaitService *ws, struct epoll_event *events, int count)
         }
         mask = 0;
         if (ev->events & (EPOLLERR)) {
-            mask |= MPR_READABLE;
             mprRemoveWaitHandler(wp);
+            wp->desiredMask = MPR_READABLE;
+            mask |= MPR_READABLE;
         }
         if (ev->events & (EPOLLIN | EPOLLHUP)) {
             mask |= MPR_READABLE;
@@ -13823,7 +13825,7 @@ PUBLIC MprHash *mprJsonToHash(MprJson *json)
 
 
 
-#if MPR_EVENT_KQUEUE
+#if BIT_EVENT_NOTIFIER == MPR_EVENT_KQUEUE
 
 /********************************** Forwards **********************************/
 
@@ -14033,9 +14035,6 @@ static void serviceIO(MprWaitService *ws, struct kevent *events, int count)
         if (kev->flags & EV_ERROR) {
             err = (int) kev->data;
             if (err == ENOENT) {
-                /* 
-                    File descriptor was closed and re-opened. Re-enable event.
-                 */
                 prior = wp->desiredMask;
                 mprNotifyOn(wp, 0);
                 wp->desiredMask = 0;
@@ -14044,9 +14043,9 @@ static void serviceIO(MprWaitService *ws, struct kevent *events, int count)
                 continue;
 
             } else if (err == EBADF || err == EINVAL) {
-                /* File descriptor was closed */
                 mprError("kqueue: invalid file descriptor %d, fd %d", wp->fd);
                 mprRemoveWaitHandler(wp);
+                wp->desiredMask = MPR_READABLE;
                 mask |= MPR_READABLE;
             }
         }
@@ -20548,7 +20547,8 @@ void romDummy() {}
 
 
 
-#if MPR_EVENT_SELECT
+#if BIT_EVENT_NOTIFIER == MPR_EVENT_SELECT
+
 /********************************** Forwards **********************************/
 
 static void serviceIO(MprWaitService *ws, fd_set *readMask, fd_set *writeMask, int maxfd);
@@ -20757,7 +20757,6 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     mprYield(MPR_YIELD_STICKY);
     if ((rc = select(maxfd, &readMask, &writeMask, NULL, &tval)) < 0) {
     }
-
     mprClearWaiting();
     mprResetYield();
 
@@ -25475,10 +25474,6 @@ PUBLIC MprThread *mprCreateThread(cchar *name, void *entry, void *data, ssize st
 
 static void manageThread(MprThread *tp, int flags)
 {
-    MprThreadService    *ts;
-
-    ts = MPR->threadService;
-
     if (flags & MPR_MANAGE_MARK) {
         mprMark(tp->name);
         mprMark(tp->data);
@@ -28462,16 +28457,16 @@ static void manageWaitService(MprWaitService *ws, int flags)
         mprMark(ws->mutex);
         mprMark(ws->spin);
     }
-#if MPR_EVENT_ASYNC
+#if BIT_EVENT_NOTIFIER == MPR_EVENT_ASYNC
     mprManageAsync(ws, flags);
 #endif
-#if MPR_EVENT_EPOLL
+#if BIT_EVENT_NOTIFIER == MPR_EVENT_EPOLL
     mprManageEpoll(ws, flags);
 #endif
-#if MPR_EVENT_KQUEUE
+#if BIT_EVENT_NOTIFIER == MPR_EVENT_KQUEUE
     mprManageKqueue(ws, flags);
 #endif
-#if MPR_EVENT_SELECT
+#if BIT_EVENT_NOTIFIER == MPR_EVENT_SELECT
     mprManageSelect(ws, flags);
 #endif
 }
