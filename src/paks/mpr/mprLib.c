@@ -2515,9 +2515,13 @@ static void monitorStack()
 
 
 /*********************************** Locals ***********************************/
+/*
+    Define an illegal exit status value
+ */
+#define NO_STATUS   0x100000
 
-static int mprState;
 static int mprExitStatus;
+static int mprState;
 
 /**************************** Forward Declarations ****************************/
 
@@ -2593,7 +2597,7 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
         mprStartGCService();
     }
     mprState = MPR_CREATED;
-    mprExitStatus = 0;
+    mprExitStatus = NO_STATUS;
 
     if (MPR->hasError || mprHasMemError()) {
         return 0;
@@ -2693,7 +2697,7 @@ static void shutdownMonitor(void *data, MprEvent *event)
     This routine does no destructive actions.
     WARNING: this races with other threads.
  */
-PUBLIC void mprShutdown(int how, int status, MprTicks timeout)
+PUBLIC void mprShutdown(int how, int exitStatus, MprTicks timeout)
 {
     MprTerminator   terminator;
     int             next;
@@ -2707,7 +2711,7 @@ PUBLIC void mprShutdown(int how, int status, MprTicks timeout)
     mprGlobalUnlock();
 
     MPR->exitStrategy = how;
-    mprExitStatus = status;
+    mprExitStatus = exitStatus;
     MPR->exitTimeout = (timeout >= 0) ? timeout : MPR->exitTimeout;
     if (mprGetDebugMode()) {
         MPR->exitTimeout = MPR_MAX_TIMEOUT;
@@ -2720,7 +2724,7 @@ PUBLIC void mprShutdown(int how, int status, MprTicks timeout)
             mprRestart();
         } else {
             mprLog(3, "Abortive exit.");
-            exit(status);
+            exit(exitStatus);
         }
         /* No continue */
     }
@@ -2736,7 +2740,7 @@ PUBLIC void mprShutdown(int how, int status, MprTicks timeout)
         Note: terminators must take not destructive actions for the MPR_STOPPED state
      */
     for (ITERATE_ITEMS(MPR->terminators, terminator, next)) {
-        (terminator)(mprState, how, mprExitStatus);
+        (terminator)(mprState, how, mprExitStatus & ~NO_STATUS);
     }
 }
 
@@ -2787,8 +2791,11 @@ PUBLIC bool mprDestroy()
             /* Note: Pending outside events will pause GC which will make mprIsIdle return false */
             mprLog(2, "Cancel termination due to continuing requests, application resumed.");
             mprCancelShutdown();
+        } else if (MPR->exitTimeout > 0) {
+            /* If a non-zero graceful timeout applies, always exit with non-zero status */
+            exit(mprExitStatus != NO_STATUS ? mprExitStatus : 1);
         } else {
-            exit(mprExitStatus ? mprExitStatus : 1);
+            exit(mprExitStatus & ~NO_STATUS);
         }
         return 0;
     }
@@ -2805,7 +2812,7 @@ PUBLIC bool mprDestroy()
     mprGlobalUnlock();
 
     for (ITERATE_ITEMS(MPR->terminators, terminator, next)) {
-        (terminator)(mprState, MPR->exitStrategy, mprExitStatus);
+        (terminator)(mprState, MPR->exitStrategy, mprExitStatus & ~NO_STATUS);
     }
     mprStopWorkers();
     mprStopCmdService();
@@ -2883,7 +2890,7 @@ static void setNames(Mpr *mpr, int argc, char **argv)
 
 PUBLIC int mprGetExitStatus()
 {
-    return mprExitStatus;
+    return mprExitStatus & ~NO_STATUS;
 }
 
 
