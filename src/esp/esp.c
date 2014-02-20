@@ -362,7 +362,7 @@ PUBLIC int main(int argc, char **argv)
         process(argc - argind, &argv[argind]);
     }
     rc = app->error;
-    mprDestroy(MPR_EXIT_DEFAULT);
+    mprDestroy();
     return rc;
 }
 
@@ -910,7 +910,7 @@ static void initialize(int argc, char **argv)
     
     if (mprStart() < 0) {
         mprError("Cannot start MPR for %s", mprGetAppName());
-        mprDestroy(MPR_EXIT_DEFAULT);
+        mprDestroy();
         app->error = 1;
         return;
     }

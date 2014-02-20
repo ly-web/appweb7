@@ -1721,7 +1721,7 @@ static int mapDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    MemoryPolicy prune|restart|exit
+    MemoryPolicy continue|restart
  */
 static int memoryPolicyDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1733,14 +1733,24 @@ static int memoryPolicyDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S", &policy)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (scmp(value, "exit") == 0) {
+    if (scmp(value, "restart") == 0) {
+#if VXWORKS
+        flags = MPR_ALLOC_POLICY_RESTART;
+#else
+        /* Appman will restart */
+        flags = MPR_ALLOC_POLICY_EXIT;
+#endif
+        
+    } else if (scmp(value, "continue") == 0) {
+        flags = MPR_ALLOC_POLICY_PRUNE;
+
+#if DEPRECATED || 1
+    } else if (scmp(value, "exit") == 0) {
         flags = MPR_ALLOC_POLICY_EXIT;
 
     } else if (scmp(value, "prune") == 0) {
         flags = MPR_ALLOC_POLICY_PRUNE;
-
-    } else if (scmp(value, "restart") == 0) {
-        flags = MPR_ALLOC_POLICY_RESTART;
+#endif
 
     } else {
         mprError("Unknown memory depletion policy '%s'", policy);

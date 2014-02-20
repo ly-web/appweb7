@@ -134,7 +134,7 @@ PUBLIC int main(int argc, char *argv[])
     if (maWriteAuthFile(auth, authFile) < 0) {
         exit(6);
     }
-    mprDestroy(MPR_EXIT_DEFAULT);
+    mprDestroy();
     return 0;
 }
 

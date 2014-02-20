@@ -50,7 +50,7 @@ PUBLIC int maRunWebServer(cchar *configFile)
             }
         }
     }
-    mprDestroy(MPR_EXIT_DEFAULT);
+    mprDestroy();
     return rc;
 }
 
@@ -98,7 +98,7 @@ PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documen
                 mprRemoveRoot(appweb);
             }
         }
-        mprDestroy(MPR_EXIT_DEFAULT);
+        mprDestroy();
     }
     return rc;
 }
@@ -174,7 +174,7 @@ PUBLIC int maRunWebClient(cchar *method, cchar *uri, cchar *data, char **respons
     if (response) {
         *response = httpReadString(conn);
     }
-    mprDestroy(MPR_EXIT_DEFAULT);
+    mprDestroy();
     return status;
 }
 

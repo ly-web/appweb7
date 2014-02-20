@@ -77,7 +77,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
     Mpr     *mpr;
     cchar   *argp, *jail;
     char    *logSpec;
-    int     argind, status, level;
+    int     argind, level;
 
     jail = 0;
     level = 0;
@@ -190,7 +190,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
     }
     if (mprStart() < 0) {
         mprError("Cannot start MPR for %s", mprGetAppName());
-        mprDestroy(MPR_EXIT_DEFAULT);
+        mprDestroy();
         return MPR_ERR_CANT_INITIALIZE;
     }
     if (checkEnvironment(argv[0]) < 0) {
@@ -212,9 +212,8 @@ MAIN(appweb, int argc, char **argv, char **envp)
     mprServiceEvents(-1, 0);
 
     mprLog(1, "Stopping Appweb ...");
-    status = mprGetExitStatus();
-    mprDestroy(MPR_EXIT_DEFAULT);
-    return status;
+    mprDestroy();
+    return mprGetExitStatus();
 }
 
 

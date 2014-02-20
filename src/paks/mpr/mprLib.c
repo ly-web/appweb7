@@ -1975,19 +1975,19 @@ static void allocException(int cause, size_t size)
             Allocation failed
          */
         mprError("Application exiting immediately due to memory depletion.");
-        mprShutdown(MPR_EXIT_ABORT, 2);
+        mprShutdown(MPR_EXIT_ABORT, -1, 0);
 
     } else if (cause & MPR_MEM_LIMIT) {
         /*
             Over memory max limit
          */
         if (heap->allocPolicy == MPR_ALLOC_POLICY_RESTART) {
-            mprError("Application exiting gracefully due to low memory condition.");
-            mprShutdown(MPR_EXIT_GRACEFUL, 1);
+            mprError("Application restarting due to low memory condition.");
+            mprShutdown(MPR_EXIT_RESTART, -1, 0);
 
         } else if (heap->allocPolicy == MPR_ALLOC_POLICY_EXIT) {
-            mprError("Application exiting immediately due to memory depletion.");
-            mprShutdown(MPR_EXIT_ABORT, 2);
+            mprError("Application exiting due to memory depletion.");
+            mprShutdown(MPR_EXIT_NORMAL, -1, MPR_EXIT_TIMEOUT);
         }
     }
     heap->stats.inMemException = 0;
@@ -2517,6 +2517,7 @@ static void monitorStack()
 /*********************************** Locals ***********************************/
 
 static int mprState;
+static int mprExitStatus;
 
 /**************************** Forward Declarations ****************************/
 
@@ -2545,10 +2546,9 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
     }
     mpr->flags = flags;
     mpr->start = mprGetTime(); 
-    mpr->exitStrategy = MPR_EXIT_IMMEDIATE;
+    mpr->exitStrategy = 0;
     mpr->emptyString = sclone("");
     mpr->oneString = sclone("1");
-    mpr->exitTimeout = MPR_TIMEOUT_STOP;
     mpr->idleCallback = mprServicesAreIdle;
     mpr->mimeTypes = mprCreateMimeTypes(NULL);
     mpr->terminators = mprCreateList(0, MPR_LIST_STATIC_VALUES);
@@ -2593,6 +2593,7 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
         mprStartGCService();
     }
     mprState = MPR_CREATED;
+    mprExitStatus = 0;
 
     if (MPR->hasError || mprHasMemError()) {
         return 0;
@@ -2660,75 +2661,73 @@ static void shutdownMonitor(void *data, MprEvent *event)
 {
     MprTicks        remaining;
 
-    if (MPR->exitStrategy & MPR_EXIT_GRACEFUL) {
-        remaining = mprGetRemainingTicks(MPR->shutdownStarted, MPR->exitTimeout);
-    } else {
-        remaining = 0;
-    }
     if (mprIsIdle(1)) {
         if (mprState <= MPR_STOPPING) {
             mprLog(2, "Shutdown proceeding, system is idle");
             mprState = MPR_STOPPED;
         }
-    } else if (remaining <= 0) {
+        return;
+    } 
+    remaining = mprGetRemainingTicks(MPR->shutdownStarted, MPR->exitTimeout);
+    if (remaining <= 0) {
         if (MPR->exitStrategy & MPR_EXIT_SAFE) {
             mprLog(2, "Shutdown cancelled due to continuing requests");
             mprCancelShutdown();
         } else {
-            mprLog(2, "Timeout for requests to complete");
+            mprLog(2, "Timeout while waiting for requests to complete");
             if (mprState <= MPR_STOPPING) {
                 mprState = MPR_STOPPED;
             }
         }
     } else {
         mprLog(2, "Waiting for requests to complete, %d secs remaining ...", remaining / MPR_TICKS_PER_SEC);
+//  MOB - test a big delay here
         mprRescheduleEvent(event, 1000);
     }
 }
 
 
 /*
-    Start shutdown of the Mpr. This sets the state to stopping and invokes the shutdownMonitor. 
+    Start shutdown of the Mpr. This sets the state to stopping and invokes the shutdownMonitor. This is done for
+    all shutdown strategies regardless. Immediate shutdowns must still give threads some time to exit.
     This routine does no destructive actions.
     WARNING: this races with other threads.
  */
-PUBLIC void mprShutdown(int how, int status)
+PUBLIC void mprShutdown(int how, int status, MprTicks timeout)
 {
     MprTerminator   terminator;
     int             next;
 
+    mprGlobalLock();
     if (mprState >= MPR_STOPPING) {
+        mprGlobalUnlock();
         return;
     }
-    MPR->shutdownStarted = mprGetTicks();
-    MPR->exitStatus = status;
+    mprState = MPR_STOPPING;
+    mprGlobalUnlock();
+
+    MPR->exitStrategy = how;
+    mprExitStatus = status;
+    MPR->exitTimeout = (timeout >= 0) ? timeout : MPR->exitTimeout;
     if (mprGetDebugMode()) {
         MPR->exitTimeout = MPR_MAX_TIMEOUT;
     }
-    if (!(how & MPR_EXIT_DEFAULT)) {
-        MPR->exitStrategy = how;
-    }
+    MPR->shutdownStarted = mprGetTicks();
+
     if (how & MPR_EXIT_ABORT) {
         if (how & MPR_EXIT_RESTART) {
             mprLog(3, "Abort with restart.");
+            mprRestart();
         } else {
             mprLog(3, "Abortive exit.");
+            exit(status);
         }
-    } else if (how & MPR_EXIT_IMMEDIATE) {
-        mprLog(3, "Immediate exit.");
-
-    } else if (how & MPR_EXIT_GRACEFUL) {
-        mprLog(3, "Graceful exit. Waiting for existing requests to complete.");
-
-    } else {
-        mprTrace(4, "mprDestroy: how %d", how);
+        /* No continue */
     }
-    mprState = MPR_STOPPING;
+    mprLog(3, "Application exit, waiting for existing requests to complete.");
 
-    if ((how & MPR_EXIT_GRACEFUL) && !mprIsIdle(0)) {
+    if (!mprIsIdle(0)) {
         mprCreateTimerEvent(NULL, "shutdownMonitor", 0, shutdownMonitor, 0, MPR_EVENT_QUICK);
-    } else if (!mprGCPaused()) {
-        mprState = MPR_STOPPED;
     }
     mprWakeDispatchers();
     mprWakeNotifier();
@@ -2737,7 +2736,7 @@ PUBLIC void mprShutdown(int how, int status)
         Note: terminators must take not destructive actions for the MPR_STOPPED state
      */
     for (ITERATE_ITEMS(MPR->terminators, terminator, next)) {
-        (terminator)(mprState, how, MPR->exitStatus);
+        (terminator)(mprState, how, mprExitStatus);
     }
 }
 
@@ -2760,69 +2759,38 @@ PUBLIC bool mprCancelShutdown()
     If the application has a user events thread and mprShutdown was called, then we will come here when already idle.
     This routine will call service terminators to allow them to shutdown their services in an orderly manner 
  */
-PUBLIC bool mprDestroy(int how)
+PUBLIC bool mprDestroy()
 {
     MprTerminator   terminator;
-    MprTicks        remaining, timeout;
+    MprTicks        timeout;
     int             i, next;
 
-    if (how == 0) {
-        how = MPR_EXIT_DEFAULT;
-    }
-    if (how & MPR_EXIT_DEFAULT) {
-        how = MPR->exitStrategy;
-    } else {
-        MPR->exitStrategy = how;
-    }
-    if (how & MPR_EXIT_ABORT) {
-        if (how & MPR_EXIT_RESTART) {
-            mprRestart();
-            /* No return */
-            return 0;
-        }
-        exit(MPR->exitStatus);
-    }
     if (mprState < MPR_STOPPING) {
-        mprShutdown(how, mprGetExitStatus());
+        mprShutdown(MPR->exitStrategy, mprExitStatus, MPR->exitTimeout);
     }
     timeout = MPR->exitTimeout;
     if (MPR->shutdownStarted) {
         timeout -= (mprGetTicks() - MPR->shutdownStarted);
     }
-    while (mprGCPaused()) {
+    /* 
+        Wait for events thread to exit and the app to become idle 
+     */
+    while (MPR->eventing) {
+        mprWakeNotifier();
+        mprWaitForCond(MPR->cond, 1000);
         if (mprGetRemainingTicks(MPR->shutdownStarted, timeout) <= 0) {
-            mprLog(2, "Cancel termination due paused GC, application resumed.");
-            mprCancelShutdown();
-            return 0;
+            break;
         }
     }
-    if (mprState < MPR_STOPPED) {
-        /*
-            Not yet stopped. This happens if using a service events thread and mprDestroy is called directly.
-            So must wait utill all running requests and services have completed
-         */
-        if (MPR->exitStrategy & MPR_EXIT_IMMEDIATE) {
-            mprState = MPR_STOPPED;
-        }
-        /* 
-            Wait for events thread to exit and app to become idle 
-         */
-        while (MPR->eventing) {
-            mprWakeNotifier();
-            mprWaitForCond(MPR->cond, 1000);
-            remaining = mprGetRemainingTicks(MPR->shutdownStarted, timeout);
-            /*
-                Test GC paused - there may be a blocking outside event pending
-             */
-            if (remaining <= 0 && !mprGCPaused()) {
-                break;
-            }
-        }
-        if ((MPR->exitStrategy & MPR_EXIT_SAFE) && !mprIsIdle(0)) {
+    if (!mprIsIdle(0)) {
+        if (MPR->exitStrategy & MPR_EXIT_SAFE) {
+            /* Note: Pending outside events will pause GC which will make mprIsIdle return false */
             mprLog(2, "Cancel termination due to continuing requests, application resumed.");
             mprCancelShutdown();
-            return 0;
+        } else {
+            exit(mprExitStatus ? mprExitStatus : 1);
         }
+        return 0;
     }
     mprGlobalLock();
     if (mprState == MPR_STARTED) {
@@ -2830,11 +2798,14 @@ PUBLIC bool mprDestroy(int how)
         /* User cancelled shutdown */
         return 0;
     }
+    /* 
+        Point of no return 
+     */
     mprState = MPR_DESTROYING;
     mprGlobalUnlock();
 
     for (ITERATE_ITEMS(MPR->terminators, terminator, next)) {
-        (terminator)(mprState, how, MPR->exitStatus);
+        (terminator)(mprState, MPR->exitStrategy, mprExitStatus);
     }
     mprStopWorkers();
     mprStopCmdService();
@@ -2842,27 +2813,23 @@ PUBLIC bool mprDestroy(int how)
     mprDestroyEventService();
 
     /*
-        Run GC until we are not freeing any memory. This is for destructors that unpin other blocks in the destructor.
+        Run GC to finalize all memory until we are not freeing any memory. This IS deterministic.
      */
     for (i = 0; i < 25; i++) {
         if (mprGC(MPR_GC_FORCE | MPR_GC_COMPLETE) == 0) {
             break;
         }
     }
-    if (how & MPR_EXIT_RESTART) {
-        mprLog(2, "Restarting\n\n");
-    } else {
-        mprLog(2, "Exiting");
-    }
     mprState = MPR_DESTROYED;
 
+    mprLog(2, (MPR->exitStrategy & MPR_EXIT_RESTART) ? "Restarting\n\n" : "Exiting");
     mprStopModuleService();
     mprStopSignalService();
     mprStopGCService();
     mprStopThreadService();
     mprStopOsService();
 
-    if (how & MPR_EXIT_RESTART) {
+    if (MPR->exitStrategy & MPR_EXIT_RESTART) {
         mprRestart();
     }
     return 1;
@@ -2916,13 +2883,13 @@ static void setNames(Mpr *mpr, int argc, char **argv)
 
 PUBLIC int mprGetExitStatus()
 {
-    return MPR->exitStatus;
+    return mprExitStatus;
 }
 
 
 PUBLIC void mprSetExitStatus(int status)
 {
-    MPR->exitStatus = status;
+    mprExitStatus = status;
 }
 
 
@@ -3006,7 +2973,7 @@ static void serviceEventsThread(void *data, MprThread *tp)
  */
 PUBLIC bool mprShouldAbortRequests()
 {
-    return (mprIsStopping() && !(MPR->exitStrategy & MPR_EXIT_GRACEFUL));
+    return mprIsStopped();
 }
 
 
@@ -3348,10 +3315,12 @@ PUBLIC char *mprEmptyString()
 }
 
 
+#if UNUSED
 PUBLIC void mprSetExitStrategy(int strategy)
 {
     MPR->exitStrategy = strategy;
 }
+#endif
 
 
 PUBLIC void mprSetEnv(cchar *key, cchar *value)
@@ -3646,7 +3615,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
         SetTimer(hwnd, 0, (UINT) timeout, NULL);
         if (GetMessage(&msg, NULL, 0, 0) == 0) {
             mprResetYield();
-            mprShutdown(MPR_EXIT_DEFAULT, -1);
+            mprShutdown(MPR_EXIT_NORMAL, 0, MPR_EXIT_TIMEOUT);
         } else {
             mprClearWaiting();
             mprResetYield();
@@ -3723,7 +3692,7 @@ static LRESULT CALLBACK msgProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
     ws = MPR->waitService;
 
     if (msg == WM_DESTROY || msg == WM_QUIT) {
-        mprShutdown(MPR_EXIT_DEFAULT, -1);
+        mprShutdown(MPR_EXIT_NORMAL, 0, MPR_EXIT_TIMEOUT);
 
     } else if (msg && msg == ws->socketMessage) {
         sock = (int) wp;
@@ -9515,7 +9484,7 @@ PUBLIC void mprDestroyDispatcher(MprDispatcher *dispatcher)
         }
         dequeueDispatcher(dispatcher);
         dispatcher->owner = 0;
-        dispatcher->flags = MPR_DISPATCHER_DESTROYED;
+        dispatcher->flags |= MPR_DISPATCHER_DESTROYED;
         unlock(es);
     }
 }
@@ -9893,8 +9862,12 @@ static int dispatchEvents(MprDispatcher *dispatcher)
  */
 static void dispatchEventsWorker(MprDispatcher *dispatcher)
 {
+    if (dispatcher->flags & MPR_DISPATCHER_DESTROYED) {
+        /* Dispatcher destroyed after worker started */
+        return;
+    }
     dispatchEvents(dispatcher);
-    if (!(dispatcher->flags == MPR_DISPATCHER_DESTROYED)) {
+    if (!(dispatcher->flags & MPR_DISPATCHER_DESTROYED)) {
         dequeueDispatcher(dispatcher);
         mprScheduleDispatcher(dispatcher);
     }
@@ -10686,12 +10659,7 @@ static void serviceIO(MprWaitService *ws, struct epoll_event *events, int count)
             continue;
         }
         mask = 0;
-        if (ev->events & (EPOLLERR)) {
-            mprRemoveWaitHandler(wp);
-            wp->desiredMask = MPR_READABLE;
-            mask |= MPR_READABLE;
-        }
-        if (ev->events & (EPOLLIN | EPOLLHUP)) {
+        if (ev->events & (EPOLLIN | EPOLLHUP | EPOLLERR)) {
             mask |= MPR_READABLE;
         }
         if (ev->events & (EPOLLOUT | EPOLLHUP)) {
@@ -10699,6 +10667,9 @@ static void serviceIO(MprWaitService *ws, struct epoll_event *events, int count)
         }
         wp->presentMask = mask & wp->desiredMask;
 
+        if (ev->events & EPOLLERR) {
+            mprRemoveWaitHandler(wp);
+        }
         if (wp->presentMask) {
             if (wp->flags & MPR_WAIT_IMMEDIATE) {
                 (wp->proc)(wp->handlerData, NULL);
@@ -10833,11 +10804,6 @@ PUBLIC MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTicks
 static void manageEvent(MprEvent *event, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        /*
-            Events in dispatcher queues are marked by the dispatcher managers, not via event->next,prev
-         */
-        assert(event->name);
-        assert(event->next);
         mprMark(event->name);
         mprMark(event->dispatcher);
         mprMark(event->handler);
@@ -14032,6 +13998,15 @@ static void serviceIO(MprWaitService *ws, struct kevent *events, int count)
         }
         assert(mprIsValid(wp));
         mask = 0;
+        if (kev->filter == EVFILT_READ) {
+            mask |= MPR_READABLE;
+        }
+        if (kev->filter == EVFILT_WRITE) {
+            mask |= MPR_WRITABLE;
+        }
+        assert(mprIsValid(wp));
+        wp->presentMask = mask & wp->desiredMask;
+
         if (kev->flags & EV_ERROR) {
             err = (int) kev->data;
             if (err == ENOENT) {
@@ -14045,19 +14020,8 @@ static void serviceIO(MprWaitService *ws, struct kevent *events, int count)
             } else if (err == EBADF || err == EINVAL) {
                 mprError("kqueue: invalid file descriptor %d, fd %d", wp->fd);
                 mprRemoveWaitHandler(wp);
-                wp->desiredMask = MPR_READABLE;
-                mask |= MPR_READABLE;
             }
         }
-        if (kev->filter == EVFILT_READ) {
-            mask |= MPR_READABLE;
-        }
-        if (kev->filter == EVFILT_WRITE) {
-            mask |= MPR_WRITABLE;
-        }
-        assert(mprIsValid(wp));
-        wp->presentMask = mask & wp->desiredMask;
-
         if (wp->presentMask) {
             if (wp->flags & MPR_WAIT_IMMEDIATE) {
                 (wp->proc)(wp->handlerData, NULL);
@@ -21200,19 +21164,19 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
 {
     mprTrace(6, "standardSignalHandler signo %d, flags %x", sp->signo, sp->flags);
     if (sp->signo == SIGTERM) {
-        mprShutdown(MPR_EXIT_GRACEFUL, -1);
+        mprShutdown(MPR_EXIT_NORMAL, -1, MPR_EXIT_TIMEOUT);
 
-    } else if (sp->signo == SIGINT) {
+    } else if (sp->signo == SIGINT || sp->signo == SIGQUIT) {
 #if BIT_UNIX_LIKE
         /*  Ensure shell input goes to a new line */
         if (isatty(1)) {
             if (write(1, "\n", 1) < 0) {}
         }
 #endif
-        mprShutdown(MPR_EXIT_IMMEDIATE, -1);
+        mprShutdown(MPR_EXIT_ABORT, -1, 0);
 
     } else if (sp->signo == SIGUSR1) {
-        mprShutdown(MPR_EXIT_GRACEFUL | MPR_EXIT_RESTART, 0);
+        mprShutdown(MPR_EXIT_RESTART, 0, 0);
 
     } else if (sp->signo == SIGPIPE || sp->signo == SIGXFSZ) {
         /* Ignore */
@@ -21226,9 +21190,8 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
         exit(255);
 #endif
 #endif
-
     } else {
-        mprShutdown(MPR_EXIT_DEFAULT, -1);
+        mprShutdown(MPR_EXIT_ABORT, -1, 0);
     }
 }
 
@@ -25209,7 +25172,7 @@ static void adjustThreadCount(int adj)
     mprLock(sp->mutex);
     sp->activeThreadCount += adj;
     if (sp->activeThreadCount <= 0) {
-        mprShutdown(MPR_EXIT_DEFAULT, 0);
+        mprShutdown(MPR_EXIT_NORMAL, 0, 0);
     }
     mprUnlock(sp->mutex);
 }
