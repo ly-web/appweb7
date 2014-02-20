@@ -87,6 +87,7 @@ if (test.threads == 1) {
 
 //  DELETE
 run("test.dat /tmp/test.dat")
+if (Config.OS == 'windows') App.sleep(500)
 assert(Path("../../web/tmp/test.dat").exists)
 run("--method DELETE /tmp/test.dat")
 assert(!Path("../../web/tmp/test.dat").exists)
