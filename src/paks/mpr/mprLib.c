@@ -26034,6 +26034,7 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
     ws = MPR->workerService;
     lock(ws);
     if (mprIsStopped()) {
+        unlock(ws);
         return MPR_ERR_BAD_STATE;
     }
     /*
@@ -26113,6 +26114,7 @@ static int getNextThreadNum(MprWorkerService *ws)
 {
     int     rc;
 
+    //  TODO Atomic
     lock(ws);
     rc = ws->nextThreadNum++;
     unlock(ws);
