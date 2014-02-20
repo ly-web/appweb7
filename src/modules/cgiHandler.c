@@ -222,11 +222,13 @@ static void waitForCgi(Cgi *cgi, MprEvent *event)
 
     conn = cgi->conn;
     cmd = cgi->cmd;
-    if (!cmd->complete) {
+    if (cmd && !cmd->complete) {
         mprPollWinCmd(cmd, 0);
         if (conn->error && cmd->pid) {
             mprStopCmd(cmd, -1);
         }
+    } else {
+        mprStopContinuousEvent(event);
     }
 }
 #endif
