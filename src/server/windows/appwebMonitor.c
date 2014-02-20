@@ -147,7 +147,7 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
             closeMonitorIcon();
         }
     }
-    mprDestroy(MPR_EXIT_IMMEDIATE);
+    mprDestroy();
     return 0;
 }
 
