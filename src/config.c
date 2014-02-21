@@ -1882,19 +1882,21 @@ static int prefixDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+#if DEPRECATE
 /*
     Protocol HTTP/1.0
     Protocol HTTP/1.1
  */
 static int protocolDirective(MaState *state, cchar *key, cchar *value)
 {
-    httpSetHostProtocol(state->host, value);
+    httpSetRouteProtocol(state->host, value);
     if (!scaselessmatch(value, "HTTP/1.0") && !scaselessmatch(value, "HTTP/1.1")) {
         mprError("Unknown http protocol %s. Should be HTTP/1.0 or HTTP/1.1", value);
         return MPR_ERR_BAD_SYNTAX;
     }
     return 0;
 }
+#endif
 
 
 #if DEPRECATE || 1
@@ -3155,7 +3157,9 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Param", paramDirective);
     maAddDirective(appweb, "Prefix", prefixDirective);
     maAddDirective(appweb, "PreserveFrames", preserveFramesDirective);
+#if UNUSED && KEEP
     maAddDirective(appweb, "Protocol", protocolDirective);
+#endif
     maAddDirective(appweb, "Redirect", redirectDirective);
     maAddDirective(appweb, "RequestHeader", requestHeaderDirective);
     maAddDirective(appweb, "RequestParseTimeout", requestParseTimeoutDirective);

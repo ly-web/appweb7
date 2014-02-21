@@ -237,11 +237,16 @@
                 state argument against MPR_STOPPING and MPR_STOPPED.</li>
                 <li>Support for Windows XP and Vista deprecated. Contact support@embedthis.com if you require XP or Vista
                     support.</li>
-                <li>Refactor mprDestroy, mprShutdown. MprDestroy now has zero args. mprShutdown gains a timeout arg.
+                <li>Refactor mprDestroy, mprShutdown. The old mprTerminate has been replaced by mprShutdown.
+                    MprDestroy now has zero args. mprShutdown gains a timeout arg.
                     The defines MPR_EXIT_IMMEDIATE and MPR_EXIT_GRACEFUL are now removed as all shutdowns are graceful
                     depending on the exit timeout.
                     <a href="https://github.com/embedthis/appweb-4/issues/301">[issue 301]</a></li>
+                <li>The HttpHost structure no longer contains an IP or Port fields. See the appropriate HttpEndpoint structure</li>
+                <li>Removed the Protocol directive to define HTTP/1.0 vs HTTP/1.1. This is now sensed from the client.
+                    Removed the httpSetHostProtocol API.</li>
             </ul>
+
             <a id="r4.4.4"></a>
             <h2 class="section">Changes in 4.4.4</h2>
             <h3>Fixes</h3>
