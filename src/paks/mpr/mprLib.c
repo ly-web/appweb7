@@ -2674,9 +2674,8 @@ static void shutdownMonitor(void *data, MprEvent *event)
     } 
     remaining = mprGetRemainingTicks(MPR->shutdownStarted, MPR->exitTimeout);
     if (remaining <= 0) {
-        if (MPR->exitStrategy & MPR_EXIT_SAFE) {
+        if (MPR->exitStrategy & MPR_EXIT_SAFE && mprCancelShutdown()) {
             mprLog(2, "Shutdown cancelled due to continuing requests");
-            mprCancelShutdown();
         } else {
             mprLog(2, "Timeout while waiting for requests to complete");
             if (mprState <= MPR_STOPPING) {
@@ -2685,7 +2684,6 @@ static void shutdownMonitor(void *data, MprEvent *event)
         }
     } else {
         mprLog(2, "Waiting for requests to complete, %d secs remaining ...", remaining / MPR_TICKS_PER_SEC);
-//  MOB - test a big delay here
         mprRescheduleEvent(event, 1000);
     }
 }
@@ -3522,7 +3520,7 @@ PUBLIC void mprManageAsync(MprWaitService *ws, int flags)
 PUBLIC int mprNotifyOn(MprWaitHandler *wp, int mask)
 {
     MprWaitService  *ws;
-    int             winMask;
+    int             rc, winMask;
 
     ws = wp->service;
     lock(ws);
@@ -3536,7 +3534,14 @@ PUBLIC int mprNotifyOn(MprWaitHandler *wp, int mask)
         }
         wp->desiredMask = mask;
         assert(ws->hwnd);
-        WSAAsyncSelect(wp->fd, ws->hwnd, ws->socketMessage, winMask);
+        if (!(wp->flags & MPR_WAIT_NOT_SOCKET)) {
+            /* 
+                FUTURE: should use WaitForMultipleObjects in a wait thread for non-socket handles
+             */
+            if ((rc = WSAAsyncSelect(wp->fd, ws->hwnd, ws->socketMessage, winMask)) != 0) {
+                mprTrace(7, "mprNotifyOn WSAAsyncSelect failed %d, errno %d", rc, GetLastError());
+            }
+        }
         if (wp->event) {
             mprRemoveEvent(wp->event);
             wp->event = 0;
@@ -5710,17 +5715,20 @@ static int addCmdHandlers(MprCmd *cmd)
     stderrFd = cmd->files[MPR_CMD_STDERR].fd; 
 
     if (stdinFd >= 0 && cmd->handlers[MPR_CMD_STDIN] == 0) {
-        if ((cmd->handlers[MPR_CMD_STDIN] = mprCreateWaitHandler(stdinFd, MPR_WRITABLE, cmd->dispatcher, stdinCallback, cmd, 0)) == 0) {
+        if ((cmd->handlers[MPR_CMD_STDIN] = mprCreateWaitHandler(stdinFd, MPR_WRITABLE, cmd->dispatcher, 
+                stdinCallback, cmd, 0)) == 0) {
             return MPR_ERR_CANT_OPEN;
         }
     }
     if (stdoutFd >= 0 && cmd->handlers[MPR_CMD_STDOUT] == 0) {
-        if ((cmd->handlers[MPR_CMD_STDOUT] = mprCreateWaitHandler(stdoutFd, MPR_READABLE, cmd->dispatcher, stdoutCallback, cmd,0)) == 0) {
+        if ((cmd->handlers[MPR_CMD_STDOUT] = mprCreateWaitHandler(stdoutFd, MPR_READABLE, cmd->dispatcher, 
+                stdoutCallback, cmd,0)) == 0) {
             return MPR_ERR_CANT_OPEN;
         }
     }
     if (stderrFd >= 0 && cmd->handlers[MPR_CMD_STDERR] == 0) {
-        if ((cmd->handlers[MPR_CMD_STDERR] = mprCreateWaitHandler(stderrFd, MPR_READABLE, cmd->dispatcher, stderrCallback, cmd,0)) == 0) {
+        if ((cmd->handlers[MPR_CMD_STDERR] = mprCreateWaitHandler(stderrFd, MPR_READABLE, cmd->dispatcher, 
+                stderrCallback, cmd,0)) == 0) {
             return MPR_ERR_CANT_OPEN;
         }
     }
@@ -21458,6 +21466,9 @@ static void manageSocket(MprSocket *sp, int flags)
 
     } else if (flags & MPR_MANAGE_FREE) {
         if (sp->fd != INVALID_SOCKET) {
+            if (sp->handler) {
+                mprRemoveWaitHandler(sp->handler);
+            }
             closesocket(sp->fd);
             if (sp->flags & MPR_SOCKET_SERVER) {
                 mprAtomicAdd(&sp->service->numAccept, -1);
@@ -28450,8 +28461,23 @@ static MprWaitHandler *initWaitHandler(MprWaitHandler *wp, int fd, int mask, Mpr
     MprWaitService  *ws;
 
     assert(fd >= 0);
-
     ws = MPR->waitService;
+
+#if BIT_DEBUG
+    {
+        MprWaitHandler  *op;
+        int             index;
+
+        for (ITERATE_ITEMS(ws->handlers, op, index)) {
+            assert(op->fd >= 0);
+            if (op->fd == fd) {
+                mprError("Duplicate fd in wait handlers");
+            } else if (op->fd < 0) {
+                mprError("Invalid fd in wait handlers, probably forgot to call mprRemoveWaitHandler");
+            }
+        }
+    }
+#endif
     wp->fd              = fd;
     wp->notifierIndex   = -1;
     wp->dispatcher      = dispatcher;
@@ -28506,13 +28532,20 @@ static void manageWaitHandler(MprWaitHandler *wp, int flags)
 }
 
 
+/*
+    This is a special case API, it is called by finalizers such as closeSocket
+ */
 PUBLIC void mprRemoveWaitHandler(MprWaitHandler *wp)
 {
     if (wp) {
-        mprRemoveItem(wp->service->handlers, wp);
-        if (wp->fd >= 0 && wp->desiredMask) {
-            mprNotifyOn(wp, 0);
+        if (!mprIsStopped()) {
+            /* Avoid locking APIs during shutdown - the locks may have been freed */
+            mprRemoveItem(wp->service->handlers, wp);
+            if (wp->fd >= 0 && wp->desiredMask) {
+                mprNotifyOn(wp, 0);
+            }
         }
+        wp->fd = INVALID_SOCKET;
     }
 }
 
@@ -28528,7 +28561,7 @@ PUBLIC void mprDestroyWaitHandler(MprWaitHandler *wp)
     lock(ws);
     if (wp->fd >= 0) {
         mprRemoveWaitHandler(wp);
-        wp->fd = -1;
+        wp->fd = INVALID_SOCKET;
         if (wp->event) {
             mprRemoveEvent(wp->event);
             wp->event = 0;
