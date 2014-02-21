@@ -561,8 +561,7 @@ typedef struct Http {
 
     char            *defaultClientHost;     /**< Default ip address */
     int             defaultClientPort;      /**< Default port */
-
-    char            *protocol;              /**< HTTP/1.0 or HTTP/1.1 */
+    char            *protocol;              /**< Default client protocol: HTTP/1.0 or HTTP/1.1 */
     char            *proxyHost;             /**< Proxy ip address */
     int             proxyPort;              /**< Proxy port */
 
@@ -2489,7 +2488,9 @@ typedef struct HttpConn {
     char            *boundary;              /**< File upload boundary */
     char            *errorMsg;              /**< Error message for the last request (if any) */
     char            *ip;                    /**< Remote client IP address */
+#if UNUSED || 1
     char            *protocol;              /**< HTTP protocol */
+#endif
     char            *protocols;             /**< Supported WebSocket protocols (clients) */
 
     int             async;                  /**< Connection is in async mode (non-blocking) */
@@ -3934,6 +3935,10 @@ typedef struct HttpRoute {
     char            *envPrefix;             /**< Environment strings prefix */
     MprList         *indicies;              /**< Directory index documents */
     HttpStage       *handler;               /**< Fixed handler */
+
+#if UNUSED && KEEP
+    char            *protocol;              /**< Defaults to "HTTP/1.1" */
+#endif
 
     int             nextGroup;              /**< Next route with a different startWith */
     int             responseStatus;         /**< Response status code */
@@ -6044,6 +6049,7 @@ typedef struct HttpTx {
     int             pendingFinalize;        /**< Call httpFinalize again once the Tx pipeline is created */
     int             finalizedConnector;     /**< Connector has finished sending the response */
     int             finalizedOutput;        /**< Handler or surrogate has finished writing output response */
+    HttpUri         *parsedUri;             /**< Client request uri */
     cchar           *filename;              /**< Name of a real file being served (typically pathInfo mapped) */
     int             flags;                  /**< Response flags */
     int             status;                 /**< HTTP response status */
@@ -6057,7 +6063,6 @@ typedef struct HttpTx {
     HttpStage       *handler;               /**< Final handler serving the request */
     MprOff          length;                 /**< Transmission content length */
     int             writeBlocked;           /**< Transmission writing is blocked */
-    HttpUri         *parsedUri;             /**< Client request uri */
     char            *method;                /**< Client request method GET, HEAD, POST, DELETE, OPTIONS, PUT, TRACE */
     cchar           *errorDocument;         /**< Error document to render */
     char            *authType;              /**< Type of authentication: set to basic, digest, post or a custom name */
@@ -6832,9 +6837,7 @@ PUBLIC void httpStopEndpoint(HttpEndpoint *endpoint);
 */
 typedef struct HttpHost {
     /*
-        NOTE: the ip:port names are used for vhost matching when there is only one such address. Otherwise a host may
-        be associated with multiple listening endpoints. In that case, the ip:port will store only one of these addresses 
-        and will not be used for matching.
+        NOTE: A host may be associated with multiple listening endpoints.
      */
     char            *name;                  /**< Host name */
     struct HttpHost *parent;                /**< Parent host to inherit aliases, dirs, routes */
@@ -6844,10 +6847,16 @@ typedef struct HttpHost {
     HttpEndpoint    *defaultEndpoint;       /**< Default endpoint for host */
     HttpEndpoint    *secureEndpoint;        /**< Secure endpoint for host */
     MprHash         *streams;               /**< Hash of mime-types to stream record */
+#if UNUSED
     char            *protocol;              /**< Defaults to "HTTP/1.1" */
+#endif
+#if UNUSED
     char            *root;                  /**< Home for this host */
+#endif
     int             flags;                  /**< Host flags */
+#if UNUSED
     MprMutex        *mutex;                 /**< Multithread sync */
+#endif
 } HttpHost;
 
 /**
