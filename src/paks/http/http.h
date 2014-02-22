@@ -2472,7 +2472,9 @@ typedef struct HttpConn {
     MprTicks        started;                /**< When the request started (ticks) */
     MprTicks        lastActivity;           /**< Last activity on the connection */
     MprEvent        *timeoutEvent;          /**< Connection or request timeout event */
+#if UNUSED && KEEP
     MprEvent        *workerEvent;           /**< Event for running connection via a worker thread */
+#endif
 
     void            *context;               /**< Embedding context (EjsRequest) */
     void            *ejs;                   /**< Embedding VM */
@@ -2488,9 +2490,7 @@ typedef struct HttpConn {
     char            *boundary;              /**< File upload boundary */
     char            *errorMsg;              /**< Error message for the last request (if any) */
     char            *ip;                    /**< Remote client IP address */
-#if UNUSED || 1
     char            *protocol;              /**< HTTP protocol */
-#endif
     char            *protocols;             /**< Supported WebSocket protocols (clients) */
 
     int             async;                  /**< Connection is in async mode (non-blocking) */
@@ -3981,10 +3981,6 @@ typedef struct HttpRoute {
     char            *envPrefix;             /**< Environment strings prefix */
     MprList         *indicies;              /**< Directory index documents */
     HttpStage       *handler;               /**< Fixed handler */
-
-#if UNUSED && KEEP
-    char            *protocol;              /**< Defaults to "HTTP/1.1" */
-#endif
 
     int             nextGroup;              /**< Next route with a different startWith */
     int             responseStatus;         /**< Response status code */
