@@ -5810,10 +5810,10 @@ typedef struct MprEvent {
 /*
     Dispatcher flags
  */
-#define MPR_DISPATCHER_IMMEDIATE    0x1 /**< Dispatcher should run using the service events thread */
-#define MPR_DISPATCHER_WAITING      0x2 /**< Dispatcher waiting for an event in mprWaitForEvent */
-#define MPR_DISPATCHER_DESTROYED    0x4 /**< Dispatcher has been destroyed */
-#define MPR_DISPATCHER_AUTO         0x8 /**< Dispatcher was auto created in response to accept event */
+#define MPR_DISPATCHER_IMMEDIATE  0x1   /**< Dispatcher should run using the service events thread */
+#define MPR_DISPATCHER_WAITING    0x2   /**< Dispatcher waiting for an event in mprWaitForEvent */
+#define MPR_DISPATCHER_DESTROYED  0x4   /**< Dispatcher has been destroyed */
+#define MPR_DISPATCHER_AUTO       0x8   /**< Dispatcher was auto created in response to accept event */
 
 /**
     Event Dispatcher
@@ -5938,7 +5938,8 @@ PUBLIC void mprSetEventServiceSleep(MprTicks delay);
 
 /**
     Wait for an event to occur on the given dispatcher
-    @description This routine yields to the garbage collector by calling #mprYield. Callers must retain all required memory.
+    @description Use this routine to wait for an event and service the event on the given dispatcher. 
+    This routine yields to the garbage collector by calling #mprYield. Callers must retain all required memory.
     @param dispatcher Event dispatcher to monitor
     @param timeout for waiting in milliseconds
     @return Zero if successful and an event occurred before the timeout expired. Returns #MPR_ERR_TIMEOUT if no event
@@ -10228,7 +10229,7 @@ PUBLIC void mprSetInst(HINSTANCE inst);
 PUBLIC void mprSetSocketMessage(int message);
 #endif
 
-#if (BIT_WIN_LIKE && !WINCE) || CYGWIN
+#if BIT_WIN_LIKE || CYGWIN
 /**
     List the subkeys for a key in the Windows registry
     @param key Windows registry key to enumerate subkeys
@@ -10258,7 +10259,7 @@ PUBLIC char *mprReadRegistry(cchar *key, cchar *name);
     @stability Stable.
   */
 PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value);
-#endif /* (BIT_WIN_LIKE && !WINCE) || CYGWIN */
+#endif /* BIT_WIN_LIKE || CYGWIN */
 
 /*
     Internal

@@ -3320,23 +3320,13 @@ PUBLIC char *mprEmptyString()
 }
 
 
-#if UNUSED
-PUBLIC void mprSetExitStrategy(int strategy)
-{
-    MPR->exitStrategy = strategy;
-}
-#endif
-
-
 PUBLIC void mprSetEnv(cchar *key, cchar *value)
 {
-#if !WINCE
 #if BIT_UNIX_LIKE
     setenv(key, value, 1);
 #else
     char *cmd = sjoin(key, "=", value, NULL);
     putenv(cmd);
-#endif
 #endif
     if (scaselessmatch(key, "PATH")) {
         MPR->pathEnv = sclone(value);
@@ -3577,6 +3567,9 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
         FD_SET(fd, &writeMask);
     }
     mprYield(MPR_YIELD_STICKY);
+    /*
+        The select() API has no impact on masks registered via WSAAsyncSelect. i.e. no need to save/restore.
+     */
     rc = select(fd + 1, &readMask, &writeMask, NULL, &tval);
     mprResetYield();
 
@@ -6002,7 +5995,7 @@ PUBLIC void mprDisableCmdEvents(MprCmd *cmd, int channel)
 }
 
 
-#if BIT_WIN_LIKE && !WINCE
+#if BIT_WIN_LIKE
 /*
     Windows only routine to wait for I/O on the channels to the gateway and the child process.
     This will queue events on the dispatcher queue when I/O occurs or the process dies.
@@ -6086,15 +6079,17 @@ PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout)
         if (mprShouldAbortRequests()) {
             break;
         }
-#if BIT_WIN_LIKE && !WINCE
+#if BIT_WIN_LIKE
         mprPollWinCmd(cmd, remaining);
         delay = 10;
 #else
         delay = (cmd->eofCount >= cmd->requiredEof) ? 10 : remaining;
 #endif
         if (!ts->eventsThread && mprGetCurrentThread() == ts->mainThread) {
+            /* 
+                Main program without any events loop
+             */
             mprServiceEvents(10, MPR_SERVICE_NO_BLOCK);
-            mprWaitForEvent(cmd->dispatcher, 10);
         } else {
             mprWaitForEvent(cmd->dispatcher, delay);
         }
@@ -6606,61 +6601,6 @@ static int startProcess(MprCmd *cmd)
 }
 
 
-#if WINCE
-//  KEEP - merge this with WIN
-static int makeChannel(MprCmd *cmd, int index)
-{
-    SECURITY_ATTRIBUTES clientAtt, serverAtt, *att;
-    HANDLE              readHandle, writeHandle;
-    MprCmdFile          *file;
-    char                *path;
-    int                 readFd, writeFd;
-
-    memset(&clientAtt, 0, sizeof(clientAtt));
-    clientAtt.nLength = sizeof(SECURITY_ATTRIBUTES);
-    clientAtt.bInheritHandle = 1;
-
-    /*
-        Server fds are not inherited by the child
-     */
-    memset(&serverAtt, 0, sizeof(serverAtt));
-    serverAtt.nLength = sizeof(SECURITY_ATTRIBUTES);
-    serverAtt.bInheritHandle = 0;
-
-    file = &cmd->files[index];
-    path = mprGetTempPath(cmd, NULL);
-
-    att = (index == MPR_CMD_STDIN) ? &clientAtt : &serverAtt;
-    readHandle = CreateFile(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, att, OPEN_ALWAYS, 
-        FILE_ATTRIBUTE_NORMAL,0);
-    if (readHandle == INVALID_HANDLE_VALUE) {
-        mprError(cmd, "Cannot create stdio pipes %s. Err %d", path, mprGetOsError());
-        return MPR_ERR_CANT_CREATE;
-    }
-    readFd = (int) (int64) _open_osfhandle((int*) readHandle, 0);
-
-    att = (index == MPR_CMD_STDIN) ? &serverAtt: &clientAtt;
-    writeHandle = CreateFile(path, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, att, OPEN_ALWAYS, 
-        FILE_ATTRIBUTE_NORMAL, 0);
-    writeFd = (int) _open_osfhandle((int*) writeHandle, 0);
-
-    if (readFd < 0 || writeFd < 0) {
-        mprError(cmd, "Cannot create stdio pipes %s. Err %d", path, mprGetOsError());
-        return MPR_ERR_CANT_CREATE;
-    }
-    if (index == MPR_CMD_STDIN) {
-        file->clientFd = readFd;
-        file->fd = writeFd;
-        file->handle = writeHandle;
-    } else {
-        file->clientFd = writeFd;
-        file->fd = readFd;
-        file->handle = readHandle;
-    }
-    return 0;
-}
-
-#else /* !WINCE */
 static int makeChannel(MprCmd *cmd, int index)
 {
     SECURITY_ATTRIBUTES clientAtt, serverAtt, *att;
@@ -6724,7 +6664,6 @@ static int makeChannel(MprCmd *cmd, int index)
     }
     return 0;
 }
-#endif /* WINCE */
 
 
 #elif BIT_UNIX_LIKE
@@ -8980,40 +8919,7 @@ static int makeLink(MprDiskFileSystem *fs, cchar *path, cchar *target, int hard)
 
 static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
 {
-#if WINCE
-    struct stat s;
-    cchar       *ext;
-
-    assert(path);
-    assert(info);
-
-    info->checked = 1;
-    info->valid = 0;
-    info->isReg = 0;
-    info->isDir = 0;
-    info->size = 0;
-
-    if (_stat64(path, &s) < 0) {
-        return -1;
-    }
-    info->valid = 1;
-    info->size = s.st_size;
-    info->atime = s.st_atime;
-    info->ctime = s.st_ctime;
-    info->mtime = s.st_mtime;
-    info->perms = s.st_mode & 07777;
-    info->owner = s.st_uid;
-    info->group = s.st_gid;
-    info->inode = s.st_ino;
-    info->isDir = (s.st_mode & S_IFDIR) != 0;
-    info->isReg = (s.st_mode & S_IFREG) != 0;
-    info->isLink = 0;
-    ext = mprGetPathExt(path);
-    if (ext && strcmp(ext, "lnk") == 0) {
-        info->isLink = 1;
-    }
-
-#elif BIT_WIN_LIKE
+#if BIT_WIN_LIKE
     struct __stat64     s;
     cchar               *ext;
 
@@ -9224,7 +9130,6 @@ static int truncateFile(MprDiskFileSystem *fs, cchar *path, MprOff size)
 
 static void manageDiskFileSystem(MprDiskFileSystem *dfs, int flags)
 {
-#if !WINCE
     if (flags & MPR_MANAGE_MARK) {
         mprMark(dfs->separators);
         mprMark(dfs->newline);
@@ -9234,7 +9139,6 @@ static void manageDiskFileSystem(MprDiskFileSystem *dfs, int flags)
         mprMark(dfs->cygwin);
 #endif
     }
-#endif
 }
 
 
@@ -9263,7 +9167,6 @@ PUBLIC MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path)
     dfs->truncateFile = truncateFile;
     dfs->writeFile = writeFile;
 
-#if !WINCE
     if ((MPR->stdError = mprAllocStruct(MprFile)) == 0) {
         return NULL;
     }
@@ -9287,7 +9190,7 @@ PUBLIC MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path)
     MPR->stdOutput->fd = 1;
     MPR->stdOutput->fileSystem = fs;
     MPR->stdOutput->mode = O_WRONLY;
-#endif
+
     return dfs;
 }
 #endif /* !BIT_ROM */
@@ -9345,6 +9248,7 @@ static void manageDispatcher(MprDispatcher *dispatcher, int flags);
 static void manageEventService(MprEventService *es, int flags);
 static void queueDispatcher(MprDispatcher *prior, MprDispatcher *dispatcher);
 
+#define isIdle(dispatcher) (dispatcher->parent == dispatcher->service->idleQ)
 #define isRunning(dispatcher) (dispatcher->parent == dispatcher->service->runQ)
 #define isReady(dispatcher) (dispatcher->parent == dispatcher->service->readyQ)
 #define isWaiting(dispatcher) (dispatcher->parent == dispatcher->service->waitQ)
@@ -9569,16 +9473,16 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
         mprServiceSignals();
 
         while ((dp = getNextReadyDispatcher(es)) != NULL) {
+            assert(!isRunning(dp));
             queueDispatcher(es->runQ, dp);
             if (dp->flags & MPR_DISPATCHER_IMMEDIATE) {
                 dispatchEventsWorker(dp);
-
-            } else if (mprStartWorker((MprWorkerProc) dispatchEventsWorker, dp) < 0) {
-                /* 
-                    Should not get here because getNextReadyDispatcher should not pick a pending dispatcher if not available workers.
-                 */
-                queueDispatcher(es->pendingQ, dp);
-                break;
+            } else {
+                if (mprStartWorker((MprWorkerProc) dispatchEventsWorker, dp) < 0) {
+                    /* Should not get here */
+                    queueDispatcher(es->pendingQ, dp);
+                    break;
+                }
             }
         } 
         if (flags & MPR_SERVICE_NO_BLOCK) {
@@ -9619,6 +9523,15 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
 
 
 /*
+    Must be called locked
+ */
+static bool canRun(MprDispatcher *dispatcher)
+{
+    return !isRunning(dispatcher) || !dispatcher->owner || dispatcher->owner == mprGetCurrentOsThread();
+}
+
+
+/*
     Wait for an event to occur and dispatch the event. This is not called by mprServiceEvents.
     Return 0 if an event was signalled. Return MPR_ERR_TIMEOUT if no event was seen before the timeout.
     WARNING: this will enable GC while sleeping.
@@ -9646,7 +9559,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout)
 
     lock(es);
     wasRunning = isRunning(dispatcher);
-    runEvents = (!wasRunning || !dispatcher->owner || dispatcher->owner == thread);
+    runEvents = canRun(dispatcher);
     if (runEvents && !wasRunning) {
         queueDispatcher(es->runQ, dispatcher);
     }
@@ -9739,13 +9652,15 @@ PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, Mpr
 {
     MprOsThread     priorOwner;
 
-    if (isRunning(dispatcher) && (dispatcher->owner && dispatcher->owner != mprGetCurrentOsThread())) {
+    if (!canRun(dispatcher)) {
         mprError("Relay to a running dispatcher owned by another thread");
     }
     if (event) {
         event->timestamp = dispatcher->service->now;
     }
     priorOwner = dispatcher->owner;
+    assert(priorOwner == 0 || priorOwner == mprGetCurrentOsThread());
+
     queueDispatcher(dispatcher->service->runQ, dispatcher);
 
     dispatcher->owner = mprGetCurrentOsThread();
@@ -9830,7 +9745,10 @@ static int dispatchEvents(MprDispatcher *dispatcher)
     assert(isRunning(dispatcher));
     mprTrace(7, "dispatchEvents for %s", dispatcher->name);
     es = dispatcher->service;
+
     priorOwner = dispatcher->owner;
+    assert(priorOwner == 0 || priorOwner == mprGetCurrentOsThread());
+
     dispatcher->owner = mprGetCurrentOsThread();
 
     /*
@@ -9846,7 +9764,9 @@ static int dispatchEvents(MprDispatcher *dispatcher)
         assert(!(event->flags & MPR_EVENT_RUNNING));
         event->flags |= MPR_EVENT_RUNNING;
         assert(event->proc);
+
         (event->proc)(event->data, event);
+
         event->flags &= ~MPR_EVENT_RUNNING;
 
         lock(es);
@@ -9881,7 +9801,10 @@ static void dispatchEventsWorker(MprDispatcher *dispatcher)
         /* Dispatcher destroyed after worker started */
         return;
     }
+    dispatcher->owner = mprGetCurrentOsThread();
     dispatchEvents(dispatcher);
+    dispatcher->owner = 0;
+
     if (!(dispatcher->flags & MPR_DISPATCHER_DESTROYED)) {
         dequeueDispatcher(dispatcher);
         mprScheduleDispatcher(dispatcher);
@@ -9937,6 +9860,12 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
     }
     if (!dispatcher && readyQ->next != readyQ) {
         dispatcher = readyQ->next;
+    }
+    /*
+        Reserve the dispatcher. This may get transferred to a worker
+     */
+    if (dispatcher) {
+        dispatcher->owner = mprGetCurrentOsThread();
     }
     unlock(es);
     return dispatcher;
@@ -10682,9 +10611,16 @@ static void serviceIO(MprWaitService *ws, struct epoll_event *events, int count)
         }
         wp->presentMask = mask & wp->desiredMask;
 
+#if UNUSED && KEEP
         if (ev->events & EPOLLERR) {
+            int error = 0;
+            socklen_t errlen = sizeof(error);
+            getsockopt(wp->fd, SOL_SOCKET, SO_ERROR, (void*) &error, &errlen);
+            printf("error %d\n", error);
+            /* Get EPOLLERR for broken pipe */
             mprRemoveWaitHandler(wp);
         }
+#endif
         if (wp->presentMask) {
             if (wp->flags & MPR_WAIT_IMMEDIATE) {
                 (wp->proc)(wp->handlerData, NULL);
@@ -13856,6 +13792,7 @@ PUBLIC int mprNotifyOn(MprWaitHandler *wp, int mask)
     assert(wp);
     ws = wp->service;
     fd = wp->fd;
+    assert(fd >= 0);
     kp = &interest[0];
 
     lock(ws);
@@ -14035,6 +13972,7 @@ static void serviceIO(MprWaitService *ws, struct kevent *events, int count)
             } else if (err == EBADF || err == EINVAL) {
                 mprError("kqueue: invalid file descriptor %d, fd %d", wp->fd);
                 mprRemoveWaitHandler(wp);
+                wp->presentMask = 0;
             }
         }
         if (wp->presentMask) {
@@ -14989,9 +14927,6 @@ PUBLIC MprMutex *mprInitLock(MprMutex *lock)
     pthread_mutex_init(&lock->cs, &attr);
     pthread_mutexattr_destroy(&attr);
 
-#elif WINCE
-    InitializeCriticalSection(&lock->cs);
-
 #elif BIT_WIN_LIKE && !BIT_DEBUG && CRITICAL_SECTION_NO_DEBUG_INFO
     InitializeCriticalSectionEx(&lock->cs, BIT_MPR_SPIN_COUNT, CRITICAL_SECTION_NO_DEBUG_INFO);
 
@@ -15079,9 +15014,6 @@ PUBLIC MprSpin *mprInitSpinLock(MprSpin *lock)
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
     pthread_mutex_init(&lock->cs, &attr);
     pthread_mutexattr_destroy(&attr);
-
-#elif WINCE
-    InitializeCriticalSection(&lock->cs);
 
 #elif BIT_WIN_LIKE && !BIT_DEBUG && CRITICAL_SECTION_NO_DEBUG_INFO
     InitializeCriticalSectionEx(&lock->cs, BIT_MPR_SPIN_COUNT, CRITICAL_SECTION_NO_DEBUG_INFO);
@@ -17013,7 +16945,7 @@ static BIT_INLINE bool isFullPath(MprFileSystem *fs, cchar *path)
     assert(fs);
     assert(path);
 
-#if (BIT_WIN_LIKE || VXWORKS) && !WINCE
+#if BIT_WIN_LIKE || VXWORKS
 {
     char    *cp, *endDrive;
 
@@ -17151,7 +17083,7 @@ PUBLIC char *mprGetAbsPath(cchar *path)
         return result;
     }
 
-#if BIT_WIN_LIKE && !WINCE
+#if BIT_WIN_LIKE
 {
     wchar    buf[BIT_MAX_PATH];
     GetFullPathName(wide(path), sizeof(buf) - 1, buf, NULL);
@@ -17530,11 +17462,7 @@ static MprList *getDirFiles(cchar *dir)
     MprList         *list;
     cchar           *seps;
     char            *path, pbuf[BIT_MAX_PATH];
-#if WINCE
-    WIN32_FIND_DATAA findData;
-#else
     WIN32_FIND_DATA findData;
-#endif
 
     list = mprCreateList(-1, 0);
     dp = 0;
@@ -18105,9 +18033,7 @@ PUBLIC char *mprGetTempPath(cchar *tempDir)
     static int      tempSeed = 0;
 
     if (tempDir == 0 || *tempDir == '\0') {
-#if WINCE
-        dir = sclone("/Temp");
-#elif BIT_WIN_LIKE
+#if BIT_WIN_LIKE
 {
         MprFileSystem   *fs;
         fs = mprLookupFileSystem(tempDir ? tempDir : (cchar*) "/");
@@ -20421,7 +20347,6 @@ PUBLIC int mprSetRomFileSystem(MprRomInode *inodeList)
 PUBLIC void manageRomFileSystem(MprRomFileSystem *rfs, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-#if !WINCE
         MprFileSystem *fs = (MprFileSystem*) rfs;
         mprMark(fs->separators);
         mprMark(fs->newline);
@@ -20431,7 +20356,6 @@ PUBLIC void manageRomFileSystem(MprRomFileSystem *rfs, int flags)
         mprMark(fs->cygwin);
 #endif
         mprMark(rfs->fileIndex);
-#endif
     }
 }
 
@@ -21257,7 +21181,7 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
 
 
 
-#if !VXWORKS && !WINCE
+#if !VXWORKS
 /*
     On MAC OS X, getaddrinfo is not thread-safe and crashes when called by a 2nd thread at any time. ie. locking wont help.
  */
@@ -25534,11 +25458,7 @@ PUBLIC int mprStartThread(MprThread *tp)
     HANDLE          h;
     uint            threadId;
 
-#if WINCE
-    h = (HANDLE) CreateThread(NULL, 0, threadProcWrapper, (void*) tp, 0, &threadId);
-#else
     h = (HANDLE) _beginthreadex(NULL, 0, threadProcWrapper, (void*) tp, 0, &threadId);
-#endif
     if (h == NULL) {
         unlock(tp);
         return MPR_ERR_CANT_INITIALIZE;
@@ -26482,11 +26402,7 @@ static int timeSep = ':';
     #define VALID_FMT "AaBbCcDdEeFGgHhIjklMmnOPpRrSsTtUuVvWwXxYyZz+%"
 #endif
 
-#if WINCE
-    #define HAS_STRFTIME 0
-#else
-    #define HAS_STRFTIME 1
-#endif
+#define HAS_STRFTIME 1
 
 #if !HAS_STRFTIME
 static char *abbrevDay[] = {
@@ -26851,7 +26767,7 @@ PUBLIC MprTime mprMakeUniversalTime(struct tm *tp)
 
 static int localTime(struct tm *timep, MprTime time)
 {
-#if BIT_UNIX_LIKE || WINCE
+#if BIT_UNIX_LIKE
     time_t when = (time_t) (time / MS_PER_SEC);
     if (localtime_r(&when, timep) == 0) {
         return MPR_ERR;
@@ -26870,7 +26786,7 @@ static int localTime(struct tm *timep, MprTime time)
 
 struct tm *universalTime(struct tm *timep, MprTime time)
 {
-#if BIT_UNIX_LIKE || WINCE
+#if BIT_UNIX_LIKE
     time_t when = (time_t) (time / MS_PER_SEC);
     return gmtime_r(&when, timep);
 #else
@@ -29840,7 +29756,7 @@ PUBLIC char *awtom(wchar *src, ssize *len)
  #include "w32api/windows.h"
 #endif
 
-#if BIT_WIN_LIKE && !WINCE
+#if BIT_WIN_LIKE
 /*********************************** Code *************************************/
 /*
     Initialize the O/S platform layer
@@ -30055,7 +29971,7 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 #endif /* BIT_WIN_LIKE */
 
 
-#if (BIT_WIN_LIKE && !WINCE) || CYGWIN
+#if BIT_WIN_LIKE || CYGWIN
 /*
     Determine the registry hive by the first portion of the path. Return 
     a pointer to the rest of key path after the hive portion.
@@ -30218,7 +30134,7 @@ PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
 
 #else
 void winDummy() {}
-#endif /* (BIT_WIN_LIKE && !WINCE) || CYGWIN */
+#endif /* BIT_WIN_LIKE || CYGWIN */
 
 /*
     @copy   default
