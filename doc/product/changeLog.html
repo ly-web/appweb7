@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.5.0-rc.3 Documentation</title>
+    <title>Embedthis Appweb 4.5.0-rc4 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.5.0-rc.3</div>
+                <div class="version">Embedthis Appweb 4.5.0-rc4</div>
             </div>
         </div>
         <div class="crumbs">
@@ -91,9 +91,33 @@
             <ul>
                 <li>VirtualHost directives can now take multiple endpoints</li>
                 <li>Windows 8.1 support</li>
+                <li>Add CgiPrefix directive to use in front of URI parameters and form variables in CGI programs.
+                    <a href="https://github.com/embedthis/appweb-4/issues/282">[issue 282]</a></li>
+                <li>Add CgiEscape directive to escape shell special characters
+                    <a href="https://github.com/embedthis/appweb-4/issues/283">[issue 283]</a></li>
+                <li>Make DigestData struct public
+                    <a href="https://github.com/embedthis/appweb-4/issues/275">[issue 275]</a></li>
+                <li>MprStealConn - need more flexibility
+                    <a href="https://github.com/embedthis/appweb-4/issues/278">[issue 278]</a></li>
+                <li>Add more session hijack protection
+                    <a href="https://github.com/embedthis/appweb-4/issues/283">[issue 283]</a></li>
+                <li>Add IPv6 conditional directive IPv6
+                    <a href="https://github.com/embedthis/appweb-4/issues/284">[issue 284]</a></li>
+                <li>Shutdown Issues
+                    <a href="https://github.com/embedthis/appweb-4/issues/285">[issue 285]</a></li>
+                <li>Change SessionCookie to allow defining the cookie name
+                    <a href="https://github.com/embedthis/appweb-4/issues/291">[issue 291]</a></li>
+                <li>Add support for single-login enforcement.
+                    <a href="https://github.com/embedthis/appweb-4/issues/292">[issue 292]</a></li>
+                <li>Add MakeDir directive
+                    <a href="https://github.com/embedthis/appweb-4/issues/293">[issue 293]</a></li>
+                <li>Add httpBorrowConn and httpReleaseConn to make it easier to use mprCreateEventOutside</li>
+                    <a href="https://github.com/embedthis/appweb-4/issues/302">[issue 302]</a></li>
             </ul>
             <h3>Fixes</h3>
             <ul>
+                <li>Missing sendfile64 on on Linux 2.4 systems
+                    <a href="https://github.com/embedthis/appweb-4/issues/244">[issue 244]</a></li>
                 <li>Add Reroute directive. Revert Route directive to not open previously defined routes.
                     <a href="https://github.com/embedthis/appweb-4/issues/238">[issue 238]</a></li>
                 <li>Add BIT_MPR_SSL_RENEGOTIATE option (config: mpr.ssl.renegotiate) to control SSL renegotiation.
@@ -104,6 +128,86 @@
                 <li>Improve XSRF security token handling adding transparent regeneration if possible. </li>
                 <li>Early detection of bad characters in URIs. This tightens request URI validation 
                     of invalid URIs that were previously permitted.</li>
+                <li>Add missing bower.json
+                    <a href="https://github.com/embedthis/appweb-4/issues/253">[issue 253]</a></li>
+                <li>Return 401 for bad authentication scheme
+                    <a href="https://github.com/embedthis/appweb-4/issues/254">[issue 254]</a></li>
+                <li>Add documentation on new httpWriteBlock behavior
+                    <a href="https://github.com/embedthis/appweb-4/issues/255">[issue 255]</a></li>
+                <li>Update conn->lastActivity in readEvent
+                    <a href="https://github.com/embedthis/appweb-4/issues/256">[issue 256]</a></li>
+                <li>Use 401 when user fails authorization
+                    <a href="https://github.com/embedthis/appweb-4/issues/257">[issue 257]</a></li>
+                <li>Return valid authentication domain
+                    <a href="https://github.com/embedthis/appweb-4/issues/258">[issue 258]</a></li>
+                <li>Fix off-by-one in httpFilterChunkData
+                    <a href="https://github.com/embedthis/appweb-4/issues/259">[issue 259]</a></li>
+                <li>Free Win32 resources on shutdown and error
+                    <a href="https://github.com/embedthis/appweb-4/issues/260">[issue 260]</a></li>
+                <li>Fixing crash on disconnect
+                    <a href="https://github.com/embedthis/appweb-4/issues/261">[issue 261]</a></li>
+                <li>Allow module-defined AuthStores
+                    <a href="https://github.com/embedthis/appweb-4/issues/262">[issue 262]</a></li>
+                <li>Reject unknown methods in fileHandler with 405
+                    <a href="https://github.com/embedthis/appweb-4/issues/263">[issue 263]</a></li>
+                <li>Use original URI to build trailing slash redirects
+                    <a href="https://github.com/embedthis/appweb-4/issues/264">[issue 264]</a></li>
+                <li>Don't chunk HTTP/1.0 responses
+                    <a href="https://github.com/embedthis/appweb-4/issues/265">[issue 265]</a></li>
+                <li>Use full URI path in dirHandler index titles
+                    <a href="https://github.com/embedthis/appweb-4/issues/266">[issue 266]</a></li>
+                <li>Send 404 from the errorHandler instead of 501
+                    <a href="https://github.com/embedthis/appweb-4/issues/267">[issue 267]</a></li>
+                <li>Always increment module refcount when loading
+                    <a href="https://github.com/embedthis/appweb-4/issues/268">[issue 268]</a></li>
+                <li>Use case-insensitive keys for the MIME types table
+                    <a href="https://github.com/embedthis/appweb-4/issues/269">[issue 269]</a></li>
+                <li>Fix arithmetic error in mprGetTicks (windows)
+                    <a href="https://github.com/embedthis/appweb-4/issues/270">[issue 270]</a></li>
+                <li>Fix mprWaitForCond with no timeout
+                    <a href="https://github.com/embedthis/appweb-4/issues/271">[issue 271]</a></li>
+                <li>Remove extra httpError format specifie
+                    <a href="https://github.com/embedthis/appweb-4/issues/272">[issue 272]</a></li>
+                <li>Fixing WNDPROC declaration
+                    <a href="https://github.com/embedthis/appweb-4/issues/273">[issue 273]</a></li>
+                <li>Windows mprWaitForSingleIO not returning event mask
+                    <a href="https://github.com/embedthis/appweb-4/issues/274">[issue 274]</a></li>
+                <li>Make DigestData struct public
+                    <a href="https://github.com/embedthis/appweb-4/issues/275">[issue 275]</a></li>
+                <li>Remove accesses to CRITICAL_SECTION's SpinCount
+                    <a href="https://github.com/embedthis/appweb-4/issues/276">[issue 276]</a></li>
+                <li>Document when and where mprYield will occur
+                    <a href="https://github.com/embedthis/appweb-4/issues/277">[issue 277]</a></li>
+                <li>Delay LimitRequestBody test after routing
+                    <a href="https://github.com/embedthis/appweb-4/issues/279">[issue 279]</a></li>
+                <li>Enable serving files outside document root
+                    <a href="https://github.com/embedthis/appweb-4/issues/280">[issue 280]</a></li>
+                <li>mprCreateEventOutside needs to work when MPR is shutting down
+                    <a href="https://github.com/embedthis/appweb-4/issues/281">[issue 281]</a></li>
+            </ul>
+            <h3>Fixes since RC3</h3>
+            <ul>
+                <li>Fix httpSetCookie for IPv6 addresses. Also add option to suppress domain by setting 
+                    cookieDomain parameter to an empty string.
+                    <a href="https://github.com/embedthis/appweb-4/issues/287">[issue 287]</a></li>
+                <li>Redirection for numerical IPv6 addresses broken
+                    <a href="https://github.com/embedthis/appweb-4/issues/288">[issue 288]</a></li>
+                <li>Fix the ESP package.json timeout.session property.
+                    <a href="https://github.com/embedthis/appweb-4/issues/289">[issue 289]</a></li>
+                <li>Fix and update samples
+                    <a href="https://github.com/embedthis/appweb-4/issues/290">[issue 290]</a></li>
+                <li>Fix signal handling for default and ignored signals
+                    <a href="https://github.com/embedthis/appweb-4/issues/294">[issue 294]</a></li>
+                <li>Fix ErrorDocument response request packet creation. 
+                    <a href="https://github.com/embedthis/appweb-4/issues/295">[issue 295]</a></li>
+                <li>Fix mprWarn to say warning instead of error
+                    <a href="https://github.com/embedthis/appweb-4/issues/296">[issue 296]</a></li>
+                <li>Fix memory exception handling
+                    <a href="https://github.com/embedthis/appweb-4/issues/297">[issue 297]</a></li>
+                <li>CONNECT verb IP address parsing
+                    <a href="https://github.com/embedthis/appweb-4/issues/299">[issue 299]</a></li>
+                <li>Compiling SDB with va_list
+                    <a href="https://github.com/embedthis/appweb-4/issues/300">[issue 300]</a></li>
             </ul>
             <h3>Incompatible Changes</h3>
             <ul>
@@ -130,7 +234,21 @@
                 <li>The ESP compilation mode is renamed from "flat" to "combined". The two modes are: discrete and combined. When esp 
                 compiles applications it automatically reads the esp.combined property from the application's package.json 
                 file to determine the compilation mode. The esp --flat switch is removed.</li>
-                <li>Support for Windows XP and Vista now deprecated</li>
+                <li>The MprTerminator type has an additional parameter: MPR state. The terminators are invoked twice to
+                notify when the a shutdown is commenced and when the MPR is being destroyed. Terminators should test the
+                state argument against MPR_STOPPING and MPR_STOPPED.</li>
+                <li>Support for Windows XP and Vista deprecated. Contact support@embedthis.com if you require XP or Vista
+                    support.</li>
+                <li>Refactor mprDestroy, mprShutdown. The old mprTerminate has been replaced by mprShutdown.
+                    MprDestroy now has zero args. mprShutdown gains a timeout arg.
+                    The defines MPR_EXIT_IMMEDIATE and MPR_EXIT_GRACEFUL are now removed as all shutdowns are graceful
+                    depending on the exit timeout.
+                    <a href="https://github.com/embedthis/appweb-4/issues/301">[issue 301]</a></li>
+                <li>The HttpHost structure no longer contains an IP or Port fields. See the appropriate HttpEndpoint structure</li>
+                <li>Removed the Protocol directive to define HTTP/1.0 vs HTTP/1.1. This is now sensed from the client.
+                    Removed the httpSetHostProtocol API.</li>
+                <li>Reinstated httpFlush behaviour to only initiate flushing and not wait for completion. Use httpFlushAll
+                    to flush and wait for completion.</li>
             </ul>
             <a id="r4.4.4"></a>
             <h2 class="section">Changes in 4.4.4</h2>

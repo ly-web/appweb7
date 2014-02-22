@@ -1,5 +1,5 @@
 /*
-    Post Controller
+    Post Controller (esp-angular-mvc)
  */
 
 'use strict';

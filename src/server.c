@@ -58,9 +58,6 @@ static void manageAppweb(MaAppweb *appweb, int flags)
         mprMark(appweb->localPlatform);
         mprMark(appweb->platform);
         mprMark(appweb->platformDir);
-
-    } else if (flags & MPR_MANAGE_FREE) {
-        maStopAppweb(appweb);
     }
 }
 
@@ -130,9 +127,6 @@ static void manageServer(MaServer *server, int flags)
         mprMark(server->limits);
         mprMark(server->endpoints);
         mprMark(server->state);
-
-    } else if (flags & MPR_MANAGE_FREE) {
-        maStopServer(server);
     }
 }
 
@@ -328,9 +322,6 @@ PUBLIC int maSetPlatform(cchar *platformPath)
     cchar           *platform, *dir, *junk, *appwebExe, *path;
     int             next, i;
 
-#if UNUSED
-    int notrace = !platformPath;
-#endif
     appweb = MPR->appwebService;
     if (!platformPath) {
         platformPath = appweb->localPlatform;
@@ -391,13 +382,7 @@ PUBLIC int maSetPlatform(cchar *platformPath)
         return MPR_ERR_BAD_ARGS;
     }
     appweb->platformDir = mprGetAbsPath(appweb->platformDir);
-#if UNUSED
-    if (!notrace) {
-#endif
-        mprLog(1, "Using platform %s at \"%s\"", appweb->platform, appweb->platformDir);
-#if UNUSED
-    }
-#endif
+    mprLog(1, "Using platform %s at \"%s\"", appweb->platform, appweb->platformDir);
     return 0;
 }
 
@@ -442,7 +427,7 @@ PUBLIC void maGetUserGroup(MaAppweb *appweb)
 
 PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 {
-    //  DEPRECATE _default_
+    //  TODO DEPRECATE _default_
     if (smatch(newUser, "APPWEB") || smatch(newUser, "_default_")) {
 #if BIT_UNIX_LIKE
         /* Only change user if root */
@@ -610,7 +595,7 @@ PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
     } else {
         path = sclone(libname);
     }
-    fmt(entryPoint, sizeof(entryPoint), "ma%sInit", name);
+    fmt(entryPoint, sizeof(entryPoint), "ma%sInit", stitle(name));
     entryPoint[2] = toupper((uchar) entryPoint[2]);
     if ((module = mprCreateModule(name, path, entryPoint, MPR->httpService)) == 0) {
         return 0;

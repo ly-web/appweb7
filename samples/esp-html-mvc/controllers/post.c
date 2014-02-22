@@ -1,5 +1,5 @@
 /*
-    post Controller
+    post Controller for esp-html-mvc (esp-html-mvc)
  */
 #include "esp.h"
 
@@ -8,9 +8,10 @@
  */ 
 static void createPost() { 
     if (updateRec(createRec("post", params()))) {
-        flash("inform", "New post created");
+        flash("inform", "New post Created");
         renderView("post/post-list");
     } else {
+        flash("error", "Cannot Create Post");
         renderView("post/post-edit");
     }
 }
@@ -50,7 +51,7 @@ static void listPost() {
  */
 static void removePost() { 
     if (removeRec("post", param("id"))) {
-        flash("inform", "Post removed");
+        flash("inform", "Post Removed");
     }
     redirect("list");
 }
@@ -65,9 +66,10 @@ static void updatePost() {
         removePost();
     } else {
         if (updateFields("post", params())) {
-            flash("inform", "Post updated successfully.");
+            flash("inform", "Post Updated Successfully");
             redirect("list");
         } else {
+            flash("error", "Cannot Update Post");
             renderView("post/post-edit");
         }
     }
@@ -88,12 +90,14 @@ ESP_EXPORT int esp_controller_blog_post(HttpRoute *route, MprModule *module) {
     espDefineAction(route, "post-init", initPost);
     espDefineAction(route, "post-list", listPost);
     espDefineAction(route, "post-update", updatePost);
+    espDefineAction(route, "post-cmd-", listPost);
     
 #if SAMPLE_VALIDATIONS
     Edi *edi = espGetRouteDatabase(route);
     ediAddValidation(edi, "present", "post", "title", 0);
     ediAddValidation(edi, "unique", "post", "title", 0);
-    ediAddValidation(edi, "format", "post", "message", "(dog|cat)");
+    ediAddValidation(edi, "banned", "post", "body", "(swear|curse)");
+    ediAddValidation(edi, "format", "post", "phone", "/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/");
 #endif
     return 0;
 }

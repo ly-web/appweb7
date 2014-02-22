@@ -47,27 +47,27 @@
 #include <io.h>
 #include <windows.h>
 
-	#define access   _access
-	#define close    _close
-	#define fileno   _fileno
-	#define fstat    _fstat
-	#define getpid   _getpid
-	#define open     _open
-	#define putenv   _putenv
-	#define read     _read
-	#define stat     _stat
-	#define umask    _umask
-	#define unlink   _unlink
-	#define write    _write
-	#define strdup   _strdup
-	#define lseek    _lseek
-	#define getcwd   _getcwd
-	#define chdir    _chdir
-	#define strnset  _strnset
-	#define chmod    _chmod
-	
-	#define mkdir(a,b)  _mkdir(a)
-	#define rmdir(a)    _rmdir(a)
+    #define access   _access
+    #define close    _close
+    #define fileno   _fileno
+    #define fstat    _fstat
+    #define getpid   _getpid
+    #define open     _open
+    #define putenv   _putenv
+    #define read     _read
+    #define stat     _stat
+    #define umask    _umask
+    #define unlink   _unlink
+    #define write    _write
+    #define strdup   _strdup
+    #define lseek    _lseek
+    #define getcwd   _getcwd
+    #define chdir    _chdir
+    #define strnset  _strnset
+    #define chmod    _chmod
+    
+    #define mkdir(a,b)  _mkdir(a)
+    #define rmdir(a)    _rmdir(a)
     typedef int ssize_t;
 #else
 #include <unistd.h>

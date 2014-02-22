@@ -8,17 +8,12 @@ Requirements
 * [Appweb](http://embedthis.com/downloads/appweb/download.ejs)
 * [Bit Build Tool](http://embedthis.com/downloads/bit/download.ejs)
 
-To build:
----
-    bit 
-
 To run:
 ---
     bit run
 
 The server listens on port 8080. Browse to: 
  
-     http://localhost:8080/index.esp
      http://localhost:8080/
 
 Code:

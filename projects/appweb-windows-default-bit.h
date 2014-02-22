@@ -7,6 +7,9 @@
 
 
 /* Settings */
+#ifndef BIT_AUTHOR
+    #define BIT_AUTHOR "Embedthis Software"
+#endif
 #ifndef BIT_BIT
     #define BIT_BIT "0.9.3"
 #endif
@@ -14,7 +17,7 @@
     #define BIT_BUILD_NUMBER 0
 #endif
 #ifndef BIT_COMPANY
-    #define BIT_COMPANY "Embedthis Software"
+    #define BIT_COMPANY "embedthis"
 #endif
 #ifndef BIT_COMPATIBLE
     #define BIT_COMPATIBLE "4.5.0"
@@ -27,6 +30,9 @@
 #endif
 #ifndef BIT_DEPTH
     #define BIT_DEPTH 1
+#endif
+#ifndef BIT_DESCRIPTION
+    #define BIT_DESCRIPTION "Embedthis Appweb Embedded Web Server"
 #endif
 #ifndef BIT_DISCOVER
     #define BIT_DISCOVER "cgi,dir,doxygen,dsi,esp,gzip,htmlmin,man,man2html,mdb,ngmin,pak,pmaker,recess,ssl,uglifyjs,utest,zip"
@@ -142,6 +148,9 @@
 #ifndef BIT_MPR_SSL_RENEGOTIATE
     #define BIT_MPR_SSL_RENEGOTIATE 1
 #endif
+#ifndef BIT_NAME
+    #define BIT_NAME "appweb"
+#endif
 #ifndef BIT_PACKS
     #define BIT_PACKS "bits/packs"
 #endif
@@ -173,10 +182,7 @@
     #define BIT_TUNE "size"
 #endif
 #ifndef BIT_VERSION
-    #define BIT_VERSION "4.5.0-rc.3"
-#endif
-#ifndef BIT_WHO
-    #define BIT_WHO "embedthis"
+    #define BIT_VERSION "4.5.0-rc4"
 #endif
 #ifndef BIT_WITHOUT_ALL
     #define BIT_WITHOUT_ALL "cgi,dir,doxygen,dsi,ejscript,esp,man,man2html,pmaker,php,sqlite,ssl"
@@ -277,10 +283,10 @@
     #define BIT_MINOR_VERSION 5
 #endif
 #ifndef BIT_PATCH_VERSION
-    #define BIT_PATCH_VERSION 0-rc
+    #define BIT_PATCH_VERSION 0-rc4
 #endif
 #ifndef BIT_VNUM
-    #define BIT_VNUM 400050000-rc
+    #define BIT_VNUM 400050000-rc4
 #endif
 
 /* Packs */

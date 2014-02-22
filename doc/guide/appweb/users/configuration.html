@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.5.0-rc.3 Documentation</title>
+    <title>Embedthis Appweb 4.5.0-rc4 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.5.0-rc.3</div>
+                <div class="version">Embedthis Appweb 4.5.0-rc4</div>
             </div>
         </div>
         <div class="crumbs">
@@ -277,6 +277,14 @@ Include conf/applications/*.conf
                     <tr>
                         <td><a href="dir/route.html#cache">Cache</a></td>
                         <td>Configure client and server side caching.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/server.html#cgiEscape">CgiEscape</a></td>
+                        <td>Escape shell special characters in CGI environment variables.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="dir/server.html#cgiPrefix">CgiPrefix</a></td>
+                        <td>Define a prefix string for URI query and form variables when passing to CGI programs.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/server.html#chroot">Chroot</a></td>
@@ -542,10 +550,12 @@ Include conf/applications/*.conf
                         <td><a href="dir/route.html#preserveFrames">PreserveFrames</a></td>
                         <td>Preserve WebSocket frames.</td>
                     </tr>
+                    <!-- UNUSED
                     <tr>
                         <td><a href="dir/server.html#protocol">Protocol</a></td>
                         <td>Define the HTTP protocol to use.</td>
                     </tr>
+                    -->
                     <tr>
                         <td><a href="dir/route.html#redirect">Redirect</a></td>
                         <td>Redirect requests to a new target.</td>

@@ -140,18 +140,18 @@ PUBLIC void httpInitAuth(Http *http)
     httpAddAuthType("digest", httpDigestLogin, httpDigestParse, httpDigestSetHeaders);
     httpAddAuthType("form", formLogin, NULL, NULL);
 
-    httpAddAuthStore("app", NULL);
-    httpAddAuthStore("internal", fileVerifyUser);
+    httpCreateAuthStore("app", NULL);
+    httpCreateAuthStore("internal", fileVerifyUser);
 #if BIT_HAS_PAM && BIT_HTTP_PAM
-    httpAddAuthStore("system", httpPamVerifyUser);
+    httpCreateAuthStore("system", httpPamVerifyUser);
 #endif
 #if DEPRECATE || 1
     /*
         Deprecated in 4.4. Use "internal"
      */
-    httpAddAuthStore("file", fileVerifyUser);
+    httpCreateAuthStore("file", fileVerifyUser);
 #if BIT_HAS_PAM && BIT_HTTP_PAM
-    httpAddAuthStore("pam", httpPamVerifyUser);
+    httpCreateAuthStore("pam", httpPamVerifyUser);
 #endif
 #endif
 }
@@ -161,13 +161,15 @@ PUBLIC bool httpAuthenticate(HttpConn *conn)
 {
     HttpRx      *rx;
     HttpAuth    *auth;
-    cchar       *username;
+    cchar       *ip, *username;
 
     rx = conn->rx;
     auth = rx->route->auth;
 
     if (!rx->authenticated) {
-        if ((username = httpGetSessionVar(conn, HTTP_SESSION_USERNAME, 0)) == 0) {
+        ip = httpGetSessionVar(conn, HTTP_SESSION_IP, 0);
+        username = httpGetSessionVar(conn, HTTP_SESSION_USERNAME, 0);
+        if (!smatch(ip, conn->ip) || !username) {
             if (auth->username && *auth->username) {
                 httpLogin(conn, auth->username, NULL);
                 username = httpGetSessionVar(conn, HTTP_SESSION_USERNAME, 0);
@@ -255,6 +257,12 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
         mprError("No user verification routine defined on route %s", rx->route->name);
         return 0;
     }
+    if (!auth->store->noSession) {
+        if ((session = httpCreateSession(conn)) == 0) {
+            /* Too many sessions */
+            return 0;
+        }
+    }
     if (auth->username && *auth->username) {
         /* If using auto-login, replace the username */
         username = auth->username;
@@ -263,10 +271,10 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
     if (!(verifyUser)(conn, username, password)) {
         return 0;
     }
-    if ((session = httpCreateSession(conn)) == 0) {
-        return 0;
+    if (!auth->store->noSession) {
+        httpSetSessionVar(conn, HTTP_SESSION_USERNAME, username);
+        httpSetSessionVar(conn, HTTP_SESSION_IP, conn->ip);
     }
-    httpSetSessionVar(conn, HTTP_SESSION_USERNAME, username);
     rx->authenticated = 1;
     conn->username = sclone(username);
     conn->encoded = 0;
@@ -444,22 +452,33 @@ static void manageAuthStore(HttpAuthStore *store, int flags)
 }
 
 
-PUBLIC int httpAddAuthStore(cchar *name, HttpVerifyUser verifyUser)
+PUBLIC HttpAuthStore *httpCreateAuthStore(cchar *name, HttpVerifyUser verifyUser)
 {
     Http            *http;
     HttpAuthStore   *store;
 
     if ((store = mprAllocObj(HttpAuthStore, manageAuthStore)) == 0) {
-        return MPR_ERR_CANT_CREATE;
+        return 0;
     }
     store->name = sclone(name);
     store->verifyUser = verifyUser;
     http = MPR->httpService;
     if (mprAddKey(http->authStores, name, store) == 0) {
+        return 0;
+    }
+    return store;
+}
+
+
+#if DEPRECATED || 1
+PUBLIC int httpAddAuthStore(cchar *name, HttpVerifyUser verifyUser)
+{
+    if (httpCreateAuthStore(name, verifyUser) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     return 0;
 }
+#endif
 
 
 PUBLIC void httpSetAuthVerify(HttpAuth *auth, HttpVerifyUser verifyUser)
@@ -657,6 +676,13 @@ PUBLIC int httpSetAuthStore(HttpAuth *auth, cchar *store)
     }
     GRADUATE_HASH(auth, userCache);
     return 0;
+}
+
+
+PUBLIC void httpSetAuthStoreSessions(HttpAuthStore *store, bool noSession)
+{
+    assert(store);
+    store->noSession = noSession;
 }
 
 
@@ -2077,12 +2103,14 @@ PUBLIC int httpConnect(HttpConn *conn, cchar *method, cchar *uri, struct MprSsl 
 PUBLIC bool httpNeedRetry(HttpConn *conn, char **url)
 {
     HttpRx          *rx;
+    HttpTx          *tx;
     HttpAuthType    *authType;
 
     assert(conn->rx);
 
     *url = 0;
     rx = conn->rx;
+    tx = conn->tx;
 
     if (conn->state < HTTP_STATE_FIRST) {
         return 0;
@@ -2091,7 +2119,7 @@ PUBLIC bool httpNeedRetry(HttpConn *conn, char **url)
         if (conn->username == 0 || conn->authType == 0) {
             httpError(conn, rx->status, "Authentication required");
 
-        } else if (conn->authRequested) {
+        } else if (conn->authRequested && smatch(conn->authType, tx->authType)) {
             httpError(conn, rx->status, "Authentication failed");
         } else {
             assert(httpClientConn(conn));
@@ -2254,7 +2282,7 @@ PUBLIC HttpConn *httpRequest(cchar *method, cchar *uri, cchar *data, char **err)
     mprAddRoot(conn);
 
     /* 
-       Open a connection to issue the GET. Then finalize the request output - this forces the request out.
+       Open a connection to issue the request. Then finalize the request output - this forces the request out.
      */
     if (httpConnect(conn, method, uri, NULL) < 0) {
         mprRemoveRoot(conn);
@@ -2461,8 +2489,8 @@ PUBLIC HttpConn *httpCreateConn(Http *http, HttpEndpoint *endpoint, MprDispatche
     if ((conn = mprAllocObj(HttpConn, manageConn)) == 0) {
         return 0;
     }
-    conn->http = http;
     conn->protocol = http->protocol;
+    conn->http = http;
     conn->port = -1;
     conn->retries = HTTP_RETRIES;
     conn->endpoint = endpoint;
@@ -2507,7 +2535,7 @@ PUBLIC HttpConn *httpCreateConn(Http *http, HttpEndpoint *endpoint, MprDispatche
  */
 PUBLIC void httpDestroyConn(HttpConn *conn)
 {
-    if (!conn->destroyed) {
+    if (!conn->destroyed && !conn->borrowed) {
         HTTP_NOTIFY(conn, HTTP_EVENT_DESTROY, 0);
         if (httpServerConn(conn)) {
             httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_CONNECTIONS, -1);
@@ -2538,6 +2566,7 @@ static void manageConn(HttpConn *conn, int flags)
     assert(conn);
 
     if (flags & MPR_MANAGE_MARK) {
+        mprMark(conn->workerEvent);
         mprMark(conn->address);
         mprMark(conn->rx);
         mprMark(conn->tx);
@@ -2556,7 +2585,6 @@ static void manageConn(HttpConn *conn, int flags)
         mprMark(conn->writeq);
         mprMark(conn->connectorq);
         mprMark(conn->timeoutEvent);
-        mprMark(conn->workerEvent);
         mprMark(conn->context);
         mprMark(conn->ejs);
         mprMark(conn->pool);
@@ -2577,11 +2605,6 @@ static void manageConn(HttpConn *conn, int flags)
         mprMark(conn->authData);
         mprMark(conn->username);
         mprMark(conn->password);
-
-    } else if (flags & MPR_MANAGE_FREE) {
-        if (conn->http) {
-            httpDestroyConn(conn);
-        }
     }
 }
 
@@ -2610,10 +2633,9 @@ static void connTimeout(HttpConn *conn, MprEvent *event)
     HttpLimits  *limits;
     cchar       *msg, *prefix;
 
-    if (!conn->http) {
+    if (conn->destroyed) {
         return;
     }
-    assert(conn->dispatcher == event->dispatcher);
     assert(conn->tx);
     assert(conn->rx);
 
@@ -2658,12 +2680,11 @@ static void connTimeout(HttpConn *conn, MprEvent *event)
 
 PUBLIC void httpScheduleConnTimeout(HttpConn *conn) 
 {
-    assert(conn->http);
-    if (!conn->timeoutEvent) {
+    if (!conn->timeoutEvent && !conn->destroyed) {
         /* 
             Will run on the HttpConn dispatcher unless shutting down and it is destroyed already 
          */
-        conn->timeoutEvent = mprCreateEvent(conn->dispatcher, "connTimeout", 0, connTimeout, conn, MPR_EVENT_QUICK);
+        conn->timeoutEvent = mprCreateEvent(conn->dispatcher, "connTimeout", 0, connTimeout, conn, 0);
     }
 }
 
@@ -2693,6 +2714,9 @@ static bool prepForNext(HttpConn *conn)
     assert(conn->endpoint);
     assert(conn->state == HTTP_STATE_COMPLETE);
 
+    if (conn->borrowed) {
+        return 0;
+    }
     if (conn->keepAliveCount <= 0) {
         conn->state = HTTP_STATE_BEGIN;
         return 0;
@@ -2860,7 +2884,7 @@ PUBLIC void httpIOEvent(HttpConn *conn, MprEvent *event)
     HttpPacket  *packet;
     ssize       size;
 
-    if (!conn->http) {
+    if (conn->destroyed) {
         /* Connection has been destroyed */
         return;
     }
@@ -2909,7 +2933,6 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
     HttpRx      *rx;
     HttpTx      *tx;
     HttpQueue   *q;
-    MprEvent    *event;
     MprSocket   *sp;
     int         eventMask;
 
@@ -2917,18 +2940,25 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
     rx = conn->rx;
     tx = conn->tx;
 
+    if (mprShouldAbortRequests() || conn->borrowed) {
+        return;
+    }
+#if DEPRECATE || 1
+    /*
+        Used by ejs
+     */
     if (conn->workerEvent) {
-        /* TODO: This is never used */
-        event = conn->workerEvent;
+        MprEvent *event = conn->workerEvent;
         conn->workerEvent = 0;
         mprQueueEvent(conn->dispatcher, event);
         return;
     }
+#endif
     eventMask = 0;
     if (rx) {
         if (conn->connError || 
-           (tx->writeBlocked) || 
-           (conn->connectorq && (conn->connectorq->count > 0 || conn->connectorq->ioCount > 0)) || 
+           /* TODO - should not need tx->writeBlocked or connectorq->count  */ 
+           (tx->writeBlocked) || (conn->connectorq && (conn->connectorq->count > 0 || conn->connectorq->ioCount > 0)) || 
            (httpQueuesNeedService(conn)) || 
            (mprSocketHasBufferedWrite(sp)) ||
            (rx->eof && tx->finalized && conn->state < HTTP_STATE_FINALIZED)) {
@@ -2948,8 +2978,9 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
 }
 
 
+#if DEPRECATE || 1
 /*
-    TODO - this is never used
+    Used by ejs
  */
 PUBLIC void httpUseWorker(HttpConn *conn, MprDispatcher *dispatcher, MprEvent *event)
 {
@@ -2961,6 +2992,7 @@ PUBLIC void httpUseWorker(HttpConn *conn, MprDispatcher *dispatcher, MprEvent *e
     conn->workerEvent = event;
     unlock(conn->http);
 }
+#endif
 
 
 PUBLIC void httpUsePrimary(HttpConn *conn)
@@ -2976,16 +3008,41 @@ PUBLIC void httpUsePrimary(HttpConn *conn)
 }
 
 
+PUBLIC void httpBorrowConn(HttpConn *conn)
+{
+    assert(!conn->borrowed);
+    if (!conn->borrowed) {
+        mprAddRoot(conn);
+        conn->borrowed = 1;
+    }
+}
+
+
+PUBLIC void httpReturnConn(HttpConn *conn)
+{
+    assert(conn->borrowed);
+    if (conn->borrowed) {
+        conn->borrowed = 0;
+        mprRemoveRoot(conn);
+        httpEnableConnEvents(conn);
+    }
+}
+
+
 /*
     Steal the socket object from a connection. This disconnects the socket from management by the Http service.
     It is the callers responsibility to call mprCloseSocket when required.
+    Harder than it looks. We clone the socket, steal the socket handle and set the connection socket handle to invalid.
+    This preserves the HttpConn.sock object for the connection and returns a new MprSocket for the caller.
  */
 PUBLIC MprSocket *httpStealSocket(HttpConn *conn)
 {
     MprSocket   *sock;
 
     assert(conn->sock);
-    if (conn->http) {
+    assert(!conn->destroyed);
+
+    if (!conn->destroyed && !conn->borrowed) {
         lock(conn->http);
         sock = mprCloneSocket(conn->sock);
         (void) mprStealSocketHandle(conn->sock);
@@ -3006,7 +3063,8 @@ PUBLIC MprSocket *httpStealSocket(HttpConn *conn)
 
 /*
     Steal the O/S socket handle a connection's socket. This disconnects the socket handle from management by the connection.
-    It is the callers responsibility to call close() when required.
+    It is the callers responsibility to call close() on the Socket when required.
+    Note: this does not change the state of the connection. 
  */
 PUBLIC Socket httpStealSocketHandle(HttpConn *conn)
 {
@@ -3777,12 +3835,6 @@ PUBLIC HttpEndpoint *httpCreateEndpoint(cchar *ip, int port, MprDispatcher *disp
 
 PUBLIC void httpDestroyEndpoint(HttpEndpoint *endpoint)
 {
-#if KEEP
-    /*
-        Connections may survive and endpoint being closed
-     */
-    destroyEndpointConnections(endpoint);
-#endif
     if (endpoint->sock) {
         mprCloseSocket(endpoint->sock, 0);
         endpoint->sock = 0;
@@ -3803,9 +3855,6 @@ static int manageEndpoint(HttpEndpoint *endpoint, int flags)
         mprMark(endpoint->dispatcher);
         mprMark(endpoint->ssl);
         mprMark(endpoint->mutex);
-
-    } else if (flags & MPR_MANAGE_FREE) {
-        httpDestroyEndpoint(endpoint);
     }
     return 0;
 }
@@ -4498,10 +4547,8 @@ PUBLIC HttpHost *httpCreateHost()
     }
     mprSetCacheLimits(host->responseCache, 0, BIT_MAX_CACHE_DURATION, 0, 0);
 
-    host->mutex = mprCreateLock();
     host->routes = mprCreateList(-1, MPR_LIST_STABLE);
     host->flags = HTTP_HOST_NO_TRACE;
-    host->protocol = sclone("HTTP/1.1");
     host->streams = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_STABLE);
     httpSetStreaming(host, "application/x-www-form-urlencoded", NULL, 0);
     httpSetStreaming(host, "application/json", NULL, 0);
@@ -4520,8 +4567,6 @@ PUBLIC HttpHost *httpCloneHost(HttpHost *parent)
     if ((host = mprAllocObj(HttpHost, manageHost)) == 0) {
         return 0;
     }
-    host->mutex = mprCreateLock();
-
     /*
         The dirs and routes are all copy-on-write.
         Don't clone ip, port and name
@@ -4530,7 +4575,6 @@ PUBLIC HttpHost *httpCloneHost(HttpHost *parent)
     host->responseCache = parent->responseCache;
     host->routes = parent->routes;
     host->flags = parent->flags | HTTP_HOST_VHOST;
-    host->protocol = parent->protocol;
     host->streams = parent->streams;
     httpAddHost(http, host);
     return host;
@@ -4545,15 +4589,9 @@ static void manageHost(HttpHost *host, int flags)
         mprMark(host->responseCache);
         mprMark(host->routes);
         mprMark(host->defaultRoute);
-        mprMark(host->protocol);
-        mprMark(host->mutex);
         mprMark(host->defaultEndpoint);
         mprMark(host->secureEndpoint);
         mprMark(host->streams);
-
-    } else if (flags & MPR_MANAGE_FREE) {
-        /* The http->hosts list is static. ie. The hosts won't be marked via http->hosts */
-        httpRemoveHost(MPR->httpService, host);
     }
 }
 
@@ -4676,12 +4714,6 @@ PUBLIC void httpLogRoutes(HttpHost *host, bool full)
 PUBLIC void httpSetHostName(HttpHost *host, cchar *name)
 {
     host->name = sclone(name);
-}
-
-
-PUBLIC void httpSetHostProtocol(HttpHost *host, cchar *protocol)
-{
-    host->protocol = sclone(protocol);
 }
 
 
@@ -7571,7 +7603,10 @@ PUBLIC bool httpFlushQueue(HttpQueue *q, int flags)
         /*
             Blocking mode: Fully drain the pipeline. This blocks until the connector has written all the data to the O/S socket.
          */
-        while (tx->writeBlocked) {
+        while (tx->writeBlocked || conn->connectorq->count > 0 || conn->connectorq->ioCount) {
+            if (conn->connError) {
+                break;
+            }
             assert(!tx->finalizedConnector);
             assert(conn->connectorq->count > 0 || conn->connectorq->ioCount);
             if (!mprWaitForSingleIO((int) conn->sock->fd, MPR_WRITABLE, conn->limits->inactivityTimeout)) {
@@ -7583,6 +7618,21 @@ PUBLIC bool httpFlushQueue(HttpQueue *q, int flags)
         }
     }
     return (q->count < q->max) ? 1 : 0;
+}
+
+
+PUBLIC void httpFlush(HttpConn *conn)
+{
+    httpFlushQueue(conn->writeq, HTTP_NON_BLOCK);
+}
+
+
+/*
+    Flush the write queue. In sync mode, this call may yield. 
+ */
+PUBLIC void httpFlushAll(HttpConn *conn)
+{
+    httpFlushQueue(conn->writeq, conn->async ? HTTP_NON_BLOCK : HTTP_BLOCK);
 }
 
 
@@ -8296,6 +8346,7 @@ PUBLIC HttpRoute *httpCreateInheritedRoute(HttpRoute *parent)
     route->defaultLanguage = parent->defaultLanguage;
     route->documents = parent->documents;
     route->home = parent->home;
+    route->envPrefix = parent->envPrefix;
     route->data = parent->data;
     route->eroute = parent->eroute;
     route->errorDocuments = parent->errorDocuments;
@@ -8328,6 +8379,7 @@ PUBLIC HttpRoute *httpCreateInheritedRoute(HttpRoute *parent)
     route->sourceName = parent->sourceName;
     route->ssl = parent->ssl;
     route->target = parent->target;
+    route->cookie = parent->cookie;
     route->targetRule = parent->targetRule;
     route->tokens = parent->tokens;
     route->updates = parent->updates;
@@ -8369,6 +8421,7 @@ static void manageRoute(HttpRoute *route, int flags)
         mprMark(route->target);
         mprMark(route->documents);
         mprMark(route->home);
+        mprMark(route->envPrefix);
         mprMark(route->indicies);
         mprMark(route->handler);
         mprMark(route->caching);
@@ -8413,11 +8466,11 @@ static void manageRoute(HttpRoute *route, int flags)
         mprMark(route->corsOrigin);
         mprMark(route->corsHeaders);
         mprMark(route->corsMethods);
+        mprMark(route->cookie);
 
     } else if (flags & MPR_MANAGE_FREE) {
         if (route->patternCompiled && (route->flags & HTTP_ROUTE_FREE_PATTERN)) {
             free(route->patternCompiled);
-            route->patternCompiled = 0;
         }
     }
 }
@@ -9405,15 +9458,6 @@ PUBLIC int httpSetRouteConnector(HttpRoute *route, cchar *name)
 }
 
 
-PUBLIC void httpSetRouteSessionVisibility(HttpRoute *route, bool visible)
-{
-    route->flags &= ~HTTP_ROUTE_VISIBLE_SESSION;
-    if (visible) {
-        route->flags |= HTTP_ROUTE_VISIBLE_SESSION;
-    }
-}
-
-
 PUBLIC void httpSetRouteData(HttpRoute *route, cchar *key, void *data)
 {
     assert(route);
@@ -9455,6 +9499,21 @@ PUBLIC void httpSetRouteFlags(HttpRoute *route, int flags)
 {
     assert(route);
     route->flags = flags;
+}
+
+
+PUBLIC void httpSetRouteEnvEscape(HttpRoute *route, bool on)
+{
+    route->flags &= ~(HTTP_ROUTE_ENV_ESCAPE);
+    if (on) {
+        route->flags |= HTTP_ROUTE_ENV_ESCAPE;
+    }
+}
+
+
+PUBLIC void httpSetRouteEnvPrefix(HttpRoute *route, cchar *prefix)
+{
+    route->envPrefix = sclone(prefix);
 }
 
 
@@ -9563,6 +9622,14 @@ PUBLIC void httpSetRouteMethods(HttpRoute *route, cchar *methods)
 }
 
 
+PUBLIC void httpSetRouteCookie(HttpRoute *route, cchar *cookie)
+{
+    assert(route);
+    assert(cookie && *cookie);
+    route->cookie = cookie;
+}
+
+
 PUBLIC void httpSetRouteName(HttpRoute *route, cchar *name)
 {
     assert(route);
@@ -9609,6 +9676,23 @@ PUBLIC void httpSetRoutePrefix(HttpRoute *route, cchar *prefix)
 }
 
 
+PUBLIC void httpSetRoutePreserveFrames(HttpRoute *route, bool on)
+{
+    route->flags &= ~HTTP_ROUTE_PRESERVE_FRAMES;
+    if (on) {
+        route->flags |= HTTP_ROUTE_PRESERVE_FRAMES;
+    }
+}
+
+
+#if KEEP && UNUSED
+PUBLIC void httpSetRouteProtocol(HttpRoute *route, cchar *protocol)
+{
+    route->protocol = sclone(protocol);
+}
+#endif
+
+
 PUBLIC void httpSetRouteServerPrefix(HttpRoute *route, cchar *prefix)
 {
     assert(route);
@@ -9626,11 +9710,11 @@ PUBLIC void httpSetRouteServerPrefix(HttpRoute *route, cchar *prefix)
 }
 
 
-PUBLIC void httpSetRoutePreserveFrames(HttpRoute *route, bool on)
+PUBLIC void httpSetRouteSessionVisibility(HttpRoute *route, bool visible)
 {
-    route->flags &= ~HTTP_ROUTE_PRESERVE_FRAMES;
-    if (on) {
-        route->flags |= HTTP_ROUTE_PRESERVE_FRAMES;
+    route->flags &= ~HTTP_ROUTE_VISIBLE_SESSION;
+    if (visible) {
+        route->flags |= HTTP_ROUTE_VISIBLE_SESSION;
     }
 }
 
@@ -10780,7 +10864,6 @@ static void manageRouteOp(HttpRouteOp *op, int flags)
     } else if (flags & MPR_MANAGE_FREE) {
         if (op->flags & HTTP_ROUTE_FREE) {
             free(op->mdata);
-            op->mdata = 0;
         }
     }
 }
@@ -11593,6 +11676,7 @@ static void manageRx(HttpRx *rx, int flags)
         mprMark(rx->extraPath);
         mprMark(rx->conn);
         mprMark(rx->route);
+        mprMark(rx->session);
         mprMark(rx->etags);
         mprMark(rx->headerPacket);
         mprMark(rx->headers);
@@ -11604,6 +11688,7 @@ static void manageRx(HttpRx *rx, int flags)
         mprMark(rx->acceptCharset);
         mprMark(rx->acceptEncoding);
         mprMark(rx->acceptLanguage);
+        mprMark(rx->authDetails);
         mprMark(rx->cookie);
         mprMark(rx->connection);
         mprMark(rx->contentLength);
@@ -11611,28 +11696,23 @@ static void manageRx(HttpRx *rx, int flags)
         mprMark(rx->pragma);
         mprMark(rx->mimeType);
         mprMark(rx->originalMethod);
+        mprMark(rx->origin);
         mprMark(rx->originalUri);
         mprMark(rx->redirect);
         mprMark(rx->referrer);
         mprMark(rx->securityToken);
-        mprMark(rx->session);
+        mprMark(rx->upgrade);
         mprMark(rx->userAgent);
+        mprMark(rx->lang);
         mprMark(rx->params);
         mprMark(rx->svars);
         mprMark(rx->inputRange);
         mprMark(rx->passwordDigest);
+        mprMark(rx->paramString);
         mprMark(rx->files);
         mprMark(rx->uploadDir);
-        mprMark(rx->paramString);
-        mprMark(rx->lang);
         mprMark(rx->target);
-        mprMark(rx->upgrade);
         mprMark(rx->webSocket);
-
-    } else if (flags & MPR_MANAGE_FREE) {
-        if (rx->conn) {
-            rx->conn->rx = 0;
-        }
     }
 }
 
@@ -12613,7 +12693,7 @@ static bool processContent(HttpConn *conn)
             }
             httpSetState(conn, HTTP_STATE_READY);
         }
-        return conn->workerEvent ? 0 : 1;
+        return 1;
     }
     if (tx->started) {
         /*
@@ -12745,6 +12825,10 @@ static void createErrorRequest(HttpConn *conn)
      */
     key = 0;
     headers = 0;
+    /*
+        Ensure buffer always has a trailing null (one past buf->end)
+     */
+    mprAddNullToBuf(buf);
     for (cp = buf->data; cp < &buf->end[-1]; cp++) {
         if (*cp == '\0') {
             if (cp[1] == '\n') {
@@ -12752,6 +12836,9 @@ static void createErrorRequest(HttpConn *conn)
                     headers = &cp[2];
                 }
                 *cp = '\r';
+                if (&cp[4] <= buf->end && cp[2] == '\r' && cp[3] == '\n') {
+                    cp[4] = '\0';
+                }
                 key = 0;
             } else if (!key) {
                 *cp = ':';
@@ -13018,7 +13105,7 @@ PUBLIC void httpSetMethod(HttpConn *conn, cchar *method)
 static int setParsedUri(HttpConn *conn)
 {
     HttpRx      *rx;
-    char        *cp;
+    HttpUri     *up;
     cchar       *hostname;
 
     rx = conn->rx;
@@ -13031,16 +13118,14 @@ static int setParsedUri(HttpConn *conn)
         Complete the URI based on the connection state.
         Must have a complete scheme, host, port and path.
      */
-    rx->parsedUri->scheme = sclone(conn->secure ? "https" : "http");
+    up = rx->parsedUri;
+    up->scheme = sclone(conn->secure ? "https" : "http");
     hostname = rx->hostHeader ? rx->hostHeader : conn->host->name;
     if (!hostname) {
         hostname = conn->sock->acceptIp;
     }
-    rx->parsedUri->host = sclone(hostname);
-    if ((cp = strchr(rx->parsedUri->host, ':')) != 0) {
-        *cp = '\0';
-    }
-    rx->parsedUri->port = conn->sock->listenSock->port;
+    mprParseSocketAddress(hostname, &up->host, NULL, NULL, 0);
+    up->port = conn->sock->listenSock->port;
     return 0;
 }
 
@@ -13914,7 +13999,7 @@ PUBLIC HttpStatusCode HttpStatusCodes[] = {
 /****************************** Forward Declarations **************************/
 
 static void httpTimer(Http *http, MprEvent *event);
-static bool isIdle();
+static bool isIdle(bool traceRequests);
 static void manageHttp(Http *http, int flags);
 static void terminateHttp(int state, int how, int status);
 static void updateCurrentDate(Http *http);
@@ -13940,7 +14025,7 @@ PUBLIC Http *httpCreate(int flags)
     http->protocol = sclone("HTTP/1.1");
     http->mutex = mprCreateLock();
     http->stages = mprCreateHash(-1, MPR_HASH_STABLE);
-    http->hosts = mprCreateList(-1, MPR_LIST_STATIC_VALUES | MPR_LIST_STABLE);
+    http->hosts = mprCreateList(-1, MPR_LIST_STABLE);
     http->connections = mprCreateList(-1, MPR_LIST_STATIC_VALUES);
     http->authTypes = mprCreateHash(-1, MPR_HASH_CASELESS | MPR_HASH_UNIQUE | MPR_HASH_STABLE);
     http->authStores = mprCreateHash(-1, MPR_HASH_CASELESS | MPR_HASH_UNIQUE | MPR_HASH_STABLE);
@@ -13967,7 +14052,7 @@ PUBLIC Http *httpCreate(int flags)
     mprAddTerminator(terminateHttp);
 
     if (flags & HTTP_SERVER_SIDE) {
-        http->endpoints = mprCreateList(-1, MPR_LIST_STATIC_VALUES | MPR_LIST_STABLE);
+        http->endpoints = mprCreateList(-1, MPR_LIST_STABLE);
         http->counters = mprCreateList(-1, MPR_LIST_STABLE);
         http->monitors = mprCreateList(-1, MPR_LIST_STABLE);
         http->routeTargets = mprCreateHash(-1, MPR_HASH_STATIC_VALUES | MPR_HASH_STABLE);
@@ -14013,8 +14098,6 @@ static void manageHttp(Http *http, int flags)
         mprMark(http->routeConditions);
         mprMark(http->routeUpdates);
         mprMark(http->sessionCache);
-        /* Don't mark convenience stage references as they will be in http->stages */
-
         mprMark(http->clientLimits);
         mprMark(http->serverLimits);
         mprMark(http->clientRoute);
@@ -14054,37 +14137,6 @@ static void manageHttp(Http *http, int flags)
 
 
 /*
-    Stop listening endpoints. If shutdown is not graceful, abort running requests.
-    Called from terminateHttp
- */
-static void stopHttp(int how)
-{
-    Http            *http;
-    HttpEndpoint    *endpoint;
-    int             next;
-
-    if ((http = MPR->httpService) == 0) {
-        return;
-    }
-    if (how & MPR_EXIT_DEFAULT) {
-        how = MPR->exitStrategy;
-    }
-    /* 
-        Close the listening endpoints - this stops all new requests 
-     */
-    for (ITERATE_ITEMS(http->endpoints, endpoint, next)) {
-        httpStopEndpoint(endpoint);
-    }
-    if (!(how & MPR_EXIT_GRACEFUL)) {
-        /* 
-            Abort running requests by simulating a timeout expiry 
-         */
-        httpTimer(http, 0);
-    }
-}
-
-
-/*
     Called to close all connections owned by a service (e.g. ejs)
  */
 PUBLIC void httpStopConnections(void *data)
@@ -14113,10 +14165,14 @@ PUBLIC void httpStopConnections(void *data)
 PUBLIC void httpDestroy() 
 {
     Http            *http;
+    HttpEndpoint    *endpoint;
+    int             next;
 
     if ((http = MPR->httpService) == 0) {
         return;
     }
+    httpStopConnections(0);
+
     if (http->timer) {
         mprRemoveEvent(http->timer);
         http->timer = 0;
@@ -14125,7 +14181,9 @@ PUBLIC void httpDestroy()
         mprRemoveEvent(http->timestamp);
         http->timestamp = 0;
     }
-    httpStopConnections(0);
+    for (ITERATE_ITEMS(http->endpoints, endpoint, next)) {
+        httpStopEndpoint(endpoint);
+    }
     MPR->httpService = NULL;
 }
 
@@ -14135,10 +14193,7 @@ PUBLIC void httpDestroy()
  */
 static void terminateHttp(int state, int how, int status)
 {
-    if (state == MPR_STOPPING) {
-        stopHttp(how);
-
-    } else if (state == MPR_DESTROYING) {
+    if (state >= MPR_STOPPED) {
         httpDestroy();
     }
 }
@@ -14147,7 +14202,7 @@ static void terminateHttp(int state, int how, int status)
 /*
     Test if the http service (including MPR) is idle with no running requests
  */
-static bool isIdle()
+static bool isIdle(bool traceRequests)
 {
     HttpConn        *conn;
     Http            *http;
@@ -14160,10 +14215,9 @@ static bool isIdle()
         lock(http->connections);
         for (next = 0; (conn = mprGetNextItem(http->connections, &next)) != 0; ) {
             if (conn->state != HTTP_STATE_BEGIN && conn->state != HTTP_STATE_COMPLETE) {
-                if (lastTrace < now) {
+                if (traceRequests && lastTrace < now) {
                     if (conn->rx) {
-                        mprLog(2, "http: Request for \"%s\" is still active", 
-                            conn->rx->uri ? conn->rx->uri : conn->rx->pathInfo);
+                        mprLog(2, "http: Request for \"%s\" is still active", conn->rx->uri ? conn->rx->uri : conn->rx->pathInfo);
                     }
                     lastTrace = now;
                 }
@@ -14175,14 +14229,7 @@ static bool isIdle()
     } else {
         now = mprGetTicks();
     }
-    if (!mprServicesAreIdle()) {
-        if (lastTrace < now) {
-            mprLog(3, "Waiting for MPR services complete");
-            lastTrace = now;
-        }
-        return 0;
-    }
-    return 1;
+    return mprServicesAreIdle(traceRequests);
 }
 
 
@@ -14346,6 +14393,9 @@ PUBLIC void httpAddStage(Http *http, HttpStage *stage)
 
 PUBLIC HttpStage *httpLookupStage(Http *http, cchar *name)
 {
+    if (!http) {
+        return 0;
+    }
     return mprLookupKey(http->stages, name);
 }
 
@@ -14353,6 +14403,10 @@ PUBLIC HttpStage *httpLookupStage(Http *http, cchar *name)
 PUBLIC void *httpLookupStageData(Http *http, cchar *name)
 {
     HttpStage   *stage;
+
+    if (!http) {
+        return 0;
+    }
     if ((stage = mprLookupKey(http->stages, name)) != 0) {
         return stage->stageData;
     }
@@ -14426,7 +14480,7 @@ static void httpTimer(Http *http, MprEvent *event)
                 abort = 1;
             } else if (!event) {
                 /* Called directly from httpStop to stop connections */
-                if (MPR->exitStrategy & MPR_EXIT_GRACEFUL) {
+                if (MPR->exitTimeout > 0) {
                     if (conn->state == HTTP_STATE_COMPLETE || 
                         (HTTP_STATE_CONNECTED < conn->state && conn->state < HTTP_STATE_PARSED)) {
                         abort = 1;
@@ -14635,6 +14689,7 @@ PUBLIC void httpGetStats(HttpStats *sp)
     MprKey              *kp;
     MprMemStats         *ap;
     MprWorkerStats      wstats;
+    ssize               memSessions;
 
     memset(sp, 0, sizeof(*sp));
     http = MPR->httpService;
@@ -14655,10 +14710,11 @@ PUBLIC void httpGetStats(HttpStats *sp)
     sp->workersYielded = wstats.yielded;
     sp->workersMax = wstats.max;
 
-    sp->activeVMs = http->activeVMs;
     sp->activeConnections = mprGetListLength(http->connections);
     sp->activeProcesses = http->activeProcesses;
-    sp->activeSessions = http->activeSessions;
+
+    mprGetCacheStats(http->sessionCache, &sp->activeSessions, &memSessions);
+    sp->memSessions = memSessions;
 
     lock(http->addresses);
     for (ITERATE_KEY_DATA(http->addresses, kp, address)) {
@@ -14666,10 +14722,10 @@ PUBLIC void httpGetStats(HttpStats *sp)
         sp->activeClients++;
     }
     unlock(http->addresses);
+
     sp->totalRequests = http->totalRequests;
     sp->totalConnections = http->totalConnections;
     sp->totalSweeps = MPR->heap->iteration;
-
 }
 
 
@@ -14694,6 +14750,7 @@ PUBLIC char *httpStatsReport(int flags)
     mprPutToBuf(buf, "Heap        %8.1f MB, %5.1f%% mem\n", s.heap / mb, s.heap / (double) s.mem * 100.0);
     mprPutToBuf(buf, "Heap-used   %8.1f MB, %5.1f%% used\n", s.heapUsed / mb, s.heapUsed / (double) s.heap * 100.0);
     mprPutToBuf(buf, "Heap-free   %8.1f MB, %5.1f%% free\n", s.heapFree / mb, s.heapFree / (double) s.heap * 100.0);
+    mprPutToBuf(buf, "Sessions    %8.1f MB\n", s.memSessions / mb);
 
     mprPutCharToBuf(buf, '\n');
     mprPutToBuf(buf, "CPUs        %8d\n", s.cpus);
@@ -14709,7 +14766,6 @@ PUBLIC char *httpStatsReport(int flags)
     mprPutToBuf(buf, "Processes   %8d active\n", s.activeProcesses);
     mprPutToBuf(buf, "Requests    %8d active\n", s.activeRequests);
     mprPutToBuf(buf, "Sessions    %8d active\n", s.activeSessions);
-    mprPutToBuf(buf, "VMs         %8d active\n", s.activeVMs);
     mprPutCharToBuf(buf, '\n');
 
     mprPutToBuf(buf, "Workers     %8d busy - %d yielded, %d idle, %d max\n", 
@@ -14828,7 +14884,7 @@ PUBLIC bool httpLookupSessionID(cchar *id)
 
     http = MPR->httpService;
     assert(http);
-    return mprReadCache(http->sessionCache, id, 0, 0) != 0;
+    return mprLookupCache(http->sessionCache, id, 0, 0) != 0;
 }
 
 
@@ -14854,19 +14910,23 @@ PUBLIC void httpSetSessionNotify(MprCacheProc callback)
 PUBLIC void httpDestroySession(HttpConn *conn)
 {
     Http        *http;
+    HttpRx      *rx;
     HttpSession *sp;
+    cchar       *cookie;
 
     http = conn->http;
+    rx = conn->rx;
     assert(http);
 
     lock(http);
     if ((sp = httpGetSession(conn, 0)) != 0) {
-        httpRemoveCookie(conn, HTTP_SESSION_COOKIE);
+        cookie = rx->route->cookie ? rx->route->cookie : HTTP_SESSION_COOKIE;
+        httpRemoveCookie(conn, cookie);
         mprExpireCacheItem(sp->cache, sp->id, 0);
         sp->id = 0;
-        conn->rx->session = 0;
+        rx->session = 0;
     }
-    conn->rx->sessionProbed = 0;
+    rx->sessionProbed = 0;
     unlock(http);
 }
 
@@ -14888,7 +14948,7 @@ PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create)
 {
     Http        *http;
     HttpRx      *rx;
-    cchar       *data, *id;
+    cchar       *cookie, *data, *id;
     static int  nextSession = 0;
     int         flags;
 
@@ -14919,13 +14979,15 @@ PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create)
                 return 0;
             }
             unlock(http);
-            if ((rx->session = allocSessionObj(conn, id, NULL)) != 0) {
-                flags = (rx->route->flags & HTTP_ROUTE_VISIBLE_SESSION) ? 0 : HTTP_COOKIE_HTTP;
-                httpSetCookie(conn, HTTP_SESSION_COOKIE, rx->session->id, "/", NULL, rx->session->lifespan, flags);
-            }
-            if (rx->route->flags & HTTP_ROUTE_XSRF) {
-                createSecurityToken(conn);
-                httpAddSecurityToken(conn);
+
+            rx->session = allocSessionObj(conn, id, NULL);
+            flags = (rx->route->flags & HTTP_ROUTE_VISIBLE_SESSION) ? 0 : HTTP_COOKIE_HTTP;
+            cookie = rx->route->cookie ? rx->route->cookie : HTTP_SESSION_COOKIE;
+            httpSetCookie(conn, cookie, rx->session->id, "/", NULL, rx->session->lifespan, flags);
+            mprLog(3, "session: create new cookie %s=%s", cookie, rx->session->id);
+
+            if ((rx->route->flags & HTTP_ROUTE_XSRF) && rx->securityToken) {
+                httpSetSessionVar(conn, BIT_XSRF_COOKIE, rx->securityToken);
             }
         }
     }
@@ -15064,6 +15126,7 @@ PUBLIC int httpWriteSession(HttpConn *conn)
 PUBLIC cchar *httpGetSessionID(HttpConn *conn)
 {
     HttpRx  *rx;
+    cchar   *cookie;
 
     assert(conn);
     rx = conn->rx;
@@ -15078,7 +15141,8 @@ PUBLIC cchar *httpGetSessionID(HttpConn *conn)
         return 0;
     }
     rx->sessionProbed = 1;
-    return httpGetCookie(conn, HTTP_SESSION_COOKIE);
+    cookie = rx->route->cookie ? rx->route->cookie : HTTP_SESSION_COOKIE;
+    return httpGetCookie(conn, cookie);
 }
 
 
@@ -15093,18 +15157,30 @@ static cchar *createSecurityToken(HttpConn *conn)
     HttpRx      *rx;
 
     rx = conn->rx;
-    rx->securityToken = 0;
-
-    /*
-        The call to httpSetSessionVar below may create a session which may call this function.
-        To eliminate a double call, get the session first.
-     */
-    if (!rx->session) {
-        /* httpGetSesion may call this function if it creates a session */ 
-        httpGetSession(conn, 1);
-    }
     if (!rx->securityToken) {
         rx->securityToken = mprGetRandomString(32);
+    }
+    return rx->securityToken;
+}
+
+
+/*
+    Get the security token from the session. Create one if one does not exist. Store the token in session store.
+    Recreate if required.
+ */
+PUBLIC cchar *httpGetSecurityToken(HttpConn *conn, bool recreate)
+{
+    HttpRx      *rx;
+
+    rx = conn->rx;
+
+    if (recreate) {
+        rx->securityToken = 0;
+    } else {
+        rx->securityToken = (char*) httpGetSessionVar(conn, BIT_XSRF_COOKIE, 0);
+    }
+    if (rx->securityToken == 0) {
+        createSecurityToken(conn);
         httpSetSessionVar(conn, BIT_XSRF_COOKIE, rx->securityToken);
     }
     return rx->securityToken;
@@ -15112,32 +15188,14 @@ static cchar *createSecurityToken(HttpConn *conn)
 
 
 /*
-    Get the security token. Create one if required.
- */
-PUBLIC cchar *httpGetSecurityToken(HttpConn *conn)
-{
-    HttpRx      *rx;
-
-    rx = conn->rx;
-
-    if (rx->securityToken == 0) {
-        rx->securityToken = (char*) httpGetSessionVar(conn, BIT_XSRF_COOKIE, 0);
-        if (rx->securityToken == 0) {
-            createSecurityToken(conn);
-        }
-    }
-    return rx->securityToken;
-}
-
-
-/*
     Add the security token to a XSRF cookie and response header
+    Set recreate to true to force a recreation of the token.
  */
-PUBLIC int httpAddSecurityToken(HttpConn *conn) 
+PUBLIC int httpAddSecurityToken(HttpConn *conn, bool recreate) 
 {
     cchar   *securityToken;
 
-    securityToken = httpGetSecurityToken(conn);
+    securityToken = httpGetSecurityToken(conn, recreate);
     httpSetCookie(conn, BIT_XSRF_COOKIE, securityToken, "/", NULL,  0, 0);
     httpSetHeader(conn, BIT_XSRF_HEADER, securityToken);
     return 0;
@@ -15164,11 +15222,9 @@ PUBLIC bool httpCheckSecurityToken(HttpConn *conn)
 #endif
         if (!smatch(sessionToken, requestToken)) {
             /*
-                Potential CSRF attack. Deny request.
-                Re-create a new security token so legitimate clients can retry.
+                Potential CSRF attack. Deny request. Re-create a new security token so legitimate clients can retry.
              */
-            createSecurityToken(conn);
-            httpAddSecurityToken(conn);
+            httpAddSecurityToken(conn, 1);
             return 0;
         }
     }
@@ -15661,6 +15717,7 @@ static void manageTx(HttpTx *tx, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(tx->altBody);
+        mprMark(tx->authType);
         mprMark(tx->cache);
         mprMark(tx->cacheBuffer);
         mprMark(tx->cachedContent);
@@ -15682,9 +15739,6 @@ static void manageTx(HttpTx *tx, int flags)
         mprMark(tx->queue[1]);
         mprMark(tx->rangeBoundary);
         mprMark(tx->webSockKey);
-
-    } else if (flags & MPR_MANAGE_FREE) {
-        httpDestroyTx(tx);
     }
 }
 
@@ -15923,15 +15977,6 @@ PUBLIC int httpIsOutputFinalized(HttpConn *conn)
 
 
 /*
-    Flush the write queue. Only in async mode, this call may yield. 
- */
-PUBLIC void httpFlush(HttpConn *conn)
-{
-    httpFlushQueue(conn->writeq, conn->async ? HTTP_NON_BLOCK : HTTP_BLOCK);
-}
-
-
-/*
     This formats a response and sets the altBody. The response is not HTML escaped.
     This is the lowest level for formatResponse.
  */
@@ -16130,14 +16175,17 @@ PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path
     if (path == 0) {
         path = "/";
     }
-    domain = (char*) cookieDomain;
-    if (!domain) {
-        domain = sclone(rx->hostHeader);
-        if ((cp = strchr(domain, ':')) != 0) {
-            *cp = '\0';
+    domain = 0;
+    if (cookieDomain) {
+        if (*cookieDomain) {
+            domain = (char*) cookieDomain;
+        } else {
+            /* Omit domain if set to empty string */
         }
-        if (*domain && domain[strlen(domain) - 1] == '.') {
-            domain[strlen(domain) - 1] = '\0';
+    } else if (rx->hostHeader) {
+        mprParseSocketAddress(rx->hostHeader, &domain, NULL, NULL, 0);
+        if (domain && (*domain == ':' || isdigit(*domain))) {
+            domain = 0;
         }
     }
     domainAtt = domain ? "; domain=" : "";
@@ -16358,8 +16406,8 @@ PUBLIC void httpSetFilename(HttpConn *conn, cchar *filename, int flags)
             return;
         }
     }
-    if ((tx->ext = httpGetPathExt(filename)) == 0) {
-        tx->ext = httpGetPathExt(conn->rx->pathInfo);
+    if (!tx->ext || tx->ext[0] == '\0') {
+        tx->ext = httpGetPathExt(filename);
     }
     mprGetPathInfo(filename, info);
     if (info->valid) {
@@ -16437,8 +16485,7 @@ PUBLIC void httpWriteHeaders(HttpQueue *q, HttpPacket *packet)
                 mprPutToBuf(buf, "http://%s:%d%s?%s %s", http->proxyHost, http->proxyPort, 
                     parsedUri->path, parsedUri->query, conn->protocol);
             } else {
-                mprPutToBuf(buf, "http://%s:%d%s %s", http->proxyHost, http->proxyPort, parsedUri->path,
-                    conn->protocol);
+                mprPutToBuf(buf, "http://%s:%d%s %s", http->proxyHost, http->proxyPort, parsedUri->path, conn->protocol);
             }
         } else {
             if (parsedUri->query && *parsedUri->query) {
@@ -16482,6 +16529,7 @@ PUBLIC void httpWriteHeaders(HttpQueue *q, HttpPacket *packet)
     }
     tx->headerSize = mprGetBufLength(buf);
     tx->flags |= HTTP_TX_HEADERS_CREATED;
+    tx->authType = conn->authType;
     q->count += httpGetPacketLength(packet);
 }
 
@@ -17583,7 +17631,6 @@ PUBLIC HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *base)
     } else {
         if (!uri->host) {
             uri->host = base->host;
-            /* Must not add a port if there is already a host */
             if (!uri->port) {
                 uri->port = base->port;
             }
@@ -17937,8 +17984,17 @@ PUBLIC HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool l
 
     for (i = 0; i < argc; i++) {
         other = others[i];
-        if (other->scheme) {
+        if (other->scheme && !smatch(current->scheme, other->scheme)) {
             current->scheme = sclone(other->scheme);
+            /*
+                If the scheme is changed (test above), then accept an explict port.
+                If no port, then must not use the current port as the scheme has changed.
+             */
+            if (other->port) {
+                current->port = other->port;
+            } else if (current->port) {
+                current->port = 0;
+            }
         }
         if (other->host) {
             current->host = sclone(other->host);
@@ -18058,7 +18114,12 @@ PUBLIC char *httpUriEx(HttpConn *conn, cchar *target, MprHash *options)
     //  OPT
     target = httpTemplate(conn, tplate, options);
     uri = httpCreateUri(target, 0);
-    uri = httpResolveUri(httpCreateUri(rx->uri, 0), 1, &uri, 0);
+    /*
+        This was changed from: httpCreateUri(rx->uri) to rx->parsedUri.
+        The use case was appweb: /auth/form/login which redirects using: https:///auth/form/login on localhost:4443
+        This must extract the existing host and port from the prior request
+     */
+    uri = httpResolveUri(rx->parsedUri, 1, &uri, 0);
     httpNormalizeUri(uri);
     return httpUriToString(uri, 0);
 }
@@ -18085,7 +18146,7 @@ PUBLIC char *httpValidateUriPath(cchar *uri)
 {
     char    *up;
 
-    if (*uri != '/') {
+    if (uri == 0 || *uri != '/') {
         return 0;
     }
     if (!httpValidUriChars(uri)) {

@@ -62,7 +62,6 @@ static char *dataTypeToSqlType[] = {
 
 /************************************ Forwards ********************************/
 
-static void cloneValidations(Edi *edi, Edi *base);
 static EdiRec *createBareRec(Edi *edi, cchar *tableName, int nfields);
 static EdiField makeRecField(cchar *value, cchar *name, int type);
 static void manageSdb(Sdb *sdb, int flags);
@@ -70,11 +69,11 @@ static int mapSqliteTypeToEdiType(int type);
 static cchar *mapToSqlType(int type);
 static int mapToEdiType(cchar *type);
 static EdiGrid *query(Edi *edi, cchar *cmd, ...);
+static EdiGrid *queryArgv(Edi *edi, cchar *cmd, int argc, cchar **argv, ...);
 static EdiGrid *queryv(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list args);
 static int sdbAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags);
 static int sdbAddIndex(Edi *edi, cchar *tableName, cchar *columnName, cchar *indexName);
 static int sdbAddTable(Edi *edi, cchar *tableName);
-static int sdbAddValidation(Edi *edi, cchar *tableName, cchar *fieldName, EdiValidation *vp);
 static int sdbChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags);
 static void sdbClose(Edi *edi);
 static EdiRec *sdbCreateRec(Edi *edi, cchar *tableName);
@@ -680,7 +679,7 @@ static int sdbUpdateRec(Edi *edi, EdiRec *rec)
     }
     argv[argc] = NULL;
 
-    if (queryv(edi, mprGetBufStart(buf), argc, argv, NULL) == 0) {
+    if (queryArgv(edi, mprGetBufStart(buf), argc, argv) == 0) {
         return MPR_ERR_CANT_WRITE;
     }
     return 0;
@@ -703,6 +702,21 @@ static EdiGrid *query(Edi *edi, cchar *cmd, ...)
     va_start(args, cmd);
     grid = queryv(edi, cmd, 0, NULL, args);
     va_end(args);
+    return grid;
+}
+
+
+/*
+    Vars are ignored. Just to satisify old compilers
+ */
+static EdiGrid *queryArgv(Edi *edi, cchar *cmd, int argc, cchar **argv, ...)
+{
+    va_list     vargs;
+    EdiGrid     *grid;
+
+    va_start(vargs, argv);
+    grid = queryv(edi, cmd, argc, argv, vargs);
+    va_end(vargs);
     return grid;
 }
 
@@ -755,7 +769,7 @@ static EdiGrid *queryv(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list var
             cmd = tail;
             continue;
         }
-        if (vargs) {
+        if (argc == 0) {
             for (index = 0; (arg = va_arg(vargs, cchar*)) != 0; index++) {
                 if (sqlite3_bind_text(stmt, index + 1, arg, -1, 0) != SQLITE_OK) {
                     sdbError(edi, "SDB: cannot bind to arg: %d, %s, error: %s", index + 1, arg, sqlite3_errmsg(db));

@@ -1,5 +1,5 @@
 /*
-    ejs.c -- Embethis Ejscript Shell Command
+    ejs.c -- Embedthis Ejscript Shell Command
 
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
@@ -312,7 +312,9 @@ MAIN(ejsMain, int argc, char **argv, char **envp)
         return MPR_ERR_MEMORY;
     }
     app->ejs = ejs;
+#if UNUSED
     mprRunDispatcher(ejs->dispatcher);
+#endif
 
     if (ejsLoadModules(ejs, searchPath, app->modules) < 0) {
         return MPR_ERR_CANT_READ;
@@ -371,14 +373,14 @@ MAIN(ejsMain, int argc, char **argv, char **envp)
         mprPrintMem("Memory Usage", 1);
 #endif
     }
-    if (!err) {
-        err = mpr->exitStatus;
+    if (err) {
+        mprSetExitStatus(err);
     }
     app->ejs = 0;
     app->compiler = 0;
     ejsDestroy(ejs);
-    mprDestroy(MPR_EXIT_DEFAULT);
-    return err;
+    mprDestroy();
+    return mprGetExitStatus();
 }
 
 

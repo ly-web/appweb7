@@ -1,5 +1,5 @@
 /*
-    post Controller
+    post Controller (esp-angular-mvc)
  */
 #include "esp.h"
 
@@ -50,27 +50,19 @@ static void updatePost() {
     Dynamic module initialization
  */
 ESP_EXPORT int esp_controller_blog_post(HttpRoute *route, MprModule *module) {
-    Edi     *edi;
-
     espDefineAction(route, "post-create", createPost);
     espDefineAction(route, "post-get", getPost);
     espDefineAction(route, "post-init", initPost);
     espDefineAction(route, "post-list", listPost);
     espDefineAction(route, "post-remove", removePost);
     espDefineAction(route, "post-update", updatePost);
-    /*
-        Add model validations
-     */
-    edi = espGetRouteDatabase(route);
+    
+#if SAMPLE_VALIDATIONS
+    Edi *edi = espGetRouteDatabase(route);
     ediAddValidation(edi, "present", "post", "title", 0);
     ediAddValidation(edi, "unique", "post", "title", 0);
     ediAddValidation(edi, "banned", "post", "body", "(swear|curse)");
-
-#if FUTURE
-    /*
-        Regular expression to check the format of a field. This example requires posts to mention dog or cat.
-     */
-    ediAddValidation(edi, "format", "post", "body", "(cat|dog)");
+    ediAddValidation(edi, "format", "post", "phone", "/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/");
 #endif
     return 0;
 }

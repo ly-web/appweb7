@@ -150,7 +150,7 @@ MAIN(httpMain, int argc, char **argv, char **envp)
     if (!app->success && app->verbose) {
         mprError("Request failed");
     }
-    mprDestroy(MPR_EXIT_DEFAULT);
+    mprDestroy();
     return (app->success) ? 0 : 255;
 }
 
@@ -866,7 +866,7 @@ static int issueRequest(HttpConn *conn, cchar *url, MprList *files)
                     url = httpUriToString(target, HTTP_COMPLETE_URI);
                     count = 0;
                 }
-                if (conn->rx && conn->rx->status == HTTP_CODE_UNAUTHORIZED && authType) {
+                if (conn->rx && conn->rx->status == HTTP_CODE_UNAUTHORIZED && authType && smatch(authType, conn->authType)) {
                     /* Supplied authentication details and failed */
                     break;
                 }
@@ -1131,7 +1131,7 @@ static void finishThread(MprThread *tp)
     if (tp) {
         mprLock(app->mutex);
         if (--app->activeLoadThreads <= 0) {
-            mprTerminate(MPR_EXIT_DEFAULT, -1);
+            mprShutdown(MPR_EXIT_NORMAL, 0, 0);
         }
         mprUnlock(app->mutex);
     }

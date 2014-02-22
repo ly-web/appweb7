@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.5.0-rc.3 Documentation</title>
+    <title>Embedthis Appweb 4.5.0-rc4 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.5.0-rc.3</div>
+                <div class="version">Embedthis Appweb 4.5.0-rc4</div>
             </div>
         </div>
         <div class="crumbs">
@@ -811,7 +811,7 @@
                     </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>MemoryPolicy prune|restart|exit</td>
+                        <td>MemoryPolicy continue|restart</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -825,22 +825,23 @@
                         <td class="pivot">Notes</td>
                         <td>
                             <p>Appweb manages memory proactively and ensures reliable operation by preventing memory 
-                            allocation errors 
-                            before they occur. It does this by defining a memory limit and enforcing a memory policy
-                            for how to react when memory is depleted.</p>
+                            allocation errors before they occur. It does this by defining a memory limit and applying 
+                            a memory policy for how to react when memory is depleted.</p>
                             <p>The MemoryPolicy directive defines how Appweb will respond to low memory conditions.
                             While the LimitMemory directive defines a maximum amount of memory that Appweb is permitted to
                             use, the MemoryPolicy directive defines how Appweb will respond when the limit is
                             approached and exceeded.</p>
-                            <p>Appweb also institutes a memory redline that is 85% of the memory limit. When memory
-                            utilization exceeds the redline value, Appweb will attempt to free non-essential memory such 
-                            as the data for request caching. If memory utilization exceeds the maximum memory limit, Appweb
-                            will invoke the memory depletion policy defined by this directive.</p> 
-                            <p>If the memory policy is set to <em>prune</em>, Appweb will prune all non-essential memory,
+                            <p>If memory utilization exceeds the maximum memory limit, Appweb
+                            will invoke the memory depletion policy defined by this directive.
+                            Appweb also institutes a memory redline that is 85% of the memory limit. When memory
+                            utilization exceeds the redline value, Appweb will issue a warning to the error log and 
+                            attempt to free non-essential memory such as old session data and request caching. </p>
+                            <p>If the memory policy is set to <em>continue</em>, Appweb will prune all non-essential memory,
                             but will continue to run. i.e. the limit becomes a soft limit and can be exceeded. If the policy
-                            is set to restart, then Appweb will do a graceful restart if the maximum is exceeded. A graceful
-                            restart will allow up to 30 seconds for existing requests to complete. If the policy is set to
-                            exit, then Appweb will immediately exit if the maximum is exceeded.</p>
+                            is set to <em>restart</em>, then Appweb will do a graceful restart if the maximum is exceeded. 
+                            A graceful restart will allow existing requests to complete up to the timeout specified by
+                            the ExitTimeout directive. Appweb relies on the <em>appman</em> manager application to restart 
+                            appweb in this case.</p>
                         </td>
                     </tr>
                 </tbody>

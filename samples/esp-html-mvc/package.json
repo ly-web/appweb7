@@ -1,30 +1,38 @@
 {
-    "name": "esp-html-mvc",
-    "description": "ESP Server-Side HTML MVC Sample",
-    "version": "1.0.0",
-    "esp": {
-        "auth": "app",
-        "scripts": {
-            "less": [ "*" ]
-        },
-        "serverPrefix": "/do",
-        "formats": {
-            "date": "yyyy-MM-dd",
-            "float": 2
-        },
-        "redirect": "secure"
-        "server": {
-            "database": "mdb://blog.mdb"
-        }
+    "name": "blog",
+    "title": "blog",
+    "description": "blog",
+    "version": "0.0.0",
+    "dependencies": {
+        "esp-server": "~4.5",
+        "esp-html-mvc": "~4.5"
     },
-    "generate": {
-        "top": "html-mvc",
-        "scaffold": true,
-        "clientModel": false,
-        "clientController": false,
-        "clientView": false,
-        "controller": true,
-        "migration": true,
-        "view": false
+    "client-scripts": [
+    ],
+    "dirs": {
+        "client": "client",
+        "paks": "client/paks"
+    },
+    "esp": {
+        "combined": false,
+        "update": true,
+        "serverPrefix": "/do",
+        "server": {
+            "generate": {
+                "appweb": "esp-html-mvc/appweb.conf",
+                "migration": "esp-server/migration.c",
+                "controller": "esp-html-mvc/controller.c",
+                "controller-singleton": "esp-html-mvc/controller-singleton.c",
+                "files": [
+                    "esp-server/src/app.c",
+                    "esp-html-mvc/start.bit",
+                    "esp-html-mvc/client/**"
+                ],
+                "clientList": "esp-html-mvc/list.esp",
+                "clientEdit": "esp-html-mvc/edit.esp"
+            },
+            "database": "mdb://blog.mdb"
+        },
+        "auth": "app"
     }
 }

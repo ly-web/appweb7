@@ -37,6 +37,13 @@ The following samples are available:
 * [websockets-echo](websockets-echo/README.md)      WebSockets echo server using an ESP controller.
 * [websockets-output](websockets-output/README.md)  Using WebSockets to send a large file.
 
+### Building
+
+To build the samples, see the per-sample README instructions.
+To build all, use:
+
+    bit --file samples.bit  samples
+
 ### Documentation
 
 The full product documentation is supplied in HTML format under the doc directory. This is also available online at:

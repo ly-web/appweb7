@@ -940,6 +940,13 @@
       <arglist>(HttpConn *conn, int status, cchar *fmt,...)</arglist>
     </member>
     <member kind="function">
+      <type>void</type>
+      <name>httpBorrowConn</name>
+      <anchorfile>group___http_conn.html</anchorfile>
+      <anchor>ga11e1e52cca2138f7aec8f66b8b8e08ca</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
       <type>bool</type>
       <name>httpClientConn</name>
       <anchorfile>group___http_conn.html</anchorfile>
@@ -1147,6 +1154,13 @@
       <name>httpResetCredentials</name>
       <anchorfile>group___http_conn.html</anchorfile>
       <anchor>gafc31fb0e49b2f9ecad11297fe6a3d616</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>httpReturnConn</name>
+      <anchorfile>group___http_conn.html</anchorfile>
+      <anchor>ga1eea2fb67ffdc13f9ae78bde57b01d4d</anchor>
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
@@ -1406,13 +1420,6 @@
     </member>
     <member kind="function">
       <type>int</type>
-      <name>httpAddAuthStore</name>
-      <anchorfile>group___http_auth.html</anchorfile>
-      <anchor>ga3863f1d9e8e297c85355324c24f88c57</anchor>
-      <arglist>(cchar *name, HttpVerifyUser verifyUser)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
       <name>httpAddAuthType</name>
       <anchorfile>group___http_auth.html</anchorfile>
       <anchor>gaa6f7776164fd762e0f107f8049ef2755</anchor>
@@ -1459,6 +1466,13 @@
       <anchorfile>group___http_auth.html</anchorfile>
       <anchor>ga9b67b82baec4f1a4fd9d17d8a25e0d07</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>HttpAuthStore *</type>
+      <name>httpCreateAuthStore</name>
+      <anchorfile>group___http_auth.html</anchorfile>
+      <anchor>ga94f376c6de2c2f698ab64ffbc75c00cc</anchor>
+      <arglist>(cchar *name, HttpVerifyUser verifyUser)</arglist>
     </member>
     <member kind="function">
       <type>HttpRole *</type>
@@ -1585,6 +1599,13 @@
       <anchorfile>group___http_auth.html</anchorfile>
       <anchor>ga9edb29a658e66f66df80100308a1aa73</anchor>
       <arglist>(HttpAuth *auth, cchar *store)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>httpSetAuthStoreSessions</name>
+      <anchorfile>group___http_auth.html</anchorfile>
+      <anchor>ga895c0dc075f8c19759c0f52f06b98567</anchor>
+      <arglist>(HttpAuthStore *store, bool noSession)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -2019,6 +2040,13 @@
     </member>
     <member kind="function">
       <type>void</type>
+      <name>httpSetRouteCookie</name>
+      <anchorfile>group___http_route.html</anchorfile>
+      <anchor>gaa866b1973062f7ac9ede6b344099f4d8</anchor>
+      <arglist>(HttpRoute *route, cchar *cookie)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
       <name>httpSetRouteData</name>
       <anchorfile>group___http_route.html</anchorfile>
       <anchor>gaf63bed103e906efe134668c20e5338ef</anchor>
@@ -2037,6 +2065,20 @@
       <anchorfile>group___http_route.html</anchorfile>
       <anchor>ga1a03a99690272ae6825e63fd26f58053</anchor>
       <arglist>(HttpRoute *route, cchar *path)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>httpSetRouteEnvEscape</name>
+      <anchorfile>group___http_route.html</anchorfile>
+      <anchor>ga11a18eefd269777da3c11095d7f78aea</anchor>
+      <arglist>(HttpRoute *route, bool on)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>httpSetRouteEnvPrefix</name>
+      <anchorfile>group___http_route.html</anchorfile>
+      <anchor>ga46bcdb0cf373c27862fe61c7ae660c1b</anchor>
+      <arglist>(HttpRoute *route, cchar *prefix)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -2243,8 +2285,8 @@
       <type>int</type>
       <name>httpAddSecurityToken</name>
       <anchorfile>group___http_session.html</anchorfile>
-      <anchor>gafcadbc5f304c531aa3375bf6950b2f1d</anchor>
-      <arglist>(HttpConn *conn)</arglist>
+      <anchor>ga6885fbd081fff504033038a476311023</anchor>
+      <arglist>(HttpConn *conn, bool recreate)</arglist>
     </member>
     <member kind="function">
       <type>HttpSession *</type>
@@ -2278,8 +2320,8 @@
       <type>cchar *</type>
       <name>httpGetSecurityToken</name>
       <anchorfile>group___http_session.html</anchorfile>
-      <anchor>ga57f15d62e4b0acec465c1c9e44e2b61d</anchor>
-      <arglist>(HttpConn *conn)</arglist>
+      <anchor>gaf9cf17d34b63a2982e6d4d9eb3f4c6cf</anchor>
+      <arglist>(HttpConn *conn, bool recreate)</arglist>
     </member>
     <member kind="function">
       <type>HttpSession *</type>
@@ -2714,6 +2756,13 @@
       <name>httpFlush</name>
       <anchorfile>group___http_tx.html</anchorfile>
       <anchor>ga23c2dd9ef6d1b76a146bb93731fa7b7d</anchor>
+      <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>httpFlushAll</name>
+      <anchorfile>group___http_tx.html</anchorfile>
+      <anchor>ga35bdc02cd0f2f7e5dc9350ca8a933972</anchor>
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
@@ -3297,6 +3346,13 @@
       <name>name</name>
       <anchorfile>struct_http_auth_store.html</anchorfile>
       <anchor>a0b440dbdd3aa06e0ea63b3627586ba9d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>int</type>
+      <name>noSession</name>
+      <anchorfile>struct_http_auth_store.html</anchorfile>
+      <anchor>a3a3af729cfd76d8497c700f9de6d49c4</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">

@@ -77,17 +77,15 @@ MAIN(appweb, int argc, char **argv, char **envp)
     Mpr     *mpr;
     cchar   *argp, *jail;
     char    *logSpec;
-    int     argind, status, verbose;
+    int     argind, level;
 
     jail = 0;
-    verbose = 0;
+    level = 0;
     logSpec = 0;
 
     if ((mpr = mprCreate(argc, argv, MPR_USER_EVENTS_THREAD)) == NULL) {
         exit(1);
     }
-    mprSetAppName(BIT_PRODUCT, BIT_TITLE, BIT_VERSION);
-
     if ((app = mprAllocObj(AppwebApp, manageApp)) == NULL) {
         exit(2);
     }
@@ -166,14 +164,14 @@ MAIN(appweb, int argc, char **argv, char **envp)
             app->workers = atoi(argv[++argind]);
 
         } else if (smatch(argp, "--verbose") || smatch(argp, "-v")) {
-            verbose++;
+            level = 2;
 
         } else if (smatch(argp, "--version") || smatch(argp, "-V")) {
             mprPrintf("%s\n", BIT_VERSION);
             exit(0);
 
         } else if (*argp == '-' && isdigit((uchar) argp[1])) {
-            verbose = (int) stoi(&argp[1]);
+            level = (int) stoi(&argp[1]);
 
         } else if (!smatch(argp, "?")) {
             mprError("Unknown switch \"%s\"", argp);
@@ -186,13 +184,13 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if (logSpec) {
         mprStartLogging(logSpec, 1);
         mprSetCmdlineLogging(1);
-    } else if (verbose) {
-        mprStartLogging(sfmt("stderr:%d", verbose + 1), 1);
+    } else if (level) {
+        mprStartLogging(sfmt("stderr:%d", level), 1);
         mprSetCmdlineLogging(1);
     }
     if (mprStart() < 0) {
         mprError("Cannot start MPR for %s", mprGetAppName());
-        mprDestroy(MPR_EXIT_DEFAULT);
+        mprDestroy();
         return MPR_ERR_CANT_INITIALIZE;
     }
     if (checkEnvironment(argv[0]) < 0) {
@@ -211,16 +209,11 @@ MAIN(appweb, int argc, char **argv, char **envp)
         mprError("Cannot start HTTP service, exiting.");
         exit(9);
     }
-    /*
-        Service I/O events until instructed to exit
-     */
-    while (!mprIsStopping()) {
-        mprServiceEvents(-1, 0);
-    }
-    status = mprGetExitStatus();
+    mprServiceEvents(-1, 0);
+
     mprLog(1, "Stopping Appweb ...");
-    mprDestroy(MPR_EXIT_DEFAULT);
-    return status;
+    mprDestroy();
+    return mprGetExitStatus();
 }
 
 

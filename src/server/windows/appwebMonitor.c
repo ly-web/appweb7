@@ -21,12 +21,9 @@
 typedef struct App {
     cchar        *company;              /* Company name */
     cchar        *serviceName;          /* Name of appweb service */
-    cchar        *serviceTitle;         /* Title of appweb service */
-    cchar        *serviceWindowName;    /* Name of appweb service */
-    cchar        *serviceWindowTitle;   /* Title of appweb service */
     int          taskBarIcon;           /* Icon in the task bar */
     HINSTANCE    appInst;               /* Current application instance */
-    HWND         appHwnd;               /* Application window handle */
+    HWND         hwnd;                  /* Application window handle */
     HMENU        subMenu;               /* As the name says */
     HMENU        monitorMenu;           /* As the name says */
 } App;
@@ -51,7 +48,6 @@ static SERVICE_TABLE_ENTRY      svcTable[] = {
 
 /***************************** Forward Declarations ***************************/
 
-static void     eventLoop();
 static void     closeMonitorIcon();
 static int      getAppwebPort();
 static char     *getBrowserPath(int size);
@@ -76,7 +72,9 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
     char    *argv[BIT_MAX_ARGC], *argp;
     int     argc, err, nextArg, manage, stop;
 
+	argv[0] = BIT_NAME "Monitor";
     argc = mprParseArgs(command, &argv[1], BIT_MAX_ARGC - 1) + 1;
+
     if (mprCreate(argc, argv, MPR_USER_EVENTS_THREAD | MPR_NO_WINDOW) == NULL) {
         exit(1);
     }
@@ -89,14 +87,10 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
     stop = 0;
     manage = 0;
     app->appInst = inst;
-    app->company = stok(slower(BIT_COMPANY), " ", NULL);
-    app->serviceName = sjoin(app->company, "-", BIT_PRODUCT, NULL);
-    app->serviceTitle = sclone(BIT_TITLE);
-    app->serviceWindowName = sclone(BIT_PRODUCT "Angel");
-    app->serviceWindowTitle = sclone(BIT_TITLE "Angel");
-
-    mprSetAppName(BIT_PRODUCT "Monitor", BIT_TITLE " Monitor", BIT_VERSION);
+    app->company = sclone(BIT_COMPANY);
+    app->serviceName = sclone(BIT_PRODUCT);
     mprSetLogHandler(logHandler);
+
     chdir(mprGetAppDir());
 
     /*
@@ -132,12 +126,12 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
         mprError("Application %s is already active.", mprGetAppTitle());
         return MPR_ERR_BUSY;
     }
-    mprSetNotifierThread(0);
-    app->appHwnd = mprGetHwnd();
+    app->hwnd = mprSetNotifierThread(0);
     mprSetWinMsgCallback(msgProc);
+
     if (app->taskBarIcon > 0) {
-        ShowWindow(app->appHwnd, SW_MINIMIZE);
-        UpdateWindow(app->appHwnd);
+        ShowWindow(app->hwnd, SW_MINIMIZE);
+        UpdateWindow(app->hwnd);
     }
     if (manage) {
         /*
@@ -149,10 +143,11 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
         if (openMonitorIcon() < 0) {
             mprError("Can't open %s tray", mprGetAppName());
         } else {
-            eventLoop();
+            mprServiceEvents(-1, 0);
             closeMonitorIcon();
         }
     }
+    mprDestroy();
     return 0;
 }
 
@@ -162,36 +157,6 @@ static void manageApp(App *app, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(app->company);
         mprMark(app->serviceName);
-        mprMark(app->serviceTitle);
-        mprMark(app->serviceWindowName);
-        mprMark(app->serviceWindowTitle);
-    } else if (flags & MPR_MANAGE_FREE) {
-    }
-}
-
-
-/*
-    Sample main event loop. This demonstrates how to integrate Mpr with your
-    applications event loop using select()
- */
-void eventLoop()
-{
-    MSG     msg;
-
-    /*
-        If single threaded or if you desire control over the event loop, you 
-        should code an event loop similar to that below:
-     */
-    while (!mprIsStopping()) {		
-        /*
-            Socket events will be serviced in the msgProc
-         */
-        if (GetMessage(&msg, NULL, 0, 0) == 0) {
-            /*  WM_QUIT received */
-            break;
-        }
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
     }
 }
 
@@ -203,7 +168,7 @@ static int findInstance()
 {
     HWND    hwnd;
 
-    hwnd = FindWindow(mprGetAppName(), mprGetAppTitle());
+    hwnd = FindWindow(mprGetAppName(), mprGetAppName());
     if (hwnd) {
         if (IsIconic(hwnd)) {
             ShowWindow(hwnd, SW_RESTORE);
@@ -219,7 +184,7 @@ static void stopMonitor()
 {
     HWND    hwnd;
 
-    hwnd = FindWindow(mprGetAppName(), mprGetAppTitle());
+    hwnd = FindWindow(mprGetAppName(), mprGetAppName());
     if (hwnd) {
         PostMessage(hwnd, WM_QUIT, 0, 0L);
     }
@@ -247,7 +212,7 @@ static long msgProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
     switch (msg) {
     case WM_DESTROY:
     case WM_QUIT:
-        mprTerminate(MPR_EXIT_GRACEFUL, -1);
+        mprShutdown(0, -1, 0);
         break;
     
     case APPWEB_MONITOR_MESSAGE:
@@ -262,10 +227,11 @@ static long msgProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
             runBrowser("http://embedthis.com/products/appweb/doc/index.html");
             break;
 
+#if UNUSED
         case MA_MENU_MANAGE:
             runBrowser("/index.html");
             break;
-
+#endif
         case MA_MENU_START:
             tp = mprCreateThread("startService", startService, 0, 0);
             mprStartThread(tp);
@@ -331,7 +297,7 @@ static int openMonitorIcon()
         return MPR_ERR_CANT_INITIALIZE;
     }
     data.uID = APPWEB_MONITOR_ID;
-    data.hWnd = app->appHwnd;
+    data.hWnd = app->hwnd;
     data.hIcon = iconHandle;
     data.cbSize = sizeof(NOTIFYICONDATA);
     data.uCallbackMessage = APPWEB_MONITOR_MESSAGE;
@@ -354,7 +320,7 @@ static void closeMonitorIcon()
     NOTIFYICONDATA  data;
 
     data.uID = APPWEB_MONITOR_ID;
-    data.hWnd = app->appHwnd;
+    data.hWnd = app->hwnd;
     data.cbSize = sizeof(NOTIFYICONDATA);
     Shell_NotifyIcon(NIM_DELETE, &data);
     if (app->monitorMenu) {
@@ -381,11 +347,11 @@ static int monitorEvent(HWND hwnd, WPARAM wp, LPARAM lp)
     int             state;
 
     msg = lp;
-
+	
     /*
         Show the menu on single right click
      */
-    if (msg == WM_RBUTTONUP) {
+    if (msg == WM_LBUTTONUP) {
         state = queryService();
 
         if (state < 0 || state & SERVICE_STOPPED) {
@@ -410,10 +376,10 @@ static int monitorEvent(HWND hwnd, WPARAM wp, LPARAM lp)
         p.x = pos.x;
         p.y = windowRect.bottom - 20;
 
-        SetForegroundWindow(app->appHwnd);
-        TrackPopupMenu(app->subMenu, TPM_RIGHTALIGN | TPM_RIGHTBUTTON, p.x, p.y, 0, app->appHwnd, NULL);
+        SetForegroundWindow(app->hwnd);
+        TrackPopupMenu(app->subMenu, TPM_RIGHTALIGN | TPM_RIGHTBUTTON, p.x, p.y, 0, app->hwnd, NULL);
         /* Required Windows work-around */
-        PostMessage(app->appHwnd, WM_NULL, 0, 0);
+        PostMessage(app->hwnd, WM_NULL, 0, 0);
         return 0;
     }
 
@@ -459,7 +425,7 @@ static void updateMenu(int id, char *text, int enable, int check)
     } else if (check < 0) {
         rc = CheckMenuItem(app->subMenu, id, MF_BYCOMMAND | MF_UNCHECKED);
     }
-    rc = DrawMenuBar(app->appHwnd);
+    rc = DrawMenuBar(app->hwnd);
 }
 
 
@@ -480,7 +446,7 @@ static void shutdownAppweb()
     HWND    hwnd;
     int     i;
 
-    hwnd = FindWindow(app->serviceWindowName, app->serviceWindowTitle);
+    hwnd = FindWindow(MPR->name, MPR->name);
     if (hwnd) {
         PostMessage(hwnd, WM_QUIT, 0, 0L);
         /*
@@ -488,11 +454,11 @@ static void shutdownAppweb()
          */
         for (i = 0; hwnd && i < 100; i++) {
             mprSleep(100);
-            hwnd = FindWindow(app->serviceWindowName, app->serviceWindowTitle);
+            hwnd = FindWindow(MPR->name, MPR->name);
         }
 
     } else {
-        mprError("Can't find %s to kill", app->serviceWindowTitle);
+        mprError("Can't find %s to kill", MPR->name);
         return;
     }
 }
@@ -698,31 +664,15 @@ static uint queryService()
 
 /*
     @copy   default
-  
+
     Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2014. All Rights Reserved.
-  
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
-    this software for full details.
-  
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-  
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-  
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
-  
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

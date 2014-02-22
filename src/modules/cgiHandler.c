@@ -30,8 +30,9 @@ static void browserToCgiService(HttpQueue *q);
 static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp);
 static void cgiCallback(MprCmd *cmd, int channel, void *data);
 static void cgiToBrowserData(HttpQueue *q, HttpPacket *packet);
-static int copyParams(cchar **envv, int index, MprJson *params, cchar *prefix);
-static int copyVars(cchar **envv, int index, MprHash *vars, cchar *prefix);
+static void copyInner(HttpConn *conn, cchar **envv, int index, cchar *key, cchar *value, cchar *prefix);
+static int copyParams(HttpConn *conn, cchar **envv, int index, MprJson *params, cchar *prefix);
+static int copyVars(HttpConn *conn, cchar **envv, int index, MprHash *vars, cchar *prefix);
 static char *getCgiToken(MprBuf *buf, cchar *delim);
 static void manageCgi(Cgi *cgi, int flags);
 static bool parseFirstCgiResponse(Cgi *cgi, HttpPacket *packet);
@@ -96,11 +97,15 @@ static void manageCgi(Cgi *cgi, int flags)
         mprMark(cgi->cmd);
         mprMark(cgi->headers);
         mprMark(cgi->location);
+#if UNUSED
     } else {
+        assert(!cgi->cmd);
         if (cgi->cmd) {
             /* Just for safety */
+            //  MOB 
             mprDestroyCmd(cgi->cmd);
         }
+#endif
     }
 }
 
@@ -116,6 +121,7 @@ static void closeCgi(HttpQueue *q)
         if (cmd) {
             mprSetCmdCallback(cmd, NULL, NULL);
             mprDestroyCmd(cmd);
+            cgi->cmd = 0;
         }
         httpMonitorEvent(q->conn, HTTP_COUNTER_ACTIVE_PROCESSES, -1);
     }
@@ -130,6 +136,7 @@ static void startCgi(HttpQueue *q)
 {
     HttpRx          *rx;
     HttpTx          *tx;
+    HttpRoute       *route;
     HttpConn        *conn;
     MprCmd          *cmd;
     Cgi             *cgi;
@@ -142,6 +149,7 @@ static void startCgi(HttpQueue *q)
     cgi = q->queueData;
     conn = q->conn;
     rx = conn->rx;
+    route = rx->route;
     tx = conn->tx;
     mprTrace(5, "CGI: Start");
 
@@ -176,9 +184,9 @@ static void startCgi(HttpQueue *q)
      */
     varCount = mprGetHashLength(rx->headers) + mprGetHashLength(rx->svars) + mprGetJsonLength(rx->params);
     if ((envv = mprAlloc((varCount + 1) * sizeof(char*))) != 0) {
-        count = copyParams(envv, 0, rx->params, "");
-        count = copyVars(envv, count, rx->svars, "");
-        count = copyVars(envv, count, rx->headers, "HTTP_");
+        count = copyParams(conn, envv, 0, rx->params, route->envPrefix);
+        count = copyVars(conn, envv, count, rx->svars, "");
+        count = copyVars(conn, envv, count, rx->headers, "HTTP_");
         assert(count <= varCount);
     }
 #if !VXWORKS
@@ -214,11 +222,13 @@ static void waitForCgi(Cgi *cgi, MprEvent *event)
 
     conn = cgi->conn;
     cmd = cgi->cmd;
-    if (!cmd->complete) {
+    if (cmd && !cmd->complete) {
         mprPollWinCmd(cmd, 0);
         if (conn->error && cmd->pid) {
             mprStopCmd(cmd, -1);
         }
+    } else {
+        mprStopContinuousEvent(event);
     }
 }
 #endif
@@ -911,33 +921,38 @@ static void traceCGIData(MprCmd *cmd, char *src, ssize size)
 #endif
 
 
-static int copyVars(cchar **envv, int index, MprHash *vars, cchar *prefix)
+static void copyInner(HttpConn *conn, cchar **envv, int index, cchar *key, cchar *value, cchar *prefix)
+{
+    char    *cp;
+
+    if (prefix) {
+        cp = sjoin(prefix, key, "=", value, NULL);
+    } else {
+        cp = sjoin(key, "=", value, NULL);
+    }
+    if (conn->rx->route->flags & HTTP_ROUTE_ENV_ESCAPE) {
+        /*
+            This will escape: &;`'\"|*?~<>^()[]{}$\\\n and also on windows \r%
+         */
+        cp = mprEscapeCmd(cp, 0);
+    }
+    envv[index] = cp;
+    for (; *cp != '='; cp++) {
+        if (*cp == '-') {
+            *cp = '_';
+        } else {
+            *cp = toupper((uchar) *cp);
+        }
+    }
+}
+
+static int copyVars(HttpConn *conn, cchar **envv, int index, MprHash *vars, cchar *prefix)
 {
     MprKey  *kp;
-    char    *cp;
 
     for (ITERATE_KEYS(vars, kp)) {
         if (kp->data) {
-            if (prefix) {
-                cp = sjoin(prefix, kp->key, "=", (char*) kp->data, NULL);
-            } else {
-                cp = sjoin(kp->key, "=", (char*) kp->data, NULL);
-            }
-#if KEEP
-            /*
-                This will escape: &;`'\"|*?~<>^()[]{}$\\\n and also on windows \r%
-            */
-            cp = mprEscapeCmd(cp, 0);
-#endif
-            envv[index] = cp;
-            for (; *cp != '='; cp++) {
-                if (*cp == '-') {
-                    *cp = '_';
-                } else {
-                    *cp = toupper((uchar) *cp);
-                }
-            }
-            index++;
+            copyInner(conn, envv, index++, kp->key, kp->data, prefix);
         }
     }
     envv[index] = 0;
@@ -945,32 +960,18 @@ static int copyVars(cchar **envv, int index, MprHash *vars, cchar *prefix)
 }
 
 
-//  FUTURE - rethink. duplicates copyVars
-static int copyParams(cchar **envv, int index, MprJson *params, cchar *prefix)
+static int copyParams(HttpConn *conn, cchar **envv, int index, MprJson *params, cchar *prefix)
 {
     MprJson     *param;
-    char        *cp;
     int         i;
 
     for (ITERATE_JSON(params, param, i)) {
-        if (prefix) {
-            cp = sjoin(prefix, param->name, "=", param->value, NULL);
-        } else {
-            cp = sjoin(param->name, "=", param->value, NULL);
-        }
-        envv[index] = cp;
-        for (; *cp != '='; cp++) {
-            if (*cp == '-') {
-                *cp = '_';
-            } else {
-                *cp = toupper((uchar) *cp);
-            }
-        }
-        index++;
+        copyInner(conn, envv, index++, param->name, param->value, prefix);
     }
     envv[index] = 0;
     return index;
 }
+
 
 static int actionDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -982,6 +983,31 @@ static int actionDirective(MaState *state, cchar *key, cchar *value)
     mprSetMimeProgram(state->route->mimeTypes, mimeType, program);
     return 0;
 }
+
+
+static int cgiEscapeDirective(MaState *state, cchar *key, cchar *value)
+{
+    bool    on;
+
+    if (!maTokenize(state, value, "%B", &on)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpSetRouteEnvEscape(state->route, on);
+    return 0;
+}
+
+
+static int cgiPrefixDirective(MaState *state, cchar *key, cchar *value)
+{
+    cchar   *prefix;
+
+    if (!maTokenize(state, value, "%S", &prefix)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    httpSetRouteEnvPrefix(state->route, prefix);
+    return 0;
+}
+
 
 
 static int scriptAliasDirective(MaState *state, cchar *key, cchar *value)
@@ -1033,6 +1059,8 @@ PUBLIC int maCgiHandlerInit(Http *http, MprModule *module)
     appweb = httpGetContext(http);
     maAddDirective(appweb, "Action", actionDirective);
     maAddDirective(appweb, "ScriptAlias", scriptAliasDirective);
+    maAddDirective(appweb, "CgiEscape", cgiEscapeDirective);
+    maAddDirective(appweb, "CgiPrefix", cgiPrefixDirective);
     return 0;
 }
 

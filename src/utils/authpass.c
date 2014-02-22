@@ -37,7 +37,6 @@ PUBLIC int main(int argc, char *argv[])
     int         i, errflg, create, nextArg;
 
     mpr = mprCreate(argc, argv, 0);
-    mprSetAppName(argv[0], NULL, NULL);
     programName = mprGetAppName(mpr);
 
     username = 0;
@@ -135,7 +134,7 @@ PUBLIC int main(int argc, char *argv[])
     if (maWriteAuthFile(auth, authFile) < 0) {
         exit(6);
     }
-    mprDestroy(MPR_EXIT_DEFAULT);
+    mprDestroy();
     return 0;
 }
 

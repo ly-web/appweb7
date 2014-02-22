@@ -83,7 +83,7 @@ int main(int argc, char **argv, char **envp)
     mprServiceEvents(-1, 0);
     maStopServer(server);
     mprRemoveRoot(appweb);
-    mprDestroy(MPR_EXIT_DEFAULT);
+    mprDestroy();
     return 0;
 }
 

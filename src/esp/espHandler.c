@@ -77,13 +77,19 @@ static void openEsp(HttpQueue *q)
         return;
     }
     if (!eroute) {
-        eroute = allocEspRoute(route);
+        httpError(conn, 0, "Cannot find a suitable ESP route");
         return;
     }
     conn->data = req;
     req->esp = esp;
     req->route = route;
     req->autoFinalize = 1;
+    /*
+        If a cookie is not explicitly set, use the application name for the session cookie
+     */
+    if (!route->cookie && eroute->appName && *eroute->appName) {
+        route->cookie = eroute->appName;
+    }
 }
 
 
@@ -329,7 +335,7 @@ static int runAction(HttpConn *conn)
             if (rx->flags & HTTP_POST) {
                 httpSetStatus(conn, HTTP_CODE_UNAUTHORIZED);
                 if (eroute->json) {
-                    mprLog(2, "esp: Security token is stale. Please reload page.");
+                    mprLog(2, "esp: Stale security token.");
                     espRenderString(conn, "{\"retry\": true, \"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
                     espFinalize(conn);
                 } else {
@@ -390,7 +396,8 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     }
     httpAddHeaderString(conn, "Content-Type", "text/html");
     if (rx->route->flags & HTTP_ROUTE_XSRF) {
-        httpAddSecurityToken(conn);
+        /* Add a new unique security token */
+        httpAddSecurityToken(conn, 1);
     }
     /* WARNING: GC yield */
     (viewProc)(conn);
@@ -651,6 +658,7 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->compile);
         mprMark(eroute->config);
         mprMark(eroute->controllersDir);
+        mprMark(eroute->currentSession);
         mprMark(eroute->database);
         mprMark(eroute->dbDir);
         mprMark(eroute->edi);
@@ -838,7 +846,6 @@ static EspRoute *getEroute(HttpRoute *route)
             return route->eroute;
         }
     }
-
     /*
         Lookup up the route chain for any configured EspRoutes
      */
@@ -1744,6 +1751,9 @@ static int unloadEsp(MprModule *mp)
 
     if (esp->inUse) {
        return MPR_ERR_BUSY;
+    }
+    if (mprIsStopping()) {
+        return 0;
     }
     if ((stage = httpLookupStage(MPR->httpService, mp->name)) != 0) {
         stage->flags |= HTTP_STAGE_UNLOADED;
