@@ -28449,7 +28449,8 @@ static void manageWaitHandler(MprWaitHandler *wp, int flags)
 
 
 /*
-    This is a special case API, it is called by finalizers such as closeSocket
+    This is a special case API, it is called by finalizers such as closeSocket.
+    It needs special handling for the shutdown case.
  */
 PUBLIC void mprRemoveWaitHandler(MprWaitHandler *wp)
 {

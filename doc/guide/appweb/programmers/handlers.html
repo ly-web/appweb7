@@ -343,10 +343,32 @@ mprCreateEvent(q-&gt;conn-&gt;dispatcher, "deviceEvent", 0, doMoreOutput, q, 0);
 </pre>
         <p>This will schedule the function <em>doMoreOutput</em> to run from the connection dispatcher. 
         <p>You may call mprCreateEvent from any Appweb thread and the scheduled function will run serialized 
-       within the event loop for the connection.</p>
-        <p>If you need to create an event from a non-Appweb thread, you must use 
-        <a href="../../../api/mpr.html#group___mpr_event_1ga6a994158ec8edfe48a47a243ea09c4b8">mprCreateEventOutside</a> 
-        instead of mprCreateEvent.</p>
+        within the event loop for the connection.</p>
+        <h4>Interacting with External Services</h4>
+        <p>If you need to interact with external services or libraries, you may have the need to asynchronously 
+            resume processing of the Appweb connection from a non-Appweb thread or library callback. 
+            However, you must not interact with an Appweb connection from a non-appweb thread otherwise you may clash
+            with Appweb simultaneously using the connection object. To run code from a non-Appweb thread, use
+            <a href="../../../api/mpr.html#group___mpr_event_1ga6a994158ec8edfe48a47a243ea09c4b8">mprCreateEventOutside</a>. 
+            This call arranges for your code to be safely run serialized from the connection's dispatcher. This call is
+            thread-safe to invoke from non-Appweb threads. </p>
+            <p>Before you call mprCreateEventOutside, first call 
+            <a href="../../../api/http.html#group___http_conn_1ga11e1e52cca2138f7aec8f66b8b8e08ca">httpBorrowConn</a> to
+            temporarily get an exclusive loan of the connection. This is required to ensure the connection is not destroyed
+            before your event can run. This can happen if the client disconnects or if the connection timeout expires. 
+            Then call 
+            <a href="../../../api/http.html#group___http_conn_1ga1eea2fb67ffdc13f9ae78bde57b01d4d">httpReturnConn</a> in
+            your event callback to resume normal processing of the connection.</p>
+            <pre>
+httpBorrowConn(conn);
+httpCreateEventOutside(conn->dispatcher, 0, 0, myEvent, conn, HTTP_EVENT_BLOCK);
+void myEvent(HttpConn *conn, MprEvent *event) {
+    /* Running serialized on an Appweb thread */
+    httpWrite(conn, "Login Successful");
+    httpFinalize(conn);
+    httpReturnConn(conn);
+}
+</pre>
         <h4>Owning a Connection</h4>
         <p>Appweb monitors requests and imposes timeout limits. The <em>RequestTimeout</em> directive in the appweb.conf file
         specifies the maximum time a request can take to complete. The <em>InactivityTimeout</em> directive specifies the maximum
@@ -357,14 +379,9 @@ mprCreateEvent(q-&gt;conn-&gt;dispatcher, "deviceEvent", 0, doMoreOutput, q, 0);
             href="../../../api/http.html#group___http_conn_1ga62a6f4aec1892bd682d7a661d1aae4ee">httpSetTimeout</a>
         API. Alternatively, the handler can <em>steal</em> the socket handle from Appweb and assume responsibility for 
         the connection via: <a
-            href="../../../api/http.html#group___http_conn_1ga2dabae1fcd13e8f482399d43133f4a69">httpStealSocketHandle</a>. </p>
-        <p>Note that the HttpConn object and other request objects will be preserved in memory even after Appweb closes a
-        request and connection. This is because calling <em>mprCreateEvent</em> with a queue reference will maintain a
-        reference to the queue and connection object and this reference will delay the garbage collector from reclaiming
-        the memory for these objects.</p>
-        <p>When output is complete, 
-        <a href="../../../api/http.html#group___http_tx_1ga279ad49e5163402e2afd6caf478bcc70">httpFinalize</a> should be called to signal the completion of the request.</p>
-        
+            href="../../../api/http.html#group___http_conn_1ga2dabae1fcd13e8f482399d43133f4a69">httpStealSocketHandle</a>. 
+            This terminates the request and connection, but preserves the open socket handle. This is useful for 
+            upgrading from HTTP to a custom protocols after an initial HTTP connection is established.</p>
         <a id="coding"></a>
         <h2>Coding Issues</h2>
         <p>There are a few coding issues to keep in mind when creating handlers. Appweb is a multithreaded event loop

@@ -5994,6 +5994,10 @@ PUBLIC MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTicks
         This routine will create and queue the event and then return, unless MPR_EVENT_BLOCK is specified. In that case,
         this call will wait while the event callback proc runs to completion then this routine will return.
         \n\n
+        If you want to access MPR objects in the event callback, you may need to take steps to ensure they still exist when
+        the event runs. This may mean calling #mprAddRoot before creating the event and calling #mprRemoveRoot inside the
+        event callback.
+        \n\n
         While creating and queuing the event, this routine temporarily pauses the garbage collector. If the garbage collector 
         is running, this call waits for it to complete before creating the event. This may necessitate a small delay before 
         running the event.
@@ -6004,7 +6008,7 @@ PUBLIC MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTicks
         This should only be used for quick, non-block event callbacks.  If using another dispatcher, it is essential that 
         the dispatcher not be destroyed while this event is queued or running. Such dispatchers must be retained before calling
         mprCallEventOutside via #mprAddRoot or #mprHold before using with this routine.
-    @param name Descriptive event name. Does not need to be unique.
+    @param name Descriptive event name. Does not need to be unique. Can be null.
     @param proc Callback function to invoke when the event is run
     @param data Data to associate with the event and stored in event->data. The data must be non-MPR memory.
     @param flags Set to MPR_EVENT_BLOCK to invoke the callback and wait for its completion before returning.

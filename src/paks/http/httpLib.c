@@ -2535,7 +2535,7 @@ PUBLIC HttpConn *httpCreateConn(Http *http, HttpEndpoint *endpoint, MprDispatche
  */
 PUBLIC void httpDestroyConn(HttpConn *conn)
 {
-    if (!conn->destroyed) {
+    if (!conn->destroyed && !conn->borrowed) {
         HTTP_NOTIFY(conn, HTTP_EVENT_DESTROY, 0);
         if (httpServerConn(conn)) {
             httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_CONNECTIONS, -1);
@@ -2714,6 +2714,9 @@ static bool prepForNext(HttpConn *conn)
     assert(conn->endpoint);
     assert(conn->state == HTTP_STATE_COMPLETE);
 
+    if (conn->borrowed) {
+        return 0;
+    }
     if (conn->keepAliveCount <= 0) {
         conn->state = HTTP_STATE_BEGIN;
         return 0;
@@ -2938,7 +2941,7 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn)
     rx = conn->rx;
     tx = conn->tx;
 
-    if (mprShouldAbortRequests()) {
+    if (mprShouldAbortRequests() || conn->borrowed) {
         return;
     }
     if (conn->workerEvent) {
@@ -3001,6 +3004,27 @@ PUBLIC void httpUsePrimary(HttpConn *conn)
 }
 
 
+PUBLIC void httpBorrowConn(HttpConn *conn)
+{
+    assert(!conn->borrowed);
+    if (!conn->borrowed) {
+        mprAddRoot(conn);
+        conn->borrowed = 1;
+    }
+}
+
+
+PUBLIC void httpReturnConn(HttpConn *conn)
+{
+    assert(conn->borrowed);
+    if (conn->borrowed) {
+        conn->borrowed = 0;
+        mprRemoveRoot(conn);
+        httpEnableConnEvents(conn);
+    }
+}
+
+
 /*
     Steal the socket object from a connection. This disconnects the socket from management by the Http service.
     It is the callers responsibility to call mprCloseSocket when required.
@@ -3014,7 +3038,7 @@ PUBLIC MprSocket *httpStealSocket(HttpConn *conn)
     assert(conn->sock);
     assert(!conn->destroyed);
 
-    if (!conn->destroyed) {
+    if (!conn->destroyed && !conn->borrowed) {
         lock(conn->http);
         sock = mprCloneSocket(conn->sock);
         (void) mprStealSocketHandle(conn->sock);
