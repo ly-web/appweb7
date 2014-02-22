@@ -4522,10 +4522,7 @@ PUBLIC HttpHost *httpCreateHost()
     host->routes = mprCreateList(-1, MPR_LIST_STABLE);
     host->flags = HTTP_HOST_NO_TRACE;
 #if UNUSED
-    //  MOB - if http has a default protocol, should inherit here
     host->protocol = sclone("HTTP/1.1");
-#endif
-#if UNUSED
     host->mutex = mprCreateLock();
 #endif
     host->streams = mprCreateHash(HTTP_SMALL_HASH_SIZE, MPR_HASH_STABLE);
@@ -4549,7 +4546,6 @@ PUBLIC HttpHost *httpCloneHost(HttpHost *parent)
 #if UNUSED
     host->mutex = mprCreateLock();
 #endif
-
     /*
         The dirs and routes are all copy-on-write.
         Don't clone ip, port and name
@@ -7618,6 +7614,21 @@ PUBLIC bool httpFlushQueue(HttpQueue *q, int flags)
         }
     }
     return (q->count < q->max) ? 1 : 0;
+}
+
+
+PUBLIC void httpFlush(HttpConn *conn)
+{
+    httpFlushQueue(conn->writeq, HTTP_NON_BLOCK);
+}
+
+
+/*
+    Flush the write queue. In sync mode, this call may yield. 
+ */
+PUBLIC void httpFlushAll(HttpConn *conn)
+{
+    httpFlushQueue(conn->writeq, conn->async ? HTTP_NON_BLOCK : HTTP_BLOCK);
 }
 
 
@@ -15967,15 +15978,6 @@ PUBLIC int httpIsFinalized(HttpConn *conn)
 PUBLIC int httpIsOutputFinalized(HttpConn *conn)
 {
     return conn->tx->finalizedOutput;
-}
-
-
-/*
-    Flush the write queue. Only in async mode, this call may yield. 
- */
-PUBLIC void httpFlush(HttpConn *conn)
-{
-    httpFlushQueue(conn->writeq, conn->async ? HTTP_NON_BLOCK : HTTP_BLOCK);
 }
 
 

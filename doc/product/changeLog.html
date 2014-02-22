@@ -245,6 +245,8 @@
                 <li>The HttpHost structure no longer contains an IP or Port fields. See the appropriate HttpEndpoint structure</li>
                 <li>Removed the Protocol directive to define HTTP/1.0 vs HTTP/1.1. This is now sensed from the client.
                     Removed the httpSetHostProtocol API.</li>
+                <li>Reinstated httpFlush behaviour to only initiate flushing and not wait for completion. Use httpFlushAll
+                    to flush and wait for completion.</li>
             </ul>
 
             <a id="r4.4.4"></a>

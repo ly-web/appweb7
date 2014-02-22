@@ -6224,17 +6224,29 @@ PUBLIC void httpFinalizeOutput(HttpConn *conn);
 
 /**
     Flush transmit data. 
-    @description This call initiates writing buffered data. 
-    If in sync mode this call may block until the output queues drain.
-    This routine may invoke mprYield before it blocks to consent for the garbage collector to run. Callers must
-    ensure they have retained all required temporary memory before invoking this routine.
-    Filters and connectors should not call this routine as it may block.
+    @description This call initiates writing buffered data an will not block.
+    If you need to wait until all the data has been written to the socket, use #httpFlushAll.
     Handlers may only call this routine in their open, close, ready, start and writable callbacks.
     @param conn HttpConn connection object created via #httpCreateConn
     @ingroup HttpTx
     @stability Stable
  */
 PUBLIC void httpFlush(HttpConn *conn);
+
+/**
+    Flush transmit data and wait for all the data to be written to the socket. 
+    @description This call initiates writing buffered data. 
+    If in sync mode this call may block until the output queues drain.
+    In sync mode, this may invoke mprYield before blocking to consent for the garbage collector to run. Callers must
+    ensure they have retained all required temporary memory before invoking this routine.
+    Filters and connectors should not call this routine as it may block. Use #httpFlush in filters or connectors.
+    Handlers may only call this routine in their open, close, ready, start and writable callbacks.
+    See #httpFlush if you do need to wait for all the data to be written to the socket.
+    @param conn HttpConn connection object created via #httpCreateConn
+    @ingroup HttpTx
+    @stability Stable
+ */
+PUBLIC void httpFlushAll(HttpConn *conn);
 
 /** 
     Follow redirctions

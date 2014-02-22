@@ -88,7 +88,7 @@ static void startProxy(HttpQueue *q)
         httpSetHeader(target, "X-Forwarded-For", );
     }
     //  Push headers out - this may not work
-    httpFlush();
+    httpFlush(conn);
 #endif
 }
 
