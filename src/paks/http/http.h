@@ -6905,16 +6905,7 @@ typedef struct HttpHost {
     HttpEndpoint    *defaultEndpoint;       /**< Default endpoint for host */
     HttpEndpoint    *secureEndpoint;        /**< Secure endpoint for host */
     MprHash         *streams;               /**< Hash of mime-types to stream record */
-#if UNUSED
-    char            *protocol;              /**< Defaults to "HTTP/1.1" */
-#endif
-#if UNUSED
-    char            *root;                  /**< Home for this host */
-#endif
     int             flags;                  /**< Host flags */
-#if UNUSED
-    MprMutex        *mutex;                 /**< Multithread sync */
-#endif
 } HttpHost;
 
 /**
