@@ -2472,9 +2472,7 @@ typedef struct HttpConn {
     MprTicks        started;                /**< When the request started (ticks) */
     MprTicks        lastActivity;           /**< Last activity on the connection */
     MprEvent        *timeoutEvent;          /**< Connection or request timeout event */
-#if UNUSED && KEEP
-    MprEvent        *workerEvent;           /**< Event for running connection via a worker thread */
-#endif
+    MprEvent        *workerEvent;           /**< Event for running connection via a worker thread (used by ejs) */
 
     void            *context;               /**< Embedding context (EjsRequest) */
     void            *ejs;                   /**< Embedding VM */
