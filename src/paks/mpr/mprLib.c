@@ -9540,7 +9540,6 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout)
 {
     MprEventService     *es;
     MprTicks            expires, delay;
-    MprOsThread         thread;
     int                 signalled, wasRunning, runEvents, nevents;
 
     es = MPR->eventService;
@@ -9553,7 +9552,6 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout)
     if (dispatcher->flags & MPR_DISPATCHER_WAITING) {
         return MPR_ERR_BUSY;
     }
-    thread = mprGetCurrentOsThread();
     expires = timeout < 0 ? (es->now + MPR_MAX_TIMEOUT) : (es->now + timeout);
     signalled = 0;
 
