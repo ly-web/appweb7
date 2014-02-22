@@ -875,9 +875,9 @@ static void exportCache()
         }
     }
     appwebPaks = mprJoinPath(mprGetAppDir(), "../" BIT_ESP_PAKS);
-    paks = mprGetPathFiles(appwebPaks, MPR_PATH_DESCEND | MPR_PATH_RELATIVE);
-    vtrace("Export", "Copying Appweb Paks to %s", app->paksCacheDir);
+    vtrace("Export", "Appweb paks from %s to %s", appwebPaks, app->paksCacheDir);
 
+    paks = mprGetPathFiles(appwebPaks, MPR_PATH_DESCEND | MPR_PATH_RELATIVE);
     for (ITERATE_ITEMS(paks, dp, i)) {
         src = mprJoinPath(appwebPaks, dp->name);
         dest = mprJoinPath(app->paksCacheDir, dp->name);
