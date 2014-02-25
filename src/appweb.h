@@ -583,7 +583,7 @@ PUBLIC bool maTokenize(MaState *state, cchar *str, cchar *fmt, ...);
 */
 PUBLIC char *maGetNextArg(char *s, char **tok);
 
-#if DEPRECATE || 1
+#if DEPRECATED || 1
 PUBLIC char *maGetNextToken(char *s, char **tok);
 #endif
 

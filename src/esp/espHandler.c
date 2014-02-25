@@ -1638,7 +1638,7 @@ static int espRouteSetDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-#if DEPRECATE || 1
+#if DEPRECATED || 1
 /*
     EspShowErrors on|off
     Now use ShowErrors
@@ -1732,7 +1732,7 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     maAddDirective(appweb, "EspRoutePrefix", espRoutePrefixDirective);
     maAddDirective(appweb, "EspRouteSet", espRouteSetDirective);
     maAddDirective(appweb, "EspUpdate", espUpdateDirective);
-#if DEPRECATE || 1
+#if DEPRECATED || 1
     maAddDirective(appweb, "EspShowErrors", espShowErrorsDirective);
 #endif
     if ((esp->ediService = ediCreateService()) == 0) {

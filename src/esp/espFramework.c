@@ -579,7 +579,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 httpSetRouteServerPrefix(route, value);
                 httpSetRouteVar(route, "SERVER_PREFIX", sjoin(route->prefix ? route->prefix: "", route->serverPrefix, 0));
             }
-#if DEPRECATE || 1
+#if DEPRECATED || 1
             if ((value = espGetConfig(route, "esp.routePrefix", 0)) != 0) {
                 httpSetRouteServerPrefix(route, value);
                 httpSetRouteVar(route, "SERVER_PREFIX", sjoin(route->prefix ? route->prefix: "", route->serverPrefix, 0));
@@ -591,7 +591,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             }
             if ((value = espGetConfig(route, "esp.xsrf", 0)) != 0) {
                 httpSetRouteXsrf(route, smatch(value, "true"));
-#if DEPRECATE || 1
+#if DEPRECATED || 1
             } else if ((value = espGetConfig(route, "esp.xsrfToken", 0)) != 0) {
                 httpSetRouteXsrf(route, smatch(value, "true"));
 #endif
@@ -600,7 +600,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             }
             if ((value = espGetConfig(route, "esp.json", 0)) != 0) {
                 eroute->json = smatch(value, "true");
-#if DEPRECATE || 1
+#if DEPRECATED || 1
             } else {
                 if ((value = espGetConfig(route, "esp.sendJson", 0)) != 0) {
                     eroute->json = smatch(value, "true");
@@ -611,7 +611,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 route->limits->sessionTimeout = httpGetTicks(value);
                 mprLog(2, "esp: set session timeout to %s", value);
             }
-#if DEPRECATE || 1
+#if DEPRECATED || 1
             if (espTestConfig(route, "esp.map", "compressed")) {
                 httpAddRouteMapping(route, "css,html,js,less,txt,xml", "${1}.gz, min.${1}.gz, min.${1}");
             }

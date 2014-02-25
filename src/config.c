@@ -1880,7 +1880,7 @@ static int prefixDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-#if DEPRECATE
+#if DEPRECATED
 /*
     Protocol HTTP/1.0
     Protocol HTTP/1.1
@@ -1897,7 +1897,7 @@ static int protocolDirective(MaState *state, cchar *key, cchar *value)
 #endif
 
 
-#if DEPRECATE || 1
+#if DEPRECATED || 1
 /*
     PutMethod on|off
  */
@@ -2033,7 +2033,7 @@ static int requireDirective(MaState *state, cchar *key, cchar *value)
         }
         addCondition(state, "secure", age, 0);
 
-#if DEPRECATE || 1 
+#if DEPRECATED || 1 
     } else if (scaselesscmp(type, "user") == 0) {
         /*
             Achieve this via abilities
@@ -2384,7 +2384,7 @@ static int threadStackDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-#if DEPRECATE || 1
+#if DEPRECATED || 1
 /*
     TraceMethod on|off
  */
@@ -3027,7 +3027,7 @@ PUBLIC char *maGetNextArg(char *s, char **tok)
 }
 
 
-#if DEPRECATE || 1
+#if DEPRECATED || 1
 PUBLIC char *maGetNextToken(char *s, char **tok)
 {
     return maGetNextArg(s, tok);
