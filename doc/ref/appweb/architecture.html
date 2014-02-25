@@ -202,7 +202,7 @@
                 <tr>
                     <td>Secure Sockets Layer (SSL)</td>
                     <td>Secure Socket Layer protocol stack. This is a virtual interface that can selectively support a
-                    variety of SSL providers including: the Peersec MatrixSSL and OpenSSL stacks.</td>
+                    variety of SSL providers including: the EST, MatrixSSL and OpenSSL stacks.</td>
                 </tr>
                 </tbody>
             </table>
@@ -233,20 +233,7 @@
             configuration file which means that the order of directives matters.</p>
             
             <a id="requests"></a>
-            <h2 class="section">Request Processing</h2><!--
-        - Header parsing
-        - Request Matching
-            - By extension
-            - By location block
-        - Pipeline construction
-        - Run pipeline
-            - Pipeline input
-            - Pipeline output
-            - Header generation
-            - Filters
-                - Chunking
-        - Keep alive
-        -->
+            <h2 class="section">Request Processing</h2>
             <p>The Appweb HTTP core manages the processing of requests and the construction of the request processing
             pipeline. When a new HTTP request arrives, Appweb will examine the network interface on which the request
             arrived, and if it is assigned to an IP based virtual host, Appweb will route the request to be handled by
@@ -270,7 +257,7 @@ HeaderName: value
             <table title="Headers">
                 <thead>
                     <tr>
-                        <th>Header</th>
+                        <th nowrap="nowrap">Header</th>
                         <th>Description</th>
                     </tr>
                 </thead>
@@ -302,7 +289,7 @@ HeaderName: value
                     hosting.</td>
                 </tr>
                 <tr>
-                    <td>If-Modified-Since</td>
+                    <td nowrap="nowrap">If-Modified-Since</td>
                     <td>Only return the content if it has been modified since the date specified. Clients who have
                     cached copies of a document (or graphics) use this header to allow the server to skip copying the
                     document if it has not changed.</td>
