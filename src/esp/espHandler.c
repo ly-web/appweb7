@@ -472,6 +472,7 @@ static bool loadEspModule(HttpRoute *route, cchar *kind, cchar *source, cchar **
     if (eroute->update) {
         if (!mprPathExists(source, R_OK)) {
             *errMsg = sfmt("Cannot find %s \"%s\" to load", kind, source);
+            unlock(esp);
             return 0;
         }
         if (espModuleIsStale(source, module, &recompile) || (isView && layoutIsStale(eroute, source, module))) {
