@@ -156,7 +156,7 @@ PUBLIC MaServer *maCreateServer(MaAppweb *appweb, cchar *name)
     server->appweb = appweb;
     server->http = appweb->http;
 
-    server->defaultHost = host = httpCreateHost(NULL);
+    server->defaultHost = host = httpCreateHost();
     if (!httpGetDefaultHost()) {
         httpSetDefaultHost(host);
     }
@@ -197,7 +197,7 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
         return 0;
 
     } else {
-        if ((endpoint = httpCreateConfiguredEndpoint(home, documents, ip, port)) == 0) {
+        if ((endpoint = httpCreateConfiguredEndpoint(server->defaultHost, home, documents, ip, port)) == 0) {
             return MPR_ERR_CANT_OPEN;
         }
         maAddEndpoint(server, endpoint);

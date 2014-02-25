@@ -482,6 +482,8 @@ PUBLIC void maAddDirective(MaAppweb *appweb, cchar *directive, MaDirective proc)
  */
 PUBLIC int maArchiveLog(cchar *path, int count, int maxSize);
 
+PUBLIC int maParseFile(MaState *state, cchar *path);
+
 /**
     Pop the state 
     @description This is used when parsing config files to handle nested include files and block level directives

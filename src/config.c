@@ -14,14 +14,12 @@ static int addCondition(MaState *state, cchar *name, cchar *condition, int flags
 static int addUpdate(MaState *state, cchar *name, cchar *details, int flags);
 static bool conditionalDefinition(MaState *state, cchar *key);
 static int configError(MaState *state, cchar *key);
-static MaState *createState(MaServer *server, HttpHost *host, HttpRoute *route);
+static MaState *createState(MaServer *server, int flags);
 static char *getDirective(char *line, char **valuep);
 static int getint(cchar *value);
 static int64 getnum(cchar *value);
 static void manageState(MaState *state, int flags);
-static int parseFile(MaState *state, cchar *path);
 static int parseFileInner(MaState *state, cchar *path);
-
 static int setTarget(MaState *state, cchar *name, cchar *details);
 
 /******************************************************************************/
@@ -46,7 +44,6 @@ PUBLIC int maOpenConfig(MaState *state, cchar *path)
 PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
 {
     MaState     *state;
-    HttpHost    *host;
     HttpRoute   *route;
     cchar       *dir;
 
@@ -55,9 +52,8 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
 
     mprLog(2, "Using config file: \"%s\"", mprGetAbsPath(path));
 
-    host = server->defaultHost;
-    route = host->defaultRoute;
-    
+    state = createState(server, flags);
+    route = state->route;
     dir = mprGetAbsPath(mprGetPathDir(path));
 
     httpSetRouteHome(route, dir);
@@ -72,9 +68,7 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     /* DEPRECATED */ httpSetRouteVar(route, "BINDIR", mprJoinPath(server->appweb->platformDir, "bin"));
 #endif
 
-    server->state = state = createState(server, host, route);
-    state->flags = flags;
-    if (parseFile(state, path) < 0) {
+    if (maParseFile(state, path) < 0) {
         server->state = 0;
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -93,22 +87,26 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
 }
 
 
-static int parseFile(MaState *state, cchar *path)
+PUBLIC int maParseFile(MaState *state, cchar *path)
 {
-    int     rc;
+    MaAppweb    *appweb;
+    MaState     *topState;
+    int         rc;
 
-    assert(state);
     assert(path && *path);
-
-    if ((state = maPushState(state)) == 0) {
-        return 0;
+    if (!state) {
+        appweb = MPR->appwebService;
+        topState = state = createState(appweb->defaultServer, 0);
+    } else {
+        topState = 0;
+        state = maPushState(state);
     }
-    assert(state == state->top->current);
-    
     rc = parseFileInner(state, path);
-    state->lineNumber = state->prev->lineNumber;
-    state = maPopState(state);
-    assert(state->top->current == state);
+    if (topState) {
+        state->server->state = 0;
+    } else {
+        maPopState(state);
+    }
     return rc;
 }
 
@@ -371,12 +369,12 @@ static int addHandlerDirective(MaState *state, cchar *key, cchar *value)
     }
     if (smatch(handler, "espHandler") && !espLoaded) {
         path = "./esp.conf";
-        if (!mprPathExists("esp.conf", R_OK)) {
+        if (!mprPathExists(path, R_OK)) {
             path = httpMakePath(state->route, state->configDir, "${BIN_DIR}/esp.conf");
         }
         if (mprPathExists(path, R_OK)) {
             espLoaded = 1;
-            if (parseFile(state, path) < 0) {
+            if (maParseFile(state, path) < 0) {
                 return MPR_ERR_CANT_OPEN;
             }
         } else {
@@ -1095,7 +1093,7 @@ static int includeDirective(MaState *state, cchar *key, cchar *value)
     value = mprGetAbsPath(mprJoinPath(state->configDir, httpExpandRouteVars(state->route, value)));
 
     if (strpbrk(value, "^$*+?([|{") == 0) {
-        if (parseFile(state, value) < 0) {
+        if (maParseFile(state, value) < 0) {
             return MPR_ERR_CANT_OPEN;
         }
     } else {
@@ -1104,7 +1102,7 @@ static int includeDirective(MaState *state, cchar *key, cchar *value)
         pattern = mprGetPathBase(value);
         includes = mprGlobPathFiles(path, pattern, 0);
         for (ITERATE_ITEMS(includes, include, next)) {
-            if (parseFile(state, include) < 0) {
+            if (maParseFile(state, include) < 0) {
                 return MPR_ERR_CANT_OPEN;
             }
         }
@@ -2828,9 +2826,14 @@ static int setTarget(MaState *state, cchar *name, cchar *details)
 /*
     This is used to create the outermost state only
  */
-static MaState *createState(MaServer *server, HttpHost *host, HttpRoute *route)
+static MaState *createState(MaServer *server, int flags)
 {
     MaState     *state;
+    HttpHost    *host;
+    HttpRoute   *route;
+
+    host = server->defaultHost;
+    route = host->defaultRoute;
 
     if ((state = mprAllocObj(MaState, manageState)) == 0) {
         return 0;
@@ -2846,6 +2849,8 @@ static MaState *createState(MaServer *server, HttpHost *host, HttpRoute *route)
     state->enabled = 1;
     state->lineNumber = 0;
     state->auth = state->route->auth;
+    state->flags = flags;
+    server->state = state;
     return state;
 }
 

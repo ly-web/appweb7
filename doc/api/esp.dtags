@@ -108,6 +108,13 @@
       <arglist>(HttpRoute *route, cchar *name)</arglist>
     </member>
     <member kind="function">
+      <type>EspRoute *</type>
+      <name>espInitRoute</name>
+      <anchorfile>group___esp_route.html</anchorfile>
+      <anchor>ga7472b9d6d36405ec71e5986963e2e05c</anchor>
+      <arglist>(HttpRoute *route)</arglist>
+    </member>
+    <member kind="function">
       <type>int</type>
       <name>espLoadConfig</name>
       <anchorfile>group___esp_route.html</anchorfile>

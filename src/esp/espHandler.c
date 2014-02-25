@@ -20,7 +20,7 @@ static Esp *esp;
 
 /************************************ Forward *********************************/
 
-static EspRoute *allocEspRoute(HttpRoute *loc);
+PUBLIC EspRoute *espInitRoute(HttpRoute *route);
 static int espDbDirective(MaState *state, cchar *key, cchar *value);
 static int espEnvDirective(MaState *state, cchar *key, cchar *value);
 static EspRoute *getEroute(HttpRoute *route);
@@ -64,7 +64,7 @@ static void openEsp(HttpQueue *q)
         return;
     }
     /*
-        Find the ESP route configuration. Search up the route parent chain
+        Find the ESP route configuration. Search up the route parent chain.
      */
     for (eroute = 0, route = rx->route; route; route = route->parent) {
         if (route->eroute) {
@@ -73,8 +73,12 @@ static void openEsp(HttpQueue *q)
         }
     }
     if (!route) {
-        httpError(conn, 0, "Cannot find a suitable ESP route configuration in appweb.conf");
-        return;
+        route = rx->route;
+        eroute = espInitRoute(route);
+        if (maParseFile(NULL, mprJoinPath(mprGetAppDir(), "esp.conf")) < 0) {
+            httpError(conn, 0, "Cannot parse esp.conf");
+            return;
+        }
     }
     if (!eroute) {
         httpError(conn, 0, "Cannot find a suitable ESP route");
@@ -676,15 +680,15 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
 }
 
 
-//  FUTURE - make public and share with esp.c
-
-static EspRoute *allocEspRoute(HttpRoute *route)
+PUBLIC EspRoute *espInitRoute(HttpRoute *route)
 {
     cchar       *path;
     MprPath     info;
     EspRoute    *eroute;
     
-    if ((eroute = mprAllocObj(EspRoute, espManageEspRoute)) == 0) {
+    if (route->eroute) {
+        eroute = route->eroute;
+    } else if ((eroute = mprAllocObj(EspRoute, espManageEspRoute)) == 0) {
         return 0;
     }
 #if DEBUG_IDE && KEEP
@@ -855,7 +859,7 @@ static EspRoute *getEroute(HttpRoute *route)
             return cloneEspRoute(route, rp->eroute);
         }
     }
-    return allocEspRoute(route);
+    return espInitRoute(route);
 }
 
 

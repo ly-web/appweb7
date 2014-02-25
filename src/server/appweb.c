@@ -311,13 +311,18 @@ static int createEndpoints(int argc, char **argv)
     } else {
         app->documents = sclone(argv[argind++]);
         mprLog(2, "Documents %s", app->documents);
-        while (argind < argc) {
+        if (argind == argc) {
+            if (maConfigureServer(app->server, NULL, app->home, app->documents, NULL, BIT_HTTP_PORT) < 0) {
+                return MPR_ERR_CANT_CREATE;
+            }
+        } else while (argind < argc) {
             endpoint = argv[argind++];
             mprParseSocketAddress(endpoint, &ip, &port, &secure, 80);
             if (maConfigureServer(app->server, NULL, app->home, app->documents, ip, port) < 0) {
                 return MPR_ERR_CANT_CREATE;
             }
         }
+        httpLogRoutes(app->server->defaultHost, 0);
     }
     if (app->workers >= 0) {
         mprSetMaxWorkers(app->workers);

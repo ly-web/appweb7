@@ -442,6 +442,15 @@ PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue);
 PUBLIC bool espHasPak(HttpRoute *route, cchar *name);
 
 /**
+    Initialzie a route for use by ESP
+    @param route HttpRoute to modify
+    @return The allocated EspRoute object
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC EspRoute *espInitRoute(HttpRoute *route);
+
+/**
     Load ESP package.json configuration file 
     @param route HttpRoute defining the ESP application
     @returns Zero if successful, otherwise a negative MPR error code.
