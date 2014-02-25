@@ -2240,6 +2240,7 @@ installBinary: $(DEPS_97)
 	cp $(CONFIG)/bin/libhttp.so $(BIT_VAPP_PREFIX)/bin/libhttp.so ; \
 	cp $(CONFIG)/bin/libmpr.so $(BIT_VAPP_PREFIX)/bin/libmpr.so ; \
 	cp $(CONFIG)/bin/libpcre.so $(BIT_VAPP_PREFIX)/bin/libpcre.so ; \
+	cp $(CONFIG)/bin/libzlib.so $(BIT_VAPP_PREFIX)/bin/libzlib.so ; \
 	cp $(CONFIG)/bin/libslink.so $(BIT_VAPP_PREFIX)/bin/libslink.so ; \
 	if [ "$(BIT_PACK_SSL)" = 1 ]; then true ; \
 	cp $(CONFIG)/bin/libmprssl.so $(BIT_VAPP_PREFIX)/bin/libmprssl.so ; \

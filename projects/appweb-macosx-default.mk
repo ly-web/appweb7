@@ -2241,6 +2241,7 @@ installBinary: $(DEPS_97)
 	cp $(CONFIG)/bin/libhttp.dylib $(BIT_VAPP_PREFIX)/bin/libhttp.dylib ; \
 	cp $(CONFIG)/bin/libmpr.dylib $(BIT_VAPP_PREFIX)/bin/libmpr.dylib ; \
 	cp $(CONFIG)/bin/libpcre.dylib $(BIT_VAPP_PREFIX)/bin/libpcre.dylib ; \
+	cp $(CONFIG)/bin/libzlib.dylib $(BIT_VAPP_PREFIX)/bin/libzlib.dylib ; \
 	cp $(CONFIG)/bin/libslink.dylib $(BIT_VAPP_PREFIX)/bin/libslink.dylib ; \
 	if [ "$(BIT_PACK_SSL)" = 1 ]; then true ; \
 	cp $(CONFIG)/bin/libmprssl.dylib $(BIT_VAPP_PREFIX)/bin/libmprssl.dylib ; \
