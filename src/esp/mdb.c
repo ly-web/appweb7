@@ -652,7 +652,7 @@ static EdiGrid *mdbReadWhere(Edi *edi, cchar *tableName, cchar *columnName, ccha
             unlock(edi);
             return 0;
         }
-        if (col->flags & EDI_INDEX && (op & OP_EQ)) {
+        if (col->flags & EDI_INDEX && (op == OP_EQ)) {
             if ((r = lookupRow(table, value)) != 0) {
                 row = getRow(table, r);
                 grid->records[0] = createRecFromRow(edi, row);
