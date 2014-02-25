@@ -12878,6 +12878,9 @@ static bool processFinalized(HttpConn *conn)
         if (rx->route && rx->route->log) {
             httpLogRequest(conn);
         }
+        if (conn->http->logCallback) {
+            (conn->http->logCallback)(conn);
+        }
         httpMonitorEvent(conn, HTTP_COUNTER_NETWORK_IO, tx->bytesWritten);
     }
     httpSetState(conn, HTTP_STATE_COMPLETE);
@@ -14806,6 +14809,14 @@ PUBLIC bool httpConfigure(HttpConfigureProc proc, void *data, MprTicks timeout)
     return 0;
 }
 
+
+PUBLIC void httpSetRequestLogCallback(HttpRequestCallback callback)
+{
+    Http    *http;
+
+    http = MPR->httpService;
+    http->logCallback = callback;
+}
 
 /*
     @copy   default
