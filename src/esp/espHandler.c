@@ -188,13 +188,13 @@ static void startEsp(HttpQueue *q)
             See if the esp configuration or app needs to be reloaded.
          */
         if (eroute->appName && espLoadConfig(route) < 0) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load esp config for %s", eroute->appName);
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot load esp config for %s", eroute->appName);
             return;
         }
 #if !BIT_STATIC
         /* WARNING: GC yield */
         if (!loadApp(route)) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load esp module for %s", eroute->appName);
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot load esp module for %s", eroute->appName);
             return;
         }
 #endif
@@ -310,7 +310,7 @@ static int runAction(HttpConn *conn)
     if (!eroute->combined && (eroute->update || !mprLookupKey(esp->actions, key))) {
         cchar *errMsg;
         if (!loadEspModule(route, "controller", source, &errMsg)) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "%s", errMsg);
+            httpError(conn, HTTP_CODE_NOT_FOUND, "%s", errMsg);
             return 0;
         }
     }
@@ -324,7 +324,7 @@ static int runAction(HttpConn *conn)
             key = sfmt("%s/missing", mprGetPathDir(source));
             if ((action = mprLookupKey(esp->actions, key)) == 0) {
                 if ((action = mprLookupKey(esp->actions, "missing")) == 0) {
-                    httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Missing action for %s in %s", rx->target, source);
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "Missing action for %s in %s", rx->target, source);
                     return 0;
                 }
             }
@@ -384,14 +384,14 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         mprHold(source);
         if (!loadEspModule(route, "view", source, &errMsg)) {
             mprRelease(source);
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "%s", errMsg);
+            httpError(conn, HTTP_CODE_NOT_FOUND, "%s", errMsg);
             return;
         }
         mprRelease(source);
     }
 #endif
     if ((viewProc = mprLookupKey(esp->views, mprGetPortablePath(source))) == 0) {
-        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot find view");
+        httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find view");
         return;
     }
     httpAddHeaderString(conn, "Content-Type", "text/html");
