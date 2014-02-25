@@ -398,3 +398,6 @@
 #ifndef BIT_PACK_ZIP
     #define BIT_PACK_ZIP 1
 #endif
+#ifndef BIT_PACK_ZLIB
+    #define BIT_PACK_ZLIB 1
+#endif
