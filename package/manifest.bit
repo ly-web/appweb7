@@ -96,6 +96,7 @@ Bit.load({
                     '${BIN}/libhttp${SHOBJ}',
                     '${BIN}/libmpr${SHOBJ}',
                     '${BIN}/libpcre${SHOBJ}',
+                    '${BIN}/libzlib${SHOBJ}',
                     '${BIN}/libslink${SHOBJ}',
                 ],
                 to:         '${abin}/',
