@@ -244,14 +244,24 @@ PUBLIC void *espGetData(HttpConn *conn)
 
 PUBLIC Edi *espGetDatabase(HttpConn *conn)
 {
-    EspReq    *req;
+    EspReq      *req;
+    EspRoute    *eroute;
+    Edi         *edi;
 
     req = conn->data;
-    if (req == 0) {
+    edi = 0;
+    if (req == 0 && conn->rx && conn->rx->route) {
+        if ((eroute = conn->rx->route->eroute) != 0) {
+            edi = eroute->edi;
+        }
+    } else {
+        edi = req->edi;
+    }
+    if (edi == 0) {
         httpError(conn, 0, "Cannot get database instance");
         return 0;
     }
-    return req->edi;
+    return edi;
 }
 
 
@@ -302,7 +312,7 @@ PUBLIC cchar *espGetFeedback(HttpConn *conn, cchar *kind)
     cchar       *msg;
    
     req = conn->data;
-    if (kind == 0 || req->feedback == 0 || mprGetHashLength(req->feedback) == 0) {
+    if (kind == 0 || req == 0 || req->feedback == 0 || mprGetHashLength(req->feedback) == 0) {
         return 0;
     }
     for (kp = 0; (kp = mprGetNextKey(req->feedback, kp)) != 0; ) {
@@ -987,7 +997,9 @@ PUBLIC void espSetFeedbackv(HttpConn *conn, cchar *kind, cchar *fmt, va_list arg
     EspReq      *req;
     cchar       *prior, *msg;
 
-    req = conn->data;
+    if ((req = conn->data) == 0) {
+        return;
+    }
     msg = sfmtv(fmt, args);
 
     if (req->feedback == 0) {
