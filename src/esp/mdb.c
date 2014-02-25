@@ -469,6 +469,12 @@ static int mdbGetTableDimensions(Edi *edi, cchar *tableName, int *numRows, int *
 
     mdb = (Mdb*) edi;
     lock(edi);
+    if (numRows) {
+        *numRows = 0;
+    }
+    if (numCols) {
+        *numCols = 0;
+    }
     if ((table = lookupTable(mdb, tableName)) == 0) {
         unlock(edi);
         return MPR_ERR_CANT_FIND;
