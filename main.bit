@@ -8,6 +8,7 @@ Bit.load({
         "src/paks/mpr/mpr.bit",
         "src/paks/est/est.bit",
         "src/paks/pcre/pcre.bit",
+        "src/paks/zlib/zlib.bit",
         "src/paks/http/http.bit",
         "src/paks/sqlite/sqlite.bit",
         "src/libappweb.bit",
