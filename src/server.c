@@ -207,7 +207,7 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
         assert(route);
 
 #if BIT_PACK_CGI
-        maLoadModule(appweb, "cgiHandler", "mod_cgi");
+        maLoadModule(appweb, "cgiHandler", "libmod_cgi");
         if (httpLookupStage(http, "cgiHandler")) {
             httpAddRouteHandler(route, "cgiHandler", "cgi cgi-nph bat cmd pl py");
             /*
@@ -224,19 +224,19 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
         }
 #endif
 #if BIT_PACK_ESP
-        maLoadModule(appweb, "espHandler", "mod_esp");
+        maLoadModule(appweb, "espHandler", "libmod_esp");
         if (httpLookupStage(http, "espHandler")) {
             httpAddRouteHandler(route, "espHandler", "esp");
         }
 #endif
 #if BIT_PACK_EJSCRIPT
-        maLoadModule(appweb, "ejsHandler", "mod_ejs");
+        maLoadModule(appweb, "ejsHandler", "libmod_ejs");
         if (httpLookupStage(http, "ejsHandler")) {
             httpAddRouteHandler(route, "ejsHandler", "ejs");
         }
 #endif
 #if BIT_PACK_PHP
-        maLoadModule(appweb, "phpHandler", "mod_php");
+        maLoadModule(appweb, "phpHandler", "libmod_php");
         if (httpLookupStage(http, "phpHandler")) {
             httpAddRouteHandler(route, "phpHandler", "php");
         }
