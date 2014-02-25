@@ -81,6 +81,7 @@ BIT_PACK_SSL_PATH         := ssl
 BIT_PACK_UGLIFYJS_PATH    := uglifyjs
 BIT_PACK_UTEST_PATH       := utest
 BIT_PACK_ZIP_PATH         := zip
+BIT_PACK_ZLIB_PATH        := zlib
 
 CFLAGS             += -fPIC -w
 DFLAGS             += -D_REENTRANT -DPIC $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_MDB=$(BIT_PACK_MDB) -DBIT_PACK_NANOSSL=$(BIT_PACK_NANOSSL) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_PCRE=$(BIT_PACK_PCRE) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SDB=$(BIT_PACK_SDB) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_SSL=$(BIT_PACK_SSL) -DBIT_PACK_ZLIB=$(BIT_PACK_ZLIB) 
@@ -1318,18 +1319,24 @@ endif
 #
 $(CONFIG)/inc/ejs.h: $(DEPS_60)
 	@echo '      [Copy] $(CONFIG)/inc/ejs.h'
+	mkdir -p "$(CONFIG)/inc"
+	cp src/paks/ejs/ejs.h $(CONFIG)/inc/ejs.h
 
 #
 #   ejs.slots.h
 #
 $(CONFIG)/inc/ejs.slots.h: $(DEPS_61)
 	@echo '      [Copy] $(CONFIG)/inc/ejs.slots.h'
+	mkdir -p "$(CONFIG)/inc"
+	cp src/paks/ejs/ejs.slots.h $(CONFIG)/inc/ejs.slots.h
 
 #
 #   ejsByteGoto.h
 #
 $(CONFIG)/inc/ejsByteGoto.h: $(DEPS_62)
 	@echo '      [Copy] $(CONFIG)/inc/ejsByteGoto.h'
+	mkdir -p "$(CONFIG)/inc"
+	cp src/paks/ejs/ejsByteGoto.h $(CONFIG)/inc/ejsByteGoto.h
 
 #
 #   ejsLib.o
@@ -2030,6 +2037,8 @@ src/server/cache: $(DEPS_87)
 #
 $(CONFIG)/inc/testAppweb.h: $(DEPS_88)
 	@echo '      [Copy] $(CONFIG)/inc/testAppweb.h'
+	mkdir -p "$(CONFIG)/inc"
+	cp test/src/testAppweb.h $(CONFIG)/inc/testAppweb.h
 
 #
 #   testAppweb.o

@@ -35,7 +35,7 @@
     #define BIT_DESCRIPTION "Embedthis Appweb Embedded Web Server"
 #endif
 #ifndef BIT_DISCOVER
-    #define BIT_DISCOVER "cgi,dir,doxygen,dsi,esp,gzip,htmlmin,man,man2html,mdb,ngmin,pak,pmaker,recess,ssl,uglifyjs,utest,zip"
+    #define BIT_DISCOVER "cgi,dir,doxygen,dsi,esp,gzip,htmlmin,man,man2html,mdb,ngmin,pak,pmaker,recess,ssl,uglifyjs,utest,zip,zlib"
 #endif
 #ifndef BIT_EJS_DB
     #define BIT_EJS_DB 1
@@ -180,9 +180,6 @@
 #endif
 #ifndef BIT_STATIC
     #define BIT_STATIC 1
-#endif
-#ifndef BIT_SYNC
-    #define BIT_SYNC "bitos,est,http,mpr,pcre,sqlite,ejs"
 #endif
 #ifndef BIT_TITLE
     #define BIT_TITLE "Embedthis Appweb"

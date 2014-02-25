@@ -82,6 +82,7 @@ BIT_PACK_UGLIFYJS_PATH    := uglifyjs
 BIT_PACK_UTEST_PATH       := utest
 BIT_PACK_VXWORKS_PATH     := $(WIND_BASE)
 BIT_PACK_ZIP_PATH         := zip
+BIT_PACK_ZLIB_PATH        := zlib
 
 export WIND_HOME          := $(WIND_BASE)/..
 export PATH               := $(WIND_GNU_PATH)/$(WIND_HOST_TYPE)/bin:$(PATH)
@@ -1325,18 +1326,24 @@ endif
 #
 $(CONFIG)/inc/ejs.h: $(DEPS_60)
 	@echo '      [Copy] $(CONFIG)/inc/ejs.h'
+	mkdir -p "$(CONFIG)/inc"
+	cp src/paks/ejs/ejs.h $(CONFIG)/inc/ejs.h
 
 #
 #   ejs.slots.h
 #
 $(CONFIG)/inc/ejs.slots.h: $(DEPS_61)
 	@echo '      [Copy] $(CONFIG)/inc/ejs.slots.h'
+	mkdir -p "$(CONFIG)/inc"
+	cp src/paks/ejs/ejs.slots.h $(CONFIG)/inc/ejs.slots.h
 
 #
 #   ejsByteGoto.h
 #
 $(CONFIG)/inc/ejsByteGoto.h: $(DEPS_62)
 	@echo '      [Copy] $(CONFIG)/inc/ejsByteGoto.h'
+	mkdir -p "$(CONFIG)/inc"
+	cp src/paks/ejs/ejsByteGoto.h $(CONFIG)/inc/ejsByteGoto.h
 
 #
 #   ejsLib.o
@@ -2037,6 +2044,8 @@ src/server/cache: $(DEPS_87)
 #
 $(CONFIG)/inc/testAppweb.h: $(DEPS_88)
 	@echo '      [Copy] $(CONFIG)/inc/testAppweb.h'
+	mkdir -p "$(CONFIG)/inc"
+	cp test/src/testAppweb.h $(CONFIG)/inc/testAppweb.h
 
 #
 #   testAppweb.o

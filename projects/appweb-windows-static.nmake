@@ -100,6 +100,7 @@ BIT_PACK_UGLIFYJS_PATH    = uglifyjs
 BIT_PACK_UTEST_PATH       = utest
 BIT_PACK_WINSDK_PATH      = winsdk
 BIT_PACK_ZIP_PATH         = zip
+BIT_PACK_ZLIB_PATH        = zlib
 
 CC                 = cl
 LD                 = link
@@ -1381,18 +1382,24 @@ $(CONFIG)\paks: $(DEPS_61)
 #
 $(CONFIG)\inc\ejs.h: $(DEPS_62)
 	@echo '      [Copy] $(CONFIG)/inc/ejs.h'
+	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
+	copy /Y src\paks\ejs\ejs.h $(CONFIG)\inc\ejs.h
 
 #
 #   ejs.slots.h
 #
 $(CONFIG)\inc\ejs.slots.h: $(DEPS_63)
 	@echo '      [Copy] $(CONFIG)/inc/ejs.slots.h'
+	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
+	copy /Y src\paks\ejs\ejs.slots.h $(CONFIG)\inc\ejs.slots.h
 
 #
 #   ejsByteGoto.h
 #
 $(CONFIG)\inc\ejsByteGoto.h: $(DEPS_64)
 	@echo '      [Copy] $(CONFIG)/inc/ejsByteGoto.h'
+	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
+	copy /Y src\paks\ejs\ejsByteGoto.h $(CONFIG)\inc\ejsByteGoto.h
 
 #
 #   ejsLib.obj
@@ -2082,12 +2089,16 @@ $(CONFIG)\bin\appweb.exe: $(DEPS_88)
 #
 $(CONFIG)\inc\appwebMonitor.h: $(DEPS_89)
 	@echo '      [Copy] $(CONFIG)/inc/appwebMonitor.h'
+	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
+	copy /Y src\server\windows\appwebMonitor.h $(CONFIG)\inc\appwebMonitor.h
 
 #
 #   monitorResources.h
 #
 $(CONFIG)\inc\monitorResources.h: $(DEPS_90)
 	@echo '      [Copy] $(CONFIG)/inc/monitorResources.h'
+	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
+	copy /Y src\server\windows\monitorResources.h $(CONFIG)\inc\monitorResources.h
 
 #
 #   appwebMonitor.res
@@ -2156,6 +2167,8 @@ DEPS_94 = $(DEPS_94) src\server\windows\appwebMonitor.ico
 
 $(CONFIG)\bin\appwebMonitor.ico: $(DEPS_94)
 	@echo '      [Copy] $(CONFIG)/bin/appwebMonitor.ico'
+	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
+	copy /Y src\server\windows\appwebMonitor.ico $(CONFIG)\bin\appwebMonitor.ico
 
 #
 #   server-cache
@@ -2170,6 +2183,8 @@ src\server\cache: $(DEPS_95)
 #
 $(CONFIG)\inc\testAppweb.h: $(DEPS_96)
 	@echo '      [Copy] $(CONFIG)/inc/testAppweb.h'
+	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
+	copy /Y test\src\testAppweb.h $(CONFIG)\inc\testAppweb.h
 
 #
 #   testAppweb.obj
