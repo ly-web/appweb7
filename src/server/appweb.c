@@ -196,8 +196,10 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if (checkEnvironment(argv[0]) < 0) {
         exit(6);
     }
-    if (findAppwebConf() < 0) {
-        exit(7);
+    if (argc == argind) {
+        if (findAppwebConf() < 0) {
+            exit(7);
+        }
     }
     if (jail && changeRoot(jail) < 0) {
         exit(8);
@@ -302,15 +304,13 @@ static int createEndpoints(int argc, char **argv)
     loadStaticModules();
     mprGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
 
-    if (argc > argind) {
-        app->documents = sclone(argv[argind++]);
-        mprLog(2, "Documents %s", app->documents);
-    }
     if (argind == argc) {
         if (maParseConfig(app->server, app->configFile, 0) < 0) {
             return MPR_ERR_CANT_CREATE;
         }
     } else {
+        app->documents = sclone(argv[argind++]);
+        mprLog(2, "Documents %s", app->documents);
         while (argind < argc) {
             endpoint = argv[argind++];
             mprParseSocketAddress(endpoint, &ip, &port, &secure, 80);
