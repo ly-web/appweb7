@@ -2496,11 +2496,13 @@ static void generateAppDb()
         return;
     }
     ext = app->database;
+#if !BIT_PACK_SDB || !BIT_PACK_MDB
     if ((smatch(app->database, "sdb") && !BIT_PACK_SDB) || (smatch(app->database, "mdb") && !BIT_PACK_MDB)) {
         fail("Cannot find database provider: \"%s\". Ensure Appweb is configured to support \"%s\"",
                 app->database, app->database);
         return;
     }
+#endif
     dbpath = sfmt("%s/%s.%s", app->eroute->dbDir, app->appName, ext);
     makeEspDir(mprGetPathDir(dbpath));
 }

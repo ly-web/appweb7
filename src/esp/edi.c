@@ -1168,7 +1168,6 @@ PUBLIC int ediParseTypeString(cchar *type)
     } else {
         return MPR_ERR_BAD_ARGS;
     }
-    return 0;
 }
 
 

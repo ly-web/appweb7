@@ -628,7 +628,7 @@ static int cacheDirective(MaState *state, cchar *key, cchar *value)
             return MPR_ERR_BAD_SYNTAX;
         }
     }
-    if (flags & !(HTTP_CACHE_ONLY | HTTP_CACHE_UNIQUE)) {
+    if (!(flags & (HTTP_CACHE_ONLY | HTTP_CACHE_UNIQUE))) {
         flags |= HTTP_CACHE_ALL;
     }
     if (lifespan > 0 && !uris && !extensions && !types && !methods) {
