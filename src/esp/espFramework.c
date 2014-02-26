@@ -244,18 +244,18 @@ PUBLIC void *espGetData(HttpConn *conn)
 
 PUBLIC Edi *espGetDatabase(HttpConn *conn)
 {
+    HttpRx      *rx;
     EspReq      *req;
     EspRoute    *eroute;
     Edi         *edi;
 
+    rx = conn->rx;
     req = conn->data;
-    edi = 0;
-    if (req == 0 && conn->rx && conn->rx->route) {
-        if ((eroute = conn->rx->route->eroute) != 0) {
+    edi = req ? req->edi : 0;
+    if (edi == 0 && rx && rx->route) {
+        if ((eroute = rx->route->eroute) != 0) {
             edi = eroute->edi;
         }
-    } else {
-        edi = req->edi;
     }
     if (edi == 0) {
         httpError(conn, 0, "Cannot get database instance");
