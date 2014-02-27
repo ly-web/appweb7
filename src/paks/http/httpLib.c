@@ -17375,13 +17375,15 @@ PUBLIC HttpUri *httpCreateUri(cchar *uri, int flags)
     HttpUri     *up;
     char        *tok, *next;
 
-    assert(uri);
-
     if ((up = mprAllocObj(HttpUri, manageUri)) == 0) {
         return 0;
     }
     tok = up->uri = sclone(uri);
 
+    /*
+        [scheme://][hostname[:port]][/path[.ext]][#ref][?query]
+        First trim query and then reference from the end
+     */
     if ((next = schr(tok, '?')) != 0) {
         *next++ = '\0';
         up->query = sclone(next);
@@ -17390,6 +17392,10 @@ PUBLIC HttpUri *httpCreateUri(cchar *uri, int flags)
         *next++ = '\0';
         up->reference = sclone(next);
     }
+
+    /*
+        [scheme://][hostname[:port]][/path]
+     */
     if ((next = scontains(tok, "://")) != 0) {
         up->scheme = snclone(tok, (next - tok));
         if (smatch(up->scheme, "http")) {
@@ -17415,60 +17421,40 @@ PUBLIC HttpUri *httpCreateUri(cchar *uri, int flags)
         }
         tok = &next[3];
     }
-    if (schr(tok, ':')) {
-        /* Has port specifier */
-        if (*tok == '[' && ((next = strchr(tok, ']')) != 0)) {
-            /* IPv6  [::]:port/uri */
-            up->host = snclone(&tok[1], (next - tok) - 1);
-            if (*++next == ':') {
-                up->port = atoi(++next);
-            }
-            tok = schr(next, '/');
 
-        } else if ((next = spbrk(tok, ":/")) == NULL) {
-            /* hostname */
-            if (*tok) {
-                up->host = sclone(tok);
-            }
-            tok = 0;
+    /*
+        [hostname[:port]][/path]
+     */
+    if (*tok == '[' && ((next = strchr(tok, ']')) != 0)) {
+        /* IPv6  [::]:port/uri */
+//  MOB - is this right or should it be -2
+        up->host = snclone(&tok[1], (next - tok) - 1);
+        tok = ++next;
 
-        } else if (*next == ':') {
-            /* hostname:port */
-            if (next > tok) {
-                up->host = snclone(tok, next - tok);
-            }
-            up->port = atoi(++next);
-            tok = schr(next, '/');
-
-        } else if (*next == '/') {
-            /* hostname/uri */
-            if (next > tok) {
-                up->host = snclone(tok, next - tok);
-            }
-            tok = next;
+    } else if (*tok && *tok != '/' && *tok != ':') {
+        if ((next = spbrk(tok, ":/")) == 0) {
+            next = &tok[slen(tok)];
         }
+        up->host = snclone(tok, next - tok);
+        tok = next;
+    }
 
-    } else if (up->scheme && *tok != '/') {
-        /* hostname/uri */
-        if ((next = schr(tok, '/')) != 0) {
-            if (next > tok) {
-                up->host = snclone(tok, next - tok);
-            }
-            tok = next;
-        } else {
-            /* hostname */
-            if (*tok) {
-                up->host = sclone(tok);
-            }
-            tok = 0;
+    /* [:port][/path] */
+    if (*tok == ':') {
+        up->port = atoi(++tok);
+        if ((tok = schr(tok, '/')) == 0) {
+            tok = "";
         }
     }
-    if (tok) {
+
+    /* [/path] */
+    if (*tok == '/') {
         up->path = sclone(tok);
-        if ((tok = srchr(up->path, '.')) != NULL) {
+        /* path[.ext[/extra]] */
+        if ((tok = srchr(up->path, '.')) != 0) {
             if (tok[1]) {
-                if ((next = srchr(up->path, '/')) != NULL) {
-                    if (next <= tok) {
+                if ((next = srchr(up->path, '/')) != 0) {
+                    if (next < tok) {
                         up->ext = sclone(++tok);
                     }
                 } else {
@@ -17565,8 +17551,8 @@ PUBLIC HttpUri *httpCreateUriFromParts(cchar *scheme, cchar *host, int port, cch
     if (query) {
         up->query = sclone(query);
     }
-    if ((tok = srchr(up->path, '.')) != NULL) {
-        if ((cp = srchr(up->path, '/')) != NULL) {
+    if ((tok = srchr(up->path, '.')) != 0) {
+        if ((cp = srchr(up->path, '/')) != 0) {
             if (cp <= tok) {
                 up->ext = sclone(&tok[1]);
             }
@@ -17621,8 +17607,8 @@ PUBLIC HttpUri *httpCloneUri(HttpUri *base, int flags)
     if (base->query) {
         up->query = sclone(base->query);
     }
-    if (up->path && (tok = srchr(up->path, '.')) != NULL) {
-        if ((cp = srchr(up->path, '/')) != NULL) {
+    if (up->path && (tok = srchr(up->path, '.')) != 0) {
+        if ((cp = srchr(up->path, '/')) != 0) {
             if (cp <= tok) {
                 up->ext = sclone(&tok[1]);
             }
@@ -17737,8 +17723,7 @@ PUBLIC char *httpFormatUri(cchar *scheme, cchar *host, int port, cchar *path, cc
         queryDelim = query = "";
     }
     if (portDelim) {
-        uri = sjoin(scheme, hostDelim, host, portDelim, portStr, pathDelim, path, referenceDelim, reference, 
-            queryDelim, query, NULL);
+        uri = sjoin(scheme, hostDelim, host, portDelim, portStr, pathDelim, path, referenceDelim, reference, queryDelim, query, NULL);
     } else {
         uri = sjoin(scheme, hostDelim, host, pathDelim, path, referenceDelim, reference, queryDelim, query, NULL);
     }
@@ -17921,12 +17906,12 @@ PUBLIC char *httpNormalizeUriPath(cchar *pathArg)
     }
     len = (int) slen(pathArg);
     if ((dupPath = mprAlloc(len + 2)) == 0) {
-        return NULL;
+        return 0;
     }
     strcpy(dupPath, pathArg);
 
     if ((segments = mprAlloc(sizeof(char*) * (len + 1))) == 0) {
-        return NULL;
+        return 0;
     }
     nseg = len = 0;
     firstc = *dupPath;
@@ -18000,8 +17985,8 @@ PUBLIC HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool l
     /*
         Must not inherit the query or reference
      */
-    current->query = NULL;
-    current->reference = NULL;
+    current->query = 0;
+    current->reference = 0;
 
     for (i = 0; i < argc; i++) {
         other = others[i];
