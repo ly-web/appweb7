@@ -16203,7 +16203,7 @@ PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path
         }
     } else if (rx->hostHeader) {
         mprParseSocketAddress(rx->hostHeader, &domain, &port, NULL, 0);
-        if (domain && port > 0) {
+        if (domain && port) {
             domain = 0;
         }
     }
