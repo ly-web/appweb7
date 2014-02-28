@@ -16191,7 +16191,8 @@ PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path
 {
     HttpRx      *rx;
     char        *cp, *expiresAtt, *expires, *domainAtt, *domain, *secure, *httponly;
-
+    int         port;
+    
     rx = conn->rx;
     if (path == 0) {
         path = "/";
@@ -16204,8 +16205,8 @@ PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path
             /* Omit domain if set to empty string */
         }
     } else if (rx->hostHeader) {
-        mprParseSocketAddress(rx->hostHeader, &domain, NULL, NULL, 0);
-        if (domain && (*domain == ':' || isdigit(*domain))) {
+        mprParseSocketAddress(rx->hostHeader, &domain, &port, NULL, 0);
+        if (domain && port > 0) {
             domain = 0;
         }
     }
