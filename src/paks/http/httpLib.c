@@ -10836,6 +10836,10 @@ PUBLIC void httpAddWebSocketsRoute(HttpRoute *parent, cchar *prefix, cchar *name
     pattern = sfmt("^%s/{controller}/stream", prefix);
     route = httpDefineRoute(parent, name, "GET", pattern, "$1-cmd-stream", "${controller}.c");
     httpAddRouteFilter(route, "webSocketFilter", "", HTTP_STAGE_RX | HTTP_STAGE_TX);
+
+    httpGraduateLimits(route, 0);
+    route->limits->inactivityTimeout = 15 * 60 * 1000;
+    route->limits->requestTimeout = MAXINT;
 }
 
 /*************************************************** Support Routines ****************************************************/
@@ -11552,7 +11556,11 @@ PUBLIC HttpLimits *httpGraduateLimits(HttpRoute *route, HttpLimits *limits)
 {
     if (route->parent && route->limits == route->parent->limits) {
         if (limits == 0) {
-            limits = ((Http*) MPR->httpService)->serverLimits;
+            if (route->parent->limits) {
+                limits = route->parent->limits;
+            } else {
+                limits = ((Http*) MPR->httpService)->serverLimits;
+            }
         }
         route->limits = mprMemdup(limits, sizeof(HttpLimits));
     }
