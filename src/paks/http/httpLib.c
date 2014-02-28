@@ -3900,9 +3900,6 @@ PUBLIC HttpEndpoint *httpCreateConfiguredEndpoint(HttpHost *host, cchar *home, c
             return 0;
         }
         httpSetHostDefaultRoute(host, route);
-#if UNUSED
-        httpSetHostName(host, sfmt("%s:%d", ip, port));
-#endif
     } else {
         route = host->defaultRoute;
     }
@@ -9687,14 +9684,6 @@ PUBLIC void httpSetRoutePreserveFrames(HttpRoute *route, bool on)
         route->flags |= HTTP_ROUTE_PRESERVE_FRAMES;
     }
 }
-
-
-#if KEEP && UNUSED
-PUBLIC void httpSetRouteProtocol(HttpRoute *route, cchar *protocol)
-{
-    route->protocol = sclone(protocol);
-}
-#endif
 
 
 PUBLIC void httpSetRouteServerPrefix(HttpRoute *route, cchar *prefix)
@@ -16200,7 +16189,7 @@ PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path
     HttpRx      *rx;
     char        *cp, *expiresAtt, *expires, *domainAtt, *domain, *secure, *httponly;
     int         port;
-    
+
     rx = conn->rx;
     if (path == 0) {
         path = "/";
