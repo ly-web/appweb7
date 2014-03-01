@@ -560,7 +560,8 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 if (smatch(value, "true") || smatch(value, "secure")) {
                     HttpRoute *alias = httpCreateAliasRoute(route, "/", 0, 0);
                     httpSetRouteTarget(alias, "redirect", "0 https://");
-                    httpAddRouteCondition(alias, "secure", "31536000000", HTTP_ROUTE_NOT);
+                    /* A null age suppresses the strict transport security header */
+                    httpAddRouteCondition(alias, "secure", 0, HTTP_ROUTE_NOT);
                     httpFinalizeRoute(alias);
                 }
             }
