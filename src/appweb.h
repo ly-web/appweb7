@@ -431,7 +431,9 @@ typedef struct MaState {
     HttpAuth    *auth;                  /**< Quick alias for route->auth */
     HttpRoute   *route;                 /**< Current route */
     MprFile     *file;                  /**< Config file handle */
+#if UNUSED
     HttpLimits  *limits;                /**< Current limits (host->limits) */
+#endif
     char        *key;                   /**< Current directive being parsed */
     char        *configDir;             /**< Directory containing config file */
     char        *filename;              /**< Config file name */

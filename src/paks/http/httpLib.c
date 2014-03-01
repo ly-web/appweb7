@@ -10829,8 +10829,11 @@ PUBLIC void httpAddWebSocketsRoute(HttpRoute *parent, cchar *prefix, cchar *name
     httpAddRouteFilter(route, "webSocketFilter", "", HTTP_STAGE_RX | HTTP_STAGE_TX);
 
     httpGraduateLimits(route, 0);
-    route->limits->inactivityTimeout = 15 * 60 * 1000;
-    route->limits->requestTimeout = MAXINT;
+    /*
+        Set some reasonable defaults. 5 minutes for inactivity and no request timeout limit
+     */
+    route->limits->inactivityTimeout = BIT_MAX_INACTIVITY_DURATION * 10;
+    route->limits->requestTimeout = MPR_MAX_TIMEOUT;
 }
 
 /*************************************************** Support Routines ****************************************************/
