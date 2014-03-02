@@ -106,6 +106,7 @@ if not exist "\Users\mob\git\appweb\windows-x86-default\paks\esp-angular\4.5.0" 
 copy /Y esp-angular\esp-click.js \Users\mob\git\appweb\windows-x86-default\paks\esp-angular\4.5.0\esp-click.js
 copy /Y esp-angular\esp-edit.js \Users\mob\git\appweb\windows-x86-default\paks\esp-angular\4.5.0\esp-edit.js
 copy /Y esp-angular\esp-field-errors.js \Users\mob\git\appweb\windows-x86-default\paks\esp-angular\4.5.0\esp-field-errors.js
+copy /Y esp-angular\esp-fixnum.js \Users\mob\git\appweb\windows-x86-default\paks\esp-angular\4.5.0\esp-fixnum.js
 copy /Y esp-angular\esp-format.js \Users\mob\git\appweb\windows-x86-default\paks\esp-angular\4.5.0\esp-format.js
 copy /Y esp-angular\esp-input-group.js \Users\mob\git\appweb\windows-x86-default\paks\esp-angular\4.5.0\esp-input-group.js
 copy /Y esp-angular\esp-input.js \Users\mob\git\appweb\windows-x86-default\paks\esp-angular\4.5.0\esp-input.js

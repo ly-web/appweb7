@@ -167,7 +167,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
      */
     if (mprStart() < 0) {
         mprError("Cannot start MPR for %s", mprGetAppName());
-        mprDestroy(MPR_EXIT_DEFAULT);
+        mprDestroy();
         return MPR_ERR_CANT_INITIALIZE;
     }
     if (checkEnvironment(argv[0]) < 0) {
@@ -202,7 +202,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
     status = mprGetExitStatus();
     mprLog(1, "Stopping Appweb ...");
     maStopAppweb(app->appweb);
-    mprDestroy(MPR_EXIT_DEFAULT);
+    mprDestroy();
     return status;
 }
 

@@ -58,9 +58,6 @@ static void manageAppweb(MaAppweb *appweb, int flags)
         mprMark(appweb->localPlatform);
         mprMark(appweb->platform);
         mprMark(appweb->platformDir);
-
-    } else if (flags & MPR_MANAGE_FREE) {
-        maStopAppweb(appweb);
     }
 }
 
@@ -130,9 +127,6 @@ static void manageServer(MaServer *server, int flags)
         mprMark(server->limits);
         mprMark(server->endpoints);
         mprMark(server->state);
-
-    } else if (flags & MPR_MANAGE_FREE) {
-        maStopServer(server);
     }
 }
 
@@ -162,7 +156,7 @@ PUBLIC MaServer *maCreateServer(MaAppweb *appweb, cchar *name)
     server->appweb = appweb;
     server->http = appweb->http;
 
-    server->defaultHost = host = httpCreateHost(NULL);
+    server->defaultHost = host = httpCreateHost();
     if (!httpGetDefaultHost()) {
         httpSetDefaultHost(host);
     }
@@ -203,7 +197,7 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
         return 0;
 
     } else {
-        if ((endpoint = httpCreateConfiguredEndpoint(home, documents, ip, port)) == 0) {
+        if ((endpoint = httpCreateConfiguredEndpoint(server->defaultHost, home, documents, ip, port)) == 0) {
             return MPR_ERR_CANT_OPEN;
         }
         maAddEndpoint(server, endpoint);
@@ -213,7 +207,7 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
         assert(route);
 
 #if BIT_PACK_CGI
-        maLoadModule(appweb, "cgiHandler", "mod_cgi");
+        maLoadModule(appweb, "cgiHandler", "libmod_cgi");
         if (httpLookupStage(http, "cgiHandler")) {
             httpAddRouteHandler(route, "cgiHandler", "cgi cgi-nph bat cmd pl py");
             /*
@@ -230,19 +224,19 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
         }
 #endif
 #if BIT_PACK_ESP
-        maLoadModule(appweb, "espHandler", "mod_esp");
+        maLoadModule(appweb, "espHandler", "libmod_esp");
         if (httpLookupStage(http, "espHandler")) {
             httpAddRouteHandler(route, "espHandler", "esp");
         }
 #endif
 #if BIT_PACK_EJSCRIPT
-        maLoadModule(appweb, "ejsHandler", "mod_ejs");
+        maLoadModule(appweb, "ejsHandler", "libmod_ejs");
         if (httpLookupStage(http, "ejsHandler")) {
             httpAddRouteHandler(route, "ejsHandler", "ejs");
         }
 #endif
 #if BIT_PACK_PHP
-        maLoadModule(appweb, "phpHandler", "mod_php");
+        maLoadModule(appweb, "phpHandler", "libmod_php");
         if (httpLookupStage(http, "phpHandler")) {
             httpAddRouteHandler(route, "phpHandler", "php");
         }
@@ -433,7 +427,7 @@ PUBLIC void maGetUserGroup(MaAppweb *appweb)
 
 PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 {
-    //  TODO DEPRECATE _default_
+    //  TODO DEPRECATED _default_
     if (smatch(newUser, "APPWEB") || smatch(newUser, "_default_")) {
 #if BIT_UNIX_LIKE
         /* Only change user if root */
@@ -478,7 +472,7 @@ PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 
 PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
 {
-    //  DEPRECATE _default_
+    //  DEPRECATED _default_
     if (smatch(newGroup, "APPWEB") || smatch(newGroup, "_default_")) {
 #if BIT_UNIX_LIKE
         /* Only change group if root */

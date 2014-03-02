@@ -46,7 +46,7 @@ MAIN(simpleClient, int argc, char **argv, char **envp)
         exit(1);
     } 
     mprPrintf("Server responded with: %s\n", httpReadString(conn));
-    mprDestroy(MPR_EXIT_DEFAULT);
+    mprDestroy();
     return 0;
 }
 

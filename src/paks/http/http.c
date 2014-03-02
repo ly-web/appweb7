@@ -150,7 +150,7 @@ MAIN(httpMain, int argc, char **argv, char **envp)
     if (!app->success && app->verbose) {
         mprError("Request failed");
     }
-    mprDestroy(MPR_EXIT_DEFAULT);
+    mprDestroy();
     return (app->success) ? 0 : 255;
 }
 
@@ -487,7 +487,7 @@ static int parseArgs(int argc, char **argv)
                 app->username = argv[++nextArg];
             }
 
-        //  DEPRECATE validate. Preserve verify.
+        //  DEPRECATED validate. Preserve verify.
         } else if (smatch(argp, "--validate") || smatch(argp, "--verify")) {
             app->verifyPeer = 1;
             ssl = 1;
@@ -1131,7 +1131,7 @@ static void finishThread(MprThread *tp)
     if (tp) {
         mprLock(app->mutex);
         if (--app->activeLoadThreads <= 0) {
-            mprShutdown(MPR_EXIT_DEFAULT, -1);
+            mprShutdown(MPR_EXIT_NORMAL, 0, 0);
         }
         mprUnlock(app->mutex);
     }

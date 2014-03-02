@@ -8,6 +8,7 @@ Bit.load({
         "src/paks/mpr/mpr.bit",
         "src/paks/est/est.bit",
         "src/paks/pcre/pcre.bit",
+        "src/paks/zlib/zlib.bit",
         "src/paks/http/http.bit",
         "src/paks/sqlite/sqlite.bit",
         "src/libappweb.bit",
@@ -58,7 +59,6 @@ Bit.load({
         /* Must build locally to build tools */
         platforms: [ 'local' ],
         packs: [ 'bits/packs' ]
-        sync: [ 'bitos', 'est', 'http', 'mpr', 'pcre', 'sqlite', 'ejs' ],
 
         /*
             Packs that are always required to build
@@ -69,7 +69,7 @@ Bit.load({
             Optional packs to automatically discover and configure
          */
         '+discover': [ 'cgi', 'dir', 'doxygen', 'dsi', 'esp', 'gzip', 'htmlmin', 'man', 'man2html', 'mdb', 'ngmin', 'pak', 
-                'pmaker', 'recess', 'ssl', 'uglifyjs', 'utest', 'zip' ],
+                'pmaker', 'recess', 'ssl', 'uglifyjs', 'utest', 'zip', 'zlib' ],
 
         /*
             Packs to disable when using --without all

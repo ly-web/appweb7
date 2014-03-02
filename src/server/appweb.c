@@ -77,7 +77,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
     Mpr     *mpr;
     cchar   *argp, *jail;
     char    *logSpec;
-    int     argind, status, level;
+    int     argind, level;
 
     jail = 0;
     level = 0;
@@ -190,14 +190,16 @@ MAIN(appweb, int argc, char **argv, char **envp)
     }
     if (mprStart() < 0) {
         mprError("Cannot start MPR for %s", mprGetAppName());
-        mprDestroy(MPR_EXIT_DEFAULT);
+        mprDestroy();
         return MPR_ERR_CANT_INITIALIZE;
     }
     if (checkEnvironment(argv[0]) < 0) {
         exit(6);
     }
-    if (findAppwebConf() < 0) {
-        exit(7);
+    if (argc == argind) {
+        if (findAppwebConf() < 0) {
+            exit(7);
+        }
     }
     if (jail && changeRoot(jail) < 0) {
         exit(8);
@@ -212,9 +214,8 @@ MAIN(appweb, int argc, char **argv, char **envp)
     mprServiceEvents(-1, 0);
 
     mprLog(1, "Stopping Appweb ...");
-    status = mprGetExitStatus();
-    mprDestroy(MPR_EXIT_DEFAULT);
-    return status;
+    mprDestroy();
+    return mprGetExitStatus();
 }
 
 
@@ -303,22 +304,25 @@ static int createEndpoints(int argc, char **argv)
     loadStaticModules();
     mprGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
 
-    if (argc > argind) {
-        app->documents = sclone(argv[argind++]);
-        mprLog(2, "Documents %s", app->documents);
-    }
     if (argind == argc) {
         if (maParseConfig(app->server, app->configFile, 0) < 0) {
             return MPR_ERR_CANT_CREATE;
         }
     } else {
-        while (argind < argc) {
+        app->documents = sclone(argv[argind++]);
+        mprLog(2, "Documents %s", app->documents);
+        if (argind == argc) {
+            if (maConfigureServer(app->server, NULL, app->home, app->documents, NULL, BIT_HTTP_PORT) < 0) {
+                return MPR_ERR_CANT_CREATE;
+            }
+        } else while (argind < argc) {
             endpoint = argv[argind++];
             mprParseSocketAddress(endpoint, &ip, &port, &secure, 80);
             if (maConfigureServer(app->server, NULL, app->home, app->documents, ip, port) < 0) {
                 return MPR_ERR_CANT_CREATE;
             }
         }
+        httpLogRoutes(app->server->defaultHost, 0);
     }
     if (app->workers >= 0) {
         mprSetMaxWorkers(app->workers);

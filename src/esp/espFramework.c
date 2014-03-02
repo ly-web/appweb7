@@ -244,14 +244,24 @@ PUBLIC void *espGetData(HttpConn *conn)
 
 PUBLIC Edi *espGetDatabase(HttpConn *conn)
 {
-    EspReq    *req;
+    HttpRx      *rx;
+    EspReq      *req;
+    EspRoute    *eroute;
+    Edi         *edi;
 
+    rx = conn->rx;
     req = conn->data;
-    if (req == 0) {
+    edi = req ? req->edi : 0;
+    if (edi == 0 && rx && rx->route) {
+        if ((eroute = rx->route->eroute) != 0) {
+            edi = eroute->edi;
+        }
+    }
+    if (edi == 0) {
         httpError(conn, 0, "Cannot get database instance");
         return 0;
     }
-    return req->edi;
+    return edi;
 }
 
 
@@ -302,7 +312,7 @@ PUBLIC cchar *espGetFeedback(HttpConn *conn, cchar *kind)
     cchar       *msg;
    
     req = conn->data;
-    if (kind == 0 || req->feedback == 0 || mprGetHashLength(req->feedback) == 0) {
+    if (kind == 0 || req == 0 || req->feedback == 0 || mprGetHashLength(req->feedback) == 0) {
         return 0;
     }
     for (kp = 0; (kp = mprGetNextKey(req->feedback, kp)) != 0; ) {
@@ -550,7 +560,8 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 if (smatch(value, "true") || smatch(value, "secure")) {
                     HttpRoute *alias = httpCreateAliasRoute(route, "/", 0, 0);
                     httpSetRouteTarget(alias, "redirect", "0 https://");
-                    httpAddRouteCondition(alias, "secure", "31536000000", HTTP_ROUTE_NOT);
+                    /* A null age suppresses the strict transport security header */
+                    httpAddRouteCondition(alias, "secure", 0, HTTP_ROUTE_NOT);
                     httpFinalizeRoute(alias);
                 }
             }
@@ -569,7 +580,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 httpSetRouteServerPrefix(route, value);
                 httpSetRouteVar(route, "SERVER_PREFIX", sjoin(route->prefix ? route->prefix: "", route->serverPrefix, 0));
             }
-#if DEPRECATE || 1
+#if DEPRECATED || 1
             if ((value = espGetConfig(route, "esp.routePrefix", 0)) != 0) {
                 httpSetRouteServerPrefix(route, value);
                 httpSetRouteVar(route, "SERVER_PREFIX", sjoin(route->prefix ? route->prefix: "", route->serverPrefix, 0));
@@ -581,7 +592,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             }
             if ((value = espGetConfig(route, "esp.xsrf", 0)) != 0) {
                 httpSetRouteXsrf(route, smatch(value, "true"));
-#if DEPRECATE || 1
+#if DEPRECATED || 1
             } else if ((value = espGetConfig(route, "esp.xsrfToken", 0)) != 0) {
                 httpSetRouteXsrf(route, smatch(value, "true"));
 #endif
@@ -590,7 +601,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             }
             if ((value = espGetConfig(route, "esp.json", 0)) != 0) {
                 eroute->json = smatch(value, "true");
-#if DEPRECATE || 1
+#if DEPRECATED || 1
             } else {
                 if ((value = espGetConfig(route, "esp.sendJson", 0)) != 0) {
                     eroute->json = smatch(value, "true");
@@ -601,7 +612,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 route->limits->sessionTimeout = httpGetTicks(value);
                 mprLog(2, "esp: set session timeout to %s", value);
             }
-#if DEPRECATE || 1
+#if DEPRECATED || 1
             if (espTestConfig(route, "esp.map", "compressed")) {
                 httpAddRouteMapping(route, "css,html,js,less,txt,xml", "${1}.gz, min.${1}.gz, min.${1}");
             }
@@ -987,7 +998,9 @@ PUBLIC void espSetFeedbackv(HttpConn *conn, cchar *kind, cchar *fmt, va_list arg
     EspReq      *req;
     cchar       *prior, *msg;
 
-    req = conn->data;
+    if ((req = conn->data) == 0) {
+        return;
+    }
     msg = sfmtv(fmt, args);
 
     if (req->feedback == 0) {

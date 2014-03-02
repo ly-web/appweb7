@@ -274,17 +274,13 @@ typedef void (*HttpEnvCallback)(struct HttpConn *conn);
  */
 typedef int (*HttpListenCallback)(struct HttpEndpoint *endpoint);
 
-/** 
-    Define an callback for IO events on this connection.
-    @description The event callback will be invoked in response to I/O events.
-    @param conn HttpConn connection object created via #httpCreateConn
-    @param fn Callback function. 
-    @param arg Data argument to provide to the callback function.
-    @return The redirected URI string to use.
-    @ingroup HttpConn
-    @stability Stable
- */
-typedef cchar *(*HttpRedirectCallback)(struct HttpConn *conn, int *code, struct HttpUri *uri);
+/**
+    Request completion callback
+    @param conn HttpConn object
+    @ingroup HttpRx
+    @stability Prototype
+  */
+typedef void (*HttpRequestCallback)(struct HttpConn *conn);
 
 /**
     Timeout callback
@@ -561,8 +557,7 @@ typedef struct Http {
 
     char            *defaultClientHost;     /**< Default ip address */
     int             defaultClientPort;      /**< Default port */
-
-    char            *protocol;              /**< HTTP/1.0 or HTTP/1.1 */
+    char            *protocol;              /**< Default client protocol: HTTP/1.0 or HTTP/1.1 */
     char            *proxyHost;             /**< Proxy ip address */
     int             proxyPort;              /**< Proxy port */
 
@@ -572,7 +567,7 @@ typedef struct Http {
     HttpEnvCallback     envCallback;        /**< SetEnv callback */
     MprForkCallback     forkCallback;       /**< Callback in child after fork() */
     HttpListenCallback  listenCallback;     /**< Invoked when creating listeners */
-    HttpRedirectCallback redirectCallback;  /**< Redirect callback */
+    HttpRequestCallback logCallback;        /**< Request completion callback */
 } Http;
 
 /*
@@ -688,7 +683,7 @@ PUBLIC struct HttpEndpoint *httpLookupEndpoint(Http *http, cchar *ip, int port);
     Set the http context object
     @param http Http object created via #httpCreate
     @param context New context object
-    @ingroup HttpConn
+    @ingroup Http
     @stability Stable
  */
 PUBLIC void httpSetContext(Http *http, void *context);
@@ -698,7 +693,7 @@ PUBLIC void httpSetContext(Http *http, void *context);
     @description Define a default host to use for client connections if the URI does not specify a host
     @param http Http object created via #httpCreateConn
     @param host Host or IP address
-    @ingroup HttpConn
+    @ingroup Http
     @stability Stable
  */
 PUBLIC void httpSetDefaultClientHost(Http *http, cchar *host);
@@ -708,10 +703,20 @@ PUBLIC void httpSetDefaultClientHost(Http *http, cchar *host);
     @description Define a default port to use for client connections if the URI does not define a port
     @param http Http object created via #httpCreateConn
     @param port Integer port number
-    @ingroup HttpConn
+    @ingroup Http
     @stability Stable
  */
 PUBLIC void httpSetDefaultClientPort(Http *http, int port);
+
+/**
+    Define a request completion callback
+    @description This routine is used to define a callback that is invoked when each request is completed.
+    The callback is passed the HttpConn object prior to destruction.
+    @param callback HttpRequestCallback function
+    @ingroup Http
+    @stability Prototype
+ */
+PUBLIC void httpSetRequestLogCallback(HttpRequestCallback callback);
 
 /** 
     Define a Http proxy host to use for all client connect requests.
@@ -1137,8 +1142,8 @@ PUBLIC char *httpUri(struct HttpConn *conn, cchar *target);
  */
 PUBLIC char *httpUriEx(struct HttpConn *conn, cchar *target, MprHash *options);
 
-#if DEPRECATE || 1
-PUBLIC char *httpLink(struct HttpConn *conn, cchar *target, MprHash *options);
+#if DEPRECATED || 1
+PUBLIC char *httpLink(struct HttpConn *conn, cchar *target, MprHash *options) BIT_DEPRECATED("Use httpUriEx instead");
 #endif
 
 /** 
@@ -1564,6 +1569,9 @@ PUBLIC void httpEnableQueue(HttpQueue *q);
     If non-blocking, the queues will be serviced but the call will not block nor yield.
     In blocking mode, this routine may invoke mprYield before it blocks to consent for the garbage collector to trun. Callers must
     ensure they have retained all required temporary memory before invoking this routine.
+    \n\n
+    This routine when used with HTTP_BLOCK should never be used in filters, connectors or by handlers outside their
+    open, close, ready, start and writable callbacks.
     @param q Queue to flush
     @param flags If set to HTTP_BLOCK, this call will block until the data has drained through the network connector.
     @return "True" if there is room for more data in the queue after flushing.
@@ -1847,6 +1855,12 @@ PUBLIC bool httpWillNextQueueAcceptSize(HttpQueue *q, ssize size);
         as required to store the write data. This call always accepts all the data and will buffer as required. 
         This call may block waiting for the downstream queue to drain if it is or becomes full.
         Data written after #httpFinalizeOutput or #httpError is called will be ignored.
+        \n\n
+        Handlers may only call httpWrite in their open, close, ready, start and writable callbacks as these are the only
+        callbacks permitted to block. If a handler
+        needs to write in other callbacks, it should use #httpWriteBlock and use the HTTP_NON_BLOCK or HTTP_BUFFER flags.
+        \n\n
+        Filters and connectors must never call httpWrite as it may block.
     @param q Queue reference
     @param fmt Printf style formatted string
     @param ... Arguments for fmt
@@ -2007,6 +2021,7 @@ typedef struct HttpStage {
         Open the stage
         @description Open the stage for this request instance. A handler may service the request in the open routine
             and may call #httpError if required.
+            Handlers may block or yield in this callback.
         @param q Queue instance object
         @ingroup HttpStage
         @stability Evolving
@@ -2016,6 +2031,7 @@ typedef struct HttpStage {
     /** 
         Close the stage
         @description Close the stage and cleanup any request resources.
+        Handlers may block or yield in this callback.
         @param q Queue instance object
         @ingroup HttpStage
         @stability Evolving
@@ -2029,7 +2045,7 @@ typedef struct HttpStage {
             Filters can choose to immediately process or forward the packet, or they can queue the packet on their queue and
             schedule their outgoingService callback for batch processing of all queued packets. This is a common pattern
             where the outgoing routine is not used and packets are automatically queued and the outgoingService 
-            callback is used to process data.
+           callback is used to process data. Filters should not block or yield in this callback.
         @param q Queue instance object
         @param packet Packet of data
         @ingroup HttpStage
@@ -2042,6 +2058,7 @@ typedef struct HttpStage {
         @description This callback should service packets on the queue and process or forward as appropriate.
         A service routine should check downstream queues by calling #httpWillNextQueueAcceptPacket before forwarding packets
         to ensure they do not overfow downstream queues.
+        Stages should not block or yield in this callback.
         @param q Queue instance object
         @ingroup HttpStage
         @stability Evolving
@@ -2056,6 +2073,7 @@ typedef struct HttpStage {
             for batch processing of all queued packets. This is a common pattern where the incoming routine is not 
             used and packets are automatically queued and the incomingService callback is used to process.
         Not used by connectors.
+        Stages should not block or yield in this callback.
         @param q Queue instance object
         @param packet Packet of data
         @ingroup HttpStage
@@ -2068,12 +2086,12 @@ typedef struct HttpStage {
         @description This callback should service packets on the queue and process or forward as appropriate.
         A service routine should check upstream queues by calling #httpWillNextQueueAcceptPacket before forwarding packets
         to ensure they do not overfow upstream queues.
+        Handlers may not block or yield in this callback.
         @param q Queue instance object
         @ingroup HttpStage
         @stability Evolving
      */
     void (*incomingService)(HttpQueue *q);
-
 
     /*  These callbacks apply only to handlers */
 
@@ -2084,9 +2102,10 @@ typedef struct HttpStage {
         Form requests with a Content-Type of "application/x-www-form-urlencoded", will be started after fully receiving all
         input data. Other requests will be started immediately after the request headers have been parsed and before
         receiving input data. This enables such requests to stream large quantities of input data without buffering.
-        The handler start callback should test the HTTP method in conn->rx->method and only respond to supported HTTP
+        The start callback should test the HTTP method in conn->rx->method and only respond to supported HTTP
         methods. It should call httpError for unsupported methods.
         The start callback will not be called if the request already has an error.
+        Handlers may block or yield in this callback.
         @param q Queue instance object
         @ingroup HttpStage
         @stability Evolving
@@ -2098,6 +2117,7 @@ typedef struct HttpStage {
         @description This callback will be invoked when all incoming data has been received. 
             The ready callback will not be called if the request already has an error.
             If a handler finishes processing the request, it should call #httpFinalizeOutput in the ready routine.
+        Handlers may block or yield in this callback.
         @param q Queue instance object
         @ingroup HttpStage
         @stability Evolving
@@ -2110,6 +2130,7 @@ typedef struct HttpStage {
         pipeline can absorb more output data (writable). As such, it may be called multiple times and can be effectively
         used for non-blocking generation of a response.
         The writable callback will not be invoked if the request output has been finalized or if an error has occurred.
+        Handlers may block or yield in this callback.
         @param q Queue instance object
         @ingroup HttpStage
         @stability Evolving
@@ -2457,7 +2478,7 @@ typedef struct HttpConn {
     MprTicks        started;                /**< When the request started (ticks) */
     MprTicks        lastActivity;           /**< Last activity on the connection */
     MprEvent        *timeoutEvent;          /**< Connection or request timeout event */
-    MprEvent        *workerEvent;           /**< Event for running connection via a worker thread */
+    MprEvent        *workerEvent;           /**< Event for running connection via a worker thread (used by ejs) */
 
     void            *context;               /**< Embedding context (EjsRequest) */
     void            *ejs;                   /**< Embedding VM */
@@ -2466,7 +2487,7 @@ typedef struct HttpConn {
     void            *data;                  /**< Custom data for request - must be a managed reference */
     void            *staticData;            /**< Custom data for request - must be an unmanaged reference */
 
-#if (DEPRECATE || 1) && !DOXYGEN
+#if (DEPRECATED || 1) && !DOXYGEN
     void            *grid;                  /**< Current request database grid for MVC apps */
     void            *record;                /**< Current request database record for MVC apps */
 #endif
@@ -2478,6 +2499,7 @@ typedef struct HttpConn {
 
     int             async;                  /**< Connection is in async mode (non-blocking) */
     int             delay;                  /**< Delay servicing request due to defense strategy */
+    int             borrowed;               /**< Connection has been borrowed */
     int             destroyed;              /**< Connection has been destroyed */
     int             followRedirects;        /**< Follow redirects for client requests */
     int             keepAliveCount;         /**< Count of remaining Keep-Alive requests for this connection */
@@ -2526,15 +2548,30 @@ PUBLIC void httpClosePipeline(HttpConn *conn);
 #define HTTP_PARSE_TIMEOUT          3
 
 /**
-    Schedule a connection timeout event on a connection
-    @description This call schedules an event to run serialized on the connection dispatcher. When run, it will
-        cancels the current request, disconnects the socket and issues an error to the error log. 
-        This call is normally invoked by the httpTimer which runs regularly to check for timed out requests.
-    @param conn HttpConn connection object created via #httpCreateConn
+    Borrow a connection 
+    @description Borrow the connection from Http. This effectively gains an exclusive loan of the connection so that it 
+    cannot be destroyed while the loan is active. After the loan is complete, you must call return the connection 
+    by calling #httpReturnConn. Otherwise the connection will not be freed and memory will leak. 
+    \n\n
+    The httpBorrowConn routine is used to stabilize a connection while interacting with some outside service. 
+    Without this routine, the connection could be destroyed while waiting. Many things can happen while waiting. 
+    For example: the client could disconnect or the connection could timeout. These events will still be serviced 
+    while the connection is borrowed, but the connection object will not be destroyed.
+    \n\n
+    While borrowed, you must not access the connection using foreign / non-MPR threads. If you need to do this, 
+    use #mprCreateEventOutside to schedule an event to run on the connection's event dispatcher. 
+    This is essential to serialize access to the connection object.
+    Inside the event callback, you should first check the connection state via HttpConn.state to ensure the request is still active.
+    If the request has completed, the state will be HTTP_STATE_COMPLETE.
+    \n\n
+    Before returning from the event callback, you must call #httpReturnConn to end the exclusive loan. 
+    This restores normal processing of the connection and enables any required I/O events. 
+    \n\n
+    @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpConn
-    @stability Internal
-  */
-PUBLIC void httpScheduleConnTimeout(HttpConn *conn);
+    @stability Prototype
+ */
+PUBLIC void httpBorrowConn(HttpConn *conn);
 
 /** 
     Create a connection object.
@@ -2861,12 +2898,40 @@ PUBLIC bool httpRequestExpired(HttpConn *conn, MprTicks timeout);
 PUBLIC void httpResetCredentials(HttpConn *conn);
 
 /**
+    Return a borrowed a connection 
+    @description Returns a borrowed connection back to the Http engine. This ends the exclusive loan of the connection so that 
+    the current request can be completed. It also enables I/O events based on the current state of the connection.
+    \n\n
+    While the connection is borrowed, you must not access the connection using foreign / non-MPR threads. 
+    Use #mprCreateEventOutside to schedule an event to run on the connection's event dispatcher. This is 
+    essential to serialize access to the connection object.
+    \n\n
+    You should only call this routine (once) after calling #httpBorrowConn.
+    \n\n
+    @param conn HttpConn object created via #httpCreateConn
+    @ingroup HttpConn
+    @stability Prototype
+ */
+PUBLIC void httpReturnConn(HttpConn *conn);
+
+/**
     Route the request and select that matching route and handle to process the request.
     @param conn HttpConn connection object created via #httpCreateConn
     @ingroup HttpConn
     @stability Internal
   */
 PUBLIC void httpRouteRequest(HttpConn *conn);
+
+/**
+    Schedule a connection timeout event on a connection
+    @description This call schedules an event to run serialized on the connection dispatcher. When run, it will
+        cancels the current request, disconnects the socket and issues an error to the error log. 
+        This call is normally invoked by the httpTimer which runs regularly to check for timed out requests.
+    @param conn HttpConn connection object created via #httpCreateConn
+    @ingroup HttpConn
+    @stability Internal
+  */
+PUBLIC void httpScheduleConnTimeout(HttpConn *conn);
 
 /**
     Service pipeline queues to flow data.
@@ -3115,6 +3180,8 @@ PUBLIC void httpCreatePipeline(HttpConn *conn);
     Note: The current request is aborted and queue data is discarded.
     After calling, the normal Appweb request and inactivity timeouts will not apply to the returned socket object.
     It is the callers responsibility to call mprCloseSocket on the returned MprSocket when ready.
+    \n\n
+    An alternative to this routine is #httpBorrowConn which temporarily loans the connection and secures it from destruction.
     @param conn HttpConn object created via #httpCreateConn
     @return A clone of the connection's MprSocket object with the socket handle.
     @ingroup HttpConn
@@ -3301,7 +3368,7 @@ typedef struct HttpAuth {
     MprHash         *userCache;             /**< Cache of authenticated users */
     MprHash         *roles;                 /**< Hash of roles */
     MprHash         *abilities;             /**< Set of required abilities (all are required) */
-#if DEPRECATE || 1
+#if DEPRECATED || 1
     MprHash         *permittedUsers;        /**< Set of valid users */
 #endif
     char            *loginPage;             /**< Web page for user login for 'post' type */
@@ -5298,7 +5365,7 @@ PUBLIC void httpSetSessionNotify(MprCacheProc notifyProc);
     @description Store an object in the session state store by serializing all properties.
     @param conn Http connection object
     @param key Session state key
-    @param value Object to serialize
+    @param value Object to serialize. This must be an MprHash object.
     @ingroup HttpSession
     @stability Evolving
  */
@@ -5309,7 +5376,7 @@ PUBLIC int httpSetSessionObj(HttpConn *conn, cchar *key, MprHash *value);
     @description
     @param conn Http connection object
     @param name Variable name to set
-    @param value Variable value to use
+    @param value String variable value to use. This must point to a valid null terminated string.
     @return A session state object
     @ingroup HttpSession
     @stability Evolving
@@ -6028,6 +6095,7 @@ typedef struct HttpTx {
     int             pendingFinalize;        /**< Call httpFinalize again once the Tx pipeline is created */
     int             finalizedConnector;     /**< Connector has finished sending the response */
     int             finalizedOutput;        /**< Handler or surrogate has finished writing output response */
+    HttpUri         *parsedUri;             /**< Client request uri */
     cchar           *filename;              /**< Name of a real file being served (typically pathInfo mapped) */
     int             flags;                  /**< Response flags */
     int             status;                 /**< HTTP response status */
@@ -6041,7 +6109,6 @@ typedef struct HttpTx {
     HttpStage       *handler;               /**< Final handler serving the request */
     MprOff          length;                 /**< Transmission content length */
     int             writeBlocked;           /**< Transmission writing is blocked */
-    HttpUri         *parsedUri;             /**< Client request uri */
     char            *method;                /**< Client request method GET, HEAD, POST, DELETE, OPTIONS, PUT, TRACE */
     cchar           *errorDocument;         /**< Error document to render */
     char            *authType;              /**< Type of authentication: set to basic, digest, post or a custom name */
@@ -6203,15 +6270,29 @@ PUBLIC void httpFinalizeOutput(HttpConn *conn);
 
 /**
     Flush transmit data. 
-    @description This call initiates writing buffered data. 
-    If in sync mode this call may block until the output queues drain.
-    This routine may invoke mprYield before it blocks to consent for the garbage collector to run. Callers must
-    ensure they have retained all required temporary memory before invoking this routine.
+    @description This call initiates writing buffered data an will not block.
+    If you need to wait until all the data has been written to the socket, use #httpFlushAll.
+    Handlers may only call this routine in their open, close, ready, start and writable callbacks.
     @param conn HttpConn connection object created via #httpCreateConn
     @ingroup HttpTx
     @stability Stable
  */
 PUBLIC void httpFlush(HttpConn *conn);
+
+/**
+    Flush transmit data and wait for all the data to be written to the socket. 
+    @description This call initiates writing buffered data. 
+    If in sync mode this call may block until the output queues drain.
+    In sync mode, this may invoke mprYield before blocking to consent for the garbage collector to run. Callers must
+    ensure they have retained all required temporary memory before invoking this routine.
+    Filters and connectors should not call this routine as it may block. Use #httpFlush in filters or connectors.
+    Handlers may only call this routine in their open, close, ready, start and writable callbacks.
+    See #httpFlush if you do need to wait for all the data to be written to the socket.
+    @param conn HttpConn connection object created via #httpCreateConn
+    @ingroup HttpTx
+    @stability Stable
+ */
+PUBLIC void httpFlushAll(HttpConn *conn);
 
 /** 
     Follow redirctions
@@ -6633,7 +6714,8 @@ PUBLIC void httpAddHostToEndpoint(HttpEndpoint *endpoint, struct HttpHost *host)
 /**
     Create and configure a new endpoint.
     @description Convenience function to create and configure a new endpoint without using a config file.
-        An endpoint is created with a default host and default route.
+        If no host is supplied, a default host and route are created.
+    @param host Optional HttpHost object.
     @param home Home directory for configuration files for the endpoint 
     @param documents Directory containing the 
     @param ip IP address to use for the endpoint. Set to null to listen on all interfaces.
@@ -6642,7 +6724,7 @@ PUBLIC void httpAddHostToEndpoint(HttpEndpoint *endpoint, struct HttpHost *host)
     @ingroup HttpEndpoint
     @stability Internal
 */
-PUBLIC HttpEndpoint *httpCreateConfiguredEndpoint(cchar *home, cchar *documents, cchar *ip, int port);
+PUBLIC HttpEndpoint *httpCreateConfiguredEndpoint(struct HttpHost *host, cchar *home, cchar *documents, cchar *ip, int port);
 
 /** 
     Create an endpoint  object.
@@ -6814,9 +6896,7 @@ PUBLIC void httpStopEndpoint(HttpEndpoint *endpoint);
 */
 typedef struct HttpHost {
     /*
-        NOTE: the ip:port names are used for vhost matching when there is only one such address. Otherwise a host may
-        be associated with multiple listening endpoints. In that case, the ip:port will store only one of these addresses 
-        and will not be used for matching.
+        NOTE: A host may be associated with multiple listening endpoints.
      */
     char            *name;                  /**< Host name */
     struct HttpHost *parent;                /**< Parent host to inherit aliases, dirs, routes */
@@ -6826,10 +6906,7 @@ typedef struct HttpHost {
     HttpEndpoint    *defaultEndpoint;       /**< Default endpoint for host */
     HttpEndpoint    *secureEndpoint;        /**< Secure endpoint for host */
     MprHash         *streams;               /**< Hash of mime-types to stream record */
-    char            *protocol;              /**< Defaults to "HTTP/1.1" */
-    char            *root;                  /**< Home for this host */
     int             flags;                  /**< Host flags */
-    MprMutex        *mutex;                 /**< Multithread sync */
 } HttpHost;
 
 /**

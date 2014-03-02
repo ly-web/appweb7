@@ -362,7 +362,7 @@ PUBLIC int main(int argc, char **argv)
         process(argc - argind, &argv[argind]);
     }
     rc = app->error;
-    mprDestroy(MPR_EXIT_DEFAULT);
+    mprDestroy();
     return rc;
 }
 
@@ -875,9 +875,9 @@ static void exportCache()
         }
     }
     appwebPaks = mprJoinPath(mprGetAppDir(), "../" BIT_ESP_PAKS);
-    paks = mprGetPathFiles(appwebPaks, MPR_PATH_DESCEND | MPR_PATH_RELATIVE);
-    vtrace("Export", "Copying Appweb Paks to %s", app->paksCacheDir);
+    vtrace("Export", "Appweb paks from %s to %s", appwebPaks, app->paksCacheDir);
 
+    paks = mprGetPathFiles(appwebPaks, MPR_PATH_DESCEND | MPR_PATH_RELATIVE);
     for (ITERATE_ITEMS(paks, dp, i)) {
         src = mprJoinPath(appwebPaks, dp->name);
         dest = mprJoinPath(app->paksCacheDir, dp->name);
@@ -910,7 +910,7 @@ static void initialize(int argc, char **argv)
     
     if (mprStart() < 0) {
         mprError("Cannot start MPR for %s", mprGetAppName());
-        mprDestroy(MPR_EXIT_DEFAULT);
+        mprDestroy();
         app->error = 1;
         return;
     }
@@ -2394,6 +2394,7 @@ static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toD
     MprDirEntry *dp;
     MprHash     *relocate;
     MprJson     *config, *export, *ex;
+    MprPath     info;
     EspRoute    *eroute;
     cchar       *base, *path, *fname;
     char        *fromData, *toData, *from, *to, *fromSum, *toSum;
@@ -2428,6 +2429,7 @@ static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toD
             to = mprJoinPaths(toDir, base, name, dp->name, NULL);
         }
         from = mprJoinPath(fromDir, dp->name);
+        mprGetPathInfo(from, &info);
         if (mprMakeDir(mprGetPathDir(to), 0755, -1, -1, 1) < 0) {
             fail("Cannot make directory %s", mprGetPathDir(to));
             return;
@@ -2444,7 +2446,7 @@ static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toD
                 toSum = mprGetMD5(toData);
                 if (!smatch(fromSum, toSum)) {
                     trace("Upgrade",  "File: %s", mprGetRelPath(to, 0));
-                    if (mprCopyPath(from, to, 0644) < 0) {
+                    if (mprCopyPath(from, to, info.perms) < 0) {
                         fail("Cannot copy file %s to %s", from, mprGetRelPath(to, 0));
                         return;
                     }
@@ -2453,7 +2455,7 @@ static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toD
                 }
             } else {
                 trace("Create", "%s", mprGetRelPath(to, 0));
-                if (mprCopyPath(from, to, 0644) < 0) {
+                if (mprCopyPath(from, to, info.perms) < 0) {
                     fail("Cannot copy file %s to %s", from, mprGetRelPath(to, 0));
                     return;
                 }
@@ -2496,11 +2498,13 @@ static void generateAppDb()
         return;
     }
     ext = app->database;
+#if !BIT_PACK_SDB || !BIT_PACK_MDB
     if ((smatch(app->database, "sdb") && !BIT_PACK_SDB) || (smatch(app->database, "mdb") && !BIT_PACK_MDB)) {
         fail("Cannot find database provider: \"%s\". Ensure Appweb is configured to support \"%s\"",
                 app->database, app->database);
         return;
     }
+#endif
     dbpath = sfmt("%s/%s.%s", app->eroute->dbDir, app->appName, ext);
     makeEspDir(mprGetPathDir(dbpath));
 }
@@ -2668,13 +2672,15 @@ static void genKey(cchar *key, cchar *path, MprHash *tokens)
 
 static void genFile(cchar *path, MprHash *tokens)
 {
-    cchar   *dest, *data;
-    ssize   len;
+    MprPath     info;
+    cchar       *dest, *data;
+    ssize       len;
 
     if (app->error) {
         return;
     }
     dest = mprTrimPathComponents(path, 2);
+    mprGetPathInfo(path, &info);
     if (isBinary(path)) {
         if ((data = mprReadPathContents(path, &len)) == 0) {
             fail("Cannot open template file \"%s\"", path);
@@ -2689,6 +2695,7 @@ static void genFile(cchar *path, MprHash *tokens)
         }
     }
     makeEspFile(dest, data, len);
+    chmod(dest, info.perms);
 }
 
 

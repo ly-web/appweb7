@@ -20,7 +20,7 @@ static Esp *esp;
 
 /************************************ Forward *********************************/
 
-static EspRoute *allocEspRoute(HttpRoute *loc);
+PUBLIC EspRoute *espInitRoute(HttpRoute *route);
 static int espDbDirective(MaState *state, cchar *key, cchar *value);
 static int espEnvDirective(MaState *state, cchar *key, cchar *value);
 static EspRoute *getEroute(HttpRoute *route);
@@ -64,7 +64,7 @@ static void openEsp(HttpQueue *q)
         return;
     }
     /*
-        Find the ESP route configuration. Search up the route parent chain
+        Find the ESP route configuration. Search up the route parent chain.
      */
     for (eroute = 0, route = rx->route; route; route = route->parent) {
         if (route->eroute) {
@@ -73,8 +73,12 @@ static void openEsp(HttpQueue *q)
         }
     }
     if (!route) {
-        httpError(conn, 0, "Cannot find a suitable ESP route configuration in appweb.conf");
-        return;
+        route = rx->route;
+        eroute = espInitRoute(route);
+        if (maParseFile(NULL, mprJoinPath(mprGetAppDir(), "esp.conf")) < 0) {
+            httpError(conn, 0, "Cannot parse esp.conf");
+            return;
+        }
     }
     if (!eroute) {
         httpError(conn, 0, "Cannot find a suitable ESP route");
@@ -188,13 +192,13 @@ static void startEsp(HttpQueue *q)
             See if the esp configuration or app needs to be reloaded.
          */
         if (eroute->appName && espLoadConfig(route) < 0) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load esp config for %s", eroute->appName);
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot load esp config for %s", eroute->appName);
             return;
         }
 #if !BIT_STATIC
         /* WARNING: GC yield */
         if (!loadApp(route)) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot load esp module for %s", eroute->appName);
+            httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot load esp module for %s", eroute->appName);
             return;
         }
 #endif
@@ -310,7 +314,7 @@ static int runAction(HttpConn *conn)
     if (!eroute->combined && (eroute->update || !mprLookupKey(esp->actions, key))) {
         cchar *errMsg;
         if (!loadEspModule(route, "controller", source, &errMsg)) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "%s", errMsg);
+            httpError(conn, HTTP_CODE_NOT_FOUND, "%s", errMsg);
             return 0;
         }
     }
@@ -324,7 +328,7 @@ static int runAction(HttpConn *conn)
             key = sfmt("%s/missing", mprGetPathDir(source));
             if ((action = mprLookupKey(esp->actions, key)) == 0) {
                 if ((action = mprLookupKey(esp->actions, "missing")) == 0) {
-                    httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Missing action for %s in %s", rx->target, source);
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "Missing action for %s in %s", rx->target, source);
                     return 0;
                 }
             }
@@ -384,14 +388,14 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         mprHold(source);
         if (!loadEspModule(route, "view", source, &errMsg)) {
             mprRelease(source);
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "%s", errMsg);
+            httpError(conn, HTTP_CODE_NOT_FOUND, "%s", errMsg);
             return;
         }
         mprRelease(source);
     }
 #endif
     if ((viewProc = mprLookupKey(esp->views, mprGetPortablePath(source))) == 0) {
-        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot find view");
+        httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find view");
         return;
     }
     httpAddHeaderString(conn, "Content-Type", "text/html");
@@ -472,6 +476,7 @@ static bool loadEspModule(HttpRoute *route, cchar *kind, cchar *source, cchar **
     if (eroute->update) {
         if (!mprPathExists(source, R_OK)) {
             *errMsg = sfmt("Cannot find %s \"%s\" to load", kind, source);
+            unlock(esp);
             return 0;
         }
         if (espModuleIsStale(source, module, &recompile) || (isView && layoutIsStale(eroute, source, module))) {
@@ -675,15 +680,15 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
 }
 
 
-//  FUTURE - make public and share with esp.c
-
-static EspRoute *allocEspRoute(HttpRoute *route)
+PUBLIC EspRoute *espInitRoute(HttpRoute *route)
 {
     cchar       *path;
     MprPath     info;
     EspRoute    *eroute;
     
-    if ((eroute = mprAllocObj(EspRoute, espManageEspRoute)) == 0) {
+    if (route->eroute) {
+        eroute = route->eroute;
+    } else if ((eroute = mprAllocObj(EspRoute, espManageEspRoute)) == 0) {
         return 0;
     }
 #if DEBUG_IDE && KEEP
@@ -854,7 +859,7 @@ static EspRoute *getEroute(HttpRoute *route)
             return cloneEspRoute(route, rp->eroute);
         }
     }
-    return allocEspRoute(route);
+    return espInitRoute(route);
 }
 
 
@@ -1117,7 +1122,6 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
             return MPR_ERR_BAD_STATE;
         }
     }
-
     httpSetRouteTarget(route, "run", "$&");
     httpAddRouteHandler(route, "espHandler", "");
     httpAddRouteHandler(route, "espHandler", "esp");
@@ -1633,7 +1637,7 @@ static int espRouteSetDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-#if DEPRECATE || 1
+#if DEPRECATED || 1
 /*
     EspShowErrors on|off
     Now use ShowErrors
@@ -1727,7 +1731,7 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     maAddDirective(appweb, "EspRoutePrefix", espRoutePrefixDirective);
     maAddDirective(appweb, "EspRouteSet", espRouteSetDirective);
     maAddDirective(appweb, "EspUpdate", espUpdateDirective);
-#if DEPRECATE || 1
+#if DEPRECATED || 1
     maAddDirective(appweb, "EspShowErrors", espShowErrorsDirective);
 #endif
     if ((esp->ediService = ediCreateService()) == 0) {

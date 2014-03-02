@@ -442,7 +442,7 @@ Deny from www.myCompetitor.com
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Require user username...<br />
-                        Require secure<br />
+                        Require secure [age=secs] [domains]<br />
                         Require ability name...</td>
                     </tr>
                     <tr>
@@ -461,7 +461,11 @@ Deny from www.myCompetitor.com
                         <td class="pivot">Notes</td>
                         <td>
                             <p>The Require directive defines which users can access a set of resources. The directive may specify a set of users by name, or a set of abilities that users must possess before being granted access. In the absence of a require directive, any valid user will be permitted access.  The Require ability directive specifies a list of ability words. These are typically verbs such as "view", "manage", "edit", and the like. </p>
-                            <p>The <em>Require secure</em> directive specifies that access must be performed over a secure protocol using SSL/TLS. This is achieved by emitting a <i>Strict-Transport-Security</i> response header. This instructs the browser that all connections thereafter must only request over HTTPS. This applies to the current and future browser sessions up to the specified lifespan.</p>
+                            <p>The <em>Require secure</em> directive specifies that access must be performed over a secure protocol using 
+                            SSL/TLS. If an age is provided, a <i>Strict-Transport-Security</i> response header will be emitted. 
+                            This instructs browsers that all connections thereafter must only request over HTTPS. This applies to the 
+                            current and all future browser sessions to this domain up to the specified lifespan. If the domains attribute
+                            is specified, then the Strict-Transport-Security header will apply to all subdomains.</p>
                             <p>The Require directive is inherited from outer hosts and blocks in the config file.</p>
                         </td>
                     </tr>

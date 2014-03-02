@@ -558,12 +558,13 @@ PUBLIC Edi *ediClone(Edi *edi);
  */
 PUBLIC EdiGrid *ediQuery(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list vargs);
 
+//  MOB - fmt not implemented
 /**
     Read a formatted field from the database
     @description This reads a field from the database and formats the result using an optional format string.
         If the field has a null or empty value, the supplied defaultValue will be returned.
     @param edi Database handle
-    @param fmt Printf style format string to use in formatting the result.
+    @param fmt Reserved. Set to NULL.
     @param tableName Database table name
     @param key Row key column value to read.
     @param fieldName Column name to read

@@ -412,6 +412,12 @@ static int sdbGetTableDimensions(Edi *edi, cchar *tableName, int *numRows, int *
     assert(edi);
     assert(tableName && *tableName);
 
+    if (numRows) {
+        *numRows = 0;
+    }
+    if (numCols) {
+        *numCols = 0;
+    }
     if (!validName(tableName)) {
         return MPR_ERR_BAD_ARGS;
     }

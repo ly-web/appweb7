@@ -32,6 +32,7 @@ BIT_PACK_PHP       = 0
 BIT_PACK_SDB       = 0
 BIT_PACK_SQLITE    = 0
 BIT_PACK_SSL       = 0
+BIT_PACK_ZLIB      = 1
 
 !IF "$(BIT_PACK_EST)" == "1"
 BIT_PACK_SSL = 1
@@ -99,12 +100,13 @@ BIT_PACK_UGLIFYJS_PATH    = uglifyjs
 BIT_PACK_UTEST_PATH       = utest
 BIT_PACK_WINSDK_PATH      = winsdk
 BIT_PACK_ZIP_PATH         = zip
+BIT_PACK_ZLIB_PATH        = zlib
 
 CC                 = cl
 LD                 = link
 RC                 = rc
 CFLAGS             = -nologo -GR- -W3 -O2 -MD
-DFLAGS             = -D_REENTRANT -D_MT -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_MDB=$(BIT_PACK_MDB) -DBIT_PACK_NANOSSL=$(BIT_PACK_NANOSSL) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_PCRE=$(BIT_PACK_PCRE) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SDB=$(BIT_PACK_SDB) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
+DFLAGS             = -D_REENTRANT -D_MT -DBIT_PACK_CGI=$(BIT_PACK_CGI) -DBIT_PACK_EJSCRIPT=$(BIT_PACK_EJSCRIPT) -DBIT_PACK_ESP=$(BIT_PACK_ESP) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_MDB=$(BIT_PACK_MDB) -DBIT_PACK_NANOSSL=$(BIT_PACK_NANOSSL) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_PCRE=$(BIT_PACK_PCRE) -DBIT_PACK_PHP=$(BIT_PACK_PHP) -DBIT_PACK_SDB=$(BIT_PACK_SDB) -DBIT_PACK_SQLITE=$(BIT_PACK_SQLITE) -DBIT_PACK_SSL=$(BIT_PACK_SSL) -DBIT_PACK_ZLIB=$(BIT_PACK_ZLIB) 
 IFLAGS             = -I$(CONFIG)\inc
 LDFLAGS            = -nologo -nodefaultlib -incremental:no -machine:$(ARCH)
 LIBPATHS           = "-libpath:$(CONFIG)\bin"
@@ -136,6 +138,9 @@ TARGETS            = $(TARGETS) $(CONFIG)\bin\makerom.exe
 TARGETS            = $(TARGETS) $(CONFIG)\bin\ca.crt
 !IF "$(BIT_PACK_PCRE)" == "1"
 TARGETS            = $(TARGETS) $(CONFIG)\bin\libpcre.lib
+!ENDIF
+!IF "$(BIT_PACK_ZLIB)" == "1"
+TARGETS            = $(TARGETS) $(CONFIG)\bin\libzlib.lib
 !ENDIF
 TARGETS            = $(TARGETS) $(CONFIG)\bin\libhttp.lib
 TARGETS            = $(TARGETS) $(CONFIG)\bin\http.exe
@@ -249,6 +254,7 @@ clean:
 	if exist "$(CONFIG)\bin\libest.lib" del /Q "$(CONFIG)\bin\libest.lib"
 	if exist "$(CONFIG)\bin\ca.crt" del /Q "$(CONFIG)\bin\ca.crt"
 	if exist "$(CONFIG)\bin\libpcre.lib" del /Q "$(CONFIG)\bin\libpcre.lib"
+	if exist "$(CONFIG)\bin\libzlib.lib" del /Q "$(CONFIG)\bin\libzlib.lib"
 	if exist "$(CONFIG)\bin\libhttp.lib" del /Q "$(CONFIG)\bin\libhttp.lib"
 	if exist "$(CONFIG)\bin\http.exe" del /Q "$(CONFIG)\bin\http.exe"
 	if exist "$(CONFIG)\bin\http.lib" del /Q "$(CONFIG)\bin\http.lib"
@@ -309,6 +315,7 @@ clean:
 	if exist "$(CONFIG)\obj\makerom.obj" del /Q "$(CONFIG)\obj\makerom.obj"
 	if exist "$(CONFIG)\obj\estLib.obj" del /Q "$(CONFIG)\obj\estLib.obj"
 	if exist "$(CONFIG)\obj\pcre.obj" del /Q "$(CONFIG)\obj\pcre.obj"
+	if exist "$(CONFIG)\obj\zlib.obj" del /Q "$(CONFIG)\obj\zlib.obj"
 	if exist "$(CONFIG)\obj\httpLib.obj" del /Q "$(CONFIG)\obj\httpLib.obj"
 	if exist "$(CONFIG)\obj\http.obj" del /Q "$(CONFIG)\obj\http.obj"
 	if exist "$(CONFIG)\obj\sqlite3.obj" del /Q "$(CONFIG)\obj\sqlite3.obj"
@@ -582,9 +589,43 @@ $(CONFIG)\bin\libpcre.lib: $(DEPS_21)
 !ENDIF
 
 #
+#   zlib.h
+#
+$(CONFIG)\inc\zlib.h: $(DEPS_22)
+	@echo '      [Copy] $(CONFIG)/inc/zlib.h'
+	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
+	copy /Y src\paks\zlib\zlib.h $(CONFIG)\inc\zlib.h
+
+#
+#   zlib.obj
+#
+DEPS_23 = $(DEPS_23) $(CONFIG)\inc\bit.h
+DEPS_23 = $(DEPS_23) $(CONFIG)\inc\zlib.h
+DEPS_23 = $(DEPS_23) $(CONFIG)\inc\bitos.h
+
+$(CONFIG)\obj\zlib.obj: \
+    src\paks\zlib\zlib.c $(DEPS_23)
+	@echo '   [Compile] $(CONFIG)/obj/zlib.obj'
+	"$(CC)" -c -Fo$(CONFIG)\obj\zlib.obj -Fd$(CONFIG)\obj\zlib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\zlib\zlib.c
+
+!IF "$(BIT_PACK_ZLIB)" == "1"
+#
+#   libzlib
+#
+DEPS_24 = $(DEPS_24) $(CONFIG)\inc\zlib.h
+DEPS_24 = $(DEPS_24) $(CONFIG)\inc\bit.h
+DEPS_24 = $(DEPS_24) $(CONFIG)\inc\bitos.h
+DEPS_24 = $(DEPS_24) $(CONFIG)\obj\zlib.obj
+
+$(CONFIG)\bin\libzlib.lib: $(DEPS_24)
+	@echo '      [Link] $(CONFIG)/bin/libzlib.lib'
+	"lib.exe" -nologo -out:$(CONFIG)\bin\libzlib.lib "$(CONFIG)\obj\zlib.obj"
+!ENDIF
+
+#
 #   http.h
 #
-$(CONFIG)\inc\http.h: $(DEPS_22)
+$(CONFIG)\inc\http.h: $(DEPS_25)
 	@echo '      [Copy] $(CONFIG)/inc/http.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y src\paks\http\http.h $(CONFIG)\inc\http.h
@@ -592,105 +633,105 @@ $(CONFIG)\inc\http.h: $(DEPS_22)
 #
 #   httpLib.obj
 #
-DEPS_23 = $(DEPS_23) $(CONFIG)\inc\bit.h
-DEPS_23 = $(DEPS_23) $(CONFIG)\inc\http.h
-DEPS_23 = $(DEPS_23) $(CONFIG)\inc\mpr.h
+DEPS_26 = $(DEPS_26) $(CONFIG)\inc\bit.h
+DEPS_26 = $(DEPS_26) $(CONFIG)\inc\http.h
+DEPS_26 = $(DEPS_26) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\httpLib.obj: \
-    src\paks\http\httpLib.c $(DEPS_23)
+    src\paks\http\httpLib.c $(DEPS_26)
 	@echo '   [Compile] $(CONFIG)/obj/httpLib.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\httpLib.obj -Fd$(CONFIG)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\http\httpLib.c
 
 #
 #   libhttp
 #
-DEPS_24 = $(DEPS_24) $(CONFIG)\inc\mpr.h
-DEPS_24 = $(DEPS_24) $(CONFIG)\inc\bit.h
-DEPS_24 = $(DEPS_24) $(CONFIG)\inc\bitos.h
-DEPS_24 = $(DEPS_24) $(CONFIG)\obj\mprLib.obj
-DEPS_24 = $(DEPS_24) $(CONFIG)\bin\libmpr.lib
-DEPS_24 = $(DEPS_24) $(CONFIG)\inc\pcre.h
-DEPS_24 = $(DEPS_24) $(CONFIG)\obj\pcre.obj
+DEPS_27 = $(DEPS_27) $(CONFIG)\inc\mpr.h
+DEPS_27 = $(DEPS_27) $(CONFIG)\inc\bit.h
+DEPS_27 = $(DEPS_27) $(CONFIG)\inc\bitos.h
+DEPS_27 = $(DEPS_27) $(CONFIG)\obj\mprLib.obj
+DEPS_27 = $(DEPS_27) $(CONFIG)\bin\libmpr.lib
+DEPS_27 = $(DEPS_27) $(CONFIG)\inc\pcre.h
+DEPS_27 = $(DEPS_27) $(CONFIG)\obj\pcre.obj
 !IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_24 = $(DEPS_24) $(CONFIG)\bin\libpcre.lib
+DEPS_27 = $(DEPS_27) $(CONFIG)\bin\libpcre.lib
 !ENDIF
-DEPS_24 = $(DEPS_24) $(CONFIG)\inc\http.h
-DEPS_24 = $(DEPS_24) $(CONFIG)\obj\httpLib.obj
+DEPS_27 = $(DEPS_27) $(CONFIG)\inc\http.h
+DEPS_27 = $(DEPS_27) $(CONFIG)\obj\httpLib.obj
 
-$(CONFIG)\bin\libhttp.lib: $(DEPS_24)
+$(CONFIG)\bin\libhttp.lib: $(DEPS_27)
 	@echo '      [Link] $(CONFIG)/bin/libhttp.lib'
 	"lib.exe" -nologo -out:$(CONFIG)\bin\libhttp.lib "$(CONFIG)\obj\httpLib.obj"
 
 #
 #   http.obj
 #
-DEPS_25 = $(DEPS_25) $(CONFIG)\inc\bit.h
-DEPS_25 = $(DEPS_25) $(CONFIG)\inc\http.h
+DEPS_28 = $(DEPS_28) $(CONFIG)\inc\bit.h
+DEPS_28 = $(DEPS_28) $(CONFIG)\inc\http.h
 
 $(CONFIG)\obj\http.obj: \
-    src\paks\http\http.c $(DEPS_25)
+    src\paks\http\http.c $(DEPS_28)
 	@echo '   [Compile] $(CONFIG)/obj/http.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\http.obj -Fd$(CONFIG)\obj\http.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)\src" "-I$(BIT_PACK_OPENSSL_PATH)\include" src\paks\http\http.c
 
 #
 #   http
 #
-DEPS_26 = $(DEPS_26) $(CONFIG)\inc\mpr.h
-DEPS_26 = $(DEPS_26) $(CONFIG)\inc\bit.h
-DEPS_26 = $(DEPS_26) $(CONFIG)\inc\bitos.h
-DEPS_26 = $(DEPS_26) $(CONFIG)\obj\mprLib.obj
-DEPS_26 = $(DEPS_26) $(CONFIG)\bin\libmpr.lib
-DEPS_26 = $(DEPS_26) $(CONFIG)\inc\pcre.h
-DEPS_26 = $(DEPS_26) $(CONFIG)\obj\pcre.obj
+DEPS_29 = $(DEPS_29) $(CONFIG)\inc\mpr.h
+DEPS_29 = $(DEPS_29) $(CONFIG)\inc\bit.h
+DEPS_29 = $(DEPS_29) $(CONFIG)\inc\bitos.h
+DEPS_29 = $(DEPS_29) $(CONFIG)\obj\mprLib.obj
+DEPS_29 = $(DEPS_29) $(CONFIG)\bin\libmpr.lib
+DEPS_29 = $(DEPS_29) $(CONFIG)\inc\pcre.h
+DEPS_29 = $(DEPS_29) $(CONFIG)\obj\pcre.obj
 !IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_26 = $(DEPS_26) $(CONFIG)\bin\libpcre.lib
+DEPS_29 = $(DEPS_29) $(CONFIG)\bin\libpcre.lib
 !ENDIF
-DEPS_26 = $(DEPS_26) $(CONFIG)\inc\http.h
-DEPS_26 = $(DEPS_26) $(CONFIG)\obj\httpLib.obj
-DEPS_26 = $(DEPS_26) $(CONFIG)\bin\libhttp.lib
-DEPS_26 = $(DEPS_26) $(CONFIG)\inc\est.h
-DEPS_26 = $(DEPS_26) $(CONFIG)\obj\estLib.obj
+DEPS_29 = $(DEPS_29) $(CONFIG)\inc\http.h
+DEPS_29 = $(DEPS_29) $(CONFIG)\obj\httpLib.obj
+DEPS_29 = $(DEPS_29) $(CONFIG)\bin\libhttp.lib
+DEPS_29 = $(DEPS_29) $(CONFIG)\inc\est.h
+DEPS_29 = $(DEPS_29) $(CONFIG)\obj\estLib.obj
 !IF "$(BIT_PACK_EST)" == "1"
-DEPS_26 = $(DEPS_26) $(CONFIG)\bin\libest.lib
+DEPS_29 = $(DEPS_29) $(CONFIG)\bin\libest.lib
 !ENDIF
-DEPS_26 = $(DEPS_26) $(CONFIG)\obj\mprSsl.obj
-DEPS_26 = $(DEPS_26) $(CONFIG)\bin\libmprssl.lib
-DEPS_26 = $(DEPS_26) $(CONFIG)\obj\http.obj
+DEPS_29 = $(DEPS_29) $(CONFIG)\obj\mprSsl.obj
+DEPS_29 = $(DEPS_29) $(CONFIG)\bin\libmprssl.lib
+DEPS_29 = $(DEPS_29) $(CONFIG)\obj\http.obj
 
-LIBS_26 = $(LIBS_26) libhttp.lib
-LIBS_26 = $(LIBS_26) libmpr.lib
+LIBS_29 = $(LIBS_29) libhttp.lib
+LIBS_29 = $(LIBS_29) libmpr.lib
 !IF "$(BIT_PACK_PCRE)" == "1"
-LIBS_26 = $(LIBS_26) libpcre.lib
+LIBS_29 = $(LIBS_29) libpcre.lib
 !ENDIF
-LIBS_26 = $(LIBS_26) libmprssl.lib
+LIBS_29 = $(LIBS_29) libmprssl.lib
 !IF "$(BIT_PACK_EST)" == "1"
-LIBS_26 = $(LIBS_26) libest.lib
+LIBS_29 = $(LIBS_29) libest.lib
 !ENDIF
 !IF "$(BIT_PACK_MATRIXSSL)" == "1"
-LIBS_26 = $(LIBS_26) libmatrixssl.lib
-LIBPATHS_26 = $(LIBPATHS_26) -libpath:$(BIT_PACK_MATRIXSSL_PATH)
+LIBS_29 = $(LIBS_29) libmatrixssl.lib
+LIBPATHS_29 = $(LIBPATHS_29) -libpath:$(BIT_PACK_MATRIXSSL_PATH)
 !ENDIF
 !IF "$(BIT_PACK_NANOSSL)" == "1"
-LIBS_26 = $(LIBS_26) libssls.lib
-LIBPATHS_26 = $(LIBPATHS_26) -libpath:$(BIT_PACK_NANOSSL_PATH)/bin
+LIBS_29 = $(LIBS_29) libssls.lib
+LIBPATHS_29 = $(LIBPATHS_29) -libpath:$(BIT_PACK_NANOSSL_PATH)/bin
 !ENDIF
 !IF "$(BIT_PACK_OPENSSL)" == "1"
-LIBS_26 = $(LIBS_26) libeay32.lib
-LIBPATHS_26 = $(LIBPATHS_26) -libpath:$(BIT_PACK_OPENSSL_PATH)
+LIBS_29 = $(LIBS_29) libeay32.lib
+LIBPATHS_29 = $(LIBPATHS_29) -libpath:$(BIT_PACK_OPENSSL_PATH)
 !ENDIF
 !IF "$(BIT_PACK_OPENSSL)" == "1"
-LIBS_26 = $(LIBS_26) libssleay32.lib
-LIBPATHS_26 = $(LIBPATHS_26) -libpath:$(BIT_PACK_OPENSSL_PATH)
+LIBS_29 = $(LIBS_29) libssleay32.lib
+LIBPATHS_29 = $(LIBPATHS_29) -libpath:$(BIT_PACK_OPENSSL_PATH)
 !ENDIF
 
-$(CONFIG)\bin\http.exe: $(DEPS_26)
+$(CONFIG)\bin\http.exe: $(DEPS_29)
 	@echo '      [Link] $(CONFIG)/bin/http.exe'
-	"$(LD)" -out:$(CONFIG)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)    "$(CONFIG)\obj\http.obj" $(LIBPATHS_26) $(LIBS_26) $(LIBS_26) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)    "$(CONFIG)\obj\http.obj" $(LIBPATHS_29) $(LIBS_29) $(LIBS_29) $(LIBS) 
 
 #
 #   sqlite3.h
 #
-$(CONFIG)\inc\sqlite3.h: $(DEPS_27)
+$(CONFIG)\inc\sqlite3.h: $(DEPS_30)
 	@echo '      [Copy] $(CONFIG)/inc/sqlite3.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y src\paks\sqlite\sqlite3.h $(CONFIG)\inc\sqlite3.h
@@ -698,11 +739,11 @@ $(CONFIG)\inc\sqlite3.h: $(DEPS_27)
 #
 #   sqlite3.obj
 #
-DEPS_28 = $(DEPS_28) $(CONFIG)\inc\bit.h
-DEPS_28 = $(DEPS_28) $(CONFIG)\inc\sqlite3.h
+DEPS_31 = $(DEPS_31) $(CONFIG)\inc\bit.h
+DEPS_31 = $(DEPS_31) $(CONFIG)\inc\sqlite3.h
 
 $(CONFIG)\obj\sqlite3.obj: \
-    src\paks\sqlite\sqlite3.c $(DEPS_28)
+    src\paks\sqlite\sqlite3.c $(DEPS_31)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite3.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite3.obj -Fd$(CONFIG)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\sqlite\sqlite3.c
 
@@ -710,11 +751,11 @@ $(CONFIG)\obj\sqlite3.obj: \
 #
 #   libsql
 #
-DEPS_29 = $(DEPS_29) $(CONFIG)\inc\sqlite3.h
-DEPS_29 = $(DEPS_29) $(CONFIG)\inc\bit.h
-DEPS_29 = $(DEPS_29) $(CONFIG)\obj\sqlite3.obj
+DEPS_32 = $(DEPS_32) $(CONFIG)\inc\sqlite3.h
+DEPS_32 = $(DEPS_32) $(CONFIG)\inc\bit.h
+DEPS_32 = $(DEPS_32) $(CONFIG)\obj\sqlite3.obj
 
-$(CONFIG)\bin\libsql.lib: $(DEPS_29)
+$(CONFIG)\bin\libsql.lib: $(DEPS_32)
 	@echo '      [Link] $(CONFIG)/bin/libsql.lib'
 	"lib.exe" -nologo -out:$(CONFIG)\bin\libsql.lib "$(CONFIG)\obj\sqlite3.obj"
 !ENDIF
@@ -722,11 +763,11 @@ $(CONFIG)\bin\libsql.lib: $(DEPS_29)
 #
 #   sqlite.obj
 #
-DEPS_30 = $(DEPS_30) $(CONFIG)\inc\bit.h
-DEPS_30 = $(DEPS_30) $(CONFIG)\inc\sqlite3.h
+DEPS_33 = $(DEPS_33) $(CONFIG)\inc\bit.h
+DEPS_33 = $(DEPS_33) $(CONFIG)\inc\sqlite3.h
 
 $(CONFIG)\obj\sqlite.obj: \
-    src\paks\sqlite\sqlite.c $(DEPS_30)
+    src\paks\sqlite\sqlite.c $(DEPS_33)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\sqlite.obj -Fd$(CONFIG)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\sqlite\sqlite.c
 
@@ -734,23 +775,23 @@ $(CONFIG)\obj\sqlite.obj: \
 #
 #   sqliteshell
 #
-DEPS_31 = $(DEPS_31) $(CONFIG)\inc\sqlite3.h
-DEPS_31 = $(DEPS_31) $(CONFIG)\inc\bit.h
-DEPS_31 = $(DEPS_31) $(CONFIG)\obj\sqlite3.obj
-DEPS_31 = $(DEPS_31) $(CONFIG)\bin\libsql.lib
-DEPS_31 = $(DEPS_31) $(CONFIG)\obj\sqlite.obj
+DEPS_34 = $(DEPS_34) $(CONFIG)\inc\sqlite3.h
+DEPS_34 = $(DEPS_34) $(CONFIG)\inc\bit.h
+DEPS_34 = $(DEPS_34) $(CONFIG)\obj\sqlite3.obj
+DEPS_34 = $(DEPS_34) $(CONFIG)\bin\libsql.lib
+DEPS_34 = $(DEPS_34) $(CONFIG)\obj\sqlite.obj
 
-LIBS_31 = $(LIBS_31) libsql.lib
+LIBS_34 = $(LIBS_34) libsql.lib
 
-$(CONFIG)\bin\sqlite.exe: $(DEPS_31)
+$(CONFIG)\bin\sqlite.exe: $(DEPS_34)
 	@echo '      [Link] $(CONFIG)/bin/sqlite.exe'
-	"$(LD)" -out:$(CONFIG)\bin\sqlite.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\sqlite.obj" $(LIBPATHS_31) $(LIBS_31) $(LIBS_31) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\sqlite.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\sqlite.obj" $(LIBPATHS_34) $(LIBS_34) $(LIBS_34) $(LIBS) 
 !ENDIF
 
 #
 #   appweb.h
 #
-$(CONFIG)\inc\appweb.h: $(DEPS_32)
+$(CONFIG)\inc\appweb.h: $(DEPS_35)
 	@echo '      [Copy] $(CONFIG)/inc/appweb.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y src\appweb.h $(CONFIG)\inc\appweb.h
@@ -758,7 +799,7 @@ $(CONFIG)\inc\appweb.h: $(DEPS_32)
 #
 #   customize.h
 #
-$(CONFIG)\inc\customize.h: $(DEPS_33)
+$(CONFIG)\inc\customize.h: $(DEPS_36)
 	@echo '      [Copy] $(CONFIG)/inc/customize.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y src\customize.h $(CONFIG)\inc\customize.h
@@ -766,106 +807,106 @@ $(CONFIG)\inc\customize.h: $(DEPS_33)
 #
 #   config.obj
 #
-DEPS_34 = $(DEPS_34) $(CONFIG)\inc\bit.h
-DEPS_34 = $(DEPS_34) $(CONFIG)\inc\appweb.h
-DEPS_34 = $(DEPS_34) $(CONFIG)\inc\pcre.h
-DEPS_34 = $(DEPS_34) $(CONFIG)\inc\mpr.h
-DEPS_34 = $(DEPS_34) $(CONFIG)\inc\http.h
-DEPS_34 = $(DEPS_34) $(CONFIG)\inc\customize.h
+DEPS_37 = $(DEPS_37) $(CONFIG)\inc\bit.h
+DEPS_37 = $(DEPS_37) $(CONFIG)\inc\appweb.h
+DEPS_37 = $(DEPS_37) $(CONFIG)\inc\pcre.h
+DEPS_37 = $(DEPS_37) $(CONFIG)\inc\mpr.h
+DEPS_37 = $(DEPS_37) $(CONFIG)\inc\http.h
+DEPS_37 = $(DEPS_37) $(CONFIG)\inc\customize.h
 
 $(CONFIG)\obj\config.obj: \
-    src\config.c $(DEPS_34)
+    src\config.c $(DEPS_37)
 	@echo '   [Compile] $(CONFIG)/obj/config.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\config.obj -Fd$(CONFIG)\obj\config.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\config.c
 
 #
 #   convenience.obj
 #
-DEPS_35 = $(DEPS_35) $(CONFIG)\inc\bit.h
-DEPS_35 = $(DEPS_35) $(CONFIG)\inc\appweb.h
+DEPS_38 = $(DEPS_38) $(CONFIG)\inc\bit.h
+DEPS_38 = $(DEPS_38) $(CONFIG)\inc\appweb.h
 
 $(CONFIG)\obj\convenience.obj: \
-    src\convenience.c $(DEPS_35)
+    src\convenience.c $(DEPS_38)
 	@echo '   [Compile] $(CONFIG)/obj/convenience.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\convenience.obj -Fd$(CONFIG)\obj\convenience.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\convenience.c
 
 #
 #   dirHandler.obj
 #
-DEPS_36 = $(DEPS_36) $(CONFIG)\inc\bit.h
-DEPS_36 = $(DEPS_36) $(CONFIG)\inc\appweb.h
+DEPS_39 = $(DEPS_39) $(CONFIG)\inc\bit.h
+DEPS_39 = $(DEPS_39) $(CONFIG)\inc\appweb.h
 
 $(CONFIG)\obj\dirHandler.obj: \
-    src\dirHandler.c $(DEPS_36)
+    src\dirHandler.c $(DEPS_39)
 	@echo '   [Compile] $(CONFIG)/obj/dirHandler.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\dirHandler.obj -Fd$(CONFIG)\obj\dirHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\dirHandler.c
 
 #
 #   fileHandler.obj
 #
-DEPS_37 = $(DEPS_37) $(CONFIG)\inc\bit.h
-DEPS_37 = $(DEPS_37) $(CONFIG)\inc\appweb.h
+DEPS_40 = $(DEPS_40) $(CONFIG)\inc\bit.h
+DEPS_40 = $(DEPS_40) $(CONFIG)\inc\appweb.h
 
 $(CONFIG)\obj\fileHandler.obj: \
-    src\fileHandler.c $(DEPS_37)
+    src\fileHandler.c $(DEPS_40)
 	@echo '   [Compile] $(CONFIG)/obj/fileHandler.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\fileHandler.obj -Fd$(CONFIG)\obj\fileHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\fileHandler.c
 
 #
 #   log.obj
 #
-DEPS_38 = $(DEPS_38) $(CONFIG)\inc\bit.h
-DEPS_38 = $(DEPS_38) $(CONFIG)\inc\appweb.h
+DEPS_41 = $(DEPS_41) $(CONFIG)\inc\bit.h
+DEPS_41 = $(DEPS_41) $(CONFIG)\inc\appweb.h
 
 $(CONFIG)\obj\log.obj: \
-    src\log.c $(DEPS_38)
+    src\log.c $(DEPS_41)
 	@echo '   [Compile] $(CONFIG)/obj/log.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\log.obj -Fd$(CONFIG)\obj\log.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\log.c
 
 #
 #   server.obj
 #
-DEPS_39 = $(DEPS_39) $(CONFIG)\inc\bit.h
-DEPS_39 = $(DEPS_39) $(CONFIG)\inc\appweb.h
+DEPS_42 = $(DEPS_42) $(CONFIG)\inc\bit.h
+DEPS_42 = $(DEPS_42) $(CONFIG)\inc\appweb.h
 
 $(CONFIG)\obj\server.obj: \
-    src\server.c $(DEPS_39)
+    src\server.c $(DEPS_42)
 	@echo '   [Compile] $(CONFIG)/obj/server.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\server.obj -Fd$(CONFIG)\obj\server.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server.c
 
 #
 #   libappweb
 #
-DEPS_40 = $(DEPS_40) $(CONFIG)\inc\mpr.h
-DEPS_40 = $(DEPS_40) $(CONFIG)\inc\bit.h
-DEPS_40 = $(DEPS_40) $(CONFIG)\inc\bitos.h
-DEPS_40 = $(DEPS_40) $(CONFIG)\obj\mprLib.obj
-DEPS_40 = $(DEPS_40) $(CONFIG)\bin\libmpr.lib
-DEPS_40 = $(DEPS_40) $(CONFIG)\inc\pcre.h
-DEPS_40 = $(DEPS_40) $(CONFIG)\obj\pcre.obj
+DEPS_43 = $(DEPS_43) $(CONFIG)\inc\mpr.h
+DEPS_43 = $(DEPS_43) $(CONFIG)\inc\bit.h
+DEPS_43 = $(DEPS_43) $(CONFIG)\inc\bitos.h
+DEPS_43 = $(DEPS_43) $(CONFIG)\obj\mprLib.obj
+DEPS_43 = $(DEPS_43) $(CONFIG)\bin\libmpr.lib
+DEPS_43 = $(DEPS_43) $(CONFIG)\inc\pcre.h
+DEPS_43 = $(DEPS_43) $(CONFIG)\obj\pcre.obj
 !IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_40 = $(DEPS_40) $(CONFIG)\bin\libpcre.lib
+DEPS_43 = $(DEPS_43) $(CONFIG)\bin\libpcre.lib
 !ENDIF
-DEPS_40 = $(DEPS_40) $(CONFIG)\inc\http.h
-DEPS_40 = $(DEPS_40) $(CONFIG)\obj\httpLib.obj
-DEPS_40 = $(DEPS_40) $(CONFIG)\bin\libhttp.lib
-DEPS_40 = $(DEPS_40) $(CONFIG)\inc\appweb.h
-DEPS_40 = $(DEPS_40) $(CONFIG)\inc\customize.h
-DEPS_40 = $(DEPS_40) $(CONFIG)\obj\config.obj
-DEPS_40 = $(DEPS_40) $(CONFIG)\obj\convenience.obj
-DEPS_40 = $(DEPS_40) $(CONFIG)\obj\dirHandler.obj
-DEPS_40 = $(DEPS_40) $(CONFIG)\obj\fileHandler.obj
-DEPS_40 = $(DEPS_40) $(CONFIG)\obj\log.obj
-DEPS_40 = $(DEPS_40) $(CONFIG)\obj\server.obj
+DEPS_43 = $(DEPS_43) $(CONFIG)\inc\http.h
+DEPS_43 = $(DEPS_43) $(CONFIG)\obj\httpLib.obj
+DEPS_43 = $(DEPS_43) $(CONFIG)\bin\libhttp.lib
+DEPS_43 = $(DEPS_43) $(CONFIG)\inc\appweb.h
+DEPS_43 = $(DEPS_43) $(CONFIG)\inc\customize.h
+DEPS_43 = $(DEPS_43) $(CONFIG)\obj\config.obj
+DEPS_43 = $(DEPS_43) $(CONFIG)\obj\convenience.obj
+DEPS_43 = $(DEPS_43) $(CONFIG)\obj\dirHandler.obj
+DEPS_43 = $(DEPS_43) $(CONFIG)\obj\fileHandler.obj
+DEPS_43 = $(DEPS_43) $(CONFIG)\obj\log.obj
+DEPS_43 = $(DEPS_43) $(CONFIG)\obj\server.obj
 
-$(CONFIG)\bin\libappweb.lib: $(DEPS_40)
+$(CONFIG)\bin\libappweb.lib: $(DEPS_43)
 	@echo '      [Link] $(CONFIG)/bin/libappweb.lib'
 	"lib.exe" -nologo -out:$(CONFIG)\bin\libappweb.lib "$(CONFIG)\obj\config.obj" "$(CONFIG)\obj\convenience.obj" "$(CONFIG)\obj\dirHandler.obj" "$(CONFIG)\obj\fileHandler.obj" "$(CONFIG)\obj\log.obj" "$(CONFIG)\obj\server.obj"
 
 #
 #   edi.h
 #
-$(CONFIG)\inc\edi.h: $(DEPS_41)
+$(CONFIG)\inc\edi.h: $(DEPS_44)
 	@echo '      [Copy] $(CONFIG)/inc/edi.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y src\esp\edi.h $(CONFIG)\inc\edi.h
@@ -873,7 +914,7 @@ $(CONFIG)\inc\edi.h: $(DEPS_41)
 #
 #   esp.h
 #
-$(CONFIG)\inc\esp.h: $(DEPS_42)
+$(CONFIG)\inc\esp.h: $(DEPS_45)
 	@echo '      [Copy] $(CONFIG)/inc/esp.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y src\esp\esp.h $(CONFIG)\inc\esp.h
@@ -881,7 +922,7 @@ $(CONFIG)\inc\esp.h: $(DEPS_42)
 #
 #   mdb.h
 #
-$(CONFIG)\inc\mdb.h: $(DEPS_43)
+$(CONFIG)\inc\mdb.h: $(DEPS_46)
 	@echo '      [Copy] $(CONFIG)/inc/mdb.h'
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y src\esp\mdb.h $(CONFIG)\inc\mdb.h
@@ -889,107 +930,107 @@ $(CONFIG)\inc\mdb.h: $(DEPS_43)
 #
 #   edi.obj
 #
-DEPS_44 = $(DEPS_44) $(CONFIG)\inc\bit.h
-DEPS_44 = $(DEPS_44) $(CONFIG)\inc\edi.h
-DEPS_44 = $(DEPS_44) $(CONFIG)\inc\pcre.h
+DEPS_47 = $(DEPS_47) $(CONFIG)\inc\bit.h
+DEPS_47 = $(DEPS_47) $(CONFIG)\inc\edi.h
+DEPS_47 = $(DEPS_47) $(CONFIG)\inc\pcre.h
 
 $(CONFIG)\obj\edi.obj: \
-    src\esp\edi.c $(DEPS_44)
+    src\esp\edi.c $(DEPS_47)
 	@echo '   [Compile] $(CONFIG)/obj/edi.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\edi.obj -Fd$(CONFIG)\obj\edi.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\edi.c
 
 #
 #   espAbbrev.obj
 #
-DEPS_45 = $(DEPS_45) $(CONFIG)\inc\bit.h
-DEPS_45 = $(DEPS_45) $(CONFIG)\inc\esp.h
+DEPS_48 = $(DEPS_48) $(CONFIG)\inc\bit.h
+DEPS_48 = $(DEPS_48) $(CONFIG)\inc\esp.h
 
 $(CONFIG)\obj\espAbbrev.obj: \
-    src\esp\espAbbrev.c $(DEPS_45)
+    src\esp\espAbbrev.c $(DEPS_48)
 	@echo '   [Compile] $(CONFIG)/obj/espAbbrev.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\espAbbrev.obj -Fd$(CONFIG)\obj\espAbbrev.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espAbbrev.c
 
 #
 #   espDeprecated.obj
 #
-DEPS_46 = $(DEPS_46) $(CONFIG)\inc\bit.h
-DEPS_46 = $(DEPS_46) $(CONFIG)\inc\esp.h
-DEPS_46 = $(DEPS_46) $(CONFIG)\inc\edi.h
+DEPS_49 = $(DEPS_49) $(CONFIG)\inc\bit.h
+DEPS_49 = $(DEPS_49) $(CONFIG)\inc\esp.h
+DEPS_49 = $(DEPS_49) $(CONFIG)\inc\edi.h
 
 $(CONFIG)\obj\espDeprecated.obj: \
-    src\esp\espDeprecated.c $(DEPS_46)
+    src\esp\espDeprecated.c $(DEPS_49)
 	@echo '   [Compile] $(CONFIG)/obj/espDeprecated.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\espDeprecated.obj -Fd$(CONFIG)\obj\espDeprecated.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espDeprecated.c
 
 #
 #   espFramework.obj
 #
-DEPS_47 = $(DEPS_47) $(CONFIG)\inc\bit.h
-DEPS_47 = $(DEPS_47) $(CONFIG)\inc\esp.h
+DEPS_50 = $(DEPS_50) $(CONFIG)\inc\bit.h
+DEPS_50 = $(DEPS_50) $(CONFIG)\inc\esp.h
 
 $(CONFIG)\obj\espFramework.obj: \
-    src\esp\espFramework.c $(DEPS_47)
+    src\esp\espFramework.c $(DEPS_50)
 	@echo '   [Compile] $(CONFIG)/obj/espFramework.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\espFramework.obj -Fd$(CONFIG)\obj\espFramework.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espFramework.c
 
 #
 #   espHandler.obj
 #
-DEPS_48 = $(DEPS_48) $(CONFIG)\inc\bit.h
-DEPS_48 = $(DEPS_48) $(CONFIG)\inc\appweb.h
-DEPS_48 = $(DEPS_48) $(CONFIG)\inc\esp.h
-DEPS_48 = $(DEPS_48) $(CONFIG)\inc\edi.h
+DEPS_51 = $(DEPS_51) $(CONFIG)\inc\bit.h
+DEPS_51 = $(DEPS_51) $(CONFIG)\inc\appweb.h
+DEPS_51 = $(DEPS_51) $(CONFIG)\inc\esp.h
+DEPS_51 = $(DEPS_51) $(CONFIG)\inc\edi.h
 
 $(CONFIG)\obj\espHandler.obj: \
-    src\esp\espHandler.c $(DEPS_48)
+    src\esp\espHandler.c $(DEPS_51)
 	@echo '   [Compile] $(CONFIG)/obj/espHandler.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\espHandler.obj -Fd$(CONFIG)\obj\espHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espHandler.c
 
 #
 #   espHtml.obj
 #
-DEPS_49 = $(DEPS_49) $(CONFIG)\inc\bit.h
-DEPS_49 = $(DEPS_49) $(CONFIG)\inc\esp.h
-DEPS_49 = $(DEPS_49) $(CONFIG)\inc\edi.h
+DEPS_52 = $(DEPS_52) $(CONFIG)\inc\bit.h
+DEPS_52 = $(DEPS_52) $(CONFIG)\inc\esp.h
+DEPS_52 = $(DEPS_52) $(CONFIG)\inc\edi.h
 
 $(CONFIG)\obj\espHtml.obj: \
-    src\esp\espHtml.c $(DEPS_49)
+    src\esp\espHtml.c $(DEPS_52)
 	@echo '   [Compile] $(CONFIG)/obj/espHtml.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\espHtml.obj -Fd$(CONFIG)\obj\espHtml.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espHtml.c
 
 #
 #   espTemplate.obj
 #
-DEPS_50 = $(DEPS_50) $(CONFIG)\inc\bit.h
-DEPS_50 = $(DEPS_50) $(CONFIG)\inc\esp.h
+DEPS_53 = $(DEPS_53) $(CONFIG)\inc\bit.h
+DEPS_53 = $(DEPS_53) $(CONFIG)\inc\esp.h
 
 $(CONFIG)\obj\espTemplate.obj: \
-    src\esp\espTemplate.c $(DEPS_50)
+    src\esp\espTemplate.c $(DEPS_53)
 	@echo '   [Compile] $(CONFIG)/obj/espTemplate.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\espTemplate.obj -Fd$(CONFIG)\obj\espTemplate.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espTemplate.c
 
 #
 #   mdb.obj
 #
-DEPS_51 = $(DEPS_51) $(CONFIG)\inc\bit.h
-DEPS_51 = $(DEPS_51) $(CONFIG)\inc\appweb.h
-DEPS_51 = $(DEPS_51) $(CONFIG)\inc\edi.h
-DEPS_51 = $(DEPS_51) $(CONFIG)\inc\mdb.h
-DEPS_51 = $(DEPS_51) $(CONFIG)\inc\pcre.h
+DEPS_54 = $(DEPS_54) $(CONFIG)\inc\bit.h
+DEPS_54 = $(DEPS_54) $(CONFIG)\inc\appweb.h
+DEPS_54 = $(DEPS_54) $(CONFIG)\inc\edi.h
+DEPS_54 = $(DEPS_54) $(CONFIG)\inc\mdb.h
+DEPS_54 = $(DEPS_54) $(CONFIG)\inc\pcre.h
 
 $(CONFIG)\obj\mdb.obj: \
-    src\esp\mdb.c $(DEPS_51)
+    src\esp\mdb.c $(DEPS_54)
 	@echo '   [Compile] $(CONFIG)/obj/mdb.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\mdb.obj -Fd$(CONFIG)\obj\mdb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\mdb.c
 
 #
 #   sdb.obj
 #
-DEPS_52 = $(DEPS_52) $(CONFIG)\inc\bit.h
-DEPS_52 = $(DEPS_52) $(CONFIG)\inc\appweb.h
+DEPS_55 = $(DEPS_55) $(CONFIG)\inc\bit.h
+DEPS_55 = $(DEPS_55) $(CONFIG)\inc\appweb.h
 
 $(CONFIG)\obj\sdb.obj: \
-    src\esp\sdb.c $(DEPS_52)
+    src\esp\sdb.c $(DEPS_55)
 	@echo '   [Compile] $(CONFIG)/obj/sdb.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\sdb.obj -Fd$(CONFIG)\obj\sdb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\sdb.c
 
@@ -997,42 +1038,42 @@ $(CONFIG)\obj\sdb.obj: \
 #
 #   libmod_esp
 #
-DEPS_53 = $(DEPS_53) $(CONFIG)\inc\mpr.h
-DEPS_53 = $(DEPS_53) $(CONFIG)\inc\bit.h
-DEPS_53 = $(DEPS_53) $(CONFIG)\inc\bitos.h
-DEPS_53 = $(DEPS_53) $(CONFIG)\obj\mprLib.obj
-DEPS_53 = $(DEPS_53) $(CONFIG)\bin\libmpr.lib
-DEPS_53 = $(DEPS_53) $(CONFIG)\inc\pcre.h
-DEPS_53 = $(DEPS_53) $(CONFIG)\obj\pcre.obj
+DEPS_56 = $(DEPS_56) $(CONFIG)\inc\mpr.h
+DEPS_56 = $(DEPS_56) $(CONFIG)\inc\bit.h
+DEPS_56 = $(DEPS_56) $(CONFIG)\inc\bitos.h
+DEPS_56 = $(DEPS_56) $(CONFIG)\obj\mprLib.obj
+DEPS_56 = $(DEPS_56) $(CONFIG)\bin\libmpr.lib
+DEPS_56 = $(DEPS_56) $(CONFIG)\inc\pcre.h
+DEPS_56 = $(DEPS_56) $(CONFIG)\obj\pcre.obj
 !IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_53 = $(DEPS_53) $(CONFIG)\bin\libpcre.lib
+DEPS_56 = $(DEPS_56) $(CONFIG)\bin\libpcre.lib
 !ENDIF
-DEPS_53 = $(DEPS_53) $(CONFIG)\inc\http.h
-DEPS_53 = $(DEPS_53) $(CONFIG)\obj\httpLib.obj
-DEPS_53 = $(DEPS_53) $(CONFIG)\bin\libhttp.lib
-DEPS_53 = $(DEPS_53) $(CONFIG)\inc\appweb.h
-DEPS_53 = $(DEPS_53) $(CONFIG)\inc\customize.h
-DEPS_53 = $(DEPS_53) $(CONFIG)\obj\config.obj
-DEPS_53 = $(DEPS_53) $(CONFIG)\obj\convenience.obj
-DEPS_53 = $(DEPS_53) $(CONFIG)\obj\dirHandler.obj
-DEPS_53 = $(DEPS_53) $(CONFIG)\obj\fileHandler.obj
-DEPS_53 = $(DEPS_53) $(CONFIG)\obj\log.obj
-DEPS_53 = $(DEPS_53) $(CONFIG)\obj\server.obj
-DEPS_53 = $(DEPS_53) $(CONFIG)\bin\libappweb.lib
-DEPS_53 = $(DEPS_53) $(CONFIG)\inc\edi.h
-DEPS_53 = $(DEPS_53) $(CONFIG)\inc\esp.h
-DEPS_53 = $(DEPS_53) $(CONFIG)\inc\mdb.h
-DEPS_53 = $(DEPS_53) $(CONFIG)\obj\edi.obj
-DEPS_53 = $(DEPS_53) $(CONFIG)\obj\espAbbrev.obj
-DEPS_53 = $(DEPS_53) $(CONFIG)\obj\espDeprecated.obj
-DEPS_53 = $(DEPS_53) $(CONFIG)\obj\espFramework.obj
-DEPS_53 = $(DEPS_53) $(CONFIG)\obj\espHandler.obj
-DEPS_53 = $(DEPS_53) $(CONFIG)\obj\espHtml.obj
-DEPS_53 = $(DEPS_53) $(CONFIG)\obj\espTemplate.obj
-DEPS_53 = $(DEPS_53) $(CONFIG)\obj\mdb.obj
-DEPS_53 = $(DEPS_53) $(CONFIG)\obj\sdb.obj
+DEPS_56 = $(DEPS_56) $(CONFIG)\inc\http.h
+DEPS_56 = $(DEPS_56) $(CONFIG)\obj\httpLib.obj
+DEPS_56 = $(DEPS_56) $(CONFIG)\bin\libhttp.lib
+DEPS_56 = $(DEPS_56) $(CONFIG)\inc\appweb.h
+DEPS_56 = $(DEPS_56) $(CONFIG)\inc\customize.h
+DEPS_56 = $(DEPS_56) $(CONFIG)\obj\config.obj
+DEPS_56 = $(DEPS_56) $(CONFIG)\obj\convenience.obj
+DEPS_56 = $(DEPS_56) $(CONFIG)\obj\dirHandler.obj
+DEPS_56 = $(DEPS_56) $(CONFIG)\obj\fileHandler.obj
+DEPS_56 = $(DEPS_56) $(CONFIG)\obj\log.obj
+DEPS_56 = $(DEPS_56) $(CONFIG)\obj\server.obj
+DEPS_56 = $(DEPS_56) $(CONFIG)\bin\libappweb.lib
+DEPS_56 = $(DEPS_56) $(CONFIG)\inc\edi.h
+DEPS_56 = $(DEPS_56) $(CONFIG)\inc\esp.h
+DEPS_56 = $(DEPS_56) $(CONFIG)\inc\mdb.h
+DEPS_56 = $(DEPS_56) $(CONFIG)\obj\edi.obj
+DEPS_56 = $(DEPS_56) $(CONFIG)\obj\espAbbrev.obj
+DEPS_56 = $(DEPS_56) $(CONFIG)\obj\espDeprecated.obj
+DEPS_56 = $(DEPS_56) $(CONFIG)\obj\espFramework.obj
+DEPS_56 = $(DEPS_56) $(CONFIG)\obj\espHandler.obj
+DEPS_56 = $(DEPS_56) $(CONFIG)\obj\espHtml.obj
+DEPS_56 = $(DEPS_56) $(CONFIG)\obj\espTemplate.obj
+DEPS_56 = $(DEPS_56) $(CONFIG)\obj\mdb.obj
+DEPS_56 = $(DEPS_56) $(CONFIG)\obj\sdb.obj
 
-$(CONFIG)\bin\libmod_esp.lib: $(DEPS_53)
+$(CONFIG)\bin\libmod_esp.lib: $(DEPS_56)
 	@echo '      [Link] $(CONFIG)/bin/libmod_esp.lib'
 	"lib.exe" -nologo -out:$(CONFIG)\bin\libmod_esp.lib "$(CONFIG)\obj\edi.obj" "$(CONFIG)\obj\espAbbrev.obj" "$(CONFIG)\obj\espDeprecated.obj" "$(CONFIG)\obj\espFramework.obj" "$(CONFIG)\obj\espHandler.obj" "$(CONFIG)\obj\espHtml.obj" "$(CONFIG)\obj\espTemplate.obj" "$(CONFIG)\obj\mdb.obj" "$(CONFIG)\obj\sdb.obj"
 !ENDIF
@@ -1040,11 +1081,11 @@ $(CONFIG)\bin\libmod_esp.lib: $(DEPS_53)
 #
 #   esp.obj
 #
-DEPS_54 = $(DEPS_54) $(CONFIG)\inc\bit.h
-DEPS_54 = $(DEPS_54) $(CONFIG)\inc\esp.h
+DEPS_57 = $(DEPS_57) $(CONFIG)\inc\bit.h
+DEPS_57 = $(DEPS_57) $(CONFIG)\inc\esp.h
 
 $(CONFIG)\obj\esp.obj: \
-    src\esp\esp.c $(DEPS_54)
+    src\esp\esp.c $(DEPS_57)
 	@echo '   [Compile] $(CONFIG)/obj/esp.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\esp.obj -Fd$(CONFIG)\obj\esp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\esp.c
 
@@ -1052,66 +1093,66 @@ $(CONFIG)\obj\esp.obj: \
 #
 #   espcmd
 #
-DEPS_55 = $(DEPS_55) $(CONFIG)\inc\mpr.h
-DEPS_55 = $(DEPS_55) $(CONFIG)\inc\bit.h
-DEPS_55 = $(DEPS_55) $(CONFIG)\inc\bitos.h
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\mprLib.obj
-DEPS_55 = $(DEPS_55) $(CONFIG)\bin\libmpr.lib
-DEPS_55 = $(DEPS_55) $(CONFIG)\inc\pcre.h
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\pcre.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\inc\mpr.h
+DEPS_58 = $(DEPS_58) $(CONFIG)\inc\bit.h
+DEPS_58 = $(DEPS_58) $(CONFIG)\inc\bitos.h
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\mprLib.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\bin\libmpr.lib
+DEPS_58 = $(DEPS_58) $(CONFIG)\inc\pcre.h
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\pcre.obj
 !IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_55 = $(DEPS_55) $(CONFIG)\bin\libpcre.lib
+DEPS_58 = $(DEPS_58) $(CONFIG)\bin\libpcre.lib
 !ENDIF
-DEPS_55 = $(DEPS_55) $(CONFIG)\inc\http.h
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\httpLib.obj
-DEPS_55 = $(DEPS_55) $(CONFIG)\bin\libhttp.lib
-DEPS_55 = $(DEPS_55) $(CONFIG)\inc\appweb.h
-DEPS_55 = $(DEPS_55) $(CONFIG)\inc\customize.h
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\config.obj
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\convenience.obj
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\dirHandler.obj
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\fileHandler.obj
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\log.obj
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\server.obj
-DEPS_55 = $(DEPS_55) $(CONFIG)\bin\libappweb.lib
-DEPS_55 = $(DEPS_55) $(CONFIG)\inc\edi.h
-DEPS_55 = $(DEPS_55) $(CONFIG)\inc\esp.h
-DEPS_55 = $(DEPS_55) $(CONFIG)\inc\mdb.h
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\edi.obj
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\espAbbrev.obj
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\espDeprecated.obj
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\espFramework.obj
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\espHandler.obj
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\espHtml.obj
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\espTemplate.obj
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\mdb.obj
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\sdb.obj
-DEPS_55 = $(DEPS_55) $(CONFIG)\bin\libmod_esp.lib
-DEPS_55 = $(DEPS_55) $(CONFIG)\obj\esp.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\inc\http.h
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\httpLib.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\bin\libhttp.lib
+DEPS_58 = $(DEPS_58) $(CONFIG)\inc\appweb.h
+DEPS_58 = $(DEPS_58) $(CONFIG)\inc\customize.h
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\config.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\convenience.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\dirHandler.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\fileHandler.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\log.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\server.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\bin\libappweb.lib
+DEPS_58 = $(DEPS_58) $(CONFIG)\inc\edi.h
+DEPS_58 = $(DEPS_58) $(CONFIG)\inc\esp.h
+DEPS_58 = $(DEPS_58) $(CONFIG)\inc\mdb.h
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\edi.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\espAbbrev.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\espDeprecated.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\espFramework.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\espHandler.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\espHtml.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\espTemplate.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\mdb.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\sdb.obj
+DEPS_58 = $(DEPS_58) $(CONFIG)\bin\libmod_esp.lib
+DEPS_58 = $(DEPS_58) $(CONFIG)\obj\esp.obj
 
-LIBS_55 = $(LIBS_55) libappweb.lib
-LIBS_55 = $(LIBS_55) libhttp.lib
-LIBS_55 = $(LIBS_55) libmpr.lib
+LIBS_58 = $(LIBS_58) libappweb.lib
+LIBS_58 = $(LIBS_58) libhttp.lib
+LIBS_58 = $(LIBS_58) libmpr.lib
 !IF "$(BIT_PACK_PCRE)" == "1"
-LIBS_55 = $(LIBS_55) libpcre.lib
+LIBS_58 = $(LIBS_58) libpcre.lib
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_55 = $(LIBS_55) libsqlite3.lib
+LIBS_58 = $(LIBS_58) libsql.lib
 !ENDIF
-LIBS_55 = $(LIBS_55) libmod_esp.lib
+LIBS_58 = $(LIBS_58) libmod_esp.lib
 
-$(CONFIG)\bin\esp.exe: $(DEPS_55)
+$(CONFIG)\bin\esp.exe: $(DEPS_58)
 	@echo '      [Link] $(CONFIG)/bin/esp.exe'
-	"$(LD)" -out:$(CONFIG)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\edi.obj" "$(CONFIG)\obj\esp.obj" "$(CONFIG)\obj\espAbbrev.obj" "$(CONFIG)\obj\espDeprecated.obj" "$(CONFIG)\obj\espFramework.obj" "$(CONFIG)\obj\espHandler.obj" "$(CONFIG)\obj\espHtml.obj" "$(CONFIG)\obj\espTemplate.obj" "$(CONFIG)\obj\mdb.obj" "$(CONFIG)\obj\sdb.obj" $(LIBPATHS_55) $(LIBS_55) $(LIBS_55) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\edi.obj" "$(CONFIG)\obj\esp.obj" "$(CONFIG)\obj\espAbbrev.obj" "$(CONFIG)\obj\espDeprecated.obj" "$(CONFIG)\obj\espFramework.obj" "$(CONFIG)\obj\espHandler.obj" "$(CONFIG)\obj\espHtml.obj" "$(CONFIG)\obj\espTemplate.obj" "$(CONFIG)\obj\mdb.obj" "$(CONFIG)\obj\sdb.obj" $(LIBPATHS_58) $(LIBS_58) $(LIBS_58) $(LIBS) 
 !ENDIF
 
 !IF "$(BIT_PACK_ESP)" == "1"
 #
 #   esp.conf
 #
-DEPS_56 = $(DEPS_56) src\esp\esp.conf
+DEPS_59 = $(DEPS_59) src\esp\esp.conf
 
-$(CONFIG)\bin\esp.conf: $(DEPS_56)
+$(CONFIG)\bin\esp.conf: $(DEPS_59)
 	@echo '      [Copy] $(CONFIG)/bin/esp.conf'
 	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
 	copy /Y src\esp\esp.conf $(CONFIG)\bin\esp.conf
@@ -1121,9 +1162,9 @@ $(CONFIG)\bin\esp.conf: $(DEPS_56)
 #
 #   esp.conf.server
 #
-DEPS_57 = $(DEPS_57) src\esp\esp.conf
+DEPS_60 = $(DEPS_60) src\esp\esp.conf
 
-src\server\esp.conf: $(DEPS_57)
+src\server\esp.conf: $(DEPS_60)
 	@echo '      [Copy] src/server/esp.conf'
 	if not exist "src\server" md "src\server"
 	copy /Y src\esp\esp.conf src\server\esp.conf
@@ -1133,106 +1174,107 @@ src\server\esp.conf: $(DEPS_57)
 #
 #   paks
 #
-DEPS_58 = $(DEPS_58) src\esp\paks\angular
-DEPS_58 = $(DEPS_58) src\esp\paks\angular\angular-animate.js
-DEPS_58 = $(DEPS_58) src\esp\paks\angular\angular-csp.css
-DEPS_58 = $(DEPS_58) src\esp\paks\angular\angular-route.js
-DEPS_58 = $(DEPS_58) src\esp\paks\angular\angular.js
-DEPS_58 = $(DEPS_58) src\esp\paks\angular\package.json
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular\esp-click.js
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular\esp-edit.js
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular\esp-field-errors.js
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular\esp-format.js
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular\esp-input-group.js
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular\esp-input.js
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular\esp-resource.js
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular\esp-session.js
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular\esp-titlecase.js
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular\esp.js
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular\package.json
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\package.json
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\appweb.conf
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\app
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\app\main.js
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\assets
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\assets\favicon.ico
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\all.css
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\all.less
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\app.less
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\fix.css
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\theme.less
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\index.esp
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\pages
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\pages\splash.html
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\controller-singleton.c
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\controller.c
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\controller.js
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\edit.html
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\list.html
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\model.js
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\start.bit
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\package.json
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\appweb.conf
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\assets
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\assets\favicon.ico
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\all.css
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\all.less
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\app.less
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\theme.less
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\index.esp
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\layouts
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\layouts\default.esp
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\controller-singleton.c
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\controller.c
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\edit.esp
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\list.esp
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\start.bit
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\package.json
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\appweb.conf
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\controller.c
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\edit.esp
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\layouts
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\layouts\default.esp
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\list.esp
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\migration.c
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\src
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\src\app.c
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\css
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\css\all.css
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\images
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\images\banner.jpg
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\images\favicon.ico
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\images\splash.jpg
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\index.esp
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\js
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\js\jquery.esp.js
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\js\jquery.js
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-server
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-server\package.json
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-server\templates
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-server\templates\esp-server
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-server\templates\esp-server\appweb.conf
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-server\templates\esp-server\controller.c
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-server\templates\esp-server\migration.c
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-server\templates\esp-server\src
-DEPS_58 = $(DEPS_58) src\esp\paks\esp-server\templates\esp-server\src\app.c
+DEPS_61 = $(DEPS_61) src\esp\paks\angular
+DEPS_61 = $(DEPS_61) src\esp\paks\angular\angular-animate.js
+DEPS_61 = $(DEPS_61) src\esp\paks\angular\angular-csp.css
+DEPS_61 = $(DEPS_61) src\esp\paks\angular\angular-route.js
+DEPS_61 = $(DEPS_61) src\esp\paks\angular\angular.js
+DEPS_61 = $(DEPS_61) src\esp\paks\angular\package.json
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular\esp-click.js
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular\esp-edit.js
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular\esp-field-errors.js
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular\esp-fixnum.js
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular\esp-format.js
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular\esp-input-group.js
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular\esp-input.js
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular\esp-resource.js
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular\esp-session.js
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular\esp-titlecase.js
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular\esp.js
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular\package.json
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\package.json
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\appweb.conf
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\app
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\app\main.js
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\assets
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\assets\favicon.ico
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\all.css
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\all.less
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\app.less
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\fix.css
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\theme.less
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\index.esp
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\pages
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\pages\splash.html
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\controller-singleton.c
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\controller.c
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\controller.js
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\edit.html
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\list.html
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\model.js
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\start.bit
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\package.json
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates\esp-html-mvc
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\appweb.conf
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\assets
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\assets\favicon.ico
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\all.css
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\all.less
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\app.less
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\theme.less
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\index.esp
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\layouts
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\layouts\default.esp
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\controller-singleton.c
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\controller.c
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\edit.esp
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\list.esp
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-html-mvc\templates\esp-html-mvc\start.bit
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\package.json
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\appweb.conf
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\controller.c
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\edit.esp
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\layouts
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\layouts\default.esp
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\list.esp
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\migration.c
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\src
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\src\app.c
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\css
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\css\all.css
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\images
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\images\banner.jpg
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\images\favicon.ico
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\images\splash.jpg
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\index.esp
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\js
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\js\jquery.esp.js
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\js\jquery.js
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-server
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-server\package.json
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-server\templates
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-server\templates\esp-server
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-server\templates\esp-server\appweb.conf
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-server\templates\esp-server\controller.c
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-server\templates\esp-server\migration.c
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-server\templates\esp-server\src
+DEPS_61 = $(DEPS_61) src\esp\paks\esp-server\templates\esp-server\src\app.c
 
-$(CONFIG)\paks: $(DEPS_58)
+$(CONFIG)\paks: $(DEPS_61)
 	cd src\esp\paks
 	if not exist "..\..\..\$(CONFIG)\paks\angular\1.2.6" md "..\..\..\$(CONFIG)\paks\angular\1.2.6"
 	copy /Y angular\angular-animate.js ..\..\..\$(CONFIG)\paks\angular\1.2.6\angular-animate.js
@@ -1244,6 +1286,7 @@ $(CONFIG)\paks: $(DEPS_58)
 	copy /Y esp-angular\esp-click.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.0\esp-click.js
 	copy /Y esp-angular\esp-edit.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.0\esp-edit.js
 	copy /Y esp-angular\esp-field-errors.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.0\esp-field-errors.js
+	copy /Y esp-angular\esp-fixnum.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.0\esp-fixnum.js
 	copy /Y esp-angular\esp-format.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.0\esp-format.js
 	copy /Y esp-angular\esp-input-group.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.0\esp-input-group.js
 	copy /Y esp-angular\esp-input.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.0\esp-input.js
@@ -1339,34 +1382,40 @@ $(CONFIG)\paks: $(DEPS_58)
 #
 #   ejs.h
 #
-$(CONFIG)\inc\ejs.h: $(DEPS_59)
+$(CONFIG)\inc\ejs.h: $(DEPS_62)
 	@echo '      [Copy] $(CONFIG)/inc/ejs.h'
+	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
+	copy /Y src\paks\ejs\ejs.h $(CONFIG)\inc\ejs.h
 
 #
 #   ejs.slots.h
 #
-$(CONFIG)\inc\ejs.slots.h: $(DEPS_60)
+$(CONFIG)\inc\ejs.slots.h: $(DEPS_63)
 	@echo '      [Copy] $(CONFIG)/inc/ejs.slots.h'
+	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
+	copy /Y src\paks\ejs\ejs.slots.h $(CONFIG)\inc\ejs.slots.h
 
 #
 #   ejsByteGoto.h
 #
-$(CONFIG)\inc\ejsByteGoto.h: $(DEPS_61)
+$(CONFIG)\inc\ejsByteGoto.h: $(DEPS_64)
 	@echo '      [Copy] $(CONFIG)/inc/ejsByteGoto.h'
+	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
+	copy /Y src\paks\ejs\ejsByteGoto.h $(CONFIG)\inc\ejsByteGoto.h
 
 #
 #   ejsLib.obj
 #
-DEPS_62 = $(DEPS_62) $(CONFIG)\inc\bit.h
-DEPS_62 = $(DEPS_62) $(CONFIG)\inc\ejs.h
-DEPS_62 = $(DEPS_62) $(CONFIG)\inc\mpr.h
-DEPS_62 = $(DEPS_62) $(CONFIG)\inc\pcre.h
-DEPS_62 = $(DEPS_62) $(CONFIG)\inc\bitos.h
-DEPS_62 = $(DEPS_62) $(CONFIG)\inc\http.h
-DEPS_62 = $(DEPS_62) $(CONFIG)\inc\ejs.slots.h
+DEPS_65 = $(DEPS_65) $(CONFIG)\inc\bit.h
+DEPS_65 = $(DEPS_65) $(CONFIG)\inc\ejs.h
+DEPS_65 = $(DEPS_65) $(CONFIG)\inc\mpr.h
+DEPS_65 = $(DEPS_65) $(CONFIG)\inc\pcre.h
+DEPS_65 = $(DEPS_65) $(CONFIG)\inc\bitos.h
+DEPS_65 = $(DEPS_65) $(CONFIG)\inc\http.h
+DEPS_65 = $(DEPS_65) $(CONFIG)\inc\ejs.slots.h
 
 $(CONFIG)\obj\ejsLib.obj: \
-    src\paks\ejs\ejsLib.c $(DEPS_62)
+    src\paks\ejs\ejsLib.c $(DEPS_65)
 	@echo '   [Compile] $(CONFIG)/obj/ejsLib.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\ejsLib.obj -Fd$(CONFIG)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejsLib.c
 
@@ -1374,25 +1423,30 @@ $(CONFIG)\obj\ejsLib.obj: \
 #
 #   libejs
 #
-DEPS_63 = $(DEPS_63) $(CONFIG)\inc\mpr.h
-DEPS_63 = $(DEPS_63) $(CONFIG)\inc\bit.h
-DEPS_63 = $(DEPS_63) $(CONFIG)\inc\bitos.h
-DEPS_63 = $(DEPS_63) $(CONFIG)\obj\mprLib.obj
-DEPS_63 = $(DEPS_63) $(CONFIG)\bin\libmpr.lib
-DEPS_63 = $(DEPS_63) $(CONFIG)\inc\pcre.h
-DEPS_63 = $(DEPS_63) $(CONFIG)\obj\pcre.obj
+DEPS_66 = $(DEPS_66) $(CONFIG)\inc\mpr.h
+DEPS_66 = $(DEPS_66) $(CONFIG)\inc\bit.h
+DEPS_66 = $(DEPS_66) $(CONFIG)\inc\bitos.h
+DEPS_66 = $(DEPS_66) $(CONFIG)\obj\mprLib.obj
+DEPS_66 = $(DEPS_66) $(CONFIG)\bin\libmpr.lib
+DEPS_66 = $(DEPS_66) $(CONFIG)\inc\pcre.h
+DEPS_66 = $(DEPS_66) $(CONFIG)\obj\pcre.obj
 !IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_63 = $(DEPS_63) $(CONFIG)\bin\libpcre.lib
+DEPS_66 = $(DEPS_66) $(CONFIG)\bin\libpcre.lib
 !ENDIF
-DEPS_63 = $(DEPS_63) $(CONFIG)\inc\http.h
-DEPS_63 = $(DEPS_63) $(CONFIG)\obj\httpLib.obj
-DEPS_63 = $(DEPS_63) $(CONFIG)\bin\libhttp.lib
-DEPS_63 = $(DEPS_63) $(CONFIG)\inc\ejs.h
-DEPS_63 = $(DEPS_63) $(CONFIG)\inc\ejs.slots.h
-DEPS_63 = $(DEPS_63) $(CONFIG)\inc\ejsByteGoto.h
-DEPS_63 = $(DEPS_63) $(CONFIG)\obj\ejsLib.obj
+DEPS_66 = $(DEPS_66) $(CONFIG)\inc\http.h
+DEPS_66 = $(DEPS_66) $(CONFIG)\obj\httpLib.obj
+DEPS_66 = $(DEPS_66) $(CONFIG)\bin\libhttp.lib
+DEPS_66 = $(DEPS_66) $(CONFIG)\inc\zlib.h
+DEPS_66 = $(DEPS_66) $(CONFIG)\obj\zlib.obj
+!IF "$(BIT_PACK_ZLIB)" == "1"
+DEPS_66 = $(DEPS_66) $(CONFIG)\bin\libzlib.lib
+!ENDIF
+DEPS_66 = $(DEPS_66) $(CONFIG)\inc\ejs.h
+DEPS_66 = $(DEPS_66) $(CONFIG)\inc\ejs.slots.h
+DEPS_66 = $(DEPS_66) $(CONFIG)\inc\ejsByteGoto.h
+DEPS_66 = $(DEPS_66) $(CONFIG)\obj\ejsLib.obj
 
-$(CONFIG)\bin\libejs.lib: $(DEPS_63)
+$(CONFIG)\bin\libejs.lib: $(DEPS_66)
 	@echo '      [Link] $(CONFIG)/bin/libejs.lib'
 	"lib.exe" -nologo -out:$(CONFIG)\bin\libejs.lib "$(CONFIG)\obj\ejsLib.obj"
 !ENDIF
@@ -1400,11 +1454,11 @@ $(CONFIG)\bin\libejs.lib: $(DEPS_63)
 #
 #   ejs.obj
 #
-DEPS_64 = $(DEPS_64) $(CONFIG)\inc\bit.h
-DEPS_64 = $(DEPS_64) $(CONFIG)\inc\ejs.h
+DEPS_67 = $(DEPS_67) $(CONFIG)\inc\bit.h
+DEPS_67 = $(DEPS_67) $(CONFIG)\inc\ejs.h
 
 $(CONFIG)\obj\ejs.obj: \
-    src\paks\ejs\ejs.c $(DEPS_64)
+    src\paks\ejs\ejs.c $(DEPS_67)
 	@echo '   [Compile] $(CONFIG)/obj/ejs.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\ejs.obj -Fd$(CONFIG)\obj\ejs.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejs.c
 
@@ -1412,96 +1466,6 @@ $(CONFIG)\obj\ejs.obj: \
 #
 #   ejs
 #
-DEPS_65 = $(DEPS_65) $(CONFIG)\inc\mpr.h
-DEPS_65 = $(DEPS_65) $(CONFIG)\inc\bit.h
-DEPS_65 = $(DEPS_65) $(CONFIG)\inc\bitos.h
-DEPS_65 = $(DEPS_65) $(CONFIG)\obj\mprLib.obj
-DEPS_65 = $(DEPS_65) $(CONFIG)\bin\libmpr.lib
-DEPS_65 = $(DEPS_65) $(CONFIG)\inc\pcre.h
-DEPS_65 = $(DEPS_65) $(CONFIG)\obj\pcre.obj
-!IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_65 = $(DEPS_65) $(CONFIG)\bin\libpcre.lib
-!ENDIF
-DEPS_65 = $(DEPS_65) $(CONFIG)\inc\http.h
-DEPS_65 = $(DEPS_65) $(CONFIG)\obj\httpLib.obj
-DEPS_65 = $(DEPS_65) $(CONFIG)\bin\libhttp.lib
-DEPS_65 = $(DEPS_65) $(CONFIG)\inc\ejs.h
-DEPS_65 = $(DEPS_65) $(CONFIG)\inc\ejs.slots.h
-DEPS_65 = $(DEPS_65) $(CONFIG)\inc\ejsByteGoto.h
-DEPS_65 = $(DEPS_65) $(CONFIG)\obj\ejsLib.obj
-DEPS_65 = $(DEPS_65) $(CONFIG)\bin\libejs.lib
-DEPS_65 = $(DEPS_65) $(CONFIG)\obj\ejs.obj
-
-LIBS_65 = $(LIBS_65) libejs.lib
-LIBS_65 = $(LIBS_65) libhttp.lib
-LIBS_65 = $(LIBS_65) libmpr.lib
-!IF "$(BIT_PACK_PCRE)" == "1"
-LIBS_65 = $(LIBS_65) libpcre.lib
-!ENDIF
-!IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_65 = $(LIBS_65) libsqlite3.lib
-!ENDIF
-
-$(CONFIG)\bin\ejs.exe: $(DEPS_65)
-	@echo '      [Link] $(CONFIG)/bin/ejs.exe'
-	"$(LD)" -out:$(CONFIG)\bin\ejs.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\ejs.obj" $(LIBPATHS_65) $(LIBS_65) $(LIBS_65) $(LIBS) 
-!ENDIF
-
-#
-#   ejsc.obj
-#
-DEPS_66 = $(DEPS_66) $(CONFIG)\inc\bit.h
-DEPS_66 = $(DEPS_66) $(CONFIG)\inc\ejs.h
-
-$(CONFIG)\obj\ejsc.obj: \
-    src\paks\ejs\ejsc.c $(DEPS_66)
-	@echo '   [Compile] $(CONFIG)/obj/ejsc.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\ejsc.obj -Fd$(CONFIG)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejsc.c
-
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
-#
-#   ejsc
-#
-DEPS_67 = $(DEPS_67) $(CONFIG)\inc\mpr.h
-DEPS_67 = $(DEPS_67) $(CONFIG)\inc\bit.h
-DEPS_67 = $(DEPS_67) $(CONFIG)\inc\bitos.h
-DEPS_67 = $(DEPS_67) $(CONFIG)\obj\mprLib.obj
-DEPS_67 = $(DEPS_67) $(CONFIG)\bin\libmpr.lib
-DEPS_67 = $(DEPS_67) $(CONFIG)\inc\pcre.h
-DEPS_67 = $(DEPS_67) $(CONFIG)\obj\pcre.obj
-!IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_67 = $(DEPS_67) $(CONFIG)\bin\libpcre.lib
-!ENDIF
-DEPS_67 = $(DEPS_67) $(CONFIG)\inc\http.h
-DEPS_67 = $(DEPS_67) $(CONFIG)\obj\httpLib.obj
-DEPS_67 = $(DEPS_67) $(CONFIG)\bin\libhttp.lib
-DEPS_67 = $(DEPS_67) $(CONFIG)\inc\ejs.h
-DEPS_67 = $(DEPS_67) $(CONFIG)\inc\ejs.slots.h
-DEPS_67 = $(DEPS_67) $(CONFIG)\inc\ejsByteGoto.h
-DEPS_67 = $(DEPS_67) $(CONFIG)\obj\ejsLib.obj
-DEPS_67 = $(DEPS_67) $(CONFIG)\bin\libejs.lib
-DEPS_67 = $(DEPS_67) $(CONFIG)\obj\ejsc.obj
-
-LIBS_67 = $(LIBS_67) libejs.lib
-LIBS_67 = $(LIBS_67) libhttp.lib
-LIBS_67 = $(LIBS_67) libmpr.lib
-!IF "$(BIT_PACK_PCRE)" == "1"
-LIBS_67 = $(LIBS_67) libpcre.lib
-!ENDIF
-!IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_67 = $(LIBS_67) libsqlite3.lib
-!ENDIF
-
-$(CONFIG)\bin\ejsc.exe: $(DEPS_67)
-	@echo '      [Link] $(CONFIG)/bin/ejsc.exe'
-	"$(LD)" -out:$(CONFIG)\bin\ejsc.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\ejsc.obj" $(LIBPATHS_67) $(LIBS_67) $(LIBS_67) $(LIBS) 
-!ENDIF
-
-!IF "$(BIT_PACK_EJSCRIPT)" == "1"
-#
-#   ejs.mod
-#
-DEPS_68 = $(DEPS_68) src\paks\ejs\ejs.es
 DEPS_68 = $(DEPS_68) $(CONFIG)\inc\mpr.h
 DEPS_68 = $(DEPS_68) $(CONFIG)\inc\bit.h
 DEPS_68 = $(DEPS_68) $(CONFIG)\inc\bitos.h
@@ -1515,34 +1479,50 @@ DEPS_68 = $(DEPS_68) $(CONFIG)\bin\libpcre.lib
 DEPS_68 = $(DEPS_68) $(CONFIG)\inc\http.h
 DEPS_68 = $(DEPS_68) $(CONFIG)\obj\httpLib.obj
 DEPS_68 = $(DEPS_68) $(CONFIG)\bin\libhttp.lib
+DEPS_68 = $(DEPS_68) $(CONFIG)\inc\zlib.h
+DEPS_68 = $(DEPS_68) $(CONFIG)\obj\zlib.obj
+!IF "$(BIT_PACK_ZLIB)" == "1"
+DEPS_68 = $(DEPS_68) $(CONFIG)\bin\libzlib.lib
+!ENDIF
 DEPS_68 = $(DEPS_68) $(CONFIG)\inc\ejs.h
 DEPS_68 = $(DEPS_68) $(CONFIG)\inc\ejs.slots.h
 DEPS_68 = $(DEPS_68) $(CONFIG)\inc\ejsByteGoto.h
 DEPS_68 = $(DEPS_68) $(CONFIG)\obj\ejsLib.obj
 DEPS_68 = $(DEPS_68) $(CONFIG)\bin\libejs.lib
-DEPS_68 = $(DEPS_68) $(CONFIG)\obj\ejsc.obj
-DEPS_68 = $(DEPS_68) $(CONFIG)\bin\ejsc.exe
+DEPS_68 = $(DEPS_68) $(CONFIG)\obj\ejs.obj
 
-$(CONFIG)\bin\ejs.mod: $(DEPS_68)
-	cd src\paks\ejs
-	"..\..\..\$(CONFIG)\bin\ejsc" --out "..\..\..\$(CONFIG)\bin\ejs.mod" --optimize 9 --bind --require null ejs.es
-	cd ..\..\..
+LIBS_68 = $(LIBS_68) libejs.lib
+LIBS_68 = $(LIBS_68) libhttp.lib
+LIBS_68 = $(LIBS_68) libmpr.lib
+!IF "$(BIT_PACK_PCRE)" == "1"
+LIBS_68 = $(LIBS_68) libpcre.lib
+!ENDIF
+!IF "$(BIT_PACK_ZLIB)" == "1"
+LIBS_68 = $(LIBS_68) libzlib.lib
+!ENDIF
+!IF "$(BIT_PACK_SQLITE)" == "1"
+LIBS_68 = $(LIBS_68) libsql.lib
+!ENDIF
+
+$(CONFIG)\bin\ejs.exe: $(DEPS_68)
+	@echo '      [Link] $(CONFIG)/bin/ejs.exe'
+	"$(LD)" -out:$(CONFIG)\bin\ejs.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\ejs.obj" $(LIBPATHS_68) $(LIBS_68) $(LIBS_68) $(LIBS) 
 !ENDIF
 
 #
-#   cgiHandler.obj
+#   ejsc.obj
 #
 DEPS_69 = $(DEPS_69) $(CONFIG)\inc\bit.h
-DEPS_69 = $(DEPS_69) $(CONFIG)\inc\appweb.h
+DEPS_69 = $(DEPS_69) $(CONFIG)\inc\ejs.h
 
-$(CONFIG)\obj\cgiHandler.obj: \
-    src\modules\cgiHandler.c $(DEPS_69)
-	@echo '   [Compile] $(CONFIG)/obj/cgiHandler.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\cgiHandler.obj -Fd$(CONFIG)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\cgiHandler.c
+$(CONFIG)\obj\ejsc.obj: \
+    src\paks\ejs\ejsc.c $(DEPS_69)
+	@echo '   [Compile] $(CONFIG)/obj/ejsc.obj'
+	"$(CC)" -c -Fo$(CONFIG)\obj\ejsc.obj -Fd$(CONFIG)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejsc.c
 
-!IF "$(BIT_PACK_CGI)" == "1"
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
 #
-#   libmod_cgi
+#   ejsc
 #
 DEPS_70 = $(DEPS_70) $(CONFIG)\inc\mpr.h
 DEPS_70 = $(DEPS_70) $(CONFIG)\inc\bit.h
@@ -1557,18 +1537,113 @@ DEPS_70 = $(DEPS_70) $(CONFIG)\bin\libpcre.lib
 DEPS_70 = $(DEPS_70) $(CONFIG)\inc\http.h
 DEPS_70 = $(DEPS_70) $(CONFIG)\obj\httpLib.obj
 DEPS_70 = $(DEPS_70) $(CONFIG)\bin\libhttp.lib
-DEPS_70 = $(DEPS_70) $(CONFIG)\inc\appweb.h
-DEPS_70 = $(DEPS_70) $(CONFIG)\inc\customize.h
-DEPS_70 = $(DEPS_70) $(CONFIG)\obj\config.obj
-DEPS_70 = $(DEPS_70) $(CONFIG)\obj\convenience.obj
-DEPS_70 = $(DEPS_70) $(CONFIG)\obj\dirHandler.obj
-DEPS_70 = $(DEPS_70) $(CONFIG)\obj\fileHandler.obj
-DEPS_70 = $(DEPS_70) $(CONFIG)\obj\log.obj
-DEPS_70 = $(DEPS_70) $(CONFIG)\obj\server.obj
-DEPS_70 = $(DEPS_70) $(CONFIG)\bin\libappweb.lib
-DEPS_70 = $(DEPS_70) $(CONFIG)\obj\cgiHandler.obj
+DEPS_70 = $(DEPS_70) $(CONFIG)\inc\zlib.h
+DEPS_70 = $(DEPS_70) $(CONFIG)\obj\zlib.obj
+!IF "$(BIT_PACK_ZLIB)" == "1"
+DEPS_70 = $(DEPS_70) $(CONFIG)\bin\libzlib.lib
+!ENDIF
+DEPS_70 = $(DEPS_70) $(CONFIG)\inc\ejs.h
+DEPS_70 = $(DEPS_70) $(CONFIG)\inc\ejs.slots.h
+DEPS_70 = $(DEPS_70) $(CONFIG)\inc\ejsByteGoto.h
+DEPS_70 = $(DEPS_70) $(CONFIG)\obj\ejsLib.obj
+DEPS_70 = $(DEPS_70) $(CONFIG)\bin\libejs.lib
+DEPS_70 = $(DEPS_70) $(CONFIG)\obj\ejsc.obj
 
-$(CONFIG)\bin\libmod_cgi.lib: $(DEPS_70)
+LIBS_70 = $(LIBS_70) libejs.lib
+LIBS_70 = $(LIBS_70) libhttp.lib
+LIBS_70 = $(LIBS_70) libmpr.lib
+!IF "$(BIT_PACK_PCRE)" == "1"
+LIBS_70 = $(LIBS_70) libpcre.lib
+!ENDIF
+!IF "$(BIT_PACK_ZLIB)" == "1"
+LIBS_70 = $(LIBS_70) libzlib.lib
+!ENDIF
+!IF "$(BIT_PACK_SQLITE)" == "1"
+LIBS_70 = $(LIBS_70) libsql.lib
+!ENDIF
+
+$(CONFIG)\bin\ejsc.exe: $(DEPS_70)
+	@echo '      [Link] $(CONFIG)/bin/ejsc.exe'
+	"$(LD)" -out:$(CONFIG)\bin\ejsc.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\ejsc.obj" $(LIBPATHS_70) $(LIBS_70) $(LIBS_70) $(LIBS) 
+!ENDIF
+
+!IF "$(BIT_PACK_EJSCRIPT)" == "1"
+#
+#   ejs.mod
+#
+DEPS_71 = $(DEPS_71) src\paks\ejs\ejs.es
+DEPS_71 = $(DEPS_71) $(CONFIG)\inc\mpr.h
+DEPS_71 = $(DEPS_71) $(CONFIG)\inc\bit.h
+DEPS_71 = $(DEPS_71) $(CONFIG)\inc\bitos.h
+DEPS_71 = $(DEPS_71) $(CONFIG)\obj\mprLib.obj
+DEPS_71 = $(DEPS_71) $(CONFIG)\bin\libmpr.lib
+DEPS_71 = $(DEPS_71) $(CONFIG)\inc\pcre.h
+DEPS_71 = $(DEPS_71) $(CONFIG)\obj\pcre.obj
+!IF "$(BIT_PACK_PCRE)" == "1"
+DEPS_71 = $(DEPS_71) $(CONFIG)\bin\libpcre.lib
+!ENDIF
+DEPS_71 = $(DEPS_71) $(CONFIG)\inc\http.h
+DEPS_71 = $(DEPS_71) $(CONFIG)\obj\httpLib.obj
+DEPS_71 = $(DEPS_71) $(CONFIG)\bin\libhttp.lib
+DEPS_71 = $(DEPS_71) $(CONFIG)\inc\zlib.h
+DEPS_71 = $(DEPS_71) $(CONFIG)\obj\zlib.obj
+!IF "$(BIT_PACK_ZLIB)" == "1"
+DEPS_71 = $(DEPS_71) $(CONFIG)\bin\libzlib.lib
+!ENDIF
+DEPS_71 = $(DEPS_71) $(CONFIG)\inc\ejs.h
+DEPS_71 = $(DEPS_71) $(CONFIG)\inc\ejs.slots.h
+DEPS_71 = $(DEPS_71) $(CONFIG)\inc\ejsByteGoto.h
+DEPS_71 = $(DEPS_71) $(CONFIG)\obj\ejsLib.obj
+DEPS_71 = $(DEPS_71) $(CONFIG)\bin\libejs.lib
+DEPS_71 = $(DEPS_71) $(CONFIG)\obj\ejsc.obj
+DEPS_71 = $(DEPS_71) $(CONFIG)\bin\ejsc.exe
+
+$(CONFIG)\bin\ejs.mod: $(DEPS_71)
+	cd src\paks\ejs
+	"..\..\..\$(CONFIG)\bin\ejsc" --out "..\..\..\$(CONFIG)\bin\ejs.mod" --optimize 9 --bind --require null ejs.es
+	cd ..\..\..
+!ENDIF
+
+#
+#   cgiHandler.obj
+#
+DEPS_72 = $(DEPS_72) $(CONFIG)\inc\bit.h
+DEPS_72 = $(DEPS_72) $(CONFIG)\inc\appweb.h
+
+$(CONFIG)\obj\cgiHandler.obj: \
+    src\modules\cgiHandler.c $(DEPS_72)
+	@echo '   [Compile] $(CONFIG)/obj/cgiHandler.obj'
+	"$(CC)" -c -Fo$(CONFIG)\obj\cgiHandler.obj -Fd$(CONFIG)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\cgiHandler.c
+
+!IF "$(BIT_PACK_CGI)" == "1"
+#
+#   libmod_cgi
+#
+DEPS_73 = $(DEPS_73) $(CONFIG)\inc\mpr.h
+DEPS_73 = $(DEPS_73) $(CONFIG)\inc\bit.h
+DEPS_73 = $(DEPS_73) $(CONFIG)\inc\bitos.h
+DEPS_73 = $(DEPS_73) $(CONFIG)\obj\mprLib.obj
+DEPS_73 = $(DEPS_73) $(CONFIG)\bin\libmpr.lib
+DEPS_73 = $(DEPS_73) $(CONFIG)\inc\pcre.h
+DEPS_73 = $(DEPS_73) $(CONFIG)\obj\pcre.obj
+!IF "$(BIT_PACK_PCRE)" == "1"
+DEPS_73 = $(DEPS_73) $(CONFIG)\bin\libpcre.lib
+!ENDIF
+DEPS_73 = $(DEPS_73) $(CONFIG)\inc\http.h
+DEPS_73 = $(DEPS_73) $(CONFIG)\obj\httpLib.obj
+DEPS_73 = $(DEPS_73) $(CONFIG)\bin\libhttp.lib
+DEPS_73 = $(DEPS_73) $(CONFIG)\inc\appweb.h
+DEPS_73 = $(DEPS_73) $(CONFIG)\inc\customize.h
+DEPS_73 = $(DEPS_73) $(CONFIG)\obj\config.obj
+DEPS_73 = $(DEPS_73) $(CONFIG)\obj\convenience.obj
+DEPS_73 = $(DEPS_73) $(CONFIG)\obj\dirHandler.obj
+DEPS_73 = $(DEPS_73) $(CONFIG)\obj\fileHandler.obj
+DEPS_73 = $(DEPS_73) $(CONFIG)\obj\log.obj
+DEPS_73 = $(DEPS_73) $(CONFIG)\obj\server.obj
+DEPS_73 = $(DEPS_73) $(CONFIG)\bin\libappweb.lib
+DEPS_73 = $(DEPS_73) $(CONFIG)\obj\cgiHandler.obj
+
+$(CONFIG)\bin\libmod_cgi.lib: $(DEPS_73)
 	@echo '      [Link] $(CONFIG)/bin/libmod_cgi.lib'
 	"lib.exe" -nologo -out:$(CONFIG)\bin\libmod_cgi.lib "$(CONFIG)\obj\cgiHandler.obj"
 !ENDIF
@@ -1576,11 +1651,11 @@ $(CONFIG)\bin\libmod_cgi.lib: $(DEPS_70)
 #
 #   ejsHandler.obj
 #
-DEPS_71 = $(DEPS_71) $(CONFIG)\inc\bit.h
-DEPS_71 = $(DEPS_71) $(CONFIG)\inc\appweb.h
+DEPS_74 = $(DEPS_74) $(CONFIG)\inc\bit.h
+DEPS_74 = $(DEPS_74) $(CONFIG)\inc\appweb.h
 
 $(CONFIG)\obj\ejsHandler.obj: \
-    src\modules\ejsHandler.c $(DEPS_71)
+    src\modules\ejsHandler.c $(DEPS_74)
 	@echo '   [Compile] $(CONFIG)/obj/ejsHandler.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\ejsHandler.obj -Fd$(CONFIG)\obj\ejsHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\ejsHandler.c
 
@@ -1588,36 +1663,41 @@ $(CONFIG)\obj\ejsHandler.obj: \
 #
 #   libmod_ejs
 #
-DEPS_72 = $(DEPS_72) $(CONFIG)\inc\mpr.h
-DEPS_72 = $(DEPS_72) $(CONFIG)\inc\bit.h
-DEPS_72 = $(DEPS_72) $(CONFIG)\inc\bitos.h
-DEPS_72 = $(DEPS_72) $(CONFIG)\obj\mprLib.obj
-DEPS_72 = $(DEPS_72) $(CONFIG)\bin\libmpr.lib
-DEPS_72 = $(DEPS_72) $(CONFIG)\inc\pcre.h
-DEPS_72 = $(DEPS_72) $(CONFIG)\obj\pcre.obj
+DEPS_75 = $(DEPS_75) $(CONFIG)\inc\mpr.h
+DEPS_75 = $(DEPS_75) $(CONFIG)\inc\bit.h
+DEPS_75 = $(DEPS_75) $(CONFIG)\inc\bitos.h
+DEPS_75 = $(DEPS_75) $(CONFIG)\obj\mprLib.obj
+DEPS_75 = $(DEPS_75) $(CONFIG)\bin\libmpr.lib
+DEPS_75 = $(DEPS_75) $(CONFIG)\inc\pcre.h
+DEPS_75 = $(DEPS_75) $(CONFIG)\obj\pcre.obj
 !IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_72 = $(DEPS_72) $(CONFIG)\bin\libpcre.lib
+DEPS_75 = $(DEPS_75) $(CONFIG)\bin\libpcre.lib
 !ENDIF
-DEPS_72 = $(DEPS_72) $(CONFIG)\inc\http.h
-DEPS_72 = $(DEPS_72) $(CONFIG)\obj\httpLib.obj
-DEPS_72 = $(DEPS_72) $(CONFIG)\bin\libhttp.lib
-DEPS_72 = $(DEPS_72) $(CONFIG)\inc\appweb.h
-DEPS_72 = $(DEPS_72) $(CONFIG)\inc\customize.h
-DEPS_72 = $(DEPS_72) $(CONFIG)\obj\config.obj
-DEPS_72 = $(DEPS_72) $(CONFIG)\obj\convenience.obj
-DEPS_72 = $(DEPS_72) $(CONFIG)\obj\dirHandler.obj
-DEPS_72 = $(DEPS_72) $(CONFIG)\obj\fileHandler.obj
-DEPS_72 = $(DEPS_72) $(CONFIG)\obj\log.obj
-DEPS_72 = $(DEPS_72) $(CONFIG)\obj\server.obj
-DEPS_72 = $(DEPS_72) $(CONFIG)\bin\libappweb.lib
-DEPS_72 = $(DEPS_72) $(CONFIG)\inc\ejs.h
-DEPS_72 = $(DEPS_72) $(CONFIG)\inc\ejs.slots.h
-DEPS_72 = $(DEPS_72) $(CONFIG)\inc\ejsByteGoto.h
-DEPS_72 = $(DEPS_72) $(CONFIG)\obj\ejsLib.obj
-DEPS_72 = $(DEPS_72) $(CONFIG)\bin\libejs.lib
-DEPS_72 = $(DEPS_72) $(CONFIG)\obj\ejsHandler.obj
+DEPS_75 = $(DEPS_75) $(CONFIG)\inc\http.h
+DEPS_75 = $(DEPS_75) $(CONFIG)\obj\httpLib.obj
+DEPS_75 = $(DEPS_75) $(CONFIG)\bin\libhttp.lib
+DEPS_75 = $(DEPS_75) $(CONFIG)\inc\appweb.h
+DEPS_75 = $(DEPS_75) $(CONFIG)\inc\customize.h
+DEPS_75 = $(DEPS_75) $(CONFIG)\obj\config.obj
+DEPS_75 = $(DEPS_75) $(CONFIG)\obj\convenience.obj
+DEPS_75 = $(DEPS_75) $(CONFIG)\obj\dirHandler.obj
+DEPS_75 = $(DEPS_75) $(CONFIG)\obj\fileHandler.obj
+DEPS_75 = $(DEPS_75) $(CONFIG)\obj\log.obj
+DEPS_75 = $(DEPS_75) $(CONFIG)\obj\server.obj
+DEPS_75 = $(DEPS_75) $(CONFIG)\bin\libappweb.lib
+DEPS_75 = $(DEPS_75) $(CONFIG)\inc\zlib.h
+DEPS_75 = $(DEPS_75) $(CONFIG)\obj\zlib.obj
+!IF "$(BIT_PACK_ZLIB)" == "1"
+DEPS_75 = $(DEPS_75) $(CONFIG)\bin\libzlib.lib
+!ENDIF
+DEPS_75 = $(DEPS_75) $(CONFIG)\inc\ejs.h
+DEPS_75 = $(DEPS_75) $(CONFIG)\inc\ejs.slots.h
+DEPS_75 = $(DEPS_75) $(CONFIG)\inc\ejsByteGoto.h
+DEPS_75 = $(DEPS_75) $(CONFIG)\obj\ejsLib.obj
+DEPS_75 = $(DEPS_75) $(CONFIG)\bin\libejs.lib
+DEPS_75 = $(DEPS_75) $(CONFIG)\obj\ejsHandler.obj
 
-$(CONFIG)\bin\libmod_ejs.lib: $(DEPS_72)
+$(CONFIG)\bin\libmod_ejs.lib: $(DEPS_75)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ejs.lib'
 	"lib.exe" -nologo -out:$(CONFIG)\bin\libmod_ejs.lib "$(CONFIG)\obj\ejsHandler.obj"
 !ENDIF
@@ -1625,11 +1705,11 @@ $(CONFIG)\bin\libmod_ejs.lib: $(DEPS_72)
 #
 #   phpHandler.obj
 #
-DEPS_73 = $(DEPS_73) $(CONFIG)\inc\bit.h
-DEPS_73 = $(DEPS_73) $(CONFIG)\inc\appweb.h
+DEPS_76 = $(DEPS_76) $(CONFIG)\inc\bit.h
+DEPS_76 = $(DEPS_76) $(CONFIG)\inc\appweb.h
 
 $(CONFIG)\obj\phpHandler.obj: \
-    src\modules\phpHandler.c $(DEPS_73)
+    src\modules\phpHandler.c $(DEPS_76)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\phpHandler.obj -Fd$(CONFIG)\obj\phpHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)\main" "-I$(BIT_PACK_PHP_PATH)\Zend" "-I$(BIT_PACK_PHP_PATH)\TSRM" src\modules\phpHandler.c
 
@@ -1637,31 +1717,31 @@ $(CONFIG)\obj\phpHandler.obj: \
 #
 #   libmod_php
 #
-DEPS_74 = $(DEPS_74) $(CONFIG)\inc\mpr.h
-DEPS_74 = $(DEPS_74) $(CONFIG)\inc\bit.h
-DEPS_74 = $(DEPS_74) $(CONFIG)\inc\bitos.h
-DEPS_74 = $(DEPS_74) $(CONFIG)\obj\mprLib.obj
-DEPS_74 = $(DEPS_74) $(CONFIG)\bin\libmpr.lib
-DEPS_74 = $(DEPS_74) $(CONFIG)\inc\pcre.h
-DEPS_74 = $(DEPS_74) $(CONFIG)\obj\pcre.obj
+DEPS_77 = $(DEPS_77) $(CONFIG)\inc\mpr.h
+DEPS_77 = $(DEPS_77) $(CONFIG)\inc\bit.h
+DEPS_77 = $(DEPS_77) $(CONFIG)\inc\bitos.h
+DEPS_77 = $(DEPS_77) $(CONFIG)\obj\mprLib.obj
+DEPS_77 = $(DEPS_77) $(CONFIG)\bin\libmpr.lib
+DEPS_77 = $(DEPS_77) $(CONFIG)\inc\pcre.h
+DEPS_77 = $(DEPS_77) $(CONFIG)\obj\pcre.obj
 !IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_74 = $(DEPS_74) $(CONFIG)\bin\libpcre.lib
+DEPS_77 = $(DEPS_77) $(CONFIG)\bin\libpcre.lib
 !ENDIF
-DEPS_74 = $(DEPS_74) $(CONFIG)\inc\http.h
-DEPS_74 = $(DEPS_74) $(CONFIG)\obj\httpLib.obj
-DEPS_74 = $(DEPS_74) $(CONFIG)\bin\libhttp.lib
-DEPS_74 = $(DEPS_74) $(CONFIG)\inc\appweb.h
-DEPS_74 = $(DEPS_74) $(CONFIG)\inc\customize.h
-DEPS_74 = $(DEPS_74) $(CONFIG)\obj\config.obj
-DEPS_74 = $(DEPS_74) $(CONFIG)\obj\convenience.obj
-DEPS_74 = $(DEPS_74) $(CONFIG)\obj\dirHandler.obj
-DEPS_74 = $(DEPS_74) $(CONFIG)\obj\fileHandler.obj
-DEPS_74 = $(DEPS_74) $(CONFIG)\obj\log.obj
-DEPS_74 = $(DEPS_74) $(CONFIG)\obj\server.obj
-DEPS_74 = $(DEPS_74) $(CONFIG)\bin\libappweb.lib
-DEPS_74 = $(DEPS_74) $(CONFIG)\obj\phpHandler.obj
+DEPS_77 = $(DEPS_77) $(CONFIG)\inc\http.h
+DEPS_77 = $(DEPS_77) $(CONFIG)\obj\httpLib.obj
+DEPS_77 = $(DEPS_77) $(CONFIG)\bin\libhttp.lib
+DEPS_77 = $(DEPS_77) $(CONFIG)\inc\appweb.h
+DEPS_77 = $(DEPS_77) $(CONFIG)\inc\customize.h
+DEPS_77 = $(DEPS_77) $(CONFIG)\obj\config.obj
+DEPS_77 = $(DEPS_77) $(CONFIG)\obj\convenience.obj
+DEPS_77 = $(DEPS_77) $(CONFIG)\obj\dirHandler.obj
+DEPS_77 = $(DEPS_77) $(CONFIG)\obj\fileHandler.obj
+DEPS_77 = $(DEPS_77) $(CONFIG)\obj\log.obj
+DEPS_77 = $(DEPS_77) $(CONFIG)\obj\server.obj
+DEPS_77 = $(DEPS_77) $(CONFIG)\bin\libappweb.lib
+DEPS_77 = $(DEPS_77) $(CONFIG)\obj\phpHandler.obj
 
-$(CONFIG)\bin\libmod_php.lib: $(DEPS_74)
+$(CONFIG)\bin\libmod_php.lib: $(DEPS_77)
 	@echo '      [Link] $(CONFIG)/bin/libmod_php.lib'
 	"lib.exe" -nologo -out:$(CONFIG)\bin\libmod_php.lib "$(CONFIG)\obj\phpHandler.obj"
 !ENDIF
@@ -1669,11 +1749,11 @@ $(CONFIG)\bin\libmod_php.lib: $(DEPS_74)
 #
 #   sslModule.obj
 #
-DEPS_75 = $(DEPS_75) $(CONFIG)\inc\bit.h
-DEPS_75 = $(DEPS_75) $(CONFIG)\inc\appweb.h
+DEPS_78 = $(DEPS_78) $(CONFIG)\inc\bit.h
+DEPS_78 = $(DEPS_78) $(CONFIG)\inc\appweb.h
 
 $(CONFIG)\obj\sslModule.obj: \
-    src\modules\sslModule.c $(DEPS_75)
+    src\modules\sslModule.c $(DEPS_78)
 	@echo '   [Compile] $(CONFIG)/obj/sslModule.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\sslModule.obj -Fd$(CONFIG)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)\src" "-I$(BIT_PACK_OPENSSL_PATH)\include" src\modules\sslModule.c
 
@@ -1681,38 +1761,38 @@ $(CONFIG)\obj\sslModule.obj: \
 #
 #   libmod_ssl
 #
-DEPS_76 = $(DEPS_76) $(CONFIG)\inc\mpr.h
-DEPS_76 = $(DEPS_76) $(CONFIG)\inc\bit.h
-DEPS_76 = $(DEPS_76) $(CONFIG)\inc\bitos.h
-DEPS_76 = $(DEPS_76) $(CONFIG)\obj\mprLib.obj
-DEPS_76 = $(DEPS_76) $(CONFIG)\bin\libmpr.lib
-DEPS_76 = $(DEPS_76) $(CONFIG)\inc\pcre.h
-DEPS_76 = $(DEPS_76) $(CONFIG)\obj\pcre.obj
+DEPS_79 = $(DEPS_79) $(CONFIG)\inc\mpr.h
+DEPS_79 = $(DEPS_79) $(CONFIG)\inc\bit.h
+DEPS_79 = $(DEPS_79) $(CONFIG)\inc\bitos.h
+DEPS_79 = $(DEPS_79) $(CONFIG)\obj\mprLib.obj
+DEPS_79 = $(DEPS_79) $(CONFIG)\bin\libmpr.lib
+DEPS_79 = $(DEPS_79) $(CONFIG)\inc\pcre.h
+DEPS_79 = $(DEPS_79) $(CONFIG)\obj\pcre.obj
 !IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_76 = $(DEPS_76) $(CONFIG)\bin\libpcre.lib
+DEPS_79 = $(DEPS_79) $(CONFIG)\bin\libpcre.lib
 !ENDIF
-DEPS_76 = $(DEPS_76) $(CONFIG)\inc\http.h
-DEPS_76 = $(DEPS_76) $(CONFIG)\obj\httpLib.obj
-DEPS_76 = $(DEPS_76) $(CONFIG)\bin\libhttp.lib
-DEPS_76 = $(DEPS_76) $(CONFIG)\inc\appweb.h
-DEPS_76 = $(DEPS_76) $(CONFIG)\inc\customize.h
-DEPS_76 = $(DEPS_76) $(CONFIG)\obj\config.obj
-DEPS_76 = $(DEPS_76) $(CONFIG)\obj\convenience.obj
-DEPS_76 = $(DEPS_76) $(CONFIG)\obj\dirHandler.obj
-DEPS_76 = $(DEPS_76) $(CONFIG)\obj\fileHandler.obj
-DEPS_76 = $(DEPS_76) $(CONFIG)\obj\log.obj
-DEPS_76 = $(DEPS_76) $(CONFIG)\obj\server.obj
-DEPS_76 = $(DEPS_76) $(CONFIG)\bin\libappweb.lib
-DEPS_76 = $(DEPS_76) $(CONFIG)\inc\est.h
-DEPS_76 = $(DEPS_76) $(CONFIG)\obj\estLib.obj
+DEPS_79 = $(DEPS_79) $(CONFIG)\inc\http.h
+DEPS_79 = $(DEPS_79) $(CONFIG)\obj\httpLib.obj
+DEPS_79 = $(DEPS_79) $(CONFIG)\bin\libhttp.lib
+DEPS_79 = $(DEPS_79) $(CONFIG)\inc\appweb.h
+DEPS_79 = $(DEPS_79) $(CONFIG)\inc\customize.h
+DEPS_79 = $(DEPS_79) $(CONFIG)\obj\config.obj
+DEPS_79 = $(DEPS_79) $(CONFIG)\obj\convenience.obj
+DEPS_79 = $(DEPS_79) $(CONFIG)\obj\dirHandler.obj
+DEPS_79 = $(DEPS_79) $(CONFIG)\obj\fileHandler.obj
+DEPS_79 = $(DEPS_79) $(CONFIG)\obj\log.obj
+DEPS_79 = $(DEPS_79) $(CONFIG)\obj\server.obj
+DEPS_79 = $(DEPS_79) $(CONFIG)\bin\libappweb.lib
+DEPS_79 = $(DEPS_79) $(CONFIG)\inc\est.h
+DEPS_79 = $(DEPS_79) $(CONFIG)\obj\estLib.obj
 !IF "$(BIT_PACK_EST)" == "1"
-DEPS_76 = $(DEPS_76) $(CONFIG)\bin\libest.lib
+DEPS_79 = $(DEPS_79) $(CONFIG)\bin\libest.lib
 !ENDIF
-DEPS_76 = $(DEPS_76) $(CONFIG)\obj\mprSsl.obj
-DEPS_76 = $(DEPS_76) $(CONFIG)\bin\libmprssl.lib
-DEPS_76 = $(DEPS_76) $(CONFIG)\obj\sslModule.obj
+DEPS_79 = $(DEPS_79) $(CONFIG)\obj\mprSsl.obj
+DEPS_79 = $(DEPS_79) $(CONFIG)\bin\libmprssl.lib
+DEPS_79 = $(DEPS_79) $(CONFIG)\obj\sslModule.obj
 
-$(CONFIG)\bin\libmod_ssl.lib: $(DEPS_76)
+$(CONFIG)\bin\libmod_ssl.lib: $(DEPS_79)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ssl.lib'
 	"lib.exe" -nologo -out:$(CONFIG)\bin\libmod_ssl.lib "$(CONFIG)\obj\sslModule.obj"
 !ENDIF
@@ -1720,59 +1800,59 @@ $(CONFIG)\bin\libmod_ssl.lib: $(DEPS_76)
 #
 #   authpass.obj
 #
-DEPS_77 = $(DEPS_77) $(CONFIG)\inc\bit.h
-DEPS_77 = $(DEPS_77) $(CONFIG)\inc\appweb.h
+DEPS_80 = $(DEPS_80) $(CONFIG)\inc\bit.h
+DEPS_80 = $(DEPS_80) $(CONFIG)\inc\appweb.h
 
 $(CONFIG)\obj\authpass.obj: \
-    src\utils\authpass.c $(DEPS_77)
+    src\utils\authpass.c $(DEPS_80)
 	@echo '   [Compile] $(CONFIG)/obj/authpass.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\authpass.obj -Fd$(CONFIG)\obj\authpass.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\authpass.c
 
 #
 #   authpass
 #
-DEPS_78 = $(DEPS_78) $(CONFIG)\inc\mpr.h
-DEPS_78 = $(DEPS_78) $(CONFIG)\inc\bit.h
-DEPS_78 = $(DEPS_78) $(CONFIG)\inc\bitos.h
-DEPS_78 = $(DEPS_78) $(CONFIG)\obj\mprLib.obj
-DEPS_78 = $(DEPS_78) $(CONFIG)\bin\libmpr.lib
-DEPS_78 = $(DEPS_78) $(CONFIG)\inc\pcre.h
-DEPS_78 = $(DEPS_78) $(CONFIG)\obj\pcre.obj
+DEPS_81 = $(DEPS_81) $(CONFIG)\inc\mpr.h
+DEPS_81 = $(DEPS_81) $(CONFIG)\inc\bit.h
+DEPS_81 = $(DEPS_81) $(CONFIG)\inc\bitos.h
+DEPS_81 = $(DEPS_81) $(CONFIG)\obj\mprLib.obj
+DEPS_81 = $(DEPS_81) $(CONFIG)\bin\libmpr.lib
+DEPS_81 = $(DEPS_81) $(CONFIG)\inc\pcre.h
+DEPS_81 = $(DEPS_81) $(CONFIG)\obj\pcre.obj
 !IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_78 = $(DEPS_78) $(CONFIG)\bin\libpcre.lib
+DEPS_81 = $(DEPS_81) $(CONFIG)\bin\libpcre.lib
 !ENDIF
-DEPS_78 = $(DEPS_78) $(CONFIG)\inc\http.h
-DEPS_78 = $(DEPS_78) $(CONFIG)\obj\httpLib.obj
-DEPS_78 = $(DEPS_78) $(CONFIG)\bin\libhttp.lib
-DEPS_78 = $(DEPS_78) $(CONFIG)\inc\appweb.h
-DEPS_78 = $(DEPS_78) $(CONFIG)\inc\customize.h
-DEPS_78 = $(DEPS_78) $(CONFIG)\obj\config.obj
-DEPS_78 = $(DEPS_78) $(CONFIG)\obj\convenience.obj
-DEPS_78 = $(DEPS_78) $(CONFIG)\obj\dirHandler.obj
-DEPS_78 = $(DEPS_78) $(CONFIG)\obj\fileHandler.obj
-DEPS_78 = $(DEPS_78) $(CONFIG)\obj\log.obj
-DEPS_78 = $(DEPS_78) $(CONFIG)\obj\server.obj
-DEPS_78 = $(DEPS_78) $(CONFIG)\bin\libappweb.lib
-DEPS_78 = $(DEPS_78) $(CONFIG)\obj\authpass.obj
+DEPS_81 = $(DEPS_81) $(CONFIG)\inc\http.h
+DEPS_81 = $(DEPS_81) $(CONFIG)\obj\httpLib.obj
+DEPS_81 = $(DEPS_81) $(CONFIG)\bin\libhttp.lib
+DEPS_81 = $(DEPS_81) $(CONFIG)\inc\appweb.h
+DEPS_81 = $(DEPS_81) $(CONFIG)\inc\customize.h
+DEPS_81 = $(DEPS_81) $(CONFIG)\obj\config.obj
+DEPS_81 = $(DEPS_81) $(CONFIG)\obj\convenience.obj
+DEPS_81 = $(DEPS_81) $(CONFIG)\obj\dirHandler.obj
+DEPS_81 = $(DEPS_81) $(CONFIG)\obj\fileHandler.obj
+DEPS_81 = $(DEPS_81) $(CONFIG)\obj\log.obj
+DEPS_81 = $(DEPS_81) $(CONFIG)\obj\server.obj
+DEPS_81 = $(DEPS_81) $(CONFIG)\bin\libappweb.lib
+DEPS_81 = $(DEPS_81) $(CONFIG)\obj\authpass.obj
 
-LIBS_78 = $(LIBS_78) libappweb.lib
-LIBS_78 = $(LIBS_78) libhttp.lib
-LIBS_78 = $(LIBS_78) libmpr.lib
+LIBS_81 = $(LIBS_81) libappweb.lib
+LIBS_81 = $(LIBS_81) libhttp.lib
+LIBS_81 = $(LIBS_81) libmpr.lib
 !IF "$(BIT_PACK_PCRE)" == "1"
-LIBS_78 = $(LIBS_78) libpcre.lib
+LIBS_81 = $(LIBS_81) libpcre.lib
 !ENDIF
 
-$(CONFIG)\bin\authpass.exe: $(DEPS_78)
+$(CONFIG)\bin\authpass.exe: $(DEPS_81)
 	@echo '      [Link] $(CONFIG)/bin/authpass.exe'
-	"$(LD)" -out:$(CONFIG)\bin\authpass.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\authpass.obj" $(LIBPATHS_78) $(LIBS_78) $(LIBS_78) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\authpass.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\authpass.obj" $(LIBPATHS_81) $(LIBS_81) $(LIBS_81) $(LIBS) 
 
 #
 #   cgiProgram.obj
 #
-DEPS_79 = $(DEPS_79) $(CONFIG)\inc\bit.h
+DEPS_82 = $(DEPS_82) $(CONFIG)\inc\bit.h
 
 $(CONFIG)\obj\cgiProgram.obj: \
-    src\utils\cgiProgram.c $(DEPS_79)
+    src\utils\cgiProgram.c $(DEPS_82)
 	@echo '   [Compile] $(CONFIG)/obj/cgiProgram.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\cgiProgram.obj -Fd$(CONFIG)\obj\cgiProgram.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\cgiProgram.c
 
@@ -1780,10 +1860,10 @@ $(CONFIG)\obj\cgiProgram.obj: \
 #
 #   cgiProgram
 #
-DEPS_80 = $(DEPS_80) $(CONFIG)\inc\bit.h
-DEPS_80 = $(DEPS_80) $(CONFIG)\obj\cgiProgram.obj
+DEPS_83 = $(DEPS_83) $(CONFIG)\inc\bit.h
+DEPS_83 = $(DEPS_83) $(CONFIG)\obj\cgiProgram.obj
 
-$(CONFIG)\bin\cgiProgram.exe: $(DEPS_80)
+$(CONFIG)\bin\cgiProgram.exe: $(DEPS_83)
 	@echo '      [Link] $(CONFIG)/bin/cgiProgram.exe'
 	"$(LD)" -out:$(CONFIG)\bin\cgiProgram.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\cgiProgram.obj" $(LIBS) 
 !ENDIF
@@ -1791,7 +1871,7 @@ $(CONFIG)\bin\cgiProgram.exe: $(DEPS_80)
 #
 #   slink.c
 #
-src\server\slink.c: $(DEPS_81)
+src\server\slink.c: $(DEPS_84)
 	cd src\server
 	if not exist slink.c copy slink.empty slink.c
 	cd ..\..
@@ -1799,289 +1879,303 @@ src\server\slink.c: $(DEPS_81)
 #
 #   slink.obj
 #
-DEPS_82 = $(DEPS_82) $(CONFIG)\inc\bit.h
-DEPS_82 = $(DEPS_82) $(CONFIG)\inc\esp.h
+DEPS_85 = $(DEPS_85) $(CONFIG)\inc\bit.h
+DEPS_85 = $(DEPS_85) $(CONFIG)\inc\esp.h
 
 $(CONFIG)\obj\slink.obj: \
-    src\server\slink.c $(DEPS_82)
+    src\server\slink.c $(DEPS_85)
 	@echo '   [Compile] $(CONFIG)/obj/slink.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\slink.obj -Fd$(CONFIG)\obj\slink.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\slink.c
 
 #
 #   libslink
 #
-DEPS_83 = $(DEPS_83) src\server\slink.c
-DEPS_83 = $(DEPS_83) $(CONFIG)\inc\mpr.h
-DEPS_83 = $(DEPS_83) $(CONFIG)\inc\bit.h
-DEPS_83 = $(DEPS_83) $(CONFIG)\inc\bitos.h
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\mprLib.obj
-DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libmpr.lib
-DEPS_83 = $(DEPS_83) $(CONFIG)\inc\pcre.h
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\pcre.obj
+DEPS_86 = $(DEPS_86) src\server\slink.c
+DEPS_86 = $(DEPS_86) $(CONFIG)\inc\mpr.h
+DEPS_86 = $(DEPS_86) $(CONFIG)\inc\bit.h
+DEPS_86 = $(DEPS_86) $(CONFIG)\inc\bitos.h
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\mprLib.obj
+DEPS_86 = $(DEPS_86) $(CONFIG)\bin\libmpr.lib
+DEPS_86 = $(DEPS_86) $(CONFIG)\inc\pcre.h
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\pcre.obj
 !IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libpcre.lib
+DEPS_86 = $(DEPS_86) $(CONFIG)\bin\libpcre.lib
 !ENDIF
-DEPS_83 = $(DEPS_83) $(CONFIG)\inc\http.h
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\httpLib.obj
-DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libhttp.lib
-DEPS_83 = $(DEPS_83) $(CONFIG)\inc\appweb.h
-DEPS_83 = $(DEPS_83) $(CONFIG)\inc\customize.h
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\config.obj
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\convenience.obj
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\dirHandler.obj
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\fileHandler.obj
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\log.obj
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\server.obj
-DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libappweb.lib
-DEPS_83 = $(DEPS_83) $(CONFIG)\inc\edi.h
-DEPS_83 = $(DEPS_83) $(CONFIG)\inc\esp.h
-DEPS_83 = $(DEPS_83) $(CONFIG)\inc\mdb.h
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\edi.obj
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\espAbbrev.obj
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\espDeprecated.obj
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\espFramework.obj
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\espHandler.obj
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\espHtml.obj
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\espTemplate.obj
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\mdb.obj
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\sdb.obj
+DEPS_86 = $(DEPS_86) $(CONFIG)\inc\http.h
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\httpLib.obj
+DEPS_86 = $(DEPS_86) $(CONFIG)\bin\libhttp.lib
+DEPS_86 = $(DEPS_86) $(CONFIG)\inc\appweb.h
+DEPS_86 = $(DEPS_86) $(CONFIG)\inc\customize.h
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\config.obj
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\convenience.obj
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\dirHandler.obj
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\fileHandler.obj
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\log.obj
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\server.obj
+DEPS_86 = $(DEPS_86) $(CONFIG)\bin\libappweb.lib
+DEPS_86 = $(DEPS_86) $(CONFIG)\inc\edi.h
+DEPS_86 = $(DEPS_86) $(CONFIG)\inc\esp.h
+DEPS_86 = $(DEPS_86) $(CONFIG)\inc\mdb.h
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\edi.obj
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\espAbbrev.obj
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\espDeprecated.obj
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\espFramework.obj
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\espHandler.obj
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\espHtml.obj
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\espTemplate.obj
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\mdb.obj
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\sdb.obj
 !IF "$(BIT_PACK_ESP)" == "1"
-DEPS_83 = $(DEPS_83) $(CONFIG)\bin\libmod_esp.lib
+DEPS_86 = $(DEPS_86) $(CONFIG)\bin\libmod_esp.lib
 !ENDIF
-DEPS_83 = $(DEPS_83) $(CONFIG)\obj\slink.obj
+DEPS_86 = $(DEPS_86) $(CONFIG)\obj\slink.obj
 
-$(CONFIG)\bin\libslink.lib: $(DEPS_83)
+$(CONFIG)\bin\libslink.lib: $(DEPS_86)
 	@echo '      [Link] $(CONFIG)/bin/libslink.lib'
 	"lib.exe" -nologo -out:$(CONFIG)\bin\libslink.lib "$(CONFIG)\obj\slink.obj"
 
 #
 #   appweb.obj
 #
-DEPS_84 = $(DEPS_84) $(CONFIG)\inc\bit.h
-DEPS_84 = $(DEPS_84) $(CONFIG)\inc\appweb.h
-DEPS_84 = $(DEPS_84) $(CONFIG)\inc\esp.h
+DEPS_87 = $(DEPS_87) $(CONFIG)\inc\bit.h
+DEPS_87 = $(DEPS_87) $(CONFIG)\inc\appweb.h
+DEPS_87 = $(DEPS_87) $(CONFIG)\inc\esp.h
 
 $(CONFIG)\obj\appweb.obj: \
-    src\server\appweb.c $(DEPS_84)
+    src\server\appweb.c $(DEPS_87)
 	@echo '   [Compile] $(CONFIG)/obj/appweb.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\appweb.obj -Fd$(CONFIG)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)\src" "-I$(BIT_PACK_OPENSSL_PATH)\include" "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)\main" "-I$(BIT_PACK_PHP_PATH)\Zend" "-I$(BIT_PACK_PHP_PATH)\TSRM" src\server\appweb.c
 
 #
 #   appweb
 #
-DEPS_85 = $(DEPS_85) $(CONFIG)\inc\mpr.h
-DEPS_85 = $(DEPS_85) $(CONFIG)\inc\bit.h
-DEPS_85 = $(DEPS_85) $(CONFIG)\inc\bitos.h
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\mprLib.obj
-DEPS_85 = $(DEPS_85) $(CONFIG)\bin\libmpr.lib
-DEPS_85 = $(DEPS_85) $(CONFIG)\inc\pcre.h
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\pcre.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\inc\mpr.h
+DEPS_88 = $(DEPS_88) $(CONFIG)\inc\bit.h
+DEPS_88 = $(DEPS_88) $(CONFIG)\inc\bitos.h
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\mprLib.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\bin\libmpr.lib
+DEPS_88 = $(DEPS_88) $(CONFIG)\inc\pcre.h
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\pcre.obj
 !IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_85 = $(DEPS_85) $(CONFIG)\bin\libpcre.lib
+DEPS_88 = $(DEPS_88) $(CONFIG)\bin\libpcre.lib
 !ENDIF
-DEPS_85 = $(DEPS_85) $(CONFIG)\inc\http.h
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\httpLib.obj
-DEPS_85 = $(DEPS_85) $(CONFIG)\bin\libhttp.lib
-DEPS_85 = $(DEPS_85) $(CONFIG)\inc\appweb.h
-DEPS_85 = $(DEPS_85) $(CONFIG)\inc\customize.h
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\config.obj
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\convenience.obj
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\dirHandler.obj
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\fileHandler.obj
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\log.obj
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\server.obj
-DEPS_85 = $(DEPS_85) $(CONFIG)\bin\libappweb.lib
-DEPS_85 = $(DEPS_85) src\server\slink.c
-DEPS_85 = $(DEPS_85) $(CONFIG)\inc\edi.h
-DEPS_85 = $(DEPS_85) $(CONFIG)\inc\esp.h
-DEPS_85 = $(DEPS_85) $(CONFIG)\inc\mdb.h
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\edi.obj
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\espAbbrev.obj
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\espDeprecated.obj
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\espFramework.obj
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\espHandler.obj
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\espHtml.obj
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\espTemplate.obj
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\mdb.obj
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\sdb.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\inc\http.h
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\httpLib.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\bin\libhttp.lib
+DEPS_88 = $(DEPS_88) $(CONFIG)\inc\appweb.h
+DEPS_88 = $(DEPS_88) $(CONFIG)\inc\customize.h
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\config.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\convenience.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\dirHandler.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\fileHandler.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\log.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\server.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\bin\libappweb.lib
+DEPS_88 = $(DEPS_88) src\server\slink.c
+DEPS_88 = $(DEPS_88) $(CONFIG)\inc\edi.h
+DEPS_88 = $(DEPS_88) $(CONFIG)\inc\esp.h
+DEPS_88 = $(DEPS_88) $(CONFIG)\inc\mdb.h
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\edi.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\espAbbrev.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\espDeprecated.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\espFramework.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\espHandler.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\espHtml.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\espTemplate.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\mdb.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\sdb.obj
 !IF "$(BIT_PACK_ESP)" == "1"
-DEPS_85 = $(DEPS_85) $(CONFIG)\bin\libmod_esp.lib
+DEPS_88 = $(DEPS_88) $(CONFIG)\bin\libmod_esp.lib
 !ENDIF
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\slink.obj
-DEPS_85 = $(DEPS_85) $(CONFIG)\bin\libslink.lib
-DEPS_85 = $(DEPS_85) $(CONFIG)\inc\est.h
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\estLib.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\slink.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\bin\libslink.lib
+DEPS_88 = $(DEPS_88) $(CONFIG)\inc\est.h
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\estLib.obj
 !IF "$(BIT_PACK_EST)" == "1"
-DEPS_85 = $(DEPS_85) $(CONFIG)\bin\libest.lib
+DEPS_88 = $(DEPS_88) $(CONFIG)\bin\libest.lib
 !ENDIF
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\mprSsl.obj
-DEPS_85 = $(DEPS_85) $(CONFIG)\bin\libmprssl.lib
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\sslModule.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\mprSsl.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\bin\libmprssl.lib
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\sslModule.obj
 !IF "$(BIT_PACK_SSL)" == "1"
-DEPS_85 = $(DEPS_85) $(CONFIG)\bin\libmod_ssl.lib
+DEPS_88 = $(DEPS_88) $(CONFIG)\bin\libmod_ssl.lib
 !ENDIF
-DEPS_85 = $(DEPS_85) $(CONFIG)\inc\ejs.h
-DEPS_85 = $(DEPS_85) $(CONFIG)\inc\ejs.slots.h
-DEPS_85 = $(DEPS_85) $(CONFIG)\inc\ejsByteGoto.h
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\ejsLib.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\inc\zlib.h
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\zlib.obj
+!IF "$(BIT_PACK_ZLIB)" == "1"
+DEPS_88 = $(DEPS_88) $(CONFIG)\bin\libzlib.lib
+!ENDIF
+DEPS_88 = $(DEPS_88) $(CONFIG)\inc\ejs.h
+DEPS_88 = $(DEPS_88) $(CONFIG)\inc\ejs.slots.h
+DEPS_88 = $(DEPS_88) $(CONFIG)\inc\ejsByteGoto.h
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\ejsLib.obj
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-DEPS_85 = $(DEPS_85) $(CONFIG)\bin\libejs.lib
+DEPS_88 = $(DEPS_88) $(CONFIG)\bin\libejs.lib
 !ENDIF
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\ejsHandler.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\ejsHandler.obj
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-DEPS_85 = $(DEPS_85) $(CONFIG)\bin\libmod_ejs.lib
+DEPS_88 = $(DEPS_88) $(CONFIG)\bin\libmod_ejs.lib
 !ENDIF
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\phpHandler.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\phpHandler.obj
 !IF "$(BIT_PACK_PHP)" == "1"
-DEPS_85 = $(DEPS_85) $(CONFIG)\bin\libmod_php.lib
+DEPS_88 = $(DEPS_88) $(CONFIG)\bin\libmod_php.lib
 !ENDIF
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\cgiHandler.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\cgiHandler.obj
 !IF "$(BIT_PACK_CGI)" == "1"
-DEPS_85 = $(DEPS_85) $(CONFIG)\bin\libmod_cgi.lib
+DEPS_88 = $(DEPS_88) $(CONFIG)\bin\libmod_cgi.lib
 !ENDIF
-DEPS_85 = $(DEPS_85) $(CONFIG)\obj\appweb.obj
+DEPS_88 = $(DEPS_88) $(CONFIG)\obj\appweb.obj
 
-LIBS_85 = $(LIBS_85) libappweb.lib
-LIBS_85 = $(LIBS_85) libhttp.lib
-LIBS_85 = $(LIBS_85) libmpr.lib
+LIBS_88 = $(LIBS_88) libappweb.lib
+LIBS_88 = $(LIBS_88) libhttp.lib
+LIBS_88 = $(LIBS_88) libmpr.lib
 !IF "$(BIT_PACK_PCRE)" == "1"
-LIBS_85 = $(LIBS_85) libpcre.lib
+LIBS_88 = $(LIBS_88) libpcre.lib
 !ENDIF
-LIBS_85 = $(LIBS_85) libslink.lib
+LIBS_88 = $(LIBS_88) libslink.lib
 !IF "$(BIT_PACK_ESP)" == "1"
-LIBS_85 = $(LIBS_85) libmod_esp.lib
+LIBS_88 = $(LIBS_88) libmod_esp.lib
 !ENDIF
 !IF "$(BIT_PACK_SQLITE)" == "1"
-LIBS_85 = $(LIBS_85) libsqlite3.lib
+LIBS_88 = $(LIBS_88) libsql.lib
 !ENDIF
 !IF "$(BIT_PACK_SSL)" == "1"
-LIBS_85 = $(LIBS_85) libmod_ssl.lib
+LIBS_88 = $(LIBS_88) libmod_ssl.lib
 !ENDIF
-LIBS_85 = $(LIBS_85) libmprssl.lib
+LIBS_88 = $(LIBS_88) libmprssl.lib
 !IF "$(BIT_PACK_EST)" == "1"
-LIBS_85 = $(LIBS_85) libest.lib
+LIBS_88 = $(LIBS_88) libest.lib
 !ENDIF
 !IF "$(BIT_PACK_MATRIXSSL)" == "1"
-LIBS_85 = $(LIBS_85) libmatrixssl.lib
-LIBPATHS_85 = $(LIBPATHS_85) -libpath:$(BIT_PACK_MATRIXSSL_PATH)
+LIBS_88 = $(LIBS_88) libmatrixssl.lib
+LIBPATHS_88 = $(LIBPATHS_88) -libpath:$(BIT_PACK_MATRIXSSL_PATH)
 !ENDIF
 !IF "$(BIT_PACK_NANOSSL)" == "1"
-LIBS_85 = $(LIBS_85) libssls.lib
-LIBPATHS_85 = $(LIBPATHS_85) -libpath:$(BIT_PACK_NANOSSL_PATH)/bin
+LIBS_88 = $(LIBS_88) libssls.lib
+LIBPATHS_88 = $(LIBPATHS_88) -libpath:$(BIT_PACK_NANOSSL_PATH)/bin
 !ENDIF
 !IF "$(BIT_PACK_OPENSSL)" == "1"
-LIBS_85 = $(LIBS_85) libeay32.lib
-LIBPATHS_85 = $(LIBPATHS_85) -libpath:$(BIT_PACK_OPENSSL_PATH)
+LIBS_88 = $(LIBS_88) libeay32.lib
+LIBPATHS_88 = $(LIBPATHS_88) -libpath:$(BIT_PACK_OPENSSL_PATH)
 !ENDIF
 !IF "$(BIT_PACK_OPENSSL)" == "1"
-LIBS_85 = $(LIBS_85) libssleay32.lib
-LIBPATHS_85 = $(LIBPATHS_85) -libpath:$(BIT_PACK_OPENSSL_PATH)
+LIBS_88 = $(LIBS_88) libssleay32.lib
+LIBPATHS_88 = $(LIBPATHS_88) -libpath:$(BIT_PACK_OPENSSL_PATH)
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-LIBS_85 = $(LIBS_85) libmod_ejs.lib
+LIBS_88 = $(LIBS_88) libmod_ejs.lib
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
-LIBS_85 = $(LIBS_85) libejs.lib
+LIBS_88 = $(LIBS_88) libejs.lib
+!ENDIF
+!IF "$(BIT_PACK_ZLIB)" == "1"
+LIBS_88 = $(LIBS_88) libzlib.lib
 !ENDIF
 !IF "$(BIT_PACK_PHP)" == "1"
-LIBS_85 = $(LIBS_85) libmod_php.lib
+LIBS_88 = $(LIBS_88) libmod_php.lib
 !ENDIF
 !IF "$(BIT_PACK_PHP)" == "1"
-LIBS_85 = $(LIBS_85) libphp5ts.lib
-LIBPATHS_85 = $(LIBPATHS_85) -libpath:$(BIT_PACK_PHP_PATH)/libs
+LIBS_88 = $(LIBS_88) libphp5ts.lib
+LIBPATHS_88 = $(LIBPATHS_88) -libpath:$(BIT_PACK_PHP_PATH)/libs
 !ENDIF
 !IF "$(BIT_PACK_CGI)" == "1"
-LIBS_85 = $(LIBS_85) libmod_cgi.lib
+LIBS_88 = $(LIBS_88) libmod_cgi.lib
 !ENDIF
 
-$(CONFIG)\bin\appweb.exe: $(DEPS_85)
+$(CONFIG)\bin\appweb.exe: $(DEPS_88)
 	@echo '      [Link] $(CONFIG)/bin/appweb.exe'
-	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)     "$(CONFIG)\obj\appweb.obj" $(LIBPATHS_85) $(LIBS_85) $(LIBS_85) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)     "$(CONFIG)\obj\appweb.obj" $(LIBPATHS_88) $(LIBS_88) $(LIBS_88) $(LIBS) 
 
 #
 #   appwebMonitor.h
 #
-$(CONFIG)\inc\appwebMonitor.h: $(DEPS_86)
+$(CONFIG)\inc\appwebMonitor.h: $(DEPS_89)
 	@echo '      [Copy] $(CONFIG)/inc/appwebMonitor.h'
+	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
+	copy /Y src\server\windows\appwebMonitor.h $(CONFIG)\inc\appwebMonitor.h
 
 #
 #   monitorResources.h
 #
-$(CONFIG)\inc\monitorResources.h: $(DEPS_87)
+$(CONFIG)\inc\monitorResources.h: $(DEPS_90)
 	@echo '      [Copy] $(CONFIG)/inc/monitorResources.h'
+	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
+	copy /Y src\server\windows\monitorResources.h $(CONFIG)\inc\monitorResources.h
 
 #
 #   appwebMonitor.res
 #
 $(CONFIG)\obj\appwebMonitor.res: \
-        src\server\windows\appwebMonitor.rc $(DEPS_88)
+        src\server\windows\appwebMonitor.rc $(DEPS_91)
 	@echo '   [Compile] $(CONFIG)/obj/appwebMonitor.res'
 	"$(RC)" -nologo -Fo $(CONFIG)\obj\appwebMonitor.res src\server\windows\appwebMonitor.rc
 
 #
 #   appwebMonitor.obj
 #
-DEPS_89 = $(DEPS_89) $(CONFIG)\inc\bit.h
-DEPS_89 = $(DEPS_89) $(CONFIG)\inc\mpr.h
+DEPS_92 = $(DEPS_92) $(CONFIG)\inc\bit.h
+DEPS_92 = $(DEPS_92) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\appwebMonitor.obj: \
-    src\server\windows\appwebMonitor.c $(DEPS_89)
+    src\server\windows\appwebMonitor.c $(DEPS_92)
 	@echo '   [Compile] $(CONFIG)/obj/appwebMonitor.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\appwebMonitor.obj -Fd$(CONFIG)\obj\appwebMonitor.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\windows\appwebMonitor.c
 
 #
 #   appwebMonitor
 #
-DEPS_90 = $(DEPS_90) $(CONFIG)\inc\mpr.h
-DEPS_90 = $(DEPS_90) $(CONFIG)\inc\bit.h
-DEPS_90 = $(DEPS_90) $(CONFIG)\inc\bitos.h
-DEPS_90 = $(DEPS_90) $(CONFIG)\obj\mprLib.obj
-DEPS_90 = $(DEPS_90) $(CONFIG)\bin\libmpr.lib
-DEPS_90 = $(DEPS_90) $(CONFIG)\inc\pcre.h
-DEPS_90 = $(DEPS_90) $(CONFIG)\obj\pcre.obj
+DEPS_93 = $(DEPS_93) $(CONFIG)\inc\mpr.h
+DEPS_93 = $(DEPS_93) $(CONFIG)\inc\bit.h
+DEPS_93 = $(DEPS_93) $(CONFIG)\inc\bitos.h
+DEPS_93 = $(DEPS_93) $(CONFIG)\obj\mprLib.obj
+DEPS_93 = $(DEPS_93) $(CONFIG)\bin\libmpr.lib
+DEPS_93 = $(DEPS_93) $(CONFIG)\inc\pcre.h
+DEPS_93 = $(DEPS_93) $(CONFIG)\obj\pcre.obj
 !IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_90 = $(DEPS_90) $(CONFIG)\bin\libpcre.lib
+DEPS_93 = $(DEPS_93) $(CONFIG)\bin\libpcre.lib
 !ENDIF
-DEPS_90 = $(DEPS_90) $(CONFIG)\inc\http.h
-DEPS_90 = $(DEPS_90) $(CONFIG)\obj\httpLib.obj
-DEPS_90 = $(DEPS_90) $(CONFIG)\bin\libhttp.lib
-DEPS_90 = $(DEPS_90) $(CONFIG)\inc\appweb.h
-DEPS_90 = $(DEPS_90) $(CONFIG)\inc\customize.h
-DEPS_90 = $(DEPS_90) $(CONFIG)\obj\config.obj
-DEPS_90 = $(DEPS_90) $(CONFIG)\obj\convenience.obj
-DEPS_90 = $(DEPS_90) $(CONFIG)\obj\dirHandler.obj
-DEPS_90 = $(DEPS_90) $(CONFIG)\obj\fileHandler.obj
-DEPS_90 = $(DEPS_90) $(CONFIG)\obj\log.obj
-DEPS_90 = $(DEPS_90) $(CONFIG)\obj\server.obj
-DEPS_90 = $(DEPS_90) $(CONFIG)\bin\libappweb.lib
-DEPS_90 = $(DEPS_90) $(CONFIG)\inc\appwebMonitor.h
-DEPS_90 = $(DEPS_90) $(CONFIG)\inc\monitorResources.h
-DEPS_90 = $(DEPS_90) $(CONFIG)\obj\appwebMonitor.res
-DEPS_90 = $(DEPS_90) $(CONFIG)\obj\appwebMonitor.obj
+DEPS_93 = $(DEPS_93) $(CONFIG)\inc\http.h
+DEPS_93 = $(DEPS_93) $(CONFIG)\obj\httpLib.obj
+DEPS_93 = $(DEPS_93) $(CONFIG)\bin\libhttp.lib
+DEPS_93 = $(DEPS_93) $(CONFIG)\inc\appweb.h
+DEPS_93 = $(DEPS_93) $(CONFIG)\inc\customize.h
+DEPS_93 = $(DEPS_93) $(CONFIG)\obj\config.obj
+DEPS_93 = $(DEPS_93) $(CONFIG)\obj\convenience.obj
+DEPS_93 = $(DEPS_93) $(CONFIG)\obj\dirHandler.obj
+DEPS_93 = $(DEPS_93) $(CONFIG)\obj\fileHandler.obj
+DEPS_93 = $(DEPS_93) $(CONFIG)\obj\log.obj
+DEPS_93 = $(DEPS_93) $(CONFIG)\obj\server.obj
+DEPS_93 = $(DEPS_93) $(CONFIG)\bin\libappweb.lib
+DEPS_93 = $(DEPS_93) $(CONFIG)\inc\appwebMonitor.h
+DEPS_93 = $(DEPS_93) $(CONFIG)\inc\monitorResources.h
+DEPS_93 = $(DEPS_93) $(CONFIG)\obj\appwebMonitor.res
+DEPS_93 = $(DEPS_93) $(CONFIG)\obj\appwebMonitor.obj
 
-LIBS_90 = $(LIBS_90) libappweb.lib
-LIBS_90 = $(LIBS_90) libhttp.lib
-LIBS_90 = $(LIBS_90) libmpr.lib
+LIBS_93 = $(LIBS_93) libappweb.lib
+LIBS_93 = $(LIBS_93) libhttp.lib
+LIBS_93 = $(LIBS_93) libmpr.lib
 !IF "$(BIT_PACK_PCRE)" == "1"
-LIBS_90 = $(LIBS_90) libpcre.lib
+LIBS_93 = $(LIBS_93) libpcre.lib
 !ENDIF
 
-$(CONFIG)\bin\appwebMonitor.exe: $(DEPS_90)
+$(CONFIG)\bin\appwebMonitor.exe: $(DEPS_93)
 	@echo '      [Link] $(CONFIG)/bin/appwebMonitor.exe'
-	"$(LD)" -out:$(CONFIG)\bin\appwebMonitor.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\appwebMonitor.res" "$(CONFIG)\obj\appwebMonitor.obj" shell32.lib ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib  $(LIBPATHS_90) $(LIBS_90) $(LIBS_90)
+	"$(LD)" -out:$(CONFIG)\bin\appwebMonitor.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\appwebMonitor.res" "$(CONFIG)\obj\appwebMonitor.obj" shell32.lib ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib  $(LIBPATHS_93) $(LIBS_93) $(LIBS_93)
 
 #
 #   appwebMonitor.ico
 #
-DEPS_91 = $(DEPS_91) src\server\windows\appwebMonitor.ico
+DEPS_94 = $(DEPS_94) src\server\windows\appwebMonitor.ico
 
-$(CONFIG)\bin\appwebMonitor.ico: $(DEPS_91)
+$(CONFIG)\bin\appwebMonitor.ico: $(DEPS_94)
 	@echo '      [Copy] $(CONFIG)/bin/appwebMonitor.ico'
+	if not exist "$(CONFIG)\bin" md "$(CONFIG)\bin"
+	copy /Y src\server\windows\appwebMonitor.ico $(CONFIG)\bin\appwebMonitor.ico
 
 #
 #   server-cache
 #
-src\server\cache: $(DEPS_92)
+src\server\cache: $(DEPS_95)
 	cd src\server
 	md cache
 	cd ..\..
@@ -2089,146 +2183,37 @@ src\server\cache: $(DEPS_92)
 #
 #   testAppweb.h
 #
-$(CONFIG)\inc\testAppweb.h: $(DEPS_93)
+$(CONFIG)\inc\testAppweb.h: $(DEPS_96)
 	@echo '      [Copy] $(CONFIG)/inc/testAppweb.h'
+	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
+	copy /Y test\src\testAppweb.h $(CONFIG)\inc\testAppweb.h
 
 #
 #   testAppweb.obj
 #
-DEPS_94 = $(DEPS_94) $(CONFIG)\inc\bit.h
-DEPS_94 = $(DEPS_94) $(CONFIG)\inc\testAppweb.h
-DEPS_94 = $(DEPS_94) $(CONFIG)\inc\mpr.h
-DEPS_94 = $(DEPS_94) $(CONFIG)\inc\http.h
+DEPS_97 = $(DEPS_97) $(CONFIG)\inc\bit.h
+DEPS_97 = $(DEPS_97) $(CONFIG)\inc\testAppweb.h
+DEPS_97 = $(DEPS_97) $(CONFIG)\inc\mpr.h
+DEPS_97 = $(DEPS_97) $(CONFIG)\inc\http.h
 
 $(CONFIG)\obj\testAppweb.obj: \
-    test\src\testAppweb.c $(DEPS_94)
+    test\src\testAppweb.c $(DEPS_97)
 	@echo '   [Compile] $(CONFIG)/obj/testAppweb.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testAppweb.obj -Fd$(CONFIG)\obj\testAppweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\src\testAppweb.c
 
 #
 #   testHttp.obj
 #
-DEPS_95 = $(DEPS_95) $(CONFIG)\inc\bit.h
-DEPS_95 = $(DEPS_95) $(CONFIG)\inc\testAppweb.h
+DEPS_98 = $(DEPS_98) $(CONFIG)\inc\bit.h
+DEPS_98 = $(DEPS_98) $(CONFIG)\inc\testAppweb.h
 
 $(CONFIG)\obj\testHttp.obj: \
-    test\src\testHttp.c $(DEPS_95)
+    test\src\testHttp.c $(DEPS_98)
 	@echo '   [Compile] $(CONFIG)/obj/testHttp.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testHttp.obj -Fd$(CONFIG)\obj\testHttp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\src\testHttp.c
 
 #
 #   testAppweb
-#
-DEPS_96 = $(DEPS_96) $(CONFIG)\inc\mpr.h
-DEPS_96 = $(DEPS_96) $(CONFIG)\inc\bit.h
-DEPS_96 = $(DEPS_96) $(CONFIG)\inc\bitos.h
-DEPS_96 = $(DEPS_96) $(CONFIG)\obj\mprLib.obj
-DEPS_96 = $(DEPS_96) $(CONFIG)\bin\libmpr.lib
-DEPS_96 = $(DEPS_96) $(CONFIG)\inc\pcre.h
-DEPS_96 = $(DEPS_96) $(CONFIG)\obj\pcre.obj
-!IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_96 = $(DEPS_96) $(CONFIG)\bin\libpcre.lib
-!ENDIF
-DEPS_96 = $(DEPS_96) $(CONFIG)\inc\http.h
-DEPS_96 = $(DEPS_96) $(CONFIG)\obj\httpLib.obj
-DEPS_96 = $(DEPS_96) $(CONFIG)\bin\libhttp.lib
-DEPS_96 = $(DEPS_96) $(CONFIG)\inc\appweb.h
-DEPS_96 = $(DEPS_96) $(CONFIG)\inc\customize.h
-DEPS_96 = $(DEPS_96) $(CONFIG)\obj\config.obj
-DEPS_96 = $(DEPS_96) $(CONFIG)\obj\convenience.obj
-DEPS_96 = $(DEPS_96) $(CONFIG)\obj\dirHandler.obj
-DEPS_96 = $(DEPS_96) $(CONFIG)\obj\fileHandler.obj
-DEPS_96 = $(DEPS_96) $(CONFIG)\obj\log.obj
-DEPS_96 = $(DEPS_96) $(CONFIG)\obj\server.obj
-DEPS_96 = $(DEPS_96) $(CONFIG)\bin\libappweb.lib
-DEPS_96 = $(DEPS_96) $(CONFIG)\inc\testAppweb.h
-DEPS_96 = $(DEPS_96) $(CONFIG)\obj\testAppweb.obj
-DEPS_96 = $(DEPS_96) $(CONFIG)\obj\testHttp.obj
-
-LIBS_96 = $(LIBS_96) libappweb.lib
-LIBS_96 = $(LIBS_96) libhttp.lib
-LIBS_96 = $(LIBS_96) libmpr.lib
-!IF "$(BIT_PACK_PCRE)" == "1"
-LIBS_96 = $(LIBS_96) libpcre.lib
-!ENDIF
-
-$(CONFIG)\bin\testAppweb.exe: $(DEPS_96)
-	@echo '      [Link] $(CONFIG)/bin/testAppweb.exe'
-	"$(LD)" -out:$(CONFIG)\bin\testAppweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\testAppweb.obj" "$(CONFIG)\obj\testHttp.obj" $(LIBPATHS_96) $(LIBS_96) $(LIBS_96) $(LIBS) 
-
-!IF "$(BIT_PACK_CGI)" == "1"
-#
-#   test-testScript
-#
-DEPS_97 = $(DEPS_97) $(CONFIG)\inc\mpr.h
-DEPS_97 = $(DEPS_97) $(CONFIG)\inc\bit.h
-DEPS_97 = $(DEPS_97) $(CONFIG)\inc\bitos.h
-DEPS_97 = $(DEPS_97) $(CONFIG)\obj\mprLib.obj
-DEPS_97 = $(DEPS_97) $(CONFIG)\bin\libmpr.lib
-DEPS_97 = $(DEPS_97) $(CONFIG)\inc\pcre.h
-DEPS_97 = $(DEPS_97) $(CONFIG)\obj\pcre.obj
-!IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_97 = $(DEPS_97) $(CONFIG)\bin\libpcre.lib
-!ENDIF
-DEPS_97 = $(DEPS_97) $(CONFIG)\inc\http.h
-DEPS_97 = $(DEPS_97) $(CONFIG)\obj\httpLib.obj
-DEPS_97 = $(DEPS_97) $(CONFIG)\bin\libhttp.lib
-DEPS_97 = $(DEPS_97) $(CONFIG)\inc\appweb.h
-DEPS_97 = $(DEPS_97) $(CONFIG)\inc\customize.h
-DEPS_97 = $(DEPS_97) $(CONFIG)\obj\config.obj
-DEPS_97 = $(DEPS_97) $(CONFIG)\obj\convenience.obj
-DEPS_97 = $(DEPS_97) $(CONFIG)\obj\dirHandler.obj
-DEPS_97 = $(DEPS_97) $(CONFIG)\obj\fileHandler.obj
-DEPS_97 = $(DEPS_97) $(CONFIG)\obj\log.obj
-DEPS_97 = $(DEPS_97) $(CONFIG)\obj\server.obj
-DEPS_97 = $(DEPS_97) $(CONFIG)\bin\libappweb.lib
-DEPS_97 = $(DEPS_97) $(CONFIG)\inc\testAppweb.h
-DEPS_97 = $(DEPS_97) $(CONFIG)\obj\testAppweb.obj
-DEPS_97 = $(DEPS_97) $(CONFIG)\obj\testHttp.obj
-DEPS_97 = $(DEPS_97) $(CONFIG)\bin\testAppweb.exe
-
-test\cgi-bin\testScript: $(DEPS_97)
-#  Omit build script test-testScript
-!ENDIF
-
-!IF "$(BIT_PACK_CGI)" == "1"
-#
-#   test-cache.cgi
-#
-DEPS_98 = $(DEPS_98) $(CONFIG)\inc\mpr.h
-DEPS_98 = $(DEPS_98) $(CONFIG)\inc\bit.h
-DEPS_98 = $(DEPS_98) $(CONFIG)\inc\bitos.h
-DEPS_98 = $(DEPS_98) $(CONFIG)\obj\mprLib.obj
-DEPS_98 = $(DEPS_98) $(CONFIG)\bin\libmpr.lib
-DEPS_98 = $(DEPS_98) $(CONFIG)\inc\pcre.h
-DEPS_98 = $(DEPS_98) $(CONFIG)\obj\pcre.obj
-!IF "$(BIT_PACK_PCRE)" == "1"
-DEPS_98 = $(DEPS_98) $(CONFIG)\bin\libpcre.lib
-!ENDIF
-DEPS_98 = $(DEPS_98) $(CONFIG)\inc\http.h
-DEPS_98 = $(DEPS_98) $(CONFIG)\obj\httpLib.obj
-DEPS_98 = $(DEPS_98) $(CONFIG)\bin\libhttp.lib
-DEPS_98 = $(DEPS_98) $(CONFIG)\inc\appweb.h
-DEPS_98 = $(DEPS_98) $(CONFIG)\inc\customize.h
-DEPS_98 = $(DEPS_98) $(CONFIG)\obj\config.obj
-DEPS_98 = $(DEPS_98) $(CONFIG)\obj\convenience.obj
-DEPS_98 = $(DEPS_98) $(CONFIG)\obj\dirHandler.obj
-DEPS_98 = $(DEPS_98) $(CONFIG)\obj\fileHandler.obj
-DEPS_98 = $(DEPS_98) $(CONFIG)\obj\log.obj
-DEPS_98 = $(DEPS_98) $(CONFIG)\obj\server.obj
-DEPS_98 = $(DEPS_98) $(CONFIG)\bin\libappweb.lib
-DEPS_98 = $(DEPS_98) $(CONFIG)\inc\testAppweb.h
-DEPS_98 = $(DEPS_98) $(CONFIG)\obj\testAppweb.obj
-DEPS_98 = $(DEPS_98) $(CONFIG)\obj\testHttp.obj
-DEPS_98 = $(DEPS_98) $(CONFIG)\bin\testAppweb.exe
-
-test\web\caching\cache.cgi: $(DEPS_98)
-#  Omit build script test-cache.cgi
-!ENDIF
-
-!IF "$(BIT_PACK_CGI)" == "1"
-#
-#   test-basic.cgi
 #
 DEPS_99 = $(DEPS_99) $(CONFIG)\inc\mpr.h
 DEPS_99 = $(DEPS_99) $(CONFIG)\inc\bit.h
@@ -2255,9 +2240,120 @@ DEPS_99 = $(DEPS_99) $(CONFIG)\bin\libappweb.lib
 DEPS_99 = $(DEPS_99) $(CONFIG)\inc\testAppweb.h
 DEPS_99 = $(DEPS_99) $(CONFIG)\obj\testAppweb.obj
 DEPS_99 = $(DEPS_99) $(CONFIG)\obj\testHttp.obj
-DEPS_99 = $(DEPS_99) $(CONFIG)\bin\testAppweb.exe
 
-test\web\auth\basic\basic.cgi: $(DEPS_99)
+LIBS_99 = $(LIBS_99) libappweb.lib
+LIBS_99 = $(LIBS_99) libhttp.lib
+LIBS_99 = $(LIBS_99) libmpr.lib
+!IF "$(BIT_PACK_PCRE)" == "1"
+LIBS_99 = $(LIBS_99) libpcre.lib
+!ENDIF
+
+$(CONFIG)\bin\testAppweb.exe: $(DEPS_99)
+	@echo '      [Link] $(CONFIG)/bin/testAppweb.exe'
+	"$(LD)" -out:$(CONFIG)\bin\testAppweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\testAppweb.obj" "$(CONFIG)\obj\testHttp.obj" $(LIBPATHS_99) $(LIBS_99) $(LIBS_99) $(LIBS) 
+
+!IF "$(BIT_PACK_CGI)" == "1"
+#
+#   test-testScript
+#
+DEPS_100 = $(DEPS_100) $(CONFIG)\inc\mpr.h
+DEPS_100 = $(DEPS_100) $(CONFIG)\inc\bit.h
+DEPS_100 = $(DEPS_100) $(CONFIG)\inc\bitos.h
+DEPS_100 = $(DEPS_100) $(CONFIG)\obj\mprLib.obj
+DEPS_100 = $(DEPS_100) $(CONFIG)\bin\libmpr.lib
+DEPS_100 = $(DEPS_100) $(CONFIG)\inc\pcre.h
+DEPS_100 = $(DEPS_100) $(CONFIG)\obj\pcre.obj
+!IF "$(BIT_PACK_PCRE)" == "1"
+DEPS_100 = $(DEPS_100) $(CONFIG)\bin\libpcre.lib
+!ENDIF
+DEPS_100 = $(DEPS_100) $(CONFIG)\inc\http.h
+DEPS_100 = $(DEPS_100) $(CONFIG)\obj\httpLib.obj
+DEPS_100 = $(DEPS_100) $(CONFIG)\bin\libhttp.lib
+DEPS_100 = $(DEPS_100) $(CONFIG)\inc\appweb.h
+DEPS_100 = $(DEPS_100) $(CONFIG)\inc\customize.h
+DEPS_100 = $(DEPS_100) $(CONFIG)\obj\config.obj
+DEPS_100 = $(DEPS_100) $(CONFIG)\obj\convenience.obj
+DEPS_100 = $(DEPS_100) $(CONFIG)\obj\dirHandler.obj
+DEPS_100 = $(DEPS_100) $(CONFIG)\obj\fileHandler.obj
+DEPS_100 = $(DEPS_100) $(CONFIG)\obj\log.obj
+DEPS_100 = $(DEPS_100) $(CONFIG)\obj\server.obj
+DEPS_100 = $(DEPS_100) $(CONFIG)\bin\libappweb.lib
+DEPS_100 = $(DEPS_100) $(CONFIG)\inc\testAppweb.h
+DEPS_100 = $(DEPS_100) $(CONFIG)\obj\testAppweb.obj
+DEPS_100 = $(DEPS_100) $(CONFIG)\obj\testHttp.obj
+DEPS_100 = $(DEPS_100) $(CONFIG)\bin\testAppweb.exe
+
+test\cgi-bin\testScript: $(DEPS_100)
+#  Omit build script test-testScript
+!ENDIF
+
+!IF "$(BIT_PACK_CGI)" == "1"
+#
+#   test-cache.cgi
+#
+DEPS_101 = $(DEPS_101) $(CONFIG)\inc\mpr.h
+DEPS_101 = $(DEPS_101) $(CONFIG)\inc\bit.h
+DEPS_101 = $(DEPS_101) $(CONFIG)\inc\bitos.h
+DEPS_101 = $(DEPS_101) $(CONFIG)\obj\mprLib.obj
+DEPS_101 = $(DEPS_101) $(CONFIG)\bin\libmpr.lib
+DEPS_101 = $(DEPS_101) $(CONFIG)\inc\pcre.h
+DEPS_101 = $(DEPS_101) $(CONFIG)\obj\pcre.obj
+!IF "$(BIT_PACK_PCRE)" == "1"
+DEPS_101 = $(DEPS_101) $(CONFIG)\bin\libpcre.lib
+!ENDIF
+DEPS_101 = $(DEPS_101) $(CONFIG)\inc\http.h
+DEPS_101 = $(DEPS_101) $(CONFIG)\obj\httpLib.obj
+DEPS_101 = $(DEPS_101) $(CONFIG)\bin\libhttp.lib
+DEPS_101 = $(DEPS_101) $(CONFIG)\inc\appweb.h
+DEPS_101 = $(DEPS_101) $(CONFIG)\inc\customize.h
+DEPS_101 = $(DEPS_101) $(CONFIG)\obj\config.obj
+DEPS_101 = $(DEPS_101) $(CONFIG)\obj\convenience.obj
+DEPS_101 = $(DEPS_101) $(CONFIG)\obj\dirHandler.obj
+DEPS_101 = $(DEPS_101) $(CONFIG)\obj\fileHandler.obj
+DEPS_101 = $(DEPS_101) $(CONFIG)\obj\log.obj
+DEPS_101 = $(DEPS_101) $(CONFIG)\obj\server.obj
+DEPS_101 = $(DEPS_101) $(CONFIG)\bin\libappweb.lib
+DEPS_101 = $(DEPS_101) $(CONFIG)\inc\testAppweb.h
+DEPS_101 = $(DEPS_101) $(CONFIG)\obj\testAppweb.obj
+DEPS_101 = $(DEPS_101) $(CONFIG)\obj\testHttp.obj
+DEPS_101 = $(DEPS_101) $(CONFIG)\bin\testAppweb.exe
+
+test\web\caching\cache.cgi: $(DEPS_101)
+#  Omit build script test-cache.cgi
+!ENDIF
+
+!IF "$(BIT_PACK_CGI)" == "1"
+#
+#   test-basic.cgi
+#
+DEPS_102 = $(DEPS_102) $(CONFIG)\inc\mpr.h
+DEPS_102 = $(DEPS_102) $(CONFIG)\inc\bit.h
+DEPS_102 = $(DEPS_102) $(CONFIG)\inc\bitos.h
+DEPS_102 = $(DEPS_102) $(CONFIG)\obj\mprLib.obj
+DEPS_102 = $(DEPS_102) $(CONFIG)\bin\libmpr.lib
+DEPS_102 = $(DEPS_102) $(CONFIG)\inc\pcre.h
+DEPS_102 = $(DEPS_102) $(CONFIG)\obj\pcre.obj
+!IF "$(BIT_PACK_PCRE)" == "1"
+DEPS_102 = $(DEPS_102) $(CONFIG)\bin\libpcre.lib
+!ENDIF
+DEPS_102 = $(DEPS_102) $(CONFIG)\inc\http.h
+DEPS_102 = $(DEPS_102) $(CONFIG)\obj\httpLib.obj
+DEPS_102 = $(DEPS_102) $(CONFIG)\bin\libhttp.lib
+DEPS_102 = $(DEPS_102) $(CONFIG)\inc\appweb.h
+DEPS_102 = $(DEPS_102) $(CONFIG)\inc\customize.h
+DEPS_102 = $(DEPS_102) $(CONFIG)\obj\config.obj
+DEPS_102 = $(DEPS_102) $(CONFIG)\obj\convenience.obj
+DEPS_102 = $(DEPS_102) $(CONFIG)\obj\dirHandler.obj
+DEPS_102 = $(DEPS_102) $(CONFIG)\obj\fileHandler.obj
+DEPS_102 = $(DEPS_102) $(CONFIG)\obj\log.obj
+DEPS_102 = $(DEPS_102) $(CONFIG)\obj\server.obj
+DEPS_102 = $(DEPS_102) $(CONFIG)\bin\libappweb.lib
+DEPS_102 = $(DEPS_102) $(CONFIG)\inc\testAppweb.h
+DEPS_102 = $(DEPS_102) $(CONFIG)\obj\testAppweb.obj
+DEPS_102 = $(DEPS_102) $(CONFIG)\obj\testHttp.obj
+DEPS_102 = $(DEPS_102) $(CONFIG)\bin\testAppweb.exe
+
+test\web\auth\basic\basic.cgi: $(DEPS_102)
 #  Omit build script test-basic.cgi
 !ENDIF
 
@@ -2265,11 +2361,11 @@ test\web\auth\basic\basic.cgi: $(DEPS_99)
 #
 #   test-cgiProgram
 #
-DEPS_100 = $(DEPS_100) $(CONFIG)\inc\bit.h
-DEPS_100 = $(DEPS_100) $(CONFIG)\obj\cgiProgram.obj
-DEPS_100 = $(DEPS_100) $(CONFIG)\bin\cgiProgram.exe
+DEPS_103 = $(DEPS_103) $(CONFIG)\inc\bit.h
+DEPS_103 = $(DEPS_103) $(CONFIG)\obj\cgiProgram.obj
+DEPS_103 = $(DEPS_103) $(CONFIG)\bin\cgiProgram.exe
 
-test\cgi-bin\cgiProgram.exe: $(DEPS_100)
+test\cgi-bin\cgiProgram.exe: $(DEPS_103)
 #  Omit build script test-cgiProgram
 !ENDIF
 
@@ -2277,9 +2373,9 @@ test\cgi-bin\cgiProgram.exe: $(DEPS_100)
 #
 #   stop
 #
-DEPS_101 = $(DEPS_101) compile
+DEPS_104 = $(DEPS_104) compile
 
-stop: $(DEPS_101)
+stop: $(DEPS_104)
 	cd .
 	@.\$(CONFIG)\bin\appman stop disable uninstall >/dev/null 2>&1 ; true
 	cd .
@@ -2287,7 +2383,7 @@ stop: $(DEPS_101)
 #
 #   installBinary
 #
-installBinary: $(DEPS_102)
+installBinary: $(DEPS_105)
 	cd .
 	if not exist "$(BIT_VAPP_PREFIX)\log" md "$(BIT_VAPP_PREFIX)\log"
 	if not exist "$(BIT_VAPP_PREFIX)\cache" md "$(BIT_VAPP_PREFIX)\cache"
@@ -2321,6 +2417,7 @@ installBinary: $(DEPS_102)
 	copy /Y src\esp\paks\esp-angular\esp-click.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\esp-click.js"
 	copy /Y src\esp\paks\esp-angular\esp-edit.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\esp-edit.js"
 	copy /Y src\esp\paks\esp-angular\esp-field-errors.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\esp-field-errors.js"
+	copy /Y src\esp\paks\esp-angular\esp-fixnum.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\esp-fixnum.js"
 	copy /Y src\esp\paks\esp-angular\esp-format.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\esp-format.js"
 	copy /Y src\esp\paks\esp-angular\esp-input-group.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\esp-input-group.js"
 	copy /Y src\esp\paks\esp-angular\esp-input.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\esp-input.js"
@@ -2485,10 +2582,10 @@ installBinary: $(DEPS_102)
 #
 #   start
 #
-DEPS_103 = $(DEPS_103) compile
-DEPS_103 = $(DEPS_103) stop
+DEPS_106 = $(DEPS_106) compile
+DEPS_106 = $(DEPS_106) stop
 
-start: $(DEPS_103)
+start: $(DEPS_106)
 	cd .
 	.\$(CONFIG)\bin\appman install enable start
 	cd .
@@ -2496,23 +2593,23 @@ start: $(DEPS_103)
 #
 #   install
 #
-DEPS_104 = $(DEPS_104) compile
-DEPS_104 = $(DEPS_104) stop
-DEPS_104 = $(DEPS_104) installBinary
-DEPS_104 = $(DEPS_104) start
+DEPS_107 = $(DEPS_107) compile
+DEPS_107 = $(DEPS_107) stop
+DEPS_107 = $(DEPS_107) installBinary
+DEPS_107 = $(DEPS_107) start
 
-install: $(DEPS_104)
+install: $(DEPS_107)
 #  Omit build script install
 
 
 #
 #   uninstall
 #
-DEPS_105 = $(DEPS_105) build
-DEPS_105 = $(DEPS_105) compile
-DEPS_105 = $(DEPS_105) stop
+DEPS_108 = $(DEPS_108) build
+DEPS_108 = $(DEPS_108) compile
+DEPS_108 = $(DEPS_108) stop
 
-uninstall: $(DEPS_105)
+uninstall: $(DEPS_108)
 	cd package
 	if exist "$(BIT_VAPP_PREFIX)\appweb.conf" del /Q "$(BIT_VAPP_PREFIX)\appweb.conf"
 	if exist "$(BIT_VAPP_PREFIX)\esp.conf" del /Q "$(BIT_VAPP_PREFIX)\esp.conf"
@@ -2539,7 +2636,7 @@ uninstall: $(DEPS_105)
 #
 #   genslink
 #
-genslink: $(DEPS_106)
+genslink: $(DEPS_109)
 	cd src\server
 	esp --static --genlink slink.c compile
 	cd ..\..
@@ -2547,9 +2644,9 @@ genslink: $(DEPS_106)
 #
 #   run
 #
-DEPS_107 = $(DEPS_107) compile
+DEPS_110 = $(DEPS_110) compile
 
-run: $(DEPS_107)
+run: $(DEPS_110)
 	cd src\server
 	sudo ..\..\$(CONFIG)\bin\appweb -v
 	cd ..\..

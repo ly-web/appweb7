@@ -431,7 +431,9 @@ typedef struct MaState {
     HttpAuth    *auth;                  /**< Quick alias for route->auth */
     HttpRoute   *route;                 /**< Current route */
     MprFile     *file;                  /**< Config file handle */
+#if UNUSED
     HttpLimits  *limits;                /**< Current limits (host->limits) */
+#endif
     char        *key;                   /**< Current directive being parsed */
     char        *configDir;             /**< Directory containing config file */
     char        *filename;              /**< Config file name */
@@ -481,6 +483,8 @@ PUBLIC void maAddDirective(MaAppweb *appweb, cchar *directive, MaDirective proc)
     @stability Stable
  */
 PUBLIC int maArchiveLog(cchar *path, int count, int maxSize);
+
+PUBLIC int maParseFile(MaState *state, cchar *path);
 
 /**
     Pop the state 
@@ -581,7 +585,7 @@ PUBLIC bool maTokenize(MaState *state, cchar *str, cchar *fmt, ...);
 */
 PUBLIC char *maGetNextArg(char *s, char **tok);
 
-#if DEPRECATE || 1
+#if DEPRECATED || 1
 PUBLIC char *maGetNextToken(char *s, char **tok);
 #endif
 

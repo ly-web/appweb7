@@ -1213,10 +1213,10 @@ static ssize writeEst(MprSocket *sp, cvoid *buf, ssize len)
                 break;
             }
             if (rc == EST_ERR_NET_CONN_RESET) {                                                         
-                mprLog(0, "ssl_write peer closed");
+                mprLog(7, "ssl_write peer closed");
                 return -1;
             } else {
-                mprLog(0, "ssl_write failed rc -0x%x", -rc);
+                mprLog(7, "ssl_write failed rc -0x%x", -rc);
                 return -1;
             }
         } else {
@@ -1948,8 +1948,7 @@ static int checkCert(MprSocket *sp)
             if ((dp = strchr(osp->peerName, '.')) != 0) {
                 /* Strip the host portion and just test the domain portion */
                 if (!smatch(pp, &dp[1])) {
-                    sp->errorMsg = sfmt("Certificate common name mismatch CN \"%s\" vs required \"%s\"", 
-                        peer, osp->peerName);
+                    sp->errorMsg = sfmt("Certificate common name mismatch CN \"%s\" vs required \"%s\"", peer, osp->peerName);
                     return -1;
                 }
             }

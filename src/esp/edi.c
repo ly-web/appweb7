@@ -46,12 +46,18 @@ static void manageEdiService(EdiService *es, int flags)
 PUBLIC int ediAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags)
 {
     mprRemoveKey(edi->schemaCache, tableName);
+    if (!edi || !edi->provider) {
+        return MPR_ERR_BAD_STATE;
+    }
     return edi->provider->addColumn(edi, tableName, columnName, type, flags);
 }
 
 
 PUBLIC int ediAddIndex(Edi *edi, cchar *tableName, cchar *columnName, cchar *indexName)
 {
+    if (!edi || !edi->provider) {
+        return MPR_ERR_BAD_STATE;
+    }
     return edi->provider->addIndex(edi, tableName, columnName, indexName);
 }
 
@@ -76,6 +82,9 @@ static EdiProvider *lookupProvider(cchar *providerName)
 
 PUBLIC int ediAddTable(Edi *edi, cchar *tableName)
 {
+    if (!edi || !edi->provider) {
+        return MPR_ERR_BAD_STATE;
+    }
     return edi->provider->addTable(edi, tableName);
 }
 
@@ -170,6 +179,9 @@ static bool validateField(Edi *edi, EdiRec *rec, cchar *columnName, cchar *value
 
 PUBLIC int ediChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags)
 {
+    if (!edi || !edi->provider) {
+        return MPR_ERR_BAD_STATE;
+    }
     mprRemoveKey(edi->schemaCache, tableName);
     return edi->provider->changeColumn(edi, tableName, columnName, type, flags);
 }
@@ -177,18 +189,27 @@ PUBLIC int ediChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int ty
 
 PUBLIC void ediClose(Edi *edi)
 {
+    if (!edi || !edi->provider) {
+        return;
+    }
     edi->provider->close(edi);
 }
 
 
 PUBLIC EdiRec *ediCreateRec(Edi *edi, cchar *tableName)
 {
+    if (!edi || !edi->provider) {
+        return 0;
+    }
     return edi->provider->createRec(edi, tableName);
 }
 
 
 PUBLIC int ediDelete(Edi *edi, cchar *path)
 {
+    if (!edi || !edi->provider) {
+        return MPR_ERR_BAD_STATE;
+    }
     return edi->provider->deleteDatabase(path);
 }
 
@@ -260,12 +281,18 @@ PUBLIC EdiRec *ediFilterRecFields(EdiRec *rec, cchar *fields, int include)
 
 PUBLIC MprList *ediGetColumns(Edi *edi, cchar *tableName)
 {
+    if (!edi || !edi->provider) {
+        return 0;
+    }
     return edi->provider->getColumns(edi, tableName);
 }
 
 
 PUBLIC int ediGetColumnSchema(Edi *edi, cchar *tableName, cchar *columnName, int *type, int *flags, int *cid)
 {
+    if (!edi || !edi->provider) {
+        return MPR_ERR_BAD_STATE;
+    }
     return edi->provider->getColumnSchema(edi, tableName, columnName, type, flags, cid);
 }
 
@@ -434,12 +461,18 @@ PUBLIC int ediGetFieldType(EdiRec *rec, cchar *fieldName)
 
 PUBLIC MprList *ediGetTables(Edi *edi)
 {
+    if (!edi || !edi->provider) {
+        return 0;
+    }
     return edi->provider->getTables(edi);
 }
 
 
 PUBLIC int ediGetTableDimensions(Edi *edi, cchar *tableName, int *numRows, int *numCols)
 {
+    if (!edi || !edi->provider) {
+        return MPR_ERR_BAD_STATE;
+    }
     return edi->provider->getTableDimensions(edi, tableName, numRows, numCols);
 }
 
@@ -512,12 +545,18 @@ PUBLIC cchar *ediGridAsJson(EdiGrid *grid, int flags)
 
 PUBLIC int ediLoad(Edi *edi, cchar *path)
 {
+    if (!edi || !edi->provider) {
+        return MPR_ERR_BAD_STATE;
+    }
     return edi->provider->load(edi, path);
 }
 
 
 PUBLIC int ediLookupField(Edi *edi, cchar *tableName, cchar *fieldName)
 {
+    if (!edi || !edi->provider) {
+        return MPR_ERR_BAD_STATE;
+    }
     return edi->provider->lookupField(edi, tableName, fieldName);
 }
 
@@ -544,7 +583,7 @@ PUBLIC Edi *ediClone(Edi *edi)
 {
     Edi     *cloned;
 
-    if (!edi) {
+    if (!edi || !edi->provider) {
         return 0;
     }
     if ((cloned = edi->provider->open(edi->path, edi->flags)) != 0) {
@@ -556,10 +595,14 @@ PUBLIC Edi *ediClone(Edi *edi)
 
 PUBLIC EdiGrid *ediQuery(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list vargs)
 {
+    if (!edi || !edi->provider) {
+        return 0;
+    }
     return edi->provider->query(edi, cmd, argc, argv, vargs);
 }
 
 
+//  MOB - fmt is unused
 PUBLIC cchar *ediReadFieldValue(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, cchar *columnName, cchar *defaultValue)
 {
     EdiField    field;
@@ -589,24 +632,38 @@ PUBLIC EdiRec *ediReadRecWhere(Edi *edi, cchar *tableName, cchar *fieldName, cch
 
 PUBLIC EdiField ediReadField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName)
 {
+    if (!edi || !edi->provider) {
+        EdiField    field;
+        memset(&field, 0, sizeof(EdiField));
+        return field;
+    }
     return edi->provider->readField(edi, tableName, key, fieldName);
 }
 
 
 PUBLIC EdiRec *ediReadRec(Edi *edi, cchar *tableName, cchar *key)
 {
+    if (!edi || !edi->provider) {
+        return 0;
+    }
     return edi->provider->readRec(edi, tableName, key);
 }
 
 
 PUBLIC EdiGrid *ediReadWhere(Edi *edi, cchar *tableName, cchar *fieldName, cchar *operation, cchar *value)
 {
+    if (!edi || !edi->provider) {
+        return 0;
+    }
     return edi->provider->readWhere(edi, tableName, fieldName, operation, value);
 }
 
 
 PUBLIC EdiGrid *ediReadTable(Edi *edi, cchar *tableName)
 {
+    if (!edi || !edi->provider) {
+        return 0;
+    }
     return edi->provider->readWhere(edi, tableName, 0, 0, 0);
 }
 
@@ -645,6 +702,9 @@ PUBLIC cchar *ediRecAsJson(EdiRec *rec, int flags)
 
 PUBLIC int edRemoveColumn(Edi *edi, cchar *tableName, cchar *columnName)
 {
+    if (!edi || !edi->provider) {
+        return MPR_ERR_BAD_STATE;
+    }
     mprRemoveKey(edi->schemaCache, tableName);
     return edi->provider->removeColumn(edi, tableName, columnName);
 }
@@ -652,24 +712,36 @@ PUBLIC int edRemoveColumn(Edi *edi, cchar *tableName, cchar *columnName)
 
 PUBLIC int ediRemoveIndex(Edi *edi, cchar *tableName, cchar *indexName)
 {
+    if (!edi || !edi->provider) {
+        return MPR_ERR_BAD_STATE;
+    }
     return edi->provider->removeIndex(edi, tableName, indexName);
 }
 
 
 PUBLIC int ediRemoveRec(Edi *edi, cchar *tableName, cchar *key)
 {
+    if (!edi || !edi->provider) {
+        return MPR_ERR_BAD_STATE;
+    }
     return edi->provider->removeRec(edi, tableName, key);
 }
 
 
 PUBLIC int ediRemoveTable(Edi *edi, cchar *tableName)
 {
+    if (!edi || !edi->provider) {
+        return MPR_ERR_BAD_STATE;
+    }
     return edi->provider->removeTable(edi, tableName);
 }
 
 
 PUBLIC int ediRenameTable(Edi *edi, cchar *tableName, cchar *newTableName)
 {
+    if (!edi || !edi->provider) {
+        return MPR_ERR_BAD_STATE;
+    }
     mprRemoveKey(edi->schemaCache, tableName);
     return edi->provider->renameTable(edi, tableName, newTableName);
 }
@@ -677,6 +749,9 @@ PUBLIC int ediRenameTable(Edi *edi, cchar *tableName, cchar *newTableName)
 
 PUBLIC int ediRenameColumn(Edi *edi, cchar *tableName, cchar *columnName, cchar *newColumnName)
 {
+    if (!edi || !edi->provider) {
+        return MPR_ERR_BAD_STATE;
+    }
     mprRemoveKey(edi->schemaCache, tableName);
     return edi->provider->renameColumn(edi, tableName, columnName, newColumnName);
 }
@@ -684,18 +759,27 @@ PUBLIC int ediRenameColumn(Edi *edi, cchar *tableName, cchar *columnName, cchar 
 
 PUBLIC int ediSave(Edi *edi)
 {
+    if (!edi || !edi->provider) {
+        return MPR_ERR_BAD_STATE;
+    }
     return edi->provider->save(edi);
 }
 
 
 PUBLIC int ediUpdateField(Edi *edi, cchar *tableName, cchar *key, cchar *fieldName, cchar *value)
 {
+    if (!edi || !edi->provider) {
+        return MPR_ERR_BAD_STATE;
+    }
     return edi->provider->updateField(edi, tableName, key, fieldName, value);
 }
 
 
 PUBLIC int ediUpdateRec(Edi *edi, EdiRec *rec)
 {
+    if (!edi || !edi->provider) {
+        return MPR_ERR_BAD_STATE;
+    }
     return edi->provider->updateRec(edi, rec);
 }
 
@@ -1168,7 +1252,6 @@ PUBLIC int ediParseTypeString(cchar *type)
     } else {
         return MPR_ERR_BAD_ARGS;
     }
-    return 0;
 }
 
 

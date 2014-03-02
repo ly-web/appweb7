@@ -83,6 +83,7 @@ PUBLIC char *espExpandCommand(HttpRoute *route, cchar *command, cchar *source, c
 {
     MprBuf      *buf;
     MaAppweb    *appweb;
+    EspRoute    *eroute;
     cchar       *cp, *outputModule, *os, *arch, *profile;
     char        *tmp;
     
@@ -90,6 +91,7 @@ PUBLIC char *espExpandCommand(HttpRoute *route, cchar *command, cchar *source, c
         return 0;
     }
     appweb = MPR->appwebService;
+    eroute = route->eroute;
     outputModule = mprTrimPathExt(module);
     maParsePlatform(appweb->platform, &os, &arch, &profile);
     buf = mprCreateBuf(-1, -1);
@@ -107,6 +109,10 @@ PUBLIC char *espExpandCommand(HttpRoute *route, cchar *command, cchar *source, c
             } else if (matchToken(&cp, "${GCC_ARCH}")) {
                 /* Target architecture mapped to GCC mtune|mcpu values */
                 mprPutStringToBuf(buf, getMappedArch(arch));
+
+            } else if (matchToken(&cp, "${APPINC}")) {
+                /* Application src include directory */
+                mprPutStringToBuf(buf, eroute->srcDir ? eroute->srcDir : ".");
 
             } else if (matchToken(&cp, "${INC}")) {
                 /* Include directory for the configuration */

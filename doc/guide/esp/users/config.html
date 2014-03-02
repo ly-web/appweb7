@@ -254,14 +254,12 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
         },
         // URI prefix for all server-side URIs
         serverPrefix: "/do",
-
         // Default timeouts (secs)
         timeouts: {
             session: 1800,
         },
         // Set to include a XSRF token to minimize CSRF vulnerabilies
         xsrf: true,
-
         // Application mode selects debug or release properties and 
         // copies them to esp
         mode: "debug",

@@ -442,6 +442,15 @@ PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue);
 PUBLIC bool espHasPak(HttpRoute *route, cchar *name);
 
 /**
+    Initialzie a route for use by ESP
+    @param route HttpRoute to modify
+    @return The allocated EspRoute object
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC EspRoute *espInitRoute(HttpRoute *route);
+
+/**
     Load ESP package.json configuration file 
     @param route HttpRoute defining the ESP application
     @returns Zero if successful, otherwise a negative MPR error code.
@@ -2475,6 +2484,7 @@ PUBLIC void renderView(cchar *view);
     Run a command
     @description Run a command and return output. 
     @param command Command line and arguments to run.
+    @param input Input data to pass to the command. Set to null if not required.
     @param output Pointer to accept command standard output response. Set to null if not required.
     @param error Pointer to accept command standard error response. Set to null if not required.
     @param flags MprCmd flags. Use MPR_CMD_DETACH to run in the background.
