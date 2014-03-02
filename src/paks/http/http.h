@@ -93,10 +93,10 @@ struct HttpWebSocket;
     #define BIT_MAX_PROCESSES       10                  /**< Maximum concurrent processes */
 #endif
 #ifndef BIT_MAX_RECEIVE_BODY
-    #define BIT_MAX_RECEIVE_BODY    (256 * 1024)        /**< Maximum incoming body size (256K) */
+    #define BIT_MAX_RECEIVE_BODY    (512 * 1024)        /**< Maximum incoming body size (512K) */
 #endif
 #ifndef BIT_MAX_RECEIVE_FORM
-    #define BIT_MAX_RECEIVE_FORM    (256 * 1024)        /**< Maximum incoming form size (256K) */
+    #define BIT_MAX_RECEIVE_FORM    (512 * 1024)        /**< Maximum incoming form size (512K) */
 #endif
 #ifndef BIT_MAX_REQUESTS_PER_CLIENT
     #define BIT_MAX_REQUESTS_PER_CLIENT 20              /**< Maximum concurrent requests per client */
