@@ -1,7 +1,7 @@
 {
     "name": "esp-server",
     "description": "ESP Server Framework",
-    "version": "4.5.0",
+    "version": "4.5.1",
     "precious": true,
     "dirs": {
         "client": "client",
