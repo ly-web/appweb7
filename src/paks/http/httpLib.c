@@ -2656,7 +2656,7 @@ static void connTimeout(HttpConn *conn, MprEvent *event)
             msg = sfmt("%s exceeded inactivity timeout of %Ld sec", prefix, limits->inactivityTimeout / 1000);
 
         } else if (conn->timeout == HTTP_REQUEST_TIMEOUT) {
-            msg = sfmt("%s exceeded timeout %d sec", prefix, limits->requestTimeout / 1000);
+            msg = sfmt("%s exceeded timeout %Ld sec", prefix, limits->requestTimeout / 1000);
         }
         if (conn->rx && (conn->state > HTTP_STATE_CONNECTED)) {
             mprTrace(5, "  State %d, uri %s", conn->state, conn->rx->uri);
@@ -14484,13 +14484,13 @@ static void httpTimer(Http *http, MprEvent *event)
         if (!conn->timeoutEvent) {
             abort = mprIsStopping();
             if (httpServerConn(conn) && (HTTP_STATE_CONNECTED < conn->state && conn->state < HTTP_STATE_PARSED) && 
-                    (conn->started + limits->requestParseTimeout) < http->now) {
+                    (http->now - conn->started) > limits->requestParseTimeout) {
                 conn->timeout = HTTP_PARSE_TIMEOUT;
                 abort = 1;
-            } else if ((conn->lastActivity + limits->inactivityTimeout) < http->now) {
+            } else if ((http->now - conn->lastActivity) > limits->inactivityTimeout) {
                 conn->timeout = HTTP_INACTIVITY_TIMEOUT;
                 abort = 1;
-            } else if ((conn->started + limits->requestTimeout) < http->now) {
+            } else if ((http->now - conn->started) > limits->requestTimeout) {
                 conn->timeout = HTTP_REQUEST_TIMEOUT;
                 abort = 1;
             } else if (!event) {
