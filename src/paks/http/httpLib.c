@@ -8672,6 +8672,10 @@ static int matchRoute(HttpConn *conn, HttpRoute *route)
         Remove the route prefix. Restore after matching.
      */
     if (route->prefix) {
+        if (!sstarts(rx->pathInfo, route->prefix)) {
+            mprError("Route prefix missing in uri. Configuration error for route: %s", route->name);
+            return HTTP_ROUTE_REJECT;
+        }
         savePathInfo = rx->pathInfo;
         pathInfo = &rx->pathInfo[route->prefixLen];
         if (*pathInfo == '\0') {

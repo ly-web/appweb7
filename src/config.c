@@ -1972,7 +1972,10 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
     target = (path) ? sfmt("%d %s", status, path) : code;
     httpSetRouteTarget(alias, "redirect", target);
     if (smatch(value, "secure")) {
-        /* Set details to null to avoid creating Strict-Transport-Security header */
+        /* 
+            Accept this route if !secure. That will then do a redirect.
+            Set details to null to avoid creating Strict-Transport-Security header 
+         */
         httpAddRouteCondition(alias, "secure", 0, HTTP_ROUTE_NOT);
     }
     httpFinalizeRoute(alias);
