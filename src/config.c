@@ -860,11 +860,15 @@ static int directoryDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    DirectoryIndex path
+    DirectoryIndex paths...
  */
 static int directoryIndexDirective(MaState *state, cchar *key, cchar *value)
 {
-    httpAddRouteIndex(state->route, value);
+    char   *path, *tok;
+
+    for (path = stok(sclone(value), " \t,", &tok); path; path = stok(0, " \t,", &tok)) {
+        httpAddRouteIndex(state->route, path);
+    }
     return 0;
 }
 
