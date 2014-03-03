@@ -495,7 +495,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
     MprJson     *msettings, *settings;
     MprPath     cinfo;
     MprTicks    clientLifespan;
-    cchar       *cdata, *cpath, *value, *errorMsg;
+    cchar       *cdata, *cpath, *value, *errorMsg, *pattern;
     bool        debug;
 
     eroute = route->eroute;
@@ -558,7 +558,8 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             }
             if ((value = espGetConfig(route, "esp.server.redirect", 0)) != 0) {
                 if (smatch(value, "true") || smatch(value, "secure")) {
-                    HttpRoute *alias = httpCreateAliasRoute(route, "/", 0, 0);
+                    pattern = route->prefix ? sfmt("%s/", route->prefix) : "/";
+                    HttpRoute *alias = httpCreateAliasRoute(route, pattern, 0, 0);
                     httpSetRouteTarget(alias, "redirect", "0 https://");
                     /* A null age suppresses the strict transport security header */
                     httpAddRouteCondition(alias, "secure", 0, HTTP_ROUTE_NOT);
