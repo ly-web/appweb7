@@ -21,6 +21,7 @@ angular.module('esp', ['esp.click', 'esp.edit', 'esp.field-errors', 'esp.fixnum'
         timeouts: {
             session: 1800,
         },
+        login: {}
     }, esp.$config);
     /* URL resolution for ngRoute templates */
     esp.url = function(url) {
@@ -238,6 +239,12 @@ angular.module('esp', ['esp.click', 'esp.edit', 'esp.field-errors', 'esp.fixnum'
                 }
                 console.log("Session time remaining: ", (timeout - ((Date.now() - Esp.user.lastAccess))) / 1000, "secs");
             }
+        } else {
+            if (Esp.config.loginRequired && !Esp.config.login.name) {
+                $rootScope.Esp.user = null;
+                $rootScope.feedback = { warning: "Session Expired, Please Log In"};
+                $location.path(Esp.config.loginRequired);
+            }
         }
         $timeout(sessionTimeout, 60 * 1000, true);
     }
@@ -272,7 +279,7 @@ angular.module('esp', ['esp.click', 'esp.edit', 'esp.field-errors', 'esp.fixnum'
                     }
                     /* Must use esp module as Esp depends on this interceptor */
                     var espModule = angular.module('esp');
-                    if (espModule.$config.loginRequired) {
+                    if (espModule.$config.loginRequired && !espModule.$config.login.name) {
                         $rootScope.Esp.user = null;
                         $location.path(espModule.$config.loginRequired);
                     } else {
@@ -300,7 +307,7 @@ esp.checkAuth = function($q, $location, $rootScope, $route, Esp) {
     var user = Esp.user
     for (var ability in requiredAbilities) {
         if (user && user.abilities && user.abilities[ability] == null) {
-            if ($location.path() != "/") {
+            if ($location.path() != "/" && !Esp.config.login.name) {
                 $rootScope.feedback = { inform: "Insufficient Privilege"};
                 $location.path(Esp.lastLocation || "/");
                 return $q.reject($rootScope.feedback);
