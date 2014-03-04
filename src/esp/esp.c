@@ -344,6 +344,10 @@ PUBLIC int main(int argc, char **argv)
             usageError();
         }
     }
+    if (argc <= 1) {
+        usageError();
+        return 1;
+    }
     initialize(argc - argind, &argv[argind]);
     if (app->error) {
         return app->error;
@@ -1788,6 +1792,10 @@ static void generateApp(int argc, char **argv)
     }
     generateFiles();
     generateAppDb();
+
+    if (espSaveConfig(app->route) < 0) {
+        fail("Cannot save ESP configuration");
+    }
 }
 
 
