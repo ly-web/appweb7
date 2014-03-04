@@ -1069,8 +1069,9 @@ PUBLIC HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool l
 //  TODO - this should be called httpLink because it returns char* and not a HttpUri
 /** 
     Create a URI link 
-    @description Create a URI link based on a given target an expanding embedded tokens based on the current request and 
-        route state. The target URI parameter may contain partial or complete URI information. The missing parts are 
+    @description Create a URI link based on a given target relative to the current request. 
+        This API expands embedded tokens based on the current request and route state. 
+        The target URI parameter may contain partial or complete URI information. The missing parts are
         supplied using the current request and route tables. The resulting URI is a normalized, server-local URI (that 
         begins with "/"). The URI will include a required application route prefix, but will not include scheme, host or 
         port components.
@@ -1136,8 +1137,9 @@ PUBLIC HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool l
 PUBLIC char *httpLink(struct HttpConn *conn, cchar *target);
 
 /** 
-    Create a URI. 
-    @description Extended httpLink with custom options
+    Extended URI link creation. 
+    @description Extended httpLink with custom options. This routine extends the #httpLink API with an options hash
+        of token values. 
     @param [in] conn HttpConn connection object 
     @param target The URI target. See #httpLink for details.
     @param options Hash of option values for embedded tokens. This hash is blended with the route variables.

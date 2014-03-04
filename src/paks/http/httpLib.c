@@ -13010,37 +13010,43 @@ PUBLIC cchar *httpGetCookie(HttpConn *conn, cchar *name)
     HttpRx  *rx;
     cchar   *cookie;
     char    *cp, *value;
+    ssize   nlen;
     int     quoted;
 
     assert(conn);
     rx = conn->rx;
     assert(rx);
 
-    cookie = rx->cookie; 
-    if (cookie && (value = strstr(cookie, name)) != 0) {
-        value += strlen(name);
-        while (isspace((uchar) *value) || *value == '=') {
-            value++;
+    if ((cookie = rx->cookie) == 0 || name == 0 || *name == '\0') {
+        return 0;
+    }
+    nlen = slen(name);
+    while ((value = strstr(cookie, name)) != 0) {
+        if ((value == cookie || value[-1] == ' ' || value[-1] == ';') && value[nlen] == '=') {
+            break;
         }
-        quoted = 0;
-        if (*value == '"') {
-            value++;
-            quoted++;
-        }
-        for (cp = value; *cp; cp++) {
-            if (quoted) {
-                if (*cp == '"' && cp[-1] != '\\') {
-                    break;
-                }
-            } else {
-                if ((*cp == ',' || *cp == ';') && cp[-1] != '\\') {
-                    break;
-                }
+    }
+    value += nlen;
+    while (isspace((uchar) *value) || *value == '=') {
+        value++;
+    }
+    quoted = 0;
+    if (*value == '"') {
+        value++;
+        quoted++;
+    }
+    for (cp = value; *cp; cp++) {
+        if (quoted) {
+            if (*cp == '"' && cp[-1] != '\\') {
+                break;
+            }
+        } else {
+            if ((*cp == ',' || *cp == ';') && cp[-1] != '\\') {
+                break;
             }
         }
-        return snclone(value, cp - value);
     }
-    return 0;
+    return snclone(value, cp - value);
 }
 
 
