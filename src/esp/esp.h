@@ -508,7 +508,6 @@ PUBLIC bool espTestConfig(HttpRoute *route, cchar *key, cchar *desired);
 PUBLIC void espManageEspRoute(EspRoute *eroute, int flags);
 PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile);
 PUBLIC int espOpenDatabase(HttpRoute *route, cchar *spec);
-PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout);
 PUBLIC void espSetDefaultDirs(HttpRoute *route);
 #if BIT_ESP_LEGACY
 PUBLIC void espSetLegacyDirs(HttpRoute *route);

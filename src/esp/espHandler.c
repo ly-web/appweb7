@@ -106,6 +106,41 @@ static void closeEsp(HttpQueue *q)
 }
 
 
+/*
+    This is called when unloading a view or controller module
+    All of ESP must be quiesced.
+ */
+static bool espUnloadModule(cchar *module, MprTicks timeout)
+{
+    MprModule   *mp;
+    MprTicks    mark;
+    Esp         *esp;
+
+    if ((mp = mprLookupModule(module)) != 0) {
+        esp = MPR->espService;
+        mark = mprGetTicks();
+        esp->reloading = 1;
+        do {
+            lock(esp);
+            /* Own request will count as 1 */
+            if (esp->inUse <= 1) {
+                if (mprUnloadModule(mp) < 0) {
+                    mprError("Cannot unload module %s", mp->name);
+                    unlock(esp);
+                }
+                esp->reloading = 0;
+                unlock(esp);
+                return 1;
+            }
+            unlock(esp);
+            mprSleep(10);
+
+        } while (mprGetRemainingTicks(mark, timeout) > 0);
+        esp->reloading = 0;
+    }
+    return 0;
+}
+
 
 PUBLIC void espClearFlash(HttpConn *conn)
 {

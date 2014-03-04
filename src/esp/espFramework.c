@@ -1185,38 +1185,6 @@ PUBLIC bool espTestConfig(HttpRoute *route, cchar *key, cchar *desired)
 }
 
 
-/*
-    This is called when unloading a view or controller module
- */
-PUBLIC bool espUnloadModule(cchar *module, MprTicks timeout)
-{
-    MprModule   *mp;
-    MprTicks    mark;
-    Esp         *esp;
-
-    if ((mp = mprLookupModule(module)) != 0) {
-        esp = MPR->espService;
-        mark = mprGetTicks();
-        esp->reloading = 1;
-        do {
-            lock(esp);
-            /* Own request will count as 1 */
-            if (esp->inUse <= 1) {
-                mprUnloadModule(mp);
-                esp->reloading = 0;
-                unlock(esp);
-                return 1;
-            }
-            unlock(esp);
-            mprSleep(10);
-
-        } while (mprGetRemainingTicks(mark, timeout) > 0);
-        esp->reloading = 0;
-    }
-    return 0;
-}
-
-
 PUBLIC void espUpdateCache(HttpConn *conn, cchar *uri, cchar *data, int lifesecs)
 {
     httpUpdateCache(conn, uri, data, lifesecs * MPR_TICKS_PER_SEC);

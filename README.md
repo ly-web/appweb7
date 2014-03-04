@@ -5,9 +5,8 @@ The fast, little web server for embedded applications.
 
 Branches
 ---
-The repository has three main branches:
+The repository has two branches:
 
-* stable - Last public release.
 * master - Somewhat stable snapshots of the dev branch. Should be suitable for ongoing development.
 * dev - Current ongoing development. Least stable and may not be suitable for development.
  
@@ -17,7 +16,7 @@ See [LICENSE.md](LICENSE.md) for details.
 
 ### To read documentation:
 
-  See http://appwebserver.org/products/appweb/doc/product/index.html
+  See http://embedthis.com/products/appweb/doc/product/index.html
 
 ### Building
     You can build with make or with Bit. Bit is quicker and more flexible.
