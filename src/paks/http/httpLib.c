@@ -13026,6 +13026,9 @@ PUBLIC cchar *httpGetCookie(HttpConn *conn, cchar *name)
             break;
         }
     }
+    if (value == 0) {
+        return 0;
+    }
     value += nlen;
     while (isspace((uchar) *value) || *value == '=') {
         value++;
