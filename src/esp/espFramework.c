@@ -385,7 +385,7 @@ PUBLIC char *espGetReferrer(HttpConn *conn)
     if (conn->rx->referrer) {
         return conn->rx->referrer;
     }
-    return httpUri(conn, "~");
+    return httpLink(conn, "~");
 }
 
 
@@ -427,7 +427,7 @@ PUBLIC char *espGetStatusMessage(HttpConn *conn)
 #if BIT_ESP_LEGACY
 PUBLIC char *espGetTop(HttpConn *conn)
 {
-    return httpUri(conn, "~");
+    return httpLink(conn, "~");
 }
 #endif
 
@@ -1193,7 +1193,7 @@ PUBLIC void espUpdateCache(HttpConn *conn, cchar *uri, cchar *data, int lifesecs
 
 PUBLIC cchar *espUri(HttpConn *conn, cchar *target)
 {
-    return httpUri(conn, target);
+    return httpLink(conn, target);
 }
 
 

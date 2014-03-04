@@ -621,6 +621,7 @@ PUBLIC int runCmd(cchar *command, char *input, char **output, char **error, MprT
 PUBLIC void scripts(cchar *patterns)
 {
     HttpConn    *conn;
+    HttpRx      *rx;
     HttpRoute   *route;
     EspRoute    *eroute;
     MprList     *files;
@@ -629,7 +630,8 @@ PUBLIC void scripts(cchar *patterns)
     int         next, ci;
 
     conn = getConn();
-    route = conn->rx->route;
+    rx = conn->rx;
+    route = rx->route;
     eroute = route->eroute;
     patterns = httpExpandRouteVars(route, patterns);
 
@@ -654,7 +656,7 @@ PUBLIC void scripts(cchar *patterns)
             path = stemplateJson(path, eroute->config);
         }
         path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
-        uri = httpUri(conn, path);
+        uri = httpUriToString(httpGetRelativeUri(rx->parsedUri, httpLinkUri(conn, path, 0), 0), 0);
         espRender(conn, "    <script src='%s' type='text/javascript'></script>\n", uri);
     }
 }
@@ -805,6 +807,7 @@ PUBLIC void showRequest()
 PUBLIC void stylesheets(cchar *patterns)
 {
     HttpConn    *conn;
+    HttpRx      *rx;
     HttpRoute   *route;
     EspRoute    *eroute;
     MprList     *files;
@@ -812,7 +815,8 @@ PUBLIC void stylesheets(cchar *patterns)
     int         next;
 
     conn = getConn();
-    route = conn->rx->route;
+    rx = conn->rx;
+    route = rx->route;
     eroute = route->eroute;
     patterns = httpExpandRouteVars(route, patterns);
 
@@ -839,7 +843,7 @@ PUBLIC void stylesheets(cchar *patterns)
     }
     for (ITERATE_ITEMS(files, path, next)) {
         path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
-        uri = httpUri(conn, path);
+        uri = httpUriToString(httpGetRelativeUri(rx->parsedUri, httpLinkUri(conn, path, 0), 0), 0);
         kind = mprGetPathExt(path);
         if (smatch(kind, "css")) {
             espRender(conn, "    <link rel='stylesheet' type='text/css' href='%s' />\n", uri);
@@ -905,7 +909,7 @@ PUBLIC cchar *uri(cchar *target, ...)
     va_start(args, target);
     uri = sfmtv(target, args);
     va_end(args);
-    return httpUri(getConn(), uri);
+    return httpLink(getConn(), uri);
 }
 
 

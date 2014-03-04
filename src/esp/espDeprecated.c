@@ -129,7 +129,7 @@ PUBLIC void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *option
     MprHash     *options;
 
     options = httpGetOptions(optionString);
-    httpSetOption(options, EDATA("click"), httpUri(conn, uri));
+    httpSetOption(options, EDATA("click"), httpLink(conn, uri));
     espRender(conn, "<button%s>%s</button>", map(conn, options), text);
 }
 
@@ -217,7 +217,7 @@ PUBLIC void espIcon(HttpConn *conn, cchar *uri, cchar *optionString)
     } else if (*uri == 0) {
         uri = sjoin("~/", mprGetPathBase(eroute->clientDir), "/images/favicon.ico", NULL);
     }
-    espRender(conn, "<link href='%s' rel='shortcut icon'%s />", httpUri(conn, uri), map(conn, options));
+    espRender(conn, "<link href='%s' rel='shortcut icon'%s />", httpLink(conn, uri), map(conn, options));
 }
 
 
@@ -226,7 +226,7 @@ PUBLIC void espImage(HttpConn *conn, cchar *uri, cchar *optionString)
     MprHash     *options;
 
     options = httpGetOptions(optionString);
-    espRender(conn, "<img src='%s'%s />", httpUri(conn, uri), map(conn, options));
+    espRender(conn, "<img src='%s'%s />", httpLink(conn, uri), map(conn, options));
 }
 
 
@@ -303,7 +303,7 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
     eroute = conn->rx->route->eroute;
     options = httpGetOptions(optionString);
     if (uri) {
-        espRender(conn, "<script src='%s' type='text/javascript'></script>", httpUri(conn, uri));
+        espRender(conn, "<script src='%s' type='text/javascript'></script>", httpLink(conn, uri));
     } else {
         minified = smatch(httpGetOption(options, "minified", 0), "true");
         indent = "";
@@ -315,7 +315,7 @@ PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *optionString)
                 espRender(conn, "%s<!-- [if lt IE 9]>\n", indent);
             }
             path = sjoin("~/", mprGetPathBase(eroute->clientDir), sp->name, minified ? ".min.js" : ".js", NULL);
-            uri = httpUri(conn, path);
+            uri = httpLink(conn, path);
             newline = sp[1].name ? "\r\n" :  "";
             espRender(conn, "%s<script src='%s' type='text/javascript'></script>%s", indent, uri, newline);
             if (sp->flags & SCRIPT_IE) {
@@ -337,14 +337,14 @@ PUBLIC void espStylesheet(HttpConn *conn, cchar *uri, cchar *optionString)
    
     eroute = conn->rx->route->eroute;
     if (uri) {
-        espRender(conn, "<link rel='stylesheet' type='text/css' href='%s' />", httpUri(conn, uri));
+        espRender(conn, "<link rel='stylesheet' type='text/css' href='%s' />", httpLink(conn, uri));
     } else {
         indent = "";
         options = httpGetOptions(optionString);
         less = smatch(httpGetOption(options, "type", "css"), "less");
         up = less ? defaultLess : defaultCss;
         for (; *up; up++) {
-            uri = httpUri(conn, sjoin("~/", mprGetPathBase(eroute->clientDir), *up, NULL));
+            uri = httpLink(conn, sjoin("~/", mprGetPathBase(eroute->clientDir), *up, NULL));
             newline = up[1] ? "\r\n" :  "";
             espRender(conn, "%s<link rel='stylesheet%s' type='text/css' href='%s' />%s", indent, less ? "/less" : "", uri, newline);
             indent = "    ";
@@ -723,7 +723,7 @@ PUBLIC void espTabs(HttpConn *conn, EdiGrid *grid, cchar *optionString)
         rec = grid->records[r];
         name = ediGetFieldValue(rec, "name");
         uri = ediGetFieldValue(rec, "uri");
-        uri = toggle ? uri : httpUri(conn, uri);
+        uri = toggle ? uri : httpLink(conn, uri);
         if ((r == 0 && toggle) || smatch(uri, conn->rx->pathInfo)) {
             klass = smatch(uri, conn->rx->pathInfo) ? " class='esp-selected'" : "";
         } else {
@@ -870,7 +870,7 @@ PUBLIC void form(EdiRec *record, cchar *optionString)
     if ((action = httpGetOption(options, "action", 0)) == 0) {
         action = (recid) ? "@update" : "@create";
     }
-    uri = httpUri(conn, action);
+    uri = httpLink(conn, action);
 
     if (smatch(httpGetOption(options, "remote", 0), "true")) {
         espRender(conn, "<form method='%s' " EDATA("remote") "='%s'%s >\r\n", method, uri, map(conn, options));
@@ -1061,7 +1061,7 @@ static cchar *map(HttpConn *conn, MprHash *options)
                 Support link template resolution for these options
              */
             if (smatch(kp->key, EDATA("click")) || smatch(kp->key, EDATA("remote")) || smatch(kp->key, EDATA("refresh"))) {
-                value = httpUriEx(conn, value, options);
+                value = httpLinkEx(conn, value, options);
                 if ((params = httpGetOptionHash(options, "params")) != 0) {
                     pstr = (char*) "";
                     for (kp = 0; (kp = mprGetNextKey(params, kp)) != 0; ) {
