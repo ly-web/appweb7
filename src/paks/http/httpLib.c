@@ -4216,6 +4216,7 @@ PUBLIC HttpHost *httpLookupHostOnEndpoint(HttpEndpoint *endpoint, cchar *name)
         }
         if (*host->name == '*') {
             if (host->name[1] == '\0') {
+                /* Match all hosts */
                 return host;
             }
             if (scontains(name, &host->name[1])) {
