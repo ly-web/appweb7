@@ -557,6 +557,13 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                     mprLog(2, "esp: app %s configured for combined compilation", eroute->appName);
                 }
             }
+            if ((value = espGetConfig(route, "esp.compile", 0)) != 0) {
+                if (smatch(value, "debug") || smatch(value, "symbols")) {
+                    eroute->compileMode = ESP_COMPILE_DEBUG;
+                } else if (smatch(value, "release") || smatch(value, "optimized")) {
+                    eroute->compileMode = ESP_COMPILE_RELEASE;
+                }
+            }
             if ((value = espGetConfig(route, "esp.server.redirect", 0)) != 0) {
                 if (smatch(value, "true") || smatch(value, "secure")) {
                     pattern = route->prefix ? sfmt("%s/", route->prefix) : "/";

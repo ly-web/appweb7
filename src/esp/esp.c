@@ -60,6 +60,7 @@ typedef struct App {
     cchar       *title;                 /* Title name for generated entities */
     cchar       *table;                 /* Override table name for migrations, tables */
 
+    int         compileMode;            /* Debug or release compilation */
     int         error;                  /* Any processing error */
     int         keep;                   /* Keep source */ 
     int         generateApp;            /* Generating a new app */
@@ -237,6 +238,9 @@ PUBLIC int main(int argc, char **argv)
                 }
             }
 
+        } else if (smatch(argp, "debug")) {
+            app->compileMode = ESP_COMPILE_DEBUG;
+
         } else if (smatch(argp, "force") || smatch(argp, "f")) {
             app->force = 1;
 
@@ -294,6 +298,9 @@ PUBLIC int main(int argc, char **argv)
 
         } else if (smatch(argp, "rebuild") || smatch(argp, "r")) {
             app->rebuild = 1;
+
+        } else if (smatch(argp, "release")) {
+            app->compileMode = ESP_COMPILE_RELEASE;
 
         } else if (smatch(argp, "routeName")) {
             if (argind >= argc) {
@@ -942,9 +949,10 @@ static void initialize(int argc, char **argv)
     } else {
         app->paksCacheDir = mprJoinPath(mprGetAppDir(), "../" BIT_ESP_PAKS);
     }
-    if (argc < 2 || !smatch(argv[0], "generate") || !smatch(argv[1], "app")) {
-        readAppwebConfig();
+    if (argc == 0 || (argc >= 2 && smatch(argv[0], "generate") && smatch(argv[1], "app"))) {
+        return;
     }
+    readAppwebConfig();
 }
 
 
@@ -1209,6 +1217,7 @@ static void readAppwebConfig()
         return;
     }
     esp = stage->stageData;
+    esp->compileMode = app->compileMode;
 }
 
 
@@ -2721,7 +2730,7 @@ static void usageError()
     "    --chdir dir                # Change to the named directory first\n"
     "    --config configFile        # Use named config file instead appweb.conf\n"
     "    --database name            # Database provider 'mdb|sdb' \n"
-    "    --combined                 # Compile into a single module\n"
+    "    --debug                    # Compile in debug mode with symbols\n"
     "    --genlink filename         # Generate a static link module for combined compilations\n"
     "    --keep                     # Keep intermediate source\n"
     "    --listen [ip:]port         # Listen on specified address \n"
@@ -2732,9 +2741,10 @@ static void usageError()
     "    --quiet                    # Don't emit trace \n"
     "    --platform os-arch-profile # Target platform\n"
     "    --rebuild                  # Force a rebuild\n"
-    "    --reverse                  # Reverse migrations\n"
+    "    --release                  # Compile in release mode with optimization\n"
     "    --routeName name           # Name of route to select\n"
     "    --routePrefix prefix       # Prefix of route to select\n"
+    "    --single                   # Generate a singleton controller\n"
     "    --show                     # Show compile commands\n"
     "    --static                   # Use static linking\n"
     "    --table name               # Override table name if plural required\n"
@@ -2744,7 +2754,6 @@ static void usageError()
     "  Commands:\n"
     "    esp clean\n"
     "    esp compile [pathFilters ...]\n"
-    "    esp migrate [forward|backward|NNN]\n"
     "    esp generate app name [paks...]\n"
     "    esp generate controller name [action [, action] ...\n"
     "    esp generate migration description model [field:type [, field:type] ...]\n"
@@ -2752,6 +2761,7 @@ static void usageError()
     "    esp generate table name [field:type [, field:type] ...]\n"
     "    esp install paks...\n"
     "    esp list\n"
+    "    esp migrate [forward|backward|NNN]\n"
     "    esp run\n"
     "    esp uninstall paks...\n"
     "    esp upgrade paks...\n"

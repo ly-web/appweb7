@@ -113,6 +113,9 @@ typedef struct EspState {
     MprBuf  *end;                           /**< Accumulated compiled esp end of function code */
 } EspState;
 
+#define ESP_COMPILE_DEBUG   1               /**< Override to compile in debug mode. Defaults to same as Appweb */
+#define ESP_COMPILE_RELEASE 2               /**< Override to compile in release mode */
+
 /**
     Top level ESP structure. This is a singleton.
  */
@@ -125,6 +128,7 @@ typedef struct Esp {
     MprThreadLocal  *local;                 /**< Thread local data */
     MprMutex        *mutex;                 /**< Multithread lock */
     EdiService      *ediService;            /**< Database service */
+    int             compileMode;            /**< Force a debug compile */
     int             inUse;                  /**< Active ESP request counter */
     int             reloading;              /**< Reloading ESP and modules */
 } Esp;
@@ -191,6 +195,7 @@ typedef struct EspRoute {
     cchar           *routeSet;              /**< Route set to use */
     cchar           *winsdk;                /**< Windows SDK */
     int             combined;               /**< Compile the application in "combined" mode */
+    int             compileMode;            /**< Compile the application debug or release mode */
     int             keepSource;             /**< Preserve generated source */
     int             loaded;                 /**< App has been loaded */
     int             update;                 /**< Auto-update modified ESP source */

@@ -41,7 +41,7 @@ typedef struct EspParse {
 /************************************ Forwards ********************************/
 
 static int getEspToken(EspParse *parse);
-static cchar *getDebug();
+static cchar *getDebug(EspRoute *eroute);
 static cchar *getEnvString(HttpRoute *route, cchar *key, cchar *defaultValue);
 static cchar *getArExt(cchar *os);
 static cchar *getShlibExt(cchar *os);
@@ -185,7 +185,7 @@ PUBLIC char *espExpandCommand(HttpRoute *route, cchar *command, cchar *source, c
                 mprPutStringToBuf(buf, getEnvString(route, "CFLAGS", ""));
 
             } else if (matchToken(&cp, "${DEBUG}")) {
-                mprPutStringToBuf(buf, getEnvString(route, "DEBUG", getDebug()));
+                mprPutStringToBuf(buf, getEnvString(route, "DEBUG", getDebug(eroute)));
 
             } else if (matchToken(&cp, "${LDFLAGS}")) {
                 mprPutStringToBuf(buf, getEnvString(route, "LDFLAGS", ""));
@@ -1018,14 +1018,26 @@ static cchar *getVxCPU(cchar *arch)
 }
 
 
-static cchar *getDebug()
+static cchar *getDebug(EspRoute *eroute)
 {
     MaAppweb    *appweb;
+    Esp         *esp;
     int         debug;
 
     appweb = MPR->appwebService;
-    debug = sends(appweb->platform, "-debug") || sends(appweb->platform, "-xcode") || 
-        sends(appweb->platform, "-mine") || sends(appweb->platform, "-vsdebug");
+    esp = MPR->espService;
+    if (esp->compileMode == ESP_COMPILE_DEBUG) {
+        debug = 1;
+    } else if (esp->compileMode == ESP_COMPILE_RELEASE) {
+        debug = 0;
+    } else if (eroute->compileMode == ESP_COMPILE_DEBUG) {
+        debug = 1;
+    } else if (eroute->compileMode == ESP_COMPILE_RELEASE) {
+        debug = 0;
+    } else {
+        debug = sends(appweb->platform, "-debug") || sends(appweb->platform, "-xcode") || 
+            sends(appweb->platform, "-mine") || sends(appweb->platform, "-vsdebug");
+    }
     if (scontains(appweb->platform, "windows-")) {
         return (debug) ? "-DBIT_DEBUG -Zi -Od" : "-Os";
     }
