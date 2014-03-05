@@ -21,6 +21,7 @@ Bit.load({
         "samples/samples.bit",
         "package/package.bit",
         "doc/doc.bit",
+        "?local.bit",
     ],
 
     '+modules': [
