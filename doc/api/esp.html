@@ -360,6 +360,14 @@
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>URI prefix for server controllers.</td></tr>
 <tr class="apiDef">
+<td>#define</td><td><a href="#esp_8h_1a422ba51501f42dd3aec012d31fff3ef7" class="nameRef">ESP_COMPILE_DEBUG</a>&nbsp;&nbsp;&nbsp;1</td>
+</tr>
+<tr class="apiBrief"><td>&nbsp;</td><td>Override to compile in debug mode.</td></tr>
+<tr class="apiDef">
+<td>#define</td><td><a href="#esp_8h_1a5a78ab2104a6b55b793b753efc34f26c" class="nameRef">ESP_COMPILE_RELEASE</a>&nbsp;&nbsp;&nbsp;2</td>
+</tr>
+<tr class="apiBrief"><td>&nbsp;</td><td>Override to compile in release mode.</td></tr>
+<tr class="apiDef">
 <td>#define</td><td><a href="#esp_8h_1a61427a6279173262d67b485f3e83a5d8" class="nameRef">ESP_LIFESPAN</a>&nbsp;&nbsp;&nbsp;<initializer>(3600 * <ref refid="mpr_8h_1a3d29febaeaca5d39a1ad539c1a3b6225" kindref="member" >MPR_TICKS_PER_SEC</ref>)</initializer></td>
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Default generated content cache lifespan.</td></tr>
@@ -5079,6 +5087,9 @@ Common code for all controllers.
     <tr><td class="param">cchar *</td><td><td>compile</td><td>
 Compile template.
 </td>
+    <tr><td class="param">int</td><td><td>compileMode</td><td>
+Compile the application debug or release mode.
+</td>
     <tr><td class="param">MprJson *</td><td><td>config</td><td>
 ESP App configuration from package.json.
 </td>
@@ -5714,6 +5725,9 @@ Create a URI link based on a given target an expanding embedded tokens based on 
     <table class="parameters" title="Parameters">
     <tr><td class="param"><a class="ref" href="#struct_mpr_hash" >MprHash</a> *</td><td><td>actions</td><td>
 Table of actions.
+</td>
+    <tr><td class="param">int</td><td><td>compileMode</td><td>
+Force a debug compile.
 </td>
     <tr><td class="param"><a class="ref" href="#struct_mpr_hash" >MprHash</a> *</td><td><td>databases</td><td>
 Cloned databases.

@@ -51,13 +51,11 @@
             <h1>Virtual Host Directives</h1>
             <h2>NameVirtualHost</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Nominates an IP address as using name based virtual hosting</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Nominates an IP address as using name based virtual hosting</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>NameVirtualHost IPaddr[:port]</td>
@@ -135,17 +133,15 @@ NameVirtualHost 206.148.97.56
             <a id="virtualHost"></a>
             <h2>VirtualHost</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Create a new directive block that applies to a specific IP address. The VirtualHost block
-                            inherits the existing configuration at the point of the opening VirtualHost directive.</th>
-                    </tr>
-                </thead>
                 <tbody>
                     <tr>
+                        <td class="pivot">Description</td>
+                        <td>Create a new directive block that applies to a specific IP address. The VirtualHost block
+                            inherits the existing configuration at the point of the opening VirtualHost directive.</td>
+                    </tr>
+                    <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>&lt;VirtualHost IPaddress[:port]&gt;<br />
+                        <td>&lt;VirtualHost IPaddress[:port] [, IPaddress[:port]]...&gt;<br />
                         ...<br />
                         &lt;/VirtualHost&gt;</td>
                     </tr>
@@ -170,15 +166,17 @@ NameVirtualHost 206.148.97.56
                         <td class="pivot">Notes</td>
                         <td>
                             <p>The VirutalHost directive defines a block of directives that will apply to the nominated
-                            IP address. The IPaddress specifies the IP address for this VirtualHost. Note: this does
-                            not cause Appweb to listen on this address. You will still need an appropriate Listen
-                            directive for the IP address. The IPaddress can be set to "*" in which case the VirtualHost
-                            will listen on all interfaces.</p>
+                            IP addresses. The IPaddresses specifies the set of IP addresses for this VirtualHost. 
+                            Note: this does not cause Appweb to listen on these addresses. You will still need an 
+                            appropriate Listen directive for each IP address. The IPaddress can be set to "*" 
+                            in which case the VirtualHost will listen on all interfaces.</p>
                             <p>If the IPaddress is also specified in a NameVirtualHost directive, the virtual host will
                             use name based hosting. This requires the browser (as nearly all modern browsers do), to
                             include the domain portion of the URL in the HTTP host header. Appweb examines this header
                             and routes the request to the Virtual Host that has a corresponding ServerName</p>
                             <p>NOTE: Unlike Apache, only one IPaddress may be specified per VirtualHost directive.</p>
+                            <p>The ServerName may being with a "*" which means match any hosts that contains the following
+                            host name. For example "*.embedthis.com" will then match blog.embedthis.com and www.embedthis.com.</p>
                         </td>
                     </tr>
                 </tbody>

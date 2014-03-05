@@ -1828,6 +1828,13 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
+      <type>int</type>
+      <name>compileMode</name>
+      <anchorfile>struct_esp.html</anchorfile>
+      <anchor>a5ec88db443bf2c900465c69d7503ed8f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>MprHash *</type>
       <name>databases</name>
       <anchorfile>struct_esp.html</anchorfile>

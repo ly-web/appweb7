@@ -422,6 +422,10 @@
                             qualified domain name with port number if using a port other than port 80.</p>
                             <p>When used inside Name based VirtualHost blocks, this directive specifies the Host
                             HTTP header that should be supplied with the request.</p>
+                            <p>When using virtual hosting, the ServerName may begin with "*" in which case the 
+                                VirtualHost block will match a request with a Host header that "contains" the given
+                                name. For example: a ServerName directive of "*.embedthis.com" will match
+                                farm.embedthis.com and www.embedthis.com.</p>
                         </td>
                     </tr>
                 </tbody>
@@ -507,13 +511,11 @@
             <a id="userAccount"></a>
             <h2>UserAccount</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>The user account that Appweb will run as.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>The user account that Appweb will run as.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>UserAccount name</td>

@@ -393,7 +393,7 @@ table {
 	-webkit-box-shadow: 2px 2px 4px #BBB;
 }
 
-thead {
+thead th {
 	background-color: #7090C0;
 	color: #FFFFFF;
 	font-weight: bold;
