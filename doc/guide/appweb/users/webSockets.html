@@ -154,8 +154,8 @@ X-Request-Timeout: 600
             consumed by the WebSockets layer at the peer. The application layer may initiate the peer message, but
             it will never see the pong response.</p>
             <p>Appweb has a <a href="dir/route.html#webSocketsPing">WebSocketsPing</a> appweb.conf directive that can be 
-            used to automatically send ping messages at a specified interval. Note: use of this directive defeats all Appweb 
-            timeouts for an idle WebSockets connection.</p>
+            used to automatically send ping messages at a specified interval. Note: use of this directive defeats the Appweb 
+            InactivityTimeout for an idle WebSockets connection.</p>
             <h2>Timeouts</h2>
             <p>The standard Appweb request and inactivity timeouts can be used for WebSocket communications.
             Typically, a route will be defined in the appweb.conf file for WebSockets and it will include
