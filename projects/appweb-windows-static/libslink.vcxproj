@@ -13,7 +13,7 @@
   </ItemDefinitionGroup>
 
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{567d31a9-ab87-426f-a11f-1686e39503b9}</ProjectGuid>
+    <ProjectGuid>{ae0edfab-5c28-4086-9e25-df5a7de53ee0}</ProjectGuid>
     <RootNamespace />
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -112,7 +112,7 @@
 
 <ItemGroup>
   <ProjectReference Include="libmod_esp.vcxproj">
-  <Project>083a3cfb-2c82-4ac3-88fd-84d42a7fb829</Project>
+  <Project>b682d63d-c097-498a-a46f-c4d1d0aabef0</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>

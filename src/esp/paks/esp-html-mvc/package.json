@@ -1,7 +1,7 @@
 {
     "name": "esp-html-mvc",
     "description": "ESP Server-Side HTML MVC",
-    "version": "4.5.1",
+    "version": "4.5.2",
     "precious": true,
     "dependencies": {
         "esp-server": "~4"
@@ -28,5 +28,7 @@
                 ]
             }
         }
+    },
+    "optionalDependencies": {
     }
 }
