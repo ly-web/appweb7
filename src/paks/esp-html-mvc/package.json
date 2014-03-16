@@ -28,5 +28,7 @@
                 ]
             }
         }
+    },
+    "optionalDependencies": {
     }
 }

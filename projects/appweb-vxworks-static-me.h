@@ -163,7 +163,7 @@
     #define ME_PLATFORMS "local"
 #endif
 #ifndef ME_PREFIXES
-    #define ME_PREFIXES "embedthis-prefixes"
+    #define ME_PREFIXES "package-prefixes"
 #endif
 #ifndef ME_SERVER_ROOT
     #define ME_SERVER_ROOT "."
@@ -261,8 +261,8 @@
 #ifndef ME_CONFIG_CMD
     #define ME_CONFIG_CMD "me -d -q -platform vxworks-x86-static -static -configure . -gen make"
 #endif
-#ifndef ME_APPWEB_NAME
-    #define ME_APPWEB_NAME 1
+#ifndef ME_APPWEB_PRODUCT
+    #define ME_APPWEB_PRODUCT 1
 #endif
 #ifndef ME_PROFILE
     #define ME_PROFILE "static"
@@ -287,13 +287,13 @@
 
 /* Extensions */
 #ifndef ME_EXT_CGI
-    #define ME_EXT_CGI 1
+    #define ME_EXT_CGI 0
 #endif
 #ifndef ME_EXT_CC
     #define ME_EXT_CC 1
 #endif
 #ifndef ME_EXT_DIR
-    #define ME_EXT_DIR 1
+    #define ME_EXT_DIR 0
 #endif
 #ifndef ME_EXT_DOXYGEN
     #define ME_EXT_DOXYGEN 1
@@ -335,7 +335,7 @@
     #define ME_EXT_MATRIXSSL 0
 #endif
 #ifndef ME_EXT_MDB
-    #define ME_EXT_MDB 1
+    #define ME_EXT_MDB 0
 #endif
 #ifndef ME_EXT_MPR
     #define ME_EXT_MPR 1

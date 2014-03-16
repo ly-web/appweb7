@@ -105,7 +105,7 @@
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>libappweb.lib;libhttp.lib;libmpr.lib;libpcre.lib;libslink.lib;libmod_esp.lib;libmod_ssl.lib;libmprssl.lib;libest.lib;libmod_cgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalDependencies>libappweb.lib;libhttp.lib;libmpr.lib;libpcre.lib;libslink.lib;libmod_esp.lib;libmod_ssl.lib;libmprssl.lib;libest.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
   </ItemDefinitionGroup>
@@ -134,13 +134,6 @@
 <ItemGroup>
   <ProjectReference Include="libmod_ssl.vcxproj">
   <Project>67b51044-c97a-4039-bf30-d90ff1b944a6</Project>
-  <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-  </ProjectReference>
-</ItemGroup>
-
-<ItemGroup>
-  <ProjectReference Include="libmod_cgi.vcxproj">
-  <Project>df08f009-0ee1-42e5-bb75-bedcfc730466</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>

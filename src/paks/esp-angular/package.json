@@ -9,5 +9,7 @@
     },
     "client-scripts": [
         "${PAKS}/esp-angular/*.js"
-    ]
+    ],
+    "optionalDependencies": {
+    }
 }
