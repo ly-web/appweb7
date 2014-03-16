@@ -1,0 +1,171 @@
+/*
+    main.me -- Main Bit File for Appweb
+ */
+
+Me.load({
+    blend: [
+        "src/paks/*/*.me",
+        "src/libappweb.me",
+        "src/modules/modules.me",
+        "src/utils/utils.me",
+        "src/server/server.me",
+        "test/test.me",
+        "samples/samples.me",
+        "package/package.me",
+        "doc/doc.me",
+        "?local.me",
+    ],
+
+    modules: [
+        'makeme/appweb.es',
+    ],
+
+    customize: [
+        /* 
+            The optional custom.me file is loaded after main.me is fully processed. It can
+            thus override any setting. Feel free to create and customize. 
+         */
+        'custom.me',
+    ],
+
+    settings: {
+        makeme: '0.8.0',
+
+        /*
+            Installation prefix set
+         */
+        prefixes: 'package-prefixes',
+        manifest: 'package/manifest.me',
+
+        /*
+            Name and path of the appweb config file. Defaults to "./appweb.conf" if empty.
+         */
+        configFile: 'appweb.conf',
+
+        extensions: {
+            require:  [ 'osdep', 'http', 'mpr', 'pcre'],
+            discover: [ 'cgi', 'dir', 'doxygen', 'dsi', 'esp', 'gzip', 'htmlmin', 'man', 'man2html', 'mdb', 
+                        'ngmin', 'pak', 'pmaker', 'recess', 'ssl', 'uglifyjs', 'utest', 'zip' ],
+            omit:     [ 'ejs', 'matrixssl', 'openssl', 'nanossl', 'php', 'sqlite' ],
+        },
+
+        /* Must build locally to build tools */
+        platforms: [ 'local' ],
+
+        /*
+            Set to true for a static (non-shared library) build
+         */
+        static: false,
+
+        http: {
+            /* Use PAM (Plugable Authentication Module) to store passwords */
+            pam: true,
+            webSockets: true,
+        },
+
+        ejs: {
+            db: true,                                                                                     
+            mail: true,                                                                                   
+            mapper: true,                                                                                 
+            shell: true,
+            tar: true,                                                                                     
+            template: true,                                                                               
+            web: true,                                                                                    
+            zlib: true,
+        },
+
+        esp: {
+            /* Reverse this in 5.0 */
+            legacy: true,
+        },
+
+        /*
+            EST SSL stack configuration
+         */
+        est: {
+            camellia: false,
+            des: false,
+            genPrime: false,
+            padlock: false,
+            romTables: false,
+            sslClient: false,
+            testCerts: false,
+            xtea: false,
+        },
+
+        mpr: {
+            /*
+                Enable logging via mprLog to the log file. Error messages are always enabled.
+                The default is to enable logging for both debug and release builds.
+             */
+            logging: true,
+            manager: 'appman',
+
+            /*
+                Enable debug trace and asserts to the log file.
+                This is enabled by default for debug builds. 
+                tracing: true,
+             */
+
+            alloc: {
+                // cache: 10000000,     /* Keep up to this amount of heap cached for fast allocation */
+            },
+            ssl: {
+                renegotiate: true,     /* Enable/Disable SSL renegotiation (defaults to true) */
+            },
+        },
+
+        /*
+            Tailor the optimization for size|balanced|speed
+         */
+        tune: 'size',
+
+        /*
+            Initial home directory for the server
+         */
+        serverRoot: '.',
+    },
+
+    usage: {
+        'ejs.db':          'Enable database support, ejs.db (true|false)',
+        'ejs.mail':        'Enable mail support, ejs.mail (true|false)',
+        'ejs.mapper':      'Enable database mapper support, ejs.mapper (true|false)',
+        'ejs.tar':         'Enable tar support, ejs.tar (true|false)',
+        'ejs.template':    'Enable template support, ejs.template (true|false)',
+        'ejs.web':         'Enable web support, ejs.web (true|false)',
+        'ejs.zlib':        'Enable zlib support, ejs.zlib (true|false)',
+
+        'est.camellia':    'Enable the Camellia cipher (true|false)',
+        'est.des':         'Enable the 3DES cipher (true|false)',
+        'est.genPrime':    'Enable generation of primes (true|false)',
+        'est.padlock':     'Enable VIA Padlock acceleration (true|false)',
+        'est.romTables':   'Enable ROM tables (true|false)',
+        'est.sslClient':   'Enable SSL/TLS client side (true|false)',                                     
+        'est.testCerts':   'Enable generation of test certificates (true|false)',
+        'est.xtea':        'Enable XTEA (true|false)',
+
+        'http.pam':        'Enable Unix Pluggable Auth Module (true|false)',
+        'http.webSockets': 'Enable WebSockets (true|false)',                
+
+        'mpr.logging':     'Enable application logging (true|false)',
+        'mpr.tracing':     'Enable debug tracing (true|false)',
+
+        'configFile':      'Path of the appweb.conf file',
+        'serverRoot':      'Home directory for the server ',
+    },
+
+    targets: {
+        /*
+            See src/server/server.me for the appweb targets
+            See src/libappweb.me for the appweb library target
+            See package/package.me for the install/package targets
+         */
+        projects: {
+            action: "genProjects('')",
+        },
+
+        mine: {
+            action: "genProjects('-with ejs -with sqlite', 'mine', Config.OS + '-' + Config.CPU)",
+        },
+    },
+})

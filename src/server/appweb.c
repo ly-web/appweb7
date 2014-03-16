@@ -18,7 +18,6 @@
 /********************************* Includes ***********************************/
 
 #include    "appweb.h"
-#include    "esp.h"
 
 /********************************** Locals ************************************/
 /*
@@ -48,14 +47,14 @@ static void manageApp(AppwebApp *app, int flags);
 static int createEndpoints(int argc, char **argv);
 static void usageError();
 
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
     #if defined(SIGINFO) || defined(SIGPWR) || defined(SIGRTMIN)
         static void statusCheck(void *ignored, MprSignal *sp);
         static void addSignals();
     #endif
     static void traceHandler(void *ignored, MprSignal *sp);
     static int  unixSecurityChecks(cchar *program, cchar *home);
-#elif BIT_WIN_LIKE
+#elif ME_WIN_LIKE
     static int writePort(MaServer *server);
     static long msgProc(HWND hwnd, uint msg, uint wp, long lp);
 #endif
@@ -63,11 +62,11 @@ static void usageError();
 /*
     If customize.h does not define, set reasonable defaults.
  */
-#ifndef BIT_SERVER_ROOT
-    #define BIT_SERVER_ROOT mprGetCurrentPath()
+#ifndef ME_SERVER_ROOT
+    #define ME_SERVER_ROOT mprGetCurrentPath()
 #endif
-#ifndef BIT_CONFIG_FILE
-    #define BIT_CONFIG_FILE NULL
+#ifndef ME_CONFIG_FILE
+    #define ME_CONFIG_FILE NULL
 #endif
 
 /*********************************** Code *************************************/
@@ -92,15 +91,15 @@ MAIN(appweb, int argc, char **argv, char **envp)
     mprAddRoot(app);
     mprAddStandardSignals();
 
-#if BIT_ROM
+#if ME_ROM
     extern MprRomInode romFiles[];
     mprSetRomFileSystem(romFiles);
 #endif
 
     app->mpr = mpr;
     app->workers = -1;
-    app->configFile = sclone(BIT_CONFIG_FILE);
-    app->home = sclone(BIT_SERVER_ROOT);
+    app->configFile = sclone(ME_CONFIG_FILE);
+    app->home = sclone(ME_SERVER_ROOT);
     app->documents = app->home;
     argc = mpr->argc;
     argv = (char**) mpr->argv;
@@ -116,7 +115,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
             }
             app->configFile = sclone(argv[++argind]);
 
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
         } else if (smatch(argp, "--chroot")) {
             if (argind >= argc) {
                 usageError();
@@ -167,7 +166,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
             level = 2;
 
         } else if (smatch(argp, "--version") || smatch(argp, "-V")) {
-            mprPrintf("%s\n", BIT_VERSION);
+            mprPrintf("%s\n", ME_VERSION);
             exit(0);
 
         } else if (*argp == '-' && isdigit((uchar) argp[1])) {
@@ -239,7 +238,7 @@ static void manageApp(AppwebApp *app, int flags)
  */
 static int changeRoot(cchar *jail)
 {
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
     if (chdir(app->home) < 0) {
         mprError("%s: Cannot change directory to %s", mprGetAppName(), app->home);
         return MPR_ERR_CANT_INITIALIZE;
@@ -261,24 +260,24 @@ static int changeRoot(cchar *jail)
 
 static void loadStaticModules()
 {
-#if BIT_STATIC
+#if ME_STATIC
     /*
         If doing a static build, must now reference required modules to force the linker to include them.
         Don't actually call init routines here. They will be called via maConfigureServer.
      */
-#if BIT_PACK_CGI
+#if ME_EXT_CGI
     mprNop(maCgiHandlerInit);
 #endif
-#if BIT_PACK_ESP
+#if ME_EXT_ESP
     mprNop(maEspHandlerInit);
 #endif
-#if BIT_PACK_PHP
+#if ME_EXT_PHP
     mprNop(maPhpHandlerInit);
 #endif
-#if BIT_PACK_SSL
+#if ME_EXT_SSL
     mprNop(maSslModuleInit);
 #endif
-#endif /* BIT_STATIC */
+#endif /* ME_STATIC */
 }
 
 
@@ -312,7 +311,7 @@ static int createEndpoints(int argc, char **argv)
         app->documents = sclone(argv[argind++]);
         mprLog(2, "Documents %s", app->documents);
         if (argind == argc) {
-            if (maConfigureServer(app->server, NULL, app->home, app->documents, NULL, BIT_HTTP_PORT) < 0) {
+            if (maConfigureServer(app->server, NULL, app->home, app->documents, NULL, ME_HTTP_PORT) < 0) {
                 return MPR_ERR_CANT_CREATE;
             }
         } else while (argind < argc) {
@@ -332,9 +331,9 @@ static int createEndpoints(int argc, char **argv)
      */
     appwebStaticInitialize();
     
-#if BIT_WIN_LIKE
+#if ME_WIN_LIKE
     writePort(app->server);
-#elif BIT_UNIX_LIKE
+#elif ME_UNIX_LIKE
     addSignals();
 #endif
     mprGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
@@ -350,7 +349,7 @@ static int findAppwebConf()
     if (!app->configFile || *app->configFile == '\0') {
         app->configFile = mprJoinPathExt(mprGetAppName(), ".conf");
     }
-#if !BIT_ROM
+#if !ME_ROM
     if (!mprPathExists(app->configFile, R_OK)) {
         if (!userPath) {
             app->configFile = mprJoinPath(app->home, "appweb.conf");
@@ -398,7 +397,7 @@ static void usageError(Mpr *mpr)
  */
 static int checkEnvironment(cchar *program)
 {
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
     char   *home;
     home = mprGetCurrentPath();
     if (unixSecurityChecks(program, home) < 0) {
@@ -411,7 +410,7 @@ static int checkEnvironment(cchar *program)
 }
 
 
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
 static void addSignals()
 {
     app->traceToggle = mprAddSignalHandler(SIGUSR2, traceHandler, 0, 0, MPR_SIGNAL_AFTER);
@@ -462,7 +461,7 @@ static void statusCheck(void *ignored, MprSignal *sp)
  */
 static int unixSecurityChecks(cchar *program, cchar *home)
 {
-#if !BIT_ROM
+#if !ME_ROM
     struct stat     sbuf;
 
     if (((stat(home, &sbuf)) != 0) || !(S_ISDIR(sbuf.st_mode))) {
@@ -491,13 +490,13 @@ static int unixSecurityChecks(cchar *program, cchar *home)
             mprError("Security risk, %s is setgid", program);
         }
     }
-#endif /* !BIT_ROM */
+#endif /* !ME_ROM */
     return 0;
 }
-#endif /* BIT_UNIX_LIKE */
+#endif /* ME_UNIX_LIKE */
 
 
-#if BIT_WIN_LIKE
+#if ME_WIN_LIKE
 /*
     Write the port so the monitor can manage
  */ 
@@ -511,7 +510,7 @@ static int writePort(MaServer *server)
         mprError("No configured endpoints");
         return MPR_ERR_CANT_ACCESS;
     }
-    //  FUTURE - should really go to a BIT_LOG_DIR (then fix uninstall.sh)
+    //  FUTURE - should really go to a ME_LOG_DIR (then fix uninstall.sh)
     path = mprJoinPath(mprGetAppDir(), "../.port.log");
     if ((fd = open(path, O_CREAT | O_WRONLY | O_TRUNC, 0666)) < 0) {
         mprError("Could not create port file %s", path);
@@ -528,7 +527,7 @@ static int writePort(MaServer *server)
     close(fd);
     return 0;
 }
-#endif /* BIT_WIN_LIKE */
+#endif /* ME_WIN_LIKE */
 
 
 #if VXWORKS

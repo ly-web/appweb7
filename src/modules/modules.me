@@ -1,0 +1,46 @@
+/*
+    modules.me -- MakeMe file for Appweb modules
+ */
+
+Me.load({
+    targets: {
+        libmod_cgi: {
+            type:   'lib',
+            sources: [ 'cgiHandler.c' ],
+            depends: [ 'libappweb' ],
+            extensions: [ 'cgi' ],
+        },
+
+        libmod_ejs: {
+            type:   'lib',
+            sources: [ 'ejsHandler.c' ],
+            depends: [ 'libappweb', 'libejs' ],
+            extensions: [ 'ejs' ],
+        },
+
+        libmod_php: {
+            type: 'lib',
+            sources: [ 'phpHandler.c' ],
+            '-compiler': [
+                '-Wall',
+                '-Wshorten-64-to-32',
+            ],
+            depends: [ 'libappweb', 'php' ],
+            extensions: [ 'php' ],
+        },
+
+        libmod_proxy: {
+            enable: false,
+            type: 'lib',
+            sources: [ 'proxyHandler.c' ],
+            depends: [ 'libappweb' ],
+        },
+
+        libmod_ssl: {
+            type: 'lib',
+            sources: [ 'sslModule.c' ],
+            depends: [ 'libappweb', 'libmprssl' ],
+            extensions: [ 'ssl' ],
+        },
+	},
+})

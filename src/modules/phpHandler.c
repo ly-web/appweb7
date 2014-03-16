@@ -8,9 +8,9 @@
 
 #include    "appweb.h"
 
-#if BIT_PACK_PHP
+#if ME_EXT_PHP
 
-#if BIT_WIN_LIKE
+#if ME_WIN_LIKE
     /*
         Workaround for VS 2005 and PHP headers. Need to include before PHP headers include it.
      */
@@ -31,10 +31,10 @@
     #define ZEND_WIN32 1
 
     /*
-        WARNING: If you compile PHP with --debug, then you MUST re-run appweb configure which will set BIT_PHP_DEBUG
+        WARNING: If you compile PHP with --debug, then you MUST re-run appweb configure which will set ME_PHP_DEBUG
         Unfortunately, PHP does not set ZEND_DEBUG in any of their headers (Ugh!)
      */
-    #if BIT_PHP_DEBUG
+    #if ME_PHP_DEBUG
     #define ZEND_DEBUG 1
     #endif
 #endif
@@ -103,8 +103,8 @@ static int  writeHeader(sapi_header_struct *sapiHeader, sapi_headers_struct *sap
     PHP Module Interface
  */
 static sapi_module_struct phpSapiBlock = {
-    BIT_PRODUCT,                    /* Sapi name */
-    BIT_TITLE,                      /* Full name */
+    ME_PRODUCT,                    /* Sapi name */
+    ME_TITLE,                      /* Full name */
     startup,                        /* Start routine */
     php_module_shutdown_wrapper,    /* Stop routine  */
     0,                              /* Activate */
@@ -162,7 +162,7 @@ static void readyPhp(HttpQueue *q)
     MaPhp               *php;
     FILE                *fp;
     cchar               *value;
-    char                shebang[BIT_MAX_PATH];
+    char                shebang[ME_MAX_PATH];
     zend_file_handle    file_handle;
 
     TSRMLS_FETCH();
@@ -481,8 +481,8 @@ static int initializePhp(Http *http)
 
     mprTrace(2, "php: initialize php library");
     appweb = httpGetContext(http);
-#if defined(BIT_PACK_PHP_INI)
-    phpSapiBlock.php_ini_path_override = BIT_PACK_PHP_INI;
+#if defined(ME_EXT_PHP_INI)
+    phpSapiBlock.php_ini_path_override = ME_EXT_PHP_INI;
 #else
     phpSapiBlock.php_ini_path_override = appweb->defaultServer->defaultHost->defaultRoute->home;
 #endif
@@ -556,14 +556,14 @@ PUBLIC int maPhpHandlerInit(Http *http, MprModule *module)
     return 0;
 }
 
-#else /* BIT_PACK_PHP */
+#else /* ME_EXT_PHP */
 
 PUBLIC int maPhpHandlerInit(Http *http, MprModule *module)
 {
     mprNop(0);
     return 0;
 }
-#endif /* BIT_PACK_PHP */
+#endif /* ME_EXT_PHP */
 
 /*
     @copy   default

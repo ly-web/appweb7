@@ -225,3 +225,4 @@ test/kick.conf
 test/apps.conf
 src/paks/openssl
 src/paks/php
+start.me

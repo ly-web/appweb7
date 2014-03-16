@@ -113,10 +113,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ClInclude Include="$(IncDir)\bitos.h" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ClInclude Include="$(IncDir)\customize.h" />
   </ItemGroup>
 
@@ -129,7 +125,6 @@
   <CustomBuildStep>
     <Command>cd ..\..\src
 copy /Y appweb.h $(IncDir)
-copy /Y bitos.h $(IncDir)
 copy /Y customize.h $(IncDir)
 cd ..\projects\appweb-windows-static</Command>
     <Outputs>$(BinDir)\libappweb.lib</Outputs>

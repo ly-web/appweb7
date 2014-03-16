@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{121d52e6-b29f-4e3d-88e9-2b458bbb64f8}</ProjectGuid>
+    <RootNamespace />
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)Microsoft.Cpp.props" />
+
+  <ImportGroup Label="PropertySheets" />
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="product.props" />
+    <Import Project="debug.props" />
+    <Import Project="x86.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="product.props" />
+    <Import Project="release.props" />
+    <Import Project="x86.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="product.props" />
+    <Import Project="debug.props" />
+    <Import Project="x64.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="product.props" />
+    <Import Project="release.props" />
+    <Import Project="x64.props" />
+  </ImportGroup>
+
+  <PropertyGroup>
+    <_ProjectFileVersion>10</_ProjectFileVersion>
+
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BinDir)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ObjDir)\esp-paks\</IntDir>
+    <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PreBuildEvent</CustomBuildBeforeTargets>
+
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BinDir)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ObjDir)\esp-paks\</IntDir>
+    <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PreBuildEvent</CustomBuildBeforeTargets>
+
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(BinDir)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ObjDir)\esp-paks\</IntDir>
+    <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PreBuildEvent</CustomBuildBeforeTargets>
+
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(BinDir)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ObjDir)\esp-paks\</IntDir>
+    <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PreBuildEvent</CustomBuildBeforeTargets>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+  <Link>
+    <AdditionalDependencies>;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalLibraryDirectories>$(OutDir);;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+  </Link>
+
+  <CustomBuildStep>
+    <Command>cd ..\..\src\paks
+if not exist "\Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.1" md "\Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.1"
+copy /Y esp-angular\esp-click.js \Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.1\esp-click.js
+copy /Y esp-angular\esp-edit.js \Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.1\esp-edit.js
+copy /Y esp-angular\esp-field-errors.js \Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.1\esp-field-errors.js
+copy /Y esp-angular\esp-fixnum.js \Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.1\esp-fixnum.js
+copy /Y esp-angular\esp-format.js \Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.1\esp-format.js
+copy /Y esp-angular\esp-input-group.js \Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.1\esp-input-group.js
+copy /Y esp-angular\esp-input.js \Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.1\esp-input.js
+copy /Y esp-angular\esp-resource.js \Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.1\esp-resource.js
+copy /Y esp-angular\esp-session.js \Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.1\esp-session.js
+copy /Y esp-angular\esp-titlecase.js \Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.1\esp-titlecase.js
+copy /Y esp-angular\esp.js \Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.1\esp.js
+copy /Y esp-angular\package.json \Users\mob\git\appweb\windows-x86-static\paks\esp-angular\4.5.1\package.json
+if not exist "\Users\mob\git\appweb\windows-x86-static\paks\esp-angular-mvc\4.5.1" md "\Users\mob\git\appweb\windows-x86-static\paks\esp-angular-mvc\4.5.1"
+copy /Y esp-angular-mvc\package.json \Users\mob\git\appweb\windows-x86-static\paks\esp-angular-mvc\4.5.1\package.json
+if not exist "\Users\mob\git\appweb\windows-x86-static\paks\esp-html-mvc\4.5.1" md "\Users\mob\git\appweb\windows-x86-static\paks\esp-html-mvc\4.5.1"
+copy /Y esp-html-mvc\package.json \Users\mob\git\appweb\windows-x86-static\paks\esp-html-mvc\4.5.1\package.json
+if not exist "\Users\mob\git\appweb\windows-x86-static\paks\esp-legacy-mvc\4.5.1" md "\Users\mob\git\appweb\windows-x86-static\paks\esp-legacy-mvc\4.5.1"
+copy /Y esp-legacy-mvc\package.json \Users\mob\git\appweb\windows-x86-static\paks\esp-legacy-mvc\4.5.1\package.json
+if not exist "\Users\mob\git\appweb\windows-x86-static\paks\esp-server\4.5.1" md "\Users\mob\git\appweb\windows-x86-static\paks\esp-server\4.5.1"
+copy /Y esp-server\package.json \Users\mob\git\appweb\windows-x86-static\paks\esp-server\4.5.1\package.json
+cd ..\..\projects\appweb-windows-static</Command>
+    <Outputs>..\..\$(Cfg)\paks</Outputs>
+  </CustomBuildStep>
+  </ItemDefinitionGroup>
+
+  <Import Project="$(VCTargetsPath)Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+
+</Project>

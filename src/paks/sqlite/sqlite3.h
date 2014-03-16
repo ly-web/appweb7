@@ -22,9 +22,9 @@
     #endif
 #endif
 
-#include "bit.h"
+#include "me.h"
 
-#if BIT_PACK_SQLITE || BIT_SQLITE_PRODUCT
+#if ME_EXT_SQLITE || ME_SQLITE_PRODUCT
 #ifndef _h_SQLITE3_
 #define _h_SQLITE3_ 1
 
@@ -7367,5 +7367,5 @@ struct sqlite3_rtree_geometry {
 
 
 #endif /* _h_SQLITE3_ */
-#endif /* BIT_PACK_SQLITE */
+#endif /* ME_EXT_SQLITE */
 

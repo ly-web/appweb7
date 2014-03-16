@@ -21,6 +21,33 @@ extern "C" {
 #define MA_UNLOAD_TIMEOUT       "5mins"             /**< Default module inactivity unload timeout */
 
 /********************************** Defines ***********************************/
+/*
+    Pack defaults
+ */
+#ifndef ME_EXT_CGI
+    #define ME_EXT_CGI 0
+#endif
+#ifndef ME_EXT_DIR
+    #define ME_EXT_DIR 0
+#endif
+#ifndef ME_EXT_EJS
+    #define ME_EXT_EJS 0
+#endif
+#ifndef ME_EXT_ESP
+    #define ME_EXT_ESP 0
+#endif
+#ifndef ME_EXT_MDB
+    #define ME_EXT_MDB 0
+#endif
+#ifndef ME_EXT_PHP
+    #define ME_EXT_PHP 0
+#endif
+#ifndef ME_EXT_SDB
+    #define ME_EXT_SDB 0
+#endif
+#ifndef ME_EXT_SSL
+    #define ME_EXT_SSL 0
+#endif
 
 #if !DOXYGEN
 struct MaAppweb;
@@ -223,7 +250,7 @@ PUBLIC int maPhpHandlerInit(Http *http, MprModule *mp);
 PUBLIC int maSslModuleInit(Http *http, MprModule *mp);
 PUBLIC int maOpenDirHandler(Http *http);
 PUBLIC int maOpenFileHandler(Http *http);
-PUBLIC int maSetPlatform(cchar *platform);
+PUBLIC int maSetPlatform(cchar *platform, cchar *probe);
 
 /*
     This is exported from slink.c which is either manually created or generated locally

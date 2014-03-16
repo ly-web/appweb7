@@ -1,0 +1,81 @@
+# Embedthis ESP
+
+<img align="right" src="http://embedthis.com/images/pak.png">
+
+ESP is a light-weight web framework that makes it easy to create blazing fast, dynamic web applications. 
+ESP uses the "C" language for server-side web programming which allows easy access to low-level data for
+management user interfaces.
+
+However, ESP is not a traditional low-level environment. If web pages or controllers are modified during development, the
+code is transparently recompiled and reloaded. ESP uses a garbage-collected environment memory management and for safe
+programming. This enables unparalleled performance with "script-like" flexibility for web applications. environment and
+blazing runtime speed.
+
+The ESP web framework provides a complete set of components including: an application generator, web request handler,
+templating engine, Model-View-Controller framework, Web Sockets, database migrations and an extensive programming API.
+This document describes the ESP web framework and how to use ESP. Note that ESP is integrated into Appweb and is not a
+separate product.
+
+Licensing
+---
+See [LICENSE.md](LICENSE.md) for details.
+
+### To read documentation:
+
+  See http://embedthis.org/products/esp/doc/product/index.html
+
+### Building
+    You can build with make or with MakeMe. MakeMe is quicker and more flexible.
+    To install MakeMe, download it from http://embedthis.com/downloads/makeme/download.esp
+
+### To build with make:
+
+    make
+
+    You can pass make variables to tailor the build. For a list of variables:
+
+	make help
+
+### To build with MakeMe:
+
+    ./configure
+    me
+
+	For a list of configure options:
+
+	./configure --help
+
+### To run
+
+	make run
+
+    or
+
+    me run
+
+### To install:
+
+    sudo make install
+
+	or 
+
+    sudo me install
+
+### To uninstall
+
+    sudo make uninstall
+
+	or 
+
+    sudo me uninstall
+
+### To test:
+
+    me test
+
+Resources
+---
+  - [ESP web site](http://esp.embedthis.org/)
+  - [Appweb GitHub repository](http://github.com/embedthis/appweb-4)
+  - [Appweb Mailing list](http://groups.google.com/groups/appweb)
+  - [Embedthis web site](http://embedthis.com/)

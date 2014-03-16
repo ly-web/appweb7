@@ -1,0 +1,29 @@
+{
+    "name": "esp-server",
+    "description": "ESP Server Framework",
+    "version": "0.9.0",
+    "precious": true,
+    "dirs": {
+        "client": "client",
+        "paks": "client/paks"
+    },
+    "export": [
+        "templates/**"
+    ],
+    "esp": {
+        "combined": false,
+        "update": true,
+        "serverPrefix": "/do",
+        "server": {
+            "generate": {
+                "appweb": "esp-server/appweb.conf",
+                "migration": "esp-server/migration.c",
+                "controller": "esp-server/controller.c",
+                "controller-singleton": "esp-server/controller.c",
+                "files": [
+                    "esp-server/src/app.c"
+                ]
+            }
+        }
+    }
+}

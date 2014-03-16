@@ -16,7 +16,8 @@ Third Party Licenses
 The Software contains third party software under the agreements that follow.
 
 ###AngularJS
-AngularJS is an optional client-side Javascript library used by some ESP MVC applications.
+AngularJS is an optional client-side Javascript library used by some ESP MVC 
+applications.
 
 [AngularJS](http://angularjs.org) - [MIT](http://opensource.org/licenses/MIT)
 

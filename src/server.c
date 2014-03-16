@@ -31,14 +31,14 @@ PUBLIC MaAppweb *maCreateAppweb()
     appweb->http = http = httpCreate(HTTP_CLIENT_SIDE | HTTP_SERVER_SIDE);
     httpSetContext(http, appweb);
     appweb->servers = mprCreateList(-1, MPR_LIST_STABLE);
-    appweb->localPlatform = slower(sfmt("%s-%s-%s", BIT_OS, BIT_CPU, BIT_PROFILE));
-    maSetPlatform(NULL);
+    appweb->localPlatform = slower(sfmt("%s-%s-%s", ME_OS, ME_CPU, ME_PROFILE));
+    maSetPlatform(NULL, NULL);
     maGetUserGroup(appweb);
     maParseInit(appweb);
     /* 
        Open the builtin handlers 
      */
-#if BIT_PACK_DIR
+#if ME_EXT_DIR
     maOpenDirHandler(http);
 #endif
     maOpenFileHandler(http);
@@ -206,7 +206,7 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
         route = mprGetFirstItem(host->routes);
         assert(route);
 
-#if BIT_PACK_CGI
+#if ME_EXT_CGI
         maLoadModule(appweb, "cgiHandler", "libmod_cgi");
         if (httpLookupStage(http, "cgiHandler")) {
             httpAddRouteHandler(route, "cgiHandler", "cgi cgi-nph bat cmd pl py");
@@ -223,19 +223,19 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
             }
         }
 #endif
-#if BIT_PACK_ESP
+#if ME_EXT_ESP
         maLoadModule(appweb, "espHandler", "libmod_esp");
         if (httpLookupStage(http, "espHandler")) {
             httpAddRouteHandler(route, "espHandler", "esp");
         }
 #endif
-#if BIT_PACK_EJSCRIPT
+#if ME_EXT_EJS
         maLoadModule(appweb, "ejsHandler", "libmod_ejs");
         if (httpLookupStage(http, "ejsHandler")) {
             httpAddRouteHandler(route, "ejsHandler", "ejs");
         }
 #endif
-#if BIT_PACK_PHP
+#if ME_EXT_PHP
         maLoadModule(appweb, "phpHandler", "libmod_php");
         if (httpLookupStage(http, "phpHandler")) {
             httpAddRouteHandler(route, "phpHandler", "php");
@@ -275,7 +275,7 @@ PUBLIC int maStartServer(MaServer *server)
     if (warned) {
         return MPR_ERR_CANT_OPEN;        
     }
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
     MaAppweb    *appweb = server->appweb;
     if (appweb->userChanged || appweb->groupChanged) {
         if (!smatch(MPR->logPath, "stdout") && !smatch(MPR->logPath, "stderr")) {
@@ -315,11 +315,11 @@ PUBLIC void maRemoveEndpoint(MaServer *server, HttpEndpoint *endpoint)
 }
 
 
-PUBLIC int maSetPlatform(cchar *platformPath)
+PUBLIC int maSetPlatform(cchar *platformPath, cchar *probe)
 {
     MaAppweb        *appweb;
     MprDirEntry     *dp;
-    cchar           *platform, *dir, *junk, *appwebExe, *path;
+    cchar           *platform, *dir, *junk, *exe, *path;
     int             next, i;
 
     appweb = MPR->appwebService;
@@ -330,7 +330,7 @@ PUBLIC int maSetPlatform(cchar *platformPath)
     
     platform = mprGetPathBase(platformPath);
 
-    if (mprPathExists(mprJoinPath(platformPath, "appweb" BIT_EXE), X_OK)) {
+    if (mprPathExists(mprJoinPath(platformPath, probe), X_OK)) {
         appweb->platform = platform;
         appweb->platformDir = sclone(platformPath);
 
@@ -338,8 +338,8 @@ PUBLIC int maSetPlatform(cchar *platformPath)
         /*
             If running inside an appweb source tree, locate the platform directory 
          */
-        appwebExe = mprJoinPath(mprGetAppDir(), "appweb" BIT_EXE);
-        if (mprPathExists(appwebExe, R_OK)) {
+        exe = mprJoinPath(mprGetAppDir(), probe);
+        if (mprPathExists(exe, R_OK)) {
             appweb->platform = appweb->localPlatform;
             appweb->platformDir = mprGetPathParent(mprGetAppDir());
 
@@ -347,10 +347,10 @@ PUBLIC int maSetPlatform(cchar *platformPath)
             /*
                 Check installed appweb
              */
-            appwebExe = BIT_VAPP_PREFIX "/bin/appweb" BIT_EXE;
-            if (mprPathExists(appwebExe, R_OK)) {
+            exe = ME_VAPP_PREFIX "/bin/appweb" ME_EXE;
+            if (mprPathExists(exe, R_OK)) {
                 appweb->platform = appweb->localPlatform;
-                appweb->platformDir = sclone(BIT_VAPP_PREFIX);
+                appweb->platformDir = sclone(ME_VAPP_PREFIX);
             }
         }
     }
@@ -365,7 +365,7 @@ PUBLIC int maSetPlatform(cchar *platformPath)
             for (ITERATE_ITEMS(mprGetPathFiles(dir, 0), dp, next)) {
                 if (dp->isDir && sstarts(mprGetPathBase(dp->name), platform)) {
                     path = mprJoinPath(dir, dp->name);
-                    if (mprPathExists(mprJoinPath(path, "bin/appweb" BIT_EXE), X_OK)) {
+                    if (mprPathExists(mprJoinPath(path, mprJoinPath("bin", probe)), X_OK)) {
                         appweb->platform = mprGetPathBase(dp->name);
                         appweb->platformDir = mprJoinPath(dir, dp->name);
                         break;
@@ -403,7 +403,7 @@ PUBLIC void maSetServerAddress(MaServer *server, cchar *ip, int port)
 
 PUBLIC void maGetUserGroup(MaAppweb *appweb)
 {
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
     struct passwd   *pp;
     struct group    *gp;
 
@@ -429,7 +429,7 @@ PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 {
     //  TODO DEPRECATED _default_
     if (smatch(newUser, "APPWEB") || smatch(newUser, "_default_")) {
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
         /* Only change user if root */
         if (getuid() != 0) {
             mprLog(2, "Running as user account \"%s\"", appweb->user);
@@ -438,13 +438,13 @@ PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 #endif
 #if MACOSX || FREEBSD
         newUser = "_www";
-#elif LINUX || BIT_UNIX_LIKE
+#elif LINUX || ME_UNIX_LIKE
         newUser = "nobody";
 #elif WINDOWS
         newUser = "Administrator";
 #endif
     }
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
 {
     struct passwd   *pp;
     if (snumber(newUser)) {
@@ -474,7 +474,7 @@ PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
 {
     //  DEPRECATED _default_
     if (smatch(newGroup, "APPWEB") || smatch(newGroup, "_default_")) {
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
         /* Only change group if root */
         if (getuid() != 0) {
             return 0;
@@ -482,7 +482,7 @@ PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
 #endif
 #if MACOSX || FREEBSD
         newGroup = "_www";
-#elif LINUX || BIT_UNIX_LIKE
+#elif LINUX || ME_UNIX_LIKE
 {
         char    *buf;
         newGroup = "nobody";
@@ -499,7 +499,7 @@ PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
         newGroup = "Administrator";
 #endif
     }
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
     struct group    *gp;
 
     if (snumber(newGroup)) {
@@ -526,7 +526,7 @@ PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
 
 PUBLIC int maApplyChangedUser(MaAppweb *appweb)
 {
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
     if (appweb->userChanged && appweb->uid >= 0) {
         if ((setuid(appweb->uid)) != 0) {
             mprError("Cannot change user to: %s: %d\n"
@@ -549,7 +549,7 @@ PUBLIC int maApplyChangedUser(MaAppweb *appweb)
 
 PUBLIC int maApplyChangedGroup(MaAppweb *appweb)
 {
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
     if (appweb->groupChanged && appweb->gid >= 0) {
         if (setgid(appweb->gid) != 0) {
             mprError("Cannot change group to %s: %d\n"
@@ -576,7 +576,7 @@ PUBLIC int maApplyChangedGroup(MaAppweb *appweb)
 PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
 {
     MprModule   *module;
-    char        entryPoint[BIT_MAX_FNAME];
+    char        entryPoint[ME_MAX_FNAME];
     char        *path;
 
     if (strcmp(name, "authFilter") == 0 || strcmp(name, "rangeFilter") == 0 || strcmp(name, "uploadFilter") == 0 ||
@@ -585,13 +585,13 @@ PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
         return 0;
     }
     if ((module = mprLookupModule(name)) != 0) {
-#if BIT_STATIC
+#if ME_STATIC
         mprLog(MPR_CONFIG, "Activating module (Builtin) %s", name);
 #endif
         return 0;
     }
     if (libname == 0) {
-        path = sjoin("mod_", name, BIT_SHOBJ, NULL);
+        path = sjoin("mod_", name, ME_SHOBJ, NULL);
     } else {
         path = sclone(libname);
     }

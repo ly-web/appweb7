@@ -470,7 +470,7 @@ static int manageDir(HttpConn *conn)
             }
         }
     }
-#if BIT_PACK_DIR
+#if ME_EXT_DIR
     /*
         Directory Listing. If a directory, test if a directory listing should be rendered. If so, delegate to the
         dirHandler. Cannot use the sendFile handler and must use the netConnector.

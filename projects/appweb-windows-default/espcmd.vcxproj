@@ -100,16 +100,8 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <ClCompile Include="..\..\src\esp\edi.c" />
-    <ClCompile Include="..\..\src\esp\esp.c" />
-    <ClCompile Include="..\..\src\esp\espAbbrev.c" />
-    <ClCompile Include="..\..\src\esp\espDeprecated.c" />
-    <ClCompile Include="..\..\src\esp\espFramework.c" />
-    <ClCompile Include="..\..\src\esp\espHandler.c" />
-    <ClCompile Include="..\..\src\esp\espHtml.c" />
-    <ClCompile Include="..\..\src\esp\espTemplate.c" />
-    <ClCompile Include="..\..\src\esp\mdb.c" />
-    <ClCompile Include="..\..\src\esp\sdb.c" />
+    <ClCompile Include="..\..\src\paks\esp\esp.c" />
+    <ClCompile Include="..\..\src\paks\esp\espLib.c" />
   </ItemGroup>
 
   <ItemDefinitionGroup>

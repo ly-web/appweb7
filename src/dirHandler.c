@@ -13,7 +13,7 @@
 
 #include    "appweb.h"
 
-#if BIT_PACK_DIR
+#if ME_EXT_DIR
 /********************************** Defines ***********************************/
 /*
     Handler configuration
@@ -449,7 +449,7 @@ static void outputFooter(HttpQueue *q)
         httpWrite(q, "</ul>\r\n");
     }
     sock = conn->sock->listenSock;
-    httpWrite(q, "<address>%s %s at %s Port %d</address>\r\n", BIT_TITLE, BIT_VERSION, sock->ip, sock->port);
+    httpWrite(q, "<address>%s %s at %s Port %d</address>\r\n", ME_TITLE, ME_VERSION, sock->ip, sock->port);
     httpWrite(q, "</body></html>\r\n");
 }
 
@@ -718,7 +718,7 @@ PUBLIC int maOpenDirHandler(Http *http)
     maAddDirective(appweb, "Options", optionsDirective);
     return 0;
 }
-#endif /* BIT_PACK_DIR */
+#endif /* ME_EXT_DIR */
 
 
 /*
