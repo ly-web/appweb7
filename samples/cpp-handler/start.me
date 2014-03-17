@@ -1,0 +1,20 @@
+/*
+    start.me - MakeMe build file
+ */
+Me.load({
+    settings: {
+        extensions: {
+            require: ['appweb'],
+        },
+    },
+    targets: {
+        libmod_simple: {
+            type: 'lib',
+            sources: ['cppHandler.cpp'],
+            depends: ['appweb'],
+        }
+        run: {
+            run: 'appweb',
+        },
+    },
+})

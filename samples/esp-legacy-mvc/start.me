@@ -1,0 +1,26 @@
+/*
+    start.me - MakeMe build file
+ */
+
+Me.load({
+    settings: {
+        extensions: {
+            require: ['appweb'],
+        },
+    },
+    targets: {
+        sample: {
+            build: "run('esp compile')",
+        },
+        cleanup: {
+            type: 'clean',
+            action: "
+                run('esp clean')
+                rm('*.o', 'cache/*')
+            ",
+        },
+        run: {
+            run: 'esp run',
+        },
+    },
+})

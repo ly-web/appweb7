@@ -1,0 +1,20 @@
+/*
+    start.me - MakeMe build file
+ */
+Me.load({
+    settings: {
+        extensions: {
+            require: ['appweb'],
+        },
+    },
+    targets: {
+        libmod_spy: {
+            type: 'lib',
+            sources: ['spyFilter.c'],
+            depends: ['appweb'],
+        }
+        run: {
+            run: 'appweb',
+        },
+    },
+})

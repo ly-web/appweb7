@@ -1,0 +1,20 @@
+/*
+    start.me - MakeMe build file
+ */
+
+Me.load({
+    settings: {
+        extensions: {
+            require: ['appweb'],
+        },
+    },
+    targets: {
+        run: {
+            run: 'appweb',
+        },
+        cleanup: {
+            type: 'clean',
+            action: "rm('error.log*')",
+        },
+    },
+})
