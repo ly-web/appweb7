@@ -85,7 +85,7 @@
     #define ME_EXTENSIONS_DISCOVER "cgi,dir,doxygen,dsi,esp,gzip,htmlmin,man,man2html,mdb,ngmin,pak,pmaker,recess,ssl,uglifyjs,utest,zip"
 #endif
 #ifndef ME_EXTENSIONS_OMIT
-    #define ME_EXTENSIONS_OMIT "ejs,matrixssl,openssl,nanossl,php,sqlite"
+    #define ME_EXTENSIONS_OMIT "ejs,matrixssl,openssl,nanossl,php,sqlite,zlib"
 #endif
 #ifndef ME_EXTENSIONS_REQUIRE
     #define ME_EXTENSIONS_REQUIRE "vxworks,compiler,lib,link,osdep,http,mpr,pcre"
@@ -389,5 +389,5 @@
     #define ME_EXT_ZIP 1
 #endif
 #ifndef ME_EXT_ZLIB
-    #define ME_EXT_ZLIB 1
+    #define ME_EXT_ZLIB 0
 #endif

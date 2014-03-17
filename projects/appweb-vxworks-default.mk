@@ -26,7 +26,7 @@ ME_EXT_PCRE           ?= 1
 ME_EXT_PHP            ?= 0
 ME_EXT_SQLITE         ?= 0
 ME_EXT_SSL            ?= 1
-ME_EXT_ZLIB           ?= 1
+ME_EXT_ZLIB           ?= 0
 
 ME_EXT_COMPILER_PATH  ?= cc$(subst x86,pentium,$(ARCH))
 ME_EXT_DOXYGEN_PATH   ?= doxygen
@@ -48,7 +48,7 @@ ME_EXT_NGMIN_PATH     ?= ngmin
 ME_EXT_OPENSSL_PATH   ?= /usr/src/openssl
 ME_EXT_OSDEP_PATH     ?= src/paks/osdep/osdep.me
 ME_EXT_PAK_PATH       ?= pak
-ME_EXT_PCRE_PATH      ?= src/paks/pcre/pcre.me
+ME_EXT_PCRE_PATH      ?= src/paks/pcre
 ME_EXT_PMAKER_PATH    ?= [function Function]
 ME_EXT_RECESS_PATH    ?= recess
 ME_EXT_UGLIFYJS_PATH  ?= uglifyjs
@@ -115,9 +115,6 @@ TARGETS               += $(CONFIG)/bin/ca.crt
 TARGETS               += $(CONFIG)/bin/http.out
 TARGETS               += $(CONFIG)/bin/libmprssl.out
 TARGETS               += $(CONFIG)/bin/appman.out
-ifeq ($(ME_EXT_ZLIB),1)
-    TARGETS           += $(CONFIG)/bin/libzlib.out
-endif
 TARGETS               += src/slink.c
 TARGETS               += $(CONFIG)/bin/libslink.out
 ifeq ($(ME_EXT_SSL),1)
@@ -176,7 +173,6 @@ clean:
 	rm -f "$(CONFIG)/bin/appman.out"
 	rm -f "$(CONFIG)/bin/makerom.out"
 	rm -f "$(CONFIG)/bin/libpcre.out"
-	rm -f "$(CONFIG)/bin/libzlib.out"
 	rm -f "$(CONFIG)/bin/libappweb.out"
 	rm -f "$(CONFIG)/bin/libslink.out"
 	rm -f "$(CONFIG)/bin/libmod_ssl.out"
@@ -193,7 +189,6 @@ clean:
 	rm -f "$(CONFIG)/obj/manager.o"
 	rm -f "$(CONFIG)/obj/makerom.o"
 	rm -f "$(CONFIG)/obj/pcre.o"
-	rm -f "$(CONFIG)/obj/zlib.o"
 	rm -f "$(CONFIG)/obj/config.o"
 	rm -f "$(CONFIG)/obj/convenience.o"
 	rm -f "$(CONFIG)/obj/dirHandler.o"
@@ -994,41 +989,9 @@ $(CONFIG)/bin/appman.out: $(DEPS_38)
 	 -o $(CONFIG)/bin/appman.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/manager.o" $(LIBS) -Wl,-r 
 
 #
-#   zlib.h
-#
-$(CONFIG)/inc/zlib.h: $(DEPS_39)
-	@echo '      [Copy] $(CONFIG)/inc/zlib.h'
-	mkdir -p "$(CONFIG)/inc"
-	cp src/paks/zlib/zlib.h $(CONFIG)/inc/zlib.h
-
-#
-#   zlib.o
-#
-DEPS_40 += $(CONFIG)/inc/me.h
-DEPS_40 += $(CONFIG)/inc/zlib.h
-
-$(CONFIG)/obj/zlib.o: \
-    src/paks/zlib/zlib.c $(DEPS_40)
-	@echo '   [Compile] $(CONFIG)/obj/zlib.o'
-	 -c -o $(CONFIG)/obj/zlib.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/paks/zlib/zlib.c
-
-ifeq ($(ME_EXT_ZLIB),1)
-#
-#   libzlib
-#
-DEPS_41 += $(CONFIG)/inc/zlib.h
-DEPS_41 += $(CONFIG)/inc/me.h
-DEPS_41 += $(CONFIG)/obj/zlib.o
-
-$(CONFIG)/bin/libzlib.out: $(DEPS_41)
-	@echo '      [Link] $(CONFIG)/bin/libzlib.out'
-	 -r -o $(CONFIG)/bin/libzlib.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/zlib.o" $(LIBS) 
-endif
-
-#
 #   slink.c
 #
-src/slink.c: $(DEPS_42)
+src/slink.c: $(DEPS_39)
 	( \
 	cd src; \
 	[ ! -f slink.c ] && cp slink.empty slink.c ; true ; \
@@ -1037,34 +1000,34 @@ src/slink.c: $(DEPS_42)
 #
 #   slink.o
 #
-DEPS_43 += $(CONFIG)/inc/me.h
-DEPS_43 += $(CONFIG)/inc/esp.h
+DEPS_40 += $(CONFIG)/inc/me.h
+DEPS_40 += $(CONFIG)/inc/esp.h
 
 $(CONFIG)/obj/slink.o: \
-    src/slink.c $(DEPS_43)
+    src/slink.c $(DEPS_40)
 	@echo '   [Compile] $(CONFIG)/obj/slink.o'
 	 -c -o $(CONFIG)/obj/slink.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/slink.c
 
 #
 #   libslink
 #
-DEPS_44 += src/slink.c
-DEPS_44 += $(CONFIG)/inc/me.h
-DEPS_44 += $(CONFIG)/inc/esp.h
-DEPS_44 += $(CONFIG)/obj/slink.o
+DEPS_41 += src/slink.c
+DEPS_41 += $(CONFIG)/inc/me.h
+DEPS_41 += $(CONFIG)/inc/esp.h
+DEPS_41 += $(CONFIG)/obj/slink.o
 
-$(CONFIG)/bin/libslink.out: $(DEPS_44)
+$(CONFIG)/bin/libslink.out: $(DEPS_41)
 	@echo '      [Link] $(CONFIG)/bin/libslink.out'
 	 -r -o $(CONFIG)/bin/libslink.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/slink.o" $(LIBS) 
 
 #
 #   sslModule.o
 #
-DEPS_45 += $(CONFIG)/inc/me.h
-DEPS_45 += $(CONFIG)/inc/appweb.h
+DEPS_42 += $(CONFIG)/inc/me.h
+DEPS_42 += $(CONFIG)/inc/appweb.h
 
 $(CONFIG)/obj/sslModule.o: \
-    src/modules/sslModule.c $(DEPS_45)
+    src/modules/sslModule.c $(DEPS_42)
 	@echo '   [Compile] $(CONFIG)/obj/sslModule.o'
 	 -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/modules/sslModule.c
 
@@ -1072,38 +1035,38 @@ ifeq ($(ME_EXT_SSL),1)
 #
 #   libmod_ssl
 #
-DEPS_46 += $(CONFIG)/inc/mpr.h
-DEPS_46 += $(CONFIG)/inc/me.h
-DEPS_46 += $(CONFIG)/inc/osdep.h
-DEPS_46 += $(CONFIG)/obj/mprLib.o
-DEPS_46 += $(CONFIG)/bin/libmpr.out
-DEPS_46 += $(CONFIG)/inc/pcre.h
-DEPS_46 += $(CONFIG)/obj/pcre.o
+DEPS_43 += $(CONFIG)/inc/mpr.h
+DEPS_43 += $(CONFIG)/inc/me.h
+DEPS_43 += $(CONFIG)/inc/osdep.h
+DEPS_43 += $(CONFIG)/obj/mprLib.o
+DEPS_43 += $(CONFIG)/bin/libmpr.out
+DEPS_43 += $(CONFIG)/inc/pcre.h
+DEPS_43 += $(CONFIG)/obj/pcre.o
 ifeq ($(ME_EXT_PCRE),1)
-    DEPS_46 += $(CONFIG)/bin/libpcre.out
+    DEPS_43 += $(CONFIG)/bin/libpcre.out
 endif
-DEPS_46 += $(CONFIG)/inc/http.h
-DEPS_46 += $(CONFIG)/obj/httpLib.o
-DEPS_46 += $(CONFIG)/bin/libhttp.out
-DEPS_46 += $(CONFIG)/inc/appweb.h
-DEPS_46 += $(CONFIG)/inc/customize.h
-DEPS_46 += $(CONFIG)/obj/config.o
-DEPS_46 += $(CONFIG)/obj/convenience.o
-DEPS_46 += $(CONFIG)/obj/dirHandler.o
-DEPS_46 += $(CONFIG)/obj/fileHandler.o
-DEPS_46 += $(CONFIG)/obj/log.o
-DEPS_46 += $(CONFIG)/obj/server.o
-DEPS_46 += $(CONFIG)/bin/libappweb.out
-DEPS_46 += $(CONFIG)/inc/est.h
-DEPS_46 += $(CONFIG)/obj/estLib.o
+DEPS_43 += $(CONFIG)/inc/http.h
+DEPS_43 += $(CONFIG)/obj/httpLib.o
+DEPS_43 += $(CONFIG)/bin/libhttp.out
+DEPS_43 += $(CONFIG)/inc/appweb.h
+DEPS_43 += $(CONFIG)/inc/customize.h
+DEPS_43 += $(CONFIG)/obj/config.o
+DEPS_43 += $(CONFIG)/obj/convenience.o
+DEPS_43 += $(CONFIG)/obj/dirHandler.o
+DEPS_43 += $(CONFIG)/obj/fileHandler.o
+DEPS_43 += $(CONFIG)/obj/log.o
+DEPS_43 += $(CONFIG)/obj/server.o
+DEPS_43 += $(CONFIG)/bin/libappweb.out
+DEPS_43 += $(CONFIG)/inc/est.h
+DEPS_43 += $(CONFIG)/obj/estLib.o
 ifeq ($(ME_EXT_EST),1)
-    DEPS_46 += $(CONFIG)/bin/libest.out
+    DEPS_43 += $(CONFIG)/bin/libest.out
 endif
-DEPS_46 += $(CONFIG)/obj/mprSsl.o
-DEPS_46 += $(CONFIG)/bin/libmprssl.out
-DEPS_46 += $(CONFIG)/obj/sslModule.o
+DEPS_43 += $(CONFIG)/obj/mprSsl.o
+DEPS_43 += $(CONFIG)/bin/libmprssl.out
+DEPS_43 += $(CONFIG)/obj/sslModule.o
 
-$(CONFIG)/bin/libmod_ssl.out: $(DEPS_46)
+$(CONFIG)/bin/libmod_ssl.out: $(DEPS_43)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ssl.out'
 	 -r -o $(CONFIG)/bin/libmod_ssl.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/sslModule.o" $(LIBS) 
 endif
@@ -1111,95 +1074,95 @@ endif
 #
 #   authpass.o
 #
-DEPS_47 += $(CONFIG)/inc/me.h
-DEPS_47 += $(CONFIG)/inc/appweb.h
+DEPS_44 += $(CONFIG)/inc/me.h
+DEPS_44 += $(CONFIG)/inc/appweb.h
 
 $(CONFIG)/obj/authpass.o: \
-    src/utils/authpass.c $(DEPS_47)
+    src/utils/authpass.c $(DEPS_44)
 	@echo '   [Compile] $(CONFIG)/obj/authpass.o'
 	 -c -o $(CONFIG)/obj/authpass.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/utils/authpass.c
 
 #
 #   authpass
 #
-DEPS_48 += $(CONFIG)/inc/mpr.h
-DEPS_48 += $(CONFIG)/inc/me.h
-DEPS_48 += $(CONFIG)/inc/osdep.h
-DEPS_48 += $(CONFIG)/obj/mprLib.o
-DEPS_48 += $(CONFIG)/bin/libmpr.out
-DEPS_48 += $(CONFIG)/inc/pcre.h
-DEPS_48 += $(CONFIG)/obj/pcre.o
+DEPS_45 += $(CONFIG)/inc/mpr.h
+DEPS_45 += $(CONFIG)/inc/me.h
+DEPS_45 += $(CONFIG)/inc/osdep.h
+DEPS_45 += $(CONFIG)/obj/mprLib.o
+DEPS_45 += $(CONFIG)/bin/libmpr.out
+DEPS_45 += $(CONFIG)/inc/pcre.h
+DEPS_45 += $(CONFIG)/obj/pcre.o
 ifeq ($(ME_EXT_PCRE),1)
-    DEPS_48 += $(CONFIG)/bin/libpcre.out
+    DEPS_45 += $(CONFIG)/bin/libpcre.out
 endif
-DEPS_48 += $(CONFIG)/inc/http.h
-DEPS_48 += $(CONFIG)/obj/httpLib.o
-DEPS_48 += $(CONFIG)/bin/libhttp.out
-DEPS_48 += $(CONFIG)/inc/appweb.h
-DEPS_48 += $(CONFIG)/inc/customize.h
-DEPS_48 += $(CONFIG)/obj/config.o
-DEPS_48 += $(CONFIG)/obj/convenience.o
-DEPS_48 += $(CONFIG)/obj/dirHandler.o
-DEPS_48 += $(CONFIG)/obj/fileHandler.o
-DEPS_48 += $(CONFIG)/obj/log.o
-DEPS_48 += $(CONFIG)/obj/server.o
-DEPS_48 += $(CONFIG)/bin/libappweb.out
-DEPS_48 += $(CONFIG)/obj/authpass.o
+DEPS_45 += $(CONFIG)/inc/http.h
+DEPS_45 += $(CONFIG)/obj/httpLib.o
+DEPS_45 += $(CONFIG)/bin/libhttp.out
+DEPS_45 += $(CONFIG)/inc/appweb.h
+DEPS_45 += $(CONFIG)/inc/customize.h
+DEPS_45 += $(CONFIG)/obj/config.o
+DEPS_45 += $(CONFIG)/obj/convenience.o
+DEPS_45 += $(CONFIG)/obj/dirHandler.o
+DEPS_45 += $(CONFIG)/obj/fileHandler.o
+DEPS_45 += $(CONFIG)/obj/log.o
+DEPS_45 += $(CONFIG)/obj/server.o
+DEPS_45 += $(CONFIG)/bin/libappweb.out
+DEPS_45 += $(CONFIG)/obj/authpass.o
 
-$(CONFIG)/bin/authpass.out: $(DEPS_48)
+$(CONFIG)/bin/authpass.out: $(DEPS_45)
 	@echo '      [Link] $(CONFIG)/bin/authpass.out'
 	 -o $(CONFIG)/bin/authpass.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/authpass.o" $(LIBS) -Wl,-r 
 
 #
 #   appweb.o
 #
-DEPS_49 += $(CONFIG)/inc/me.h
-DEPS_49 += $(CONFIG)/inc/appweb.h
+DEPS_46 += $(CONFIG)/inc/me.h
+DEPS_46 += $(CONFIG)/inc/appweb.h
 
 $(CONFIG)/obj/appweb.o: \
-    src/server/appweb.c $(DEPS_49)
+    src/server/appweb.c $(DEPS_46)
 	@echo '   [Compile] $(CONFIG)/obj/appweb.o'
 	 -c -o $(CONFIG)/obj/appweb.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/server/appweb.c
 
 #
 #   appweb
 #
-DEPS_50 += $(CONFIG)/inc/mpr.h
-DEPS_50 += $(CONFIG)/inc/me.h
-DEPS_50 += $(CONFIG)/inc/osdep.h
-DEPS_50 += $(CONFIG)/obj/mprLib.o
-DEPS_50 += $(CONFIG)/bin/libmpr.out
-DEPS_50 += $(CONFIG)/inc/pcre.h
-DEPS_50 += $(CONFIG)/obj/pcre.o
+DEPS_47 += $(CONFIG)/inc/mpr.h
+DEPS_47 += $(CONFIG)/inc/me.h
+DEPS_47 += $(CONFIG)/inc/osdep.h
+DEPS_47 += $(CONFIG)/obj/mprLib.o
+DEPS_47 += $(CONFIG)/bin/libmpr.out
+DEPS_47 += $(CONFIG)/inc/pcre.h
+DEPS_47 += $(CONFIG)/obj/pcre.o
 ifeq ($(ME_EXT_PCRE),1)
-    DEPS_50 += $(CONFIG)/bin/libpcre.out
+    DEPS_47 += $(CONFIG)/bin/libpcre.out
 endif
-DEPS_50 += $(CONFIG)/inc/http.h
-DEPS_50 += $(CONFIG)/obj/httpLib.o
-DEPS_50 += $(CONFIG)/bin/libhttp.out
-DEPS_50 += $(CONFIG)/inc/appweb.h
-DEPS_50 += $(CONFIG)/inc/customize.h
-DEPS_50 += $(CONFIG)/obj/config.o
-DEPS_50 += $(CONFIG)/obj/convenience.o
-DEPS_50 += $(CONFIG)/obj/dirHandler.o
-DEPS_50 += $(CONFIG)/obj/fileHandler.o
-DEPS_50 += $(CONFIG)/obj/log.o
-DEPS_50 += $(CONFIG)/obj/server.o
-DEPS_50 += $(CONFIG)/bin/libappweb.out
-DEPS_50 += src/slink.c
-DEPS_50 += $(CONFIG)/inc/esp.h
-DEPS_50 += $(CONFIG)/obj/slink.o
-DEPS_50 += $(CONFIG)/bin/libslink.out
-DEPS_50 += $(CONFIG)/obj/appweb.o
+DEPS_47 += $(CONFIG)/inc/http.h
+DEPS_47 += $(CONFIG)/obj/httpLib.o
+DEPS_47 += $(CONFIG)/bin/libhttp.out
+DEPS_47 += $(CONFIG)/inc/appweb.h
+DEPS_47 += $(CONFIG)/inc/customize.h
+DEPS_47 += $(CONFIG)/obj/config.o
+DEPS_47 += $(CONFIG)/obj/convenience.o
+DEPS_47 += $(CONFIG)/obj/dirHandler.o
+DEPS_47 += $(CONFIG)/obj/fileHandler.o
+DEPS_47 += $(CONFIG)/obj/log.o
+DEPS_47 += $(CONFIG)/obj/server.o
+DEPS_47 += $(CONFIG)/bin/libappweb.out
+DEPS_47 += src/slink.c
+DEPS_47 += $(CONFIG)/inc/esp.h
+DEPS_47 += $(CONFIG)/obj/slink.o
+DEPS_47 += $(CONFIG)/bin/libslink.out
+DEPS_47 += $(CONFIG)/obj/appweb.o
 
-$(CONFIG)/bin/appweb.out: $(DEPS_50)
+$(CONFIG)/bin/appweb.out: $(DEPS_47)
 	@echo '      [Link] $(CONFIG)/bin/appweb.out'
 	 -o $(CONFIG)/bin/appweb.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/appweb.o" $(LIBS) -Wl,-r 
 
 #
 #   server-cache
 #
-src/server/cache: $(DEPS_51)
+src/server/cache: $(DEPS_48)
 	( \
 	cd src/server; \
 	mkdir -p cache ; \
@@ -1208,7 +1171,7 @@ src/server/cache: $(DEPS_51)
 #
 #   testAppweb.h
 #
-$(CONFIG)/inc/testAppweb.h: $(DEPS_52)
+$(CONFIG)/inc/testAppweb.h: $(DEPS_49)
 	@echo '      [Copy] $(CONFIG)/inc/testAppweb.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp test/src/testAppweb.h $(CONFIG)/inc/testAppweb.h
@@ -1216,79 +1179,79 @@ $(CONFIG)/inc/testAppweb.h: $(DEPS_52)
 #
 #   testAppweb.o
 #
-DEPS_53 += $(CONFIG)/inc/me.h
-DEPS_53 += $(CONFIG)/inc/testAppweb.h
-DEPS_53 += $(CONFIG)/inc/mpr.h
-DEPS_53 += $(CONFIG)/inc/http.h
+DEPS_50 += $(CONFIG)/inc/me.h
+DEPS_50 += $(CONFIG)/inc/testAppweb.h
+DEPS_50 += $(CONFIG)/inc/mpr.h
+DEPS_50 += $(CONFIG)/inc/http.h
 
 $(CONFIG)/obj/testAppweb.o: \
-    test/src/testAppweb.c $(DEPS_53)
+    test/src/testAppweb.c $(DEPS_50)
 	@echo '   [Compile] $(CONFIG)/obj/testAppweb.o'
 	 -c -o $(CONFIG)/obj/testAppweb.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" test/src/testAppweb.c
 
 #
 #   testHttp.o
 #
-DEPS_54 += $(CONFIG)/inc/me.h
-DEPS_54 += $(CONFIG)/inc/testAppweb.h
+DEPS_51 += $(CONFIG)/inc/me.h
+DEPS_51 += $(CONFIG)/inc/testAppweb.h
 
 $(CONFIG)/obj/testHttp.o: \
-    test/src/testHttp.c $(DEPS_54)
+    test/src/testHttp.c $(DEPS_51)
 	@echo '   [Compile] $(CONFIG)/obj/testHttp.o'
 	 -c -o $(CONFIG)/obj/testHttp.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" test/src/testHttp.c
 
 #
 #   testAppweb
 #
-DEPS_55 += $(CONFIG)/inc/mpr.h
-DEPS_55 += $(CONFIG)/inc/me.h
-DEPS_55 += $(CONFIG)/inc/osdep.h
-DEPS_55 += $(CONFIG)/obj/mprLib.o
-DEPS_55 += $(CONFIG)/bin/libmpr.out
-DEPS_55 += $(CONFIG)/inc/pcre.h
-DEPS_55 += $(CONFIG)/obj/pcre.o
+DEPS_52 += $(CONFIG)/inc/mpr.h
+DEPS_52 += $(CONFIG)/inc/me.h
+DEPS_52 += $(CONFIG)/inc/osdep.h
+DEPS_52 += $(CONFIG)/obj/mprLib.o
+DEPS_52 += $(CONFIG)/bin/libmpr.out
+DEPS_52 += $(CONFIG)/inc/pcre.h
+DEPS_52 += $(CONFIG)/obj/pcre.o
 ifeq ($(ME_EXT_PCRE),1)
-    DEPS_55 += $(CONFIG)/bin/libpcre.out
+    DEPS_52 += $(CONFIG)/bin/libpcre.out
 endif
-DEPS_55 += $(CONFIG)/inc/http.h
-DEPS_55 += $(CONFIG)/obj/httpLib.o
-DEPS_55 += $(CONFIG)/bin/libhttp.out
-DEPS_55 += $(CONFIG)/inc/appweb.h
-DEPS_55 += $(CONFIG)/inc/customize.h
-DEPS_55 += $(CONFIG)/obj/config.o
-DEPS_55 += $(CONFIG)/obj/convenience.o
-DEPS_55 += $(CONFIG)/obj/dirHandler.o
-DEPS_55 += $(CONFIG)/obj/fileHandler.o
-DEPS_55 += $(CONFIG)/obj/log.o
-DEPS_55 += $(CONFIG)/obj/server.o
-DEPS_55 += $(CONFIG)/bin/libappweb.out
-DEPS_55 += $(CONFIG)/inc/testAppweb.h
-DEPS_55 += $(CONFIG)/obj/testAppweb.o
-DEPS_55 += $(CONFIG)/obj/testHttp.o
+DEPS_52 += $(CONFIG)/inc/http.h
+DEPS_52 += $(CONFIG)/obj/httpLib.o
+DEPS_52 += $(CONFIG)/bin/libhttp.out
+DEPS_52 += $(CONFIG)/inc/appweb.h
+DEPS_52 += $(CONFIG)/inc/customize.h
+DEPS_52 += $(CONFIG)/obj/config.o
+DEPS_52 += $(CONFIG)/obj/convenience.o
+DEPS_52 += $(CONFIG)/obj/dirHandler.o
+DEPS_52 += $(CONFIG)/obj/fileHandler.o
+DEPS_52 += $(CONFIG)/obj/log.o
+DEPS_52 += $(CONFIG)/obj/server.o
+DEPS_52 += $(CONFIG)/bin/libappweb.out
+DEPS_52 += $(CONFIG)/inc/testAppweb.h
+DEPS_52 += $(CONFIG)/obj/testAppweb.o
+DEPS_52 += $(CONFIG)/obj/testHttp.o
 
-$(CONFIG)/bin/testAppweb.out: $(DEPS_55)
+$(CONFIG)/bin/testAppweb.out: $(DEPS_52)
 	@echo '      [Link] $(CONFIG)/bin/testAppweb.out'
 	 -o $(CONFIG)/bin/testAppweb.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/testAppweb.o" "$(CONFIG)/obj/testHttp.o" $(LIBS) -Wl,-r 
 
 #
 #   installBinary
 #
-installBinary: $(DEPS_56)
+installBinary: $(DEPS_53)
 
 #
 #   install
 #
-DEPS_57 += installBinary
+DEPS_54 += installBinary
 
-install: $(DEPS_57)
+install: $(DEPS_54)
 
 
 #
 #   uninstall
 #
-DEPS_58 += build
+DEPS_55 += build
 
-uninstall: $(DEPS_58)
+uninstall: $(DEPS_55)
 	( \
 	cd package; \
 	rm -f "$(ME_VAPP_PREFIX)/appweb.conf" ; \
@@ -1301,7 +1264,7 @@ uninstall: $(DEPS_58)
 #
 #   genslink
 #
-genslink: $(DEPS_59)
+genslink: $(DEPS_56)
 	( \
 	cd src; \
 	esp --static --genlink slink.c compile ; \
@@ -1311,9 +1274,9 @@ genslink: $(DEPS_59)
 #
 #   run
 #
-DEPS_60 += compile
+DEPS_57 += compile
 
-run: $(DEPS_60)
+run: $(DEPS_57)
 	( \
 	cd src/server; \
 	sudo ../../$(CONFIG)/bin/appweb -v ; \

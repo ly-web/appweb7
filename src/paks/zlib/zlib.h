@@ -4,7 +4,7 @@
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
 
-    Prepared by: orion
+    Prepared by: orion 1
  */
 
 #define local static
@@ -30,6 +30,10 @@
 #include "me.h"
 
 #if EMBEDTHIS || 1
+    #undef      _CRT_SECURE_NO_DEPRECATE
+    #define     _CRT_SECURE_NO_DEPRECATE 1
+    #undef      _CRT_SECURE_NO_WARNINGS
+    #define     _CRT_SECURE_NO_WARNINGS 1
     #undef TIME
 #if _WIN32
     #define ZLIB_DLL
