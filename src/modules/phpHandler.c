@@ -93,9 +93,10 @@ static int  sendHeaders(sapi_headers_struct *sapiHeaders TSRMLS_DC);
 static int  writeBlock(cchar *str, uint len TSRMLS_DC);
 
 #if PHP_MAJOR_VERSION >=5 && PHP_MINOR_VERSION >= 3
-static int  writeHeader(sapi_header_struct *sapiHeader, sapi_header_op_enum op, sapi_headers_struct *sapiHeaders TSRMLS_DC);
+    static int writeHeader(sapi_header_struct *sapiHeader, sapi_header_op_enum op, 
+        sapi_headers_struct *sapiHeaders TSRMLS_DC);
 #else
-static int  writeHeader(sapi_header_struct *sapiHeader, sapi_headers_struct *sapiHeaders TSRMLS_DC);
+    static int  writeHeader(sapi_header_struct *sapiHeader, sapi_headers_struct *sapiHeaders TSRMLS_DC);
 #endif
 
 /************************************ Locals **********************************/
@@ -103,8 +104,8 @@ static int  writeHeader(sapi_header_struct *sapiHeader, sapi_headers_struct *sap
     PHP Module Interface
  */
 static sapi_module_struct phpSapiBlock = {
-    ME_PRODUCT,                    /* Sapi name */
-    ME_TITLE,                      /* Full name */
+    ME_NAME,                        /* Sapi name */
+    ME_TITLE,                       /* Full name */
     startup,                        /* Start routine */
     php_module_shutdown_wrapper,    /* Stop routine  */
     0,                              /* Activate */

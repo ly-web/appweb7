@@ -17,7 +17,7 @@ Me.load({
     ],
 
     modules: [
-        'makeme/appweb.es',
+        'package/service.es',
     ],
 
     customize: [
@@ -166,6 +166,18 @@ Me.load({
 
         mine: {
             action: "genProjects('-with ejs -with sqlite', 'mine', Config.OS + '-' + Config.CPU)",
+        },
+    },
+
+    probe: {
+        cgi: {
+            description: 'Common Gateway Interface Module',
+            path: function (ext) me.dir.src.join('src/modules/cgiHandler.c'),
+            depends: [ 'libmod_cgi' ],
+        },
+        dir: {
+            description: 'Directory Listing Module',
+            path: function(ext) me.dir.src.join('src/dirHandler.c'),
         },
     },
 })

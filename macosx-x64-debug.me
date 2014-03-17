@@ -175,28 +175,11 @@ Me.load({
                 "vxworks",
                 "winsdk",
             ],
-            scripts: {
-                config: [
-                    {
-                        home: "/Users/mob/git/me/macosx-x64-release/bin/probe",
-                        interpreter: "ejs",
-                        script: "[function Function]",
-                    },
-                ],
-                generate: [
-                    {
-                        home: "/Users/mob/git/me/macosx-x64-release/bin/probe",
-                        interpreter: "ejs",
-                        script: "[function Function]",
-                    },
-                ],
-            },
             compiler: [
                 "-Wno-unused-result",
                 "-Wshorten-64-to-32",
                 "-Wall",
                 "-g",
-                "-Wunreachable-code",
             ],
             defines: [
                 "ME_DEBUG",
@@ -251,16 +234,15 @@ Me.load({
             depends: [
                 "libesp",
             ],
-            path: "/Users/mob/git/appweb/src/paks/esp",
+            path: "src/paks/esp/esp.me",
             description: "Embedthis ESP, the amazingly fast C-Language web framework",
             type: "extension",
         },
         est: {
             name: "est",
             enable: true,
-            file: "/Users/mob/git/me/macosx-x64-release/bin/probe/est.me",
             description: "Embedded Security Transport Library",
-            path: "/Users/mob/git/appweb/src/paks/est/estLib.c",
+            path: "src/paks/est/estLib.c",
             depends: [
                 "libest",
             ],
@@ -293,7 +275,7 @@ Me.load({
         http: {
             name: "http",
             enable: true,
-            path: "/Users/mob/git/appweb/src/paks/http",
+            path: "src/paks/http/http.me",
             description: "Embedthis Http Library",
             type: "extension",
         },
@@ -306,15 +288,6 @@ Me.load({
             extensions: [
                 "compiler",
             ],
-            scripts: {
-                generate: [
-                    {
-                        home: "/Users/mob/git/me/macosx-x64-release/bin/probe",
-                        interpreter: "ejs",
-                        script: "[function Function]",
-                    },
-                ],
-            },
             type: "extension",
         },
         link: {
@@ -326,15 +299,6 @@ Me.load({
             extensions: [
                 "compiler",
             ],
-            scripts: {
-                config: [
-                    {
-                        home: "/Users/mob/git/me/macosx-x64-release/bin/probe",
-                        interpreter: "ejs",
-                        script: "[function Function]",
-                    },
-                ],
-            },
             type: "extension",
         },
         man: {
@@ -367,15 +331,6 @@ Me.load({
                 "nanossl",
                 "openssl",
             ],
-            scripts: {
-                generate: [
-                    {
-                        home: "/Users/mob/git/me/macosx-x64-release/bin/probe",
-                        interpreter: "ejs",
-                        script: "[function Function]",
-                    },
-                ],
-            },
             diagnostic: "Using the est SSL provider instead.",
             libpaths: [
                 "/Users/mob/git/packages-macosx-x64/matrixssl/latest",
@@ -393,15 +348,16 @@ Me.load({
             type: "extension",
         },
         mdb: {
+            description: "MDB Database",
+            path: "src/mdb.c",
             name: "mdb",
-            enable: false,
-            diagnostic: "Cannot find extension: mdb.me",
+            enable: true,
             type: "extension",
         },
         mpr: {
             name: "mpr",
             enable: true,
-            path: "/Users/mob/git/appweb/src/paks/mpr",
+            path: "src/paks/mpr/mpr.me",
             description: "Embedthis Multithreaded Portable Runtime",
             type: "extension",
         },
@@ -410,7 +366,7 @@ Me.load({
             enable: false,
             file: "/Users/mob/git/me/macosx-x64-release/bin/probe/nanossl.me",
             description: "Mocana NanoSSL",
-            path: "[function Function]",
+            path: null,
             extensions: [
                 "ssl",
             ],
@@ -419,15 +375,6 @@ Me.load({
                 "matrixssl",
                 "openssl",
             ],
-            scripts: {
-                generate: [
-                    {
-                        home: "/Users/mob/git/me/macosx-x64-release/bin/probe",
-                        interpreter: "ejs",
-                        script: "[function Function]",
-                    },
-                ],
-            },
             diagnostic: "Using the est SSL provider instead.",
             type: "extension",
         },
@@ -453,15 +400,6 @@ Me.load({
                 "matrixssl",
                 "nanossl",
             ],
-            scripts: {
-                generate: [
-                    {
-                        home: "/Users/mob/git/me/macosx-x64-release/bin/probe",
-                        interpreter: "ejs",
-                        script: "[function Function]",
-                    },
-                ],
-            },
             libraries: [
                 "ssl",
                 "crypto",
@@ -486,7 +424,7 @@ Me.load({
         osdep: {
             name: "osdep",
             enable: true,
-            path: "/Users/mob/git/appweb/src/paks/osdep",
+            path: "src/paks/osdep/osdep.me",
             description: "Embedthis O/S Dependent Layer",
             type: "extension",
         },
@@ -501,7 +439,7 @@ Me.load({
         pcre: {
             name: "pcre",
             enable: true,
-            path: "/Users/mob/git/appweb/src/paks/pcre",
+            path: "src/paks/pcre/pcre.me",
             description: "PCRE Library",
             type: "extension",
         },
@@ -586,23 +524,7 @@ Me.load({
             enable: false,
             file: "/Users/mob/git/me/macosx-x64-release/bin/probe/vxworks.me",
             description: "VxWorks SDK",
-            path: "[function Function]",
-            scripts: {
-                config: [
-                    {
-                        home: "/Users/mob/git/me/macosx-x64-release/bin/probe",
-                        interpreter: "ejs",
-                        script: "[function Function]",
-                    },
-                ],
-                generate: [
-                    {
-                        home: "/Users/mob/git/me/macosx-x64-release/bin/probe",
-                        interpreter: "ejs",
-                        script: "[function Function]",
-                    },
-                ],
-            },
+            path: null,
             diagnostic: "Cannot find \"target/h/vxWorks.h\" for extension \"vxworks\" on macosx-x64-debug. ",
             type: "extension",
         },
@@ -611,16 +533,7 @@ Me.load({
             enable: false,
             file: "/Users/mob/git/me/macosx-x64-release/bin/probe/winsdk.me",
             description: "Windows SDK",
-            path: "[function Function]",
-            scripts: {
-                config: [
-                    {
-                        home: "/Users/mob/git/me/macosx-x64-release/bin/probe",
-                        interpreter: "ejs",
-                        script: "[function Function]",
-                    },
-                ],
-            },
+            path: null,
             diagnostic: "Winsdk only available on windows",
             type: "extension",
         },

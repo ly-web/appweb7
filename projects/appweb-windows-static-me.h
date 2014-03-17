@@ -323,7 +323,7 @@
     #define ME_EXT_MATRIXSSL 0
 #endif
 #ifndef ME_EXT_MDB
-    #define ME_EXT_MDB 0
+    #define ME_EXT_MDB 1
 #endif
 #ifndef ME_EXT_MPR
     #define ME_EXT_MPR 1
@@ -350,10 +350,10 @@
     #define ME_EXT_PHP 0
 #endif
 #ifndef ME_EXT_PMAKER
-    #define ME_EXT_PMAKER 1
+    #define ME_EXT_PMAKER 0
 #endif
 #ifndef ME_EXT_RC
-    #define ME_EXT_RC 1
+    #define ME_EXT_RC 0
 #endif
 #ifndef ME_EXT_RECESS
     #define ME_EXT_RECESS 1
@@ -374,7 +374,7 @@
     #define ME_EXT_VXWORKS 1
 #endif
 #ifndef ME_EXT_WINSDK
-    #define ME_EXT_WINSDK 1
+    #define ME_EXT_WINSDK 0
 #endif
 #ifndef ME_EXT_ZIP
     #define ME_EXT_ZIP 1

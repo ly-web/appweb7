@@ -3,6 +3,15 @@
  */
 
 Me.load({
+    probe: {
+        sqlite: {
+            description: 'SQLite Database',
+            path: function(ext) {
+                return ext.withpath || probe(me.dir.paks.join('sqlite'))
+            }
+            depends: [ 'libsql' ],
+        },
+    },
     targets: {
         libsql: {
             type: 'lib',

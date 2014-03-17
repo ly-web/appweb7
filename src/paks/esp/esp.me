@@ -7,6 +7,10 @@ Me.load({
         esp: {
             depends: [ 'libesp' ],
         },
+        mdb: {
+            description: 'MDB Database',
+            path: function (ext) me.dir.src.join('src/mdb.c'),
+        },
     },
 
     targets: {
