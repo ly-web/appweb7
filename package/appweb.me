@@ -3,6 +3,12 @@
  */
 
 Me.load({
+    probe: {
+        appweb: {
+            description: 'Appweb Web Server',
+            depends: [ 'libappweb' ],
+        },
+    },
     targets: {
         libappweb: {
             type: 'lib',
