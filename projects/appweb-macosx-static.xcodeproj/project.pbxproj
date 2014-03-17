@@ -1676,7 +1676,7 @@
 			shellPath = /bin/bash;
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/paks/esp
-rm -rf ../../${OUT_DIR}/bin/esp.conf
+mkdir -p ../../${OUT_DIR}/bin
 cp -r esp.conf ../../${OUT_DIR}/bin/esp.conf
 ";
 		};
@@ -1705,7 +1705,6 @@ cp -r esp.conf ../../${OUT_DIR}/bin/esp.conf
 ../src/paks/ejs/package.json,
 ../src/paks/ejs/README.md,
 ../src/paks/esp,
-../src/paks/esp/bower.json,
 ../src/paks/esp/esp.c,
 ../src/paks/esp/esp.conf,
 ../src/paks/esp/esp.h,
@@ -1826,16 +1825,20 @@ cp -r esp.conf ../../${OUT_DIR}/bin/esp.conf
 ../src/paks/me-dev,
 ../src/paks/me-dev/dev.es,
 ../src/paks/me-dev/dev.me,
+../src/paks/me-dev/LICENSE.md,
 ../src/paks/me-dev/package.json,
+../src/paks/me-dev/README.md,
 ../src/paks/me-doc,
 ../src/paks/me-doc/doc.es,
 ../src/paks/me-doc/doc.me,
 ../src/paks/me-doc/package.json,
 ../src/paks/me-package,
+../src/paks/me-package/LICENSE.md,
 ../src/paks/me-package/manifest.me,
 ../src/paks/me-package/package.es,
 ../src/paks/me-package/package.json,
 ../src/paks/me-package/package.me,
+../src/paks/me-package/README.md,
 ../src/paks/mpr,
 ../src/paks/mpr/LICENSE.md,
 ../src/paks/mpr/makerom.c,
@@ -1992,7 +1995,7 @@ cd ../src/paks
 			shellPath = /bin/bash;
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/paks/est
-rm -rf ../../${OUT_DIR}/bin/ca.crt
+mkdir -p ../../${OUT_DIR}/bin
 cp -r ca.crt ../../${OUT_DIR}/bin/ca.crt
 ";
 		};
@@ -2751,7 +2754,7 @@ fi";
 
                 /* Common Settings */
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_ME)";
+                ONLY_ACTIVE_ARCH = YES;
                 CURRENT_PROJECT_VERSION = 5.0.0;
                 DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
                 DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
@@ -2820,7 +2823,7 @@ fi";
 
                 /* Common Settings */
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_ME)";
+                ONLY_ACTIVE_ARCH = YES;
                 CURRENT_PROJECT_VERSION = 5.0.0;
                 DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
                 DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
