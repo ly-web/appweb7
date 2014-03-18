@@ -1351,10 +1351,10 @@ static void cacheAtClient(HttpConn *conn)
     if (!mprLookupKey(tx->headers, "Cache-Control")) {
         if ((value = mprLookupKey(conn->tx->headers, "Cache-Control")) != 0) {
             if (strstr(value, "max-age") == 0) {
-                httpAppendHeader(conn, "Cache-Control", "public, max-age=%d", cache->clientLifespan / MPR_TICKS_PER_SEC);
+                httpAppendHeader(conn, "Cache-Control", "public, max-age=%Ld", cache->clientLifespan / MPR_TICKS_PER_SEC);
             }
         } else {
-            httpAddHeader(conn, "Cache-Control", "public, max-age=%d", cache->clientLifespan / MPR_TICKS_PER_SEC);
+            httpAddHeader(conn, "Cache-Control", "public, max-age=%Ld", cache->clientLifespan / MPR_TICKS_PER_SEC);
             /* 
                 Old HTTP/1.0 clients don't understand Cache-Control 
              */
