@@ -223,8 +223,8 @@ Bit.load({
                 enable:     "bit.platform.os == 'windows' && !bit.settings.static",
 
             },{
-                from:       ['src/esp/paks/'],
-                to:         '${abin}/../esp',
+                from:       ['${OUT}/paks/'],
+                to:         '${abin}/../paks',
                 set:        'esp',
                 packs:      'esp',
 
