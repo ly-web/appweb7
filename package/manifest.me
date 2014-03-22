@@ -87,7 +87,7 @@ Me.load({
                 to:         '${abin}/',
                 linkin:     '${bin}',
                 set:        'esp',
-                extensions: 'esp',
+                ifdef:      'esp',
 
             },{ from:        [
                     '${BIN}/appwebMonitor${EXE}',
@@ -114,7 +114,7 @@ Me.load({
                 ],
                 to:         '${abin}/',
                 set:        'libs',
-                extensions: 'ssl',
+                ifdef:      'ssl',
                 enable:     "!me.settings.static",
 
            },{ from:        [
@@ -122,7 +122,7 @@ Me.load({
                 ],
                 to:         '${abin}/',
                 set:        'core',
-                extensions: 'ssl',
+                ifdef:      'ssl',
 
             },{ from:        [
                     '${BIN}/libssl*${SHOBJ}*',
@@ -131,7 +131,7 @@ Me.load({
                 to:         '${abin}/',
                 set:        'core',
                 enable:     "me.platform.os != 'windows'",
-                extensions: 'openssl',
+                ifdef:      'openssl',
 
             },{ from:        [
                     '${BIN}/libeay32${SHOBJ}',
@@ -140,30 +140,30 @@ Me.load({
                 to:         '${abin}/',
                 set:        'core',
                 enable:     "me.platform.os == 'windows'",
-                extensions: 'openssl',
+                ifdef:      'openssl',
 
             },{ from:       '${BIN}/libest${SHOBJ}',
                 to:         '${abin}/',
                 set:        'libs',
-                extensions: 'est',
+                ifdef:      'est',
                 enable:     "!me.settings.static",
 
             },{ from:       '${BIN}/libsql${SHOBJ}',
                 to:         '${abin}/',
                 set:        'libs',
-                extensions: 'sqlite'
+                ifdef:      'sqlite'
                 enable:     "!me.settings.static",
 
             },{ from:       '${BIN}/libmod_esp${SHOBJ}',
                 to:         '${abin}/',
                 set:        'libs',
-                extensions: 'esp',
+                ifdef:      'esp',
                 enable:     "!me.settings.static",
 
             },{ from:       '${BIN}/libmod_cgi${SHOBJ}',
                 to:         '${abin}/',
                 set:        'libs',
-                extensions: 'cgi',
+                ifdef:      'cgi',
                 enable:     "!me.settings.static",
 
             },{ from:        [
@@ -172,7 +172,7 @@ Me.load({
                 ],
                 to:         '${abin}/',
                 set:        'libs',
-                extensions: 'ejs',
+                ifdef:      'ejs',
                 enable:     "!me.settings.static",
 
             },{ from:        [
@@ -180,7 +180,7 @@ Me.load({
                 ],
                 to:         '${abin}/',
                 set:        'libs',
-                extensions: 'php',
+                ifdef:      'php',
                 enable:     "!me.settings.static",
 
             },{ from:        [
@@ -188,7 +188,7 @@ Me.load({
                 ],
                 to:         '${abin}/',
                 set:        'core',
-                extensions: 'php',
+                ifdef:      'php',
                 enable:     "me.platform.os != 'windows'",
 
             },{ from:        [
@@ -196,7 +196,7 @@ Me.load({
                 ],
                 to:         '${abin}/',
                 set:        'core',
-                extensions: 'php',
+                ifdef:      'php',
                 enable:     "me.platform.os == 'windows'",
 
            }, {
@@ -224,20 +224,20 @@ Me.load({
                 ],
                 to:         '${abin}/',
                 set:        'libs',
-                extensions: 'ssl',
+                ifdef:      'ssl',
                 enable:     "me.platform.os == 'windows' && !me.settings.static",
 
             },{
                 from:       ['${OUT}/paks/'],
                 to:         '${abin}/../esp',
                 set:        'esp',
-                extensions: 'esp',
+                ifdef:      'esp',
 
             },{
                 from:       '${BIN}/esp.conf',
                 to:         '${abin}/',
                 set:        'core',
-                extensions: 'esp',
+                ifdef:      'esp',
 
             },{ from:       'src/server/web/',
                 to:         '${web}/', 
@@ -265,7 +265,7 @@ Me.load({
                 from:       'src/server/php.ini',
                 to:         '${etc}/',
                 set:        'php',
-                extensions: 'php',
+                ifdef:      'php',
 
             },{
                 from:       'src/server/appweb.local', 
@@ -321,7 +321,7 @@ Me.load({
                 to:         '${vapp}/inc/',
                 set:        'dev',
                 linkin:     '${inc}/appweb',
-                extensions: 'esp',
+                ifdef:      'esp',
 
             },{
                 from:       [
@@ -332,13 +332,13 @@ Me.load({
                 to:         '${vapp}/inc/',
                 set:        'dev',
                 linkin:     '${inc}/appweb',
-                extensions: 'ejs',
+                ifdef:      'ejs',
 
             },{
                 from:       '${BIN}/ejs.mod',
                 to:         '${abin}/',
                 set:        'core',
-                extensions: 'ejs',
+                ifdef:      'ejs',
 
             },{
                 from:        'doc/man/*.1',
@@ -402,7 +402,7 @@ Me.load({
                 set:         'source',
 
             },{
-                from:        ['makeme', 'src', 'test', 'doc', 'projects', 'package', 'samples'],
+                from:        ['src', 'test', 'doc', 'projects', 'package', 'samples'],
                 to:          '${src}/',
                 set:         'source',
 
@@ -427,8 +427,8 @@ Me.load({
                 cat:        true,
                 filter:     /^#inc.*appweb.*$|^#inc.*esp.*$|^#inc.*customize.*$/mg,
                 exclude:    /\/server\/|\/esp\/|\/utils\/|\/paks\/|proxyHandler/,
-                header:     '#include \"appweb.h\"\n\n#if ME_EXT_APPWEB',
-                footer:     '#endif /* ME_EXT_APPWEB */',
+                header:     '#include \"appweb.h\"\n\n#if ME_COM_APPWEB',
+                footer:     '#endif /* ME_COM_APPWEB */',
                 title:      '${settings.title} Library Source',
                 set:        'pak',
             },

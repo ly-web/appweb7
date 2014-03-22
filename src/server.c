@@ -38,7 +38,7 @@ PUBLIC MaAppweb *maCreateAppweb()
     /* 
        Open the builtin handlers 
      */
-#if ME_EXT_DIR
+#if ME_COM_DIR
     maOpenDirHandler(http);
 #endif
     maOpenFileHandler(http);
@@ -206,7 +206,7 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
         route = mprGetFirstItem(host->routes);
         assert(route);
 
-#if ME_EXT_CGI
+#if ME_COM_CGI
         maLoadModule(appweb, "cgiHandler", "libmod_cgi");
         if (httpLookupStage(http, "cgiHandler")) {
             httpAddRouteHandler(route, "cgiHandler", "cgi cgi-nph bat cmd pl py");
@@ -223,19 +223,19 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
             }
         }
 #endif
-#if ME_EXT_ESP
+#if ME_COM_ESP
         maLoadModule(appweb, "espHandler", "libmod_esp");
         if (httpLookupStage(http, "espHandler")) {
             httpAddRouteHandler(route, "espHandler", "esp");
         }
 #endif
-#if ME_EXT_EJS
+#if ME_COM_EJS
         maLoadModule(appweb, "ejsHandler", "libmod_ejs");
         if (httpLookupStage(http, "ejsHandler")) {
             httpAddRouteHandler(route, "ejsHandler", "ejs");
         }
 #endif
-#if ME_EXT_PHP
+#if ME_COM_PHP
         maLoadModule(appweb, "phpHandler", "libmod_php");
         if (httpLookupStage(http, "phpHandler")) {
             httpAddRouteHandler(route, "phpHandler", "php");

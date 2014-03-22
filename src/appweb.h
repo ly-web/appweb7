@@ -24,29 +24,29 @@ extern "C" {
 /*
     Pack defaults
  */
-#ifndef ME_EXT_CGI
-    #define ME_EXT_CGI 0
+#ifndef ME_COM_CGI
+    #define ME_COM_CGI 0
 #endif
-#ifndef ME_EXT_DIR
-    #define ME_EXT_DIR 0
+#ifndef ME_COM_DIR
+    #define ME_COM_DIR 0
 #endif
-#ifndef ME_EXT_EJS
-    #define ME_EXT_EJS 0
+#ifndef ME_COM_EJS
+    #define ME_COM_EJS 0
 #endif
-#ifndef ME_EXT_ESP
-    #define ME_EXT_ESP 0
+#ifndef ME_COM_ESP
+    #define ME_COM_ESP 0
 #endif
-#ifndef ME_EXT_MDB
-    #define ME_EXT_MDB 0
+#ifndef ME_COM_MDB
+    #define ME_COM_MDB 0
 #endif
-#ifndef ME_EXT_PHP
-    #define ME_EXT_PHP 0
+#ifndef ME_COM_PHP
+    #define ME_COM_PHP 0
 #endif
-#ifndef ME_EXT_SDB
-    #define ME_EXT_SDB 0
+#ifndef ME_COM_SDB
+    #define ME_COM_SDB 0
 #endif
-#ifndef ME_EXT_SSL
-    #define ME_EXT_SSL 0
+#ifndef ME_COM_SSL
+    #define ME_COM_SSL 0
 #endif
 
 #if !DOXYGEN

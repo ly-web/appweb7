@@ -9,7 +9,7 @@
 
 #include "esp.h"
 
-#if ME_EXT_ESP
+#if ME_COM_ESP
 
 /************************************************************************/
 /*
@@ -6830,11 +6830,11 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     if ((esp->ediService = ediCreateService()) == 0) {
         return 0;
     }
-#if ME_EXT_MDB
+#if ME_COM_MDB
     /* Memory database */
     mdbInit();
 #endif
-#if ME_EXT_SQLITE
+#if ME_COM_SQLITE
     sdbInit();
 #endif
     return 0;
@@ -8374,7 +8374,7 @@ static cchar *getCompilerPath(cchar *os, cchar *arch)
 
 #include    "pcre.h"
 
-#if ME_EXT_MDB
+#if ME_COM_MDB
 /************************************* Local **********************************/
 
 #define MDB_LOAD_BEGIN   1      /* Initial state */
@@ -9898,7 +9898,7 @@ static int parseOperation(cchar *operation)
 /* To prevent ar/ranlib warnings */
 PUBLIC void mdbDummy() {}
 
-#endif /* ME_EXT_MDB */
+#endif /* ME_COM_MDB */
 /*
     @copy   default
 
@@ -9936,7 +9936,7 @@ PUBLIC void mdbDummy() {}
 #include    "http.h"
 
 
-#if ME_EXT_SQLITE
+#if ME_COM_SQLITE
  #include    "sqlite3.h"
 
 #ifndef ME_MAX_SQLITE_MEM
@@ -10961,7 +10961,7 @@ static void initSqlite()
 #else
 /* To prevent ar/ranlib warnings */
 PUBLIC void sdbDummy() {}
-#endif /* ME_EXT_SQLITE */
+#endif /* ME_COM_SQLITE */
 
 /*
     @copy   default
@@ -10982,4 +10982,4 @@ PUBLIC void sdbDummy() {}
 
     @end
  */
-#endif /* ME_EXT_ESP */
+#endif /* ME_COM_ESP */

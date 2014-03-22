@@ -142,7 +142,7 @@ PUBLIC void httpInitAuth(Http *http)
 
     httpCreateAuthStore("app", NULL);
     httpCreateAuthStore("internal", fileVerifyUser);
-#if ME_HAS_PAM && ME_HTTP_PAM
+#if ME_COMPILER_HAS_PAM && ME_HTTP_PAM
     httpCreateAuthStore("system", httpPamVerifyUser);
 #endif
 #if DEPRECATED || 1
@@ -150,7 +150,7 @@ PUBLIC void httpInitAuth(Http *http)
         Deprecated in 4.4. Use "internal"
      */
     httpCreateAuthStore("file", fileVerifyUser);
-#if ME_HAS_PAM && ME_HTTP_PAM
+#if ME_COMPILER_HAS_PAM && ME_HTTP_PAM
     httpCreateAuthStore("pam", httpPamVerifyUser);
 #endif
 #endif
@@ -662,7 +662,7 @@ PUBLIC int httpSetAuthStore(HttpAuth *auth, cchar *store)
     }
     //  DEPRECATED "pam"
     if (smatch(store, "system") || smatch(store, "pam")) {
-#if ME_HAS_PAM && ME_HTTP_PAM
+#if ME_COMPILER_HAS_PAM && ME_HTTP_PAM
         if (auth->type && smatch(auth->type->name, "digest")) {
             mprError("Cannot use the PAM password store with digest authentication");
             return MPR_ERR_BAD_ARGS;
@@ -1188,7 +1188,7 @@ static int matchCacheFilter(HttpConn *conn, HttpRoute *route, int dir)
         mprTrace(3, "cacheFilter: Cache response content for '%s'", conn->rx->uri);
         return HTTP_ROUTE_OK;
     }
-    return HTTP_ROUTE_REJECT;
+    return HTTP_ROUTE_OMIT_FILTER;
 }
 
 
@@ -1708,7 +1708,7 @@ static int matchChunk(HttpConn *conn, HttpRoute *route, int dir)
     tx = conn->tx;
 
     if (conn->upgraded || (httpClientConn(conn) && tx->parsedUri && tx->parsedUri->webSockets)) {
-        return HTTP_ROUTE_REJECT;
+        return HTTP_ROUTE_OMIT_FILTER;
     }
     if (dir & HTTP_STAGE_TX) {
         /* 
@@ -1716,7 +1716,7 @@ static int matchChunk(HttpConn *conn, HttpRoute *route, int dir)
             the X_APPWEB_CHUNK_SIZE header which may set the chunk size to zero.
          */
         if (tx->length >= 0 || tx->chunkSize == 0) {
-            return HTTP_ROUTE_REJECT;
+            return HTTP_ROUTE_OMIT_FILTER;
         }
         return HTTP_ROUTE_OK;
     } else {
@@ -2002,7 +2002,7 @@ static HttpConn *openConnection(HttpConn *conn, struct MprSsl *ssl)
     conn->secure = uri->secure;
     conn->keepAliveCount = (conn->limits->keepAliveMax) ? conn->limits->keepAliveMax : 0;
 
-#if ME_EXT_SSL
+#if ME_COM_SSL
     /* Must be done even if using keep alive for repeat SSL requests */
     if (uri->secure) {
         char *peerName;
@@ -4141,7 +4141,7 @@ PUBLIC void httpSetEndpointNotifier(HttpEndpoint *endpoint, HttpNotifier notifie
 
 PUBLIC int httpSecureEndpoint(HttpEndpoint *endpoint, struct MprSsl *ssl)
 {
-#if ME_EXT_SSL
+#if ME_COM_SSL
     endpoint->ssl = ssl;
     return 0;
 #else
@@ -6669,7 +6669,7 @@ bool httpIsLastPacket(HttpPacket *packet)
 
 
 
-#if ME_HAS_PAM && ME_HTTP_PAM
+#if ME_COMPILER_HAS_PAM && ME_HTTP_PAM
  #include    <security/pam_appl.h>
 
 /********************************* Defines ************************************/
@@ -6793,7 +6793,7 @@ static int pamChat(int msgCount, const struct pam_message **msg, struct pam_resp
     *resp = reply;
     return PAM_SUCCESS;
 }
-#endif /* ME_HAS_PAM */
+#endif /* ME_COMPILER_HAS_PAM */
 
 /*
     @copy   default
@@ -7949,7 +7949,7 @@ static int matchRange(HttpConn *conn, HttpRoute *route, int dir)
     if ((dir & HTTP_STAGE_TX) && conn->tx->outputRanges) {
         return HTTP_ROUTE_OK;
     }
-    return HTTP_ROUTE_REJECT;
+    return HTTP_ROUTE_OMIT_FILTER;
 }
 
 
@@ -8216,7 +8216,7 @@ static bool fixRangeLength(HttpConn *conn)
 
 
 
-#if ME_EXT_PCRE
+#if ME_COM_PCRE
  #include    "pcre.h"
 #endif
 
@@ -16790,11 +16790,11 @@ static int matchUpload(HttpConn *conn, HttpRoute *route, int dir)
     ssize   len;
 
     if (!(dir & HTTP_STAGE_RX)) {
-        return HTTP_ROUTE_REJECT;
+        return HTTP_ROUTE_OMIT_FILTER;
     }
     rx = conn->rx;
     if (!(rx->flags & HTTP_POST) || rx->remainingContent <= 0) {
-        return HTTP_ROUTE_REJECT;
+        return HTTP_ROUTE_OMIT_FILTER;
     }
     pat = "multipart/form-data";
     len = strlen(pat);
@@ -16803,7 +16803,7 @@ static int matchUpload(HttpConn *conn, HttpRoute *route, int dir)
         mprTrace(5, "matchUpload for %s", rx->uri);
         return HTTP_ROUTE_OK;
     }
-    return HTTP_ROUTE_REJECT;
+    return HTTP_ROUTE_OMIT_FILTER;
 }
 
 
@@ -18846,8 +18846,8 @@ static int matchWebSock(HttpConn *conn, HttpRoute *route, int dir)
     assert(rx);
     assert(tx);
 
-    if (conn->error || tx->responded) {
-        return HTTP_ROUTE_REJECT;
+    if (conn->error) {
+        return HTTP_ROUTE_OMIT_FILTER;
     }
     if (httpClientConn(conn)) {
         if (rx->webSocket) {
@@ -18862,16 +18862,19 @@ static int matchWebSock(HttpConn *conn, HttpRoute *route, int dir)
             ws->state = WS_STATE_CONNECTING;
             return HTTP_ROUTE_OK;
         }
-        return HTTP_ROUTE_REJECT;
+        return HTTP_ROUTE_OMIT_FILTER;
     }
     if (dir & HTTP_STAGE_TX) {
-        return rx->webSocket ? HTTP_ROUTE_OK : HTTP_ROUTE_REJECT;
+        return rx->webSocket ? HTTP_ROUTE_OK : HTTP_ROUTE_OMIT_FILTER;
     }
     if (!rx->upgrade || !scaselessmatch(rx->upgrade, "websocket")) {
-        return HTTP_ROUTE_REJECT;
+        return HTTP_ROUTE_OMIT_FILTER;
     }
     if (!rx->hostHeader || !smatch(rx->method, "GET")) {
-        return HTTP_ROUTE_REJECT;
+        return HTTP_ROUTE_OMIT_FILTER;
+    }
+    if (tx->flags & HTTP_TX_HEADERS_CREATED) {
+        return HTTP_ROUTE_OMIT_FILTER;
     }
     version = (int) stoi(httpGetHeader(conn, "sec-websocket-version"));
     if (version < WS_VERSION) {
@@ -18930,7 +18933,7 @@ static int matchWebSock(HttpConn *conn, HttpRoute *route, int dir)
         rx->remainingContent = MAXINT;
         return HTTP_ROUTE_OK;
     }
-    return HTTP_ROUTE_REJECT;
+    return HTTP_ROUTE_OMIT_FILTER;
 }
 
 

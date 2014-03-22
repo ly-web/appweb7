@@ -15,6 +15,39 @@
 #ifndef ME_COMPATIBLE
     #define ME_COMPATIBLE "5.0.0"
 #endif
+#ifndef ME_COMPILER_HAS_ATOMIC
+    #define ME_COMPILER_HAS_ATOMIC 0
+#endif
+#ifndef ME_COMPILER_HAS_ATOMIC64
+    #define ME_COMPILER_HAS_ATOMIC64 0
+#endif
+#ifndef ME_COMPILER_HAS_DYN_LOAD
+    #define ME_COMPILER_HAS_DYN_LOAD 1
+#endif
+#ifndef ME_COMPILER_HAS_LIB_EDIT
+    #define ME_COMPILER_HAS_LIB_EDIT 0
+#endif
+#ifndef ME_COMPILER_HAS_LIB_RT
+    #define ME_COMPILER_HAS_LIB_RT 0
+#endif
+#ifndef ME_COMPILER_HAS_MMU
+    #define ME_COMPILER_HAS_MMU 1
+#endif
+#ifndef ME_COMPILER_HAS_STACK_PROTECTOR
+    #define ME_COMPILER_HAS_STACK_PROTECTOR 0
+#endif
+#ifndef ME_COMPILER_HAS_SYNC
+    #define ME_COMPILER_HAS_SYNC 0
+#endif
+#ifndef ME_COMPILER_HAS_SYNC64
+    #define ME_COMPILER_HAS_SYNC64 0
+#endif
+#ifndef ME_COMPILER_HAS_SYNC_CAS
+    #define ME_COMPILER_HAS_SYNC_CAS 0
+#endif
+#ifndef ME_COMPILER_HAS_UNNAMED_UNIONS
+    #define ME_COMPILER_HAS_UNNAMED_UNIONS 1
+#endif
 #ifndef ME_CONFIG_FILE
     #define ME_CONFIG_FILE "appweb.conf"
 #endif
@@ -81,59 +114,17 @@
 #ifndef ME_EST_XTEA
     #define ME_EST_XTEA 0
 #endif
-#ifndef ME_EXTENSIONS_DISCOVER
-    #define ME_EXTENSIONS_DISCOVER "cgi,dir,doxygen,dsi,esp,gzip,htmlmin,man,man2html,mdb,ngmin,pak,pmaker,recess,ssl,uglifyjs,utest,zip"
-#endif
-#ifndef ME_EXTENSIONS_OMIT
-    #define ME_EXTENSIONS_OMIT "ejs,matrixssl,openssl,nanossl,php,sqlite,zlib"
-#endif
-#ifndef ME_EXTENSIONS_REQUIRE
-    #define ME_EXTENSIONS_REQUIRE "winsdk,compiler,lib,link,rc,osdep,http,mpr,pcre"
-#endif
-#ifndef ME_HAS_ATOMIC
-    #define ME_HAS_ATOMIC 0
-#endif
-#ifndef ME_HAS_ATOMIC64
-    #define ME_HAS_ATOMIC64 0
-#endif
-#ifndef ME_HAS_DYN_LOAD
-    #define ME_HAS_DYN_LOAD 1
-#endif
-#ifndef ME_HAS_LIB_EDIT
-    #define ME_HAS_LIB_EDIT 0
-#endif
-#ifndef ME_HAS_LIB_RT
-    #define ME_HAS_LIB_RT 0
-#endif
-#ifndef ME_HAS_MMU
-    #define ME_HAS_MMU 1
-#endif
-#ifndef ME_HAS_STACK_PROTECTOR
-    #define ME_HAS_STACK_PROTECTOR 0
-#endif
-#ifndef ME_HAS_SYNC
-    #define ME_HAS_SYNC 0
-#endif
-#ifndef ME_HAS_SYNC64
-    #define ME_HAS_SYNC64 0
-#endif
-#ifndef ME_HAS_SYNC_CAS
-    #define ME_HAS_SYNC_CAS 0
-#endif
-#ifndef ME_HAS_UNNAMED_UNIONS
-    #define ME_HAS_UNNAMED_UNIONS 1
-#endif
 #ifndef ME_HTTP_PAM
     #define ME_HTTP_PAM 1
 #endif
 #ifndef ME_HTTP_WEB_SOCKETS
     #define ME_HTTP_WEB_SOCKETS 1
 #endif
-#ifndef ME_MAKEME
-    #define ME_MAKEME "0.8.0"
-#endif
 #ifndef ME_MANIFEST
     #define ME_MANIFEST "package/manifest.me"
+#endif
+#ifndef ME_ME
+    #define ME_ME "0.8.0"
 #endif
 #ifndef ME_MPR_ALLOC
     #define ME_MPR_ALLOC "[object Object]"
@@ -273,112 +264,73 @@
     #define ME_VNUM 500000000-rc0
 #endif
 
-/* Extensions */
-#ifndef ME_EXT_CGI
-    #define ME_EXT_CGI 0
+/* Components */
+#ifndef ME_COM_CGI
+    #define ME_COM_CGI 1
 #endif
-#ifndef ME_EXT_CC
-    #define ME_EXT_CC 1
+#ifndef ME_COM_CC
+    #define ME_COM_CC 1
 #endif
-#ifndef ME_EXT_DIR
-    #define ME_EXT_DIR 0
+#ifndef ME_COM_DIR
+    #define ME_COM_DIR 1
 #endif
-#ifndef ME_EXT_DOXYGEN
-    #define ME_EXT_DOXYGEN 1
+#ifndef ME_COM_EJS
+    #define ME_COM_EJS 0
 #endif
-#ifndef ME_EXT_DSI
-    #define ME_EXT_DSI 1
+#ifndef ME_COM_ESP
+    #define ME_COM_ESP 1
 #endif
-#ifndef ME_EXT_EJS
-    #define ME_EXT_EJS 0
+#ifndef ME_COM_EST
+    #define ME_COM_EST 1
 #endif
-#ifndef ME_EXT_ESP
-    #define ME_EXT_ESP 1
+#ifndef ME_COM_HTTP
+    #define ME_COM_HTTP 1
 #endif
-#ifndef ME_EXT_EST
-    #define ME_EXT_EST 1
+#ifndef ME_COM_LIB
+    #define ME_COM_LIB 1
 #endif
-#ifndef ME_EXT_GZIP
-    #define ME_EXT_GZIP 1
+#ifndef ME_COM_LINK
+    #define ME_COM_LINK 1
 #endif
-#ifndef ME_EXT_HTMLMIN
-    #define ME_EXT_HTMLMIN 1
+#ifndef ME_COM_MATRIXSSL
+    #define ME_COM_MATRIXSSL 0
 #endif
-#ifndef ME_EXT_HTTP
-    #define ME_EXT_HTTP 1
+#ifndef ME_COM_MDB
+    #define ME_COM_MDB 1
 #endif
-#ifndef ME_EXT_LIB
-    #define ME_EXT_LIB 1
+#ifndef ME_COM_MPR
+    #define ME_COM_MPR 1
 #endif
-#ifndef ME_EXT_LINK
-    #define ME_EXT_LINK 1
+#ifndef ME_COM_NANOSSL
+    #define ME_COM_NANOSSL 0
 #endif
-#ifndef ME_EXT_MAN
-    #define ME_EXT_MAN 1
+#ifndef ME_COM_OPENSSL
+    #define ME_COM_OPENSSL 0
 #endif
-#ifndef ME_EXT_MAN2HTML
-    #define ME_EXT_MAN2HTML 1
+#ifndef ME_COM_OSDEP
+    #define ME_COM_OSDEP 1
 #endif
-#ifndef ME_EXT_MATRIXSSL
-    #define ME_EXT_MATRIXSSL 0
+#ifndef ME_COM_PCRE
+    #define ME_COM_PCRE 1
 #endif
-#ifndef ME_EXT_MDB
-    #define ME_EXT_MDB 1
+#ifndef ME_COM_PHP
+    #define ME_COM_PHP 0
 #endif
-#ifndef ME_EXT_MPR
-    #define ME_EXT_MPR 1
+#ifndef ME_COM_RC
+    #define ME_COM_RC 0
 #endif
-#ifndef ME_EXT_NANOSSL
-    #define ME_EXT_NANOSSL 0
+#ifndef ME_COM_SQLITE
+    #define ME_COM_SQLITE 0
 #endif
-#ifndef ME_EXT_NGMIN
-    #define ME_EXT_NGMIN 1
+#ifndef ME_COM_SSL
+    #define ME_COM_SSL 1
 #endif
-#ifndef ME_EXT_OPENSSL
-    #define ME_EXT_OPENSSL 0
+#ifndef ME_COM_VXWORKS
+    #define ME_COM_VXWORKS 0
 #endif
-#ifndef ME_EXT_OSDEP
-    #define ME_EXT_OSDEP 1
+#ifndef ME_COM_WINSDK
+    #define ME_COM_WINSDK 0
 #endif
-#ifndef ME_EXT_PAK
-    #define ME_EXT_PAK 1
-#endif
-#ifndef ME_EXT_PCRE
-    #define ME_EXT_PCRE 1
-#endif
-#ifndef ME_EXT_PHP
-    #define ME_EXT_PHP 0
-#endif
-#ifndef ME_EXT_PMAKER
-    #define ME_EXT_PMAKER 0
-#endif
-#ifndef ME_EXT_RC
-    #define ME_EXT_RC 0
-#endif
-#ifndef ME_EXT_RECESS
-    #define ME_EXT_RECESS 1
-#endif
-#ifndef ME_EXT_SQLITE
-    #define ME_EXT_SQLITE 0
-#endif
-#ifndef ME_EXT_SSL
-    #define ME_EXT_SSL 1
-#endif
-#ifndef ME_EXT_UGLIFYJS
-    #define ME_EXT_UGLIFYJS 1
-#endif
-#ifndef ME_EXT_UTEST
-    #define ME_EXT_UTEST 1
-#endif
-#ifndef ME_EXT_VXWORKS
-    #define ME_EXT_VXWORKS 1
-#endif
-#ifndef ME_EXT_WINSDK
-    #define ME_EXT_WINSDK 0
-#endif
-#ifndef ME_EXT_ZIP
-    #define ME_EXT_ZIP 1
-#endif
-#ifndef ME_EXT_ZLIB
-    #define ME_EXT_ZLIB 0
+#ifndef ME_COM_ZLIB
+    #define ME_COM_ZLIB 1
 #endif

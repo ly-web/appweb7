@@ -265,16 +265,16 @@ static void loadStaticModules()
         If doing a static build, must now reference required modules to force the linker to include them.
         Don't actually call init routines here. They will be called via maConfigureServer.
      */
-#if ME_EXT_CGI
+#if ME_COM_CGI
     mprNop(maCgiHandlerInit);
 #endif
-#if ME_EXT_ESP
+#if ME_COM_ESP
     mprNop(maEspHandlerInit);
 #endif
-#if ME_EXT_PHP
+#if ME_COM_PHP
     mprNop(maPhpHandlerInit);
 #endif
-#if ME_EXT_SSL
+#if ME_COM_SSL
     mprNop(maSslModuleInit);
 #endif
 #endif /* ME_STATIC */

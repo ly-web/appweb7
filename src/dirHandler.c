@@ -13,7 +13,7 @@
 
 #include    "appweb.h"
 
-#if ME_EXT_DIR
+#if ME_COM_DIR
 /********************************** Defines ***********************************/
 /*
     Handler configuration
@@ -718,7 +718,7 @@ PUBLIC int maOpenDirHandler(Http *http)
     maAddDirective(appweb, "Options", optionsDirective);
     return 0;
 }
-#endif /* ME_EXT_DIR */
+#endif /* ME_COM_DIR */
 
 
 /*

@@ -9,7 +9,7 @@
 
 #include "me.h"
 
-#if ME_EXT_ESP
+#if ME_COM_ESP
 
 #include "osdep.h"
 #include "appweb.h"
@@ -1046,11 +1046,11 @@ PUBLIC EdiGrid *ediPivotGrid(EdiGrid *grid, int flags);
   */
 PUBLIC EdiGrid *ediSortGrid(EdiGrid *grid, cchar *sortColumn, int sortOrder);
 
-#if ME_EXT_MDB
+#if ME_COM_MDB
 PUBLIC void mdbInit();
 #endif
 
-#if ME_EXT_SQLITE
+#if ME_COM_SQLITE
 PUBLIC void sdbInit();
 #endif
 
@@ -1100,7 +1100,7 @@ PUBLIC void sdbInit();
 #include    "http.h"
 
 
-#if ME_EXT_MDB
+#if ME_COM_MDB
 
 #ifdef __cplusplus
 extern "C" {
@@ -1188,7 +1188,7 @@ typedef struct Mdb {
 } /* extern C */
 #endif
 
-#endif /* ME_EXT_MDB */
+#endif /* ME_COM_MDB */
 #endif /* _h_MDB */
 
 /*
@@ -4821,4 +4821,4 @@ PUBLIC void text(cchar *field, cchar *options);
 
     @end
  */
-#endif /* ME_EXT_ESP */
+#endif /* ME_COM_ESP */

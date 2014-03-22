@@ -5,7 +5,7 @@
 if (!Config.SSL) {
     test.skip("SSL not enabled in ejs")
 
-} else if (App.config.bit_matrixssl !== 0) {
+} else if (App.config.me_matrixssl !== 0) {
 dump(App.config)
     let http: Http = new Http
 

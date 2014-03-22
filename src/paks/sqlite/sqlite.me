@@ -3,13 +3,12 @@
  */
 
 Me.load({
-    probe: {
+    targets: {
         sqlite: {
-            description: 'SQLite Database',
+            configurable: true,
             depends: [ 'libsql' ],
         },
-    },
-    targets: {
+
         libsql: {
             type: 'lib',
             headers: [ '*.h' ],
@@ -21,14 +20,14 @@ Me.load({
             ],
             scripts: {
                 '+precompile': `
-                    if (me.extensions.compiler.path.basename == 'gcc') {
+                    if (me.targets.compiler.path.basename == 'gcc') {
                         me.target.compiler.push('-w')
-                    } else if (me.extensions.compiler.path.basename == 'clang') {
+                    } else if (me.targets.compiler.path.basename == 'clang') {
                         me.target.compiler.push('-w')
                     }
                 `,
             },
-            extensions: [ 'sqlite' ],
+            ifdef: [ 'sqlite' ],
         },
 
         sqliteshell: {
@@ -37,7 +36,7 @@ Me.load({
             sources: [ 'sqlite.c' ],
             depends: [ 'libsql' ],
             platforms: [ 'local' ],
-            extensions: [ 'sqlite' ],
+            ifdef: [ 'sqlite' ],
         },
 	},
 })

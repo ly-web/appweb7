@@ -3,19 +3,17 @@
  */
 
 Me.load({
-    probe: {
+    targets: {
         appweb: {
-            description: 'Appweb Web Server',
+            configurable: true,
             depends: [ 'libappweb' ],
         },
-    },
-    targets: {
         libappweb: {
             type: 'lib',
             sources: [ 'appwebLib.c' ],
             headers: [ '*.h' ],
             depends: [ 'libhttp', 'libpcre', 'libmpr' ],
-            extensions: [ 'appweb' ],
+            ifdef: [ 'appweb' ],
         },
     },
 })

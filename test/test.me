@@ -22,7 +22,7 @@ Me.load({
             'generate-sh': "echo '#!${BIN}/cgiProgram${EXE}' >cgi-bin/testScript ; chmod +x cgi-bin/testScript",
             depends: ['cgiProgram'],
             platforms: [ 'local' ],
-            extensions: [ 'cgi' ],
+            ifdef: [ 'cgi' ],
             depends: ['testAppweb'],
         },
 
@@ -40,7 +40,7 @@ Me.load({
                 chmod +x web/caching/cache.cgi
             ",
             platforms: [ 'local' ],
-            extensions: [ 'cgi' ],
+            ifdef: [ 'cgi' ],
             depends: ['testAppweb'],
         },
 
@@ -59,7 +59,7 @@ Me.load({
                 chmod +x web/auth/basic/basic.cgi
             ",
             platforms: [ 'local' ],
-            extensions: [ 'cgi' ],
+            ifdef: [ 'cgi' ],
             depends: ['testAppweb'],
         },
 
@@ -82,7 +82,7 @@ Me.load({
             ",
             depends: ['cgiProgram'],
             platforms: [ 'local' ],
-            extensions: [ 'cgi' ],
+            ifdef: [ 'cgi' ],
         },
 
         //  TODO

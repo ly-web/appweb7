@@ -8,7 +8,7 @@
 
 #include    "appweb.h"
 
-#if ME_EXT_PHP
+#if ME_COM_PHP
 
 #if ME_WIN_LIKE
     /*
@@ -482,8 +482,8 @@ static int initializePhp(Http *http)
 
     mprTrace(2, "php: initialize php library");
     appweb = httpGetContext(http);
-#if defined(ME_EXT_PHP_INI)
-    phpSapiBlock.php_ini_path_override = ME_EXT_PHP_INI;
+#if defined(ME_COM_PHP_INI)
+    phpSapiBlock.php_ini_path_override = ME_COM_PHP_INI;
 #else
     phpSapiBlock.php_ini_path_override = appweb->defaultServer->defaultHost->defaultRoute->home;
 #endif
@@ -557,14 +557,14 @@ PUBLIC int maPhpHandlerInit(Http *http, MprModule *module)
     return 0;
 }
 
-#else /* ME_EXT_PHP */
+#else /* ME_COM_PHP */
 
 PUBLIC int maPhpHandlerInit(Http *http, MprModule *module)
 {
     mprNop(0);
     return 0;
 }
-#endif /* ME_EXT_PHP */
+#endif /* ME_COM_PHP */
 
 /*
     @copy   default

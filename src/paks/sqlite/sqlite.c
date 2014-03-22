@@ -22,7 +22,7 @@
 #endif
 #endif
 
-#if ME_EXT_SQLITE || ME_SQLITE_PRODUCT
+#if ME_COM_SQLITE || ME_SQLITE_PRODUCT
 /*
 ** 2001 September 15
 **
@@ -3190,5 +3190,5 @@ int main(int argc, char **argv){
   return rc;
 }
 
-#endif /* ME_EXT_SQLITE */
+#endif /* ME_COM_SQLITE */
 

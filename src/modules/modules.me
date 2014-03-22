@@ -8,14 +8,14 @@ Me.load({
             type:   'lib',
             sources: [ 'cgiHandler.c' ],
             depends: [ 'libappweb' ],
-            extensions: [ 'cgi' ],
+            ifdef: [ 'cgi' ],
         },
 
         libmod_ejs: {
             type:   'lib',
             sources: [ 'ejsHandler.c' ],
             depends: [ 'libappweb', 'libejs' ],
-            extensions: [ 'ejs' ],
+            ifdef: [ 'ejs' ],
         },
 
         libmod_php: {
@@ -27,7 +27,7 @@ Me.load({
                 '-Wunreachable-code',
             ],
             depends: [ 'libappweb', 'php' ],
-            extensions: [ 'php' ],
+            ifdef: [ 'php' ],
         },
 
         libmod_proxy: {
@@ -41,7 +41,7 @@ Me.load({
             type: 'lib',
             sources: [ 'sslModule.c' ],
             depends: [ 'libappweb', 'libmprssl' ],
-            extensions: [ 'ssl' ],
+            ifdef: [ 'ssl' ],
         },
 	},
 })

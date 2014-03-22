@@ -27,7 +27,7 @@
 
 #include    "appweb.h"
 
-#if ME_EXT_PROXY
+#if ME_COM_PROXY
 /************************************ Locals ***********************************/
 
 /*********************************** Forwards *********************************/
@@ -273,7 +273,7 @@ PUBLIC int maProxyHandlerInit(Http *http, MprModule *mp)
     return 0;
 }
 
-#endif /* ME_EXT_PROXY */
+#endif /* ME_COM_PROXY */
 
 /*
     @copy   default

@@ -3,18 +3,19 @@
  */
 
 Me.load({
-    probe: {
-        esp: {
-            description: 'ESP Web Framework',
-            depends: [ 'libesp' ],
-        },
-        mdb: {
-            description: 'MDB Database',
-            path: function (ext) me.dir.src.join('src/mdb.c'),
-        },
-    },
 
     targets: {
+        esp: {
+            configurable: true,
+            depends:      [ 'libmod_esp', 'mdb' ],
+            uses:         [ 'sqlite' ],
+        },
+
+        mdb: {
+            configurable: true,
+            description: 'Embedthis MDB Database',
+        },
+
         'esp.h': {
             type: 'header',
             headers: [ '*.h' ],
@@ -22,33 +23,34 @@ Me.load({
 
         libmod_esp: {
             type: 'lib',
-            depends: [ 'libappweb', 'mdb', 'sqlite' ],
+            depends: [ 'libappweb', 'mdb' ],
+            uses:    [ 'sqlite' ],
             sources: [ '*.c' ],
-            headers: [ '*.h' ],
             exclude: /esp\.c/,
-            extensions: [ 'esp' ],
+            headers: [ '*.h' ],
+            ifdef:   [ 'esp' ],
         },
 
         espcmd: {
             path: '${BIN}/esp${EXE}',
             type: 'exe',
-            depends: [ 'libappweb', 'mdb', 'sqlite', 'libmod_esp' ],
+            depends: [ 'libmod_esp' ],
             sources: [ '*.c' ]
             platforms: [ 'local' ],
-            extensions: 'esp',
+            ifdef:   [ 'esp' ],
         },
 
         'esp.conf': {
             type: 'file',
             files: [ 'esp.conf' ],
-            extensions: 'esp',
+            ifdef: [ 'esp' ],
         },
 
         'esp-paks': {
             path: '${OUT}/paks/',
             files: [ '**' ],
             platforms: [ 'local' ],
-            extensions: 'esp',
+            ifdef: ['esp'],
             home: '${TOP}/src/paks',
             'generate-capture': true,
             build: `

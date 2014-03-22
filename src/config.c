@@ -1410,7 +1410,7 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
  */
 static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
 {
-#if ME_EXT_SSL
+#if ME_COM_SSL
     HttpEndpoint    *endpoint;
     char            *ip;
     int             port;
@@ -2750,27 +2750,27 @@ static bool conditionalDefinition(MaState *state, cchar *key)
     } else if (state->appweb->skipModules) {
         /* ESP utility needs to be able to load mod_esp */
         if (sstarts(mprGetAppName(), "esp") && scaselessmatch(key, "ESP_MODULE")) {
-            result = ME_EXT_ESP;
+            result = ME_COM_ESP;
         }
 
     } else {
         if (scaselessmatch(key, "CGI_MODULE")) {
-            result = ME_EXT_CGI;
+            result = ME_COM_CGI;
 
         } else if (scaselessmatch(key, "DIR_MODULE")) {
-            result = ME_EXT_DIR;
+            result = ME_COM_DIR;
 
         } else if (scaselessmatch(key, "EJS_MODULE")) {
-            result = ME_EXT_EJS;
+            result = ME_COM_EJS;
 
         } else if (scaselessmatch(key, "ESP_MODULE")) {
-            result = ME_EXT_ESP;
+            result = ME_COM_ESP;
 
         } else if (scaselessmatch(key, "PHP_MODULE")) {
-            result = ME_EXT_PHP;
+            result = ME_COM_PHP;
 
         } else if (scaselessmatch(key, "SSL_MODULE")) {
-            result = ME_EXT_SSL;
+            result = ME_COM_SSL;
         }
     }
     return (not) ? !result : result;

@@ -11,7 +11,7 @@
 
 #include    "appweb.h"
 
-#if ME_EXT_CGI
+#if ME_COM_CGI
 /************************************ Locals ***********************************/
 
 typedef struct Cgi {
@@ -1064,7 +1064,7 @@ PUBLIC int maCgiHandlerInit(Http *http, MprModule *module)
     return 0;
 }
 
-#endif /* ME_EXT_CGI */
+#endif /* ME_COM_CGI */
 
 /*
     @copy   default

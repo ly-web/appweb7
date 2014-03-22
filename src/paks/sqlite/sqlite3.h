@@ -24,7 +24,7 @@
 
 #include "me.h"
 
-#if ME_EXT_SQLITE || ME_SQLITE_PRODUCT
+#if ME_COM_SQLITE || ME_SQLITE_PRODUCT
 #ifndef _h_SQLITE3_
 #define _h_SQLITE3_ 1
 
@@ -7367,5 +7367,5 @@ struct sqlite3_rtree_geometry {
 
 
 #endif /* _h_SQLITE3_ */
-#endif /* ME_EXT_SQLITE */
+#endif /* ME_COM_SQLITE */
 

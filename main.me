@@ -20,6 +20,12 @@ Me.load({
         'package/service.es',
     ],
 
+    configure: {
+        requires:  [ 'osdep', 'http', 'mpr', 'pcre'],
+        discovers: [ 'cgi', 'dir', 'esp', 'est', 'mdb', 'ssl', ],
+        extras:    [ 'ejs', 'php', 'sqlite', ],
+    },
+
     customize: [
         /* 
             The optional custom.me file is loaded after main.me is fully processed. It can
@@ -41,13 +47,6 @@ Me.load({
             Name and path of the appweb config file. Defaults to "./appweb.conf" if empty.
          */
         configFile: 'appweb.conf',
-
-        extensions: {
-            require:  [ 'osdep', 'http', 'mpr', 'pcre'],
-            discover: [ 'cgi', 'dir', 'doxygen', 'dsi', 'esp', 'gzip', 'htmlmin', 'man', 'man2html', 'mdb', 
-                        'ngmin', 'pak', 'pmaker', 'recess', 'ssl', 'uglifyjs', 'utest', 'zip' ],
-            omit:     [ 'ejs', 'matrixssl', 'openssl', 'nanossl', 'php', 'sqlite', 'zlib' ],
-        },
 
         /* Must build locally to build tools */
         platforms: [ 'local' ],
@@ -155,6 +154,19 @@ Me.load({
     },
 
     targets: {
+        cgi: {
+            configurable: true,
+            description: 'Common Gateway Interface Module',
+            path: 'src/modules/cgiHandler.c',
+            depends: [ 'libmod_cgi' ],
+        },
+
+        dir: {
+            configurable: true,
+            description: 'Directory Listing Module',
+            path: 'src/dirHandler.c',
+        },
+
         /*
             See src/server/server.me for the appweb targets
             See src/libappweb.me for the appweb library target
@@ -169,15 +181,4 @@ Me.load({
         },
     },
 
-    probe: {
-        cgi: {
-            description: 'Common Gateway Interface Module',
-            path: function (ext) me.dir.src.join('src/modules/cgiHandler.c'),
-            depends: [ 'libmod_cgi' ],
-        },
-        dir: {
-            description: 'Directory Listing Module',
-            path: function(ext) me.dir.src.join('src/dirHandler.c'),
-        },
-    },
 })

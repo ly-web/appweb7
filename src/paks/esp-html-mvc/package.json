@@ -1,7 +1,7 @@
 {
     "name": "esp-html-mvc",
     "description": "ESP Server-Side HTML MVC",
-    "version": "0.9.0",
+    "version": "4.5.2",
     "precious": true,
     "dependencies": {
         "esp-server": "~4"
@@ -10,7 +10,7 @@
         "templates/**"
     ],
     "ignore": [
-        "start.me"
+        "start.bit"
     ],
     "esp": {
         "auth": "app",
@@ -23,7 +23,7 @@
                 "controller": "esp-html-mvc/controller.c",
                 "controller-singleton": "esp-html-mvc/controller-singleton.c",
                 "files": [
-                    "esp-html-mvc/start.me",
+                    "esp-html-mvc/start.bit",
                     "esp-html-mvc/client/**"
                 ]
             }

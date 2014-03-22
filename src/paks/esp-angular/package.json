@@ -1,10 +1,10 @@
 {
     "name": "esp-angular",
     "description": "Embedthis ESP for Angular",
-    "version": "0.9.0",
+    "version": "4.5.2",
     "precious": true,
     "dependencies": {
-        "esp-server": "~0.9",
+        "esp-server": "~4",
         "angular": "~1.2"
     },
     "client-scripts": [

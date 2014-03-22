@@ -8,7 +8,7 @@
 
 #include    "esp.h"
 
-#if ME_EXT_ESP || ME_ESP_PRODUCT
+#if ME_COM_ESP || ME_ESP_PRODUCT
 /********************************** Locals ************************************/
 /*
     Global application object. Provides the top level roots of all data objects for the GC.
@@ -194,9 +194,9 @@ PUBLIC int main(int argc, char **argv)
     app->configFile = 0;
     app->listen = sclone(ESP_LISTEN);
     app->paksDir = sclone(ESP_PAKS_DIR);
-#if ME_EXT_SQLITE
+#if ME_COM_SQLITE
     app->database = sclone("sdb");
-#elif ME_EXT_MDB
+#elif ME_COM_MDB
     app->database = sclone("mdb");
 #else
     mprError("No database provider defined");
@@ -2515,8 +2515,8 @@ static void generateAppDb()
         return;
     }
     ext = app->database;
-#if !ME_EXT_SQLITE || !ME_EXT_MDB
-    if ((smatch(app->database, "sdb") && !ME_EXT_SQLITE) || (smatch(app->database, "mdb") && !ME_EXT_MDB)) {
+#if !ME_COM_SQLITE || !ME_COM_MDB
+    if ((smatch(app->database, "sdb") && !ME_COM_SQLITE) || (smatch(app->database, "mdb") && !ME_COM_MDB)) {
         fail("Cannot find database provider: \"%s\". Ensure Appweb is configured to support \"%s\"",
                 app->database, app->database);
         return;
@@ -3032,7 +3032,7 @@ static bool identifier(cchar *name)
     }
     return *cp == '\0' && isalpha(*name);
 }
-#endif /* ME_EXT_ESP */
+#endif /* ME_COM_ESP */
 
 /*
     @copy   default

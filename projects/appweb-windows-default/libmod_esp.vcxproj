@@ -109,7 +109,7 @@
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>libappweb.lib;libhttp.lib;libmpr.lib;libpcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalDependencies>libappweb.lib;libhttp.lib;libmpr.lib;libpcre.lib;libsql.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
 

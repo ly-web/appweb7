@@ -7,7 +7,7 @@
 
 #include    "appweb.h"
 
-#if ME_EXT_SSL
+#if ME_COM_SSL
 /*********************************** Code *************************************/
 
 static void checkSsl(MaState *state)
@@ -277,7 +277,7 @@ PUBLIC int maSslModuleInit(Http *http, MprModule *mp)
 {
     return 0;
 }
-#endif /* ME_EXT_SSL */
+#endif /* ME_COM_SSL */
 
 /*
     @copy   default

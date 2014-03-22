@@ -3,7 +3,7 @@
 
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(IncDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IncDir);..\..\$(ME_COM_MATRIXSSL_PATH);..\..\$(ME_COM_MATRIXSSL_PATH)\matrixssl;..\..\$(ME_COM_NANOSSL_PATH)\src;..\..\$(BIT_PACK_PHP_PATH);..\..\$(BIT_PACK_PHP_PATH)\main;..\..\$(BIT_PACK_PHP_PATH)\Zend;..\..\$(BIT_PACK_PHP_PATH)\TSRM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -105,8 +105,8 @@
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>libappweb.lib;libhttp.lib;libmpr.lib;libpcre.lib;libslink.lib;libmod_esp.lib;libmod_ssl.lib;libmprssl.lib;libest.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    <AdditionalDependencies>libappweb.lib;libhttp.lib;libmpr.lib;libpcre.lib;libslink.lib;libmod_esp.lib;libsql.lib;libmod_ssl.lib;libmprssl.lib;libest.lib;matrixssl.lib;ssls;libmod_ejs.lib;libejs.lib;libzlib.lib;libmod_php.lib;php5ts.lib;libmod_cgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;$(ME_COM_MATRIXSSL_PATH);$(ME_COM_NANOSSL_PATH)\bin;$(BIT_PACK_PHP_PATH)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
   </ItemDefinitionGroup>
 
@@ -134,6 +134,27 @@
 <ItemGroup>
   <ProjectReference Include="libmod_ssl.vcxproj">
   <Project>67b51044-c97a-4039-bf30-d90ff1b944a6</Project>
+  <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+  </ProjectReference>
+</ItemGroup>
+
+<ItemGroup>
+  <ProjectReference Include="libmod_ejs.vcxproj">
+  <Project>57d14da5-f8c9-49b5-854f-c979a09e01fc</Project>
+  <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+  </ProjectReference>
+</ItemGroup>
+
+<ItemGroup>
+  <ProjectReference Include="libmod_php.vcxproj">
+  <Project>0aeddfca-e0f2-47f1-aeda-694763afa2fd</Project>
+  <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+  </ProjectReference>
+</ItemGroup>
+
+<ItemGroup>
+  <ProjectReference Include="libmod_cgi.vcxproj">
+  <Project>df08f009-0ee1-42e5-bb75-bedcfc730466</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>
