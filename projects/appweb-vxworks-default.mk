@@ -58,6 +58,7 @@ ME_COM_LINK_PATH      ?= ld
 ME_COM_MATRIXSSL_PATH ?= /usr/src/matrixssl
 ME_COM_NANOSSL_PATH   ?= /usr/src/nanossl
 ME_COM_OPENSSL_PATH   ?= /usr/src/openssl
+ME_COM_PHP_PATH       ?= /usr/src/php
 ME_COM_VXWORKS_PATH   ?= $(WIND_BASE)
 
 export WIND_HOME      ?= $(WIND_BASE)/..
@@ -1089,7 +1090,9 @@ DEPS_45 += src/paks/pcre/pcre.c
 DEPS_45 += src/paks/pcre/pcre.h
 DEPS_45 += src/paks/pcre/pcre.me
 DEPS_45 += src/paks/pcre/README.md
-DEPS_45 += src/paks/php.me
+DEPS_45 += src/paks/php
+DEPS_45 += src/paks/php/package.json
+DEPS_45 += src/paks/php/php.me
 DEPS_45 += src/paks/sqlite
 DEPS_45 += src/paks/sqlite/LICENSE.md
 DEPS_45 += src/paks/sqlite/package.json
@@ -1504,7 +1507,7 @@ DEPS_60 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/phpHandler.o: \
     src/modules/phpHandler.c $(DEPS_60)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/modules/phpHandler.c
+	$(CC) -c -o $(CONFIG)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/modules/phpHandler.c
 
 ifeq ($(ME_COM_PHP),1)
 #
@@ -1536,9 +1539,12 @@ DEPS_61 += $(CONFIG)/obj/server.o
 DEPS_61 += $(CONFIG)/bin/libappweb.out
 DEPS_61 += $(CONFIG)/obj/phpHandler.o
 
+LIBS_61 += -lphp5
+LIBPATHS_61 += -L$(BIT_PACK_PHP_PATH)/libs
+
 $(CONFIG)/bin/libmod_php.out: $(DEPS_61)
 	@echo '      [Link] $(CONFIG)/bin/libmod_php.out'
-	$(CC) -r -o $(CONFIG)/bin/libmod_php.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/phpHandler.o" $(LIBS) 
+	$(CC) -r -o $(CONFIG)/bin/libmod_php.out $(LDFLAGS) $(LIBPATHS)  "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS) 
 endif
 
 #

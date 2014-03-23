@@ -57,6 +57,7 @@ ME_COM_LIB_PATH       ?= ar
 ME_COM_MATRIXSSL_PATH ?= /usr/src/matrixssl
 ME_COM_NANOSSL_PATH   ?= /usr/src/nanossl
 ME_COM_OPENSSL_PATH   ?= /usr/src/openssl
+ME_COM_PHP_PATH       ?= /usr/src/php
 
 CFLAGS                += -fPIC -w
 DFLAGS                += -D_REENTRANT -DPIC $(patsubst %,-D%,$(filter ME_%,$(MAKEFLAGS))) -DME_COM_CGI=$(ME_COM_CGI) -DME_COM_DIR=$(ME_COM_DIR) -DME_COM_EJS=$(ME_COM_EJS) -DME_COM_ESP=$(ME_COM_ESP) -DME_COM_EST=$(ME_COM_EST) -DME_COM_HTTP=$(ME_COM_HTTP) -DME_COM_MATRIXSSL=$(ME_COM_MATRIXSSL) -DME_COM_MDB=$(ME_COM_MDB) -DME_COM_NANOSSL=$(ME_COM_NANOSSL) -DME_COM_OPENSSL=$(ME_COM_OPENSSL) -DME_COM_PCRE=$(ME_COM_PCRE) -DME_COM_PHP=$(ME_COM_PHP) -DME_COM_SQLITE=$(ME_COM_SQLITE) -DME_COM_SSL=$(ME_COM_SSL) -DME_COM_VXWORKS=$(ME_COM_VXWORKS) -DME_COM_WINSDK=$(ME_COM_WINSDK) -DME_COM_ZLIB=$(ME_COM_ZLIB) 
@@ -1157,7 +1158,9 @@ DEPS_45 += src/paks/pcre/pcre.c
 DEPS_45 += src/paks/pcre/pcre.h
 DEPS_45 += src/paks/pcre/pcre.me
 DEPS_45 += src/paks/pcre/README.md
-DEPS_45 += src/paks/php.me
+DEPS_45 += src/paks/php
+DEPS_45 += src/paks/php/package.json
+DEPS_45 += src/paks/php/php.me
 DEPS_45 += src/paks/sqlite
 DEPS_45 += src/paks/sqlite/LICENSE.md
 DEPS_45 += src/paks/sqlite/package.json
@@ -1628,7 +1631,7 @@ DEPS_60 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/phpHandler.o: \
     src/modules/phpHandler.c $(DEPS_60)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/modules/phpHandler.c
+	$(CC) -c -o $(CONFIG)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/modules/phpHandler.c
 
 ifeq ($(ME_COM_PHP),1)
 #
@@ -1668,10 +1671,12 @@ LIBS_61 += -lmpr
 ifeq ($(ME_COM_PCRE),1)
     LIBS_61 += -lpcre
 endif
+LIBS_61 += -lphp5
+LIBPATHS_61 += -L$(BIT_PACK_PHP_PATH)/libs
 
 $(CONFIG)/bin/libmod_php.so: $(DEPS_61)
 	@echo '      [Link] $(CONFIG)/bin/libmod_php.so'
-	$(CC) -shared -o $(CONFIG)/bin/libmod_php.so $(LIBPATHS) "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libmod_php.so $(LIBPATHS)  "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS) 
 endif
 
 #

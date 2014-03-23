@@ -58,6 +58,7 @@ ME_COM_LINK_PATH      ?= ld
 ME_COM_MATRIXSSL_PATH ?= /usr/src/matrixssl
 ME_COM_NANOSSL_PATH   ?= /usr/src/nanossl
 ME_COM_OPENSSL_PATH   ?= /usr/src/openssl
+ME_COM_PHP_PATH       ?= /usr/src/php
 ME_COM_VXWORKS_PATH   ?= $(WIND_BASE)
 
 export WIND_HOME      ?= $(WIND_BASE)/..
@@ -891,7 +892,7 @@ DEPS_44 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/phpHandler.o: \
     src/modules/phpHandler.c $(DEPS_44)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/modules/phpHandler.c
+	$(CC) -c -o $(CONFIG)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/modules/phpHandler.c
 
 ifeq ($(ME_COM_PHP),1)
 #
@@ -983,7 +984,7 @@ DEPS_48 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/appweb.o: \
     src/server/appweb.c $(DEPS_48)
 	@echo '   [Compile] $(CONFIG)/obj/appweb.o'
-	$(CC) -c -o $(CONFIG)/obj/appweb.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" src/server/appweb.c
+	$(CC) -c -o $(CONFIG)/obj/appweb.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/server/appweb.c
 
 #
 #   appweb
@@ -1107,13 +1108,17 @@ endif
 ifeq ($(ME_COM_PHP),1)
     LIBS_49 += -lmod_php
 endif
+ifeq ($(ME_COM_PHP),1)
+    LIBS_49 += -lphp5
+    LIBPATHS_49 += -L$(BIT_PACK_PHP_PATH)/libs
+endif
 ifeq ($(ME_COM_CGI),1)
     LIBS_49 += -lmod_cgi
 endif
 
 $(CONFIG)/bin/appweb.out: $(DEPS_49)
 	@echo '      [Link] $(CONFIG)/bin/appweb.out'
-	$(CC) -o $(CONFIG)/bin/appweb.out $(LDFLAGS) $(LIBPATHS)    "$(CONFIG)/obj/appweb.o" $(LIBPATHS_49) $(LIBS_49) $(LIBS_49) $(LIBS) -Wl,-r 
+	$(CC) -o $(CONFIG)/bin/appweb.out $(LDFLAGS) $(LIBPATHS)     "$(CONFIG)/obj/appweb.o" $(LIBPATHS_49) $(LIBS_49) $(LIBS_49) $(LIBS) -Wl,-r 
 
 #
 #   authpass.o
@@ -1548,7 +1553,9 @@ DEPS_60 += src/paks/pcre/pcre.c
 DEPS_60 += src/paks/pcre/pcre.h
 DEPS_60 += src/paks/pcre/pcre.me
 DEPS_60 += src/paks/pcre/README.md
-DEPS_60 += src/paks/php.me
+DEPS_60 += src/paks/php
+DEPS_60 += src/paks/php/package.json
+DEPS_60 += src/paks/php/php.me
 DEPS_60 += src/paks/sqlite
 DEPS_60 += src/paks/sqlite/LICENSE.md
 DEPS_60 += src/paks/sqlite/package.json

@@ -57,6 +57,7 @@ ME_COM_LIB_PATH       ?= ar
 ME_COM_MATRIXSSL_PATH ?= /usr/src/matrixssl
 ME_COM_NANOSSL_PATH   ?= /usr/src/nanossl
 ME_COM_OPENSSL_PATH   ?= /usr/src/openssl
+ME_COM_PHP_PATH       ?= /usr/src/php
 
 CFLAGS                += -w
 DFLAGS                +=  $(patsubst %,-D%,$(filter ME_%,$(MAKEFLAGS))) -DME_COM_CGI=$(ME_COM_CGI) -DME_COM_DIR=$(ME_COM_DIR) -DME_COM_EJS=$(ME_COM_EJS) -DME_COM_ESP=$(ME_COM_ESP) -DME_COM_EST=$(ME_COM_EST) -DME_COM_HTTP=$(ME_COM_HTTP) -DME_COM_MATRIXSSL=$(ME_COM_MATRIXSSL) -DME_COM_MDB=$(ME_COM_MDB) -DME_COM_NANOSSL=$(ME_COM_NANOSSL) -DME_COM_OPENSSL=$(ME_COM_OPENSSL) -DME_COM_PCRE=$(ME_COM_PCRE) -DME_COM_PHP=$(ME_COM_PHP) -DME_COM_SQLITE=$(ME_COM_SQLITE) -DME_COM_SSL=$(ME_COM_SSL) -DME_COM_VXWORKS=$(ME_COM_VXWORKS) -DME_COM_WINSDK=$(ME_COM_WINSDK) -DME_COM_ZLIB=$(ME_COM_ZLIB) 
@@ -1157,7 +1158,9 @@ DEPS_45 += src/paks/pcre/pcre.c
 DEPS_45 += src/paks/pcre/pcre.h
 DEPS_45 += src/paks/pcre/pcre.me
 DEPS_45 += src/paks/pcre/README.md
-DEPS_45 += src/paks/php.me
+DEPS_45 += src/paks/php
+DEPS_45 += src/paks/php/package.json
+DEPS_45 += src/paks/php/php.me
 DEPS_45 += src/paks/sqlite
 DEPS_45 += src/paks/sqlite/LICENSE.md
 DEPS_45 += src/paks/sqlite/package.json
@@ -1628,7 +1631,7 @@ DEPS_60 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/phpHandler.o: \
     src/modules/phpHandler.c $(DEPS_60)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/phpHandler.o -arch $(CC_ARCH) $(IFLAGS) src/modules/phpHandler.c
+	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/phpHandler.o -arch $(CC_ARCH) $(IFLAGS) "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/modules/phpHandler.c
 
 ifeq ($(ME_COM_PHP),1)
 #
@@ -1668,10 +1671,12 @@ LIBS_61 += -lmpr
 ifeq ($(ME_COM_PCRE),1)
     LIBS_61 += -lpcre
 endif
+LIBS_61 += -lphp5
+LIBPATHS_61 += -L$(BIT_PACK_PHP_PATH)/libs
 
 $(CONFIG)/bin/libmod_php.dylib: $(DEPS_61)
 	@echo '      [Link] $(CONFIG)/bin/libmod_php.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_php.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libmod_php.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_php.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS)  -install_name @rpath/libmod_php.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS) -lpam 
 endif
 
 #
@@ -2189,8 +2194,95 @@ installBinary: $(DEPS_82)
 	cp $(CONFIG)/bin/libphp5.dylib $(ME_VAPP_PREFIX)/bin/libphp5.dylib ; \
 	fi ; \
 	if [ "$(ME_COM_ESP)" = 1 ]; then true ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/bin/.." ; \
-	cp $(CONFIG)/paks $(ME_VAPP_PREFIX)/bin/../esp ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-angular/4.5.2" ; \
+	cp $(CONFIG)/paks/esp-angular/4.5.2/esp-click.js $(ME_VAPP_PREFIX)/esp/esp-angular/4.5.2/esp-click.js ; \
+	cp $(CONFIG)/paks/esp-angular/4.5.2/esp-edit.js $(ME_VAPP_PREFIX)/esp/esp-angular/4.5.2/esp-edit.js ; \
+	cp $(CONFIG)/paks/esp-angular/4.5.2/esp-field-errors.js $(ME_VAPP_PREFIX)/esp/esp-angular/4.5.2/esp-field-errors.js ; \
+	cp $(CONFIG)/paks/esp-angular/4.5.2/esp-fixnum.js $(ME_VAPP_PREFIX)/esp/esp-angular/4.5.2/esp-fixnum.js ; \
+	cp $(CONFIG)/paks/esp-angular/4.5.2/esp-format.js $(ME_VAPP_PREFIX)/esp/esp-angular/4.5.2/esp-format.js ; \
+	cp $(CONFIG)/paks/esp-angular/4.5.2/esp-input-group.js $(ME_VAPP_PREFIX)/esp/esp-angular/4.5.2/esp-input-group.js ; \
+	cp $(CONFIG)/paks/esp-angular/4.5.2/esp-input.js $(ME_VAPP_PREFIX)/esp/esp-angular/4.5.2/esp-input.js ; \
+	cp $(CONFIG)/paks/esp-angular/4.5.2/esp-resource.js $(ME_VAPP_PREFIX)/esp/esp-angular/4.5.2/esp-resource.js ; \
+	cp $(CONFIG)/paks/esp-angular/4.5.2/esp-session.js $(ME_VAPP_PREFIX)/esp/esp-angular/4.5.2/esp-session.js ; \
+	cp $(CONFIG)/paks/esp-angular/4.5.2/esp-titlecase.js $(ME_VAPP_PREFIX)/esp/esp-angular/4.5.2/esp-titlecase.js ; \
+	cp $(CONFIG)/paks/esp-angular/4.5.2/esp.js $(ME_VAPP_PREFIX)/esp/esp-angular/4.5.2/esp.js ; \
+	cp $(CONFIG)/paks/esp-angular/4.5.2/package.json $(ME_VAPP_PREFIX)/esp/esp-angular/4.5.2/package.json ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2" ; \
+	cp $(CONFIG)/paks/esp-angular-mvc/4.5.2/package.json $(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/package.json ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc" ; \
+	cp $(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/appweb.conf $(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/appweb.conf ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/app" ; \
+	cp $(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/app/main.js $(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/app/main.js ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/assets" ; \
+	cp $(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/assets/favicon.ico $(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/assets/favicon.ico ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css" ; \
+	cp $(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/all.css $(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/all.css ; \
+	cp $(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/all.less $(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/all.less ; \
+	cp $(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/app.less $(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/app.less ; \
+	cp $(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/fix.css $(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/fix.css ; \
+	cp $(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/theme.less $(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/theme.less ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client" ; \
+	cp $(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/index.esp $(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/index.esp ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/pages" ; \
+	cp $(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/pages/splash.html $(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/pages/splash.html ; \
+	cp $(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/controller-singleton.c $(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/controller-singleton.c ; \
+	cp $(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/controller.c $(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/controller.c ; \
+	cp $(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/controller.js $(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/controller.js ; \
+	cp $(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/edit.html $(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/edit.html ; \
+	cp $(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/list.html $(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/list.html ; \
+	cp $(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/model.js $(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/model.js ; \
+	cp $(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/start.bit $(ME_VAPP_PREFIX)/esp/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/start.bit ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2" ; \
+	cp $(CONFIG)/paks/esp-html-mvc/4.5.2/package.json $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/package.json ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/templates/esp-html-mvc" ; \
+	cp $(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/appweb.conf $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/templates/esp-html-mvc/appweb.conf ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/assets" ; \
+	cp $(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/assets/favicon.ico $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/assets/favicon.ico ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css" ; \
+	cp $(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css/all.css $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css/all.css ; \
+	cp $(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css/all.less $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css/all.less ; \
+	cp $(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css/app.less $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css/app.less ; \
+	cp $(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css/theme.less $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css/theme.less ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/templates/esp-html-mvc/client" ; \
+	cp $(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/index.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/index.esp ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/layouts" ; \
+	cp $(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/layouts/default.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/layouts/default.esp ; \
+	cp $(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/controller-singleton.c $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/templates/esp-html-mvc/controller-singleton.c ; \
+	cp $(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/controller.c $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/templates/esp-html-mvc/controller.c ; \
+	cp $(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/edit.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/templates/esp-html-mvc/edit.esp ; \
+	cp $(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/list.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/templates/esp-html-mvc/list.esp ; \
+	cp $(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/start.bit $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.5.2/templates/esp-html-mvc/start.bit ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2" ; \
+	cp $(CONFIG)/paks/esp-legacy-mvc/4.5.2/package.json $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/package.json ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc" ; \
+	cp $(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/appweb.conf $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/appweb.conf ; \
+	cp $(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/controller.c $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/controller.c ; \
+	cp $(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/edit.esp $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/edit.esp ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/layouts" ; \
+	cp $(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/layouts/default.esp $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/layouts/default.esp ; \
+	cp $(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/list.esp $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/list.esp ; \
+	cp $(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/migration.c $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/migration.c ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/src" ; \
+	cp $(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/src/app.c $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/src/app.c ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/css" ; \
+	cp $(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/css/all.css $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/css/all.css ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/images" ; \
+	cp $(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/images/banner.jpg $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/images/banner.jpg ; \
+	cp $(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/images/favicon.ico $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/images/favicon.ico ; \
+	cp $(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/images/splash.jpg $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/images/splash.jpg ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static" ; \
+	cp $(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/index.esp $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/index.esp ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/js" ; \
+	cp $(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/js/jquery.esp.js $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/js/jquery.esp.js ; \
+	cp $(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/js/jquery.js $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/js/jquery.js ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-server/4.5.2" ; \
+	cp $(CONFIG)/paks/esp-server/4.5.2/package.json $(ME_VAPP_PREFIX)/esp/esp-server/4.5.2/package.json ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-server/4.5.2/templates/esp-server" ; \
+	cp $(CONFIG)/paks/esp-server/4.5.2/templates/esp-server/appweb.conf $(ME_VAPP_PREFIX)/esp/esp-server/4.5.2/templates/esp-server/appweb.conf ; \
+	cp $(CONFIG)/paks/esp-server/4.5.2/templates/esp-server/controller.c $(ME_VAPP_PREFIX)/esp/esp-server/4.5.2/templates/esp-server/controller.c ; \
+	cp $(CONFIG)/paks/esp-server/4.5.2/templates/esp-server/migration.c $(ME_VAPP_PREFIX)/esp/esp-server/4.5.2/templates/esp-server/migration.c ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-server/4.5.2/templates/esp-server/src" ; \
+	cp $(CONFIG)/paks/esp-server/4.5.2/templates/esp-server/src/app.c $(ME_VAPP_PREFIX)/esp/esp-server/4.5.2/templates/esp-server/src/app.c ; \
 	fi ; \
 	if [ "$(ME_COM_ESP)" = 1 ]; then true ; \
 	cp $(CONFIG)/bin/esp.conf $(ME_VAPP_PREFIX)/bin/esp.conf ; \
