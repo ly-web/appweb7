@@ -1747,13 +1747,18 @@ endif
 
 
 #
+#   genslink
+#
+genslink: $(DEPS_64)
+
+#
 #   http.o
 #
-DEPS_64 += $(CONFIG)/inc/me.h
-DEPS_64 += $(CONFIG)/inc/http.h
+DEPS_65 += $(CONFIG)/inc/me.h
+DEPS_65 += $(CONFIG)/inc/http.h
 
 $(CONFIG)/obj/http.o: \
-    src/paks/http/http.c $(DEPS_64)
+    src/paks/http/http.c $(DEPS_65)
 	@echo '   [Compile] $(CONFIG)/obj/http.o'
 	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/http.o $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" src/paks/http/http.c
 
@@ -1761,63 +1766,63 @@ ifeq ($(ME_COM_HTTP),1)
 #
 #   httpcmd
 #
-DEPS_65 += $(CONFIG)/inc/mpr.h
-DEPS_65 += $(CONFIG)/inc/me.h
-DEPS_65 += $(CONFIG)/inc/osdep.h
-DEPS_65 += $(CONFIG)/obj/mprLib.o
-DEPS_65 += $(CONFIG)/bin/libmpr.a
-DEPS_65 += $(CONFIG)/inc/pcre.h
-DEPS_65 += $(CONFIG)/obj/pcre.o
+DEPS_66 += $(CONFIG)/inc/mpr.h
+DEPS_66 += $(CONFIG)/inc/me.h
+DEPS_66 += $(CONFIG)/inc/osdep.h
+DEPS_66 += $(CONFIG)/obj/mprLib.o
+DEPS_66 += $(CONFIG)/bin/libmpr.a
+DEPS_66 += $(CONFIG)/inc/pcre.h
+DEPS_66 += $(CONFIG)/obj/pcre.o
 ifeq ($(ME_COM_PCRE),1)
-    DEPS_65 += $(CONFIG)/bin/libpcre.a
+    DEPS_66 += $(CONFIG)/bin/libpcre.a
 endif
-DEPS_65 += $(CONFIG)/inc/http.h
-DEPS_65 += $(CONFIG)/obj/httpLib.o
-DEPS_65 += $(CONFIG)/bin/libhttp.a
-DEPS_65 += $(CONFIG)/inc/est.h
-DEPS_65 += $(CONFIG)/obj/estLib.o
+DEPS_66 += $(CONFIG)/inc/http.h
+DEPS_66 += $(CONFIG)/obj/httpLib.o
+DEPS_66 += $(CONFIG)/bin/libhttp.a
+DEPS_66 += $(CONFIG)/inc/est.h
+DEPS_66 += $(CONFIG)/obj/estLib.o
 ifeq ($(ME_COM_EST),1)
-    DEPS_65 += $(CONFIG)/bin/libest.a
+    DEPS_66 += $(CONFIG)/bin/libest.a
 endif
-DEPS_65 += $(CONFIG)/obj/mprSsl.o
-DEPS_65 += $(CONFIG)/bin/libmprssl.a
-DEPS_65 += $(CONFIG)/obj/http.o
+DEPS_66 += $(CONFIG)/obj/mprSsl.o
+DEPS_66 += $(CONFIG)/bin/libmprssl.a
+DEPS_66 += $(CONFIG)/obj/http.o
 
-LIBS_65 += -lhttp
-LIBS_65 += -lmpr
+LIBS_66 += -lhttp
+LIBS_66 += -lmpr
 ifeq ($(ME_COM_PCRE),1)
-    LIBS_65 += -lpcre
+    LIBS_66 += -lpcre
 endif
-LIBS_65 += -lmprssl
+LIBS_66 += -lmprssl
 ifeq ($(ME_COM_EST),1)
-    LIBS_65 += -lest
+    LIBS_66 += -lest
 endif
 ifeq ($(ME_COM_MATRIXSSL),1)
-    LIBS_65 += -lmatrixssl
-    LIBPATHS_65 += -L$(ME_COM_MATRIXSSL_PATH)
+    LIBS_66 += -lmatrixssl
+    LIBPATHS_66 += -L$(ME_COM_MATRIXSSL_PATH)
 endif
 ifeq ($(ME_COM_NANOSSL),1)
-    LIBS_65 += -lssls
-    LIBPATHS_65 += -L$(ME_COM_NANOSSL_PATH)/bin
+    LIBS_66 += -lssls
+    LIBPATHS_66 += -L$(ME_COM_NANOSSL_PATH)/bin
 endif
 ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_65 += -lssl
-    LIBPATHS_65 += -L$(ME_COM_OPENSSL_PATH)
+    LIBS_66 += -lssl
+    LIBPATHS_66 += -L$(ME_COM_OPENSSL_PATH)
 endif
 ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_65 += -lcrypto
-    LIBPATHS_65 += -L$(ME_COM_OPENSSL_PATH)
+    LIBS_66 += -lcrypto
+    LIBPATHS_66 += -L$(ME_COM_OPENSSL_PATH)
 endif
 
-$(CONFIG)/bin/http: $(DEPS_65)
+$(CONFIG)/bin/http: $(DEPS_66)
 	@echo '      [Link] $(CONFIG)/bin/http'
-	$(CC) -o $(CONFIG)/bin/http $(LIBPATHS)    "$(CONFIG)/obj/http.o" $(LIBPATHS_65) $(LIBS_65) $(LIBS_65) $(LIBS) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/http $(LIBPATHS)    "$(CONFIG)/obj/http.o" $(LIBPATHS_66) $(LIBS_66) $(LIBS_66) $(LIBS) $(LIBS) 
 endif
 
 #
 #   sqlite3.h
 #
-$(CONFIG)/inc/sqlite3.h: $(DEPS_66)
+$(CONFIG)/inc/sqlite3.h: $(DEPS_67)
 	@echo '      [Copy] $(CONFIG)/inc/sqlite3.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp src/paks/sqlite/sqlite3.h $(CONFIG)/inc/sqlite3.h
@@ -1825,11 +1830,11 @@ $(CONFIG)/inc/sqlite3.h: $(DEPS_66)
 #
 #   sqlite3.o
 #
-DEPS_67 += $(CONFIG)/inc/me.h
-DEPS_67 += $(CONFIG)/inc/sqlite3.h
+DEPS_68 += $(CONFIG)/inc/me.h
+DEPS_68 += $(CONFIG)/inc/sqlite3.h
 
 $(CONFIG)/obj/sqlite3.o: \
-    src/paks/sqlite/sqlite3.c $(DEPS_67)
+    src/paks/sqlite/sqlite3.c $(DEPS_68)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite3.o'
 	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/sqlite3.o $(IFLAGS) src/paks/sqlite/sqlite3.c
 
@@ -1837,11 +1842,11 @@ ifeq ($(ME_COM_SQLITE),1)
 #
 #   libsql
 #
-DEPS_68 += $(CONFIG)/inc/sqlite3.h
-DEPS_68 += $(CONFIG)/inc/me.h
-DEPS_68 += $(CONFIG)/obj/sqlite3.o
+DEPS_69 += $(CONFIG)/inc/sqlite3.h
+DEPS_69 += $(CONFIG)/inc/me.h
+DEPS_69 += $(CONFIG)/obj/sqlite3.o
 
-$(CONFIG)/bin/libsql.a: $(DEPS_68)
+$(CONFIG)/bin/libsql.a: $(DEPS_69)
 	@echo '      [Link] $(CONFIG)/bin/libsql.a'
 	ar -cr $(CONFIG)/bin/libsql.a "$(CONFIG)/obj/sqlite3.o"
 endif
@@ -1849,43 +1854,43 @@ endif
 #
 #   manager.o
 #
-DEPS_69 += $(CONFIG)/inc/me.h
-DEPS_69 += $(CONFIG)/inc/mpr.h
+DEPS_70 += $(CONFIG)/inc/me.h
+DEPS_70 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/manager.o: \
-    src/paks/mpr/manager.c $(DEPS_69)
+    src/paks/mpr/manager.c $(DEPS_70)
 	@echo '   [Compile] $(CONFIG)/obj/manager.o'
 	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/manager.o $(IFLAGS) src/paks/mpr/manager.c
 
 #
 #   manager
 #
-DEPS_70 += $(CONFIG)/inc/mpr.h
-DEPS_70 += $(CONFIG)/inc/me.h
-DEPS_70 += $(CONFIG)/inc/osdep.h
-DEPS_70 += $(CONFIG)/obj/mprLib.o
-DEPS_70 += $(CONFIG)/bin/libmpr.a
-DEPS_70 += $(CONFIG)/obj/manager.o
+DEPS_71 += $(CONFIG)/inc/mpr.h
+DEPS_71 += $(CONFIG)/inc/me.h
+DEPS_71 += $(CONFIG)/inc/osdep.h
+DEPS_71 += $(CONFIG)/obj/mprLib.o
+DEPS_71 += $(CONFIG)/bin/libmpr.a
+DEPS_71 += $(CONFIG)/obj/manager.o
 
-LIBS_70 += -lmpr
+LIBS_71 += -lmpr
 
-$(CONFIG)/bin/appman: $(DEPS_70)
+$(CONFIG)/bin/appman: $(DEPS_71)
 	@echo '      [Link] $(CONFIG)/bin/appman'
-	$(CC) -o $(CONFIG)/bin/appman $(LIBPATHS) "$(CONFIG)/obj/manager.o" $(LIBPATHS_70) $(LIBS_70) $(LIBS_70) $(LIBS) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/appman $(LIBPATHS) "$(CONFIG)/obj/manager.o" $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS) $(LIBS) 
 
 #
 #   server-cache
 #
-src/server/cache: $(DEPS_71)
+src/server/cache: $(DEPS_72)
 
 #
 #   sqlite.o
 #
-DEPS_72 += $(CONFIG)/inc/me.h
-DEPS_72 += $(CONFIG)/inc/sqlite3.h
+DEPS_73 += $(CONFIG)/inc/me.h
+DEPS_73 += $(CONFIG)/inc/sqlite3.h
 
 $(CONFIG)/obj/sqlite.o: \
-    src/paks/sqlite/sqlite.c $(DEPS_72)
+    src/paks/sqlite/sqlite.c $(DEPS_73)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite.o'
 	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/sqlite.o $(IFLAGS) src/paks/sqlite/sqlite.c
 
@@ -1893,23 +1898,23 @@ ifeq ($(ME_COM_SQLITE),1)
 #
 #   sqliteshell
 #
-DEPS_73 += $(CONFIG)/inc/sqlite3.h
-DEPS_73 += $(CONFIG)/inc/me.h
-DEPS_73 += $(CONFIG)/obj/sqlite3.o
-DEPS_73 += $(CONFIG)/bin/libsql.a
-DEPS_73 += $(CONFIG)/obj/sqlite.o
+DEPS_74 += $(CONFIG)/inc/sqlite3.h
+DEPS_74 += $(CONFIG)/inc/me.h
+DEPS_74 += $(CONFIG)/obj/sqlite3.o
+DEPS_74 += $(CONFIG)/bin/libsql.a
+DEPS_74 += $(CONFIG)/obj/sqlite.o
 
-LIBS_73 += -lsql
+LIBS_74 += -lsql
 
-$(CONFIG)/bin/sqlite: $(DEPS_73)
+$(CONFIG)/bin/sqlite: $(DEPS_74)
 	@echo '      [Link] $(CONFIG)/bin/sqlite'
-	$(CC) -o $(CONFIG)/bin/sqlite $(LIBPATHS) "$(CONFIG)/obj/sqlite.o" $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/sqlite $(LIBPATHS) "$(CONFIG)/obj/sqlite.o" $(LIBPATHS_74) $(LIBS_74) $(LIBS_74) $(LIBS) $(LIBS) 
 endif
 
 #
 #   testAppweb.h
 #
-$(CONFIG)/inc/testAppweb.h: $(DEPS_74)
+$(CONFIG)/inc/testAppweb.h: $(DEPS_75)
 	@echo '      [Copy] $(CONFIG)/inc/testAppweb.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp test/src/testAppweb.h $(CONFIG)/inc/testAppweb.h
@@ -1917,74 +1922,29 @@ $(CONFIG)/inc/testAppweb.h: $(DEPS_74)
 #
 #   testAppweb.o
 #
-DEPS_75 += $(CONFIG)/inc/me.h
-DEPS_75 += $(CONFIG)/inc/testAppweb.h
-DEPS_75 += $(CONFIG)/inc/mpr.h
-DEPS_75 += $(CONFIG)/inc/http.h
+DEPS_76 += $(CONFIG)/inc/me.h
+DEPS_76 += $(CONFIG)/inc/testAppweb.h
+DEPS_76 += $(CONFIG)/inc/mpr.h
+DEPS_76 += $(CONFIG)/inc/http.h
 
 $(CONFIG)/obj/testAppweb.o: \
-    test/src/testAppweb.c $(DEPS_75)
+    test/src/testAppweb.c $(DEPS_76)
 	@echo '   [Compile] $(CONFIG)/obj/testAppweb.o'
 	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/testAppweb.o $(IFLAGS) test/src/testAppweb.c
 
 #
 #   testHttp.o
 #
-DEPS_76 += $(CONFIG)/inc/me.h
-DEPS_76 += $(CONFIG)/inc/testAppweb.h
+DEPS_77 += $(CONFIG)/inc/me.h
+DEPS_77 += $(CONFIG)/inc/testAppweb.h
 
 $(CONFIG)/obj/testHttp.o: \
-    test/src/testHttp.c $(DEPS_76)
+    test/src/testHttp.c $(DEPS_77)
 	@echo '   [Compile] $(CONFIG)/obj/testHttp.o'
 	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/testHttp.o $(IFLAGS) test/src/testHttp.c
 
 #
 #   testAppweb
-#
-DEPS_77 += $(CONFIG)/inc/mpr.h
-DEPS_77 += $(CONFIG)/inc/me.h
-DEPS_77 += $(CONFIG)/inc/osdep.h
-DEPS_77 += $(CONFIG)/obj/mprLib.o
-DEPS_77 += $(CONFIG)/bin/libmpr.a
-DEPS_77 += $(CONFIG)/inc/pcre.h
-DEPS_77 += $(CONFIG)/obj/pcre.o
-ifeq ($(ME_COM_PCRE),1)
-    DEPS_77 += $(CONFIG)/bin/libpcre.a
-endif
-DEPS_77 += $(CONFIG)/inc/http.h
-DEPS_77 += $(CONFIG)/obj/httpLib.o
-ifeq ($(ME_COM_HTTP),1)
-    DEPS_77 += $(CONFIG)/bin/libhttp.a
-endif
-DEPS_77 += $(CONFIG)/inc/appweb.h
-DEPS_77 += $(CONFIG)/inc/customize.h
-DEPS_77 += $(CONFIG)/obj/config.o
-DEPS_77 += $(CONFIG)/obj/convenience.o
-DEPS_77 += $(CONFIG)/obj/dirHandler.o
-DEPS_77 += $(CONFIG)/obj/fileHandler.o
-DEPS_77 += $(CONFIG)/obj/log.o
-DEPS_77 += $(CONFIG)/obj/server.o
-DEPS_77 += $(CONFIG)/bin/libappweb.a
-DEPS_77 += $(CONFIG)/inc/testAppweb.h
-DEPS_77 += $(CONFIG)/obj/testAppweb.o
-DEPS_77 += $(CONFIG)/obj/testHttp.o
-
-LIBS_77 += -lappweb
-ifeq ($(ME_COM_HTTP),1)
-    LIBS_77 += -lhttp
-endif
-LIBS_77 += -lmpr
-ifeq ($(ME_COM_PCRE),1)
-    LIBS_77 += -lpcre
-endif
-
-$(CONFIG)/bin/testAppweb: $(DEPS_77)
-	@echo '      [Link] $(CONFIG)/bin/testAppweb'
-	$(CC) -o $(CONFIG)/bin/testAppweb $(LIBPATHS) "$(CONFIG)/obj/testAppweb.o" "$(CONFIG)/obj/testHttp.o" $(LIBPATHS_77) $(LIBS_77) $(LIBS_77) $(LIBS) $(LIBS) 
-
-ifeq ($(ME_COM_CGI),1)
-#
-#   test-basic.cgi
 #
 DEPS_78 += $(CONFIG)/inc/mpr.h
 DEPS_78 += $(CONFIG)/inc/me.h
@@ -2013,20 +1973,23 @@ DEPS_78 += $(CONFIG)/bin/libappweb.a
 DEPS_78 += $(CONFIG)/inc/testAppweb.h
 DEPS_78 += $(CONFIG)/obj/testAppweb.o
 DEPS_78 += $(CONFIG)/obj/testHttp.o
-DEPS_78 += $(CONFIG)/bin/testAppweb
 
-test/web/auth/basic/basic.cgi: $(DEPS_78)
-	( \
-	cd test; \
-	echo "#!`type -p ejs`" >web/auth/basic/basic.cgi ; \
-	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi ; \
-	chmod +x web/auth/basic/basic.cgi ; \
-	)
+LIBS_78 += -lappweb
+ifeq ($(ME_COM_HTTP),1)
+    LIBS_78 += -lhttp
 endif
+LIBS_78 += -lmpr
+ifeq ($(ME_COM_PCRE),1)
+    LIBS_78 += -lpcre
+endif
+
+$(CONFIG)/bin/testAppweb: $(DEPS_78)
+	@echo '      [Link] $(CONFIG)/bin/testAppweb'
+	$(CC) -o $(CONFIG)/bin/testAppweb $(LIBPATHS) "$(CONFIG)/obj/testAppweb.o" "$(CONFIG)/obj/testHttp.o" $(LIBPATHS_78) $(LIBS_78) $(LIBS_78) $(LIBS) $(LIBS) 
 
 ifeq ($(ME_COM_CGI),1)
 #
-#   test-cache.cgi
+#   test-basic.cgi
 #
 DEPS_79 += $(CONFIG)/inc/mpr.h
 DEPS_79 += $(CONFIG)/inc/me.h
@@ -2057,7 +2020,49 @@ DEPS_79 += $(CONFIG)/obj/testAppweb.o
 DEPS_79 += $(CONFIG)/obj/testHttp.o
 DEPS_79 += $(CONFIG)/bin/testAppweb
 
-test/web/caching/cache.cgi: $(DEPS_79)
+test/web/auth/basic/basic.cgi: $(DEPS_79)
+	( \
+	cd test; \
+	echo "#!`type -p ejs`" >web/auth/basic/basic.cgi ; \
+	echo 'print("HTTP/1.0 200 OK\nContent-Type: text/plain\n\n" + serialize(App.env, {pretty: true}) + "\n")' >>web/auth/basic/basic.cgi ; \
+	chmod +x web/auth/basic/basic.cgi ; \
+	)
+endif
+
+ifeq ($(ME_COM_CGI),1)
+#
+#   test-cache.cgi
+#
+DEPS_80 += $(CONFIG)/inc/mpr.h
+DEPS_80 += $(CONFIG)/inc/me.h
+DEPS_80 += $(CONFIG)/inc/osdep.h
+DEPS_80 += $(CONFIG)/obj/mprLib.o
+DEPS_80 += $(CONFIG)/bin/libmpr.a
+DEPS_80 += $(CONFIG)/inc/pcre.h
+DEPS_80 += $(CONFIG)/obj/pcre.o
+ifeq ($(ME_COM_PCRE),1)
+    DEPS_80 += $(CONFIG)/bin/libpcre.a
+endif
+DEPS_80 += $(CONFIG)/inc/http.h
+DEPS_80 += $(CONFIG)/obj/httpLib.o
+ifeq ($(ME_COM_HTTP),1)
+    DEPS_80 += $(CONFIG)/bin/libhttp.a
+endif
+DEPS_80 += $(CONFIG)/inc/appweb.h
+DEPS_80 += $(CONFIG)/inc/customize.h
+DEPS_80 += $(CONFIG)/obj/config.o
+DEPS_80 += $(CONFIG)/obj/convenience.o
+DEPS_80 += $(CONFIG)/obj/dirHandler.o
+DEPS_80 += $(CONFIG)/obj/fileHandler.o
+DEPS_80 += $(CONFIG)/obj/log.o
+DEPS_80 += $(CONFIG)/obj/server.o
+DEPS_80 += $(CONFIG)/bin/libappweb.a
+DEPS_80 += $(CONFIG)/inc/testAppweb.h
+DEPS_80 += $(CONFIG)/obj/testAppweb.o
+DEPS_80 += $(CONFIG)/obj/testHttp.o
+DEPS_80 += $(CONFIG)/bin/testAppweb
+
+test/web/caching/cache.cgi: $(DEPS_80)
 	( \
 	cd test; \
 	echo "#!`type -p ejs`" >web/caching/cache.cgi ; \
@@ -2070,11 +2075,11 @@ ifeq ($(ME_COM_CGI),1)
 #
 #   test-cgiProgram
 #
-DEPS_80 += $(CONFIG)/inc/me.h
-DEPS_80 += $(CONFIG)/obj/cgiProgram.o
-DEPS_80 += $(CONFIG)/bin/cgiProgram
+DEPS_81 += $(CONFIG)/inc/me.h
+DEPS_81 += $(CONFIG)/obj/cgiProgram.o
+DEPS_81 += $(CONFIG)/bin/cgiProgram
 
-test/cgi-bin/cgiProgram: $(DEPS_80)
+test/cgi-bin/cgiProgram: $(DEPS_81)
 	( \
 	cd test; \
 	cp ../$(CONFIG)/bin/cgiProgram cgi-bin/cgiProgram ; \
@@ -2089,46 +2094,54 @@ ifeq ($(ME_COM_CGI),1)
 #
 #   test-testScript
 #
-DEPS_81 += $(CONFIG)/inc/mpr.h
-DEPS_81 += $(CONFIG)/inc/me.h
-DEPS_81 += $(CONFIG)/inc/osdep.h
-DEPS_81 += $(CONFIG)/obj/mprLib.o
-DEPS_81 += $(CONFIG)/bin/libmpr.a
-DEPS_81 += $(CONFIG)/inc/pcre.h
-DEPS_81 += $(CONFIG)/obj/pcre.o
+DEPS_82 += $(CONFIG)/inc/mpr.h
+DEPS_82 += $(CONFIG)/inc/me.h
+DEPS_82 += $(CONFIG)/inc/osdep.h
+DEPS_82 += $(CONFIG)/obj/mprLib.o
+DEPS_82 += $(CONFIG)/bin/libmpr.a
+DEPS_82 += $(CONFIG)/inc/pcre.h
+DEPS_82 += $(CONFIG)/obj/pcre.o
 ifeq ($(ME_COM_PCRE),1)
-    DEPS_81 += $(CONFIG)/bin/libpcre.a
+    DEPS_82 += $(CONFIG)/bin/libpcre.a
 endif
-DEPS_81 += $(CONFIG)/inc/http.h
-DEPS_81 += $(CONFIG)/obj/httpLib.o
+DEPS_82 += $(CONFIG)/inc/http.h
+DEPS_82 += $(CONFIG)/obj/httpLib.o
 ifeq ($(ME_COM_HTTP),1)
-    DEPS_81 += $(CONFIG)/bin/libhttp.a
+    DEPS_82 += $(CONFIG)/bin/libhttp.a
 endif
-DEPS_81 += $(CONFIG)/inc/appweb.h
-DEPS_81 += $(CONFIG)/inc/customize.h
-DEPS_81 += $(CONFIG)/obj/config.o
-DEPS_81 += $(CONFIG)/obj/convenience.o
-DEPS_81 += $(CONFIG)/obj/dirHandler.o
-DEPS_81 += $(CONFIG)/obj/fileHandler.o
-DEPS_81 += $(CONFIG)/obj/log.o
-DEPS_81 += $(CONFIG)/obj/server.o
-DEPS_81 += $(CONFIG)/bin/libappweb.a
-DEPS_81 += $(CONFIG)/inc/testAppweb.h
-DEPS_81 += $(CONFIG)/obj/testAppweb.o
-DEPS_81 += $(CONFIG)/obj/testHttp.o
-DEPS_81 += $(CONFIG)/bin/testAppweb
+DEPS_82 += $(CONFIG)/inc/appweb.h
+DEPS_82 += $(CONFIG)/inc/customize.h
+DEPS_82 += $(CONFIG)/obj/config.o
+DEPS_82 += $(CONFIG)/obj/convenience.o
+DEPS_82 += $(CONFIG)/obj/dirHandler.o
+DEPS_82 += $(CONFIG)/obj/fileHandler.o
+DEPS_82 += $(CONFIG)/obj/log.o
+DEPS_82 += $(CONFIG)/obj/server.o
+DEPS_82 += $(CONFIG)/bin/libappweb.a
+DEPS_82 += $(CONFIG)/inc/testAppweb.h
+DEPS_82 += $(CONFIG)/obj/testAppweb.o
+DEPS_82 += $(CONFIG)/obj/testHttp.o
+DEPS_82 += $(CONFIG)/bin/testAppweb
 
-test/cgi-bin/testScript: $(DEPS_81)
+test/cgi-bin/testScript: $(DEPS_82)
 	( \
 	cd test; \
 	echo '#!../$(CONFIG)/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript ; \
 	)
 endif
 
+
+#
+#   stop
+#
+DEPS_83 += compile
+
+stop: $(DEPS_83)
+
 #
 #   installBinary
 #
-installBinary: $(DEPS_82)
+installBinary: $(DEPS_84)
 	( \
 	cd .; \
 	mkdir -p "$(ME_APP_PREFIX)" ; \
@@ -2300,23 +2313,40 @@ installBinary: $(DEPS_82)
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/manager.1" "$(ME_MAN_PREFIX)/man1/manager.1" ; \
 	)
 
+#
+#   start
+#
+DEPS_85 += compile
+DEPS_85 += stop
 
+start: $(DEPS_85)
 
 #
-#   stop
+#   install
 #
-DEPS_83 += compile
+DEPS_86 += compile
+DEPS_86 += stop
+DEPS_86 += installBinary
+DEPS_86 += start
 
-stop: $(DEPS_83)
+install: $(DEPS_86)
+
+#
+#   run
+#
+DEPS_87 += compile
+
+run: $(DEPS_87)
+
 
 #
 #   uninstall
 #
-DEPS_84 += build
-DEPS_84 += compile
-DEPS_84 += stop
+DEPS_88 += build
+DEPS_88 += compile
+DEPS_88 += stop
 
-uninstall: $(DEPS_84)
+uninstall: $(DEPS_88)
 	( \
 	cd package; \
 	rm -f "$(ME_ETC_PREFIX)/appweb.conf" ; \
@@ -2337,4 +2367,9 @@ uninstall: $(DEPS_84)
 	rm -f "$(ME_APP_PREFIX)/latest" ; \
 	rmdir -p "$(ME_APP_PREFIX)" 2>/dev/null ; true ; \
 	)
+
+#
+#   version
+#
+version: $(DEPS_89)
 
