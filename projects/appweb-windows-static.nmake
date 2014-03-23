@@ -103,51 +103,40 @@ ME_COM_MDB            = 1
 ME_COM_CGI_PATH       = src/modules/cgiHandler.c
 ME_COM_COMPILER_PATH  = cl
 ME_COM_DIR_PATH       = src/dirHandler.c
-ME_COM_EJS_PATH       = src/paks/ejs
-ME_COM_ESP_PATH       = src/paks/esp
-ME_COM_EST_PATH       = src/paks/est
-ME_COM_HTTP_PATH      = src/paks/http
 ME_COM_LIB_PATH       = lib.exe
 ME_COM_LINK_PATH      = link.exe
 ME_COM_MATRIXSSL_PATH = /usr/src/matrixssl
-ME_COM_MDB_PATH       = src/mdb.c
-ME_COM_MPR_PATH       = src/paks/mpr
 ME_COM_NANOSSL_PATH   = /usr/src/nanossl
-ME_COM_OPENSSL_PATH   = [object Object]
-ME_COM_OSDEP_PATH     = src/paks/osdep
-ME_COM_PCRE_PATH      = src/paks/pcre
-ME_COM_PHP_PATH       = /usr/src/php
+ME_COM_OPENSSL_PATH   = /usr/src/openssl
 ME_COM_RC_PATH        = rc.exe
-ME_COM_SQLITE_PATH    = src/paks/sqlite
-ME_COM_SSL_PATH       = src/paks/ssl
-ME_COM_ZLIB_PATH      = src/paks/zlib
 
 CC                    = cl
 LD                    = link
 RC                    = rc
-CFLAGS                = -nologo -GR- -W3  -MD
+CFLAGS                = -nologo -GR- -W3 -Zi d -MDd
 DFLAGS                = -D_REENTRANT -D_MT -DME_COM_CGI=$(ME_COM_CGI) -DME_COM_DIR=$(ME_COM_DIR) -DME_COM_EJS=$(ME_COM_EJS) -DME_COM_ESP=$(ME_COM_ESP) -DME_COM_EST=$(ME_COM_EST) -DME_COM_HTTP=$(ME_COM_HTTP) -DME_COM_MATRIXSSL=$(ME_COM_MATRIXSSL) -DME_COM_MDB=$(ME_COM_MDB) -DME_COM_NANOSSL=$(ME_COM_NANOSSL) -DME_COM_OPENSSL=$(ME_COM_OPENSSL) -DME_COM_PCRE=$(ME_COM_PCRE) -DME_COM_PHP=$(ME_COM_PHP) -DME_COM_SQLITE=$(ME_COM_SQLITE) -DME_COM_SSL=$(ME_COM_SSL) -DME_COM_VXWORKS=$(ME_COM_VXWORKS) -DME_COM_ZLIB=$(ME_COM_ZLIB) 
 IFLAGS                = -I$(CONFIG)\inc
-LDFLAGS               = -nologo -nodefaultlib -incremental:no -machine:$(ARCH)
+LDFLAGS               = -nologo -nodefaultlib -incremental:no -debug -machine:$(ARCH)
 LIBPATHS              = "-libpath:$(CONFIG)\bin"
 LIBS                  = ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib shell32.lib
 
-ME_ROOT_PREFIX        = C:
-ME_BASE_PREFIX        = $(ME_ROOT_PREFIX)\Program Files
-ME_APP_PREFIX         = $(ME_BASE_PREFIX)\Embedthis Appweb
-ME_VAPP_PREFIX        = $(ME_APP_PREFIX)
-ME_DATA_PREFIX        = $(ME_VAPP_PREFIX)
-ME_STATE_PREFIX       = $(ME_VAPP_PREFIX)
-ME_BIN_PREFIX         = $(ME_VAPP_PREFIX)\bin
-ME_INC_PREFIX         = $(ME_VAPP_PREFIX)\inc
-ME_LIB_PREFIX         = $(ME_VAPP_PREFIX)\lib
-ME_MAN_PREFIX         = $(ME_VAPP_PREFIX)\man
-ME_ETC_PREFIX         = $(ME_VAPP_PREFIX)
-ME_WEB_PREFIX         = $(ME_VAPP_PREFIX)\web
-ME_LOG_PREFIX         = $(ME_VAPP_PREFIX)\log
-ME_SPOOL_PREFIX       = $(ME_VAPP_PREFIX)\tmp
-ME_CACHE_PREFIX       = $(ME_VAPP_PREFIX)\cache
-ME_SRC_PREFIX         = $(ME_VAPP_PREFIX)\src
+ME_ROOT_PREFIX        = 
+ME_BASE_PREFIX        = $(ME_ROOT_PREFIX)\usr\local
+ME_DATA_PREFIX        = $(ME_ROOT_PREFIX)\
+ME_STATE_PREFIX       = $(ME_ROOT_PREFIX)\var
+ME_APP_PREFIX         = \usr\local\lib\$(NAME)
+ME_VAPP_PREFIX        = \usr\local\lib\$(NAME)\$(VERSION)
+ME_BIN_PREFIX         = $(ME_ROOT_PREFIX)\usr\local\bin
+ME_INC_PREFIX         = $(ME_ROOT_PREFIX)\usr\local\include
+ME_LIB_PREFIX         = $(ME_ROOT_PREFIX)\usr\local\lib
+ME_MAN_PREFIX         = $(ME_ROOT_PREFIX)\usr\local\share\man
+ME_SBIN_PREFIX        = $(ME_ROOT_PREFIX)\usr\local\sbin
+ME_ETC_PREFIX         = $(ME_ROOT_PREFIX)\etc\$(NAME)
+ME_WEB_PREFIX         = $(ME_ROOT_PREFIX)\var\www\$(NAME)-default
+ME_LOG_PREFIX         = $(ME_ROOT_PREFIX)\var\log\$(NAME)
+ME_SPOOL_PREFIX       = $(ME_ROOT_PREFIX)\var\spool\$(NAME)
+ME_CACHE_PREFIX       = $(ME_ROOT_PREFIX)\var\spool\$(NAME)\cache
+ME_SRC_PREFIX         = $(ME_ROOT_PREFIX)$(NAME)-$(VERSION)
 
 
 TARGETS               = $(TARGETS) $(CONFIG)\bin\appweb.exe
@@ -725,7 +714,7 @@ DEPS_30 = $(DEPS_30) $(CONFIG)\inc\est.h
 $(CONFIG)\obj\mprSsl.obj: \
     src\paks\mpr\mprSsl.c $(DEPS_30)
 	@echo '   [Compile] $(CONFIG)/obj/mprSsl.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\paks\mpr\mprSsl.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\mpr\mprSsl.c
 
 #
 #   libmprssl
@@ -755,7 +744,7 @@ DEPS_32 = $(DEPS_32) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\sslModule.obj: \
     src\modules\sslModule.c $(DEPS_32)
 	@echo '   [Compile] $(CONFIG)/obj/sslModule.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\sslModule.obj -Fd$(CONFIG)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\modules\sslModule.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\sslModule.obj -Fd$(CONFIG)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\sslModule.c
 
 !IF "$(ME_COM_SSL)" == "1"
 #
@@ -971,7 +960,7 @@ DEPS_44 = $(DEPS_44) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\phpHandler.obj: \
     src\modules\phpHandler.c $(DEPS_44)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\phpHandler.obj -Fd$(CONFIG)\obj\phpHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)\main" "-I$(BIT_PACK_PHP_PATH)\Zend" "-I$(BIT_PACK_PHP_PATH)\TSRM" src\modules\phpHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\phpHandler.obj -Fd$(CONFIG)\obj\phpHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\phpHandler.c
 
 !IF "$(ME_COM_PHP)" == "1"
 #
@@ -1063,7 +1052,7 @@ DEPS_48 = $(DEPS_48) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\appweb.obj: \
     src\server\appweb.c $(DEPS_48)
 	@echo '   [Compile] $(CONFIG)/obj/appweb.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\appweb.obj -Fd$(CONFIG)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)\main" "-I$(BIT_PACK_PHP_PATH)\Zend" "-I$(BIT_PACK_PHP_PATH)\TSRM" src\server\appweb.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\appweb.obj -Fd$(CONFIG)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\appweb.c
 
 #
 #   appweb
@@ -1149,23 +1138,12 @@ LIBS_49 = $(LIBS_49) libslink.lib
 !IF "$(ME_COM_ESP)" == "1"
 LIBS_49 = $(LIBS_49) libmod_esp.lib
 !ENDIF
-!IF "$(ME_COM_SQLITE)" == "1"
-LIBS_49 = $(LIBS_49) libsql.lib
-!ENDIF
 !IF "$(ME_COM_SSL)" == "1"
 LIBS_49 = $(LIBS_49) libmod_ssl.lib
 !ENDIF
 LIBS_49 = $(LIBS_49) libmprssl.lib
 !IF "$(ME_COM_EST)" == "1"
 LIBS_49 = $(LIBS_49) libest.lib
-!ENDIF
-!IF "$(ME_COM_MATRIXSSL)" == "1"
-LIBS_49 = $(LIBS_49) libmatrixssl.lib
-LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)
-!ENDIF
-!IF "$(ME_COM_NANOSSL)" == "1"
-LIBS_49 = $(LIBS_49) libssls.lib
-LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_NANOSSL_PATH)/bin
 !ENDIF
 !IF "$(ME_COM_EJS)" == "1"
 LIBS_49 = $(LIBS_49) libmod_ejs.lib
@@ -1179,17 +1157,13 @@ LIBS_49 = $(LIBS_49) libzlib.lib
 !IF "$(ME_COM_PHP)" == "1"
 LIBS_49 = $(LIBS_49) libmod_php.lib
 !ENDIF
-!IF "$(ME_COM_PHP)" == "1"
-LIBS_49 = $(LIBS_49) libphp5ts.lib
-LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(BIT_PACK_PHP_PATH)/libs
-!ENDIF
 !IF "$(ME_COM_CGI)" == "1"
 LIBS_49 = $(LIBS_49) libmod_cgi.lib
 !ENDIF
 
 $(CONFIG)\bin\appweb.exe: $(DEPS_49)
 	@echo '      [Link] $(CONFIG)/bin/appweb.exe'
-	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)    "$(CONFIG)\obj\appweb.obj" $(LIBPATHS_49) $(LIBS_49) $(LIBS_49) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\appweb.obj" $(LIBPATHS_49) $(LIBS_49) $(LIBS_49) $(LIBS) 
 
 #
 #   appwebMonitor.h
@@ -1421,9 +1395,6 @@ LIBS_62 = $(LIBS_62) libpcre.lib
 !IF "$(ME_COM_ZLIB)" == "1"
 LIBS_62 = $(LIBS_62) libzlib.lib
 !ENDIF
-!IF "$(ME_COM_SQLITE)" == "1"
-LIBS_62 = $(LIBS_62) libsql.lib
-!ENDIF
 
 $(CONFIG)\bin\ejsc.exe: $(DEPS_62)
 	@echo '      [Link] $(CONFIG)/bin/ejsc.exe'
@@ -1521,9 +1492,6 @@ LIBS_65 = $(LIBS_65) libpcre.lib
 !ENDIF
 !IF "$(ME_COM_ZLIB)" == "1"
 LIBS_65 = $(LIBS_65) libzlib.lib
-!ENDIF
-!IF "$(ME_COM_SQLITE)" == "1"
-LIBS_65 = $(LIBS_65) libsql.lib
 !ENDIF
 
 $(CONFIG)\bin\ejscmd.exe: $(DEPS_65)
@@ -1713,6 +1681,7 @@ DEPS_66 = $(DEPS_66) src\paks\pcre\pcre.c
 DEPS_66 = $(DEPS_66) src\paks\pcre\pcre.h
 DEPS_66 = $(DEPS_66) src\paks\pcre\pcre.me
 DEPS_66 = $(DEPS_66) src\paks\pcre\README.md
+DEPS_66 = $(DEPS_66) src\paks\php.me
 DEPS_66 = $(DEPS_66) src\paks\sqlite
 DEPS_66 = $(DEPS_66) src\paks\sqlite\LICENSE.md
 DEPS_66 = $(DEPS_66) src\paks\sqlite\package.json
@@ -1900,9 +1869,6 @@ LIBS_69 = $(LIBS_69) libmpr.lib
 !IF "$(ME_COM_PCRE)" == "1"
 LIBS_69 = $(LIBS_69) libpcre.lib
 !ENDIF
-!IF "$(ME_COM_SQLITE)" == "1"
-LIBS_69 = $(LIBS_69) libsql.lib
-!ENDIF
 
 $(CONFIG)\bin\esp.exe: $(DEPS_69)
 	@echo '      [Link] $(CONFIG)/bin/esp.exe'
@@ -1919,7 +1885,7 @@ DEPS_70 = $(DEPS_70) $(CONFIG)\inc\http.h
 $(CONFIG)\obj\http.obj: \
     src\paks\http\http.c $(DEPS_70)
 	@echo '   [Compile] $(CONFIG)/obj/http.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\http.obj -Fd$(CONFIG)\obj\http.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\paks\http\http.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\http.obj -Fd$(CONFIG)\obj\http.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\http\http.c
 
 !IF "$(ME_COM_HTTP)" == "1"
 #
@@ -1956,18 +1922,10 @@ LIBS_71 = $(LIBS_71) libmprssl.lib
 !IF "$(ME_COM_EST)" == "1"
 LIBS_71 = $(LIBS_71) libest.lib
 !ENDIF
-!IF "$(ME_COM_MATRIXSSL)" == "1"
-LIBS_71 = $(LIBS_71) libmatrixssl.lib
-LIBPATHS_71 = $(LIBPATHS_71) -libpath:$(ME_COM_MATRIXSSL_PATH)
-!ENDIF
-!IF "$(ME_COM_NANOSSL)" == "1"
-LIBS_71 = $(LIBS_71) libssls.lib
-LIBPATHS_71 = $(LIBPATHS_71) -libpath:$(ME_COM_NANOSSL_PATH)/bin
-!ENDIF
 
 $(CONFIG)\bin\http.exe: $(DEPS_71)
 	@echo '      [Link] $(CONFIG)/bin/http.exe'
-	"$(LD)" -out:$(CONFIG)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)   "$(CONFIG)\obj\http.obj" $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\http.obj" $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS) 
 !ENDIF
 
 #
@@ -2289,102 +2247,103 @@ test\cgi-bin\testScript: $(DEPS_89)
 #
 installBinary: $(DEPS_90)
 	cd .
-	if not exist "$(ME_VAPP_PREFIX)\log" md "$(ME_VAPP_PREFIX)\log"
-	if not exist "$(ME_VAPP_PREFIX)\cache" md "$(ME_VAPP_PREFIX)\cache"
+	if not exist "$(ME_LOG_PREFIX)" md "$(ME_LOG_PREFIX)"
+	if not exist "$(ME_CACHE_PREFIX)" md "$(ME_CACHE_PREFIX)"
 	if not exist "$(ME_VAPP_PREFIX)\bin" md "$(ME_VAPP_PREFIX)\bin"
-	copy /Y $(CONFIG)\bin\appweb.exe "$(ME_VAPP_PREFIX)\bin\appweb.exe"
-	copy /Y $(CONFIG)\bin\appman.exe "$(ME_VAPP_PREFIX)\bin\appman.exe"
-	copy /Y $(CONFIG)\bin\http.exe "$(ME_VAPP_PREFIX)\bin\http.exe"
+	copy /Y $(CONFIG)\bin\appweb.exe $(ME_VAPP_PREFIX)\bin\appweb.exe
+	copy /Y $(CONFIG)\bin\appman.exe $(ME_VAPP_PREFIX)\bin\appman.exe
+	copy /Y $(CONFIG)\bin\http.exe $(ME_VAPP_PREFIX)\bin\http.exe
 !IF "$(ME_COM_ESP)" == "1"
-	copy /Y $(CONFIG)\bin\esp.exe "$(ME_VAPP_PREFIX)\bin\esp.exe"
+	copy /Y $(CONFIG)\bin\esp.exe $(ME_VAPP_PREFIX)\bin\esp.exe
 !ENDIF
-	copy /Y $(CONFIG)\bin\appwebMonitor.exe "$(ME_VAPP_PREFIX)\bin\appwebMonitor.exe"
-	copy /Y $(CONFIG)\bin\appwebMonitor.ico "$(ME_VAPP_PREFIX)\bin\appwebMonitor.ico"
+	copy /Y $(CONFIG)\bin\appwebMonitor.exe $(ME_VAPP_PREFIX)\bin\appwebMonitor.exe
+	copy /Y $(CONFIG)\bin\appwebMonitor.ico $(ME_VAPP_PREFIX)\bin\appwebMonitor.ico
 !IF "$(ME_COM_SSL)" == "1"
-	copy /Y $(CONFIG)\bin\ca.crt "$(ME_VAPP_PREFIX)\bin\ca.crt"
+	copy /Y $(CONFIG)\bin\ca.crt $(ME_VAPP_PREFIX)\bin\ca.crt
 !ENDIF
 !IF "$(ME_COM_OPENSSL)" == "1"
-	copy /Y $(CONFIG)\bin\libeay32.dll "$(ME_VAPP_PREFIX)\bin\libeay32.dll"
-	copy /Y $(CONFIG)\bin\ssleay32.dll "$(ME_VAPP_PREFIX)\bin\ssleay32.dll"
+	copy /Y $(CONFIG)\bin\libeay32.dll $(ME_VAPP_PREFIX)\bin\libeay32.dll
+	copy /Y $(CONFIG)\bin\ssleay32.dll $(ME_VAPP_PREFIX)\bin\ssleay32.dll
 !ENDIF
 !IF "$(ME_COM_PHP)" == "1"
-	copy /Y $(CONFIG)\bin\php5ts.dll "$(ME_VAPP_PREFIX)\bin\php5ts.dll"
+	copy /Y $(CONFIG)\bin\php5ts.dll $(ME_VAPP_PREFIX)\bin\php5ts.dll
 !ENDIF
 !IF "$(ME_COM_ESP)" == "1"
 	if not exist "$(ME_VAPP_PREFIX)" md "$(ME_VAPP_PREFIX)"
-	copy /Y $(CONFIG)\paks "$(ME_VAPP_PREFIX)\esp"
+	copy /Y $(CONFIG)\paks $(ME_VAPP_PREFIX)\esp
 !ENDIF
 !IF "$(ME_COM_ESP)" == "1"
-	copy /Y $(CONFIG)\bin\esp.conf "$(ME_VAPP_PREFIX)\bin\esp.conf"
+	copy /Y $(CONFIG)\bin\esp.conf $(ME_VAPP_PREFIX)\bin\esp.conf
 !ENDIF
-	if not exist "$(ME_VAPP_PREFIX)\web\bench" md "$(ME_VAPP_PREFIX)\web\bench"
-	copy /Y src\server\web\bench\1b.html "$(ME_VAPP_PREFIX)\web\bench\1b.html"
-	copy /Y src\server\web\bench\4k.html "$(ME_VAPP_PREFIX)\web\bench\4k.html"
-	copy /Y src\server\web\bench\64k.html "$(ME_VAPP_PREFIX)\web\bench\64k.html"
-	if not exist "$(ME_VAPP_PREFIX)\web" md "$(ME_VAPP_PREFIX)\web"
-	copy /Y src\server\web\favicon.ico "$(ME_VAPP_PREFIX)\web\favicon.ico"
-	if not exist "$(ME_VAPP_PREFIX)\web\icons" md "$(ME_VAPP_PREFIX)\web\icons"
-	copy /Y src\server\web\icons\back.gif "$(ME_VAPP_PREFIX)\web\icons\back.gif"
-	copy /Y src\server\web\icons\blank.gif "$(ME_VAPP_PREFIX)\web\icons\blank.gif"
-	copy /Y src\server\web\icons\compressed.gif "$(ME_VAPP_PREFIX)\web\icons\compressed.gif"
-	copy /Y src\server\web\icons\folder.gif "$(ME_VAPP_PREFIX)\web\icons\folder.gif"
-	copy /Y src\server\web\icons\parent.gif "$(ME_VAPP_PREFIX)\web\icons\parent.gif"
-	copy /Y src\server\web\icons\space.gif "$(ME_VAPP_PREFIX)\web\icons\space.gif"
-	copy /Y src\server\web\icons\text.gif "$(ME_VAPP_PREFIX)\web\icons\text.gif"
-	copy /Y src\server\web\iehacks.css "$(ME_VAPP_PREFIX)\web\iehacks.css"
-	if not exist "$(ME_VAPP_PREFIX)\web\images" md "$(ME_VAPP_PREFIX)\web\images"
-	copy /Y src\server\web\images\banner.jpg "$(ME_VAPP_PREFIX)\web\images\banner.jpg"
-	copy /Y src\server\web\images\bottomShadow.jpg "$(ME_VAPP_PREFIX)\web\images\bottomShadow.jpg"
-	copy /Y src\server\web\images\shadow.jpg "$(ME_VAPP_PREFIX)\web\images\shadow.jpg"
-	copy /Y src\server\web\index.html "$(ME_VAPP_PREFIX)\web\index.html"
-	copy /Y src\server\web\min-index.html "$(ME_VAPP_PREFIX)\web\min-index.html"
-	copy /Y src\server\web\print.css "$(ME_VAPP_PREFIX)\web\print.css"
-	copy /Y src\server\web\screen.css "$(ME_VAPP_PREFIX)\web\screen.css"
-	if not exist "$(ME_VAPP_PREFIX)\web\test" md "$(ME_VAPP_PREFIX)\web\test"
-	copy /Y src\server\web\test\bench.html "$(ME_VAPP_PREFIX)\web\test\bench.html"
-	copy /Y src\server\web\test\test.cgi "$(ME_VAPP_PREFIX)\web\test\test.cgi"
-	copy /Y src\server\web\test\test.ejs "$(ME_VAPP_PREFIX)\web\test\test.ejs"
-	copy /Y src\server\web\test\test.esp "$(ME_VAPP_PREFIX)\web\test\test.esp"
-	copy /Y src\server\web\test\test.html "$(ME_VAPP_PREFIX)\web\test\test.html"
-	copy /Y src\server\web\test\test.php "$(ME_VAPP_PREFIX)\web\test\test.php"
-	copy /Y src\server\web\test\test.pl "$(ME_VAPP_PREFIX)\web\test\test.pl"
-	copy /Y src\server\web\test\test.py "$(ME_VAPP_PREFIX)\web\test\test.py"
-	if not exist "$(ME_VAPP_PREFIX)\web\test" md "$(ME_VAPP_PREFIX)\web\test"
-	copy /Y src\server\web\test\test.cgi "$(ME_VAPP_PREFIX)\web\test\test.cgi"
-	copy /Y src\server\web\test\test.pl "$(ME_VAPP_PREFIX)\web\test\test.pl"
-	copy /Y src\server\web\test\test.py "$(ME_VAPP_PREFIX)\web\test\test.py"
-	if not exist "$(ME_VAPP_PREFIX)" md "$(ME_VAPP_PREFIX)"
-	copy /Y src\server\mime.types "$(ME_VAPP_PREFIX)\mime.types"
-	copy /Y src\server\self.crt "$(ME_VAPP_PREFIX)\self.crt"
-	copy /Y src\server\self.key "$(ME_VAPP_PREFIX)\self.key"
+	if not exist "$(ME_WEB_PREFIX)\bench" md "$(ME_WEB_PREFIX)\bench"
+	copy /Y src\server\web\bench\1b.html $(ME_WEB_PREFIX)\bench\1b.html
+	copy /Y src\server\web\bench\4k.html $(ME_WEB_PREFIX)\bench\4k.html
+	copy /Y src\server\web\bench\64k.html $(ME_WEB_PREFIX)\bench\64k.html
+	if not exist "$(ME_WEB_PREFIX)" md "$(ME_WEB_PREFIX)"
+	copy /Y src\server\web\favicon.ico $(ME_WEB_PREFIX)\favicon.ico
+	if not exist "$(ME_WEB_PREFIX)\icons" md "$(ME_WEB_PREFIX)\icons"
+	copy /Y src\server\web\icons\back.gif $(ME_WEB_PREFIX)\icons\back.gif
+	copy /Y src\server\web\icons\blank.gif $(ME_WEB_PREFIX)\icons\blank.gif
+	copy /Y src\server\web\icons\compressed.gif $(ME_WEB_PREFIX)\icons\compressed.gif
+	copy /Y src\server\web\icons\folder.gif $(ME_WEB_PREFIX)\icons\folder.gif
+	copy /Y src\server\web\icons\parent.gif $(ME_WEB_PREFIX)\icons\parent.gif
+	copy /Y src\server\web\icons\space.gif $(ME_WEB_PREFIX)\icons\space.gif
+	copy /Y src\server\web\icons\text.gif $(ME_WEB_PREFIX)\icons\text.gif
+	copy /Y src\server\web\iehacks.css $(ME_WEB_PREFIX)\iehacks.css
+	if not exist "$(ME_WEB_PREFIX)\images" md "$(ME_WEB_PREFIX)\images"
+	copy /Y src\server\web\images\banner.jpg $(ME_WEB_PREFIX)\images\banner.jpg
+	copy /Y src\server\web\images\bottomShadow.jpg $(ME_WEB_PREFIX)\images\bottomShadow.jpg
+	copy /Y src\server\web\images\shadow.jpg $(ME_WEB_PREFIX)\images\shadow.jpg
+	copy /Y src\server\web\index.html $(ME_WEB_PREFIX)\index.html
+	copy /Y src\server\web\min-index.html $(ME_WEB_PREFIX)\min-index.html
+	copy /Y src\server\web\print.css $(ME_WEB_PREFIX)\print.css
+	copy /Y src\server\web\screen.css $(ME_WEB_PREFIX)\screen.css
+	if not exist "$(ME_WEB_PREFIX)\test" md "$(ME_WEB_PREFIX)\test"
+	copy /Y src\server\web\test\bench.html $(ME_WEB_PREFIX)\test\bench.html
+	copy /Y src\server\web\test\test.cgi $(ME_WEB_PREFIX)\test\test.cgi
+	copy /Y src\server\web\test\test.ejs $(ME_WEB_PREFIX)\test\test.ejs
+	copy /Y src\server\web\test\test.esp $(ME_WEB_PREFIX)\test\test.esp
+	copy /Y src\server\web\test\test.html $(ME_WEB_PREFIX)\test\test.html
+	copy /Y src\server\web\test\test.php $(ME_WEB_PREFIX)\test\test.php
+	copy /Y src\server\web\test\test.pl $(ME_WEB_PREFIX)\test\test.pl
+	copy /Y src\server\web\test\test.py $(ME_WEB_PREFIX)\test\test.py
+	if not exist "$(ME_WEB_PREFIX)\test" md "$(ME_WEB_PREFIX)\test"
+	copy /Y src\server\web\test\test.cgi $(ME_WEB_PREFIX)\test\test.cgi
+	copy /Y src\server\web\test\test.pl $(ME_WEB_PREFIX)\test\test.pl
+	copy /Y src\server\web\test\test.py $(ME_WEB_PREFIX)\test\test.py
+	if not exist "$(ME_ETC_PREFIX)" md "$(ME_ETC_PREFIX)"
+	copy /Y src\server\mime.types $(ME_ETC_PREFIX)\mime.types
+	copy /Y src\server\self.crt $(ME_ETC_PREFIX)\self.crt
+	copy /Y src\server\self.key $(ME_ETC_PREFIX)\self.key
 !IF "$(ME_COM_PHP)" == "1"
-	copy /Y src\server\php.ini "$(ME_VAPP_PREFIX)\php.ini"
+	copy /Y src\server\php.ini $(ME_ETC_PREFIX)\php.ini
 !ENDIF
-	copy /Y src\server\appweb.conf "$(ME_VAPP_PREFIX)\appweb.conf"
-	copy /Y src\server\sample.conf "$(ME_VAPP_PREFIX)\sample.conf"
-	copy /Y src\server\self.crt "$(ME_VAPP_PREFIX)\self.crt"
-	copy /Y src\server\self.key "$(ME_VAPP_PREFIX)\self.key"
-	echo 'set LOG_DIR "$(ME_VAPP_PREFIX)/log"\nset CACHE_DIR "$(ME_VAPP_PREFIX)/cache"\nDocuments "$(ME_VAPP_PREFIX)/web\nListen 80\n<if SSL_MODULE>\nListenSecure 443\n</if>\n' >$(ME_VAPP_PREFIX)/install.conf
+	if not exist "$(ME_ETC_PREFIX)" md "$(ME_ETC_PREFIX)"
+	copy /Y src\server\appweb.conf $(ME_ETC_PREFIX)\appweb.conf
+	copy /Y src\server\sample.conf $(ME_ETC_PREFIX)\sample.conf
+	copy /Y src\server\self.crt $(ME_ETC_PREFIX)\self.crt
+	copy /Y src\server\self.key $(ME_ETC_PREFIX)\self.key
+	echo 'set LOG_DIR "$(ME_LOG_PREFIX)"\nset CACHE_DIR "$(ME_CACHE_PREFIX)"\nDocuments "$(ME_WEB_PREFIX)\nListen 80\n<if SSL_MODULE>\nListenSecure 443\n</if>\n' >$(ME_ETC_PREFIX)/install.conf
 	if not exist "$(ME_VAPP_PREFIX)\inc" md "$(ME_VAPP_PREFIX)\inc"
-	copy /Y $(CONFIG)\inc\me.h "$(ME_VAPP_PREFIX)\inc\me.h"
-	copy /Y src\paks\osdep\osdep.h "$(ME_VAPP_PREFIX)\inc\osdep.h"
-	copy /Y src\appweb.h "$(ME_VAPP_PREFIX)\inc\appweb.h"
-	copy /Y src\customize.h "$(ME_VAPP_PREFIX)\inc\customize.h"
-	copy /Y src\paks\est\est.h "$(ME_VAPP_PREFIX)\inc\est.h"
-	copy /Y src\paks\http\http.h "$(ME_VAPP_PREFIX)\inc\http.h"
-	copy /Y src\paks\mpr\mpr.h "$(ME_VAPP_PREFIX)\inc\mpr.h"
-	copy /Y src\paks\pcre\pcre.h "$(ME_VAPP_PREFIX)\inc\pcre.h"
-	copy /Y src\paks\sqlite\sqlite3.h "$(ME_VAPP_PREFIX)\inc\sqlite3.h"
+	copy /Y $(CONFIG)\inc\me.h $(ME_VAPP_PREFIX)\inc\me.h
+	copy /Y src\paks\osdep\osdep.h $(ME_VAPP_PREFIX)\inc\osdep.h
+	copy /Y src\appweb.h $(ME_VAPP_PREFIX)\inc\appweb.h
+	copy /Y src\customize.h $(ME_VAPP_PREFIX)\inc\customize.h
+	copy /Y src\paks\est\est.h $(ME_VAPP_PREFIX)\inc\est.h
+	copy /Y src\paks\http\http.h $(ME_VAPP_PREFIX)\inc\http.h
+	copy /Y src\paks\mpr\mpr.h $(ME_VAPP_PREFIX)\inc\mpr.h
+	copy /Y src\paks\pcre\pcre.h $(ME_VAPP_PREFIX)\inc\pcre.h
+	copy /Y src\paks\sqlite\sqlite3.h $(ME_VAPP_PREFIX)\inc\sqlite3.h
 !IF "$(ME_COM_ESP)" == "1"
-	copy /Y src\paks\esp\esp.h "$(ME_VAPP_PREFIX)\inc\esp.h"
+	copy /Y src\paks\esp\esp.h $(ME_VAPP_PREFIX)\inc\esp.h
 !ENDIF
 !IF "$(ME_COM_EJS)" == "1"
-	copy /Y src\paks\ejs\ejs.h "$(ME_VAPP_PREFIX)\inc\ejs.h"
-	copy /Y src\paks\ejs\ejs.slots.h "$(ME_VAPP_PREFIX)\inc\ejs.slots.h"
-	copy /Y src\paks\ejs\ejsByteGoto.h "$(ME_VAPP_PREFIX)\inc\ejsByteGoto.h"
+	copy /Y src\paks\ejs\ejs.h $(ME_VAPP_PREFIX)\inc\ejs.h
+	copy /Y src\paks\ejs\ejs.slots.h $(ME_VAPP_PREFIX)\inc\ejs.slots.h
+	copy /Y src\paks\ejs\ejsByteGoto.h $(ME_VAPP_PREFIX)\inc\ejsByteGoto.h
 !ENDIF
 !IF "$(ME_COM_EJS)" == "1"
-	copy /Y $(CONFIG)\bin\ejs.mod "$(ME_VAPP_PREFIX)\bin\ejs.mod"
+	copy /Y $(CONFIG)\bin\ejs.mod $(ME_VAPP_PREFIX)\bin\ejs.mod
 !ENDIF
 	cd .
 
@@ -2407,25 +2366,17 @@ DEPS_92 = $(DEPS_92) stop
 
 uninstall: $(DEPS_92)
 	cd package
-	if exist "$(ME_VAPP_PREFIX)\appweb.conf" del /Q "$(ME_VAPP_PREFIX)\appweb.conf"
-	if exist "$(ME_VAPP_PREFIX)\esp.conf" del /Q "$(ME_VAPP_PREFIX)\esp.conf"
-	if exist "$(ME_VAPP_PREFIX)\mine.types" del /Q "$(ME_VAPP_PREFIX)\mine.types"
-	if exist "$(ME_VAPP_PREFIX)\install.conf" del /Q "$(ME_VAPP_PREFIX)\install.conf"
-	if exist "$(ME_VAPP_PREFIX)\inc\appweb" rd /Q /S "$(ME_VAPP_PREFIX)\inc\appweb"
-	if exist "$(ME_VAPP_PREFIX)\web" rd /Q /S "$(ME_VAPP_PREFIX)\web"
-	if exist "$(ME_VAPP_PREFIX)\tmp" rd /Q /S "$(ME_VAPP_PREFIX)\tmp"
-	if exist "$(ME_VAPP_PREFIX)\cache" rd /Q /S "$(ME_VAPP_PREFIX)\cache"
-	if exist "$(ME_VAPP_PREFIX)\log" rd /Q /S "$(ME_VAPP_PREFIX)\log"
+	if exist "$(ME_ETC_PREFIX)\appweb.conf" del /Q "$(ME_ETC_PREFIX)\appweb.conf"
+	if exist "$(ME_ETC_PREFIX)\esp.conf" del /Q "$(ME_ETC_PREFIX)\esp.conf"
+	if exist "$(ME_ETC_PREFIX)\mine.types" del /Q "$(ME_ETC_PREFIX)\mine.types"
+	if exist "$(ME_ETC_PREFIX)\install.conf" del /Q "$(ME_ETC_PREFIX)\install.conf"
+	if exist "$(ME_INC_PREFIX)\appweb" rd /Q /S "$(ME_INC_PREFIX)\appweb"
+	if exist "$(ME_WEB_PREFIX)" rd /Q /S "$(ME_WEB_PREFIX)"
+	if exist "$(ME_SPOOL_PREFIX)" rd /Q /S "$(ME_SPOOL_PREFIX)"
+	if exist "$(ME_CACHE_PREFIX)" rd /Q /S "$(ME_CACHE_PREFIX)"
+	if exist "$(ME_LOG_PREFIX)" rd /Q /S "$(ME_LOG_PREFIX)"
 	if exist "$(ME_VAPP_PREFIX)" rd /Q /S "$(ME_VAPP_PREFIX)"
-	if exist "$(ME_VAPP_PREFIX)\bin" rd /Q "$(ME_VAPP_PREFIX)\bin"
-	if exist "$(ME_VAPP_PREFIX)\inc" rd /Q "$(ME_VAPP_PREFIX)\inc"
-	if exist "$(ME_VAPP_PREFIX)\man" rd /Q "$(ME_VAPP_PREFIX)\man"
-	if exist "$(ME_VAPP_PREFIX)" rd /Q "$(ME_VAPP_PREFIX)"
-	if exist "$(ME_VAPP_PREFIX)\web" rd /Q "$(ME_VAPP_PREFIX)\web"
-	if exist "$(ME_VAPP_PREFIX)\log" rd /Q "$(ME_VAPP_PREFIX)\log"
-	if exist "$(ME_VAPP_PREFIX)\tmp" rd /Q "$(ME_VAPP_PREFIX)\tmp"
-	if exist "$(ME_VAPP_PREFIX)\cache" rd /Q "$(ME_VAPP_PREFIX)\cache"
-	if exist "$(ME_VAPP_PREFIX)\latest" del /Q "$(ME_VAPP_PREFIX)\latest"
-	if exist "$(ME_VAPP_PREFIX)" rd /Q "$(ME_VAPP_PREFIX)"
+	if exist "$(ME_APP_PREFIX)\latest" del /Q "$(ME_APP_PREFIX)\latest"
+	if exist "$(ME_APP_PREFIX)" rd /Q "$(ME_APP_PREFIX)"
 	cd ..
 

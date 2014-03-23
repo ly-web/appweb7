@@ -28,7 +28,7 @@ ME_COM_PHP            ?= 0
 ME_COM_SQLITE         ?= 0
 ME_COM_SSL            ?= 1
 ME_COM_VXWORKS        ?= 0
-ME_COM_WINSDK         ?= 0
+ME_COM_WINSDK         ?= 1
 ME_COM_ZLIB           ?= 1
 
 ifeq ($(ME_COM_EST),1)
@@ -53,22 +53,10 @@ endif
 ME_COM_CGI_PATH       ?= src/modules/cgiHandler.c
 ME_COM_COMPILER_PATH  ?= clang
 ME_COM_DIR_PATH       ?= src/dirHandler.c
-ME_COM_EJS_PATH       ?= src/paks/ejs
-ME_COM_ESP_PATH       ?= src/paks/esp
-ME_COM_EST_PATH       ?= src/paks/est
-ME_COM_HTTP_PATH      ?= src/paks/http
 ME_COM_LIB_PATH       ?= ar
 ME_COM_MATRIXSSL_PATH ?= /usr/src/matrixssl
-ME_COM_MDB_PATH       ?= src/mdb.c
-ME_COM_MPR_PATH       ?= src/paks/mpr
 ME_COM_NANOSSL_PATH   ?= /usr/src/nanossl
-ME_COM_OPENSSL_PATH   ?= [object Object]
-ME_COM_OSDEP_PATH     ?= src/paks/osdep
-ME_COM_PCRE_PATH      ?= src/paks/pcre
-ME_COM_PHP_PATH       ?= /usr/src/php
-ME_COM_SQLITE_PATH    ?= src/paks/sqlite
-ME_COM_SSL_PATH       ?= src/paks/ssl
-ME_COM_ZLIB_PATH      ?= src/paks/zlib
+ME_COM_OPENSSL_PATH   ?= /usr/src/openssl
 
 CFLAGS                += -w
 DFLAGS                +=  $(patsubst %,-D%,$(filter ME_%,$(MAKEFLAGS))) -DME_COM_CGI=$(ME_COM_CGI) -DME_COM_DIR=$(ME_COM_DIR) -DME_COM_EJS=$(ME_COM_EJS) -DME_COM_ESP=$(ME_COM_ESP) -DME_COM_EST=$(ME_COM_EST) -DME_COM_HTTP=$(ME_COM_HTTP) -DME_COM_MATRIXSSL=$(ME_COM_MATRIXSSL) -DME_COM_MDB=$(ME_COM_MDB) -DME_COM_NANOSSL=$(ME_COM_NANOSSL) -DME_COM_OPENSSL=$(ME_COM_OPENSSL) -DME_COM_PCRE=$(ME_COM_PCRE) -DME_COM_PHP=$(ME_COM_PHP) -DME_COM_SQLITE=$(ME_COM_SQLITE) -DME_COM_SSL=$(ME_COM_SSL) -DME_COM_VXWORKS=$(ME_COM_VXWORKS) -DME_COM_WINSDK=$(ME_COM_WINSDK) -DME_COM_ZLIB=$(ME_COM_ZLIB) 
@@ -311,7 +299,7 @@ DEPS_5 += $(CONFIG)/obj/mprLib.o
 
 $(CONFIG)/bin/libmpr.dylib: $(DEPS_5)
 	@echo '      [Link] $(CONFIG)/bin/libmpr.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmpr.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/mprLib.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libmpr.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/mprLib.o" $(LIBS) 
 
 #
 #   pcre.h
@@ -342,7 +330,7 @@ DEPS_8 += $(CONFIG)/obj/pcre.o
 
 $(CONFIG)/bin/libpcre.dylib: $(DEPS_8)
 	@echo '      [Link] $(CONFIG)/bin/libpcre.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libpcre.dylib -arch $(CC_ARCH) $(LDFLAGS) -compatibility_version 5.0.0 -current_version 5.0.0 $(LIBPATHS) -install_name @rpath/libpcre.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/pcre.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libpcre.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ -compatibility_version 5.0.0 -current_version 5.0.0 $(LIBPATHS) -install_name @rpath/libpcre.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/pcre.o" $(LIBS) 
 endif
 
 #
@@ -389,7 +377,7 @@ endif
 
 $(CONFIG)/bin/libhttp.dylib: $(DEPS_11)
 	@echo '      [Link] $(CONFIG)/bin/libhttp.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libhttp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libhttp.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/httpLib.o" $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libhttp.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libhttp.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/httpLib.o" $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS) -lpam 
 endif
 
 #
@@ -515,7 +503,7 @@ endif
 
 $(CONFIG)/bin/libappweb.dylib: $(DEPS_20)
 	@echo '      [Link] $(CONFIG)/bin/libappweb.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libappweb.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/config.o" "$(CONFIG)/obj/convenience.o" "$(CONFIG)/obj/dirHandler.o" "$(CONFIG)/obj/fileHandler.o" "$(CONFIG)/obj/log.o" "$(CONFIG)/obj/server.o" $(LIBPATHS_20) $(LIBS_20) $(LIBS_20) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libappweb.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/config.o" "$(CONFIG)/obj/convenience.o" "$(CONFIG)/obj/dirHandler.o" "$(CONFIG)/obj/fileHandler.o" "$(CONFIG)/obj/log.o" "$(CONFIG)/obj/server.o" $(LIBPATHS_20) $(LIBS_20) $(LIBS_20) $(LIBS) -lpam 
 
 #
 #   slink.c
@@ -555,7 +543,7 @@ DEPS_24 += $(CONFIG)/obj/slink.o
 
 $(CONFIG)/bin/libslink.dylib: $(DEPS_24)
 	@echo '      [Link] $(CONFIG)/bin/libslink.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libslink.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/slink.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libslink.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/slink.o" $(LIBS) 
 
 #
 #   appweb.o
@@ -613,7 +601,7 @@ LIBS_26 += -lslink
 
 $(CONFIG)/bin/appweb: $(DEPS_26)
 	@echo '      [Link] $(CONFIG)/bin/appweb'
-	$(CC) -o $(CONFIG)/bin/appweb -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/appweb.o" $(LIBPATHS_26) $(LIBS_26) $(LIBS_26) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/appweb -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/appweb.o" $(LIBPATHS_26) $(LIBS_26) $(LIBS_26) $(LIBS) -lpam 
 
 #
 #   authpass.o
@@ -666,7 +654,7 @@ endif
 
 $(CONFIG)/bin/authpass: $(DEPS_28)
 	@echo '      [Link] $(CONFIG)/bin/authpass'
-	$(CC) -o $(CONFIG)/bin/authpass -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/authpass.o" $(LIBPATHS_28) $(LIBS_28) $(LIBS_28) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/authpass -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/authpass.o" $(LIBPATHS_28) $(LIBS_28) $(LIBS_28) $(LIBS) -lpam 
 
 ifeq ($(ME_COM_EST),1)
 #
@@ -699,7 +687,7 @@ DEPS_31 += $(CONFIG)/obj/cgiProgram.o
 
 $(CONFIG)/bin/cgiProgram: $(DEPS_31)
 	@echo '      [Link] $(CONFIG)/bin/cgiProgram'
-	$(CC) -o $(CONFIG)/bin/cgiProgram -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/cgiProgram.o" $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/cgiProgram -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/cgiProgram.o" $(LIBS) 
 endif
 
 #
@@ -731,7 +719,7 @@ DEPS_34 += $(CONFIG)/obj/zlib.o
 
 $(CONFIG)/bin/libzlib.dylib: $(DEPS_34)
 	@echo '      [Link] $(CONFIG)/bin/libzlib.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libzlib.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libzlib.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/zlib.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libzlib.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libzlib.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/zlib.o" $(LIBS) 
 endif
 
 #
@@ -820,7 +808,7 @@ endif
 
 $(CONFIG)/bin/libejs.dylib: $(DEPS_39)
 	@echo '      [Link] $(CONFIG)/bin/libejs.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_39) $(LIBS_39) $(LIBS_39) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_39) $(LIBS_39) $(LIBS_39) $(LIBS) -lpam 
 endif
 
 #
@@ -882,7 +870,7 @@ endif
 
 $(CONFIG)/bin/ejsc: $(DEPS_41)
 	@echo '      [Link] $(CONFIG)/bin/ejsc'
-	$(CC) -o $(CONFIG)/bin/ejsc -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejsc.o" $(LIBPATHS_41) $(LIBS_41) $(LIBS_41) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/ejsc -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/ejsc.o" $(LIBPATHS_41) $(LIBS_41) $(LIBS_41) $(LIBS) -lpam 
 endif
 
 ifeq ($(ME_COM_EJS),1)
@@ -984,7 +972,7 @@ endif
 
 $(CONFIG)/bin/ejscmd: $(DEPS_44)
 	@echo '      [Link] $(CONFIG)/bin/ejscmd'
-	$(CC) -o $(CONFIG)/bin/ejscmd -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejs.o" $(LIBPATHS_44) $(LIBS_44) $(LIBS_44) $(LIBS) -lpam -ledit 
+	$(CC) -o $(CONFIG)/bin/ejscmd -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/ejs.o" $(LIBPATHS_44) $(LIBS_44) $(LIBS_44) $(LIBS) -lpam -ledit 
 endif
 
 ifeq ($(ME_COM_ESP),1)
@@ -1169,6 +1157,7 @@ DEPS_45 += src/paks/pcre/pcre.c
 DEPS_45 += src/paks/pcre/pcre.h
 DEPS_45 += src/paks/pcre/pcre.me
 DEPS_45 += src/paks/pcre/README.md
+DEPS_45 += src/paks/php.me
 DEPS_45 += src/paks/sqlite
 DEPS_45 += src/paks/sqlite/LICENSE.md
 DEPS_45 += src/paks/sqlite/package.json
@@ -1362,7 +1351,7 @@ endif
 
 $(CONFIG)/bin/libmod_esp.dylib: $(DEPS_48)
 	@echo '      [Link] $(CONFIG)/bin/libmod_esp.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_esp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/espLib.o" $(LIBPATHS_48) $(LIBS_48) $(LIBS_48) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_esp.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/espLib.o" $(LIBPATHS_48) $(LIBS_48) $(LIBS_48) $(LIBS) -lpam 
 endif
 
 #
@@ -1424,7 +1413,7 @@ endif
 
 $(CONFIG)/bin/esp: $(DEPS_50)
 	@echo '      [Link] $(CONFIG)/bin/esp'
-	$(CC) -o $(CONFIG)/bin/esp -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/esp.o" "$(CONFIG)/obj/espLib.o" $(LIBPATHS_50) $(LIBS_50) $(LIBS_50) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/esp -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/esp.o" "$(CONFIG)/obj/espLib.o" $(LIBPATHS_50) $(LIBS_50) $(LIBS_50) $(LIBS) -lpam 
 endif
 
 
@@ -1466,7 +1455,7 @@ endif
 
 $(CONFIG)/bin/http: $(DEPS_52)
 	@echo '      [Link] $(CONFIG)/bin/http'
-	$(CC) -o $(CONFIG)/bin/http -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/http.o" $(LIBPATHS_52) $(LIBS_52) $(LIBS_52) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/http -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/http.o" $(LIBPATHS_52) $(LIBS_52) $(LIBS_52) $(LIBS) -lpam 
 endif
 
 #
@@ -1500,7 +1489,7 @@ DEPS_55 += $(CONFIG)/obj/estLib.o
 
 $(CONFIG)/bin/libest.dylib: $(DEPS_55)
 	@echo '      [Link] $(CONFIG)/bin/libest.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libest.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libest.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/estLib.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libest.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libest.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/estLib.o" $(LIBS) 
 endif
 
 #
@@ -1555,7 +1544,7 @@ endif
 
 $(CONFIG)/bin/libmod_cgi.dylib: $(DEPS_57)
 	@echo '      [Link] $(CONFIG)/bin/libmod_cgi.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/cgiHandler.o" $(LIBPATHS_57) $(LIBS_57) $(LIBS_57) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/cgiHandler.o" $(LIBPATHS_57) $(LIBS_57) $(LIBS_57) $(LIBS) -lpam 
 endif
 
 #
@@ -1627,7 +1616,7 @@ endif
 
 $(CONFIG)/bin/libmod_ejs.dylib: $(DEPS_59)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ejs.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_59) $(LIBS_59) $(LIBS_59) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_59) $(LIBS_59) $(LIBS_59) $(LIBS) -lpam 
 endif
 
 #
@@ -1639,7 +1628,7 @@ DEPS_60 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/phpHandler.o: \
     src/modules/phpHandler.c $(DEPS_60)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/phpHandler.o -arch $(CC_ARCH) $(IFLAGS) "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/modules/phpHandler.c
+	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/phpHandler.o -arch $(CC_ARCH) $(IFLAGS) src/modules/phpHandler.c
 
 ifeq ($(ME_COM_PHP),1)
 #
@@ -1679,12 +1668,10 @@ LIBS_61 += -lmpr
 ifeq ($(ME_COM_PCRE),1)
     LIBS_61 += -lpcre
 endif
-LIBS_61 += -lphp5
-LIBPATHS_61 += -L$(BIT_PACK_PHP_PATH)/libs
 
 $(CONFIG)/bin/libmod_php.dylib: $(DEPS_61)
 	@echo '      [Link] $(CONFIG)/bin/libmod_php.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_php.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmod_php.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_php.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libmod_php.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS) -lpam 
 endif
 
 #
@@ -1697,7 +1684,7 @@ DEPS_62 += $(CONFIG)/inc/est.h
 $(CONFIG)/obj/mprSsl.o: \
     src/paks/mpr/mprSsl.c $(DEPS_62)
 	@echo '   [Compile] $(CONFIG)/obj/mprSsl.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/mprSsl.o -arch $(CC_ARCH) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" src/paks/mpr/mprSsl.c
+	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/mprSsl.o -arch $(CC_ARCH) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" src/paks/mpr/mprSsl.c
 
 #
 #   libmprssl
@@ -1726,10 +1713,18 @@ ifeq ($(ME_COM_NANOSSL),1)
     LIBS_63 += -lssls
     LIBPATHS_63 += -L$(ME_COM_NANOSSL_PATH)/bin
 endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_63 += -lssl
+    LIBPATHS_63 += -L$(ME_COM_OPENSSL_PATH)
+endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_63 += -lcrypto
+    LIBPATHS_63 += -L$(ME_COM_OPENSSL_PATH)
+endif
 
 $(CONFIG)/bin/libmprssl.dylib: $(DEPS_63)
 	@echo '      [Link] $(CONFIG)/bin/libmprssl.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)   -install_name @rpath/libmprssl.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/mprSsl.o" $(LIBPATHS_63) $(LIBS_63) $(LIBS_63) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS)    -install_name @rpath/libmprssl.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/mprSsl.o" $(LIBPATHS_63) $(LIBS_63) $(LIBS_63) $(LIBS) 
 
 #
 #   sslModule.o
@@ -1740,7 +1735,7 @@ DEPS_64 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/sslModule.o: \
     src/modules/sslModule.c $(DEPS_64)
 	@echo '   [Compile] $(CONFIG)/obj/sslModule.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/sslModule.o -arch $(CC_ARCH) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" src/modules/sslModule.c
+	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/sslModule.o -arch $(CC_ARCH) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" src/modules/sslModule.c
 
 ifeq ($(ME_COM_SSL),1)
 #
@@ -1799,10 +1794,18 @@ ifeq ($(ME_COM_NANOSSL),1)
     LIBS_65 += -lssls
     LIBPATHS_65 += -L$(ME_COM_NANOSSL_PATH)/bin
 endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_65 += -lssl
+    LIBPATHS_65 += -L$(ME_COM_OPENSSL_PATH)
+endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_65 += -lcrypto
+    LIBPATHS_65 += -L$(ME_COM_OPENSSL_PATH)
+endif
 
 $(CONFIG)/bin/libmod_ssl.dylib: $(DEPS_65)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ssl.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)   -install_name @rpath/libmod_ssl.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/sslModule.o" $(LIBPATHS_65) $(LIBS_65) $(LIBS_65) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ssl.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS)    -install_name @rpath/libmod_ssl.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/sslModule.o" $(LIBPATHS_65) $(LIBS_65) $(LIBS_65) $(LIBS) -lpam 
 endif
 
 #
@@ -1834,7 +1837,7 @@ DEPS_68 += $(CONFIG)/obj/sqlite3.o
 
 $(CONFIG)/bin/libsql.dylib: $(DEPS_68)
 	@echo '      [Link] $(CONFIG)/bin/libsql.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libsql.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libsql.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/sqlite3.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libsql.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libsql.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/sqlite3.o" $(LIBS) 
 endif
 
 #
@@ -1862,7 +1865,7 @@ LIBS_70 += -lmpr
 
 $(CONFIG)/bin/appman: $(DEPS_70)
 	@echo '      [Link] $(CONFIG)/bin/appman'
-	$(CC) -o $(CONFIG)/bin/appman -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/manager.o" $(LIBPATHS_70) $(LIBS_70) $(LIBS_70) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/appman -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/manager.o" $(LIBPATHS_70) $(LIBS_70) $(LIBS_70) $(LIBS) 
 
 #
 #   server-cache
@@ -1894,7 +1897,7 @@ LIBS_73 += -lsql
 
 $(CONFIG)/bin/sqlite: $(DEPS_73)
 	@echo '      [Link] $(CONFIG)/bin/sqlite'
-	$(CC) -o $(CONFIG)/bin/sqlite -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/sqlite.o" $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/sqlite -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/sqlite.o" $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) 
 endif
 
 #
@@ -1971,7 +1974,7 @@ endif
 
 $(CONFIG)/bin/testAppweb: $(DEPS_77)
 	@echo '      [Link] $(CONFIG)/bin/testAppweb'
-	$(CC) -o $(CONFIG)/bin/testAppweb -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/testAppweb.o" "$(CONFIG)/obj/testHttp.o" $(LIBPATHS_77) $(LIBS_77) $(LIBS_77) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/testAppweb -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/testAppweb.o" "$(CONFIG)/obj/testHttp.o" $(LIBPATHS_77) $(LIBS_77) $(LIBS_77) $(LIBS) -lpam 
 
 ifeq ($(ME_COM_CGI),1)
 #

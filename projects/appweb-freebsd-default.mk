@@ -28,7 +28,7 @@ ME_COM_PHP            ?= 0
 ME_COM_SQLITE         ?= 0
 ME_COM_SSL            ?= 1
 ME_COM_VXWORKS        ?= 0
-ME_COM_WINSDK         ?= 0
+ME_COM_WINSDK         ?= 1
 ME_COM_ZLIB           ?= 1
 
 ifeq ($(ME_COM_EST),1)
@@ -53,22 +53,10 @@ endif
 ME_COM_CGI_PATH       ?= src/modules/cgiHandler.c
 ME_COM_COMPILER_PATH  ?= gcc
 ME_COM_DIR_PATH       ?= src/dirHandler.c
-ME_COM_EJS_PATH       ?= src/paks/ejs
-ME_COM_ESP_PATH       ?= src/paks/esp
-ME_COM_EST_PATH       ?= src/paks/est
-ME_COM_HTTP_PATH      ?= src/paks/http
 ME_COM_LIB_PATH       ?= ar
 ME_COM_MATRIXSSL_PATH ?= /usr/src/matrixssl
-ME_COM_MDB_PATH       ?= src/mdb.c
-ME_COM_MPR_PATH       ?= src/paks/mpr
 ME_COM_NANOSSL_PATH   ?= /usr/src/nanossl
-ME_COM_OPENSSL_PATH   ?= [object Object]
-ME_COM_OSDEP_PATH     ?= src/paks/osdep
-ME_COM_PCRE_PATH      ?= src/paks/pcre
-ME_COM_PHP_PATH       ?= /usr/src/php
-ME_COM_SQLITE_PATH    ?= src/paks/sqlite
-ME_COM_SSL_PATH       ?= src/paks/ssl
-ME_COM_ZLIB_PATH      ?= src/paks/zlib
+ME_COM_OPENSSL_PATH   ?= /usr/src/openssl
 
 CFLAGS                += -fPIC -w
 DFLAGS                += -D_REENTRANT -DPIC $(patsubst %,-D%,$(filter ME_%,$(MAKEFLAGS))) -DME_COM_CGI=$(ME_COM_CGI) -DME_COM_DIR=$(ME_COM_DIR) -DME_COM_EJS=$(ME_COM_EJS) -DME_COM_ESP=$(ME_COM_ESP) -DME_COM_EST=$(ME_COM_EST) -DME_COM_HTTP=$(ME_COM_HTTP) -DME_COM_MATRIXSSL=$(ME_COM_MATRIXSSL) -DME_COM_MDB=$(ME_COM_MDB) -DME_COM_NANOSSL=$(ME_COM_NANOSSL) -DME_COM_OPENSSL=$(ME_COM_OPENSSL) -DME_COM_PCRE=$(ME_COM_PCRE) -DME_COM_PHP=$(ME_COM_PHP) -DME_COM_SQLITE=$(ME_COM_SQLITE) -DME_COM_SSL=$(ME_COM_SSL) -DME_COM_VXWORKS=$(ME_COM_VXWORKS) -DME_COM_WINSDK=$(ME_COM_WINSDK) -DME_COM_ZLIB=$(ME_COM_ZLIB) 
@@ -1169,6 +1157,7 @@ DEPS_45 += src/paks/pcre/pcre.c
 DEPS_45 += src/paks/pcre/pcre.h
 DEPS_45 += src/paks/pcre/pcre.me
 DEPS_45 += src/paks/pcre/README.md
+DEPS_45 += src/paks/php.me
 DEPS_45 += src/paks/sqlite
 DEPS_45 += src/paks/sqlite/LICENSE.md
 DEPS_45 += src/paks/sqlite/package.json
@@ -1639,7 +1628,7 @@ DEPS_60 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/phpHandler.o: \
     src/modules/phpHandler.c $(DEPS_60)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/modules/phpHandler.c
+	$(CC) -c -o $(CONFIG)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/modules/phpHandler.c
 
 ifeq ($(ME_COM_PHP),1)
 #
@@ -1679,12 +1668,10 @@ LIBS_61 += -lmpr
 ifeq ($(ME_COM_PCRE),1)
     LIBS_61 += -lpcre
 endif
-LIBS_61 += -lphp5
-LIBPATHS_61 += -L$(BIT_PACK_PHP_PATH)/libs
 
 $(CONFIG)/bin/libmod_php.so: $(DEPS_61)
 	@echo '      [Link] $(CONFIG)/bin/libmod_php.so'
-	$(CC) -shared -o $(CONFIG)/bin/libmod_php.so $(LIBPATHS)  "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libmod_php.so $(LIBPATHS) "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS) 
 endif
 
 #
@@ -1697,7 +1684,7 @@ DEPS_62 += $(CONFIG)/inc/est.h
 $(CONFIG)/obj/mprSsl.o: \
     src/paks/mpr/mprSsl.c $(DEPS_62)
 	@echo '   [Compile] $(CONFIG)/obj/mprSsl.o'
-	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" src/paks/mpr/mprSsl.c
+	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" src/paks/mpr/mprSsl.c
 
 #
 #   libmprssl
@@ -1726,10 +1713,18 @@ ifeq ($(ME_COM_NANOSSL),1)
     LIBS_63 += -lssls
     LIBPATHS_63 += -L$(ME_COM_NANOSSL_PATH)/bin
 endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_63 += -lssl
+    LIBPATHS_63 += -L$(ME_COM_OPENSSL_PATH)
+endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_63 += -lcrypto
+    LIBPATHS_63 += -L$(ME_COM_OPENSSL_PATH)
+endif
 
 $(CONFIG)/bin/libmprssl.so: $(DEPS_63)
 	@echo '      [Link] $(CONFIG)/bin/libmprssl.so'
-	$(CC) -shared -o $(CONFIG)/bin/libmprssl.so $(LIBPATHS)   "$(CONFIG)/obj/mprSsl.o" $(LIBPATHS_63) $(LIBS_63) $(LIBS_63) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libmprssl.so $(LIBPATHS)    "$(CONFIG)/obj/mprSsl.o" $(LIBPATHS_63) $(LIBS_63) $(LIBS_63) $(LIBS) 
 
 #
 #   sslModule.o
@@ -1740,7 +1735,7 @@ DEPS_64 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/sslModule.o: \
     src/modules/sslModule.c $(DEPS_64)
 	@echo '   [Compile] $(CONFIG)/obj/sslModule.o'
-	$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" src/modules/sslModule.c
+	$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" src/modules/sslModule.c
 
 ifeq ($(ME_COM_SSL),1)
 #
@@ -1799,10 +1794,18 @@ ifeq ($(ME_COM_NANOSSL),1)
     LIBS_65 += -lssls
     LIBPATHS_65 += -L$(ME_COM_NANOSSL_PATH)/bin
 endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_65 += -lssl
+    LIBPATHS_65 += -L$(ME_COM_OPENSSL_PATH)
+endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_65 += -lcrypto
+    LIBPATHS_65 += -L$(ME_COM_OPENSSL_PATH)
+endif
 
 $(CONFIG)/bin/libmod_ssl.so: $(DEPS_65)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ssl.so'
-	$(CC) -shared -o $(CONFIG)/bin/libmod_ssl.so $(LIBPATHS)   "$(CONFIG)/obj/sslModule.o" $(LIBPATHS_65) $(LIBS_65) $(LIBS_65) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libmod_ssl.so $(LIBPATHS)    "$(CONFIG)/obj/sslModule.o" $(LIBPATHS_65) $(LIBS_65) $(LIBS_65) $(LIBS) 
 endif
 
 #

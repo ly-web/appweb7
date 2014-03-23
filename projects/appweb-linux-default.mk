@@ -28,7 +28,7 @@ ME_COM_PHP            ?= 0
 ME_COM_SQLITE         ?= 0
 ME_COM_SSL            ?= 1
 ME_COM_VXWORKS        ?= 0
-ME_COM_WINSDK         ?= 0
+ME_COM_WINSDK         ?= 1
 ME_COM_ZLIB           ?= 1
 
 ifeq ($(ME_COM_EST),1)
@@ -53,22 +53,10 @@ endif
 ME_COM_CGI_PATH       ?= src/modules/cgiHandler.c
 ME_COM_COMPILER_PATH  ?= gcc
 ME_COM_DIR_PATH       ?= src/dirHandler.c
-ME_COM_EJS_PATH       ?= src/paks/ejs
-ME_COM_ESP_PATH       ?= src/paks/esp
-ME_COM_EST_PATH       ?= src/paks/est
-ME_COM_HTTP_PATH      ?= src/paks/http
 ME_COM_LIB_PATH       ?= ar
 ME_COM_MATRIXSSL_PATH ?= /usr/src/matrixssl
-ME_COM_MDB_PATH       ?= src/mdb.c
-ME_COM_MPR_PATH       ?= src/paks/mpr
 ME_COM_NANOSSL_PATH   ?= /usr/src/nanossl
-ME_COM_OPENSSL_PATH   ?= [object Object]
-ME_COM_OSDEP_PATH     ?= src/paks/osdep
-ME_COM_PCRE_PATH      ?= src/paks/pcre
-ME_COM_PHP_PATH       ?= /usr/src/php
-ME_COM_SQLITE_PATH    ?= src/paks/sqlite
-ME_COM_SSL_PATH       ?= src/paks/ssl
-ME_COM_ZLIB_PATH      ?= src/paks/zlib
+ME_COM_OPENSSL_PATH   ?= /usr/src/openssl
 
 CFLAGS                += -fPIC -w
 DFLAGS                += -D_REENTRANT -DPIC $(patsubst %,-D%,$(filter ME_%,$(MAKEFLAGS))) -DME_COM_CGI=$(ME_COM_CGI) -DME_COM_DIR=$(ME_COM_DIR) -DME_COM_EJS=$(ME_COM_EJS) -DME_COM_ESP=$(ME_COM_ESP) -DME_COM_EST=$(ME_COM_EST) -DME_COM_HTTP=$(ME_COM_HTTP) -DME_COM_MATRIXSSL=$(ME_COM_MATRIXSSL) -DME_COM_MDB=$(ME_COM_MDB) -DME_COM_NANOSSL=$(ME_COM_NANOSSL) -DME_COM_OPENSSL=$(ME_COM_OPENSSL) -DME_COM_PCRE=$(ME_COM_PCRE) -DME_COM_PHP=$(ME_COM_PHP) -DME_COM_SQLITE=$(ME_COM_SQLITE) -DME_COM_SSL=$(ME_COM_SSL) -DME_COM_VXWORKS=$(ME_COM_VXWORKS) -DME_COM_WINSDK=$(ME_COM_WINSDK) -DME_COM_ZLIB=$(ME_COM_ZLIB) 
@@ -311,7 +299,7 @@ DEPS_5 += $(CONFIG)/obj/mprLib.o
 
 $(CONFIG)/bin/libmpr.so: $(DEPS_5)
 	@echo '      [Link] $(CONFIG)/bin/libmpr.so'
-	$(CC) -shared -o $(CONFIG)/bin/libmpr.so $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/mprLib.o" $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libmpr.so -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/mprLib.o" $(LIBS) 
 
 #
 #   pcre.h
@@ -342,7 +330,7 @@ DEPS_8 += $(CONFIG)/obj/pcre.o
 
 $(CONFIG)/bin/libpcre.so: $(DEPS_8)
 	@echo '      [Link] $(CONFIG)/bin/libpcre.so'
-	$(CC) -shared -o $(CONFIG)/bin/libpcre.so $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/pcre.o" $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libpcre.so -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/pcre.o" $(LIBS) 
 endif
 
 #
@@ -389,7 +377,7 @@ endif
 
 $(CONFIG)/bin/libhttp.so: $(DEPS_11)
 	@echo '      [Link] $(CONFIG)/bin/libhttp.so'
-	$(CC) -shared -o $(CONFIG)/bin/libhttp.so $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/httpLib.o" $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libhttp.so -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/httpLib.o" $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS) 
 endif
 
 #
@@ -515,7 +503,7 @@ endif
 
 $(CONFIG)/bin/libappweb.so: $(DEPS_20)
 	@echo '      [Link] $(CONFIG)/bin/libappweb.so'
-	$(CC) -shared -o $(CONFIG)/bin/libappweb.so $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/config.o" "$(CONFIG)/obj/convenience.o" "$(CONFIG)/obj/dirHandler.o" "$(CONFIG)/obj/fileHandler.o" "$(CONFIG)/obj/log.o" "$(CONFIG)/obj/server.o" $(LIBPATHS_20) $(LIBS_20) $(LIBS_20) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libappweb.so -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/config.o" "$(CONFIG)/obj/convenience.o" "$(CONFIG)/obj/dirHandler.o" "$(CONFIG)/obj/fileHandler.o" "$(CONFIG)/obj/log.o" "$(CONFIG)/obj/server.o" $(LIBPATHS_20) $(LIBS_20) $(LIBS_20) $(LIBS) 
 
 #
 #   slink.c
@@ -555,7 +543,7 @@ DEPS_24 += $(CONFIG)/obj/slink.o
 
 $(CONFIG)/bin/libslink.so: $(DEPS_24)
 	@echo '      [Link] $(CONFIG)/bin/libslink.so'
-	$(CC) -shared -o $(CONFIG)/bin/libslink.so $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/slink.o" $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libslink.so -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/slink.o" $(LIBS) 
 
 #
 #   appweb.o
@@ -613,7 +601,7 @@ LIBS_26 += -lslink
 
 $(CONFIG)/bin/appweb: $(DEPS_26)
 	@echo '      [Link] $(CONFIG)/bin/appweb'
-	$(CC) -o $(CONFIG)/bin/appweb $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/appweb.o" $(LIBPATHS_26) $(LIBS_26) $(LIBS_26) $(LIBS) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/appweb -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/appweb.o" $(LIBPATHS_26) $(LIBS_26) $(LIBS_26) $(LIBS) $(LIBS) 
 
 #
 #   authpass.o
@@ -666,7 +654,7 @@ endif
 
 $(CONFIG)/bin/authpass: $(DEPS_28)
 	@echo '      [Link] $(CONFIG)/bin/authpass'
-	$(CC) -o $(CONFIG)/bin/authpass $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/authpass.o" $(LIBPATHS_28) $(LIBS_28) $(LIBS_28) $(LIBS) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/authpass -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/authpass.o" $(LIBPATHS_28) $(LIBS_28) $(LIBS_28) $(LIBS) $(LIBS) 
 
 ifeq ($(ME_COM_EST),1)
 #
@@ -699,7 +687,7 @@ DEPS_31 += $(CONFIG)/obj/cgiProgram.o
 
 $(CONFIG)/bin/cgiProgram: $(DEPS_31)
 	@echo '      [Link] $(CONFIG)/bin/cgiProgram'
-	$(CC) -o $(CONFIG)/bin/cgiProgram $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/cgiProgram.o" $(LIBS) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/cgiProgram -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/cgiProgram.o" $(LIBS) $(LIBS) 
 endif
 
 #
@@ -731,7 +719,7 @@ DEPS_34 += $(CONFIG)/obj/zlib.o
 
 $(CONFIG)/bin/libzlib.so: $(DEPS_34)
 	@echo '      [Link] $(CONFIG)/bin/libzlib.so'
-	$(CC) -shared -o $(CONFIG)/bin/libzlib.so $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/zlib.o" $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libzlib.so -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/zlib.o" $(LIBS) 
 endif
 
 #
@@ -820,7 +808,7 @@ endif
 
 $(CONFIG)/bin/libejs.so: $(DEPS_39)
 	@echo '      [Link] $(CONFIG)/bin/libejs.so'
-	$(CC) -shared -o $(CONFIG)/bin/libejs.so $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_39) $(LIBS_39) $(LIBS_39) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libejs.so -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_39) $(LIBS_39) $(LIBS_39) $(LIBS) 
 endif
 
 #
@@ -882,7 +870,7 @@ endif
 
 $(CONFIG)/bin/ejsc: $(DEPS_41)
 	@echo '      [Link] $(CONFIG)/bin/ejsc'
-	$(CC) -o $(CONFIG)/bin/ejsc $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejsc.o" $(LIBPATHS_41) $(LIBS_41) $(LIBS_41) $(LIBS) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/ejsc -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/ejsc.o" $(LIBPATHS_41) $(LIBS_41) $(LIBS_41) $(LIBS) $(LIBS) 
 endif
 
 ifeq ($(ME_COM_EJS),1)
@@ -984,7 +972,7 @@ endif
 
 $(CONFIG)/bin/ejscmd: $(DEPS_44)
 	@echo '      [Link] $(CONFIG)/bin/ejscmd'
-	$(CC) -o $(CONFIG)/bin/ejscmd $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejs.o" $(LIBPATHS_44) $(LIBS_44) $(LIBS_44) $(LIBS) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/ejscmd -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/ejs.o" $(LIBPATHS_44) $(LIBS_44) $(LIBS_44) $(LIBS) $(LIBS) 
 endif
 
 ifeq ($(ME_COM_ESP),1)
@@ -1169,6 +1157,7 @@ DEPS_45 += src/paks/pcre/pcre.c
 DEPS_45 += src/paks/pcre/pcre.h
 DEPS_45 += src/paks/pcre/pcre.me
 DEPS_45 += src/paks/pcre/README.md
+DEPS_45 += src/paks/php.me
 DEPS_45 += src/paks/sqlite
 DEPS_45 += src/paks/sqlite/LICENSE.md
 DEPS_45 += src/paks/sqlite/package.json
@@ -1362,7 +1351,7 @@ endif
 
 $(CONFIG)/bin/libmod_esp.so: $(DEPS_48)
 	@echo '      [Link] $(CONFIG)/bin/libmod_esp.so'
-	$(CC) -shared -o $(CONFIG)/bin/libmod_esp.so $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/espLib.o" $(LIBPATHS_48) $(LIBS_48) $(LIBS_48) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libmod_esp.so -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/espLib.o" $(LIBPATHS_48) $(LIBS_48) $(LIBS_48) $(LIBS) 
 endif
 
 #
@@ -1424,7 +1413,7 @@ endif
 
 $(CONFIG)/bin/esp: $(DEPS_50)
 	@echo '      [Link] $(CONFIG)/bin/esp'
-	$(CC) -o $(CONFIG)/bin/esp $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/esp.o" "$(CONFIG)/obj/espLib.o" $(LIBPATHS_50) $(LIBS_50) $(LIBS_50) $(LIBS) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/esp -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/esp.o" "$(CONFIG)/obj/espLib.o" $(LIBPATHS_50) $(LIBS_50) $(LIBS_50) $(LIBS) $(LIBS) 
 endif
 
 
@@ -1466,7 +1455,7 @@ endif
 
 $(CONFIG)/bin/http: $(DEPS_52)
 	@echo '      [Link] $(CONFIG)/bin/http'
-	$(CC) -o $(CONFIG)/bin/http $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/http.o" $(LIBPATHS_52) $(LIBS_52) $(LIBS_52) $(LIBS) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/http -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/http.o" $(LIBPATHS_52) $(LIBS_52) $(LIBS_52) $(LIBS) $(LIBS) 
 endif
 
 #
@@ -1500,7 +1489,7 @@ DEPS_55 += $(CONFIG)/obj/estLib.o
 
 $(CONFIG)/bin/libest.so: $(DEPS_55)
 	@echo '      [Link] $(CONFIG)/bin/libest.so'
-	$(CC) -shared -o $(CONFIG)/bin/libest.so $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/estLib.o" $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libest.so -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/estLib.o" $(LIBS) 
 endif
 
 #
@@ -1555,7 +1544,7 @@ endif
 
 $(CONFIG)/bin/libmod_cgi.so: $(DEPS_57)
 	@echo '      [Link] $(CONFIG)/bin/libmod_cgi.so'
-	$(CC) -shared -o $(CONFIG)/bin/libmod_cgi.so $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/cgiHandler.o" $(LIBPATHS_57) $(LIBS_57) $(LIBS_57) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libmod_cgi.so -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/cgiHandler.o" $(LIBPATHS_57) $(LIBS_57) $(LIBS_57) $(LIBS) 
 endif
 
 #
@@ -1627,7 +1616,7 @@ endif
 
 $(CONFIG)/bin/libmod_ejs.so: $(DEPS_59)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ejs.so'
-	$(CC) -shared -o $(CONFIG)/bin/libmod_ejs.so $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_59) $(LIBS_59) $(LIBS_59) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libmod_ejs.so -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_59) $(LIBS_59) $(LIBS_59) $(LIBS) 
 endif
 
 #
@@ -1639,7 +1628,7 @@ DEPS_60 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/phpHandler.o: \
     src/modules/phpHandler.c $(DEPS_60)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/modules/phpHandler.c
+	$(CC) -c -o $(CONFIG)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/modules/phpHandler.c
 
 ifeq ($(ME_COM_PHP),1)
 #
@@ -1679,12 +1668,10 @@ LIBS_61 += -lmpr
 ifeq ($(ME_COM_PCRE),1)
     LIBS_61 += -lpcre
 endif
-LIBS_61 += -lphp5
-LIBPATHS_61 += -L$(BIT_PACK_PHP_PATH)/libs
 
 $(CONFIG)/bin/libmod_php.so: $(DEPS_61)
 	@echo '      [Link] $(CONFIG)/bin/libmod_php.so'
-	$(CC) -shared -o $(CONFIG)/bin/libmod_php.so $(LDFLAGS) $(LIBPATHS)  "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libmod_php.so -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS) 
 endif
 
 #
@@ -1697,7 +1684,7 @@ DEPS_62 += $(CONFIG)/inc/est.h
 $(CONFIG)/obj/mprSsl.o: \
     src/paks/mpr/mprSsl.c $(DEPS_62)
 	@echo '   [Compile] $(CONFIG)/obj/mprSsl.o'
-	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" src/paks/mpr/mprSsl.c
+	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" src/paks/mpr/mprSsl.c
 
 #
 #   libmprssl
@@ -1726,10 +1713,18 @@ ifeq ($(ME_COM_NANOSSL),1)
     LIBS_63 += -lssls
     LIBPATHS_63 += -L$(ME_COM_NANOSSL_PATH)/bin
 endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_63 += -lssl
+    LIBPATHS_63 += -L$(ME_COM_OPENSSL_PATH)
+endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_63 += -lcrypto
+    LIBPATHS_63 += -L$(ME_COM_OPENSSL_PATH)
+endif
 
 $(CONFIG)/bin/libmprssl.so: $(DEPS_63)
 	@echo '      [Link] $(CONFIG)/bin/libmprssl.so'
-	$(CC) -shared -o $(CONFIG)/bin/libmprssl.so $(LDFLAGS) $(LIBPATHS)   "$(CONFIG)/obj/mprSsl.o" $(LIBPATHS_63) $(LIBS_63) $(LIBS_63) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libmprssl.so -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS)    "$(CONFIG)/obj/mprSsl.o" $(LIBPATHS_63) $(LIBS_63) $(LIBS_63) $(LIBS) 
 
 #
 #   sslModule.o
@@ -1740,7 +1735,7 @@ DEPS_64 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/sslModule.o: \
     src/modules/sslModule.c $(DEPS_64)
 	@echo '   [Compile] $(CONFIG)/obj/sslModule.o'
-	$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" src/modules/sslModule.c
+	$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" src/modules/sslModule.c
 
 ifeq ($(ME_COM_SSL),1)
 #
@@ -1799,10 +1794,18 @@ ifeq ($(ME_COM_NANOSSL),1)
     LIBS_65 += -lssls
     LIBPATHS_65 += -L$(ME_COM_NANOSSL_PATH)/bin
 endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_65 += -lssl
+    LIBPATHS_65 += -L$(ME_COM_OPENSSL_PATH)
+endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_65 += -lcrypto
+    LIBPATHS_65 += -L$(ME_COM_OPENSSL_PATH)
+endif
 
 $(CONFIG)/bin/libmod_ssl.so: $(DEPS_65)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ssl.so'
-	$(CC) -shared -o $(CONFIG)/bin/libmod_ssl.so $(LDFLAGS) $(LIBPATHS)   "$(CONFIG)/obj/sslModule.o" $(LIBPATHS_65) $(LIBS_65) $(LIBS_65) $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libmod_ssl.so -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS)    "$(CONFIG)/obj/sslModule.o" $(LIBPATHS_65) $(LIBS_65) $(LIBS_65) $(LIBS) 
 endif
 
 #
@@ -1834,7 +1837,7 @@ DEPS_68 += $(CONFIG)/obj/sqlite3.o
 
 $(CONFIG)/bin/libsql.so: $(DEPS_68)
 	@echo '      [Link] $(CONFIG)/bin/libsql.so'
-	$(CC) -shared -o $(CONFIG)/bin/libsql.so $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/sqlite3.o" $(LIBS) 
+	$(CC) -shared -o $(CONFIG)/bin/libsql.so -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/sqlite3.o" $(LIBS) 
 endif
 
 #
@@ -1862,7 +1865,7 @@ LIBS_70 += -lmpr
 
 $(CONFIG)/bin/appman: $(DEPS_70)
 	@echo '      [Link] $(CONFIG)/bin/appman'
-	$(CC) -o $(CONFIG)/bin/appman $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/manager.o" $(LIBPATHS_70) $(LIBS_70) $(LIBS_70) $(LIBS) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/appman -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/manager.o" $(LIBPATHS_70) $(LIBS_70) $(LIBS_70) $(LIBS) $(LIBS) 
 
 #
 #   server-cache
@@ -1894,7 +1897,7 @@ LIBS_73 += -lsql
 
 $(CONFIG)/bin/sqlite: $(DEPS_73)
 	@echo '      [Link] $(CONFIG)/bin/sqlite'
-	$(CC) -o $(CONFIG)/bin/sqlite $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/sqlite.o" $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/sqlite -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/sqlite.o" $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) $(LIBS) 
 endif
 
 #
@@ -1971,7 +1974,7 @@ endif
 
 $(CONFIG)/bin/testAppweb: $(DEPS_77)
 	@echo '      [Link] $(CONFIG)/bin/testAppweb'
-	$(CC) -o $(CONFIG)/bin/testAppweb $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/testAppweb.o" "$(CONFIG)/obj/testHttp.o" $(LIBPATHS_77) $(LIBS_77) $(LIBS_77) $(LIBS) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/testAppweb -rdynamic -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN/ $(LIBPATHS) "$(CONFIG)/obj/testAppweb.o" "$(CONFIG)/obj/testHttp.o" $(LIBPATHS_77) $(LIBS_77) $(LIBS_77) $(LIBS) $(LIBS) 
 
 ifeq ($(ME_COM_CGI),1)
 #

@@ -3,7 +3,7 @@
 
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(IncDir);..\..\$(BIT_PACK_PHP_PATH);..\..\$(BIT_PACK_PHP_PATH)\main;..\..\$(BIT_PACK_PHP_PATH)\Zend;..\..\$(BIT_PACK_PHP_PATH)\TSRM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IncDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -105,8 +105,8 @@
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>libappweb.lib;libhttp.lib;libmpr.lib;libpcre.lib;php5ts.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;$(BIT_PACK_PHP_PATH)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    <AdditionalDependencies>libappweb.lib;libhttp.lib;libmpr.lib;libpcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
   </ItemDefinitionGroup>
 
