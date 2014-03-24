@@ -8942,6 +8942,9 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
     info->isReg = 0;
     info->isDir = 0;
     info->size = 0;
+    info->atime = 0;
+    info->ctime = 0;
+    info->mtime = 0;
     if (sends(path, "/")) {
         /* Windows stat fails with a trailing "/" */
         path = strim(path, "/", MPR_TRIM_END);
@@ -9025,6 +9028,9 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
     info->isDir = 0;
     info->size = 0;
     info->checked = 1;
+    info->atime = 0;
+    info->ctime = 0;
+    info->mtime = 0;
     if (stat((char*) path, &s) < 0) {
         return MPR_ERR_CANT_ACCESS;
     }
@@ -9046,6 +9052,9 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
     info->isDir = 0;
     info->size = 0;
     info->checked = 1;
+    info->atime = 0;
+    info->ctime = 0;
+    info->mtime = 0;
     if (lstat((char*) path, &s) < 0) {
         return MPR_ERR_CANT_ACCESS;
     }
