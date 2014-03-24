@@ -1,7 +1,7 @@
 {
     "name": "esp-angular-mvc",
     "description": "ESP Angular MVC Application Skeleton",
-    "version": "4.5.3",
+    "version": "4.5.4",
     "precious": true,
     "dependencies": {
         "esp-angular": "~4"

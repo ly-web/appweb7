@@ -37,7 +37,7 @@ Bit.load({
     ],
 
     settings: {
-        bit: '0.9.3',
+        bit: '0.9.4',
 
         /*
             Installation prefix set
