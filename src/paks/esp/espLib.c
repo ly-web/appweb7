@@ -5164,6 +5164,7 @@ static void closeEsp(HttpQueue *q)
 }
 
 
+#if !ME_STATIC
 /*
     This is called when unloading a view or controller module
     All of ESP must be quiesced.
@@ -5198,6 +5199,7 @@ static bool espUnloadModule(cchar *module, MprTicks timeout)
     }
     return 0;
 }
+#endif
 
 
 PUBLIC void espClearFlash(HttpConn *conn)
@@ -7517,6 +7519,9 @@ static char *joinLine(cchar *str, ssize *lenp)
             count++;
         }
     }
+    /*
+        Allocate room to backquote newlines (requires 3)
+     */
     len = slen(str);
     if ((buf = mprAlloc(len + (count * 3) + 1)) == 0) {
         return 0;
@@ -7531,8 +7536,11 @@ static char *joinLine(cchar *str, ssize *lenp)
             *bp++ = '\\';
             *bp++ = 'r';
             continue;
-        } else if (*cp == '\\' && cp[1] != '\\') {
-            bquote++;
+        } else if (*cp == '\\') {
+            if (cp[1]) {
+                *bp++ = *cp++;
+                bquote++;
+            }
         }
         *bp++ = *cp;
     }
