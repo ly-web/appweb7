@@ -1230,9 +1230,13 @@ DEPS_51 = $(DEPS_51) src\paks\esp-angular\esp-resource.js
 DEPS_51 = $(DEPS_51) src\paks\esp-angular\esp-session.js
 DEPS_51 = $(DEPS_51) src\paks\esp-angular\esp-titlecase.js
 DEPS_51 = $(DEPS_51) src\paks\esp-angular\esp.js
+DEPS_51 = $(DEPS_51) src\paks\esp-angular\LICENSE.md
 DEPS_51 = $(DEPS_51) src\paks\esp-angular\package.json
+DEPS_51 = $(DEPS_51) src\paks\esp-angular\README.md
 DEPS_51 = $(DEPS_51) src\paks\esp-angular-mvc
+DEPS_51 = $(DEPS_51) src\paks\esp-angular-mvc\LICENSE.md
 DEPS_51 = $(DEPS_51) src\paks\esp-angular-mvc\package.json
+DEPS_51 = $(DEPS_51) src\paks\esp-angular-mvc\README.md
 DEPS_51 = $(DEPS_51) src\paks\esp-angular-mvc\templates
 DEPS_51 = $(DEPS_51) src\paks\esp-angular-mvc\templates\esp-angular-mvc
 DEPS_51 = $(DEPS_51) src\paks\esp-angular-mvc\templates\esp-angular-mvc\appweb.conf
@@ -1256,9 +1260,11 @@ DEPS_51 = $(DEPS_51) src\paks\esp-angular-mvc\templates\esp-angular-mvc\controll
 DEPS_51 = $(DEPS_51) src\paks\esp-angular-mvc\templates\esp-angular-mvc\edit.html
 DEPS_51 = $(DEPS_51) src\paks\esp-angular-mvc\templates\esp-angular-mvc\list.html
 DEPS_51 = $(DEPS_51) src\paks\esp-angular-mvc\templates\esp-angular-mvc\model.js
-DEPS_51 = $(DEPS_51) src\paks\esp-angular-mvc\templates\esp-angular-mvc\start.bit
+DEPS_51 = $(DEPS_51) src\paks\esp-angular-mvc\templates\esp-angular-mvc\start.me
 DEPS_51 = $(DEPS_51) src\paks\esp-html-mvc
+DEPS_51 = $(DEPS_51) src\paks\esp-html-mvc\LICENSE.md
 DEPS_51 = $(DEPS_51) src\paks\esp-html-mvc\package.json
+DEPS_51 = $(DEPS_51) src\paks\esp-html-mvc\README.md
 DEPS_51 = $(DEPS_51) src\paks\esp-html-mvc\templates
 DEPS_51 = $(DEPS_51) src\paks\esp-html-mvc\templates\esp-html-mvc
 DEPS_51 = $(DEPS_51) src\paks\esp-html-mvc\templates\esp-html-mvc\appweb.conf
@@ -1277,9 +1283,11 @@ DEPS_51 = $(DEPS_51) src\paks\esp-html-mvc\templates\esp-html-mvc\controller-sin
 DEPS_51 = $(DEPS_51) src\paks\esp-html-mvc\templates\esp-html-mvc\controller.c
 DEPS_51 = $(DEPS_51) src\paks\esp-html-mvc\templates\esp-html-mvc\edit.esp
 DEPS_51 = $(DEPS_51) src\paks\esp-html-mvc\templates\esp-html-mvc\list.esp
-DEPS_51 = $(DEPS_51) src\paks\esp-html-mvc\templates\esp-html-mvc\start.bit
+DEPS_51 = $(DEPS_51) src\paks\esp-html-mvc\templates\esp-html-mvc\start.me
 DEPS_51 = $(DEPS_51) src\paks\esp-legacy-mvc
+DEPS_51 = $(DEPS_51) src\paks\esp-legacy-mvc\LICENSE.md
 DEPS_51 = $(DEPS_51) src\paks\esp-legacy-mvc\package.json
+DEPS_51 = $(DEPS_51) src\paks\esp-legacy-mvc\README.md
 DEPS_51 = $(DEPS_51) src\paks\esp-legacy-mvc\templates
 DEPS_51 = $(DEPS_51) src\paks\esp-legacy-mvc\templates\esp-legacy-mvc
 DEPS_51 = $(DEPS_51) src\paks\esp-legacy-mvc\templates\esp-legacy-mvc\appweb.conf
@@ -1303,7 +1311,9 @@ DEPS_51 = $(DEPS_51) src\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\js
 DEPS_51 = $(DEPS_51) src\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\js\jquery.esp.js
 DEPS_51 = $(DEPS_51) src\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\js\jquery.js
 DEPS_51 = $(DEPS_51) src\paks\esp-server
+DEPS_51 = $(DEPS_51) src\paks\esp-server\LICENSE.md
 DEPS_51 = $(DEPS_51) src\paks\esp-server\package.json
+DEPS_51 = $(DEPS_51) src\paks\esp-server\README.md
 DEPS_51 = $(DEPS_51) src\paks\esp-server\templates
 DEPS_51 = $(DEPS_51) src\paks\esp-server\templates\esp-server
 DEPS_51 = $(DEPS_51) src\paks\esp-server\templates\esp-server\appweb.conf
@@ -1398,99 +1408,109 @@ DEPS_51 = $(DEPS_51) src\paks\zlib\zlib.me
 
 $(CONFIG)\paks: $(DEPS_51)
 	cd src\paks
-	if not exist "..\..\$(CONFIG)\paks\esp-angular\4.5.2" md "..\..\$(CONFIG)\paks\esp-angular\4.5.2"
-	copy /Y esp-angular\esp-click.js ..\..\$(CONFIG)\paks\esp-angular\4.5.2\esp-click.js
-	copy /Y esp-angular\esp-edit.js ..\..\$(CONFIG)\paks\esp-angular\4.5.2\esp-edit.js
-	copy /Y esp-angular\esp-field-errors.js ..\..\$(CONFIG)\paks\esp-angular\4.5.2\esp-field-errors.js
-	copy /Y esp-angular\esp-fixnum.js ..\..\$(CONFIG)\paks\esp-angular\4.5.2\esp-fixnum.js
-	copy /Y esp-angular\esp-format.js ..\..\$(CONFIG)\paks\esp-angular\4.5.2\esp-format.js
-	copy /Y esp-angular\esp-input-group.js ..\..\$(CONFIG)\paks\esp-angular\4.5.2\esp-input-group.js
-	copy /Y esp-angular\esp-input.js ..\..\$(CONFIG)\paks\esp-angular\4.5.2\esp-input.js
-	copy /Y esp-angular\esp-resource.js ..\..\$(CONFIG)\paks\esp-angular\4.5.2\esp-resource.js
-	copy /Y esp-angular\esp-session.js ..\..\$(CONFIG)\paks\esp-angular\4.5.2\esp-session.js
-	copy /Y esp-angular\esp-titlecase.js ..\..\$(CONFIG)\paks\esp-angular\4.5.2\esp-titlecase.js
-	copy /Y esp-angular\esp.js ..\..\$(CONFIG)\paks\esp-angular\4.5.2\esp.js
-	copy /Y esp-angular\package.json ..\..\$(CONFIG)\paks\esp-angular\4.5.2\package.json
-	if not exist "..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2" md "..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2"
-	copy /Y esp-angular-mvc\package.json ..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\package.json
-	if not exist "..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates" md "..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates"
-	if not exist "..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc" md "..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc"
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\appweb.conf ..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\appweb.conf
-	if not exist "..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client" md "..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client"
-	if not exist "..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client\app" md "..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client\app"
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\app\main.js ..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client\app\main.js
-	if not exist "..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client\assets" md "..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client\assets"
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\assets\favicon.ico ..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client\assets\favicon.ico
-	if not exist "..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client\css" md "..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client\css"
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\all.css ..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client\css\all.css
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\all.less ..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client\css\all.less
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\app.less ..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client\css\app.less
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\fix.css ..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client\css\fix.css
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\theme.less ..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client\css\theme.less
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\index.esp ..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client\index.esp
-	if not exist "..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client\pages" md "..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client\pages"
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\pages\splash.html ..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\client\pages\splash.html
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\controller-singleton.c ..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\controller-singleton.c
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\controller.c ..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\controller.c
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\controller.js ..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\controller.js
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\edit.html ..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\edit.html
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\list.html ..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\list.html
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\model.js ..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\model.js
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\start.bit ..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.2\templates\esp-angular-mvc\start.bit
-	if not exist "..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2" md "..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2"
-	copy /Y esp-html-mvc\package.json ..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\package.json
-	if not exist "..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates" md "..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates"
-	if not exist "..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc" md "..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc"
-	copy /Y esp-html-mvc\templates\esp-html-mvc\appweb.conf ..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\appweb.conf
-	if not exist "..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\client" md "..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\client"
-	if not exist "..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\client\assets" md "..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\client\assets"
-	copy /Y esp-html-mvc\templates\esp-html-mvc\client\assets\favicon.ico ..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\client\assets\favicon.ico
-	if not exist "..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\client\css" md "..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\client\css"
-	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\all.css ..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\client\css\all.css
-	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\all.less ..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\client\css\all.less
-	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\app.less ..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\client\css\app.less
-	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\theme.less ..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\client\css\theme.less
-	copy /Y esp-html-mvc\templates\esp-html-mvc\client\index.esp ..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\client\index.esp
-	if not exist "..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\client\layouts" md "..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\client\layouts"
-	copy /Y esp-html-mvc\templates\esp-html-mvc\client\layouts\default.esp ..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\client\layouts\default.esp
-	copy /Y esp-html-mvc\templates\esp-html-mvc\controller-singleton.c ..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\controller-singleton.c
-	copy /Y esp-html-mvc\templates\esp-html-mvc\controller.c ..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\controller.c
-	copy /Y esp-html-mvc\templates\esp-html-mvc\edit.esp ..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\edit.esp
-	copy /Y esp-html-mvc\templates\esp-html-mvc\list.esp ..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\list.esp
-	copy /Y esp-html-mvc\templates\esp-html-mvc\start.bit ..\..\$(CONFIG)\paks\esp-html-mvc\4.5.2\templates\esp-html-mvc\start.bit
-	if not exist "..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2" md "..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2"
-	copy /Y esp-legacy-mvc\package.json ..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\package.json
-	if not exist "..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates" md "..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates"
-	if not exist "..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc" md "..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc"
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\appweb.conf ..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\appweb.conf
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\controller.c ..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\controller.c
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\edit.esp ..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\edit.esp
-	if not exist "..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\layouts" md "..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\layouts"
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\layouts\default.esp ..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\layouts\default.esp
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\list.esp ..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\list.esp
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\migration.c ..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\migration.c
-	if not exist "..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\src" md "..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\src"
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\src\app.c ..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\src\app.c
-	if not exist "..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\static" md "..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\static"
-	if not exist "..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\static\css" md "..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\static\css"
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\css\all.css ..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\static\css\all.css
-	if not exist "..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\static\images" md "..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\static\images"
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\images\banner.jpg ..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\static\images\banner.jpg
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\images\favicon.ico ..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\static\images\favicon.ico
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\images\splash.jpg ..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\static\images\splash.jpg
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\index.esp ..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\static\index.esp
-	if not exist "..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\static\js" md "..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\static\js"
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\js\jquery.esp.js ..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\static\js\jquery.esp.js
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\js\jquery.js ..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.2\templates\esp-legacy-mvc\static\js\jquery.js
-	if not exist "..\..\$(CONFIG)\paks\esp-server\4.5.2" md "..\..\$(CONFIG)\paks\esp-server\4.5.2"
-	copy /Y esp-server\package.json ..\..\$(CONFIG)\paks\esp-server\4.5.2\package.json
-	if not exist "..\..\$(CONFIG)\paks\esp-server\4.5.2\templates" md "..\..\$(CONFIG)\paks\esp-server\4.5.2\templates"
-	if not exist "..\..\$(CONFIG)\paks\esp-server\4.5.2\templates\esp-server" md "..\..\$(CONFIG)\paks\esp-server\4.5.2\templates\esp-server"
-	copy /Y esp-server\templates\esp-server\appweb.conf ..\..\$(CONFIG)\paks\esp-server\4.5.2\templates\esp-server\appweb.conf
-	copy /Y esp-server\templates\esp-server\controller.c ..\..\$(CONFIG)\paks\esp-server\4.5.2\templates\esp-server\controller.c
-	copy /Y esp-server\templates\esp-server\migration.c ..\..\$(CONFIG)\paks\esp-server\4.5.2\templates\esp-server\migration.c
-	if not exist "..\..\$(CONFIG)\paks\esp-server\4.5.2\templates\esp-server\src" md "..\..\$(CONFIG)\paks\esp-server\4.5.2\templates\esp-server\src"
-	copy /Y esp-server\templates\esp-server\src\app.c ..\..\$(CONFIG)\paks\esp-server\4.5.2\templates\esp-server\src\app.c
+	if not exist "..\..\$(CONFIG)\paks\esp-angular\5.0.0" md "..\..\$(CONFIG)\paks\esp-angular\5.0.0"
+	copy /Y esp-angular\esp-click.js ..\..\$(CONFIG)\paks\esp-angular\5.0.0\esp-click.js
+	copy /Y esp-angular\esp-edit.js ..\..\$(CONFIG)\paks\esp-angular\5.0.0\esp-edit.js
+	copy /Y esp-angular\esp-field-errors.js ..\..\$(CONFIG)\paks\esp-angular\5.0.0\esp-field-errors.js
+	copy /Y esp-angular\esp-fixnum.js ..\..\$(CONFIG)\paks\esp-angular\5.0.0\esp-fixnum.js
+	copy /Y esp-angular\esp-format.js ..\..\$(CONFIG)\paks\esp-angular\5.0.0\esp-format.js
+	copy /Y esp-angular\esp-input-group.js ..\..\$(CONFIG)\paks\esp-angular\5.0.0\esp-input-group.js
+	copy /Y esp-angular\esp-input.js ..\..\$(CONFIG)\paks\esp-angular\5.0.0\esp-input.js
+	copy /Y esp-angular\esp-resource.js ..\..\$(CONFIG)\paks\esp-angular\5.0.0\esp-resource.js
+	copy /Y esp-angular\esp-session.js ..\..\$(CONFIG)\paks\esp-angular\5.0.0\esp-session.js
+	copy /Y esp-angular\esp-titlecase.js ..\..\$(CONFIG)\paks\esp-angular\5.0.0\esp-titlecase.js
+	copy /Y esp-angular\esp.js ..\..\$(CONFIG)\paks\esp-angular\5.0.0\esp.js
+	copy /Y esp-angular\LICENSE.md ..\..\$(CONFIG)\paks\esp-angular\5.0.0\LICENSE.md
+	copy /Y esp-angular\package.json ..\..\$(CONFIG)\paks\esp-angular\5.0.0\package.json
+	copy /Y esp-angular\README.md ..\..\$(CONFIG)\paks\esp-angular\5.0.0\README.md
+	if not exist "..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0" md "..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0"
+	copy /Y esp-angular-mvc\LICENSE.md ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\LICENSE.md
+	copy /Y esp-angular-mvc\package.json ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\package.json
+	copy /Y esp-angular-mvc\README.md ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\README.md
+	if not exist "..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates" md "..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates"
+	if not exist "..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc" md "..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc"
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\appweb.conf ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\appweb.conf
+	if not exist "..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client" md "..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client"
+	if not exist "..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client\app" md "..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client\app"
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\app\main.js ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client\app\main.js
+	if not exist "..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client\assets" md "..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client\assets"
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\assets\favicon.ico ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client\assets\favicon.ico
+	if not exist "..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client\css" md "..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client\css"
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\all.css ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client\css\all.css
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\all.less ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client\css\all.less
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\app.less ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client\css\app.less
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\fix.css ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client\css\fix.css
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\theme.less ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client\css\theme.less
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\index.esp ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client\index.esp
+	if not exist "..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client\pages" md "..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client\pages"
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\pages\splash.html ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\client\pages\splash.html
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\controller-singleton.c ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\controller-singleton.c
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\controller.c ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\controller.c
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\controller.js ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\controller.js
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\edit.html ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\edit.html
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\list.html ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\list.html
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\model.js ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\model.js
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\start.me ..\..\$(CONFIG)\paks\esp-angular-mvc\5.0.0\templates\esp-angular-mvc\start.me
+	if not exist "..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0" md "..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0"
+	copy /Y esp-html-mvc\LICENSE.md ..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\LICENSE.md
+	copy /Y esp-html-mvc\package.json ..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\package.json
+	copy /Y esp-html-mvc\README.md ..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\README.md
+	if not exist "..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates" md "..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates"
+	if not exist "..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc" md "..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc"
+	copy /Y esp-html-mvc\templates\esp-html-mvc\appweb.conf ..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\appweb.conf
+	if not exist "..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\client" md "..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\client"
+	if not exist "..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\assets" md "..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\assets"
+	copy /Y esp-html-mvc\templates\esp-html-mvc\client\assets\favicon.ico ..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\assets\favicon.ico
+	if not exist "..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\css" md "..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\css"
+	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\all.css ..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\css\all.css
+	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\all.less ..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\css\all.less
+	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\app.less ..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\css\app.less
+	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\theme.less ..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\css\theme.less
+	copy /Y esp-html-mvc\templates\esp-html-mvc\client\index.esp ..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\index.esp
+	if not exist "..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\layouts" md "..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\layouts"
+	copy /Y esp-html-mvc\templates\esp-html-mvc\client\layouts\default.esp ..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\layouts\default.esp
+	copy /Y esp-html-mvc\templates\esp-html-mvc\controller-singleton.c ..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\controller-singleton.c
+	copy /Y esp-html-mvc\templates\esp-html-mvc\controller.c ..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\controller.c
+	copy /Y esp-html-mvc\templates\esp-html-mvc\edit.esp ..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\edit.esp
+	copy /Y esp-html-mvc\templates\esp-html-mvc\list.esp ..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\list.esp
+	copy /Y esp-html-mvc\templates\esp-html-mvc\start.me ..\..\$(CONFIG)\paks\esp-html-mvc\5.0.0\templates\esp-html-mvc\start.me
+	if not exist "..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0" md "..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0"
+	copy /Y esp-legacy-mvc\LICENSE.md ..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\LICENSE.md
+	copy /Y esp-legacy-mvc\package.json ..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\package.json
+	copy /Y esp-legacy-mvc\README.md ..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\README.md
+	if not exist "..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates" md "..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates"
+	if not exist "..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc" md "..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc"
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\appweb.conf ..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\appweb.conf
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\controller.c ..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\controller.c
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\edit.esp ..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\edit.esp
+	if not exist "..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\layouts" md "..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\layouts"
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\layouts\default.esp ..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\layouts\default.esp
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\list.esp ..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\list.esp
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\migration.c ..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\migration.c
+	if not exist "..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\src" md "..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\src"
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\src\app.c ..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\src\app.c
+	if not exist "..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\static" md "..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\static"
+	if not exist "..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\static\css" md "..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\static\css"
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\css\all.css ..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\static\css\all.css
+	if not exist "..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\static\images" md "..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\static\images"
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\images\banner.jpg ..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\static\images\banner.jpg
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\images\favicon.ico ..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\static\images\favicon.ico
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\images\splash.jpg ..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\static\images\splash.jpg
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\index.esp ..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\static\index.esp
+	if not exist "..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\static\js" md "..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\static\js"
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\js\jquery.esp.js ..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\static\js\jquery.esp.js
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\js\jquery.js ..\..\$(CONFIG)\paks\esp-legacy-mvc\5.0.0\templates\esp-legacy-mvc\static\js\jquery.js
+	if not exist "..\..\$(CONFIG)\paks\esp-server\5.0.0" md "..\..\$(CONFIG)\paks\esp-server\5.0.0"
+	copy /Y esp-server\LICENSE.md ..\..\$(CONFIG)\paks\esp-server\5.0.0\LICENSE.md
+	copy /Y esp-server\package.json ..\..\$(CONFIG)\paks\esp-server\5.0.0\package.json
+	copy /Y esp-server\README.md ..\..\$(CONFIG)\paks\esp-server\5.0.0\README.md
+	if not exist "..\..\$(CONFIG)\paks\esp-server\5.0.0\templates" md "..\..\$(CONFIG)\paks\esp-server\5.0.0\templates"
+	if not exist "..\..\$(CONFIG)\paks\esp-server\5.0.0\templates\esp-server" md "..\..\$(CONFIG)\paks\esp-server\5.0.0\templates\esp-server"
+	copy /Y esp-server\templates\esp-server\appweb.conf ..\..\$(CONFIG)\paks\esp-server\5.0.0\templates\esp-server\appweb.conf
+	copy /Y esp-server\templates\esp-server\controller.c ..\..\$(CONFIG)\paks\esp-server\5.0.0\templates\esp-server\controller.c
+	copy /Y esp-server\templates\esp-server\migration.c ..\..\$(CONFIG)\paks\esp-server\5.0.0\templates\esp-server\migration.c
+	if not exist "..\..\$(CONFIG)\paks\esp-server\5.0.0\templates\esp-server\src" md "..\..\$(CONFIG)\paks\esp-server\5.0.0\templates\esp-server\src"
+	copy /Y esp-server\templates\esp-server\src\app.c ..\..\$(CONFIG)\paks\esp-server\5.0.0\templates\esp-server\src\app.c
 	cd ..\..
 !ENDIF
 

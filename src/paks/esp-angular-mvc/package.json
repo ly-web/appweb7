@@ -1,16 +1,16 @@
 {
     "name": "esp-angular-mvc",
     "description": "ESP Angular MVC Application Skeleton",
-    "version": "4.5.2",
+    "version": "5.0.0",
     "precious": true,
     "dependencies": {
-        "esp-angular": "~4"
+        "esp-angular": "~5"
     },
     "export": [
         "templates/**"
     ],
     "ignore": [
-        "start.bit"
+        "start.me"
     ],
     "client-scripts": [
         "app/main.js",
@@ -32,12 +32,10 @@
                 "controller": "esp-angular-mvc/controller.c",
                 "controller-singleton": "esp-angular-mvc/controller-singleton.c",
                 "files": [
-                    "esp-angular-mvc/start.bit",
+                    "esp-angular-mvc/start.me",
                     "esp-angular-mvc/client/**"
                 ]
             }
         }
-    },
-    "optionalDependencies": {
     }
 }

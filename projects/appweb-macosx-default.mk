@@ -300,7 +300,7 @@ DEPS_5 += $(CONFIG)/obj/mprLib.o
 
 $(CONFIG)/bin/libmpr.dylib: $(DEPS_5)
 	@echo '      [Link] $(CONFIG)/bin/libmpr.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libmpr.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/mprLib.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmpr.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/mprLib.o" $(LIBS) 
 
 #
 #   pcre.h
@@ -331,7 +331,7 @@ DEPS_8 += $(CONFIG)/obj/pcre.o
 
 $(CONFIG)/bin/libpcre.dylib: $(DEPS_8)
 	@echo '      [Link] $(CONFIG)/bin/libpcre.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libpcre.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ -compatibility_version 5.0.0 -current_version 5.0.0 $(LIBPATHS) -install_name @rpath/libpcre.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/pcre.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libpcre.dylib -arch $(CC_ARCH) $(LDFLAGS) -compatibility_version 5.0.0 -current_version 5.0.0 $(LIBPATHS) -install_name @rpath/libpcre.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/pcre.o" $(LIBS) 
 endif
 
 #
@@ -378,7 +378,7 @@ endif
 
 $(CONFIG)/bin/libhttp.dylib: $(DEPS_11)
 	@echo '      [Link] $(CONFIG)/bin/libhttp.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libhttp.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libhttp.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/httpLib.o" $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libhttp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libhttp.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/httpLib.o" $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS) -lpam 
 endif
 
 #
@@ -504,7 +504,7 @@ endif
 
 $(CONFIG)/bin/libappweb.dylib: $(DEPS_20)
 	@echo '      [Link] $(CONFIG)/bin/libappweb.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libappweb.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/config.o" "$(CONFIG)/obj/convenience.o" "$(CONFIG)/obj/dirHandler.o" "$(CONFIG)/obj/fileHandler.o" "$(CONFIG)/obj/log.o" "$(CONFIG)/obj/server.o" $(LIBPATHS_20) $(LIBS_20) $(LIBS_20) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libappweb.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/config.o" "$(CONFIG)/obj/convenience.o" "$(CONFIG)/obj/dirHandler.o" "$(CONFIG)/obj/fileHandler.o" "$(CONFIG)/obj/log.o" "$(CONFIG)/obj/server.o" $(LIBPATHS_20) $(LIBS_20) $(LIBS_20) $(LIBS) -lpam 
 
 #
 #   slink.c
@@ -544,7 +544,7 @@ DEPS_24 += $(CONFIG)/obj/slink.o
 
 $(CONFIG)/bin/libslink.dylib: $(DEPS_24)
 	@echo '      [Link] $(CONFIG)/bin/libslink.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libslink.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/slink.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libslink.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/slink.o" $(LIBS) 
 
 #
 #   appweb.o
@@ -602,7 +602,7 @@ LIBS_26 += -lslink
 
 $(CONFIG)/bin/appweb: $(DEPS_26)
 	@echo '      [Link] $(CONFIG)/bin/appweb'
-	$(CC) -o $(CONFIG)/bin/appweb -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/appweb.o" $(LIBPATHS_26) $(LIBS_26) $(LIBS_26) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/appweb -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/appweb.o" $(LIBPATHS_26) $(LIBS_26) $(LIBS_26) $(LIBS) -lpam 
 
 #
 #   authpass.o
@@ -655,7 +655,7 @@ endif
 
 $(CONFIG)/bin/authpass: $(DEPS_28)
 	@echo '      [Link] $(CONFIG)/bin/authpass'
-	$(CC) -o $(CONFIG)/bin/authpass -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/authpass.o" $(LIBPATHS_28) $(LIBS_28) $(LIBS_28) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/authpass -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/authpass.o" $(LIBPATHS_28) $(LIBS_28) $(LIBS_28) $(LIBS) -lpam 
 
 ifeq ($(ME_COM_EST),1)
 #
@@ -688,7 +688,7 @@ DEPS_31 += $(CONFIG)/obj/cgiProgram.o
 
 $(CONFIG)/bin/cgiProgram: $(DEPS_31)
 	@echo '      [Link] $(CONFIG)/bin/cgiProgram'
-	$(CC) -o $(CONFIG)/bin/cgiProgram -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/cgiProgram.o" $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/cgiProgram -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/cgiProgram.o" $(LIBS) 
 endif
 
 #
@@ -720,7 +720,7 @@ DEPS_34 += $(CONFIG)/obj/zlib.o
 
 $(CONFIG)/bin/libzlib.dylib: $(DEPS_34)
 	@echo '      [Link] $(CONFIG)/bin/libzlib.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libzlib.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libzlib.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/zlib.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libzlib.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libzlib.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/zlib.o" $(LIBS) 
 endif
 
 #
@@ -809,7 +809,7 @@ endif
 
 $(CONFIG)/bin/libejs.dylib: $(DEPS_39)
 	@echo '      [Link] $(CONFIG)/bin/libejs.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_39) $(LIBS_39) $(LIBS_39) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_39) $(LIBS_39) $(LIBS_39) $(LIBS) -lpam 
 endif
 
 #
@@ -871,7 +871,7 @@ endif
 
 $(CONFIG)/bin/ejsc: $(DEPS_41)
 	@echo '      [Link] $(CONFIG)/bin/ejsc'
-	$(CC) -o $(CONFIG)/bin/ejsc -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/ejsc.o" $(LIBPATHS_41) $(LIBS_41) $(LIBS_41) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/ejsc -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejsc.o" $(LIBPATHS_41) $(LIBS_41) $(LIBS_41) $(LIBS) -lpam 
 endif
 
 ifeq ($(ME_COM_EJS),1)
@@ -973,7 +973,7 @@ endif
 
 $(CONFIG)/bin/ejscmd: $(DEPS_44)
 	@echo '      [Link] $(CONFIG)/bin/ejscmd'
-	$(CC) -o $(CONFIG)/bin/ejscmd -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/ejs.o" $(LIBPATHS_44) $(LIBS_44) $(LIBS_44) $(LIBS) -lpam -ledit 
+	$(CC) -o $(CONFIG)/bin/ejscmd -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejs.o" $(LIBPATHS_44) $(LIBS_44) $(LIBS_44) $(LIBS) -lpam -ledit 
 endif
 
 ifeq ($(ME_COM_ESP),1)
@@ -1019,9 +1019,13 @@ DEPS_45 += src/paks/esp-angular/esp-resource.js
 DEPS_45 += src/paks/esp-angular/esp-session.js
 DEPS_45 += src/paks/esp-angular/esp-titlecase.js
 DEPS_45 += src/paks/esp-angular/esp.js
+DEPS_45 += src/paks/esp-angular/LICENSE.md
 DEPS_45 += src/paks/esp-angular/package.json
+DEPS_45 += src/paks/esp-angular/README.md
 DEPS_45 += src/paks/esp-angular-mvc
+DEPS_45 += src/paks/esp-angular-mvc/LICENSE.md
 DEPS_45 += src/paks/esp-angular-mvc/package.json
+DEPS_45 += src/paks/esp-angular-mvc/README.md
 DEPS_45 += src/paks/esp-angular-mvc/templates
 DEPS_45 += src/paks/esp-angular-mvc/templates/esp-angular-mvc
 DEPS_45 += src/paks/esp-angular-mvc/templates/esp-angular-mvc/appweb.conf
@@ -1045,9 +1049,11 @@ DEPS_45 += src/paks/esp-angular-mvc/templates/esp-angular-mvc/controller.js
 DEPS_45 += src/paks/esp-angular-mvc/templates/esp-angular-mvc/edit.html
 DEPS_45 += src/paks/esp-angular-mvc/templates/esp-angular-mvc/list.html
 DEPS_45 += src/paks/esp-angular-mvc/templates/esp-angular-mvc/model.js
-DEPS_45 += src/paks/esp-angular-mvc/templates/esp-angular-mvc/start.bit
+DEPS_45 += src/paks/esp-angular-mvc/templates/esp-angular-mvc/start.me
 DEPS_45 += src/paks/esp-html-mvc
+DEPS_45 += src/paks/esp-html-mvc/LICENSE.md
 DEPS_45 += src/paks/esp-html-mvc/package.json
+DEPS_45 += src/paks/esp-html-mvc/README.md
 DEPS_45 += src/paks/esp-html-mvc/templates
 DEPS_45 += src/paks/esp-html-mvc/templates/esp-html-mvc
 DEPS_45 += src/paks/esp-html-mvc/templates/esp-html-mvc/appweb.conf
@@ -1066,9 +1072,11 @@ DEPS_45 += src/paks/esp-html-mvc/templates/esp-html-mvc/controller-singleton.c
 DEPS_45 += src/paks/esp-html-mvc/templates/esp-html-mvc/controller.c
 DEPS_45 += src/paks/esp-html-mvc/templates/esp-html-mvc/edit.esp
 DEPS_45 += src/paks/esp-html-mvc/templates/esp-html-mvc/list.esp
-DEPS_45 += src/paks/esp-html-mvc/templates/esp-html-mvc/start.bit
+DEPS_45 += src/paks/esp-html-mvc/templates/esp-html-mvc/start.me
 DEPS_45 += src/paks/esp-legacy-mvc
+DEPS_45 += src/paks/esp-legacy-mvc/LICENSE.md
 DEPS_45 += src/paks/esp-legacy-mvc/package.json
+DEPS_45 += src/paks/esp-legacy-mvc/README.md
 DEPS_45 += src/paks/esp-legacy-mvc/templates
 DEPS_45 += src/paks/esp-legacy-mvc/templates/esp-legacy-mvc
 DEPS_45 += src/paks/esp-legacy-mvc/templates/esp-legacy-mvc/appweb.conf
@@ -1092,7 +1100,9 @@ DEPS_45 += src/paks/esp-legacy-mvc/templates/esp-legacy-mvc/static/js
 DEPS_45 += src/paks/esp-legacy-mvc/templates/esp-legacy-mvc/static/js/jquery.esp.js
 DEPS_45 += src/paks/esp-legacy-mvc/templates/esp-legacy-mvc/static/js/jquery.js
 DEPS_45 += src/paks/esp-server
+DEPS_45 += src/paks/esp-server/LICENSE.md
 DEPS_45 += src/paks/esp-server/package.json
+DEPS_45 += src/paks/esp-server/README.md
 DEPS_45 += src/paks/esp-server/templates
 DEPS_45 += src/paks/esp-server/templates/esp-server
 DEPS_45 += src/paks/esp-server/templates/esp-server/appweb.conf
@@ -1188,99 +1198,109 @@ DEPS_45 += src/paks/zlib/zlib.me
 $(CONFIG)/paks: $(DEPS_45)
 	( \
 	cd src/paks; \
-	mkdir -p "../../$(CONFIG)/paks/esp-angular/4.5.2" ; \
-	cp esp-angular/esp-click.js ../../$(CONFIG)/paks/esp-angular/4.5.2/esp-click.js ; \
-	cp esp-angular/esp-edit.js ../../$(CONFIG)/paks/esp-angular/4.5.2/esp-edit.js ; \
-	cp esp-angular/esp-field-errors.js ../../$(CONFIG)/paks/esp-angular/4.5.2/esp-field-errors.js ; \
-	cp esp-angular/esp-fixnum.js ../../$(CONFIG)/paks/esp-angular/4.5.2/esp-fixnum.js ; \
-	cp esp-angular/esp-format.js ../../$(CONFIG)/paks/esp-angular/4.5.2/esp-format.js ; \
-	cp esp-angular/esp-input-group.js ../../$(CONFIG)/paks/esp-angular/4.5.2/esp-input-group.js ; \
-	cp esp-angular/esp-input.js ../../$(CONFIG)/paks/esp-angular/4.5.2/esp-input.js ; \
-	cp esp-angular/esp-resource.js ../../$(CONFIG)/paks/esp-angular/4.5.2/esp-resource.js ; \
-	cp esp-angular/esp-session.js ../../$(CONFIG)/paks/esp-angular/4.5.2/esp-session.js ; \
-	cp esp-angular/esp-titlecase.js ../../$(CONFIG)/paks/esp-angular/4.5.2/esp-titlecase.js ; \
-	cp esp-angular/esp.js ../../$(CONFIG)/paks/esp-angular/4.5.2/esp.js ; \
-	cp esp-angular/package.json ../../$(CONFIG)/paks/esp-angular/4.5.2/package.json ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-angular-mvc/4.5.2" ; \
-	cp esp-angular-mvc/package.json ../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/package.json ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates" ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc" ; \
-	cp esp-angular-mvc/templates/esp-angular-mvc/appweb.conf ../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/appweb.conf ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client" ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/app" ; \
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/app/main.js ../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/app/main.js ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/assets" ; \
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/assets/favicon.ico ../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/assets/favicon.ico ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css" ; \
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/all.css ../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/all.css ; \
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/all.less ../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/all.less ; \
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/app.less ../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/app.less ; \
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/fix.css ../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/fix.css ; \
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/theme.less ../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/theme.less ; \
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/index.esp ../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/index.esp ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/pages" ; \
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/pages/splash.html ../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/pages/splash.html ; \
-	cp esp-angular-mvc/templates/esp-angular-mvc/controller-singleton.c ../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/controller-singleton.c ; \
-	cp esp-angular-mvc/templates/esp-angular-mvc/controller.c ../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/controller.c ; \
-	cp esp-angular-mvc/templates/esp-angular-mvc/controller.js ../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/controller.js ; \
-	cp esp-angular-mvc/templates/esp-angular-mvc/edit.html ../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/edit.html ; \
-	cp esp-angular-mvc/templates/esp-angular-mvc/list.html ../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/list.html ; \
-	cp esp-angular-mvc/templates/esp-angular-mvc/model.js ../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/model.js ; \
-	cp esp-angular-mvc/templates/esp-angular-mvc/start.bit ../../$(CONFIG)/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/start.bit ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-html-mvc/4.5.2" ; \
-	cp esp-html-mvc/package.json ../../$(CONFIG)/paks/esp-html-mvc/4.5.2/package.json ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates" ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc" ; \
-	cp esp-html-mvc/templates/esp-html-mvc/appweb.conf ../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/appweb.conf ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client" ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/assets" ; \
-	cp esp-html-mvc/templates/esp-html-mvc/client/assets/favicon.ico ../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/assets/favicon.ico ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css" ; \
-	cp esp-html-mvc/templates/esp-html-mvc/client/css/all.css ../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css/all.css ; \
-	cp esp-html-mvc/templates/esp-html-mvc/client/css/all.less ../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css/all.less ; \
-	cp esp-html-mvc/templates/esp-html-mvc/client/css/app.less ../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css/app.less ; \
-	cp esp-html-mvc/templates/esp-html-mvc/client/css/theme.less ../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css/theme.less ; \
-	cp esp-html-mvc/templates/esp-html-mvc/client/index.esp ../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/index.esp ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/layouts" ; \
-	cp esp-html-mvc/templates/esp-html-mvc/client/layouts/default.esp ../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/layouts/default.esp ; \
-	cp esp-html-mvc/templates/esp-html-mvc/controller-singleton.c ../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/controller-singleton.c ; \
-	cp esp-html-mvc/templates/esp-html-mvc/controller.c ../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/controller.c ; \
-	cp esp-html-mvc/templates/esp-html-mvc/edit.esp ../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/edit.esp ; \
-	cp esp-html-mvc/templates/esp-html-mvc/list.esp ../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/list.esp ; \
-	cp esp-html-mvc/templates/esp-html-mvc/start.bit ../../$(CONFIG)/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/start.bit ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2" ; \
-	cp esp-legacy-mvc/package.json ../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/package.json ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates" ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc" ; \
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/appweb.conf ../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/appweb.conf ; \
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/controller.c ../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/controller.c ; \
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/edit.esp ../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/edit.esp ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/layouts" ; \
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/layouts/default.esp ../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/layouts/default.esp ; \
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/list.esp ../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/list.esp ; \
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/migration.c ../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/migration.c ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/src" ; \
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/src/app.c ../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/src/app.c ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static" ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/css" ; \
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/css/all.css ../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/css/all.css ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/images" ; \
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/images/banner.jpg ../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/images/banner.jpg ; \
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/images/favicon.ico ../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/images/favicon.ico ; \
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/images/splash.jpg ../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/images/splash.jpg ; \
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/index.esp ../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/index.esp ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/js" ; \
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/js/jquery.esp.js ../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/js/jquery.esp.js ; \
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/js/jquery.js ../../$(CONFIG)/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/js/jquery.js ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-server/4.5.2" ; \
-	cp esp-server/package.json ../../$(CONFIG)/paks/esp-server/4.5.2/package.json ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-server/4.5.2/templates" ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-server/4.5.2/templates/esp-server" ; \
-	cp esp-server/templates/esp-server/appweb.conf ../../$(CONFIG)/paks/esp-server/4.5.2/templates/esp-server/appweb.conf ; \
-	cp esp-server/templates/esp-server/controller.c ../../$(CONFIG)/paks/esp-server/4.5.2/templates/esp-server/controller.c ; \
-	cp esp-server/templates/esp-server/migration.c ../../$(CONFIG)/paks/esp-server/4.5.2/templates/esp-server/migration.c ; \
-	mkdir -p "../../$(CONFIG)/paks/esp-server/4.5.2/templates/esp-server/src" ; \
-	cp esp-server/templates/esp-server/src/app.c ../../$(CONFIG)/paks/esp-server/4.5.2/templates/esp-server/src/app.c ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-angular/5.0.0" ; \
+	cp esp-angular/esp-click.js ../../$(CONFIG)/paks/esp-angular/5.0.0/esp-click.js ; \
+	cp esp-angular/esp-edit.js ../../$(CONFIG)/paks/esp-angular/5.0.0/esp-edit.js ; \
+	cp esp-angular/esp-field-errors.js ../../$(CONFIG)/paks/esp-angular/5.0.0/esp-field-errors.js ; \
+	cp esp-angular/esp-fixnum.js ../../$(CONFIG)/paks/esp-angular/5.0.0/esp-fixnum.js ; \
+	cp esp-angular/esp-format.js ../../$(CONFIG)/paks/esp-angular/5.0.0/esp-format.js ; \
+	cp esp-angular/esp-input-group.js ../../$(CONFIG)/paks/esp-angular/5.0.0/esp-input-group.js ; \
+	cp esp-angular/esp-input.js ../../$(CONFIG)/paks/esp-angular/5.0.0/esp-input.js ; \
+	cp esp-angular/esp-resource.js ../../$(CONFIG)/paks/esp-angular/5.0.0/esp-resource.js ; \
+	cp esp-angular/esp-session.js ../../$(CONFIG)/paks/esp-angular/5.0.0/esp-session.js ; \
+	cp esp-angular/esp-titlecase.js ../../$(CONFIG)/paks/esp-angular/5.0.0/esp-titlecase.js ; \
+	cp esp-angular/esp.js ../../$(CONFIG)/paks/esp-angular/5.0.0/esp.js ; \
+	cp esp-angular/LICENSE.md ../../$(CONFIG)/paks/esp-angular/5.0.0/LICENSE.md ; \
+	cp esp-angular/package.json ../../$(CONFIG)/paks/esp-angular/5.0.0/package.json ; \
+	cp esp-angular/README.md ../../$(CONFIG)/paks/esp-angular/5.0.0/README.md ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-angular-mvc/5.0.0" ; \
+	cp esp-angular-mvc/LICENSE.md ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/LICENSE.md ; \
+	cp esp-angular-mvc/package.json ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/package.json ; \
+	cp esp-angular-mvc/README.md ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/README.md ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates" ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc" ; \
+	cp esp-angular-mvc/templates/esp-angular-mvc/appweb.conf ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/appweb.conf ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client" ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/app" ; \
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/app/main.js ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/app/main.js ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/assets" ; \
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/assets/favicon.ico ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/assets/favicon.ico ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/css" ; \
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/all.css ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/css/all.css ; \
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/all.less ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/css/all.less ; \
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/app.less ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/css/app.less ; \
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/fix.css ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/css/fix.css ; \
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/theme.less ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/css/theme.less ; \
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/index.esp ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/index.esp ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/pages" ; \
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/pages/splash.html ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/pages/splash.html ; \
+	cp esp-angular-mvc/templates/esp-angular-mvc/controller-singleton.c ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/controller-singleton.c ; \
+	cp esp-angular-mvc/templates/esp-angular-mvc/controller.c ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/controller.c ; \
+	cp esp-angular-mvc/templates/esp-angular-mvc/controller.js ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/controller.js ; \
+	cp esp-angular-mvc/templates/esp-angular-mvc/edit.html ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/edit.html ; \
+	cp esp-angular-mvc/templates/esp-angular-mvc/list.html ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/list.html ; \
+	cp esp-angular-mvc/templates/esp-angular-mvc/model.js ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/model.js ; \
+	cp esp-angular-mvc/templates/esp-angular-mvc/start.me ../../$(CONFIG)/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/start.me ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-html-mvc/5.0.0" ; \
+	cp esp-html-mvc/LICENSE.md ../../$(CONFIG)/paks/esp-html-mvc/5.0.0/LICENSE.md ; \
+	cp esp-html-mvc/package.json ../../$(CONFIG)/paks/esp-html-mvc/5.0.0/package.json ; \
+	cp esp-html-mvc/README.md ../../$(CONFIG)/paks/esp-html-mvc/5.0.0/README.md ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates" ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc" ; \
+	cp esp-html-mvc/templates/esp-html-mvc/appweb.conf ../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/appweb.conf ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client" ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/assets" ; \
+	cp esp-html-mvc/templates/esp-html-mvc/client/assets/favicon.ico ../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/assets/favicon.ico ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/css" ; \
+	cp esp-html-mvc/templates/esp-html-mvc/client/css/all.css ../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/css/all.css ; \
+	cp esp-html-mvc/templates/esp-html-mvc/client/css/all.less ../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/css/all.less ; \
+	cp esp-html-mvc/templates/esp-html-mvc/client/css/app.less ../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/css/app.less ; \
+	cp esp-html-mvc/templates/esp-html-mvc/client/css/theme.less ../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/css/theme.less ; \
+	cp esp-html-mvc/templates/esp-html-mvc/client/index.esp ../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/index.esp ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/layouts" ; \
+	cp esp-html-mvc/templates/esp-html-mvc/client/layouts/default.esp ../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/layouts/default.esp ; \
+	cp esp-html-mvc/templates/esp-html-mvc/controller-singleton.c ../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/controller-singleton.c ; \
+	cp esp-html-mvc/templates/esp-html-mvc/controller.c ../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/controller.c ; \
+	cp esp-html-mvc/templates/esp-html-mvc/edit.esp ../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/edit.esp ; \
+	cp esp-html-mvc/templates/esp-html-mvc/list.esp ../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/list.esp ; \
+	cp esp-html-mvc/templates/esp-html-mvc/start.me ../../$(CONFIG)/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/start.me ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0" ; \
+	cp esp-legacy-mvc/LICENSE.md ../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/LICENSE.md ; \
+	cp esp-legacy-mvc/package.json ../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/package.json ; \
+	cp esp-legacy-mvc/README.md ../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/README.md ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates" ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc" ; \
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/appweb.conf ../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/appweb.conf ; \
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/controller.c ../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/controller.c ; \
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/edit.esp ../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/edit.esp ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/layouts" ; \
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/layouts/default.esp ../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/layouts/default.esp ; \
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/list.esp ../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/list.esp ; \
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/migration.c ../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/migration.c ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/src" ; \
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/src/app.c ../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/src/app.c ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static" ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/css" ; \
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/css/all.css ../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/css/all.css ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/images" ; \
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/images/banner.jpg ../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/images/banner.jpg ; \
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/images/favicon.ico ../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/images/favicon.ico ; \
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/images/splash.jpg ../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/images/splash.jpg ; \
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/index.esp ../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/index.esp ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/js" ; \
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/js/jquery.esp.js ../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/js/jquery.esp.js ; \
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/js/jquery.js ../../$(CONFIG)/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/js/jquery.js ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-server/5.0.0" ; \
+	cp esp-server/LICENSE.md ../../$(CONFIG)/paks/esp-server/5.0.0/LICENSE.md ; \
+	cp esp-server/package.json ../../$(CONFIG)/paks/esp-server/5.0.0/package.json ; \
+	cp esp-server/README.md ../../$(CONFIG)/paks/esp-server/5.0.0/README.md ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-server/5.0.0/templates" ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-server/5.0.0/templates/esp-server" ; \
+	cp esp-server/templates/esp-server/appweb.conf ../../$(CONFIG)/paks/esp-server/5.0.0/templates/esp-server/appweb.conf ; \
+	cp esp-server/templates/esp-server/controller.c ../../$(CONFIG)/paks/esp-server/5.0.0/templates/esp-server/controller.c ; \
+	cp esp-server/templates/esp-server/migration.c ../../$(CONFIG)/paks/esp-server/5.0.0/templates/esp-server/migration.c ; \
+	mkdir -p "../../$(CONFIG)/paks/esp-server/5.0.0/templates/esp-server/src" ; \
+	cp esp-server/templates/esp-server/src/app.c ../../$(CONFIG)/paks/esp-server/5.0.0/templates/esp-server/src/app.c ; \
 	)
 endif
 
@@ -1354,7 +1374,7 @@ endif
 
 $(CONFIG)/bin/libmod_esp.dylib: $(DEPS_48)
 	@echo '      [Link] $(CONFIG)/bin/libmod_esp.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_esp.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/espLib.o" $(LIBPATHS_48) $(LIBS_48) $(LIBS_48) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_esp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/espLib.o" $(LIBPATHS_48) $(LIBS_48) $(LIBS_48) $(LIBS) -lpam 
 endif
 
 #
@@ -1416,7 +1436,7 @@ endif
 
 $(CONFIG)/bin/esp: $(DEPS_50)
 	@echo '      [Link] $(CONFIG)/bin/esp'
-	$(CC) -o $(CONFIG)/bin/esp -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/esp.o" "$(CONFIG)/obj/espLib.o" $(LIBPATHS_50) $(LIBS_50) $(LIBS_50) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/esp -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/esp.o" "$(CONFIG)/obj/espLib.o" $(LIBPATHS_50) $(LIBS_50) $(LIBS_50) $(LIBS) -lpam 
 endif
 
 
@@ -1463,7 +1483,7 @@ endif
 
 $(CONFIG)/bin/http: $(DEPS_53)
 	@echo '      [Link] $(CONFIG)/bin/http'
-	$(CC) -o $(CONFIG)/bin/http -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/http.o" $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/http -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/http.o" $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS) -lpam 
 endif
 
 #
@@ -1497,7 +1517,7 @@ DEPS_56 += $(CONFIG)/obj/estLib.o
 
 $(CONFIG)/bin/libest.dylib: $(DEPS_56)
 	@echo '      [Link] $(CONFIG)/bin/libest.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libest.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libest.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/estLib.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libest.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libest.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/estLib.o" $(LIBS) 
 endif
 
 #
@@ -1552,7 +1572,7 @@ endif
 
 $(CONFIG)/bin/libmod_cgi.dylib: $(DEPS_58)
 	@echo '      [Link] $(CONFIG)/bin/libmod_cgi.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/cgiHandler.o" $(LIBPATHS_58) $(LIBS_58) $(LIBS_58) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_cgi.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/cgiHandler.o" $(LIBPATHS_58) $(LIBS_58) $(LIBS_58) $(LIBS) -lpam 
 endif
 
 #
@@ -1624,7 +1644,7 @@ endif
 
 $(CONFIG)/bin/libmod_ejs.dylib: $(DEPS_60)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ejs.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_60) $(LIBS_60) $(LIBS_60) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_60) $(LIBS_60) $(LIBS_60) $(LIBS) -lpam 
 endif
 
 #
@@ -1681,7 +1701,7 @@ LIBPATHS_62 += -L$(BIT_PACK_PHP_PATH)/libs
 
 $(CONFIG)/bin/libmod_php.dylib: $(DEPS_62)
 	@echo '      [Link] $(CONFIG)/bin/libmod_php.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_php.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS)  -install_name @rpath/libmod_php.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_62) $(LIBS_62) $(LIBS_62) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_php.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmod_php.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_62) $(LIBS_62) $(LIBS_62) $(LIBS) -lpam 
 endif
 
 #
@@ -1734,7 +1754,7 @@ endif
 
 $(CONFIG)/bin/libmprssl.dylib: $(DEPS_64)
 	@echo '      [Link] $(CONFIG)/bin/libmprssl.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS)    -install_name @rpath/libmprssl.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/mprSsl.o" $(LIBPATHS_64) $(LIBS_64) $(LIBS_64) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmprssl.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/mprSsl.o" $(LIBPATHS_64) $(LIBS_64) $(LIBS_64) $(LIBS) 
 
 #
 #   sslModule.o
@@ -1815,7 +1835,7 @@ endif
 
 $(CONFIG)/bin/libmod_ssl.dylib: $(DEPS_66)
 	@echo '      [Link] $(CONFIG)/bin/libmod_ssl.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ssl.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS)    -install_name @rpath/libmod_ssl.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/sslModule.o" $(LIBPATHS_66) $(LIBS_66) $(LIBS_66) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmod_ssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmod_ssl.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/sslModule.o" $(LIBPATHS_66) $(LIBS_66) $(LIBS_66) $(LIBS) -lpam 
 endif
 
 #
@@ -1847,7 +1867,7 @@ DEPS_69 += $(CONFIG)/obj/sqlite3.o
 
 $(CONFIG)/bin/libsql.dylib: $(DEPS_69)
 	@echo '      [Link] $(CONFIG)/bin/libsql.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libsql.dylib -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) -install_name @rpath/libsql.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/sqlite3.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libsql.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libsql.dylib -compatibility_version 5.0.0 -current_version 5.0.0 "$(CONFIG)/obj/sqlite3.o" $(LIBS) 
 endif
 
 #
@@ -1875,7 +1895,7 @@ LIBS_71 += -lmpr
 
 $(CONFIG)/bin/appman: $(DEPS_71)
 	@echo '      [Link] $(CONFIG)/bin/appman'
-	$(CC) -o $(CONFIG)/bin/appman -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/manager.o" $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/appman -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/manager.o" $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS) 
 
 #
 #   server-cache
@@ -1907,7 +1927,7 @@ LIBS_74 += -lsql
 
 $(CONFIG)/bin/sqlite: $(DEPS_74)
 	@echo '      [Link] $(CONFIG)/bin/sqlite'
-	$(CC) -o $(CONFIG)/bin/sqlite -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/sqlite.o" $(LIBPATHS_74) $(LIBS_74) $(LIBS_74) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/sqlite -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/sqlite.o" $(LIBPATHS_74) $(LIBS_74) $(LIBS_74) $(LIBS) 
 endif
 
 #
@@ -1984,7 +2004,7 @@ endif
 
 $(CONFIG)/bin/testAppweb: $(DEPS_78)
 	@echo '      [Link] $(CONFIG)/bin/testAppweb'
-	$(CC) -o $(CONFIG)/bin/testAppweb -arch $(CC_ARCH) -Wl,-rpath,@executable_path/ -Wl,-rpath,@loader_path/ $(LIBPATHS) "$(CONFIG)/obj/testAppweb.o" "$(CONFIG)/obj/testHttp.o" $(LIBPATHS_78) $(LIBS_78) $(LIBS_78) $(LIBS) -lpam 
+	$(CC) -o $(CONFIG)/bin/testAppweb -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/testAppweb.o" "$(CONFIG)/obj/testHttp.o" $(LIBPATHS_78) $(LIBS_78) $(LIBS_78) $(LIBS) -lpam 
 
 ifeq ($(ME_COM_CGI),1)
 #

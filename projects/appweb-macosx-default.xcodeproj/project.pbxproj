@@ -2031,9 +2031,13 @@ cp -r ca.crt ../../${OUT_DIR}/bin/ca.crt
 ../src/paks/esp-angular/esp-session.js,
 ../src/paks/esp-angular/esp-titlecase.js,
 ../src/paks/esp-angular/esp.js,
+../src/paks/esp-angular/LICENSE.md,
 ../src/paks/esp-angular/package.json,
+../src/paks/esp-angular/README.md,
 ../src/paks/esp-angular-mvc,
+../src/paks/esp-angular-mvc/LICENSE.md,
 ../src/paks/esp-angular-mvc/package.json,
+../src/paks/esp-angular-mvc/README.md,
 ../src/paks/esp-angular-mvc/templates,
 ../src/paks/esp-angular-mvc/templates/esp-angular-mvc,
 ../src/paks/esp-angular-mvc/templates/esp-angular-mvc/appweb.conf,
@@ -2057,9 +2061,11 @@ cp -r ca.crt ../../${OUT_DIR}/bin/ca.crt
 ../src/paks/esp-angular-mvc/templates/esp-angular-mvc/edit.html,
 ../src/paks/esp-angular-mvc/templates/esp-angular-mvc/list.html,
 ../src/paks/esp-angular-mvc/templates/esp-angular-mvc/model.js,
-../src/paks/esp-angular-mvc/templates/esp-angular-mvc/start.bit,
+../src/paks/esp-angular-mvc/templates/esp-angular-mvc/start.me,
 ../src/paks/esp-html-mvc,
+../src/paks/esp-html-mvc/LICENSE.md,
 ../src/paks/esp-html-mvc/package.json,
+../src/paks/esp-html-mvc/README.md,
 ../src/paks/esp-html-mvc/templates,
 ../src/paks/esp-html-mvc/templates/esp-html-mvc,
 ../src/paks/esp-html-mvc/templates/esp-html-mvc/appweb.conf,
@@ -2078,9 +2084,11 @@ cp -r ca.crt ../../${OUT_DIR}/bin/ca.crt
 ../src/paks/esp-html-mvc/templates/esp-html-mvc/controller.c,
 ../src/paks/esp-html-mvc/templates/esp-html-mvc/edit.esp,
 ../src/paks/esp-html-mvc/templates/esp-html-mvc/list.esp,
-../src/paks/esp-html-mvc/templates/esp-html-mvc/start.bit,
+../src/paks/esp-html-mvc/templates/esp-html-mvc/start.me,
 ../src/paks/esp-legacy-mvc,
+../src/paks/esp-legacy-mvc/LICENSE.md,
 ../src/paks/esp-legacy-mvc/package.json,
+../src/paks/esp-legacy-mvc/README.md,
 ../src/paks/esp-legacy-mvc/templates,
 ../src/paks/esp-legacy-mvc/templates/esp-legacy-mvc,
 ../src/paks/esp-legacy-mvc/templates/esp-legacy-mvc/appweb.conf,
@@ -2104,7 +2112,9 @@ cp -r ca.crt ../../${OUT_DIR}/bin/ca.crt
 ../src/paks/esp-legacy-mvc/templates/esp-legacy-mvc/static/js/jquery.esp.js,
 ../src/paks/esp-legacy-mvc/templates/esp-legacy-mvc/static/js/jquery.js,
 ../src/paks/esp-server,
+../src/paks/esp-server/LICENSE.md,
 ../src/paks/esp-server/package.json,
+../src/paks/esp-server/README.md,
 ../src/paks/esp-server/templates,
 ../src/paks/esp-server/templates/esp-server,
 ../src/paks/esp-server/templates/esp-server/appweb.conf,
@@ -2204,99 +2214,109 @@ cp -r ca.crt ../../${OUT_DIR}/bin/ca.crt
 			shellPath = /bin/bash;
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/paks
-	mkdir -p \"../${OUT_DIR}/paks/esp-angular/4.5.2\"
-	cp esp-angular/esp-click.js ../${OUT_DIR}/paks/esp-angular/4.5.2/esp-click.js
-	cp esp-angular/esp-edit.js ../${OUT_DIR}/paks/esp-angular/4.5.2/esp-edit.js
-	cp esp-angular/esp-field-errors.js ../${OUT_DIR}/paks/esp-angular/4.5.2/esp-field-errors.js
-	cp esp-angular/esp-fixnum.js ../${OUT_DIR}/paks/esp-angular/4.5.2/esp-fixnum.js
-	cp esp-angular/esp-format.js ../${OUT_DIR}/paks/esp-angular/4.5.2/esp-format.js
-	cp esp-angular/esp-input-group.js ../${OUT_DIR}/paks/esp-angular/4.5.2/esp-input-group.js
-	cp esp-angular/esp-input.js ../${OUT_DIR}/paks/esp-angular/4.5.2/esp-input.js
-	cp esp-angular/esp-resource.js ../${OUT_DIR}/paks/esp-angular/4.5.2/esp-resource.js
-	cp esp-angular/esp-session.js ../${OUT_DIR}/paks/esp-angular/4.5.2/esp-session.js
-	cp esp-angular/esp-titlecase.js ../${OUT_DIR}/paks/esp-angular/4.5.2/esp-titlecase.js
-	cp esp-angular/esp.js ../${OUT_DIR}/paks/esp-angular/4.5.2/esp.js
-	cp esp-angular/package.json ../${OUT_DIR}/paks/esp-angular/4.5.2/package.json
-	mkdir -p \"../${OUT_DIR}/paks/esp-angular-mvc/4.5.2\"
-	cp esp-angular-mvc/package.json ../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/package.json
-	mkdir -p \"../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates\"
-	mkdir -p \"../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc\"
-	cp esp-angular-mvc/templates/esp-angular-mvc/appweb.conf ../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/appweb.conf
-	mkdir -p \"../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client\"
-	mkdir -p \"../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/app\"
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/app/main.js ../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/app/main.js
-	mkdir -p \"../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/assets\"
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/assets/favicon.ico ../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/assets/favicon.ico
-	mkdir -p \"../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css\"
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/all.css ../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/all.css
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/all.less ../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/all.less
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/app.less ../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/app.less
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/fix.css ../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/fix.css
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/theme.less ../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/css/theme.less
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/index.esp ../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/index.esp
-	mkdir -p \"../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/pages\"
-	cp esp-angular-mvc/templates/esp-angular-mvc/client/pages/splash.html ../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/client/pages/splash.html
-	cp esp-angular-mvc/templates/esp-angular-mvc/controller-singleton.c ../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/controller-singleton.c
-	cp esp-angular-mvc/templates/esp-angular-mvc/controller.c ../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/controller.c
-	cp esp-angular-mvc/templates/esp-angular-mvc/controller.js ../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/controller.js
-	cp esp-angular-mvc/templates/esp-angular-mvc/edit.html ../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/edit.html
-	cp esp-angular-mvc/templates/esp-angular-mvc/list.html ../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/list.html
-	cp esp-angular-mvc/templates/esp-angular-mvc/model.js ../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/model.js
-	cp esp-angular-mvc/templates/esp-angular-mvc/start.bit ../${OUT_DIR}/paks/esp-angular-mvc/4.5.2/templates/esp-angular-mvc/start.bit
-	mkdir -p \"../${OUT_DIR}/paks/esp-html-mvc/4.5.2\"
-	cp esp-html-mvc/package.json ../${OUT_DIR}/paks/esp-html-mvc/4.5.2/package.json
-	mkdir -p \"../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates\"
-	mkdir -p \"../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc\"
-	cp esp-html-mvc/templates/esp-html-mvc/appweb.conf ../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/appweb.conf
-	mkdir -p \"../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client\"
-	mkdir -p \"../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/assets\"
-	cp esp-html-mvc/templates/esp-html-mvc/client/assets/favicon.ico ../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/assets/favicon.ico
-	mkdir -p \"../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css\"
-	cp esp-html-mvc/templates/esp-html-mvc/client/css/all.css ../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css/all.css
-	cp esp-html-mvc/templates/esp-html-mvc/client/css/all.less ../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css/all.less
-	cp esp-html-mvc/templates/esp-html-mvc/client/css/app.less ../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css/app.less
-	cp esp-html-mvc/templates/esp-html-mvc/client/css/theme.less ../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/css/theme.less
-	cp esp-html-mvc/templates/esp-html-mvc/client/index.esp ../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/index.esp
-	mkdir -p \"../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/layouts\"
-	cp esp-html-mvc/templates/esp-html-mvc/client/layouts/default.esp ../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/client/layouts/default.esp
-	cp esp-html-mvc/templates/esp-html-mvc/controller-singleton.c ../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/controller-singleton.c
-	cp esp-html-mvc/templates/esp-html-mvc/controller.c ../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/controller.c
-	cp esp-html-mvc/templates/esp-html-mvc/edit.esp ../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/edit.esp
-	cp esp-html-mvc/templates/esp-html-mvc/list.esp ../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/list.esp
-	cp esp-html-mvc/templates/esp-html-mvc/start.bit ../${OUT_DIR}/paks/esp-html-mvc/4.5.2/templates/esp-html-mvc/start.bit
-	mkdir -p \"../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2\"
-	cp esp-legacy-mvc/package.json ../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/package.json
-	mkdir -p \"../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates\"
-	mkdir -p \"../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc\"
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/appweb.conf ../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/appweb.conf
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/controller.c ../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/controller.c
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/edit.esp ../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/edit.esp
-	mkdir -p \"../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/layouts\"
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/layouts/default.esp ../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/layouts/default.esp
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/list.esp ../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/list.esp
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/migration.c ../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/migration.c
-	mkdir -p \"../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/src\"
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/src/app.c ../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/src/app.c
-	mkdir -p \"../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static\"
-	mkdir -p \"../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/css\"
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/css/all.css ../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/css/all.css
-	mkdir -p \"../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/images\"
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/images/banner.jpg ../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/images/banner.jpg
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/images/favicon.ico ../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/images/favicon.ico
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/images/splash.jpg ../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/images/splash.jpg
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/index.esp ../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/index.esp
-	mkdir -p \"../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/js\"
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/js/jquery.esp.js ../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/js/jquery.esp.js
-	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/js/jquery.js ../${OUT_DIR}/paks/esp-legacy-mvc/4.5.2/templates/esp-legacy-mvc/static/js/jquery.js
-	mkdir -p \"../${OUT_DIR}/paks/esp-server/4.5.2\"
-	cp esp-server/package.json ../${OUT_DIR}/paks/esp-server/4.5.2/package.json
-	mkdir -p \"../${OUT_DIR}/paks/esp-server/4.5.2/templates\"
-	mkdir -p \"../${OUT_DIR}/paks/esp-server/4.5.2/templates/esp-server\"
-	cp esp-server/templates/esp-server/appweb.conf ../${OUT_DIR}/paks/esp-server/4.5.2/templates/esp-server/appweb.conf
-	cp esp-server/templates/esp-server/controller.c ../${OUT_DIR}/paks/esp-server/4.5.2/templates/esp-server/controller.c
-	cp esp-server/templates/esp-server/migration.c ../${OUT_DIR}/paks/esp-server/4.5.2/templates/esp-server/migration.c
-	mkdir -p \"../${OUT_DIR}/paks/esp-server/4.5.2/templates/esp-server/src\"
-	cp esp-server/templates/esp-server/src/app.c ../${OUT_DIR}/paks/esp-server/4.5.2/templates/esp-server/src/app.c
+	mkdir -p \"../${OUT_DIR}/paks/esp-angular/5.0.0\"
+	cp esp-angular/esp-click.js ../${OUT_DIR}/paks/esp-angular/5.0.0/esp-click.js
+	cp esp-angular/esp-edit.js ../${OUT_DIR}/paks/esp-angular/5.0.0/esp-edit.js
+	cp esp-angular/esp-field-errors.js ../${OUT_DIR}/paks/esp-angular/5.0.0/esp-field-errors.js
+	cp esp-angular/esp-fixnum.js ../${OUT_DIR}/paks/esp-angular/5.0.0/esp-fixnum.js
+	cp esp-angular/esp-format.js ../${OUT_DIR}/paks/esp-angular/5.0.0/esp-format.js
+	cp esp-angular/esp-input-group.js ../${OUT_DIR}/paks/esp-angular/5.0.0/esp-input-group.js
+	cp esp-angular/esp-input.js ../${OUT_DIR}/paks/esp-angular/5.0.0/esp-input.js
+	cp esp-angular/esp-resource.js ../${OUT_DIR}/paks/esp-angular/5.0.0/esp-resource.js
+	cp esp-angular/esp-session.js ../${OUT_DIR}/paks/esp-angular/5.0.0/esp-session.js
+	cp esp-angular/esp-titlecase.js ../${OUT_DIR}/paks/esp-angular/5.0.0/esp-titlecase.js
+	cp esp-angular/esp.js ../${OUT_DIR}/paks/esp-angular/5.0.0/esp.js
+	cp esp-angular/LICENSE.md ../${OUT_DIR}/paks/esp-angular/5.0.0/LICENSE.md
+	cp esp-angular/package.json ../${OUT_DIR}/paks/esp-angular/5.0.0/package.json
+	cp esp-angular/README.md ../${OUT_DIR}/paks/esp-angular/5.0.0/README.md
+	mkdir -p \"../${OUT_DIR}/paks/esp-angular-mvc/5.0.0\"
+	cp esp-angular-mvc/LICENSE.md ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/LICENSE.md
+	cp esp-angular-mvc/package.json ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/package.json
+	cp esp-angular-mvc/README.md ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/README.md
+	mkdir -p \"../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates\"
+	mkdir -p \"../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc\"
+	cp esp-angular-mvc/templates/esp-angular-mvc/appweb.conf ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/appweb.conf
+	mkdir -p \"../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client\"
+	mkdir -p \"../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/app\"
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/app/main.js ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/app/main.js
+	mkdir -p \"../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/assets\"
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/assets/favicon.ico ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/assets/favicon.ico
+	mkdir -p \"../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/css\"
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/all.css ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/css/all.css
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/all.less ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/css/all.less
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/app.less ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/css/app.less
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/fix.css ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/css/fix.css
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/css/theme.less ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/css/theme.less
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/index.esp ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/index.esp
+	mkdir -p \"../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/pages\"
+	cp esp-angular-mvc/templates/esp-angular-mvc/client/pages/splash.html ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/client/pages/splash.html
+	cp esp-angular-mvc/templates/esp-angular-mvc/controller-singleton.c ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/controller-singleton.c
+	cp esp-angular-mvc/templates/esp-angular-mvc/controller.c ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/controller.c
+	cp esp-angular-mvc/templates/esp-angular-mvc/controller.js ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/controller.js
+	cp esp-angular-mvc/templates/esp-angular-mvc/edit.html ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/edit.html
+	cp esp-angular-mvc/templates/esp-angular-mvc/list.html ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/list.html
+	cp esp-angular-mvc/templates/esp-angular-mvc/model.js ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/model.js
+	cp esp-angular-mvc/templates/esp-angular-mvc/start.me ../${OUT_DIR}/paks/esp-angular-mvc/5.0.0/templates/esp-angular-mvc/start.me
+	mkdir -p \"../${OUT_DIR}/paks/esp-html-mvc/5.0.0\"
+	cp esp-html-mvc/LICENSE.md ../${OUT_DIR}/paks/esp-html-mvc/5.0.0/LICENSE.md
+	cp esp-html-mvc/package.json ../${OUT_DIR}/paks/esp-html-mvc/5.0.0/package.json
+	cp esp-html-mvc/README.md ../${OUT_DIR}/paks/esp-html-mvc/5.0.0/README.md
+	mkdir -p \"../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates\"
+	mkdir -p \"../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc\"
+	cp esp-html-mvc/templates/esp-html-mvc/appweb.conf ../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/appweb.conf
+	mkdir -p \"../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client\"
+	mkdir -p \"../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/assets\"
+	cp esp-html-mvc/templates/esp-html-mvc/client/assets/favicon.ico ../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/assets/favicon.ico
+	mkdir -p \"../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/css\"
+	cp esp-html-mvc/templates/esp-html-mvc/client/css/all.css ../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/css/all.css
+	cp esp-html-mvc/templates/esp-html-mvc/client/css/all.less ../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/css/all.less
+	cp esp-html-mvc/templates/esp-html-mvc/client/css/app.less ../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/css/app.less
+	cp esp-html-mvc/templates/esp-html-mvc/client/css/theme.less ../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/css/theme.less
+	cp esp-html-mvc/templates/esp-html-mvc/client/index.esp ../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/index.esp
+	mkdir -p \"../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/layouts\"
+	cp esp-html-mvc/templates/esp-html-mvc/client/layouts/default.esp ../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/layouts/default.esp
+	cp esp-html-mvc/templates/esp-html-mvc/controller-singleton.c ../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/controller-singleton.c
+	cp esp-html-mvc/templates/esp-html-mvc/controller.c ../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/controller.c
+	cp esp-html-mvc/templates/esp-html-mvc/edit.esp ../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/edit.esp
+	cp esp-html-mvc/templates/esp-html-mvc/list.esp ../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/list.esp
+	cp esp-html-mvc/templates/esp-html-mvc/start.me ../${OUT_DIR}/paks/esp-html-mvc/5.0.0/templates/esp-html-mvc/start.me
+	mkdir -p \"../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0\"
+	cp esp-legacy-mvc/LICENSE.md ../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/LICENSE.md
+	cp esp-legacy-mvc/package.json ../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/package.json
+	cp esp-legacy-mvc/README.md ../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/README.md
+	mkdir -p \"../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates\"
+	mkdir -p \"../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc\"
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/appweb.conf ../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/appweb.conf
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/controller.c ../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/controller.c
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/edit.esp ../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/edit.esp
+	mkdir -p \"../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/layouts\"
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/layouts/default.esp ../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/layouts/default.esp
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/list.esp ../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/list.esp
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/migration.c ../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/migration.c
+	mkdir -p \"../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/src\"
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/src/app.c ../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/src/app.c
+	mkdir -p \"../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static\"
+	mkdir -p \"../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/css\"
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/css/all.css ../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/css/all.css
+	mkdir -p \"../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/images\"
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/images/banner.jpg ../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/images/banner.jpg
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/images/favicon.ico ../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/images/favicon.ico
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/images/splash.jpg ../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/images/splash.jpg
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/index.esp ../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/index.esp
+	mkdir -p \"../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/js\"
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/js/jquery.esp.js ../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/js/jquery.esp.js
+	cp esp-legacy-mvc/templates/esp-legacy-mvc/static/js/jquery.js ../${OUT_DIR}/paks/esp-legacy-mvc/5.0.0/templates/esp-legacy-mvc/static/js/jquery.js
+	mkdir -p \"../${OUT_DIR}/paks/esp-server/5.0.0\"
+	cp esp-server/LICENSE.md ../${OUT_DIR}/paks/esp-server/5.0.0/LICENSE.md
+	cp esp-server/package.json ../${OUT_DIR}/paks/esp-server/5.0.0/package.json
+	cp esp-server/README.md ../${OUT_DIR}/paks/esp-server/5.0.0/README.md
+	mkdir -p \"../${OUT_DIR}/paks/esp-server/5.0.0/templates\"
+	mkdir -p \"../${OUT_DIR}/paks/esp-server/5.0.0/templates/esp-server\"
+	cp esp-server/templates/esp-server/appweb.conf ../${OUT_DIR}/paks/esp-server/5.0.0/templates/esp-server/appweb.conf
+	cp esp-server/templates/esp-server/controller.c ../${OUT_DIR}/paks/esp-server/5.0.0/templates/esp-server/controller.c
+	cp esp-server/templates/esp-server/migration.c ../${OUT_DIR}/paks/esp-server/5.0.0/templates/esp-server/migration.c
+	mkdir -p \"../${OUT_DIR}/paks/esp-server/5.0.0/templates/esp-server/src\"
+	cp esp-server/templates/esp-server/src/app.c ../${OUT_DIR}/paks/esp-server/5.0.0/templates/esp-server/src/app.c
 ";
 		};
 		D345C5D4D345D5AC0000000F /* ShellScript for esp.conf */ = {

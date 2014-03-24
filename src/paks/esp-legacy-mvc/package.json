@@ -1,7 +1,7 @@
 {
     "name": "esp-legacy-mvc",
     "description": "ESP Server Side Legacy MVC",
-    "version": "4.5.2",
+    "version": "5.0.0",
     "precious": true,
     "export": [
         "layouts/**",
@@ -24,9 +24,5 @@
                 ]
             }
         }
-    },
-    "dependencies": {
-    },
-    "optionalDependencies": {
     }
 }
