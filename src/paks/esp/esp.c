@@ -877,7 +877,7 @@ static void exportCache()
     MprDirEntry *dp;
     MprList     *paks;
     MprPath     info;
-    cchar       *appwebPaks, *src, *dest;
+    cchar       *espPaks, *src, *dest;
     int         i;
 
     if (!mprPathExists(app->paksCacheDir, R_OK)) {
@@ -885,12 +885,12 @@ static void exportCache()
             fail("Cannot make directory %s", app->paksCacheDir);
         }
     }
-    appwebPaks = mprJoinPath(mprGetAppDir(), "../" ME_ESP_PAKS);
-    vtrace("Export", "Appweb paks from %s to %s", appwebPaks, app->paksCacheDir);
+    espPaks = mprJoinPath(mprGetAppDir(), "../" ME_ESP_PAKS);
+    trace("Export", "ESP paks from %s to %s", espPaks, app->paksCacheDir);
 
-    paks = mprGetPathFiles(appwebPaks, MPR_PATH_DESCEND | MPR_PATH_RELATIVE);
+    paks = mprGetPathFiles(espPaks, MPR_PATH_DESCEND | MPR_PATH_RELATIVE);
     for (ITERATE_ITEMS(paks, dp, i)) {
-        src = mprJoinPath(appwebPaks, dp->name);
+        src = mprJoinPath(espPaks, dp->name);
         dest = mprJoinPath(app->paksCacheDir, dp->name);
         if (dp->isDir) {
             if (mprMakeDir(dest, 0775, -1, -1, 1) < 0) {
@@ -911,7 +911,7 @@ static void exportCache()
 static void initialize(int argc, char **argv)
 {
     MprPath     src, dest;
-    cchar       *appwebPaks, *home;
+    cchar       *espPaks, *home, *path;
 
     if (app->error) {
         return;
@@ -935,14 +935,15 @@ static void initialize(int argc, char **argv)
      */
     if ((home = getenv("HOME")) != 0) {
         app->paksCacheDir = mprJoinPath(home, ".paks");
-        appwebPaks = mprJoinPath(mprGetAppDir(), "../" ME_ESP_PAKS);
+        espPaks = mprJoinPath(mprGetAppDir(), "../" ME_ESP_PAKS);
         if (!mprPathExists(app->paksCacheDir, R_OK)) {
             if (mprMakeDir(app->paksCacheDir, 0775, -1, -1, 0) < 0) {
                 fail("Cannot make directory %s", app->paksCacheDir);
             }
         }
-        mprGetPathInfo(mprJoinPath(appwebPaks, "esp-server"), &src);
-        mprGetPathInfo(mprJoinPath(app->paksCacheDir, "esp-server"), &dest);
+        path = sjoin("esp-server/", stok(sclone(ESP_VERSION), "-", NULL), NULL);
+        mprGetPathInfo(mprJoinPath(espPaks, path), &src);
+        mprGetPathInfo(mprJoinPath(app->paksCacheDir, path), &dest);
         if (!dest.valid || (src.mtime >= dest.mtime)) {
             exportCache();
         }
@@ -1747,7 +1748,7 @@ static void compileCombined(HttpRoute *route)
  */
 static void generateApp(int argc, char **argv)
 {
-    cchar   *name;
+    cchar   *criteria, *name;
     int     i;
 
     name = argv[0];
@@ -1796,8 +1797,9 @@ static void generateApp(int argc, char **argv)
         return;
     }
     generateSetup();
+    criteria = sfmt("~%s", mprTrimPathExt(ESP_VERSION));
     for (i = 1; i < argc; i++) {
-        installPak(argv[i], NULL, 1);
+        installPak(argv[i], criteria, 1);
     }
     generateFiles();
     generateAppDb();
@@ -2754,6 +2756,7 @@ static void usageError()
     "  Commands:\n"
     "    esp clean\n"
     "    esp compile [pathFilters ...]\n"
+    "    esp debug|release\n"
     "    esp generate app name [paks...]\n"
     "    esp generate controller name [action [, action] ...\n"
     "    esp generate migration description model [field:type [, field:type] ...]\n"
@@ -2929,7 +2932,7 @@ static bool acceptableVersion(cchar *criteria, cchar *version)
 
 static bool inRange(cchar *expr, cchar *version)
 {
-    char    *op, *base, *pre, *low, *high, *preVersion;
+    char    *cp, *op, *base, *pre, *low, *high, *preVersion;
     int64   min, max, numberVersion;
     ssize   i;
 
@@ -2949,7 +2952,9 @@ static bool inRange(cchar *expr, cchar *version)
             return 0;
         }
         base = slower(base);
-        base = stok(base, ".x", NULL);
+        if ((cp = scontains(base, ".x")) != 0) {
+            *cp = '\0';
+        }
         return sstarts(version, base);
     }
     if (scontains(base, "x") && !schr(version, '-')) {

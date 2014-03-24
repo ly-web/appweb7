@@ -14,6 +14,9 @@
 #include "osdep.h"
 #include "appweb.h"
 
+#ifndef ESP_VERSION
+    #define ESP_VERSION "5.0.0"
+#endif
 
 /************************************************************************/
 /*
@@ -1254,7 +1257,7 @@ extern "C" {
     #define ME_ESP_RELOAD_TIMEOUT (5 * 1000)           /**< Timeout for reloading esp modules */
 #endif
 #ifndef ME_ESP_PAKS
-    #define ME_ESP_PAKS    "paks"                      /**< Default Paks directory name*/
+    #define ME_ESP_PAKS    "esp"                       /**< Default Paks directory name */
 #endif
 #ifndef ME_ESP_PACKAGE
     #define ME_ESP_PACKAGE "package.json"              /**< Pak file name */
@@ -1275,7 +1278,12 @@ extern "C" {
 #define httpAddRouteSet espAddRouteSet
 #endif
 
+#ifndef ESP_VERSION
+    #define ESP_VERSION ME_VERSION
+#endif
+
 /********************************** Defines ***********************************/
+
 /**
     Procedure callback
     @ingroup Esp

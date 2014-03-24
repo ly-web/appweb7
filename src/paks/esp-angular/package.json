@@ -4,7 +4,7 @@
     "version": "5.0.0",
     "precious": true,
     "dependencies": {
-        "esp-server": "~0.5",
+        "esp-server": "~5.0",
         "angular": "~1.2"
     },
     "client-scripts": [
