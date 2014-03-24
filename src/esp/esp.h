@@ -37,7 +37,7 @@ extern "C" {
     #define BIT_ESP_RELOAD_TIMEOUT (5 * 1000)           /**< Timeout for reloading esp modules */
 #endif
 #ifndef BIT_ESP_PAKS
-    #define BIT_ESP_PAKS    "paks"                      /**< Default Paks directory name*/
+    #define BIT_ESP_PAKS    "esp"                       /**< Default Paks directory name*/
 #endif
 #ifndef BIT_ESP_PACKAGE
     #define BIT_ESP_PACKAGE "package.json"              /**< Pak file name */
@@ -56,6 +56,10 @@ extern "C" {
 #if DEPRECATED || 1
 #define httpAddHomeRoute espAddHomeRoute
 #define httpAddRouteSet espAddRouteSet
+#endif
+
+#ifndef ESP_VERSION
+    #define ESP_VERSION BIT_VERSION
 #endif
 
 /********************************** Defines ***********************************/
