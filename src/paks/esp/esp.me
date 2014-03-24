@@ -47,20 +47,20 @@ Me.load({
         },
 
         'esp-paks': {
-            path: '${OUT}/paks/',
+            home: '${TOP}/src/paks',
+            path: '${OUT}/esp/',
             files: [ '**' ],
             platforms: [ 'local' ],
             ifdef: ['esp'],
-            home: '${TOP}/src/paks',
             'generate-capture': true,
             build: `
-                trace('Copy', me.dir.out.join('paks'))
+                trace('Copy', me.dir.out.join('esp'))
                 for each (pak in Path('.').files('esp-*')) {
                     let version = pak.join('package.json').readJSON().version || '0.0.0'
-                    makeDir(OUT.join('paks', pak, version))
+                    makeDir(OUT.join('esp', pak, version))
                     for each (path in pak.files('**')) {
                         let stem = path.components.slice(1).join(path.separator)
-                        let dest = OUT.join('paks', pak, version, stem)
+                        let dest = OUT.join('esp', pak, version, stem)
                         if (path.isDir) {
                             makeDir(dest)
                         } else {

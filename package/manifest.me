@@ -228,9 +228,24 @@ Me.load({
                 enable:     "me.platform.os == 'windows' && !me.settings.static",
 
             },{
-                from:       ['${OUT}/paks/'],
-                to:         '${abin}/../esp',
                 set:        'esp',
+                copy:       `
+                    for each (pak in Path(me.dir.paks).files(['angular', 'esp-*'])) {
+                        let version = pak.join('package.json').readJSON().version || '0.0.0'
+                        let dir = me.globals.abin.join('../esp', pak.basename, version)
+                        makeDir(dir)
+                        for each (from in pak.files('**')) {
+                            let base = from.relativeTo(me.dir.paks)
+                            let stem = base.components.slice(1).join(from.separator)
+                            let to = dir.join(stem)
+                            if (from.isDir) {
+                                makeDir(to)
+                            } else {
+                                copyFile(from, to)
+                            }
+                        }
+                    }
+                `,
                 ifdef:      'esp',
 
             },{
