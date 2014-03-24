@@ -11,7 +11,7 @@
     #define BIT_AUTHOR "Embedthis Software"
 #endif
 #ifndef BIT_BIT
-    #define BIT_BIT "0.9.3"
+    #define BIT_BIT "0.9.4"
 #endif
 #ifndef BIT_BUILD_NUMBER
     #define BIT_BUILD_NUMBER 0
@@ -20,7 +20,7 @@
     #define BIT_COMPANY "embedthis"
 #endif
 #ifndef BIT_COMPATIBLE
-    #define BIT_COMPATIBLE "4.5.3"
+    #define BIT_COMPATIBLE "4.5.4"
 #endif
 #ifndef BIT_CONFIG_FILE
     #define BIT_CONFIG_FILE "appweb.conf"
@@ -179,7 +179,7 @@
     #define BIT_TUNE "size"
 #endif
 #ifndef BIT_VERSION
-    #define BIT_VERSION "4.5.3"
+    #define BIT_VERSION "4.5.4"
 #endif
 #ifndef BIT_WITHOUT_ALL
     #define BIT_WITHOUT_ALL "cgi,dir,doxygen,dsi,ejscript,esp,man,man2html,pmaker,php,sqlite,ssl"
@@ -280,10 +280,10 @@
     #define BIT_MINOR_VERSION 5
 #endif
 #ifndef BIT_PATCH_VERSION
-    #define BIT_PATCH_VERSION 3
+    #define BIT_PATCH_VERSION 4
 #endif
 #ifndef BIT_VNUM
-    #define BIT_VNUM 400050003
+    #define BIT_VNUM 400050004
 #endif
 
 /* Packs */

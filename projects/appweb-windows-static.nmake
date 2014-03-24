@@ -3,7 +3,7 @@
 #
 
 PRODUCT            = appweb
-VERSION            = 4.5.3
+VERSION            = 4.5.4
 PROFILE            = static
 PA                 = $(PROCESSOR_ARCHITECTURE)
 
@@ -164,7 +164,7 @@ TARGETS            = $(TARGETS) $(CONFIG)\bin\esp.conf
 TARGETS            = $(TARGETS) src\server\esp.conf
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-TARGETS            = $(TARGETS) $(CONFIG)\paks
+TARGETS            = $(TARGETS) $(CONFIG)\esp
 !ENDIF
 !IF "$(BIT_PACK_EJSCRIPT)" == "1"
 TARGETS            = $(TARGETS) $(CONFIG)\bin\libejs.lib
@@ -357,7 +357,7 @@ clean:
 #   version
 #
 version: $(DEPS_1)
-	echo 4.5.3
+	echo 4.5.4
 
 #
 #   bit.h
@@ -1274,107 +1274,107 @@ DEPS_61 = $(DEPS_61) src\esp\paks\esp-server\templates\esp-server\migration.c
 DEPS_61 = $(DEPS_61) src\esp\paks\esp-server\templates\esp-server\src
 DEPS_61 = $(DEPS_61) src\esp\paks\esp-server\templates\esp-server\src\app.c
 
-$(CONFIG)\paks: $(DEPS_61)
+$(CONFIG)\esp: $(DEPS_61)
 	cd src\esp\paks
-	if not exist "..\..\..\$(CONFIG)\paks\angular\1.2.6" md "..\..\..\$(CONFIG)\paks\angular\1.2.6"
-	copy /Y angular\angular-animate.js ..\..\..\$(CONFIG)\paks\angular\1.2.6\angular-animate.js
-	copy /Y angular\angular-csp.css ..\..\..\$(CONFIG)\paks\angular\1.2.6\angular-csp.css
-	copy /Y angular\angular-route.js ..\..\..\$(CONFIG)\paks\angular\1.2.6\angular-route.js
-	copy /Y angular\angular.js ..\..\..\$(CONFIG)\paks\angular\1.2.6\angular.js
-	copy /Y angular\package.json ..\..\..\$(CONFIG)\paks\angular\1.2.6\package.json
-	if not exist "..\..\..\$(CONFIG)\paks\esp-angular\4.5.3" md "..\..\..\$(CONFIG)\paks\esp-angular\4.5.3"
-	copy /Y esp-angular\esp-click.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.3\esp-click.js
-	copy /Y esp-angular\esp-edit.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.3\esp-edit.js
-	copy /Y esp-angular\esp-field-errors.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.3\esp-field-errors.js
-	copy /Y esp-angular\esp-fixnum.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.3\esp-fixnum.js
-	copy /Y esp-angular\esp-format.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.3\esp-format.js
-	copy /Y esp-angular\esp-input-group.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.3\esp-input-group.js
-	copy /Y esp-angular\esp-input.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.3\esp-input.js
-	copy /Y esp-angular\esp-resource.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.3\esp-resource.js
-	copy /Y esp-angular\esp-session.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.3\esp-session.js
-	copy /Y esp-angular\esp-titlecase.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.3\esp-titlecase.js
-	copy /Y esp-angular\esp.js ..\..\..\$(CONFIG)\paks\esp-angular\4.5.3\esp.js
-	copy /Y esp-angular\package.json ..\..\..\$(CONFIG)\paks\esp-angular\4.5.3\package.json
-	if not exist "..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3" md "..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3"
-	copy /Y esp-angular-mvc\package.json ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\package.json
-	if not exist "..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates" md "..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates"
-	if not exist "..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc" md "..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc"
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\appweb.conf ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\appweb.conf
-	if not exist "..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client" md "..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client"
-	if not exist "..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client\app" md "..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client\app"
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\app\main.js ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client\app\main.js
-	if not exist "..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client\assets" md "..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client\assets"
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\assets\favicon.ico ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client\assets\favicon.ico
-	if not exist "..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client\css" md "..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client\css"
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\all.css ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client\css\all.css
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\all.less ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client\css\all.less
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\app.less ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client\css\app.less
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\fix.css ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client\css\fix.css
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\theme.less ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client\css\theme.less
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\index.esp ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client\index.esp
-	if not exist "..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client\pages" md "..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client\pages"
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\pages\splash.html ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\client\pages\splash.html
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\controller-singleton.c ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\controller-singleton.c
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\controller.c ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\controller.c
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\controller.js ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\controller.js
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\edit.html ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\edit.html
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\list.html ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\list.html
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\model.js ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\model.js
-	copy /Y esp-angular-mvc\templates\esp-angular-mvc\start.bit ..\..\..\$(CONFIG)\paks\esp-angular-mvc\4.5.3\templates\esp-angular-mvc\start.bit
-	if not exist "..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3" md "..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3"
-	copy /Y esp-html-mvc\package.json ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\package.json
-	if not exist "..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates" md "..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates"
-	if not exist "..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc" md "..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc"
-	copy /Y esp-html-mvc\templates\esp-html-mvc\appweb.conf ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\appweb.conf
-	if not exist "..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\client" md "..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\client"
-	if not exist "..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\client\assets" md "..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\client\assets"
-	copy /Y esp-html-mvc\templates\esp-html-mvc\client\assets\favicon.ico ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\client\assets\favicon.ico
-	if not exist "..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\client\css" md "..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\client\css"
-	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\all.css ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\client\css\all.css
-	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\all.less ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\client\css\all.less
-	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\app.less ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\client\css\app.less
-	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\theme.less ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\client\css\theme.less
-	copy /Y esp-html-mvc\templates\esp-html-mvc\client\index.esp ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\client\index.esp
-	if not exist "..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\client\layouts" md "..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\client\layouts"
-	copy /Y esp-html-mvc\templates\esp-html-mvc\client\layouts\default.esp ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\client\layouts\default.esp
-	copy /Y esp-html-mvc\templates\esp-html-mvc\controller-singleton.c ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\controller-singleton.c
-	copy /Y esp-html-mvc\templates\esp-html-mvc\controller.c ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\controller.c
-	copy /Y esp-html-mvc\templates\esp-html-mvc\edit.esp ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\edit.esp
-	copy /Y esp-html-mvc\templates\esp-html-mvc\list.esp ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\list.esp
-	copy /Y esp-html-mvc\templates\esp-html-mvc\start.bit ..\..\..\$(CONFIG)\paks\esp-html-mvc\4.5.3\templates\esp-html-mvc\start.bit
-	if not exist "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3" md "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3"
-	copy /Y esp-legacy-mvc\package.json ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\package.json
-	if not exist "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates" md "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates"
-	if not exist "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc" md "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc"
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\appweb.conf ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\appweb.conf
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\controller.c ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\controller.c
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\edit.esp ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\edit.esp
-	if not exist "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\layouts" md "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\layouts"
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\layouts\default.esp ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\layouts\default.esp
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\list.esp ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\list.esp
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\migration.c ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\migration.c
-	if not exist "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\src" md "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\src"
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\src\app.c ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\src\app.c
-	if not exist "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\static" md "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\static"
-	if not exist "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\static\css" md "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\static\css"
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\css\all.css ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\static\css\all.css
-	if not exist "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\static\images" md "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\static\images"
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\images\banner.jpg ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\static\images\banner.jpg
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\images\favicon.ico ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\static\images\favicon.ico
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\images\splash.jpg ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\static\images\splash.jpg
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\index.esp ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\static\index.esp
-	if not exist "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\static\js" md "..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\static\js"
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\js\jquery.esp.js ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\static\js\jquery.esp.js
-	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\js\jquery.js ..\..\..\$(CONFIG)\paks\esp-legacy-mvc\4.5.3\templates\esp-legacy-mvc\static\js\jquery.js
-	if not exist "..\..\..\$(CONFIG)\paks\esp-server\4.5.3" md "..\..\..\$(CONFIG)\paks\esp-server\4.5.3"
-	copy /Y esp-server\package.json ..\..\..\$(CONFIG)\paks\esp-server\4.5.3\package.json
-	if not exist "..\..\..\$(CONFIG)\paks\esp-server\4.5.3\templates" md "..\..\..\$(CONFIG)\paks\esp-server\4.5.3\templates"
-	if not exist "..\..\..\$(CONFIG)\paks\esp-server\4.5.3\templates\esp-server" md "..\..\..\$(CONFIG)\paks\esp-server\4.5.3\templates\esp-server"
-	copy /Y esp-server\templates\esp-server\appweb.conf ..\..\..\$(CONFIG)\paks\esp-server\4.5.3\templates\esp-server\appweb.conf
-	copy /Y esp-server\templates\esp-server\controller.c ..\..\..\$(CONFIG)\paks\esp-server\4.5.3\templates\esp-server\controller.c
-	copy /Y esp-server\templates\esp-server\migration.c ..\..\..\$(CONFIG)\paks\esp-server\4.5.3\templates\esp-server\migration.c
-	if not exist "..\..\..\$(CONFIG)\paks\esp-server\4.5.3\templates\esp-server\src" md "..\..\..\$(CONFIG)\paks\esp-server\4.5.3\templates\esp-server\src"
-	copy /Y esp-server\templates\esp-server\src\app.c ..\..\..\$(CONFIG)\paks\esp-server\4.5.3\templates\esp-server\src\app.c
+	if not exist "..\..\..\$(CONFIG)\esp\angular\1.2.6" md "..\..\..\$(CONFIG)\esp\angular\1.2.6"
+	copy /Y angular\angular-animate.js ..\..\..\$(CONFIG)\esp\angular\1.2.6\angular-animate.js
+	copy /Y angular\angular-csp.css ..\..\..\$(CONFIG)\esp\angular\1.2.6\angular-csp.css
+	copy /Y angular\angular-route.js ..\..\..\$(CONFIG)\esp\angular\1.2.6\angular-route.js
+	copy /Y angular\angular.js ..\..\..\$(CONFIG)\esp\angular\1.2.6\angular.js
+	copy /Y angular\package.json ..\..\..\$(CONFIG)\esp\angular\1.2.6\package.json
+	if not exist "..\..\..\$(CONFIG)\esp\esp-angular\4.5.4" md "..\..\..\$(CONFIG)\esp\esp-angular\4.5.4"
+	copy /Y esp-angular\esp-click.js ..\..\..\$(CONFIG)\esp\esp-angular\4.5.4\esp-click.js
+	copy /Y esp-angular\esp-edit.js ..\..\..\$(CONFIG)\esp\esp-angular\4.5.4\esp-edit.js
+	copy /Y esp-angular\esp-field-errors.js ..\..\..\$(CONFIG)\esp\esp-angular\4.5.4\esp-field-errors.js
+	copy /Y esp-angular\esp-fixnum.js ..\..\..\$(CONFIG)\esp\esp-angular\4.5.4\esp-fixnum.js
+	copy /Y esp-angular\esp-format.js ..\..\..\$(CONFIG)\esp\esp-angular\4.5.4\esp-format.js
+	copy /Y esp-angular\esp-input-group.js ..\..\..\$(CONFIG)\esp\esp-angular\4.5.4\esp-input-group.js
+	copy /Y esp-angular\esp-input.js ..\..\..\$(CONFIG)\esp\esp-angular\4.5.4\esp-input.js
+	copy /Y esp-angular\esp-resource.js ..\..\..\$(CONFIG)\esp\esp-angular\4.5.4\esp-resource.js
+	copy /Y esp-angular\esp-session.js ..\..\..\$(CONFIG)\esp\esp-angular\4.5.4\esp-session.js
+	copy /Y esp-angular\esp-titlecase.js ..\..\..\$(CONFIG)\esp\esp-angular\4.5.4\esp-titlecase.js
+	copy /Y esp-angular\esp.js ..\..\..\$(CONFIG)\esp\esp-angular\4.5.4\esp.js
+	copy /Y esp-angular\package.json ..\..\..\$(CONFIG)\esp\esp-angular\4.5.4\package.json
+	if not exist "..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4" md "..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4"
+	copy /Y esp-angular-mvc\package.json ..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\package.json
+	if not exist "..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates" md "..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates"
+	if not exist "..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc" md "..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc"
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\appweb.conf ..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\appweb.conf
+	if not exist "..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client" md "..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client"
+	if not exist "..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\app" md "..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\app"
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\app\main.js ..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\app\main.js
+	if not exist "..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\assets" md "..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\assets"
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\assets\favicon.ico ..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\assets\favicon.ico
+	if not exist "..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\css" md "..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\css"
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\all.css ..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\css\all.css
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\all.less ..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\css\all.less
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\app.less ..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\css\app.less
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\fix.css ..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\css\fix.css
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\css\theme.less ..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\css\theme.less
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\index.esp ..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\index.esp
+	if not exist "..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\pages" md "..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\pages"
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\client\pages\splash.html ..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\pages\splash.html
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\controller-singleton.c ..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\controller-singleton.c
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\controller.c ..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\controller.c
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\controller.js ..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\controller.js
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\edit.html ..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\edit.html
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\list.html ..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\list.html
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\model.js ..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\model.js
+	copy /Y esp-angular-mvc\templates\esp-angular-mvc\start.bit ..\..\..\$(CONFIG)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\start.bit
+	if not exist "..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4" md "..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4"
+	copy /Y esp-html-mvc\package.json ..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\package.json
+	if not exist "..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates" md "..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates"
+	if not exist "..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc" md "..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc"
+	copy /Y esp-html-mvc\templates\esp-html-mvc\appweb.conf ..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\appweb.conf
+	if not exist "..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client" md "..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client"
+	if not exist "..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\assets" md "..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\assets"
+	copy /Y esp-html-mvc\templates\esp-html-mvc\client\assets\favicon.ico ..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\assets\favicon.ico
+	if not exist "..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\css" md "..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\css"
+	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\all.css ..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\css\all.css
+	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\all.less ..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\css\all.less
+	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\app.less ..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\css\app.less
+	copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\theme.less ..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\css\theme.less
+	copy /Y esp-html-mvc\templates\esp-html-mvc\client\index.esp ..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\index.esp
+	if not exist "..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\layouts" md "..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\layouts"
+	copy /Y esp-html-mvc\templates\esp-html-mvc\client\layouts\default.esp ..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\layouts\default.esp
+	copy /Y esp-html-mvc\templates\esp-html-mvc\controller-singleton.c ..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\controller-singleton.c
+	copy /Y esp-html-mvc\templates\esp-html-mvc\controller.c ..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\controller.c
+	copy /Y esp-html-mvc\templates\esp-html-mvc\edit.esp ..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\edit.esp
+	copy /Y esp-html-mvc\templates\esp-html-mvc\list.esp ..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\list.esp
+	copy /Y esp-html-mvc\templates\esp-html-mvc\start.bit ..\..\..\$(CONFIG)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\start.bit
+	if not exist "..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4" md "..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4"
+	copy /Y esp-legacy-mvc\package.json ..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\package.json
+	if not exist "..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates" md "..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates"
+	if not exist "..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc" md "..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc"
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\appweb.conf ..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\appweb.conf
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\controller.c ..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\controller.c
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\edit.esp ..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\edit.esp
+	if not exist "..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\layouts" md "..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\layouts"
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\layouts\default.esp ..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\layouts\default.esp
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\list.esp ..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\list.esp
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\migration.c ..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\migration.c
+	if not exist "..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\src" md "..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\src"
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\src\app.c ..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\src\app.c
+	if not exist "..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static" md "..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static"
+	if not exist "..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\css" md "..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\css"
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\css\all.css ..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\css\all.css
+	if not exist "..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\images" md "..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\images"
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\images\banner.jpg ..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\images\banner.jpg
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\images\favicon.ico ..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\images\favicon.ico
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\images\splash.jpg ..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\images\splash.jpg
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\index.esp ..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\index.esp
+	if not exist "..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\js" md "..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\js"
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\js\jquery.esp.js ..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\js\jquery.esp.js
+	copy /Y esp-legacy-mvc\templates\esp-legacy-mvc\static\js\jquery.js ..\..\..\$(CONFIG)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\js\jquery.js
+	if not exist "..\..\..\$(CONFIG)\esp\esp-server\4.5.4" md "..\..\..\$(CONFIG)\esp\esp-server\4.5.4"
+	copy /Y esp-server\package.json ..\..\..\$(CONFIG)\esp\esp-server\4.5.4\package.json
+	if not exist "..\..\..\$(CONFIG)\esp\esp-server\4.5.4\templates" md "..\..\..\$(CONFIG)\esp\esp-server\4.5.4\templates"
+	if not exist "..\..\..\$(CONFIG)\esp\esp-server\4.5.4\templates\esp-server" md "..\..\..\$(CONFIG)\esp\esp-server\4.5.4\templates\esp-server"
+	copy /Y esp-server\templates\esp-server\appweb.conf ..\..\..\$(CONFIG)\esp\esp-server\4.5.4\templates\esp-server\appweb.conf
+	copy /Y esp-server\templates\esp-server\controller.c ..\..\..\$(CONFIG)\esp\esp-server\4.5.4\templates\esp-server\controller.c
+	copy /Y esp-server\templates\esp-server\migration.c ..\..\..\$(CONFIG)\esp\esp-server\4.5.4\templates\esp-server\migration.c
+	if not exist "..\..\..\$(CONFIG)\esp\esp-server\4.5.4\templates\esp-server\src" md "..\..\..\$(CONFIG)\esp\esp-server\4.5.4\templates\esp-server\src"
+	copy /Y esp-server\templates\esp-server\src\app.c ..\..\..\$(CONFIG)\esp\esp-server\4.5.4\templates\esp-server\src\app.c
 	cd ..\..\..
 !ENDIF
 
@@ -2407,8 +2407,105 @@ installBinary: $(DEPS_105)
 	copy /Y $(CONFIG)\bin\php5ts.dll "$(BIT_VAPP_PREFIX)\bin\php5ts.dll"
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
-	if not exist "$(BIT_VAPP_PREFIX)" md "$(BIT_VAPP_PREFIX)"
-	copy /Y $(CONFIG)\paks "$(BIT_VAPP_PREFIX)\paks"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\angular\1.2.6" md "$(BIT_VAPP_PREFIX)\esp\angular\1.2.6"
+	copy /Y src\esp\paks\angular\angular-animate.js "$(BIT_VAPP_PREFIX)\esp\angular\1.2.6\angular-animate.js"
+	copy /Y src\esp\paks\angular\angular-csp.css "$(BIT_VAPP_PREFIX)\esp\angular\1.2.6\angular-csp.css"
+	copy /Y src\esp\paks\angular\angular-route.js "$(BIT_VAPP_PREFIX)\esp\angular\1.2.6\angular-route.js"
+	copy /Y src\esp\paks\angular\angular.js "$(BIT_VAPP_PREFIX)\esp\angular\1.2.6\angular.js"
+	copy /Y src\esp\paks\angular\package.json "$(BIT_VAPP_PREFIX)\esp\angular\1.2.6\package.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular\4.5.4" md "$(BIT_VAPP_PREFIX)\esp\esp-angular\4.5.4"
+	copy /Y src\esp\paks\esp-angular\esp-click.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\4.5.4\esp-click.js"
+	copy /Y src\esp\paks\esp-angular\esp-edit.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\4.5.4\esp-edit.js"
+	copy /Y src\esp\paks\esp-angular\esp-field-errors.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\4.5.4\esp-field-errors.js"
+	copy /Y src\esp\paks\esp-angular\esp-fixnum.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\4.5.4\esp-fixnum.js"
+	copy /Y src\esp\paks\esp-angular\esp-format.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\4.5.4\esp-format.js"
+	copy /Y src\esp\paks\esp-angular\esp-input-group.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\4.5.4\esp-input-group.js"
+	copy /Y src\esp\paks\esp-angular\esp-input.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\4.5.4\esp-input.js"
+	copy /Y src\esp\paks\esp-angular\esp-resource.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\4.5.4\esp-resource.js"
+	copy /Y src\esp\paks\esp-angular\esp-session.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\4.5.4\esp-session.js"
+	copy /Y src\esp\paks\esp-angular\esp-titlecase.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\4.5.4\esp-titlecase.js"
+	copy /Y src\esp\paks\esp-angular\esp.js "$(BIT_VAPP_PREFIX)\esp\esp-angular\4.5.4\esp.js"
+	copy /Y src\esp\paks\esp-angular\package.json "$(BIT_VAPP_PREFIX)\esp\esp-angular\4.5.4\package.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4" md "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4"
+	copy /Y src\esp\paks\esp-angular-mvc\package.json "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\package.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates" md "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc" md "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\appweb.conf "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\appweb.conf"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client" md "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\app" md "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\app"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\app\main.js "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\app\main.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\assets" md "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\assets"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\assets\favicon.ico "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\assets\favicon.ico"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\css" md "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\css"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\all.css "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\css\all.css"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\all.less "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\css\all.less"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\app.less "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\css\app.less"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\fix.css "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\css\fix.css"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\css\theme.less "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\css\theme.less"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\index.esp "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\index.esp"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\pages" md "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\pages"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\client\pages\splash.html "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\client\pages\splash.html"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\controller-singleton.c "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\controller-singleton.c"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\controller.c "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\controller.c"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\controller.js "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\controller.js"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\edit.html "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\edit.html"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\list.html "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\list.html"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\model.js "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\model.js"
+	copy /Y src\esp\paks\esp-angular-mvc\templates\esp-angular-mvc\start.bit "$(BIT_VAPP_PREFIX)\esp\esp-angular-mvc\4.5.4\templates\esp-angular-mvc\start.bit"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4" md "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4"
+	copy /Y src\esp\paks\esp-html-mvc\package.json "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\package.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates" md "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc" md "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc"
+	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\appweb.conf "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\appweb.conf"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client" md "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\assets" md "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\assets"
+	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\assets\favicon.ico "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\assets\favicon.ico"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\css" md "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\css"
+	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\all.css "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\css\all.css"
+	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\all.less "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\css\all.less"
+	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\app.less "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\css\app.less"
+	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\css\theme.less "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\css\theme.less"
+	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\index.esp "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\index.esp"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\layouts" md "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\layouts"
+	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\client\layouts\default.esp "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\client\layouts\default.esp"
+	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\controller-singleton.c "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\controller-singleton.c"
+	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\controller.c "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\controller.c"
+	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\edit.esp "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\edit.esp"
+	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\list.esp "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\list.esp"
+	copy /Y src\esp\paks\esp-html-mvc\templates\esp-html-mvc\start.bit "$(BIT_VAPP_PREFIX)\esp\esp-html-mvc\4.5.4\templates\esp-html-mvc\start.bit"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4"
+	copy /Y src\esp\paks\esp-legacy-mvc\package.json "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\package.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\appweb.conf "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\appweb.conf"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\controller.c "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\controller.c"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\edit.esp "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\edit.esp"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\layouts" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\layouts"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\layouts\default.esp "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\layouts\default.esp"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\list.esp "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\list.esp"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\migration.c "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\migration.c"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\src" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\src"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\src\app.c "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\src\app.c"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\css" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\css"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\css\all.css "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\css\all.css"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\images" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\images"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\images\banner.jpg "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\images\banner.jpg"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\images\favicon.ico "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\images\favicon.ico"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\images\splash.jpg "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\images\splash.jpg"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\index.esp "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\index.esp"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\js" md "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\js"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\js\jquery.esp.js "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\js\jquery.esp.js"
+	copy /Y src\esp\paks\esp-legacy-mvc\templates\esp-legacy-mvc\static\js\jquery.js "$(BIT_VAPP_PREFIX)\esp\esp-legacy-mvc\4.5.4\templates\esp-legacy-mvc\static\js\jquery.js"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-server\4.5.4" md "$(BIT_VAPP_PREFIX)\esp\esp-server\4.5.4"
+	copy /Y src\esp\paks\esp-server\package.json "$(BIT_VAPP_PREFIX)\esp\esp-server\4.5.4\package.json"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-server\4.5.4\templates" md "$(BIT_VAPP_PREFIX)\esp\esp-server\4.5.4\templates"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-server\4.5.4\templates\esp-server" md "$(BIT_VAPP_PREFIX)\esp\esp-server\4.5.4\templates\esp-server"
+	copy /Y src\esp\paks\esp-server\templates\esp-server\appweb.conf "$(BIT_VAPP_PREFIX)\esp\esp-server\4.5.4\templates\esp-server\appweb.conf"
+	copy /Y src\esp\paks\esp-server\templates\esp-server\controller.c "$(BIT_VAPP_PREFIX)\esp\esp-server\4.5.4\templates\esp-server\controller.c"
+	copy /Y src\esp\paks\esp-server\templates\esp-server\migration.c "$(BIT_VAPP_PREFIX)\esp\esp-server\4.5.4\templates\esp-server\migration.c"
+	if not exist "$(BIT_VAPP_PREFIX)\esp\esp-server\4.5.4\templates\esp-server\src" md "$(BIT_VAPP_PREFIX)\esp\esp-server\4.5.4\templates\esp-server\src"
+	copy /Y src\esp\paks\esp-server\templates\esp-server\src\app.c "$(BIT_VAPP_PREFIX)\esp\esp-server\4.5.4\templates\esp-server\src\app.c"
 !ENDIF
 !IF "$(BIT_PACK_ESP)" == "1"
 	copy /Y $(CONFIG)\bin\esp.conf "$(BIT_VAPP_PREFIX)\bin\esp.conf"
