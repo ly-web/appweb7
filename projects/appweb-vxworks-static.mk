@@ -1530,6 +1530,7 @@ DEPS_60 += src/paks/me-dev/README.md
 DEPS_60 += src/paks/me-doc
 DEPS_60 += src/paks/me-doc/doc.es
 DEPS_60 += src/paks/me-doc/doc.me
+DEPS_60 += src/paks/me-doc/gendoc.es
 DEPS_60 += src/paks/me-doc/LICENSE.md
 DEPS_60 += src/paks/me-doc/package.json
 DEPS_60 += src/paks/me-doc/README.md

@@ -59,7 +59,7 @@ ME_COM_NANOSSL_PATH   ?= /usr/src/nanossl
 ME_COM_OPENSSL_PATH   ?= /usr/src/openssl
 ME_COM_PHP_PATH       ?= /usr/src/php
 
-CFLAGS                += -w
+CFLAGS                += -g -w
 DFLAGS                +=  $(patsubst %,-D%,$(filter ME_%,$(MAKEFLAGS))) -DME_COM_CGI=$(ME_COM_CGI) -DME_COM_DIR=$(ME_COM_DIR) -DME_COM_EJS=$(ME_COM_EJS) -DME_COM_ESP=$(ME_COM_ESP) -DME_COM_EST=$(ME_COM_EST) -DME_COM_HTTP=$(ME_COM_HTTP) -DME_COM_MATRIXSSL=$(ME_COM_MATRIXSSL) -DME_COM_MDB=$(ME_COM_MDB) -DME_COM_NANOSSL=$(ME_COM_NANOSSL) -DME_COM_OPENSSL=$(ME_COM_OPENSSL) -DME_COM_PCRE=$(ME_COM_PCRE) -DME_COM_PHP=$(ME_COM_PHP) -DME_COM_SQLITE=$(ME_COM_SQLITE) -DME_COM_SSL=$(ME_COM_SSL) -DME_COM_VXWORKS=$(ME_COM_VXWORKS) -DME_COM_WINSDK=$(ME_COM_WINSDK) -DME_COM_ZLIB=$(ME_COM_ZLIB) 
 IFLAGS                += "-I$(CONFIG)/inc"
 LDFLAGS               += '-Wl,-rpath,@executable_path/' '-Wl,-rpath,@loader_path/'
@@ -288,7 +288,7 @@ DEPS_4 += $(CONFIG)/inc/osdep.h
 $(CONFIG)/obj/mprLib.o: \
     src/paks/mpr/mprLib.c $(DEPS_4)
 	@echo '   [Compile] $(CONFIG)/obj/mprLib.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/mprLib.o -arch $(CC_ARCH) $(IFLAGS) src/paks/mpr/mprLib.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/mprLib.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/paks/mpr/mprLib.c
 
 #
 #   libmpr
@@ -319,7 +319,7 @@ DEPS_7 += $(CONFIG)/inc/pcre.h
 $(CONFIG)/obj/pcre.o: \
     src/paks/pcre/pcre.c $(DEPS_7)
 	@echo '   [Compile] $(CONFIG)/obj/pcre.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/pcre.o -arch $(CC_ARCH) $(IFLAGS) src/paks/pcre/pcre.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/pcre.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/paks/pcre/pcre.c
 
 ifeq ($(ME_COM_PCRE),1)
 #
@@ -352,7 +352,7 @@ DEPS_10 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/httpLib.o: \
     src/paks/http/httpLib.c $(DEPS_10)
 	@echo '   [Compile] $(CONFIG)/obj/httpLib.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/httpLib.o -arch $(CC_ARCH) $(IFLAGS) src/paks/http/httpLib.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/httpLib.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/paks/http/httpLib.c
 
 ifeq ($(ME_COM_HTTP),1)
 #
@@ -410,7 +410,7 @@ DEPS_14 += $(CONFIG)/inc/customize.h
 $(CONFIG)/obj/config.o: \
     src/config.c $(DEPS_14)
 	@echo '   [Compile] $(CONFIG)/obj/config.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/config.o -arch $(CC_ARCH) $(IFLAGS) src/config.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/config.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/config.c
 
 #
 #   convenience.o
@@ -421,7 +421,7 @@ DEPS_15 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/convenience.o: \
     src/convenience.c $(DEPS_15)
 	@echo '   [Compile] $(CONFIG)/obj/convenience.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/convenience.o -arch $(CC_ARCH) $(IFLAGS) src/convenience.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/convenience.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/convenience.c
 
 #
 #   dirHandler.o
@@ -432,7 +432,7 @@ DEPS_16 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/dirHandler.o: \
     src/dirHandler.c $(DEPS_16)
 	@echo '   [Compile] $(CONFIG)/obj/dirHandler.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/dirHandler.o -arch $(CC_ARCH) $(IFLAGS) src/dirHandler.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/dirHandler.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/dirHandler.c
 
 #
 #   fileHandler.o
@@ -443,7 +443,7 @@ DEPS_17 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/fileHandler.o: \
     src/fileHandler.c $(DEPS_17)
 	@echo '   [Compile] $(CONFIG)/obj/fileHandler.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/fileHandler.o -arch $(CC_ARCH) $(IFLAGS) src/fileHandler.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/fileHandler.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/fileHandler.c
 
 #
 #   log.o
@@ -454,7 +454,7 @@ DEPS_18 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/log.o: \
     src/log.c $(DEPS_18)
 	@echo '   [Compile] $(CONFIG)/obj/log.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/log.o -arch $(CC_ARCH) $(IFLAGS) src/log.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/log.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/log.c
 
 #
 #   server.o
@@ -465,7 +465,7 @@ DEPS_19 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/server.o: \
     src/server.c $(DEPS_19)
 	@echo '   [Compile] $(CONFIG)/obj/server.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/server.o -arch $(CC_ARCH) $(IFLAGS) src/server.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/server.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/server.c
 
 #
 #   libappweb
@@ -532,7 +532,7 @@ DEPS_23 += $(CONFIG)/inc/esp.h
 $(CONFIG)/obj/slink.o: \
     src/slink.c $(DEPS_23)
 	@echo '   [Compile] $(CONFIG)/obj/slink.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/slink.o -arch $(CC_ARCH) $(IFLAGS) src/slink.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/slink.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/slink.c
 
 #
 #   libslink
@@ -555,7 +555,7 @@ DEPS_25 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/appweb.o: \
     src/server/appweb.c $(DEPS_25)
 	@echo '   [Compile] $(CONFIG)/obj/appweb.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/appweb.o -arch $(CC_ARCH) $(IFLAGS) src/server/appweb.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/appweb.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/server/appweb.c
 
 #
 #   appweb
@@ -613,7 +613,7 @@ DEPS_27 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/authpass.o: \
     src/utils/authpass.c $(DEPS_27)
 	@echo '   [Compile] $(CONFIG)/obj/authpass.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/authpass.o -arch $(CC_ARCH) $(IFLAGS) src/utils/authpass.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/authpass.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/utils/authpass.c
 
 #
 #   authpass
@@ -677,7 +677,7 @@ DEPS_30 += $(CONFIG)/inc/me.h
 $(CONFIG)/obj/cgiProgram.o: \
     src/utils/cgiProgram.c $(DEPS_30)
 	@echo '   [Compile] $(CONFIG)/obj/cgiProgram.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/cgiProgram.o -arch $(CC_ARCH) $(IFLAGS) src/utils/cgiProgram.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/cgiProgram.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/utils/cgiProgram.c
 
 ifeq ($(ME_COM_CGI),1)
 #
@@ -708,7 +708,7 @@ DEPS_33 += $(CONFIG)/inc/zlib.h
 $(CONFIG)/obj/zlib.o: \
     src/paks/zlib/zlib.c $(DEPS_33)
 	@echo '   [Compile] $(CONFIG)/obj/zlib.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/zlib.o -arch $(CC_ARCH) $(IFLAGS) src/paks/zlib/zlib.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/zlib.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/paks/zlib/zlib.c
 
 ifeq ($(ME_COM_ZLIB),1)
 #
@@ -762,7 +762,7 @@ DEPS_38 += $(CONFIG)/inc/zlib.h
 $(CONFIG)/obj/ejsLib.o: \
     src/paks/ejs/ejsLib.c $(DEPS_38)
 	@echo '   [Compile] $(CONFIG)/obj/ejsLib.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/ejsLib.o -arch $(CC_ARCH) $(IFLAGS) src/paks/ejs/ejsLib.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/ejsLib.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/paks/ejs/ejsLib.c
 
 ifeq ($(ME_COM_EJS),1)
 #
@@ -821,7 +821,7 @@ DEPS_40 += $(CONFIG)/inc/ejs.h
 $(CONFIG)/obj/ejsc.o: \
     src/paks/ejs/ejsc.c $(DEPS_40)
 	@echo '   [Compile] $(CONFIG)/obj/ejsc.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/ejsc.o -arch $(CC_ARCH) $(IFLAGS) src/paks/ejs/ejsc.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/ejsc.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/paks/ejs/ejsc.c
 
 ifeq ($(ME_COM_EJS),1)
 #
@@ -923,7 +923,7 @@ DEPS_43 += $(CONFIG)/inc/ejs.h
 $(CONFIG)/obj/ejs.o: \
     src/paks/ejs/ejs.c $(DEPS_43)
 	@echo '   [Compile] $(CONFIG)/obj/ejs.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/ejs.o -arch $(CC_ARCH) $(IFLAGS) src/paks/ejs/ejs.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/ejs.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/paks/ejs/ejs.c
 
 ifeq ($(ME_COM_EJS),1)
 #
@@ -1135,6 +1135,7 @@ DEPS_45 += src/paks/me-dev/README.md
 DEPS_45 += src/paks/me-doc
 DEPS_45 += src/paks/me-doc/doc.es
 DEPS_45 += src/paks/me-doc/doc.me
+DEPS_45 += src/paks/me-doc/gendoc.es
 DEPS_45 += src/paks/me-doc/LICENSE.md
 DEPS_45 += src/paks/me-doc/package.json
 DEPS_45 += src/paks/me-doc/README.md
@@ -1327,7 +1328,7 @@ DEPS_47 += $(CONFIG)/inc/http.h
 $(CONFIG)/obj/espLib.o: \
     src/paks/esp/espLib.c $(DEPS_47)
 	@echo '   [Compile] $(CONFIG)/obj/espLib.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/espLib.o -arch $(CC_ARCH) $(IFLAGS) src/paks/esp/espLib.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/espLib.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/paks/esp/espLib.c
 
 ifeq ($(ME_COM_ESP),1)
 #
@@ -1386,7 +1387,7 @@ DEPS_49 += $(CONFIG)/inc/esp.h
 $(CONFIG)/obj/esp.o: \
     src/paks/esp/esp.c $(DEPS_49)
 	@echo '   [Compile] $(CONFIG)/obj/esp.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/esp.o -arch $(CC_ARCH) $(IFLAGS) src/paks/esp/esp.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/esp.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/paks/esp/esp.c
 
 ifeq ($(ME_COM_ESP),1)
 #
@@ -1454,7 +1455,7 @@ DEPS_52 += $(CONFIG)/inc/http.h
 $(CONFIG)/obj/http.o: \
     src/paks/http/http.c $(DEPS_52)
 	@echo '   [Compile] $(CONFIG)/obj/http.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/http.o -arch $(CC_ARCH) $(IFLAGS) src/paks/http/http.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/http.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/paks/http/http.c
 
 ifeq ($(ME_COM_HTTP),1)
 #
@@ -1504,7 +1505,7 @@ DEPS_55 += $(CONFIG)/inc/osdep.h
 $(CONFIG)/obj/estLib.o: \
     src/paks/est/estLib.c $(DEPS_55)
 	@echo '   [Compile] $(CONFIG)/obj/estLib.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/estLib.o -arch $(CC_ARCH) $(IFLAGS) src/paks/est/estLib.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/estLib.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/paks/est/estLib.c
 
 ifeq ($(ME_COM_EST),1)
 #
@@ -1529,7 +1530,7 @@ DEPS_57 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/cgiHandler.o: \
     src/modules/cgiHandler.c $(DEPS_57)
 	@echo '   [Compile] $(CONFIG)/obj/cgiHandler.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/cgiHandler.o -arch $(CC_ARCH) $(IFLAGS) src/modules/cgiHandler.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/cgiHandler.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/modules/cgiHandler.c
 
 ifeq ($(ME_COM_CGI),1)
 #
@@ -1584,7 +1585,7 @@ DEPS_59 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/ejsHandler.o: \
     src/modules/ejsHandler.c $(DEPS_59)
 	@echo '   [Compile] $(CONFIG)/obj/ejsHandler.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/ejsHandler.o -arch $(CC_ARCH) $(IFLAGS) src/modules/ejsHandler.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/ejsHandler.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/modules/ejsHandler.c
 
 ifeq ($(ME_COM_EJS),1)
 #
@@ -1656,7 +1657,7 @@ DEPS_61 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/phpHandler.o: \
     src/modules/phpHandler.c $(DEPS_61)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/phpHandler.o -arch $(CC_ARCH) $(IFLAGS) "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/modules/phpHandler.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/phpHandler.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/modules/phpHandler.c
 
 ifeq ($(ME_COM_PHP),1)
 #
@@ -1714,7 +1715,7 @@ DEPS_63 += $(CONFIG)/inc/est.h
 $(CONFIG)/obj/mprSsl.o: \
     src/paks/mpr/mprSsl.c $(DEPS_63)
 	@echo '   [Compile] $(CONFIG)/obj/mprSsl.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/mprSsl.o -arch $(CC_ARCH) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" src/paks/mpr/mprSsl.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/mprSsl.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" src/paks/mpr/mprSsl.c
 
 #
 #   libmprssl
@@ -1765,7 +1766,7 @@ DEPS_65 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/sslModule.o: \
     src/modules/sslModule.c $(DEPS_65)
 	@echo '   [Compile] $(CONFIG)/obj/sslModule.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/sslModule.o -arch $(CC_ARCH) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" src/modules/sslModule.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/sslModule.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" src/modules/sslModule.c
 
 ifeq ($(ME_COM_SSL),1)
 #
@@ -1855,7 +1856,7 @@ DEPS_68 += $(CONFIG)/inc/sqlite3.h
 $(CONFIG)/obj/sqlite3.o: \
     src/paks/sqlite/sqlite3.c $(DEPS_68)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite3.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/sqlite3.o -arch $(CC_ARCH) $(IFLAGS) src/paks/sqlite/sqlite3.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/sqlite3.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/paks/sqlite/sqlite3.c
 
 ifeq ($(ME_COM_SQLITE),1)
 #
@@ -1879,7 +1880,7 @@ DEPS_70 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/manager.o: \
     src/paks/mpr/manager.c $(DEPS_70)
 	@echo '   [Compile] $(CONFIG)/obj/manager.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/manager.o -arch $(CC_ARCH) $(IFLAGS) src/paks/mpr/manager.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/manager.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/paks/mpr/manager.c
 
 #
 #   manager
@@ -1911,7 +1912,7 @@ DEPS_73 += $(CONFIG)/inc/sqlite3.h
 $(CONFIG)/obj/sqlite.o: \
     src/paks/sqlite/sqlite.c $(DEPS_73)
 	@echo '   [Compile] $(CONFIG)/obj/sqlite.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/sqlite.o -arch $(CC_ARCH) $(IFLAGS) src/paks/sqlite/sqlite.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/sqlite.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/paks/sqlite/sqlite.c
 
 ifeq ($(ME_COM_SQLITE),1)
 #
@@ -1949,7 +1950,7 @@ DEPS_76 += $(CONFIG)/inc/http.h
 $(CONFIG)/obj/testAppweb.o: \
     test/src/testAppweb.c $(DEPS_76)
 	@echo '   [Compile] $(CONFIG)/obj/testAppweb.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/testAppweb.o -arch $(CC_ARCH) $(IFLAGS) test/src/testAppweb.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/testAppweb.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) test/src/testAppweb.c
 
 #
 #   testHttp.o
@@ -1960,7 +1961,7 @@ DEPS_77 += $(CONFIG)/inc/testAppweb.h
 $(CONFIG)/obj/testHttp.o: \
     test/src/testHttp.c $(DEPS_77)
 	@echo '   [Compile] $(CONFIG)/obj/testHttp.o'
-	$(CC) -c $(CFLAGS) $(DFLAGS) -o $(CONFIG)/obj/testHttp.o -arch $(CC_ARCH) $(IFLAGS) test/src/testHttp.c
+	$(CC) -c $(DFLAGS) -o $(CONFIG)/obj/testHttp.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) test/src/testHttp.c
 
 #
 #   testAppweb
