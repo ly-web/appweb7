@@ -223,10 +223,27 @@ Bit.load({
                 enable:     "bit.platform.os == 'windows' && !bit.settings.static",
 
             },{
-                from:       ['${OUT}/paks/'],
-                to:         '${abin}/../paks',
                 set:        'esp',
-                packs:      'esp',
+                copy:       `
+                    let epaks = bit.dir.src.join('src/esp/paks')
+                    for each (pak in epaks.files(['angular', 'esp-*'])) {
+                        let version = pak.join('package.json').readJSON().version || '0.0.0'
+                        let dir = bit.globals.abin.join('../esp', pak.basename, version)
+                        makeDir(dir)
+                        for each (from in pak.files('**')) {
+                            let base = from.relativeTo(epaks)
+                            let stem = base.components.slice(1).join(from.separator)
+                            let to = dir.join(stem)
+                            if (from.isDir) {
+                                makeDir(to)
+                            } else {
+                                copyFile(from, to)
+                            }
+                        }
+                    }
+                `,
+                packs:     'esp',
+
 
             },{
                 from:       '${BIN}/esp.conf',
