@@ -34,7 +34,6 @@ public function deploy(manifest, prefixes, package): Array {
         }
         let prior = App.dir
         if (item.home) {
-print("HOME", expand(item.home))
             App.chdir(expand(item.home))
         }
         for (let [key,value] in item) {
