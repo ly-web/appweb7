@@ -2216,10 +2216,10 @@ PUBLIC uint64 mprGetCPU()
         }
     }
 #elif MACOSX
-    uint64 utime, stime;
-    struct task_thread_times_info info;
-    mach_msg_type_number_t count = sizeof(info);
-    if (task_info(mach_task_self(), TASK_THREAD_TIMES_INFO, (task_info_t) &info, &count) == KERN_SUCCESS) {
+    struct task_basic_info info;
+    mach_msg_type_number_t count = TASK_BASIC_INFO_COUNT;
+    if (task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t) &info, &count) == KERN_SUCCESS) {
+        uint64 utime, stime;
         utime = info.user_time.seconds * MPR_TICKS_PER_SEC + info.user_time.microseconds / 1000;
         stime = info.system_time.seconds * MPR_TICKS_PER_SEC + info.system_time.microseconds / 1000;
         ticks = utime + stime;
