@@ -1196,7 +1196,7 @@ static void readAppwebConfig()
     appweb = MPR->appwebService = app->appweb;
     appweb->skipModules = 1;
     http = app->appweb->http;
-    if (maSetPlatform(app->platform, "esp" ME_EXE) < 0) {
+    if (maSetPlatform(app->platform, "bin/esp" ME_EXE) < 0) {
         fail("Cannot find suitable platform %s", app->platform ? app->platform : appweb->localPlatform);
         return;
     }

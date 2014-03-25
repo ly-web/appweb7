@@ -368,9 +368,9 @@ static int addHandlerDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_CANT_CREATE;
     }
     if (smatch(handler, "espHandler") && !espLoaded) {
-        path = "./esp.conf";
+        path = "esp.conf";
         if (!mprPathExists(path, R_OK)) {
-            path = httpMakePath(state->route, state->configDir, "${BIN_DIR}/esp.conf");
+            path = mprJoinPath(mprGetAppDir(), "esp.conf");
         }
         if (mprPathExists(path, R_OK)) {
             espLoaded = 1;
