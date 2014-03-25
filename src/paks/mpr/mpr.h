@@ -1132,6 +1132,7 @@ typedef struct MprMemStats {
     uint            numCpu;                 /**< Number of CPUs */
     uint            pageSize;               /**< System page size */
     uint            heapRegions;            /**< Heap region count */
+    uint            sweeps;                 /**< Number of GC sweeps */
     uint64          cacheHeap;              /**< Heap cache. Try to keep at least this amount in the free queues  */
     uint64          bytesAllocated;         /**< Bytes currently allocated. Includes active and free. */
     uint64          bytesFree;              /**< Bytes currently free and retained in the heap queues */
@@ -1210,7 +1211,9 @@ typedef struct MprHeap {
     int              gcEnabled;             /**< GC is enabled */
     int              gcRequested;           /**< GC has been requested */
     int              hasError;              /**< Memory allocation error */
+#if UNUSD
     int              iteration;             /**< GC iteration counter (debug only) */
+#endif
     int              marking;               /**< Actually marking objects now */
     int              mustYield;             /**< Threads must yield for GC which is due */
     int              nextSeqno;             /**< Next sequence number */

@@ -14766,7 +14766,7 @@ PUBLIC void httpGetStats(HttpStats *sp)
 
     sp->totalRequests = http->totalRequests;
     sp->totalConnections = http->totalConnections;
-    sp->totalSweeps = MPR->heap->iteration;
+    sp->totalSweeps = MPR->heap->stats.sweeps;
 }
 
 

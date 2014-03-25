@@ -1385,6 +1385,7 @@ static void sweep()
         }
     }
     heap->stats.heapRegions = rcount;
+    heap->stats.sweeps++;
 #if (ME_MPR_ALLOC_STATS && ME_MPR_ALLOC_DEBUG) && KEEP
     printf("GC: Marked %lld / %lld, Swept %lld / %lld, freed %lld, bytesFree %lld (prior %lld)\n"
                  "    WeightedCount %d / %d, allocated blocks %lld allocated bytes %lld\n"
