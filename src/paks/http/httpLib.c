@@ -14734,6 +14734,7 @@ PUBLIC void httpGetStats(HttpStats *sp)
     http = MPR->httpService;
     ap = mprGetMemStats();
 
+    sp->cpu = ap->cpu;
     sp->cpus = ap->numCpu;
     sp->ram = ap->ram;
     sp->mem = ap->rss;
