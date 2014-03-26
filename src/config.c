@@ -1808,7 +1808,9 @@ static int monitorDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, expr, "%S %S %S", &counter, &relation, &limit)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpAddMonitor(counter, relation, getnum(limit), httpGetTicks(period), defenses);
+    if (httpAddMonitor(counter, relation, getnum(limit), httpGetTicks(period), defenses) < 0) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
     return 0;
 }
 

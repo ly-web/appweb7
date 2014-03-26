@@ -5383,8 +5383,8 @@ PUBLIC int httpAddMonitor(cchar *counterName, cchar *expr, uint64 limit, MprTick
     tok = sclone(defenses);
     while ((def = stok(tok, " \t", &tok)) != 0) {
         if ((defense = mprLookupKey(http->defenses, def)) == 0) {
-            mprError("Cannot find defense \"%s\"", def);
-            return 0;
+            mprError("Cannot find Defense \"%s\"", def);
+            return MPR_ERR_CANT_FIND;
         }
         mprAddItem(defenseList, defense);
     }
