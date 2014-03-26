@@ -212,8 +212,7 @@ Type: filesandordirs; Name: "{app}\*.obj";
 Name: addpath; Description: Add ${settings.title} to the system PATH variable;
 
 [Run]
-Filename: "{app}/bin/${settings.name}Monitor.exe"; Parameters: "--stop"; WorkingDir: "{app}/bin"; Check:
-IsPresent('{app}/bin/${settings.name}Monitor.exe'); StatusMsg: "Stopping the Appweb Monitor"; Flags: waituntilterminated; BeforeInstall: SaveConf()
+Filename: "{app}/bin/${settings.name}Monitor.exe"; Parameters: "--stop"; WorkingDir: "{app}/bin"; Check: IsPresent('{app}/bin/${settings.name}Monitor.exe'); StatusMsg: "Stopping the Appweb Monitor"; Flags: waituntilterminated; BeforeInstall: SaveConf()
 
 Filename: "{app}/bin/appman.exe"; Parameters: "uninstall"; WorkingDir: "{app}"; Check: IsPresent('{app}/bin/appman.exe'); StatusMsg: "Stopping Appweb"; Flags: waituntilterminated;
 
