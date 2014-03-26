@@ -188,6 +188,10 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
     appweb = server->appweb;
     http = appweb->http;
 
+    /* Suppress conditional compilation warnings */
+    mprNop(appweb);
+    mprNop(http);
+
     if (configFile) {
         path = mprGetAbsPath(configFile);
         if (maParseConfig(server, path, 0) < 0) {
