@@ -5665,6 +5665,7 @@ static void cmdRemedy(MprHash *args)
         mprError("Cannot start command: %s", command);
         return;
     }
+    mprLog(1, "Cmd data: %s", data);
     if (data && mprWriteCmdBlock(cmd, MPR_CMD_STDIN, data, -1) < 0) {
         mprError("Cannot write to command: %s", command);
         return;
