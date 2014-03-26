@@ -16,9 +16,17 @@ Me.load({
                             ? ([ 'libeay32.lib', 'ssleay32.lib' ]) : ([ 'ssl', 'crypto' ]),
                     }
                 }
-                let lib, libraries, libpaths, imports, includes, path
-                let search = getComponentSearch(target, 'openssl-src')
+                let lib, libraries, libpaths, imports, includes
+                /*
+                    Convention for build farm
+                 */
+                let packages = me.dir.top.join('../packages-' + me.platform.os + '-' + me.platform.arch, 'openssl')
+                packages = packages.files('openssl*').reverse()[0]
 
+                let search = getComponentSearch(target, 'openssl-src')
+                if (packages.exists) {
+                    search.push(packages)
+                }
                 if (me.platform.os == 'windows') {
                     for (let [index, item] in search) {
                         search[index] = Path(item).join('out32dll')
@@ -28,12 +36,12 @@ Me.load({
                     libpaths = [ lib.parent ]
                     imports = [ lib.parent.join('libeay32.dll'), lib.parent.join('libeay32.lib'),
                         lib.parent.join('ssleay32.dll'), lib.parent.join('ssleay32.lib') ]
-                    path = lib.dirname.parent
+                    let path = lib.dirname.parent
                     includes = [ probe('openssl/ssl.h', {search: [path.join('inc32')]}).absolute ]
 
                 } else {
                     lib = probe('libcrypto.' + me.ext.shobj, {fullpath: true, search: search, nopath: true}).absolute
-                    path = lib.dirname
+                    let path = lib.dirname
                     libraries = [ 'ssl', 'crypto' ]
                     libpaths = [ lib.parent ]
                     imports = lib.parent.files('libssl*.' + me.ext.shobj + '*') + 
@@ -41,7 +49,7 @@ Me.load({
                     includes = [ probe('openssl/ssl.h', {search: [ path.join('include'), '/usr/include']}).absolute ]
                 }
                 return {
-                    path:       path
+                    path:       lib.dirname,
                     imports:    imports,
                     includes:   includes,
                     libpaths:   libpaths,
