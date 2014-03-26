@@ -10877,6 +10877,7 @@ PUBLIC void mprRescheduleEvent(MprEvent *event, MprTicks period)
 {
     MprEventService     *es;
     MprDispatcher       *dispatcher;
+    int                 continuous;
 
     dispatcher = event->dispatcher;
 
@@ -10887,7 +10888,9 @@ PUBLIC void mprRescheduleEvent(MprEvent *event, MprTicks period)
     event->timestamp = es->now;
     event->due = event->timestamp + period;
     if (event->next) {
+        continuous = event->flags & MPR_EVENT_CONTINUOUS;
         mprRemoveEvent(event);
+        event->flags |= continuous;
     }
     unlock(es);
     mprQueueEvent(dispatcher, event);
