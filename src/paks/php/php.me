@@ -19,8 +19,17 @@ Me.load({
                         libraries: (me.platform.os == 'windows') ? ([ 'php5ts.lib' ]) : ([ 'php5' ]),
                     }
                 }
+                /*
+                    Convention for build farm
+                 */
+                let packages = me.dir.top.join('../packages-' + me.platform.os + '-' + me.platform.arch, 'php')
+                packages = packages.files('php*').reverse()[0]
+              
                 if (me.platform.os == 'windows') {
                     let search = getComponentSearch(target, 'php-src')
+                    if (packages.exists) {
+                        search.push(packages)
+                    }
                     let path = probe('php5.spec', {fullpath: true, search: search, nopath: true})
                     search = [
                         path.join('x64/Release_TS'),
@@ -44,6 +53,9 @@ Me.load({
 
                 } else {
                     let search = getComponentSearch(target, 'php-src', 'libs')
+                    if (packages.exists) {
+                        search.push(packages.join('libs'))
+                    }
                     let lib = probe('libphp5.' + me.ext.shobj, {fullpath: true, search: search}).absolute
                     let path = lib.dirname.parent
                     let incdir = probe('php.h', {search: [path.join('main'), '/usr/include']}).absolute.parent
