@@ -27,7 +27,7 @@ Me.load({
               
                 if (me.platform.os == 'windows') {
                     let search = getComponentSearch(target, 'php-src')
-                    if (packages.exists) {
+                    if (packages && packages.exists) {
                         search.push(packages)
                     }
                     let path = probe('php5.spec.in', {search: search, nopath: true})
@@ -53,7 +53,7 @@ Me.load({
 
                 } else {
                     let search = getComponentSearch(target, 'php-src', 'libs')
-                    if (packages.exists) {
+                    if (packages && packages.exists) {
                         search.push(packages.join('libs'))
                     }
                     let lib = probe('libphp5.' + me.ext.shobj, {fullpath: true, search: search}).absolute
