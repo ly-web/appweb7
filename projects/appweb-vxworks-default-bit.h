@@ -20,7 +20,7 @@
     #define BIT_COMPANY "embedthis"
 #endif
 #ifndef BIT_COMPATIBLE
-    #define BIT_COMPATIBLE "4.5.4"
+    #define BIT_COMPATIBLE "4.5.5"
 #endif
 #ifndef BIT_CONFIG_FILE
     #define BIT_CONFIG_FILE "appweb.conf"
@@ -188,7 +188,7 @@
     #define BIT_TUNE "size"
 #endif
 #ifndef BIT_VERSION
-    #define BIT_VERSION "4.5.4"
+    #define BIT_VERSION "4.5.5"
 #endif
 #ifndef BIT_WARN64TO32
     #define BIT_WARN64TO32 0
@@ -250,7 +250,7 @@
     #define BIT_VAPP_PREFIX "deploy"
 #endif
 #ifndef BIT_SRC_PREFIX
-    #define BIT_SRC_PREFIX "/usr/src/appweb-4.5.4"
+    #define BIT_SRC_PREFIX "/usr/src/appweb-4.5.5"
 #endif
 
 /* Suffixes */
@@ -292,10 +292,10 @@
     #define BIT_MINOR_VERSION 5
 #endif
 #ifndef BIT_PATCH_VERSION
-    #define BIT_PATCH_VERSION 4
+    #define BIT_PATCH_VERSION 5
 #endif
 #ifndef BIT_VNUM
-    #define BIT_VNUM 400050004
+    #define BIT_VNUM 400050005
 #endif
 
 /* Packs */
