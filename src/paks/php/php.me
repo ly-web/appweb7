@@ -30,7 +30,7 @@ Me.load({
                     if (packages.exists) {
                         search.push(packages)
                     }
-                    let path = probe('php5.spec', {fullpath: true, search: search, nopath: true})
+                    let path = probe('php5.spec.in', {search: search, nopath: true})
                     search = [
                         path.join('x64/Release_TS'),
                         path.join('x64/Release'),
