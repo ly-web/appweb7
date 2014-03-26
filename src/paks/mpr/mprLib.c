@@ -5543,7 +5543,7 @@ static void resetCmd(MprCmd *cmd, bool finalizing)
 #if VXWORKS
         if (files[i].name) {
             DEV_HDR *dev;
-            char    *tail;
+            cchar   *tail;
             if ((dev = iosDevFind(files[i].name, &tail)) != NULL) {
                 iosDevDelete(dev);
             }
