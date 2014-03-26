@@ -28,18 +28,18 @@
         <div class="crumbs">
             <a href="../../../index.html">Home</a>
 <!-- EndDsi -->
-             &gt;<a href="index.html">Source Code</a>&gt; <b>Building with Bit</b>
+             &gt;<a href="index.html">Source Code</a>&gt; <b>Building with MakeMe</b>
         </div>
     </div>
     <div class="content">
         <div class="contentRight">
             <h1>Quick Nav</h1>
             <ul>
-                <li><a href="#download">Download Bit</a></li>
+                <li><a href="#download">Download MakeMe</a></li>
                 <li><a href="#configuring">Configuring the Build</a></li>
                 <li><a href="#options">Configure Options</a></li>
                 <li><a href="#packages">External Packages</a></li>
-                <li><a href="#building">Building with Bit</a></li>
+                <li><a href="#building">Building with MakeMe</a></li>
                 <li><a href="#static">Static Linking</a></li>
                 <li><a href="#rom">Serving from ROM</a></li>
                 <li><a href="#installing">Installing</a></li>
@@ -69,24 +69,24 @@
 <!-- EndDsi -->
         </div>
         <div class="contentLeft">
-            <h1>Building with Bit</h1>
+            <h1>Building with MakeMe</h1>
             
-            <p>The procedure for building with Bit is the same for all supported platforms.</p>
+            <p>The procedure for building with MakeMe is the same for all supported platforms.</p>
             
             <a name="download"></a>
-            <h3>Download Bit</h3>
-            <p>You can download Bit from the 
-            <a href="http://embedthis.com/downloads/bit/download.esp">Embedthis Bit Download</a> download site.
+            <h3>Download MakeMe</h3>
+            <p>You can download MakeMe from the 
+            <a href="http://embedthis.com/downloads/me/download.esp">Embedthis MakeMe Download</a> download site.
             Packaged installations are provided for Windows and MACOSX. For Linux, use the source distribution.
-            See the <a href="http://embedthis.com/products/bit/doc/">Bit Documentation</a> for information regarding
-            installing Bit.</p>
+            See the <a href="http://embedthis.com/products/me/doc/">MakeMe Documentation</a> for information regarding
+            installing MakeMe.</p>
             
             <a id="configuring"></a>
             <h3 class="section">Configure Appweb</h3>
-            <p>Before building with Bit, you need to do a one-time <em>configuration</em>.
+            <p>Before building with MakeMe, you need to do a one-time <em>configuration</em>.
             This customizes Appweb to select features, options, third-party packages available on your system. 
-            The <em>configure</em> script simply invokes <em>bit configure</em> and passes all command 
-            line options to bit.</p>
+            The <em>configure</em> script simply invokes <em>me configure</em> and passes all command 
+            line options to <em>me</em>.</p>
            
             <h3>Running Configure</h3>
             <p>You may run the configure script with no options to accept the defaults &mdash; this is a good
@@ -96,20 +96,20 @@
             <pre>
 ./configure --release --without all
 </pre>
-            <p>The <em>--release</em> switch instructs bit to build an optimized production release. This will disable
+            <p>The <em>--release</em> switch instructs MakeMe to build an optimized production release. This will disable
             debugging code and non-essential logging. The <em>--without all</em> switch will disable non-essential
             features to create a minimal build.</p>
-            <p>During configuration, <em>bit</em> will create:</p>
+            <p>During configuration, MakeMe will create:</p>
             <ul>
-                <li>A bit file that specifies the platforms to build named: start.bit</li>
-                <li>A bit file for each platform named: OS-ARCH-PROFILE].bit</li>
-                <li>A source header with for the build configuration named: OS-ARCH-PROFILE/inc/bit.h</li>
+                <li>A MakeMe file that specifies the platforms to build named: start.me</li>
+                <li>A MakeMe file for each platform named: OS-ARCH-PROFILE].me</li>
+                <li>A source header with for the build configuration named: OS-ARCH-PROFILE/inc/me.h</li>
                 <li>An output products directory for each platform named: OS-ARCH-PROFILE</li>
             </ul>
             <p>where OS is the name of the operating system, ARCH is the name of the cpu architecture and PROFILE
             is the build profile name, typically "debug" or "release". For example: linux-x86-debug.</p>
-            <p>The generated Bit files are readable Javascript files that contain the settings to control the build
-            when Bit is run. When compiling, source code may include the <em>bit.h</em> header to read the 
+            <p>The generated MakeMe files are readable Javascript files that contain the settings to control the build
+            when MakeMe is run. When compiling, source code may include the <em>me.h</em> header to read the 
             Appweb configuration.</p>
             <a id="options"></a>
             <h2 class="section">Configure Options</h2>
@@ -129,11 +129,11 @@
                 </tr>
                 <tr>
                     <td>--help</td>
-                    <td>Display the bit program usage help.</td>
+                    <td>Display the <em>me</em> program usage help.</td>
                 </tr>
                 <tr>
                     <td class="nowrap">--set KEY=VALUE</td>
-                    <td>Set the value of a property in the bit settings collection. For example: "--set
+                    <td>Set the value of a property in the MakeMe <em>settings</em> collection. For example: "--set
                         mpr.tracing=false".</td>
                 </tr>
                 <tr>
@@ -209,7 +209,7 @@
                 <tr>
                     <td class="nowrap">--with PACKAGE[=dir]</td>
                     <td>Specify if a PACKAGE should be included in the build. The optional directory is the path to
-                        the source distribution of the package. If the directory is omitted, bit will search the
+                        the source distribution of the package. If the directory is omitted, <em>me</em> will search the
                         local system for the package in well known places.</td>
                 </tr>
                 <tr>
@@ -349,7 +349,7 @@ configure --with openssl=/usr/src/openssl
             </table>
             <h3>Environment Variables</h3>
             <p>When cross compiling, certain environment variables may be passed to the configure script and on to 
-            <em>bit</em> to configure the compiler and linker paths and flags. </p>
+            <em>me</em> to configure the compiler and linker paths and flags. </p>
             <table title="env">
                 <thead>
                     <tr>
@@ -393,7 +393,7 @@ configure --with openssl=/usr/src/openssl
 CC=/opt/bin/ccarm configure
 </pre>
             
-            <h3>Bit Configure Examples</h3>
+            <h3>MakeMe Configure Examples</h3>
             <p>Here are some useful configure command options.</p>
             <p>To configure for building outside a source tree. This supports building from source from a 
                 read-only file system.</p>
@@ -408,7 +408,7 @@ CC=/opt/bin/ccarm configure
             
             <p>To display all configure options:
 <pre class="paper">configure --help
-Usage: bit [options] [targets|actions] ...
+Usage: me [options] [targets|actions] ...
   Options:
   --benchmark                              # Measure elapsed time
   --configure path-to-source               # Configure for building
@@ -416,13 +416,13 @@ Usage: bit [options] [targets|actions] ...
   --debug                                  # Same as --profile debug
   --depth level                            # Set utest depth level
   --diagnose                               # Emit diagnostic trace 
-  --dump                                   # Dump the full project bit file
+  --dump                                   # Dump the full project MakeMe file
   --endian [big|little]                    # Define the CPU endianness
-  --file file.bit                          # Use the specified bit file
+  --file file.me                           # Use the specified MakeMe file
   --force                                  # Override warnings
   --gen [make|nmake|sh|vs|xcode|main|start]# Generate project file
   --help                                   # Print help message
-  --import                                 # Import standard bit configuration
+  --import                                 # Import standard MakeMe configuration
   --keep                                   # Keep intermediate files
   --log logSpec                            # Save errors to a log file
   --nocross                                # Build natively
@@ -442,7 +442,7 @@ Usage: bit [options] [targets|actions] ...
   --static                                 # Make static without shared libraries
   --unicode                                # Set char size to wide (unicode)
   --unset feature                          # Unset a feature
-  --version                                # Display the bit version
+  --version                                # Display the MakeMe version
   --verbose                                # Trace operations
   --with PACK[=PATH]                       # Build with package at PATH
   --without PACK                           # Build without a package
@@ -465,7 +465,7 @@ Extension Packages (--with PACK):
 </pre>
             <a id="packages"></a>
             <h3>Configuring External Packages</h3>
-            <p>The Bit configuration process supports the resolution of external packages that extend and enhance Appweb, 
+            <p>The MakeMe configuration process supports the resolution of external packages that extend and enhance Appweb, 
                 such as OpenSSL and PHP. By default, Appweb can locate these packages if the source
                 distributions are installed in standard locations. Otherwise, the packages can be identified by using
                 <em>configure --with PACKAGE=PATH</em> switch. This specifies the path to the package source directory.</p>
@@ -481,27 +481,25 @@ Extension Packages (--with PACK):
             <p>During configuration, the required Matrixssl libraries and headers will be copied into
             the Appweb source tree. </p>
             <a id="building"></a>
-            <h2 class="section">Building Appweb with Bit</h2>
+            <h2 class="section">Building Appweb with MakeMe</h2>
             <p>After configuring, you may proceed to build the source code by typing:</p>
-            <pre>
-bit
-</pre>
+           <pre>me</pre>
             <p>This will fully build the software. If cross compiling and depending on your configuration, 
             it may build twice: once for the local system and once for the target platform. This may be necessary
             to build required tools. If Ejscript is enabled, this is required.</p>
-            <h3>Useful Bit options and targets</h3>
-            <p>Here are some useful bit examples:</p>
-            <pre>bit --show     # Show actual commands while building
-bit --why      # Show why each target is or is not being built 
-bit --dump     # Dump the combined bit configuration in one file
-bit rebuild    # Rebuild all targets
-bit clean      # Clean all built targets
-bit rebuild    # Rebuild all targets
-bit install    # Install the built software locally
-bit help       # Show bit usage</pre>
+            <h3>Useful MakeMe options and targets</h3>
+            <p>Here are some useful MakeMe examples:</p>
+            <pre>me --show     # Show actual commands while building
+me --why      # Show why each target is or is not being built 
+me --dump     # Dump the combined MakeMe configuration in one file
+me rebuild    # Rebuild all targets
+me clean      # Clean all built targets
+me rebuild    # Rebuild all targets
+me install    # Install the built software locally
+me help       # Show MakeMe usage</pre>
             <a name="static"></a>
             <h2 class="section">Static Linking</h2>
-            <p>On some platforms, it is desirable to statically link the Appweb web server. The default Appweb Bit files
+            <p>On some platforms, it is desirable to statically link the Appweb web server. The default Appweb MakeMe files
             will build Appweb using shared libraries. This is so that appweb can dynamically load modules at run-time.
             It is best to use dynamic linking if using ESP so that it can dynamically reload applications to update them.
             This is ideal when developing so that you can quickly reload applications by simply clicking reload in your
@@ -510,7 +508,7 @@ bit help       # Show bit usage</pre>
             <i>--static</i> option and then rebuild.</p>
 <pre>
 ./configure --static
-bit
+me
 </pre>
             <p>If using ESP with static linking, you must take extra steps to pre-compile your ESP pages and applications.
             These steps are:
@@ -536,7 +534,7 @@ esp --static --genlink slink.c compile</pre>
             ROM. To enable this, configure with the <em>--rom</em> switch.
             <pre>
 configure --rom
-bit
+me
 </pre>
             <p>Note that static linking implies significant limitations on Appweb:</p>
                 <ul>
@@ -546,11 +544,11 @@ bit
             <p>See <a href="../programmers/rom.html">Serving Pages from ROM</a> for more information.</p>
             <a id="installing"></a>
             <h2 class="section">Installing</h2>
-            <p>You can install the newly built software via bit:</p>
-            <pre>sudo bit install</pre>
+            <p>You can install the newly built software via <em>me</em>:</p>
+            <pre>sudo me install</pre>
             <p>You can remove by:</p>
             <pre>
-sudo bit uninstall
+sudo me uninstall
 </pre>
             <a id="cross"></a>
             <h2 class="section">Cross Compiling</h2>
@@ -558,11 +556,11 @@ sudo bit uninstall
             Sometimes this compiling is just for a different instruction set (say x64 instead of x86). Other
             times, it is for a completely different operating system and/or CPU architecture. In such cases a
             cross-compiler is typically required to build for the target platform.</p>
-            <p>Bit supports cross compiling via the <em>-platform PLATFORM</em> bit configure option. This option adds a
-            platform to the list of platforms to be made. Multiple platforms may be
+            <p>MakeMe supports cross compiling via the <em>-platform PLATFORM</em> MakeMe configure option. 
+            This option adds a platform to the list of platforms to be made. Multiple platforms may be
             specified and the 'local' platform alias may be used for the local development platform.</p>
-            <pre>bit -platform linux-arm-debug -configure . </pre>
-            <p>This will create a windows-x64.bit configuration file and a start.es that references it. The
+            <pre>me -platform linux-arm-debug -configure . </pre>
+            <p>This will create a windows-x64.me configuration file and a start.es that references it. The
             platform switch does not need to be restated after configuration.</p>
             <h3>Platforms</h3>
             <p>A platform specification is of the form OS-ARCH-PROFILE, where the
@@ -577,8 +575,8 @@ sudo bit uninstall
             <p>This will build Ejscript for the local development system, and without Ejscript for the target.</p>
             <h3>Environment Variables</h3>
             <p>When cross compiling, you may need to inform <b>configure</b> about your cross-compilation tool chain.
-            Bit will do its best to discover the installed cross tool chain and will look in well known
-            directories to locate the compiler, linker and other required tools. If <em>bit</em> cannot locate the 
+            MakeMe will do its best to discover the installed cross tool chain and will look in well known
+            directories to locate the compiler, linker and other required tools. If <em>me</em> cannot locate the 
             tool chain, you can supply the tool chain details via the environment variables: CC, CFLAGS, DFLAGS, IFLAGS
             LD and LDFLAGS. These will be used to define and configure the cross-compilation tool chain. 
             <p>For example, here is a cross-compilation <b>configure</b> command line to create a debug build 
@@ -590,14 +588,14 @@ CFLAGS=-I/opt/include \
 configure --debug --platform linux-arm:arm7tdi-debug
 </pre>
             <h2 class="section">Create an Installable Release</h2>
-            <p>After building, bit can create installable packages of the software:</p>
-            <pre>bit package</pre>
+            <p>After building, MakeMe can create installable packages of the software:</p>
+            <pre>me package</pre>
             <p>The release packages are placed under the <em>releases</em> directory. The <em>appweb-tar.tgz</em> image is a
             simple compressed tar archive of the binary release.</p>
            
            <h2 class="section">Deploying</h2>
             <p>If you are embedding Appweb into another application or installing to a target device, you can deploy the required Appweb files to a staging directory.</p>
-            <pre>bit --sets core,lib deploy /tmp/deployed</pre>
+            <pre>me --sets core,lib deploy /tmp/deployed</pre>
             <p>This will copy the core and library Appweb files to the <em>deploy</em> directory under the platform output directory.</p>
         </div>
     </div>

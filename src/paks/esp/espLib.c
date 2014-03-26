@@ -4242,7 +4242,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             eroute->mode = mprGetJson(eroute->config, "esp.mode", 0);
             if (!eroute->mode) {
                 eroute->mode = sclone("debug");
-                mprLog(2, "esp: application \"%s\" running in \"%s\" mode", eroute->appName, eroute->mode);
+                mprLog(3, "esp: application \"%s\" running in \"%s\" mode", eroute->appName, eroute->mode);
             }
             debug = smatch(eroute->mode, "debug");
             if ((msettings = mprGetJsonObj(eroute->config, sfmt("esp.modes.%s", eroute->mode), 0)) != 0) {
@@ -4258,7 +4258,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             if ((value = espGetConfig(route, "esp.combined", 0)) != 0) {
                 eroute->combined = smatch(value, "true");
                 if (eroute->combined) {
-                    mprLog(2, "esp: app %s configured for combined compilation", eroute->appName);
+                    mprLog(3, "esp: app %s configured for combined compilation", eroute->appName);
                 }
             }
             if ((value = espGetConfig(route, "esp.compile", 0)) != 0) {
@@ -4323,7 +4323,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             }
             if ((value = espGetConfig(route, "esp.timeouts.session", 0)) != 0) {
                 route->limits->sessionTimeout = httpGetTicks(value);
-                mprLog(2, "esp: set session timeout to %s", value);
+                mprLog(3, "esp: set session timeout to %s", value);
             }
 #if DEPRECATED || 1
             if (espTestConfig(route, "esp.map", "compressed")) {

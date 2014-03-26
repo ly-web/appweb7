@@ -35,7 +35,7 @@
         <div class="contentRight">
             <h1>Quick Nav</h1>
             <ul>
-                <li><a href="#4.5.2">Release 4.5.2</a></li>
+                <li><a href="#5.0.0">Release 5.0.0</a></li>
                 <li><a href="#3.4.1">Release 3.4.1</a></li>
                 <li><a href="#2.4.4">Release 2.4.4</a></li>
             </ul>
@@ -64,6 +64,56 @@
             Please see the <a href="http://github.com/embedthis/appweb-4/issues">Appweb Issue Database</a> 
             for the official product issue list and for comprehensive CVE dispositions.</p>
         
+            <a id="5.0.0"></a>
+            <h2 class="section">Changes in 5.0.0</h2>
+            <h4>Notes</h4>
+                <ul>
+                    <li>The Appweb 5 API is substantially backwards compatible with Appweb 4 applications. If
+                    Legacy Appweb 4 APIs are not being used, there should be minimal code change to migrate to 
+                    Appweb 5 from Appweb 4.</li>
+                </ul>
+            <h3>Major Changes</h3>
+            <ul>
+                <li>Deprecated APIs and Legacy code in Appweb 4 has been removed.
+                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a>.</li>
+                <li>The ESP web framework has been extracted as a stand-alone product, but Appweb still 
+                    includes the full ESP framework.
+                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a>.</li>
+                <li>Appweb uses the MakeMe build tool. This was previously called Bit. 
+                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a>.</li>
+                <li>Appweb is more modular by using the Pak package manager tool .
+                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a>.</li>
+            </ul>
+            <h3>Minor Changes</h3>
+            <ul>
+                <li>Generated Makefiles are more configurable.
+                    <a href="https://github.com/embedthis/appweb-4/issues/NN">[issue NN]</a>.</li>
+            </ul>
+            <a id="4.5.4"></a>
+            <h2 class="section">Changes in 4.5.4</h2>
+            <h4>Notes:</h4>
+            <ul>
+                <li>Requires Bit version 0.9.4 if using "bit install, package or generate"</li>
+                <li>ESP packs moved under /usr/local/lib/appweb/latest/esp</li>
+            </ul>
+            <h3>Fixes</h3>
+            <ul>
+                <li>ESP generation will use only paks with compatible SemVer version numbers.
+                    <a href="https://github.com/embedthis/appweb-4/issues/322">[issue 322]</a>.</li>
+                <li>Fix ESP compilation handling of back-quoted characters.
+                    <a href="https://github.com/embedthis/appweb-4/issues/323">[issue 323]</a>.</li>
+                <li>Fix "make install" installation of ESP paks
+                    <a href="https://github.com/embedthis/appweb-4/issues/324">[issue 324]</a>.</li>
+            </ul>
+            <a id="4.5.3"></a>
+            <h2 class="section">Changes in 4.5.3</h2>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Fix directory layout of binary installation ESP packs
+                    <a href="https://github.com/embedthis/appweb-4/issues/321">[issue 321]</a>.</li>
+                <li>Fix client cache header invalid max-age
+                    <a href="https://github.com/embedthis/appweb-4/issues/319">[issue 319]</a>.</li>
+            </ul>
             <a id="4.5.2"></a>
             <h2 class="section">Changes in 4.5.2</h2>
             <h3>Fixes</h3>
