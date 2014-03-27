@@ -605,7 +605,10 @@ static void freeBlock(MprMem *mp)
 
     assert(!mp->free);
     SCRIBBLE(mp);
-    INC(swept);
+#if ME_DEBUG || ME_MPR_ALLOC_STATS
+    heap->stats.swept++;
+    heap->stats.sweptBytes += mp->size;
+#endif
     heap->freedBlocks = 1;
     freeLocation(mp);
 #if ME_MPR_ALLOC_STATS
@@ -1293,9 +1296,12 @@ static void sweep()
         return;
     }
     mprTrace(7, "GC: sweep started");
+#if ME_DEBUG || ME_MPR_ALLOC_STATS
+    heap->stats.swept = 0;
+    heap->stats.sweptBytes = 0;
+#endif
 #if ME_MPR_ALLOC_STATS
     heap->stats.sweepVisited = 0;
-    heap->stats.swept = 0;
     heap->stats.freed = 0;
 #endif
     /*
