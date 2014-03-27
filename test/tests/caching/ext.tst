@@ -27,10 +27,10 @@ function cached(uri, expected): Boolean {
 }
 
 //  The esp request should be cached and the php should not
-if (App.config.bit_esp) {
+if (App.config.me_esp) {
     assert(cached("/ext/cache.esp", true))
 }
-if (App.config.bit_php) {
+if (App.config.me_php) {
     assert(!cached("/ext/cache.php", false))
 }
 

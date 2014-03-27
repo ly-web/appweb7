@@ -66,7 +66,7 @@ run("-i 20 --protocol HTTP/1.1 /index.html")
 run("--user 'joshua:pass1' /auth/basic/basic.html")
 run("--user 'joshua' --password 'pass1' /auth/basic/basic.html")
 
-if (App.config.bit_ejscript) {
+if (App.config.me_ejscript) {
     //  Form data
     data = run("--form 'name=John+Smith&address=300+Park+Avenue' /form.ejs")
     assert(data.contains('"address": "300 Park Avenue"'))
@@ -102,7 +102,7 @@ data = run("--showHeaders /index.html")
 assert(data.contains('Content-Type'))
 
 //  Upload
-if (App.config.bit_ejscript) {
+if (App.config.me_ejscript) {
     let files = Path(".").files().join(" ")
     data = run("--upload " + files + " /upload.ejs")
     assert(data.contains('"clientFilename": "http.tst"'))

@@ -9,7 +9,7 @@ let count = 6000
 
 /* UNUSED as form limit is set to 32K.
 
-if (App.config.bit_esp) {
+if (App.config.me_esp) {
     let length
     let s = ''
     for (i in 128) {

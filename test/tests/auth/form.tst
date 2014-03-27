@@ -7,7 +7,7 @@ const HTTPS = App.config.uris.ssl || "https://127.0.0.1:4443"
 
 let http: Http = new Http
 
-if (App.config.bit_ssl) {
+if (App.config.me_ssl) {
     //  Appweb uses a self-signed cert
     http.verify = false
 

@@ -9,7 +9,7 @@ let http: Http = new Http
 
 //  TODO - rewrite to not use ejs
 
-if (App.config.bit_ejscript) {
+if (App.config.me_ejscript) {
     http.upload(HTTP + "/upload.ejs", { myfile: "test.dat"} )
     assert(http.status == 200)
     assert(http.response.contains('"clientFilename": "test.dat"'))

@@ -5,7 +5,7 @@
 const HTTP = App.config.uris.http || "127.0.0.1:4100"
 let http: Http = new Http
 
-if (!global.test || App.config.bit_esp) {
+if (!global.test || App.config.me_esp) {
 
     //  Prep and clear the cache
     http.get(HTTP + "/cache/clear")

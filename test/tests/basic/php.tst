@@ -4,7 +4,7 @@
 
 const HTTP = App.config.uris.http || "127.0.0.1:4100"
 
-if (App.config.bit_php) {
+if (App.config.me_php) {
     let http: Http = new Http
 
     //  Simple Get 

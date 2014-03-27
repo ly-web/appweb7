@@ -30,7 +30,7 @@ Me.load({
             path: 'web/caching/cache.cgi',
             build: "
                 let path = Path('web/caching/cache.cgi')
-                path.write('#!' + App.exeDir.join('ejs') + '\n' + 
+                path.write('#!' + Cmd.locate('ejs') + '\n' + 
                     'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n{number:\" + Date().now() + \"}\n\")')
                 path.setAttributes({permissions: 0755})
             ",
@@ -48,7 +48,7 @@ Me.load({
             path: 'web/auth/basic/basic.cgi',
             build: "
                 let path = Path('web/auth/basic/basic.cgi')
-                path.write('#!' + App.exeDir.join('ejs') + '\n' + 
+                path.write('#!' + Cmd.locate('ejs') + '\n' + 
                     'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n\" + serialize(App.env, {pretty: true}) + \"\n\")')
                 path.setAttributes({permissions: 0755})
                 trace('Generate', path)

@@ -21,16 +21,16 @@ function testCache(uri) {
     http.close()
 }
 
-if (App.config.bit_php) {
+if (App.config.me_php) {
     testCache("/combined/cache.php")
 }
-if (App.config.bit_esp) {
+if (App.config.me_esp) {
     testCache("/combined/cache.esp")
 }
-if (App.config.bit_ejscript) {
+if (App.config.me_ejscript) {
     testCache("/combined/cache.ejs")
 }
-if (App.config.bit_cgi && Config.OS != 'windows') {
+if (App.config.me_cgi && Config.OS != 'windows') {
     testCache("/combined/cache.cgi")
 }
 

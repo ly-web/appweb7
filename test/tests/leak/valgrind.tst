@@ -48,17 +48,17 @@ if (test.os == "LINUX" && test.depth >= 4 && valgrind) {
         throw "Can't start appweb for valgrind"
     }
     run("-i 100 " + PORT + "/index.html")
-    if (App.config.bit_esp) {
+    if (App.config.me_esp) {
         run(PORT + "/test.esp")
     }
     //  TODO - re-enable php when php shutdown is clean
-    if (false && App.config.bit_php) {
+    if (false && App.config.me_php) {
         run(PORT + "/test.php")
     }
-    if (App.config.bit_cgi) {
+    if (App.config.me_cgi) {
         run(PORT + "/test.cgi")
     }
-    if (App.config.bit_ejscript) {
+    if (App.config.me_ejscript) {
         run(PORT + "/test.ejs")
     }
     run(PORT + "/exit.esp")
