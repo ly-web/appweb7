@@ -340,7 +340,7 @@ PUBLIC int main(int argc, char **argv)
             app->verbose = 1;
 
         } else if (smatch(argp, "version") || smatch(argp, "V")) {
-            mprPrintf("%s %s\n", mprGetAppTitle(), ME_VERSION);
+            mprPrintf("%s\n", ME_VERSION);
             exit(0);
 
         } else if (smatch(argp, "why") || smatch(argp, "w")) {
@@ -913,6 +913,11 @@ static void initialize(int argc, char **argv)
     MprPath     src, dest;
     cchar       *espPaks, *home, *path;
 
+    if ((home = getenv("HOME")) != 0) {
+        app->paksCacheDir = mprJoinPath(home, ".paks");
+    } else {
+        app->paksCacheDir = mprJoinPath(mprGetAppDir(), "../" ME_ESP_PAKS);
+    }
     if (app->error) {
         return;
     }
@@ -934,7 +939,6 @@ static void initialize(int argc, char **argv)
         Export the /usr/local/lib/appweb/esp contents to ~/.paks (one time only)
      */
     if ((home = getenv("HOME")) != 0) {
-        app->paksCacheDir = mprJoinPath(home, ".paks");
         espPaks = mprJoinPath(mprGetAppDir(), "../" ME_ESP_PAKS);
         if (!mprPathExists(app->paksCacheDir, R_OK)) {
             if (mprMakeDir(app->paksCacheDir, 0775, -1, -1, 0) < 0) {
@@ -947,8 +951,6 @@ static void initialize(int argc, char **argv)
         if (!dest.valid || (src.mtime >= dest.mtime)) {
             exportCache();
         }
-    } else {
-        app->paksCacheDir = mprJoinPath(mprGetAppDir(), "../" ME_ESP_PAKS);
     }
     if (argc == 0 || (argc >= 2 && smatch(argv[0], "generate") && smatch(argv[1], "app"))) {
         return;
@@ -2573,19 +2575,38 @@ static void makeEspFile(cchar *path, cchar *data, ssize len)
 static cchar *getCachedPaks()
 {
     MprDirEntry     *dp;
-    MprJson         *config;
+    MprJson         *config, *keyword;
     MprList         *files, *result;
-    cchar           *path, *version;
-    int             next;
+    cchar           *base, *path, *version;
+    int             index, next, show;
 
+    if (!app->paksCacheDir) {
+        return 0;
+    }
     result = mprCreateList(0, 0);
     files = mprGetPathFiles(app->paksCacheDir, 0);
     for (ITERATE_ITEMS(files, dp, next)) {
         version = getPakVersion(dp->name, NULL);
         path = mprJoinPaths(dp->name, version, ME_ESP_PACKAGE, NULL);
         if (mprPathExists(path, R_OK)) {
+            base = mprGetPathBase(path);
             if ((config = loadPackage(path)) != 0) {
-                mprAddItem(result, sfmt("%24s: %s", mprGetJson(config, "name", 0), mprGetJson(config, "description", 0)));
+                show = 0;
+                if (sstarts(base, "esp-")) {
+                    show++;
+                } else {
+                    MprJson *keywords = mprGetJsonObj(config, "keywords", 0);
+                    for (ITERATE_JSON(keywords, keyword, index)) {
+                        if (smatch(keyword->value, "esp")) {
+                            show++;
+                            break;
+                        }
+                    }
+                }
+                if (show && !smatch(base, "esp")) {
+                    mprAddItem(result, sfmt("%24s: %s", 
+                        mprGetJson(config, "name", 0), mprGetJson(config, "description", 0)));
+                }
             }
         }
     }
@@ -2724,7 +2745,6 @@ static void usageError()
 
     name = mprGetAppName();
     initialize(0, NULL);
-    paks = getCachedPaks();
 
     mprEprintf("\nESP Usage:\n\n"
     "  %s [options] [commands]\n\n"
@@ -2768,9 +2788,12 @@ static void usageError()
     "    esp run\n"
     "    esp uninstall paks...\n"
     "    esp upgrade paks...\n"
-    "\n"
-    "  Paks: (for esp install)\n%s\n"
-    "", name, paks);
+    "\n", name);
+
+    paks = getCachedPaks();
+    if (paks) {
+        mprEprintf("  Local Paks: (See also http://embedthis.com/catalog)\n%s\n", paks);
+    }
     app->error = 1;
 }
 
