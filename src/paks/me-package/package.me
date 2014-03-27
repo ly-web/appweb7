@@ -12,11 +12,11 @@ Me.load({
     ],
 
     scripts: {
-        postload: "
+        postloadall: `
             if (me.platform.like == 'windows') {
                 me.prefixes = me['windows-prefixes']
             }
-        ",
+        `,
     },
 
     internal: {
