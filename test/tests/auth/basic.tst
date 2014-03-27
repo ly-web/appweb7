@@ -48,4 +48,5 @@ if (App.config.bit_cgi && global.test && test.hostOs != "VXWORKS") {
     assert(!http.response.contains("PATH_INFO"))
     assert(!http.response.contains("PATH_TRANSLATED"))
     assert(http.response.contains("\"REMOTE_USER\": \"joshua\""))
+    http.close();
 }
