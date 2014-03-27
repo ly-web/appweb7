@@ -2,6 +2,9 @@
     "name": "esp-server",
     "description": "ESP Server Framework",
     "version": "5.0.0",
+    "keywords": [
+        "esp",
+    ],
     "precious": true,
     "dirs": {
         "client": "client",

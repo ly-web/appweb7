@@ -34,24 +34,37 @@
     ],
     "dirs": {
         "paks": "src/paks",
+        "client": "client"
     },
     "dependencies": {
-        "http": "~5.0",
-        "me-dev": "~0.8",
-        "me-package": "~0.8",
-        "mpr": "~5.0",
-        "osdep": "~0.8",
-        "pcre": "~1.0"
-    },
-    "optionalDependencies": {
         "ejs": "~2.3",
         "esp": "~5",
         "esp-html-mvc": "*",
         "esp-server": "*",
         "est": "~0.6",
+        "http": "~5.0",
+        "me-dev": "~0.8",
+        "me-package": "~0.8",
+        "mpr": "~5.0",
+        "osdep": "~0.8",
+        "pcre": "~1.0",
         "php": "~5.4",
         "sqlite": "~1.0",
         "ssl": "~0.8",
         "zlib": "~1.0"
     },
+    "paks": {
+        "esp": {
+            "noblend": true,
+            "noexport": true
+        },
+        "esp-server": {
+            "noblend": true,
+            "noexport": true
+        },
+        "esp-html-mvc": {
+            "noblend": true,
+            "noexport": true
+        }
+    }
 }
