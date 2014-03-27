@@ -4,7 +4,8 @@
     "title": "SQLite Library",
     "version": "1.0.2",
     "keywords": [
-        "sqlite"
+        "sqlite",
+        "me"
     ],
     "author": {
         "name": "Embedthis Software",

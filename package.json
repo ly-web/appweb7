@@ -34,7 +34,6 @@
     ],
     "dirs": {
         "paks": "src/paks",
-        "client": "client"
     },
     "dependencies": {
         "http": "~5.0",
@@ -45,13 +44,9 @@
         "pcre": "~1.0"
     },
     "optionalDependencies": {
-        "angular": "~1.2",
         "ejs": "~2.3",
         "esp": "~5",
-        "esp-angular": "*",
-        "esp-angular-mvc": "*",
         "esp-html-mvc": "*",
-        "esp-legacy-mvc": "*",
         "esp-server": "*",
         "est": "~0.6",
         "php": "~5.4",
@@ -59,58 +54,4 @@
         "ssl": "~0.8",
         "zlib": "~1.0"
     },
-    "esp": {
-        "serverPrefix": "/do",
-        "combined": false,
-        "update": true,
-        "server": {
-            "generate": {
-                "appweb": "esp-server/appweb.conf",
-                "migration": "esp-server/migration.c",
-                "controller": "esp-server/controller.c",
-                "controller-singleton": "esp-server/controller.c",
-                "files": [
-                    "esp-server/src/app.c"
-                ],
-                "clientModel": "esp-angular-mvc/model.js",
-                "clientController": "esp-angular-mvc/controller.js",
-                "clientList": "esp-legacy-mvc/list.esp",
-                "clientEdit": "esp-legacy-mvc/edit.esp"
-            }
-        },
-        "formats": {
-            "date": "yyyy-MM-dd",
-            "float": 2
-        },
-        "json": true,
-        "auth": "app"
-    },
-    "client-scripts": [
-        "src/paks/angular/angular.js",
-        "src/paks/angular/angular-animate.js",
-        "src/paks/angular/angular-route.js",
-        "paks/angular/angular.js",
-        "paks/angular/angular-animate.js",
-        "paks/angular/angular-route.js",
-        "src/paks/esp-angular/*.js",
-        "app/main.js",
-        "app/*/**.js*"
-    ],
-    "paks": {
-        "esp-angular": {
-            "noexport": true
-        },
-        "esp-angular-mvc": {
-            "noexport": true
-        },
-        "esp-html-mvc": {
-            "noexport": true
-        },
-        "esp-legacy-mvc": {
-            "noexport": true
-        },
-        "esp-server": {
-            "noexport": true
-        }
-    }
 }
