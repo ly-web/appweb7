@@ -202,19 +202,12 @@ static void startCgi(HttpQueue *q)
         return;
     }
 #if ME_WIN_LIKE
-    /*
-        Start the windows-waiter via an event. This ensures it is serialized in the request dispatcher
-     */
     mprCreateEvent(conn->dispatcher, "cgi-win", 10, waitForCgi, cgi, MPR_EVENT_CONTINUOUS);
 #endif
 }
 
 
 #if ME_WIN_LIKE
-/*
-    Windows can't select on named pipes. So poll for events. This runs on the connection dispatcher thread. 
-    Don't actually service events here. Otherwise it becomes too complex with nested calls.
- */
 static void waitForCgi(Cgi *cgi, MprEvent *event)
 {
     HttpConn    *conn;
@@ -223,9 +216,9 @@ static void waitForCgi(Cgi *cgi, MprEvent *event)
     conn = cgi->conn;
     cmd = cgi->cmd;
     if (cmd && !cmd->complete) {
-        mprPollWinCmd(cmd, 0);
         if (conn->error && cmd->pid) {
             mprStopCmd(cmd, -1);
+            mprStopContinuousEvent(event);
         }
     } else {
         mprStopContinuousEvent(event);
