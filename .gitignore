@@ -223,3 +223,5 @@ src/paks/openssl
 /start.me
 macosx-*.me
 /windows-*
+/linux-*
+/vxworks-*
