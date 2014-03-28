@@ -144,7 +144,6 @@ static int parseFileInner(MaState *state, cchar *path)
         /*
             Allow directives to run commands and yield without worring about holding references.
          */
-        mprYield(0);
         mprPauseGC();
         if ((*directive)(state, key, value) < 0) {
             mprResumeGC();
