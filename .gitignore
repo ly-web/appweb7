@@ -64,7 +64,6 @@ Win32
 .port.log
 bin/appweb.conf
 releases/*.tgz
-src/test/t.es
 */i386-wrs*
 src/test/cgi-bin/*.out
 src/server/WIN/*.res
@@ -93,7 +92,6 @@ src/test/.pidfile
 rpm.log
 *.cltmp
 .embedthis
-src/test/web/a
 src/handlers/proxyHandler.nc
 src/test/web/huge.txt
 *.vcxproj.filters
@@ -113,7 +111,6 @@ cache/view_*.c
 src/test/*/cache/view_*.c
 src/test/mvc/cache/*
 src/test/cache
-src/test/junk
 src/test/farm.conf
 src/test/app/cache
 .DS_Store
@@ -122,7 +119,6 @@ doc/api/esp/xml
 doc/api/esp/html
 src/test/app/db/test.bak
 src/modules/proxyHandler.nc
-src/test/apps
 build/bin/appman
 src/server/cache
 projects/WIN/appweb-all/php5ts_debug.dll.def
