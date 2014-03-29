@@ -165,55 +165,58 @@
 
 /* Prefixes */
 #ifndef ME_ROOT_PREFIX
-    #define ME_ROOT_PREFIX "/"
+    #define ME_ROOT_PREFIX "C:"
+#endif
+#ifndef ME_PROGRAMFILES_PREFIX
+    #define ME_PROGRAMFILES_PREFIX "C:/Program Files"
+#endif
+#ifndef ME_PROGRAMFILES32_PREFIX
+    #define ME_PROGRAMFILES32_PREFIX "C:/Program Files"
 #endif
 #ifndef ME_BASE_PREFIX
-    #define ME_BASE_PREFIX "/usr/local"
-#endif
-#ifndef ME_DATA_PREFIX
-    #define ME_DATA_PREFIX "/"
-#endif
-#ifndef ME_STATE_PREFIX
-    #define ME_STATE_PREFIX "/var"
+    #define ME_BASE_PREFIX "C:/Program Files"
 #endif
 #ifndef ME_APP_PREFIX
-    #define ME_APP_PREFIX "/usr/local/lib/appweb"
+    #define ME_APP_PREFIX "C:/Program Files/Embedthis Appweb"
 #endif
 #ifndef ME_VAPP_PREFIX
-    #define ME_VAPP_PREFIX "/usr/local/lib/appweb/5.0.0-rc0"
+    #define ME_VAPP_PREFIX "C:/Program Files/Embedthis Appweb"
+#endif
+#ifndef ME_DATA_PREFIX
+    #define ME_DATA_PREFIX "C:/Program Files/Embedthis Appweb"
+#endif
+#ifndef ME_STATE_PREFIX
+    #define ME_STATE_PREFIX "C:/Program Files/Embedthis Appweb"
 #endif
 #ifndef ME_BIN_PREFIX
-    #define ME_BIN_PREFIX "/usr/local/bin"
+    #define ME_BIN_PREFIX "C:/Program Files/Embedthis Appweb/bin"
 #endif
 #ifndef ME_INC_PREFIX
-    #define ME_INC_PREFIX "/usr/local/include"
+    #define ME_INC_PREFIX "C:/Program Files/Embedthis Appweb/inc"
 #endif
 #ifndef ME_LIB_PREFIX
-    #define ME_LIB_PREFIX "/usr/local/lib"
+    #define ME_LIB_PREFIX "C:/Program Files/Embedthis Appweb/lib"
 #endif
 #ifndef ME_MAN_PREFIX
-    #define ME_MAN_PREFIX "/usr/local/share/man"
-#endif
-#ifndef ME_SBIN_PREFIX
-    #define ME_SBIN_PREFIX "/usr/local/sbin"
+    #define ME_MAN_PREFIX "C:/Program Files/Embedthis Appweb/man"
 #endif
 #ifndef ME_ETC_PREFIX
-    #define ME_ETC_PREFIX "/etc/appweb"
+    #define ME_ETC_PREFIX "C:/Program Files/Embedthis Appweb"
 #endif
 #ifndef ME_WEB_PREFIX
-    #define ME_WEB_PREFIX "/var/www/appweb-default"
+    #define ME_WEB_PREFIX "C:/Program Files/Embedthis Appweb/web"
 #endif
 #ifndef ME_LOG_PREFIX
-    #define ME_LOG_PREFIX "/var/log/appweb"
+    #define ME_LOG_PREFIX "C:/Program Files/Embedthis Appweb/log"
 #endif
 #ifndef ME_SPOOL_PREFIX
-    #define ME_SPOOL_PREFIX "/var/spool/appweb"
+    #define ME_SPOOL_PREFIX "C:/Program Files/Embedthis Appweb/tmp"
 #endif
 #ifndef ME_CACHE_PREFIX
-    #define ME_CACHE_PREFIX "/var/spool/appweb/cache"
+    #define ME_CACHE_PREFIX "C:/Program Files/Embedthis Appweb/cache"
 #endif
 #ifndef ME_SRC_PREFIX
-    #define ME_SRC_PREFIX "appweb-5.0.0-rc0"
+    #define ME_SRC_PREFIX "C:/Program Files/Embedthis Appweb/src"
 #endif
 
 /* Suffixes */
