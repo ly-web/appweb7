@@ -25,10 +25,10 @@
         "http": "*",
         "mpr": "*",
         "pcre": "*",
-    },
-    "optionalDependencies": {
         "esp-html-mvc": "*",
         "esp-server": "*",
+    },
+    "optionalDependencies": {
         "est": "*",
         "sqlite": "*",
     },
