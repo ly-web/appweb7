@@ -28,7 +28,7 @@ Me.load({
                 if (me.platform.os == 'windows') {
                     let search = getComponentSearch(target, 'php-src')
                     if (packages && packages.exists) {
-                        search = [packages] + search
+                        search.push(packages)
                     }
                     let path = probe('php5.spec.in', {search: search, nopath: true})
                     search = [
