@@ -1,5 +1,7 @@
 /*
     methods.tst - Test cache matching by method
+
+    WARNING: this unit test can fail if your local time is not set correctly.
  */
 
 const HTTP = App.config.uris.http || "127.0.0.1:4100"
