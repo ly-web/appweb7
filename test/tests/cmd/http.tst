@@ -8,10 +8,12 @@ if (test.verbosity > 2) {
     command += "-v "
 }
 
+var cmd
+
 function run(args): String {
     App.log.debug(5, "[TestRun]", command + args)
     try {
-        let cmd = Cmd(command + args)
+        cmd = Cmd(command + args)
         if (cmd.status != 0) {
             //  TODO - temp for http
             if (cmd.status < 0 && Config.OS == 'windows') {
@@ -39,6 +41,9 @@ assert(data.trimEnd().endsWith("END"))
 
 //  Chunked get
 data = run("--chunk 256 /big.txt")
+if (!data.startsWith("012345678")) {
+    print("DATA", data)
+}
 assert(data.startsWith("012345678"))
 assert(data.trimEnd().endsWith("END OF DOCUMENT"))
 
