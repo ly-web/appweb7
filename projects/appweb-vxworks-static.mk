@@ -1464,7 +1464,6 @@ DEPS_60 += src/paks/me-dev/dev.me
 DEPS_60 += src/paks/me-dev/LICENSE.md
 DEPS_60 += src/paks/me-dev/package.json
 DEPS_60 += src/paks/me-dev/README.md
-DEPS_60 += src/paks/me-dev/src
 DEPS_60 += src/paks/me-doc
 DEPS_60 += src/paks/me-doc/doc.es
 DEPS_60 += src/paks/me-doc/doc.me

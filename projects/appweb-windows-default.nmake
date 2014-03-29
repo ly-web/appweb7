@@ -1279,7 +1279,6 @@ DEPS_51 = $(DEPS_51) src\paks\me-dev\dev.me
 DEPS_51 = $(DEPS_51) src\paks\me-dev\LICENSE.md
 DEPS_51 = $(DEPS_51) src\paks\me-dev\package.json
 DEPS_51 = $(DEPS_51) src\paks\me-dev\README.md
-DEPS_51 = $(DEPS_51) src\paks\me-dev\src
 DEPS_51 = $(DEPS_51) src\paks\me-doc
 DEPS_51 = $(DEPS_51) src\paks\me-doc\doc.es
 DEPS_51 = $(DEPS_51) src\paks\me-doc\doc.me
