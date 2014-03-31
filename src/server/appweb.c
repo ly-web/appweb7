@@ -416,7 +416,7 @@ static void addSignals()
     app->traceToggle = mprAddSignalHandler(SIGUSR2, traceHandler, 0, 0, MPR_SIGNAL_AFTER);
 
     /*
-        Signal to dump memory stats. Must configure with ./configure --set memoryCheck=true
+        Signal to dump memory stats. Must configure with ./configure --set mprAllocCheck=true
      */
 #if defined(SIGINFO)
     app->statusCheck = mprAddSignalHandler(SIGINFO, statusCheck, 0, 0, MPR_SIGNAL_AFTER);
