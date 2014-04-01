@@ -332,5 +332,5 @@
     #define ME_COM_WINSDK 1
 #endif
 #ifndef ME_COM_ZLIB
-    #define ME_COM_ZLIB 1
+    #define ME_COM_ZLIB 0
 #endif
