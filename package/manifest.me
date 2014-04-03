@@ -190,7 +190,7 @@ Me.load({
                 to:         '${abin}/',
                 set:        'core',
                 ifdef:      'php',
-                enable:     "me.platform.os != 'windows'",
+                enable:     "me.platform.os != 'windows' && me.platform.os != 'vxworks'",
 
             },{ from:        [
                     '${BIN}/php5ts${SHOBJ}',
