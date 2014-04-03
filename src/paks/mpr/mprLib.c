@@ -28431,9 +28431,11 @@ static MprWaitHandler *initWaitHandler(MprWaitHandler *wp, int fd, int mask, Mpr
         return 0;
     }
 #if BIT_UNIX_LIKE || VXWORKS
+#if BIT_EVENT_NOTIFIER == MPR_EVENT_SELECT
     if (fd >= FD_SETSIZE) {
         mprError("File descriptor %d exceeds max io of %d", fd, FD_SETSIZE);
     }
+#endif
 #endif
     if (mask) {
         if (mprAddItem(ws->handlers, wp) < 0) {
