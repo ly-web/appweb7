@@ -5288,7 +5288,6 @@ static void checkMonitor(HttpMonitor *monitor, MprEvent *event)
     HttpAddress     *address;
     HttpCounter     c, *counter;
     MprKey          *kp;
-    int             removed;
 
     http = monitor->http;
     http->now = mprGetTicks();
@@ -5313,23 +5312,25 @@ static void checkMonitor(HttpMonitor *monitor, MprEvent *event)
             Check the monitor for each active client address
          */
         lock(http->addresses);
-        do {
-            removed = 0;
-            for (ITERATE_KEY_DATA(http->addresses, kp, address)) {
-                counter = &address->counters[monitor->counterIndex];
-                unlock(http->addresses);
-                checkCounter(monitor, counter, kp->key);
-                lock(http->addresses);
-                /*
-                    Expire old records
-                 */
-                if ((address->updated + http->monitorMaxPeriod) < http->now) {
+        for (ITERATE_KEY_DATA(http->addresses, kp, address)) {
+            counter = &address->counters[monitor->counterIndex];
+            unlock(http->addresses);
+            checkCounter(monitor, counter, kp->key);
+            lock(http->addresses);
+            /*
+                Expire old records
+             */
+            if ((address->updated + http->monitorMaxPeriod) < http->now) {
+                if (address->banUntil) {
+                    if (address->banUntil < http->now) {
+                        mprLog(1, "Remove ban on client %s", kp->key);
+                        mprRemoveKey(http->addresses, kp->key);
+                    }
+                } else {
                     mprRemoveKey(http->addresses, kp->key);
-                    removed = 1;
-                    break;
                 }
             }
-        } while (removed);
+        }
         unlock(http->addresses);
 
         if (mprGetHashLength(http->addresses) == 0) {
