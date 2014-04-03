@@ -525,6 +525,7 @@ $(CONFIG)/inc/esp.h: $(DEPS_22)
 #   slink.o
 #
 DEPS_23 += $(CONFIG)/inc/me.h
+DEPS_23 += $(CONFIG)/inc/mpr.h
 DEPS_23 += $(CONFIG)/inc/esp.h
 
 $(CONFIG)/obj/slink.o: \
@@ -537,6 +538,7 @@ $(CONFIG)/obj/slink.o: \
 #
 DEPS_24 += src/slink.c
 DEPS_24 += $(CONFIG)/inc/me.h
+DEPS_24 += $(CONFIG)/inc/mpr.h
 DEPS_24 += $(CONFIG)/inc/esp.h
 DEPS_24 += $(CONFIG)/obj/slink.o
 

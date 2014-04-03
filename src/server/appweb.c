@@ -449,9 +449,9 @@ static void statusCheck(void *ignored, MprSignal *sp)
 {
     mprRawLog(0, "%s", httpStatsReport(0));
     if (MPR->heap->track) {
-        mprPrintMem("Memory Report", MPR_MEM_DETAIL);
+        mprPrintMem("MPR Memory Report", MPR_MEM_DETAIL);
     } else {
-        mprPrintMem("Memory Report", 0);
+        mprPrintMem("MPR Memory Report", 0);
     }
 }
 

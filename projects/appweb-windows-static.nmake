@@ -622,6 +622,7 @@ $(CONFIG)\bin\libmod_esp.lib: $(DEPS_24)
 #   slink.obj
 #
 DEPS_25 = $(DEPS_25) $(CONFIG)\inc\me.h
+DEPS_25 = $(DEPS_25) $(CONFIG)\inc\mpr.h
 DEPS_25 = $(DEPS_25) $(CONFIG)\inc\esp.h
 
 $(CONFIG)\obj\slink.obj: \

@@ -834,7 +834,7 @@ PUBLIC EdiGrid *ediCreateBareGrid(Edi *edi, cchar *tableName, int nrows)
 {
     EdiGrid  *grid;
 
-    if ((grid = mprAllocMem(sizeof(EdiGrid) + sizeof(EdiRec*) * nrows, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
+    if ((grid = mprAllocBlock(sizeof(EdiGrid) + sizeof(EdiRec*) * nrows, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
         return 0;
     }
     mprSetManager(grid, (MprManager) manageEdiGrid);
@@ -853,7 +853,7 @@ PUBLIC EdiRec *ediCreateBareRec(Edi *edi, cchar *tableName, int nfields)
 {
     EdiRec      *rec;
 
-    if ((rec = mprAllocMem(sizeof(EdiRec) + sizeof(EdiField) * nfields, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
+    if ((rec = mprAllocBlock(sizeof(EdiRec) + sizeof(EdiField) * nfields, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
         return 0;
     }
     mprSetManager(rec, (MprManager) ediManageEdiRec);
@@ -8526,7 +8526,7 @@ static EdiRec *mdbCreateRec(Edi *edi, cchar *tableName)
         return 0;
     }
     nfields = max(table->schema->ncols, 1);
-    if ((rec = mprAllocMem(sizeof(EdiRec) + sizeof(EdiField) * nfields, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
+    if ((rec = mprAllocBlock(sizeof(EdiRec) + sizeof(EdiField) * nfields, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
         return 0;
     }
     mprSetManager(rec, (MprManager) ediManageEdiRec);
@@ -9660,7 +9660,7 @@ static int lookupRow(MdbTable *table, cchar *key)
 static MdbSchema *growSchema(MdbTable *table)
 {
     if (table->schema == 0) {
-        if ((table->schema = mprAllocMem(sizeof(MdbSchema) + 
+        if ((table->schema = mprAllocBlock(sizeof(MdbSchema) + 
                 sizeof(MdbCol) * MDB_INCR, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
             return 0;
         }
@@ -9750,7 +9750,7 @@ static MdbRow *createRow(Mdb *mdb, MdbTable *table)
     int         ncols;
 
     ncols = max(table->schema->ncols, 1);
-    if ((row = mprAllocMem(sizeof(MdbRow) + sizeof(EdiField) * ncols, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
+    if ((row = mprAllocBlock(sizeof(MdbRow) + sizeof(EdiField) * ncols, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
         return 0;
     }
     mprSetManager(row, (MprManager) manageRow);
@@ -9855,7 +9855,7 @@ static EdiRec *createRecFromRow(Edi *edi, MdbRow *row)
     MdbCol  *col;
     int     c;
 
-    if ((rec = mprAllocMem(sizeof(EdiRec) + sizeof(EdiField) * row->nfields, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
+    if ((rec = mprAllocBlock(sizeof(EdiRec) + sizeof(EdiField) * row->nfields, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
         return 0;
     }
     mprSetManager(rec, (MprManager) ediManageEdiRec);
@@ -10151,7 +10151,7 @@ static EdiRec *sdbCreateRec(Edi *edi, cchar *tableName)
     int     i;
 
     schema = getSchema(edi, tableName);
-    if ((rec = mprAllocMem(sizeof(EdiRec) + sizeof(EdiField) * schema->nfields, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
+    if ((rec = mprAllocBlock(sizeof(EdiRec) + sizeof(EdiField) * schema->nfields, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
         return 0;
     }
     mprSetManager(rec, (MprManager) ediManageEdiRec);
@@ -10792,7 +10792,7 @@ static EdiRec *createBareRec(Edi *edi, cchar *tableName, int nfields)
 {
     EdiRec  *rec;
 
-    if ((rec = mprAllocMem(sizeof(EdiRec) + sizeof(EdiField) * nfields, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
+    if ((rec = mprAllocBlock(sizeof(EdiRec) + sizeof(EdiField) * nfields, MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO)) == 0) {
         return 0;
     }
     mprSetManager(rec, (MprManager) ediManageEdiRec);

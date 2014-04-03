@@ -141,8 +141,8 @@
 #ifndef ME_MANIFEST
     #define ME_MANIFEST "package/manifest.me"
 #endif
-#ifndef ME_MPR_ALLOC
-    #define ME_MPR_ALLOC "[object Object]"
+#ifndef ME_MPR_ALLOC_CHECK
+    #define ME_MPR_ALLOC_CHECK 0
 #endif
 #ifndef ME_MPR_LOGGING
     #define ME_MPR_LOGGING 1

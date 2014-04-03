@@ -105,12 +105,13 @@ Me.load({
                 This is enabled by default for debug builds. 
                 tracing: true,
              */
-
             alloc: {
-                // cache: 10000000,     /* Keep up to this amount of heap cached for fast allocation */
+                // quota: 204800,          /* Amount of memory to allocate before a GC */
+                // cache: 0,               /* Amount of memory to buffer for fast allocations */
+                // check: false,           /* Memory debug */
             },
             ssl: {
-                renegotiate: true,     /* Enable/Disable SSL renegotiation (defaults to true) */
+                renegotiate: true,      /* Enable/Disable SSL renegotiation (defaults to true) */
             },
         },
 

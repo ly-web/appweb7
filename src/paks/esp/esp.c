@@ -1477,6 +1477,7 @@ static void compile(int argc, char **argv)
             return;
         }
         mprWriteFileFmt(file, "/*\n    %s -- Generated Appweb Static Initialization\n */\n", app->genlink);
+        mprWriteFileFmt(file, "#include \"mpr.h\"\n\n");
         mprWriteFileFmt(file, "#include \"esp.h\"\n\n");
         for (ITERATE_ITEMS(app->slink, route, next)) {
             eroute = route->eroute;

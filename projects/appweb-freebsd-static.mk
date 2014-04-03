@@ -546,6 +546,7 @@ endif
 #   slink.o
 #
 DEPS_25 += $(CONFIG)/inc/me.h
+DEPS_25 += $(CONFIG)/inc/mpr.h
 DEPS_25 += $(CONFIG)/inc/esp.h
 
 $(CONFIG)/obj/slink.o: \

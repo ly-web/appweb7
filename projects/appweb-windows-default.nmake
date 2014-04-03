@@ -646,6 +646,7 @@ $(CONFIG)\inc\esp.h: $(DEPS_22)
 #   slink.obj
 #
 DEPS_23 = $(DEPS_23) $(CONFIG)\inc\me.h
+DEPS_23 = $(DEPS_23) $(CONFIG)\inc\mpr.h
 DEPS_23 = $(DEPS_23) $(CONFIG)\inc\esp.h
 
 $(CONFIG)\obj\slink.obj: \
@@ -658,6 +659,7 @@ $(CONFIG)\obj\slink.obj: \
 #
 DEPS_24 = $(DEPS_24) src\slink.c
 DEPS_24 = $(DEPS_24) $(CONFIG)\inc\me.h
+DEPS_24 = $(DEPS_24) $(CONFIG)\inc\mpr.h
 DEPS_24 = $(DEPS_24) $(CONFIG)\inc\esp.h
 DEPS_24 = $(DEPS_24) $(CONFIG)\obj\slink.obj
 

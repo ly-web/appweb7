@@ -1606,6 +1606,7 @@
             isa = PBXGroup;
             children = (
 				D64967C4D6497AA200000152 /* me.h */,
+				D64967C4D6497AA20000015C /* mpr.h */,
 				D64967C4D6497AA200000157 /* esp.h */,
 				D64967C4D6497AA200000074 /* slink.c */,
 			);
