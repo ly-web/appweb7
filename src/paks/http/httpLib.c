@@ -12113,6 +12113,7 @@ static bool parseRequestLine(HttpConn *conn, HttpPacket *packet)
             rx->needInputPipeline = 1;
         }
         conn->http10 = 1;
+        conn->mustClose = 1;
         conn->protocol = protocol;
     } else if (strcmp(protocol, "HTTP/1.1") == 0) {
         conn->protocol = protocol;
@@ -12518,13 +12519,6 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
             break;
         }
     }
-#if MOVED
-    if (!rx->upload && rx->length >= conn->limits->receiveBodySize) {
-        httpLimitError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE,
-            "Request content length %,Ld bytes is too big. Limit %,Ld", rx->length, conn->limits->receiveBodySize);
-        return 0;
-    }
-#endif
     if (rx->form && rx->length >= conn->limits->receiveFormSize) {
         httpLimitError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
             "Request form of %,Ld bytes is too big. Limit %,Ld", rx->length, conn->limits->receiveFormSize);
@@ -12637,10 +12631,6 @@ static ssize filterPacket(HttpConn *conn, HttpPacket *packet, int *more)
 
     if (mprIsSocketEof(conn->sock)) {
         httpSetEof(conn);
-        if (rx->remainingContent > 0 || (rx->chunkState && rx->chunkState != HTTP_CHUNK_EOF)) {
-            httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "Connection lost");
-            return 0;
-        }
     }
     if (rx->chunkState) {
         nbytes = httpFilterChunkData(tx->queue[HTTP_QUEUE_RX], packet);
@@ -12679,7 +12669,8 @@ static ssize filterPacket(HttpConn *conn, HttpPacket *packet, int *more)
         httpTraceContent(conn, HTTP_TRACE_RX, HTTP_TRACE_BODY, packet, nbytes, rx->bytesRead);
     }
     if (rx->eof) {
-        if (rx->remainingContent > 0 && !conn->mustClose) {
+        if ((rx->remainingContent > 0 && (rx->length > 0 || !conn->mustClose)) ||
+            (rx->chunkState && rx->chunkState != HTTP_CHUNK_EOF)) {
             /* Closing is the only way for HTTP/1.0 to signify the end of data */
             httpError(conn, HTTP_ABORT | HTTP_CODE_COMMS_ERROR, "Connection lost");
             return 0;
