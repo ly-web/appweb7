@@ -456,7 +456,7 @@ static MprMem *allocMem(size_t required)
     MprFreeMem      *fp;
     MprMem          *mp;
     size_t          *bitmap, localMap;
-    int             baseBindex, bindex, qindex, retryIndex;
+    int             baseBindex, bindex, qindex, baseQindex, retryIndex;
 
     ATOMIC_INC(requests);
 
@@ -474,8 +474,10 @@ static MprMem *allocMem(size_t required)
             }
         }
     }
+    baseQindex = qindex;
+
     if (qindex >= 0) {
-        heap->workDone += qindex;
+        heap->workDone += required;
     retry:
         retryIndex = -1;
         baseBindex = qindex / MPR_ALLOC_BITMAP_BITS;
@@ -486,62 +488,81 @@ static MprMem *allocMem(size_t required)
          */
         for (bindex = baseBindex; bindex < MPR_ALLOC_NUM_BITMAPS; bitmap++, bindex++) {
             /* Mask queues lower than the base queue */
-            localMap = heap->bitmap[bindex] & ((size_t) -1 << max(0, (qindex - (MPR_ALLOC_BITMAP_BITS * bindex))));
+            localMap = *bitmap & ((size_t) ((uint64) -1 << max(0, (qindex - (MPR_ALLOC_BITMAP_BITS * bindex)))));
 
             while (localMap) {
                 qindex = (bindex * MPR_ALLOC_BITMAP_BITS) + findFirstBit(localMap) - 1;
                 freeq = &heap->freeq[qindex];
                 ATOMIC_INC(trys);
-                if (freeq->next != (MprFreeMem*) freeq) {
-                    if (acquire(freeq)) {
-                        if (freeq->next != (MprFreeMem*) freeq) {
-                            /* Inline unlinkBlock for speed */
-                            fp = freeq->next;
-                            fp->prev->next = fp->next;
-                            fp->next->prev = fp->prev;
-                            fp->blk.qindex = 0;
-                            fp->blk.mark = heap->mark;
-                            fp->blk.free = 0;
-                            if (--freeq->count == 0) {
-                                clearbitmap(bitmap, qindex % MPR_ALLOC_BITMAP_BITS);
-                            }
-                            mp = (MprMem*) fp;
-                            release(freeq);
-                            mprAtomicAdd64((int64*) &heap->stats.bytesFree, -(int64) mp->size);
+                if (acquire(freeq)) {
+                    if (freeq->next != (MprFreeMem*) freeq) {
+                        /* Inline unlinkBlock for speed */
+                        fp = freeq->next;
+                        fp->prev->next = fp->next;
+                        fp->next->prev = fp->prev;
+                        fp->blk.qindex = 0;
+                        fp->blk.mark = heap->mark;
+                        fp->blk.free = 0;
+                        if (--freeq->count == 0) {
+                            clearbitmap(bitmap, qindex % MPR_ALLOC_BITMAP_BITS);
+                        }
+                        assert(freeq->count >= 0);
+                        mp = (MprMem*) fp;
+                        release(freeq);
+                        mprAtomicAdd64((int64*) &heap->stats.bytesFree, -(int64) mp->size);
 
-                            if (mp->size >= (size_t) (required + MPR_ALLOC_MIN_SPLIT)) {
-                                linkSpareBlock(((char*) mp) + required, mp->size - required);
-                                mp->size = (MprMemSize) required;
-                                ATOMIC_INC(splits);
-                            }
-                            if (heap->workDone > heap->workQuota && heap->stats.bytesFree < heap->stats.lowHeap && 
-                                    !heap->gcRequested) {
-                                triggerGC();
-                            }
-                            ATOMIC_INC(reuse);
-                            assert(mp->size >= required);
-                            return mp;
-                        } else {
-                            /* Someone beat us to the last block */
-                            release(freeq);
+                        if (mp->size >= (size_t) (required + MPR_ALLOC_MIN_SPLIT)) {
+                            linkSpareBlock(((char*) mp) + required, mp->size - required);
+                            mp->size = (MprMemSize) required;
+                            ATOMIC_INC(splits);
                         }
+                        if (!heap->gcRequested && heap->workDone > heap->workQuota) {
+                            triggerGC();
+                        }
+                        ATOMIC_INC(reuse);
+                        assert(mp->size >= required);
+                        return mp;
                     } else {
-                        ATOMIC_INC(tryFails);
-                        if (freeq->count > 0 && retryIndex < 0) {
-                            retryIndex = qindex;
+                        /* Another thread raced for the last block */
+                        ATOMIC_INC(race);
+                        if (freeq->count == 0) {
+                            clearbitmap(bitmap, qindex % MPR_ALLOC_BITMAP_BITS);
                         }
+                        release(freeq);
+                    }
+                } else {
+                    /* Contention on this queue */
+                    ATOMIC_INC(tryFails);
+                    if (freeq->count > 0 && retryIndex < 0) {
+                        retryIndex = qindex;
                     }
                 }
-                /* Refresh the bitmap incase other threads have split or depleted suitable queues. +1 to clear current queue */
-                localMap = heap->bitmap[bindex] & ((size_t) ((uint64) -1 << max(0, (qindex + 1 - (MPR_ALLOC_BITMAP_BITS * bindex)))));
+               /*
+                    Refresh the bitmap incase threads have split or depleted suitable queues.
+                    +1 to step past the current queue.
+                 */
+                localMap = *bitmap & ((size_t) ((uint64) -1 << max(0, (qindex + 1 - (MPR_ALLOC_BITMAP_BITS * bindex)))));
                 ATOMIC_INC(qrace);
             }
         }
+        /*
+            Avoid growing the heap if there is a suitable block in the heap.
+         */
         if (retryIndex >= 0) {
-            /* Avoid growHeap if there is a suitable block in the heap */
+            /* Contention on a suitable queue - retry that */
             ATOMIC_INC(retries);
             qindex = retryIndex;
             goto retry;
+        }
+        if (heap->stats.bytesFree > heap->stats.lowHeap) {
+            /* A suitable block may be available - try again */
+            bitmap = &heap->bitmap[baseBindex];
+            for (bindex = baseBindex; bindex < MPR_ALLOC_NUM_BITMAPS; bitmap++, bindex++) {
+                if (*bitmap & ((size_t) ((uint64) -1 << max(0, (baseQindex - (MPR_ALLOC_BITMAP_BITS * bindex)))))) {
+                    qindex = baseQindex;
+                    goto retry;
+                }
+            }
         }
     }
     return growHeap(required);

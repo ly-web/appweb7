@@ -856,7 +856,11 @@ PUBLIC void mprAtomicAdd64(volatile int64 *target, int64 value);
     #define BIT_MPR_ALLOC_VIRTUAL   0                   /* Use malloc() for region allocations */
 #endif
 #ifndef BIT_MPR_ALLOC_QUOTA
-    #define BIT_MPR_ALLOC_QUOTA     8192                /* Number of allocations before a GC is worthwhile */
+    #if BIT_TUNE_SIZE
+        #define BIT_MPR_ALLOC_QUOTA  (200 * 1024)        /* Total allocations before a GC is worthwhile */
+    #else
+        #define BIT_MPR_ALLOC_QUOTA  (512 * 1024)
+    #endif
 #endif
 #ifndef BIT_MPR_ALLOC_REGION_SIZE
     #define BIT_MPR_ALLOC_REGION_SIZE (256 * 1024)      /* Memory region allocation chunk size */
