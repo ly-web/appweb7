@@ -616,7 +616,7 @@ static MprMem *growHeap(size_t required)
     mprAtomicListInsert((void**) &heap->regions, (void**) &region->next, region);
     ATOMIC_ADD(bytesAllocated, size);
     /*
-        Tolerate races
+        Compute peak heap stats. Not an accurate stat - tolerate races.
      */
     if (heap->stats.bytesAllocated > heap->stats.bytesAllocatedPeak) {
         heap->stats.bytesAllocatedPeak = heap->stats.bytesAllocated;
@@ -1848,6 +1848,7 @@ static void printMemReport()
     printf("  Heap-peak       %12.1f MB\n", ap->bytesAllocatedPeak / mb);
     printf("  Heap-used       %12.1f MB\n", (ap->bytesAllocated - ap->bytesFree) / mb);
     printf("  Heap-free       %12.1f MB\n", ap->bytesFree / mb);
+    printf("  Heap cache      %12.1f MB (%.2f %%)\n", ap->cacheHeap / mb, ap->cacheHeap * 100.0 / ap->maxHeap);
 
     if (ap->maxHeap == (size_t) -1) {
         printf("  Heap limit         unlimited\n");
@@ -1856,7 +1857,6 @@ static void printMemReport()
         printf("  Heap limit      %12.1f MB\n", ap->maxHeap / mb);
         printf("  Heap redline    %12.1f MB\n", ap->warnHeap / mb);
     }
-    printf("  Heap cache      %12.1f MB (%.2f %%)\n", ap->cacheHeap / mb, ap->cacheHeap * 100.0 / ap->maxHeap);
     printf("  Errors          %12d\n", (int) ap->errors);
     printf("  CPU cores       %12d\n", (int) ap->cpuCores);
     printf("\n");

@@ -2611,8 +2611,8 @@ PUBLIC void httpDisconnect(HttpConn *conn)
     if (conn->sock) {
         mprDisconnectSocket(conn->sock);
     }
-    conn->connError = 1;
-    conn->error = 1;
+    conn->connError++;
+    conn->error++;
     conn->keepAliveCount = 0;
     if (conn->tx) {
         conn->tx->finalized = 1;
