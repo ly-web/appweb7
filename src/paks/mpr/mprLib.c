@@ -148,7 +148,6 @@ static ME_INLINE int cas(size_t *target, size_t expected, size_t value);
 static ME_INLINE bool claim(MprMem *mp);
 static ME_INLINE void clearbitmap(size_t *bitmap, int bindex);
 static void dummyManager(void *ptr, int flags);
-static size_t fastMemSize();
 static void freeBlock(MprMem *mp);
 static void getSystemInfo();
 static MprMem *growHeap(size_t size);
@@ -816,7 +815,7 @@ PUBLIC void *mprVirtAlloc(size_t size, int mode)
     size_t      used;
     void        *ptr;
 
-    used = fastMemSize();
+    used = mprGetMem();
     if (memStats.pageSize) {
         size = MPR_PAGE_ALIGN(size, memStats.pageSize);
     }
@@ -1430,7 +1429,7 @@ static void sweep()
             }
             ATOMIC_ADD(bytesAllocated, - (int64) region->size);
             mprTrace(9, "DEBUG: Unpin %p to %p size %d, used %d", region, ((char*) region) + region->size, 
-                region->size, fastMemSize());
+                region->size, mprGetMem());
             mprVirtFree(region, region->size);
             INC(unpins);
         } else {
@@ -2026,7 +2025,7 @@ static void allocException(int cause, size_t size)
         return;
     }
     heap->stats.inMemException = 1;
-    used = fastMemSize();
+    used = mprGetMem();
 
     if (cause == MPR_MEM_FAIL) {
         heap->hasError = 1;
@@ -2236,22 +2235,23 @@ PUBLIC MprMemStats *mprGetMemStats()
  */
 PUBLIC size_t mprGetMem()
 {
-    size_t  size = 0;
+    size_t      size = 0;
 
 #if LINUX
-    int fd;
-    char path[ME_MAX_PATH];
-    sprintf(path, "/proc/%d/status", getpid());
-    if ((fd = open(path, O_RDONLY)) >= 0) {
-        char buf[ME_MAX_BUFFER], *tok;
-        int nbytes = read(fd, buf, sizeof(buf) - 1);
-        close(fd);
-        if (nbytes > 0) {
+    static int  procfd = -1;
+    char        buf[ME_MAX_BUFFER], *cp;
+    int         nbytes;
+
+    if (procfd < 0) {
+        procfd = open("/proc/self/statm", O_RDONLY);
+    }
+    if (procfd >= 0) {
+        lseek(procfd, 0, 0);
+        if ((nbytes = read(procfd, buf, sizeof(buf) - 1)) > 0) {
             buf[nbytes] = '\0';
-            if ((tok = strstr(buf, "VmRSS:")) != 0) {
-                for (tok += 6; tok && isspace((uchar) *tok); tok++) {}
-                size = stoi(tok) * 1024;
-            }
+            for (cp = buf; *cp && *cp != ' '; cp++) {}
+            for (; *cp == ' '; cp++) {}
+            size = stoi(cp) * memStats.pageSize;
         }
     }
     if (size == 0) {
@@ -2308,34 +2308,6 @@ PUBLIC uint64 mprGetCPU()
     }
 #endif
     return ticks;
-}
-
-
-/*
-    Fast routine to teturn the approximately the amount of memory currently in use. If a fast method is not available,
-    use the amount of heap memory allocated by the MPR.
-    WARNING: this routine must be FAST as it is used by the MPR memory allocation mechanism when more memory is allocated
-    from the O/S (i.e. not on every block allocation).
- */
-static size_t fastMemSize()
-{
-    size_t      size = 0;
-
-#if LINUX
-    struct rusage rusage;
-    getrusage(RUSAGE_SELF, &rusage);
-    size = rusage.ru_maxrss * 1024;
-#elif MACOSX
-    struct task_basic_info info;
-    mach_msg_type_number_t count = TASK_BASIC_INFO_COUNT;
-    if (task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t) &info, &count) == KERN_SUCCESS) {
-        size = info.resident_size;
-    }
-#endif
-    if (size == 0) {
-        size = (size_t) heap->stats.bytesAllocated;
-    }
-    return size;
 }
 
 
