@@ -29,6 +29,5 @@
         "paks": "src/paks"
     },
     "dependencies": {
-        "me-dev": "*",
     }
 }
