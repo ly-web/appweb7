@@ -5348,6 +5348,9 @@ static void pruneCache(MprCache *cache, MprEvent *event)
                 Look for those expiring in the next 5 minutes, then 20 mins, then 80 ...
              */
             excessKeys = mprGetHashLength(cache->store) - cache->maxKeys;
+            if (excessKeys < 0) {
+                excessKeys = 0;
+            }
             factor = 5 * 60 * MPR_TICKS_PER_SEC; 
             when += factor;
             while (excessKeys > 0 || cache->usedMem > cache->maxMem) {
