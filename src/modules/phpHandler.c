@@ -132,7 +132,7 @@ static sapi_module_struct phpSapiBlock = {
 /*
     Open handler for a new request
  */
-static void openPhp(HttpQueue *q)
+static int openPhp(HttpQueue *q)
 {
     /*
         PHP will buffer all input. i.e. does not stream. The normal Limits still apply.
@@ -148,6 +148,7 @@ static void openPhp(HttpQueue *q)
         q->stage->stageData = mprAlloc(1);
     }
     q->queueData = mprAllocObj(MaPhp, NULL);
+    return 0;
 }
 
 
