@@ -8058,7 +8058,6 @@ static bool applyRange(HttpQueue *q, HttpPacket *packet)
         httpPutBackPacket(q, packet);
         return 0;
     }
-
     /*
         Process the data packet over multiple ranges ranges until all the data is processed or discarded.
         A packet may contain data or it may be empty with an associated entityLength. If empty, range packets
