@@ -232,14 +232,12 @@ static void browserToCgiData(HttpQueue *q, HttpPacket *packet)
 
     assert(q);
     assert(packet);
-    cgi = q->queueData;
+    if ((cgi = q->queueData) == 0) {
+        return;
+    }
     conn = q->conn;
     assert(q == conn->readq);
 
-    if (cgi == 0) {
-        //MOB
-        return;
-    }
     if (httpGetPacketLength(packet) == 0) {
         /* End of input */
         if (conn->rx->remainingContent > 0) {
@@ -264,7 +262,9 @@ static void browserToCgiService(HttpQueue *q)
     ssize       rc, len;
     int         err;
 
-    cgi = q->queueData;
+    if ((cgi = q->queueData) == 0) {
+        return;
+    }
     assert(q == cgi->writeq);
     cmd = cgi->cmd;
     assert(cmd);
@@ -321,13 +321,11 @@ static void cgiToBrowserService(HttpQueue *q)
     MprCmd      *cmd;
     Cgi         *cgi;
 
-    cgi = q->queueData;
-    conn = q->conn;
-    assert(q == conn->writeq);
-    if (cgi == 0) {
-        //MOB
+    if ((cgi = q->queueData) == 0) {
         return;
     }
+    conn = q->conn;
+    assert(q == conn->writeq);
     cmd = cgi->cmd;
 
     /*
@@ -361,7 +359,9 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
     Cgi         *cgi;
     int         suspended;
 
-    cgi = data;
+    if ((cgi = data) == 0) {
+        return;
+    }
     if ((conn = cgi->conn) == 0) {
         return;
     }
