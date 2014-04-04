@@ -58,7 +58,7 @@ static void readFromCgi(Cgi *cgi, int channel);
 /*
     Open the handler for a new request
  */
-static void openCgi(HttpQueue *q)
+static int openCgi(HttpQueue *q)
 {
     HttpConn    *conn;
     Cgi         *cgi;
@@ -67,17 +67,19 @@ static void openCgi(HttpQueue *q)
     conn = q->conn;
     mprTrace(5, "Open CGI handler");
     if ((nproc = (int) httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_PROCESSES, 1)) >= conn->limits->processMax) {
-        httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Server overloaded");
         mprLog(2, "Too many concurrent processes %d/%d", nproc, conn->limits->processMax);
-        return;
+        httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Server overloaded");
+        httpMonitorEvent(q->conn, HTTP_COUNTER_ACTIVE_PROCESSES, -1);
+        return MPR_ERR_CANT_OPEN;
     }
     if ((cgi = mprAllocObj(Cgi, manageCgi)) == 0) {
         /* Normal mem handler recovery */ 
-        return;
+        return MPR_ERR_MEMORY;
     }
     httpTrimExtraPath(conn);
     httpMapFile(conn);
     httpCreateCGIParams(conn);
+
     q->queueData = q->pair->queueData = cgi;
     cgi->conn = conn;
     cgi->readq = httpCreateQueue(conn, conn->http->cgiConnector, HTTP_QUEUE_RX, 0);
@@ -85,6 +87,7 @@ static void openCgi(HttpQueue *q)
     cgi->readq->pair = cgi->writeq;
     cgi->writeq->pair = cgi->readq;
     cgi->writeq->queueData = cgi->readq->queueData = cgi;
+    return 0;
 }
 
 
@@ -97,15 +100,6 @@ static void manageCgi(Cgi *cgi, int flags)
         mprMark(cgi->cmd);
         mprMark(cgi->headers);
         mprMark(cgi->location);
-#if UNUSED
-    } else {
-        assert(!cgi->cmd);
-        if (cgi->cmd) {
-            /* Just for safety */
-            //  MOB 
-            mprDestroyCmd(cgi->cmd);
-        }
-#endif
     }
 }
 
@@ -242,6 +236,10 @@ static void browserToCgiData(HttpQueue *q, HttpPacket *packet)
     conn = q->conn;
     assert(q == conn->readq);
 
+    if (cgi == 0) {
+        //MOB
+        return;
+    }
     if (httpGetPacketLength(packet) == 0) {
         /* End of input */
         if (conn->rx->remainingContent > 0) {
@@ -326,6 +324,10 @@ static void cgiToBrowserService(HttpQueue *q)
     cgi = q->queueData;
     conn = q->conn;
     assert(q == conn->writeq);
+    if (cgi == 0) {
+        //MOB
+        return;
+    }
     cmd = cgi->cmd;
 
     /*

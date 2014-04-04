@@ -56,7 +56,7 @@ static int rewriteFileHandler(HttpConn *conn)
 
 
 
-static void openFileHandler(HttpQueue *q)
+static int openFileHandler(HttpQueue *q)
 {
     HttpRx      *rx;
     HttpTx      *tx;
@@ -71,7 +71,7 @@ static void openFileHandler(HttpQueue *q)
     info = &tx->fileInfo;
 
     if (conn->error) {
-        return;
+        return MPR_ERR_CANT_OPEN;
     }
     if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
         if (!(info->valid || info->isDir)) {
@@ -81,7 +81,7 @@ static void openFileHandler(HttpQueue *q)
                 mprLog(3, "fileHandler: Cannot find filename %s", tx->filename);
             }
             httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find document");
-            return;
+            return 0;
         } 
         if (!tx->etag) {
             /* Set the etag for caching in the client */
@@ -104,7 +104,7 @@ static void openFileHandler(HttpQueue *q)
             tx->length = -1;
         }
         if (!tx->fileInfo.isReg && !tx->fileInfo.isLink) {
-            mprError("Document is not a regular file");
+            mprLog(3, "Document is not a regular file: %s", tx->filename);
             httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot serve document");
             
         } else if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
@@ -134,6 +134,7 @@ static void openFileHandler(HttpQueue *q)
     } else {
         httpError(conn, HTTP_CODE_BAD_METHOD, "Unsupported method");
     }
+    return 0;
 }
 
 
