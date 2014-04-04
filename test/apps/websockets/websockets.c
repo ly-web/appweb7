@@ -110,18 +110,20 @@ static void big_response()
     int         i, count;
 
     conn = getConn();
-    count = 10000;
-
     /*
         First message is big, but in a single send. The middleware should break this into frames unless you call:
             httpSetWebSocketPreserveFrames(conn, 1);
         This will regard each call to httpSendBlock as a frame.
         NOTE: this is not an ideal pattern (so don't copy it).
      */
-    buf = mprCreateBuf(0, 0);
+    buf = mprCreateBuf(51000, 0);
+    mprAddRoot(buf);
+    count = 1000;    
     for (i = 0; i < count; i++) {
         mprPutToBuf(buf, "%8d:01234567890123456789012345678901234567890\n", i);
+        mprYield(0);
     }
+    mprRemoveRoot(buf);
     mprAddNullToBuf(buf);
     /* Retain just for GC */
     httpSetWebSocketData(conn, buf);

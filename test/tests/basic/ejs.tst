@@ -136,6 +136,7 @@ if (App.config.me_ejscript) {
     status()
     location()
     quoting()
+    http.close()
 
 } else {
     test.skip("Ejscript not enabled")

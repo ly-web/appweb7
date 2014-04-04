@@ -17,12 +17,12 @@ function cached(uri, expected): Boolean {
     http.get(HTTP + uri)
     assert(http.status == 200)
     resp = deserialize(http.response)
-    http.close()
     if (expected != (resp.number == first)) {
         print("\nFirst number:  " + first)
         print("\nSecond number: " + resp.number)
         dump(http.response)
     }
+    http.close()
     return (resp.number == first)
 }
 

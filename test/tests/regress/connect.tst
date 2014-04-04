@@ -13,3 +13,4 @@ while ((n = s.read(response, -1)) != null) {
     if (response.toString().contains("</html")) break
 }
 assert(response.toString().contains('HTTP/1.1 400 Bad Request'))
+s.close()

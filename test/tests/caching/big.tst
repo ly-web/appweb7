@@ -14,13 +14,13 @@ http.get(HTTP + "/cache/big")
 assert(http.status == 200)
 assert(http.header("Transfer-Encoding") == "chunked")
 assert(!http.header("Content-Length"))
-assert(http.response.contains("Line: 00999 aaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbccccccccccccccccccddddddd<br/>"))
+assert(http.response.contains("Line: 00499 aaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbccccccccccccccccccddddddd<br/>"))
 
 //  Get again, this time will be cached and will be sent not chunked
 http.get(HTTP + "/cache/big")
 assert(http.status == 200)
 assert(!http.header("Transfer-Encoding"))
-assert(http.header("Content-Length") == 78000)
-assert(http.response.contains("Line: 00999 aaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbccccccccccccccccccddddddd<br/>"))
+assert(http.header("Content-Length") == 39000)
+assert(http.response.contains("Line: 00499 aaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbccccccccccccccccccddddddd<br/>"))
 
 http.close()

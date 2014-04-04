@@ -31,6 +31,7 @@ if (App.config.me_php) {
     while ((count = http.read(data))) {
         assert(data.toString().contains("aaaabbbb"))
     }
+    http.close()
 
 } else {
     test.skip("PHP not enabled")

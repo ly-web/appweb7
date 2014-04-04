@@ -26,6 +26,7 @@ function mainHost() {
     assert(http.status == 404)
     http.get(HTTP + "/vhost2.html")
     assert(http.status == 404)
+    http.close()
 }
 
 
@@ -36,42 +37,52 @@ function namedHost() {
     http.setHeader("Host", "localhost:" + Uri(NAMED).port)
     http.get(NAMED + "/vhost1.html")
     assert(http.status == 200)
+    http.close()
 
     //  These should fail
     http = new Http
     http.setHeader("Host", "localhost:" + Uri(NAMED).port)
     http.get(NAMED + "/main.html")
     assert(http.status == 404)
+    http.close()
 
     http = new Http
     http.setHeader("Host", "localhost:" + Uri(NAMED).port)
     http.get(NAMED + "/iphost.html")
     assert(http.status == 404)
+    http.close()
 
     http = new Http
     http.setHeader("Host", "localhost:" + Uri(NAMED).port)
     http.get(NAMED + "/vhost2.html")
     assert(http.status == 404)
+    http.close()
 
     //  Now try the second vhost on 127.0.0.1
     http = new Http
     http.setHeader("Host", "127.0.0.1:" + Uri(NAMED).port)
     http.get(NAMED + "/vhost2.html")
     assert(http.status == 200)
+    http.close()
 
     //  These should fail
     http = new Http
     http.setHeader("Host", "127.0.0.1:" + Uri(NAMED).port)
     http.get(NAMED + "/main.html")
     assert(http.status == 404)
+    http.close()
+
     http = new Http
     http.setHeader("Host", "127.0.0.1:" + Uri(NAMED).port)
     http.get(NAMED + "/iphost.html")
     assert(http.status == 404)
+    http.close()
+
     http = new Http
     http.setHeader("Host", "127.0.0.1:" + Uri(NAMED).port)
     http.get(NAMED + "/vhost1.html")
     assert(http.status == 404)
+    http.close()
 }
 
 function ipHost() {
@@ -79,6 +90,7 @@ function ipHost() {
     http.setCredentials("mary", "pass2")
     http.get(VIRT + "/private.html")
     assert(http.status == 200)
+    http.close()
 }
 
 mainHost()

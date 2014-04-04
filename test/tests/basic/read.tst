@@ -34,3 +34,4 @@ for (l in lines) {
     assert(line.contains((l+1).toString()))
 }
 assert(http.status == 200)
+http.close()

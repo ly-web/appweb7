@@ -12,6 +12,7 @@ if (App.config.me_ejscript) {
     assert(lines.length == 801)
     assert(lines[0].contains("aaaaabbb") && lines[0].contains("00000"))
     assert(lines[799].contains("aaaaabbb") && lines[799].contains("00799"))
+    http.close()
 
 } else {
     test.skip("Ejscript not enabled")
