@@ -31,6 +31,7 @@ if (App.config.bit_esp) {
     assert(length == written)
     http.finalize()
     assert(http.status == 200)
+    http.close()
 } else {
     test.skip("ESP not enabled")
 }

@@ -21,3 +21,4 @@ http.followRedirects = true
 http.get(HTTP + "/dir/")
 assert(http.status == 200)
 assert(http.response.contains("Hello /dir/index.html"))
+http.close()

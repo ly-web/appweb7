@@ -17,6 +17,7 @@ if (App.config.bit_ejscript) {
     assert(http.response.contains('"a": "x"'))
     assert(http.response.contains('"b": "y"'))
     assert(http.response.contains('"c": "z"'))
+    http.close()
 
 } else {
     test.skip("Ejscript not enabled")

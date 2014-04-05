@@ -185,10 +185,12 @@ function nph() {
         http.get(HTTP + "/cgi-bin/nph-cgiProgram")
         assert(http.status == 200)
         assert(http.header("X-CGI-CustomHeader") == "Any value at all")
+        http.close()
     }
 }
 
 function quoting() {
+    let http = new Http
     http.get(HTTP + "/cgi-bin/testScript?a+b+c")
     match(http, "QUERY_STRING", "a+b+c")
     match(http, "QVAR a b c", "")
@@ -224,6 +226,7 @@ function quoting() {
     match(http, "ARG.8.", "m n")
     match(http, "QUERY_STRING", "a|b+c>d+e?f+g>h+i'j+k\"l+m%20n")
     assert(http.response.contains("QVAR a|b c>d e?f g>h i'j k\"l m n"))
+    http.close()
 }
 /*
     TODO?

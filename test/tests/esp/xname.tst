@@ -8,6 +8,8 @@ let http: Http = new Http
 if (!test.cross) {
     http.get(HTTP + "/test.xesp")
     assert(http.status == 200)
+    http.close()
+
 } else {
     test.skip("Disabled if cross-compiling")
 }

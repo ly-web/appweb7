@@ -7,3 +7,4 @@ let http: Http = new Http
 
 http.get(HTTP + "/route/auth/basic.html")
 assert(http.status == 401)
+http.close()

@@ -48,7 +48,7 @@ PUBLIC void input(cchar *field, cchar *optionString)
         for (kp = 0; (kp = mprGetNextKey(choices, kp)) != 0; ) {
             checked = (smatch(kp->data, value)) ? " checked" : "";
             espRender(conn, "%s <input type='radio' name='%s' value='%s'%s%s class='%s'/>\r\n",
-                spascal(kp->key), field, kp->data, checked, map(conn, options), style);
+                stitle(kp->key), field, kp->data, checked, map(conn, options), style);
         }
         break;
         /* Fall through */

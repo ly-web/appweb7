@@ -655,7 +655,7 @@ static int chrootDirective(MaState *state, cchar *key, cchar *value)
     }
     if (state->http->flags & HTTP_UTILITY) {
         /* Not running a web server but rather a utility like the "esp" generator program */
-        mprLog(MPR_CONFIG, "Change directory to: \"%s\"", home);
+        mprLog(MPR_INFO, "Change directory to: \"%s\"", home);
     } else {
         if (chroot(home) < 0) {
             if (errno == EPERM) {
@@ -677,7 +677,7 @@ static int chrootDirective(MaState *state, cchar *key, cchar *value)
                 kp->data = mprGetAbsPath(mprGetRelPath(kp->data, oldConfigDir));
             }
         }
-        mprLog(MPR_CONFIG, "Chroot to: \"%s\"", home);
+        mprLog(MPR_INFO, "Chroot to: \"%s\"", home);
     }
     return 0;
 #else
@@ -1053,7 +1053,7 @@ static int homeDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     httpSetRouteHome(state->route, path);
-    mprLog(MPR_CONFIG, "Server Root \"%s\"", path);
+    mprLog(MPR_INFO, "Server Root \"%s\"", path);
     return 0;
 }
 
@@ -1686,7 +1686,7 @@ static int makeDirDirective(MaState *state, cchar *key, cchar *value)
         if (mprGetPathInfo(path, &info) == 0 && info.isDir) {
             continue;
         }
-        mprLog(MPR_CONFIG, "Create directory: \"%s\"", path);
+        mprLog(MPR_INFO, "Create directory: \"%s\"", path);
         if (mprMakeDir(path, mode, uid, gid, 1) < 0) {
             return MPR_ERR_BAD_SYNTAX;
         }

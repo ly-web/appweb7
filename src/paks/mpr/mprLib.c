@@ -1152,12 +1152,12 @@ static void sweeperThread(void *unused, MprThread *tp)
     tp->stickyYield = 1;
     tp->yielded = 1;
 
-    while (!mprIsFinished()) {
+    while (!mprIsDestroyed()) {
         if (!heap->mustYield) {
             heap->gcRequested = 0;
             mprWaitForCond(heap->gcCond, -1);
         }
-        if (pauseGC || mprIsFinished()) {
+        if (pauseGC || mprIsDestroyed()) {
             continue;
         }
         markAndSweep();

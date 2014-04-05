@@ -26,6 +26,7 @@ function mainHost() {
     assert(http.status == 404)
     http.get(HTTP + "/vhost2.html")
     assert(http.status == 404)
+    http.close()
 }
 
 
@@ -72,6 +73,7 @@ function namedHost() {
     http.setHeader("Host", "127.0.0.1:" + Uri(NAMED).port)
     http.get(NAMED + "/vhost1.html")
     assert(http.status == 404)
+    http.close()
 }
 
 function ipHost() {
@@ -79,6 +81,7 @@ function ipHost() {
     http.setCredentials("mary", "pass2")
     http.get(VIRT + "/private.html")
     assert(http.status == 200)
+    http.close()
 }
 
 mainHost()

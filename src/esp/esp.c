@@ -1508,14 +1508,14 @@ static bool requiredRoute(HttpRoute *route)
         return 1;
     }
     for (ITERATE_KEYS(app->targets, kp)) {
-        if (mprIsParentPathOf(route->documents, kp->key)) {
+        if (mprIsPathContained(route->documents, kp->key)) {
             kp->type = ESP_FOUND_TARGET;
             return 1;
         }
         if (route->sourceName) {
             eroute = route->eroute;
             source = mprJoinPath(eroute->controllersDir, route->sourceName);
-            if (mprIsParentPathOf(kp->key, source)) {
+            if (mprIsPathContained(kp->key, source)) {
                 kp->type = ESP_FOUND_TARGET;
                 return 1;
             }
@@ -1541,7 +1541,7 @@ static bool selectResource(cchar *path, cchar *kind)
         return 1;
     }
     for (ITERATE_KEYS(app->targets, kp)) {
-        if (mprIsParentPathOf(kp->key, path)) {
+        if (mprIsPathContained(kp->key, path)) {
             kp->type = ESP_FOUND_TARGET;
             return 1;
         }

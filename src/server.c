@@ -540,7 +540,7 @@ PUBLIC int maApplyChangedUser(MaAppweb *appweb)
             prctl(PR_SET_DUMPABLE, 1);
 #endif
         }
-        mprLog(MPR_CONFIG, "Changing user to %s (%d)", appweb->user, appweb->uid);
+        mprLog(MPR_INFO, "Changing user to %s (%d)", appweb->user, appweb->uid);
     }
 #endif
     return 0;
@@ -563,7 +563,7 @@ PUBLIC int maApplyChangedGroup(MaAppweb *appweb)
             prctl(PR_SET_DUMPABLE, 1);
 #endif
         }
-        mprLog(MPR_CONFIG, "Changing group to %s (%d)", appweb->group, appweb->gid);
+        mprLog(MPR_INFO, "Changing group to %s (%d)", appweb->group, appweb->gid);
     }
 #endif
     return 0;
@@ -586,7 +586,7 @@ PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
     }
     if ((module = mprLookupModule(name)) != 0) {
 #if BIT_STATIC
-        mprLog(MPR_CONFIG, "Activating module (Builtin) %s", name);
+        mprLog(MPR_INFO, "Activating module (Builtin) %s", name);
 #endif
         return 0;
     }

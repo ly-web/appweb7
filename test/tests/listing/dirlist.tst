@@ -9,4 +9,5 @@ let http: Http = new Http
 if (App.config.dir) {
     http.get(HTTP + "/listing/")
     assert(http.status == 200)
+    http.close()
 }

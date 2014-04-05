@@ -493,10 +493,10 @@ PUBLIC void removeCookie(cchar *name)
 PUBLIC bool removeRec(cchar *tableName, cchar *key)
 {
     if (ediRemoveRec(getDatabase(), tableName, key) < 0) {
-        feedback("error", "Cannot delete %s", spascal(tableName));
+        feedback("error", "Cannot delete %s", stitle(tableName));
         return 0;
     }
-    feedback("inform", "Deleted %s", spascal(tableName));
+    feedback("inform", "Deleted %s", stitle(tableName));
     return 1;
 }
 
@@ -887,10 +887,10 @@ PUBLIC bool updateRec(EdiRec *rec)
     }
     setRec(rec);
     if (ediUpdateRec(getDatabase(), rec) < 0) {
-        feedback("error", "Cannot save %s", spascal(rec->tableName));
+        feedback("error", "Cannot save %s", stitle(rec->tableName));
         return 0;
     }
-    feedback("inform", "Saved %s", spascal(rec->tableName));
+    feedback("inform", "Saved %s", stitle(rec->tableName));
     return 1;
 }
 

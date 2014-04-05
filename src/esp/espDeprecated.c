@@ -275,7 +275,7 @@ PUBLIC void espRadio(HttpConn *conn, cchar *field, cchar *choicesString, cchar *
     for (kp = 0; (kp = mprGetNextKey(choices, kp)) != 0; ) {
         checked = (smatch(kp->data, value)) ? " checked" : "";
         espRender(conn, "%s <input type='radio' name='%s' value='%s'%s%s />\r\n", 
-            spascal(kp->key), field, kp->data, checked, map(conn, options));
+            stitle(kp->key), field, kp->data, checked, map(conn, options));
     }
 }
 
@@ -541,7 +541,7 @@ static void pivotTable(HttpConn *conn, EdiGrid *grid, MprHash *options)
             assert(r <= grid->nrecords);
             width = ((o = httpGetOption(options, "width", 0)) != 0) ? sfmt(" width='%s'", o) : "";
             thisCol = mprLookupKey(colOptions, itosbuf(index, sizeof(index), r, 10));
-            header = httpGetOption(thisCol, "header", spascal(rec->id));
+            header = httpGetOption(thisCol, "header", stitle(rec->id));
             espRender(conn, "            <th%s>%s</th>\r\n", width, header);
         }
         espRender(conn, "        </tr>\r\n    </thead>\r\n");
@@ -570,7 +570,7 @@ static void pivotTable(HttpConn *conn, EdiGrid *grid, MprHash *options)
                 /* 
                     Render column name
                  */
-                name = httpGetOption(thisCol, "header", spascal(rec->id));
+                name = httpGetOption(thisCol, "header", stitle(rec->id));
                 if (httpOption(options, "edit", "true", 0) && httpOption(thisCol, "edit", "true", 1)) {
                     espRender(conn, "            <td%s>%s</td><td>", map(conn, thisCol), name);
                     if ((dropdown = httpGetOption(thisCol, "dropdown", 0)) != 0) {
@@ -661,7 +661,7 @@ PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *optionString)
             fp = &rec->fields[c];
             width = ((o = httpGetOption(options, "width", 0)) != 0) ? sfmt(" width='%s'", o) : "";
             thisCol = mprLookupKey(colOptions, itosbuf(index, sizeof(index), c, 10));
-            header = httpGetOption(thisCol, "header", spascal(fp->name));
+            header = httpGetOption(thisCol, "header", stitle(fp->name));
             espRender(conn, "            <th%s>%s</th>\r\n", width, header);
         }
         espRender(conn, "        </tr>\r\n    </thead>\r\n");
@@ -822,7 +822,7 @@ static void emitFormErrors(HttpConn *conn, EdiRec *rec, MprHash *options)
     if (errors) {
         count = mprGetHashLength(errors);
         espRender(conn, "<div class='" ESTYLE("form-error") "'><h2>The %s has %s it being saved.</h2>\r\n",
-            spascal(rec->tableName), count <= 1 ? "an error that prevents" : "errors that prevent");
+            stitle(rec->tableName), count <= 1 ? "an error that prevents" : "errors that prevent");
         espRender(conn, "    <p>There were problems with the following fields:</p>\r\n");
         espRender(conn, "    <ul>\r\n");
         for (ITERATE_KEY_DATA(errors, field, msg)) {

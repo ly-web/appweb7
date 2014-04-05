@@ -925,7 +925,7 @@ PUBLIC void mprAtomicAdd64(volatile int64 *target, int64 value);
     @defgroup MprMem MprMem
     @see MprFreeMem MprHeap MprManager MprMemNotifier MprRegion mprAddRoot mprAlloc mprAllocMem mprAllocObj 
         mprAllocZeroed mprCreateMemService mprDestroyMemService mprEnableGC mprGetBlockSize mprGetMem 
-        mprGetMemStats mprGetMpr mprGetPageSize mprHasMemError mprHold mprIsParentPathOf mprIsValid mprMark 
+        mprGetMemStats mprGetMpr mprGetPageSize mprHasMemError mprHold mprIsValid mprMark 
         mprMemcmp mprMemcpy mprMemdup mprPrintMem mprRealloc mprRelease mprRemoveRoot mprGC mprResetMemError 
         mprRevive mprSetAllocLimits mprSetManager mprSetMemError mprSetMemLimits mprSetMemNotifier mprSetMemPolicy 
         mprSetName mprVerifyMem mprVirtAlloc mprVirtFree 
@@ -1790,7 +1790,7 @@ PUBLIC int  mprSyncThreads(MprTicks timeout);
     @defgroup MprString MprString
     @see MprString itos itosradix itosbuf mprEprintf mprPrintf scamel scaselesscmp scaselessmatch schr 
         sclone scmp scontains scopy sends sfmt sfmtv shash shashlower sjoin sjoinv slen slower smatch sncaselesscmp snclone
-        sncmp sncopy snumber sfnumber shnumber spascal spbrk srchr srejoin srejoinv sreplace sspn sstarts ssub stemplate 
+        sncmp sncopy snumber sfnumber shnumber spbrk srchr srejoin srejoinv sreplace sspn sstarts ssub stemplate 
         stemplateJson stoi stoiradix stok strim supper sncontains mprFprintf fmtv fmt
     @stability Internal
  */

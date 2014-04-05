@@ -25,6 +25,7 @@ if (App.config.bit_dir) {
     http.get(HTTP + "/index.html", {name: "John", address: "700 Park Ave"})
     assert(http.status == 200)
     */
+    http.close()
 
 } else {
     test.skip("directory listings not enabled")

@@ -12,3 +12,4 @@ assert(http.response == "user")
 
 http.get(HTTP + "/route/user/login/aA.html")
 assert(http.status == 404)
+http.close()

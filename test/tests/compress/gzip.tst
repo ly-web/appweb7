@@ -9,3 +9,4 @@ let http: Http = new Http
 http.setHeader("Accept-Encoding", "gzip")
 http.get(HTTP + "/compress/compressed.txt")
 assert(http.status == 200)
+http.close()

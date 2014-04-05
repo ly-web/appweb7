@@ -3115,7 +3115,6 @@ static HttpPacket *getPacket(HttpConn *conn, ssize *size)
         content = packet->content;
         mprResetBufIfEmpty(content);
         if (mprGetBufSpace(content) < BIT_MAX_BUFFER && mprGrowBuf(content, BIT_MAX_BUFFER) < 0) {
-            mprMemoryError(0);
             conn->keepAliveCount = 0;
             conn->state = HTTP_STATE_BEGIN;
             return 0;
