@@ -582,7 +582,7 @@ PUBLIC Edi *ediClone(Edi *edi);
  */
 PUBLIC EdiGrid *ediQuery(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list vargs);
 
-//  MOB - fmt not implemented
+//  TODO - fmt not implemented
 /**
     Read a formatted field from the database
     @description This reads a field from the database and formats the result using an optional format string.
@@ -1240,13 +1240,7 @@ extern "C" {
 #endif
 
 /********************************** Tunables **********************************/
-/*
-    DEPRECATED from 4.4, but still enabled
- */
-#ifndef ME_ESP_LEGACY
-    /* Reverse this in 5.0 */
-    #define ME_ESP_LEGACY 1                            /* Must be enabled while testing with legacy-mvc */
-#endif
+
 #ifndef ME_ESP_SERVER_PREFIX
     #define ME_ESP_SERVER_PREFIX "/do"                 /**< URI prefix for server controllers */
 #endif
@@ -1271,11 +1265,6 @@ extern "C" {
     #define ESP_VSKEY "HKLM\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VS7"
 #else
     #define ESP_VSKEY "HKLM\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7"
-#endif
-
-#if DEPRECATED || 1
-#define httpAddHomeRoute espAddHomeRoute
-#define httpAddRouteSet espAddRouteSet
 #endif
 
 #ifndef ESP_VERSION
@@ -1425,9 +1414,6 @@ typedef struct EspRoute {
     int             loaded;                 /**< App has been loaded */
     int             update;                 /**< Auto-update modified ESP source */
     int             json;                   /**< Emit json responses */
-#if ME_ESP_LEGACY
-    int             legacy;                 /**< Legacy MVC app */
-#endif
     MprTicks        lifespan;               /**< Default cache lifespan */
     Edi             *edi;                   /**< Default database for this route */
     MprMutex        *mutex;                 /**< Multithread lock */
@@ -1739,9 +1725,6 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags);
 PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile);
 PUBLIC int espOpenDatabase(HttpRoute *route, cchar *spec);
 PUBLIC void espSetDefaultDirs(HttpRoute *route);
-#if ME_ESP_LEGACY
-PUBLIC void espSetLegacyDirs(HttpRoute *route);
-#endif
 
 /********************************** Requests **********************************/
 /**
@@ -1854,10 +1837,6 @@ PUBLIC void espAppendHeaderString(HttpConn *conn, cchar *key, cchar *value);
     @stability Evolving
  */
 PUBLIC void espAutoFinalize(HttpConn *conn);
-
-#if ME_ESP_LEGACY
-PUBLIC bool espCheckSecurityToken(HttpConn *conn);
-#endif
 
 /**
     Create a session state object. 
@@ -2004,10 +1983,6 @@ PUBLIC EspRoute *espGetEspRoute(HttpConn *conn);
     @stability Evolving
  */
 PUBLIC cchar *espGetDocuments(HttpConn *conn);
-
-#if ME_ESP_LEGACY
-PUBLIC cchar *espGetDir(HttpConn *conn);
-#endif
 
 /**
     Get a flash message.
@@ -2182,19 +2157,6 @@ PUBLIC int espGetStatus(HttpConn *conn);
     @stability Evolving
  */
 PUBLIC char *espGetStatusMessage(HttpConn *conn);
-
-#if ME_ESP_LEGACY
-/**
-    Get a relative URI to the top of the application.
-    @description This will return an absolute URI for the top of the application. This will be "/" if there is no
-        application script name. Otherwise, it will return a URI for the script name for the application.
-    @param conn HttpConn connection object
-    @return String Absolute URI to the top of the application
-    @ingroup EspReq
-    @stability Evolving
- */
-PUBLIC char *espGetTop(HttpConn *conn);
-#endif
 
 /**
     Get the uploaded files.
@@ -2591,7 +2553,7 @@ PUBLIC void espSetContentType(HttpConn *conn, cchar *mimeType);
  */
 PUBLIC void espSetCurrentSession(HttpConn *conn);
 
-//  MOB - do we need abbrev versions
+//  TODO - do we need abbrev versions
 PUBLIC void espClearCurrentSession(HttpConn *conn);
 
 /**
@@ -2769,12 +2731,6 @@ PUBLIC int espSetSessionVar(HttpConn *conn, cchar *name, cchar *value);
     @stability Evolving
  */
 PUBLIC void espShowRequest(HttpConn *conn);
-
-#if ME_ESP_LEGACY
-#define espSetSecurityToken httpSetSecurityToken
-#define espSecurityToken httpSetSecurityToken
-#define espGetSecurityToken httpGetSecurityToken
-#endif
 
 /**
     Update the cached content for a request
@@ -3117,10 +3073,6 @@ PUBLIC EspRoute *getEspRoute();
  */
 PUBLIC cchar *getDocuments();
 
-#if ME_ESP_LEGACY
-PUBLIC cchar *getDir();
-#endif
-
 /**
     Get a field from the current database record
     @param rec Database record. 
@@ -3206,19 +3158,6 @@ PUBLIC cchar *getSessionVar(cchar *name);
     @stability Prototype
  */
 PUBLIC cchar *getSessionID();
-
-#if ME_ESP_LEGACY
-/**
-    Get a relative URI to the top of the application.
-    @description This will return an absolute URI for the top of the application. This will be "/" if there is no
-        application script name. Otherwise, it will return a URI for the script name for the application.
-        Alternatively, this can be constructed via uri("~")
-    @return String Absolute URI to the top of the application
-    @ingroup EspAbbrev
-    @stability Evolving
- */
-PUBLIC cchar *getAppUri();
-#endif
 
 /**
     Test if a field in the current record has input validation errors
@@ -3485,13 +3424,6 @@ PUBLIC EdiRec *readRec(cchar *tableName, cchar *key);
  */
 PUBLIC EdiGrid *readWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
 
-#if ME_ESP_LEGACY
-/* 
-    Deprecated in 4.4.1 
- */
-PUBLIC EdiGrid *readRecsWhere(cchar *tableName, cchar *fieldName, cchar *operation, cchar *value);
-#endif
-
 /**
     Read one record
     @description This runs a simple query on the database and selects the first matching record. The query selects
@@ -3673,10 +3605,6 @@ PUBLIC ssize renderSafe(cchar *fmt, ...);
     @stability Prototype
  */
 PUBLIC void inputSecurityToken();
-
-#if ME_ESP_LEGACY 
-#define renderSecurityToken inputSecurityToken
-#endif
 
 /**
     Render a string of data to the client
@@ -4099,711 +4027,6 @@ PUBLIC bool updateRecFromParams(cchar *table);
 </pre>
  */
 PUBLIC cchar *uri(cchar *target, ...);
-
-#if ME_ESP_LEGACY 
-/**
-    Suite of high-level controls that generate HTML5.
-    @description There are two forms of the ESP control APIs.
-    The "full" form and the "abbreviated" form. The "full" form API takes a
-    HttpConn request connection object as the first parameter and the function names are prefixed with "esp". 
-    The "abbreviated" form APIs are shorter and more convenient. They do not have a connection argument and 
-    determine the request connection using Thread-Local storage. They do not have any function prefix. Ocassionally,
-    an ESP control name may clash with a function name in another library. 
-    \n\n
-    ESP Controls are grouped into two families: input form controls and general output controls. Input controls
-    are typically located inside a form/endform control pair that defines a current database record from which data
-    will be utilized. Output controls can be used anywhere on a page outside a form/endform group.
-    \n\n
-    Input controls are generally of the form: function(field, options) where field is the name of the property
-    in the current record that contains the data to display. The options is an object hash that controls and modifies
-    how the control will render. The options hash is a JSON string, which is interpreted as a set of property values.
-    \n\n
-    Various controls have custom options, but most share the following common set of option properties:
-    @arg action String Action to invoke. This can be a URI string or a controller/Action pair of the form
-        \@controller/action. If only the controller is provided (\@controller/), the "list" action assumed.
-    @arg apply String Client JQuery selector identifying the element to apply the remote update.
-        Typically "div.ID" where ID is the DOM ID for the element.
-    @arg background String Background color. This is a CSS RGB color specification. For example "FF0000" for red.
-    @arg click (Boolean|Uri|String) URI to invoke if the control is clicked.
-    @arg color String Foreground color. This is a CSS RGB color specification. For example "FF0000" for red.
-    @arg confirm String Message to prompt the user to request confirmation before submitting a form or request.
-    @arg controller controller owning the action to invoke when clicked. Defaults to the current controller.
-    @arg data-* All data-* names are passed through to the HTML unmodified.
-    @arg domid String Client-side DOM-ID to use for the control
-    @arg effects String Transition effects to apply when updating a control. Select from: "fadein", "fadeout", "highlight".
-    @arg escape Boolean Escape the text before rendering. This converts HTML reserved tags and delimiters into an encoded form.
-    @arg height (Number|String) Height of the control. Can be a number of pixels or a percentage string. 
-        Defaults to unlimited.
-    @arg key Array List of fields to set as the key values to uniquely identify the clicked or edited element. 
-        The key will be rendered as a "data-key" HTML attribute and will be passed to the receiving controller 
-        when the entry is clicked or edited. Each entry of the key option can be a simple
-        string field name or it can be an Object with a single property, where the property name is a simple
-        string field name and the property value is the mapped field name to use as the actual key name. This 
-        supports using custom key names. NOTE: this option cannot be used if using cell clicks or edits. In that
-        case, set click/edit to a callback function and explicitly construct the required URI and parameters.
-    @arg keyFormat String Define how the keys will be handled for click and edit URIs. 
-        Set to one of the set: ["params", "path", "query"]. Default is "path".
-        Set to "query" to add the key/value pairs to the request URI. Each pair is separated using "&" and the
-            key and value are formatted as "key=value".
-        Set to "params" to add the key/value pair to the request body parameters. 
-        Set to "path" to add the key values in order to the request URI. Each value is separated using "/". This
-            provides "pretty" URIs that can be easily tokenized by router templates.
-        If you require more complex key management, set click or edit to a callback function and format the 
-        URI and params manually.
-    @arg id Number Numeric database ID for the record that originated the data for the view element.
-    @arg method String HTTP method to invoke.
-    @arg pass String attributes to pass through unaltered to the client
-    @arg params Request parameters to include with a click or remote request
-    @arg period Number Period in milliseconds to invoke the #refresh URI to update the control data. If period
-        is zero (or undefined), then refresh will be done using a perisistent connection.
-    @arg query URI query string to add to click URIs.
-    @arg rel String HTML rel attribute. Can be used to generate "rel=nofollow" on links.
-    @arg remote (String|URI|Object) Perform the request in the background without changing the browser location.
-    @arg refresh (String|URI|Object) URI to invoke in the background to refresh the control's data every period.
-        milliseconds. If period is undefined or zero, a persistent connection may be used to refresh data.
-        The refresh option may use the "\@controller/action" form.
-    @arg size (Number|String) Size of the element.
-    @arg style String CSS Style to use for the element.
-    @arg value Object Override value to display if used without a form control record.
-    @arg width (Number|String) Width of the control. Can be a number of pixels or a percentage string. Defaults to unlimited.
-    @stability Deprecated
-    @defgroup EspControl EspControl
-    @internal
-  */
-
-/**
-    Display a popup alert message in the client's browser when the web page is displayed.
-    @param conn Http connection object
-    @param text Alert text to display
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @arg period -- Polling period in milliseconds for the client to check the server for status message 
-    updates. If this is not specifed, the connection to the server will be kept open. This permits the 
-    server to "push" alerts to the console, but will consume a connection at the server for each client.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espAlert(HttpConn *conn, cchar *text, cchar *options);
-
-/**
-    Render an HTML anchor link.
-    @description. This emits a label inside an anchor reference. i.e. a clickable link.
-    @param conn Http connection object
-    @param text Anchor text to display for the link
-    @param uri URI link for the anchor
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espAnchor(HttpConn *conn, cchar *text, cchar *uri, cchar *options);
-
-/**
-    Render an HTML button to use inside a form.
-    @description  This creates a button suitable for use inside an input form. When the button is clicked,
-        the input form will be submitted.
-    @param conn Http connection object
-    @param text Button text to display. This text is also used as the name for the form input from this control.
-    @param value Form input value to submit when the button is clicked
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espButton(HttpConn *conn, cchar *text, cchar *value, cchar *options);
-
-/**
-    Render an HTML button to use outside a form
-    @param conn Http connection object
-    @param text Button text to display
-    @param uri URI to invoke when the button is clicked.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espButtonLink(HttpConn *conn, cchar *text, cchar *uri, cchar *options);
-
-/**
-    Render an input checkbox. 
-    @description This creates a checkbox suitable for use within an input form. 
-    @param conn Http connection object
-    @param name Name for the input checkbox. This defines the HTML element name, and provides the source of the
-        initial value for the checkbox. The field should be a property of the #form current record. 
-        If this call is used without a form control record, the actual data value should be supplied via the 
-        options.value property.
-    @param checkedValue Value for which the checkbox will be checked.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espCheckbox(HttpConn *conn, cchar *name, cchar *checkedValue, cchar *options);
-
-/**
-    Render an HTML division
-    @description This creates an HTML element with the required options. It is useful to generate a dynamically 
-        refreshing division.
-    @param conn Http connection object
-    @param body HTML body to render
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espDivision(HttpConn *conn, cchar *body, cchar *options);
-
-/* Deprecated */
-PUBLIC void espForm(HttpConn *conn, EdiRec *record, cchar *options);
-
-/**
-    Render an HTML icon.
-    @param conn Http connection object
-    @param uri URI reference for the icon resource
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espIcon(HttpConn *conn, cchar *uri, cchar *options);
-
-/**
-    Render an HTML image.
-    @param conn Http connection object
-    @param uri URI reference for the image resource
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espImage(HttpConn *conn, cchar *uri, cchar *options);
-
-/**
-    Render a text label field. This renders an output-only text field. Use espText() for input fields.
-    @param conn Http connection object
-    @param text Label text to display.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espLabel(HttpConn *conn, cchar *text, cchar *options);
-
-/**
-    Render a selection list.
-    @param conn Http connection object
-    @param field Record field name to provide the default value for the list. The field should be a property of the 
-        form current record.  The field name is used to create the HTML input control name.
-        If this call is used without a form control record, the actual data value should be supplied via the 
-        options.value property.
-    @param choices Choices to select from. This is a EdiGrid object. For example:
-        espDropdown(conn, "priority", makeGrid("[{ id: 0, low: 0}, { id: 1, med: 1}, {id: 2, high: 2}]"), 0)
-        espDropdown(conn, "priority", makeGrid("[{low: 0}, {med: 1}, {high: 2}]"), 0)
-        espDropdown(conn, "priority", makeGrid("[{'low'}, {'med'}, {'high'}]"), 0)
-        espDropdown(conn, "priority", makeGrid("[0, 10, 100]"), 0)
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espDropdown(HttpConn *conn, cchar *field, EdiGrid *choices, cchar *options);
-
-/**
-    Render a mail link.
-    @param conn Http connection object
-    @param name Recipient name to display
-    @param address Mail recipient address link
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espMail(HttpConn *conn, cchar *name, cchar *address, cchar *options);
-
-/**
-    Emit a progress bar.
-    @param conn Http connection object
-    @param progress Progress percentage (0-100) 
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espProgress(HttpConn *conn, cchar *progress, cchar *options);
-
-/**
-    Render a radio button. This creates a radio button suitable for use within an input form. 
-    @param conn Http connection object
-    @param field Name for the input radio button. This defines the HTML element name and provides the source 
-        of the initial value to display. The field should be a property of the form current record. 
-        If this call is used without a form control record, the actual data value should be supplied via the 
-        options.value property.
-    @param choices Choices to select from. This is a JSON style set of properties. For example:
-        espRadio(conn, "priority", "{ low: 0, med: 1, high: 2, }", NULL)
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espRadio(HttpConn *conn, cchar *field, cchar *choices, cchar *options);
-
-/**
-    Control the refresh of web page dynamic elements.
-    @param conn Http connection object
-    @param on URI to invoke when turning "on" refresh
-    @param off URI to invoke when turning "off" refresh
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @arg minified -- Set to "true" to select a minified (compressed) version of the script.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
-    @internal
- */
-PUBLIC void espRefresh(HttpConn *conn, cchar *on, cchar *off, cchar *options);
-
-/**
-    Render a script link.
-    @param uri Script URI to load. Set to null to get a default set of scripts. See #httpLink for a list of possible
-        URI formats.
-    @param conn Http connection object
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espScript(HttpConn *conn, cchar *uri, cchar *options);
-
-/**
-    Render a stylesheet link
-    @param uri Stylesheet URI to load. Set to null to get a default set of stylesheets. See #httpLink for a list of possible
-        URI formats.
-    @param conn Http connection object
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espStylesheet(HttpConn *conn, cchar *uri, cchar *options);
-
-/**
-    Render a table.
-    @description The table control can display static or dynamic tabular data. The client table control 
-        manages sorting by column, dynamic data refreshes, and clicking on rows or cells.
-    @param conn Http connection object
-    @param grid Data to display. The data is a grid of data. Use ediMakeGrid or ediReadTable.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @arg cell Boolean Set to "true" to make click or edit links apply per cell instead of per row. 
-        The default is false.
-    @arg columns Object The columns list is an object hash of column objects where each column entry is a
-        hash of column options.  Column options:
-    <ul>
-        <li>align - Will right-align numbers by default</li>
-        <li>click - URI to invoke if the cell is clicked</li>
-        <li>formatter - Function to invoke to format the value to display</li>
-        <li>header - Header text for the column</li>
-        <li>style - Cell styles</li>
-        <li>width - Column width. Can be a string percentage or numeric pixel width</li>
-    </ul>
-    @arg params Object Hash of post parameters to include in the request. This is a hash of key/value items.
-    @arg pivot Boolean Pivot the table by swapping rows for columns and vice-versa
-    @arg showHeader Boolean Control if column headings are displayed.
-    @arg showId Boolean If a column's option is not provided, the id column is normally hidden. 
-        To display, set showId to be 'true'.
-    @arg sort String Enable row sorting and define the column to sort by. Defaults to the first column.
-    @arg sortOrder String Default sort order. Set to "ascending" or "descending". Defaults to ascending.
-    @arg style String CSS class to use for the table. The ultimate style to use for a table cell is the 
-        combination of style, styleCells, styleColumns, and style Rows.
-    @arg styleCells 2D Array of styles to use for the table body cells. Can also provide an array to the 
-        column.style property.
-    @arg styleColumns Array of styles to use for the table body columns. Can also use the style option in the
-        columns option.
-    @arg styleRows Array of styles to use for the table body rows
-    @arg title String Table title.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espTable(HttpConn *conn, EdiGrid *grid, cchar *options);
-
-/**
-    Render a tab control. 
-    The tab control can manage a set of panes and will selectively show and hide or invoke the selected panes. 
-    If the "click" option is defined, the selected pane will be invoked via a foreground click. If the
-    "remote" option is defined, the selected pane will be invoked via a background click. If the "toggle" option is
-    defined the selected pane will be made visible and other panes will be hidden.
-    If using show/hide tabs, define the initial visible pane to be of the class "-ejs-pane-visible" and define
-    other panes to be "-ejs-pane-hidden". The control's client side code will toggle these classes to make panes
-    visible or hidden.
-    @param conn Http connection object
-    @param grid Tab data for the control. Tab data is be be a single object where the tab text is the property 
-        key and the target to invoke is the property value. 
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @arg click Set to "true" to invoke the selected pane via a foreground click.
-    @arg remote Set to "true" to invoke the selected pane via a background click.
-    @arg toggle Set to "true" to show the selected pane and hide other panes.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espTabs(HttpConn *conn, EdiGrid *grid, cchar *options);
-
-/**
-    Render a text input field as part of a form.
-    @param conn Http connection object
-    @param field Name for the input text field. This defines the HTML element name and provides the source 
-        of the initial value to display. The field should be a property of the form control record. It can 
-        be a simple property of the record or it can have multiple parts, such as: field.field.field. If 
-        this call is used without a form control record, the actual data value should be supplied via the 
-        options.value property. If the cols or rows option is defined, then a textarea HTML element will be used for
-        multiline input.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @arg cols Number number of text columns
-    @arg rows Number number of text rows
-    @arg password Boolean The data to display is a password and should be obfuscated.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void espText(HttpConn *conn, cchar *field, cchar *options);
-
-/**
-    Display a popup alert message in the client's browser when the web page is displayed.
-    @param text Alert text to display
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @arg Polling period in milliseconds for the client to check the server for status message 
-    updates. If this is not specifed, the connection to the server will be kept open. This permits the 
-    server to "push" alerts to the console, but will consume a connection at the server for each client.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void alert(cchar *text, cchar *options);
-
-/**
-    Render an HTML anchor link
-    @description. This is emits a label inside an anchor reference. i.e. a clickable link.
-    @param text Anchor text to display for the link
-    @param uri URI link for the anchor
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void anchor(cchar *text, cchar *uri, cchar *options);
-
-/**
-    Render an HTML button to use inside a form.
-    @description  This creates a button suitable for use inside an input form. When the button is clicked,
-        the input form will be submitted.
-    @param text Button text to display. This text is also used as the name for the form input from this control.
-    @param value Form input value to submit when the button is clicked
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void button(cchar *text, cchar *value, cchar *options);
-
-/**
-    Render an HTML button to use outside a form
-    @param text Button text to display
-    @param uri URI to invoke when the button is clicked.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void buttonLink(cchar *text, cchar *uri, cchar *options);
-
-/**
-    Render a graphic chart
-    @description The chart control can display static or dynamic tabular data. The client chart control manages
-        sorting by column, dynamic data refreshes, pagination and clicking on rows.
-    TODO. This is incomplete.
-    @param grid Data to display. The data is a grid of data. Use ediMakeGrid or ediReadTable.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @arg columns Object hash of column entries. Each column entry is in-turn an object hash of options. If unset, 
-        all columns are displayed using defaults.
-    @arg kind String Type of chart. Select from: piechart, table, linechart, annotatedtimeline, guage, map, 
-        motionchart, areachart, intensitymap, imageareachart, barchart, imagebarchart, bioheatmap, columnchart, 
-        linechart, imagelinechart, imagepiechart, scatterchart (and more)
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void chart(EdiGrid *grid, cchar *options);
-
-/**
-    Render an input checkbox. 
-    @description This creates a checkbox suitable for use within an input form. 
-    @param field Name for the input checkbox. This defines the HTML element name and provides the source of the
-        initial value for the checkbox. The field should be a property of the #form current record. 
-        If this call is used without a form control record, the actual data value should be supplied via the 
-        options.value property.
-    @param checkedValue Value for which the checkbox will be checked.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void checkbox(cchar *field, cchar *checkedValue, cchar *options);
-
-/**
-    Render an HTML division
-    @description This creates an HTML element with the required options.It is useful to generate a dynamically 
-        refreshing division.
-    @param body HTML body to render
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void division(cchar *body, cchar *options);
-
-/**
-    Render a dropdown selection list
-    @param field Record field name to provide the default value for the list. The field should be a property of the 
-        form current record.  The field name is used to create the HTML input control name.
-        If this call is used without a form control record, the actual data value should be supplied via the 
-        options.value property.
-    @param choices Choices to select from. This is a EdiGrid object. For example:
-        espDropdown(conn, "priority", makeGrid("[{ id: 0, low: 0}, { id: 1, med: 1}, {id: 2, high: 2}]"), 0)
-        espDropdown(conn, "priority", makeGrid("[{low: 0}, {med: 1}, {high: 2}]"), 0)
-        espDropdown(conn, "priority", makeGrid("[{'low'}, {'med'}, {'high'}]"), 0)
-        espDropdown(conn, "priority", makeGrid("[0, 10, 100]"), 0)
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void dropdown(cchar *field, EdiGrid *choices, cchar *options);
-
-/**
-    Signify the end of an HTML form. 
-    @description This emits a HTML closing form tag.
-    @ingroup EspControl
-    @stability Deprecated
-    @internal
- */
-PUBLIC void endform();
-
-/**
-    Render an HTML form 
-    @description This will render an HTML form tag and optionally associate the given record as the current record for
-        the request. Abbreviated controls (see \l EspAbbrev \el) use the current record to supply form data fields and values.
-        The form control can be used without a record. In this case, nested ESP controls may have to provide 
-        values via an Options.value field.
-    @param record Record to use by default to supply form field names and values. If NULL, use the default record.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @arg hideErrors -- Don't display database record errors. Records retain error diagnostics from the previous
-        failed write. Setting this option will prevent the display of such errors.
-    @arg modal -- Make the form a modal dialog. This will block all other HTML controls except the form.
-    @arg insecure -- Don't generate a security token for the form.
-    @arg securityToken -- String Override CSRF security token to include when the form is submitted. A default 
-        security token will always be generated unless options.insecure is defined to be true.
-        Security tokens are used by ESP to mitigate cross site scripting errors.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void form(EdiRec *record, cchar *options);
-
-/**
-    Get a URI for the top of the application
-    @ingroup EspAbbrev
-    @stability deprecated
- */
-PUBLIC cchar *getTop();
-
-/**
-    Render an HTML icon
-    @param uri URI reference for the icon resource
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void icon(cchar *uri, cchar *options);
-
-/**
-    Render an HTML image
-    @param uri URI reference for the image resource
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void image(cchar *uri, cchar *options);
-
-/**
-    Set an informational flash notification message.
-    @description Flash messages persist for only one request and are a convenient way to pass state information or 
-    feedback messages to the next request. 
-    @param fmt Printf style message format
-    @ingroup EspAbbrev
-    @stability Evolving
- */
-PUBLIC void inform(cchar *fmt, ...);
-
-/**
-    Render a text label field. This renders an output-only text field. Use espText() for input fields.
-    @param text Label text to display.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void label(cchar *text, cchar *options);
-
-/**
-    Render a mail link
-    @param name Recipient name to display
-    @param address Mail recipient address link
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void mail(cchar *name, cchar *address, cchar *options);
-
-/**
-    Emit a progress bar.
-    @param progress Progress percentage (0-100) 
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void progress(cchar *progress, cchar *options);
-
-/**
-    Render a radio button. This creates a radio button suitable for use within an input form. 
-    @param field Name for the input radio button. This defines the HTML element name and provides the source 
-        of the initial value to display. The field should be a property of the form current record. 
-        If this call is used without a form control record, the actual data value should be supplied via the 
-        options.value property.
-    @param choices Choices to select from. This is a JSON style set of properties. For example:
-        radio("priority", "{ low: 0, med: 1, high: 2, }", NULL)
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void radio(cchar *field, void *choices, cchar *options);
-
-/**
-    Control the refresh of web page dynamic elements
-    @param on URI to invoke when turning "on" refresh
-    @param off URI to invoke when turning "off" refresh
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @arg minified Set to "ture" to select a minified (compressed) version of the script.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void refresh(cchar *on, cchar *off, cchar *options);
-
-/**
-    Render a script link
-    @param uri Script URI to load. Set to null to get a default set of scripts. See #httpLink for a list of possible
-        URI formats.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void script(cchar *uri, cchar *options);
-
-/**
-    Render a stylesheet link
-    @param uri Stylesheet URI to load. Set to null to get a default set of stylesheets. 
-        See #httpLink for a list of possible URI formats.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void stylesheet(cchar *uri, cchar *options);
-
-/**
-    Render a table.
-    @description The table control can display static or dynamic tabular data. The client table control 
-        manages sorting by column, dynamic data refreshes and clicking on rows or cells.
-    @param grid Data to display. The data is a grid of data. Use ediMakeGrid or ediReadTable.
-    @param options Extra options. See \l EspControl \el for a list of the standard options.
-    @param options Optional extra options. See \l EspControl \el for a list of the standard options.
-    @arg cell Boolean Set to "true" to make click or edit links apply per cell instead of per row. 
-        The default is false.
-    @arg columns Object The columns list is an object hash of column objects where each column entry is 
-        hash of column options.  Column options:
-    <ul>
-        <li>align - Will right-align numbers by default</li>
-        <li>click - URI to invoke if the cell is clicked</li>
-        <li>formatter - Function to invoke to format the value to display</li>
-        <li>header - Header text for the column</li>
-        <li>style - Cell styles</li>
-        <li>width - Column width. Can be a string percentage or numeric pixel width</li>
-    </ul>
-    @arg params Object Hash of post parameters to include in the request. This is a hash of key/value items.
-    @arg pivot Boolean Pivot the table by swaping rows for columns and vice-versa
-    @arg showHeader Boolean Control if column headings are displayed.
-    @arg showId Boolean If a columns option is not provided, the id column is normally hidden. 
-        To display, set showId to be "true".
-    @arg sort String Enable row sorting and define the column to sort by. Defaults to the first column.
-    @arg sortOrder String Default sort order. Set to "ascending" or "descending".Defaults to ascending.
-    @arg style String CSS class to use for the table. The ultimate style to use for a table cell is the 
-        combination of style, styleCells, styleColumns and style Rows.
-    @arg styleCells 2D Array of styles to use for the table body cells. Can also provide an array to the 
-        column.style property.
-    @arg styleColumns Array of styles to use for the table body columns. Can also use the style option in the
-        columns option.
-    @arg styleRows Array of styles to use for the table body rows
-    @arg title String Table title.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
-*/
-PUBLIC void table(EdiGrid *grid, cchar *options);
-
-/**
-    Render a tab control. 
-    The tab control can manage a set of panes and will selectively show and hide or invoke the selected panes. 
-    If the "click" option is defined, the selected pane will be invoked via a foreground click. If the
-    "remote" option is defined, the selected pane will be invoked via a background click. If the "toggle" option is
-    defined the selected pane will be made visible and other panes will be hidden.
-    If using show/hide tabs, define the initial visible pane to be of the class "-ejs-pane-visible" and define
-    other panes to be "-ejs-pane-hidden". The control's client side code will toggle these classes to make panes
-    visible or hidden.
-    @param grid Tab data for the control. Tab data is a single object where the tab text is the property 
-        key and the target to invoke is the property value. 
-    @param options Optional extra options. See \l EspControl \el for a list of the standard options.
-    @arg click Set to "true" to invoke the selected pane via a foreground click.
-    @arg remote Set to "true" to invoke the selected pane via a background click.
-    @arg toggle Set to "true" to show the selected pane and hide other panes.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void tabs(EdiGrid *grid, cchar *options);
-
-/**
-    Render a text input field as part of a form.
-    @param field Name for the input text field. This defines the HTML element name and provides the source 
-        of the initial value to display. The field should be a property of the form control record. It can 
-        be a simple property of the record or it can have multiple parts, such as: field.field.field. If 
-        this call is used without a form control record, the actual data value should be supplied via the 
-        options.value property. If the cols or rows option is defined, then a textarea HTML element will be used for
-        multiline input.
-    @param options Optional extra options. See \l EspControl \el for a list of the standard options.
-    @arg cols Number number of text columns
-    @arg rows Number number of text rows
-    @arg password Boolean The data to display is a password and should be obfuscated.
-    @ingroup EspAbbrev
-    @stability Deprecated
-    @internal
- */
-PUBLIC void text(cchar *field, cchar *options);
-#endif /* ME_ESP_LEGACY */
 
 #ifdef __cplusplus
 } /* extern C */

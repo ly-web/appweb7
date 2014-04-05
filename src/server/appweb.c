@@ -251,7 +251,7 @@ static int changeRoot(cchar *jail)
         }
         return MPR_ERR_CANT_INITIALIZE;
     } else {
-        mprLog(MPR_CONFIG, "Chroot to: \"%s\"", jail);
+        mprLog(MPR_INFO, "Chroot to: \"%s\"", jail);
     }
 #endif
     return 0;

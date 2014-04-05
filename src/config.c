@@ -63,9 +63,9 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     httpSetRouteVar(route, "SPL_DIR", ME_SPOOL_PREFIX);
     httpSetRouteVar(route, "BIN_DIR", mprJoinPath(server->appweb->platformDir, "bin"));
 
-#if DEPRECATED || 1
-    /* DEPRECATED */ httpSetRouteVar(route, "LIBDIR", mprJoinPath(server->appweb->platformDir, "bin"));
-    /* DEPRECATED */ httpSetRouteVar(route, "BINDIR", mprJoinPath(server->appweb->platformDir, "bin"));
+#if DEPRECATED
+    httpSetRouteVar(route, "LIBDIR", mprJoinPath(server->appweb->platformDir, "bin"));
+    httpSetRouteVar(route, "BINDIR", mprJoinPath(server->appweb->platformDir, "bin"));
 #endif
 
     if (maParseFile(state, path) < 0) {
@@ -446,6 +446,7 @@ static int allowDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+#if DEPRECATED
 /*
     AuthGroupFile path
  */
@@ -454,6 +455,7 @@ static int authGroupFileDirective(MaState *state, cchar *key, cchar *value)
     mprError("The AuthGroupFile directive is deprecated. Use new User/Group directives instead.");
     return 0;
 }
+#endif
 
 
 /*
@@ -471,7 +473,6 @@ static int authStoreDirective(MaState *state, cchar *key, cchar *value)
 
 /*
     AuthRealm name
-    DEPRECATED
  */
 static int authRealmDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -510,6 +511,7 @@ static int authTypeDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+#if DEPRECATED
 /*
     AuthUserFile path
  */
@@ -518,6 +520,7 @@ static int authUserFileDirective(MaState *state, cchar *key, cchar *value)
     mprError("The AuthGroupFile directive is deprecated. Use new User/Group directives instead.");
     return 0;
 }
+#endif
 
 
 /*
@@ -655,7 +658,7 @@ static int chrootDirective(MaState *state, cchar *key, cchar *value)
     }
     if (state->http->flags & HTTP_UTILITY) {
         /* Not running a web server but rather a utility like the "esp" generator program */
-        mprLog(MPR_CONFIG, "Change directory to: \"%s\"", home);
+        mprLog(MPR_INFO, "Change directory to: \"%s\"", home);
     } else {
         if (chroot(home) < 0) {
             if (errno == EPERM) {
@@ -677,7 +680,7 @@ static int chrootDirective(MaState *state, cchar *key, cchar *value)
                 kp->data = mprGetAbsPath(mprGetRelPath(kp->data, oldConfigDir));
             }
         }
-        mprLog(MPR_CONFIG, "Chroot to: \"%s\"", home);
+        mprLog(MPR_INFO, "Chroot to: \"%s\"", home);
     }
     return 0;
 #else
@@ -704,7 +707,7 @@ static int closeDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-#if DEPRECATED || 1
+#if DEPRECATED
 /*
     Compress [gzip|none]
  */
@@ -1059,7 +1062,7 @@ static int homeDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     httpSetRouteHome(state->route, path);
-    mprLog(MPR_CONFIG, "Server Root \"%s\"", path);
+    mprLog(MPR_INFO, "Server Root \"%s\"", path);
     return 0;
 }
 
@@ -1146,7 +1149,6 @@ static int inactivityTimeoutDirective(MaState *state, cchar *key, cchar *value)
 
 /*
     LimitBuffer bytes
-    DEPRECATED: LimitStageBuffer bytes
  */
 static int limitBufferDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1254,15 +1256,16 @@ static int limitProcessesDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+#if DEPRECATED
 /*
     LimitRequests count
-    DEPRECATED 4.4
  */
 static int limitRequestsDirective(MaState *state, cchar *key, cchar *value)
 {
     mprError("The LimitRequests directive is deprecated. Use LimitConnections or LimitRequestsPerClient instead.");
     return 0;
 }
+#endif
 
 
 /*
@@ -1692,7 +1695,7 @@ static int makeDirDirective(MaState *state, cchar *key, cchar *value)
         if (mprGetPathInfo(path, &info) == 0 && info.isDir) {
             continue;
         }
-        mprLog(MPR_CONFIG, "Create directory: \"%s\"", path);
+        mprLog(MPR_INFO, "Create directory: \"%s\"", path);
         if (mprMakeDir(path, mode, uid, gid, 1) < 0) {
             return MPR_ERR_BAD_SYNTAX;
         }
@@ -1746,7 +1749,7 @@ static int memoryPolicyDirective(MaState *state, cchar *key, cchar *value)
     } else if (scmp(value, "continue") == 0) {
         flags = MPR_ALLOC_POLICY_PRUNE;
 
-#if DEPRECATED || 1
+#if DEPRECATED
     } else if (scmp(value, "exit") == 0) {
         flags = MPR_ALLOC_POLICY_EXIT;
 
@@ -1903,7 +1906,7 @@ static int protocolDirective(MaState *state, cchar *key, cchar *value)
 #endif
 
 
-#if DEPRECATED || 1
+#if DEPRECATED
 /*
     PutMethod on|off
  */
@@ -2046,22 +2049,12 @@ static int requireDirective(MaState *state, cchar *key, cchar *value)
         }
         addCondition(state, "secure", age, 0);
 
-#if DEPRECATED || 1 
     } else if (scaselesscmp(type, "user") == 0) {
-        /*
-            Achieve this via abilities
-         */
         httpSetAuthPermittedUsers(state->auth, rest);
 
     } else if (scaselesscmp(type, "valid-user") == 0) {
-        /*
-            Achieve this via abilities
-         */
         httpSetAuthAnyValidUser(state->auth);
 
-    } else if (scaselesscmp(type, "acl") == 0) {
-        mprError("The Require acl directive is deprecated. Use Require ability instead.");
-#endif
     } else {
         return configError(state, key);
     }
@@ -2125,15 +2118,16 @@ static int resetDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+#if DEPRECATED
 /*
     ResetPipeline (alias for Reset routes)
-    DEPRECATED
  */
 static int resetPipelineDirective(MaState *state, cchar *key, cchar *value)
 {
     httpResetRoutePipeline(state->route);
     return 0;
 }
+#endif
 
 
 /*
@@ -2212,8 +2206,6 @@ static int serverNameDirective(MaState *state, cchar *key, cchar *value)
 
 /*
     SessionCookie [name=NAME] [visible=true]
-    DEPRECATED:
-        SessionCookie visible|invisible
  */
 static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -2222,7 +2214,7 @@ static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%*", &options)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-#if DEPRECATED || 1
+#if DEPRECATED
     if (scaselessmatch(value, "visible")) {
         httpSetRouteSessionVisibility(state->route, 1);
     } else if (scaselessmatch(value, "invisible")) {
@@ -2398,7 +2390,7 @@ static int threadStackDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-#if DEPRECATED || 1
+#if DEPRECATED
 /*
     TraceMethod on|off
  */
@@ -3048,7 +3040,7 @@ PUBLIC char *maGetNextArg(char *s, char **tok)
 }
 
 
-#if DEPRECATED || 1
+#if DEPRECATED
 PUBLIC char *maGetNextToken(char *s, char **tok)
 {
     return maGetNextArg(s, tok);
@@ -3226,7 +3218,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "AccessLog", accessLogDirective);
 #endif
 
-#if DEPRECATED || 1
+#if DEPRECATED
     /* Use AuthStore */
     maAddDirective(appweb, "AuthMethod", authStoreDirective);
     maAddDirective(appweb, "AuthGroupFile", authGroupFileDirective);

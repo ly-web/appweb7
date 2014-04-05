@@ -432,8 +432,7 @@ PUBLIC void maGetUserGroup(MaAppweb *appweb)
 
 PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 {
-    //  TODO DEPRECATED _default_
-    if (smatch(newUser, "APPWEB") || smatch(newUser, "_default_")) {
+    if (smatch(newUser, "APPWEB")) {
 #if ME_UNIX_LIKE
         /* Only change user if root */
         if (getuid() != 0) {
@@ -477,8 +476,7 @@ PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
 
 PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
 {
-    //  DEPRECATED _default_
-    if (smatch(newGroup, "APPWEB") || smatch(newGroup, "_default_")) {
+    if (smatch(newGroup, "APPWEB")) {
 #if ME_UNIX_LIKE
         /* Only change group if root */
         if (getuid() != 0) {
@@ -545,7 +543,7 @@ PUBLIC int maApplyChangedUser(MaAppweb *appweb)
             prctl(PR_SET_DUMPABLE, 1);
 #endif
         }
-        mprLog(MPR_CONFIG, "Changing user to %s (%d)", appweb->user, appweb->uid);
+        mprLog(MPR_INFO, "Changing user to %s (%d)", appweb->user, appweb->uid);
     }
 #endif
     return 0;
@@ -568,7 +566,7 @@ PUBLIC int maApplyChangedGroup(MaAppweb *appweb)
             prctl(PR_SET_DUMPABLE, 1);
 #endif
         }
-        mprLog(MPR_CONFIG, "Changing group to %s (%d)", appweb->group, appweb->gid);
+        mprLog(MPR_INFO, "Changing group to %s (%d)", appweb->group, appweb->gid);
     }
 #endif
     return 0;
@@ -591,7 +589,7 @@ PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
     }
     if ((module = mprLookupModule(name)) != 0) {
 #if ME_STATIC
-        mprLog(MPR_CONFIG, "Activating module (Builtin) %s", name);
+        mprLog(MPR_INFO, "Activating module (Builtin) %s", name);
 #endif
         return 0;
     }
