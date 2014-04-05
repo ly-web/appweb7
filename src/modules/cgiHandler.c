@@ -69,6 +69,7 @@ static void openCgi(HttpQueue *q)
     if ((nproc = (int) httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_PROCESSES, 1)) >= conn->limits->processMax) {
         httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Server overloaded");
         mprLog(2, "Too many concurrent processes %d/%d", nproc, conn->limits->processMax);
+        httpMonitorEvent(q->conn, HTTP_COUNTER_ACTIVE_PROCESSES, -1);
         return;
     }
     if ((cgi = mprAllocObj(Cgi, manageCgi)) == 0) {
@@ -97,15 +98,6 @@ static void manageCgi(Cgi *cgi, int flags)
         mprMark(cgi->cmd);
         mprMark(cgi->headers);
         mprMark(cgi->location);
-#if UNUSED
-    } else {
-        assert(!cgi->cmd);
-        if (cgi->cmd) {
-            /* Just for safety */
-            //  MOB 
-            mprDestroyCmd(cgi->cmd);
-        }
-#endif
     }
 }
 
@@ -245,7 +237,9 @@ static void browserToCgiData(HttpQueue *q, HttpPacket *packet)
 
     assert(q);
     assert(packet);
-    cgi = q->queueData;
+    if ((cgi = q->queueData) == 0) {
+        return;
+    }
     conn = q->conn;
     assert(q == conn->readq);
 
@@ -273,7 +267,9 @@ static void browserToCgiService(HttpQueue *q)
     ssize       rc, len;
     int         err;
 
-    cgi = q->queueData;
+    if ((cgi = q->queueData) == 0) {
+        return;
+    }
     assert(q == cgi->writeq);
     cmd = cgi->cmd;
     assert(cmd);
@@ -330,7 +326,9 @@ static void cgiToBrowserService(HttpQueue *q)
     MprCmd      *cmd;
     Cgi         *cgi;
 
-    cgi = q->queueData;
+    if ((cgi = q->queueData) == 0) {
+        return;
+    }
     conn = q->conn;
     assert(q == conn->writeq);
     cmd = cgi->cmd;
@@ -366,7 +364,9 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
     Cgi         *cgi;
     int         suspended;
 
-    cgi = data;
+    if ((cgi = data) == 0) {
+        return;
+    }
     if ((conn = cgi->conn) == 0) {
         return;
     }

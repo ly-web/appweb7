@@ -5002,9 +5002,6 @@ typedef struct EjsSlot {
     int             hashChain;              /**< Next property in hash chain */
     union {
         EjsAny      *ref;                   /**< Property reference */
-#if UNUSED
-        EjsValue    value;
-#endif
     } value;
 } EjsSlot;
 
@@ -9107,9 +9104,6 @@ typedef void (*EjsLoaderCallback)(struct Ejs *ejs, int kind, ...);
     #define EJS_MINOR(version)      ((version / EJS_VERSION_FACTOR) % EJS_VERSION_FACTOR)
     #define EJS_PATCH(version)      (version % EJS_VERSION_FACTOR)
     #define EJS_MAX_VERSION         EJS_MAKE_VERSION(EJS_VERSION_FACTOR-1, EJS_VERSION_FACTOR-1, EJS_VERSION_FACTOR-1)
-#if UNUSED
-    #define EJS_VERSION             EJS_MAKE_VERSION(BIT_MAJOR_VERSION, BIT_MINOR_VERSION, BIT_PATCH_VERSION)
-#endif
 #endif
 
 #ifndef EJS_VERSION

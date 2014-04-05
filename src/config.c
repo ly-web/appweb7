@@ -779,12 +779,6 @@ static int crossOriginDirective(MaState *state, cchar *key, cchar *value)
             return MPR_ERR_BAD_SYNTAX;
         }
     }
-#if UNUSED
-    if (smatch(route->corsOrigin, "*") && route->corsCredentials) {
-        mprError("CrossOrigin: Cannot use wildcard Origin if allowing credentials");
-        return MPR_ERR_BAD_STATE;
-    }
-#endif
     /*
         Need the options method for pre-flight requests
      */
@@ -2858,9 +2852,6 @@ static MaState *createState(MaServer *server, int flags)
     state->http = server->http;
     state->host = host;
     state->route = route;
-#if UNUSED
-    state->limits = state->route->limits;
-#endif
     state->enabled = 1;
     state->lineNumber = 0;
     state->auth = state->route->auth;
@@ -2890,9 +2881,6 @@ PUBLIC MaState *maPushState(MaState *prev)
     state->filename = prev->filename;
     state->configDir = prev->configDir;
     state->file = prev->file;
-#if UNUSED
-    state->limits = prev->limits;
-#endif
     state->auth = state->route->auth;
     state->top->current = state;
     return state;
@@ -2921,9 +2909,6 @@ static void manageState(MaState *state, int flags)
         mprMark(state->auth);
         mprMark(state->route);
         mprMark(state->file);
-#if UNUSED
-        mprMark(state->limits);
-#endif
         mprMark(state->key);
         mprMark(state->configDir);
         mprMark(state->filename);
@@ -3181,9 +3166,6 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Param", paramDirective);
     maAddDirective(appweb, "Prefix", prefixDirective);
     maAddDirective(appweb, "PreserveFrames", preserveFramesDirective);
-#if UNUSED && KEEP
-    maAddDirective(appweb, "Protocol", protocolDirective);
-#endif
     maAddDirective(appweb, "Redirect", redirectDirective);
     maAddDirective(appweb, "RequestHeader", requestHeaderDirective);
     maAddDirective(appweb, "RequestParseTimeout", requestParseTimeoutDirective);

@@ -3762,29 +3762,6 @@ static void closeBlock(EcCompiler *cp)
 }
 
 
-#if UNUSED && KEEP
-static EjsNamespace *createHoistNamespace(EcCompiler *cp, EjsObj *obj)
-{
-    EjsNamespace    *namespace;
-    Ejs             *ejs;
-    EcNode          *letBlockNode;
-    char            *spaceName;
-
-    ejs = cp->ejs;
-    spaceName = sfmt("-hoisted-%d", ejsGetLength(ejs, obj));
-    namespace = ejsCreateNamespace(ejs, ejsCreateStringFromAsc(ejs, spaceName));
-
-    letBlockNode = cp->state->letBlockNode;
-    if (letBlockNode->namespaces == 0) {
-        letBlockNode->namespaces = mprCreateList(-1, 0);
-    }
-    mprAddItem(letBlockNode->namespaces, namespace);
-    ejsAddNamespaceToBlock(ejs, (EjsBlock*) cp->state->optimizedLetBlock, namespace);
-    return namespace;
-}
-#endif
-
-
 /*
     Determine the block in which to define a variable.
  */
@@ -7747,9 +7724,6 @@ static void createInitializer(EcCompiler *cp, EjsModule *mp)
         We can safely just ignore this debug code.
      */
     if (!mp->hasInitializer || !mp->code) {
-#if UNUSED
-        mp->hasInitializer = 0;
-#endif
         LEAVE(cp);
         return;
     }
@@ -8173,12 +8147,6 @@ static void processModule(EcCompiler *cp, EjsModule *mp)
         mprCloseFile(mp->file);
     }
     mp->file = 0;
-#if UNUSED
-    /*
-        Can't remove because then compileInner can't add the compiled modules to the interpreter if code is zero.
-     */
-    mp->code = 0;
-#endif
 }
 
 
@@ -9039,9 +9007,6 @@ static ReservedWord keywords[] =
   { "if",               G_RESERVED,         T_IF,                       0, },
   { "implements",       G_CONREV,           T_IMPLEMENTS,               0, },
   { "in",               G_RESERVED,         T_IN,                       0, },
-#if UNUSED
-  { "include",          G_CONREV,           T_INCLUDE,                  0, },
-#endif
   { "instanceof",       G_RESERVED,         T_INSTANCEOF,               0, },
   { "interface",        G_CONREV,           T_INTERFACE,                0, },
   { "internal",         G_CONREV,           T_RESERVED_NAMESPACE,       T_INTERNAL, },
@@ -9067,9 +9032,6 @@ static ReservedWord keywords[] =
   { "switch",           G_RESERVED,         T_SWITCH,                   0, },
   { "this",             G_RESERVED,         T_THIS,                     0, },
   { "throw",            G_RESERVED,         T_THROW,                    0, },
-#if UNUSED
-  { "to",               G_CONREV,           T_TO,                       0, },
-#endif
   { "true",             G_RESERVED,         T_TRUE,                     0, },
   { "try",              G_RESERVED,         T_TRY,                      0, },
   { "typeof",           G_RESERVED,         T_TYPEOF,                   0, },

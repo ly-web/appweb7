@@ -4201,7 +4201,6 @@ module ejs {
         native function AssertError(message: String? = null) 
     }
 
-//UNUSED Who is using this? Delete
     /**
         Code (instruction) error exception class. Thrown when an illegal or insecure operation code is detected 
         in the instruction stream.

@@ -1152,8 +1152,8 @@ PUBLIC char *httpLinkEx(struct HttpConn *conn, cchar *target, MprHash *options);
 PUBLIC HttpUri *httpLinkUri(struct HttpConn *conn, cchar *target, MprHash *options);
 
 #if DEPRECATED || 1
-PUBLIC char *httpUri(struct HttpConn *conn, cchar *target) BIT_DEPRECATED("Use httpLink instead");
-PUBLIC char *httpUriEx(struct HttpConn *conn, cchar *target, MprHash *options) BIT_DEPRECATED("Use httpLinkEx instead");
+PUBLIC char *httpUri(struct HttpConn *conn, cchar *target)
+PUBLIC char *httpUriEx(struct HttpConn *conn, cchar *target, MprHash *options)
 #endif
 
 /** 
@@ -1453,21 +1453,22 @@ PUBLIC HttpPacket *httpSplitPacket(HttpPacket *packet, ssize offset);
 /*  
     Queue directions
  */
-#define HTTP_QUEUE_TX             0           /**< Send (transmit to client) queue */
-#define HTTP_QUEUE_RX             1           /**< Receive (read from client) queue */
-#define HTTP_MAX_QUEUE            2           /**< Number of queue types */
+#define HTTP_QUEUE_TX             0         /**< Send (transmit to client) queue */
+#define HTTP_QUEUE_RX             1         /**< Receive (read from client) queue */
+#define HTTP_MAX_QUEUE            2         /**< Number of queue types */
 
 /* 
    Queue flags
  */
-#define HTTP_QUEUE_OPEN           0x1         /**< Queue's open routine has been called */
-#define HTTP_QUEUE_SUSPENDED      0x2         /**< Queue's service routine is suspended due to flow control */
-#define HTTP_QUEUE_ALL            0x10        /**< Queue has all the data there is and will be */
-#define HTTP_QUEUE_SERVICED       0x20        /**< Queue has been serviced at least once */
-#define HTTP_QUEUE_EOF            0x40        /**< Queue at end of data */
-#define HTTP_QUEUE_STARTED        0x80        /**< Handler stage start routine called */
-#define HTTP_QUEUE_READY          0x100       /**< Handler stage ready routine called */
-#define HTTP_QUEUE_RESERVICE      0x200       /**< Queue requires reservicing */
+#define HTTP_QUEUE_OPEN_TRIED     0x1       /**< Queue's open routine has been called */
+#define HTTP_QUEUE_OPENED         0x2       /**< Queue's open routine has been called */
+#define HTTP_QUEUE_SUSPENDED      0x4       /**< Queue's service routine is suspended due to flow control */
+#define HTTP_QUEUE_ALL            0x8       /**< Queue has all the data there is and will be */
+#define HTTP_QUEUE_SERVICED       0x10      /**< Queue has been serviced at least once */
+#define HTTP_QUEUE_EOF            0x20      /**< Queue at end of data */
+#define HTTP_QUEUE_STARTED        0x40      /**< Handler stage start routine called */
+#define HTTP_QUEUE_READY          0x80      /**< Handler stage ready routine called */
+#define HTTP_QUEUE_RESERVICE      0x100     /**< Queue requires reservicing */
 
 /*  
     Queue callback prototypes
@@ -6083,6 +6084,7 @@ PUBLIC void httpProcessWriteEvent(HttpConn *conn);
 #define HTTP_TX_NO_CHECK            0x10    /**< Do not check if the filename is inside the route documents directory */
 #define HTTP_TX_NO_LENGTH           0x20    /**< Do not emit a content length (used for TRACE) */
 #define HTTP_TX_NO_MAP              0x40    /**< Do not map the filename to compressed or minified alternatives */
+#define HTTP_TX_PIPELINE            0x80    /**< Created Tx pipeline */
 
 /** 
     Http Tx
