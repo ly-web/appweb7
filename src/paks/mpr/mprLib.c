@@ -5345,6 +5345,8 @@ static void stdinCallback(MprCmd *cmd, MprEvent *event);
 static void stdoutCallback(MprCmd *cmd, MprEvent *event);
 static void stderrCallback(MprCmd *cmd, MprEvent *event);
 #if BIT_WIN_LIKE
+static void pollWinCmd(MprCmd *cmd, MprTicks timeout);
+static void pollWinTimer(MprCmd *cmd, MprEvent *event);
 static cchar *makeWinEnvBlock(MprCmd *cmd);
 #endif
 
@@ -5499,7 +5501,7 @@ static void resetCmd(MprCmd *cmd, bool finalizing)
 #if VXWORKS
         if (files[i].name) {
             DEV_HDR *dev;
-            char    *tail;
+            cchar   *tail;
             if ((dev = iosDevFind(files[i].name, &tail)) != NULL) {
                 iosDevDelete(dev);
             }
@@ -5536,6 +5538,7 @@ static void completeCommand(MprCmd *cmd)
         After removing the command from the cmds list, it can be garbage collected if no other reference is retained
      */
     cmd->complete = 1;
+    mprDisconnectCmd(cmd);
     mprRemoveItem(MPR->cmdService->cmds, cmd);
 }
 
@@ -5828,6 +5831,11 @@ PUBLIC int mprStartCmd(MprCmd *cmd, int argc, cchar **argv, cchar **envp, int fl
     rc = startProcess(cmd);
     cmd->originalPid = cmd->pid;
     sunlock(cmd);
+#if BIT_WIN_LIKE
+    if (!rc) {
+        mprCreateTimerEvent(cmd->dispatcher, "pollWinTimer", 10, pollWinTimer, cmd, 0);
+    }
+#endif
     return rc;
 }
 
@@ -6013,7 +6021,7 @@ PUBLIC void mprDisableCmdEvents(MprCmd *cmd, int channel)
     NOTE: NamedPipes can't use WaitForMultipleEvents, so we dedicate a thread to polling.
     WARNING: this should not be called from a dispatcher other than cmd->dispatcher. 
  */
-PUBLIC void mprPollWinCmd(MprCmd *cmd, MprTicks timeout)
+static void pollWinCmd(MprCmd *cmd, MprTicks timeout)
 {
     MprTicks        mark, delay;
     MprWaitHandler  *wp;
@@ -6030,6 +6038,7 @@ PUBLIC void mprPollWinCmd(MprCmd *cmd, MprTicks timeout)
             if (wp && wp->desiredMask & MPR_READABLE) {
                 rc = PeekNamedPipe(cmd->files[i].handle, NULL, 0, NULL, &nbytes, NULL);
                 if (rc && nbytes > 0 || cmd->process == 0) {
+                    wp->presentMask |= MPR_READABLE;
                     mprQueueIOEvent(wp);
                 }
             }
@@ -6038,6 +6047,7 @@ PUBLIC void mprPollWinCmd(MprCmd *cmd, MprTicks timeout)
     if (cmd->files[MPR_CMD_STDIN].handle) {
         wp = cmd->handlers[MPR_CMD_STDIN];
         if (wp && wp->desiredMask & MPR_WRITABLE) {
+            wp->presentMask |= MPR_WRITABLE;
             mprQueueIOEvent(wp);
         }
     }
@@ -6056,6 +6066,17 @@ PUBLIC void mprPollWinCmd(MprCmd *cmd, MprTicks timeout)
         } while (cmd->eofCount == cmd->requiredEof);
     }
     sunlock(cmd);
+}
+
+
+static void pollWinTimer(MprCmd *cmd, MprEvent *event)
+{
+    if (!cmd->complete) {
+        pollWinCmd(cmd, 0);
+    }
+    if (cmd->complete) {
+        mprStopContinuousEvent(event);
+    }
 }
 #endif
 
@@ -6090,18 +6111,16 @@ PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout)
         if (mprShouldAbortRequests()) {
             break;
         }
-#if BIT_WIN_LIKE
-        mprPollWinCmd(cmd, remaining);
-        delay = 10;
-#else
         delay = (cmd->eofCount >= cmd->requiredEof) ? 10 : remaining;
-#endif
         if (!ts->eventsThread && mprGetCurrentThread() == ts->mainThread) {
             /* 
                 Main program without any events loop
              */
             mprServiceEvents(10, MPR_SERVICE_NO_BLOCK);
         } else {
+            if (cmd->dispatcher->owner != mprGetCurrentOsThread()) {
+                delay = 10;
+            }
             mprWaitForEvent(cmd->dispatcher, delay);
         }
         remaining = (expires - mprGetTicks());
