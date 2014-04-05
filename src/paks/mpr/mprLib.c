@@ -2172,7 +2172,7 @@ PUBLIC size_t mprGetMem()
 
 #if LINUX
     static int  procfd = -1;
-    char        buf[ME_MAX_BUFFER], *cp;
+    char        buf[BIT_MAX_BUFFER], *cp;
     int         nbytes;
 
     if (procfd < 0) {
