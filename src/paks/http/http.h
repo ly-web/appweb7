@@ -1152,8 +1152,8 @@ PUBLIC char *httpLinkEx(struct HttpConn *conn, cchar *target, MprHash *options);
 PUBLIC HttpUri *httpLinkUri(struct HttpConn *conn, cchar *target, MprHash *options);
 
 #if DEPRECATED || 1
-PUBLIC char *httpUri(struct HttpConn *conn, cchar *target)
-PUBLIC char *httpUriEx(struct HttpConn *conn, cchar *target, MprHash *options)
+PUBLIC char *httpUri(struct HttpConn *conn, cchar *target);
+PUBLIC char *httpUriEx(struct HttpConn *conn, cchar *target, MprHash *options);
 #endif
 
 /** 
