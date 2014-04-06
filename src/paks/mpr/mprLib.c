@@ -9685,11 +9685,9 @@ PUBLIC int mprDispatchersAreIdle()
 PUBLIC int mprStartDispatcher(MprDispatcher *dispatcher)
 {
     if (dispatcher->owner && dispatcher->owner != mprGetCurrentOsThread()) {
-        mprError("Cannot start dispatcher - owned by another thread");
         return MPR_ERR_BAD_STATE;
     }
     if (isRunning(dispatcher)) {
-        mprError("Cannot start a running dispatcher");
         return MPR_ERR_BAD_STATE;
     }
     queueDispatcher(dispatcher->service->runQ, dispatcher);
@@ -9701,11 +9699,9 @@ PUBLIC int mprStartDispatcher(MprDispatcher *dispatcher)
 PUBLIC int mprStopDispatcher(MprDispatcher *dispatcher)
 {
     if (dispatcher->owner != mprGetCurrentOsThread()) {
-        mprError("Cannot stop dispatcher - owned by another thread");
         return MPR_ERR_BAD_STATE;
     }
     if (!isRunning(dispatcher)) {
-        mprError("Cannot stop a stopped dispatcher");
         return MPR_ERR_BAD_STATE;
     }
     dispatcher->owner = 0;
