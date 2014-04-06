@@ -6228,6 +6228,24 @@ PUBLIC void mprRescheduleEvent(MprEvent *event, MprTicks period);
  */
 PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, MprEvent *event);
 
+/**
+    Start a dispatcher by setting it on the run queue
+    @param dispatcher Dispatcher object created via #mprCreateDispatcher
+    @return Zero if successful, otherwise a negative MPR status code.
+    @stability Prototype
+    @ingroup MprEvent
+ */
+PUBLIC int mprStartDispatcher(MprDispatcher *dispatcher);
+
+/**
+    Stop a dispatcher by removing it from the run queue
+    @param dispatcher Dispatcher object created via #mprCreateDispatcher
+    @return Zero if successful, otherwise a negative MPR status code.
+    @stability Prototype
+    @ingroup MprEvent
+ */
+PUBLIC int mprStopDispatcher(MprDispatcher *dispatcher);
+
 /* Internal API */
 PUBLIC MprEvent *mprCreateEventQueue();
 PUBLIC MprEventService *mprCreateEventService();

@@ -9682,30 +9682,54 @@ PUBLIC int mprDispatchersAreIdle()
 }
 
 
+PUBLIC int mprStartDispatcher(MprDispatcher *dispatcher)
+{
+    if (dispatcher->owner && dispatcher->owner != mprGetCurrentOsThread()) {
+        mprError("Cannot start dispatcher - owned by another thread");
+        return MPR_ERR_BAD_STATE;
+    }
+    if (isRunning(dispatcher)) {
+        mprError("Cannot start a running dispatcher");
+        return MPR_ERR_BAD_STATE;
+    }
+    queueDispatcher(dispatcher->service->runQ, dispatcher);
+    dispatcher->owner = mprGetCurrentOsThread();
+    return 0;
+}
+
+
+PUBLIC int mprStopDispatcher(MprDispatcher *dispatcher)
+{
+    if (dispatcher->owner != mprGetCurrentOsThread()) {
+        mprError("Cannot stop dispatcher - owned by another thread");
+        return MPR_ERR_BAD_STATE;
+    }
+    if (!isRunning(dispatcher)) {
+        mprError("Cannot stop a stopped dispatcher");
+        return MPR_ERR_BAD_STATE;
+    }
+    dispatcher->owner = 0;
+    dequeueDispatcher(dispatcher);
+    mprScheduleDispatcher(dispatcher);
+    return 0;
+}
+
+
 /*
     Relay an event to a dispatcher. This invokes the callback proc as though it was invoked from the given dispatcher. 
  */
 PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, MprEvent *event)
 {
-    MprOsThread     priorOwner;
-
-    if (!canRun(dispatcher)) {
-        mprError("Relay to a running dispatcher owned by another thread");
+    if (mprStartDispatcher(dispatcher) < 0) {
+        return;
     }
-    if (event) {
-        event->timestamp = dispatcher->service->now;
+    if (proc) {
+        if (event) {
+            event->timestamp = dispatcher->service->now;
+        }
+        ((MprEventProc) proc)(data, event);
     }
-    priorOwner = dispatcher->owner;
-    assert(priorOwner == 0 || priorOwner == mprGetCurrentOsThread());
-
-    queueDispatcher(dispatcher->service->runQ, dispatcher);
-
-    dispatcher->owner = mprGetCurrentOsThread();
-    ((MprEventProc) proc)(data, event);
-    dispatcher->owner = priorOwner;
-
-    dequeueDispatcher(dispatcher);
-    mprScheduleDispatcher(dispatcher);
+    mprStopDispatcher(dispatcher);
 }
 
 
