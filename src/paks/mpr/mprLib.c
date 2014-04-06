@@ -9782,24 +9782,6 @@ PUBLIC int mprDispatchersAreIdle()
 }
 
 
-/*
-    Relay an event to a dispatcher. This invokes the callback proc as though it was invoked from the given dispatcher. 
- */
-PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, MprEvent *event)
-{
-    if (mprStartDispatcher(dispatcher) < 0) {
-        return;
-    }
-    if (proc) {
-        if (event) {
-            event->timestamp = dispatcher->service->now;
-        }
-        ((MprEventProc) proc)(data, event);
-    }
-    mprStopDispatcher(dispatcher);
-}
-
-
 PUBLIC int mprStartDispatcher(MprDispatcher *dispatcher)
 {
     if (dispatcher->owner && dispatcher->owner != mprGetCurrentOsThread()) {
@@ -9830,6 +9812,24 @@ PUBLIC int mprStopDispatcher(MprDispatcher *dispatcher)
     dequeueDispatcher(dispatcher);
     mprScheduleDispatcher(dispatcher);
     return 0;
+}
+
+
+/*
+    Relay an event to a dispatcher. This invokes the callback proc as though it was invoked from the given dispatcher. 
+ */
+PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, MprEvent *event)
+{
+    if (mprStartDispatcher(dispatcher) < 0) {
+        return;
+    }
+    if (proc) {
+        if (event) {
+            event->timestamp = dispatcher->service->now;
+        }
+        ((MprEventProc) proc)(data, event);
+    }
+    mprStopDispatcher(dispatcher);
 }
 
 
@@ -23803,12 +23803,6 @@ PUBLIC char *stitle(cchar *str)
     }
     ptr[0] = (char) toupper((uchar) ptr[0]);
     return ptr;
-}
-
-
-PUBLIC char *spascal(cchar *str)
-{
-    return stitle(str);
 }
 
 
