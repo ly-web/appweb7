@@ -5496,13 +5496,11 @@ PUBLIC void input(cchar *field, cchar *optionString)
     HttpConn    *conn;
     MprHash     *choices, *options;
     MprKey      *kp;
-    EspReq      *req;
     EdiRec      *rec;
     cchar       *rows, *cols, *etype, *value, *checked, *style, *error, *errorMsg;
     int         type, flags;
 
     conn = getConn();
-    req = conn->data;
     rec = conn->record;
     if (ediGetColumnSchema(rec->edi, rec->tableName, field, &type, &flags, NULL) < 0) {
         type = -1;
