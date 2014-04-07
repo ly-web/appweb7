@@ -5497,14 +5497,12 @@ PUBLIC void input(cchar *field, cchar *optionString)
     MprHash     *choices, *options;
     MprKey      *kp;
     EspReq      *req;
-    EspRoute    *eroute;
     EdiRec      *rec;
     cchar       *rows, *cols, *etype, *value, *checked, *style, *error, *errorMsg;
     int         type, flags;
 
     conn = getConn();
     req = conn->data;
-    eroute = req->route->eroute;
     rec = conn->record;
     if (ediGetColumnSchema(rec->edi, rec->tableName, field, &type, &flags, NULL) < 0) {
         type = -1;
@@ -5582,11 +5580,9 @@ PUBLIC void inputSecurityToken()
 static cchar *getValue(HttpConn *conn, cchar *fieldName, MprHash *options)
 {
     EdiRec      *record;
-    EspRoute    *eroute;
     cchar       *value;
 
     record = conn->record;
-    eroute = conn->rx->route->eroute;
     value = 0;
     if (record) {
         value = ediGetFieldValue(record, fieldName);
