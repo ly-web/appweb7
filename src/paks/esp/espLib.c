@@ -3840,7 +3840,7 @@ static Esp *esp;
 
 static void closeEsp(HttpQueue *q);
 //  TODO - why public
-PUBLIC EspRoute *espInitRoute(HttpRoute *route);
+static EspRoute *espInitRoute(HttpRoute *route);
 static int espDbDirective(MaState *state, cchar *key, cchar *value);
 static int espEnvDirective(MaState *state, cchar *key, cchar *value);
 static EspRoute *getEroute(HttpRoute *route);

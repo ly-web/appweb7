@@ -911,7 +911,7 @@ static void exportCache()
 static void initialize(int argc, char **argv)
 {
     MprPath     src, dest;
-    cchar       *espPaks, *home, *path;
+    cchar       *espPaks, *home, *path, *dpath;
 
     if ((home = getenv("HOME")) != 0) {
         app->paksCacheDir = mprJoinPath(home, ".paks");
@@ -947,8 +947,11 @@ static void initialize(int argc, char **argv)
         }
         path = sjoin("esp-server/", stok(sclone(ESP_VERSION), "-", NULL), NULL);
         mprGetPathInfo(mprJoinPath(espPaks, path), &src);
-        mprGetPathInfo(mprJoinPath(app->paksCacheDir, path), &dest);
+        dpath = mprJoinPath(app->paksCacheDir, path);
+        mprGetPathInfo(dpath, &dest);
         if (!dest.valid || (src.mtime >= dest.mtime)) {
+            /* Touch paks/esp-server/VERSION */
+            mprDeletePath(mprGetTempPath(dpath));
             exportCache();
         }
     }
