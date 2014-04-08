@@ -59,7 +59,6 @@
     "paks": {
         "esp": {
             "noblend": true,
-            "noexport": true
         },
         "esp-server": {
             "noblend": true,

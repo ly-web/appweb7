@@ -40,6 +40,9 @@
         "paks": "src/paks",
         "client": "client"
     },
+    "export": [
+        "doc/**"
+    ],
     "licenses": [
         {
             "type": "GPL",
