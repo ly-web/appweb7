@@ -1956,6 +1956,17 @@
 ../src/paks/esp-html-mvc/templates/esp-html-mvc/edit.esp,
 ../src/paks/esp-html-mvc/templates/esp-html-mvc/list.esp,
 ../src/paks/esp-html-mvc/templates/esp-html-mvc/start.me,
+../src/paks/esp-mvc,
+../src/paks/esp-mvc/LICENSE.md,
+../src/paks/esp-mvc/package.json,
+../src/paks/esp-mvc/README.md,
+../src/paks/esp-mvc/templates,
+../src/paks/esp-mvc/templates/esp-mvc,
+../src/paks/esp-mvc/templates/esp-mvc/appweb.conf,
+../src/paks/esp-mvc/templates/esp-mvc/controller.c,
+../src/paks/esp-mvc/templates/esp-mvc/migration.c,
+../src/paks/esp-mvc/templates/esp-mvc/src,
+../src/paks/esp-mvc/templates/esp-mvc/src/app.c,
 ../src/paks/esp-server,
 ../src/paks/esp-server/LICENSE.md,
 ../src/paks/esp-server/package.json,
@@ -1998,6 +2009,17 @@ cd ../src/paks
 	cp esp-html-mvc/templates/esp-html-mvc/edit.esp ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/edit.esp
 	cp esp-html-mvc/templates/esp-html-mvc/list.esp ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/list.esp
 	cp esp-html-mvc/templates/esp-html-mvc/start.me ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/start.me
+	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0\"
+	cp esp-mvc/LICENSE.md ../${OUT_DIR}/esp/esp-mvc/1.0.0/LICENSE.md
+	cp esp-mvc/package.json ../${OUT_DIR}/esp/esp-mvc/1.0.0/package.json
+	cp esp-mvc/README.md ../${OUT_DIR}/esp/esp-mvc/1.0.0/README.md
+	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0/templates\"
+	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0/templates/esp-mvc\"
+	cp esp-mvc/templates/esp-mvc/appweb.conf ../${OUT_DIR}/esp/esp-mvc/1.0.0/templates/esp-mvc/appweb.conf
+	cp esp-mvc/templates/esp-mvc/controller.c ../${OUT_DIR}/esp/esp-mvc/1.0.0/templates/esp-mvc/controller.c
+	cp esp-mvc/templates/esp-mvc/migration.c ../${OUT_DIR}/esp/esp-mvc/1.0.0/templates/esp-mvc/migration.c
+	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0/templates/esp-mvc/src\"
+	cp esp-mvc/templates/esp-mvc/src/app.c ../${OUT_DIR}/esp/esp-mvc/1.0.0/templates/esp-mvc/src/app.c
 	mkdir -p \"../${OUT_DIR}/esp/esp-server/5.0.0\"
 	cp esp-server/LICENSE.md ../${OUT_DIR}/esp/esp-server/5.0.0/LICENSE.md
 	cp esp-server/package.json ../${OUT_DIR}/esp/esp-server/5.0.0/package.json
@@ -3221,7 +3243,7 @@ fi";
 		F88BAD16F88BBD60000001E9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = esp-paks;
+				PRODUCT_NAME = ;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3233,7 +3255,7 @@ fi";
 		F88BAD16F88BBD60000001EA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = esp-paks;
+				PRODUCT_NAME = ;
 
 
 			};
@@ -3263,7 +3285,7 @@ fi";
 		F88BAD16F88BBD60000001ED /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = espcmd;
+				PRODUCT_NAME = esp;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3280,7 +3302,7 @@ fi";
 		F88BAD16F88BBD60000001EE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = espcmd;
+				PRODUCT_NAME = esp;
 
 				OTHER_LDFLAGS = (
 					"-lpam",
@@ -3293,7 +3315,7 @@ fi";
 		F88BAD16F88BBD60000001EF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = http-ca-crt;
+				PRODUCT_NAME = ca.crt;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3305,7 +3327,7 @@ fi";
 		F88BAD16F88BBD60000001F0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = http-ca-crt;
+				PRODUCT_NAME = ca.crt;
 
 
 			};
@@ -3314,7 +3336,7 @@ fi";
 		F88BAD16F88BBD60000001F1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = httpcmd;
+				PRODUCT_NAME = http;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3331,7 +3353,7 @@ fi";
 		F88BAD16F88BBD60000001F2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = httpcmd;
+				PRODUCT_NAME = http;
 
 				OTHER_LDFLAGS = (
 					"-lpam",
@@ -3344,7 +3366,7 @@ fi";
 		F88BAD16F88BBD60000001F3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libappweb;
+				PRODUCT_NAME = libappweb.dylib;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3361,7 +3383,7 @@ fi";
 		F88BAD16F88BBD60000001F4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libappweb;
+				PRODUCT_NAME = libappweb.dylib;
 
 				OTHER_LDFLAGS = (
 					"-lpam",
@@ -3374,7 +3396,7 @@ fi";
 		F88BAD16F88BBD60000001F5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libest;
+				PRODUCT_NAME = libest.dylib;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3386,7 +3408,7 @@ fi";
 		F88BAD16F88BBD60000001F6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libest;
+				PRODUCT_NAME = libest.dylib;
 
 
 			};
@@ -3395,7 +3417,7 @@ fi";
 		F88BAD16F88BBD60000001F7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libhttp;
+				PRODUCT_NAME = libhttp.dylib;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3412,7 +3434,7 @@ fi";
 		F88BAD16F88BBD60000001F8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libhttp;
+				PRODUCT_NAME = libhttp.dylib;
 
 				OTHER_LDFLAGS = (
 					"-lpam",
@@ -3425,7 +3447,7 @@ fi";
 		F88BAD16F88BBD60000001F9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmod_cgi;
+				PRODUCT_NAME = libmod_cgi.dylib;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3442,7 +3464,7 @@ fi";
 		F88BAD16F88BBD60000001FA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmod_cgi;
+				PRODUCT_NAME = libmod_cgi.dylib;
 
 				OTHER_LDFLAGS = (
 					"-lpam",
@@ -3455,7 +3477,7 @@ fi";
 		F88BAD16F88BBD60000001FB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmod_esp;
+				PRODUCT_NAME = libmod_esp.dylib;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3472,7 +3494,7 @@ fi";
 		F88BAD16F88BBD60000001FC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmod_esp;
+				PRODUCT_NAME = libmod_esp.dylib;
 
 				OTHER_LDFLAGS = (
 					"-lpam",
@@ -3485,7 +3507,7 @@ fi";
 		F88BAD16F88BBD60000001FD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmod_ssl;
+				PRODUCT_NAME = libmod_ssl.dylib;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3502,7 +3524,7 @@ fi";
 		F88BAD16F88BBD60000001FE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmod_ssl;
+				PRODUCT_NAME = libmod_ssl.dylib;
 
 				OTHER_LDFLAGS = (
 					"-lpam",
@@ -3515,7 +3537,7 @@ fi";
 		F88BAD16F88BBD60000001FF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmpr;
+				PRODUCT_NAME = libmpr.dylib;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3527,7 +3549,7 @@ fi";
 		F88BAD16F88BBD6000000200 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmpr;
+				PRODUCT_NAME = libmpr.dylib;
 
 
 			};
@@ -3536,7 +3558,7 @@ fi";
 		F88BAD16F88BBD6000000201 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmprssl;
+				PRODUCT_NAME = libmprssl.dylib;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3548,7 +3570,7 @@ fi";
 		F88BAD16F88BBD6000000202 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmprssl;
+				PRODUCT_NAME = libmprssl.dylib;
 
 
 			};
@@ -3557,7 +3579,7 @@ fi";
 		F88BAD16F88BBD6000000203 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libpcre;
+				PRODUCT_NAME = libpcre.dylib;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"PCRE_CHAR=char",
@@ -3570,7 +3592,7 @@ fi";
 		F88BAD16F88BBD6000000204 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libpcre;
+				PRODUCT_NAME = libpcre.dylib;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"PCRE_CHAR=char",
@@ -3582,7 +3604,7 @@ fi";
 		F88BAD16F88BBD6000000205 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libslink;
+				PRODUCT_NAME = libslink.dylib;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3594,7 +3616,7 @@ fi";
 		F88BAD16F88BBD6000000206 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libslink;
+				PRODUCT_NAME = libslink.dylib;
 
 
 			};
@@ -3624,7 +3646,7 @@ fi";
 		F88BAD16F88BBD6000000209 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = manager;
+				PRODUCT_NAME = appman;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3636,7 +3658,7 @@ fi";
 		F88BAD16F88BBD600000020A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = manager;
+				PRODUCT_NAME = appman;
 
 
 			};
@@ -3645,7 +3667,7 @@ fi";
 		F88BAD16F88BBD600000020B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = server-cache;
+				PRODUCT_NAME = cache;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3657,7 +3679,7 @@ fi";
 		F88BAD16F88BBD600000020C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = server-cache;
+				PRODUCT_NAME = cache;
 
 
 			};
@@ -3687,7 +3709,7 @@ fi";
 		F88BAD16F88BBD600000020F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = test-basic.cgi;
+				PRODUCT_NAME = basic.cgi;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3704,7 +3726,7 @@ fi";
 		F88BAD16F88BBD6000000210 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = test-basic.cgi;
+				PRODUCT_NAME = basic.cgi;
 
 				OTHER_LDFLAGS = (
 					"-lpam",
@@ -3717,7 +3739,7 @@ fi";
 		F88BAD16F88BBD6000000211 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = test-cache.cgi;
+				PRODUCT_NAME = cache.cgi;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3734,7 +3756,7 @@ fi";
 		F88BAD16F88BBD6000000212 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = test-cache.cgi;
+				PRODUCT_NAME = cache.cgi;
 
 				OTHER_LDFLAGS = (
 					"-lpam",
@@ -3747,7 +3769,7 @@ fi";
 		F88BAD16F88BBD6000000213 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = test-cgiProgram;
+				PRODUCT_NAME = cgiProgram;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3759,7 +3781,7 @@ fi";
 		F88BAD16F88BBD6000000214 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = test-cgiProgram;
+				PRODUCT_NAME = cgiProgram;
 
 
 			};
@@ -3768,7 +3790,7 @@ fi";
 		F88BAD16F88BBD6000000215 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = test-testScript;
+				PRODUCT_NAME = testScript;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3785,7 +3807,7 @@ fi";
 		F88BAD16F88BBD6000000216 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = test-testScript;
+				PRODUCT_NAME = testScript;
 
 				OTHER_LDFLAGS = (
 					"-lpam",

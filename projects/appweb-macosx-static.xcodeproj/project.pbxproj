@@ -2075,6 +2075,17 @@
 ../src/paks/esp-html-mvc/templates/esp-html-mvc/edit.esp,
 ../src/paks/esp-html-mvc/templates/esp-html-mvc/list.esp,
 ../src/paks/esp-html-mvc/templates/esp-html-mvc/start.me,
+../src/paks/esp-mvc,
+../src/paks/esp-mvc/LICENSE.md,
+../src/paks/esp-mvc/package.json,
+../src/paks/esp-mvc/README.md,
+../src/paks/esp-mvc/templates,
+../src/paks/esp-mvc/templates/esp-mvc,
+../src/paks/esp-mvc/templates/esp-mvc/appweb.conf,
+../src/paks/esp-mvc/templates/esp-mvc/controller.c,
+../src/paks/esp-mvc/templates/esp-mvc/migration.c,
+../src/paks/esp-mvc/templates/esp-mvc/src,
+../src/paks/esp-mvc/templates/esp-mvc/src/app.c,
 ../src/paks/esp-server,
 ../src/paks/esp-server/LICENSE.md,
 ../src/paks/esp-server/package.json,
@@ -2117,6 +2128,17 @@ cd ../src/paks
 	cp esp-html-mvc/templates/esp-html-mvc/edit.esp ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/edit.esp
 	cp esp-html-mvc/templates/esp-html-mvc/list.esp ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/list.esp
 	cp esp-html-mvc/templates/esp-html-mvc/start.me ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/start.me
+	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0\"
+	cp esp-mvc/LICENSE.md ../${OUT_DIR}/esp/esp-mvc/1.0.0/LICENSE.md
+	cp esp-mvc/package.json ../${OUT_DIR}/esp/esp-mvc/1.0.0/package.json
+	cp esp-mvc/README.md ../${OUT_DIR}/esp/esp-mvc/1.0.0/README.md
+	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0/templates\"
+	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0/templates/esp-mvc\"
+	cp esp-mvc/templates/esp-mvc/appweb.conf ../${OUT_DIR}/esp/esp-mvc/1.0.0/templates/esp-mvc/appweb.conf
+	cp esp-mvc/templates/esp-mvc/controller.c ../${OUT_DIR}/esp/esp-mvc/1.0.0/templates/esp-mvc/controller.c
+	cp esp-mvc/templates/esp-mvc/migration.c ../${OUT_DIR}/esp/esp-mvc/1.0.0/templates/esp-mvc/migration.c
+	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0/templates/esp-mvc/src\"
+	cp esp-mvc/templates/esp-mvc/src/app.c ../${OUT_DIR}/esp/esp-mvc/1.0.0/templates/esp-mvc/src/app.c
 	mkdir -p \"../${OUT_DIR}/esp/esp-server/5.0.0\"
 	cp esp-server/LICENSE.md ../${OUT_DIR}/esp/esp-server/5.0.0/LICENSE.md
 	cp esp-server/package.json ../${OUT_DIR}/esp/esp-server/5.0.0/package.json
@@ -3411,7 +3433,7 @@ fi";
 		D64967C4D6497AA20000020D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = esp-paks;
+				PRODUCT_NAME = ;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3427,7 +3449,7 @@ fi";
 		D64967C4D6497AA20000020E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = esp-paks;
+				PRODUCT_NAME = ;
 
 				OTHER_LDFLAGS = ();
 
@@ -3467,7 +3489,7 @@ fi";
 		D64967C4D6497AA200000211 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = espcmd;
+				PRODUCT_NAME = esp;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3485,7 +3507,7 @@ fi";
 		D64967C4D6497AA200000212 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = espcmd;
+				PRODUCT_NAME = esp;
 
 				OTHER_LDFLAGS = (
 					"-lpam",
@@ -3499,7 +3521,7 @@ fi";
 		D64967C4D6497AA200000213 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = http-ca-crt;
+				PRODUCT_NAME = ca.crt;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3515,7 +3537,7 @@ fi";
 		D64967C4D6497AA200000214 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = http-ca-crt;
+				PRODUCT_NAME = ca.crt;
 
 				OTHER_LDFLAGS = ();
 
@@ -3527,7 +3549,7 @@ fi";
 		D64967C4D6497AA200000215 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = httpcmd;
+				PRODUCT_NAME = http;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3545,7 +3567,7 @@ fi";
 		D64967C4D6497AA200000216 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = httpcmd;
+				PRODUCT_NAME = http;
 
 				OTHER_LDFLAGS = (
 					"-lpam",
@@ -3559,7 +3581,7 @@ fi";
 		D64967C4D6497AA200000217 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libappweb;
+				PRODUCT_NAME = libappweb.a;
 				EXECUTABLE_EXTENSION = a;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -3578,7 +3600,7 @@ fi";
 		D64967C4D6497AA200000218 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libappweb;
+				PRODUCT_NAME = libappweb.a;
 				EXECUTABLE_EXTENSION = a;
 
 				OTHER_LDFLAGS = (
@@ -3593,7 +3615,7 @@ fi";
 		D64967C4D6497AA200000219 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libest;
+				PRODUCT_NAME = libest.a;
 				EXECUTABLE_EXTENSION = a;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -3610,7 +3632,7 @@ fi";
 		D64967C4D6497AA20000021A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libest;
+				PRODUCT_NAME = libest.a;
 				EXECUTABLE_EXTENSION = a;
 
 				OTHER_LDFLAGS = ();
@@ -3623,7 +3645,7 @@ fi";
 		D64967C4D6497AA20000021B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libhttp;
+				PRODUCT_NAME = libhttp.a;
 				EXECUTABLE_EXTENSION = a;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -3642,7 +3664,7 @@ fi";
 		D64967C4D6497AA20000021C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libhttp;
+				PRODUCT_NAME = libhttp.a;
 				EXECUTABLE_EXTENSION = a;
 
 				OTHER_LDFLAGS = (
@@ -3657,7 +3679,7 @@ fi";
 		D64967C4D6497AA20000021D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmod_cgi;
+				PRODUCT_NAME = libmod_cgi.a;
 				EXECUTABLE_EXTENSION = a;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -3676,7 +3698,7 @@ fi";
 		D64967C4D6497AA20000021E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmod_cgi;
+				PRODUCT_NAME = libmod_cgi.a;
 				EXECUTABLE_EXTENSION = a;
 
 				OTHER_LDFLAGS = (
@@ -3691,7 +3713,7 @@ fi";
 		D64967C4D6497AA20000021F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmod_esp;
+				PRODUCT_NAME = libmod_esp.a;
 				EXECUTABLE_EXTENSION = a;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -3710,7 +3732,7 @@ fi";
 		D64967C4D6497AA200000220 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmod_esp;
+				PRODUCT_NAME = libmod_esp.a;
 				EXECUTABLE_EXTENSION = a;
 
 				OTHER_LDFLAGS = (
@@ -3725,7 +3747,7 @@ fi";
 		D64967C4D6497AA200000221 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmod_ssl;
+				PRODUCT_NAME = libmod_ssl.a;
 				EXECUTABLE_EXTENSION = a;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -3744,7 +3766,7 @@ fi";
 		D64967C4D6497AA200000222 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmod_ssl;
+				PRODUCT_NAME = libmod_ssl.a;
 				EXECUTABLE_EXTENSION = a;
 
 				OTHER_LDFLAGS = (
@@ -3759,7 +3781,7 @@ fi";
 		D64967C4D6497AA200000223 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmpr;
+				PRODUCT_NAME = libmpr.a;
 				EXECUTABLE_EXTENSION = a;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -3776,7 +3798,7 @@ fi";
 		D64967C4D6497AA200000224 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmpr;
+				PRODUCT_NAME = libmpr.a;
 				EXECUTABLE_EXTENSION = a;
 
 				OTHER_LDFLAGS = ();
@@ -3789,7 +3811,7 @@ fi";
 		D64967C4D6497AA200000225 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmprssl;
+				PRODUCT_NAME = libmprssl.a;
 				EXECUTABLE_EXTENSION = a;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -3806,7 +3828,7 @@ fi";
 		D64967C4D6497AA200000226 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmprssl;
+				PRODUCT_NAME = libmprssl.a;
 				EXECUTABLE_EXTENSION = a;
 
 				OTHER_LDFLAGS = ();
@@ -3819,7 +3841,7 @@ fi";
 		D64967C4D6497AA200000227 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libpcre;
+				PRODUCT_NAME = libpcre.a;
 				EXECUTABLE_EXTENSION = a;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -3837,7 +3859,7 @@ fi";
 		D64967C4D6497AA200000228 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libpcre;
+				PRODUCT_NAME = libpcre.a;
 				EXECUTABLE_EXTENSION = a;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -3854,7 +3876,7 @@ fi";
 		D64967C4D6497AA200000229 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libslink;
+				PRODUCT_NAME = libslink.a;
 				EXECUTABLE_EXTENSION = a;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -3873,7 +3895,7 @@ fi";
 		D64967C4D6497AA20000022A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libslink;
+				PRODUCT_NAME = libslink.a;
 				EXECUTABLE_EXTENSION = a;
 
 				OTHER_LDFLAGS = (
@@ -3916,7 +3938,7 @@ fi";
 		D64967C4D6497AA20000022D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = manager;
+				PRODUCT_NAME = appman;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3932,7 +3954,7 @@ fi";
 		D64967C4D6497AA20000022E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = manager;
+				PRODUCT_NAME = appman;
 
 				OTHER_LDFLAGS = ();
 
@@ -3944,7 +3966,7 @@ fi";
 		D64967C4D6497AA20000022F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = server-cache;
+				PRODUCT_NAME = cache;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3960,7 +3982,7 @@ fi";
 		D64967C4D6497AA200000230 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = server-cache;
+				PRODUCT_NAME = cache;
 
 				OTHER_LDFLAGS = ();
 
@@ -4000,7 +4022,7 @@ fi";
 		D64967C4D6497AA200000233 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = test-basic.cgi;
+				PRODUCT_NAME = basic.cgi;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -4018,7 +4040,7 @@ fi";
 		D64967C4D6497AA200000234 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = test-basic.cgi;
+				PRODUCT_NAME = basic.cgi;
 
 				OTHER_LDFLAGS = (
 					"",
@@ -4032,7 +4054,7 @@ fi";
 		D64967C4D6497AA200000235 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = test-cache.cgi;
+				PRODUCT_NAME = cache.cgi;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -4050,7 +4072,7 @@ fi";
 		D64967C4D6497AA200000236 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = test-cache.cgi;
+				PRODUCT_NAME = cache.cgi;
 
 				OTHER_LDFLAGS = (
 					"",
@@ -4064,7 +4086,7 @@ fi";
 		D64967C4D6497AA200000237 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = test-cgiProgram;
+				PRODUCT_NAME = cgiProgram;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -4080,7 +4102,7 @@ fi";
 		D64967C4D6497AA200000238 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = test-cgiProgram;
+				PRODUCT_NAME = cgiProgram;
 
 				OTHER_LDFLAGS = ();
 
@@ -4092,7 +4114,7 @@ fi";
 		D64967C4D6497AA200000239 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = test-testScript;
+				PRODUCT_NAME = testScript;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -4110,7 +4132,7 @@ fi";
 		D64967C4D6497AA20000023A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = test-testScript;
+				PRODUCT_NAME = testScript;
 
 				OTHER_LDFLAGS = (
 					"",

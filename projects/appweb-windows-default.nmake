@@ -150,7 +150,7 @@ TARGETS               = $(TARGETS) $(CONFIG)\bin\cgiProgram.exe
 TARGETS               = $(TARGETS) $(CONFIG)\bin\ejs.mod
 !ENDIF
 !IF "$(ME_COM_EJS)" == "1"
-TARGETS               = $(TARGETS) $(CONFIG)\bin\ejscmd.exe
+TARGETS               = $(TARGETS) $(CONFIG)\bin\ejs.exe
 !ENDIF
 !IF "$(ME_COM_ESP)" == "1"
 TARGETS               = $(TARGETS) $(CONFIG)\esp
@@ -280,10 +280,10 @@ clean:
 	if exist "$(CONFIG)\bin\ejsc.lib" del /Q "$(CONFIG)\bin\ejsc.lib"
 	if exist "$(CONFIG)\bin\ejsc.pdb" del /Q "$(CONFIG)\bin\ejsc.pdb"
 	if exist "$(CONFIG)\bin\ejsc.exp" del /Q "$(CONFIG)\bin\ejsc.exp"
-	if exist "$(CONFIG)\bin\ejscmd.exe" del /Q "$(CONFIG)\bin\ejscmd.exe"
-	if exist "$(CONFIG)\bin\ejscmd.lib" del /Q "$(CONFIG)\bin\ejscmd.lib"
-	if exist "$(CONFIG)\bin\ejscmd.pdb" del /Q "$(CONFIG)\bin\ejscmd.pdb"
-	if exist "$(CONFIG)\bin\ejscmd.exp" del /Q "$(CONFIG)\bin\ejscmd.exp"
+	if exist "$(CONFIG)\bin\ejs.exe" del /Q "$(CONFIG)\bin\ejs.exe"
+	if exist "$(CONFIG)\bin\ejs.lib" del /Q "$(CONFIG)\bin\ejs.lib"
+	if exist "$(CONFIG)\bin\ejs.pdb" del /Q "$(CONFIG)\bin\ejs.pdb"
+	if exist "$(CONFIG)\bin\ejs.exp" del /Q "$(CONFIG)\bin\ejs.exp"
 	if exist "$(CONFIG)\bin\esp.conf" del /Q "$(CONFIG)\bin\esp.conf"
 	if exist "$(CONFIG)\bin\esp.exe" del /Q "$(CONFIG)\bin\esp.exe"
 	if exist "$(CONFIG)\bin\esp.lib" del /Q "$(CONFIG)\bin\esp.lib"
@@ -1169,9 +1169,9 @@ LIBS_49 = $(LIBS_49) libzlib.lib
 LIBS_49 = $(LIBS_49) libsql.lib
 !ENDIF
 
-$(CONFIG)\bin\ejscmd.exe: $(DEPS_49)
-	@echo '      [Link] $(CONFIG)/bin/ejscmd.exe'
-	"$(LD)" -out:$(CONFIG)\bin\ejscmd.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\ejs.obj" $(LIBPATHS_49) $(LIBS_49) $(LIBS_49) $(LIBS) 
+$(CONFIG)\bin\ejs.exe: $(DEPS_49)
+	@echo '      [Link] $(CONFIG)/bin/ejs.exe'
+	"$(LD)" -out:$(CONFIG)\bin\ejs.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\ejs.obj" $(LIBPATHS_49) $(LIBS_49) $(LIBS_49) $(LIBS) 
 !ENDIF
 
 !IF "$(ME_COM_ESP)" == "1"
@@ -1201,6 +1201,17 @@ DEPS_50 = $(DEPS_50) src\paks\esp-html-mvc\templates\esp-html-mvc\controller.c
 DEPS_50 = $(DEPS_50) src\paks\esp-html-mvc\templates\esp-html-mvc\edit.esp
 DEPS_50 = $(DEPS_50) src\paks\esp-html-mvc\templates\esp-html-mvc\list.esp
 DEPS_50 = $(DEPS_50) src\paks\esp-html-mvc\templates\esp-html-mvc\start.me
+DEPS_50 = $(DEPS_50) src\paks\esp-mvc
+DEPS_50 = $(DEPS_50) src\paks\esp-mvc\LICENSE.md
+DEPS_50 = $(DEPS_50) src\paks\esp-mvc\package.json
+DEPS_50 = $(DEPS_50) src\paks\esp-mvc\README.md
+DEPS_50 = $(DEPS_50) src\paks\esp-mvc\templates
+DEPS_50 = $(DEPS_50) src\paks\esp-mvc\templates\esp-mvc
+DEPS_50 = $(DEPS_50) src\paks\esp-mvc\templates\esp-mvc\appweb.conf
+DEPS_50 = $(DEPS_50) src\paks\esp-mvc\templates\esp-mvc\controller.c
+DEPS_50 = $(DEPS_50) src\paks\esp-mvc\templates\esp-mvc\migration.c
+DEPS_50 = $(DEPS_50) src\paks\esp-mvc\templates\esp-mvc\src
+DEPS_50 = $(DEPS_50) src\paks\esp-mvc\templates\esp-mvc\src\app.c
 DEPS_50 = $(DEPS_50) src\paks\esp-server
 DEPS_50 = $(DEPS_50) src\paks\esp-server\LICENSE.md
 DEPS_50 = $(DEPS_50) src\paks\esp-server\package.json
@@ -1238,6 +1249,17 @@ $(CONFIG)\esp: $(DEPS_50)
 	copy /Y esp-html-mvc\templates\esp-html-mvc\edit.esp ..\..\$(CONFIG)\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\edit.esp
 	copy /Y esp-html-mvc\templates\esp-html-mvc\list.esp ..\..\$(CONFIG)\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\list.esp
 	copy /Y esp-html-mvc\templates\esp-html-mvc\start.me ..\..\$(CONFIG)\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\start.me
+	if not exist "..\..\$(CONFIG)\esp\esp-mvc\1.0.0" md "..\..\$(CONFIG)\esp\esp-mvc\1.0.0"
+	copy /Y esp-mvc\LICENSE.md ..\..\$(CONFIG)\esp\esp-mvc\1.0.0\LICENSE.md
+	copy /Y esp-mvc\package.json ..\..\$(CONFIG)\esp\esp-mvc\1.0.0\package.json
+	copy /Y esp-mvc\README.md ..\..\$(CONFIG)\esp\esp-mvc\1.0.0\README.md
+	if not exist "..\..\$(CONFIG)\esp\esp-mvc\1.0.0\templates" md "..\..\$(CONFIG)\esp\esp-mvc\1.0.0\templates"
+	if not exist "..\..\$(CONFIG)\esp\esp-mvc\1.0.0\templates\esp-mvc" md "..\..\$(CONFIG)\esp\esp-mvc\1.0.0\templates\esp-mvc"
+	copy /Y esp-mvc\templates\esp-mvc\appweb.conf ..\..\$(CONFIG)\esp\esp-mvc\1.0.0\templates\esp-mvc\appweb.conf
+	copy /Y esp-mvc\templates\esp-mvc\controller.c ..\..\$(CONFIG)\esp\esp-mvc\1.0.0\templates\esp-mvc\controller.c
+	copy /Y esp-mvc\templates\esp-mvc\migration.c ..\..\$(CONFIG)\esp\esp-mvc\1.0.0\templates\esp-mvc\migration.c
+	if not exist "..\..\$(CONFIG)\esp\esp-mvc\1.0.0\templates\esp-mvc\src" md "..\..\$(CONFIG)\esp\esp-mvc\1.0.0\templates\esp-mvc\src"
+	copy /Y esp-mvc\templates\esp-mvc\src\app.c ..\..\$(CONFIG)\esp\esp-mvc\1.0.0\templates\esp-mvc\src\app.c
 	if not exist "..\..\$(CONFIG)\esp\esp-server\5.0.0" md "..\..\$(CONFIG)\esp\esp-server\5.0.0"
 	copy /Y esp-server\LICENSE.md ..\..\$(CONFIG)\esp\esp-server\5.0.0\LICENSE.md
 	copy /Y esp-server\package.json ..\..\$(CONFIG)\esp\esp-server\5.0.0\package.json
@@ -1675,7 +1697,7 @@ DEPS_69 = $(DEPS_69) $(CONFIG)\inc\est.h
 $(CONFIG)\obj\mprSsl.obj: \
     src\paks\mpr\mprSsl.c $(DEPS_69)
 	@echo '   [Compile] $(CONFIG)/obj/mprSsl.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" "-I$(ME_COM_OPENSSL_PATH)\include" src\paks\mpr\mprSsl.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mprSsl.obj -Fd$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\paks\mpr\mprSsl.c
 
 #
 #   libmprssl
@@ -1693,6 +1715,14 @@ DEPS_70 = $(DEPS_70) $(CONFIG)\bin\libest.dll
 DEPS_70 = $(DEPS_70) $(CONFIG)\obj\mprSsl.obj
 
 LIBS_70 = $(LIBS_70) libmpr.lib
+!IF "$(ME_COM_OPENSSL)" == "1"
+LIBS_70 = $(LIBS_70) libeay32.lib
+LIBPATHS_70 = $(LIBPATHS_70) -libpath:$(ME_COM_OPENSSL_PATH)
+!ENDIF
+!IF "$(ME_COM_OPENSSL)" == "1"
+LIBS_70 = $(LIBS_70) libssleay32.lib
+LIBPATHS_70 = $(LIBPATHS_70) -libpath:$(ME_COM_OPENSSL_PATH)
+!ENDIF
 !IF "$(ME_COM_EST)" == "1"
 LIBS_70 = $(LIBS_70) libest.lib
 !ENDIF
@@ -1703,14 +1733,6 @@ LIBPATHS_70 = $(LIBPATHS_70) -libpath:$(ME_COM_MATRIXSSL_PATH)
 !IF "$(ME_COM_NANOSSL)" == "1"
 LIBS_70 = $(LIBS_70) libssls.lib
 LIBPATHS_70 = $(LIBPATHS_70) -libpath:$(ME_COM_NANOSSL_PATH)/bin
-!ENDIF
-!IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_70 = $(LIBS_70) libeay32.lib
-LIBPATHS_70 = $(LIBPATHS_70) -libpath:$(ME_COM_OPENSSL_PATH)
-!ENDIF
-!IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_70 = $(LIBS_70) libssleay32.lib
-LIBPATHS_70 = $(LIBPATHS_70) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 
 $(CONFIG)\bin\libmprssl.dll: $(DEPS_70)
@@ -1726,7 +1748,7 @@ DEPS_71 = $(DEPS_71) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\sslModule.obj: \
     src\modules\sslModule.c $(DEPS_71)
 	@echo '   [Compile] $(CONFIG)/obj/sslModule.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\sslModule.obj -Fd$(CONFIG)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" "-I$(ME_COM_OPENSSL_PATH)\include" src\modules\sslModule.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\sslModule.obj -Fd$(CONFIG)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\modules\sslModule.c
 
 !IF "$(ME_COM_SSL)" == "1"
 #
@@ -1774,6 +1796,14 @@ LIBS_72 = $(LIBS_72) libmpr.lib
 LIBS_72 = $(LIBS_72) libpcre.lib
 !ENDIF
 LIBS_72 = $(LIBS_72) libmprssl.lib
+!IF "$(ME_COM_OPENSSL)" == "1"
+LIBS_72 = $(LIBS_72) libeay32.lib
+LIBPATHS_72 = $(LIBPATHS_72) -libpath:$(ME_COM_OPENSSL_PATH)
+!ENDIF
+!IF "$(ME_COM_OPENSSL)" == "1"
+LIBS_72 = $(LIBS_72) libssleay32.lib
+LIBPATHS_72 = $(LIBPATHS_72) -libpath:$(ME_COM_OPENSSL_PATH)
+!ENDIF
 !IF "$(ME_COM_EST)" == "1"
 LIBS_72 = $(LIBS_72) libest.lib
 !ENDIF
@@ -1784,14 +1814,6 @@ LIBPATHS_72 = $(LIBPATHS_72) -libpath:$(ME_COM_MATRIXSSL_PATH)
 !IF "$(ME_COM_NANOSSL)" == "1"
 LIBS_72 = $(LIBS_72) libssls.lib
 LIBPATHS_72 = $(LIBPATHS_72) -libpath:$(ME_COM_NANOSSL_PATH)/bin
-!ENDIF
-!IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_72 = $(LIBS_72) libeay32.lib
-LIBPATHS_72 = $(LIBPATHS_72) -libpath:$(ME_COM_OPENSSL_PATH)
-!ENDIF
-!IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_72 = $(LIBS_72) libssleay32.lib
-LIBPATHS_72 = $(LIBPATHS_72) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 
 $(CONFIG)\bin\libmod_ssl.dll: $(DEPS_72)
@@ -2135,9 +2157,6 @@ installBinary: $(DEPS_92)
 	copy /Y $(CONFIG)\bin\appweb.exe "$(ME_VAPP_PREFIX)\bin\appweb.exe"
 	copy /Y $(CONFIG)\bin\appman.exe "$(ME_VAPP_PREFIX)\bin\appman.exe"
 	copy /Y $(CONFIG)\bin\http.exe "$(ME_VAPP_PREFIX)\bin\http.exe"
-!IF "$(ME_COM_ESP)" == "1"
-	copy /Y $(CONFIG)\bin\esp.exe "$(ME_VAPP_PREFIX)\bin\esp.exe"
-!ENDIF
 	copy /Y $(CONFIG)\bin\appwebMonitor.exe "$(ME_VAPP_PREFIX)\bin\appwebMonitor.exe"
 	copy /Y $(CONFIG)\bin\appwebMonitor.ico "$(ME_VAPP_PREFIX)\bin\appwebMonitor.ico"
 	copy /Y $(CONFIG)\bin\libappweb.dll "$(ME_VAPP_PREFIX)\bin\libappweb.dll"
@@ -2211,6 +2230,17 @@ installBinary: $(DEPS_92)
 	copy /Y src\paks\esp-html-mvc\templates\esp-html-mvc\edit.esp "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\edit.esp"
 	copy /Y src\paks\esp-html-mvc\templates\esp-html-mvc\list.esp "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\list.esp"
 	copy /Y src\paks\esp-html-mvc\templates\esp-html-mvc\start.me "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\start.me"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-mvc\1.0.0" md "$(ME_VAPP_PREFIX)\esp\esp-mvc\1.0.0"
+	copy /Y src\paks\esp-mvc\LICENSE.md "$(ME_VAPP_PREFIX)\esp\esp-mvc\1.0.0\LICENSE.md"
+	copy /Y src\paks\esp-mvc\package.json "$(ME_VAPP_PREFIX)\esp\esp-mvc\1.0.0\package.json"
+	copy /Y src\paks\esp-mvc\README.md "$(ME_VAPP_PREFIX)\esp\esp-mvc\1.0.0\README.md"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-mvc\1.0.0\templates" md "$(ME_VAPP_PREFIX)\esp\esp-mvc\1.0.0\templates"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-mvc\1.0.0\templates\esp-mvc" md "$(ME_VAPP_PREFIX)\esp\esp-mvc\1.0.0\templates\esp-mvc"
+	copy /Y src\paks\esp-mvc\templates\esp-mvc\appweb.conf "$(ME_VAPP_PREFIX)\esp\esp-mvc\1.0.0\templates\esp-mvc\appweb.conf"
+	copy /Y src\paks\esp-mvc\templates\esp-mvc\controller.c "$(ME_VAPP_PREFIX)\esp\esp-mvc\1.0.0\templates\esp-mvc\controller.c"
+	copy /Y src\paks\esp-mvc\templates\esp-mvc\migration.c "$(ME_VAPP_PREFIX)\esp\esp-mvc\1.0.0\templates\esp-mvc\migration.c"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-mvc\1.0.0\templates\esp-mvc\src" md "$(ME_VAPP_PREFIX)\esp\esp-mvc\1.0.0\templates\esp-mvc\src"
+	copy /Y src\paks\esp-mvc\templates\esp-mvc\src\app.c "$(ME_VAPP_PREFIX)\esp\esp-mvc\1.0.0\templates\esp-mvc\src\app.c"
 	if not exist "$(ME_VAPP_PREFIX)\esp\esp-server\5.0.0" md "$(ME_VAPP_PREFIX)\esp\esp-server\5.0.0"
 	copy /Y src\paks\esp-server\LICENSE.md "$(ME_VAPP_PREFIX)\esp\esp-server\5.0.0\LICENSE.md"
 	copy /Y src\paks\esp-server\package.json "$(ME_VAPP_PREFIX)\esp\esp-server\5.0.0\package.json"

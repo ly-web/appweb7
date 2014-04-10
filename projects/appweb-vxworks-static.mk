@@ -110,7 +110,7 @@ ifeq ($(ME_COM_EJS),1)
     TARGETS           += $(CONFIG)/bin/ejs.mod
 endif
 ifeq ($(ME_COM_EJS),1)
-    TARGETS           += $(CONFIG)/bin/ejscmd.out
+    TARGETS           += $(CONFIG)/bin/ejs.out
 endif
 ifeq ($(ME_COM_ESP),1)
     TARGETS           += $(CONFIG)/esp
@@ -218,7 +218,7 @@ clean:
 	rm -f "$(CONFIG)/bin/authpass.out"
 	rm -f "$(CONFIG)/bin/cgiProgram.out"
 	rm -f "$(CONFIG)/bin/ejsc.out"
-	rm -f "$(CONFIG)/bin/ejscmd.out"
+	rm -f "$(CONFIG)/bin/ejs.out"
 	rm -f "$(CONFIG)/bin/esp.conf"
 	rm -f "$(CONFIG)/bin/esp.out"
 	rm -f "$(CONFIG)/bin/ca.crt"
@@ -645,7 +645,7 @@ DEPS_30 += $(CONFIG)/inc/est.h
 $(CONFIG)/obj/mprSsl.o: \
     src/paks/mpr/mprSsl.c $(DEPS_30)
 	@echo '   [Compile] $(CONFIG)/obj/mprSsl.o'
-	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" src/paks/mpr/mprSsl.c
+	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_OPENSSL_PATH)/include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" src/paks/mpr/mprSsl.c
 
 #
 #   libmprssl
@@ -675,7 +675,7 @@ DEPS_32 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/sslModule.o: \
     src/modules/sslModule.c $(DEPS_32)
 	@echo '   [Compile] $(CONFIG)/obj/sslModule.o'
-	$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" src/modules/sslModule.c
+	$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_OPENSSL_PATH)/include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" src/modules/sslModule.c
 
 ifeq ($(ME_COM_SSL),1)
 #
@@ -983,7 +983,7 @@ DEPS_48 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/appweb.o: \
     src/server/appweb.c $(DEPS_48)
 	@echo '   [Compile] $(CONFIG)/obj/appweb.o'
-	$(CC) -c -o $(CONFIG)/obj/appweb.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/server/appweb.c
+	$(CC) -c -o $(CONFIG)/obj/appweb.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_OPENSSL_PATH)/include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/server/appweb.c
 
 #
 #   appweb
@@ -1076,6 +1076,14 @@ ifeq ($(ME_COM_SSL),1)
     LIBS_49 += -lmod_ssl
 endif
 LIBS_49 += -lmprssl
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_49 += -lssl
+    LIBPATHS_49 += -L$(ME_COM_OPENSSL_PATH)
+endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_49 += -lcrypto
+    LIBPATHS_49 += -L$(ME_COM_OPENSSL_PATH)
+endif
 ifeq ($(ME_COM_EST),1)
     LIBS_49 += -lest
 endif
@@ -1086,14 +1094,6 @@ endif
 ifeq ($(ME_COM_NANOSSL),1)
     LIBS_49 += -lssls
     LIBPATHS_49 += -L$(ME_COM_NANOSSL_PATH)/bin
-endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_49 += -lssl
-    LIBPATHS_49 += -L$(ME_COM_OPENSSL_PATH)
-endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_49 += -lcrypto
-    LIBPATHS_49 += -L$(ME_COM_OPENSSL_PATH)
 endif
 ifeq ($(ME_COM_EJS),1)
     LIBS_49 += -lmod_ejs
@@ -1353,9 +1353,9 @@ ifeq ($(ME_COM_SQLITE),1)
     LIBS_58 += -lsql
 endif
 
-$(CONFIG)/bin/ejscmd.out: $(DEPS_58)
-	@echo '      [Link] $(CONFIG)/bin/ejscmd.out'
-	$(CC) -o $(CONFIG)/bin/ejscmd.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejs.o" $(LIBPATHS_58) $(LIBS_58) $(LIBS_58) $(LIBS) -Wl,-r 
+$(CONFIG)/bin/ejs.out: $(DEPS_58)
+	@echo '      [Link] $(CONFIG)/bin/ejs.out'
+	$(CC) -o $(CONFIG)/bin/ejs.out $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejs.o" $(LIBPATHS_58) $(LIBS_58) $(LIBS_58) $(LIBS) -Wl,-r 
 endif
 
 ifeq ($(ME_COM_ESP),1)
@@ -1385,6 +1385,17 @@ DEPS_59 += src/paks/esp-html-mvc/templates/esp-html-mvc/controller.c
 DEPS_59 += src/paks/esp-html-mvc/templates/esp-html-mvc/edit.esp
 DEPS_59 += src/paks/esp-html-mvc/templates/esp-html-mvc/list.esp
 DEPS_59 += src/paks/esp-html-mvc/templates/esp-html-mvc/start.me
+DEPS_59 += src/paks/esp-mvc
+DEPS_59 += src/paks/esp-mvc/LICENSE.md
+DEPS_59 += src/paks/esp-mvc/package.json
+DEPS_59 += src/paks/esp-mvc/README.md
+DEPS_59 += src/paks/esp-mvc/templates
+DEPS_59 += src/paks/esp-mvc/templates/esp-mvc
+DEPS_59 += src/paks/esp-mvc/templates/esp-mvc/appweb.conf
+DEPS_59 += src/paks/esp-mvc/templates/esp-mvc/controller.c
+DEPS_59 += src/paks/esp-mvc/templates/esp-mvc/migration.c
+DEPS_59 += src/paks/esp-mvc/templates/esp-mvc/src
+DEPS_59 += src/paks/esp-mvc/templates/esp-mvc/src/app.c
 DEPS_59 += src/paks/esp-server
 DEPS_59 += src/paks/esp-server/LICENSE.md
 DEPS_59 += src/paks/esp-server/package.json
@@ -1423,6 +1434,17 @@ $(CONFIG)/esp: $(DEPS_59)
 	cp esp-html-mvc/templates/esp-html-mvc/edit.esp ../../$(CONFIG)/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/edit.esp ; \
 	cp esp-html-mvc/templates/esp-html-mvc/list.esp ../../$(CONFIG)/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/list.esp ; \
 	cp esp-html-mvc/templates/esp-html-mvc/start.me ../../$(CONFIG)/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/start.me ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-mvc/1.0.0" ; \
+	cp esp-mvc/LICENSE.md ../../$(CONFIG)/esp/esp-mvc/1.0.0/LICENSE.md ; \
+	cp esp-mvc/package.json ../../$(CONFIG)/esp/esp-mvc/1.0.0/package.json ; \
+	cp esp-mvc/README.md ../../$(CONFIG)/esp/esp-mvc/1.0.0/README.md ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-mvc/1.0.0/templates" ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-mvc/1.0.0/templates/esp-mvc" ; \
+	cp esp-mvc/templates/esp-mvc/appweb.conf ../../$(CONFIG)/esp/esp-mvc/1.0.0/templates/esp-mvc/appweb.conf ; \
+	cp esp-mvc/templates/esp-mvc/controller.c ../../$(CONFIG)/esp/esp-mvc/1.0.0/templates/esp-mvc/controller.c ; \
+	cp esp-mvc/templates/esp-mvc/migration.c ../../$(CONFIG)/esp/esp-mvc/1.0.0/templates/esp-mvc/migration.c ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-mvc/1.0.0/templates/esp-mvc/src" ; \
+	cp esp-mvc/templates/esp-mvc/src/app.c ../../$(CONFIG)/esp/esp-mvc/1.0.0/templates/esp-mvc/src/app.c ; \
 	mkdir -p "../../$(CONFIG)/esp/esp-server/5.0.0" ; \
 	cp esp-server/LICENSE.md ../../$(CONFIG)/esp/esp-server/5.0.0/LICENSE.md ; \
 	cp esp-server/package.json ../../$(CONFIG)/esp/esp-server/5.0.0/package.json ; \
@@ -1540,7 +1562,7 @@ DEPS_65 += $(CONFIG)/inc/http.h
 $(CONFIG)/obj/http.o: \
     src/paks/http/http.c $(DEPS_65)
 	@echo '   [Compile] $(CONFIG)/obj/http.o'
-	$(CC) -c -o $(CONFIG)/obj/http.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" src/paks/http/http.c
+	$(CC) -c -o $(CONFIG)/obj/http.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_OPENSSL_PATH)/include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" src/paks/http/http.c
 
 ifeq ($(ME_COM_HTTP),1)
 #
@@ -1574,6 +1596,14 @@ ifeq ($(ME_COM_PCRE),1)
     LIBS_66 += -lpcre
 endif
 LIBS_66 += -lmprssl
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_66 += -lssl
+    LIBPATHS_66 += -L$(ME_COM_OPENSSL_PATH)
+endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_66 += -lcrypto
+    LIBPATHS_66 += -L$(ME_COM_OPENSSL_PATH)
+endif
 ifeq ($(ME_COM_EST),1)
     LIBS_66 += -lest
 endif
@@ -1584,14 +1614,6 @@ endif
 ifeq ($(ME_COM_NANOSSL),1)
     LIBS_66 += -lssls
     LIBPATHS_66 += -L$(ME_COM_NANOSSL_PATH)/bin
-endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_66 += -lssl
-    LIBPATHS_66 += -L$(ME_COM_OPENSSL_PATH)
-endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_66 += -lcrypto
-    LIBPATHS_66 += -L$(ME_COM_OPENSSL_PATH)
 endif
 
 $(CONFIG)/bin/http.out: $(DEPS_66)

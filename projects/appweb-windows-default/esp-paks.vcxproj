@@ -119,6 +119,17 @@ copy /Y esp-html-mvc\templates\esp-html-mvc\controller.c \Users\mob\git\appweb\w
 copy /Y esp-html-mvc\templates\esp-html-mvc\edit.esp \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\edit.esp
 copy /Y esp-html-mvc\templates\esp-html-mvc\list.esp \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\list.esp
 copy /Y esp-html-mvc\templates\esp-html-mvc\start.me \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\start.me
+if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0"
+copy /Y esp-mvc\LICENSE.md \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\LICENSE.md
+copy /Y esp-mvc\package.json \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\package.json
+copy /Y esp-mvc\README.md \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\README.md
+if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates"
+if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates\esp-mvc" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates\esp-mvc"
+copy /Y esp-mvc\templates\esp-mvc\appweb.conf \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates\esp-mvc\appweb.conf
+copy /Y esp-mvc\templates\esp-mvc\controller.c \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates\esp-mvc\controller.c
+copy /Y esp-mvc\templates\esp-mvc\migration.c \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates\esp-mvc\migration.c
+if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates\esp-mvc\src" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates\esp-mvc\src"
+copy /Y esp-mvc\templates\esp-mvc\src\app.c \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates\esp-mvc\src\app.c
 if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0"
 copy /Y esp-server\LICENSE.md \Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0\LICENSE.md
 copy /Y esp-server\package.json \Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0\package.json

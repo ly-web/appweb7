@@ -105,7 +105,7 @@ ifeq ($(ME_COM_EJS),1)
     TARGETS           += $(CONFIG)/bin/ejs.mod
 endif
 ifeq ($(ME_COM_EJS),1)
-    TARGETS           += $(CONFIG)/bin/ejscmd
+    TARGETS           += $(CONFIG)/bin/ejs
 endif
 ifeq ($(ME_COM_ESP),1)
     TARGETS           += $(CONFIG)/esp
@@ -225,7 +225,7 @@ clean:
 	rm -f "$(CONFIG)/bin/authpass"
 	rm -f "$(CONFIG)/bin/cgiProgram"
 	rm -f "$(CONFIG)/bin/ejsc"
-	rm -f "$(CONFIG)/bin/ejscmd"
+	rm -f "$(CONFIG)/bin/ejs"
 	rm -f "$(CONFIG)/bin/esp.conf"
 	rm -f "$(CONFIG)/bin/esp"
 	rm -f "$(CONFIG)/bin/ca.crt"
@@ -959,9 +959,9 @@ ifeq ($(ME_COM_SQLITE),1)
     LIBS_43 += -lsql
 endif
 
-$(CONFIG)/bin/ejscmd: $(DEPS_43)
-	@echo '      [Link] $(CONFIG)/bin/ejscmd'
-	$(CC) -o $(CONFIG)/bin/ejscmd $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejs.o" $(LIBPATHS_43) $(LIBS_43) $(LIBS_43) $(LIBS) $(LIBS) 
+$(CONFIG)/bin/ejs: $(DEPS_43)
+	@echo '      [Link] $(CONFIG)/bin/ejs'
+	$(CC) -o $(CONFIG)/bin/ejs $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/ejs.o" $(LIBPATHS_43) $(LIBS_43) $(LIBS_43) $(LIBS) $(LIBS) 
 endif
 
 ifeq ($(ME_COM_ESP),1)
@@ -991,6 +991,17 @@ DEPS_44 += src/paks/esp-html-mvc/templates/esp-html-mvc/controller.c
 DEPS_44 += src/paks/esp-html-mvc/templates/esp-html-mvc/edit.esp
 DEPS_44 += src/paks/esp-html-mvc/templates/esp-html-mvc/list.esp
 DEPS_44 += src/paks/esp-html-mvc/templates/esp-html-mvc/start.me
+DEPS_44 += src/paks/esp-mvc
+DEPS_44 += src/paks/esp-mvc/LICENSE.md
+DEPS_44 += src/paks/esp-mvc/package.json
+DEPS_44 += src/paks/esp-mvc/README.md
+DEPS_44 += src/paks/esp-mvc/templates
+DEPS_44 += src/paks/esp-mvc/templates/esp-mvc
+DEPS_44 += src/paks/esp-mvc/templates/esp-mvc/appweb.conf
+DEPS_44 += src/paks/esp-mvc/templates/esp-mvc/controller.c
+DEPS_44 += src/paks/esp-mvc/templates/esp-mvc/migration.c
+DEPS_44 += src/paks/esp-mvc/templates/esp-mvc/src
+DEPS_44 += src/paks/esp-mvc/templates/esp-mvc/src/app.c
 DEPS_44 += src/paks/esp-server
 DEPS_44 += src/paks/esp-server/LICENSE.md
 DEPS_44 += src/paks/esp-server/package.json
@@ -1029,6 +1040,17 @@ $(CONFIG)/esp: $(DEPS_44)
 	cp esp-html-mvc/templates/esp-html-mvc/edit.esp ../../$(CONFIG)/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/edit.esp ; \
 	cp esp-html-mvc/templates/esp-html-mvc/list.esp ../../$(CONFIG)/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/list.esp ; \
 	cp esp-html-mvc/templates/esp-html-mvc/start.me ../../$(CONFIG)/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/start.me ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-mvc/1.0.0" ; \
+	cp esp-mvc/LICENSE.md ../../$(CONFIG)/esp/esp-mvc/1.0.0/LICENSE.md ; \
+	cp esp-mvc/package.json ../../$(CONFIG)/esp/esp-mvc/1.0.0/package.json ; \
+	cp esp-mvc/README.md ../../$(CONFIG)/esp/esp-mvc/1.0.0/README.md ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-mvc/1.0.0/templates" ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-mvc/1.0.0/templates/esp-mvc" ; \
+	cp esp-mvc/templates/esp-mvc/appweb.conf ../../$(CONFIG)/esp/esp-mvc/1.0.0/templates/esp-mvc/appweb.conf ; \
+	cp esp-mvc/templates/esp-mvc/controller.c ../../$(CONFIG)/esp/esp-mvc/1.0.0/templates/esp-mvc/controller.c ; \
+	cp esp-mvc/templates/esp-mvc/migration.c ../../$(CONFIG)/esp/esp-mvc/1.0.0/templates/esp-mvc/migration.c ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-mvc/1.0.0/templates/esp-mvc/src" ; \
+	cp esp-mvc/templates/esp-mvc/src/app.c ../../$(CONFIG)/esp/esp-mvc/1.0.0/templates/esp-mvc/src/app.c ; \
 	mkdir -p "../../$(CONFIG)/esp/esp-server/5.0.0" ; \
 	cp esp-server/LICENSE.md ../../$(CONFIG)/esp/esp-server/5.0.0/LICENSE.md ; \
 	cp esp-server/package.json ../../$(CONFIG)/esp/esp-server/5.0.0/package.json ; \
@@ -1467,7 +1489,7 @@ DEPS_63 += $(CONFIG)/inc/est.h
 $(CONFIG)/obj/mprSsl.o: \
     src/paks/mpr/mprSsl.c $(DEPS_63)
 	@echo '   [Compile] $(CONFIG)/obj/mprSsl.o'
-	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" src/paks/mpr/mprSsl.c
+	$(CC) -c -o $(CONFIG)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" src/paks/mpr/mprSsl.c
 
 #
 #   libmprssl
@@ -1485,6 +1507,14 @@ endif
 DEPS_64 += $(CONFIG)/obj/mprSsl.o
 
 LIBS_64 += -lmpr
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_64 += -lssl
+    LIBPATHS_64 += -L$(ME_COM_OPENSSL_PATH)
+endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_64 += -lcrypto
+    LIBPATHS_64 += -L$(ME_COM_OPENSSL_PATH)
+endif
 ifeq ($(ME_COM_EST),1)
     LIBS_64 += -lest
 endif
@@ -1495,14 +1525,6 @@ endif
 ifeq ($(ME_COM_NANOSSL),1)
     LIBS_64 += -lssls
     LIBPATHS_64 += -L$(ME_COM_NANOSSL_PATH)/bin
-endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_64 += -lssl
-    LIBPATHS_64 += -L$(ME_COM_OPENSSL_PATH)
-endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_64 += -lcrypto
-    LIBPATHS_64 += -L$(ME_COM_OPENSSL_PATH)
 endif
 
 $(CONFIG)/bin/libmprssl.so: $(DEPS_64)
@@ -1518,7 +1540,7 @@ DEPS_65 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/sslModule.o: \
     src/modules/sslModule.c $(DEPS_65)
 	@echo '   [Compile] $(CONFIG)/obj/sslModule.o'
-	$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" "-I$(ME_COM_OPENSSL_PATH)/include" src/modules/sslModule.c
+	$(CC) -c -o $(CONFIG)/obj/sslModule.o $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)/matrixssl" "-I$(ME_COM_NANOSSL_PATH)/src" src/modules/sslModule.c
 
 ifeq ($(ME_COM_SSL),1)
 #
@@ -1566,6 +1588,14 @@ ifeq ($(ME_COM_PCRE),1)
     LIBS_66 += -lpcre
 endif
 LIBS_66 += -lmprssl
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_66 += -lssl
+    LIBPATHS_66 += -L$(ME_COM_OPENSSL_PATH)
+endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_66 += -lcrypto
+    LIBPATHS_66 += -L$(ME_COM_OPENSSL_PATH)
+endif
 ifeq ($(ME_COM_EST),1)
     LIBS_66 += -lest
 endif
@@ -1576,14 +1606,6 @@ endif
 ifeq ($(ME_COM_NANOSSL),1)
     LIBS_66 += -lssls
     LIBPATHS_66 += -L$(ME_COM_NANOSSL_PATH)/bin
-endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_66 += -lssl
-    LIBPATHS_66 += -L$(ME_COM_OPENSSL_PATH)
-endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_66 += -lcrypto
-    LIBPATHS_66 += -L$(ME_COM_OPENSSL_PATH)
 endif
 
 $(CONFIG)/bin/libmod_ssl.so: $(DEPS_66)
@@ -1944,11 +1966,6 @@ installBinary: $(DEPS_84)
 	cp $(CONFIG)/bin/http $(ME_VAPP_PREFIX)/bin/http ; \
 	rm -f "$(ME_BIN_PREFIX)/http" ; \
 	ln -s "$(ME_VAPP_PREFIX)/bin/http" "$(ME_BIN_PREFIX)/http" ; \
-	if [ "$(ME_COM_ESP)" = 1 ]; then true ; \
-	cp $(CONFIG)/bin/esp $(ME_VAPP_PREFIX)/bin/esp ; \
-	rm -f "$(ME_BIN_PREFIX)/esp" ; \
-	ln -s "$(ME_VAPP_PREFIX)/bin/esp" "$(ME_BIN_PREFIX)/esp" ; \
-	fi ; \
 	cp $(CONFIG)/bin/libappweb.so $(ME_VAPP_PREFIX)/bin/libappweb.so ; \
 	cp $(CONFIG)/bin/libhttp.so $(ME_VAPP_PREFIX)/bin/libhttp.so ; \
 	cp $(CONFIG)/bin/libmpr.so $(ME_VAPP_PREFIX)/bin/libmpr.so ; \
@@ -2012,6 +2029,17 @@ installBinary: $(DEPS_84)
 	cp src/paks/esp-html-mvc/templates/esp-html-mvc/edit.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/edit.esp ; \
 	cp src/paks/esp-html-mvc/templates/esp-html-mvc/list.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/list.esp ; \
 	cp src/paks/esp-html-mvc/templates/esp-html-mvc/start.me $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/start.me ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-mvc/1.0.0" ; \
+	cp src/paks/esp-mvc/LICENSE.md $(ME_VAPP_PREFIX)/esp/esp-mvc/1.0.0/LICENSE.md ; \
+	cp src/paks/esp-mvc/package.json $(ME_VAPP_PREFIX)/esp/esp-mvc/1.0.0/package.json ; \
+	cp src/paks/esp-mvc/README.md $(ME_VAPP_PREFIX)/esp/esp-mvc/1.0.0/README.md ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-mvc/1.0.0/templates" ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-mvc/1.0.0/templates/esp-mvc" ; \
+	cp src/paks/esp-mvc/templates/esp-mvc/appweb.conf $(ME_VAPP_PREFIX)/esp/esp-mvc/1.0.0/templates/esp-mvc/appweb.conf ; \
+	cp src/paks/esp-mvc/templates/esp-mvc/controller.c $(ME_VAPP_PREFIX)/esp/esp-mvc/1.0.0/templates/esp-mvc/controller.c ; \
+	cp src/paks/esp-mvc/templates/esp-mvc/migration.c $(ME_VAPP_PREFIX)/esp/esp-mvc/1.0.0/templates/esp-mvc/migration.c ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-mvc/1.0.0/templates/esp-mvc/src" ; \
+	cp src/paks/esp-mvc/templates/esp-mvc/src/app.c $(ME_VAPP_PREFIX)/esp/esp-mvc/1.0.0/templates/esp-mvc/src/app.c ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-server/5.0.0" ; \
 	cp src/paks/esp-server/LICENSE.md $(ME_VAPP_PREFIX)/esp/esp-server/5.0.0/LICENSE.md ; \
 	cp src/paks/esp-server/package.json $(ME_VAPP_PREFIX)/esp/esp-server/5.0.0/package.json ; \
