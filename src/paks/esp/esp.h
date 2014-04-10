@@ -15,7 +15,7 @@
 #include "appweb.h"
 
 #ifndef ESP_VERSION
-    #define ESP_VERSION "5.0.0"
+    #define ESP_VERSION "1.0.0"
 #endif
 
 /************************************************************************/
@@ -1327,8 +1327,8 @@ typedef struct EspState {
     MprBuf  *end;                           /**< Accumulated compiled esp end of function code */
 } EspState;
 
-#define ESP_COMPILE_DEBUG   1               /**< Override to compile in debug mode. Defaults to same as Appweb */
-#define ESP_COMPILE_RELEASE 2               /**< Override to compile in release mode */
+#define ESP_COMPILE_SYMBOLS     1           /**< Override to compile in debug mode. Defaults to same as Appweb */
+#define ESP_COMPILE_OPTIMIZED   2           /**< Override to compile in release mode */
 
 /**
     Top level ESP structure. This is a singleton.
@@ -1656,17 +1656,6 @@ PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue);
     @stability Prototype
  */
 PUBLIC bool espHasPak(HttpRoute *route, cchar *name);
-
-#if UNUSED
-/**
-    Initialzie a route for use by ESP
-    @param route HttpRoute to modify
-    @return The allocated EspRoute object
-    @ingroup EspRoute
-    @stability Prototype
- */
-static EspRoute *espInitRoute(HttpRoute *route);
-#endif
 
 /**
     Load ESP package.json configuration file 

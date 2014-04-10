@@ -11,6 +11,7 @@ esp \- ESP Application Generator for Server-Side Web Applications.
 [\fI--keep\fR]
 [\fI--listen [ip:]port\fR]
 [\fI--log logFile:level\fR]
+[\fI--optimized\fR]
 [\fI--overwrite\fR]
 [\fI--quiet\fR]
 [\fI--platform [path/]os-arch-profile\fR]
@@ -19,6 +20,7 @@ esp \- ESP Application Generator for Server-Side Web Applications.
 [\fI--routePrefix prefix\fR]
 [\fI--single\fR]
 [\fI--static\fR]
+[\fI--symbols\fR]
 [\fI--table name\fR]
 [\fI--verbose\fR]
 [\fI--why\fR]
@@ -28,7 +30,7 @@ commands ...
  esp clean
  esp compile
  esp compile [pathFilters...]
- esp debug|release
+ esp mode [debug|release]
  esp generate app name [packs]
  esp generate controller name [action [, action] ...]
  esp generate migration description model [field:type [, field:type] ...]
@@ -210,9 +212,10 @@ in the Appweb source code built for that platform.
 \fbesp -platform /home/dev/linux-arm-debug compile
 .RE
 
-.SH DEBUG or RELEASE
-The \fBesp debug\fR command will modify the "esp.mode" property and set it to the "debug" value.
-The \fBesp release\fR command will set the esp mode to "release".
+.SH MODE
+The \fBesp mode\fR command will retrieve and display the "esp.mode" property.
+The \fBesp mode debug\fR command will modify the "esp.mode" property and set it to the "debug" value.
+The \fBesp release\fR command will set the esp.mode to "release".
 
 .SH RUNNING
 .PP

@@ -46,9 +46,10 @@
     },
     "optionalDependencies": {
         "ejs": "~2.3",
-        "esp": "~5",
-        "esp-html-mvc": "*",
-        "esp-server": "*",
+        "esp": "~1.0",
+        "esp-html-mvc": "~1.0",
+        "esp-mvc": "~1.0",
+        "esp-server": "~1.0",
         "est": "~0.6",
         "me-php": "~5",
         "me-ssl": "~0.8",
@@ -60,13 +61,33 @@
         "esp": {
             "noblend": true
         },
-        "esp-server": {
-            "noblend": true,
-            "noexport": true
-        },
         "esp-html-mvc": {
             "noblend": true,
             "noexport": true
+        },
+        "esp-mvc": {
+            "noblend": true,
+            "noexport": true
+        },
+        "esp-server": {
+            "noblend": true,
+            "noexport": true
+        }
+    },
+    "esp": {
+        "combined": false,
+        "update": true,
+        "serverPrefix": "/do",
+        "server": {
+            "generate": {
+                "appweb": "esp-mvc/appweb.conf",
+                "migration": "esp-mvc/migration.c",
+                "controller": "esp-mvc/controller.c",
+                "controller-singleton": "esp-mvc/controller.c",
+                "files": [
+                    "esp-mvc/src/app.c"
+                ]
+            }
         }
     }
 }
