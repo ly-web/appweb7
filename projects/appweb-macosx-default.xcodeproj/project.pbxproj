@@ -3243,7 +3243,7 @@ fi";
 		F88BAD16F88BBD60000001E9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = ;
+				PRODUCT_NAME = esp-paks;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3255,7 +3255,7 @@ fi";
 		F88BAD16F88BBD60000001EA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = ;
+				PRODUCT_NAME = esp-paks;
 
 
 			};
@@ -3315,7 +3315,7 @@ fi";
 		F88BAD16F88BBD60000001EF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = ca.crt;
+				PRODUCT_NAME = http-ca-crt;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3327,7 +3327,7 @@ fi";
 		F88BAD16F88BBD60000001F0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = ca.crt;
+				PRODUCT_NAME = http-ca-crt;
 
 
 			};
@@ -3366,7 +3366,7 @@ fi";
 		F88BAD16F88BBD60000001F3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libappweb.dylib;
+				PRODUCT_NAME = libappweb;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3383,7 +3383,7 @@ fi";
 		F88BAD16F88BBD60000001F4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libappweb.dylib;
+				PRODUCT_NAME = libappweb;
 
 				OTHER_LDFLAGS = (
 					"-lpam",
@@ -3396,7 +3396,7 @@ fi";
 		F88BAD16F88BBD60000001F5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libest.dylib;
+				PRODUCT_NAME = libest;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3408,7 +3408,7 @@ fi";
 		F88BAD16F88BBD60000001F6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libest.dylib;
+				PRODUCT_NAME = libest;
 
 
 			};
@@ -3417,7 +3417,7 @@ fi";
 		F88BAD16F88BBD60000001F7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libhttp.dylib;
+				PRODUCT_NAME = libhttp;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3434,7 +3434,7 @@ fi";
 		F88BAD16F88BBD60000001F8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libhttp.dylib;
+				PRODUCT_NAME = libhttp;
 
 				OTHER_LDFLAGS = (
 					"-lpam",
@@ -3447,7 +3447,7 @@ fi";
 		F88BAD16F88BBD60000001F9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmod_cgi.dylib;
+				PRODUCT_NAME = libmod_cgi;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3464,7 +3464,7 @@ fi";
 		F88BAD16F88BBD60000001FA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmod_cgi.dylib;
+				PRODUCT_NAME = libmod_cgi;
 
 				OTHER_LDFLAGS = (
 					"-lpam",
@@ -3477,7 +3477,7 @@ fi";
 		F88BAD16F88BBD60000001FB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmod_esp.dylib;
+				PRODUCT_NAME = libmod_esp;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3494,7 +3494,7 @@ fi";
 		F88BAD16F88BBD60000001FC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmod_esp.dylib;
+				PRODUCT_NAME = libmod_esp;
 
 				OTHER_LDFLAGS = (
 					"-lpam",
@@ -3507,7 +3507,7 @@ fi";
 		F88BAD16F88BBD60000001FD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmod_ssl.dylib;
+				PRODUCT_NAME = libmod_ssl;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3524,7 +3524,7 @@ fi";
 		F88BAD16F88BBD60000001FE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmod_ssl.dylib;
+				PRODUCT_NAME = libmod_ssl;
 
 				OTHER_LDFLAGS = (
 					"-lpam",
@@ -3537,7 +3537,7 @@ fi";
 		F88BAD16F88BBD60000001FF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmpr.dylib;
+				PRODUCT_NAME = libmpr;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3549,7 +3549,7 @@ fi";
 		F88BAD16F88BBD6000000200 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmpr.dylib;
+				PRODUCT_NAME = libmpr;
 
 
 			};
@@ -3558,7 +3558,7 @@ fi";
 		F88BAD16F88BBD6000000201 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmprssl.dylib;
+				PRODUCT_NAME = libmprssl;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3570,7 +3570,7 @@ fi";
 		F88BAD16F88BBD6000000202 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libmprssl.dylib;
+				PRODUCT_NAME = libmprssl;
 
 
 			};
@@ -3579,7 +3579,7 @@ fi";
 		F88BAD16F88BBD6000000203 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libpcre.dylib;
+				PRODUCT_NAME = libpcre;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"PCRE_CHAR=char",
@@ -3592,7 +3592,7 @@ fi";
 		F88BAD16F88BBD6000000204 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libpcre.dylib;
+				PRODUCT_NAME = libpcre;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"PCRE_CHAR=char",
@@ -3604,7 +3604,7 @@ fi";
 		F88BAD16F88BBD6000000205 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libslink.dylib;
+				PRODUCT_NAME = libslink;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3616,7 +3616,7 @@ fi";
 		F88BAD16F88BBD6000000206 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = libslink.dylib;
+				PRODUCT_NAME = libslink;
 
 
 			};
@@ -3646,7 +3646,7 @@ fi";
 		F88BAD16F88BBD6000000209 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = appman;
+				PRODUCT_NAME = manager;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3658,7 +3658,7 @@ fi";
 		F88BAD16F88BBD600000020A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = appman;
+				PRODUCT_NAME = manager;
 
 
 			};
@@ -3667,7 +3667,7 @@ fi";
 		F88BAD16F88BBD600000020B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = cache;
+				PRODUCT_NAME = server-cache;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3679,7 +3679,7 @@ fi";
 		F88BAD16F88BBD600000020C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = cache;
+				PRODUCT_NAME = server-cache;
 
 
 			};
@@ -3709,7 +3709,7 @@ fi";
 		F88BAD16F88BBD600000020F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = basic.cgi;
+				PRODUCT_NAME = test-basic.cgi;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3726,7 +3726,7 @@ fi";
 		F88BAD16F88BBD6000000210 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = basic.cgi;
+				PRODUCT_NAME = test-basic.cgi;
 
 				OTHER_LDFLAGS = (
 					"-lpam",
@@ -3739,7 +3739,7 @@ fi";
 		F88BAD16F88BBD6000000211 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = cache.cgi;
+				PRODUCT_NAME = test-cache.cgi;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3756,7 +3756,7 @@ fi";
 		F88BAD16F88BBD6000000212 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = cache.cgi;
+				PRODUCT_NAME = test-cache.cgi;
 
 				OTHER_LDFLAGS = (
 					"-lpam",
@@ -3769,7 +3769,7 @@ fi";
 		F88BAD16F88BBD6000000213 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = cgiProgram;
+				PRODUCT_NAME = test-cgiProgram;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3781,7 +3781,7 @@ fi";
 		F88BAD16F88BBD6000000214 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = cgiProgram;
+				PRODUCT_NAME = test-cgiProgram;
 
 
 			};
@@ -3790,7 +3790,7 @@ fi";
 		F88BAD16F88BBD6000000215 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = testScript;
+				PRODUCT_NAME = test-testScript;
 
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -3807,7 +3807,7 @@ fi";
 		F88BAD16F88BBD6000000216 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				PRODUCT_NAME = testScript;
+				PRODUCT_NAME = test-testScript;
 
 				OTHER_LDFLAGS = (
 					"-lpam",

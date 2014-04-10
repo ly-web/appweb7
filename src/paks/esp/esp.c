@@ -372,7 +372,9 @@ PUBLIC int main(int argc, char **argv)
             app->why = 1;
 
         } else {
-            fail("Unknown switch \"%s\"", argp);
+            if (!smatch(argp, "?") && !smatch(argp, "help")) {
+                fail("Unknown switch \"%s\"", argp);
+            }
             usageError();
         }
     }
@@ -860,6 +862,8 @@ static void run(int argc, char **argv)
     mprGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
     if (app->verbose) {
         mprSetLogLevel(app->verbose + 1);
+    } else if (!app->quiet) {
+        mprSetLogLevel(2);
     }
     if (maStartAppweb(app->appweb) < 0) {
         mprError("Cannot start HTTP service, exiting.");
@@ -2841,7 +2845,7 @@ static void usageError()
     "    esp list\n"
     "    esp migrate [forward|backward|NNN]\n"
     "    esp mode [debug|release]\n"
-    "    esp run\n"
+    "    esp [run]\n"
     "    esp uninstall paks...\n"
     "    esp upgrade paks...\n"
     "\n", name);

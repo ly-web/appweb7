@@ -15,5 +15,11 @@ Me.load({
             depends: [ 'libhttp', 'libpcre', 'libmpr' ],
             ifdef: [ 'appweb' ],
         },
+        authpass: {
+            type: 'exe',
+            sources: [ 'authpass.c' ],
+            depends: [ 'libappweb' ],
+            platforms: [ 'local' ],
+        },
     },
 })
