@@ -1418,7 +1418,6 @@ static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
     char            *ip;
     int             port;
 
-
     mprParseSocketAddress(value, &ip, &port, NULL, 443);
     if (port == 0) {
         mprError("Bad or missing port %d in ListenSecure directive", port);
@@ -2675,7 +2674,7 @@ PUBLIC bool maValidateServer(MaServer *server)
     for (nextHost = 0; (host = mprGetNextItem(http->hosts, &nextHost)) != 0; ) {
         for (nextRoute = 0; (route = mprGetNextItem(host->routes, &nextRoute)) != 0; ) {
             if (!mprLookupKey(route->extensions, "")) {
-                mprLog(3, "Route %s in host %s is missing a catch-all handler. "
+                mprLog(4, "Route %s in host %s is missing a catch-all handler. "
                     "Adding: AddHandler fileHandler \"\"", route->name, host->name);
                 httpAddRouteHandler(route, "fileHandler", "");
                 httpAddRouteIndex(route, "index.html");
