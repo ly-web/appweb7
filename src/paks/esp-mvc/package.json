@@ -1,7 +1,7 @@
 {
     "name": "esp-mvc",
     "description": "ESP MVC Framework",
-    "version": "1.0.0",
+    "version": "1.0.0-rc0",
     "keywords": [
         "esp",
     ],
@@ -17,10 +17,9 @@
         "templates/**"
     ],
     "esp": {
-        "combined": false,
-        "update": true,
         "serverPrefix": "/do",
         "server": {
+            "database": "",
             "generate": {
                 "appweb": "esp-mvc/appweb.conf",
                 "migration": "esp-mvc/migration.c",

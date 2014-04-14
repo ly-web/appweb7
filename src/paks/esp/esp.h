@@ -15,7 +15,7 @@
 #include "appweb.h"
 
 #ifndef ESP_VERSION
-    #define ESP_VERSION "1.0.0"
+    #define ESP_VERSION "1.0.0-rc0"
 #endif
 
 /************************************************************************/
@@ -1456,6 +1456,9 @@ PUBLIC void espAddHomeRoute(HttpRoute *route);
     @stability Prototype
  */
 PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set);
+
+//  MOB - DOC
+PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet);
 
 /**
     Add caching for response content.

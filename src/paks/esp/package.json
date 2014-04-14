@@ -2,7 +2,7 @@
     "name": "esp",
     "description": "Embedthis ESP, the amazingly fast C-Language web framework",
     "title": "Embedthis ESP",
-    "version": "1.0.0",
+    "version": "1.0.0-rc0",
     "keywords": [
         "esp",
         "package"
@@ -21,28 +21,26 @@
         "url": "http://github.com/embedthis/esp/issues"
     },
     "dependencies": {
-        "osdep": "*",
-        "http": "*",
-        "mpr": "*",
-        "pcre": "*",
-        "esp-html-mvc": "*",
-        "esp-server": "*",
+        "http": "~5",
+        "mpr": "~5",
+        "me-dev": "~0.8",
+        "osdep": "~0.8",
+        "pcre": "*"
     },
     "optionalDependencies": {
-        "est": "*",
-        "sqlite": "*",
+        "appweb": "~5",
+        "est": "~0.6",
+        "me-ssl": "~0.8",
+        "sqlite": "~1"
     },
     "devDependencies": {
         "appweb": "*",
-        "makeme": ">0.8.4"
+        "me": ">0.8.0"
     },
     "dirs": {
         "paks": "src/paks",
         "client": "client"
     },
-    "export": [
-        "doc/**"
-    ],
     "licenses": [
         {
             "type": "GPL",
@@ -53,4 +51,23 @@
             "url": "http://embedthis.com/licensing/"
         }
     ],
+    "paks": {
+        "appweb": {
+            "noblend": true,
+            "noexport": true,
+            "nodeps": true
+        },
+        "esp-server": {
+            "noblend": true,
+            "noexport": true
+        },
+        "esp-mvc": {
+            "noblend": true,
+            "noexport": true
+        },
+        "esp-html-mvc": {
+            "noblend": true,
+            "noexport": true
+        }
+    },
 }

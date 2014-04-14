@@ -2252,7 +2252,8 @@ PUBLIC void scripts(cchar *patterns)
         return;
     }
     if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0 || mprGetListLength(files) == 0) {
-        mprLog(0, "scripts(): Cannot find any files matching %s", patterns);
+        files = mprCreateList(0, 0);
+        mprAddItem(files, patterns);
     }
     for (ITERATE_ITEMS(files, path, next)) {
         if (schr(path, '$')) {
@@ -3012,7 +3013,8 @@ PUBLIC int espLoadConfig(HttpRoute *route)
     MprJson     *msettings, *settings;
     MprPath     cinfo;
     MprTicks    clientLifespan;
-    cchar       *cdata, *cpath, *value, *errorMsg, *pattern;
+    cchar       *cdata, *cpath, *value, *errorMsg, *pattern, *set;
+    char        *next;
     bool        debug;
 
     eroute = route->eroute;
@@ -3024,6 +3026,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
     cpath = mprJoinPath(route->documents, ME_ESP_PACKAGE);
     if (mprGetPathInfo(cpath, &cinfo) == 0) {
         if (eroute->config && cinfo.mtime > eroute->configLoaded) {
+            //  MOB - but some of these operations are not idempotent
             eroute->config = 0;
         }
         eroute->configLoaded = cinfo.mtime;
@@ -3094,8 +3097,24 @@ PUBLIC int espLoadConfig(HttpRoute *route)
         }
         if ((value = espGetConfig(route, "esp.serverPrefix", 0)) != 0) {
             httpSetRouteServerPrefix(route, value);
+            /* Compute the aggregate app+server prefix */
+            espSetConfig(route, "esp.prefix", sjoin(route->prefix ? route->prefix : "", route->serverPrefix, NULL));
+#if UNUSED
+            //  MOB - Http seems to compute this 
             httpSetRouteVar(route, "SERVER_PREFIX", sjoin(route->prefix ? route->prefix: "", route->serverPrefix, 0));
+#endif
         }
+        /*
+            Must be after serverPrefix
+         */
+        if ((value = espGetConfig(route, "esp.server.routes", 0)) != 0) {
+            set = stok(sclone(value), ", \t", &next);
+            while (set) {
+                espAddRouteSet(route, set);
+                set = stok(NULL, ", \t", &next);
+            }
+        }
+
         if ((value = espGetConfig(route, "esp.login.name", 0)) != 0) {
             /* Automatic login as this user. Password not required */
             httpSetAuthUsername(route->auth, value);
@@ -3940,10 +3959,8 @@ static bool espUnloadModule(cchar *module, MprTicks timeout)
 {
     MprModule   *mp;
     MprTicks    mark;
-    Esp         *esp;
 
     if ((mp = mprLookupModule(module)) != 0) {
-        esp = MPR->espService;
         mark = mprGetTicks();
         esp->reloading = 1;
         do {
@@ -4308,14 +4325,12 @@ static char *getModuleEntry(EspRoute *eroute, cchar *kind, cchar *source, cchar 
  */
 static bool loadEspModule(HttpRoute *route, MprDispatcher *dispatcher, cchar *kind, cchar *source, cchar **errMsg)
 {
-    Esp         *esp;
     EspRoute    *eroute;
     MprModule   *mp;
     cchar       *appName, *cacheName, *canonical, *entry, *module;
     int         isView, recompile;
 
     eroute = route->eroute;
-    esp = MPR->espService;
     *errMsg = "";
 
 #if VXWORKS
@@ -4394,7 +4409,7 @@ static bool loadApp(HttpRoute *route, MprDispatcher *dispatcher)
     } else {
         source = mprJoinPath(eroute->srcDir, "app.c");
     }
-    if (!loadEspModule(route, dispatcher, "app", source, &errMsg)) {
+    if (mprPathExists(source, R_OK) && !loadEspModule(route, dispatcher, "app", source, &errMsg)) {
         mprError("%s", errMsg);
         return 0;
     }
@@ -4628,14 +4643,14 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     eroute = route->eroute;
     dir = route->documents;
 
-    eroute->dbDir       = mprJoinPath(dir, "db");
-    eroute->cacheDir    = mprJoinPath(dir, "cache");
-    eroute->clientDir   = mprJoinPath(dir, "client");
+    eroute->dbDir          = mprJoinPath(dir, "db");
+    eroute->cacheDir       = mprJoinPath(dir, "cache");
+    eroute->clientDir      = mprJoinPath(dir, "client");
     eroute->controllersDir = mprJoinPath(dir, "controllers");
-    eroute->srcDir      = mprJoinPath(dir, "src");
-    eroute->appDir      = mprJoinPath(dir, "client/app");
-    eroute->layoutsDir  = mprJoinPath(eroute->clientDir, "layouts");
-    eroute->viewsDir    = eroute->appDir;
+    eroute->srcDir         = mprJoinPath(dir, "src");
+    eroute->appDir         = mprJoinPath(dir, "client/app");
+    eroute->layoutsDir     = mprJoinPath(eroute->clientDir, "layouts");
+    eroute->viewsDir       = eroute->appDir;
 
     httpSetRouteVar(route, "CACHE_DIR", eroute->cacheDir);
     httpSetRouteVar(route, "CLIENT_DIR", eroute->clientDir);
@@ -4745,9 +4760,64 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
 
 /*********************************** Directives *******************************/
 /*
+    Define an ESP Application
+ */
+PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet)
+{
+    EspRoute    *eroute;
+
+    if ((eroute = getEroute(route)) == 0) {
+        return MPR_ERR_MEMORY;
+    }
+    httpSetRouteDocuments(route, dir);
+    eroute->top = eroute;
+    if (name) {
+        eroute->appName = sclone(name);
+    }
+#if UNUSED
+    //  MOB - if used, should be done in httpSetRouteName()
+    httpSetRouteVar(route, "APP_NAME", name);
+#endif
+    espSetDefaultDirs(route);
+    if (prefix) {
+        if (*prefix != '/') {
+            mprError("Prefix name should start with a \"/\"");
+            prefix = sjoin("/", prefix, NULL);
+        }
+        prefix = stemplate(prefix, route->vars);
+        httpSetRouteName(route, prefix);
+        httpSetRoutePrefix(route, prefix);
+        httpSetRoutePattern(route, sfmt("^%s%", prefix), 0);
+    } else {
+        httpSetRouteName(route, sfmt("/%s", name));
+    }
+#if UNUSED
+    //  MOB - if used, should be done in httpSetRoutePrefix
+    httpSetRouteVar(route, "PREFIX", prefix);
+#endif
+    httpSetRouteTarget(route, "run", "$&");
+    httpAddRouteHandler(route, "espHandler", "");
+    httpAddRouteHandler(route, "espHandler", "esp");
+    httpAddRouteIndex(route, "index.esp");
+
+    if (espLoadConfig(route) < 0) {
+        return MPR_ERR_CANT_LOAD;
+    }    
+    espSetConfig(route, "esp.appPrefix", prefix);
+
+    if (routeSet) {
+        eroute->routeSet = sclone(routeSet);
+        espAddRouteSet(route, eroute->routeSet);
+        httpFinalizeRoute(route);
+    }
+    return 0;
+}
+
+
+/*
     <EspApp 
   or 
-    EspApp 
+    <EspApp 
         auth=STORE 
         database=DATABASE 
         dir=DIR 
@@ -4765,7 +4835,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
 
     dir = ".";
     routeSet = 0;
-    combined = "false";
+    combined = 0;
     prefix = 0;
     database = 0;
     auth = 0;
@@ -4794,10 +4864,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
             }
         }
     }
-    if (smatch(prefix, "/") || smatch(prefix, "")) {
-        prefix = 0;
-    }
-    if (/* FUTURE smatch(prefix, state->route->prefix) && */ mprSamePath(state->route->documents, dir)) {
+    if (mprSamePath(state->route->documents, dir)) {
         /* 
             Can use existing route as it has the same prefix and documents directory. 
          */
@@ -4806,55 +4873,24 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
         route = httpCreateInheritedRoute(state->route);
     }
     state->route = route;
-    httpSetRouteDocuments(route, dir);
-
-    if ((eroute = getEroute(route)) == 0) {
-        return MPR_ERR_MEMORY;
+    eroute = route->eroute;
+    if (espApp(route, dir, name, prefix, routeSet) < 0) {
+        return MPR_ERR_CANT_CREATE;
     }
-    eroute->top = eroute;
-    eroute->combined = scaselessmatch(combined, "true") || smatch(combined, "1");
-    if (name) {
-        eroute->appName = sclone(name);
-    }
-    httpSetRouteVar(route, "APP_NAME", name);
-    eroute->routeSet = sclone(routeSet);
-    espSetDefaultDirs(route);
     if (prefix) {
-        if (*prefix != '/') {
-            mprError("Prefix name should start with a \"/\"");
-            prefix = sjoin("/", prefix, NULL);
-        }
-        prefix = stemplate(prefix, route->vars);
-        httpSetRouteName(route, prefix);
-        httpSetRoutePrefix(route, prefix);
-        httpSetRoutePattern(route, sfmt("^%s%", prefix), 0);
-    } else {
-        httpSetRouteName(route, sfmt("/%s", name));
+        espSetConfig(route, "esp.appPrefix", prefix);
     }
-    httpSetRouteVar(route, "PREFIX", prefix);
-    /*
-        Load the config file here before creating routes
-     */
-    if (espLoadConfig(route) < 0) {
-        return MPR_ERR_CANT_LOAD;
+    if (combined) {
+        eroute->combined = scaselessmatch(combined, "true") || smatch(combined, "1");
     }
-    espSetConfig(route, "esp.appPrefix", prefix);
-    espSetConfig(route, "esp.prefix", sjoin(prefix ? prefix : "", route->serverPrefix, NULL));
     if (auth) {
         if (httpSetAuthStore(route->auth, auth) < 0) {
             mprError("The %s AuthStore is not available on this platform", auth);
             return MPR_ERR_BAD_STATE;
         }
     }
-    httpSetRouteTarget(route, "run", "$&");
-    httpAddRouteHandler(route, "espHandler", "");
-    httpAddRouteHandler(route, "espHandler", "esp");
-
-    httpAddRouteIndex(route, "index.esp");
-
     if (database) {
-        eroute->database = sclone(database);
-        if (espDbDirective(state, key, eroute->database) < 0) {
+        if (espDbDirective(state, key, database) < 0) {
             return MPR_ERR_BAD_STATE;
         }
     }
@@ -4873,7 +4909,9 @@ static int finishEspAppDirective(MaState *state, cchar *key, cchar *value)
      */
     route = state->route;
     eroute = route->eroute;
+#if UNUSED
     espAddRouteSet(route, eroute->routeSet);
+#endif
     if (route != state->prev->route) {
         httpFinalizeRoute(route);
     }
@@ -4907,7 +4945,7 @@ static int finishEspAppDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    <Espapp>
+    <EspApp>
  */
 static int openEspAppDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -4917,7 +4955,7 @@ static int openEspAppDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    </Espapp>
+    </EspApp>
  */
 static int closeEspAppDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -4964,7 +5002,7 @@ static int espCompileDirective(MaState *state, cchar *key, cchar *value)
 PUBLIC int espOpenDatabase(HttpRoute *route, cchar *spec)
 {
     EspRoute    *eroute;
-    char        *provider, *path;
+    char        *provider, *path, *dir;
     int         flags;
 
     eroute = route->eroute;
@@ -4974,9 +5012,14 @@ PUBLIC int espOpenDatabase(HttpRoute *route, cchar *spec)
         return MPR_ERR_BAD_ARGS;
     }
     path = mprJoinPath(eroute->dbDir, path);
+    dir = mprGetPathDir(path);
+    if (!mprPathExists(dir, X_OK)) {
+        mprMakeDir(dir, 0755, -1, -1, 1);
+    }
     if ((eroute->edi = ediOpen(mprGetRelPath(path, NULL), provider, flags)) == 0) {
         return MPR_ERR_CANT_OPEN;
     }
+    eroute->database = sclone(spec);
     return 0;
 }
 
@@ -5233,13 +5276,16 @@ static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    MOB - RENAME. This is the ServerPrefix
     EspRoutePrefix /server
     Sets the route prefix to use for routes to talk to the server
  */
 static int espRoutePrefixDirective(MaState *state, cchar *key, cchar *value)
 {
     httpSetRouteServerPrefix(state->route, value);
+#if UNUSED
     httpSetRouteVar(state->route, "SERVER_PREFIX", sjoin(state->route->prefix ? state->route->prefix: "", state->route->serverPrefix, NULL));
+#endif
     return 0;
 }
 
