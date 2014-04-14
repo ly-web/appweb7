@@ -2092,11 +2092,7 @@
 ../src/paks/esp-server/README.md,
 ../src/paks/esp-server/templates,
 ../src/paks/esp-server/templates/esp-server,
-../src/paks/esp-server/templates/esp-server/appweb.conf,
-../src/paks/esp-server/templates/esp-server/controller.c,
-../src/paks/esp-server/templates/esp-server/migration.c,
-../src/paks/esp-server/templates/esp-server/src,
-../src/paks/esp-server/templates/esp-server/src/app.c
+../src/paks/esp-server/templates/esp-server/appweb.conf
 			);
 			outputPaths = (
 ../macosx-x64-static/esp
@@ -2105,51 +2101,47 @@
 			shellPath = /bin/bash;
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/paks
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0\"
-	cp esp-html-mvc/LICENSE.md ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/LICENSE.md
-	cp esp-html-mvc/package.json ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/package.json
-	cp esp-html-mvc/README.md ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/README.md
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc\"
-	cp esp-html-mvc/templates/esp-html-mvc/appweb.conf ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/appweb.conf
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/client\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/assets\"
-	cp esp-html-mvc/templates/esp-html-mvc/client/assets/favicon.ico ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/assets/favicon.ico
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/css\"
-	cp esp-html-mvc/templates/esp-html-mvc/client/css/all.css ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/css/all.css
-	cp esp-html-mvc/templates/esp-html-mvc/client/css/all.less ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/css/all.less
-	cp esp-html-mvc/templates/esp-html-mvc/client/css/app.less ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/css/app.less
-	cp esp-html-mvc/templates/esp-html-mvc/client/css/theme.less ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/css/theme.less
-	cp esp-html-mvc/templates/esp-html-mvc/client/index.esp ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/index.esp
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/layouts\"
-	cp esp-html-mvc/templates/esp-html-mvc/client/layouts/default.esp ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/client/layouts/default.esp
-	cp esp-html-mvc/templates/esp-html-mvc/controller-singleton.c ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/controller-singleton.c
-	cp esp-html-mvc/templates/esp-html-mvc/controller.c ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/controller.c
-	cp esp-html-mvc/templates/esp-html-mvc/edit.esp ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/edit.esp
-	cp esp-html-mvc/templates/esp-html-mvc/list.esp ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/list.esp
-	cp esp-html-mvc/templates/esp-html-mvc/start.me ../${OUT_DIR}/esp/esp-html-mvc/5.0.0/templates/esp-html-mvc/start.me
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0\"
-	cp esp-mvc/LICENSE.md ../${OUT_DIR}/esp/esp-mvc/1.0.0/LICENSE.md
-	cp esp-mvc/package.json ../${OUT_DIR}/esp/esp-mvc/1.0.0/package.json
-	cp esp-mvc/README.md ../${OUT_DIR}/esp/esp-mvc/1.0.0/README.md
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0/templates\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0/templates/esp-mvc\"
-	cp esp-mvc/templates/esp-mvc/appweb.conf ../${OUT_DIR}/esp/esp-mvc/1.0.0/templates/esp-mvc/appweb.conf
-	cp esp-mvc/templates/esp-mvc/controller.c ../${OUT_DIR}/esp/esp-mvc/1.0.0/templates/esp-mvc/controller.c
-	cp esp-mvc/templates/esp-mvc/migration.c ../${OUT_DIR}/esp/esp-mvc/1.0.0/templates/esp-mvc/migration.c
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0/templates/esp-mvc/src\"
-	cp esp-mvc/templates/esp-mvc/src/app.c ../${OUT_DIR}/esp/esp-mvc/1.0.0/templates/esp-mvc/src/app.c
-	mkdir -p \"../${OUT_DIR}/esp/esp-server/5.0.0\"
-	cp esp-server/LICENSE.md ../${OUT_DIR}/esp/esp-server/5.0.0/LICENSE.md
-	cp esp-server/package.json ../${OUT_DIR}/esp/esp-server/5.0.0/package.json
-	cp esp-server/README.md ../${OUT_DIR}/esp/esp-server/5.0.0/README.md
-	mkdir -p \"../${OUT_DIR}/esp/esp-server/5.0.0/templates\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-server/5.0.0/templates/esp-server\"
-	cp esp-server/templates/esp-server/appweb.conf ../${OUT_DIR}/esp/esp-server/5.0.0/templates/esp-server/appweb.conf
-	cp esp-server/templates/esp-server/controller.c ../${OUT_DIR}/esp/esp-server/5.0.0/templates/esp-server/controller.c
-	cp esp-server/templates/esp-server/migration.c ../${OUT_DIR}/esp/esp-server/5.0.0/templates/esp-server/migration.c
-	mkdir -p \"../${OUT_DIR}/esp/esp-server/5.0.0/templates/esp-server/src\"
-	cp esp-server/templates/esp-server/src/app.c ../${OUT_DIR}/esp/esp-server/5.0.0/templates/esp-server/src/app.c
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0\"
+	cp esp-html-mvc/LICENSE.md ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/LICENSE.md
+	cp esp-html-mvc/package.json ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/package.json
+	cp esp-html-mvc/README.md ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/README.md
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates\"
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc\"
+	cp esp-html-mvc/templates/esp-html-mvc/appweb.conf ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/appweb.conf
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client\"
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/assets\"
+	cp esp-html-mvc/templates/esp-html-mvc/client/assets/favicon.ico ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/assets/favicon.ico
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/css\"
+	cp esp-html-mvc/templates/esp-html-mvc/client/css/all.css ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/css/all.css
+	cp esp-html-mvc/templates/esp-html-mvc/client/css/all.less ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/css/all.less
+	cp esp-html-mvc/templates/esp-html-mvc/client/css/app.less ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/css/app.less
+	cp esp-html-mvc/templates/esp-html-mvc/client/css/theme.less ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/css/theme.less
+	cp esp-html-mvc/templates/esp-html-mvc/client/index.esp ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/index.esp
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/layouts\"
+	cp esp-html-mvc/templates/esp-html-mvc/client/layouts/default.esp ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/layouts/default.esp
+	cp esp-html-mvc/templates/esp-html-mvc/controller-singleton.c ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/controller-singleton.c
+	cp esp-html-mvc/templates/esp-html-mvc/controller.c ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/controller.c
+	cp esp-html-mvc/templates/esp-html-mvc/edit.esp ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/edit.esp
+	cp esp-html-mvc/templates/esp-html-mvc/list.esp ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/list.esp
+	cp esp-html-mvc/templates/esp-html-mvc/start.me ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/start.me
+	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0\"
+	cp esp-mvc/LICENSE.md ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/LICENSE.md
+	cp esp-mvc/package.json ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/package.json
+	cp esp-mvc/README.md ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/README.md
+	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/templates\"
+	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/templates/esp-mvc\"
+	cp esp-mvc/templates/esp-mvc/appweb.conf ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/templates/esp-mvc/appweb.conf
+	cp esp-mvc/templates/esp-mvc/controller.c ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/templates/esp-mvc/controller.c
+	cp esp-mvc/templates/esp-mvc/migration.c ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/templates/esp-mvc/migration.c
+	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/templates/esp-mvc/src\"
+	cp esp-mvc/templates/esp-mvc/src/app.c ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/templates/esp-mvc/src/app.c
+	mkdir -p \"../${OUT_DIR}/esp/esp-server/1.0.0-rc0\"
+	cp esp-server/LICENSE.md ../${OUT_DIR}/esp/esp-server/1.0.0-rc0/LICENSE.md
+	cp esp-server/package.json ../${OUT_DIR}/esp/esp-server/1.0.0-rc0/package.json
+	cp esp-server/README.md ../${OUT_DIR}/esp/esp-server/1.0.0-rc0/README.md
+	mkdir -p \"../${OUT_DIR}/esp/esp-server/1.0.0-rc0/templates\"
+	mkdir -p \"../${OUT_DIR}/esp/esp-server/1.0.0-rc0/templates/esp-server\"
+	cp esp-server/templates/esp-server/appweb.conf ../${OUT_DIR}/esp/esp-server/1.0.0-rc0/templates/esp-server/appweb.conf
 ";
 		};
 		D64967C4D6497AA20000000B /* ShellScript for esp.conf */ = {

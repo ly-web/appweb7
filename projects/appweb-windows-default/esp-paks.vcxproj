@@ -96,51 +96,47 @@
 
   <CustomBuildStep>
     <Command>cd ..\..\src\paks
-if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0"
-copy /Y esp-html-mvc\LICENSE.md \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\LICENSE.md
-copy /Y esp-html-mvc\package.json \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\package.json
-copy /Y esp-html-mvc\README.md \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\README.md
-if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates"
-if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc"
-copy /Y esp-html-mvc\templates\esp-html-mvc\appweb.conf \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\appweb.conf
-if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\client" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\client"
-if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\assets" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\assets"
-copy /Y esp-html-mvc\templates\esp-html-mvc\client\assets\favicon.ico \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\assets\favicon.ico
-if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\css" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\css"
-copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\all.css \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\css\all.css
-copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\all.less \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\css\all.less
-copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\app.less \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\css\app.less
-copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\theme.less \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\css\theme.less
-copy /Y esp-html-mvc\templates\esp-html-mvc\client\index.esp \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\index.esp
-if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\layouts" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\layouts"
-copy /Y esp-html-mvc\templates\esp-html-mvc\client\layouts\default.esp \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\client\layouts\default.esp
-copy /Y esp-html-mvc\templates\esp-html-mvc\controller-singleton.c \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\controller-singleton.c
-copy /Y esp-html-mvc\templates\esp-html-mvc\controller.c \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\controller.c
-copy /Y esp-html-mvc\templates\esp-html-mvc\edit.esp \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\edit.esp
-copy /Y esp-html-mvc\templates\esp-html-mvc\list.esp \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\list.esp
-copy /Y esp-html-mvc\templates\esp-html-mvc\start.me \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\5.0.0\templates\esp-html-mvc\start.me
-if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0"
-copy /Y esp-mvc\LICENSE.md \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\LICENSE.md
-copy /Y esp-mvc\package.json \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\package.json
-copy /Y esp-mvc\README.md \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\README.md
-if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates"
-if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates\esp-mvc" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates\esp-mvc"
-copy /Y esp-mvc\templates\esp-mvc\appweb.conf \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates\esp-mvc\appweb.conf
-copy /Y esp-mvc\templates\esp-mvc\controller.c \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates\esp-mvc\controller.c
-copy /Y esp-mvc\templates\esp-mvc\migration.c \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates\esp-mvc\migration.c
-if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates\esp-mvc\src" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates\esp-mvc\src"
-copy /Y esp-mvc\templates\esp-mvc\src\app.c \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0\templates\esp-mvc\src\app.c
-if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0"
-copy /Y esp-server\LICENSE.md \Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0\LICENSE.md
-copy /Y esp-server\package.json \Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0\package.json
-copy /Y esp-server\README.md \Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0\README.md
-if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0\templates" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0\templates"
-if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0\templates\esp-server" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0\templates\esp-server"
-copy /Y esp-server\templates\esp-server\appweb.conf \Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0\templates\esp-server\appweb.conf
-copy /Y esp-server\templates\esp-server\controller.c \Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0\templates\esp-server\controller.c
-copy /Y esp-server\templates\esp-server\migration.c \Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0\templates\esp-server\migration.c
-if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0\templates\esp-server\src" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0\templates\esp-server\src"
-copy /Y esp-server\templates\esp-server\src\app.c \Users\mob\git\appweb\windows-x86-default\esp\esp-server\5.0.0\templates\esp-server\src\app.c
+if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0"
+copy /Y esp-html-mvc\LICENSE.md \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\LICENSE.md
+copy /Y esp-html-mvc\package.json \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\package.json
+copy /Y esp-html-mvc\README.md \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\README.md
+if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates"
+if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc"
+copy /Y esp-html-mvc\templates\esp-html-mvc\appweb.conf \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\appweb.conf
+if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\client" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\client"
+if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\client\assets" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\client\assets"
+copy /Y esp-html-mvc\templates\esp-html-mvc\client\assets\favicon.ico \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\client\assets\favicon.ico
+if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\client\css" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\client\css"
+copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\all.css \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\client\css\all.css
+copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\all.less \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\client\css\all.less
+copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\app.less \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\client\css\app.less
+copy /Y esp-html-mvc\templates\esp-html-mvc\client\css\theme.less \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\client\css\theme.less
+copy /Y esp-html-mvc\templates\esp-html-mvc\client\index.esp \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\client\index.esp
+if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\client\layouts" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\client\layouts"
+copy /Y esp-html-mvc\templates\esp-html-mvc\client\layouts\default.esp \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\client\layouts\default.esp
+copy /Y esp-html-mvc\templates\esp-html-mvc\controller-singleton.c \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\controller-singleton.c
+copy /Y esp-html-mvc\templates\esp-html-mvc\controller.c \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\controller.c
+copy /Y esp-html-mvc\templates\esp-html-mvc\edit.esp \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\edit.esp
+copy /Y esp-html-mvc\templates\esp-html-mvc\list.esp \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\list.esp
+copy /Y esp-html-mvc\templates\esp-html-mvc\start.me \Users\mob\git\appweb\windows-x86-default\esp\esp-html-mvc\1.0.0-rc0\templates\esp-html-mvc\start.me
+if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0-rc0" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0-rc0"
+copy /Y esp-mvc\LICENSE.md \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0-rc0\LICENSE.md
+copy /Y esp-mvc\package.json \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0-rc0\package.json
+copy /Y esp-mvc\README.md \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0-rc0\README.md
+if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0-rc0\templates" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0-rc0\templates"
+if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0-rc0\templates\esp-mvc" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0-rc0\templates\esp-mvc"
+copy /Y esp-mvc\templates\esp-mvc\appweb.conf \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0-rc0\templates\esp-mvc\appweb.conf
+copy /Y esp-mvc\templates\esp-mvc\controller.c \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0-rc0\templates\esp-mvc\controller.c
+copy /Y esp-mvc\templates\esp-mvc\migration.c \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0-rc0\templates\esp-mvc\migration.c
+if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0-rc0\templates\esp-mvc\src" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0-rc0\templates\esp-mvc\src"
+copy /Y esp-mvc\templates\esp-mvc\src\app.c \Users\mob\git\appweb\windows-x86-default\esp\esp-mvc\1.0.0-rc0\templates\esp-mvc\src\app.c
+if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-server\1.0.0-rc0" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-server\1.0.0-rc0"
+copy /Y esp-server\LICENSE.md \Users\mob\git\appweb\windows-x86-default\esp\esp-server\1.0.0-rc0\LICENSE.md
+copy /Y esp-server\package.json \Users\mob\git\appweb\windows-x86-default\esp\esp-server\1.0.0-rc0\package.json
+copy /Y esp-server\README.md \Users\mob\git\appweb\windows-x86-default\esp\esp-server\1.0.0-rc0\README.md
+if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-server\1.0.0-rc0\templates" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-server\1.0.0-rc0\templates"
+if not exist "\Users\mob\git\appweb\windows-x86-default\esp\esp-server\1.0.0-rc0\templates\esp-server" md "\Users\mob\git\appweb\windows-x86-default\esp\esp-server\1.0.0-rc0\templates\esp-server"
+copy /Y esp-server\templates\esp-server\appweb.conf \Users\mob\git\appweb\windows-x86-default\esp\esp-server\1.0.0-rc0\templates\esp-server\appweb.conf
 cd ..\..\projects\appweb-windows-default</Command>
     <Outputs>..\..\$(Cfg)\esp</Outputs>
   </CustomBuildStep>
