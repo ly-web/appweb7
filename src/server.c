@@ -94,7 +94,6 @@ PUBLIC MaServer *maLookupServer(MaAppweb *appweb, cchar *name)
 PUBLIC int maStartAppweb(MaAppweb *appweb)
 {
     MaServer    *server;
-    char        *timeText;
     int         next;
 
     for (next = 0; (server = mprGetNextItem(appweb->servers, &next)) != 0; ) {
@@ -102,8 +101,7 @@ PUBLIC int maStartAppweb(MaAppweb *appweb)
             return MPR_ERR_CANT_INITIALIZE;
         }
     }
-    timeText = mprGetDate(0);
-    mprLog(1, "Started at %s with max %d threads", timeText, mprGetMaxWorkers(appweb));
+    mprLog(1, "Started at %s", mprGetDate(0));
     return 0;
 }
 
@@ -230,13 +228,13 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
             }
         }
 #endif
-#if ME_COM_ESP
+#if ME_COM_ESP || ME_ESP_PRODUCT
         maLoadModule(appweb, "espHandler", "libmod_esp");
         if (httpLookupStage(http, "espHandler")) {
             httpAddRouteHandler(route, "espHandler", "esp");
         }
 #endif
-#if ME_COM_EJS
+#if ME_COM_EJS || ME_EJS_PRODUCT
         maLoadModule(appweb, "ejsHandler", "libmod_ejs");
         if (httpLookupStage(http, "ejsHandler")) {
             httpAddRouteHandler(route, "ejsHandler", "ejs");

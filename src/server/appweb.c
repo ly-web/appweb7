@@ -321,7 +321,6 @@ static int createEndpoints(int argc, char **argv)
                 return MPR_ERR_CANT_CREATE;
             }
         }
-        httpLogRoutes(app->server->defaultHost, 0);
     }
     if (app->workers >= 0) {
         mprSetMaxWorkers(app->workers);
