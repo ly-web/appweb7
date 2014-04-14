@@ -3980,7 +3980,7 @@ PUBLIC int httpStartEndpoint(HttpEndpoint *endpoint)
     } else {
         mprSetSocketBlockingMode(endpoint->sock, 1);
     }
-    proto = endpoint->ssl ? "HTTPS" : "HTTP ";
+    proto = endpoint->ssl ? "HTTPS" : "HTTP";
     ip = *endpoint->ip ? endpoint->ip : "*";
     if (mprIsSocketV6(endpoint->sock)) {
         mprLog(2, "Started %s service on \"[%s]:%d\"", proto, ip, endpoint->port);
@@ -8323,7 +8323,7 @@ PUBLIC HttpRoute *httpCreateRoute(HttpHost *host)
     }
     route->auth = httpCreateAuth();
     route->defaultLanguage = sclone("en");
-    route->home = route->documents = mprGetCurrentPath(".");
+    route->home = route->documents = mprGetCurrentPath();
     route->flags = HTTP_ROUTE_STEALTH;
 #if ME_DEBUG
     route->flags |= HTTP_ROUTE_SHOW_ERRORS;
