@@ -172,7 +172,11 @@ MAIN(appweb, int argc, char **argv, char **envp)
         } else if (*argp == '-' && isdigit((uchar) argp[1])) {
             level = (int) stoi(&argp[1]);
 
-        } else if (!smatch(argp, "?")) {
+        } else if (smatch(argp, "-?") || scontains(argp, "-help")) {
+            usageError();
+            exit(5);
+
+        } else if (*argp == '-') {
             mprError("Unknown switch \"%s\"", argp);
             usageError();
             exit(5);
