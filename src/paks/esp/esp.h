@@ -1661,15 +1661,6 @@ PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue);
 PUBLIC bool espHasPak(HttpRoute *route, cchar *name);
 
 /**
-    Load ESP package.json configuration file 
-    @param route HttpRoute defining the ESP application
-    @returns Zero if successful, otherwise a negative MPR error code.
-    @ingroup EspRoute
-    @stability Prototype
- */
-PUBLIC int espLoadConfig(HttpRoute *route);
-
-/**
     Save the in-memory ESP package.json configuration to the default location for the ESP application
     defined by the specified route. 
     @param route HttpRoute defining the ESP application

@@ -152,6 +152,7 @@ static bool identifier(cchar *name);
 static MprJson *createPackage();
 static void initialize(int argc, char **argv);
 static bool inRange(cchar *expr, cchar *version);
+static void init(int argc, char **argv);
 static void install(int argc, char **argv);
 static bool installPak(cchar *name, cchar *criteria, bool topLevel);
 static bool installPakFiles(cchar *name, cchar *version, bool topLevel);
@@ -474,6 +475,9 @@ static void parseCommand(int argc, char **argv)
     } else if (smatch(cmd, "get")) {
         app->require = REQ_PACKAGE;
 
+    } else if (smatch(cmd, "init")) {
+        app->require = 0;
+
     } else if (smatch(cmd, "install")) {
         app->require = 0;
 
@@ -639,10 +643,11 @@ static void initialize(int argc, char **argv)
             app->eroute->update = 1;
             httpSetRouteShowErrors(app->route, 1);
             espSetDefaultDirs(app->route);
+            httpAddRouteHandler(app->route, "espHandler", "esp");
+            httpAddRouteIndex(app->route, "index.esp");
+            httpAddRouteIndex(app->route, "index.html");
         }
-        httpAddRouteHandler(app->route, "espHandler", "esp");
-        httpAddRouteIndex(app->route, "index.esp");
-        httpAddRouteIndex(app->route, "index.html");
+        
         /*
             Load ESP compiler rules
          */
@@ -690,6 +695,9 @@ static void process(int argc, char **argv)
 
     } else if (smatch(cmd, "get")) {
         getPackageValue(argc - 1, &argv[1]);
+
+    } else if (smatch(cmd, "init")) {
+        init(argc - 1, &argv[1]);
 
     } else if (smatch(cmd, "install")) {
         install(argc - 1, &argv[1]);
@@ -831,6 +839,12 @@ static void getPackageValue(int argc, char **argv)
     } else {
         printf("undefined\n");
     }
+}
+
+
+static void init(int argc, char **argv)
+{
+    savePackage();
 }
 
 
@@ -1412,7 +1426,7 @@ static cchar *findAppwebConfig()
     if (path == 0) {
         path = name;
     }
-    mprLog(3, "Probe for \"%s\"", path);
+    mprLog(5, "Probe for \"%s\"", path);
     if (!mprPathExists(path, R_OK)) {
         if (app->appwebConfig) {
             fail("Cannot open config file %s", path);
@@ -1420,7 +1434,7 @@ static cchar *findAppwebConfig()
         }
         path = 0;
         for (current = mprGetCurrentPath(); current; current = parent) {
-            mprLog(3, "Probe for \"%s\"", current);
+            mprLog(5, "Probe for \"%s\"", current);
             if (mprPathExists(mprJoinPath(current, name), R_OK)) {
                 path = mprJoinPath(current, name);
                 break;
@@ -2522,17 +2536,10 @@ static bool installPakFiles(cchar *name, cchar *criteria, bool topLevel)
 
 static MprJson *createPackage()
 {
-    MprJson     *config;
-
-    config = mprCreateJson(0);
-    mprSetJson(config, "name", app->appName, 0);
-    mprSetJson(config, "title", app->appName, 0);
-    mprSetJson(config, "description", app->appName, 0);
-    mprSetJson(config, "version", "0.0.0", 0);
-    mprSetJsonObj(config, "dependencies", mprCreateJson(0), 0);
-    mprSetJsonObj(config, "client-scripts", mprCreateJson(MPR_JSON_ARRAY), 0);
-    mprSetJsonObj(config, "dirs", mprCreateJson(0), 0);
-    return config;
+    return mprParseJson(sfmt("{ name: '%s', title: '%s', descript: '%s', version: '1.0.0', \
+        dependencies: {}, 'client-scripts': [], dirs: { client: 'client', paks: 'client/paks' }, \
+        esp: {server: {routes: 'esp-server'}}}",
+        app->appName, app->appName, app->appName));
 }
 
 
@@ -2803,8 +2810,7 @@ static void usageError()
     mprEprintf("\nESP Usage:\n\n"
     "  %s [options] [commands]\n\n"
     "  Options:\n"
-    "    --chdir dir                # Change to the named directory first\n"
-    "    --config appwebConfig        # Use named config file instead appweb.conf\n"
+    "    --config appwebConfig      # Use named config file instead appweb.conf\n"
     "    --database name            # Database provider 'mdb|sdb'\n"
     "    --genlink filename         # Generate a static link module for combined compilations\n"
     "    --home directory           # Change to directory first\n"

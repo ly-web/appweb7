@@ -3003,157 +3003,6 @@ PUBLIC bool espIsSecure(HttpConn *conn)
 }
 
 
-/*
-    Load the package.json
- */
-PUBLIC int espLoadConfig(HttpRoute *route)
-{
-    HttpRoute   *alias;
-    EspRoute    *eroute;
-    MprJson     *msettings, *settings;
-    MprPath     cinfo;
-    MprTicks    clientLifespan;
-    cchar       *cdata, *cpath, *value, *errorMsg, *pattern, *set;
-    char        *next;
-    bool        debug;
-
-    eroute = route->eroute;
-    lock(eroute);
-
-    /*
-        See if config file has been modified and if so, reload.
-     */
-    cpath = mprJoinPath(route->documents, ME_ESP_PACKAGE);
-    if (mprGetPathInfo(cpath, &cinfo) == 0) {
-        if (eroute->config && cinfo.mtime > eroute->configLoaded) {
-            //  MOB - but some of these operations are not idempotent
-            eroute->config = 0;
-        }
-        eroute->configLoaded = cinfo.mtime;
-    }
-    if (!eroute->config) {
-        if ((cdata = mprReadPathContents(cpath, NULL)) == 0) {
-            mprError("Cannot read ESP configuration from %s", cpath);
-            unlock(eroute);
-            return MPR_ERR_CANT_READ;
-        }
-        if ((eroute->config = mprParseJsonEx(cdata, 0, 0, 0, &errorMsg)) == 0) {
-            mprError("Cannot parse %s: error %s", cpath, errorMsg);
-            unlock(eroute);
-            return 0;
-        }
-        /*
-            Blend the mode properties into settings
-         */
-        eroute->mode = mprGetJson(eroute->config, "esp.mode", 0);
-        if (!eroute->mode) {
-            eroute->mode = sclone("debug");
-            mprLog(3, "esp: application \"%s\" running in \"%s\" mode", eroute->appName, eroute->mode);
-        }
-        debug = smatch(eroute->mode, "debug");
-        if ((msettings = mprGetJsonObj(eroute->config, sfmt("esp.modes.%s", eroute->mode), 0)) != 0) {
-            settings = mprLookupJsonObj(eroute->config, "esp");
-            mprBlendJson(settings, msettings, MPR_JSON_OVERWRITE);
-            mprSetJson(settings, "esp.mode", eroute->mode, 0);
-        }
-        if ((value = espGetConfig(route, "esp.auth", 0)) != 0) {
-            if (httpSetAuthStore(route->auth, value) < 0) {
-                mprError("The %s AuthStore is not available on this platform", value);
-            }
-        }
-        if ((value = espGetConfig(route, "esp.combined", 0)) != 0) {
-            eroute->combined = smatch(value, "true");
-            if (eroute->combined) {
-                mprLog(3, "esp: app %s configured for combined compilation", eroute->appName);
-            }
-        }
-        if ((value = espGetConfig(route, "esp.compile", 0)) != 0) {
-            if (smatch(value, "debug") || smatch(value, "symbols")) {
-                eroute->compileMode = ESP_COMPILE_SYMBOLS;
-            } else if (smatch(value, "release") || smatch(value, "optimized")) {
-                eroute->compileMode = ESP_COMPILE_OPTIMIZED;
-            }
-        }
-        if ((value = espGetConfig(route, "esp.server.redirect", 0)) != 0) {
-            if (smatch(value, "true") || smatch(value, "secure")) {
-                pattern = route->prefix ? sfmt("%s/", route->prefix) : "/";
-                alias = httpCreateAliasRoute(route, pattern, 0, 0);
-                httpSetRouteTarget(alias, "redirect", "0 https://");
-                /* A null age suppresses the strict transport security header */
-                httpAddRouteCondition(alias, "secure", 0, HTTP_ROUTE_NOT);
-                httpFinalizeRoute(alias);
-            }
-        }
-        if ((value = espGetConfig(route, "esp.showErrors", 0)) != 0) {
-            httpSetRouteShowErrors(route, smatch(value, "true"));
-        } else if (debug) {
-            httpSetRouteShowErrors(route, 1);
-        }
-        if ((value = espGetConfig(route, "esp.update", 0)) != 0) {
-            eroute->update = smatch(value, "true");
-        }
-        if ((value = espGetConfig(route, "esp.keepSource", 0)) != 0) {
-            eroute->keepSource = smatch(value, "true");
-        }
-        if ((value = espGetConfig(route, "esp.serverPrefix", 0)) != 0) {
-            httpSetRouteServerPrefix(route, value);
-            /* Compute the aggregate app+server prefix */
-            espSetConfig(route, "esp.prefix", sjoin(route->prefix ? route->prefix : "", route->serverPrefix, NULL));
-#if UNUSED
-            //  MOB - Http seems to compute this 
-            httpSetRouteVar(route, "SERVER_PREFIX", sjoin(route->prefix ? route->prefix: "", route->serverPrefix, 0));
-#endif
-        }
-        /*
-            Must be after serverPrefix
-         */
-        if ((value = espGetConfig(route, "esp.server.routes", 0)) != 0) {
-            set = stok(sclone(value), ", \t", &next);
-            while (set) {
-                espAddRouteSet(route, set);
-                set = stok(NULL, ", \t", &next);
-            }
-        }
-
-        if ((value = espGetConfig(route, "esp.login.name", 0)) != 0) {
-            /* Automatic login as this user. Password not required */
-            httpSetAuthUsername(route->auth, value);
-        }
-        if ((value = espGetConfig(route, "esp.xsrf", 0)) != 0) {
-            httpSetRouteXsrf(route, smatch(value, "true"));
-        } else {
-            httpSetRouteXsrf(route, 1);
-        }
-        if ((value = espGetConfig(route, "esp.json", 0)) != 0) {
-            eroute->json = smatch(value, "true");
-        }
-        if ((value = espGetConfig(route, "esp.timeouts.session", 0)) != 0) {
-            route->limits->sessionTimeout = httpGetTicks(value);
-            mprLog(3, "esp: set session timeout to %s", value);
-        }
-        if (espTestConfig(route, "esp.compressed", "true")) {
-            httpAddRouteMapping(route, "css,html,js,less,txt,xml", "${1}.gz, min.${1}.gz, min.${1}");
-        }
-        if ((value = espGetConfig(route, "esp.cache", 0)) != 0) {
-            clientLifespan = httpGetTicks(value);
-            httpAddCache(route, NULL, NULL, "html,gif,jpeg,jpg,png,pdf,ico,js,txt,less", NULL, clientLifespan, 0, 
-                HTTP_CACHE_CLIENT | HTTP_CACHE_ALL);
-        }
-        if (!eroute->database) {
-            if ((eroute->database = espGetConfig(route, "esp.server.database", 0)) != 0) {
-                if (espOpenDatabase(route, eroute->database) < 0) {
-                    mprError("Cannot open database %s", eroute->database);
-                    unlock(eroute);
-                    return MPR_ERR_CANT_OPEN;
-                }
-            }
-        }
-    }
-    unlock(eroute);
-    return 0;
-}
-
-
 PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value)
 {
     return httpMatchParam(conn, var, value);
@@ -3844,8 +3693,6 @@ PUBLIC bool espIsCurrentSession(HttpConn *conn)
 
 /********************************** Includes **********************************/
 
-#include    "http.h"
-
 
 
 
@@ -3857,15 +3704,17 @@ static Esp *esp;
 
 /************************************ Forward *********************************/
 
+static int cloneDatabase(HttpConn *conn);
 static void closeEsp(HttpQueue *q);
-//  TODO - why public
-static EspRoute *espInitRoute(HttpRoute *route);
+static EspRoute *initRoute(HttpRoute *route);
 static int espDbDirective(MaState *state, cchar *key, cchar *value);
 static int espEnvDirective(MaState *state, cchar *key, cchar *value);
 static EspRoute *getEroute(HttpRoute *route);
+static int loadConfig(HttpRoute *route);
 static void manageEsp(Esp *esp, int flags);
 static void manageReq(EspReq *req, int flags);
 static int runAction(HttpConn *conn);
+static void setEspDir(HttpRoute *route, cchar *name, cchar *value);
 static int unloadEsp(MprModule *mp);
 static bool pageExists(HttpConn *conn);
 
@@ -3915,7 +3764,7 @@ static int openEsp(HttpQueue *q)
     }
     if (!route) {
         route = rx->route;
-        eroute = espInitRoute(route);
+        eroute = initRoute(route);
         if (maParseFile(NULL, mprJoinPath(mprGetAppDir(), "esp.conf")) < 0) {
             httpError(conn, 0, "Cannot parse esp.conf");
             closeEsp(q);
@@ -4070,7 +3919,7 @@ static void startEsp(HttpQueue *q)
         /*
             See if the esp configuration or app needs to be reloaded.
          */
-        if (eroute->appName && espLoadConfig(route) < 0) {
+        if (eroute->appName && loadConfig(route) < 0) {
             httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot load esp config for %s", eroute->appName);
             return;
         }
@@ -4101,59 +3950,6 @@ static void startEsp(HttpQueue *q)
         mprSetThreadData(req->esp->local, NULL);
     }
 }
-
-
-/*
-    Create a per user session database clone. Used for demos so one users updates to not change anothers view of the database
- */
-static void pruneDatabases(Esp *esp)
-{
-    MprKey      *kp;
-
-    lock(esp);
-    for (ITERATE_KEYS(esp->databases, kp)) {
-        if (!httpLookupSessionID(kp->key)) {
-            mprRemoveKey(esp->databases, kp->key);
-            /* Restart scan */
-            kp = 0;
-        }
-    }
-    unlock(esp);
-}
-
-static int cloneDatabase(HttpConn *conn)
-{
-    Esp         *esp;
-    EspRoute    *eroute;
-    EspReq      *req;
-    cchar       *id;
-
-    req = conn->data;
-    eroute = conn->rx->route->eroute;
-    assert(eroute->edi);
-    assert(eroute->edi->flags & EDI_PRIVATE);
-
-    esp = req->esp;
-    if (!esp->databases) {
-        lock(esp);
-        if (!esp->databases) {
-            esp->databases = mprCreateHash(0, 0);
-            esp->databasesTimer = mprCreateTimerEvent(NULL, "esp-databases", 60 * 1000, pruneDatabases, esp, 0);
-        }
-        unlock(esp);
-    }
-    httpGetSession(conn, 1);
-    id = httpGetSessionID(conn);
-    if ((req->edi = mprLookupKey(esp->databases, id)) == 0) {
-        if ((req->edi = ediClone(eroute->edi)) == 0) {
-            mprError("Cannot clone database: %s", eroute->edi->path);
-            return MPR_ERR_CANT_OPEN;
-        }
-        mprAddKey(esp->databases, id, req->edi);
-    }
-    return 0;
-}
-
 
 
 static int runAction(HttpConn *conn)
@@ -4219,7 +4015,8 @@ static int runAction(HttpConn *conn)
                 httpSetStatus(conn, HTTP_CODE_UNAUTHORIZED);
                 if (eroute->json) {
                     mprLog(2, "esp: Stale security token.");
-                    espRenderString(conn, "{\"retry\": true, \"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
+                    espRenderString(conn, 
+                        "{\"retry\": true, \"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
                     espFinalize(conn);
                 } else {
                     httpError(conn, HTTP_CODE_UNAUTHORIZED, "Security token is stale. Please reload page.");
@@ -4288,6 +4085,242 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
 
 
 /************************************ Support *********************************/
+/*
+    Load the package.json
+ */
+static int loadConfig(HttpRoute *route)
+{
+    HttpRoute   *alias;
+    EspRoute    *eroute;
+    MprJson     *msettings, *settings;
+    MprPath     cinfo;
+    MprTicks    clientLifespan;
+    cchar       *cdata, *cpath, *value, *errorMsg, *pattern, *set;
+    char        *next;
+    bool        debug;
+
+    eroute = route->eroute;
+    lock(eroute);
+
+    /*
+        See if config file has been modified and if so, reload.
+     */
+    cpath = mprJoinPath(route->documents, ME_ESP_PACKAGE);
+    if (mprGetPathInfo(cpath, &cinfo) == 0) {
+        if (eroute->config && cinfo.mtime > eroute->configLoaded) {
+            /* WARNING: all operations below must be idempotent */
+            eroute->config = 0;
+        }
+        eroute->configLoaded = cinfo.mtime;
+    }
+    if (!eroute->config && mprPathExists(cpath, R_OK)) {
+        if ((cdata = mprReadPathContents(cpath, NULL)) == 0) {
+            mprError("Cannot read ESP configuration from %s", cpath);
+            unlock(eroute);
+            return MPR_ERR_CANT_READ;
+        }
+        if ((eroute->config = mprParseJsonEx(cdata, 0, 0, 0, &errorMsg)) == 0) {
+            mprError("Cannot parse %s: error %s", cpath, errorMsg);
+            unlock(eroute);
+            return 0;
+        }
+        /*
+            Blend the mode properties into settings
+         */
+        eroute->mode = mprGetJson(eroute->config, "esp.mode", 0);
+        if (!eroute->mode) {
+            eroute->mode = sclone("debug");
+            mprLog(3, "esp: application \"%s\" running in \"%s\" mode", eroute->appName, eroute->mode);
+        }
+        debug = smatch(eroute->mode, "debug");
+        if ((msettings = mprGetJsonObj(eroute->config, sfmt("esp.modes.%s", eroute->mode), 0)) != 0) {
+            settings = mprLookupJsonObj(eroute->config, "esp");
+            mprBlendJson(settings, msettings, MPR_JSON_OVERWRITE);
+            mprSetJson(settings, "esp.mode", eroute->mode, 0);
+        }
+        /*
+            Directories
+         */
+        if ((value = espGetConfig(route, "dirs.app", 0)) != 0) {
+            setEspDir(route, "app", value);
+        }
+        if ((value = espGetConfig(route, "dirs.cache", 0)) != 0) {
+            setEspDir(route, "cache", value);
+        }
+        if ((value = espGetConfig(route, "dirs.client", 0)) != 0) {
+            setEspDir(route, "client", value);
+        }
+        if ((value = espGetConfig(route, "dirs.controllers", 0)) != 0) {
+            setEspDir(route, "controllers", value);
+        }
+        if ((value = espGetConfig(route, "dirs.db", 0)) != 0) {
+            setEspDir(route, "db", value);
+        }
+        if ((value = espGetConfig(route, "dirs.layouts", 0)) != 0) {
+            setEspDir(route, "layouts", value);
+        }
+        if ((value = espGetConfig(route, "dirs.src", 0)) != 0) {
+            setEspDir(route, "src", value);
+        }
+        if ((value = espGetConfig(route, "dirs.views", 0)) != 0) {
+            setEspDir(route, "views", value);
+        }
+        if ((value = espGetConfig(route, "esp.auth", 0)) != 0) {
+            if (httpSetAuthStore(route->auth, value) < 0) {
+                mprError("The %s AuthStore is not available on this platform", value);
+            }
+        }
+        if ((value = espGetConfig(route, "esp.combined", 0)) != 0) {
+            eroute->combined = smatch(value, "true");
+            if (eroute->combined) {
+                mprLog(3, "esp: app %s configured for combined compilation", eroute->appName);
+            }
+        }
+        if ((value = espGetConfig(route, "esp.compile", 0)) != 0) {
+            if (smatch(value, "debug") || smatch(value, "symbols")) {
+                eroute->compileMode = ESP_COMPILE_SYMBOLS;
+            } else if (smatch(value, "release") || smatch(value, "optimized")) {
+                eroute->compileMode = ESP_COMPILE_OPTIMIZED;
+            }
+        }
+        if ((value = espGetConfig(route, "esp.server.redirect", 0)) != 0) {
+            /*
+                Disabling redirect may require a server reboot
+             */
+            if (smatch(value, "true") || smatch(value, "secure")) {
+                pattern = route->prefix ? sfmt("%s/", route->prefix) : "/";
+                alias = httpCreateAliasRoute(route, pattern, 0, 0);
+                httpSetRouteTarget(alias, "redirect", "0 https://");
+                /* A null age suppresses the strict transport security header */
+                httpAddRouteCondition(alias, "secure", 0, HTTP_ROUTE_NOT);
+                httpFinalizeRoute(alias);
+            }
+        }
+        if ((value = espGetConfig(route, "esp.showErrors", 0)) != 0) {
+            httpSetRouteShowErrors(route, smatch(value, "true"));
+        } else if (debug) {
+            httpSetRouteShowErrors(route, 1);
+        }
+        if ((value = espGetConfig(route, "esp.update", 0)) != 0) {
+            eroute->update = smatch(value, "true");
+        }
+        if ((value = espGetConfig(route, "esp.keepSource", 0)) != 0) {
+            eroute->keepSource = smatch(value, "true");
+        }
+        if ((value = espGetConfig(route, "esp.serverPrefix", 0)) != 0) {
+            httpSetRouteServerPrefix(route, value);
+            /* Compute the aggregate app+server prefix */
+            espSetConfig(route, "esp.prefix", sjoin(route->prefix ? route->prefix : "", route->serverPrefix, NULL));
+#if UNUSED
+            //  MOB - Http seems to compute this 
+            httpSetRouteVar(route, "SERVER_PREFIX", sjoin(route->prefix ? route->prefix: "", route->serverPrefix, 0));
+#endif
+        }
+        /*
+            Must be after serverPrefix
+         */
+        if ((value = espGetConfig(route, "esp.server.routes", 0)) != 0) {
+            /*
+                Changing the route set will require a server reboot
+             */
+            set = stok(sclone(value), ", \t", &next);
+            while (set) {
+                espAddRouteSet(route, set);
+                set = stok(NULL, ", \t", &next);
+            }
+        }
+
+        if ((value = espGetConfig(route, "esp.login.name", 0)) != 0) {
+            /* Automatic login as this user. Password not required */
+            httpSetAuthUsername(route->auth, value);
+        }
+        if ((value = espGetConfig(route, "esp.xsrf", 0)) != 0) {
+            httpSetRouteXsrf(route, smatch(value, "true"));
+        } else {
+            httpSetRouteXsrf(route, 1);
+        }
+        if ((value = espGetConfig(route, "esp.json", 0)) != 0) {
+            eroute->json = smatch(value, "true");
+        }
+        if ((value = espGetConfig(route, "esp.timeouts.session", 0)) != 0) {
+            //  MOB SHOULD support request and inactivity timeouts too
+            route->limits->sessionTimeout = httpGetTicks(value);
+            mprLog(3, "esp: set session timeout to %s", value);
+        }
+        if (espTestConfig(route, "esp.compressed", "true")) {
+            httpAddRouteMapping(route, "css,html,js,less,txt,xml", "${1}.gz, min.${1}.gz, min.${1}");
+        }
+        if ((value = espGetConfig(route, "esp.cache", 0)) != 0) {
+            clientLifespan = httpGetTicks(value);
+            httpAddCache(route, NULL, NULL, "html,gif,jpeg,jpg,png,pdf,ico,js,txt,less", NULL, clientLifespan, 0, 
+                HTTP_CACHE_CLIENT | HTTP_CACHE_ALL);
+        }
+        if (!eroute->database) {
+            if ((eroute->database = espGetConfig(route, "esp.server.database", 0)) != 0) {
+                if (espOpenDatabase(route, eroute->database) < 0) {
+                    mprError("Cannot open database %s", eroute->database);
+                    unlock(eroute);
+                    return MPR_ERR_CANT_OPEN;
+                }
+            }
+        }
+    }
+    unlock(eroute);
+    return 0;
+}
+
+
+/*
+    Create a per user session database clone. Used for demos so one users updates to not change anothers view of the database
+ */
+static void pruneDatabases(Esp *esp)
+{
+    MprKey      *kp;
+
+    lock(esp);
+    for (ITERATE_KEYS(esp->databases, kp)) {
+        if (!httpLookupSessionID(kp->key)) {
+            mprRemoveKey(esp->databases, kp->key);
+            /* Restart scan */
+            kp = 0;
+        }
+    }
+    unlock(esp);
+}
+
+static int cloneDatabase(HttpConn *conn)
+{
+    Esp         *esp;
+    EspRoute    *eroute;
+    EspReq      *req;
+    cchar       *id;
+
+    req = conn->data;
+    eroute = conn->rx->route->eroute;
+    assert(eroute->edi);
+    assert(eroute->edi->flags & EDI_PRIVATE);
+
+    esp = req->esp;
+    if (!esp->databases) {
+        lock(esp);
+        if (!esp->databases) {
+            esp->databases = mprCreateHash(0, 0);
+            esp->databasesTimer = mprCreateTimerEvent(NULL, "esp-databases", 60 * 1000, pruneDatabases, esp, 0);
+        }
+        unlock(esp);
+    }
+    httpGetSession(conn, 1);
+    id = httpGetSessionID(conn);
+    if ((req->edi = mprLookupKey(esp->databases, id)) == 0) {
+        if ((req->edi = ediClone(eroute->edi)) == 0) {
+            mprError("Cannot clone database: %s", eroute->edi->path);
+            return MPR_ERR_CANT_OPEN;
+        }
+        mprAddKey(esp->databases, id, req->edi);
+    }
+    return 0;
+}
+
 
 #if !ME_STATIC
 static char *getModuleEntry(EspRoute *eroute, cchar *kind, cchar *source, cchar *cacheName)
@@ -4421,7 +4454,8 @@ static bool loadApp(HttpRoute *route, MprDispatcher *dispatcher)
 /*
     Test if a module has been updated (is stale).
     This will unload the module if it loaded but stale.
-    Set recompile to true if the source is absent or more recent
+    Set recompile to true if the source is absent or more recent.
+    Will return false if the source does not exist (important for testing layouts).
  */
 PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile)
 {
@@ -4470,7 +4504,7 @@ PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile)
 
 
 /*
-    Check if the layout has changed
+    Check if the layout has changed. Returns false if the layout does not exist.
  */
 static bool layoutIsStale(EspRoute *eroute, cchar *source, cchar *module)
 {
@@ -4557,7 +4591,7 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
 }
 
 
-static EspRoute *espInitRoute(HttpRoute *route)
+static EspRoute *initRoute(HttpRoute *route)
 {
     cchar       *path;
     MprPath     info;
@@ -4635,33 +4669,6 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
 }
 
 
-PUBLIC void espSetDefaultDirs(HttpRoute *route)
-{
-    EspRoute    *eroute;
-    char        *dir;
-
-    eroute = route->eroute;
-    dir = route->documents;
-
-    eroute->dbDir          = mprJoinPath(dir, "db");
-    eroute->cacheDir       = mprJoinPath(dir, "cache");
-    eroute->clientDir      = mprJoinPath(dir, "client");
-    eroute->controllersDir = mprJoinPath(dir, "controllers");
-    eroute->srcDir         = mprJoinPath(dir, "src");
-    eroute->appDir         = mprJoinPath(dir, "client/app");
-    eroute->layoutsDir     = mprJoinPath(eroute->clientDir, "layouts");
-    eroute->viewsDir       = eroute->appDir;
-
-    httpSetRouteVar(route, "CACHE_DIR", eroute->cacheDir);
-    httpSetRouteVar(route, "CLIENT_DIR", eroute->clientDir);
-    httpSetRouteVar(route, "CONTROLLERS_DIR", eroute->controllersDir);
-    httpSetRouteVar(route, "DB_DIR", eroute->dbDir);
-    httpSetRouteVar(route, "LAYOUTS_DIR", eroute->layoutsDir);
-    httpSetRouteVar(route, "SRC_DIR", eroute->srcDir);
-    httpSetRouteVar(route, "VIEWS_DIR", eroute->viewsDir);
-}
-
-
 /*
     Manage all links for EspReq for the garbage collector
  */
@@ -4696,7 +4703,8 @@ static void manageEsp(Esp *esp, int flags)
 
 
 /*
-    Get a dedicated EspRoute for an HttpRoute. Allocate if required. It is expected that the caller will modify the EspRoute.
+    Get a dedicated EspRoute for an HttpRoute. Allocate if required. 
+    It is expected that the caller will modify the EspRoute.
  */
 static EspRoute *getEroute(HttpRoute *route)
 {
@@ -4715,7 +4723,7 @@ static EspRoute *getEroute(HttpRoute *route)
             return cloneEspRoute(route, rp->eroute);
         }
     }
-    return espInitRoute(route);
+    return initRoute(route);
 }
 
 
@@ -4740,21 +4748,24 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
     if (set == 0 || *set == 0) {
         return;
     }
-    if (scaselessmatch(set, "esp-angular-mvc")) {
+    if (scaselessmatch(set, "esp-server")) {
+        /* Simple controller/action route */
+        httpAddRestfulRoute(route, route->serverPrefix, "action", "GET,POST","/{action}(/)*$", 
+            "${action}", "{controller}");
+        httpAddClientRoute(route, "", "/public");
+        httpHideRoute(route, 1);
+
+    } else if (scaselessmatch(set, "esp-angular-mvc")) {
         httpAddWebSocketsRoute(route, route->serverPrefix, "/*/stream");
         httpAddResourceGroup(route, route->serverPrefix, "{controller}");
         httpAddClientRoute(route, "", "/public");
         httpHideRoute(route, 1);
-        eroute->viewsDir = eroute->appDir;
-        eroute->layoutsDir = mprJoinPath(eroute->clientDir, "layouts");
 
     } else if (scaselessmatch(set, "esp-html-mvc")) {
         httpAddRestfulRoute(route, route->serverPrefix, "delete", "POST", "/{id=[0-9]+}/delete$", "delete", "{controller}");
         httpAddResourceGroup(route, route->serverPrefix, "{controller}");
         httpAddClientRoute(route, "", "/public");
         httpHideRoute(route, 1);
-        eroute->viewsDir = eroute->appDir;
-        eroute->layoutsDir = mprJoinPath(eroute->clientDir, "layouts");
     }
 }
 
@@ -4799,8 +4810,9 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
     httpAddRouteHandler(route, "espHandler", "");
     httpAddRouteHandler(route, "espHandler", "esp");
     httpAddRouteIndex(route, "index.esp");
+    httpAddRouteIndex(route, "index.html");
 
-    if (espLoadConfig(route) < 0) {
+    if (loadConfig(route) < 0) {
         return MPR_ERR_CANT_LOAD;
     }    
     espSetConfig(route, "esp.appPrefix", prefix);
@@ -5044,6 +5056,49 @@ static int espDbDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+static void setEspDir(HttpRoute *route, cchar *name, cchar *value)
+{
+    EspRoute    *eroute;
+
+    eroute = route->eroute;
+    if (value == 0) {
+        value = name;
+    }
+    value = mprJoinPath(route->documents, value);
+    if (smatch(name, "app")) {
+        eroute->appDir = value;
+    } else if (smatch(name, "cache")) {
+        eroute->cacheDir = value;
+    } else if (smatch(name, "client")) {
+        eroute->clientDir = value;
+    } else if (smatch(name, "controllers")) {
+        eroute->controllersDir = value;
+    } else if (smatch(name, "db")) {
+        eroute->dbDir = value;
+    } else if (smatch(name, "layouts")) {
+        eroute->layoutsDir = value;
+    } else if (smatch(name, "src")) {
+        eroute->srcDir = value;
+    } else if (smatch(name, "views")) {
+        eroute->viewsDir = value;
+    }
+    httpSetRouteVar(route, sjoin(supper(name), "_DIR", NULL), value);
+}
+
+
+PUBLIC void espSetDefaultDirs(HttpRoute *route)
+{
+    setEspDir(route, "app", "client/app");
+    setEspDir(route, "cache", 0);
+    setEspDir(route, "client", 0);
+    setEspDir(route, "controllers", 0);
+    setEspDir(route, "db", 0);
+    setEspDir(route, "layouts", 0);
+    setEspDir(route, "src", 0);
+    setEspDir(route, "views", "client/app");
+}
+
+
 /*
     EspDir key path
  */
@@ -5058,27 +5113,15 @@ static int espDirDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S ?S", &name, &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
+#if DEPRECATED || 1
     if (smatch(name, "mvc")) {
         espSetDefaultDirs(state->route);
-    } else {
+    } else 
+#endif
+    {
         path = stemplate(path, state->route->vars);
         path = stemplate(mprJoinPath(state->route->home, path), state->route->vars);
-        if (smatch(name, "cache")) {
-            eroute->cacheDir = path;
-        } else if (smatch(name, "client")) {
-            eroute->clientDir = path;
-        } else if (smatch(name, "controllers")) {
-            eroute->controllersDir = path;
-        } else if (smatch(name, "db")) {
-            eroute->dbDir = path;
-        } else if (smatch(name, "layouts")) {
-            eroute->layoutsDir = path;
-        } else if (smatch(name, "src")) {
-            eroute->srcDir = path;
-        } else if (smatch(name, "views")) {
-            eroute->viewsDir = path;
-        }
-        httpSetRouteVar(state->route, name, path);
+        setEspDir(state->route, name, path);
     }
     return 0;
 }
@@ -5101,7 +5144,8 @@ static void defineVisualStudioEnv(MaState *state)
     }
     if (scontains(appweb->platform, "-x64-")) {
         is64BitSystem = smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432");
-        espEnvDirective(state, "EspEnv", "LIB \"${WINSDK}\\LIB\\${WINVER}\\um\\x64;${WINSDK}\\LIB\\x64;${VS}\\VC\\lib\\amd64\"");
+        espEnvDirective(state, "EspEnv", 
+            "LIB \"${WINSDK}\\LIB\\${WINVER}\\um\\x64;${WINSDK}\\LIB\\x64;${VS}\\VC\\lib\\amd64\"");
         if (is64BitSystem) {
             espEnvDirective(state, "EspEnv", 
                 "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin\\amd64;${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;"
@@ -5275,19 +5319,21 @@ static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+#if UNUSED
 /*
-    MOB - RENAME. This is the ServerPrefix
-    EspRoutePrefix /server
-    Sets the route prefix to use for routes to talk to the server
+    EspRouteServerPrefix /server
+    Sets the route server prefix to use for routes to talk to the server
  */
-static int espRoutePrefixDirective(MaState *state, cchar *key, cchar *value)
+static int espRouteServerPrefixDirective(MaState *state, cchar *key, cchar *value)
 {
     httpSetRouteServerPrefix(state->route, value);
 #if UNUSED
-    httpSetRouteVar(state->route, "SERVER_PREFIX", sjoin(state->route->prefix ? state->route->prefix: "", state->route->serverPrefix, NULL));
+    httpSetRouteVar(state->route, "SERVER_PREFIX", 
+        sjoin(state->route->prefix ? state->route->prefix: "", state->route->serverPrefix, NULL));
 #endif
     return 0;
 }
+#endif
 
 
 /*
@@ -5459,7 +5505,9 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     maAddDirective(appweb, "EspResource", espResourceDirective);
     maAddDirective(appweb, "EspResourceGroup", espResourceGroupDirective);
     maAddDirective(appweb, "EspRoute", espRouteDirective);
-    maAddDirective(appweb, "EspRoutePrefix", espRoutePrefixDirective);
+#if UNUSED
+    maAddDirective(appweb, "EspRouteServerPrefix", espRouteServerPrefixDirective);
+#endif
     maAddDirective(appweb, "EspRouteSet", espRouteSetDirective);
     maAddDirective(appweb, "EspUpdate", espUpdateDirective);
     if ((esp->ediService = ediCreateService()) == 0) {
@@ -6000,9 +6048,6 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
             *errMsg = sfmt("Cannot read %s", source);
             return 0;
         }
-        /*
-            Use layouts iff there is a source defined on the route. Only MVC/controllers based apps do this.
-         */
         if (eroute->layoutsDir) {
             layout = mprJoinPath(eroute->layoutsDir, "default.esp");
         }

@@ -22,8 +22,8 @@
     },
     "dependencies": {
         "http": "~5",
-        "mpr": "~5",
         "me-dev": "~0.8",
+        "mpr": "~5",
         "osdep": "~0.8",
         "pcre": "*"
     },
@@ -69,5 +69,5 @@
             "noblend": true,
             "noexport": true
         }
-    },
+    }
 }
