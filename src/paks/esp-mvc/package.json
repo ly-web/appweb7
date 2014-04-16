@@ -23,11 +23,9 @@
             "generate": {
                 "appweb": "esp-mvc/appweb.conf",
                 "migration": "esp-mvc/migration.c",
+                "module": "esp-mvc/src/app.c",
                 "controller": "esp-mvc/controller.c",
                 "controller-singleton": "esp-mvc/controller.c",
-                "files": [
-                    "esp-mvc/src/app.c"
-                ]
             }
         }
     }

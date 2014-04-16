@@ -10,10 +10,10 @@
         "esp-mvc": "~1.0"
     },
     "export": [
+        "client/**",
+        "layouts/**",
+        "start.me",
         "templates/**"
-    ],
-    "ignore": [
-        "start.me"
     ],
     "esp": {
         "auth": "app",
@@ -25,11 +25,8 @@
                 "clientEdit": "esp-html-mvc/edit.esp",
                 "controller": "esp-html-mvc/controller.c",
                 "controller-singleton": "esp-html-mvc/controller-singleton.c",
-                "files": [
-                    "esp-html-mvc/start.me",
-                    "esp-html-mvc/client/**"
-                ]
-            }
+            },
+            "routes": "esp-angular-mvc",
         }
     }
 }

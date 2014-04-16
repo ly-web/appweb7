@@ -7,17 +7,18 @@
     ],
     "precious": true,
     "dirs": {
-        "client": "client",
         "paks": "client/paks"
     },
     "export": [
         "templates/**"
     ],
     "esp": {
+        "logRoutes": false,
         "server": {
             "generate": {
                 "appweb": "esp-server/appweb.conf",
-            }
+            },
+            "routes": "esp-server",
         },
         "mode": "debug",
         "modes": {
