@@ -1106,14 +1106,14 @@ static void run(int argc, char **argv)
     }
     if (!app->appwebConfig) {
         if (argc == 0) {
-            if (maConfigureServer(app->server, NULL, app->home, ".", "127.0.0.1", 4000) < 0) {
+            if (maConfigureServer(app->server, NULL, app->home, ".", "127.0.0.1", 4000, MA_NO_MODULES) < 0) {
                 fail("Cannot configure the server to listen on port 127.0.0.1:%d", 4000);
                 return;
             }
         } else for (i = 0; i < argc; i++) {
             endpoint = argv[i++];
             mprParseSocketAddress(endpoint, &ip, &port, NULL, 80);
-            if (maConfigureServer(app->server, NULL, app->home, ".", ip, port) < 0) {
+            if (maConfigureServer(app->server, NULL, app->home, ".", ip, port, MA_NO_MODULES) < 0) {
                 fail("Cannot configure the server to listen at %s", endpoint);
                 return;
             }

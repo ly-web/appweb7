@@ -315,13 +315,13 @@ static int createEndpoints(int argc, char **argv)
         app->documents = sclone(argv[argind++]);
         mprLog(2, "Documents %s", app->documents);
         if (argind == argc) {
-            if (maConfigureServer(app->server, NULL, app->home, app->documents, NULL, ME_HTTP_PORT) < 0) {
+            if (maConfigureServer(app->server, NULL, app->home, app->documents, NULL, ME_HTTP_PORT, 0) < 0) {
                 return MPR_ERR_CANT_CREATE;
             }
         } else while (argind < argc) {
             endpoint = argv[argind++];
             mprParseSocketAddress(endpoint, &ip, &port, &secure, 80);
-            if (maConfigureServer(app->server, NULL, app->home, app->documents, ip, port) < 0) {
+            if (maConfigureServer(app->server, NULL, app->home, app->documents, ip, port, 0) < 0) {
                 return MPR_ERR_CANT_CREATE;
             }
         }

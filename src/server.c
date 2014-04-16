@@ -177,7 +177,7 @@ PUBLIC MaServer *maCreateServer(MaAppweb *appweb, cchar *name)
 /*
     Configure the server. If the configFile is defined, use it. If not, then consider home, documents, ip and port.
  */
-PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port)
+PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port, int flags)
 {
     MaAppweb        *appweb;
     Http            *http;
@@ -208,49 +208,53 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
         maAddEndpoint(server, endpoint);
         host = mprGetFirstItem(endpoint->hosts);
         assert(host);
-        route = mprGetFirstItem(host->routes);
+        route = host->defaultRoute;
         assert(route);
 
-#if ME_COM_CGI
-        maLoadModule(appweb, "cgiHandler", "libmod_cgi");
-        if (httpLookupStage(http, "cgiHandler")) {
-            httpAddRouteHandler(route, "cgiHandler", "cgi cgi-nph bat cmd pl py");
-            /*
-                Add cgi-bin with a route for the /cgi-bin URL prefix.
-             */
-            path = "cgi-bin";
-            if (mprPathExists(path, X_OK)) {
-                HttpRoute *cgiRoute;
-                cgiRoute = httpCreateAliasRoute(route, "/cgi-bin/", path, 0);
-                mprTrace(4, "ScriptAlias \"/cgi-bin/\":\"%s\"", path);
-                httpSetRouteHandler(cgiRoute, "cgiHandler");
-                httpFinalizeRoute(cgiRoute);
-            }
-        }
-#endif
-#if ME_COM_ESP || ME_ESP_PRODUCT
-        maLoadModule(appweb, "espHandler", "libmod_esp");
-        if (httpLookupStage(http, "espHandler")) {
-            httpAddRouteHandler(route, "espHandler", "esp");
-        }
-#endif
-#if ME_COM_EJS || ME_EJS_PRODUCT
-        maLoadModule(appweb, "ejsHandler", "libmod_ejs");
-        if (httpLookupStage(http, "ejsHandler")) {
-            httpAddRouteHandler(route, "ejsHandler", "ejs");
-        }
-#endif
-#if ME_COM_PHP
-        maLoadModule(appweb, "phpHandler", "libmod_php");
-        if (httpLookupStage(http, "phpHandler")) {
-            httpAddRouteHandler(route, "phpHandler", "php");
-        }
-#endif
-        httpAddRouteHandler(route, "fileHandler", "");
-        httpFinalizeRoute(route);
         if (home) {
             httpSetRouteHome(route, home);
         }
+        if (!(flags & MA_NO_MODULES)) {
+#if ME_COM_CGI
+            maLoadModule(appweb, "cgiHandler", "libmod_cgi");
+            if (httpLookupStage(http, "cgiHandler")) {
+                httpAddRouteHandler(route, "cgiHandler", "cgi cgi-nph bat cmd pl py");
+                /*
+                    Add cgi-bin with a route for the /cgi-bin URL prefix.
+                 */
+                path = "cgi-bin";
+                if (mprPathExists(path, X_OK)) {
+                    HttpRoute *cgiRoute;
+                    cgiRoute = httpCreateAliasRoute(route, "/cgi-bin/", path, 0);
+                    mprTrace(4, "ScriptAlias \"/cgi-bin/\":\"%s\"", path);
+                    httpSetRouteHandler(cgiRoute, "cgiHandler");
+                    httpFinalizeRoute(cgiRoute);
+                }
+            }
+#endif
+#if ME_COM_ESP || ME_ESP_PRODUCT
+            maLoadModule(appweb, "espHandler", "libmod_esp");
+            if (httpLookupStage(http, "espHandler")) {
+                httpAddRouteHandler(route, "espHandler", "esp");
+            }
+#endif
+#if ME_COM_EJS || ME_EJS_PRODUCT
+            maLoadModule(appweb, "ejsHandler", "libmod_ejs");
+            if (httpLookupStage(http, "ejsHandler")) {
+                httpAddRouteHandler(route, "ejsHandler", "ejs");
+            }
+#endif
+#if ME_COM_PHP
+            maLoadModule(appweb, "phpHandler", "libmod_php");
+            if (httpLookupStage(http, "phpHandler")) {
+                httpAddRouteHandler(route, "phpHandler", "php");
+            }
+#endif
+            httpAddRouteHandler(route, "fileHandler", "");
+        }
+#if UNUSED
+        httpFinalizeRoute(route);
+#endif
     }
     return 0;
 }

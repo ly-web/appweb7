@@ -117,8 +117,8 @@ PUBLIC int maApplyChangedUser(MaAppweb *appweb);
 /** 
     Create the Appweb object.
     @description Appweb uses a singleton Appweb object to manage multiple web servers instances.
-    @param Probe file to search for to locate the Appweb platform directory. Set to NULL for the default
-    of "bin/appweb".
+    @param probe file to search for to locate the Appweb platform directory. Set to NULL for the default
+        of "bin/appweb".
     @return A Http object. Use mprFree to close and release.
     @ingroup MaAppweb
     @stability Stable
@@ -289,6 +289,8 @@ typedef struct MaServer {
  */
 PUBLIC void maAddEndpoint(MaServer *server, HttpEndpoint *endpoint);
 
+#define MA_NO_MODULES 0x1                   /**< Configure server but do not load modules */
+
 /** 
     Configure a web server.
     @description This will configure a web server based on either a configuration file or using the supplied
@@ -299,11 +301,12 @@ PUBLIC void maAddEndpoint(MaServer *server, HttpEndpoint *endpoint);
     @param documents Default directory for web documents to serve. This overrides the value in the config file.
     @param ip IP address to listen on. This overrides the value specified in the config file.
     @param port Port address to listen on. This overrides the value specified in the config file.
+    @param flags Set to MA_NO_MODULES to suppress loading modules. Otherwise set to zero.
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
     @ingroup MaServer
     @stability Stable
  */
-PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port);
+PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port, int flags);
 
 /** 
     Create a MaServer object

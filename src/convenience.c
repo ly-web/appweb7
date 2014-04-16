@@ -83,7 +83,7 @@ PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documen
                 if ((server = maCreateServer(appweb, 0)) == 0) {
                     mprError("Cannot create the web server");
                 } else {
-                    if (maConfigureServer(server, 0, home, documents, ip, port) < 0) {
+                    if (maConfigureServer(server, 0, home, documents, ip, port, 0) < 0) {
                         mprError("Cannot create the web server");
                     } else {
                         if (maStartServer(server) < 0) {
