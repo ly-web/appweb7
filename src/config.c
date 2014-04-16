@@ -924,7 +924,6 @@ static int errorDocumentDirective(MaState *state, cchar *key, cchar *value)
         [size=bytes] 
         [level=0-9] 
         [backup=count] 
-        [append] 
         [anew]
         [stamp=period]
  */
@@ -961,8 +960,11 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
             } else if (smatch(option, "backup")) {
                 backup = atoi(ovalue);
 
+#if DEPRECATED || 1
+            /* Defaults to append */
             } else if (smatch(option, "append")) {
                 flags |= MPR_LOG_APPEND;
+#endif
 
             } else if (smatch(option, "anew")) {
                 flags |= MPR_LOG_ANEW;
