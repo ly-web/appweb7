@@ -69,7 +69,7 @@
             on Linux and libphp5.dll on Windows. You may replace the PHP library with a custom build from the PHP
             source base if you wish.</p>
             <p>The supplied PHP library was configured with the following configuration options (on Linux):</p>
-            <pre>
+            <pre>$ <b>
 ./configure \
     --disable-debug \
     --disable-rpath \
@@ -97,7 +97,16 @@
     --with-xml \
     --with-xmlrpc \
     --with-zlib ; \
-</pre><a id="cgi"></a>
+</b></pre>
+            <h2>Building PHP</h2>
+            <p>While Appweb does not supply PHP, there is a convenient way to download, build and install PHP using the
+            <a href="http://embedthis.com/products/pak">Pak</a> package manager. 
+            <p>The following will download, build install PHP into your appweb source tree.</p>
+            <pre>$ <b>pak install php</b></pre>
+            <p>Once installed, running the Appweb <em>configure</em> program with <em>--with php</em> will automatically
+            locate the built PHP libraries.</p>
+            <pre>$ <b>configure --with php</b></pre>
+            <a id="cgi"></a>
             <h2>Using PHP via CGI</h2>
             <p>If you need to use PHP via CGI, be aware that PHP will run much more slowly. This will be especially
             apparent for small scripts where the load time for each script will be the dominant overhead.</p>

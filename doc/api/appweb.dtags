@@ -57,8 +57,8 @@
       <type>MaAppweb *</type>
       <name>maCreateAppweb</name>
       <anchorfile>group___ma_appweb.html</anchorfile>
-      <anchor>ga3c5d11ffcda01cb1d75ae24faa39cdee</anchor>
-      <arglist>()</arglist>
+      <anchor>ga675e06882f349fd1129a50714722cff5</anchor>
+      <arglist>(cchar *probe)</arglist>
     </member>
     <member kind="function">
       <type>char *</type>
@@ -230,8 +230,8 @@
       <type>int</type>
       <name>maConfigureServer</name>
       <anchorfile>group___ma_server.html</anchorfile>
-      <anchor>ga95cc0d8c3f161d0a9d4a2a4925e50158</anchor>
-      <arglist>(MaServer *server, cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port)</arglist>
+      <anchor>ga3e3ab6e82af2d351307972c49f815b12</anchor>
+      <arglist>(MaServer *server, cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port, int flags)</arglist>
     </member>
     <member kind="function">
       <type>MaServer *</type>

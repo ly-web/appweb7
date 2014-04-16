@@ -61,7 +61,6 @@
                         <td>AccessLog path <br/>
                             &nbsp; &rarr; [size=bytes] <br/>
                             &nbsp; &rarr; [backup=count] <br/>
-                            &nbsp; &rarr; [append] <br/>
                             &nbsp; &rarr; [anew]</td>
                     </tr>
                     <tr>
@@ -70,7 +69,7 @@
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>AccessLog access.log size=1MB backup=5 append anew</td>
+                        <td>AccessLog access.log size=1MB backup=5 anew</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -83,8 +82,7 @@
                             The <em>backup</em> parameter indicates how many backup log files to preserve. When the
                             maximum size is exceeded, the log files will be renamed by appending a sequential number
                             from zero up to the given path name. The highest number will be the oldest log file.</p>
-                            <p>The <em>append</em> option means that new content will be appended to an existing log
-                            file, whereas, <em>anew</em> specifies that the log file will be created anew whenever
+                            <p>The <em>anew</em> keyword specifies that a new log file will be created whenever
                             Appweb is restarted.</p>
                         </td>
                     </tr>
@@ -105,7 +103,6 @@
                             &nbsp; &rarr; [size=bytes] <br/>
                             &nbsp; &rarr; [level=0-9] <br/>
                             &nbsp; &rarr; [backup=count] <br/>
-                            &nbsp; &rarr; [append] <br/>
                             &nbsp; &rarr; [anew]<br/>
                             &nbsp; &rarr; [stamp=period]</td>
                     </tr>
@@ -115,7 +112,7 @@
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>ErrorLog error.log size=1MB level=2 backup=5 append anew stamp=1hr</td>
+                        <td>ErrorLog error.log size=1MB level=2 backup=5 anew stamp=1hr</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -128,8 +125,7 @@
                             The <em>backup</em> parameter indicates how many backup log files to preserve. When the
                             maximum size is exceeded, the log files will be renamed by appending a sequential number
                             from zero up to the given path name. The highest number will be the oldest log file.</p>
-                            <p>The <em>append</em> option means that new content will be appended to an existing log
-                            file, whereas, <em>anew</em> specifies that the log file will be created anew whenever
+                            <p>The <em>anew</em> keyword specifies that a new log file will be created whenever
                             Appweb is restarted.</p>
                             <p>The <em>level</em> argument defines a
                             logging verbosity level between 0 and 9 with 9 being the most verbose.</p>

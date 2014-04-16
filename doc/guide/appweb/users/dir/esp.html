@@ -43,13 +43,11 @@
                 <li><a href="#espEnv">EspEnv</a></li>
                 <li><a href="#espKeepSource">EspKeepSource</a></li>
                 <li><a href="#espLink">EspLink</a></li>
-                <li><a href="#espLoad">EspLoad</a></li>
                 <li><a href="#espPermResource">EspPermResource</a></li>
                 <li><a href="#espResource">EspResource</a></li>
                 <li><a href="#espResourceGroup">EspResourceGroup</a></li>
                 <li><a href="#espRoute">EspRoute</a></li>
                 <li><a href="#espRouteSet">EspRouteSet</a></li>
-                <li><a href="#espShowErrors">EspShowErrors</a></li>
                 <li><a href="#espUpdate">EspUpdate</a></li>
             </ul>
             <h1>See Also</h1>
@@ -76,8 +74,7 @@
                             &nbsp; &rarr; prefix=URI <br/>
                             &nbsp; &rarr; [dir=PATH] <br/>
                             &nbsp; &rarr; [routes=ROUTES] <br/>
-                            &nbsp; &rarr; [database=DATABASE]<br/>
-                            &nbsp; &rarr; [flat=false|true]</td>
+                            &nbsp; &rarr; [database=DATABASE]</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -93,15 +90,20 @@
                         <td>
                             <p>The EspApp directive defines an ESP application at the given directory that
                             will receive all requests that begin with specified URI prefix. 
-                            This one-line directive is often all you need to do to define an ESP application. It is
-                            loosely equivalent to the following directive sequence:</p>
+                            This one-line directive is often all you need to do to define an ESP application.</p>
+                            <p>The EspApp directive can be used as a one liner or as an opening tag. For example:</p>
+                            <pre class="dir">EspApp name="blog" dir="./blog"</pre>
+                            <p>or</p>
+                            <pre class="dir">&lt;EspApp name="blog" dir="./blog"&gt;
+    # Other directives
+&lt;/EspApp&gt;</pre>
+                            <p>It is loosely equivalent to the following directive sequence:</p>
                             <pre class="dir">
 &lt;Route UriPrefix&gt;
     <a href="route.html#name">Name</a> UriPrefix
     <a href="route.html#prefix">Prefix</a> UriPrefix
     <a href="route.html#documentRoot">DocumentRoot</a> Directory
     <a href="route.html#addHandler">AddHandler</a> espHandler
-    <a href="#espDir">EspDir</a> mvc
     <a href="#espRouteSet">EspRouteSet</a> Routes
     <a href="#espDb">EspDb</a> Database
 &lt;/Route&gt;
@@ -116,9 +118,9 @@
                             <p>The Routes argument specifies a set of routes to add for the applications. Permissable
                                 values for the Routes are: 
                                 <ul>
-                                    <li>simple &mdash; Adds a route for the home page URI ("/").</li>
-                                    <li>restful &mdash; Adds a home route, a static route and resource group routes 
-                                    mapping URIs. See <a href="#espResourceGroup">EspResourceGroup</a> for details.</li>
+                                    <li>esp-html-mvc &mdash; Adds a route set suitable for server-side MVC apps.</li>
+                                    <li>esp-angular-mvc &mdash; Adds a route set suitable for AngularJS MVC apps.
+                                    See <a href="#espResourceGroup">EspResourceGroup</a> for details on adding routes.</li>
                                 </ul>
                             <p>It is convenient to define applications using this directive in a separate configuration
                             file for each application. If the application config file is stored under the Appweb
@@ -250,12 +252,11 @@ EspDb sdb://test.sdb</pre>
                 <tbody>
                     <tr>
                         <td class="pivot">Description</td>
-                        <td>Define the directories to use for an ESP applications</td>
+                        <td>Define the directories to use for ESP applications</td>
                     </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>EspDir mvc<br/>
-                            EspDir [cache|client|controllers|db|layouts|views] Directory
+                        <td>EspDir [app|cache|client|controllers|db|layouts|src|views] Directory
                         </td>
                     </tr>
                     <tr>
@@ -265,28 +266,26 @@ EspDb sdb://test.sdb</pre>
                     <tr>
                         <td class="pivot">Example</td>
                         <td>
-<pre>EspDir mvc
-EspDir client ./client</pre>
+<pre>EspDir client ./client</pre>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>
                             <p>The EspDir directive configures the directories used by ESP.</p>
-                            <p>There are two forms for the EspDir directive. The first takes a single argument set to 
-                                "<em>mvc</em>". This form sets each of the standard directories to their default values.
-                            The second form defines a single ESP directory to the given path value.</p>
                             <p>The standard directories are:
                             <ul>
+                                <li>app &mdash; Application code directory, defaults to client/app.</li>
                                 <li>cache &mdash; This is the directory where ESP puts compiled modules. Defaults to
                                     <em>cache</em>.</li>
-                                    <li>client &mdash; This is the directory for static client web files in an MVC application. 
-                                        Defaults to <em>client</em>.</li>
-                                    <li>controllers &mdash; This is the directory for MVC controller source code.
-                                        Defaults to <em>controllers.</em></li>
-                                    <li>db &mdash; This is the directory for database files. Defaults to <em>db</em>.</li>
-                                    <li>layouts &mdash; This is the directory for ESP template layouts. 
-                                        Defaults to <em>layouts</em>.</li>
-                                    <li>views &mdash; This is the directory for ESP view pages. Defaults to <em>views</em>.</li>
+                                <li>client &mdash; This is the directory for static client web files in an MVC application. 
+                                    Defaults to <em>client</em>.</li>
+                                <li>controllers &mdash; This is the directory for MVC controller source code.
+                                    Defaults to <em>controllers.</em></li>
+                                <li>db &mdash; This is the directory for database files. Defaults to <em>db</em>.</li>
+                                <li>layouts &mdash; This is the directory for ESP template layouts. 
+                                    Defaults to <em>layouts</em>.</li>
+                                <li>src &mdash; This is the directory application "C" source code.</li>
+                                <li>views &mdash; This is the directory for ESP view pages. Defaults to <em>client/app</em>.</li>
                             </ul>
                         </td>
                     </tr>
@@ -421,53 +420,6 @@ EspDir client ./client</pre>
                             <p>If appweb is built with static linking or if the esp command is invoked with the --static 
                             switch, the EspLink command should perform static linking. The default esp.conf configuration
                             file has separate commands for dynamic and static linking.</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <a id="espLoad"></a>
-            <h2>EspLoad</h2>
-            <table class="directive" title="directive">
-                <tbody>
-                    <tr>
-                        <td class="pivot">Description</td>
-                        <td>Load an ESP application that has been compiled <em>flat</em> using the
-                            <em>esp</em> command.</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Synopsis</td>
-                        <td>EspLoad Name Path</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Context</td>
-                        <td>Default server, Virtual host, Route</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Example</td>
-                        <td>
-<pre>EspLoad blog cache/app
-EspLoad blog cache/app.dylib
-</pre>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Notes</td>
-                        <td>
-                            <p>The EspLoad directive will pre-load an ESP application that has been compiled
-                            <em>flat</em>
-                            via the <em>esp compile flat</em> command. A flat application is one where all controllers, 
-                            views and ESP template pages have been compiled into a single module. Pre-loading a flat
-                            application provides the ultimate in performance and eliminates any per-request overhead
-                            in checking for changed modules or source code.</p>
-                            <p>The Name argument to the directive should be a unique, descriptive name for the application.
-                            By default, when esp compiles an application, this name is the folder name of the application, 
-                            though this can be overridden by the esp --name switch.</p>
-                            <p>
-                            The second argument is a path to the compiled, flat application. This by default is called
-                            <em>cache/app.so</em> where <em>.so</em> may vary depending on the O/S platform. The path
-                            may be specified with or without an extension. Omitting the extension will allow a common
-                            configuration file to be used across multiple platforms.</p>
-                            <p>See the <a href="../../../esp/users/generator.html">ESP Generator</a> documentation for more
-                            details.</p>
                         </td>
                     </tr>
                 </tbody>
@@ -710,38 +662,6 @@ Name               Method   Pattern
 /client            GET      ^/(.*)
 /APP_NAME          GET,POST ^/
 </pre>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <a id="espShowErrors"></a>
-            <h2>EspShowErrors</h2>
-            <table class="directive" title="directive">
-                <tbody>
-                    <tr>
-                        <td class="pivot">Description</td>
-                        <td>Control whether to display ESP server-side errors to the client.</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Synopsis</td>
-                        <td>EspShowErrors on|off</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Context</td>
-                        <td>Default server, Virtual host, Route</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Example</td>
-                        <td>
-<pre>EspShowErrors on</pre>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Notes</td>
-                        <td>
-                            <p>The EspShowErrors directive controls whether ESP errors are sent to the client 
-                            and displayed in the browser. If EspShowErrors is off, then ESP errors will be sent to the
-                            Appweb log file. If EspShowErrors is on, then the errors will also be sent back to the
-                            client. This is useful in development mode to quickly diagnose errors.</p>
                         </td>
                     </tr>
                 </tbody>

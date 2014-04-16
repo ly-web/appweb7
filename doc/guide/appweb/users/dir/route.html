@@ -67,6 +67,7 @@
                 <li><a href="#scriptAlias">ScriptAlias</a></li>
                 <li><a href="#setConnector">SetConnector</a></li>
                 <li><a href="#setHandler">SetHandler</a></li>
+                <li><a href="#showErrors">ShowErrors</a></li>
                 <li><a href="#source">Source</a></li>
                 <li><a href="#target">Target</a></li>
                 <li><a href="#update">Update</a></li>
@@ -1533,6 +1534,38 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
                         <td>
                             <p>The SetHandler directive defines the request handler that will service a request
                             matching the enclosing block.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <a id="showErrors"></a>
+            <h2>ShowErrors</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Control whether to display server-side errors to the client.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>ShowErrors on|off</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, Virtual host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>
+<pre>ShowErrors on</pre>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The ShowErrors directive controls whether errors are sent to the client 
+                            and displayed in the browser. If ShowErrors is off, then errors will be sent to the
+                            Appweb log file. If ShowErrors is on, then the errors will also be sent back to the
+                            client. This is useful in development mode to quickly diagnose errors.</p>
                         </td>
                     </tr>
                 </tbody>
