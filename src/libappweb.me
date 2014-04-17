@@ -11,7 +11,7 @@ Me.load({
             headers: [ '*.h' ],
             sources: [ '*.c' ],
             exclude: /romFiles|slink/,
-            depends: [ 'libhttp' ],
+            depends: [ 'libhttp', 'libmpr' ],
         },
 
         'genslink': {
