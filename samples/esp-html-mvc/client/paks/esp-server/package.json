@@ -1,7 +1,10 @@
 {
     "name": "esp-server",
-    "description": "ESP Server Framework",
-    "version": "4.5.0",
+    "description": "ESP Server-Side Configuration",
+    "version": "1.0.0-rc0",
+    "keywords": [
+        "esp",
+    ],
     "precious": true,
     "dirs": {
         "client": "client",
@@ -11,18 +14,30 @@
         "templates/**"
     ],
     "esp": {
-        "combined": false,
-        "update": true,
-        "serverPrefix": "/do",
+        "logRoutes": false,
         "server": {
             "generate": {
                 "appweb": "esp-server/appweb.conf",
-                "migration": "esp-server/migration.c",
-                "controller": "esp-server/controller.c",
-                "controller-singleton": "esp-server/controller.c",
-                "files": [
-                    "esp-server/src/app.c"
-                ]
+            },
+            "routes": "esp-server",
+        },
+        "mode": "debug",
+        "modes": {
+            "debug": {
+                "combined": false,
+                "compile": "symbols",
+                "showErrors": true,
+                "keepSource": true,
+                "update": true,
+            },
+            "release": {
+                "combined": true,
+                "cache": 86400,
+                "compile": "optimized",
+                "compressed": true,
+                "showErrors": false,
+                "update": false,
+                "keepSource": false,
             }
         }
     }

@@ -46,9 +46,9 @@ static void manageApp(AppwebApp *app, int flags);
 static int createEndpoints(int argc, char **argv);
 static void usageError();
 
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
     static int  unixSecurityChecks(cchar *program, cchar *home);
-#elif BIT_WIN_LIKE
+#elif ME_WIN_LIKE
     static long msgProc(HWND hwnd, uint msg, uint wp, long lp);
 #endif
 
@@ -68,7 +68,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if ((mpr = mprCreate(argc, argv, MPR_USER_EVENTS_THREAD)) == NULL) {
         exit(1);
     }
-    mprSetAppName(BIT_PRODUCT, BIT_TITLE, BIT_VERSION);
+    mprSetAppName(ME_NAME, ME_TITLE, ME_VERSION);
 
     /*
         Allocate the top level application object. ManageApp is the GC manager function and is called
@@ -98,7 +98,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
             }
             app->configFile = sclone(argv[++argind]);
 
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
         } else if (smatch(argp, "--chroot")) {
             if (argind >= argc) {
                 usageError();
@@ -143,7 +143,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
             verbose++;
 
         } else if (smatch(argp, "--version") || smatch(argp, "-V")) {
-            mprPrintf("%s-%s\n", BIT_VERSION, BIT_BUILD_NUMBER);
+            mprPrintf("%s\n", ME_VERSION);
             exit(0);
 
         } else {
@@ -225,7 +225,7 @@ static void manageApp(AppwebApp *app, int flags)
  */
 static int changeRoot(cchar *jail)
 {
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
     if (chdir(app->home) < 0) {
         mprError("%s: Cannot change directory to %s", mprGetAppName(), app->home);
         return MPR_ERR_CANT_INITIALIZE;
@@ -238,7 +238,7 @@ static int changeRoot(cchar *jail)
         }
         return MPR_ERR_CANT_INITIALIZE;
     } else {
-        mprLog(MPR_CONFIG, "Chroot to: \"%s\"", jail);
+        mprLog(MPR_INFO, "Chroot to: \"%s\"", jail);
     }
 #endif
     return 0;
@@ -251,20 +251,20 @@ static int changeRoot(cchar *jail)
  */
 static void loadStaticModules()
 {
-#if BIT_STATIC
-#if BIT_PACK_CGI
+#if ME_STATIC
+#if ME_PACK_CGI
     mprNop(maCgiHandlerInit);
 #endif
-#if BIT_PACK_ESP
+#if ME_PACK_ESP
     mprNop(maEspHandlerInit);
 #endif
-#if BIT_PACK_PHP
+#if ME_PACK_PHP
     mprNop(maPhpHandlerInit);
 #endif
-#if BIT_SSL
+#if ME_SSL
     mprNop(maSslModuleInit);
 #endif
-#endif /* BIT_STATIC */
+#endif /* ME_STATIC */
 }
 
 
@@ -370,7 +370,7 @@ static void usageError(Mpr *mpr)
  */
 static int checkEnvironment(cchar *program)
 {
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
     char   *home;
     home = mprGetCurrentPath();
     if (unixSecurityChecks(program, home) < 0) {
@@ -383,7 +383,7 @@ static int checkEnvironment(cchar *program)
 }
 
 
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
 /*
     Security checks. Make sure we are staring with a safe environment
  */
@@ -419,7 +419,7 @@ static int unixSecurityChecks(cchar *program, cchar *home)
     }
     return 0;
 }
-#endif /* BIT_UNIX_LIKE */
+#endif /* ME_UNIX_LIKE */
 
 
 /*

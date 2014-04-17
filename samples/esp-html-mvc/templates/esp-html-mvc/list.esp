@@ -10,7 +10,7 @@
             if (grid->nrecords) {
                 rec = grid->records[0];
                 for (fp = 0; (fp = ediGetNextField(rec, fp, 1)) != 0; ) { 
-                    render("<th>%s</th>\n", spascal(fp->name));
+                    render("<th>%s</th>\n", stitle(fp->name));
                 }
             } %>
         </tr>

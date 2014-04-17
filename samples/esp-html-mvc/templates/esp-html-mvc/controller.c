@@ -97,7 +97,7 @@ ${DEFINE_ACTIONS}
     ediAddValidation(edi, "present", "${CONTROLLER}", "title", 0);
     ediAddValidation(edi, "unique", "${CONTROLLER}", "title", 0);
     ediAddValidation(edi, "banned", "${CONTROLLER}", "body", "(swear|curse)");
-    ediAddValidation(edi, "format", "${CONTROLLER}", "phone", "/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/");
+    ediAddValidation(edi, "format", "${CONTROLLER}", "phone", "/^\\(?([0-9]{3})\\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/");
 #endif
     return 0;
 }

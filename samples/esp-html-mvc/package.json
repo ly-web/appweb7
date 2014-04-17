@@ -4,8 +4,8 @@
     "description": "blog",
     "version": "0.0.0",
     "dependencies": {
-        "esp-server": "~4.5",
-        "esp-html-mvc": "~4.5"
+        "esp-html-mvc": "*",
+        "esp-server": "*"
     },
     "client-scripts": [
     ],
@@ -23,16 +23,32 @@
                 "migration": "esp-server/migration.c",
                 "controller": "esp-html-mvc/controller.c",
                 "controller-singleton": "esp-html-mvc/controller-singleton.c",
-                "files": [
-                    "esp-server/src/app.c",
-                    "esp-html-mvc/start.bit",
-                    "esp-html-mvc/client/**"
-                ],
                 "clientList": "esp-html-mvc/list.esp",
                 "clientEdit": "esp-html-mvc/edit.esp"
             },
-            "database": "mdb://blog.mdb"
+            "database": "mdb://blog.mdb",
+            "routes": "esp-angular-mvc"
         },
-        "auth": "app"
+        "auth": "app",
+        "logRoutes": false,
+        "mode": "debug",
+        "modes": {
+            "debug": {
+                "combined": false,
+                "compile": "symbols",
+                "showErrors": true,
+                "keepSource": true,
+                "update": true
+            },
+            "release": {
+                "combined": true,
+                "cache": 86400,
+                "compile": "optimized",
+                "compressed": true,
+                "showErrors": false,
+                "update": false,
+                "keepSource": false
+            }
+        }
     }
 }
