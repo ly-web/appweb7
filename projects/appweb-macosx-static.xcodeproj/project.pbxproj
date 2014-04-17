@@ -175,18 +175,17 @@
 		D64967C4D6497AA20000004F /* authpass.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000050 /* authpass.c */; };
 		D64967C4D6497AA200000051 /* cgiProgram.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000052 /* cgiProgram.c */; };
 		D64967C4D6497AA200000053 /* esp.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000054 /* esp.c */; };
-		D64967C4D6497AA200000055 /* espLib.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000056 /* espLib.c */; };
-		D64967C4D6497AA200000057 /* http.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000058 /* http.c */; };
-		D64967C4D6497AA200000059 /* config.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA20000005A /* config.c */; };
-		D64967C4D6497AA20000005B /* convenience.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA20000005C /* convenience.c */; };
-		D64967C4D6497AA20000005D /* dirHandler.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA20000005E /* dirHandler.c */; };
-		D64967C4D6497AA20000005F /* fileHandler.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000060 /* fileHandler.c */; };
-		D64967C4D6497AA200000061 /* log.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000062 /* log.c */; };
-		D64967C4D6497AA200000063 /* server.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000064 /* server.c */; };
-		D64967C4D6497AA200000065 /* estLib.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000066 /* estLib.c */; };
-		D64967C4D6497AA200000067 /* httpLib.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000068 /* httpLib.c */; };
-		D64967C4D6497AA200000069 /* cgiHandler.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA20000006A /* cgiHandler.c */; };
-		D64967C4D6497AA200000055 /* espLib.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000056 /* espLib.c */; };
+		D64967C4D6497AA200000055 /* http.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000056 /* http.c */; };
+		D64967C4D6497AA200000057 /* config.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000058 /* config.c */; };
+		D64967C4D6497AA200000059 /* convenience.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA20000005A /* convenience.c */; };
+		D64967C4D6497AA20000005B /* dirHandler.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA20000005C /* dirHandler.c */; };
+		D64967C4D6497AA20000005D /* fileHandler.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA20000005E /* fileHandler.c */; };
+		D64967C4D6497AA20000005F /* log.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000060 /* log.c */; };
+		D64967C4D6497AA200000061 /* server.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000062 /* server.c */; };
+		D64967C4D6497AA200000063 /* estLib.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000064 /* estLib.c */; };
+		D64967C4D6497AA200000065 /* httpLib.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000066 /* httpLib.c */; };
+		D64967C4D6497AA200000067 /* cgiHandler.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000068 /* cgiHandler.c */; };
+		D64967C4D6497AA200000069 /* espLib.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA20000006A /* espLib.c */; };
 		D64967C4D6497AA20000006B /* sslModule.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA20000006C /* sslModule.c */; };
 		D64967C4D6497AA20000006D /* mprLib.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA20000006E /* mprLib.c */; };
 		D64967C4D6497AA20000006F /* mprSsl.c in Sources */ = {isa = PBXBuildFile; fileRef = D64967C4D6497AA200000070 /* mprSsl.c */; };
@@ -1171,30 +1170,29 @@
 		D64967C4D6497AA200000156 /* cgiProgram */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = cgiProgram; sourceTree = BUILT_PRODUCTS_DIR; };
 		D64967C4D6497AA200000054 /* esp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = esp.c; path = src/paks/esp/esp.c; sourceTree = "<group>"; };
 		D64967C4D6497AA200000157 /* esp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = esp.h; path = macosx-x64-static/inc/esp.h; sourceTree = "<group>"; };
-		D64967C4D6497AA200000056 /* espLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espLib.c; path = src/paks/esp/espLib.c; sourceTree = "<group>"; };
-		D64967C4D6497AA200000158 /* pcre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pcre.h; path = macosx-x64-static/inc/pcre.h; sourceTree = "<group>"; };
+		D64967C4D6497AA200000158 /* espcmd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = esp; sourceTree = BUILT_PRODUCTS_DIR; };
+		D64967C4D6497AA200000056 /* http.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = http.c; path = src/paks/http/http.c; sourceTree = "<group>"; };
 		D64967C4D6497AA200000159 /* http.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = http.h; path = macosx-x64-static/inc/http.h; sourceTree = "<group>"; };
-		D64967C4D6497AA20000015A /* espcmd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = esp; sourceTree = BUILT_PRODUCTS_DIR; };
-		D64967C4D6497AA200000058 /* http.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = http.c; path = src/paks/http/http.c; sourceTree = "<group>"; };
-		D64967C4D6497AA20000015B /* httpcmd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = http; sourceTree = BUILT_PRODUCTS_DIR; };
-		D64967C4D6497AA20000005A /* config.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = config.c; path = src/config.c; sourceTree = "<group>"; };
+		D64967C4D6497AA20000015A /* httpcmd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = http; sourceTree = BUILT_PRODUCTS_DIR; };
+		D64967C4D6497AA200000058 /* config.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = config.c; path = src/config.c; sourceTree = "<group>"; };
+		D64967C4D6497AA20000015B /* pcre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pcre.h; path = macosx-x64-static/inc/pcre.h; sourceTree = "<group>"; };
 		D64967C4D6497AA20000015C /* mpr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mpr.h; path = macosx-x64-static/inc/mpr.h; sourceTree = "<group>"; };
 		D64967C4D6497AA20000015D /* customize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = customize.h; path = macosx-x64-static/inc/customize.h; sourceTree = "<group>"; };
-		D64967C4D6497AA20000005C /* convenience.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = convenience.c; path = src/convenience.c; sourceTree = "<group>"; };
-		D64967C4D6497AA20000005E /* dirHandler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dirHandler.c; path = src/dirHandler.c; sourceTree = "<group>"; };
-		D64967C4D6497AA200000060 /* fileHandler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = fileHandler.c; path = src/fileHandler.c; sourceTree = "<group>"; };
-		D64967C4D6497AA200000062 /* log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = log.c; path = src/log.c; sourceTree = "<group>"; };
-		D64967C4D6497AA200000064 /* server.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = server.c; path = src/server.c; sourceTree = "<group>"; };
+		D64967C4D6497AA20000005A /* convenience.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = convenience.c; path = src/convenience.c; sourceTree = "<group>"; };
+		D64967C4D6497AA20000005C /* dirHandler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dirHandler.c; path = src/dirHandler.c; sourceTree = "<group>"; };
+		D64967C4D6497AA20000005E /* fileHandler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = fileHandler.c; path = src/fileHandler.c; sourceTree = "<group>"; };
+		D64967C4D6497AA200000060 /* log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = log.c; path = src/log.c; sourceTree = "<group>"; };
+		D64967C4D6497AA200000062 /* server.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = server.c; path = src/server.c; sourceTree = "<group>"; };
 		D64967C4D6497AA20000007E /* libappweb */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libappweb.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		D64967C4D6497AA200000066 /* estLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = estLib.c; path = src/paks/est/estLib.c; sourceTree = "<group>"; };
+		D64967C4D6497AA200000064 /* estLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = estLib.c; path = src/paks/est/estLib.c; sourceTree = "<group>"; };
 		D64967C4D6497AA20000015E /* est.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = est.h; path = macosx-x64-static/inc/est.h; sourceTree = "<group>"; };
 		D64967C4D6497AA20000015F /* osdep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = osdep.h; path = macosx-x64-static/inc/osdep.h; sourceTree = "<group>"; };
 		D64967C4D6497AA20000008E /* libest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libest.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		D64967C4D6497AA200000068 /* httpLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = httpLib.c; path = src/paks/http/httpLib.c; sourceTree = "<group>"; };
+		D64967C4D6497AA200000066 /* httpLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = httpLib.c; path = src/paks/http/httpLib.c; sourceTree = "<group>"; };
 		D64967C4D6497AA200000080 /* libhttp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libhttp.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		D64967C4D6497AA20000006A /* cgiHandler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cgiHandler.c; path = src/modules/cgiHandler.c; sourceTree = "<group>"; };
+		D64967C4D6497AA200000068 /* cgiHandler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cgiHandler.c; path = src/modules/cgiHandler.c; sourceTree = "<group>"; };
 		D64967C4D6497AA200000090 /* libmod_cgi */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmod_cgi.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		D64967C4D6497AA200000056 /* espLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espLib.c; path = src/paks/esp/espLib.c; sourceTree = "<group>"; };
+		D64967C4D6497AA20000006A /* espLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espLib.c; path = src/paks/esp/espLib.c; sourceTree = "<group>"; };
 		D64967C4D6497AA200000088 /* libmod_esp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmod_esp.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D64967C4D6497AA20000006C /* sslModule.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sslModule.c; path = src/modules/sslModule.c; sourceTree = "<group>"; };
 		D64967C4D6497AA20000008A /* libmod_ssl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmod_ssl.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1468,10 +1466,7 @@
             children = (
 				D64967C4D6497AA200000152 /* me.h */,
 				D64967C4D6497AA200000157 /* esp.h */,
-				D64967C4D6497AA200000158 /* pcre.h */,
-				D64967C4D6497AA200000159 /* http.h */,
 				D64967C4D6497AA200000054 /* esp.c */,
-				D64967C4D6497AA200000056 /* espLib.c */,
 			);
             name = "espcmd";
             path = ..;
@@ -1482,7 +1477,7 @@
             children = (
 				D64967C4D6497AA200000152 /* me.h */,
 				D64967C4D6497AA200000159 /* http.h */,
-				D64967C4D6497AA200000058 /* http.c */,
+				D64967C4D6497AA200000056 /* http.c */,
 			);
             name = "httpcmd";
             path = ..;
@@ -1493,16 +1488,16 @@
             children = (
 				D64967C4D6497AA200000152 /* me.h */,
 				D64967C4D6497AA200000153 /* appweb.h */,
-				D64967C4D6497AA200000158 /* pcre.h */,
+				D64967C4D6497AA20000015B /* pcre.h */,
 				D64967C4D6497AA20000015C /* mpr.h */,
 				D64967C4D6497AA200000159 /* http.h */,
 				D64967C4D6497AA20000015D /* customize.h */,
-				D64967C4D6497AA20000005A /* config.c */,
-				D64967C4D6497AA20000005C /* convenience.c */,
-				D64967C4D6497AA20000005E /* dirHandler.c */,
-				D64967C4D6497AA200000060 /* fileHandler.c */,
-				D64967C4D6497AA200000062 /* log.c */,
-				D64967C4D6497AA200000064 /* server.c */,
+				D64967C4D6497AA200000058 /* config.c */,
+				D64967C4D6497AA20000005A /* convenience.c */,
+				D64967C4D6497AA20000005C /* dirHandler.c */,
+				D64967C4D6497AA20000005E /* fileHandler.c */,
+				D64967C4D6497AA200000060 /* log.c */,
+				D64967C4D6497AA200000062 /* server.c */,
 			);
             name = "libappweb";
             path = ..;
@@ -1514,7 +1509,7 @@
 				D64967C4D6497AA200000152 /* me.h */,
 				D64967C4D6497AA20000015E /* est.h */,
 				D64967C4D6497AA20000015F /* osdep.h */,
-				D64967C4D6497AA200000066 /* estLib.c */,
+				D64967C4D6497AA200000064 /* estLib.c */,
 			);
             name = "libest";
             path = ..;
@@ -1526,7 +1521,7 @@
 				D64967C4D6497AA200000152 /* me.h */,
 				D64967C4D6497AA200000159 /* http.h */,
 				D64967C4D6497AA20000015C /* mpr.h */,
-				D64967C4D6497AA200000068 /* httpLib.c */,
+				D64967C4D6497AA200000066 /* httpLib.c */,
 			);
             name = "libhttp";
             path = ..;
@@ -1537,7 +1532,7 @@
             children = (
 				D64967C4D6497AA200000152 /* me.h */,
 				D64967C4D6497AA200000153 /* appweb.h */,
-				D64967C4D6497AA20000006A /* cgiHandler.c */,
+				D64967C4D6497AA200000068 /* cgiHandler.c */,
 			);
             name = "libmod_cgi";
             path = ..;
@@ -1548,9 +1543,11 @@
             children = (
 				D64967C4D6497AA200000152 /* me.h */,
 				D64967C4D6497AA200000157 /* esp.h */,
-				D64967C4D6497AA200000158 /* pcre.h */,
+				D64967C4D6497AA20000015B /* pcre.h */,
 				D64967C4D6497AA200000159 /* http.h */,
-				D64967C4D6497AA200000056 /* espLib.c */,
+				D64967C4D6497AA20000015F /* osdep.h */,
+				D64967C4D6497AA200000153 /* appweb.h */,
+				D64967C4D6497AA20000006A /* espLib.c */,
 			);
             name = "libmod_esp";
             path = ..;
@@ -1595,7 +1592,7 @@
             isa = PBXGroup;
             children = (
 				D64967C4D6497AA200000152 /* me.h */,
-				D64967C4D6497AA200000158 /* pcre.h */,
+				D64967C4D6497AA20000015B /* pcre.h */,
 				D64967C4D6497AA200000072 /* pcre.c */,
 			);
             name = "libpcre";
@@ -1656,8 +1653,8 @@
 				D64967C4D6497AA200000154 /* appweb */,
 				D64967C4D6497AA200000155 /* authpass */,
 				D64967C4D6497AA200000156 /* cgiProgram */,
-				D64967C4D6497AA20000015A /* espcmd */,
-				D64967C4D6497AA20000015B /* httpcmd */,
+				D64967C4D6497AA200000158 /* espcmd */,
+				D64967C4D6497AA20000015A /* httpcmd */,
 				D64967C4D6497AA20000007E /* libappweb */,
 				D64967C4D6497AA20000008E /* libest */,
 				D64967C4D6497AA200000080 /* libhttp */,
@@ -1764,7 +1761,7 @@
 			);
 			name = espcmd;
 			productName = appweb;
-			productReference = D64967C4D6497AA20000015A /* espcmd */;
+			productReference = D64967C4D6497AA200000158 /* espcmd */;
 			productType = "com.apple.product-type.tool";
 		};
 		D64967C4D6497AA200000147 /* httpcmd */ = {
@@ -1786,7 +1783,7 @@
 			);
 			name = httpcmd;
 			productName = appweb;
-			productReference = D64967C4D6497AA20000015B /* httpcmd */;
+			productReference = D64967C4D6497AA20000015A /* httpcmd */;
 			productType = "com.apple.product-type.tool";
 		};
 		D64967C4D6497AA2000000C7 /* libappweb */ = {
@@ -2053,46 +2050,46 @@
 			);
 			inputPaths = (
 ../src/paks/esp-html-mvc,
+../src/paks/esp-html-mvc/client,
+../src/paks/esp-html-mvc/client/assets,
+../src/paks/esp-html-mvc/client/assets/favicon.ico,
+../src/paks/esp-html-mvc/client/css,
+../src/paks/esp-html-mvc/client/css/all.css,
+../src/paks/esp-html-mvc/client/css/all.less,
+../src/paks/esp-html-mvc/client/css/app.less,
+../src/paks/esp-html-mvc/client/css/theme.less,
+../src/paks/esp-html-mvc/client/index.esp,
+../src/paks/esp-html-mvc/generate,
+../src/paks/esp-html-mvc/generate/esp-html-mvc,
+../src/paks/esp-html-mvc/generate/esp-html-mvc/appweb.conf,
+../src/paks/esp-html-mvc/generate/esp-html-mvc/controller-singleton.c,
+../src/paks/esp-html-mvc/generate/esp-html-mvc/controller.c,
+../src/paks/esp-html-mvc/generate/esp-html-mvc/edit.esp,
+../src/paks/esp-html-mvc/generate/esp-html-mvc/list.esp,
+../src/paks/esp-html-mvc/layouts,
+../src/paks/esp-html-mvc/layouts/default.esp,
 ../src/paks/esp-html-mvc/LICENSE.md,
 ../src/paks/esp-html-mvc/package.json,
 ../src/paks/esp-html-mvc/README.md,
-../src/paks/esp-html-mvc/templates,
-../src/paks/esp-html-mvc/templates/esp-html-mvc,
-../src/paks/esp-html-mvc/templates/esp-html-mvc/appweb.conf,
-../src/paks/esp-html-mvc/templates/esp-html-mvc/client,
-../src/paks/esp-html-mvc/templates/esp-html-mvc/client/assets,
-../src/paks/esp-html-mvc/templates/esp-html-mvc/client/assets/favicon.ico,
-../src/paks/esp-html-mvc/templates/esp-html-mvc/client/css,
-../src/paks/esp-html-mvc/templates/esp-html-mvc/client/css/all.css,
-../src/paks/esp-html-mvc/templates/esp-html-mvc/client/css/all.less,
-../src/paks/esp-html-mvc/templates/esp-html-mvc/client/css/app.less,
-../src/paks/esp-html-mvc/templates/esp-html-mvc/client/css/theme.less,
-../src/paks/esp-html-mvc/templates/esp-html-mvc/client/index.esp,
-../src/paks/esp-html-mvc/templates/esp-html-mvc/client/layouts,
-../src/paks/esp-html-mvc/templates/esp-html-mvc/client/layouts/default.esp,
-../src/paks/esp-html-mvc/templates/esp-html-mvc/controller-singleton.c,
-../src/paks/esp-html-mvc/templates/esp-html-mvc/controller.c,
-../src/paks/esp-html-mvc/templates/esp-html-mvc/edit.esp,
-../src/paks/esp-html-mvc/templates/esp-html-mvc/list.esp,
-../src/paks/esp-html-mvc/templates/esp-html-mvc/start.me,
+../src/paks/esp-html-mvc/start.me,
 ../src/paks/esp-mvc,
+../src/paks/esp-mvc/generate,
+../src/paks/esp-mvc/generate/esp-mvc,
+../src/paks/esp-mvc/generate/esp-mvc/appweb.conf,
+../src/paks/esp-mvc/generate/esp-mvc/controller.c,
+../src/paks/esp-mvc/generate/esp-mvc/migration.c,
+../src/paks/esp-mvc/generate/esp-mvc/src,
+../src/paks/esp-mvc/generate/esp-mvc/src/app.c,
 ../src/paks/esp-mvc/LICENSE.md,
 ../src/paks/esp-mvc/package.json,
 ../src/paks/esp-mvc/README.md,
-../src/paks/esp-mvc/templates,
-../src/paks/esp-mvc/templates/esp-mvc,
-../src/paks/esp-mvc/templates/esp-mvc/appweb.conf,
-../src/paks/esp-mvc/templates/esp-mvc/controller.c,
-../src/paks/esp-mvc/templates/esp-mvc/migration.c,
-../src/paks/esp-mvc/templates/esp-mvc/src,
-../src/paks/esp-mvc/templates/esp-mvc/src/app.c,
 ../src/paks/esp-server,
+../src/paks/esp-server/generate,
+../src/paks/esp-server/generate/esp-server,
+../src/paks/esp-server/generate/esp-server/appweb.conf,
 ../src/paks/esp-server/LICENSE.md,
 ../src/paks/esp-server/package.json,
-../src/paks/esp-server/README.md,
-../src/paks/esp-server/templates,
-../src/paks/esp-server/templates/esp-server,
-../src/paks/esp-server/templates/esp-server/appweb.conf
+../src/paks/esp-server/README.md
 			);
 			outputPaths = (
 ../macosx-x64-static/esp
@@ -2102,46 +2099,46 @@
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/paks
 	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0\"
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/client\"
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/client/assets\"
+	cp esp-html-mvc/client/assets/favicon.ico ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/client/assets/favicon.ico
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/client/css\"
+	cp esp-html-mvc/client/css/all.css ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/client/css/all.css
+	cp esp-html-mvc/client/css/all.less ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/client/css/all.less
+	cp esp-html-mvc/client/css/app.less ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/client/css/app.less
+	cp esp-html-mvc/client/css/theme.less ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/client/css/theme.less
+	cp esp-html-mvc/client/index.esp ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/client/index.esp
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/generate\"
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/generate/esp-html-mvc\"
+	cp esp-html-mvc/generate/esp-html-mvc/appweb.conf ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/generate/esp-html-mvc/appweb.conf
+	cp esp-html-mvc/generate/esp-html-mvc/controller-singleton.c ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/generate/esp-html-mvc/controller-singleton.c
+	cp esp-html-mvc/generate/esp-html-mvc/controller.c ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/generate/esp-html-mvc/controller.c
+	cp esp-html-mvc/generate/esp-html-mvc/edit.esp ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/generate/esp-html-mvc/edit.esp
+	cp esp-html-mvc/generate/esp-html-mvc/list.esp ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/generate/esp-html-mvc/list.esp
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/layouts\"
+	cp esp-html-mvc/layouts/default.esp ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/layouts/default.esp
 	cp esp-html-mvc/LICENSE.md ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/LICENSE.md
 	cp esp-html-mvc/package.json ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/package.json
 	cp esp-html-mvc/README.md ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/README.md
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc\"
-	cp esp-html-mvc/templates/esp-html-mvc/appweb.conf ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/appweb.conf
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/assets\"
-	cp esp-html-mvc/templates/esp-html-mvc/client/assets/favicon.ico ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/assets/favicon.ico
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/css\"
-	cp esp-html-mvc/templates/esp-html-mvc/client/css/all.css ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/css/all.css
-	cp esp-html-mvc/templates/esp-html-mvc/client/css/all.less ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/css/all.less
-	cp esp-html-mvc/templates/esp-html-mvc/client/css/app.less ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/css/app.less
-	cp esp-html-mvc/templates/esp-html-mvc/client/css/theme.less ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/css/theme.less
-	cp esp-html-mvc/templates/esp-html-mvc/client/index.esp ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/index.esp
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/layouts\"
-	cp esp-html-mvc/templates/esp-html-mvc/client/layouts/default.esp ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/client/layouts/default.esp
-	cp esp-html-mvc/templates/esp-html-mvc/controller-singleton.c ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/controller-singleton.c
-	cp esp-html-mvc/templates/esp-html-mvc/controller.c ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/controller.c
-	cp esp-html-mvc/templates/esp-html-mvc/edit.esp ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/edit.esp
-	cp esp-html-mvc/templates/esp-html-mvc/list.esp ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/list.esp
-	cp esp-html-mvc/templates/esp-html-mvc/start.me ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/templates/esp-html-mvc/start.me
+	cp esp-html-mvc/start.me ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/start.me
 	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0\"
+	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/generate\"
+	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/generate/esp-mvc\"
+	cp esp-mvc/generate/esp-mvc/appweb.conf ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/generate/esp-mvc/appweb.conf
+	cp esp-mvc/generate/esp-mvc/controller.c ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/generate/esp-mvc/controller.c
+	cp esp-mvc/generate/esp-mvc/migration.c ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/generate/esp-mvc/migration.c
+	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/generate/esp-mvc/src\"
+	cp esp-mvc/generate/esp-mvc/src/app.c ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/generate/esp-mvc/src/app.c
 	cp esp-mvc/LICENSE.md ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/LICENSE.md
 	cp esp-mvc/package.json ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/package.json
 	cp esp-mvc/README.md ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/README.md
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/templates\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/templates/esp-mvc\"
-	cp esp-mvc/templates/esp-mvc/appweb.conf ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/templates/esp-mvc/appweb.conf
-	cp esp-mvc/templates/esp-mvc/controller.c ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/templates/esp-mvc/controller.c
-	cp esp-mvc/templates/esp-mvc/migration.c ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/templates/esp-mvc/migration.c
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/templates/esp-mvc/src\"
-	cp esp-mvc/templates/esp-mvc/src/app.c ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/templates/esp-mvc/src/app.c
 	mkdir -p \"../${OUT_DIR}/esp/esp-server/1.0.0-rc0\"
+	mkdir -p \"../${OUT_DIR}/esp/esp-server/1.0.0-rc0/generate\"
+	mkdir -p \"../${OUT_DIR}/esp/esp-server/1.0.0-rc0/generate/esp-server\"
+	cp esp-server/generate/esp-server/appweb.conf ../${OUT_DIR}/esp/esp-server/1.0.0-rc0/generate/esp-server/appweb.conf
 	cp esp-server/LICENSE.md ../${OUT_DIR}/esp/esp-server/1.0.0-rc0/LICENSE.md
 	cp esp-server/package.json ../${OUT_DIR}/esp/esp-server/1.0.0-rc0/package.json
 	cp esp-server/README.md ../${OUT_DIR}/esp/esp-server/1.0.0-rc0/README.md
-	mkdir -p \"../${OUT_DIR}/esp/esp-server/1.0.0-rc0/templates\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-server/1.0.0-rc0/templates/esp-server\"
-	cp esp-server/templates/esp-server/appweb.conf ../${OUT_DIR}/esp/esp-server/1.0.0-rc0/templates/esp-server/appweb.conf
 ";
 		};
 		D64967C4D6497AA20000000B /* ShellScript for esp.conf */ = {
@@ -2421,7 +2418,6 @@ fi";
 			buildActionMask = 2147483647;
 			files = (
 				D64967C4D6497AA200000053 /* esp.c in Sources */,
-				D64967C4D6497AA200000055 /* espLib.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2429,7 +2425,7 @@ fi";
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D64967C4D6497AA200000057 /* http.c in Sources */,
+				D64967C4D6497AA200000055 /* http.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2437,12 +2433,12 @@ fi";
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D64967C4D6497AA200000059 /* config.c in Sources */,
-				D64967C4D6497AA20000005B /* convenience.c in Sources */,
-				D64967C4D6497AA20000005D /* dirHandler.c in Sources */,
-				D64967C4D6497AA20000005F /* fileHandler.c in Sources */,
-				D64967C4D6497AA200000061 /* log.c in Sources */,
-				D64967C4D6497AA200000063 /* server.c in Sources */,
+				D64967C4D6497AA200000057 /* config.c in Sources */,
+				D64967C4D6497AA200000059 /* convenience.c in Sources */,
+				D64967C4D6497AA20000005B /* dirHandler.c in Sources */,
+				D64967C4D6497AA20000005D /* fileHandler.c in Sources */,
+				D64967C4D6497AA20000005F /* log.c in Sources */,
+				D64967C4D6497AA200000061 /* server.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2450,7 +2446,7 @@ fi";
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D64967C4D6497AA200000065 /* estLib.c in Sources */,
+				D64967C4D6497AA200000063 /* estLib.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2458,7 +2454,7 @@ fi";
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D64967C4D6497AA200000067 /* httpLib.c in Sources */,
+				D64967C4D6497AA200000065 /* httpLib.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2466,7 +2462,7 @@ fi";
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D64967C4D6497AA200000069 /* cgiHandler.c in Sources */,
+				D64967C4D6497AA200000067 /* cgiHandler.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2474,7 +2470,7 @@ fi";
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D64967C4D6497AA200000055 /* espLib.c in Sources */,
+				D64967C4D6497AA200000069 /* espLib.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

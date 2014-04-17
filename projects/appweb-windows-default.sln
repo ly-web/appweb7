@@ -30,6 +30,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libappweb", "appweb-windows
 	ProjectSection(ProjectDependencies) = postProject
 		{3F525F82-92E8-4897-8A53-F03027B478FF} = {3F525F82-92E8-4897-8A53-F03027B478FF}
 	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{B878BE55-BECB-4C83-8E95-6AD11BA24206} = {B878BE55-BECB-4C83-8E95-6AD11BA24206}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "slink.c", "appweb-windows-default\slink.c.vcxproj", "{C4E6AB32-0EB8-4204-8A75-2D1D07D01226}"
 	ProjectSection(ProjectDependencies) = postProject

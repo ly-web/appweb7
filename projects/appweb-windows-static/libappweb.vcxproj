@@ -138,6 +138,13 @@ cd ..\projects\appweb-windows-static</Command>
   </ProjectReference>
 </ItemGroup>
 
+<ItemGroup>
+  <ProjectReference Include="libmpr.vcxproj">
+  <Project>b878be55-becb-4c83-8e95-6ad11ba24206</Project>
+  <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+  </ProjectReference>
+</ItemGroup>
+
   <Import Project="$(VCTargetsPath)Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

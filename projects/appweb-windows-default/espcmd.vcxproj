@@ -101,7 +101,6 @@
   
   <ItemGroup>
     <ClCompile Include="..\..\src\paks\esp\esp.c" />
-    <ClCompile Include="..\..\src\paks\esp\espLib.c" />
   </ItemGroup>
 
   <ItemDefinitionGroup>
