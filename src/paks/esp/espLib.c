@@ -4819,9 +4819,9 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
 #if UNUSED
     httpAddRouteHandler(route, "espHandler", "");
     httpAddRouteHandler(route, "espHandler", "esp");
-    httpAddRouteIndex(route, "index.esp");
     httpAddRouteIndex(route, "index.html");
 #endif
+    httpAddRouteIndex(route, "index.esp");
 
     if (loadConfig(route) < 0) {
         return MPR_ERR_CANT_LOAD;

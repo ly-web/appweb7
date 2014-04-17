@@ -657,10 +657,10 @@ static void initialize(int argc, char **argv)
             app->eroute->update = 1;
             httpSetRouteShowErrors(app->route, 1);
             espSetDefaultDirs(app->route);
+            httpAddRouteIndex(app->route, "index.esp");
         }
         httpAddRouteHandler(app->route, "espHandler", "esp");
         httpAddRouteHandler(app->route, "fileHandler", "html gif jpeg jpg png pdf ico css js txt \"\"");
-        httpAddRouteIndex(app->route, "index.esp");
         httpAddRouteIndex(app->route, "index.html");
         
         /*
@@ -2788,7 +2788,17 @@ static cchar *getTemplate(cchar *key, MprHash *tokens)
     cchar   *pattern;
 
     if ((pattern = getConfigValue(sfmt("esp.server.generate.%s", key), 0)) != 0) {
-        return readTemplate(mprJoinPath("templates", pattern), tokens, NULL);
+        if (mprPathExists(app->eroute->generateDir, X_OK)) {
+            return readTemplate(mprJoinPath(app->eroute->generateDir, pattern), tokens, NULL);
+        }
+#if DEPECATE || 1
+        if (mprPathExists("generate", X_OK)) {
+            return readTemplate(mprJoinPath("generate", pattern), tokens, NULL);
+        }
+        if (mprPathExists("templates", X_OK)) {
+            return readTemplate(mprJoinPath("templates", pattern), tokens, NULL);
+        }
+#endif
     }
     return 0;
 }
