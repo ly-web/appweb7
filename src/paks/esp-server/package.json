@@ -7,6 +7,7 @@
     ],
     "precious": true,
     "dirs": {
+        "client": "client",
         "paks": "client/paks"
     },
     "export": [
