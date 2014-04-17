@@ -464,7 +464,7 @@ static int authGroupFileDirective(MaState *state, cchar *key, cchar *value)
 static int authStoreDirective(MaState *state, cchar *key, cchar *value)
 {
     if (httpSetAuthStore(state->auth, value) < 0) {
-        mprError("The %s AuthStore is not available on this platform", value);
+        mprError("The \"%s\" AuthStore is not available on this platform", value);
         return configError(state, key);
     }
     return 0;

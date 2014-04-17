@@ -288,6 +288,10 @@ struct  MprXml;
 #define MPR_VERBOSE         9           /**< Highest level of trace */
 #define MPR_LEVEL_MASK      0xf         /**< Level mask */
 
+#if DEPRECATED || 1
+#define MPR_CONFIG          MPR_INFO
+#endif
+
 /*
     Log message flags
  */
@@ -2144,6 +2148,9 @@ PUBLIC bool shnumber(cchar *s);
     @stability Stable
  */
 PUBLIC char *stitle(cchar *str);
+#if DEPRECATED || 1
+#define spascal(s) stitle(s)
+#endif
 
 /**
     Locate the a character from a set in a string.
