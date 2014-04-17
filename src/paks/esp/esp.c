@@ -368,7 +368,7 @@ static int parseArgs(int argc, char **argv)
                 if (!identifier(argv[++argind])) {
                     fail("Application name must be a valid C identifier");
                 } else {
-                    app->appName = argv[argind];
+                    app->appName = sclone(argv[argind]);
                     app->title = stitle(app->appName);
                 }
             }
@@ -490,8 +490,10 @@ static void parseCommand(int argc, char **argv)
 
     } else if (smatch(cmd, "install")) {
         app->require = 0;
-        if (!app->appName && !mprPathExists("package.json", R_OK)) {
-            app->appName = mprGetPathBase(mprGetCurrentPath());
+        if (!mprPathExists("package.json", R_OK)) {
+            if (!app->appName) {
+                app->appName = mprGetPathBase(mprGetCurrentPath());
+            }
             app->require = REQ_NAME;
         }
 
@@ -561,7 +563,9 @@ static void setupRequirements(int argc, char **argv)
             fail("Cannot find %s", ME_ESP_PACKAGE);
             return;
         }
+#if UNUSED
         app->appName = mprGetPathBase(mprGetCurrentPath());
+#endif
         app->title = stitle(app->appName);
         app->config = createPackage();
     }
