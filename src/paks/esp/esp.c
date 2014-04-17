@@ -600,13 +600,21 @@ static void initRuntime()
         return;
     }
     httpCreate(HTTP_SERVER_SIDE | HTTP_UTILITY);
-
-    //  MOB maCreateAppweb API is ugly requiring a probe. Why not just use bin + ME_NAME
-    if ((app->appweb = maCreateAppweb("bin/esp" ME_EXE)) == 0) {
+    if ((app->appweb = maCreateAppweb()) == 0) {
         fail("Cannot create HTTP service for %s", mprGetAppName());
         return;
     }
     appweb = MPR->appwebService = app->appweb;
+
+    maSetPlatform(app->platform, "bin/esp" ME_EXE);
+    if (!appweb->platform) {
+        if (app->platform) {
+            fail("Cannot find platform: \"%s\"", app->platform);
+        } else {
+            fail("Cannot find ESP platform files containing \"%s\"", "bin/esp" ME_EXE);
+        }
+        return;
+    }
     appweb->skipModules = 1;
     http = app->appweb->http;
     appweb->staticLink = app->staticLink;
@@ -654,6 +662,10 @@ static void initialize(int argc, char **argv)
                 fail("Cannot create ESP app");
                 return;
             }
+            httpAddRouteHandler(app->route, "espHandler", "esp");
+            // MOB - should be done by client route
+            // httpAddRouteHandler(app->route, "fileHandler", "html gif jpeg jpg png pdf ico css js txt");
+            httpAddRouteIndex(app->route, "index.html");
         } else {
             /*
                 Either no package.json or no "esp" definition
@@ -664,10 +676,10 @@ static void initialize(int argc, char **argv)
             httpSetRouteShowErrors(app->route, 1);
             espSetDefaultDirs(app->route);
             httpAddRouteIndex(app->route, "index.esp");
+            httpAddRouteHandler(app->route, "espHandler", "esp");
+            httpAddRouteHandler(app->route, "fileHandler", "html gif jpeg jpg png pdf ico css js txt \"\"");
+            httpAddRouteIndex(app->route, "index.html");
         }
-        httpAddRouteHandler(app->route, "espHandler", "esp");
-        httpAddRouteHandler(app->route, "fileHandler", "html gif jpeg jpg png pdf ico css js txt \"\"");
-        httpAddRouteIndex(app->route, "index.html");
         
         /*
             Load ESP compiler rules

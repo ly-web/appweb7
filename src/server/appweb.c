@@ -296,7 +296,7 @@ static int createEndpoints(int argc, char **argv)
     endpoint = 0;
     argind = 0;
 
-    if ((app->appweb = maCreateAppweb(NULL)) == 0) {
+    if ((app->appweb = maCreateAppweb()) == 0) {
         mprError("Cannot create HTTP service for %s", mprGetAppName());
         return MPR_ERR_CANT_CREATE;
     }

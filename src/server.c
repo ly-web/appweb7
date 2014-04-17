@@ -19,14 +19,11 @@ static void manageAppweb(MaAppweb *appweb, int flags);
 /*
     Create the top level appweb control object. This is typically a singleton.
  */
-PUBLIC MaAppweb *maCreateAppweb(cchar *probe)
+PUBLIC MaAppweb *maCreateAppweb()
 {
     MaAppweb    *appweb;
     Http        *http;
 
-    if (!probe) {
-        probe = "bin/appweb" ME_EXE;
-    }
     if ((appweb = mprAllocObj(MaAppweb, manageAppweb)) == NULL) {
         return 0;
     }
@@ -35,7 +32,6 @@ PUBLIC MaAppweb *maCreateAppweb(cchar *probe)
     httpSetContext(http, appweb);
     appweb->servers = mprCreateList(-1, MPR_LIST_STABLE);
     appweb->localPlatform = slower(sfmt("%s-%s-%s", ME_OS, ME_CPU, ME_PROFILE));
-    maSetPlatform(NULL, probe);
     maGetUserGroup(appweb);
     maParseInit(appweb);
     /* 
@@ -45,6 +41,7 @@ PUBLIC MaAppweb *maCreateAppweb(cchar *probe)
     maOpenDirHandler(http);
 #endif
     maOpenFileHandler(http);
+    maSetPlatform(NULL, "bin/appweb" ME_EXE);
     return appweb; 
 }
 

@@ -125,13 +125,11 @@ PUBLIC int maApplyChangedUser(MaAppweb *appweb);
 /** 
     Create the Appweb object.
     @description Appweb uses a singleton Appweb object to manage multiple web servers instances.
-    @param probe file to search for to locate the Appweb platform directory. Set to NULL for the default
-        of "bin/appweb".
     @return A Http object. Use mprFree to close and release.
     @ingroup MaAppweb
     @stability Stable
  */
-PUBLIC MaAppweb *maCreateAppweb(cchar *probe);
+PUBLIC MaAppweb *maCreateAppweb();
 
 /**
     Get the user group

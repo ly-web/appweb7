@@ -102,7 +102,7 @@ PUBLIC int main(int argc, char *argv[])
     }
     roles = sclone(mprGetBufStart(buf));
 
-    appweb = maCreateAppweb(NULL);
+    appweb = maCreateAppweb();
     server = maCreateServer(appweb, "default");
     auth = maGetDefaultAuth(server);
 
