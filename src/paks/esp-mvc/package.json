@@ -14,7 +14,7 @@
         "paks": "client/paks"
     },
     "export": [
-        "templates/**"
+        "generate/**"
     ],
     "esp": {
         "serverPrefix": "/do",

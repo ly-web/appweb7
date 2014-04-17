@@ -13,7 +13,7 @@
         "client/**",
         "layouts/**",
         "start.me",
-        "templates/**"
+        "generate/**"
     ],
     "esp": {
         "auth": "app",

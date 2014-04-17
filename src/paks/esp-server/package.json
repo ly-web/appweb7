@@ -11,7 +11,7 @@
         "paks": "client/paks"
     },
     "export": [
-        "templates/**"
+        "generate/**"
     ],
     "esp": {
         "logRoutes": false,
