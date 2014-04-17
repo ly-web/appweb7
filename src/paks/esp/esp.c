@@ -483,12 +483,14 @@ static void parseCommand(int argc, char **argv)
         app->require = REQ_PACKAGE;
 
     } else if (smatch(cmd, "init")) {
-        app->appName = (argc >= 1) ? argv[0] : mprGetPathBase(mprGetCurrentPath());
+        if (!app->appName) {
+            app->appName = (argc >= 1) ? argv[0] : mprGetPathBase(mprGetCurrentPath());
+        }
         app->require = REQ_NAME;
 
     } else if (smatch(cmd, "install")) {
         app->require = 0;
-        if (!mprPathExists("package.json", R_OK)) {
+        if (!app->appName && !mprPathExists("package.json", R_OK)) {
             app->appName = mprGetPathBase(mprGetCurrentPath());
             app->require = REQ_NAME;
         }
@@ -1447,7 +1449,7 @@ static MprList *getRoutes()
  */
 static cchar *findAppwebConfig()
 {
-    cchar   *name, *current, *parent, *path;
+    cchar   *name, *path;
 
     if (app->error || app->require & REQ_NO_CONFIG) {
         return 0;
@@ -1460,10 +1462,12 @@ static cchar *findAppwebConfig()
     mprLog(5, "Probe for \"%s\"", path);
     if (!mprPathExists(path, R_OK)) {
         if (app->appwebConfig) {
+            /* specified via --config */
             fail("Cannot open config file %s", path);
             return 0;
         }
         path = 0;
+#if UNUSED
         for (current = mprGetCurrentPath(); current; current = parent) {
             mprLog(5, "Probe for \"%s\"", current);
             if (mprPathExists(mprJoinPath(current, name), R_OK)) {
@@ -1475,6 +1479,7 @@ static cchar *findAppwebConfig()
                 break;
             }
         }
+#endif
         if (!path) {
             return 0;
         }

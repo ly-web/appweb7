@@ -1,0 +1,40 @@
+{
+    "name": "esp-angular-mvc",
+    "description": "ESP Angular MVC Application Skeleton",
+    "version": "1.0.0-rc0",
+    "keywords": [
+        "esp",
+    ],
+    "precious": true,
+    "dependencies": {
+        "esp-angular": "~1.0"
+    },
+    "export": [
+        "client/**",
+        "start.me",
+        "generate/**",
+    ],
+    "client-scripts": [
+        "app/main.js",
+        "app/*/**.js*"
+    ],
+    "esp": {
+        "formats": {
+            "date": "yyyy-MM-dd",
+            "float": 2
+        },
+        "json": true,
+        "server": {
+            "generate": {
+                "appweb": "esp-angular-mvc/appweb.conf",
+                "clientModel": "esp-angular-mvc/model.js",
+                "clientController": "esp-angular-mvc/controller.js",
+                "clientList": "esp-angular-mvc/list.html",
+                "clientEdit": "esp-angular-mvc/edit.html",
+                "controller": "esp-angular-mvc/controller.c",
+                "controller-singleton": "esp-angular-mvc/controller-singleton.c",
+            },
+            "routes": "esp-angular-mvc",
+        }
+    }
+}

@@ -1,0 +1,68 @@
+{
+    "name": "blog",
+    "title": "blog",
+    "descript": "blog",
+    "version": "1.0.0",
+    "dependencies": {
+        "esp-server": "~1.0",
+        "esp-mvc": "~1.0",
+        "angular": "~1.2",
+        "esp-angular": "~1.0",
+        "esp-angular-mvc": "~1.0"
+    },
+    "client-scripts": [
+        "paks/angular/angular.js",
+        "paks/angular/angular-animate.js",
+        "paks/angular/angular-route.js",
+        "paks/esp-angular/*.js",
+        "app/main.js",
+        "app/*/**.js*"
+    ],
+    "dirs": {
+        "client": "client",
+        "paks": "client/paks"
+    },
+    "esp": {
+        "server": {
+            "routes": "esp-angular-mvc",
+            "generate": {
+                "appweb": "esp-angular-mvc/appweb.conf",
+                "migration": "esp-mvc/migration.c",
+                "module": "esp-mvc/src/app.c",
+                "controller": "esp-angular-mvc/controller.c",
+                "controller-singleton": "esp-angular-mvc/controller-singleton.c",
+                "clientModel": "esp-angular-mvc/model.js",
+                "clientController": "esp-angular-mvc/controller.js",
+                "clientList": "esp-angular-mvc/list.html",
+                "clientEdit": "esp-angular-mvc/edit.html"
+            },
+            "database": "mdb://angular.mdb"
+        },
+        "logRoutes": false,
+        "mode": "debug",
+        "modes": {
+            "debug": {
+                "combined": false,
+                "compile": "symbols",
+                "showErrors": true,
+                "keepSource": true,
+                "update": true
+            },
+            "release": {
+                "combined": true,
+                "cache": 86400,
+                "compile": "optimized",
+                "compressed": true,
+                "showErrors": false,
+                "update": false,
+                "keepSource": false
+            }
+        },
+        "serverPrefix": "/do",
+        "formats": {
+            "date": "yyyy-MM-dd",
+            "float": 2
+        },
+        "json": true
+    }
+}
