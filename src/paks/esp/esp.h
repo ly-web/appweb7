@@ -1396,11 +1396,13 @@ typedef struct EspRoute {
     cchar           *clientDir;             /**< Directory for client-side public web content */
     cchar           *controllersDir;        /**< Directory for controllers */
     cchar           *dbDir;                 /**< Directory for databases */
+    cchar           *generateDir;           /**< Directory for generation templates */
     cchar           *layoutsDir;            /**< Directory for view layouts */
+    cchar           *paksDir;               /**< Directory for extension packs */
     cchar           *srcDir;                /**< Directory for server-side source */
     cchar           *viewsDir;              /**< Directory for server-side views */
-    cchar           *currentSession;        /**< Current login session when enforcing a single login */
 
+    cchar           *currentSession;        /**< Current login session when enforcing a single login */
     cchar           *compile;               /**< Compile template */
     cchar           *link;                  /**< Link template */
     cchar           *mode;                  /**< Application run mode (debug|release) */

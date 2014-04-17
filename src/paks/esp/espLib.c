@@ -4156,8 +4156,14 @@ static int loadConfig(HttpRoute *route)
         if ((value = espGetConfig(route, "dirs.db", 0)) != 0) {
             setEspDir(route, "db", value);
         }
+        if ((value = espGetConfig(route, "dirs.generate", 0)) != 0) {
+            setEspDir(route, "generate", value);
+        }
         if ((value = espGetConfig(route, "dirs.layouts", 0)) != 0) {
             setEspDir(route, "layouts", value);
+        }
+        if ((value = espGetConfig(route, "dirs.paks", 0)) != 0) {
+            setEspDir(route, "paks", value);
         }
         if ((value = espGetConfig(route, "dirs.src", 0)) != 0) {
             setEspDir(route, "src", value);
@@ -4169,6 +4175,11 @@ static int loadConfig(HttpRoute *route)
             if (httpSetAuthStore(route->auth, value) < 0) {
                 mprError("The %s AuthStore is not available on this platform", value);
             }
+        }
+        if ((value = espGetConfig(route, "esp.cache", 0)) != 0) {
+            clientLifespan = httpGetTicks(value);
+            httpAddCache(route, NULL, NULL, "html,gif,jpeg,jpg,png,pdf,ico,js,txt,less", NULL, clientLifespan, 0, 
+                HTTP_CACHE_CLIENT | HTTP_CACHE_ALL);
         }
         if ((value = espGetConfig(route, "esp.combined", 0)) != 0) {
             eroute->combined = smatch(value, "true");
@@ -4183,6 +4194,9 @@ static int loadConfig(HttpRoute *route)
                 eroute->compileMode = ESP_COMPILE_OPTIMIZED;
             }
         }
+        if (espTestConfig(route, "esp.compressed", "true")) {
+            httpAddRouteMapping(route, "css,html,js,less,txt,xml", "${1}.gz, min.${1}.gz, min.${1}");
+        }
         if ((value = espGetConfig(route, "esp.server.redirect", 0)) != 0) {
             /*
                 Disabling redirect may require a server reboot
@@ -4196,16 +4210,15 @@ static int loadConfig(HttpRoute *route)
                 httpFinalizeRoute(alias);
             }
         }
-        if ((value = espGetConfig(route, "esp.showErrors", 0)) != 0) {
-            httpSetRouteShowErrors(route, smatch(value, "true"));
-        } else if (debug) {
-            httpSetRouteShowErrors(route, 1);
-        }
-        if ((value = espGetConfig(route, "esp.update", 0)) != 0) {
-            eroute->update = smatch(value, "true");
+        if ((value = espGetConfig(route, "esp.json", 0)) != 0) {
+            eroute->json = smatch(value, "true");
         }
         if ((value = espGetConfig(route, "esp.keepSource", 0)) != 0) {
             eroute->keepSource = smatch(value, "true");
+        }
+        if ((value = espGetConfig(route, "esp.login.name", 0)) != 0) {
+            /* Automatic login as this user. Password not required */
+            httpSetAuthUsername(route->auth, value);
         }
         if ((value = espGetConfig(route, "esp.serverPrefix", 0)) != 0) {
             httpSetRouteServerPrefix(route, value);
@@ -4215,6 +4228,11 @@ static int loadConfig(HttpRoute *route)
             //  MOB - Http seems to compute this 
             httpSetRouteVar(route, "SERVER_PREFIX", sjoin(route->prefix ? route->prefix: "", route->serverPrefix, 0));
 #endif
+        }
+        if ((value = espGetConfig(route, "esp.showErrors", 0)) != 0) {
+            httpSetRouteShowErrors(route, smatch(value, "true"));
+        } else if (debug) {
+            httpSetRouteShowErrors(route, 1);
         }
         /*
             Must be after serverPrefix
@@ -4229,31 +4247,18 @@ static int loadConfig(HttpRoute *route)
                 set = stok(NULL, ", \t", &next);
             }
         }
-
-        if ((value = espGetConfig(route, "esp.login.name", 0)) != 0) {
-            /* Automatic login as this user. Password not required */
-            httpSetAuthUsername(route->auth, value);
-        }
-        if ((value = espGetConfig(route, "esp.xsrf", 0)) != 0) {
-            httpSetRouteXsrf(route, smatch(value, "true"));
-        } else {
-            httpSetRouteXsrf(route, 1);
-        }
-        if ((value = espGetConfig(route, "esp.json", 0)) != 0) {
-            eroute->json = smatch(value, "true");
-        }
         if ((value = espGetConfig(route, "esp.timeouts.session", 0)) != 0) {
             //  MOB SHOULD support request and inactivity timeouts too
             route->limits->sessionTimeout = httpGetTicks(value);
             mprLog(3, "esp: set session timeout to %s", value);
         }
-        if (espTestConfig(route, "esp.compressed", "true")) {
-            httpAddRouteMapping(route, "css,html,js,less,txt,xml", "${1}.gz, min.${1}.gz, min.${1}");
+        if ((value = espGetConfig(route, "esp.update", 0)) != 0) {
+            eroute->update = smatch(value, "true");
         }
-        if ((value = espGetConfig(route, "esp.cache", 0)) != 0) {
-            clientLifespan = httpGetTicks(value);
-            httpAddCache(route, NULL, NULL, "html,gif,jpeg,jpg,png,pdf,ico,js,txt,less", NULL, clientLifespan, 0, 
-                HTTP_CACHE_CLIENT | HTTP_CACHE_ALL);
+        if ((value = espGetConfig(route, "esp.xsrf", 0)) != 0) {
+            httpSetRouteXsrf(route, smatch(value, "true"));
+        } else {
+            httpSetRouteXsrf(route, 1);
         }
         if (!eroute->database) {
             if ((eroute->database = espGetConfig(route, "esp.server.database", 0)) != 0) {
@@ -4579,6 +4584,8 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->dbDir);
         mprMark(eroute->edi);
         mprMark(eroute->env);
+        mprMark(eroute->paksDir);
+        mprMark(eroute->generateDir);
         mprMark(eroute->layoutsDir);
         mprMark(eroute->link);
         mprMark(eroute->mutex);
@@ -4663,6 +4670,8 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
     eroute->layoutsDir = parent->layoutsDir;
     eroute->srcDir = parent->srcDir;
     eroute->controllersDir = parent->controllersDir;
+    eroute->generateDir = parent->generateDir;
+    eroute->paksDir = parent->paksDir;
     eroute->viewsDir = parent->viewsDir;
     route->eroute = eroute;
     return eroute;
@@ -4807,10 +4816,12 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
     httpSetRouteVar(route, "PREFIX", prefix);
 #endif
     httpSetRouteTarget(route, "run", "$&");
+#if UNUSED
     httpAddRouteHandler(route, "espHandler", "");
     httpAddRouteHandler(route, "espHandler", "esp");
     httpAddRouteIndex(route, "index.esp");
     httpAddRouteIndex(route, "index.html");
+#endif
 
     if (loadConfig(route) < 0) {
         return MPR_ERR_CANT_LOAD;
@@ -5075,8 +5086,12 @@ static void setEspDir(HttpRoute *route, cchar *name, cchar *value)
         eroute->controllersDir = value;
     } else if (smatch(name, "db")) {
         eroute->dbDir = value;
+    } else if (smatch(name, "generate")) {
+        eroute->generateDir = value;
     } else if (smatch(name, "layouts")) {
         eroute->layoutsDir = value;
+    } else if (smatch(name, "paks")) {
+        eroute->paksDir = value;
     } else if (smatch(name, "src")) {
         eroute->srcDir = value;
     } else if (smatch(name, "views")) {
@@ -5093,7 +5108,9 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     setEspDir(route, "client", 0);
     setEspDir(route, "controllers", 0);
     setEspDir(route, "db", 0);
+    setEspDir(route, "generate", 0);
     setEspDir(route, "layouts", 0);
+    setEspDir(route, "paks", "client/paks");
     setEspDir(route, "src", 0);
     setEspDir(route, "views", "client/app");
 }

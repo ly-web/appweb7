@@ -98,6 +98,7 @@ static int       nextMigration;         /* Sequence number for next migration */
 #define REQ_PACKAGE     0x8             /* Require package.json, otherwise load if present */
 #define REQ_NO_CONFIG   0x10            /* Never load appweb.conf */
 #define REQ_SERVE       0x20            /* Will be running as a server */
+#define REQ_NAME        0x40            /* Set appName */
 
 /*
     CompileFile flags
@@ -352,18 +353,24 @@ static int parseArgs(int argc, char **argv)
                 app->log = sclone(argv[++argind]);
             }
 
+#if UNUSED
         } else if (smatch(argp, "name")) {
             if (argind >= argc) {
                 usageError();
             }
             mprSetAppName(argv[++argind], 0, 0);
-
+#endif
         } else if (smatch(argp, "name")) {
+            //  MOB - is this needed?
             if (argind >= argc) {
                 usageError();
             } else {
-                app->appName = argv[++argind];
-                app->title = stitle(app->appName);
+                if (!identifier(argv[++argind])) {
+                    fail("Application name must be a valid C identifier");
+                } else {
+                    app->appName = argv[argind];
+                    app->title = stitle(app->appName);
+                }
             }
 
         } else if (smatch(argp, "optimized")) {
@@ -476,10 +483,15 @@ static void parseCommand(int argc, char **argv)
         app->require = REQ_PACKAGE;
 
     } else if (smatch(cmd, "init")) {
-        app->require = 0;
+        app->appName = (argc >= 1) ? argv[0] : mprGetPathBase(mprGetCurrentPath());
+        app->require = REQ_NAME;
 
     } else if (smatch(cmd, "install")) {
         app->require = 0;
+        if (!mprPathExists("package.json", R_OK)) {
+            app->appName = mprGetPathBase(mprGetCurrentPath());
+            app->require = REQ_NAME;
+        }
 
     } else if (smatch(cmd, "list")) {
         app->require = REQ_PACKAGE;
@@ -520,32 +532,36 @@ static void setupRequirements(int argc, char **argv)
     if (app->error) {
         return;
     }
+    if (app->require & REQ_NAME) {
+        if (!identifier(app->appName)) {
+            if (argc >= 1) {
+                fail("Application name must be a valid C identifier");
+            } else {
+                fail("Directory name is used as application name and must be a valid C identifier");
+            }
+            return;
+        }
+    }
     if ((app->appwebConfig = findAppwebConfig()) == 0) {
         if (app->require & REQ_CONFIG) {
             fail("Cannot find appweb.conf");
             return;
         }
     }
-    if (app->eroute) {
-        app->appName = app->eroute->appName;
-    } else {
-        app->appName = mprGetPathBase(mprGetCurrentPath());
-        if (!identifier(app->appName)) {
-            fail("Cannot generate. Application name must be a valid C identifier");
+    if (mprPathExists(ME_ESP_PACKAGE, R_OK)) {
+        if ((app->config = loadPackage(ME_ESP_PACKAGE)) == 0) {
             return;
         }
-    }
-    app->title = stitle(app->appName);
+        app->appName = getConfigValue("name", app->appName);
 
-    if (!mprPathExists(ME_ESP_PACKAGE, R_OK)) {
+    } else {
         if (app->require & REQ_PACKAGE) {
             fail("Cannot find %s", ME_ESP_PACKAGE);
             return;
         }
+        app->appName = mprGetPathBase(mprGetCurrentPath());
+        app->title = stitle(app->appName);
         app->config = createPackage();
-
-    } else if ((app->config = loadPackage(ME_ESP_PACKAGE)) == 0) {
-        return;
     }
     if (app->require & REQ_TARGETS) {
         app->targets = getTargets(argc - 1, &argv[1]);
@@ -626,10 +642,8 @@ static void initialize(int argc, char **argv)
             return;
         }
     } else {
-        if (mprGetJsonObj(app->config, "esp", 0) != 0) {
-            /*
-                Package.json has "esp" definition
-             */
+        if (mprPathExists("package.json", R_OK) && mprGetJsonObj(app->config, "esp", 0) != 0) {
+            
             if (espApp(app->route, ".", app->appName, 0, 0) < 0) {
                 fail("Cannot create ESP app");
                 return;
@@ -643,10 +657,11 @@ static void initialize(int argc, char **argv)
             app->eroute->update = 1;
             httpSetRouteShowErrors(app->route, 1);
             espSetDefaultDirs(app->route);
-            httpAddRouteHandler(app->route, "espHandler", "esp");
-            httpAddRouteIndex(app->route, "index.esp");
-            httpAddRouteIndex(app->route, "index.html");
         }
+        httpAddRouteHandler(app->route, "espHandler", "esp");
+        httpAddRouteHandler(app->route, "fileHandler", "html gif jpeg jpg png pdf ico css js txt \"\"");
+        httpAddRouteIndex(app->route, "index.esp");
+        httpAddRouteIndex(app->route, "index.html");
         
         /*
             Load ESP compiler rules
@@ -656,6 +671,9 @@ static void initialize(int argc, char **argv)
             return;
         }
         httpFinalizeRoute(app->route);
+#if KEEP
+        httpLogRoutes(app->server->defaultHost, 0);
+#endif
     }
     app->routes = getRoutes();
     if ((stage = httpLookupStage(http, "espHandler")) == 0) {
@@ -855,6 +873,13 @@ static void install(int argc, char **argv)
     if (argc < 1) {
         usageError();
         return;
+    }
+    if (!mprPathExists("package.json", R_OK)) {
+        app->appName = mprGetPathBase(mprGetCurrentPath());
+        if (!identifier(app->appName)) {
+            fail("Directory name is used as application name and must be a valid C identifier");
+            return;
+        }
     }
     for (i = 0; i < argc; i++) {
         installPak(argv[i], 0, 1);
@@ -1291,6 +1316,12 @@ static bool similarRoute(HttpRoute *r1, HttpRoute *r2)
         return 0;
     }
     if (!smatch(e1->viewsDir, e2->viewsDir)) {
+        return 0;
+    }
+    if (!smatch(e1->generateDir, e2->generateDir)) {
+        return 0;
+    }
+    if (!smatch(e1->paksDir, e2->paksDir)) {
         return 0;
     }
     if (scontains(r1->sourceName, "${") == 0 && scontains(r2->sourceName, "${") == 0) {
@@ -1822,10 +1853,16 @@ static void compileItems(HttpRoute *route)
         }
     }
     if (eroute->clientDir) {
-        app->files = mprGetPathFiles(eroute->clientDir, MPR_PATH_DESCEND);
+        app->files = mprGetPathFiles(eroute->clientDir, MPR_PATH_DESCEND | MPR_PATH_NODIRS);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
+            if (sstarts(path, eroute->generateDir)) {
+                continue;
+            }
             if (sstarts(path, eroute->layoutsDir)) {
+                continue;
+            }
+            if (sstarts(path, eroute->paksDir)) {
                 continue;
             }
             if (sstarts(path, eroute->viewsDir)) {
@@ -2541,7 +2578,6 @@ static MprJson *createPackage()
         esp: {server: {routes: 'esp-server'}}}",
         app->appName, app->appName, app->appName));
 }
-
 
 
 static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toDir)
