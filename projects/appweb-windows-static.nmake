@@ -1458,7 +1458,7 @@ DEPS_63 = $(DEPS_63) $(CONFIG)\bin\ejsc.exe
 
 $(CONFIG)\bin\ejs.mod: $(DEPS_63)
 	cd src\paks\ejs
-	"$(LBIN)\ejsc" --out "..\..\..\$(CONFIG)\bin\ejs.mod" --optimize 9 --bind --require null ejs.es
+	"..\..\..\$(LBIN)\ejsc" --out "..\..\..\$(CONFIG)\bin\ejs.mod" --optimize 9 --bind --require null ejs.es
 	cd ..\..\..
 !ENDIF
 
