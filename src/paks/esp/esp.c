@@ -632,7 +632,7 @@ static void initRuntime()
 static void initialize(int argc, char **argv)
 {
     HttpStage   *stage;
-    int         flags, loadApps;
+    int         flags;
 
     if (app->error) {
         return;
@@ -644,11 +644,15 @@ static void initialize(int argc, char **argv)
     exportCache();
     setupRequirements(argc, argv);
     app->route = httpGetDefaultRoute(0);
+    app->eroute = app->route->eroute;
+    app->eroute->skipApps = !(app->require & REQ_SERVE);
     
     if (app->appwebConfig) {
         /*
             Parse appweb.conf
          */
+        //  MOB - what does NON_SERVER imply?
+        
         flags = (app->require & REQ_SERVE) ? 0 : MA_PARSE_NON_SERVER;
         if (maParseConfig(app->server, app->appwebConfig, flags) < 0) {
             fail("Cannot configure the server, exiting.");
@@ -656,9 +660,7 @@ static void initialize(int argc, char **argv)
         }
     } else {
         if (mprPathExists("package.json", R_OK) && mprGetJsonObj(app->config, "esp", 0) != 0) {
-            
-            loadApps = (app->require & REQ_SERVE);
-            if (espApp(NULL, app->route, ".", app->appName, 0, 0, loadApps) < 0) {
+            if (espApp(NULL, app->route, ".", app->appName, 0, 0) < 0) {
                 fail("Cannot create ESP app");
                 return;
             }
@@ -1450,7 +1452,6 @@ static MprList *getRoutes()
         }
         return 0;
     }
-    app->eroute = app->route->eroute;
     return routes;
 }
 
@@ -2605,12 +2606,10 @@ static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toD
     MprHash     *relocate;
     MprJson     *config, *export, *ex;
     MprPath     info;
-    EspRoute    *eroute;
     cchar       *base, *path, *fname;
     char        *fromData, *toData, *from, *to, *fromSum, *toSum;
     int         i, j, next;
 
-    eroute = app->eroute;
     path = mprJoinPath(fromDir, ME_ESP_PACKAGE);
     if (!mprPathExists(path, R_OK) || (config = loadPackage(path)) == 0) {
         fail("Cannot load %s", path);

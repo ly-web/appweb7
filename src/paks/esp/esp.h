@@ -1413,6 +1413,7 @@ typedef struct EspRoute {
     int             combined;               /**< Compile the application in "combined" mode */
     int             compileMode;            /**< Compile the application debug or release mode */
     int             keepSource;             /**< Preserve generated source */
+    int             skipApps;               /**< Skip loading applications */
     int             loaded;                 /**< App has been loaded */
     int             update;                 /**< Auto-update modified ESP source */
     int             json;                   /**< Emit json responses */
@@ -1460,7 +1461,7 @@ PUBLIC void espAddHomeRoute(HttpRoute *route);
 PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set);
 
 //  MOB - DOC
-PUBLIC int espApp(MaState *state, HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet, int loadApps);
+PUBLIC int espApp(MaState *state, HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet);
 
 /**
     Add caching for response content.
