@@ -615,7 +615,6 @@ static void initRuntime()
         }
         return;
     }
-    appweb->skipModules = 1;
     http = app->appweb->http;
     appweb->staticLink = app->staticLink;
     
@@ -633,7 +632,7 @@ static void initRuntime()
 static void initialize(int argc, char **argv)
 {
     HttpStage   *stage;
-    int         flags;
+    int         flags, loadApps;
 
     if (app->error) {
         return;
@@ -658,40 +657,38 @@ static void initialize(int argc, char **argv)
     } else {
         if (mprPathExists("package.json", R_OK) && mprGetJsonObj(app->config, "esp", 0) != 0) {
             
-            if (espApp(app->route, ".", app->appName, 0, 0) < 0) {
+            loadApps = (app->require & REQ_SERVE);
+            if (espApp(NULL, app->route, ".", app->appName, 0, 0, loadApps) < 0) {
                 fail("Cannot create ESP app");
                 return;
             }
-            httpAddRouteHandler(app->route, "espHandler", "esp");
-            // MOB - should be done by client route
+            // httpAddRouteHandler(app->route, "espHandler", "esp");
+            // MOB - should be done by client route with ""
             // httpAddRouteHandler(app->route, "fileHandler", "html gif jpeg jpg png pdf ico css js txt");
             httpAddRouteIndex(app->route, "index.html");
+
         } else {
             /*
                 Either no package.json or no "esp" definition
              */
-            app->eroute = mprAllocObj(EspRoute, espManageEspRoute);
-            app->route->eroute = app->eroute;
+            if ((app->eroute = app->route->eroute) == 0) {
+                app->route->eroute = app->eroute = mprAllocObj(EspRoute, espManageEspRoute);
+            }
             app->eroute->update = 1;
             httpSetRouteShowErrors(app->route, 1);
             espSetDefaultDirs(app->route);
-            httpAddRouteIndex(app->route, "index.esp");
             httpAddRouteHandler(app->route, "espHandler", "esp");
-            httpAddRouteHandler(app->route, "fileHandler", "html gif jpeg jpg png pdf ico css js txt \"\"");
+            httpAddRouteHandler(app->route, "fileHandler", "");
+            httpAddRouteIndex(app->route, "index.esp");
             httpAddRouteIndex(app->route, "index.html");
-        }
-        
-        /*
-            Load ESP compiler rules
-         */
-        if (maParseFile(NULL, mprJoinPath(mprGetAppDir(), "esp.conf")) < 0) {
-            fail("Cannot parse esp.conf");
-            return;
+#if UNUSED
+            if (maParseFile(NULL, mprJoinPath(mprGetAppDir(), "esp.conf")) < 0) {
+                fail("Cannot parse esp.conf");
+                return;
+            }
+#endif
         }
         httpFinalizeRoute(app->route);
-#if KEEP
-        httpLogRoutes(app->server->defaultHost, 0);
-#endif
     }
     app->routes = getRoutes();
     if ((stage = httpLookupStage(http, "espHandler")) == 0) {

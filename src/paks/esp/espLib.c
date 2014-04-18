@@ -3765,6 +3765,8 @@ static int openEsp(HttpQueue *q)
     if (!route) {
         route = rx->route;
         eroute = initRoute(route);
+        //  MOB - is this really required?
+        assert(0);
         if (maParseFile(NULL, mprJoinPath(mprGetAppDir(), "esp.conf")) < 0) {
             httpError(conn, 0, "Cannot parse esp.conf");
             closeEsp(q);
@@ -4447,9 +4449,11 @@ static bool loadApp(HttpRoute *route, MprDispatcher *dispatcher)
     } else {
         source = mprJoinPath(eroute->srcDir, "app.c");
     }
-    if (mprPathExists(source, R_OK) && !loadEspModule(route, dispatcher, "app", source, &errMsg)) {
-        mprError("%s", errMsg);
-        return 0;
+    if (mprPathExists(source, R_OK)) {
+        if (!loadEspModule(route, dispatcher, "app", source, &errMsg)) {
+            mprError("%s", errMsg);
+            return 0;
+        }
     }
     eroute->loaded = 1;
     return 1;
@@ -4751,9 +4755,6 @@ PUBLIC void espAddHomeRoute(HttpRoute *parent)
 
 PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
 {
-    EspRoute    *eroute;
-
-    eroute = route->eroute;
     if (set == 0 || *set == 0) {
         return;
     }
@@ -4782,9 +4783,13 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
 /*
     Define an ESP Application
  */
-PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet)
+PUBLIC int espApp(MaState *state, HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet, int loadApps)
 {
     EspRoute    *eroute;
+    MprJson     *preload, *item;
+    cchar       *errMsg, *source;
+    char        *kind;
+    int         i;
 
     if ((eroute = getEroute(route)) == 0) {
         return MPR_ERR_MEMORY;
@@ -4794,10 +4799,6 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
     if (name) {
         eroute->appName = sclone(name);
     }
-#if UNUSED
-    //  MOB - if used, should be done in httpSetRouteName()
-    httpSetRouteVar(route, "APP_NAME", name);
-#endif
     espSetDefaultDirs(route);
     if (prefix) {
         if (*prefix != '/') {
@@ -4811,28 +4812,59 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
     } else {
         httpSetRouteName(route, sfmt("/%s", name));
     }
+    httpSetRouteTarget(route, "run", "$&");
+    httpAddRouteHandler(route, "espHandler", "");
+    //  MOB - required for client routes to override fileHandler ""
+    httpAddRouteHandler(route, "espHandler", "esp");
+    httpAddRouteIndex(route, "index.esp");
+
 #if UNUSED
     //  MOB - if used, should be done in httpSetRoutePrefix
     httpSetRouteVar(route, "PREFIX", prefix);
-#endif
-    httpSetRouteTarget(route, "run", "$&");
-    //  MOB - required for EspApp in appweb.conf
-    httpAddRouteHandler(route, "espHandler", "");
-#if UNUSED
-    httpAddRouteHandler(route, "espHandler", "esp");
     httpAddRouteIndex(route, "index.html");
+    //  MOB - if used, should be done in httpSetRouteName()
+    httpSetRouteVar(route, "APP_NAME", name);
 #endif
-    httpAddRouteIndex(route, "index.esp");
 
     if (loadConfig(route) < 0) {
         return MPR_ERR_CANT_LOAD;
     }    
     espSetConfig(route, "esp.appPrefix", prefix);
-
+#if UNUSED
+    if (!eroute->compile) {
+        path = mprJoinPath(mprGetAppDir(), "esp.conf");
+        if (maParseFile(state, path) < 0) {
+            mprError("Cannot find esp.conf at %s", path);
+            return MPR_ERR_CANT_OPEN;
+        }
+    }
+#endif
+    if (loadApps) {
+        /*
+            Note: the config parser pauses GC, so this will never yield
+         */
+        if (!loadApp(route, NULL)) {
+            return MPR_ERR_CANT_LOAD;
+        }
+        if (!eroute->combined && (preload = mprGetJsonObj(eroute->config, "esp.preload", 0)) != 0) {
+            for (ITERATE_JSON(preload, item, i)) {
+                source = stok(sclone(item->value), ":", &kind);
+                if (!kind) kind = "controller";
+                source = mprJoinPath(eroute->controllersDir, source);
+                if (!loadEspModule(route, NULL, kind, source, &errMsg)) {
+                    mprError("Cannot preload esp module %s. %s", source, errMsg);
+                    return MPR_ERR_CANT_LOAD;
+                }
+            }
+        }
+    }
     if (routeSet) {
+        /* Want routes to inherit eroute->loaded */
         eroute->routeSet = sclone(routeSet);
         espAddRouteSet(route, eroute->routeSet);
+#if UNUSED
         httpFinalizeRoute(route);
+#endif
     }
     return 0;
 }
@@ -4898,25 +4930,25 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     }
     state->route = route;
     eroute = route->eroute;
-    if (espApp(route, dir, name, prefix, routeSet) < 0) {
-        return MPR_ERR_CANT_CREATE;
-    }
-    if (prefix) {
-        espSetConfig(route, "esp.appPrefix", prefix);
-    }
-    if (combined) {
-        eroute->combined = scaselessmatch(combined, "true") || smatch(combined, "1");
-    }
     if (auth) {
         if (httpSetAuthStore(route->auth, auth) < 0) {
             mprError("The %s AuthStore is not available on this platform", auth);
             return MPR_ERR_BAD_STATE;
         }
     }
+    if (combined) {
+        eroute->combined = scaselessmatch(combined, "true") || smatch(combined, "1");
+    }
     if (database) {
         if (espDbDirective(state, key, database) < 0) {
             return MPR_ERR_BAD_STATE;
         }
+    }
+    if (espApp(state, route, dir, name, prefix, routeSet, 1) < 0) {
+        return MPR_ERR_CANT_CREATE;
+    }
+    if (prefix) {
+        espSetConfig(route, "esp.appPrefix", prefix);
     }
     return 0;
 }
@@ -4939,7 +4971,7 @@ static int finishEspAppDirective(MaState *state, cchar *key, cchar *value)
     if (route != state->prev->route) {
         httpFinalizeRoute(route);
     }
-#if !ME_STATIC
+#if !ME_STATIC && UNUSED
     if (!state->appweb->skipModules) {
         MprJson *preload, *item;
         cchar   *errMsg, *source;
@@ -5471,7 +5503,6 @@ static int espUpdateDirective(MaState *state, cchar *key, cchar *value)
     return 0;
 }
 
-
 /************************************ Init ************************************/
 /*
     Loadable module configuration
@@ -5538,6 +5569,10 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
 #if ME_COM_SQLITE
     sdbInit();
 #endif
+    if (maParseFile(NULL, mprJoinPath(mprGetAppDir(), "esp.conf")) < 0) {
+        mprError("Cannot find esp.conf at %s", mprGetAppDir());
+        return MPR_ERR_CANT_OPEN;
+    }
     return 0;
 }
 
