@@ -124,7 +124,9 @@ static void manageServer(MaServer *server, int flags)
         mprMark(server->defaultHost);
         mprMark(server->limits);
         mprMark(server->endpoints);
+#if UNUSED
         mprMark(server->state);
+#endif
     }
 }
 

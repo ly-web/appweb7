@@ -53,6 +53,7 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     mprLog(2, "Using config file: \"%s\"", mprGetAbsPath(path));
 
     state = createState(server, flags);
+    mprAddRoot(state);
     route = state->route;
     dir = mprGetAbsPath(mprGetPathDir(path));
 
@@ -69,14 +70,13 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
 #endif
 
     if (maParseFile(state, path) < 0) {
-        server->state = 0;
+        mprRemoveRoot(state);
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpFinalizeRoute(state->route);
-    server->state = 0;
+    mprRemoveRoot(state);
 
+    httpFinalizeRoute(state->route);
     if (!maValidateServer(server)) {
-        server->state = 0;
         return MPR_ERR_BAD_ARGS;
     }
     if (mprHasMemError()) {
@@ -97,13 +97,14 @@ PUBLIC int maParseFile(MaState *state, cchar *path)
     if (!state) {
         appweb = MPR->appwebService;
         topState = state = createState(appweb->defaultServer, 0);
+        mprAddRoot(state);
     } else {
         topState = 0;
         state = maPushState(state);
     }
     rc = parseFileInner(state, path);
     if (topState) {
-        state->server->state = 0;
+        mprRemoveRoot(state);
     } else {
         maPopState(state);
     }
@@ -352,8 +353,10 @@ static int addOutputFilterDirective(MaState *state, cchar *key, cchar *value)
  */
 static int addHandlerDirective(MaState *state, cchar *key, cchar *value)
 {
-    char        *handler, *extensions, *path;
+    char        *handler, *extensions;
+#if UNUSED
     static int  espLoaded = 0;
+#endif
 
     if (!maTokenize(state, value, "%S ?*", &handler, &extensions)) {
         return MPR_ERR_BAD_SYNTAX;
@@ -367,6 +370,7 @@ static int addHandlerDirective(MaState *state, cchar *key, cchar *value)
         mprError("Cannot add handler %s", handler);
         return MPR_ERR_CANT_CREATE;
     }
+#if UNUSED
     if (smatch(handler, "espHandler") && !espLoaded) {
         path = "esp.conf";
         if (!mprPathExists(path, R_OK)) {
@@ -381,6 +385,7 @@ static int addHandlerDirective(MaState *state, cchar *key, cchar *value)
             mprLog(0, "Cannot find esp.conf at %s", path);
         }
     }
+#endif
     return 0;
 }
 
@@ -2853,14 +2858,10 @@ static MaState *createState(MaServer *server, int flags)
     state->http = server->http;
     state->host = host;
     state->route = route;
-#if UNUSED
-    state->limits = state->route->limits;
-#endif
     state->enabled = 1;
     state->lineNumber = 0;
     state->auth = state->route->auth;
     state->flags = flags;
-    server->state = state;
     return state;
 }
 

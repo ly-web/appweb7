@@ -283,7 +283,9 @@ typedef struct MaServer {
     HttpLimits      *limits;                /**< Limits for this server */
     MprList         *endpoints;             /**< List of HttpEndpoints */
     HttpHost        *defaultHost;           /**< Default host for this server */
+#if UNUSED
     struct MaState  *state;                 /**< Top of appweb.conf parse tree */
+#endif
 } MaServer;
 
 /**
