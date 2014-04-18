@@ -89,7 +89,9 @@ typedef struct MaAppweb {
     int                 staticLink;             /**< Target platform is using a static linking */
     int                 userChanged;            /**< User name changed */
     int                 groupChanged;           /**< Group name changed */
+#if UNUSED
     int                 skipModules;            /**< Don't load modules */
+#endif
 } MaAppweb;
 
 /**
