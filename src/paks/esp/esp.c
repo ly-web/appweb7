@@ -30,10 +30,10 @@ typedef struct App {
     cchar       *listen;                /* Listen endpoint for "esp run" */
     cchar       *platform;              /* Target platform os-arch-profile (lower) */
 
-    int         combined;               /* Combine all inputs into one, combined output */ 
-    cchar       *combinedPath;          /* Output filename for combined compilations */
-    MprFile     *combinedFile;          /* Output file for combined compilations */
-    MprList     *combinedItems;         /* Items to invoke from Init */
+    int         combine;                /* Combine all inputs into one, combine output */ 
+    cchar       *combinePath;           /* Output filename for combine compilations */
+    MprFile     *combineFile;           /* Output file for combine compilations */
+    MprList     *combineItems;          /* Items to invoke from Init */
 
     MprList     *routes;                /* Routes to process */
     EspRoute    *eroute;                /* Selected ESP route to build */
@@ -250,9 +250,9 @@ static void manageApp(App *app, int flags)
         mprMark(app->files);
         mprMark(app->filterRouteName);
         mprMark(app->filterRoutePrefix);
-        mprMark(app->combinedFile);
-        mprMark(app->combinedItems);
-        mprMark(app->combinedPath);
+        mprMark(app->combineFile);
+        mprMark(app->combineItems);
+        mprMark(app->combinePath);
         mprMark(app->genlink);
         mprMark(app->binDir);
         mprMark(app->paksCacheDir);
@@ -577,7 +577,7 @@ static void setupRequirements(int argc, char **argv)
 
 static void initRuntime()
 {
-    cchar       *home;
+    cchar       *home, *probe;
 
     if (app->error) {
         return;
@@ -606,12 +606,13 @@ static void initRuntime()
     }
     appweb = MPR->appwebService = app->appweb;
 
-    maSetPlatform(app->platform, "bin/esp" ME_EXE);
+    probe = sfmt("bin/%s%s", mprGetAppName(), ME_EXE);
+    maSetPlatform(app->platform, probe);
     if (!appweb->platform) {
         if (app->platform) {
             fail("Cannot find platform: \"%s\"", app->platform);
         } else {
-            fail("Cannot find ESP platform files containing \"%s\"", "bin/esp" ME_EXE);
+            fail("Cannot find ESP platform files containing \"%s\"", probe);
         }
         return;
     }
@@ -1591,8 +1592,8 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
     defaultLayout = (eroute->layoutsDir) ? mprJoinPath(eroute->layoutsDir, "default.esp") : 0;
     mprMakeDir(eroute->cacheDir, 0755, -1, -1, 1);
 
-    if (app->combined) {
-        why(source, "combined mode forces complete rebuild");
+    if (app->combine) {
+        why(source, "\"combine\" mode forces complete rebuild");
 
     } else if (app->rebuild) {
         why(source, "due to forced rebuild");
@@ -1625,28 +1626,28 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
     } else {
         why(source, "%s is missing", app->module);
     }
-    if (app->combinedFile) {
+    if (app->combineFile) {
         trace("Catenate", "%s", source);
-        mprWriteFileFmt(app->combinedFile, "/*\n    Source from %s\n */\n", source);
+        mprWriteFileFmt(app->combineFile, "/*\n    Source from %s\n */\n", source);
     }
     if (kind & (ESP_CONTROlLER | ESP_MIGRATION | ESP_SRC)) {
         app->csource = source;
-        if (app->combinedFile) {
+        if (app->combineFile) {
             if ((data = mprReadPathContents(source, &len)) == 0) {
                 fail("Cannot read %s", source);
                 return;
             }
-            if (mprWriteFile(app->combinedFile, data, slen(data)) < 0) {
-                fail("Cannot write compiled script file %s", app->combinedFile->path);
+            if (mprWriteFile(app->combineFile, data, slen(data)) < 0) {
+                fail("Cannot write compiled script file %s", app->combineFile->path);
                 return;
             }
-            mprWriteFileFmt(app->combinedFile, "\n\n");
+            mprWriteFileFmt(app->combineFile, "\n\n");
             if (kind & ESP_SRC) {
-                mprAddItem(app->combinedItems, sfmt("esp_app_%s", eroute->appName));
+                mprAddItem(app->combineItems, sfmt("esp_app_%s", eroute->appName));
             } else if (eroute->appName && *eroute->appName) {
-                mprAddItem(app->combinedItems, sfmt("esp_controller_%s_%s", eroute->appName, mprTrimPathExt(mprGetPathBase(source))));
+                mprAddItem(app->combineItems, sfmt("esp_controller_%s_%s", eroute->appName, mprTrimPathExt(mprGetPathBase(source))));
             } else {
-                mprAddItem(app->combinedItems, sfmt("esp_controller_%s", mprTrimPathExt(mprGetPathBase(source))));
+                mprAddItem(app->combineItems, sfmt("esp_controller_%s", mprTrimPathExt(mprGetPathBase(source))));
             }
         }
     }
@@ -1661,13 +1662,13 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
             return;
         }
         len = slen(script);
-        if (app->combinedFile) {
-            if (mprWriteFile(app->combinedFile, script, len) < 0) {
-                fail("Cannot write compiled script file %s", app->combinedFile->path);
+        if (app->combineFile) {
+            if (mprWriteFile(app->combineFile, script, len) < 0) {
+                fail("Cannot write compiled script file %s", app->combineFile->path);
                 return;
             }
-            mprWriteFileFmt(app->combinedFile, "\n\n");
-            mprAddItem(app->combinedItems, sfmt("esp_%s", app->cacheName));
+            mprWriteFileFmt(app->combineFile, "\n\n");
+            mprAddItem(app->combineItems, sfmt("esp_%s", app->cacheName));
 
         } else {
             app->csource = mprJoinPathExt(mprTrimPathExt(app->module), ".c");
@@ -1679,7 +1680,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
             }
         }
     }
-    if (!app->combinedFile) {
+    if (!app->combineFile) {
         /*
             WARNING: GC yield here
          */
@@ -1725,8 +1726,8 @@ static void compile(int argc, char **argv)
     if (app->error) {
         return;
     }
-    app->combined = app->eroute->combined;
-    vtrace("Info", "Compiling in %s mode", app->combined ? "combined" : "discrete");
+    app->combine = app->eroute->combine;
+    vtrace("Info", "Compiling in %s mode", app->combine ? "combine" : "discrete");
 
     if (app->genlink) {
         app->slink = mprCreateList(0, MPR_LIST_STABLE);
@@ -1735,7 +1736,7 @@ static void compile(int argc, char **argv)
         eroute = route->eroute;
         mprMakeDir(eroute->cacheDir, 0755, -1, -1, 1);
         mprTrace(2, "Build with route \"%s\" at %s", route->name, route->documents);
-        if (app->combined) {
+        if (app->combine) {
             compileCombined(route);
         } else {
             compileItems(route);
@@ -1752,7 +1753,7 @@ static void compile(int argc, char **argv)
     if (app->slink) {
         qtrace("Generate", app->genlink);
         if ((file = mprOpenFile(app->genlink, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
-            fail("Cannot open %s", app->combinedPath);
+            fail("Cannot open %s", app->combinePath);
             return;
         }
         mprWriteFileFmt(file, "/*\n    %s -- Generated Appweb Static Initialization\n */\n", app->genlink);
@@ -1761,14 +1762,14 @@ static void compile(int argc, char **argv)
         for (ITERATE_ITEMS(app->slink, route, next)) {
             eroute = route->eroute;
             name = app->appName ? app->appName : mprGetPathBase(route->documents);
-            mprWriteFileFmt(file, "extern int esp_app_%s_combined(HttpRoute *route, MprModule *module);", name);
+            mprWriteFileFmt(file, "extern int esp_app_%s_combine(HttpRoute *route, MprModule *module);", name);
             mprWriteFileFmt(file, "    /* SOURCE %s */\n",
                 mprGetRelPath(mprJoinPath(eroute->cacheDir, sjoin(name, ".c", NULL)), NULL));
         }
         mprWriteFileFmt(file, "\nPUBLIC void appwebStaticInitialize()\n{\n");
         for (ITERATE_ITEMS(app->slink, route, next)) {
             name = app->appName ? app->appName : mprGetPathBase(route->documents);
-            mprWriteFileFmt(file, "    espStaticInitialize(esp_app_%s_combined, \"%s\", \"%s\");\n", name, name, route->name);
+            mprWriteFileFmt(file, "    espStaticInitialize(esp_app_%s_combine, \"%s\", \"%s\");\n", name, name, route->name);
         }
         mprWriteFileFmt(file, "}\n");
         mprCloseFile(file);
@@ -1915,7 +1916,7 @@ static void compileItems(HttpRoute *route)
 
 
 /*
-    Compile all the items for a route into a combined (single) output file
+    Compile all the items for a route into a combine (single) output file
  */
 static void compileCombined(HttpRoute *route)
 {
@@ -1932,8 +1933,8 @@ static void compileCombined(HttpRoute *route)
     /*
         Combined ... Catenate all source
      */
-    app->combinedItems = mprCreateList(-1, MPR_LIST_STABLE);
-    app->combinedPath = mprJoinPath(eroute->cacheDir, sjoin(name, ".c", NULL));
+    app->combineItems = mprCreateList(-1, MPR_LIST_STABLE);
+    app->combinePath = mprJoinPath(eroute->cacheDir, sjoin(name, ".c", NULL));
 
     app->build = mprCreateList(0, MPR_LIST_STABLE);
     path = mprJoinPath(app->eroute->srcDir, "app.c");
@@ -1983,12 +1984,12 @@ static void compileCombined(HttpRoute *route)
         }
     }
     if (mprGetListLength(app->build) > 0) {
-        if ((app->combinedFile = mprOpenFile(app->combinedPath, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
-            fail("Cannot open %s", app->combinedPath);
+        if ((app->combineFile = mprOpenFile(app->combinePath, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
+            fail("Cannot open %s", app->combinePath);
             return;
         }
-        mprWriteFileFmt(app->combinedFile, "/*\n    Combined compilation of %s\n */\n\n", name);
-        mprWriteFileFmt(app->combinedFile, "#include \"esp.h\"\n\n");
+        mprWriteFileFmt(app->combineFile, "/*\n    Combined compilation of %s\n */\n\n", name);
+        mprWriteFileFmt(app->combineFile, "#include \"esp.h\"\n\n");
 
         for (ITERATE_ITEMS(app->build, kp, next)) {
             if (smatch(kp->value, "src")) {
@@ -2005,28 +2006,28 @@ static void compileCombined(HttpRoute *route)
         if (app->slink) {
             mprAddItem(app->slink, route);
         }
-        mprWriteFileFmt(app->combinedFile, "\nESP_EXPORT int esp_app_%s_combined(HttpRoute *route, MprModule *module) {\n", name);
-        for (next = 0; (line = mprGetNextItem(app->combinedItems, &next)) != 0; ) {
-            mprWriteFileFmt(app->combinedFile, "    %s(route, module);\n", line);
+        mprWriteFileFmt(app->combineFile, "\nESP_EXPORT int esp_app_%s_combine(HttpRoute *route, MprModule *module) {\n", name);
+        for (next = 0; (line = mprGetNextItem(app->combineItems, &next)) != 0; ) {
+            mprWriteFileFmt(app->combineFile, "    %s(route, module);\n", line);
         }
-        mprWriteFileFmt(app->combinedFile, "    return 0;\n}\n");
-        mprCloseFile(app->combinedFile);
+        mprWriteFileFmt(app->combineFile, "    return 0;\n}\n");
+        mprCloseFile(app->combineFile);
 
         app->module = mprNormalizePath(sfmt("%s/%s%s", eroute->cacheDir, name, ME_SHOBJ));
         qtrace("Compile", "%s", name);
-        if (runEspCommand(route, eroute->compile, app->combinedPath, app->module) < 0) {
+        if (runEspCommand(route, eroute->compile, app->combinePath, app->module) < 0) {
             return;
         }
         if (eroute->link) {
             trace("Link", "%s", mprGetRelPath(mprTrimPathExt(app->module), NULL));
-            if (runEspCommand(route, eroute->link, app->combinedPath, app->module) < 0) {
+            if (runEspCommand(route, eroute->link, app->combinePath, app->module) < 0) {
                 return;
             }
         }
     }
-    app->combinedItems = 0;
-    app->combinedFile = 0;
-    app->combinedPath = 0;
+    app->combineItems = 0;
+    app->combineFile = 0;
+    app->combinePath = 0;
     app->build = 0;
 }
 
@@ -2875,12 +2876,12 @@ static void usageError()
     "  Options:\n"
     "    --config appwebConfig      # Use named config file instead appweb.conf\n"
     "    --database name            # Database provider 'mdb|sdb'\n"
-    "    --genlink filename         # Generate a static link module for combined compilations\n"
+    "    --genlink filename         # Generate a static link module for combine compilations\n"
     "    --home directory           # Change to directory first\n"
     "    --keep                     # Keep intermediate source\n"
     "    --listen [ip:]port         # Generate app to listen at address\n"
     "    --log logFile:level        # Log to file file at verbosity level\n"
-    "    --name appName             # Name for the app when compiling combined\n"
+    "    --name appName             # Name for the app when compiling combine\n"
     "    --optimize                 # Compile optimized without symbols\n"
     "    --overwrite                # Overwrite existing files\n"
     "    --quiet                    # Don't emit trace\n"

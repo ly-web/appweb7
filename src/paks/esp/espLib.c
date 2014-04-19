@@ -2229,7 +2229,7 @@ PUBLIC void scripts(cchar *patterns)
     EspRoute    *eroute;
     MprList     *files;
     MprJson     *cscripts, *script;
-    cchar       *name, *uri, *path;
+    cchar       *uri, *path, *version;
     int         next, ci;
 
     conn = getConn();
@@ -2239,8 +2239,27 @@ PUBLIC void scripts(cchar *patterns)
     patterns = httpExpandRouteVars(route, patterns);
 
     if (!patterns || !*patterns) {
+#if FUTURE || 1
+        version = espGetConfig(route, "version", "1.0.0");
+        if (eroute->combineScript) {
+            scripts(eroute->combineScript);
+        } else if (espGetConfig(route, "content.js.combine", 0)) {
+            if (espGetConfig(route, "content.js.minify", 0)) {
+                eroute->combineScript = sfmt("all-%s.min.js", version);
+            } else {
+                eroute->combineScript = sfmt("all-%s.js", version);
+            }
+            scripts(eroute->combineScript);
+        } else {
+            if ((cscripts = mprGetJsonObj(eroute->config, "client-scripts", 0)) != 0) {
+                for (ITERATE_JSON(cscripts, script, ci)) {
+                    scripts(script->value);
+                }
+            }
+        }
+#else
         if (modeIs("release")) {
-            name = sfmt("all-%s.min.js.gz", espGetConfig(route, "version", "1.0.0"));
+            name = sfmt("all-%s.min.js", espGetConfig(route, "version", "1.0.0"));
             scripts(name);
         } else {
             if ((cscripts = mprGetJsonObj(eroute->config, "client-scripts", 0)) != 0) {
@@ -2249,9 +2268,11 @@ PUBLIC void scripts(cchar *patterns)
                 }
             }
         }
+#endif
         return;
     }
-    if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0 || mprGetListLength(files) == 0) {
+    if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0 || 
+            mprGetListLength(files) == 0) {
         files = mprCreateList(0, 0);
         mprAddItem(files, patterns);
     }
@@ -2261,7 +2282,7 @@ PUBLIC void scripts(cchar *patterns)
         }
         path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
         uri = httpUriToString(httpGetRelativeUri(rx->parsedUri, httpLinkUri(conn, path, 0), 0), 0);
-        espRender(conn, "    <script src='%s' type='text/javascript'></script>\n", uri);
+        espRender(conn, "<script src='%s' type='text/javascript'></script>\n", uri);
     }
 }
 
@@ -2415,7 +2436,7 @@ PUBLIC void stylesheets(cchar *patterns)
     HttpRoute   *route;
     EspRoute    *eroute;
     MprList     *files;
-    cchar       *uri, *path, *kind;
+    cchar       *uri, *path, *kind, *version;
     int         next;
 
     conn = getConn();
@@ -2425,6 +2446,30 @@ PUBLIC void stylesheets(cchar *patterns)
     patterns = httpExpandRouteVars(route, patterns);
 
     if (!patterns || !*patterns) {
+#if FUTURE || 1
+        version = espGetConfig(route, "version", "1.0.0");
+        if (eroute->combineSheet) {
+            scripts(eroute->combineSheet);
+        } else if (espGetConfig(route, "content.css.combine", 0)) {
+            if (espGetConfig(route, "content.css.minify", 0)) {
+                eroute->combineSheet = sfmt("all-%s.min.css", version);
+            } else {
+                eroute->combineSheet = sfmt("all-%s.css", version);
+            }
+            stylesheets(eroute->combineSheet);
+        } else {
+            path = mprJoinPath(eroute->clientDir, "css/all.css");
+            if (mprPathExists(path, R_OK)) {
+                stylesheets("css/all.css");
+            } else {
+                stylesheets("css/all.less");
+                path = mprJoinPath(eroute->clientDir, "css/fix.css");
+                if (mprPathExists(path, R_OK)) {
+                    stylesheets("css/fix.css");
+                }
+            }
+        }
+#else
         if (modeIs("release")) {
             stylesheets(sfmt("css/all-%s.min.css", espGetConfig(route, "version", "1.0.0")));
         } else {
@@ -2439,6 +2484,7 @@ PUBLIC void stylesheets(cchar *patterns)
                 }
             }
         }
+#endif
         return;
     }
     if ((files = mprGlobPathFiles(eroute->clientDir, patterns, MPR_PATH_RELATIVE)) == 0 || mprGetListLength(files) == 0) {
@@ -2450,9 +2496,9 @@ PUBLIC void stylesheets(cchar *patterns)
         uri = httpUriToString(httpGetRelativeUri(rx->parsedUri, httpLinkUri(conn, path, 0), 0), 0);
         kind = mprGetPathExt(path);
         if (smatch(kind, "css")) {
-            espRender(conn, "    <link rel='stylesheet' type='text/css' href='%s' />\n", uri);
+            espRender(conn, "<link rel='stylesheet' type='text/css' href='%s' />\n", uri);
         } else {
-            espRender(conn, "    <link rel='stylesheet/%s' type='text/css' href='%s' />\n", kind, uri);
+            espRender(conn, "<link rel='stylesheet/%s' type='text/css' href='%s' />\n", kind, uri);
         }
     }
 }
@@ -3988,7 +4034,7 @@ static int runAction(HttpConn *conn)
 
 #if !ME_STATIC
     key = mprJoinPath(eroute->controllersDir, rx->target);
-    if (!eroute->combined && (eroute->update || !mprLookupKey(esp->actions, key))) {
+    if (!eroute->combine && (eroute->update || !mprLookupKey(esp->actions, key))) {
         cchar *errMsg;
         if (!loadEspModule(route, conn->dispatcher, "controller", source, &errMsg)) {
             httpError(conn, HTTP_CODE_NOT_FOUND, "%s", errMsg);
@@ -4060,7 +4106,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         source = conn->tx->filename;
     }
 #if !ME_STATIC
-    if (!eroute->combined && (eroute->update || !mprLookupKey(esp->views, mprGetPortablePath(source)))) {
+    if (!eroute->combine && (eroute->update || !mprLookupKey(esp->views, mprGetPortablePath(source)))) {
         cchar *errMsg;
         /* WARNING: GC yield */
         mprHold(source);
@@ -4183,12 +4229,20 @@ static int loadConfig(HttpRoute *route)
             httpAddCache(route, NULL, NULL, "html,gif,jpeg,jpg,png,pdf,ico,js,txt,less", NULL, clientLifespan, 0, 
                 HTTP_CACHE_CLIENT | HTTP_CACHE_ALL);
         }
-        if ((value = espGetConfig(route, "esp.combined", 0)) != 0) {
-            eroute->combined = smatch(value, "true");
-            if (eroute->combined) {
-                mprLog(3, "esp: app %s configured for combined compilation", eroute->appName);
+        if ((value = espGetConfig(route, "esp.combine", 0)) != 0) {
+            eroute->combine = smatch(value, "true");
+            if (eroute->combine) {
+                mprLog(3, "esp: app %s configured for \"combine\" mode compilation", eroute->appName);
             }
         }
+#if DEPRECATE || 1
+        if ((value = espGetConfig(route, "esp.combined", 0)) != 0) {
+            eroute->combine = smatch(value, "true");
+            if (eroute->combine) {
+                mprLog(3, "esp: app %s configured for \"combine\" compilation", eroute->appName);
+            }
+        }
+#endif
         if ((value = espGetConfig(route, "esp.compile", 0)) != 0) {
             if (smatch(value, "debug") || smatch(value, "symbols")) {
                 eroute->compileMode = ESP_COMPILE_SYMBOLS;
@@ -4338,8 +4392,8 @@ static char *getModuleEntry(EspRoute *eroute, cchar *kind, cchar *source, cchar 
         entry = sfmt("esp_%s", cacheName);
 
     } else if (smatch(kind, "app")) {
-        if (eroute->combined) {
-            entry = sfmt("esp_%s_%s_combined", kind, eroute->appName);
+        if (eroute->combine) {
+            entry = sfmt("esp_%s_%s_combine", kind, eroute->appName);
         } else {
             entry = sfmt("esp_%s_%s", kind, eroute->appName);
         }
@@ -4381,7 +4435,7 @@ static bool loadEspModule(HttpRoute *route, MprDispatcher *dispatcher, cchar *ki
 #endif
     canonical = mprGetPortablePath(mprGetRelPath(source, route->documents));
     appName = eroute->appName ? eroute->appName : route->host->name;
-    if (eroute->combined) {
+    if (eroute->combine) {
         cacheName = eroute->appName;
     } else {
         cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", appName, canonical), -1, sjoin(kind, "_", NULL));
@@ -4444,7 +4498,7 @@ static bool loadApp(HttpRoute *route, MprDispatcher *dispatcher)
     if (eroute->loaded && !eroute->update) {
         return 1;
     }
-    if (eroute->combined) {
+    if (eroute->combine) {
         source = mprJoinPath(eroute->cacheDir, sfmt("%s.c", eroute->appName));
     } else {
         source = mprJoinPath(eroute->srcDir, "app.c");
@@ -4581,6 +4635,8 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->cacheDir);
         mprMark(eroute->clientDir);
         mprMark(eroute->compile);
+        mprMark(eroute->combineScript);
+        mprMark(eroute->combineSheet);
         mprMark(eroute->config);
         mprMark(eroute->controllersDir);
         mprMark(eroute->currentSession);
@@ -4668,6 +4724,8 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
     eroute->appName = parent->appName;
     eroute->cacheDir = parent->cacheDir;
     eroute->clientDir = parent->clientDir;
+    eroute->combineScript = parent->combineScript;
+    eroute->combineSheet = parent->combineSheet;
     eroute->config = parent->config;
     eroute->configLoaded = parent->configLoaded;
     eroute->dbDir = parent->dbDir;
@@ -4846,7 +4904,7 @@ PUBLIC int espApp(MaState *state, HttpRoute *route, cchar *dir, cchar *name, cch
         if (!loadApp(route, NULL)) {
             return MPR_ERR_CANT_LOAD;
         }
-        if (!eroute->combined && (preload = mprGetJsonObj(eroute->config, "esp.preload", 0)) != 0) {
+        if (!eroute->combine && (preload = mprGetJsonObj(eroute->config, "esp.preload", 0)) != 0) {
             for (ITERATE_JSON(preload, item, i)) {
                 source = stok(sclone(item->value), ":", &kind);
                 if (!kind) kind = "controller";
@@ -4877,7 +4935,7 @@ PUBLIC int espApp(MaState *state, HttpRoute *route, cchar *dir, cchar *name, cch
         auth=STORE 
         database=DATABASE 
         dir=DIR 
-        combined=true|false
+        combine=true|false
         name=NAME 
         prefix=PREFIX 
         routes=ROUTES 
@@ -4886,12 +4944,12 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpRoute   *route;
     EspRoute    *eroute;
-    cchar       *auth, *database, *name, *prefix, *dir, *routeSet, *combined;
+    cchar       *auth, *database, *name, *prefix, *dir, *routeSet, *combine;
     char        *option, *ovalue, *tok;
 
     dir = ".";
     routeSet = 0;
-    combined = 0;
+    combine = 0;
     prefix = 0;
     database = 0;
     auth = 0;
@@ -4907,8 +4965,12 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
                 database = ovalue;
             } else if (smatch(option, "dir")) {
                 dir = ovalue;
+            } else if (smatch(option, "combine")) {
+                combine = ovalue;
+#if DEPRECATED || 1
             } else if (smatch(option, "combined")) {
-                combined = ovalue;
+                combine = ovalue;
+#endif
             } else if (smatch(option, "name")) {
                 name = ovalue;
             } else if (smatch(option, "prefix")) {
@@ -4936,8 +4998,8 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
             return MPR_ERR_BAD_STATE;
         }
     }
-    if (combined) {
-        eroute->combined = scaselessmatch(combined, "true") || smatch(combined, "1");
+    if (combine) {
+        eroute->combine = scaselessmatch(combine, "true") || smatch(combine, "1");
     }
     if (database) {
         if (espDbDirective(state, key, database) < 0) {
@@ -4981,7 +5043,7 @@ static int finishEspAppDirective(MaState *state, cchar *key, cchar *value)
         if (!loadApp(route, NULL)) {
             return MPR_ERR_CANT_LOAD;
         }
-        if (!eroute->combined && (preload = mprGetJsonObj(eroute->config, "esp.preload", 0)) != 0) {
+        if (!eroute->combine && (preload = mprGetJsonObj(eroute->config, "esp.preload", 0)) != 0) {
             for (ITERATE_JSON(preload, item, i)) {
                 source = stok(sclone(item->value), ":", &kind);
                 if (!kind) kind = "controller";

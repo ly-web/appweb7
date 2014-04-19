@@ -4030,7 +4030,7 @@ Before the notifier is invoked, espSetConn is called to set the connection objec
 Directory for client-side application content &quot;app&quot;.
 </td>
     <tr><td class="param">char *</td><td><td>appName</td><td>
-App module name when compiled combined.
+App module name when compiled in combine mode.
 </td>
     <tr><td class="param">cchar *</td><td><td>cacheDir</td><td>
 Directory for cached compiled controllers and views.
@@ -4038,8 +4038,14 @@ Directory for cached compiled controllers and views.
     <tr><td class="param">cchar *</td><td><td>clientDir</td><td>
 Directory for client-side public web content.
 </td>
-    <tr><td class="param">int</td><td><td>combined</td><td>
-Compile the application in &quot;combined&quot; mode.
+    <tr><td class="param">int</td><td><td>combine</td><td>
+Compile the application in &quot;combine&quot; mode.
+</td>
+    <tr><td class="param">cchar *</td><td><td>combineScript</td><td>
+Combine mode script filename.
+</td>
+    <tr><td class="param">cchar *</td><td><td>combineSheet</td><td>
+Combine mode stylesheet filename.
 </td>
     <tr><td class="param">EspProc</td><td><td>commonController</td><td>
 Common code for all controllers.
@@ -4109,6 +4115,9 @@ Route set to use.
 </td>
     <tr><td class="param">cchar *</td><td><td>searchPath</td><td>
 Search path to use when locating compiler/linker.
+</td>
+    <tr><td class="param">int</td><td><td>skipApps</td><td>
+Skip loading applications.
 </td>
     <tr><td class="param">cchar *</td><td><td>srcDir</td><td>
 Directory for server-side source.
