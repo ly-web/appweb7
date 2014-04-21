@@ -27,7 +27,6 @@
 #define MPR_MAX_FNAME   1024
 
 static char *fileList[] = {
-    "appWeb.conf",
     "*.obj",
     "*.lib",
     "*.dll",
