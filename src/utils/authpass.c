@@ -209,7 +209,7 @@ static void printUsage(cchar *programName)
         "Options:\n"
         "    --cipher md5|blowfish Select the encryption cipher. Defaults to md5\n"
         "    --create              Create the password file\n"
-        "    --passwordp password  Use the specified password\n"
+        "    --password password   Use the specified password\n"
         "\n", programName);
 }
 

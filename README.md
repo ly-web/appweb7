@@ -1,4 +1,4 @@
-Embedthis Appweb 4.X
+Embedthis Appweb
 ===
 
 The fast, little web server for embedded applications. 
