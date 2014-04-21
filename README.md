@@ -5,9 +5,10 @@ The fast, little web server for embedded applications.
 
 Branches
 ---
-The repository has two branches:
+The repository has three branches:
 
-* master - Somewhat stable snapshots of the dev branch. Should be suitable for ongoing development.
+* master - Most recent release of the software.
+* lts - Most recent LTS release of the software.
 * dev - Current ongoing development. Least stable and may not be suitable for development.
  
 Licensing
