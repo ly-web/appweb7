@@ -3,44 +3,44 @@
 esp \- ESP Application Generator for Server-Side Web Applications.
 .SH SYNOPSIS
 .B esp
- [\fI--apply]\fR] 
- [\fI--config configFile]\fR] 
- [\fI--database DB]\fR] 
- [\fI--genlink slink.c\fR]
- [\fI--home dir]\fR] 
- [\fI--keep\fR]
- [\fI--listen [ip:]port\fR]
- [\fI--log logFile:level\fR]
- [\fI--optimized\fR]
- [\fI--overwrite\fR]
- [\fI--quiet\fR]
- [\fI--platform [path/]os-arch-profile\fR]
- [\fI--rebuild\fR]
- [\fI--routeName name\fR]
- [\fI--routePrefix prefix\fR]
- [\fI--single\fR]
- [\fI--static\fR]
- [\fI--symbols\fR]
- [\fI--table name\fR]
- [\fI--verbose\fR]
- [\fI--why\fR]
-commands ...
+    \fB--apply\fR
+    \fB--config configFile\fR
+    \fB--database DB\fR
+    \fB--genlink slink.c\fR
+    \fB--home dir\fR
+    \fB--keep\fR
+    \fB--listen [ip:]port\fR
+    \fB--log logFile:level\fR
+    \fB--optimized\fR
+    \fB--overwrite\fR
+    \fB--quiet\fR
+    \fB--platform [path/]os-arch-profile\fR
+    \fB--rebuild\fR
+    \fB--routeName name\fR
+    \fB--routePrefix prefix\fR
+    \fB--single\fR
+    \fB--static\fR
+    \fB--symbols\fR
+    \fB--table name\fR
+    \fB--verbose\fR
+    \fB--why\fR
+    \fBcommands ...\fR
 .SH ""
 .B Commands:
- esp clean
- esp compile
- esp compile [pathFilters...]
- esp mode [debug|release]
- esp generate controller name [action [, action] ...]
- esp generate migration description model [field:type ...]
- esp generate scaffold model [field:type ...]
- esp generate table name model [field:type ...]
- esp install paks...
- esp migrate [forward|backward|NNN]
- esp mode [debug|release|otherMode]
- esp [run] [ip]:[port]
- esp uninstall paks...
- esp upgrade paks..
+    esp clean
+    esp compile
+    esp compile [pathFilters...]
+    esp edit key[=value]
+    esp generate controller name [action [, action] ...]
+    esp generate migration description model [field:type ...]
+    esp generate scaffold model [field:type ...]
+    esp generate table name model [field:type ...]
+    esp install paks...
+    esp migrate [forward|backward|NNN]
+    esp mode [debug|release|otherMode]
+    esp [run] [ip]:[port]
+    esp uninstall paks...
+    esp upgrade paks..
 .SH DESCRIPTION
 The \fBesp\fR command generates, manages and runs ESP web applications. It includes a full HTTP/1.1 web server to 
 host your application but can also help to generate ESP web applications, controllers, database tables, and scaffolds.

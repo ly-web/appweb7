@@ -132,6 +132,7 @@ static void compileCombined(HttpRoute *route);
 static void compileItems(HttpRoute *route);
 static App *createApp(Mpr *mpr);
 static void createMigration(cchar *name, cchar *table, cchar *comment, int fieldCount, char **fields);
+static void editPackageValue(int argc, char **argv);
 static void exportCache();
 static void fail(cchar *fmt, ...);
 static void fatal(cchar *fmt, ...);
@@ -148,7 +149,6 @@ static MprList *getRoutes();
 static MprHash *getTargets(int argc, char **argv);
 static cchar *getTemplate(cchar *key, MprHash *tokens);
 static cchar *getPakVersion(cchar *name, cchar *version);
-static void getPackageValue(int argc, char **argv);
 static bool identifier(cchar *name);
 static MprJson *createPackage();
 static void initialize(int argc, char **argv);
@@ -176,7 +176,6 @@ static void savePackage();
 static bool selectResource(cchar *path, cchar *kind);
 static void setMode(cchar *mode);
 static void setPackageKey(cchar *key, cchar *value);
-static void setPackageValue(int argc, char **argv);
 static int sortFiles(MprDirEntry **d1, MprDirEntry **d2);
 static void qtrace(cchar *tag, cchar *fmt, ...);
 static void trace(cchar *tag, cchar *fmt, ...);
@@ -479,7 +478,7 @@ static void parseCommand(int argc, char **argv)
     } else if (smatch(cmd, "generate")) {
         app->require = REQ_PACKAGE;
 
-    } else if (smatch(cmd, "get")) {
+    } else if (smatch(cmd, "edit")) {
         app->require = REQ_PACKAGE;
 
     } else if (smatch(cmd, "init")) {
@@ -512,9 +511,6 @@ static void parseCommand(int argc, char **argv)
         if (argc > 1) {
             app->require = REQ_NO_CONFIG;
         }
-
-    } else if (smatch(cmd, "set")) {
-        app->require = REQ_PACKAGE;
 
     } else if (smatch(cmd, "uninstall")) {
         app->require = 0;
@@ -726,11 +722,11 @@ static void process(int argc, char **argv)
     } else if (smatch(cmd, "compile")) {
         compile(argc -1, &argv[1]);
 
+    } else if (smatch(cmd, "edit")) {
+        editPackageValue(argc - 1, &argv[1]);
+
     } else if (smatch(cmd, "generate")) {
         generate(argc - 1, &argv[1]);
-
-    } else if (smatch(cmd, "get")) {
-        getPackageValue(argc - 1, &argv[1]);
 
     } else if (smatch(cmd, "init")) {
         init(argc - 1, &argv[1]);
@@ -747,16 +743,13 @@ static void process(int argc, char **argv)
     } else if (smatch(cmd, "mode")) {
         if (argc < 2) {
             char *args[1] = { "esp.mode" };
-            getPackageValue(1, args);
+            editPackageValue(1, args);
         } else {
             setMode(argv[1]);
         }
 
     } else if (smatch(cmd, "run")) {
         run(argc - 1, &argv[1]);
-
-    } else if (smatch(cmd, "set")) {
-        setPackageValue(argc - 1, &argv[1]);
 
     } else if (smatch(cmd, "uninstall")) {
         uninstall(argc - 1, &argv[1]);
@@ -860,22 +853,30 @@ static cchar *getConfigValue(cchar *key, cchar *defaultValue)
 }
 
 
-static void getPackageValue(int argc, char **argv)
+static void editPackageValue(int argc, char **argv)
 {
     cchar   *key, *value;
+    int     i;
 
     if (argc < 1) {
         usageError();
         return;
     }
-    key = argv[0];
-    value = getConfigValue(key, 0);
-    if (value) { 
-        printf("%s\n", value);
-    } else {
-        printf("undefined\n");
+    for (i = 0; i < argc; i++) {
+        key = stok(sclone(argv[i]), "=", (char**) &value);
+        if (value) {
+            setPackageKey(key, value);
+        } else {
+            value = getConfigValue(key, 0);
+            if (value) { 
+                printf("%s\n", value);
+            } else {
+                printf("undefined\n");
+            }
+        }
     }
 }
+
 
 
 static void init(int argc, char **argv)
@@ -1108,20 +1109,6 @@ static void setMode(cchar *mode)
     app->quiet = 1;
     clean(0, NULL);
     app->quiet = quiet;
-}
-
-
-static void setPackageValue(int argc, char **argv)
-{
-    cchar   *key, *value;
-
-    if (argc < 2) {
-        usageError();
-        return;
-    }
-    key = argv[0];
-    value = argv[1];
-    setPackageKey(key, value);
 }
 
 
@@ -2907,14 +2894,13 @@ static void usageError()
     "    esp generate migration description model [field:type [, field:type] ...]\n"
     "    esp generate scaffold model [field:type [, field:type] ...]\n"
     "    esp generate table name [field:type [, field:type] ...]\n"
-    "    esp get package-field\n"
+    "    esp edit key[=value]\n"
     "    esp init\n"
     "    esp install paks...\n"
     "    esp list\n"
     "    esp migrate [forward|backward|NNN]\n"
     "    esp mode [debug|release]\n"
     "    esp [run] [ip]:[port] ...\n"
-    "    esp set package-field value\n"
     "    esp uninstall paks...\n"
     "    esp upgrade paks...\n"
     "\n", name);
