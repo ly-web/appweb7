@@ -72,5 +72,5 @@ Resources
 ---
   - [Appweb web site](http://appwebserver.org/)
   - [Appweb GitHub repository](http://github.com/embedthis/appweb)
-  - [Appweb Community Support](http://groups.google.com/groups/appweb)
+  - [Appweb Community Support](http://groups.google.com/group/appweb)
   - [Embedthis web site](http://embedthis.com/)
