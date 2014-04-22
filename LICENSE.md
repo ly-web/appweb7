@@ -22,7 +22,7 @@ applications.
 [AngularJS](http://angularjs.org) - [MIT](http://opensource.org/licenses/MIT)
 
 
-###Dtoa License
+### Dtoa License
 ---
 
 The Dtoa module is used in Ejscript.
@@ -39,19 +39,19 @@ OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY OF THIS SOFTWARE OR ITS
 FITNESS FOR ANY PARTICULAR PURPOSE.
 
 
-###EST License
+### EST License
 
 The optional EST SSL stack includes code from TropicSSL.
 
 TropicSSL - [BSD License](http://opensource.org/licenses/BSD-2-Clause)
 
 
-###Perl Regular Expressions License
+### Perl Regular Expressions License
 
 PCRE - [BSD License](http://opensource.org/licenses/BSD-2-Clause)
 
 
-###RSA MD5 License
+### RSA MD5 License
 
 License to copy and use this software is granted provided that it is identified 
 as the "RSA Data Security, Inc. MD5 Message-Digest Algorithm" in all material 
@@ -66,12 +66,12 @@ kind. These notices must be retained in any copies of any part of this
 documentation and/or software. 
 
 
-###SQLite License
+### SQLite License
 
 SQLite - [Public Domain](http://www.sqlite.org/copyright.html)
 
 
-###Zlib License
+### Zlib License
 
 ZLIB - [MIT Style License](http://www.zlib.net/zlib_license.html)
 

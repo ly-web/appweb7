@@ -38,6 +38,6 @@ Resources
 ---
   - [Ejscript web site](http://ejscript.org/)
   - [Embedthis web site](http://embedthis.com/)
-  - [Ejscript GitHub repository](http://github.com/embedthis/ejs-2)
+  - [Ejscript GitHub repository](http://github.com/embedthis/ejs)
   - [Ejscript Mailing list](http://groups.google.com/groups/ejs)
 
