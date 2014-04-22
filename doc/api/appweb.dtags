@@ -57,8 +57,8 @@
       <type>MaAppweb *</type>
       <name>maCreateAppweb</name>
       <anchorfile>group___ma_appweb.html</anchorfile>
-      <anchor>ga675e06882f349fd1129a50714722cff5</anchor>
-      <arglist>(cchar *probe)</arglist>
+      <anchor>ga3c5d11ffcda01cb1d75ae24faa39cdee</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>char *</type>

@@ -9,7 +9,7 @@ The repository has three branches:
 
 * master - Most recent release of the software.
 * lts - Most recent LTS release of the software.
-* dev - Current ongoing development. Least stable and may not be suitable for development.
+* dev - Current ongoing development.
  
 Licensing
 ---
@@ -17,7 +17,7 @@ See [LICENSE.md](LICENSE.md) for details.
 
 ### To read documentation:
 
-  See http://embedthis.com/products/appweb/doc/product/index.html
+  See http://embedthis.com/products/appweb/doc/index.html
 
 ### Building
     You can build with make or with MakeMe. MakeMe is quicker and more flexible.
@@ -71,6 +71,6 @@ See [LICENSE.md](LICENSE.md) for details.
 Resources
 ---
   - [Appweb web site](http://appwebserver.org/)
-  - [Appweb GitHub repository](http://github.com/embedthis/appweb-4)
-  - [Appweb Mailing list](http://groups.google.com/groups/appweb)
+  - [Appweb GitHub repository](http://github.com/embedthis/appweb)
+  - [Appweb Community Support](http://groups.google.com/groups/appweb)
   - [Embedthis web site](http://embedthis.com/)

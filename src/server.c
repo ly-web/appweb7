@@ -550,6 +550,13 @@ PUBLIC int maApplyChangedUser(MaAppweb *appweb)
         mprLog(MPR_INFO, "Changing user to %s (%d)", appweb->user, appweb->uid);
     }
 #endif
+#if FUTURE
+    if (appweb->uid >= 0 && appweb->gid >= 0 && !appweb->groupChanged) {
+        if (initgroups(appweb->user, appweb->gid) == -1) {
+            mprError("Cannot initgroups for %s, errno: %d", appweb->user, errno);
+        }
+    }
+#endif
     return 0;
 }
 

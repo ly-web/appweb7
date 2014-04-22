@@ -76,6 +76,6 @@ See [LICENSE.md](LICENSE.md) for details.
 Resources
 ---
   - [ESP web site](http://esp.embedthis.org/)
-  - [Appweb GitHub repository](http://github.com/embedthis/appweb-4)
-  - [Appweb Mailing list](http://groups.google.com/groups/appweb)
+  - [ESP GitHub repository](http://github.com/embedthis/esp)
+  - [ESP Mailing list](http://groups.google.com/groups/esp)
   - [Embedthis web site](http://embedthis.com/)

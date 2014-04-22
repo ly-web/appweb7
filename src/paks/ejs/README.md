@@ -1,4 +1,4 @@
-Embedthis Ejscript 2.X
+Embedthis Ejscript Language
 ===
 
 A complete, integrated JavaScript environment.
