@@ -287,6 +287,30 @@ PUBLIC int maStartServer(MaServer *server)
     if (maApplyChangedGroup(appweb) < 0 || maApplyChangedUser(appweb) < 0) {
         return MPR_ERR_CANT_COMPLETE;
     }
+   if (appweb->userChanged || appweb->groupChanged) {
+        struct group    *gp;
+        gid_t           glist[64], gid;
+        MprBuf          *gbuf = mprCreateBuf(0, 0);
+        cchar           *groups;
+        int             i, ngroup;
+
+        gid = getgid();
+        ngroup = getgroups(sizeof(glist) / sizeof(gid_t), glist);
+        if (ngroup > 1) {
+            mprPutStringToBuf(gbuf, ", groups: ");
+            for (i = 0; i < ngroup; i++) {
+                if (glist[i] == gid) continue;
+                if ((gp = getgrgid(glist[i])) != 0) {
+                    mprPutToBuf(gbuf, "%s (%d) ", gp->gr_name, glist[i]);
+                } else {
+                    mprPutToBuf(gbuf, "(%d) ", glist[i]);
+                }
+            }
+        }
+        groups = mprGetBufStart(gbuf);
+        mprLog(MPR_INFO, "Running as user \"%s\" (%d), group \"%s\" (%d)%s", appweb->user, appweb->uid,
+            appweb->group, appweb->gid, groups);
+    }
 #endif
     return 0;
 }
@@ -528,6 +552,25 @@ PUBLIC int maApplyChangedUser(MaAppweb *appweb)
 {
 #if BIT_UNIX_LIKE
     if (appweb->userChanged && appweb->uid >= 0) {
+        if (appweb->gid >= 0 && appweb->groupChanged) {
+            if (setgroups(0, NULL) == -1) {
+                mprError("Cannot clear supplemental groups");
+            }
+            if (setgid(appweb->gid) == -1) {
+                mprError("Cannot change group to %s: %d\n"
+                    "WARNING: This is a major security exposure", appweb->group, appweb->gid);
+            }
+        } else {
+            struct passwd   *pp;
+            if ((pp = getpwuid(appweb->uid)) == 0) {
+                mprError("Cannot get user entry for id: %d", appweb->uid);
+                return MPR_ERR_CANT_ACCESS;
+            }
+            mprLog(4, "Initgroups for %s GID %d", appweb->user, pp->pw_gid);
+            if (initgroups(appweb->user, pp->pw_gid) == -1) {
+                mprError("Cannot initgroups for %s, errno: %d", appweb->user, errno);
+            }
+        }
         if ((setuid(appweb->uid)) != 0) {
             mprError("Cannot change user to: %s: %d\n"
                 "WARNING: This is a major security exposure", appweb->user, appweb->uid);
@@ -540,7 +583,6 @@ PUBLIC int maApplyChangedUser(MaAppweb *appweb)
             prctl(PR_SET_DUMPABLE, 1);
 #endif
         }
-        mprLog(MPR_INFO, "Changing user to %s (%d)", appweb->user, appweb->uid);
     }
 #endif
     return 0;
@@ -563,7 +605,6 @@ PUBLIC int maApplyChangedGroup(MaAppweb *appweb)
             prctl(PR_SET_DUMPABLE, 1);
 #endif
         }
-        mprLog(MPR_INFO, "Changing group to %s (%d)", appweb->group, appweb->gid);
     }
 #endif
     return 0;
