@@ -108,6 +108,7 @@ text/x-setext etx
 text/xml xml xsl
 video/mpeg mpeg mpg mpe
 video/quicktime qt mov
+video/mp4 mp4
 video/vnd.mpegurl mxu
 video/vnd.rn-realvideo rv
 video/x-msvideo avi
