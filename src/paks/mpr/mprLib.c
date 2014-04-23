@@ -15901,6 +15901,7 @@ static char *standardMimeTypes[] = {
     "json",  "application/json",
     "less",  "text/css",
     "mp3",   "audio/mpeg",
+    "mp4",   "video/mp4",
     "mpg",   "video/mpeg",
     "mpeg",  "video/mpeg",
     "otf",   "application/x-font-opentype",
