@@ -11,5 +11,6 @@
         "${PAKS}/esp-angular/*.js"
     ],
     "optionalDependencies": {
-    }
+    },
+    "v": "e"
 }

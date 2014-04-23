@@ -71,6 +71,6 @@ See [LICENSE.md](LICENSE.md) for details.
 Resources
 ---
   - [Appweb web site](http://appwebserver.org/)
-  - [Appweb GitHub repository](http://github.com/embedthis/appweb-4)
+  - [Appweb GitHub repository](http://github.com/embedthis/appweb)
   - [Appweb Mailing list](http://groups.google.com/groups/appweb)
   - [Embedthis web site](http://embedthis.com/)

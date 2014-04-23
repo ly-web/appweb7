@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.5.5 Documentation</title>
+    <title>Embedthis Appweb 4.5.6 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.5.5</div>
+                <div class="version">Embedthis Appweb 4.5.6</div>
             </div>
         </div>
         <div class="crumbs">
@@ -283,7 +283,7 @@ chmod 755  . lib logs
             <a href="http://en.wikipedia.org/wiki/Chroot">chroot</a> jail. A chroot jail is when an application changes
             its root directory to be isolated from the real file system root directory. Any access then to files outside the jail is protected and impossible. Appweb supports chroot jails via the 
             <a href="dir/server.html#chroot">chroot</a> directive and via the appweb --chroot command line option.</p>
-            <p>See also the <a href="https://github.com/embedthis/appweb-4/tree/dev/samples/chroot-server"
+            <p>See also the <a href="https://github.com/embedthis/appweb/tree/dev/samples/chroot-server"
                 >Chroot Sample</a> for a working example.</p>
             <a id="ssl"></a>
             <h2 class="section">Securing SSL</h2>
@@ -447,12 +447,13 @@ Accept-Ranges: bytes
             <h2 class="section">Documented Vulnerabilities</h2>
             <p>Appweb documents discovered security errors in its GitHub issue database 
             at </p>
-            <pre><a href="https://github.com/embedthis/appweb-4/issues?state=open"
-            >https://github.com/embedthis/appweb-4/issues?state=open</a></pre>
+            <pre><a href="https://github.com/embedthis/appweb/issues?state=open"
+            >https://github.com/embedthis/appweb/issues?state=open</a></pre>
             <p>Specific issue reports are created for all confirmed or erroneous 
             security reports that receive a CVE classification. You can search for specific 
             CVE numbers or see all via:</p>
-            <pre><a href="https://github.com/embedthis/appweb-4/search?q=CVE-&amp;type=Issues">https://github.com/embedthis/appweb-4/search?q=CVE-&amp;type=Issues</a></pre>
+            <pre><a
+href="https://github.com/embedthis/appweb/search?q=CVE-&amp;type=Issues">https://github.com/embedthis/appweb/search?q=CVE-&amp;type=Issues</a></pre>
             <p>Unfortunately some security researchers publish poorly diagnosed security alerts and sometimes do not contact the vendor for confirmation of the report. Consequently there exist some security CVE reports which are bogus. Appweb creates parallel CVE issues in the Appweb GitHub issue database to comment on these reports and provide accurate resolution information.</p>
             <h2 class="section">Other Security References</h2>
             <p>Some of these articles may provide good background regarding security web servers.</p>
