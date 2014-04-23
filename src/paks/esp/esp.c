@@ -1216,7 +1216,7 @@ static void exportCache()
 {
     MprDirEntry *dp;
     MprList     *paks;
-    MprPath     info, sinfo, dinfo;
+    MprPath     info;
     cchar       *espPaks, *src, *dest, *path, *dpath;
     int         i;
 
@@ -1233,6 +1233,7 @@ static void exportCache()
             return;
         }
     }
+#if KEEP
     /*
         Verify the modified time of the esp-server pak
      */
@@ -1248,6 +1249,21 @@ static void exportCache()
     if (dinfo.valid && sinfo.mtime < dinfo.mtime) {
         return;
     }
+#else
+    /*
+        Check the existence of esp-server/VERSION
+     */
+    paks = mprGetPathFiles(mprJoinPath(espPaks, "esp-server"), MPR_PATH_RELATIVE);
+    if ((dp = mprGetFirstItem(paks)) == 0) {
+        fail("Cannot locate esp-server in esp paks directory: %s", app->paksCacheDir);
+        return;
+    }
+    path = mprJoinPath("esp-server", dp->name);
+    dpath = mprJoinPath(app->paksCacheDir, path);
+    if (mprPathExists(dpath, X_OK)) {
+        return;
+    }
+#endif
 
     /* Touch paks/esp-server/VERSION */
     mprDeletePath(mprGetTempPath(dpath));
@@ -1257,7 +1273,7 @@ static void exportCache()
             fail("Cannot make directory %s", app->paksCacheDir);
         }
     }
-    trace("Export", "ESP paks from %s to %s", espPaks, app->paksCacheDir);
+    trace("Init", "Copy ESP paks from %s to %s", espPaks, app->paksCacheDir);
 
     paks = mprGetPathFiles(espPaks, MPR_PATH_DESCEND | MPR_PATH_RELATIVE);
     for (ITERATE_ITEMS(paks, dp, i)) {
