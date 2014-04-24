@@ -6958,7 +6958,6 @@ PUBLIC int startProcess(MprCmd *cmd)
 {
     MprCmdTaskFn    entryFn;
     MprModule       *mp;
-    SYM_TYPE        symType;
     char            *entryPoint, *program, *pair;
     int             pri, next;
 
@@ -6982,7 +6981,7 @@ PUBLIC int startProcess(MprCmd *cmd)
      */
     entryPoint = sjoin("_", entryPoint, NULL);
 #endif
-    if (symFindByName(sysSymTbl, entryPoint, (char**) (void*) &entryFn, &symType) < 0) {
+    if (mprFindVxSym(sysSymTbl, entryPoint, (char**) (void*) &entryFn) < 0) {
         if ((mp = mprCreateModule(cmd->program, cmd->program, NULL, NULL)) == 0) {
             mprError("start: can't create module");
             return MPR_ERR_CANT_CREATE;
@@ -6991,7 +6990,7 @@ PUBLIC int startProcess(MprCmd *cmd)
             mprError("start: can't load DLL %s, errno %d", program, mprGetOsError());
             return MPR_ERR_CANT_READ;
         }
-        if (symFindByName(sysSymTbl, entryPoint, (char**) (void*) &entryFn, &symType) < 0) {
+        if (mprFindVxSym(sysSymTbl, entryPoint, (char**) (void*) &entryFn) < 0) {
             mprError("start: can't find symbol %s, errno %d", entryPoint, mprGetOsError());
             return MPR_ERR_CANT_ACCESS;
         }
@@ -25614,16 +25613,18 @@ PUBLIC MprOsThread mprGetCurrentOsThread()
 
 PUBLIC void mprSetThreadPriority(MprThread *tp, int newPriority)
 {
-    int     osPri;
-
+#if ME_WIN_LIKE || VXWORKS
+    int     osPri = mprMapMprPriorityToOs(newPriority);
+#endif
     lock(tp);
-    osPri = mprMapMprPriorityToOs(newPriority);
-
 #if ME_WIN_LIKE
     SetThreadPriority(tp->threadHandle, osPri);
 #elif VXWORKS
     taskPrioritySet(tp->osThread, osPri);
 #elif ME_UNIX_LIKE && DISABLED
+    /*
+        Not worth setting thread priorities on linux
+     */
     MprOsThread ost;
     pthread_attr_t attr;
     int policy = 0;
@@ -25637,6 +25638,9 @@ PUBLIC void mprSetThreadPriority(MprThread *tp, int newPriority)
     pthread_setschedprio(ost, max_prio_for_policy);
     pthread_attr_destroy(&thAttr);
 #elif DEPRECATED
+    /*
+        Don't set process priority
+     */
     setpriority(PRIO_PROCESS, (int) tp->pid, osPri);
 #else
     /* Nothing can be done */
@@ -28118,8 +28122,10 @@ static void validateTime(struct tm *tp, struct tm *defaults)
 /*
     Compatibility for windows and VxWorks
  */
-#if ME_WIN_LIKE || VXWORKS
+#if ME_WIN_LIKE || (VXWORKS && (_WRS_VXWORKS_MAJOR < 6 || (_WRS_VXWORKS_MAJOR == 6 && _WRS_VXWORKS_MINOR < 9)))
+
 PUBLIC int gettimeofday(struct timeval *tv, struct timezone *tz)
+
 {
     #if ME_WIN_LIKE
         FILETIME        fileTime;
@@ -28252,10 +28258,37 @@ PUBLIC int mprGetRandomBytes(char *buf, int length, bool block)
 }
 
 
+#if _WRS_VXWORKS_MAJOR < 6 || (_WRS_VXWORKS_MAJOR == 6 && _WRS_VXWORKS_MINOR < 9)
+int mprFindVxSym(SYMTAB_ID sid, char *name, char **pvalue)
+{
+    SYM_TYPE    type;
+
+    return symFindByName(sid, name, pvalue, &type);
+}
+#else
+
+int mprFindVxSym(SYMTAB_ID sid, char *name, char **pvalue)
+{
+    SYMBOL_DESC     symDesc;
+
+    memset(&symDesc, 0, sizeof(SYMBOL_DESC));
+    symDesc.mask = SYM_FIND_BY_NAME;
+    symDesc.name = name;
+
+    if (symFind(sid, &symDesc) == ERROR) {
+        return ERROR;
+    }
+    if (pvalue != NULL) {
+        *pvalue = (char*) symDesc.value;
+    }
+    return OK;
+}
+#endif
+
+
 PUBLIC int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
-    SYM_TYPE        symType;
     MprPath         info;
     char            *at, *entry;
     void            *handle;
@@ -28269,7 +28302,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
 #if ME_CPU_ARCH == MPR_CPU_IX86 || ME_CPU_ARCH == MPR_CPU_IX64 || ME_CPU_ARCH == MPR_CPU_SH
     entry = sjoin("_", entry, NULL);
 #endif
-    if (!mp->entry || symFindByName(sysSymTbl, entry, (char**) (void*) &fn, &symType) == -1) {
+    if (!mp->entry || mprFindFxSym(sysSymTbl, entry, (char**) (void*) &fn) == -1) {
         if ((at = mprSearchForModule(mp->path)) == 0) {
             mprError("Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
                 mprGetModuleSearchPath());
@@ -28300,7 +28333,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
         mprLog(2, "Activating module %s", mp->name);
     }
     if (mp->entry) {
-        if (symFindByName(sysSymTbl, entry, (char**) (void*) &fn, &symType) == -1) {
+        if (mprFindVxSym(sysSymTbl, entry, (char**) (void*) &fn) == -1) {
             mprError("Cannot find symbol %s when loading %s", entry, mp->path);
             return MPR_ERR_CANT_READ;
         }

@@ -10270,6 +10270,10 @@ PUBLIC char *mprReadRegistry(cchar *key, cchar *name);
 PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value);
 #endif /* ME_WIN_LIKE || CYGWIN */
 
+#if VXWORKS
+PUBLIC int mprFindVxSym(SYMTAB_ID sid, char *name, char **pvalue);
+#endif
+
 /*
     Internal
  */
