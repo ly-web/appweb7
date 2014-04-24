@@ -1,13 +1,13 @@
 {
     "name": "esp-html-mvc",
     "description": "ESP Server-Side HTML MVC",
-    "version": "1.0.0-rc0",
+    "version": "5.0.0-rc0",
     "keywords": [
         "esp",
     ],
     "precious": true,
     "dependencies": {
-        "esp-mvc": "~1.0"
+        "esp-mvc": "~5.0"
     },
     "export": [
         "client/**",
