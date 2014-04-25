@@ -9,16 +9,16 @@ program executable link, provided the module entry point is manually invoked fro
 
 Requirements
 ---
-* [Appweb](http://embedthis.com/downloads/appweb/download.ejs)
-* [Bit Build Tool](http://embedthis.com/downloads/bit/download.ejs)
+* [Appweb](http://embedthis.com/downloads/appweb/download.esp)
+* [MakeMe Build Tool](http://embedthis.com/downloads/me/download.esp)
 
 To build:
 ---
-    bit
+    me
 
 To run:
 ---
-    bit run
+    me run
 
 You will see trace in the console for the custom directive:
 
@@ -28,7 +28,7 @@ Code:
 ---
 * [simpleModule.c](simpleModule.c) - Simple module
 * [appweb.conf](appweb.conf) - Appweb server configuration file
-* [start.bit](start.bit) - Bit build instructions
+* [start.me](start.me) - MakeMe build instructions
 
 Documentation:
 ---

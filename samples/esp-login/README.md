@@ -20,12 +20,12 @@ The password database is kept in a flat file called auth.conf. The password was 
 
 Requirements
 ---
-* [Appweb](http://embedthis.com/downloads/appweb/download.ejs)
-* [Bit Build Tool](http://embedthis.com/downloads/bit/download.ejs)
+* [Appweb](http://embedthis.com/downloads/appweb/download.esp)
+* [MakeMe Build Tool](http://embedthis.com/downloads/me/download.esp)
 
 To run:
 ---
-    bit run
+    me run
 
 The server listens on port 8080 for HTTP traffice and 4443 for SSL. Browse to: 
  
@@ -43,7 +43,7 @@ Code:
 * [self.crt](self.crt) - Self-signed test certificate
 * [self.key](self.key) - Test private key
 * [web](web) - Web content to serve
-* [start.bit](start.bit) - Bit build instructions
+* [start.me](start.me) - MakeMe build instructions
 * [cache](cache) - Directory for cached ESP pages
 
 Documentation:

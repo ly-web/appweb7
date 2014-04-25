@@ -5,19 +5,19 @@ This sample demonstrates the commands to use to deploy Appweb files to a staging
 
 Requirements
 ---
-* [Appweb](http://embedthis.com/downloads/appweb/download.ejs)
-* [Bit Build Tool](http://embedthis.com/downloads/bit/download.ejs)
+* [Appweb](http://embedthis.com/downloads/appweb/download.esp)
+* [MakeMe Build Tool](http://embedthis.com/downloads/me/download.esp)
 
 Steps:
 ---
 
 1. Appweb must be built
 
-    bit 
+    me 
 
 2. Deploy 
 
-    bit --sets core,libs,esp --deploy dir
+    me --sets core,libs,esp --deploy dir
 
 This will copy the required Appweb files to deploy into the nominated directory.
 
@@ -26,7 +26,7 @@ Other sets include: 'web', 'service', 'php', 'utils', 'test', 'dev', 'doc', 'pac
 Documentation:
 ---
 * [Appweb Documentation](http://embedthis.com/products/appweb/doc/index.html)
-* [Building Appweb with Bit](http://embedthis.com/products/appweb/doc/guide/appweb/source/bit.html)
+* [Building Appweb with MakeMe](http://embedthis.com/products/appweb/doc/guide/appweb/source/me.html)
 
 See Also:
 ---
