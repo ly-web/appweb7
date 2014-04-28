@@ -24,14 +24,14 @@
         "?mode": "debug",
         "modes": {
             "debug": {
-                "?combined": false,
+                "?combine": false,
                 "?compile": "symbols",
                 "?showErrors": true,
                 "?keepSource": true,
                 "?update": true,
             },
             "release": {
-                "?combined": true,
+                "?combine": true,
                 "?cache": 86400,
                 "?compile": "optimized",
                 "?compressed": true,
