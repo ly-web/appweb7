@@ -1955,19 +1955,17 @@
 ../src/paks/esp-html-mvc/start.me,
 ../src/paks/esp-mvc,
 ../src/paks/esp-mvc/generate,
-../src/paks/esp-mvc/generate/esp-mvc,
-../src/paks/esp-mvc/generate/esp-mvc/appweb.conf,
-../src/paks/esp-mvc/generate/esp-mvc/controller.c,
-../src/paks/esp-mvc/generate/esp-mvc/migration.c,
-../src/paks/esp-mvc/generate/esp-mvc/src,
-../src/paks/esp-mvc/generate/esp-mvc/src/app.c,
+../src/paks/esp-mvc/generate/appweb.conf,
+../src/paks/esp-mvc/generate/controller.c,
+../src/paks/esp-mvc/generate/migration.c,
+../src/paks/esp-mvc/generate/src,
+../src/paks/esp-mvc/generate/src/app.c,
 ../src/paks/esp-mvc/LICENSE.md,
 ../src/paks/esp-mvc/package.json,
 ../src/paks/esp-mvc/README.md,
 ../src/paks/esp-server,
 ../src/paks/esp-server/generate,
-../src/paks/esp-server/generate/esp-server,
-../src/paks/esp-server/generate/esp-server/appweb.conf,
+../src/paks/esp-server/generate/appweb.conf,
 ../src/paks/esp-server/LICENSE.md,
 ../src/paks/esp-server/package.json,
 ../src/paks/esp-server/README.md
@@ -1979,47 +1977,45 @@
 			shellPath = /bin/bash;
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/paks
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/client\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/client/assets\"
-	cp esp-html-mvc/client/assets/favicon.ico ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/client/assets/favicon.ico
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/client/css\"
-	cp esp-html-mvc/client/css/all.css ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/client/css/all.css
-	cp esp-html-mvc/client/css/all.less ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/client/css/all.less
-	cp esp-html-mvc/client/css/app.less ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/client/css/app.less
-	cp esp-html-mvc/client/css/theme.less ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/client/css/theme.less
-	cp esp-html-mvc/client/index.esp ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/client/index.esp
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/generate\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/generate/esp-html-mvc\"
-	cp esp-html-mvc/generate/esp-html-mvc/appweb.conf ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/generate/esp-html-mvc/appweb.conf
-	cp esp-html-mvc/generate/esp-html-mvc/controller-singleton.c ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/generate/esp-html-mvc/controller-singleton.c
-	cp esp-html-mvc/generate/esp-html-mvc/controller.c ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/generate/esp-html-mvc/controller.c
-	cp esp-html-mvc/generate/esp-html-mvc/edit.esp ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/generate/esp-html-mvc/edit.esp
-	cp esp-html-mvc/generate/esp-html-mvc/list.esp ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/generate/esp-html-mvc/list.esp
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/layouts\"
-	cp esp-html-mvc/layouts/default.esp ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/layouts/default.esp
-	cp esp-html-mvc/LICENSE.md ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/LICENSE.md
-	cp esp-html-mvc/package.json ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/package.json
-	cp esp-html-mvc/README.md ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/README.md
-	cp esp-html-mvc/start.me ../${OUT_DIR}/esp/esp-html-mvc/1.0.0-rc0/start.me
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/generate\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/generate/esp-mvc\"
-	cp esp-mvc/generate/esp-mvc/appweb.conf ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/generate/esp-mvc/appweb.conf
-	cp esp-mvc/generate/esp-mvc/controller.c ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/generate/esp-mvc/controller.c
-	cp esp-mvc/generate/esp-mvc/migration.c ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/generate/esp-mvc/migration.c
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/generate/esp-mvc/src\"
-	cp esp-mvc/generate/esp-mvc/src/app.c ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/generate/esp-mvc/src/app.c
-	cp esp-mvc/LICENSE.md ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/LICENSE.md
-	cp esp-mvc/package.json ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/package.json
-	cp esp-mvc/README.md ../${OUT_DIR}/esp/esp-mvc/1.0.0-rc0/README.md
-	mkdir -p \"../${OUT_DIR}/esp/esp-server/1.0.0-rc0\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-server/1.0.0-rc0/generate\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-server/1.0.0-rc0/generate/esp-server\"
-	cp esp-server/generate/esp-server/appweb.conf ../${OUT_DIR}/esp/esp-server/1.0.0-rc0/generate/esp-server/appweb.conf
-	cp esp-server/LICENSE.md ../${OUT_DIR}/esp/esp-server/1.0.0-rc0/LICENSE.md
-	cp esp-server/package.json ../${OUT_DIR}/esp/esp-server/1.0.0-rc0/package.json
-	cp esp-server/README.md ../${OUT_DIR}/esp/esp-server/1.0.0-rc0/README.md
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0\"
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/client\"
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/client/assets\"
+	cp esp-html-mvc/client/assets/favicon.ico ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/client/assets/favicon.ico
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/client/css\"
+	cp esp-html-mvc/client/css/all.css ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/client/css/all.css
+	cp esp-html-mvc/client/css/all.less ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/client/css/all.less
+	cp esp-html-mvc/client/css/app.less ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/client/css/app.less
+	cp esp-html-mvc/client/css/theme.less ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/client/css/theme.less
+	cp esp-html-mvc/client/index.esp ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/client/index.esp
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate\"
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate/esp-html-mvc\"
+	cp esp-html-mvc/generate/esp-html-mvc/appweb.conf ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate/esp-html-mvc/appweb.conf
+	cp esp-html-mvc/generate/esp-html-mvc/controller-singleton.c ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate/esp-html-mvc/controller-singleton.c
+	cp esp-html-mvc/generate/esp-html-mvc/controller.c ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate/esp-html-mvc/controller.c
+	cp esp-html-mvc/generate/esp-html-mvc/edit.esp ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate/esp-html-mvc/edit.esp
+	cp esp-html-mvc/generate/esp-html-mvc/list.esp ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate/esp-html-mvc/list.esp
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/layouts\"
+	cp esp-html-mvc/layouts/default.esp ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/layouts/default.esp
+	cp esp-html-mvc/LICENSE.md ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/LICENSE.md
+	cp esp-html-mvc/package.json ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/package.json
+	cp esp-html-mvc/README.md ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/README.md
+	cp esp-html-mvc/start.me ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/start.me
+	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/5.0.0-rc0\"
+	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/5.0.0-rc0/generate\"
+	cp esp-mvc/generate/appweb.conf ../${OUT_DIR}/esp/esp-mvc/5.0.0-rc0/generate/appweb.conf
+	cp esp-mvc/generate/controller.c ../${OUT_DIR}/esp/esp-mvc/5.0.0-rc0/generate/controller.c
+	cp esp-mvc/generate/migration.c ../${OUT_DIR}/esp/esp-mvc/5.0.0-rc0/generate/migration.c
+	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/5.0.0-rc0/generate/src\"
+	cp esp-mvc/generate/src/app.c ../${OUT_DIR}/esp/esp-mvc/5.0.0-rc0/generate/src/app.c
+	cp esp-mvc/LICENSE.md ../${OUT_DIR}/esp/esp-mvc/5.0.0-rc0/LICENSE.md
+	cp esp-mvc/package.json ../${OUT_DIR}/esp/esp-mvc/5.0.0-rc0/package.json
+	cp esp-mvc/README.md ../${OUT_DIR}/esp/esp-mvc/5.0.0-rc0/README.md
+	mkdir -p \"../${OUT_DIR}/esp/esp-server/5.0.0-rc0\"
+	mkdir -p \"../${OUT_DIR}/esp/esp-server/5.0.0-rc0/generate\"
+	cp esp-server/generate/appweb.conf ../${OUT_DIR}/esp/esp-server/5.0.0-rc0/generate/appweb.conf
+	cp esp-server/LICENSE.md ../${OUT_DIR}/esp/esp-server/5.0.0-rc0/LICENSE.md
+	cp esp-server/package.json ../${OUT_DIR}/esp/esp-server/5.0.0-rc0/package.json
+	cp esp-server/README.md ../${OUT_DIR}/esp/esp-server/5.0.0-rc0/README.md
 ";
 		};
 		F88BAD16F88BBD600000000B /* ShellScript for esp.conf */ = {
@@ -3018,7 +3014,7 @@ fi";
                 /* Common Settings */
 				ALWAYS_SEARCH_USER_PATHS = NO;
                 ONLY_ACTIVE_ARCH = YES;
-                CURRENT_PROJECT_VERSION = 5.0.0;
+                CURRENT_PROJECT_VERSION = 5.0;
                 DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
                 DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -3087,7 +3083,7 @@ fi";
                 /* Common Settings */
 				ALWAYS_SEARCH_USER_PATHS = NO;
                 ONLY_ACTIVE_ARCH = YES;
-                CURRENT_PROJECT_VERSION = 5.0.0;
+                CURRENT_PROJECT_VERSION = 5.0;
                 DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
                 DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;

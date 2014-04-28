@@ -930,19 +930,17 @@ DEPS_45 += src/paks/esp-html-mvc/README.md
 DEPS_45 += src/paks/esp-html-mvc/start.me
 DEPS_45 += src/paks/esp-mvc
 DEPS_45 += src/paks/esp-mvc/generate
-DEPS_45 += src/paks/esp-mvc/generate/esp-mvc
-DEPS_45 += src/paks/esp-mvc/generate/esp-mvc/appweb.conf
-DEPS_45 += src/paks/esp-mvc/generate/esp-mvc/controller.c
-DEPS_45 += src/paks/esp-mvc/generate/esp-mvc/migration.c
-DEPS_45 += src/paks/esp-mvc/generate/esp-mvc/src
-DEPS_45 += src/paks/esp-mvc/generate/esp-mvc/src/app.c
+DEPS_45 += src/paks/esp-mvc/generate/appweb.conf
+DEPS_45 += src/paks/esp-mvc/generate/controller.c
+DEPS_45 += src/paks/esp-mvc/generate/migration.c
+DEPS_45 += src/paks/esp-mvc/generate/src
+DEPS_45 += src/paks/esp-mvc/generate/src/app.c
 DEPS_45 += src/paks/esp-mvc/LICENSE.md
 DEPS_45 += src/paks/esp-mvc/package.json
 DEPS_45 += src/paks/esp-mvc/README.md
 DEPS_45 += src/paks/esp-server
 DEPS_45 += src/paks/esp-server/generate
-DEPS_45 += src/paks/esp-server/generate/esp-server
-DEPS_45 += src/paks/esp-server/generate/esp-server/appweb.conf
+DEPS_45 += src/paks/esp-server/generate/appweb.conf
 DEPS_45 += src/paks/esp-server/LICENSE.md
 DEPS_45 += src/paks/esp-server/package.json
 DEPS_45 += src/paks/esp-server/README.md
@@ -950,47 +948,45 @@ DEPS_45 += src/paks/esp-server/README.md
 $(CONFIG)/esp: $(DEPS_45)
 	( \
 	cd src/paks; \
-	mkdir -p "../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0" ; \
-	mkdir -p "../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/client" ; \
-	mkdir -p "../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/client/assets" ; \
-	cp esp-html-mvc/client/assets/favicon.ico ../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/client/assets/favicon.ico ; \
-	mkdir -p "../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/client/css" ; \
-	cp esp-html-mvc/client/css/all.css ../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/client/css/all.css ; \
-	cp esp-html-mvc/client/css/all.less ../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/client/css/all.less ; \
-	cp esp-html-mvc/client/css/app.less ../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/client/css/app.less ; \
-	cp esp-html-mvc/client/css/theme.less ../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/client/css/theme.less ; \
-	cp esp-html-mvc/client/index.esp ../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/client/index.esp ; \
-	mkdir -p "../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/generate" ; \
-	mkdir -p "../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/generate/esp-html-mvc" ; \
-	cp esp-html-mvc/generate/esp-html-mvc/appweb.conf ../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/generate/esp-html-mvc/appweb.conf ; \
-	cp esp-html-mvc/generate/esp-html-mvc/controller-singleton.c ../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/generate/esp-html-mvc/controller-singleton.c ; \
-	cp esp-html-mvc/generate/esp-html-mvc/controller.c ../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/generate/esp-html-mvc/controller.c ; \
-	cp esp-html-mvc/generate/esp-html-mvc/edit.esp ../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/generate/esp-html-mvc/edit.esp ; \
-	cp esp-html-mvc/generate/esp-html-mvc/list.esp ../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/generate/esp-html-mvc/list.esp ; \
-	mkdir -p "../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/layouts" ; \
-	cp esp-html-mvc/layouts/default.esp ../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/layouts/default.esp ; \
-	cp esp-html-mvc/LICENSE.md ../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/LICENSE.md ; \
-	cp esp-html-mvc/package.json ../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/package.json ; \
-	cp esp-html-mvc/README.md ../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/README.md ; \
-	cp esp-html-mvc/start.me ../../$(CONFIG)/esp/esp-html-mvc/1.0.0-rc0/start.me ; \
-	mkdir -p "../../$(CONFIG)/esp/esp-mvc/1.0.0-rc0" ; \
-	mkdir -p "../../$(CONFIG)/esp/esp-mvc/1.0.0-rc0/generate" ; \
-	mkdir -p "../../$(CONFIG)/esp/esp-mvc/1.0.0-rc0/generate/esp-mvc" ; \
-	cp esp-mvc/generate/esp-mvc/appweb.conf ../../$(CONFIG)/esp/esp-mvc/1.0.0-rc0/generate/esp-mvc/appweb.conf ; \
-	cp esp-mvc/generate/esp-mvc/controller.c ../../$(CONFIG)/esp/esp-mvc/1.0.0-rc0/generate/esp-mvc/controller.c ; \
-	cp esp-mvc/generate/esp-mvc/migration.c ../../$(CONFIG)/esp/esp-mvc/1.0.0-rc0/generate/esp-mvc/migration.c ; \
-	mkdir -p "../../$(CONFIG)/esp/esp-mvc/1.0.0-rc0/generate/esp-mvc/src" ; \
-	cp esp-mvc/generate/esp-mvc/src/app.c ../../$(CONFIG)/esp/esp-mvc/1.0.0-rc0/generate/esp-mvc/src/app.c ; \
-	cp esp-mvc/LICENSE.md ../../$(CONFIG)/esp/esp-mvc/1.0.0-rc0/LICENSE.md ; \
-	cp esp-mvc/package.json ../../$(CONFIG)/esp/esp-mvc/1.0.0-rc0/package.json ; \
-	cp esp-mvc/README.md ../../$(CONFIG)/esp/esp-mvc/1.0.0-rc0/README.md ; \
-	mkdir -p "../../$(CONFIG)/esp/esp-server/1.0.0-rc0" ; \
-	mkdir -p "../../$(CONFIG)/esp/esp-server/1.0.0-rc0/generate" ; \
-	mkdir -p "../../$(CONFIG)/esp/esp-server/1.0.0-rc0/generate/esp-server" ; \
-	cp esp-server/generate/esp-server/appweb.conf ../../$(CONFIG)/esp/esp-server/1.0.0-rc0/generate/esp-server/appweb.conf ; \
-	cp esp-server/LICENSE.md ../../$(CONFIG)/esp/esp-server/1.0.0-rc0/LICENSE.md ; \
-	cp esp-server/package.json ../../$(CONFIG)/esp/esp-server/1.0.0-rc0/package.json ; \
-	cp esp-server/README.md ../../$(CONFIG)/esp/esp-server/1.0.0-rc0/README.md ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0" ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/client" ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/client/assets" ; \
+	cp esp-html-mvc/client/assets/favicon.ico ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/client/assets/favicon.ico ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/client/css" ; \
+	cp esp-html-mvc/client/css/all.css ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/client/css/all.css ; \
+	cp esp-html-mvc/client/css/all.less ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/client/css/all.less ; \
+	cp esp-html-mvc/client/css/app.less ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/client/css/app.less ; \
+	cp esp-html-mvc/client/css/theme.less ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/client/css/theme.less ; \
+	cp esp-html-mvc/client/index.esp ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/client/index.esp ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate" ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate/esp-html-mvc" ; \
+	cp esp-html-mvc/generate/esp-html-mvc/appweb.conf ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate/esp-html-mvc/appweb.conf ; \
+	cp esp-html-mvc/generate/esp-html-mvc/controller-singleton.c ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate/esp-html-mvc/controller-singleton.c ; \
+	cp esp-html-mvc/generate/esp-html-mvc/controller.c ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate/esp-html-mvc/controller.c ; \
+	cp esp-html-mvc/generate/esp-html-mvc/edit.esp ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate/esp-html-mvc/edit.esp ; \
+	cp esp-html-mvc/generate/esp-html-mvc/list.esp ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate/esp-html-mvc/list.esp ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/layouts" ; \
+	cp esp-html-mvc/layouts/default.esp ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/layouts/default.esp ; \
+	cp esp-html-mvc/LICENSE.md ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/LICENSE.md ; \
+	cp esp-html-mvc/package.json ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/package.json ; \
+	cp esp-html-mvc/README.md ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/README.md ; \
+	cp esp-html-mvc/start.me ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/start.me ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-mvc/5.0.0-rc0" ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-mvc/5.0.0-rc0/generate" ; \
+	cp esp-mvc/generate/appweb.conf ../../$(CONFIG)/esp/esp-mvc/5.0.0-rc0/generate/appweb.conf ; \
+	cp esp-mvc/generate/controller.c ../../$(CONFIG)/esp/esp-mvc/5.0.0-rc0/generate/controller.c ; \
+	cp esp-mvc/generate/migration.c ../../$(CONFIG)/esp/esp-mvc/5.0.0-rc0/generate/migration.c ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-mvc/5.0.0-rc0/generate/src" ; \
+	cp esp-mvc/generate/src/app.c ../../$(CONFIG)/esp/esp-mvc/5.0.0-rc0/generate/src/app.c ; \
+	cp esp-mvc/LICENSE.md ../../$(CONFIG)/esp/esp-mvc/5.0.0-rc0/LICENSE.md ; \
+	cp esp-mvc/package.json ../../$(CONFIG)/esp/esp-mvc/5.0.0-rc0/package.json ; \
+	cp esp-mvc/README.md ../../$(CONFIG)/esp/esp-mvc/5.0.0-rc0/README.md ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-server/5.0.0-rc0" ; \
+	mkdir -p "../../$(CONFIG)/esp/esp-server/5.0.0-rc0/generate" ; \
+	cp esp-server/generate/appweb.conf ../../$(CONFIG)/esp/esp-server/5.0.0-rc0/generate/appweb.conf ; \
+	cp esp-server/LICENSE.md ../../$(CONFIG)/esp/esp-server/5.0.0-rc0/LICENSE.md ; \
+	cp esp-server/package.json ../../$(CONFIG)/esp/esp-server/5.0.0-rc0/package.json ; \
+	cp esp-server/README.md ../../$(CONFIG)/esp/esp-server/5.0.0-rc0/README.md ; \
 	)
 endif
 
