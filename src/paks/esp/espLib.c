@@ -2458,6 +2458,9 @@ PUBLIC void stylesheets(cchar *patterns)
             }
             stylesheets(eroute->combineSheet);
         } else {
+            /*
+                Give priority to all.css over all.less
+             */
             path = mprJoinPath(eroute->clientDir, "css/all.css");
             if (mprPathExists(path, R_OK)) {
                 stylesheets("css/all.css");
@@ -4172,6 +4175,7 @@ static int loadConfig(HttpRoute *route)
             unlock(eroute);
             return 0;
         }
+
         /*
             Blend the mode properties into settings
          */
@@ -4224,6 +4228,7 @@ static int loadConfig(HttpRoute *route)
                 mprError("The %s AuthStore is not available on this platform", value);
             }
         }
+
         if ((value = espGetConfig(route, "esp.cache", 0)) != 0) {
             clientLifespan = httpGetTicks(value);
             httpAddCache(route, NULL, NULL, "html,gif,jpeg,jpg,png,pdf,ico,js,txt,less", NULL, clientLifespan, 0, 
@@ -4661,7 +4666,6 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
 static EspRoute *initRoute(HttpRoute *route)
 {
     cchar       *path;
-    MprPath     info;
     EspRoute    *eroute;
     
     if (route->eroute) {
@@ -4675,11 +4679,15 @@ static EspRoute *initRoute(HttpRoute *route)
     path = httpGetRouteVar(route, "CACHE_DIR");
     if (!path) {
         path = mprJoinPath(route->home, "cache");
+#if DEPRECATE
         mprMakeDir(path, 0755, -1, -1, 1);
+#endif
     }
+#if DEPRECATE
     if (mprGetPathInfo(path, &info) != 0 || !info.isDir) {
         path = route->home;
     }
+#endif
 #endif
     /*
         Use a relative path incase a Chroot directive happens after loading the esp handler
@@ -5123,6 +5131,13 @@ PUBLIC int espOpenDatabase(HttpRoute *route, cchar *spec)
 
     eroute = route->eroute;
     flags = EDI_CREATE | EDI_AUTO_SAVE;
+    if (smatch(spec, "default")) {
+#if ME_COM_SQLITE
+        spec = sfmt("sdb://%s.sdb", eroute->appName);
+#elif ME_COM_MDB
+        spec = sfmt("mdb://%s.mdb", eroute->appName);
+#endif
+    }
     provider = stok(sclone(spec), "://", &path);
     if (provider == 0 || path == 0) {
         return MPR_ERR_BAD_ARGS;

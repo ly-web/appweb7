@@ -116,7 +116,7 @@ static int       nextMigration;         /* Sequence number for next migration */
 #define VER_FACTOR_MAX  "999"
 
 #define ESP_MIGRATIONS  "_EspMigrations"
-#define ESP_PAKS_DIR    "client/paks"   /* Local paks dir under client */
+#define ESP_PAKS_DIR    "paks"          /* Default paks dir */
 
 /***************************** Forward Declarations ***************************/
 
@@ -553,15 +553,13 @@ static void setupRequirements(int argc, char **argv)
             return;
         }
         app->appName = getConfigValue("name", app->appName);
-
+        app->paksDir = getConfigValue("dirs.paks", app->paksDir);
     } else {
         if (app->require & REQ_PACKAGE) {
             fail("Cannot find %s", ME_ESP_PACKAGE);
             return;
         }
-#if UNUSED
         app->appName = mprGetPathBase(mprGetCurrentPath());
-#endif
         app->title = stitle(app->appName);
         app->config = createPackage();
     }
@@ -878,10 +876,12 @@ static void editPackageValue(int argc, char **argv)
 }
 
 
-
 static void init(int argc, char **argv)
 {
-    savePackage();
+    if (!mprPathExists("package.json", R_OK)) {
+        trace("Create", "package.json");
+        savePackage();
+    }
 }
 
 
@@ -926,6 +926,9 @@ static void list(int argc, char **argv)
             printf("%s %s\n", dp->name, mprGetJson(spec, "version", 0));
         }
     }
+    #if KEEP
+    mprTraceJson(0, app->config);
+    #endif
 }
 
 
@@ -953,7 +956,7 @@ static void migrate(int argc, char **argv)
     command = 0;
 
     if ((edi = app->eroute->edi) == 0) {
-        fail("Database not open. Check appweb.conf");
+        fail("Database not defined");
         return;
     }
     if (app->rebuild) {
@@ -2199,7 +2202,7 @@ static void generateTable(int argc, char **argv)
 
     app->table = app->table ? app->table : sclone(argv[0]);
     if ((edi = app->eroute->edi) == 0) {
-        fail("Database not open. Check appweb.conf");
+        fail("Database not defined");
         return;
     }
     edi->flags |= EDI_SUPPRESS_SAVE;
@@ -2494,7 +2497,7 @@ static void blendJson(MprJson *dest, cchar *toKey, MprJson *from, cchar *fromKey
     if ((to = mprGetJsonObj(dest, toKey, 0)) == 0) {
         to = mprCreateJson(from->type);
     }
-    mprBlendJson(to, from, MPR_JSON_OVERWRITE);
+    mprBlendJson(to, from, MPR_JSON_COMBINE);
     mprSetJsonObj(dest, toKey, to, 0);
 }
 
@@ -2597,7 +2600,7 @@ static bool installPakFiles(cchar *name, cchar *criteria, bool topLevel)
 static MprJson *createPackage()
 {
     return mprParseJson(sfmt("{ name: '%s', title: '%s', descript: '%s', version: '1.0.0', \
-        dependencies: {}, 'client-scripts': [], dirs: { client: 'client', paks: 'client/paks' }, \
+        dependencies: {}, 'client-scripts': [], dirs: { client: 'client', jslib: 'client/lib', paks: 'paks' }, \
         esp: {server: {routes: 'esp-server'}}}",
         app->appName, app->appName, app->appName));
 }
@@ -2809,10 +2812,13 @@ static cchar *getTemplate(cchar *key, MprHash *tokens)
     cchar   *pattern;
 
     if ((pattern = getConfigValue(sfmt("esp.server.generate.%s", key), 0)) != 0) {
+        if (mprPathExists(app->paksDir, X_OK)) {
+            return readTemplate(mprJoinPath(app->paksDir, pattern), tokens, NULL);
+        }
+#if DEPECATE
         if (mprPathExists(app->eroute->generateDir, X_OK)) {
             return readTemplate(mprJoinPath(app->eroute->generateDir, pattern), tokens, NULL);
         }
-#if DEPECATE || 1
         if (mprPathExists("generate", X_OK)) {
             return readTemplate(mprJoinPath("generate", pattern), tokens, NULL);
         }
@@ -2863,7 +2869,7 @@ static void genKey(cchar *key, cchar *path, MprHash *tokens)
         return;
     }
     if (!path) {
-        path = mprTrimPathComponents(pattern, 1);
+        path = mprTrimPathComponents(pattern, 2);
     }
     makeEspFile(stemplate(path, tokens), data, 0);
 }

@@ -407,11 +407,9 @@ PUBLIC int maSetPlatform(cchar *platformPath, cchar *probe)
         }
     }
     if (!appweb->platform) {
-        mprLog(1, "Cannot find platform %s", platformPath);
         return MPR_ERR_CANT_FIND;
     }
     if (maParsePlatform(appweb->platform, &junk, &junk, &junk) < 0) {
-        mprLog(1, "Cannot parse platform %s", appweb->platform);
         return MPR_ERR_BAD_ARGS;
     }
     appweb->platformDir = mprGetAbsPath(appweb->platformDir);
