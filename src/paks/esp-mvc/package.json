@@ -1,0 +1,33 @@
+{
+    "name": "esp-mvc",
+    "description": "ESP MVC Framework",
+    "version": "5.0.0-rc0",
+    "licenses": [
+        {
+            "type": "GPL",
+            "url": "http://www.gnu.org/licenses/gpl-2.0.html"
+        }, {
+            "type": "Commercial",
+            "url": "http://embedthis.com/licensing/"
+        }
+    ],
+    "keywords": [
+        "esp",
+    ],
+    "dependencies": {
+        "esp-server": "~5.0",
+    },
+    "esp": {
+        "?serverPrefix": "/do",
+        "server": {
+            "?database": "default",
+            "generate": {
+                "?appweb": "esp-mvc/generate/appweb.conf",
+                "?migration": "esp-mvc/generate/migration.c",
+                "?module": "esp-mvc/generate/src/app.c",
+                "?controller": "esp-mvc/generate/controller.c",
+                "?controller-singleton": "esp-mvc/generate/controller.c",
+            }
+        }
+    }
+}
