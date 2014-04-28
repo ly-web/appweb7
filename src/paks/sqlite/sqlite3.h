@@ -171,7 +171,9 @@
      */
     #define fcntl(A,B,C) 0
     #define getpid mprGetpid
-    typedef int* intptr_t;
+    #if _WRS_VXWORKS_MAJOR < 6 || (_WRS_VXWORKS_MAJOR == 6 && _WRS_VXWORKS_MINOR < 9)
+        typedef int* intptr_t;
+    #endif
     #define semClose __semClose
 
 #endif /* VXWORKS */
