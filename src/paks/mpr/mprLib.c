@@ -6856,7 +6856,6 @@ PUBLIC int startProcess(MprCmd *cmd)
 {
     MprCmdTaskFn    entryFn;
     MprModule       *mp;
-    SYM_TYPE        symType;
     char            *entryPoint, *program, *pair;
     int             pri, next;
 
@@ -6880,7 +6879,7 @@ PUBLIC int startProcess(MprCmd *cmd)
      */
     entryPoint = sjoin("_", entryPoint, NULL);
 #endif
-    if (symFindByName(sysSymTbl, entryPoint, (char**) (void*) &entryFn, &symType) < 0) {
+    if (mprFindVxSym(sysSymTbl, entryPoint, (char**) (void*) &entryFn) < 0) {
         if ((mp = mprCreateModule(cmd->program, cmd->program, NULL, NULL)) == 0) {
             mprError("start: can't create module");
             return MPR_ERR_CANT_CREATE;
@@ -6889,7 +6888,7 @@ PUBLIC int startProcess(MprCmd *cmd)
             mprError("start: can't load DLL %s, errno %d", program, mprGetOsError());
             return MPR_ERR_CANT_READ;
         }
-        if (symFindByName(sysSymTbl, entryPoint, (char**) (void*) &entryFn, &symType) < 0) {
+        if (mprFindVxSym(sysSymTbl, entryPoint, (char**) (void*) &entryFn) < 0) {
             mprError("start: can't find symbol %s, errno %d", entryPoint, mprGetOsError());
             return MPR_ERR_CANT_ACCESS;
         }
@@ -28197,10 +28196,37 @@ PUBLIC int mprGetRandomBytes(char *buf, int length, bool block)
 }
 
 
+#if _WRS_VXWORKS_MAJOR < 6 || (_WRS_VXWORKS_MAJOR == 6 && _WRS_VXWORKS_MINOR < 9)
+int mprFindVxSym(SYMTAB_ID sid, char *name, char **pvalue)
+{
+    SYM_TYPE    type;
+
+    return symFindByName(sid, name, pvalue, &type);
+}
+#else
+
+int mprFindVxSym(SYMTAB_ID sid, char *name, char **pvalue)
+{
+    SYMBOL_DESC     symDesc;
+
+    memset(&symDesc, 0, sizeof(SYMBOL_DESC));
+    symDesc.mask = SYM_FIND_BY_NAME;
+    symDesc.name = name;
+
+    if (symFind(sid, &symDesc) == ERROR) {
+        return ERROR;
+    }
+    if (pvalue != NULL) {
+        *pvalue = (char*) symDesc.value;
+    }
+    return OK;
+}
+#endif
+
+
 PUBLIC int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
-    SYM_TYPE        symType;
     MprPath         info;
     char            *at, *entry;
     void            *handle;
@@ -28214,7 +28240,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
 #if BIT_CPU_ARCH == MPR_CPU_IX86 || BIT_CPU_ARCH == MPR_CPU_IX64 || BIT_CPU_ARCH == MPR_CPU_SH
     entry = sjoin("_", entry, NULL);
 #endif
-    if (!mp->entry || symFindByName(sysSymTbl, entry, (char**) (void*) &fn, &symType) == -1) {
+    if (!mp->entry || mprFindVxSym(sysSymTbl, entry, (char**) (void*) &fn) == -1) {
         if ((at = mprSearchForModule(mp->path)) == 0) {
             mprError("Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
                 mprGetModuleSearchPath());
@@ -28245,7 +28271,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
         mprLog(2, "Activating module %s", mp->name);
     }
     if (mp->entry) {
-        if (symFindByName(sysSymTbl, entry, (char**) (void*) &fn, &symType) == -1) {
+        if (mprFindVxSym(sysSymTbl, entry, (char**) (void*) &fn) == -1) {
             mprError("Cannot find symbol %s when loading %s", entry, mp->path);
             return MPR_ERR_CANT_READ;
         }
