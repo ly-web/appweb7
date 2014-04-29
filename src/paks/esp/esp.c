@@ -43,6 +43,7 @@ typedef struct App {
     MprList     *build;                 /* Items to build */
     MprList     *slink;                 /* List of items for static link */
     MprHash     *targets;               /* Command line targets */
+    MprHash     *topDeps;               /* Top level dependencies */
     EdiGrid     *migrations;            /* Migrations table */
 
     cchar       *command;               /* Compilation or link command */
@@ -64,11 +65,7 @@ typedef struct App {
     int         compileMode;            /* Debug or release compilation */
     int         error;                  /* Any processing error */
     int         keep;                   /* Keep source */ 
-    //  MOB - remove
-    int         generateApp;            /* Generating a new app */
     int         force;                  /* Force the requested action, ignoring unfullfilled dependencies */
-    int         overwrite;              /* Overwrite existing files if required */
-    int         priorInstall;           /* Generating into an existing application directory */
     int         quiet;                  /* Don't trace progress */
     int         require;                /* Initialization requirement flags */
     int         rebuild;                /* Force a rebuild */
@@ -116,12 +113,14 @@ static int       nextMigration;         /* Sequence number for next migration */
 #define VER_FACTOR_MAX  "999"
 
 #define ESP_MIGRATIONS  "_EspMigrations"
+
 #define ESP_PAKS_DIR    "paks"          /* Default paks dir */
+#define ESP_LIB_DIR     "client/lib"    /* Default client/lib dir */
 
 /***************************** Forward Declarations ***************************/
 
 static int64 asNumber(cchar *version);
-static bool blendPak(cchar *name, cchar *criteria, bool topLevel);
+static bool blendPak(cchar *name, cchar *criteria);
 static bool blendSpec(cchar *name, cchar *version, MprJson *spec);
 static void clean(int argc, char **argv);
 static void config();
@@ -155,8 +154,8 @@ static void initialize(int argc, char **argv);
 static bool inRange(cchar *expr, cchar *version);
 static void init(int argc, char **argv);
 static void install(int argc, char **argv);
-static bool installPak(cchar *name, cchar *criteria, bool topLevel);
-static bool installPakFiles(cchar *name, cchar *version, bool topLevel);
+static bool installPak(cchar *name, cchar *criteria);
+static bool installPakFiles(cchar *name, cchar *version);
 static void list(int argc, char **argv);
 static cchar *findAppwebConfig();
 static MprJson *loadPackage(cchar *path);
@@ -230,6 +229,7 @@ static App *createApp(Mpr *mpr)
 #else
     mprError("No database provider defined");
 #endif
+    app->topDeps = mprCreateHash(0, 0);
     return app;
 }
 
@@ -274,6 +274,7 @@ static void manageApp(App *app, int flags)
         mprMark(app->server);
         mprMark(app->targets);
         mprMark(app->table);
+        mprMark(app->topDeps);
     }
 }
 
@@ -375,8 +376,10 @@ static int parseArgs(int argc, char **argv)
         } else if (smatch(argp, "optimized")) {
             app->compileMode = ESP_COMPILE_OPTIMIZED;
 
+#if DEPRECATE || 1
         } else if (smatch(argp, "overwrite")) {
-            app->overwrite = 1;
+            app->force = 1;
+#endif
 
         } else if (smatch(argp, "platform")) {
             if (argind >= argc) {
@@ -887,7 +890,8 @@ static void init(int argc, char **argv)
 
 static void install(int argc, char **argv)
 {
-    int     i;
+    MprJson     *deps, *dep;
+    int         i;
 
     if (argc < 1) {
         usageError();
@@ -901,7 +905,14 @@ static void install(int argc, char **argv)
         }
     }
     for (i = 0; i < argc; i++) {
-        installPak(argv[i], 0, 1);
+        mprAddKey(app->topDeps, argv[i], sclone(argv[i]));
+    }
+    deps = mprGetJsonObj(app->config, "dependencies", MPR_JSON_TOP);
+    for (ITERATE_JSON(deps, dep, i)) {
+        mprAddKey(app->topDeps, dep->name, dep->value);
+    }
+    for (i = 0; i < argc; i++) {
+        installPak(argv[i], 0);
     }
 }
 
@@ -1193,18 +1204,27 @@ static void uninstall(int argc, char **argv)
 static void upgrade(int argc, char **argv)
 {
     MprDirEntry     *dp;
+    MprJson         *deps, *dep;
     MprList         *files;
     int             i, next;
 
-    app->overwrite = 1;
     app->upgrade = 1;
-
+    deps = mprGetJsonObj(app->config, "dependencies", MPR_JSON_TOP);
     if (argc == 0) {
+        for (ITERATE_JSON(deps, dep, i)) {
+            mprAddKey(app->topDeps, dep->name, dep->value);
+        }
         files = mprGetPathFiles(app->paksDir, MPR_PATH_RELATIVE);
         for (ITERATE_ITEMS(files, dp, next)) {
             upgradePak(dp->name);
         }
     } else {
+        for (i = 0; i < argc; i++) {
+            mprAddKey(app->topDeps, argv[i], sclone(argv[i]));
+        }
+        for (ITERATE_JSON(deps, dep, i)) {
+            mprAddKey(app->topDeps, dep->name, dep->value);
+        }
         for (i = 0; i < argc; i++) {
             upgradePak(argv[i]);
         }
@@ -1599,10 +1619,10 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
     mprMakeDir(eroute->cacheDir, 0755, -1, -1, 1);
 
     if (app->combine) {
-        why(source, "\"combine\" mode forces complete rebuild");
+        why(source, "\"combine\" mode requires complete rebuild");
 
     } else if (app->rebuild) {
-        why(source, "due to forced rebuild");
+        why(source, "due to requested rebuild");
 
     } else if (!espModuleIsStale(source, app->module, &recompile)) {
         if (kind & (ESP_PAGE | ESP_VIEW)) {
@@ -2142,7 +2162,7 @@ static void createMigration(cchar *name, cchar *table, cchar *comment, int field
     tail = sfmt("%s.c", name);
     for (ITERATE_ITEMS(files, dp, next)) {
         if (sends(dp->name, tail)) {
-            if (!app->overwrite && !app->force) {
+            if (!app->force) {
                 qtrace("Exists", "A migration with the same description already exists: %s", dp->name);
                 return;
             }
@@ -2338,7 +2358,7 @@ static bool upgradePak(cchar *name)
     if (smatch(cachedVersion, version) && !app->force) {
         qtrace("Info", "Installed %s is current with %s", name, version);
     } else {
-        installPak(name, cachedVersion, 1);
+        installPak(name, cachedVersion);
     }
     return 1;
 }
@@ -2348,18 +2368,20 @@ static bool upgradePak(cchar *name)
     Install files for a pak and all its dependencies.
     The name may contain "#version" if version is NULL. If no version is specified, use the latest.
  */
-static bool installPak(cchar *name, cchar *criteria, bool topLevel)
+static bool installPak(cchar *name, cchar *criteria)
 {
     MprJson *deps, *cp;
     cchar   *path, *version;
     int     i;
 
-    path = mprJoinPaths(app->route->documents, app->paksDir, name, NULL);
-    if (mprPathExists(path, X_OK) && !app->overwrite && !app->force) {
-        if (topLevel || app->verbose) {
-            qtrace("Info",  "Pak %s is already installed", name);
+    if (!app->upgrade) {
+        path = mprJoinPaths(app->route->documents, app->paksDir, name, NULL);
+        if (mprPathExists(path, X_OK) && !app->force) {
+            if (mprLookupKey(app->topDeps, name) || app->verbose) {
+                qtrace("Info",  "Pak %s is already installed", name);
+            }
+            return 1;
         }
-        return 1;
     }
     if (!criteria) {
         /* Criteria not specified. Look in dependencies to see if there is a criteria */
@@ -2376,17 +2398,12 @@ static bool installPak(cchar *name, cchar *criteria, bool topLevel)
     if ((version = findAcceptableVersion(name, criteria)) == 0) {
         return 0;
     }
-    if (!blendPak(name, version, topLevel)) {
+    if (!blendPak(name, version)) {
         return 0;
-    }
-    //  MOB - Odd place for this
-    if (app->database && getConfigValue("esp.server.database", 0) != 0) {
-        mprSetJson(app->config, "esp.server.database", 
-            sfmt("%s://%s.%s", app->database, app->appName, app->database), 0);
     }
     trace("Save", mprJoinPath(app->route->documents, ME_ESP_PACKAGE));
     savePackage();
-    installPakFiles(name, version, topLevel);
+    installPakFiles(name, version);
     return 1;
 }
 
@@ -2396,7 +2413,7 @@ static void uninstallPak(cchar *name)
     MprJson     *scripts, *script, *spec, *escripts, *escript;
     MprList     *files;
     MprDirEntry *dp;
-    cchar       *path, *package;
+    cchar       *path, *package, *libDir, *client;
     char        *base, *cp;
     int         i;
 
@@ -2414,6 +2431,14 @@ static void uninstallPak(cchar *name)
     trace("Remove", "Dependency in %s", ME_ESP_PACKAGE);
     mprRemoveJson(app->config, sfmt("dependencies.%s", name));
 
+    if ((libDir = mprGetJson(app->config, "dirs.lib", 0)) == 0) {
+        libDir = ESP_LIB_DIR;
+    }
+    if ((client = mprGetJson(app->config, "dirs.client", 0)) == 0) {
+        client = sjoin(mprGetPathBase(app->eroute->clientDir), "/", NULL);
+    }
+    libDir = strim(libDir, sjoin(client, "/", NULL), MPR_TRIM_START);
+
     trace("Remove", "Client scripts in %s", ME_ESP_PACKAGE);
     scripts = mprGetJsonObj(spec, "client-scripts", MPR_JSON_TOP);
     for (ITERATE_JSON(scripts, script, i)) {
@@ -2422,7 +2447,7 @@ static void uninstallPak(cchar *name)
             if ((cp = scontains(base, "/*")) != 0) {
                 *cp = '\0';
             }
-            base = sreplace(base, "${PAKS}", "paks");
+            base = sreplace(base, "${LIB}", libDir);
             escripts = mprGetJsonObj(app->config, "client-scripts", MPR_JSON_TOP);
         restart:
             for (ITERATE_JSON(escripts, escript, i)) {
@@ -2448,14 +2473,14 @@ static void uninstallPak(cchar *name)
     Blend a pak package.json configuration
     This will recursively blend all dependencies. Order is bottom up so dependencies can define directories.
  */
-static bool blendPak(cchar *name, cchar *version, bool topLevel)
+static bool blendPak(cchar *name, cchar *version)
 {
     MprJson     *cp, *deps, *spec;
     cchar       *path, *dver;
     int         i;
 
     path = mprJoinPaths(app->route->documents, app->paksDir, name, NULL);
-    if (mprPathExists(path, X_OK) && !app->overwrite && !app->force) {
+    if (mprPathExists(path, X_OK) && !app->force) {
         /* Already installed */
         return 1;
     }
@@ -2473,7 +2498,7 @@ static bool blendPak(cchar *name, cchar *version, bool topLevel)
             if ((dver = findAcceptableVersion(cp->name, cp->value)) == 0) {
                 return 0;
             }
-            if (!blendPak(cp->name, dver, 0)) {
+            if (!blendPak(cp->name, dver)) {
                 return 0;
             }
         }
@@ -2506,11 +2531,16 @@ static bool blendSpec(cchar *name, cchar *version, MprJson *spec)
 {
     EspRoute    *eroute;
     MprJson     *blend, *cp, *scripts;
-    cchar       *script, *client, *paks, *key;
+    ssize       clen;
+    cchar       *script, *client, *libDir, *key;
     char        *major, *minor, *patch;
     int         i;
 
     eroute = app->eroute;
+    blend = mprGetJsonObj(spec, "blend", MPR_JSON_TOP);
+    for (ITERATE_JSON(blend, cp, i)) {
+        blendJson(app->config, cp->name, spec, cp->value);
+    }
     if (mprGetJsonObj(spec, "esp", MPR_JSON_TOP) != 0) {
         blendJson(app->config, "esp", spec, "esp");
     }
@@ -2524,45 +2554,47 @@ static bool blendSpec(cchar *name, cchar *version, MprJson *spec)
         if ((client = mprGetJson(app->config, "dirs.client", 0)) == 0) {
             client = sjoin(mprGetPathBase(eroute->clientDir), "/", NULL);
         }
-        if ((paks = mprGetJson(app->config, "dirs.paks", 0)) == 0) {
-            paks = ESP_PAKS_DIR;
+        if ((libDir = mprGetJson(app->config, "dirs.lib", 0)) == 0) {
+            libDir = ESP_LIB_DIR;
         }
-        paks = strim(paks, sjoin(client, "/", NULL), MPR_TRIM_START);
+        clen = slen(client);
+        if (sstarts(libDir, client) != 0 && libDir[clen] == '/') {
+            libDir = &libDir[clen + 1];
+        }
         for (ITERATE_JSON(scripts, cp, i)) {
             if (!(cp->type & MPR_JSON_STRING)) continue;
-            script = sreplace(cp->value, "${PAKS}", paks);
+            script = sreplace(cp->value, "${LIB}", libDir);
             script = stemplateJson(script, app->config);
             if (!mprGetJson(app->config, sfmt("client-scripts[@ = %s]", script), 0)) {
                 mprSetJson(app->config, "client-scripts[*]", script, 0);
             }
         }
     }
-    blend = mprGetJsonObj(spec, "blend", MPR_JSON_TOP);
-    for (ITERATE_JSON(blend, cp, i)) {
-        blendJson(app->config, cp->name, spec, cp->value);
-    }
-    major = stok(sclone(version), ".", &minor);
-    minor = stok(minor, ".", &patch);
-    key = sfmt("dependencies.%s", name);
-    if (!mprGetJson(app->config, key, 0)) {
-        mprSetJson(app->config, key, sfmt("~%s.%s", major, minor), 0);
+    if (mprLookupKey(app->topDeps, name)) {
+        major = stok(sclone(version), ".", &minor);
+        minor = stok(minor, ".", &patch);
+        key = sfmt("dependencies.%s", name);
+        if (!mprGetJson(app->config, key, 0)) {
+            mprSetJson(app->config, key, sfmt("~%s.%s", major, minor), 0);
+        }
     }
     return 1;
 }
+
 
 /*
     Install files for a pak and all its dependencies.
     The name may contain "#version" if version is NULL. If no version is specified, use the latest.
  */
-static bool installPakFiles(cchar *name, cchar *criteria, bool topLevel)
+static bool installPakFiles(cchar *name, cchar *criteria)
 {
     MprJson     *deps, *spec, *cp;
     cchar       *path, *package, *version;
     int         i;
 
     path = mprJoinPaths(app->route->documents, app->paksDir, name, NULL);
-    if (mprPathExists(path, X_OK) && !app->overwrite && !app->force) {
-        if (topLevel || app->verbose) {
+    if (mprPathExists(path, X_OK) && !app->force) {
+        if (mprLookupKey(app->topDeps, name) || app->verbose) {
             qtrace("Info",  "Pak %s is already installed", name);
         }
         return 1;
@@ -2586,7 +2618,7 @@ static bool installPakFiles(cchar *name, cchar *criteria, bool topLevel)
         deps = mprGetJsonObj(spec, "dependencies", MPR_JSON_TOP);
         if (deps) {
             for (i = 0, cp = deps->children; i < deps->length; i++, cp = cp->next) {
-                if (!installPakFiles(cp->name, cp->value, 0)) {
+                if (!installPakFiles(cp->name, cp->value)) {
                     break;
                 }
             }
@@ -2599,83 +2631,120 @@ static bool installPakFiles(cchar *name, cchar *criteria, bool topLevel)
 
 static MprJson *createPackage()
 {
-    return mprParseJson(sfmt("{ name: '%s', title: '%s', descript: '%s', version: '1.0.0', \
-        dependencies: {}, 'client-scripts': [], dirs: { client: 'client', jslib: 'client/lib', paks: 'paks' }, \
+    return mprParseJson(sfmt("{ name: '%s', title: '%s', description: '%s', version: '1.0.0', \
+        dependencies: {}, 'client-scripts': [], dirs: { client: 'client', lib: 'client/lib', paks: 'paks' }, \
         esp: {server: {routes: 'esp-server'}}}",
         app->appName, app->appName, app->appName));
+}
+
+
+static MprHash *getExports(cchar *fromDir)
+{
+    MprList     *files;
+    MprJson     *config, *list, *from, *exp, *fp;
+    MprHash     *export;
+    cchar       *fname, *path, *to;
+    bool        overwrite;
+    int         ei, fi, ji;
+
+    export = mprCreateHash(0, 0);
+
+    path = mprJoinPath(fromDir, ME_ESP_PACKAGE);
+    if (!mprPathExists(path, R_OK) || (config = loadPackage(path)) == 0) {
+        fail("Cannot load %s", path);
+        return export;
+    }
+    list = mprGetJsonObj(config, "export", MPR_JSON_TOP);
+    for (ITERATE_JSON(list, exp, ei)) {
+        if (exp->type & MPR_JSON_STRING) {
+            mprAddKeyWithType(export, exp->value, sclone("."), 1);
+        } else {
+            if ((to = mprGetJson(exp, "to", MPR_JSON_TOP)) == 0) {
+                to = ".";
+            } else {
+                to = mprGetRelPath(sreplace(to, "${LIB}", app->eroute->libDir), 0);
+            }
+            /* Default is overwrite: false */
+            overwrite = smatch(mprGetJson(exp, "overwrite", MPR_JSON_TOP), "true");
+            from = mprGetJsonObj(exp, "from", MPR_JSON_TOP);
+            if (from->type & MPR_JSON_STRING) {
+                files = mprGlobPathFiles(fromDir, from->value, MPR_PATH_RELATIVE);
+                for (ITERATE_ITEMS(files, fname, ji)) {
+                    mprAddKeyWithType(export, fname, to, overwrite);
+                }
+            } else {
+                for (ITERATE_JSON(from, fp, fi)) {
+                    files = mprGlobPathFiles(fromDir, fp->value, MPR_PATH_RELATIVE);
+                    for (ITERATE_ITEMS(files, fname, ji)) {
+                        mprAddKeyWithType(export, fname, to, overwrite);
+                    }
+                }
+            }
+        }
+    }
+    return export;
 }
 
 
 static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toDir)
 {
     MprList     *files;
+    MprHash     *export;
     MprDirEntry *dp;
-    MprHash     *relocate;
-    MprJson     *config, *export, *ex;
+    MprKey      *exp;
     MprPath     info;
-    cchar       *base, *path, *fname;
-    char        *fromData, *toData, *from, *to, *fromSum, *toSum;
-    int         i, j, next;
+    cchar       *base;
+    char        *from, *to;
+    int         next;
 
-    path = mprJoinPath(fromDir, ME_ESP_PACKAGE);
-    if (!mprPathExists(path, R_OK) || (config = loadPackage(path)) == 0) {
-        fail("Cannot load %s", path);
-        return;
-    }
-    /*
-        Build a list of files to export to the top level
-     */
-    export = mprGetJsonObj(config, "export", MPR_JSON_TOP);
-    relocate = mprCreateHash(0, 0);
-    for (ITERATE_JSON(export, ex, i)) {
-        if (!(ex->type & MPR_JSON_STRING)) continue;
-        files = mprGlobPathFiles(fromDir, ex->value, MPR_PATH_RELATIVE);
-        for (ITERATE_ITEMS(files, fname, j)) {
-            mprAddKey(relocate, fname, fname);
-        }
-    }
+    export = getExports(fromDir);
     if ((base = mprGetJson(app->config, "dirs.paks", 0)) == 0) {
         base = app->paksDir;
     }
     files = mprGetPathFiles(fromDir, MPR_PATH_DESCEND | MPR_PATH_RELATIVE | MPR_PATH_NODIRS);
     for (next = 0; (dp = mprGetNextItem(files, &next)) != 0 && !app->error; ) {
-        if (mprLookupKey(relocate, dp->name) != 0) {
-            to = mprJoinPath(toDir, dp->name);
-        } else {
-            to = mprJoinPaths(toDir, base, name, dp->name, NULL);
-        }
+        to = mprJoinPaths(toDir, base, name, dp->name, NULL);
         from = mprJoinPath(fromDir, dp->name);
-        mprGetPathInfo(from, &info);
-        if (mprMakeDir(mprGetPathDir(to), 0755, -1, -1, 1) < 0) {
-            fail("Cannot make directory %s", mprGetPathDir(to));
-            return;
-        }
-        if (mprPathExists(to, R_OK) && !app->overwrite && !app->upgrade) {
-            //  MOB - remove this test
-            if (!app->generateApp || app->priorInstall) {
-                trace("Exists",  "File: %s", mprGetRelPath(to, 0));
+
+        /*
+            Standard copy from cache to paks
+         */
+        if (!mprPathExists(to, R_OK) || app->force) {
+            if (mprMakeDir(mprGetPathDir(to), 0755, -1, -1, 1) < 0) {
+                fail("Cannot make directory %s", mprGetPathDir(to));
+                return;
             }
+            mprGetPathInfo(from, &info);
+            if (mprCopyPath(from, to, info.perms) < 0) {
+                fail("Cannot copy file %s to %s", from, mprGetRelPath(to, 0));
+                return;
+            }
+            trace("Copy", "%s", mprGetRelPath(to, 0));
         } else {
-            if (app->upgrade) {
-                fromData = mprReadPathContents(from, 0);
-                fromSum = mprGetMD5(fromData);
-                toData = mprReadPathContents(to, 0);
-                toSum = mprGetMD5(toData);
-                if (!smatch(fromSum, toSum)) {
-                    trace("Upgrade",  "File: %s", mprGetRelPath(to, 0));
-                    if (mprCopyPath(from, to, info.perms) < 0) {
-                        fail("Cannot copy file %s to %s", from, mprGetRelPath(to, 0));
-                        return;
-                    }
-                } else {
-                    vtrace("Same",  "File: %s", mprGetRelPath(to, 0));
+            trace("Exists", "%s", mprGetRelPath(to, 0));
+        }
+    }
+    /*
+        Export copy 
+     */
+    for (next = 0; (dp = mprGetNextItem(files, &next)) != 0 && !app->error; ) {
+        if ((exp = mprLookupKeyEntry(export, dp->name)) != 0) {
+            to = mprJoinPath(exp->data, dp->name);
+            /* exp-type == overwrite */
+            if (!mprPathExists(to, R_OK) || exp->type) {
+                if (mprMakeDir(mprGetPathDir(to), 0755, -1, -1, 1) < 0) {
+                    fail("Cannot make directory %s", mprGetPathDir(to));
+                    return;
                 }
-            } else {
-                trace("Create", "%s", mprGetRelPath(to, 0));
+                from = mprJoinPath(fromDir, dp->name);
+                mprGetPathInfo(from, &info);
                 if (mprCopyPath(from, to, info.perms) < 0) {
                     fail("Cannot copy file %s to %s", from, mprGetRelPath(to, 0));
                     return;
                 }
+                trace("Export", "%s", mprGetRelPath(to, 0));
+            } else {
+                trace("Exists", "%s", mprGetRelPath(to, 0));
             }
         }
     }
@@ -2701,10 +2770,8 @@ static void makeEspFile(cchar *path, cchar *data, ssize len)
     bool    exists;
 
     exists = mprPathExists(path, R_OK);
-    if (exists && !app->overwrite && !app->force) {
-        if (!app->generateApp) {
-            trace("Exists", path);
-        }
+    if (exists && !app->force) {
+        trace("Exists", path);
         return;
     }
     makeEspDir(mprGetPathDir(path));
@@ -2886,13 +2953,13 @@ static void usageError()
     "    --config appwebConfig      # Use named config file instead appweb.conf\n"
     "    --database name            # Database provider 'mdb|sdb'\n"
     "    --genlink filename         # Generate a static link module for combine compilations\n"
+    "    --force                    # Force requested action\n"
     "    --home directory           # Change to directory first\n"
     "    --keep                     # Keep intermediate source\n"
     "    --listen [ip:]port         # Generate app to listen at address\n"
     "    --log logFile:level        # Log to file file at verbosity level\n"
     "    --name appName             # Name for the app when compiling combine\n"
     "    --optimize                 # Compile optimized without symbols\n"
-    "    --overwrite                # Overwrite existing files\n"
     "    --quiet                    # Don't emit trace\n"
     "    --platform os-arch-profile # Target platform\n"
     "    --rebuild                  # Force a rebuild\n"

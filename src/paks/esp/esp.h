@@ -1398,6 +1398,7 @@ typedef struct EspRoute {
     cchar           *dbDir;                 /**< Directory for databases */
     cchar           *generateDir;           /**< Directory for generation templates */
     cchar           *layoutsDir;            /**< Directory for view layouts */
+    cchar           *libDir;                /**< Directory for js libraries */
     cchar           *paksDir;               /**< Directory for extension packs */
     cchar           *srcDir;                /**< Directory for server-side source */
     cchar           *viewsDir;              /**< Directory for server-side views */

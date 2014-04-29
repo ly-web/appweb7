@@ -2458,17 +2458,17 @@ PUBLIC void stylesheets(cchar *patterns)
             stylesheets(eroute->combineSheet);
         } else {
             /*
-                Give priority to all.css over all.less
+                Give priority to all.less over all.css
              */
-            path = mprJoinPath(eroute->clientDir, "css/all.css");
+            path = mprJoinPath(eroute->clientDir, "css/all.less");
             if (mprPathExists(path, R_OK)) {
-                stylesheets("css/all.css");
-            } else {
                 stylesheets("css/all.less");
                 path = mprJoinPath(eroute->clientDir, "css/fix.css");
                 if (mprPathExists(path, R_OK)) {
                     stylesheets("css/fix.css");
                 }
+            } else {
+                stylesheets("css/all.css");
             }
         }
     } else {
@@ -4642,6 +4642,7 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->paksDir);
         mprMark(eroute->generateDir);
         mprMark(eroute->layoutsDir);
+        mprMark(eroute->libDir);
         mprMark(eroute->link);
         mprMark(eroute->mutex);
         mprMark(eroute->searchPath);
@@ -4728,6 +4729,7 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
     eroute->configLoaded = parent->configLoaded;
     eroute->dbDir = parent->dbDir;
     eroute->layoutsDir = parent->layoutsDir;
+    eroute->libDir = parent->libDir;
     eroute->srcDir = parent->srcDir;
     eroute->controllersDir = parent->controllersDir;
     eroute->generateDir = parent->generateDir;
@@ -5188,6 +5190,8 @@ static void setEspDir(HttpRoute *route, cchar *name, cchar *value)
         eroute->generateDir = value;
     } else if (smatch(name, "layouts")) {
         eroute->layoutsDir = value;
+    } else if (smatch(name, "lib")) {
+        eroute->libDir = value;
     } else if (smatch(name, "paks")) {
         eroute->paksDir = value;
     } else if (smatch(name, "src")) {
@@ -5208,7 +5212,8 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     setEspDir(route, "db", 0);
     setEspDir(route, "generate", 0);
     setEspDir(route, "layouts", 0);
-    setEspDir(route, "paks", "client/paks");
+    setEspDir(route, "lib", "client/lib");
+    setEspDir(route, "paks", "paks");
     setEspDir(route, "src", 0);
     setEspDir(route, "views", "client/app");
 }

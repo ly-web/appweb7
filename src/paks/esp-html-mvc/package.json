@@ -2,31 +2,54 @@
     "name": "esp-html-mvc",
     "description": "ESP Server-Side HTML MVC",
     "version": "5.0.0-rc0",
+    "licenses": [
+        {
+            "type": "GPL",
+            "url": "http://www.gnu.org/licenses/gpl-2.0.html"
+        }, {
+            "type": "Commercial",
+            "url": "http://embedthis.com/licensing/"
+        }
+    ],
     "keywords": [
         "esp",
     ],
-    "precious": true,
     "dependencies": {
         "esp-mvc": "~5.0"
     },
     "export": [
-        "client/**",
-        "layouts/**",
-        "start.me",
-        "generate/**"
+        {
+            from: [ 
+                "css/*",
+            ],
+            to: '${LIB}/esp-html-mvc',
+        }, {
+            overwrite: false,
+            from: [ 
+                "client/**",
+                "layouts/**",
+                "start.me",
+            ],
+            to: '.',
+        }
     ],
     "esp": {
-        "auth": "app",
-        "serverPrefix": "/do",
+        "?auth": "app",
+        "?serverPrefix": "/do",
         "server": {
             "generate": {
-                "appweb": "esp-html-mvc/appweb.conf",
-                "clientList": "esp-html-mvc/list.esp",
-                "clientEdit": "esp-html-mvc/edit.esp",
-                "controller": "esp-html-mvc/controller.c",
-                "controller-singleton": "esp-html-mvc/controller-singleton.c",
+                "-appweb": "esp-mvc/generate/appweb.conf",
+                "-controller": "esp-mvc/generate/controller.c",
+                "-controller-singleton": "esp-mvc/generate/controller.c",
+
+                "?appweb": "esp-html-mvc/generate/appweb.conf",
+                "?clientList": "esp-html-mvc/generate/list.esp",
+                "?clientEdit": "esp-html-mvc/generate/edit.esp",
+                "?controller": "esp-html-mvc/generate/controller.c",
+                "?controller-singleton": "esp-html-mvc/generate/controller-singleton.c",
             },
-            "routes": "esp-angular-mvc",
+            "-routes": "esp-server",
+            "?routes": "esp-html-mvc",
         }
     }
 }

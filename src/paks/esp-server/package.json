@@ -16,7 +16,7 @@
     ],
     "dirs": {
         "?client": "client",
-        "?jslib": "client/lib",
+        "?lib": "client/lib",
         "?paks": "paks",
     },
     "esp": {
