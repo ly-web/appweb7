@@ -1345,6 +1345,7 @@ typedef struct Esp {
     int             compileMode;            /**< Force a debug compile */
     int             inUse;                  /**< Active ESP request counter */
     int             reloading;              /**< Reloading ESP and modules */
+    int             canCompile;             /**< Configured for compilation */
 } Esp;
 
 /**
@@ -1385,12 +1386,28 @@ PUBLIC void espInitHtmlOptions(Esp *esp);
 typedef struct EspRoute {
     char            *appName;               /**< App module name when compiled in combine mode */
     struct EspRoute *top;                   /**< Top-level route for this application */
+    HttpRoute       *route;                 /**< Back link to route */
     EspProc         commonController;       /**< Common code for all controllers */
+
+    //  MOB - push these into route?
     MprHash         *env;                   /**< Environment variables for route */
+    cchar           *currentSession;        /**< Current login session when enforcing a single login */
+
+    cchar           *compile;               /**< Compile template */
+    cchar           *link;                  /**< Link template */
+    cchar           *searchPath;            /**< Search path to use when locating compiler/linker */
+    cchar           *winsdk;                /**< Windows SDK */
+    cchar           *combineScript;         /**< Combine mode script filename */
+    cchar           *combineSheet;          /**< Combine mode stylesheet filename */
+    int             compileMode;            /**< Compile the application debug or release mode */
+    int             skipApps;               /**< Skip loading applications */
+    Edi             *edi;                   /**< Default database for this route */
+
+#if UNUSED
     MprJson         *config;                /**< ESP App configuration from package.json */
     MprTime         configLoaded;           /**< When package.json was last loaded */
+    cchar           *client;                /**< Configuration to send to the client */
 
-    cchar           *searchPath;            /**< Search path to use when locating compiler/linker */
     cchar           *appDir;                /**< Directory for client-side application content "app" */
     cchar           *cacheDir;              /**< Directory for cached compiled controllers and views */
     cchar           *clientDir;             /**< Directory for client-side public web content */
@@ -1403,26 +1420,19 @@ typedef struct EspRoute {
     cchar           *srcDir;                /**< Directory for server-side source */
     cchar           *viewsDir;              /**< Directory for server-side views */
 
-    cchar           *currentSession;        /**< Current login session when enforcing a single login */
-    cchar           *compile;               /**< Compile template */
-    cchar           *link;                  /**< Link template */
-    cchar           *mode;                  /**< Application run mode (debug|release) */
 
+    cchar           *mode;                  /**< Application run mode (debug|release) */
     cchar           *database;              /**< Name of database for route */
     cchar           *routeSet;              /**< Route set to use */
-    cchar           *winsdk;                /**< Windows SDK */
-    cchar           *combineScript;         /**< Combine mode script filename */
-    cchar           *combineSheet;          /**< Combine mode stylesheet filename */
-    int             combine;                /**< Compile the application in "combine" mode */
-    int             compileMode;            /**< Compile the application debug or release mode */
-    int             keepSource;             /**< Preserve generated source */
-    int             skipApps;               /**< Skip loading applications */
     int             loaded;                 /**< App has been loaded */
     int             update;                 /**< Auto-update modified ESP source */
+    int             combine;                /**< Compile the application in "combine" mode */
+    int             keepSource;             /**< Preserve generated source */
     int             json;                   /**< Emit json responses */
     MprTicks        lifespan;               /**< Default cache lifespan */
-    Edi             *edi;                   /**< Default database for this route */
     MprMutex        *mutex;                 /**< Multithread lock */
+#endif
+
 } EspRoute;
 
 /**
@@ -1465,6 +1475,7 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set);
 
 //  MOB - DOC
 PUBLIC int espApp(MaState *state, HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet);
+PUBLIC bool espLoadModule(HttpRoute *route, MprDispatcher *dispatcher, cchar *kind, cchar *source, cchar **errMsg);
 
 /**
     Add caching for response content.
@@ -1665,6 +1676,12 @@ PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue);
     @stability Prototype
  */
 PUBLIC bool espHasPak(HttpRoute *route, cchar *name);
+
+//  MOB - DOC - NAMING
+PUBLIC int espLoadConfig(HttpRoute *route);
+PUBLIC int espInitParser();
+PUBLIC void espSetDir(HttpRoute *route, cchar *name, cchar *value);
+PUBLIC EspRoute *espCreateRoute(HttpRoute *route);
 
 /**
     Save the in-memory ESP package.json configuration to the default location for the ESP application

@@ -62,11 +62,11 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     httpSetRouteVar(route, "LOG_DIR", ".");
     httpSetRouteVar(route, "INC_DIR", ME_VAPP_PREFIX "/inc");
     httpSetRouteVar(route, "SPL_DIR", ME_SPOOL_PREFIX);
-    httpSetRouteVar(route, "BIN_DIR", mprJoinPath(server->appweb->platformDir, "bin"));
+    httpSetRouteVar(route, "BIN_DIR", mprJoinPath(server->http->platformDir, "bin"));
 
 #if DEPRECATED
-    httpSetRouteVar(route, "LIBDIR", mprJoinPath(server->appweb->platformDir, "bin"));
-    httpSetRouteVar(route, "BINDIR", mprJoinPath(server->appweb->platformDir, "bin"));
+    httpSetRouteVar(route, "LIBDIR", mprJoinPath(server->http->platformDir, "bin"));
+    httpSetRouteVar(route, "BINDIR", mprJoinPath(server->http->platformDir, "bin"));
 #endif
 
     if (maParseFile(state, path) < 0) {
@@ -198,7 +198,10 @@ static int parseLine(MaState *state, cchar *line)
 #if !ME_ROM
 /*
     AccessLog path
-    AccessLog conf/log.conf size=10K, backup=5, append, anew
+        [size=bytes] 
+        [level=0-9] 
+        [backup=count] 
+        [anew]
  */
 static int accessLogDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -223,8 +226,10 @@ static int accessLogDirective(MaState *state, cchar *key, cchar *value)
             } else if (smatch(option, "backup")) {
                 backup = atoi(ovalue);
 
+#if DEPRECATED || 1
             } else if (smatch(option, "append")) {
                 flags |= MPR_LOG_APPEND;
+#endif
 
             } else if (smatch(option, "anew")) {
                 flags |= MPR_LOG_ANEW;
@@ -354,9 +359,6 @@ static int addOutputFilterDirective(MaState *state, cchar *key, cchar *value)
 static int addHandlerDirective(MaState *state, cchar *key, cchar *value)
 {
     char        *handler, *extensions;
-#if UNUSED
-    static int  espLoaded = 0;
-#endif
 
     if (!maTokenize(state, value, "%S ?*", &handler, &extensions)) {
         return MPR_ERR_BAD_SYNTAX;
@@ -370,22 +372,6 @@ static int addHandlerDirective(MaState *state, cchar *key, cchar *value)
         mprError("Cannot add handler %s", handler);
         return MPR_ERR_CANT_CREATE;
     }
-#if UNUSED
-    if (smatch(handler, "espHandler") && !espLoaded) {
-        path = "esp.conf";
-        if (!mprPathExists(path, R_OK)) {
-            path = mprJoinPath(mprGetAppDir(), "esp.conf");
-        }
-        if (mprPathExists(path, R_OK)) {
-            espLoaded = 1;
-            if (maParseFile(state, path) < 0) {
-                return MPR_ERR_CANT_OPEN;
-            }
-        } else {
-            mprLog(0, "Cannot find esp.conf at %s", path);
-        }
-    }
-#endif
     return 0;
 }
 
@@ -1024,7 +1010,7 @@ static int exitTimeoutDirective(MaState *state, cchar *key, cchar *value)
 static int groupAccountDirective(MaState *state, cchar *key, cchar *value)
 {
     if (!smatch(value, "_unchanged_") && !mprGetDebugMode()) {
-        maSetHttpGroup(state->appweb, value);
+        httpSetGroupAccount(value);
     }
     return 0;
 }
@@ -1339,8 +1325,6 @@ static int limitResponseBodyDirective(MaState *state, cchar *key, cchar *value)
     state->route->limits->transmissionBodySize = getnum(value);
     return 0;
 }
-
-
 
 
 /*
@@ -1668,7 +1652,7 @@ static int makeDirDirective(MaState *state, cchar *key, cchar *value)
             if (snumber(owner)) {
                 uid = (int) stoi(owner);
             } else if (smatch(owner, "APPWEB")) {
-                uid = state->appweb->uid;
+                uid = state->http->uid;
             } else {
                 uid = userToID(owner);
             }
@@ -1678,7 +1662,7 @@ static int makeDirDirective(MaState *state, cchar *key, cchar *value)
             if (snumber(group)) {
                 gid = (int) stoi(group);
             } else if (smatch(owner, "APPWEB")) {
-                gid = state->appweb->gid;
+                gid = state->http->gid;
             } else {
                 gid = groupToID(group);
             }
@@ -1890,6 +1874,7 @@ static int paramDirective(MaState *state, cchar *key, cchar *value)
 static int prefixDirective(MaState *state, cchar *key, cchar *value)
 {
     httpSetRoutePrefix(state->route, value);
+    //  MOB - this should be pushed into httpSetRoutePrefix
     httpSetRouteVar(state->route, "PREFIX", value);
     return 0;
 }
@@ -2032,6 +2017,7 @@ static int requireDirective(MaState *state, cchar *key, cchar *value)
         httpSetAuthRequiredAbilities(state->auth, rest);
 
     /* Support require group for legacy support */
+    //  DEPRECATE "group"
     } else if (scaselesscmp(type, "group") == 0 || scaselesscmp(type, "role") == 0) {
         httpSetAuthRequiredAbilities(state->auth, rest);
 
@@ -2525,7 +2511,7 @@ static int userDirective(MaState *state, cchar *key, cchar *value)
 static int userAccountDirective(MaState *state, cchar *key, cchar *value)
 {
     if (!smatch(value, "_unchanged_") && !mprGetDebugMode()) {
-        maSetHttpUser(state->appweb, value);
+        httpSetUserAccount(value);
     }
     return 0;
 }
@@ -2692,6 +2678,7 @@ PUBLIC bool maValidateServer(MaServer *server)
 }
 
 
+#if UNUSED
 PUBLIC int maParsePlatform(cchar *platform, cchar **os, cchar **arch, cchar **profile)
 {
     char   *rest;
@@ -2707,6 +2694,7 @@ PUBLIC int maParsePlatform(cchar *platform, cchar **os, cchar **arch, cchar **pr
     }
     return 0;
 }
+#endif
 
 
 static bool conditionalDefinition(MaState *state, cchar *key)
@@ -2719,7 +2707,7 @@ static bool conditionalDefinition(MaState *state, cchar *key)
     if (not) {
         for (++key; isspace((uchar) *key); key++) {}
     }
-    maParsePlatform(state->appweb->platform, &os, &arch, &profile);
+    httpParsePlatform(state->http->platform, &os, &arch, &profile);
 
     if (scaselessmatch(key, arch)) {
         result = 1;
@@ -2730,7 +2718,7 @@ static bool conditionalDefinition(MaState *state, cchar *key)
     } else if (scaselessmatch(key, profile)) {
         result = 1;
 
-    } else if (scaselessmatch(key, state->appweb->platform)) {
+    } else if (scaselessmatch(key, state->http->platform)) {
         result = 1;
 
 #if ME_DEBUG

@@ -4,13 +4,14 @@ esp \- ESP Application Generator for Server-Side Web Applications.
 .SH SYNOPSIS
 .B esp
     \fB--apply\fR
-    \fB--config configFile\fR
+    \fB--appweb configFile\fR
     \fB--database DB\fR
     \fB--genlink slink.c\fR
     \fB--home dir\fR
     \fB--keep\fR
     \fB--listen [ip:]port\fR
     \fB--log logFile:level\fR
+    \fB--nodeps\fR
     \fB--optimized\fR
     \fB--overwrite\fR
     \fB--quiet\fR
@@ -250,8 +251,8 @@ esp has the following command usage patterns:
 .SH OPTIONS
 .PP
 .TP 6
-\fB\--config configFile\fR
-Use the specified config file instead of appweb.conf
+\fB\--appweb configFile\fR
+Use the specified appweb config file to host the ESP application.
 .TP 6
 \fB\--database Database provider\fR
 Use the specified database provider. Set to "mdb" or "sdb" for SQLite.
@@ -275,6 +276,9 @@ will be patched into the generated appweb.conf configuration file.
 \fB\--log logFile:level\fR
 Specify a file to log messages.  The syntax is: \fB"--log logName[,moduleName][:logLevel]"\fR.             
 Level 3 will trace the request and response headers. 
+.TP 6
+\fB\--nodeps\fR
+Do not install or upgrade dependencies.
 .TP 6
 \fB\--optimize\fR
 Compile optimized without debug symbols. 

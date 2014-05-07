@@ -69,9 +69,8 @@ struct MaState;
     @description There is one instance of MaAppweb per application. It manages a list of HTTP servers running in
         the application.
     @defgroup MaAppweb MaAppweb
-    @see Http maAddServer maApplyChangedGroup maApplyChangedUser maCreateAppweb maGetUserGroup maLoadModule 
-        maLookupServer maParseInit maParsePlatform maRenderDirListing maSetDefaultServer maSetHttpGroup maSetHttpUser 
-        maStartAppweb maStopAppweb 
+    @see Http maAddServer maCreateAppweb maLoadModule 
+        maLookupServer maParseInit maRenderDirListing maSetDefaultServer maStartAppweb maStopAppweb 
     @stability Internal
  */
 typedef struct MaAppweb {
@@ -79,6 +78,7 @@ typedef struct MaAppweb {
     MprList             *servers;               /**< List of server objects */
     MprHash             *directives;            /**< Config file directives */
     Http                *http;                  /**< Http service object */
+#if UNUSED
     cchar               *group;                 /**< O/S application group name */
     cchar               *localPlatform;         /**< Local (dev) platform os-arch-profile (lower case) */
     cchar               *platform;              /**< Target platform os-arch-profile (lower case) */
@@ -86,12 +86,10 @@ typedef struct MaAppweb {
     cchar               *user;                  /**< O/S application user name */
     int                 uid;                    /**< User Id */
     int                 gid;                    /**< Group Id */
-    int                 staticLink;             /**< Target platform is using a static linking */
     int                 userChanged;            /**< User name changed */
     int                 groupChanged;           /**< Group name changed */
-#if UNUSED
-    int                 skipModules;            /**< Don't load modules */
 #endif
+    int                 staticLink;             /**< Target platform is using a static linking */
 } MaAppweb;
 
 /**
@@ -105,6 +103,7 @@ typedef struct MaAppweb {
  */
 PUBLIC void maAddServer(MaAppweb *appweb, struct MaServer *server);
 
+#if UNUSED
 /**
     Apply the changed Appweb group ID.
     @description Apply configuration changes and actually change the Appweb group id
@@ -123,6 +122,7 @@ PUBLIC int maApplyChangedGroup(MaAppweb *appweb);
     @stability Stable
  */
 PUBLIC int maApplyChangedUser(MaAppweb *appweb);
+#endif
 
 /** 
     Create the Appweb object.
@@ -133,6 +133,7 @@ PUBLIC int maApplyChangedUser(MaAppweb *appweb);
  */
 PUBLIC MaAppweb *maCreateAppweb();
 
+#if UNUSED
 /**
     Get the user group
     @description Get the user name and ID for appweb and update the MaAppweb object
@@ -141,6 +142,7 @@ PUBLIC MaAppweb *maCreateAppweb();
     @stability Internal
  */
 PUBLIC void maGetUserGroup(MaAppweb *appweb);
+#endif
 
 /**
     Load an appweb module
@@ -186,6 +188,7 @@ PUBLIC bool maRenderDirListing(HttpConn *conn);
  */
 PUBLIC int maParseInit(MaAppweb *appweb);
 
+#if UNUSED
 /**
     Parse a platform string
     @param platform The platform string. Must be of the form: os-arch-profile
@@ -197,6 +200,7 @@ PUBLIC int maParseInit(MaAppweb *appweb);
     @stability Internal
  */
 PUBLIC int maParsePlatform(cchar *platform, cchar **os, cchar **arch, cchar **profile);
+#endif
 
 /**
     Set the default server
@@ -207,6 +211,7 @@ PUBLIC int maParsePlatform(cchar *platform, cchar **os, cchar **arch, cchar **pr
  */
 PUBLIC void maSetDefaultServer(MaAppweb *appweb, struct MaServer *server);
 
+#if UNUSED
 /**
     Set the Http Group
     @description Define the group name under which to run the Appweb service
@@ -228,6 +233,7 @@ PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *group);
     @stability Stable
  */
 PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *user);
+#endif
 
 /**
     Start Appweb services
@@ -260,7 +266,6 @@ PUBLIC int maPhpHandlerInit(Http *http, MprModule *mp);
 PUBLIC int maSslModuleInit(Http *http, MprModule *mp);
 PUBLIC int maOpenDirHandler(Http *http);
 PUBLIC int maOpenFileHandler(Http *http);
-PUBLIC int maSetPlatform(cchar *platform, cchar *probe);
 
 /*
     This is exported from slink.c which is either manually created or generated locally
@@ -285,9 +290,6 @@ typedef struct MaServer {
     HttpLimits      *limits;                /**< Limits for this server */
     MprList         *endpoints;             /**< List of HttpEndpoints */
     HttpHost        *defaultHost;           /**< Default host for this server */
-#if UNUSED
-    struct MaState  *state;                 /**< Top of appweb.conf parse tree */
-#endif
 } MaServer;
 
 /**

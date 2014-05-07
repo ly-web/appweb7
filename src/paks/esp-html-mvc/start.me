@@ -4,12 +4,14 @@
 
 Me.load({
     targets: {
+/*
         'build-html-mvc': {
             build: `
                 trace('Compile', 'esp compile')
                 run('esp -q compile')
             `,
         },
+*/
         run: {
             depends: ['comp'],
             run: 'esp -v',
