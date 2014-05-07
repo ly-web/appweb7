@@ -1,0 +1,48 @@
+{
+    "name": "esp-angular",
+    "description": "Embedthis ESP for Angular",
+    "version": "5.0.0-rc0",
+    "keywords": [
+        "esp",
+    ],
+    "dependencies": {
+        "esp-mvc": "~5.0",
+        "angular": "~1.2"
+    },
+    "licenses": [ {
+            "type": "GPL",
+            "url": "http://www.gnu.org/licenses/gpl-2.0.html"
+        }, {
+            "type": "Commercial",
+            "url": "http://embedthis.com/licensing/"
+        }
+    ],
+    "export": [ {
+            from: [
+                "*.js",
+            ],
+            to: '${LIB}/esp-angular',
+        }
+    ],
+    "app": {
+        "client": {
+            "+scripts": [
+                "${LIB}/esp-angular/*.js"
+            ],
+            "mappings": {
+                "auth":         'app.http.auth',
+                "prefix":       'app.http.prefix',
+                "serverPrefix": 'app.http.serverPrefix',
+                "formats":      'app.http.formats',
+                "login": {
+                    "name":     'app.http.auth.login.name',
+                    "url'":     'app.http.auth.login.url',
+                },
+                "timeouts": {
+                    "session":  'app.http.timeouts.session',
+                    "refresh":  'app.http.timeouts.refresh',
+                }
+            }
+        }
+    }
+}
