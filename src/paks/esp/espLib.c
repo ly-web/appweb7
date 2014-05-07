@@ -3853,15 +3853,6 @@ static int openEsp(HttpQueue *q)
     if (!route) {
         route = rx->route;
         eroute = initRoute(route);
-#if UNUSED
-        //  MOB - is this really required?
-        assert(0);
-        if (maParseFile(NULL, mprJoinPath(mprGetAppDir(), "esp.conf")) < 0) {
-            httpError(conn, 0, "Cannot parse esp.conf");
-            closeEsp(q);
-            return MPR_ERR_CANT_OPEN;
-        }
-#endif
     }
     if (!eroute) {
         httpError(conn, 0, "Cannot find a suitable ESP route");
@@ -4480,30 +4471,10 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(eroute->appName);
-#if UNUSED
-        mprMark(eroute->appDir);
-        mprMark(eroute->cacheDir);
-        mprMark(eroute->clientDir);
-        mprMark(eroute->dbDir);
-        mprMark(eroute->controllersDir);
-        mprMark(eroute->paksDir);
-        mprMark(eroute->generateDir);
-        mprMark(eroute->layoutsDir);
-        mprMark(eroute->libDir);
-        mprMark(eroute->srcDir);
-        mprMark(eroute->viewsDir);
-#endif
         mprMark(eroute->compile);
         mprMark(eroute->combineScript);
         mprMark(eroute->combineSheet);
         mprMark(eroute->currentSession);
-    #if UNUSED
-        mprMark(eroute->client);
-        mprMark(eroute->config);
-        mprMark(eroute->database);
-        mprMark(eroute->routeSet);
-        mprMark(eroute->mutex);
-    #endif
         mprMark(eroute->edi);
         mprMark(eroute->env);
         mprMark(eroute->link);
@@ -4520,28 +4491,6 @@ PUBLIC EspRoute *espCreateRoute(HttpRoute *route)
     if ((eroute = mprAllocObj(EspRoute, espManageEspRoute)) == 0) {
         return 0;
     }
-#if UNUSED
-    cchar       *path;
-    if (route) {
-        path = httpGetRouteVar(route, "CACHE_DIR");
-        if (!path) {
-            path = mprJoinPath(route->home, "cache");
-        }
-        route->eroute = eroute;
-    } else {
-        path = mprGetAppDir();
-    }
-    /*
-        Use a relative path incase a Chroot directive happens after loading the esp handler
-     */
-    eroute->cacheDir = (char*) mprGetRelPath(path, NULL);
-    eroute->update = ME_DEBUG;
-    eroute->keepSource = ME_DEBUG;
-    eroute->lifespan = 0;
-#endif
-#if UNUSED
-    eroute->mutex = mprCreateLock();
-#endif
     eroute->route = route;
     route->eroute = eroute;
     return eroute;
@@ -4585,29 +4534,8 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
         eroute->env = mprCloneHash(parent->env);
     }
     eroute->appName = parent->appName;
-
-#if UNUSED
-    eroute->appDir = parent->appDir;
-    eroute->cacheDir = parent->cacheDir;
-    eroute->clientDir = parent->clientDir;
-    eroute->dbDir = parent->dbDir;
-    eroute->layoutsDir = parent->layoutsDir;
-    eroute->libDir = parent->libDir;
-    eroute->srcDir = parent->srcDir;
-    eroute->controllersDir = parent->controllersDir;
-    eroute->generateDir = parent->generateDir;
-    eroute->paksDir = parent->paksDir;
-    eroute->viewsDir = parent->viewsDir;
-#endif
     eroute->combineScript = parent->combineScript;
     eroute->combineSheet = parent->combineSheet;
-#if UNUSED
-    eroute->update = parent->update;
-    eroute->keepSource = parent->keepSource;
-    eroute->lifespan = parent->lifespan;
-    eroute->config = parent->config;
-    eroute->configLoaded = parent->configLoaded;
-#endif
     route->eroute = eroute;
     return eroute;
 }
@@ -4721,33 +4649,13 @@ PUBLIC int espApp(MaState *state, HttpRoute *route, cchar *dir, cchar *name, cch
     }
     httpSetRouteTarget(route, "run", "$&");
     httpAddRouteHandler(route, "espHandler", "");
-    //  MOB - required for client routes to override fileHandler ""
     httpAddRouteHandler(route, "espHandler", "esp");
     httpAddRouteIndex(route, "index.esp");
-
-#if UNUSED
-    //  MOB - if used, should be done in httpSetRoutePrefix
-    httpSetRouteVar(route, "PREFIX", prefix);
-    httpAddRouteIndex(route, "index.html");
-    //  MOB - if used, should be done in httpSetRouteName()
-    httpSetRouteVar(route, "APP_NAME", name);
-#endif
+    httpSetRouteVar(route, "APP", name);
 
     if (httpLoadConfig(route, ME_ESP_PACKAGE) < 0) {
         return MPR_ERR_CANT_LOAD;
     }    
-#if UNUSED
-    espSetConfig(route, "esp.appPrefix", prefix);
-#endif
-#if UNUSED
-    if (!eroute->compile) {
-        path = mprJoinPath(mprGetAppDir(), "esp.conf");
-        if (maParseFile(state, path) < 0) {
-            mprError("Cannot find esp.conf at %s", path);
-            return MPR_ERR_CANT_OPEN;
-        }
-    }
-#endif
     if (route->database && !eroute->edi) {
         if (espOpenDatabase(route, route->database) < 0) {
             mprError("Cannot open database %s", route->database);
@@ -4878,37 +4786,9 @@ static int finishEspAppDirective(MaState *state, cchar *key, cchar *value)
         to the enclosing host. This ensures that nested routes are defined BEFORE outer/enclosing routes.
      */
     route = state->route;
-#if UNUSED
-    httpAddRouteSet(route, eroute->routeSet);
-#endif
     if (route != state->prev->route) {
         httpFinalizeRoute(route);
     }
-#if !ME_STATIC && UNUSED
-    if (!state->appweb->skipModules) {
-        MprJson *preload, *item;
-        cchar   *errMsg, *source;
-        char    *kind;
-        int     i;
-        /*
-            Note: the config parser pauses GC, so this will never yield
-         */
-        if (!loadApp(route, NULL)) {
-            return MPR_ERR_CANT_LOAD;
-        }
-        if (!route->combine && (preload = mprGetJsonObj(route->config, "esp.preload")) != 0) {
-            for (ITERATE_JSON(preload, item, i)) {
-                source = stok(sclone(item->value), ":", &kind);
-                if (!kind) kind = "controller";
-                source = mprJoinPath(httpGetDir(route, "controllers"), source);
-                if (!espLoadModule(state->route, NULL, kind, source, &errMsg)) {
-                    mprError("Cannot preload esp module %s. %s", source, errMsg);
-                    return MPR_ERR_CANT_LOAD;
-                }
-            }
-        }
-    }
-#endif
     return 0;
 }
 
@@ -4998,7 +4878,6 @@ PUBLIC int espOpenDatabase(HttpRoute *route, cchar *spec)
     if ((eroute->edi = ediOpen(mprGetRelPath(path, NULL), provider, flags)) == 0) {
         return MPR_ERR_CANT_OPEN;
     }
-    //  MOB API
     route->database = sclone(spec);
     return 0;
 }
@@ -5024,50 +4903,6 @@ static int espDbDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-#if UNUSED
-PUBLIC void espSetDir(HttpRoute *route, cchar *name, cchar *value)
-{
-    EspRoute    *eroute;
-
-    eroute = route->eroute;
-    if (value == 0) {
-        value = name;
-    }
-    value = mprJoinPath(route->documents, value);
-    if (smatch(name, "app")) {
-        eroute->appDir = value;
-    } else if (smatch(name, "cache")) {
-        eroute->cacheDir = value;
-    } else if (smatch(name, "client")) {
-        eroute->clientDir = value;
-    } else if (smatch(name, "controllers")) {
-        eroute->controllersDir = value;
-    } else if (smatch(name, "db")) {
-        eroute->dbDir = value;
-    } else if (smatch(name, "documents")) {
-        httpSetRouteDocuments(route, httpMakePath(route, 0, value));
-    } else if (smatch(name, "generate")) {
-        eroute->generateDir = value;
-    } else if (smatch(name, "home")) {
-        httpSetRouteHome(route, value);
-    } else if (smatch(name, "layouts")) {
-        eroute->layoutsDir = value;
-    } else if (smatch(name, "lib")) {
-        eroute->libDir = value;
-    } else if (smatch(name, "paks")) {
-        eroute->paksDir = value;
-    } else if (smatch(name, "src")) {
-        eroute->srcDir = value;
-    } else if (smatch(name, "upload")) {
-        httpSetRouteUploadDir(route, httpMakePath(route, 0, value));
-    } else if (smatch(name, "views")) {
-        eroute->viewsDir = value;
-    }
-    httpSetRouteVar(route, sjoin(supper(name), "_DIR", NULL), value);
-}
-#endif
-
-
 PUBLIC void espSetDefaultDirs(HttpRoute *route)
 {
     httpSetDir(route, "app", "client/app");
@@ -5082,8 +4917,13 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     httpSetDir(route, "src", 0);
     httpSetDir(route, "views", "client/app");
 
-    //  MOB Client relative LIB for client.scripts
+    /*  Client relative LIB for client.scripts */
     httpSetRouteVar(route, "LIB", "lib");
+
+#if MOB
+    //  missing upload
+    httpSetRouteUploadDir(route, httpMakePath(route, 0, value));
+#endif
 }
 
 
@@ -5302,23 +5142,6 @@ static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-#if UNUSED
-/*
-    EspRouteServerPrefix /server
-    Sets the route server prefix to use for routes to talk to the server
- */
-static int espRouteServerPrefixDirective(MaState *state, cchar *key, cchar *value)
-{
-    httpSetRouteServerPrefix(state->route, value);
-#if UNUSED
-    httpSetRouteVar(state->route, "SERVER_PREFIX", 
-        sjoin(state->route->prefix ? state->route->prefix: "", state->route->serverPrefix, NULL));
-#endif
-    return 0;
-}
-#endif
-
-
 /*
     EspRoute 
         methods=METHODS
@@ -5424,7 +5247,6 @@ static int espUpdateDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%B", &on)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    //  MOB API
     state->route->update = on;
     return 0;
 }
@@ -5470,7 +5292,6 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     }
     /*
         Add appweb configuration file directives
-        MOB - make conditional on something
      */
     maAddDirective(appweb, "EspApp", espAppDirective);
     maAddDirective(appweb, "<EspApp", openEspAppDirective);
@@ -5485,9 +5306,6 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     maAddDirective(appweb, "EspResource", espResourceDirective);
     maAddDirective(appweb, "EspResourceGroup", espResourceGroupDirective);
     maAddDirective(appweb, "EspRoute", espRouteDirective);
-#if UNUSED
-    maAddDirective(appweb, "EspRouteServerPrefix", espRouteServerPrefixDirective);
-#endif
     maAddDirective(appweb, "EspRouteSet", espRouteSetDirective);
     maAddDirective(appweb, "EspUpdate", espUpdateDirective);
     if ((esp->ediService = ediCreateService()) == 0) {

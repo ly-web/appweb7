@@ -459,17 +459,6 @@ PUBLIC HttpAuthStore *httpCreateAuthStore(cchar *name, HttpVerifyUser verifyUser
 }
 
 
-#if DEPRECATED
-PUBLIC int httpAddAuthStore(cchar *name, HttpVerifyUser verifyUser)
-{
-    if (httpCreateAuthStore(name, verifyUser) == 0) {
-        return MPR_ERR_CANT_CREATE;
-    }
-    return 0;
-}
-#endif
-
-
 PUBLIC void httpSetAuthVerify(HttpAuth *auth, HttpVerifyUser verifyUser)
 {
     auth->verifyUser = verifyUser;
@@ -3364,10 +3353,7 @@ static void parseContentHandlers(HttpRoute *route, cchar *key, MprJson *prop)
 
 static void parsePrefix(HttpRoute *route, cchar *key, MprJson *prop)
 {
-    //  MOB - should we be prepending the outer prefix?
     httpSetRoutePrefix(route, sjoin(route->prefix, prop->value, 0));
-    //  MOB - this should be pushed into httpSetRoutePrefix
-    httpSetRouteVar(route, "PREFIX", prop->value);
 }
 
 
@@ -8610,21 +8596,6 @@ static void handleTrace(HttpConn *conn)
 }
 
 
-#if DEPRECATED
-PUBLIC void httpHandleOptionsTrace(HttpConn *conn)
-{
-    HttpRx      *rx;
-
-    rx = conn->rx;
-    if (rx->flags & HTTP_OPTIONS) {
-        httpHandleOptions(conn);
-    } else if (rx->flags & HTTP_TRACE) {
-        handleTrace(conn);
-    }
-}
-#endif
-
-
 PUBLIC int httpOpenPassHandler(Http *http)
 {
     HttpStage     *stage;
@@ -10102,9 +10073,6 @@ PUBLIC HttpRoute *httpCreateInheritedRoute(HttpRoute *parent)
     route->http = MPR->httpService;
     route->indicies = parent->indicies;
     route->inputStages = parent->inputStages;
-#if UNUSED
-    route->json = parent->json;
-#endif
     route->keepSource = parent->keepSource;
     route->languages = parent->languages;
     route->lifespan = parent->lifespan;
@@ -10669,17 +10637,6 @@ static cchar *mapContent(HttpConn *conn, cchar *filename)
             }
         }
     }
-#if DEPRECATED
-    /* 
-        Old style compression. Deprecated in 4.4 
-     */
-    if (!info->valid && !route->map && (route->flags & HTTP_ROUTE_GZIP) && scontains(rx->acceptEncoding, "gzip")) {
-        path = sjoin(filename, ".gz", NULL);
-        if (mprGetPathInfo(path, info) == 0) {
-            filename = path;
-        }
-    }
-#endif
     return filename;
 }
 
@@ -11199,16 +11156,6 @@ PUBLIC void httpSetRouteAutoDelete(HttpRoute *route, bool enable)
 }
 
 
-#if DEPRECATED
-PUBLIC void httpSetRouteCompression(HttpRoute *route, int flags)
-{
-    assert(route);
-    route->flags &= ~(HTTP_ROUTE_GZIP);
-    route->flags |= (HTTP_ROUTE_GZIP & flags);
-}
-#endif
-
-
 PUBLIC int httpSetRouteConnector(HttpRoute *route, cchar *name)
 {
     HttpStage     *stage;
@@ -11247,19 +11194,7 @@ PUBLIC void httpSetRouteDocuments(HttpRoute *route, cchar *path)
 
     route->documents = httpMakePath(route, route->home, path);
     httpSetRouteVar(route, "DOCUMENTS", route->documents);
-#if DEPRECATED
-    httpSetRouteVar(route, "DOCUMENTS_DIR", route->documents);
-    httpSetRouteVar(route, "DOCUMENT_ROOT", route->documents);
-#endif
 }
-
-
-#if DEPRECATED
-PUBLIC void httpSetRouteDir(HttpRoute *route, cchar *path)
-{
-    httpSetRouteDocuments(route, path);
-}
-#endif
 
 
 PUBLIC void httpSetRouteFlags(HttpRoute *route, int flags)
@@ -11307,10 +11242,6 @@ PUBLIC void httpSetRouteHome(HttpRoute *route, cchar *path)
 
     route->home = httpMakePath(route, ".", path);
     httpSetRouteVar(route, "HOME", route->home);
-#if DEPRECATED
-    httpSetRouteVar(route, "HOME_DIR", route->home);
-    httpSetRouteVar(route, "ROUTE_HOME", route->home);
-#endif
 }
 
 
@@ -11440,6 +11371,7 @@ PUBLIC void httpSetRoutePrefix(HttpRoute *route, cchar *prefix)
     } else {
         route->prefix = 0;
         route->prefixLen = 0;
+        httpSetRouteVar(route, "PREFIX", "");
     }
     if (route->pattern) {
         finalizePattern(route);
@@ -12707,9 +12639,6 @@ static void definePathVars(HttpRoute *route)
     mprAddKey(route->vars, "VERSION", sclone(ME_VERSION));
     mprAddKey(route->vars, "PLATFORM", sclone(ME_PLATFORM));
     mprAddKey(route->vars, "BIN_DIR", mprGetAppDir());
-#if DEPRECATED
-    mprAddKey(route->vars, "LIBDIR", mprGetAppDir());
-#endif
     if (route->host) {
         defineHostVars(route);
     }
@@ -12722,12 +12651,6 @@ static void defineHostVars(HttpRoute *route)
     mprAddKey(route->vars, "DOCUMENTS", route->documents);
     mprAddKey(route->vars, "HOME", route->home);
     mprAddKey(route->vars, "SERVER_NAME", route->host->name);
-
-#if DEPRECATED
-    mprAddKey(route->vars, "ROUTE_HOME", route->home);
-    mprAddKey(route->vars, "DOCUMENT_ROOT", route->documents);
-    mprAddKey(route->vars, "SERVER_ROOT", route->home);
-#endif
 }
 
 
@@ -17415,14 +17338,6 @@ PUBLIC bool httpCheckSecurityToken(HttpConn *conn)
 
     if ((sessionToken = httpGetSessionVar(conn, ME_XSRF_COOKIE, 0)) != 0) {
         requestToken = httpGetHeader(conn, ME_XSRF_HEADER);
-#if DEPRECATED
-        /*
-            Deprecated in 4.4
-        */
-        if (!requestToken) {
-            requestToken = httpGetParam(conn, ME_XSRF_PARAM, 0);
-        }
-#endif
         if (!smatch(sessionToken, requestToken)) {
             /*
                 Potential CSRF attack. Deny request. Re-create a new security token so legitimate clients can retry.
@@ -20331,19 +20246,6 @@ PUBLIC char *httpLinkEx(HttpConn *conn, cchar *target, MprHash *options)
 }
 
 
-#if DEPRECATED
-PUBLIC char *httpUriEx(HttpConn *conn, cchar *target, MprHash *options)
-{
-    return httpLinkEx(conn, target, options);
-}
-
-PUBLIC char *httpUri(HttpConn *conn, cchar *target)
-{
-    return httpLink(conn, target);
-}
-#endif
-
-
 PUBLIC char *httpUriToString(HttpUri *uri, int flags)
 {
     return httpFormatUri(uri->scheme, uri->host, uri->port, uri->path, uri->reference, uri->query, flags);
@@ -20555,13 +20457,9 @@ PUBLIC void httpCreateCGIParams(HttpConn *conn)
     mprAddKey(svars, "REMOTE_ADDR", conn->ip);
     mprAddKeyFmt(svars, "REMOTE_PORT", "%d", conn->port);
 
-#if DEPRECATED
-    mprAddKey(svars, "DOCUMENT_ROOT", rx->route->documents);
-    //  DEPRECATED - use ROUTE_HOME
-    mprAddKey(svars, "SERVER_ROOT", rx->route->home);
-#endif
-
-    /* Set to the same as AUTH_USER */
+    /* 
+        Set to the same as AUTH_USER 
+     */
     mprAddKey(svars, "REMOTE_USER", conn->username);
     mprAddKey(svars, "REQUEST_METHOD", rx->method);
     mprAddKey(svars, "REQUEST_TRANSPORT", sclone((char*) ((conn->secure) ? "https" : "http")));

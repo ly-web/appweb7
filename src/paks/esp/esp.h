@@ -1389,7 +1389,6 @@ typedef struct EspRoute {
     HttpRoute       *route;                 /**< Back link to route */
     EspProc         commonController;       /**< Common code for all controllers */
 
-    //  MOB - push these into route?
     MprHash         *env;                   /**< Environment variables for route */
     cchar           *currentSession;        /**< Current login session when enforcing a single login */
 
@@ -1402,37 +1401,6 @@ typedef struct EspRoute {
     int             compileMode;            /**< Compile the application debug or release mode */
     int             skipApps;               /**< Skip loading applications */
     Edi             *edi;                   /**< Default database for this route */
-
-#if UNUSED
-    MprJson         *config;                /**< ESP App configuration from package.json */
-    MprTime         configLoaded;           /**< When package.json was last loaded */
-    cchar           *client;                /**< Configuration to send to the client */
-
-    cchar           *appDir;                /**< Directory for client-side application content "app" */
-    cchar           *cacheDir;              /**< Directory for cached compiled controllers and views */
-    cchar           *clientDir;             /**< Directory for client-side public web content */
-    cchar           *controllersDir;        /**< Directory for controllers */
-    cchar           *dbDir;                 /**< Directory for databases */
-    cchar           *generateDir;           /**< Directory for generation templates */
-    cchar           *layoutsDir;            /**< Directory for view layouts */
-    cchar           *libDir;                /**< Directory for js libraries */
-    cchar           *paksDir;               /**< Directory for extension packs */
-    cchar           *srcDir;                /**< Directory for server-side source */
-    cchar           *viewsDir;              /**< Directory for server-side views */
-
-
-    cchar           *mode;                  /**< Application run mode (debug|release) */
-    cchar           *database;              /**< Name of database for route */
-    cchar           *routeSet;              /**< Route set to use */
-    int             loaded;                 /**< App has been loaded */
-    int             update;                 /**< Auto-update modified ESP source */
-    int             combine;                /**< Compile the application in "combine" mode */
-    int             keepSource;             /**< Preserve generated source */
-    int             json;                   /**< Emit json responses */
-    MprTicks        lifespan;               /**< Default cache lifespan */
-    MprMutex        *mutex;                 /**< Multithread lock */
-#endif
-
 } EspRoute;
 
 /**

@@ -34,20 +34,6 @@
     </member>
     <member kind="function">
       <type>int</type>
-      <name>maApplyChangedGroup</name>
-      <anchorfile>group___ma_appweb.html</anchorfile>
-      <anchor>gaf558e80479e238939e4c4edf16a16ec0</anchor>
-      <arglist>(MaAppweb *appweb)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>maApplyChangedUser</name>
-      <anchorfile>group___ma_appweb.html</anchorfile>
-      <anchor>ga04b040307aaccc46eaf6fef1dd61d024</anchor>
-      <arglist>(MaAppweb *appweb)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
       <name>maArchiveLog</name>
       <anchorfile>group___ma_appweb.html</anchorfile>
       <anchor>ga454f6a859fd29e3c76e136420fdfc3c4</anchor>
@@ -66,13 +52,6 @@
       <anchorfile>group___ma_appweb.html</anchorfile>
       <anchor>ga55e8a5ed07c0c10d79fd20d3c0e1d602</anchor>
       <arglist>(char *s, char **tok)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>maGetUserGroup</name>
-      <anchorfile>group___ma_appweb.html</anchorfile>
-      <anchor>gaeea4a201c9a8cca9521cd006436b8570</anchor>
-      <arglist>(MaAppweb *appweb)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -101,13 +80,6 @@
       <anchorfile>group___ma_appweb.html</anchorfile>
       <anchor>gaf72ae42c5d6c767a221d6d84f4f0b83b</anchor>
       <arglist>(MaAppweb *appweb)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>maParsePlatform</name>
-      <anchorfile>group___ma_appweb.html</anchorfile>
-      <anchor>gaeeb83f9f10a5e54bcf16836f198f9f30</anchor>
-      <arglist>(cchar *platform, cchar **os, cchar **arch, cchar **profile)</arglist>
     </member>
     <member kind="function">
       <type>MaState *</type>
@@ -143,20 +115,6 @@
       <anchorfile>group___ma_appweb.html</anchorfile>
       <anchor>ga30109915ae5446c9299173528c2c880e</anchor>
       <arglist>(MaAppweb *appweb, struct MaServer *server)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>maSetHttpGroup</name>
-      <anchorfile>group___ma_appweb.html</anchorfile>
-      <anchor>ga29500f7d8b117921cf5c68beb7ef40ad</anchor>
-      <arglist>(MaAppweb *appweb, cchar *group)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>maSetHttpUser</name>
-      <anchorfile>group___ma_appweb.html</anchorfile>
-      <anchor>gaf824d096f9596ebf8840d7e8d005baad</anchor>
-      <arglist>(MaAppweb *appweb, cchar *user)</arglist>
     </member>
     <member kind="function">
       <type>void</type>

@@ -648,9 +648,6 @@ static void initialize(int argc, char **argv)
                 fail("Cannot create ESP app");
                 return;
             }
-            // httpAddRouteHandler(route, "espHandler", "esp");
-            // MOB - should be done by client route with ""
-            // httpAddRouteHandler(route, "fileHandler", "html gif jpeg jpg png pdf ico css js txt");
             httpAddRouteIndex(route, "index.html");
 
         } else {
@@ -667,14 +664,12 @@ static void initialize(int argc, char **argv)
         }
         httpFinalizeRoute(route);
     }
-#if UNUSED || 1
     if (route->database && !app->eroute->edi) {
         if (espOpenDatabase(route, route->database) < 0) {
             fail("Cannot open database %s", route->database);
             return;
         }
     }
-#endif
     app->routes = getRoutes();
     if ((stage = httpLookupStage(http, "espHandler")) == 0) {
         fail("Cannot find ESP handler");
@@ -1150,11 +1145,6 @@ static void run(int argc, char **argv)
             mprSetLogLevel(2);
         }
     }
-#if UNUSED
-    if (smatch(espGetConfig(app->route, "esp.logRoutes"), "true")) {
-        httpLogRoutes(app->route->host, 0);
-    }
-#endif
     if (!app->appwebConfig) {
         if (argc == 0) {
             if (http->endpoints->length == 0) {
@@ -1860,11 +1850,6 @@ static void compileItems(HttpRoute *route)
         app->files = mprGetPathFiles(clientDir, MPR_PATH_DESCEND | MPR_PATH_NODIRS);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
-#if UNUSED
-            if (sstarts(path, httpGetDir(route, "generate"))) {
-                continue;
-            }
-#endif
             if (sstarts(path, httpGetDir(route, "layouts"))) {
                 continue;
             }
@@ -2390,7 +2375,6 @@ static void uninstallPak(cchar *name)
     if ((libDir = mprGetJson(app->config, "directories.lib")) == 0) {
         libDir = ESP_LIB_DIR;
     }
-    //  MOB - why this?
     if ((client = mprGetJson(app->config, "directories.client")) == 0) {
         client = sjoin(mprGetPathBase(httpGetDir(app->route, "client")), "/", NULL);
     }
@@ -2493,15 +2477,10 @@ static bool blendSpec(cchar *name, cchar *version, MprJson *spec)
     cchar       *script, *key;
     char        *major, *minor, *patch;
     int         i;
-#if UNUSED
-    ssize       clen;
-    cchar       *libdir, *client;
-#endif
 
     eroute = app->eroute;
     /*
         Before blending, expand ${var} references
-        MOB - generalize and fix all properties?
      */
     if ((scripts = mprGetJsonObj(spec, "app.client.+scripts")) != 0) {
         for (ITERATE_JSON(scripts, cp, i)) {
