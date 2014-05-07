@@ -5509,17 +5509,19 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
             May need to compile, so set the platform information and location
          */
         if (!http->platform || !http->platformDir) {
-            probe = sfmt("bin/%s%s", mprGetAppName(), ME_EXE);
+            probe = sfmt("bin/%s", mprGetPathBase(mprGetAppPath()));
             if (httpSetPlatform(NULL, probe) < 0) {
                 mprError("Cannot find ESP platform for %s", probe);
-                return MPR_ERR_CANT_OPEN;
+                /* Not a hard error */
             }
         }
-        if (maParseFile(NULL, mprJoinPath(mprGetAppDir(), "esp.conf")) < 0) {
-            mprError("Cannot parse %s", path);
-            return MPR_ERR_CANT_OPEN;
+        if (http->platform && http->platformDir) {
+            if (maParseFile(NULL, mprJoinPath(mprGetAppDir(), "esp.conf")) < 0) {
+                mprError("Cannot parse %s", path);
+                return MPR_ERR_CANT_OPEN;
+            }
+            esp->canCompile = 1;
         }
-        esp->canCompile = 1;
     }
     return 0;
 }
