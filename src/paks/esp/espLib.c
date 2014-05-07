@@ -4570,6 +4570,7 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
     if ((eroute = mprAllocObj(EspRoute, espManageEspRoute)) == 0) {
         return 0;
     }
+    eroute->route = route;
     eroute->top = parent->top;
     eroute->searchPath = parent->searchPath;
     eroute->edi = parent->edi;
@@ -4699,6 +4700,8 @@ PUBLIC int espApp(MaState *state, HttpRoute *route, cchar *dir, cchar *name, cch
         return MPR_ERR_MEMORY;
     }
     httpSetRouteDocuments(route, dir);
+    httpSetRouteHome(route, dir);
+
     eroute->top = eroute;
     if (name) {
         eroute->appName = sclone(name);
