@@ -37,7 +37,7 @@
         "appweb": "*",
         "me": ">0.8.0"
     },
-    "dirs": {
+    "directories": {
         "paks": "src/paks",
         "client": "client"
     },

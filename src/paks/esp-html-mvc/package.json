@@ -17,11 +17,8 @@
     "dependencies": {
         "esp-mvc": "~5.0"
     },
-    "export": [
-        {
-            from: [ 
-                "css/*",
-            ],
+    "export": [ {
+            from: [ "css/*" ],
             to: '${LIB}/esp-html-mvc',
         }, {
             overwrite: false,
@@ -33,23 +30,26 @@
             to: '.',
         }
     ],
-    "esp": {
-        "?auth": "app",
-        "?serverPrefix": "/do",
-        "server": {
+    "app": {
+        "esp": {
             "generate": {
                 "-appweb": "esp-mvc/generate/appweb.conf",
                 "-controller": "esp-mvc/generate/controller.c",
-                "-controller-singleton": "esp-mvc/generate/controller.c",
+                "-controllerSingleton": "esp-mvc/generate/controller.c",
 
                 "?appweb": "esp-html-mvc/generate/appweb.conf",
                 "?clientList": "esp-html-mvc/generate/list.esp",
                 "?clientEdit": "esp-html-mvc/generate/edit.esp",
                 "?controller": "esp-html-mvc/generate/controller.c",
-                "?controller-singleton": "esp-html-mvc/generate/controller-singleton.c",
+                "?controllerSingleton": "esp-html-mvc/generate/controller-singleton.c",
+            },
+        },
+        "http": {
+            "auth": {
+                "?type": "app",
             },
             "-routes": "esp-server",
             "?routes": "esp-html-mvc",
-        }
-    }
+        },
+    },
 }
