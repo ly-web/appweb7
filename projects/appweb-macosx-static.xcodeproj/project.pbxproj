@@ -2056,22 +2056,21 @@
 ../src/paks/esp-html-mvc/client/css,
 ../src/paks/esp-html-mvc/client/css/all.css,
 ../src/paks/esp-html-mvc/client/css/all.less,
-../src/paks/esp-html-mvc/client/css/app.less,
-../src/paks/esp-html-mvc/client/css/theme.less,
 ../src/paks/esp-html-mvc/client/index.esp,
+../src/paks/esp-html-mvc/css,
+../src/paks/esp-html-mvc/css/app.less,
+../src/paks/esp-html-mvc/css/theme.less,
 ../src/paks/esp-html-mvc/generate,
-../src/paks/esp-html-mvc/generate/esp-html-mvc,
-../src/paks/esp-html-mvc/generate/esp-html-mvc/appweb.conf,
-../src/paks/esp-html-mvc/generate/esp-html-mvc/controller-singleton.c,
-../src/paks/esp-html-mvc/generate/esp-html-mvc/controller.c,
-../src/paks/esp-html-mvc/generate/esp-html-mvc/edit.esp,
-../src/paks/esp-html-mvc/generate/esp-html-mvc/list.esp,
+../src/paks/esp-html-mvc/generate/appweb.conf,
+../src/paks/esp-html-mvc/generate/controller-singleton.c,
+../src/paks/esp-html-mvc/generate/controller.c,
+../src/paks/esp-html-mvc/generate/edit.esp,
+../src/paks/esp-html-mvc/generate/list.esp,
 ../src/paks/esp-html-mvc/layouts,
 ../src/paks/esp-html-mvc/layouts/default.esp,
 ../src/paks/esp-html-mvc/LICENSE.md,
 ../src/paks/esp-html-mvc/package.json,
 ../src/paks/esp-html-mvc/README.md,
-../src/paks/esp-html-mvc/start.me,
 ../src/paks/esp-mvc,
 ../src/paks/esp-mvc/generate,
 ../src/paks/esp-mvc/generate/appweb.conf,
@@ -2103,22 +2102,21 @@ cd ../src/paks
 	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/client/css\"
 	cp esp-html-mvc/client/css/all.css ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/client/css/all.css
 	cp esp-html-mvc/client/css/all.less ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/client/css/all.less
-	cp esp-html-mvc/client/css/app.less ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/client/css/app.less
-	cp esp-html-mvc/client/css/theme.less ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/client/css/theme.less
 	cp esp-html-mvc/client/index.esp ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/client/index.esp
+	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/css\"
+	cp esp-html-mvc/css/app.less ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/css/app.less
+	cp esp-html-mvc/css/theme.less ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/css/theme.less
 	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate/esp-html-mvc\"
-	cp esp-html-mvc/generate/esp-html-mvc/appweb.conf ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate/esp-html-mvc/appweb.conf
-	cp esp-html-mvc/generate/esp-html-mvc/controller-singleton.c ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate/esp-html-mvc/controller-singleton.c
-	cp esp-html-mvc/generate/esp-html-mvc/controller.c ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate/esp-html-mvc/controller.c
-	cp esp-html-mvc/generate/esp-html-mvc/edit.esp ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate/esp-html-mvc/edit.esp
-	cp esp-html-mvc/generate/esp-html-mvc/list.esp ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate/esp-html-mvc/list.esp
+	cp esp-html-mvc/generate/appweb.conf ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate/appweb.conf
+	cp esp-html-mvc/generate/controller-singleton.c ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate/controller-singleton.c
+	cp esp-html-mvc/generate/controller.c ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate/controller.c
+	cp esp-html-mvc/generate/edit.esp ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate/edit.esp
+	cp esp-html-mvc/generate/list.esp ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/generate/list.esp
 	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/layouts\"
 	cp esp-html-mvc/layouts/default.esp ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/layouts/default.esp
 	cp esp-html-mvc/LICENSE.md ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/LICENSE.md
 	cp esp-html-mvc/package.json ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/package.json
 	cp esp-html-mvc/README.md ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/README.md
-	cp esp-html-mvc/start.me ../${OUT_DIR}/esp/esp-html-mvc/5.0.0-rc0/start.me
 	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/5.0.0-rc0\"
 	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/5.0.0-rc0/generate\"
 	cp esp-mvc/generate/appweb.conf ../${OUT_DIR}/esp/esp-mvc/5.0.0-rc0/generate/appweb.conf
