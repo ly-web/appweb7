@@ -1004,6 +1004,13 @@ static int exitTimeoutDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
+static int fixDotNetDigestAuth(MaState *state, cchar *key, cchar *value)
+{
+    state->route->flags |= smatch(value, "on") ? HTTP_ROUTE_DOTNET_DIGEST_FIX : 0;
+    return 0;
+}
+
+
 /*
     GroupAccount groupName
  */
@@ -3205,6 +3212,11 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "</VirtualHost", closeVirtualHostDirective);
     maAddDirective(appweb, "WebSocketsProtocol", webSocketsProtocolDirective);
     maAddDirective(appweb, "WebSocketsPing", webSocketsPingDirective);
+
+    /*
+        Fixes
+     */
+    maAddDirective(appweb, "FixDotNetDigestAuth", fixDotNetDigestAuth);
 
 #if !ME_ROM
     maAddDirective(appweb, "AccessLog", accessLogDirective);
