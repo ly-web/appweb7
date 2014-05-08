@@ -50,7 +50,7 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     assert(server);
     assert(path && *path);
 
-    mprLog(2, "Using config file: \"%s\"", mprGetAbsPath(path));
+    mprLog(2, "Using config file: \"%s\"", mprGetRelPath(path, 0));
 
     state = createState(server, flags);
     mprAddRoot(state);

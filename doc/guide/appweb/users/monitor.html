@@ -85,8 +85,7 @@
             <p>Monitors are defined in the <i>appweb.conf</i> configuration file via the <a href="">Monitor</a> directive.
             The monitor directive takes the form:</p>
             <pre>
-Monitor Expression Period List-of-Defenses...
-            </pre>
+Monitor Expression Period List-of-Defenses...</pre>
             <p>The monitor directive defines an expression to be regularly tested. The Period defines how often it will
             be tested. If the expression is true, the list of defenses will be invoked to address the threat. For example:</p>
             <pre>
@@ -204,7 +203,7 @@ KEYWORD=VALUE
                 response STATUS and MESSAGE. For example, to ban without a response message:</p>
                 <pre>Defense mydefense REMEDY=ban PERIOD=10mins</pre> 
                 <p>To ban with a response:</p>
-                <pre>Defense mydefense REMDY=ban STATUS=406 MESSAGE="Client temporarily banned" PERIOD=10mins</pre> 
+                <pre>Defense mydefense REMDY=ban STATUS=406 MESSAGE="Client banned" PERIOD=10mins</pre> 
             <h3>Cmd Remedy</h3>
             <p>The <i>Cmd</i> remedy invokes an external command. This is an open interface to permit you to run
             a program of your choosing. The command line is specified by the <i>CMD</i> keyword. For example:</p>
