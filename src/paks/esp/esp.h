@@ -1376,6 +1376,12 @@ PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *rout
  */
 PUBLIC void espInitHtmlOptions(Esp *esp);
 
+/**
+    Initialize the ESP configuration file parser
+    @internal
+ */
+PUBLIC int espInitParser();
+
 /********************************** EspRoutes *********************************/
 /**
     EspRoute extended route configuration.
@@ -1441,9 +1447,18 @@ PUBLIC void espAddHomeRoute(HttpRoute *route);
  */
 PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set);
 
-//  MOB - DOC
-PUBLIC int espApp(MaState *state, HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet);
-PUBLIC bool espLoadModule(HttpRoute *route, MprDispatcher *dispatcher, cchar *kind, cchar *source, cchar **errMsg);
+/**
+    Define an ESP application
+    @param route Parent route from which to inherit configuration.
+    @param dir Directory containing the application
+    @param name Name of the application
+    @param prefix URI prefix for the application
+    @param routeSet Pre-defined route set
+    @returns Zero if successful, otherwise a negative MPR error code.
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet);
 
 /**
     Add caching for response content.
@@ -1571,6 +1586,15 @@ PUBLIC void espDefineAction(HttpRoute *route, cchar *targetKey, void *actionProc
 PUBLIC int espBindProc(HttpRoute *route, cchar *pattern, void *actionProc);
 
 /**
+    Create an EspRoute object
+    @param route HttpRoute to associate with
+    @return EspRoute object
+    @internal
+    @stability Prototype
+ */
+PUBLIC EspRoute *espCreateRoute(HttpRoute *route);
+
+/**
     Define a base function to invoke for all controller actions.
     @description A base function can be defined that will be called before calling any controller action. This
         emulates a super class constructor.
@@ -1645,11 +1669,18 @@ PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue);
  */
 PUBLIC bool espHasPak(HttpRoute *route, cchar *name);
 
-//  MOB - DOC - NAMING
-PUBLIC int espLoadConfig(HttpRoute *route);
-PUBLIC int espInitParser();
-PUBLIC void espSetDir(HttpRoute *route, cchar *name, cchar *value);
-PUBLIC EspRoute *espCreateRoute(HttpRoute *route);
+/**
+    Load an ESP module
+    @param route Parent route from which to inherit configuration.
+    @param dispatcher Dispatcher to use when waiting for compilation commands
+    @param kind Type of module. Set to "view" or "controller" or "app".
+    @param source Path to source code for the module
+    @param errMsg Output string reference to receive any error messages.
+    @returns Zero if successful, otherwise a negative MPR error code.
+    @ingroup EspRoute
+    @stability Prototype
+ */
+PUBLIC int espLoadModule(HttpRoute *route, MprDispatcher *dispatcher, cchar *kind, cchar *source, cchar **errMsg);
 
 /**
     Save the in-memory ESP package.json configuration to the default location for the ESP application

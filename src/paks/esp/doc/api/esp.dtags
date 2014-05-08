@@ -39,6 +39,13 @@
     </member>
     <member kind="function">
       <type>int</type>
+      <name>espApp</name>
+      <anchorfile>group___esp_route.html</anchorfile>
+      <anchor>gad01dbff7dee8ea0cf2f2804f46f47ae7</anchor>
+      <arglist>(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
       <name>espBindProc</name>
       <anchorfile>group___esp_route.html</anchorfile>
       <anchor>ga0d812aed0ff96f0ffa281860270e8910</anchor>
@@ -106,6 +113,13 @@
       <anchorfile>group___esp_route.html</anchorfile>
       <anchor>gab784ceb8c6581201c05c93729f733b6c</anchor>
       <arglist>(HttpRoute *route, cchar *name)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>espLoadModule</name>
+      <anchorfile>group___esp_route.html</anchorfile>
+      <anchor>ga24a90a6be3709ef846828deb50ceb0c8</anchor>
+      <arglist>(HttpRoute *route, MprDispatcher *dispatcher, cchar *kind, cchar *source, cchar **errMsg)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -1484,6 +1498,13 @@
       <name>actions</name>
       <anchorfile>struct_esp.html</anchorfile>
       <anchor>a69abe25c82410c2d1f1f2ebe679f3fcf</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>int</type>
+      <name>canCompile</name>
+      <anchorfile>struct_esp.html</anchorfile>
+      <anchor>a351e3545dfe7dbcee2e5c753c7d1bc48</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">

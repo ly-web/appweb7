@@ -4073,7 +4073,7 @@ static int runAction(HttpConn *conn)
     key = mprJoinPath(controllersDir, rx->target);
     if (!route->combine && (route->update || !mprLookupKey(esp->actions, key))) {
         cchar *errMsg;
-        if (!espLoadModule(route, conn->dispatcher, "controller", source, &errMsg)) {
+        if (espLoadModule(route, conn->dispatcher, "controller", source, &errMsg) < 0) {
             httpError(conn, HTTP_CODE_NOT_FOUND, "%s", errMsg);
             return 0;
         }
@@ -4147,7 +4147,7 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
         cchar *errMsg;
         /* WARNING: GC yield */
         mprHold(source);
-        if (!espLoadModule(route, conn->dispatcher, "view", source, &errMsg)) {
+        if (espLoadModule(route, conn->dispatcher, "view", source, &errMsg) < 0) {
             mprRelease(source);
             httpError(conn, HTTP_CODE_NOT_FOUND, "%s", errMsg);
             return;
@@ -4256,7 +4256,7 @@ static char *getModuleEntry(EspRoute *eroute, cchar *kind, cchar *source, cchar 
 /*
     WARNING: GC yield
  */
-PUBLIC bool espLoadModule(HttpRoute *route, MprDispatcher *dispatcher, cchar *kind, cchar *source, cchar **errMsg)
+PUBLIC int espLoadModule(HttpRoute *route, MprDispatcher *dispatcher, cchar *kind, cchar *source, cchar **errMsg)
 {
     EspRoute    *eroute;
     MprModule   *mp;
@@ -4287,7 +4287,7 @@ PUBLIC bool espLoadModule(HttpRoute *route, MprDispatcher *dispatcher, cchar *ki
         if (!mprPathExists(source, R_OK)) {
             *errMsg = sfmt("Cannot find %s \"%s\" to load", kind, source);
             unlock(esp);
-            return 0;
+            return MPR_ERR_CANT_FIND;
         }
         if (espModuleIsStale(source, module, &recompile) || (isView && layoutIsStale(eroute, source, module))) {
             if (recompile) {
@@ -4295,7 +4295,7 @@ PUBLIC bool espLoadModule(HttpRoute *route, MprDispatcher *dispatcher, cchar *ki
                 if (!espCompile(route, dispatcher, source, module, cacheName, isView, (char**) errMsg)) {
                     mprReleaseBlocks(source, module, cacheName, NULL);
                     unlock(esp);
-                    return 0;
+                    return MPR_ERR_CANT_WRITE;
                 }
                 mprReleaseBlocks(source, module, cacheName, NULL);
             }
@@ -4308,17 +4308,17 @@ PUBLIC bool espLoadModule(HttpRoute *route, MprDispatcher *dispatcher, cchar *ki
         if ((mp = mprCreateModule(source, module, entry, route)) == 0) {
             *errMsg = "Memory allocation error loading module";
             unlock(esp);
-            return 0;
+            return MPR_ERR_MEMORY;
         }
         mprLog(3, "espLoadModule: \"%s\", %s", kind, source);
         if (mprLoadModule(mp) < 0) {
             *errMsg = "Cannot load compiled esp module";
             unlock(esp);
-            return 0;
+            return MPR_ERR_CANT_READ;
         }
     }
     unlock(esp);
-    return 1;
+    return 0;
 }
 
 
@@ -4616,7 +4616,7 @@ PUBLIC void espAddHomeRoute(HttpRoute *parent)
 /*
     Define an ESP Application
  */
-PUBLIC int espApp(MaState *state, HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet)
+PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet)
 {
     EspRoute    *eroute;
     MprJson     *preload, *item;
@@ -4674,7 +4674,7 @@ PUBLIC int espApp(MaState *state, HttpRoute *route, cchar *dir, cchar *name, cch
                 source = stok(sclone(item->value), ":", &kind);
                 if (!kind) kind = "controller";
                 source = mprJoinPath(httpGetDir(route, "controllers"), source);
-                if (!espLoadModule(route, NULL, kind, source, &errMsg)) {
+                if (espLoadModule(route, NULL, kind, source, &errMsg) < 0) {
                     mprError("Cannot preload esp module %s. %s", source, errMsg);
                     return MPR_ERR_CANT_LOAD;
                 }
@@ -4767,7 +4767,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
             return MPR_ERR_BAD_STATE;
         }
     }
-    if (espApp(state, route, dir, name, prefix, routeSet) < 0) {
+    if (espApp(route, dir, name, prefix, routeSet) < 0) {
         return MPR_ERR_CANT_CREATE;
     }
     if (prefix) {

@@ -644,7 +644,7 @@ static void initialize(int argc, char **argv)
         }
     } else {
         if (mprPathExists("package.json", R_OK) && mprGetJsonObj(app->config, "app.esp") != 0) {
-            if (espApp(NULL, route, ".", app->appName, 0, 0) < 0) {
+            if (espApp(route, ".", app->appName, 0, 0) < 0) {
                 fail("Cannot create ESP app");
                 return;
             }
