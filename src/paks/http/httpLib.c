@@ -15769,6 +15769,7 @@ PUBLIC Http *httpCreate(int flags)
     http->monitorMinPeriod = MAXINT;
     http->secret = mprGetRandomString(HTTP_MAX_SECRET);
     http->localPlatform = slower(sfmt("%s-%s-%s", ME_OS, ME_CPU, ME_PROFILE));
+    httpSetPlatform(http->localPlatform);
 
     updateCurrentDate();
     http->statusCodes = mprCreateHash(41, MPR_HASH_STATIC_VALUES | MPR_HASH_STATIC_KEYS | MPR_HASH_STABLE);
@@ -16869,79 +16870,35 @@ PUBLIC int httpParsePlatform(cchar *platform, cchar **osp, cchar **archp, cchar 
 }
 
 
-/*
-    Set the platform and platform objects location
-    PlatformPath may be a platform spec that must be located, or it may be a complete path to the platform output directory.
-    If platformPath is null, the local platform definition is used.
-    Probe is the name of the primary executable program in the platform bin directory.
- */
-PUBLIC int httpSetPlatform(cchar *platformPath, cchar *probe)
+PUBLIC int httpSetPlatform(cchar *platform)
 {
-    Http            *http;
-    MprDirEntry     *dp;
-    cchar           *platform, *dir, *junk, *path;
-    int             next, i;
+    Http    *http;
+    cchar   *junk;
 
     http = MPR->httpService;
-    http->platform = http->platformDir = 0;
-
-    if (!platformPath) {
-        platformPath = http->localPlatform;
-    }
-    platform = mprGetPathBase(platformPath);
-
-    if (mprPathExists(mprJoinPath(platformPath, probe), R_OK)) {
-        http->platform = platform;
-        http->platformDir = sclone(platformPath);
-
-    } else if (smatch(platform, http->localPlatform)) {
-        /*
-            Check probe with current executable
-         */
-        path = mprJoinPath(mprGetPathDir(mprGetAppDir()), probe);
-        if (mprPathExists(path, R_OK)) {
-            http->platform = http->localPlatform;
-            http->platformDir = mprGetPathParent(mprGetAppDir());
-
-        } else {
-            /*
-                Check probe with installed product
-             */
-            if (mprPathExists(mprJoinPath(ME_VAPP_PREFIX, probe), R_OK)) {
-                http->platform = http->localPlatform;
-                http->platformDir = sclone(ME_VAPP_PREFIX);
-            }
-        }
-    }
-    
-    /*
-        Last chance. Search up the tree for a similar platform directory.
-        This permits specifying a partial platform like "vxworks" without architecture and profile.
-     */
-    if (!http->platformDir) {
-        dir = mprGetCurrentPath();
-        for (i = 0; !mprSamePath(dir, "/") && i < 64; i++) {
-            for (ITERATE_ITEMS(mprGetPathFiles(dir, 0), dp, next)) {
-                if (dp->isDir && sstarts(mprGetPathBase(dp->name), platform)) {
-                    path = mprJoinPath(dir, dp->name);
-                    if (mprPathExists(mprJoinPath(path, probe), R_OK)) {
-                        http->platform = mprGetPathBase(dp->name);
-                        http->platformDir = mprJoinPath(dir, dp->name);
-                        break;
-                    }
-                }
-            }
-            dir = mprGetPathParent(dir);
-        }
-    }
-    if (!http->platform) {
-        return MPR_ERR_CANT_FIND;
-    }
-    if (httpParsePlatform(http->platform, &junk, &junk, &junk) < 0) {
+    if (platform && httpParsePlatform(platform, &junk, &junk, &junk) < 0) {
         return MPR_ERR_BAD_ARGS;
     }
-    http->platformDir = mprGetAbsPath(http->platformDir);
-    mprLog(2, "Using platform %s at \"%s\"", http->platform, mprGetRelPath(http->platformDir, 0));
+    http->platform = platform ? sclone(platform) : http->localPlatform;
+    mprLog(2, "Using platform %s", http->platform);
+    return 0;
+}
+
+
+/*
+    Set the platform objects location
+ */
+PUBLIC int httpSetPlatformDir(cchar *path)
+{
+    Http    *http;
+
+    http = MPR->httpService;
+    if (path) {
+        http->platformDir = mprGetAbsPath(path);
+    } else {
+        http->platformDir = mprGetPathDir(mprGetPathDir(mprGetAppPath()));
+    }
+    mprLog(2, "Using platform directory \"%s\"", mprGetRelPath(http->platformDir, 0));
     return 0;
 }
 

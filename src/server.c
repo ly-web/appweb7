@@ -31,10 +31,6 @@ PUBLIC MaAppweb *maCreateAppweb()
     appweb->http = http = httpCreate(HTTP_CLIENT_SIDE | HTTP_SERVER_SIDE);
     httpSetContext(http, appweb);
     appweb->servers = mprCreateList(-1, MPR_LIST_STABLE);
-#if UNUSED
-    appweb->localPlatform = slower(sfmt("%s-%s-%s", ME_OS, ME_CPU, ME_PROFILE));
-    maGetUserGroup(appweb);
-#endif
     maParseInit(appweb);
     /* 
        Open the builtin handlers 
@@ -43,9 +39,6 @@ PUBLIC MaAppweb *maCreateAppweb()
     maOpenDirHandler(http);
 #endif
     maOpenFileHandler(http);
-#if UNUSED
-    httpSetPlatform(NULL, "bin/appweb" ME_EXE);
-#endif
     return appweb; 
 }
 
@@ -57,13 +50,6 @@ static void manageAppweb(MaAppweb *appweb, int flags)
         mprMark(appweb->servers);
         mprMark(appweb->directives);
         mprMark(appweb->http);
-#if UNUSED
-        mprMark(appweb->user);
-        mprMark(appweb->group);
-        mprMark(appweb->localPlatform);
-        mprMark(appweb->platform);
-        mprMark(appweb->platformDir);
-#endif
     }
 }
 
@@ -96,18 +82,7 @@ PUBLIC MaServer *maLookupServer(MaAppweb *appweb, cchar *name)
 
 PUBLIC int maStartAppweb(MaAppweb *appweb)
 {
-#if UNUSED
-    MaServer    *server;
-    int         next;
-
-    for (next = 0; (server = mprGetNextItem(appweb->servers, &next)) != 0; ) {
-        if (maStartServer(server) < 0) {
-            return MPR_ERR_CANT_INITIALIZE;
-        }
-    }
-#else
     httpStartEndpoints();
-#endif
     mprLog(1, "Started at %s", mprGetDate(0));
     return 0;
 }
@@ -115,17 +90,8 @@ PUBLIC int maStartAppweb(MaAppweb *appweb)
 
 PUBLIC int maStopAppweb(MaAppweb *appweb)
 {
-#if UNUSED
-    MaServer  *server;
-    int     next;
-
-    for (next = 0; (server = mprGetNextItem(appweb->servers, &next)) != 0; ) {
-        maStopServer(server);
-    }
-#else
     httpStopConnections(0);
     httpStopEndpoints();
-#endif
     return 0;
 }
 
@@ -263,9 +229,6 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
 #endif
             httpAddRouteHandler(route, "fileHandler", "");
         }
-#if UNUSED
-        httpFinalizeRoute(route);
-#endif
     }
     return 0;
 }

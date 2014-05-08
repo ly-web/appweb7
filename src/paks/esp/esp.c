@@ -560,7 +560,7 @@ static void setupRequirements(int argc, char **argv)
 
 static void initRuntime()
 {
-    cchar   *home, *probe;
+    cchar   *home;
 
     if (app->error) {
         return;
@@ -590,13 +590,15 @@ static void initRuntime()
     appweb = MPR->appwebService = app->appweb;
     http = app->appweb->http;
 
-    probe = sfmt("bin/%s%s", mprGetAppName(), ME_EXE);
-    httpSetPlatform(app->platform, probe);
-    if (!http->platform) {
+    if (app->platform) {
+        httpSetPlatformDir(app->platform);
+    } else {
+        app->platform = http->platform;
+        httpSetPlatformDir(0);
+    }
+    if (!http->platformDir) {
         if (app->platform) {
             fail("Cannot find platform: \"%s\"", app->platform);
-        } else {
-            fail("Cannot find ESP platform files containing \"%s\"", probe);
         }
         return;
     }

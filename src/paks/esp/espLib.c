@@ -4343,7 +4343,7 @@ static bool loadApp(HttpRoute *route, MprDispatcher *dispatcher)
         source = mprJoinPath(httpGetDir(route, "src"), "app.c");
     }
     if (mprPathExists(source, R_OK)) {
-        if (!espLoadModule(route, dispatcher, "app", source, &errMsg)) {
+        if (espLoadModule(route, dispatcher, "app", source, &errMsg) < 0) {
             mprError("%s", errMsg);
             return 0;
         }
@@ -5259,7 +5259,7 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
 {
     HttpStage   *handler;
     MaAppweb    *appweb;
-    cchar       *path, *probe;
+    cchar       *path;
 
     appweb = httpGetContext(http);
 
@@ -5322,24 +5322,12 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
         Load the esp.conf directives to compile esp
      */
     path = mprJoinPath(mprGetAppDir(), "esp.conf");
-    if (mprPathExists(path, R_OK)) {
-        /*
-            May need to compile, so set the platform information and location
-         */
-        if (!http->platform || !http->platformDir) {
-            probe = sfmt("bin/%s", mprGetPathBase(mprGetAppPath()));
-            if (httpSetPlatform(NULL, probe) < 0) {
-                mprError("Cannot find ESP platform for %s", probe);
-                /* Not a hard error */
-            }
+    if (mprPathExists(path, R_OK) && (http->platformDir || httpSetPlatformDir(0) == 0)) {
+        if (maParseFile(NULL, mprJoinPath(mprGetAppDir(), "esp.conf")) < 0) {
+            mprError("Cannot parse %s", path);
+            return MPR_ERR_CANT_OPEN;
         }
-        if (http->platform && http->platformDir) {
-            if (maParseFile(NULL, mprJoinPath(mprGetAppDir(), "esp.conf")) < 0) {
-                mprError("Cannot parse %s", path);
-                return MPR_ERR_CANT_OPEN;
-            }
-            esp->canCompile = 1;
-        }
+        esp->canCompile = 1;
     }
     return 0;
 }

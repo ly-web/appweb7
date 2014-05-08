@@ -821,18 +821,25 @@ PUBLIC void httpSetDefaultClientPort(Http *http, int port);
 PUBLIC int httpSetGroupAccount(cchar *group);
 
 /**
-    Set platform and platform directory location
+    Set platform description
     @description Some web frameworks need to recompile sources before serving requests (ESP).
         These need access to the http libraries to link with.
-    @param platform Platform string of the form: OS-ARCH-PROFILE. This may also be a full path to the platform
-        directory.
-    @param probe file to search for when identifying a platform directory. This should be a relative path from
-        the platform directory to file in the platform directory.
+    @param platform Platform string of the form: OS-ARCH-PROFILE.
+    @return Zero if the platform string parses, otherwise a negative Mpr error code.
+    @ingroup Http
+    @stability Prototype
+ */
+PUBLIC int httpSetPlatform(cchar *platform);
+
+/**
+    Set platform directory location
+    @description Set the platform directory location which contains libraries and headers for the application.
+    @param platform Path to the platform directory.
     @return Zero if successful, otherwise a negative Mpr error code.
     @ingroup Http
     @stability Prototype
  */
-PUBLIC int httpSetPlatform(cchar *platform, cchar *probe);
+PUBLIC int httpSetPlatformDir(cchar *platform);
 
 /** 
     Define a Http proxy host to use for all client connect requests.
