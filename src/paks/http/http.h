@@ -369,7 +369,7 @@ typedef struct HttpMonitor {
 } HttpMonitor;
 
 /**
-    Per-IP address structure.
+    Per-IP address structure
     @ingroup HttpMonitor HttpMonitor
     @stability Internal
  */

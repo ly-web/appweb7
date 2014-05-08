@@ -4452,16 +4452,18 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
         return 0;
     }
     address = conn->address;
-    if (address && address->banUntil > http->now) {
-        if (address->banStatus) {
-            httpError(conn, HTTP_CLOSE | address->banStatus, 
-                "Connection refused, client banned: %s", address->banMsg ? address->banMsg : "");
-        } else if (address->banMsg && address->banMsg) {
-            httpError(conn, HTTP_CLOSE | HTTP_CODE_NOT_ACCEPTABLE, 
-                "Connection refused, client banned: %s", address->banMsg ? address->banMsg : "");
+    if (address && address->banUntil) {
+        if (address->banUntil < http->now) {
+            mprLog(1, "Remove ban on client %s at %s", sock->ip, mprGetDate(0));
+            address->banUntil = 0;
         } else {
-            httpDestroyConn(conn);
-            return 0;
+            if (address->banStatus) {
+                httpError(conn, HTTP_CLOSE | address->banStatus, 
+                    "Connection refused, client banned: %s", address->banMsg ? address->banMsg : "");
+            } else {
+                httpDestroyConn(conn);
+                return 0;
+            }
         }
     }
     if (endpoint->ssl) {
@@ -6878,7 +6880,7 @@ static void invokeDefenses(HttpMonitor *monitor, MprHash *args)
             kp->data = stemplate(kp->data, args);
         }
         mprBlendHash(args, extra);
-        mprLog(1, "Defense \"%s\" activated. Running remedy \"%s\".", defense->name, defense->remedy);
+        mprLog(4, "Defense \"%s\" running remedy \"%s\".", defense->name, defense->remedy);
 
         /*  WARNING: yields */
         remedyProc(args);
@@ -6942,16 +6944,13 @@ PUBLIC void httpPruneMonitors()
     period = max(http->monitorMaxPeriod, 15 * MPR_TICKS_PER_SEC);
     lock(http->addresses);
     for (ITERATE_KEY_DATA(http->addresses, kp, address)) {
-        if ((address->updated + period) < http->now) {
-            if (address->banUntil) {
-                if (address->banUntil < http->now) {
-                    mprLog(1, "Remove ban on client %s", kp->key);
-                    mprRemoveKey(http->addresses, kp->key);
-                }
-            } else {
-                mprRemoveKey(http->addresses, kp->key);
-                /* Safe to keep iterating after removal of key */
-            }
+        if (address->banUntil && address->banUntil < http->now) {
+            mprLog(1, "Remove ban on client %s at %s", kp->key, mprGetDate(0));
+            address->banUntil = 0;
+        }
+        if ((address->updated + period) < http->now && address->banUntil == 0) {
+            mprRemoveKey(http->addresses, kp->key);
+            /* Safe to keep iterating after removal of key */
         }
     }
     unlock(http->addresses);
@@ -7293,13 +7292,15 @@ PUBLIC int httpBanClient(cchar *ip, MprTicks period, int status, cchar *msg)
         mprLog(1, "Cannot find client %s to ban", ip);
         return MPR_ERR_CANT_FIND;
     }
+    if (address->banUntil < http->now) {
+        mprLog(1, "httpBanClient: %s banned for %Ld secs at %s", ip, period / 1000, mprGetDate(0));
+    }
     banUntil = http->now + period;
     address->banUntil = max(banUntil, address->banUntil);
     if (msg && *msg) {
         address->banMsg = sclone(msg);
     }
     address->banStatus = status;
-    mprLog(1, "Client %s banned for %Ld secs", ip, period / 1000);
     return 0;
 }
 
@@ -7346,7 +7347,7 @@ static void cmdRemedy(MprHash *args)
         data = stok(command, "|", &command);
         data = stemplate(data, args);
     }
-    mprTrace(1, "Run cmd remedy: %s", command);
+    mprLog(1, "Run cmd remedy: %s", command);
     command = strim(command, " \t", MPR_TRIM_BOTH);
     if ((background = (sends(command, "&"))) != 0) {
         command = strim(command, "&", MPR_TRIM_END);
@@ -7358,7 +7359,7 @@ static void cmdRemedy(MprHash *args)
         mprError("Cannot start command: %s", command);
         return;
     }
-    mprLog(1, "Cmd data: \n%s", data);
+    mprLog(4, "Cmd data: \n%s", data);
     if (data && mprWriteCmdBlock(cmd, MPR_CMD_STDIN, data, -1) < 0) {
         mprError("Cannot write to command: %s", command);
         return;
@@ -16833,18 +16834,36 @@ PUBLIC int httpApplyChangedGroup()
 }
 
 
-PUBLIC int httpParsePlatform(cchar *platform, cchar **os, cchar **arch, cchar **profile)
+PUBLIC int httpParsePlatform(cchar *platform, cchar **osp, cchar **archp, cchar **profilep)
 {
-    char   *rest;
+    char   *arch, *os, *profile, *rest;
 
+    if (osp) {
+        *osp = 0;
+    }
+    if (archp) {
+       *archp = 0;
+    }
+    if (profilep) {
+       *profilep = 0;
+    }
     if (platform == 0 || *platform == '\0') {
         return MPR_ERR_BAD_ARGS;
     }
-    *os = stok(sclone(platform), "-", &rest);
-    *arch = sclone(stok(NULL, "-", &rest));
-    *profile = sclone(rest);
-    if (*os == 0 || *arch == 0 || *profile == 0 || **os == '\0' || **arch == '\0' || **profile == '\0') {
+    os = stok(sclone(platform), "-", &rest);
+    arch = sclone(stok(NULL, "-", &rest));
+    profile = sclone(rest);
+    if (os == 0 || arch == 0 || profile == 0 || *os == '\0' || *arch == '\0' || *profile == '\0') {
         return MPR_ERR_BAD_ARGS;
+    }
+    if (osp) {
+        *osp = os;
+    }
+    if (archp) {
+       *archp = arch;
+    }
+    if (profilep) {
+       *profilep = profile;
     }
     return 0;
 }
@@ -16922,7 +16941,7 @@ PUBLIC int httpSetPlatform(cchar *platformPath, cchar *probe)
         return MPR_ERR_BAD_ARGS;
     }
     http->platformDir = mprGetAbsPath(http->platformDir);
-    mprLog(1, "Using platform %s at \"%s\"", http->platform, http->platformDir);
+    mprLog(2, "Using platform %s at \"%s\"", http->platform, mprGetRelPath(http->platformDir, 0));
     return 0;
 }
 
