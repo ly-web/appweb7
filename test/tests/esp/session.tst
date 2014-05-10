@@ -34,10 +34,11 @@ if (http.header("Set-Cookie")) {
 }
 http.close()
 
-
 //  GET /session/login
 http.setCookie(cookie)
 http.get(HTTP + "/session/login")
 assert(http.status == 200)
+print("RESPONSE", http.response)
+print("HEADERS", http.headers)
 assert(http.response.contains("Logged in"))
 http.close()
