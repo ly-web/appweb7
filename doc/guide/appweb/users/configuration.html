@@ -131,15 +131,14 @@ AddHandler fileHandler html
             web server to serve unique content for different domains or IP addresses.</p>
             <p>Here is an example of an IP-based virtual host.</p>
             <pre>
-&lt;VirtualHost 206.148.97.56&gt;
+&lt;VirtualHost&gt;
     Documents /var/www/mycorp
     ...
 &lt;/VirtualHost&gt;
 </pre>
             <p>Here is an example of a Name-based virtual host.</p>
             <pre>
-NameVirtualHost 206.148.96.56
-&lt;VirtualHost 206.148.97.56&gt;
+&lt;VirtualHost&gt;
     ServerName www.mycorp.org
     Documents /var/www/mycorp
     ...
@@ -521,10 +520,6 @@ Include conf/applications/*.conf
                     <tr>
                         <td><a href="dir/route.html#monitor">Monitor</a></td>
                         <td>Monitor a resource for attacks and trigger a defensive response.</td>
-                    </tr>
-                    <tr>
-                        <td><a href="dir/vhost.html#namedVirtualHost">NameVirtualHost</a></td>
-                        <td>Nominate an IP address for name-based virtual hosting.</td>
                     </tr>
                     <tr>
                         <td><a href="dir/dir.html#options">Options</a></td>

@@ -1830,12 +1830,16 @@ static int nameDirective(MaState *state, cchar *key, cchar *value)
  */
 static int nameVirtualHostDirective(MaState *state, cchar *key, cchar *value)
 {
+#if DEPRECATED
     char    *ip;
     int     port;
 
     mprTrace(4, "NameVirtual Host: %s ", value);
     mprParseSocketAddress(value, &ip, &port, NULL, -1);
     httpConfigureNamedVirtualEndpoints(state->http, ip, port);
+#else
+    mprError("The NameVirtualHost directive is no longer needed");
+#endif
     return 0;
 }
 
@@ -2544,11 +2548,15 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
         httpSetHostDefaultRoute(state->host, state->route);
 
         /* Set a default host and route name */
-        httpSetHostName(state->host, stok(sclone(value), " \t,", NULL));
-        httpSetRouteName(state->route, sfmt("default-%s", state->host->name));
-
-        /* Save the endpoints until the close of the vhost. Do this so the vhost block can do the Listen */
-        state->endpoints = sclone(value);
+        if (value) {
+            httpSetHostName(state->host, stok(sclone(value), " \t,", NULL));
+            httpSetRouteName(state->route, sfmt("default-%s", state->host->name));
+            /*
+                Save the endpoints until the close of the VirtualHost to closeVirtualHostDirective can
+                add the virtual host to the specified endpoints.
+             */
+            state->endpoints = sclone(value);
+        }
     }
     return 0;
 }
@@ -2563,17 +2571,21 @@ static int closeVirtualHostDirective(MaState *state, cchar *key, cchar *value)
     char            *address, *ip, *addresses, *tok;
     int             port;
 
-    if (state->enabled && state->endpoints) {
-        addresses = state->endpoints;
-        while ((address = stok(addresses, " \t,", &tok)) != 0) {
-            addresses = 0;
-            mprParseSocketAddress(address, &ip, &port, NULL, -1);
-            if ((endpoint = httpLookupEndpoint(state->http, ip, port)) == 0) {
-                mprError("Cannot find listen directive for virtual host %s", address);
-                return MPR_ERR_BAD_SYNTAX;
-            } else {
-                httpAddHostToEndpoint(endpoint, state->host);
+    if (state->enabled) { 
+        if (state->endpoints && *state->endpoints) {
+            addresses = state->endpoints;
+            while ((address = stok(addresses, " \t,", &tok)) != 0) {
+                addresses = 0;
+                mprParseSocketAddress(address, &ip, &port, NULL, -1);
+                if ((endpoint = httpLookupEndpoint(state->http, ip, port)) == 0) {
+                    mprError("Cannot find listen directive for virtual host %s", address);
+                    return MPR_ERR_BAD_SYNTAX;
+                } else {
+                    httpAddHostToEndpoint(endpoint, state->host);
+                }
             }
+        } else {
+            httpAddHostToEndpoints(state->host);
         }
     }
     closeDirective(state, key, value);
@@ -3169,7 +3181,9 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "MinWorkers", minWorkersDirective);
     maAddDirective(appweb, "Monitor", monitorDirective);
     maAddDirective(appweb, "Name", nameDirective);
+#if DEPRECATED || 1
     maAddDirective(appweb, "NameVirtualHost", nameVirtualHostDirective);
+#endif
     maAddDirective(appweb, "Order", orderDirective);
     maAddDirective(appweb, "Param", paramDirective);
     maAddDirective(appweb, "Prefix", prefixDirective);

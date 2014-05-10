@@ -60,7 +60,6 @@ extern "C" {
 #if !DOXYGEN
 struct MaAppweb;
 struct MaServer;
-struct MaSsl;
 struct MaState;
 #endif
 
@@ -78,17 +77,6 @@ typedef struct MaAppweb {
     MprList             *servers;               /**< List of server objects */
     MprHash             *directives;            /**< Config file directives */
     Http                *http;                  /**< Http service object */
-#if UNUSED
-    cchar               *group;                 /**< O/S application group name */
-    cchar               *localPlatform;         /**< Local (dev) platform os-arch-profile (lower case) */
-    cchar               *platform;              /**< Target platform os-arch-profile (lower case) */
-    cchar               *platformDir;           /**< Path to platform directory containing binaries */
-    cchar               *user;                  /**< O/S application user name */
-    int                 uid;                    /**< User Id */
-    int                 gid;                    /**< Group Id */
-    int                 userChanged;            /**< User name changed */
-    int                 groupChanged;           /**< Group name changed */
-#endif
     int                 staticLink;             /**< Target platform is using a static linking */
 } MaAppweb;
 
@@ -103,27 +91,6 @@ typedef struct MaAppweb {
  */
 PUBLIC void maAddServer(MaAppweb *appweb, struct MaServer *server);
 
-#if UNUSED
-/**
-    Apply the changed Appweb group ID.
-    @description Apply configuration changes and actually change the Appweb group id
-    @param appweb Appweb object created via #maCreateAppweb
-    @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
-    @ingroup MaAppweb
-    @stability Stable
- */
-PUBLIC int maApplyChangedGroup(MaAppweb *appweb);
-
-/**
-    Apply the changed Appweb user ID
-    @description Apply configuration changes and actually change the Appweb user id
-    @param appweb Appweb object created via #maCreateAppweb
-    @ingroup MaAppweb
-    @stability Stable
- */
-PUBLIC int maApplyChangedUser(MaAppweb *appweb);
-#endif
-
 /** 
     Create the Appweb object.
     @description Appweb uses a singleton Appweb object to manage multiple web servers instances.
@@ -132,17 +99,6 @@ PUBLIC int maApplyChangedUser(MaAppweb *appweb);
     @stability Stable
  */
 PUBLIC MaAppweb *maCreateAppweb();
-
-#if UNUSED
-/**
-    Get the user group
-    @description Get the user name and ID for appweb and update the MaAppweb object
-    @param appweb Appweb object created via #maCreateAppweb
-    @ingroup MaAppweb
-    @stability Internal
- */
-PUBLIC void maGetUserGroup(MaAppweb *appweb);
-#endif
 
 /**
     Load an appweb module
@@ -188,20 +144,6 @@ PUBLIC bool maRenderDirListing(HttpConn *conn);
  */
 PUBLIC int maParseInit(MaAppweb *appweb);
 
-#if UNUSED
-/**
-    Parse a platform string
-    @param platform The platform string. Must be of the form: os-arch-profile
-    @param os Parsed O/S portion
-    @param arch Parsed architecture portion
-    @param profile Parsed profile portion
-    @return Zero if successful, otherwise a negative Mpr error code.
-    @ingroup MaAppweb
-    @stability Internal
- */
-PUBLIC int maParsePlatform(cchar *platform, cchar **os, cchar **arch, cchar **profile);
-#endif
-
 /**
     Set the default server
     @param appweb Appweb object created via #maCreateAppweb
@@ -210,30 +152,6 @@ PUBLIC int maParsePlatform(cchar *platform, cchar **os, cchar **arch, cchar **pr
     @stability Internal
  */
 PUBLIC void maSetDefaultServer(MaAppweb *appweb, struct MaServer *server);
-
-#if UNUSED
-/**
-    Set the Http Group
-    @description Define the group name under which to run the Appweb service
-    @param appweb Appweb object created via #maCreateAppweb
-    @param group Group name. Must be defined in the system group file.
-    @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
-    @ingroup MaAppweb
-    @stability Stable
- */
-PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *group);
-
-/**
-    Set the Http User
-    @description Define the user name under which to run the Appweb service
-    @param appweb Appweb object created via #maCreateAppweb
-    @param user User name. Must be defined in the system password file.
-    @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
-    @ingroup MaAppweb
-    @stability Stable
- */
-PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *user);
-#endif
 
 /**
     Start Appweb services
@@ -463,8 +381,7 @@ PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path);
     Current configuration parse state
     @stability Evolving
     @defgroup MaState MaState
-    @see MaDirective MaState maAddDirective maArchiveLog maPopState maPushState maSetAccessLog maStartAccessLogging 
-        maStartLogging maStopAccessLogging maStopLogging maTokenize 
+    @seeMaDirective MaState maAddDirective maArchiveLog maPopState maPushState maTokenize
     @stability Internal
  */
 typedef struct MaState {
@@ -512,19 +429,7 @@ typedef int (MaDirective)(MaState *state, cchar *key, cchar *value);
  */
 PUBLIC void maAddDirective(MaAppweb *appweb, cchar *directive, MaDirective proc);
 
-/**
-    Archive a log file
-    @description The current log file is archived by appending ".1" to the log path name. If a "path.1" exists, it will
-        be renamed first to "path.2" and so on up to "path.count". 
-    @param path Current log file name
-    @param count Number of archived log files to preserve
-    @param maxSize Reserved
-    @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
-    @ingroup MaAppweb
-    @stability Stable
- */
-PUBLIC int maArchiveLog(cchar *path, int count, int maxSize);
-
+//  MOB DOC
 PUBLIC int maParseFile(MaState *state, cchar *path);
 
 /**
@@ -546,50 +451,6 @@ PUBLIC MaState *maPopState(MaState *state);
     @stability Stable
  */
 PUBLIC MaState *maPushState(MaState *state);
-
-/**
-    Define the access log
-    @description The access log is used to log details about requests to the web server. Errors are logged in the
-        error log.
-    @param route HttpRoute object for which to define the logging characteristics.
-    @param path Pathname for the log file
-    @param format Log file format. The format string argument defines how Appweb will record HTTP accesses to the 
-        access log. The following log format specifiers are supported:
-        <ul>
-            <li>%% - Percent sign</li>
-            <li>\%a - Remote IP address</li>
-            <li>\%b - Response bytes written to the client include headers. If zero, "-" is written.</li>
-            <li>\%B - Response bytes written excluding headers</li>
-            <li>\%h - Remote hostname</li>
-            <li>\%O - Bytes written include headers. If zero bytes, "0" is written.</li>
-            <li>\%r - First line of the request</li>
-            <li>\%s - HTTP response status code</li>
-            <li>\%t - Time the request was completed</li>
-            <li>\%u - Authenticated username</li>
-            <li>\%{header}i - HTTP header value</li>
-        </ul>
-    @ingroup MaAppweb
-    @stability Stable
- */
-PUBLIC void maSetAccessLog(HttpRoute *route, cchar *path, cchar *format);
-
-/**
-    Start access logging
-    @description Start access logging for a host
-    @param route HttpRoute object
-    @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
-    @ingroup MaAppweb
-    @stability Stable
- */
-PUBLIC int maStartAccessLogging(HttpRoute *route);
-
-/**
-    Stop access logging
-    @param route HttpRoute object
-    @ingroup MaAppweb
-    @stability Stable
- */
-PUBLIC void maStopAccessLogging(HttpRoute *route);
 
 /**
     Tokenize a string based on route data
@@ -614,7 +475,6 @@ PUBLIC void maStopAccessLogging(HttpRoute *route);
  */
 PUBLIC bool maTokenize(MaState *state, cchar *str, cchar *fmt, ...);
 
-
 /**
     Get the argument in a directive
     @description Break into arguments. Args may be quoted. An outer quoting of the entire arg is removed.
@@ -625,10 +485,6 @@ PUBLIC bool maTokenize(MaState *state, cchar *str, cchar *fmt, ...);
     @stability Evolving
 */
 PUBLIC char *maGetNextArg(char *s, char **tok);
-
-#if DEPRECATED
-PUBLIC char *maGetNextToken(char *s, char **tok);
-#endif
 
 #ifdef __cplusplus
 } /* extern C */

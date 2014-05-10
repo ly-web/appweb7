@@ -71,43 +71,47 @@
             <p>Virtual hosts are created by grouping configuration directives within a VirtualHost directive block.
             Directives within the block apply only to the virtual host.</p>
             <pre>
-&lt;VirtualHost 206.148.97.56&gt;
+&lt;VirtualHost&gt;
     ServerName www.acme.com
     Documents /var/www/acmeDocs
       ...
 &lt;/VirtualHost&gt;
 </pre>
-            <p>Before declaring a VirtualHost directive for name-based virtual hosting, you must use a <a href=
-            "dir/vhost.html#namedVirtualHost">NameVirtualHost</a> directive. This specifies that the given IP address
-            will use name-based hosting.</p><a id="nameBasedVirtualHosts"></a>
-            <h2 class="section">Name-based Virtual Hosts</h2>
-            <p>Name-based virtual hosts allow multiple virtual hosts to share an IP address by using the HTTP Host
-            header to distinguish which virtual host should service the request.</p>
-            <p>NOTE: Name-based virtual hosting cannot be used with the SSL protocol. You must use IP-based
-            hosting.</p>
-            <h3>Example</h3>
+            <p>The VirtualHost directive may optionally take a list of IP:PORT endpoints on which to attach. Only these
+            endpoints will be connected to the virtual host. For example:
             <pre>
-NameVirtualHost 206.148.97.56
-&lt;VirtualHost 206.148.97.56&gt;
+&lt;VirtualHost *:80, *:443&gt;
     ServerName www.acme.com
     Documents /var/www/acme
     ...
 &lt;/VirtualHost&gt;
-&lt;VirtualHost 206.148.97.56&gt;
+</pre>
+
+            <p>The VirtualHost directive creates a new Host and routes for that host. The settings of outer directives
+            are inherited, but the routes are not inherited.</p> 
+            <h2 class="section">Name-Based Virtual Hosts</h2>
+            <p>Name-based virtual hosts allow multiple virtual hosts to share an IP address by using the HTTP Host
+            header to distinguish which virtual host should service the request.</p>
+            <h3>Example</h3>
+            <pre>
+&lt;VirtualHost&gt;
+    ServerName www.acme.com
+    Documents /var/www/acme
+    ...
+&lt;/VirtualHost&gt;
+&lt;VirtualHost&gt;
     ServerName www.coyote.com
     Documents /var/www/coyote
     ...
 &lt;/VirtualHost&gt;
 </pre>
-            <p>In this example www.acme.com and www.coyote.com share the IP address 206.148.97.56. Note that the IP
-            address specified by the NameVirtualHost directive must match the IP address in the VirtualHost directive.
+            <p>In this example www.acme.com and www.coyote.com share the IP address 206.148.97.56. 
             You may specify port numbers with the IP addresses if you require a port other than port 80.</p>
-            <p>WARNING: Some very old clients may not include the Host header in their HTTP request and so may not be
-            able to use Name-based virtual hosting.</p><a id="ipBasedVirtualHosts"></a>
+
+            <a id="ipBasedVirtualHosts"></a>
             <h2 class="section">IP-based Virtual Hosts</h2>
             <p>IP-based virtual hosts allow multiple virtual hosts to be supported on a single server. Each IP-based
-            virtual host consumes a separate IP address. The SSL protocol is supported with IP-based virtual
-            hosting.</p>
+            virtual host consumes a separate IP address.</p>
             <pre>
 &lt;VirtualHost 206.148.97.56&gt;
     ServerName www.acme.com

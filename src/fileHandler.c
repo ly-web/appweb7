@@ -451,13 +451,13 @@ static int manageDir(HttpConn *conn)
         httpRedirect(conn, HTTP_CODE_MOVED_PERMANENTLY, uri);
         return HTTP_ROUTE_OK;
     }
-    if (route->indicies) {
+    if (route->indexes) {
         /*
             Ends with a "/" so do internal redirection to an index file
          */
-        for (ITERATE_ITEMS(route->indicies, index, next)) {
+        for (ITERATE_ITEMS(route->indexes, index, next)) {
             /*
-                Internal directory redirections. Transparently append index. Test indicies in order.
+                Internal directory redirections. Transparently append index. Test indexes in order.
              */
             path = mprJoinPath(tx->filename, index);
             if (mprPathExists(path, R_OK)) {
