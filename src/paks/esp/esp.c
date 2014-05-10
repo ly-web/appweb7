@@ -55,7 +55,7 @@ typedef struct App {
     cchar       *filterRoutePrefix;     /* Prefix of route to use for ESP configuration */
     cchar       *log;                   /* Arg for --log */
     cchar       *routeSet;              /* Desired route set package */
-    cchar       *mode;                  /* New esp.mode to use */
+    cchar       *mode;                  /* New app.mode to use */
     cchar       *module;                /* Compiled module name */
     cchar       *base;                  /* Base filename */
     cchar       *entry;                 /* Module entry point */
@@ -729,7 +729,7 @@ static void process(int argc, char **argv)
 
     } else if (smatch(cmd, "mode")) {
         if (argc < 2) {
-            char *args[1] = { "esp.mode" };
+            char *args[1] = { "app.mode" };
             editPackageValue(1, args);
         } else {
             setMode(argv[1]);
@@ -1105,7 +1105,7 @@ static void setMode(cchar *mode)
 {
     int     quiet;
 
-    setPackageKey("esp.mode", mode);
+    setPackageKey("app.mode", mode);
     quiet = app->quiet;
     app->quiet = 1;
     clean(0, NULL);
@@ -1154,6 +1154,7 @@ static void run(int argc, char **argv)
                     fail("Cannot create endpoint for 127.0.0.1:%d", 4000);
                     return;
                 }
+                httpAddHostToEndpoints(app->host);
             }
         } else for (i = 0; i < argc; i++) {
             address = argv[i++];
@@ -1162,9 +1163,9 @@ static void run(int argc, char **argv)
                 fail("Cannot create endpoint for %s:%d", ip, port);
                 return;
             }
+            httpAddHostToEndpoints(app->host);
         }
     }
-    httpAddHostToEndpoints(app->host);
     if (httpStartEndpoints() < 0) {
         mprError("Cannot start HTTP service, exiting.");
         return;
@@ -1402,17 +1403,17 @@ static MprList *getRoutes()
             continue;
         }
         if (filterRouteName) {
-            mprTrace(5, "Check route name %s, prefix %s with %s", route->name, route->startWith, filterRouteName);
+            mprTrace(6, "Check route name %s, prefix %s with %s", route->name, route->startWith, filterRouteName);
             if (!smatch(filterRouteName, route->name)) {
                 continue;
             }
         } else if (filterRoutePrefix) {
-            mprTrace(5, "Check route name %s, prefix %s with %s", route->name, route->startWith, filterRoutePrefix);
+            mprTrace(6, "Check route name %s, prefix %s with %s", route->name, route->startWith, filterRoutePrefix);
             if (!smatch(filterRoutePrefix, route->prefix) && !smatch(filterRoutePrefix, route->startWith)) {
                 continue;
             }
         } else {
-            mprTrace(5, "Check route name %s, prefix %s", route->name, route->startWith);
+            mprTrace(6, "Check route name %s, prefix %s", route->name, route->startWith);
         }
         parent = route->parent;
         if (parent && parent->eroute &&
@@ -1424,7 +1425,7 @@ static MprList *getRoutes()
             continue;
         }
         if (!requiredRoute(route)) {
-            mprTrace(5, "Skip route %s not required for selected targets", route->name);
+            mprTrace(7, "Skip route %s not required for selected targets", route->name);
             continue;
         }
         /*
@@ -1433,7 +1434,7 @@ static MprList *getRoutes()
         rp = 0;
         for (ITERATE_ITEMS(routes, rp, nextRoute)) {
             if (similarRoute(route, rp)) {
-                mprTrace(5, "Skip route %s because of prior similar route: %s", route->name, rp->name);
+                mprTrace(7, "Skip route %s because of prior similar route: %s", route->name, rp->name);
                 route = 0;
                 break;
             }
@@ -1623,7 +1624,8 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
             if (kind & ESP_SRC) {
                 mprAddItem(app->combineItems, sfmt("esp_app_%s", eroute->appName));
             } else if (eroute->appName && *eroute->appName) {
-                mprAddItem(app->combineItems, sfmt("esp_controller_%s_%s", eroute->appName, mprTrimPathExt(mprGetPathBase(source))));
+                mprAddItem(app->combineItems, 
+                    sfmt("esp_controller_%s_%s", eroute->appName, mprTrimPathExt(mprGetPathBase(source))));
             } else {
                 mprAddItem(app->combineItems, sfmt("esp_controller_%s", mprTrimPathExt(mprGetPathBase(source))));
             }
