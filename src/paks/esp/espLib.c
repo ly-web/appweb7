@@ -2760,8 +2760,7 @@ PUBLIC cchar *espCreateSession(HttpConn *conn)
 
 PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *action)
 {
-    EspRoute    *eroute;
-    Esp         *esp;
+    Esp     *esp;
 
     assert(route);
     assert(target && *target);
@@ -2769,7 +2768,6 @@ PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *action)
 
     esp = MPR->espService;
     if (target) {
-        eroute = route->eroute;
         mprAddKey(esp->actions, mprJoinPath(httpGetDir(route, "controllers"), target), action);
     }
 }
@@ -2781,10 +2779,9 @@ PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *action)
 PUBLIC void espDefineBase(HttpRoute *route, EspProc baseProc)
 {
     HttpRoute   *rp;
-    EspRoute    *eroute, *er;
+    EspRoute    *er;
     int         next;
 
-    eroute = route->eroute;
     for (ITERATE_ITEMS(route->host->routes, rp, next)) {
         if ((er = route->eroute) != 0) {
             if (smatch(httpGetDir(rp, "controllers"), httpGetDir(route, "controllers"))) {
@@ -4128,13 +4125,11 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
 {
     HttpRx      *rx;
     HttpRoute   *route;
-    EspRoute    *eroute;
     EspViewProc viewProc;
     cchar       *source;
     
     rx = conn->rx;
     route = rx->route;
-    eroute = route->eroute;
     
     if (name) {
         source = mprJoinPathExt(mprJoinPath(httpGetDir(route, "views"), name), ".esp");
@@ -4709,7 +4704,6 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
 static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpRoute   *route;
-    EspRoute    *eroute;
     cchar       *auth, *database, *name, *prefix, *dir, *routeSet, *combine;
     char        *option, *ovalue, *tok;
 
@@ -4757,7 +4751,6 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
         route = httpCreateInheritedRoute(state->route);
     }
     state->route = route;
-    eroute = route->eroute;
     if (auth) {
         if (httpSetAuthStore(route->auth, auth) < 0) {
             mprError("The %s AuthStore is not available on this platform", auth);
@@ -6057,7 +6050,6 @@ static char *joinLine(cchar *str, ssize *lenp)
 PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
         EspState *state, char **err)
 {
-    EspRoute    *eroute;
     EspState    top;
     EspParse    parse;
     MprBuf      *body;
@@ -6070,7 +6062,6 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
     assert(page);
 
     *err = 0;
-    eroute = route->eroute;
     if (!state) {
         assert(cacheName);
         state = &top;
