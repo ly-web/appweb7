@@ -764,7 +764,6 @@ static void clean(int argc, char **argv)
 {
     MprList         *files;
     MprDirEntry     *dp;
-    EspRoute        *eroute;
     HttpRoute       *route;
     cchar           *cacheDir, *path;
     int             next, nextFile;
@@ -773,7 +772,6 @@ static void clean(int argc, char **argv)
         return;
     }
     for (ITERATE_ITEMS(app->routes, route, next)) {
-        eroute = route->eroute;
         cacheDir = httpGetDir(route, "cache");
         if (cacheDir) {
             trace("clean", "Route \"%s\" at %s", route->name, route->documents);
@@ -1323,11 +1321,6 @@ static MprHash *getTargets(int argc, char **argv)
 
 static bool similarRoute(HttpRoute *r1, HttpRoute *r2)
 {
-    EspRoute    *e1, *e2;
-
-    e1 = r1->eroute;
-    e2 = r2->eroute;
-
     if (!smatch(r1->documents, r2->documents)) {
         return 0;
     }
@@ -1338,6 +1331,10 @@ static bool similarRoute(HttpRoute *r1, HttpRoute *r2)
         return 0;
     }
 #if UNUSED
+    EspRoute    *e1, *e2;
+    e1 = r1->eroute;
+    e2 = r2->eroute;
+
     for (dp = dirs; dp; dp++) {
         if (!smatch(httpGetDir(r1, dir), httpGetDir(r2, dir))) {
             return 0;
@@ -1819,13 +1816,9 @@ static bool selectResource(cchar *path, cchar *kind)
  */
 static void compileItems(HttpRoute *route)
 {
-    EspRoute    *eroute;
     MprDirEntry *dp;
     cchar       *path, *clientDir;
     int         next;
-
-    eroute = route->eroute;
-    assert(eroute);
 
     app->files = mprGetPathFiles(httpGetDir(route, "controllers"), MPR_PATH_DESCEND);
     for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
@@ -2477,13 +2470,11 @@ static void blendJson(MprJson *dest, cchar *toKey, MprJson *from, cchar *fromKey
 
 static bool blendSpec(cchar *name, cchar *version, MprJson *spec)
 {
-    EspRoute    *eroute;
     MprJson     *blend, *cp, *scripts;
     cchar       *script, *key;
     char        *major, *minor, *patch;
     int         i;
 
-    eroute = app->eroute;
     /*
         Before blending, expand ${var} references
      */
