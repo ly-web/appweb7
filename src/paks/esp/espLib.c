@@ -2431,17 +2431,19 @@ PUBLIC void stylesheets(cchar *patterns)
     if (!patterns || !*patterns) {
         version = espGetConfig(route, "version", "1.0.0");
         if (eroute->combineSheet) {
+            /* Previously computed combined stylesheet filename */
             scripts(eroute->combineSheet);
+
         } else if (espGetConfig(route, "app.http.content.combine[@=css]", 0)) {
             if (espGetConfig(route, "app.http.content.minify[@=css]", 0)) {
-                eroute->combineSheet = sfmt("all-%s.min.css", version);
+                eroute->combineSheet = sfmt("css/all-%s.min.css", version);
             } else {
-                eroute->combineSheet = sfmt("all-%s.css", version);
+                eroute->combineSheet = sfmt("css/all-%s.css", version);
             }
             stylesheets(eroute->combineSheet);
         } else {
             /*
-                Give priority to all.less over all.css
+                Not combining into a single stylesheet, so give priority to all.less over all.css if present
              */
             ext = espGetConfig(route, "app.http.content.stylesheets", "css");
             filename = mprJoinPathExt("css/all", ext);
@@ -2452,6 +2454,13 @@ PUBLIC void stylesheets(cchar *patterns)
                 path = mprJoinPath(clientDir, "css/all.less");
                 if (mprPathExists(path, R_OK)) {
                     stylesheets("css/all.less");
+                }
+            }
+            if (smatch(ext, "less")) {
+                /* Load a pure CSS incase some styles need to be applied before the lesssheet is parsed */
+                path = mprJoinPath(clientDir, "css/fix.css");
+                if (mprPathExists(path, R_OK)) {
+                    stylesheets("css/fix.css");
                 }
             }
         }

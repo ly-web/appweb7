@@ -583,12 +583,13 @@ static void initRuntime()
         return;
     }
     httpCreate(HTTP_SERVER_SIDE | HTTP_UTILITY);
+    http = MPR->httpService;
+
     if ((app->appweb = maCreateAppweb()) == 0) {
         fail("Cannot create HTTP service for %s", mprGetAppName());
         return;
     }
     appweb = MPR->appwebService = app->appweb;
-    http = app->appweb->http;
 
     if (app->platform) {
         httpSetPlatformDir(app->platform);
