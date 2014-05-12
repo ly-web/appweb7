@@ -483,16 +483,25 @@ static int getPostData(char **bufp, size_t *lenp)
 
     if ((contentLength = getenv("CONTENT_LENGTH")) != 0) {
         size = atoi(contentLength);
+        if (size < 0){
+            error("Content-Length must be >= 0, as per RFC2616 Section 14.13");
+            return -1;
+        }
         limit = size;
     } else {
         size = 4096;
         limit = INT_MAX;
     }
-    if ((buf = malloc(size + 1)) == 0) {
+    
+    bufsize = size + 1;
+    if (bufsize == 0){
+            error("bufsize overflowed");
+            return -1;
+    }
+    if ((buf = malloc(bufsize)) == 0) {
         error("Couldn't allocate memory to read post data");
         return -1;
     }
-    bufsize = size + 1;
     len = 0;
 
     while (len < limit) {
