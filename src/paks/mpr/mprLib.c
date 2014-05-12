@@ -25120,7 +25120,7 @@ static MprTestFailure *createFailure(MprTestGroup *gp, cchar *loc, cchar *messag
 }
 
 
-PUBLIC bool assertTrue(MprTestGroup *gp, cchar *loc, bool isTrue, cchar *msg)
+PUBLIC bool assertTrue(MprTestGroup *gp, cchar *loc, int isTrue, cchar *msg)
 {
     if (! isTrue) {
         gp->success = isTrue;
