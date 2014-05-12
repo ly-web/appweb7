@@ -7026,7 +7026,7 @@ PUBLIC cchar *mprGetThreadName(MprThread *thread);
     @param thread Thread object returned by #mprCreateThread
     @returns An integer MPR thread priority between 0 and 100 inclusive.
     @ingroup MprThread
-    @stability Stable
+    @stability Deprecated
  */
 PUBLIC int mprGetThreadPriority(MprThread *thread);
 
@@ -7040,7 +7040,7 @@ PUBLIC int mprGetThreadPriority(MprThread *thread);
         @li MPR_NORMAL_PRIORITY
         @li MPR_HIGH_PRIORITY
     @ingroup MprThread
-    @stability Stable
+    @stability Deprecated
  */
 PUBLIC void mprSetCurrentThreadPriority(int priority);
 
