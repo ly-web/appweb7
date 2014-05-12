@@ -20720,8 +20720,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     unlock(ws);
 
     mprYield(MPR_YIELD_STICKY);
-    if ((rc = select(maxfd, &readMask, &writeMask, NULL, &tval)) < 0) {
-    }
+    rc = select(maxfd, &readMask, &writeMask, NULL, &tval);
     mprClearWaiting();
     mprResetYield();
 
