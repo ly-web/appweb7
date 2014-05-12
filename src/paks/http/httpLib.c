@@ -16000,6 +16000,9 @@ PUBLIC void httpFinalize(HttpConn *conn)
         return;
     }
     tx->finalized = 1;
+    if (conn->rx->session) {
+        httpWriteSession(conn);
+    }
     httpFinalizeOutput(conn);
 }
 
