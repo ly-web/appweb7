@@ -35,6 +35,7 @@ if (http.header("Set-Cookie")) {
 http.close()
 
 //  GET /session/login
+App.sleep(1000);
 http.setCookie(cookie)
 http.get(HTTP + "/session/login")
 assert(http.status == 200)
