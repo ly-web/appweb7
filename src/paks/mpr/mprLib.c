@@ -1157,6 +1157,7 @@ static void sweeperThread(void *unused, MprThread *tp)
             mprWaitForCond(heap->gcCond, -1);
         }
         if (pauseGC || mprIsDestroyed()) {
+            heap->mustYield = 0;
             continue;
         }
         markAndSweep();
@@ -8798,6 +8799,7 @@ static void manageDiskFile(MprFile *file, int flags)
     } else if (flags & MPR_MANAGE_FREE) {
         if (file->fd >= 0) {
             close(file->fd);
+            file->fd = -1;
         }
     }
 }
