@@ -1909,7 +1909,7 @@ static int checkCert(MprSocket *sp)
     OpenSocket  *osp;
     X509        *cert;
     X509_NAME   *xSubject;
-    char        subject[512], issuer[512], peer[512], *dp, *pp;
+    char        subject[512], issuer[512], peer[512], *target, *certName, *tp;
 
     ssl = sp->ssl;
     osp = (OpenSocket*) sp->sslSocket;
