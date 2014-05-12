@@ -89,7 +89,6 @@ if (App.config.me_ejscript) {
         http.followRedirects = false
         http.get(HTTP + "/ejsProgram.ejs?redirect=http://www.redhat.com/")
         assert(http.status == 302)
-        http.close()
     }
 
     function quoting() {
