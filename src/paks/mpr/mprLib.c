@@ -14989,7 +14989,7 @@ PUBLIC MprMutex *mprInitLock(MprMutex *lock)
     pthread_mutex_init(&lock->cs, &attr);
     pthread_mutexattr_destroy(&attr);
 
-#elif BIT_WIN_LIKE && !BIT_DEBUG && CRITICAL_SECTION_NO_DEBUG_INFO && _WIN32_WINNT >= 0x0600
+#elif BIT_WIN_LIKE && !BIT_DEBUG && CRITICAL_SECTION_NO_DEBUG_INFO && BIT_64 && _WIN32_WINNT >= 0x0600
     InitializeCriticalSectionEx(&lock->cs, BIT_MPR_SPIN_COUNT, CRITICAL_SECTION_NO_DEBUG_INFO);
 
 #elif BIT_WIN_LIKE
@@ -15077,7 +15077,7 @@ PUBLIC MprSpin *mprInitSpinLock(MprSpin *lock)
     pthread_mutex_init(&lock->cs, &attr);
     pthread_mutexattr_destroy(&attr);
 
-#elif BIT_WIN_LIKE && !BIT_DEBUG && CRITICAL_SECTION_NO_DEBUG_INFO && _WIN32_WINNT >= 0x0600
+#elif BIT_WIN_LIKE && !BIT_DEBUG && CRITICAL_SECTION_NO_DEBUG_INFO && BIT_64 && _WIN32_WINNT >= 0x0600
     InitializeCriticalSectionEx(&lock->cs, BIT_MPR_SPIN_COUNT, CRITICAL_SECTION_NO_DEBUG_INFO);
 
 #elif BIT_WIN_LIKE
