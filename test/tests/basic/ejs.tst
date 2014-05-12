@@ -12,14 +12,12 @@ if (App.config.bit_ejscript) {
         http.get(HTTP + "/ejsProgram.ejs")
         assert(http.status == 200)
         deserialize(http.response)
-        http.close()
     }
 
     function forms() {
         http.get(HTTP + "/ejsProgram.ejs")
         assert(http.status == 200)
         deserialize(http.response)
-        http.close()
 
         /* 
             Not supporting caseless extension matching 
@@ -39,7 +37,6 @@ if (App.config.bit_ejscript) {
         let resp = deserialize(http.response)
         assert(resp.uri == "/SimpleAlias/ejsProgram.ejs")
         assert(resp.query == null)
-        http.close()
     }
     */
 
@@ -72,7 +69,6 @@ if (App.config.bit_ejscript) {
         assert(params["var3"] == "c")
         assert(params["name"] == "Peter")
         assert(params["address"] == "777 Mulberry Lane")
-        http.close()
     }
 
     function encoding() {
@@ -81,13 +77,11 @@ if (App.config.bit_ejscript) {
         assert(resp.query == "var%201=value%201")
         assert(resp.pathInfo == "/ejsProgram.ejs")
         assert(resp.params["var 1"] == "value 1")
-        http.close()
     }
 
     function status() {
         http.get(HTTP + "/ejsProgram.ejs?code=711")
         assert(http.status == 711)
-        http.close()
     }
 
     function location() {
@@ -95,7 +89,6 @@ if (App.config.bit_ejscript) {
         http.followRedirects = false
         http.get(HTTP + "/ejsProgram.ejs?redirect=http://www.redhat.com/")
         assert(http.status == 302)
-        http.close()
     }
 
     function quoting() {
@@ -130,7 +123,6 @@ if (App.config.bit_ejscript) {
         let resp = deserialize(http.response)
         assert(resp.params["a,b c#d e?f g#h i'j kl m n"] == 1234)
         assert(resp.query == "a,b+c#d+e?f+g#h+i\'j+kl+m%20n=1234")
-        http.close()
     }
 
     basic()
@@ -143,6 +135,7 @@ if (App.config.bit_ejscript) {
     status()
     location()
     quoting()
+    http.close()
 
 } else {
     test.skip("Ejscript not enabled")

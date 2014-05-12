@@ -35,6 +35,7 @@ assert(http.status == 200)
 http.setCredentials("mary", "pass2")
 http.get(HTTP + "/auth/basic/joshua/user.html")
 assert(http.status == 401)
+http.close()
 
 if (App.config.bit_cgi && global.test && test.hostOs != "VXWORKS") {
     // Requires /bin/sh 
@@ -48,4 +49,5 @@ if (App.config.bit_cgi && global.test && test.hostOs != "VXWORKS") {
     assert(!http.response.contains("PATH_INFO"))
     assert(!http.response.contains("PATH_TRANSLATED"))
     assert(http.response.contains("\"REMOTE_USER\": \"joshua\""))
+    http.close()
 }
