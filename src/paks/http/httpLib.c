@@ -7977,6 +7977,7 @@ static void startRange(HttpQueue *q)
      */
     if (tx->outputRanges == 0 || tx->status != HTTP_CODE_OK || !fixRangeLength(conn)) {
         httpRemoveQueue(q);
+        tx->outputRanges = 0;
     } else {
         tx->status = HTTP_CODE_PARTIAL;
         if (tx->outputRanges->next) {
@@ -8156,7 +8157,9 @@ static bool fixRangeLength(HttpConn *conn)
 
     tx = conn->tx;
     length = tx->entityLength ? tx->entityLength : tx->length;
-
+    if (length <= 0) {
+        return 0;
+    }
     for (range = tx->outputRanges; range; range = range->next) {
         /*
                 Range: 0-49             first 50 bytes
@@ -12602,7 +12605,7 @@ static ssize filterPacket(HttpConn *conn, HttpPacket *packet, int *more)
     tx = conn->tx;
     *more = 0;
 
-    if (mprIsSocketEof(conn->sock)) {
+    if (mprIsSocketEof(conn->sock) || conn->connError) {
         httpSetEof(conn);
     }
     if (rx->chunkState) {
