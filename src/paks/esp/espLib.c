@@ -2432,7 +2432,7 @@ PUBLIC void stylesheets(cchar *patterns)
         version = espGetConfig(route, "version", "1.0.0");
         if (eroute->combineSheet) {
             /* Previously computed combined stylesheet filename */
-            scripts(eroute->combineSheet);
+            stylesheets(eroute->combineSheet);
 
         } else if (espGetConfig(route, "app.http.content.combine[@=css]", 0)) {
             if (espGetConfig(route, "app.http.content.minify[@=css]", 0)) {
