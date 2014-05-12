@@ -25,9 +25,4 @@
             "url": "https://github.com/embedthis/me-php/blob/master/LICENSE.md"
         }
     ],
-    "dirs": {
-        "paks": "src/paks"
-    },
-    "dependencies": {
-    }
 }

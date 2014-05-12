@@ -3390,7 +3390,7 @@ static void parseRedirect(HttpRoute *route, cchar *key, MprJson *prop)
             alias = httpCreateAliasRoute(route, from, 0, code);
             target = (to) ? sfmt("%d %s", status, to) : status;
             httpSetRouteTarget(alias, "redirect", target);
-            if (sstarts(from, "https://")) {
+            if (sstarts(to, "https://")) {
                 /* 
                     Accept this route if !secure. That will then do a redirect.
                     Set details to null to avoid creating Strict-Transport-Security header 
