@@ -9355,6 +9355,9 @@ static void destroyDispatcherQueue(MprDispatcher *q)
     for (dp = q->next; dp != q; dp = next) {
         next = dp->next;
         mprDestroyDispatcher(dp);
+        if (next == dp->next) {
+            break;
+        }
     }
 }
 
