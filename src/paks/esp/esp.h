@@ -3967,6 +3967,10 @@ PUBLIC bool updateRec(EdiRec *rec);
 */ 
 PUBLIC bool updateRecFromParams(cchar *table);
 
+/*
+    NOTE: this has inconsistent naming with httpLink() vs uri()
+    But we tolerate this because link() is taken and httpUri() it confusing vs httpCreateUri
+ */
 /** 
     Create a URI. 
     @description Create a URI link based on a given target an expanding embedded tokens based on the current request and 

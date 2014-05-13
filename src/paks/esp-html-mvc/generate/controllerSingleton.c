@@ -68,6 +68,10 @@ static void update${UCONTROLLER}() {
     }
 }
 
+static void redirectPost() {
+    redirect(sjoin(getConn()->rx->uri, "/", NULL));
+}
+
 static void common(HttpConn *conn) {
 }
 
@@ -85,6 +89,7 @@ ESP_EXPORT int esp_controller_${APP}_${CONTROLLER}(HttpRoute *route, MprModule *
     espDefineAction(route, "${CONTROLLER}-list", list${UCONTROLLER});
     espDefineAction(route, "${CONTROLLER}-update", update${UCONTROLLER});
     espDefineAction(route, "${CONTROLLER}-cmd-", list${UCONTROLLER});
+    espDefineAction(route, "${CONTROLLER}", redirect${UCONTROLLER});
 ${DEFINE_ACTIONS}    
 #if SAMPLE_VALIDATIONS
     Edi *edi = espGetRouteDatabase(route);

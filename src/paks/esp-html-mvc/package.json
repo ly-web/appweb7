@@ -41,7 +41,7 @@
                 "?clientList": "esp-html-mvc/generate/list.esp",
                 "?clientEdit": "esp-html-mvc/generate/edit.esp",
                 "?controller": "esp-html-mvc/generate/controller.c",
-                "?controllerSingleton": "esp-html-mvc/generate/controller-singleton.c",
+                "?controllerSingleton": "esp-html-mvc/generate/controllerSingleton.c",
             },
         },
         "http": {

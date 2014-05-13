@@ -2111,7 +2111,7 @@ static void generateScaffoldController(int argc, char **argv)
 {
     cchar   *key;
 
-    key = app->singleton ? "controller-singleton" : "controller";
+    key = app->singleton ? "controllerSingleton" : "controller";
     genKey(key, sfmt("%s/%s.c", httpGetDir(app->route, "controllers"), app->controller), 0);
 }
 
