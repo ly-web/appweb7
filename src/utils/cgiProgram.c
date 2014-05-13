@@ -485,6 +485,7 @@ static int getPostData(char **bufp, size_t *lenp)
         size = atoi(contentLength);
         if (size < 0 || size >= INT_MAX) {
             error("Bad content length");
+            return -1;
         }
         limit = size;
     } else {
