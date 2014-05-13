@@ -2441,6 +2441,7 @@ PUBLIC void stylesheets(cchar *patterns)
                 eroute->combineSheet = sfmt("css/all-%s.css", version);
             }
             stylesheets(eroute->combineSheet);
+
         } else {
             /*
                 Not combining into a single stylesheet, so give priority to all.less over all.css if present
@@ -2465,8 +2466,7 @@ PUBLIC void stylesheets(cchar *patterns)
             }
         }
     } else {
-        if ((files = mprGlobPathFiles(clientDir, patterns, MPR_PATH_RELATIVE)) == 0 || 
-                mprGetListLength(files) == 0) {
+        if ((files = mprGlobPathFiles(clientDir, patterns, MPR_PATH_RELATIVE)) == 0 || mprGetListLength(files) == 0) {
             files = mprCreateList(0, 0);
             mprAddItem(files, patterns);
         }
@@ -2615,6 +2615,7 @@ static void angularRouteSet(HttpRoute *route, cchar *set)
 
 static void htmlRouteSet(HttpRoute *route, cchar *set)
 {
+    httpDefineRoute(route, sfmt("%s/*", route->serverPrefix), "GET", sfmt("^%s/{controller}$", route->serverPrefix), "$1", "${controller}.c");
     httpAddRestfulRoute(route, route->serverPrefix, "delete", "POST", "/{id=[0-9]+}/delete$", "delete", "{controller}");
     httpAddResourceGroup(route, route->serverPrefix, "{controller}");
     httpAddClientRoute(route, "", "/public");
@@ -4094,7 +4095,7 @@ static int runAction(HttpConn *conn)
             key = sfmt("%s/missing", mprGetPathDir(source));
             if ((action = mprLookupKey(esp->actions, key)) == 0) {
                 if ((action = mprLookupKey(esp->actions, "missing")) == 0) {
-                    httpError(conn, HTTP_CODE_NOT_FOUND, "Missing action for %s in %s", rx->target, source);
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "Missing action for \"%s\"", rx->target);
                     return 0;
                 }
             }
