@@ -5,12 +5,11 @@
     "precious": true,
     "dependencies": {
         "esp-server": "~4",
-        "angular": "~1.2"
+        "angular": "~1.2.6"
     },
     "client-scripts": [
         "${PAKS}/esp-angular/*.js"
     ],
     "optionalDependencies": {
     },
-    "v": "e"
 }
