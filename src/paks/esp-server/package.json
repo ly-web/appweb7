@@ -26,24 +26,10 @@
         "?mode": "debug",
         "modes": {
             "debug": {
-                "esp": {
-                    "?compile": "symbols",
-                },
                 "http": {
                     "content": {
                         "?keep": [ "c" ],
                     },
-                    "?showErrors": true,
-                    "?update": true,
-                },
-            },
-            "release": {
-                "esp": {
-                    "?compile": "optimized",
-                },
-                "http": {
-                    "?showErrors": false,
-                    "?update": false,
                 },
             },
         },

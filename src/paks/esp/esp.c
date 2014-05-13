@@ -132,7 +132,7 @@ static void compileItems(HttpRoute *route);
 static App *createApp(Mpr *mpr);
 static void createMigration(cchar *name, cchar *table, cchar *comment, int fieldCount, char **fields);
 static void editPackageValue(int argc, char **argv);
-static void exportCache();
+static void seedPakCache();
 static void fail(cchar *fmt, ...);
 static void fatal(cchar *fmt, ...);
 static cchar *findAcceptableVersion(cchar *name, cchar *criteria);
@@ -629,7 +629,7 @@ static void initialize(int argc, char **argv)
     if (app->error) {
         return;
     }
-    exportCache();
+    seedPakCache();
     setupRequirements(argc, argv);
     app->route = route = httpGetDefaultRoute(0);
     if (!route->eroute) {
@@ -1221,9 +1221,9 @@ static void upgrade(int argc, char **argv)
 
 
 /*
-    Export the ESP paks from /usr/local/lib/NAME/esp contents to ~/.paks (one time only)
+    Seed the cache with the ESP paks from /usr/local/lib/NAME/esp contents to ~/.paks (one time only)
  */
-static void exportCache()
+static void seedPakCache()
 {
     MprDirEntry *dp;
     MprList     *paks;
