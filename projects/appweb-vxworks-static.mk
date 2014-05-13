@@ -1377,8 +1377,8 @@ DEPS_59 += src/paks/esp-html-mvc/css/app.less
 DEPS_59 += src/paks/esp-html-mvc/css/theme.less
 DEPS_59 += src/paks/esp-html-mvc/generate
 DEPS_59 += src/paks/esp-html-mvc/generate/appweb.conf
-DEPS_59 += src/paks/esp-html-mvc/generate/controller-singleton.c
 DEPS_59 += src/paks/esp-html-mvc/generate/controller.c
+DEPS_59 += src/paks/esp-html-mvc/generate/controllerSingleton.c
 DEPS_59 += src/paks/esp-html-mvc/generate/edit.esp
 DEPS_59 += src/paks/esp-html-mvc/generate/list.esp
 DEPS_59 += src/paks/esp-html-mvc/layouts
@@ -1419,8 +1419,8 @@ $(CONFIG)/esp: $(DEPS_59)
 	cp esp-html-mvc/css/theme.less ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/css/theme.less ; \
 	mkdir -p "../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate" ; \
 	cp esp-html-mvc/generate/appweb.conf ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate/appweb.conf ; \
-	cp esp-html-mvc/generate/controller-singleton.c ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate/controller-singleton.c ; \
 	cp esp-html-mvc/generate/controller.c ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate/controller.c ; \
+	cp esp-html-mvc/generate/controllerSingleton.c ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate/controllerSingleton.c ; \
 	cp esp-html-mvc/generate/edit.esp ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate/edit.esp ; \
 	cp esp-html-mvc/generate/list.esp ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate/list.esp ; \
 	mkdir -p "../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/layouts" ; \

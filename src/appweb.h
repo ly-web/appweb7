@@ -381,7 +381,7 @@ PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path);
     Current configuration parse state
     @stability Evolving
     @defgroup MaState MaState
-    @seeMaDirective MaState maAddDirective maArchiveLog maPopState maPushState maTokenize
+    @see MaDirective MaState maAddDirective maArchiveLog maPopState maPushState maTokenize
     @stability Internal
  */
 typedef struct MaState {

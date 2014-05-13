@@ -981,8 +981,8 @@ DEPS_44 += src/paks/esp-html-mvc/css/app.less
 DEPS_44 += src/paks/esp-html-mvc/css/theme.less
 DEPS_44 += src/paks/esp-html-mvc/generate
 DEPS_44 += src/paks/esp-html-mvc/generate/appweb.conf
-DEPS_44 += src/paks/esp-html-mvc/generate/controller-singleton.c
 DEPS_44 += src/paks/esp-html-mvc/generate/controller.c
+DEPS_44 += src/paks/esp-html-mvc/generate/controllerSingleton.c
 DEPS_44 += src/paks/esp-html-mvc/generate/edit.esp
 DEPS_44 += src/paks/esp-html-mvc/generate/list.esp
 DEPS_44 += src/paks/esp-html-mvc/layouts
@@ -1023,8 +1023,8 @@ $(CONFIG)/esp: $(DEPS_44)
 	cp esp-html-mvc/css/theme.less ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/css/theme.less ; \
 	mkdir -p "../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate" ; \
 	cp esp-html-mvc/generate/appweb.conf ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate/appweb.conf ; \
-	cp esp-html-mvc/generate/controller-singleton.c ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate/controller-singleton.c ; \
 	cp esp-html-mvc/generate/controller.c ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate/controller.c ; \
+	cp esp-html-mvc/generate/controllerSingleton.c ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate/controllerSingleton.c ; \
 	cp esp-html-mvc/generate/edit.esp ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate/edit.esp ; \
 	cp esp-html-mvc/generate/list.esp ../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/generate/list.esp ; \
 	mkdir -p "../../$(CONFIG)/esp/esp-html-mvc/5.0.0-rc0/layouts" ; \
@@ -2012,8 +2012,8 @@ installBinary: $(DEPS_84)
 	cp src/paks/esp-html-mvc/css/theme.less $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.0.0-rc0/css/theme.less ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.0.0-rc0/generate" ; \
 	cp src/paks/esp-html-mvc/generate/appweb.conf $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.0.0-rc0/generate/appweb.conf ; \
-	cp src/paks/esp-html-mvc/generate/controller-singleton.c $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.0.0-rc0/generate/controller-singleton.c ; \
 	cp src/paks/esp-html-mvc/generate/controller.c $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.0.0-rc0/generate/controller.c ; \
+	cp src/paks/esp-html-mvc/generate/controllerSingleton.c $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.0.0-rc0/generate/controllerSingleton.c ; \
 	cp src/paks/esp-html-mvc/generate/edit.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.0.0-rc0/generate/edit.esp ; \
 	cp src/paks/esp-html-mvc/generate/list.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.0.0-rc0/generate/list.esp ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.0.0-rc0/layouts" ; \
@@ -2216,6 +2216,8 @@ DEPS_88 += stop
 uninstall: $(DEPS_88)
 	( \
 	cd package; \
+	rm -f "$(ME_CACHE_PREFIX)/view_7d8f413d270493ba141b22da61c498dd.c" ; \
+	rm -f "$(ME_CACHE_PREFIX)/view_7d8f413d270493ba141b22da61c498dd.dylib" ; \
 	rm -f "$(ME_ETC_PREFIX)/appweb.conf" ; \
 	rm -f "$(ME_ETC_PREFIX)/esp.conf" ; \
 	rm -f "$(ME_ETC_PREFIX)/mine.types" ; \
