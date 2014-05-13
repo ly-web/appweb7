@@ -399,7 +399,7 @@ static void printEnv(char **envp)
 
 #if !VXWORKS
     /*
-        This is not supported on VxWorks as you can't get "envp" in main()
+        This is not supported on VxWorks as you cannot get "envp" in main()
      */
     printf("\r\n<H2>All Defined Environment Variables</H2>\r\n"); 
     if (envp) {
@@ -483,13 +483,16 @@ static int getPostData(char **bufp, size_t *lenp)
 
     if ((contentLength = getenv("CONTENT_LENGTH")) != 0) {
         size = atoi(contentLength);
+        if (size < 0 || size >= INT_MAX) {
+            error("Bad content length");
+        }
         limit = size;
     } else {
         size = 4096;
         limit = INT_MAX;
     }
     if ((buf = malloc(size + 1)) == 0) {
-        error("Couldn't allocate memory to read post data");
+        error("Could not allocate memory to read post data");
         return -1;
     }
     bufsize = size + 1;
@@ -498,14 +501,14 @@ static int getPostData(char **bufp, size_t *lenp)
     while (len < limit) {
         if ((len + size + 1) > bufsize) {
             if ((buf = realloc(buf, len + size + 1)) == 0) {
-                error("Couldn't allocate memory to read post data");
+                error("Could not allocate memory to read post data");
                 return -1;
             }
             bufsize = len + size + 1;
         }
         bytes = read(0, &buf[len], (int) size);
         if (bytes < 0) {
-            error("Couldn't read CGI input %d", errno);
+            error("Could not read CGI input %d", errno);
             return -1;
         } else if (bytes == 0) {
             /* EOF */
