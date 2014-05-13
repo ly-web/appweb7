@@ -33,13 +33,6 @@
       <arglist>(MaAppweb *appweb, struct MaServer *server)</arglist>
     </member>
     <member kind="function">
-      <type>int</type>
-      <name>maArchiveLog</name>
-      <anchorfile>group___ma_appweb.html</anchorfile>
-      <anchor>ga454f6a859fd29e3c76e136420fdfc3c4</anchor>
-      <arglist>(cchar *path, int count, int maxSize)</arglist>
-    </member>
-    <member kind="function">
       <type>MaAppweb *</type>
       <name>maCreateAppweb</name>
       <anchorfile>group___ma_appweb.html</anchorfile>
@@ -104,13 +97,6 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>maSetAccessLog</name>
-      <anchorfile>group___ma_appweb.html</anchorfile>
-      <anchor>ga9b68eb868e420bafc8b6fde4a5c3d15c</anchor>
-      <arglist>(HttpRoute *route, cchar *path, cchar *format)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
       <name>maSetDefaultServer</name>
       <anchorfile>group___ma_appweb.html</anchorfile>
       <anchor>ga30109915ae5446c9299173528c2c880e</anchor>
@@ -125,13 +111,6 @@
     </member>
     <member kind="function">
       <type>int</type>
-      <name>maStartAccessLogging</name>
-      <anchorfile>group___ma_appweb.html</anchorfile>
-      <anchor>ga4b758efae1918f0bd5704fdd79ca674a</anchor>
-      <arglist>(HttpRoute *route)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
       <name>maStartAppweb</name>
       <anchorfile>group___ma_appweb.html</anchorfile>
       <anchor>gaad2b501a1eef1b0210189ef055c4f158</anchor>
@@ -143,13 +122,6 @@
       <anchorfile>group___ma_appweb.html</anchorfile>
       <anchor>ga3df448d06702386f01bdf34fa9e2df42</anchor>
       <arglist>(MaServer *server)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>maStopAccessLogging</name>
-      <anchorfile>group___ma_appweb.html</anchorfile>
-      <anchor>ga2a09e8fd4be12b6f3488e64afc09c3d6</anchor>
-      <arglist>(HttpRoute *route)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
