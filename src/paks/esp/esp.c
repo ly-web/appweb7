@@ -3154,12 +3154,14 @@ static int64 asNumber(cchar *version)
 }
 
 
-static cchar *findAcceptableVersion(cchar *name, cchar *criteria)
+static cchar *findAcceptableVersion(cchar *name, cchar *originalCriteria)
 {
     MprDirEntry     *dp;
     MprList         *files;
+    cchar           *criteria;
     int             next;
 
+    criteria = originalCriteria;
     if (!criteria || smatch(criteria, "*")) {
         criteria = "x";
     }
@@ -3173,7 +3175,13 @@ static cchar *findAcceptableVersion(cchar *name, cchar *criteria)
             return dp->name;
         }
     }
-    fail("Cannot find acceptable version for: %s with criteria %s in %s", name, criteria, app->paksCacheDir);
+    if (originalCriteria) {
+        fail("Cannot find acceptable version for: \"%s\" with version criteria \"%s\" in %s", 
+            name, originalCriteria, app->paksCacheDir);
+    } else {
+        fail("Cannot find pak: \"%s\" in %s", name, app->paksCacheDir);
+    }
+    mprError("Use \"pak install %s\" to install", name);
     return 0;
 }
 

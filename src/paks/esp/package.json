@@ -20,6 +20,7 @@
     "bugs": {
         "url": "http://github.com/embedthis/esp/issues"
     },
+    "pak": "~0.9",
     "dependencies": {
         "http": "~5",
         "me-dev": "~0.8",
