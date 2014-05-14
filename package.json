@@ -34,8 +34,8 @@
     ],
     "directories": {
         "paks": "src/paks",
-        "client": "client"
     },
+    "pak": "~0.9",
     "dependencies": {
         "http": "~5.0",
         "me-dev": "~0.8",
