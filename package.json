@@ -35,6 +35,7 @@
     "dirs": {
         "paks": "src/paks"
     },
+    "pak": "~0.8",
     "dependencies": {
         "bitos": "~0.8",
         "ejs": "~2.3",
