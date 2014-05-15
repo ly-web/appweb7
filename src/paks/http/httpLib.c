@@ -10415,7 +10415,6 @@ static int matchRoute(HttpConn *conn, HttpRoute *route)
      */
     if (route->prefix) {
         if (!sstarts(rx->pathInfo, route->prefix)) {
-            mprError("Route prefix missing in uri. Configuration error for route: %s", route->name);
             return HTTP_ROUTE_REJECT;
         }
         savePathInfo = rx->pathInfo;
