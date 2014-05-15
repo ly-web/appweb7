@@ -38,13 +38,14 @@ assert(data.startsWith("012345678"))
 assert(data.trimEnd().endsWith("END"))
 
 //  Chunked get
-data = run("--chunk 256 /big.txt")
-assert(data.startsWith("012345678"))
-assert(data.trimEnd().endsWith("END OF DOCUMENT"))
-
-//  Chunked empty get
-data = run("--chunk 100 /empty.html")
-assert(data == "")
+if (Config.OS != 'windows') {
+    data = run("--chunk 256 /big.txt")
+    assert(data.startsWith("012345678"))
+    assert(data.trimEnd().endsWith("END OF DOCUMENT"))
+    //  Chunked empty get
+    data = run("--chunk 100 /empty.html")
+    assert(data == "")
+}
 
 //  Multiple requests to test keep-alive
 run("-i 300 /index.html")
