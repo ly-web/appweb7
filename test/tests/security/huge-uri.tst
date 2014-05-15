@@ -32,6 +32,9 @@ assert(response.toString() == '')
 s.close()
 
 //  Check server still up
+if (Config.OS == 'windows') {
+    App.sleep(3000)
+}
 http = new Http
 http.get(HTTP + "/index.html")
 assert(http.status == 200)
