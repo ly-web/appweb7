@@ -4101,20 +4101,18 @@ static int runAction(HttpConn *conn)
             }
         }
     }
-    if (route->flags & HTTP_ROUTE_XSRF) {
+    if (route->flags & HTTP_ROUTE_XSRF && !(rx->flags & HTTP_GET)) {
         if (!httpCheckSecurityToken(conn)) {
-            if (rx->flags & HTTP_POST) {
-                httpSetStatus(conn, HTTP_CODE_UNAUTHORIZED);
-                if (smatch(route->responseFormat, "json")) {
-                    mprLog(2, "esp: Stale security token.");
-                    espRenderString(conn, 
-                        "{\"retry\": true, \"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
-                    espFinalize(conn);
-                } else {
-                    httpError(conn, HTTP_CODE_UNAUTHORIZED, "Security token is stale. Please reload page.");
-                }
-                return 0;
+            httpSetStatus(conn, HTTP_CODE_UNAUTHORIZED);
+            if (smatch(route->responseFormat, "json")) {
+                mprLog(2, "esp: Stale security token.");
+                espRenderString(conn, 
+                    "{\"retry\": true, \"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
+                espFinalize(conn);
+            } else {
+                httpError(conn, HTTP_CODE_UNAUTHORIZED, "Security token is stale. Please reload page.");
             }
+            return 0;
         }
     }
     if (action) {
