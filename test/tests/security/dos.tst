@@ -10,7 +10,6 @@ http.get(HTTP + "/index.html")
 assert(http.status == 200)
 http.close()
 
-//  TODO - TEMP
 if (Config.OS != 'windows') {
     //  Try to crash with DOS attack
     for (i in 1000) {
