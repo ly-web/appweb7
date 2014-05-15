@@ -42,6 +42,7 @@ ws.wait(WebSocket.OPEN, TIMEOUT)
 ws.wait(WebSocket.CLOSED, TIMEOUT)
 assert(ws.readyState == WebSocket.CLOSED)
 
+print("RECEIVED", received, gotClose, msgCount, lastEvent.last, gotError)
 assert(received == 16000)
 assert(gotClose)
 assert(msgCount > 1)
