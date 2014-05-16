@@ -28,7 +28,7 @@
         <div class="crumbs">
             <a href="../../../index.html">Home</a>
 <!-- EndDsi -->
-             &gt; <a href="index.html">Programming Guide</a> &gt; <b>Migrating to Appweb 4</b>
+             &gt; <a href="index.html">Programming Guide</a> &gt; <b>Migrating to Appweb 5</b>
         </div>
     </div>
     <div class="content">
@@ -37,7 +37,7 @@
             <ul>
                 <li><a href="#compatibility">Appweb 3 Compatibility</a></li>
                 <li><a href="#support">Legacy Support</a></li>
-                <li><a href="#changes">Appweb 4 Changes</a></li>
+                <li><a href="#changes">Appweb 5 Changes</a></li>
                 <li><a href="#config">Migrating Config Files</a></li>
                 <li><a href="#modules">Migrating Modules</a></li>
                 <li><a href="#cgi">Migrating CGI Programs</a></li>
@@ -51,7 +51,7 @@
                 <li><a href="../../../guide/appweb/programmers/modules.html">Custom Modules</a></li>
                 <li><a href="../../../guide/appweb/programmers/handlers.html">Custom Handlers</a></li>
                 <li><a href="../../../guide/appweb/programmers/stages.html">Pipeline Stages</a></li>
-                <li><a href="../../../guide/appweb/programmers/migrating.html">Migrating to Appweb 4</a></li>
+                <li><a href="../../../guide/appweb/programmers/migrating.html">Migrating to Appweb 5</a></li>
                 <li><a href="../../../guide/appweb/programmers/rom.html">ROM Content</a></li>
                 <li><a href="../../../guide/appweb/programmers/man.html">Manual Pages</a></li>
                 <li><a href="../../../ref/appweb/index.html">Programmers Reference</a></li>
@@ -62,35 +62,26 @@
 <!-- EndDsi -->
         </div>
         <div class="contentLeft">
-            <h1>Migrating to Appweb 4</h1>
-            <p>Appweb 4 is a major upgrade from Appweb 3. It incorporates many new features and upgrades.
-            It also changes many APIs and interfaces.</p>
-            <a id="compatibility"></a>
-            <h2 class="section">Compatibility with Appweb 3</h2>
-           <h4>Supported Versions</h4>
-            <p>There are two supported version streams:</p>
+            <h1>Migrating to Appweb 5</h1>
+            <p>Appweb 4 and 5 are highly compatible. Code written for Appweb 4 should migrate to Appweb 5 with 
+            little or no changes required to the core code. Appweb 5 uses newer versions of the MakeMe (formerly Bit)
+            and Pak tools. This necessitates some changes to the build files.</p>
+            <p>If you are migrating from Appweb 2 or 3, you should regard Appweb 5.X as a next generation web 
+            server. You can migrate code from Appweb 2 or 3 to Appweb 5, however, you should anticipate 
+            significant refactoring work in the transition.</p>
+
+            <a id="changes"></a>
+            <h2 class="section">Changes in Appweb 5</h2>
+            <p>Appweb 5 APIs are highly compatible with Appweb 4, though previously deprecated APIs have been 
+                removed.</p>
+            <h3>New Capabilities</h3>
             <ul>
-                <li><b>Appweb Long Term Support (LTS)</b> &mdash; The goal of LTS versions is stability and compatibility.
-                Bugs and security issues will be fixed, but no feature updates will be issued for LTS versions.
-                Appweb 4.5.X is the LTS stream and will be maintained with security updates and fixes until the end of 2015.</li>
-            </ul><ul>
-                <li><b>Appweb Development Versions (DEV)</b> &mdash; The goal of DEV versions is ongoing feature development.
-                New features will be issued for DEV versions. Appweb 5 is the next DEV version and will be released in Q1 2014.</li>
+                <li>ESP is now a stand-alone product and can be run separately</li>
+                <li>ESP applications can be configured via package.json directives</li>
+                <li>Appweb and ESP are now more modular and heavily use the Pak tool to install and manage
+                    extension components from the href="http://embedthis.com/catalog/">Online Pak Catalog</a>.</p>
             </ul>
-            <p>Appweb 2 and 3 are <a href="http://en.wikipedia.org/wiki/End-of-life_(product)">end-of-life</a>. This means
-                that security patches are not proactively created for these versions. Commercial support is available via
-                special legacy support programs. Users are strongly advised to upgrade to Appweb 4.</p>
-            <p>Starting with Appweb 4.5, Appweb is released with Long Term Support (LTS). This means that Appweb 4.5
-                will be supported until the end of 2015.
-            In this way, we can ensure
-            that Appweb 4 quickly becomes a stable platform going forward. Please see our <a href=
-                "../../../product/compatibility.html">Compatibility Policy</a>.</p>
-            
-            <a id="support"></a>
-            <h3>Legacy Appweb Support</h3>
-            <p>Appweb 2 and 3 are now officially "end-of-life". This means that we will not be issueing proactive 
-            security fixes. Support is now offered only by special programs available from Embedthis.</p>
-            
+
             <a id="changes"></a>
             <h2 class="section">Changes in Appweb 4</h2>
             <p>Appweb 4 provides equivalent or greater functionality to that in Appweb 3. 
