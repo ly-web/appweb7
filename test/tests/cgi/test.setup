@@ -1,4 +1,4 @@
-if (App.config.bit_cgi && Path(test.top).join("test/web/cgiProgram.cgi").exists) {
+if (App.config.me_cgi && Path(test.top).join("test/web/cgiProgram.cgi").exists) {
     App.config.hasCGI = true
     if (false && Config.OS == 'windows') {
         test.skip("CGI tests skipped on windows")

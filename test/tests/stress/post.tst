@@ -41,11 +41,11 @@ function postTest(url: String) {
 
 postTest("/index.html")
 
-if (App.config.bit_esp) {
+if (App.config.me_esp) {
     postTest("/stream.esp")
     postTest("/solo/stream")
 }
 
-if (App.config.bit_cgi) {
+if (App.config.me_cgi) {
     postTest("/cgi-bin/cgiProgram")
 }

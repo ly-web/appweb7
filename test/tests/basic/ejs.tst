@@ -5,7 +5,7 @@
 const HTTP = App.config.uris.http || "127.0.0.1:4100"
 let http: Http = new Http
 
-if (App.config.bit_ejscript) {
+if (App.config.me_ejscript) {
     /* Tests */
 
     function basic() {
@@ -89,7 +89,6 @@ if (App.config.bit_ejscript) {
         http.followRedirects = false
         http.get(HTTP + "/ejsProgram.ejs?redirect=http://www.redhat.com/")
         assert(http.status == 302)
-        http.close()
     }
 
     function quoting() {
@@ -136,6 +135,7 @@ if (App.config.bit_ejscript) {
     status()
     location()
     quoting()
+    http.close()
 
 } else {
     test.skip("Ejscript not enabled")

@@ -8,9 +8,9 @@
 
 #include    "appweb.h"
 
-#if BIT_PACK_PHP
+#if ME_COM_PHP
 
-#if BIT_WIN_LIKE
+#if ME_WIN_LIKE
     /*
         Workaround for VS 2005 and PHP headers. Need to include before PHP headers include it.
      */
@@ -31,10 +31,10 @@
     #define ZEND_WIN32 1
 
     /*
-        WARNING: If you compile PHP with --debug, then you MUST re-run appweb configure which will set BIT_PHP_DEBUG
+        WARNING: If you compile PHP with --debug, then you MUST re-run appweb configure which will set ME_PHP_DEBUG
         Unfortunately, PHP does not set ZEND_DEBUG in any of their headers (Ugh!)
      */
-    #if BIT_PHP_DEBUG
+    #if ME_PHP_DEBUG
     #define ZEND_DEBUG 1
     #endif
 #endif
@@ -93,9 +93,10 @@ static int  sendHeaders(sapi_headers_struct *sapiHeaders TSRMLS_DC);
 static int  writeBlock(cchar *str, uint len TSRMLS_DC);
 
 #if PHP_MAJOR_VERSION >=5 && PHP_MINOR_VERSION >= 3
-static int  writeHeader(sapi_header_struct *sapiHeader, sapi_header_op_enum op, sapi_headers_struct *sapiHeaders TSRMLS_DC);
+    static int writeHeader(sapi_header_struct *sapiHeader, sapi_header_op_enum op, 
+        sapi_headers_struct *sapiHeaders TSRMLS_DC);
 #else
-static int  writeHeader(sapi_header_struct *sapiHeader, sapi_headers_struct *sapiHeaders TSRMLS_DC);
+    static int  writeHeader(sapi_header_struct *sapiHeader, sapi_headers_struct *sapiHeaders TSRMLS_DC);
 #endif
 
 /************************************ Locals **********************************/
@@ -103,8 +104,8 @@ static int  writeHeader(sapi_header_struct *sapiHeader, sapi_headers_struct *sap
     PHP Module Interface
  */
 static sapi_module_struct phpSapiBlock = {
-    BIT_PRODUCT,                    /* Sapi name */
-    BIT_TITLE,                      /* Full name */
+    ME_NAME,                        /* Sapi name */
+    ME_TITLE,                       /* Full name */
     startup,                        /* Start routine */
     php_module_shutdown_wrapper,    /* Stop routine  */
     0,                              /* Activate */
@@ -131,7 +132,7 @@ static sapi_module_struct phpSapiBlock = {
 /*
     Open handler for a new request
  */
-static void openPhp(HttpQueue *q)
+static int openPhp(HttpQueue *q)
 {
     /*
         PHP will buffer all input. i.e. does not stream. The normal Limits still apply.
@@ -147,6 +148,7 @@ static void openPhp(HttpQueue *q)
         q->stage->stageData = mprAlloc(1);
     }
     q->queueData = mprAllocObj(MaPhp, NULL);
+    return 0;
 }
 
 
@@ -162,7 +164,7 @@ static void readyPhp(HttpQueue *q)
     MaPhp               *php;
     FILE                *fp;
     cchar               *value;
-    char                shebang[BIT_MAX_PATH];
+    char                shebang[ME_MAX_PATH];
     zend_file_handle    file_handle;
 
     TSRMLS_FETCH();
@@ -481,8 +483,8 @@ static int initializePhp(Http *http)
 
     mprTrace(2, "php: initialize php library");
     appweb = httpGetContext(http);
-#if defined(BIT_PACK_PHP_INI)
-    phpSapiBlock.php_ini_path_override = BIT_PACK_PHP_INI;
+#if defined(ME_COM_PHP_INI)
+    phpSapiBlock.php_ini_path_override = ME_COM_PHP_INI;
 #else
     phpSapiBlock.php_ini_path_override = appweb->defaultServer->defaultHost->defaultRoute->home;
 #endif
@@ -556,14 +558,14 @@ PUBLIC int maPhpHandlerInit(Http *http, MprModule *module)
     return 0;
 }
 
-#else /* BIT_PACK_PHP */
+#else /* ME_COM_PHP */
 
 PUBLIC int maPhpHandlerInit(Http *http, MprModule *module)
 {
     mprNop(0);
     return 0;
 }
-#endif /* BIT_PACK_PHP */
+#endif /* ME_COM_PHP */
 
 /*
     @copy   default

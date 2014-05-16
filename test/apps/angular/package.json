@@ -1,0 +1,87 @@
+{
+    "name": "blog",
+    "title": "blog",
+    "descript": "blog",
+    "version": "1.0.0",
+    "dependencies": {
+        "esp-angular-mvc": "~5.0"
+    },
+    "app": {
+        "client": {
+            "scripts": [
+                "lib/angular/angular.js",
+                "lib/angular/angular-animate.js",
+                "lib/angular/angular-route.js",
+                "lib/esp-angular/*.js",
+                "app/main.js",
+                "app/*/**.js*"
+            ],
+            "mappings": {
+                "auth": "app.http.auth",
+                "prefix": "app.http.prefix",
+                "serverPrefix": "app.http.serverPrefix",
+                "formats": "app.http.formats",
+                "login": {
+                    "name": "app.http.auth.login.name",
+                    "url'": "app.http.auth.login.url"
+                },
+                "timeouts": {
+                    "session": "app.http.timeouts.session",
+                    "refresh": "app.http.timeouts.refresh"
+                }
+            }
+        },
+        "esp": {
+            "generate": {
+                "appweb": "esp-server/generate/appweb.conf",
+                "migration": "esp-mvc/generate/migration.c",
+                "module": "esp-mvc/generate/src/app.c",
+                "clientModel": "esp-angular-mvc/generate/model.js",
+                "clientController": "esp-angular-mvc/generate/controller.js",
+                "clientList": "esp-angular-mvc/generate/list.html",
+                "clientEdit": "esp-angular-mvc/generate/edit.html",
+                "controller": "esp-angular-mvc/generate/controller.c",
+                "controllerSingleton": "esp-angular-mvc/generate/controller-singleton.c"
+            }
+        },
+        "http": {
+            "database": "mdb://blog.mdb",
+            "serverPrefix": "/do",
+            "content": {
+                "stylesheets": "css"
+            },
+            "formats": {
+                "response": "json",
+                "date": "yyyy-MM-dd",
+                "float": 2
+            },
+            "routes": "esp-angular-mvc"
+        },
+        "mode": "debug",
+        "modes": {
+            "debug": {
+                "esp": {
+                    "compile": "symbols"
+                },
+                "http": {
+                    "content": {
+                        "keep": [
+                            "c"
+                        ]
+                    },
+                    "showErrors": true,
+                    "update": true
+                }
+            },
+            "release": {
+                "esp": {
+                    "compile": "optimized"
+                },
+                "http": {
+                    "showErrors": false,
+                    "update": false
+                }
+            }
+        }
+    }
+}

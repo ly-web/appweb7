@@ -5,7 +5,7 @@
 const HTTP = App.config.uris.http || "127.0.0.1:4100"
 let http: Http = new Http
 
-if (App.config.bit_dir) {
+if (App.config.me_dir) {
     /*  TODO DIRECTORY LISTINGS NEEDED 
     http.get(HTTP + "/dir/")
     assert(http.status == 200)
@@ -24,6 +24,7 @@ if (App.config.bit_dir) {
     //  Test Get with a body. Yes this is valid Http, although unusual.
     http.get(HTTP + "/index.html", {name: "John", address: "700 Park Ave"})
     assert(http.status == 200)
+    http.close()
     */
 
 } else {

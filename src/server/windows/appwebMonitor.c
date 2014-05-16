@@ -15,7 +15,7 @@
 
 #include    <winUser.h>
 
-#if BIT_WIN_LIKE
+#if ME_WIN_LIKE
 /*********************************** Locals ***********************************/
 
 typedef struct App {
@@ -69,11 +69,11 @@ static void     updateMenu(int id, char *text, int enable, int check);
 
 APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
 {
-    char    *argv[BIT_MAX_ARGC], *argp;
+    char    *argv[ME_MAX_ARGC], *argp;
     int     argc, err, nextArg, manage, stop;
 
-	argv[0] = BIT_NAME "Monitor";
-    argc = mprParseArgs(command, &argv[1], BIT_MAX_ARGC - 1) + 1;
+	argv[0] = ME_NAME "Monitor";
+    argc = mprParseArgs(command, &argv[1], ME_MAX_ARGC - 1) + 1;
 
     if (mprCreate(argc, argv, MPR_USER_EVENTS_THREAD | MPR_NO_WINDOW) == NULL) {
         exit(1);
@@ -87,8 +87,8 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
     stop = 0;
     manage = 0;
     app->appInst = inst;
-    app->company = sclone(BIT_COMPANY);
-    app->serviceName = sclone(BIT_PRODUCT);
+    app->company = sclone(ME_COMPANY);
+    app->serviceName = sclone(ME_NAME);
     mprSetLogHandler(logHandler);
 
     chdir(mprGetAppDir());
@@ -207,7 +207,7 @@ BOOL CALLBACK dialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 static long msgProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
     MprThread   *tp;
-    char        buf[BIT_MAX_FNAME];
+    char        buf[ME_MAX_FNAME];
 
     switch (msg) {
     case WM_DESTROY:
@@ -246,7 +246,7 @@ static long msgProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
             /*
                 Single-threaded users beware. This blocks !!
              */
-            fmt(buf, sizeof(buf), "%s %s", BIT_TITLE, BIT_VERSION);
+            fmt(buf, sizeof(buf), "%s %s", ME_TITLE, ME_VERSION);
             MessageBoxEx(hwnd, buf, mprGetAppTitle(), MB_OK, 0);
             break;
 
@@ -355,12 +355,12 @@ static int monitorEvent(HWND hwnd, WPARAM wp, LPARAM lp)
         state = queryService();
 
         if (state < 0 || state & SERVICE_STOPPED) {
-            fmt(textBuf, sizeof(textBuf), "%s Stopped", BIT_TITLE);
+            fmt(textBuf, sizeof(textBuf), "%s Stopped", ME_TITLE);
             updateMenu(MA_MENU_STATUS, textBuf, 0, -1);
             updateMenu(MA_MENU_START, 0, 1, 0);
             updateMenu(MA_MENU_STOP, 0, -1, 0);
         } else {
-            fmt(textBuf, sizeof(textBuf), "%s Running", BIT_TITLE);
+            fmt(textBuf, sizeof(textBuf), "%s Running", ME_TITLE);
             updateMenu(MA_MENU_STATUS, textBuf, 0, 1);
             updateMenu(MA_MENU_START, 0, -1, 0);
             updateMenu(MA_MENU_STOP, 0, 1, 0);
@@ -494,7 +494,7 @@ static int runBrowser(char *page)
 {
     PROCESS_INFORMATION procInfo;
     STARTUPINFO         startInfo;
-    char                cmdBuf[BIT_MAX_BUFFER];
+    char                cmdBuf[ME_MAX_BUFFER];
     char                *path;
     char                *pathArg;
     int                 port;
@@ -504,7 +504,7 @@ static int runBrowser(char *page)
         mprError("Can't get Appweb listening port");
         return -1;
     }
-    path = getBrowserPath(BIT_MAX_BUFFER);
+    path = getBrowserPath(ME_MAX_BUFFER);
     if (path == 0) {
         mprError("Can't get browser startup command");
         return -1;
@@ -514,12 +514,12 @@ static int runBrowser(char *page)
         page++;
     }
     if (sstarts(page, "http")) {
-        fmt(cmdBuf, BIT_MAX_BUFFER, "%s %s", path, page);
+        fmt(cmdBuf, ME_MAX_BUFFER, "%s %s", path, page);
     } else if (pathArg == 0) {
-        fmt(cmdBuf, BIT_MAX_BUFFER, "%s http://localhost:%d/%s", path, port, page);
+        fmt(cmdBuf, ME_MAX_BUFFER, "%s http://localhost:%d/%s", path, port, page);
     } else {
         *pathArg = '\0';
-        fmt(cmdBuf, BIT_MAX_BUFFER, "%s \"http://localhost:%d/%s\"", path, port, page);
+        fmt(cmdBuf, ME_MAX_BUFFER, "%s \"http://localhost:%d/%s\"", path, port, page);
     }
 
     mprLog(4, "Running %s\n", cmdBuf);
@@ -540,13 +540,13 @@ static int runBrowser(char *page)
  */ 
 static char *getBrowserPath(int size)
 {
-    char    cmd[BIT_MAX_BUFFER];
+    char    cmd[ME_MAX_BUFFER];
     char    *type, *cp, *path;
 
     if ((type = mprReadRegistry("HKEY_CLASSES_ROOT\\.htm", "")) == 0) {
         return 0;
     }
-    fmt(cmd, BIT_MAX_BUFFER, "HKEY_CLASSES_ROOT\\%s\\shell\\open\\command", type);
+    fmt(cmd, ME_MAX_BUFFER, "HKEY_CLASSES_ROOT\\%s\\shell\\open\\command", type);
     if ((path = mprReadRegistry(cmd, "")) == 0) {
         return 0;
     }

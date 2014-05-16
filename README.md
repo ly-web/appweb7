@@ -1,15 +1,15 @@
-Embedthis Appweb 4.X
+Embedthis Appweb
 ===
 
 The fast, little web server for embedded applications. 
 
 Branches
 ---
-The repository has three main branches:
+The repository has three branches:
 
-* stable - Last public release.
-* master - Somewhat stable snapshots of the dev branch. Should be suitable for ongoing development.
-* dev - Current ongoing development. Least stable and may not be suitable for development.
+* master - Most recent release of the software.
+* lts - Most recent LTS release of the software.
+* dev - Current ongoing development.
  
 Licensing
 ---
@@ -17,11 +17,11 @@ See [LICENSE.md](LICENSE.md) for details.
 
 ### To read documentation:
 
-  See http://appwebserver.org/products/appweb/doc/product/index.html
+  See http://embedthis.com/products/appweb/doc/index.html
 
 ### Building
-    You can build with make or with Bit. Bit is quicker and more flexible.
-    To install Bit, download Bit from http://embedthis.com/downloads/bit/download.ejs
+    You can build with make or with MakeMe. MakeMe is quicker and more flexible.
+    To install MakeMe, download it from http://embedthis.com/downloads/makeme/download.esp
 
 ### To build with make:
 
@@ -31,10 +31,10 @@ See [LICENSE.md](LICENSE.md) for details.
 
 	make help
 
-### To build with Bit:
+### To build with MakeMe:
 
     ./configure
-    bit
+    me
 
 	For a list of configure options:
 
@@ -46,7 +46,7 @@ See [LICENSE.md](LICENSE.md) for details.
 
     or
 
-    bit run
+    me run
 
 ### To install:
 
@@ -54,7 +54,7 @@ See [LICENSE.md](LICENSE.md) for details.
 
 	or 
 
-    sudo bit install
+    sudo me install
 
 ### To uninstall
 
@@ -62,15 +62,15 @@ See [LICENSE.md](LICENSE.md) for details.
 
 	or 
 
-    sudo bit uninstall
+    sudo me uninstall
 
 ### To test:
 
-    bit test
+    me test
 
 Resources
 ---
   - [Appweb web site](http://appwebserver.org/)
-  - [Appweb GitHub repository](http://github.com/embedthis/appweb-4)
-  - [Appweb Mailing list](http://groups.google.com/groups/appweb)
+  - [Appweb GitHub repository](http://github.com/embedthis/appweb)
+  - [Appweb Community Support](http://groups.google.com/group/appweb)
   - [Embedthis web site](http://embedthis.com/)

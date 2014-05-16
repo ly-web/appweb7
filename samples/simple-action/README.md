@@ -7,16 +7,16 @@ actions.
 
 Requirements
 ---
-* [Appweb](http://embedthis.com/downloads/appweb/download.ejs)
-* [Bit Build Tool](http://embedthis.com/downloads/bit/download.ejs)
+* [Appweb](http://embedthis.com/downloads/appweb/download.esp)
+* [MakeMe Build Tool](http://embedthis.com/downloads/me/download.esp)
 
 To build:
 ---
-    bit 
+    me 
 
 To run:
 ---
-    bit run
+    me run
 
 The server listens on port 8080. Browse to: 
  
@@ -32,7 +32,7 @@ Code:
 * [server.c](server.c) - Main program with action
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [index.html](index.html) - Web page to serve
-* [start.bit](start.bit) - Bit build instructions
+* [start.me](start.me) - MakeMe build instructions
 
 Documentation:
 ---

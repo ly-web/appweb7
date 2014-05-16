@@ -11,6 +11,7 @@ esp \- ESP Application Generator for Server-Side Web Applications.
 [\fI--keep\fR]
 [\fI--listen [ip:]port\fR]
 [\fI--log logFile:level\fR]
+[\fI--optimized\fR]
 [\fI--overwrite\fR]
 [\fI--quiet\fR]
 [\fI--platform [path/]os-arch-profile\fR]
@@ -19,6 +20,7 @@ esp \- ESP Application Generator for Server-Side Web Applications.
 [\fI--routePrefix prefix\fR]
 [\fI--single\fR]
 [\fI--static\fR]
+[\fI--symbols\fR]
 [\fI--table name\fR]
 [\fI--verbose\fR]
 [\fI--why\fR]
@@ -28,13 +30,18 @@ commands ...
  esp clean
  esp compile
  esp compile [pathFilters...]
+ esp mode [debug|release]
  esp generate app name [packs]
  esp generate controller name [action [, action] ...]
  esp generate migration description model [field:type [, field:type] ...]
  esp generate scaffold model [field:type [, field:type] ...]
  esp generate table name model [field:type [, field:type] ...]
+ esp install paks...
  esp migrate [forward|backward|NNN]
- esp run
+ esp mode [debug|release|otherMode]
+ esp [run] [ip]:[port]
+ esp uninstall paks...
+ esp upgrade paks..
 .SH DESCRIPTION
 The \fBesp\fR command generates, manages and runs ESP web applications.
 It can generate ESP web applications, controllers, database tables, and scaffolds.
@@ -81,7 +88,7 @@ Esp will also create some files which have the following meaning:
  app.config     - Appweb configuration file for hosting app 
  appweb.config  - Stand-alone Appweb configuration file
  index.esp      - Home web page
- start.bit      - Bit build file
+ start.me       - MakeMe build file
 .RE
 
 The esp command can generate various functionality by specifying extension packs on the command line.
@@ -209,6 +216,11 @@ in the Appweb source code built for that platform.
 \fbesp -platform /home/dev/linux-arm-debug compile
 .RE
 
+.SH MODE
+The \fBesp mode\fR command will retrieve and display the "esp.mode" property.
+The \fBesp mode debug\fR command will modify the "esp.mode" property and set it to the "debug" value.
+The \fBesp release\fR command will set the esp.mode to "release".
+
 .SH RUNNING
 .PP
 To run your application:
@@ -242,6 +254,8 @@ esp has the following command usage patterns:
  esp generate scaffold model [field:type [, field:type] ...]
  esp generate table name model [field:type [, field:type] ...]
  esp run
+ esp run 4000
+ esp mode debug
 .RE
 
 .SH OPTIONS
@@ -273,6 +287,9 @@ will be patched into the generated appweb.conf configuration file.
 Specify a file to log messages.  The syntax is: \fB"--log logName[,moduleName][:logLevel]"\fR.             
 Level 3 will trace the request and response headers. 
 .TP 6
+\fB\--optimize\fR
+Compile optimized without debug symbols. 
+.TP 6
 \fB\--overwrite\fR
 Overwrite existing files. Ejsweb normally will not overwrite existing files. This is to preserve user changes to 
 previously generated files.
@@ -288,9 +305,6 @@ upwards for a parent platform directory.
 \fB\--rebuild\fR
 Force a recompile of all items when used with the compile command. 
 When used with migrate, this will recreate the database and apply all migrations.
-.TP 6
-\fB\--reverse\fR
-Reverse the application of migrations.
 .TP 6
 \fB\--routeName name\fR
 This selects the Appweb route by name that will be used for the ESP configuration. Routes can be given an explicit
@@ -308,6 +322,9 @@ action.
 \fB\--static\fR
 Use static linking when building ESP applications. This causes esp to create archive libraries instead of shared libraries.
 .TP 6
+\fB\--symbols\fR
+Compile for debug with symbols. 
+.TP 6
 \fB\--table name\fR
 Override the database table name when generating tables, migrations or scaffolds. This is useful to request a plural 
 version of the model name. Alternatively, specify the model name when generating the scaffold, table or migration 
@@ -323,7 +340,7 @@ Explain why a resource was or was not compiled.
 Report bugs to dev@embedthis.com.
 
 .SH COPYRIGHT
-Copyright \(co 2004-2014 Embedthis Software.  ESP is a trademark of Embedthis Software.
+Copyright \(co 2004-2014 Embedthis Software. Embedthis ESP is a trademark of Embedthis Software.
 
 .br
 .SH "SEE ALSO"

@@ -6,19 +6,19 @@ security by changing its root directory so that the rest of the operating system
 
 Requirements
 ---
-* [Appweb](http://embedthis.com/downloads/appweb/download.ejs)
-* [Bit Build Tool](http://embedthis.com/downloads/bit/download.ejs)
+* [Appweb](http://embedthis.com/downloads/appweb/download.esp)
+* [MakeMe Build Tool](http://embedthis.com/downloads/e/download.esp)
 
 To build:
 ---
-    bit 
+    me 
     esp compile
 
     # Note that the ESP pages must be pre-compiled as the cc compiler wont be available inside the chroot jail.
 
 To run:
 ---
-    sudo bit run
+    sudo me run
 
 The server listens on port 8080. Browse to:
 
@@ -39,7 +39,7 @@ Code:
 * [server.c](server.c) - Main program
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [index.html](index.html) - Web page to serve
-* [start.bit](start.bit) - Bit build instructions
+* [start.me](start.me) - MakeMe build instructions
 
 Documentation:
 ---

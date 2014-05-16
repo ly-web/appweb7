@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.5.0 Documentation</title>
+    <title>Embedthis Appweb 5.0.0-rc0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.5.0</div>
+                <div class="version">Embedthis Appweb 5.0.0-rc0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -67,6 +67,7 @@
                 <li><a href="#scriptAlias">ScriptAlias</a></li>
                 <li><a href="#setConnector">SetConnector</a></li>
                 <li><a href="#setHandler">SetHandler</a></li>
+                <li><a href="#showErrors">ShowErrors</a></li>
                 <li><a href="#source">Source</a></li>
                 <li><a href="#target">Target</a></li>
                 <li><a href="#update">Update</a></li>
@@ -85,13 +86,11 @@
             <h1>Route Directives</h1><a id="addHandler"></a>
             <h2>AddHandler</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Add a handler for processing content with specific file extensions</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Add a handler for processing content with specific file extensions</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>AddHandler handlerName extension [extension] ...</td>
@@ -125,13 +124,11 @@
             <a id="addInputFilter"></a>
             <h2>AddInputFilter</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Add the specified filter to the input processing pipeline</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Add the specified filter to the input processing pipeline</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>AddInputFilter filterName</td>
@@ -163,13 +160,11 @@
             <a id="addOutputFilter"></a>
             <h2>AddOutputFilter</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Add the specified filter to the output processing pipeline</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Add the specified filter to the output processing pipeline</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>AddOutputFilter filterName</td>
@@ -199,13 +194,11 @@
             <a id="addLanguageDir"></a>
             <h2>AddLanguageDir</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Add the specified language and language document directory to the route</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Add the specified language and language document directory to the route</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>AddLanguageDir iso-lang-tag path</td>
@@ -237,13 +230,11 @@
             <a id="addLanguageSuffix"></a>
             <h2>AddLanguageSuffix</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Add the specified language</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Add the specified language</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>AddLanguageSuffix iso-lang-tag suffix [position]</td>
@@ -276,13 +267,11 @@
             <a id="alias"></a>
             <h2>Alias</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Map URIs and leading URI portions to file system locations.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Map URIs and leading URI portions to file system locations.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Alias urlPortion destinationPath</td>
@@ -320,13 +309,11 @@
             <a id="cache"></a>
             <h2>Cache</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Control content caching</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Control content caching</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Cache lifespan<br/>
@@ -414,13 +401,11 @@
             <a id="clientCacheByType"></a>
             <h2>ClientCacheByType</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Control client-side caching by document mime type</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Control client-side caching by document mime type</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>ClientCacheByType lifespan mime-types ...</td>
@@ -451,13 +436,11 @@
             <a id="condition"></a>
             <h2>Condition</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define a pre-condition that must be true for the route to be selected.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define a pre-condition that must be true for the route to be selected.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Condition [!] rule details ...<br/>
@@ -500,13 +483,11 @@
             <a id="crossOrigin"></a>
             <h2>CrossOrigin</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Directive to control cross-origin resource sharing.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Directive to control cross-origin resource sharing.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>CrossOrigin origin=[client|all|*|NAME] <br/>
@@ -541,13 +522,11 @@
             <a id="defense"></a>
             <h2>Defense</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define a defensive policy to respond to attacks.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define a defensive policy to respond to attacks.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Defense [tokens=value]</td>
@@ -629,13 +608,11 @@ Defense reboot REMEDY=restart
             <a id="defaultLanguage"></a>
             <h2>DefaultLanguage</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Set the default language to select for content.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Set the default language to select for content.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>DefaultLanguage language</td>
@@ -662,13 +639,11 @@ Defense reboot REMEDY=restart
             <a id="documentRoot"></a>
             <h2>DocumentRoot</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Top level directory containing the documents to be published for context.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Top level directory containing the documents to be published for context.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>DocumentRoot directoryPath</td>
@@ -695,13 +670,11 @@ Defense reboot REMEDY=restart
             <a id="errorDocument"></a>
             <h2>ErrorDocument</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define an error document to be served when a HTTP error occurs</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define an error document to be served when a HTTP error occurs</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>ErrorDocument code URI</td>
@@ -726,13 +699,11 @@ Defense reboot REMEDY=restart
             <a id="header"></a>
             <h2>Header</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define a request HTTP header value must match a value for the route to be selected.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define a request HTTP header value must match a value for the route to be selected.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Header [add|append|remove|set] field value</td>
@@ -760,13 +731,11 @@ Defense reboot REMEDY=restart
             <a id="ignoreEncodingErrors"></a>
             <h2>IgnoreEncodingErrors</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Ignore UTF-8 encoding errors</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Ignore UTF-8 encoding errors</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>IgnoreEncodingErrors on|off</td>
@@ -791,13 +760,11 @@ Defense reboot REMEDY=restart
             <a id="inactivityTimeout"></a>
             <h2>InactivityTimeout</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Control the timeout period for TCP/IP connections</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Control the timeout period for TCP/IP connections</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>InactivityTimeout time</td>
@@ -807,8 +774,9 @@ Defense reboot REMEDY=restart
                         <td>Default Server, Virtual Host</td>
                     </tr>
                     <tr>
-                        <td class="pivot">Example</td>
-                        <td>InactivityTimeout 2mins</td>
+                        <td class="pivot">Examples</td>
+                        <td>InactivityTimeout 2mins<br/>
+                        InactivityTimeout never</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -830,13 +798,11 @@ Defense reboot REMEDY=restart
             <a id="logRoutes"></a>
             <h2>LogRoutes</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Show the route table in the error log.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Show the route table in the error log.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>LogRoutes</td>
@@ -861,13 +827,11 @@ Defense reboot REMEDY=restart
             <a id="map"></a>
             <h2>Map</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Control mapping of requests by extension.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Control mapping of requests by extension.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Map compressed<br/>
@@ -904,13 +868,11 @@ Defense reboot REMEDY=restart
             <a id="methods"></a>
             <h2>Methods</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define the valid HTTP Methods for the route</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define the valid HTTP Methods for the route</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Methods [add|remove|set] MethodSet</td>
@@ -939,13 +901,11 @@ Defense reboot REMEDY=restart
             <a id="monitor"></a>
             <h2>Monitor</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Monitor server resources for attacks</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Monitor server resources for attacks</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Monitor Expression Period Defenses ...</td>
@@ -1001,13 +961,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="name"></a>
             <h2>Name</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define a name for the route</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define a name for the route</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Name string</td>
@@ -1034,13 +992,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="param"></a>
             <h2>Param</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Add a request param test that must match for the route to be selected.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Add a request param test that must match for the route to be selected.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Param [!] field pattern</td>
@@ -1070,13 +1026,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="prefix"></a>
             <h2>Prefix</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define a URI prefix for the route.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define a URI prefix for the route.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Prefix URI-Prefix</td>
@@ -1106,13 +1060,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="preserveFrames"></a>
             <h2>PreserveFrames</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Preserve WebSocket frame boundaries</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Preserve WebSocket frame boundaries</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>PreserveFrames on|off</td>
@@ -1141,13 +1093,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="putMethod"></a>
             <h2>PutMethod</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Control use of the HTTP PUT method inside a route block.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Control use of the HTTP PUT method inside a route block.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>PutMethod [on|off]</td>
@@ -1176,13 +1126,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="redirect"></a>
             <h2>Redirect</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Redirect requests to a new target.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Redirect requests to a new target.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Redirect [status] oldURI [newURI]</td>
@@ -1221,13 +1169,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="requestHeader"></a>
             <h2>RequestHeader</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define a request HTTP header value must match a value for the route to be selected.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define a request HTTP header value must match a value for the route to be selected.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>RequestHeader [!] field pattern</td>
@@ -1255,13 +1201,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="requestParseTimeout"></a>
             <h2>RequestParseTimeout</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Defines the maximum time to parse the request or response HTTP headers</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines the maximum time to parse the request or response HTTP headers</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>RequestParseTimeout time</td>
@@ -1295,13 +1239,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="requestTimeout"></a>
             <h2>RequestTimeout</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Defines the maximum request duration</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines the maximum request duration</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>RequestTimeout time</td>
@@ -1311,8 +1253,9 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
                         <td>Default Server, Virtual Host</td>
                     </tr>
                     <tr>
-                        <td class="pivot">Example</td>
-                        <td>RequestTimeout 10mins</td>
+                        <td class="pivot">Examples</td>
+                        <td>RequestTimeout 10mins<br/>
+                        RequestTimeout never</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -1329,13 +1272,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="reroute"></a>
             <h2>Reroute</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Open a previously defined route to add or modify directives</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Open a previously defined route to add or modify directives</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>&lt;Reroute URI-Pattern&gt;<br />
@@ -1364,13 +1305,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="reset"></a>
             <h2>Reset [routes|pipeline]</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Reset the input and output processing pipeline.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Reset the input and output processing pipeline.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Reset pipeline<br/>
@@ -1403,13 +1342,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="route"></a>
             <h2>Route</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define a block of directives to apply to a matching URI pattern</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define a block of directives to apply to a matching URI pattern</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>&lt;Route URI-Pattern&gt;<br />
@@ -1441,13 +1378,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="scriptAlias"></a>
             <h2>ScriptAlias</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Map a URI to a destination and enable CGI script processing for that location.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Map a URI to a destination and enable CGI script processing for that location.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>ScriptAlias urlPath destinationPath</td>
@@ -1485,13 +1420,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="sessionCookie"></a>
             <h2>SessionCookie</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Sets the Session cookie options.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Sets the Session cookie options.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>SessionCookie name=NAME visible=[true|false]</td>
@@ -1519,13 +1452,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="sessionTimeout"></a>
             <h2>SessionTimeout</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Defines the maximum session state duration</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines the maximum session state duration</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>SessionTimeout seconds</td>
@@ -1551,13 +1482,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="setConnector"></a>
             <h2>SetConnector</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Set the connector to transmit the response to the client</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Set the connector to transmit the response to the client</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>SetConnector connectorName</td>
@@ -1583,13 +1512,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="setHandler"></a>
             <h2>SetHandler</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Set the handler to processing requests</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Set the handler to processing requests</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>SetHandler handlerName</td>
@@ -1611,16 +1538,46 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
                     </tr>
                 </tbody>
             </table>
+            <a id="showErrors"></a>
+            <h2>ShowErrors</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Control whether to display server-side errors to the client.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>ShowErrors on|off</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, Virtual host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>
+<pre>ShowErrors on</pre>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The ShowErrors directive controls whether errors are sent to the client 
+                            and displayed in the browser. If ShowErrors is off, then errors will be sent to the
+                            Appweb log file. If ShowErrors is on, then the errors will also be sent back to the
+                            client. This is useful in development mode to quickly diagnose errors.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
             <a id="source"></a>
             <h2>Source</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define source code for the handler to use when servicing the request.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define source code for the handler to use when servicing the request.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Source path</td>
@@ -1646,13 +1603,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="stealth"></a>
             <h2>Stealth</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Control stealth mode.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Control stealth mode.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Stealth [on|off]</td>
@@ -1679,13 +1634,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="target"></a>
             <h2>Target</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define the route target rule that describes how the request should be handled.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define the route target rule that describes how the request should be handled.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Target rule details ...<br/>
@@ -1737,13 +1690,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="traceMethod"></a>
             <h2>TraceMethod</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Control the Trace HTTP method</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Control the Trace HTTP method</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>TraceMethod on|off</td>
@@ -1775,13 +1726,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="update"></a>
             <h2>Update</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define an update rule to modify the request when the route is selected.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define an update rule to modify the request when the route is selected.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Update param var value ...<br/>
@@ -1817,13 +1766,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="uploadAutoDelete"></a>
             <h2>UploadAutoDelete</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Set the directory to store uploaded files.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Set the directory to store uploaded files.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>UploadAutoDelete [on|off]</td>
@@ -1852,13 +1799,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="uploadDir"></a>
             <h2>UploadDir</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Set the directory to store uploaded files.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Set the directory to store uploaded files.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>UploadDir path</td>
@@ -1887,13 +1832,11 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
             <a id="webSocketsPing"></a>
             <h2>WebSocketsPing</h2>
             <table class="directive" title="details">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define the period for a Web Sockets Ping message.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define the period for a Web Sockets Ping message.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>WebSocketsPing time</td>

@@ -1,5 +1,7 @@
 /*
     Test caching
+ 
+    Assumes configuration of: LimitCache 64K, CacheItem 16K
  */
 #include "esp.h"
 
@@ -12,6 +14,7 @@ static void sml() {
     int     i;
     for (i = 0; i < 1; i++) {
         render("Line: %05d %s", i, "aaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbccccccccccccccccccddddddd<br/>\r\n");
+        mprYield(0);
     }
     render("{ when: %Ld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
 }
@@ -21,23 +24,26 @@ static void medium() {
     //  This will emit ~8K (under the item limit)
     for (i = 0; i < 100; i++) {
         render("Line: %05d %s", i, "aaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbccccccccccccccccccddddddd<br/>\r\n");
+        mprYield(0);
     }
     render("{ when: %Ld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
 }
 
 static void big() {
     int     i;
-    //  This will emit ~76K (under the item limit)
-    for (i = 0; i < 1000; i++) {
+    //  This will emit ~39K (under the item limit)
+    for (i = 0; i < 500; i++) {
         render("Line: %05d %s", i, "aaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbccccccccccccccccccddddddd<br/>\r\n");
+        mprYield(0);
     }
 }
 
 static void huge() { 
     int     i;
-    //  This will emit ~762K (over the item limit)
+    //  This will emit ~390K (over the item limit)
     for (i = 0; i < 10000; i++) {
         render("Line: %05d %s", i, "aaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbccccccccccccccccccddddddd<br/>\r\n");
+        mprYield(0);
     }
     render("{ when: %Ld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
 }

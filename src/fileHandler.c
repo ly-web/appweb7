@@ -56,7 +56,7 @@ static int rewriteFileHandler(HttpConn *conn)
 
 
 
-static void openFileHandler(HttpQueue *q)
+static int openFileHandler(HttpQueue *q)
 {
     HttpRx      *rx;
     HttpTx      *tx;
@@ -71,17 +71,17 @@ static void openFileHandler(HttpQueue *q)
     info = &tx->fileInfo;
 
     if (conn->error) {
-        return;
+        return MPR_ERR_CANT_OPEN;
     }
     if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
         if (!(info->valid || info->isDir)) {
             if (rx->referrer) {
-                mprLog(2, "fileHandler: Cannot find filename %s from referrer %s", tx->filename, rx->referrer);
+                mprLog(3, "fileHandler: Cannot find filename %s from referrer %s", tx->filename, rx->referrer);
             } else {
-                mprLog(2, "fileHandler: Cannot find filename %s", tx->filename);
+                mprLog(3, "fileHandler: Cannot find filename %s", tx->filename);
             }
             httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find document");
-            return;
+            return 0;
         } 
         if (!tx->etag) {
             /* Set the etag for caching in the client */
@@ -104,7 +104,7 @@ static void openFileHandler(HttpQueue *q)
             tx->length = -1;
         }
         if (!tx->fileInfo.isReg && !tx->fileInfo.isLink) {
-            mprError("Document is not a regular file");
+            mprLog(3, "Document is not a regular file: %s", tx->filename);
             httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot serve document");
             
         } else if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
@@ -134,6 +134,7 @@ static void openFileHandler(HttpQueue *q)
     } else {
         httpError(conn, HTTP_CODE_BAD_METHOD, "Unsupported method");
     }
+    return 0;
 }
 
 
@@ -450,13 +451,13 @@ static int manageDir(HttpConn *conn)
         httpRedirect(conn, HTTP_CODE_MOVED_PERMANENTLY, uri);
         return HTTP_ROUTE_OK;
     }
-    if (route->indicies) {
+    if (route->indexes) {
         /*
             Ends with a "/" so do internal redirection to an index file
          */
-        for (ITERATE_ITEMS(route->indicies, index, next)) {
+        for (ITERATE_ITEMS(route->indexes, index, next)) {
             /*
-                Internal directory redirections. Transparently append index. Test indicies in order.
+                Internal directory redirections. Transparently append index. Test indexes in order.
              */
             path = mprJoinPath(tx->filename, index);
             if (mprPathExists(path, R_OK)) {
@@ -470,7 +471,7 @@ static int manageDir(HttpConn *conn)
             }
         }
     }
-#if BIT_PACK_DIR
+#if ME_COM_DIR
     /*
         Directory Listing. If a directory, test if a directory listing should be rendered. If so, delegate to the
         dirHandler. Cannot use the sendFile handler and must use the netConnector.

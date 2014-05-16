@@ -2,7 +2,7 @@
     "name": "appweb",
     "description": "Embedthis Appweb Embedded Web Server",
     "title": "Embedthis Appweb",
-    "version": "4.5.0",
+    "version": "5.0.0-rc0",
     "keywords": [
         "appweb",
         "http",
@@ -16,11 +16,11 @@
     },
     "repository": {
         "type": "git",
-        "url": "git://github.com/embedthis/appweb-4.git"
+        "url": "git://github.com/embedthis/appweb.git"
     },
     "bugs": {
         "email": "dev@embedthis.com",
-        "url": "http://github.com/embedthis/appweb-4/issues"
+        "url": "http://github.com/embedthis/appweb/issues"
     },
     "licenses": [
         {
@@ -32,17 +32,45 @@
             "url": "http://embedthis.com/licensing/"
         }
     ],
-    "dirs": {
+    "directories": {
         "paks": "src/paks"
     },
+    "pak": "~0.9",
     "dependencies": {
-        "bitos": "~0.8",
+        "http": "~5.0",
+        "me-dev": "~0.8",
+        "mpr": "~5.0",
+        "osdep": "~0.8",
+        "pcre": "~1.0"
+    },
+    "optionalDependencies": {
         "ejs": "~2.3",
+        "esp": "~5.0",
+        "esp-html-mvc": "~5.0",
+        "esp-mvc": "~5.0",
+        "esp-server": "~5.0",
         "est": "~0.6",
-        "http": "~4.5",
-        "mpr": "~4.5",
-        "pcre": "~1.0",
+        "me-php": "~5",
+        "me-ssl": "~0.8",
+        "php": "~5",
         "sqlite": "~1.0",
         "zlib": "~1.0"
+    },
+    "paks": {
+        "esp": {
+            "noblend": true
+        },
+        "esp-html-mvc": {
+            "noblend": true,
+            "noexport": true
+        },
+        "esp-mvc": {
+            "noblend": true,
+            "noexport": true
+        },
+        "esp-server": {
+            "noblend": true,
+            "noexport": true
+        }
     }
 }

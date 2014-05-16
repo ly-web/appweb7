@@ -5,7 +5,7 @@
 #define EMBEDTHIS_MODIFICATION 1
 
 #if EMBEDTHIS_MODIFICATION
-#include "bit.h"
+#include "me.h"
 #if VXWORKS
     #ifndef _VSB_CONFIG_FILE
         #define _VSB_CONFIG_FILE "vsbConfig.h"
@@ -22,7 +22,7 @@
 #endif
 #endif
 
-#if BIT_PACK_SQLITE || BIT_SQLITE_PRODUCT
+#if ME_COM_SQLITE || ME_SQLITE_PRODUCT
 /*
 ** 2001 September 15
 **
@@ -3190,5 +3190,5 @@ int main(int argc, char **argv){
   return rc;
 }
 
-#endif /* BIT_PACK_SQLITE */
+#endif /* ME_COM_SQLITE */
 

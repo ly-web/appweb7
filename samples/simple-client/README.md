@@ -5,16 +5,16 @@ This sample shows how to use the Http library to issue Http client requests.
 
 Requirements
 ---
-* [Appweb](http://embedthis.com/downloads/appweb/download.ejs)
-* [Bit Build Tool](http://embedthis.com/downloads/bit/download.ejs)
+* [Appweb](http://embedthis.com/downloads/appweb/download.esp)
+* [MakeMe Build Tool](http://embedthis.com/downloads/me/download.esp)
 
 To build:
 ---
-    bit 
+    me 
 
 To run:
 ---
-    bit run
+    me run
 
 The client retrieves:
  
@@ -23,7 +23,7 @@ The client retrieves:
 Code:
 ---
 * [client.c](client.c) - Main program
-* [start.bit](start.bit) - Bit build instructions
+* [start.me](start.me) - MakeMe build instructions
 
 Documentation:
 ---

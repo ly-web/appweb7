@@ -113,10 +113,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ClInclude Include="$(IncDir)\bitos.h" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ClInclude Include="$(IncDir)\customize.h" />
   </ItemGroup>
 
@@ -129,7 +125,6 @@
   <CustomBuildStep>
     <Command>cd ..\..\src
 copy /Y appweb.h $(IncDir)
-copy /Y bitos.h $(IncDir)
 copy /Y customize.h $(IncDir)
 cd ..\projects\appweb-windows-default</Command>
     <Outputs>$(BinDir)\libappweb.dll</Outputs>
@@ -139,6 +134,13 @@ cd ..\projects\appweb-windows-default</Command>
 <ItemGroup>
   <ProjectReference Include="libhttp.vcxproj">
   <Project>3f525f82-92e8-4897-8a53-f03027b478ff</Project>
+  <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+  </ProjectReference>
+</ItemGroup>
+
+<ItemGroup>
+  <ProjectReference Include="libmpr.vcxproj">
+  <Project>b878be55-becb-4c83-8e95-6ad11ba24206</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>

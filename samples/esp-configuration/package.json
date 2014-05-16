@@ -7,9 +7,11 @@
     The format of this file is CommonJS package.json file with esp sections. It is an enhanced 
     JSON file. Property keys do not need to be enclosed in quotes.
     Also the last property in a collection may be terminated with a comma.
+ */
 {
     "name": "blog",
-    "description": "blog",
+    "title": "My Blog",
+    "description": "My blog with tales of overseas travel",
     "version": "1.0.0",
 
     /*
@@ -79,11 +81,6 @@
         "json": true,
 
         /*
-            Set if a login is required to the login home page
-         */
-        "loginRequired": "",
-
-        /*
             Default refresh period to use for dynamic data polling
          */
         "refresh": 1000,
@@ -109,12 +106,12 @@
             Server side properties not passed to the client
          */
         "server": {
-            "database": "mdb://blog.mdb"
+            "database": "mdb://blog.mdb",
 
             /*
                 Redirect all traffic over HTTPS
              */
-            "redirect": "secure"
+            "redirect": "secure",
 
             /*
                 Templates used for "esp generate"
@@ -124,11 +121,6 @@
                 "migration": "esp-server/migration.c",
                 "controller": "esp-angular-mvc/controller.c",
                 "controller-singleton": "esp-angular-mvc/controller-singleton.c",
-                "files": [
-                    "esp-server/src/app.c",
-                    "esp-angular-mvc/start.bit",
-                    "esp-angular-mvc/client/**"
-                ],
                 "clientModel": "esp-angular-mvc/model.js",
                 "clientController": "esp-angular-mvc/controller.js",
                 "clientList": "esp-angular-mvc/list.html",
@@ -180,6 +172,10 @@
                         "edit": true,
                         "view": true,
                     },
+                    /*
+                        Set if a login is required to the login home page
+                     */
+                    "required": "",
                 },
             },
             "release": {
@@ -195,8 +191,9 @@
                         "edit": true,
                         "view": true,
                     },
+                    "required": "",
                 },
             },
         }
     },
-},
+}

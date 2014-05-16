@@ -8,10 +8,12 @@ if (test.verbosity > 2) {
     command += "-v "
 }
 
+var cmd
+
 function run(args): String {
     App.log.debug(5, "[TestRun]", command + args)
     try {
-        let cmd = Cmd(command + args)
+        cmd = Cmd(command + args)
         if (cmd.status != 0) {
             //  TODO - temp for http
             if (cmd.status < 0 && Config.OS == 'windows') {
@@ -39,6 +41,9 @@ assert(data.trimEnd().endsWith("END"))
 
 //  Chunked get
 data = run("--chunk 256 /big.txt")
+if (!data.startsWith("012345678")) {
+    print("DATA", data)
+}
 assert(data.startsWith("012345678"))
 assert(data.trimEnd().endsWith("END OF DOCUMENT"))
 
@@ -66,7 +71,7 @@ run("-i 20 --protocol HTTP/1.1 /index.html")
 run("--user 'joshua:pass1' /auth/basic/basic.html")
 run("--user 'joshua' --password 'pass1' /auth/basic/basic.html")
 
-if (App.config.bit_ejscript) {
+if (App.config.me_ejscript) {
     //  Form data
     data = run("--form 'name=John+Smith&address=300+Park+Avenue' /form.ejs")
     assert(data.contains('"address": "300 Park Avenue"'))
@@ -102,7 +107,7 @@ data = run("--showHeaders /index.html")
 assert(data.contains('Content-Type'))
 
 //  Upload
-if (App.config.bit_ejscript) {
+if (App.config.me_ejscript) {
     let files = Path(".").files().join(" ")
     data = run("--upload " + files + " /upload.ejs")
     assert(data.contains('"clientFilename": "http.tst"'))

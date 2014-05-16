@@ -27,7 +27,8 @@
 
 
 
-#if BIT_PACK_EJSCRIPT
+//  UNUSED
+#if ME_COM_EJS || 1
 
 /********************************** Forwards **********************************/
 
@@ -210,7 +211,7 @@ MAIN(ejscMain, int argc, char **argv, char **envp)
             }
 
         } else if (strcmp(argp, "--version") == 0 || strcmp(argp, "-V") == 0) {
-            mprPrintf("%s\n", BIT_TITLE, EJS_VERSION);
+            mprPrintf("%s\n", ME_TITLE, EJS_VERSION);
             return 0;
 
         } else if (strcmp(argp, "--warn") == 0) {
@@ -398,7 +399,7 @@ int main(int argc, char **argv)
     return 0;
 }
 
-#endif /* BIT_PACK_EJSCRIPT */
+#endif /* ME_COM_EJS */
 /*
     @copy   default
 

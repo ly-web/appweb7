@@ -7,7 +7,7 @@
 
 #include    "appweb.h"
 
-#if BIT_PACK_EJSCRIPT
+#if ME_COM_EJS
     #include    "ejs.h"
 
 /************************************* Data ***********************************/
@@ -28,7 +28,7 @@ static char startup[] = "\
 /*
     Open handler for a new request
  */
-static void openEjs(HttpQueue *q)
+static int openEjs(HttpQueue *q)
 {
     HttpConn    *conn;
     HttpRx      *rx;
@@ -42,7 +42,7 @@ static void openEjs(HttpQueue *q)
 
     mprTrace(5, "Open EJS handler");
     if (conn->ejs) {
-        return;
+        return -1;
     }
     /*
         FUTURE OPT - check this pool is usable over all routes
@@ -65,7 +65,7 @@ static void openEjs(HttpQueue *q)
      */
     if ((ejs = ejsAllocPoolVM(pool, EJS_FLAG_HOSTED)) == 0) {
         httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Cannot create Ejs interpreter");
-        return;
+        return -1;
     }
     conn->ejs = ejs;
     ejs->hosted = 1;
@@ -81,6 +81,7 @@ static void openEjs(HttpQueue *q)
      */
     conn->http->activeVMs = pool->count + (pool->template ? 1 : 0);
 #endif
+    return 0;
 }
 
 
@@ -159,14 +160,14 @@ PUBLIC int maEjsHandlerInit(Http *http, MprModule *module)
     maAddDirective(appweb, "EjsWorkers", ejsWorkersDirective);
     return 0;
 }
-#else /* BIT_PACK_EJSCRIPT */
+#else /* ME_COM_EJS */
 
 PUBLIC int maEjsHandlerInit(Http *http, MprModule *module)
 {
     mprNop(0);
     return 0;
 }
-#endif /* BIT_PACK_EJSCRIPT */
+#endif /* ME_COM_EJS */
 
 /*
     @copy   default

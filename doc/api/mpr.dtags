@@ -36,23 +36,23 @@
     <class kind="struct">MprWorkerStats</class>
     <member kind="define">
       <type>#define</type>
-      <name>BIT_MAX_EVENTS</name>
+      <name>ME_MAX_EVENTS</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a7349c55cdfc3b7f43649a5d18afba3bb</anchor>
+      <anchor>af821420781729d00310228b21dc11aea</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
       <type>#define</type>
-      <name>BIT_MPR_LOGGING</name>
+      <name>ME_MPR_LOGGING</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>acdd6dbd60b7b6fd7c8b1aa0c67aee862</anchor>
+      <anchor>af8ebacbfd3978c3b12cef8c9f7b7db11</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
       <type>#define</type>
-      <name>BIT_MPR_MAX_PASSWORD</name>
+      <name>ME_MPR_MAX_PASSWORD</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>aa130b1fa260d87a9fe7cdd4d5bc10a95</anchor>
+      <anchor>a9d90dbb86522baf78c10b9aa51078770</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
@@ -291,13 +291,6 @@
       <name>MPR_DAEMON</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>ad1645441f4f2593704607bcaf695c0cb</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MPR_DEBUG</name>
-      <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a990bc0ed43b1479ca1ea9e9c81fbb13a</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
@@ -767,13 +760,6 @@
       <name>MPR_EXIT_TIMEOUT</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>ae0673073d2a8d3382a0ee082675c2148</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MPR_FATAL_MSG</name>
-      <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>ae98cab91ffb1d0745e2ee620fe2fec62</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
@@ -1257,13 +1243,6 @@
       <name>MPR_SERVICE_NO_GC</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>a2a21cf060065f6162ecae871533ea9f7</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MPR_SERVICE_ONE_THING</name>
-      <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>ac6d5205a6c355e6e3c5cb78db9b57a7f</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
@@ -2681,6 +2660,13 @@
       <arglist>(MprWorker *worker)</arglist>
     </member>
     <member kind="function">
+      <type>void</type>
+      <name>mprDefaultLogHandler</name>
+      <anchorfile>group___mpr_log.html</anchorfile>
+      <anchor>ga397bb24e9f28b8d1e1482922d2b265a4</anchor>
+      <arglist>(int flags, int level, cchar *msg)</arglist>
+    </member>
+    <member kind="function">
       <type>int</type>
       <name>mprDeletePath</name>
       <anchorfile>group___mpr_path.html</anchorfile>
@@ -3108,6 +3094,13 @@
       <arglist>()</arglist>
     </member>
     <member kind="function">
+      <type>uint64</type>
+      <name>mprGetCPU</name>
+      <anchorfile>group___mpr_mem.html</anchorfile>
+      <anchor>gad5c9bf331c8c5dc9f586625e86818154</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
       <type>MprOsThread</type>
       <name>mprGetCurrentOsThread</name>
       <anchorfile>group___mpr_thread.html</anchorfile>
@@ -3309,6 +3302,13 @@
       <anchorfile>group___mpr_json.html</anchorfile>
       <anchor>ga804fb42efcb968510655e4bd90e4bbb7</anchor>
       <arglist>(MprJson *obj, cchar *key, int flags)</arglist>
+    </member>
+    <member kind="function">
+      <type>void *</type>
+      <name>mprGetKey</name>
+      <anchorfile>group___mpr.html</anchorfile>
+      <anchor>ga20b09458de8a01d16356288a8b41c23f</anchor>
+      <arglist>(cchar *key)</arglist>
     </member>
     <member kind="function">
       <type>void *</type>
@@ -4410,13 +4410,6 @@
       <arglist>(MprFile *file)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
-      <name>mprPollWinCmd</name>
-      <anchorfile>group___mpr_cmd.html</anchorfile>
-      <anchor>ga192b4e4644029986c0fab0dc79d6999a</anchor>
-      <arglist>(MprCmd *cmd, MprTicks timeout)</arglist>
-    </member>
-    <member kind="function">
       <type>void *</type>
       <name>mprPopItem</name>
       <anchorfile>group___mpr_list.html</anchorfile>
@@ -5117,6 +5110,13 @@
       <arglist>(MprJson *obj, cchar *key, MprJson *value, int flags)</arglist>
     </member>
     <member kind="function">
+      <type>void</type>
+      <name>mprSetKey</name>
+      <anchorfile>group___mpr.html</anchorfile>
+      <anchor>ga8a1f63942d93420121a18e0cf5a56d91</anchor>
+      <arglist>(cchar *key, void *value)</arglist>
+    </member>
+    <member kind="function">
       <type>int</type>
       <name>mprSetListLimits</name>
       <anchorfile>group___mpr_list.html</anchorfile>
@@ -5489,6 +5489,13 @@
     </member>
     <member kind="function">
       <type>int</type>
+      <name>mprStartDispatcher</name>
+      <anchorfile>group___mpr_event.html</anchorfile>
+      <anchor>ga05910285cefa99428bada1572eed1bbd</anchor>
+      <arglist>(MprDispatcher *dispatcher)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
       <name>mprStartEventsThread</name>
       <anchorfile>group___mpr.html</anchorfile>
       <anchor>ga201d701e07e26e2ec458d4f5be81bf17</anchor>
@@ -5556,6 +5563,13 @@
       <anchorfile>group___mpr_event.html</anchorfile>
       <anchor>ga1f2c85a20242ec0c1e4830ccd25c7bb7</anchor>
       <arglist>(MprEvent *event)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>mprStopDispatcher</name>
+      <anchorfile>group___mpr_event.html</anchorfile>
+      <anchor>ga046940fc239f1be73583fd76b312116a</anchor>
+      <arglist>(MprDispatcher *dispatcher)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -6518,6 +6532,13 @@
       <anchorfile>group___mpr_mem.html</anchorfile>
       <anchor>ga4c9028aba8f82b48191035aa3a191d81</anchor>
       <arglist>(cvoid *ptr)</arglist>
+    </member>
+    <member kind="function">
+      <type>uint64</type>
+      <name>mprGetCPU</name>
+      <anchorfile>group___mpr_mem.html</anchorfile>
+      <anchor>gad5c9bf331c8c5dc9f586625e86818154</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>size_t</type>
@@ -7721,6 +7742,13 @@
     </member>
     <member kind="function">
       <type>void</type>
+      <name>mprDefaultLogHandler</name>
+      <anchorfile>group___mpr_log.html</anchorfile>
+      <anchor>ga397bb24e9f28b8d1e1482922d2b265a4</anchor>
+      <arglist>(int flags, int level, cchar *msg)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
       <name>mprError</name>
       <anchorfile>group___mpr_log.html</anchorfile>
       <anchor>ga33ca1cbd4c7573013253873dab76f209</anchor>
@@ -8673,11 +8701,25 @@
       <arglist>(MprEvent *event)</arglist>
     </member>
     <member kind="function">
+      <type>int</type>
+      <name>mprStartDispatcher</name>
+      <anchorfile>group___mpr_event.html</anchorfile>
+      <anchor>ga05910285cefa99428bada1572eed1bbd</anchor>
+      <arglist>(MprDispatcher *dispatcher)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>mprStopContinuousEvent</name>
       <anchorfile>group___mpr_event.html</anchorfile>
       <anchor>ga1f2c85a20242ec0c1e4830ccd25c7bb7</anchor>
       <arglist>(MprEvent *event)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>mprStopDispatcher</name>
+      <anchorfile>group___mpr_event.html</anchorfile>
+      <anchor>ga046940fc239f1be73583fd76b312116a</anchor>
+      <arglist>(MprDispatcher *dispatcher)</arglist>
     </member>
   </compound>
   <compound kind="group">
@@ -9769,13 +9811,6 @@
       <arglist>(MprCmd *cmd)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
-      <name>mprPollWinCmd</name>
-      <anchorfile>group___mpr_cmd.html</anchorfile>
-      <anchor>ga192b4e4644029986c0fab0dc79d6999a</anchor>
-      <arglist>(MprCmd *cmd, MprTicks timeout)</arglist>
-    </member>
-    <member kind="function">
       <type>ssize</type>
       <name>mprReadCmd</name>
       <anchorfile>group___mpr_cmd.html</anchorfile>
@@ -10253,6 +10288,13 @@
       <arglist>()</arglist>
     </member>
     <member kind="function">
+      <type>void *</type>
+      <name>mprGetKey</name>
+      <anchorfile>group___mpr.html</anchorfile>
+      <anchor>ga20b09458de8a01d16356288a8b41c23f</anchor>
+      <arglist>(cchar *key)</arglist>
+    </member>
+    <member kind="function">
       <type>int</type>
       <name>mprGetLogLevel</name>
       <anchorfile>group___mpr.html</anchorfile>
@@ -10517,6 +10559,13 @@
       <anchorfile>group___mpr.html</anchorfile>
       <anchor>ga1fa92eb8cb9bf4f023f4f60f57001abc</anchor>
       <arglist>(cchar *ip)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>mprSetKey</name>
+      <anchorfile>group___mpr.html</anchorfile>
+      <anchor>ga8a1f63942d93420121a18e0cf5a56d91</anchor>
+      <arglist>(cchar *key, void *value)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -10981,13 +11030,6 @@
     </member>
     <member kind="variable">
       <type>int</type>
-      <name>iteration</name>
-      <anchorfile>struct_mpr_heap.html</anchorfile>
-      <anchor>a51fe0d1160ba4b94f743821ad7e7d59a</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>int</type>
       <name>mark</name>
       <anchorfile>struct_mpr_heap.html</anchorfile>
       <anchor>aa9b2ce22acfff89414bbf5144f5c8e11</anchor>
@@ -11043,10 +11085,10 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
-      <type>int</type>
-      <name>priorWeightedCount</name>
+      <type>uint64</type>
+      <name>priorWorkDone</name>
       <anchorfile>struct_mpr_heap.html</anchorfile>
-      <anchor>abc5e085e603ff1ef7ac59398315f38f9</anchor>
+      <anchor>a7adb93c2011508f0956a31102efaac0f</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -11113,17 +11155,17 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
-      <type>int</type>
+      <type>uint64</type>
       <name>workDone</name>
       <anchorfile>struct_mpr_heap.html</anchorfile>
-      <anchor>aa9809a34abdbadedfbf9157081924e28</anchor>
+      <anchor>a887e11a4ba64a0977df1500a39a03957</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
-      <type>int</type>
+      <type>uint64</type>
       <name>workQuota</name>
       <anchorfile>struct_mpr_heap.html</anchorfile>
-      <anchor>a0673f60f8ca2442c4a9b39d24616c17e</anchor>
+      <anchor>aa08ac2c90aa07fa0ce99a36d4ee8ae22</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -11225,6 +11267,13 @@
     </member>
     <member kind="variable">
       <type>uint64</type>
+      <name>bytesAllocatedPeak</name>
+      <anchorfile>struct_mpr_mem_stats.html</anchorfile>
+      <anchor>a1ef8a6cbd4c9e9184345520d549d5204</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint64</type>
       <name>bytesFree</name>
       <anchorfile>struct_mpr_mem_stats.html</anchorfile>
       <anchor>a5d4e3283562ae0f5b58ad8ad42e5519f</anchor>
@@ -11238,10 +11287,31 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
+      <type>uint</type>
+      <name>cpuCores</name>
+      <anchorfile>struct_mpr_mem_stats.html</anchorfile>
+      <anchor>a96588ed3cb9c6b40a9d32f96a8da0a7e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint64</type>
+      <name>cpuUsage</name>
+      <anchorfile>struct_mpr_mem_stats.html</anchorfile>
+      <anchor>a3bec3000fb624f6865789c1af6d42988</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>uint64</type>
       <name>errors</name>
       <anchorfile>struct_mpr_mem_stats.html</anchorfile>
       <anchor>a6c4f754473c90f79a69298e80eb3fb9a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>heapRegions</name>
+      <anchorfile>struct_mpr_mem_stats.html</anchorfile>
+      <anchor>aedb54a4df8f8d9287ee97d0965b86ce5</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -11267,13 +11337,6 @@
     </member>
     <member kind="variable">
       <type>uint</type>
-      <name>numCpu</name>
-      <anchorfile>struct_mpr_mem_stats.html</anchorfile>
-      <anchor>a1b17ba9530672be878738c86cec5ee4b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint</type>
       <name>pageSize</name>
       <anchorfile>struct_mpr_mem_stats.html</anchorfile>
       <anchor>aa469f95d95885d3216ff2fb01d8d1447</anchor>
@@ -11291,6 +11354,27 @@
       <name>rss</name>
       <anchorfile>struct_mpr_mem_stats.html</anchorfile>
       <anchor>a9f73cd7fbbebbe89337723534fc3941b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>sweeps</name>
+      <anchorfile>struct_mpr_mem_stats.html</anchorfile>
+      <anchor>a0335963221da2c4672debce2b679c8e3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint64</type>
+      <name>swept</name>
+      <anchorfile>struct_mpr_mem_stats.html</anchorfile>
+      <anchor>a196ac3eb5ae3d69bc4ae04b1e959d4bc</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint64</type>
+      <name>sweptBytes</name>
+      <anchorfile>struct_mpr_mem_stats.html</anchorfile>
+      <anchor>a89948e02e9b6c8e379575a14c708669c</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">

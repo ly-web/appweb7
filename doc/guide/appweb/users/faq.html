@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.5.0 Documentation</title>
+    <title>Embedthis Appweb 5.0.0-rc0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.5.0</div>
+                <div class="version">Embedthis Appweb 5.0.0-rc0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -128,13 +128,12 @@
                 <pre>
 apt-get install build-essential libxml2-dev libdb-dev
 </pre>
-                <p>To get the PHP package, use the <strong>git</strong> tool to
-                download the packages:</p>
-                <pre>
-git clone http://github.com/embedthis/packages
-</pre>This is a big download, please be patient.
-                <p>In the php sub-directory you will find a Makefile which has configure settings for PHP on various
-                platforms. This Makefile disables most features to build a minimal PHP configuration. Edit this to suit
+                <p>The easiest way to get the PHP package is via the <a href="http://embedthis.com/products/pak">Pak</a>
+                package manger. Download Pak and then use:</p>
+                <pre>$ <b>pak install php</b></pre>
+                <p>This will download, build and install php into the appweb source directory.</p>
+                <p>You may need to modify the build settings if you wish to manually build PHP.
+                The default build disables most features to build a minimal PHP configuration. Edit this to suit
                 your configuration.</p>
                 <p>On <b>Linux</b>, use the following configuration:</p>
                 <pre>
@@ -156,7 +155,7 @@ cscript /nologo configure.js \
   --disable-reflection --disable-tokenizer --disable-zlib --disable-ftp \
   --enable-embed --enable-zts --without-dom --without-libxml
 </pre>
-                <p>On <b>MAC OS X</b>, use the following configuration:</p>
+                <p>On <b>MAC OSX</b>, use the following configuration:</p>
                 <pre>
 ./configure --disable-debug --disable-rpath --enable-bcmath \
   --enable-calendar --enable-maintainer-zts --enable-embed=shared \
@@ -169,9 +168,7 @@ cscript /nologo configure.js \
 </pre>
                 <p>Once you have a new PHP library, you can reconfigure and build Appweb to use this PHP library. Here
                 is a typical Appweb configure command to use PHP:</p>
-                <pre>
-./configure -with php=/dir/to/php
-</pre>
+                <pre>$ <b>./configure -with php</b></pre>
             </div>
             <p class="question"><a id="disableFeatures"></a>If I rebuild the source, can I
             disable features at compile time?</p>
@@ -247,15 +244,10 @@ SERVER_URL
             </div>
             <p class="question"><a id="minimalFootprint"></a>How small can I make Appweb?</p>
             <div class="answer">
-                <p>Appweb 2 has about 800K of code. On a VxWorks or uClibc based Linux system, you should be able to
+                <p>Appweb 5 has about 1MB of code. On a VxWorks or uClibc based Linux system, you should be able to
                 build Appweb for a 1MB memory footprint. It will be larger if you use OpenSSL and much larger if
-                you use PHP (which is +5MB).</p>
-                <p>For a minimal footprint on Appweb, use:</p>
-                <pre>
-./configure --without all ... more options ...
-</pre>
-                <p>This will disable all possible features but still provide a running web server. Then add various
-                <em>--set option=value</em> and <em>--with component</em> switches as required.</p>
+                you use PHP (which is +10MB).</p>
+                
                 <p>Things to consider when building small.</p>
                 <ul>
                     <li>Don't use PHP.</li>

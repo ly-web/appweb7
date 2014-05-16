@@ -5,7 +5,7 @@
 if (!Config.SSL) {
     test.skip("SSL not enabled in ejs")
 
-} else if (!App.config.bit_ssl) {
+} else if (!App.config.me_ssl) {
     test.skip("SSL not enabled")
 } else {
     const HTTPS = App.config.test.http_port || "https://localhost:4443"

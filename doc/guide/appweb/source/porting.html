@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.5.0 Documentation</title>
+    <title>Embedthis Appweb 5.0.0-rc0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.5.0</div>
+                <div class="version">Embedthis Appweb 5.0.0-rc0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -72,7 +72,7 @@
             Runtime (MPR).</p>
             <p><b>NOTE:</b> When attempting a port, you should get the latest copy of the development source 
             rather than using the download source package. You can get the latest development source by checking out a
-            copy from the <a href="https://github.com/embedthis/appweb-4">repository</a>.</p>
+            copy from the <a href="https://github.com/embedthis/appweb">repository</a>.</p>
             <p><b>NOTE:</b> Please read <a href="building.html">Building from Source</a> before your read this
             document. It provides valuable background about building from source.</p>
             
@@ -81,7 +81,7 @@
             <ol>
                 <li><h3>Pick a Name for the O/S</h3>
                     <p>If you are doing a port for a new operating system, you need to pick a symbolic name that will
-                    be used in conditional compilation, Makefiles, bit files, and operating system specific 
+                    be used in conditional compilation, Makefiles, MakeMe files, and operating system specific 
                     directories. Some existing O/S names are: "linux", "windows", "freebsd", and "macosx".</p>
                     <p>These names are used as upper-case pre-processor defines and in some cases as lower-case
                         directory names.</p>
@@ -109,11 +109,11 @@ vi projects/appweb-qnx.mk
                 </li>
                 <li><h3>Tailor the cross-platform O/S header.</h3>
                     <p>To insulate most of the Appweb source code from the differences of various operating systems,
-                    the <em>src/bitos.h</em> header file wraps all the required O/S headers and publishes a
+                    the <em>src/paks/osdep/osdep.h</em> header file wraps all the required O/S headers and publishes a
                     consistent set of types and prototypes. None of the source files include normal O/S headers like
                     &lt;string.h&gt;. While this does slow the build by including more headers than are required
                     &mdash; it is barely noticeable on modern CPUs.</p>
-                    <p>When porting the bitos.h, start by copying the sections in bitos.h that pertain to your base 
+                    <p>When porting the osdep.h, start by copying the sections in osdep.h that pertain to your base 
                     copied O/S.
                     These will be protected by "#if BASEOS" defines. In the example of QNX, we would look for, and
                     copy, any sections with "#if LINUX" and create "#if QNX" sections.</p>
@@ -121,7 +121,7 @@ vi projects/appweb-qnx.mk
                     contents from the base O/S and modify. It is better to isolate the code for each O/S.</p>
                 </li>
                 <li><h3>Test the Headers with a Hello World Program.</h3>
-                    <p>Don't use the make system yet. Just create an empty C hello world program and include "bitos.h".
+                    <p>Don't use the make system yet. Just create an empty C hello world program and include "osdep.h".
                     Compile it and shake out the issues. </p>
                 </li>
                 <li><h3>Port the MPR Source Code</h3>

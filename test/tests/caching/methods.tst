@@ -1,5 +1,7 @@
 /*
     methods.tst - Test cache matching by method
+
+    WARNING: this unit test can fail if your local time is not set correctly.
  */
 
 const HTTP = App.config.uris.http || "127.0.0.1:4100"
@@ -32,7 +34,7 @@ function cached(method, uri): Boolean {
     return (resp.number == first)
 }
 
-if (App.config.bit_esp) {
+if (App.config.me_esp) {
     //  The POST requst should be cached and the GET not
     assert(cached("POST", "/methods/cache.esp"))
     assert(!cached("GET", "/methods/cache.esp"))

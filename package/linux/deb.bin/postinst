@@ -5,15 +5,15 @@
 #	Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 #
 
-BIT_PRODUCT=${settings.product}
-BIT_NAME="${settings.title}"
-BIT_APP_PREFIX="${prefixes.app}"
-BIT_VAPP_PREFIX="${prefixes.vapp}"
-BIT_BIN_PREFIX="${prefixes.bin}"
-BIT_LIB_PREFIX="${prefixes.lib}"
-BIT_LOG_PREFIX="${prefixes.log}"
-BIT_SPOOL_PREFIX="${prefixes.spool}"
-BIT_CACHE_PREFIX="${prefixes.cache}"
+ME_PRODUCT=${settings.name}
+ME_NAME="${settings.title}"
+ME_APP_PREFIX="${prefixes.app}"
+ME_VAPP_PREFIX="${prefixes.vapp}"
+ME_BIN_PREFIX="${prefixes.bin}"
+ME_LIB_PREFIX="${prefixes.lib}"
+ME_LOG_PREFIX="${prefixes.log}"
+ME_SPOOL_PREFIX="${prefixes.spool}"
+ME_CACHE_PREFIX="${prefixes.cache}"
 
 ###############################################################################
 setPerms() {
@@ -34,13 +34,13 @@ setPerms() {
 		fi
 	done
 	if [ "$username" = "" -o "$groupname" = "" ] ; then
-		echo "Can't find a suitable user/group for $BIT_PRODUCT" 1>&2
+		echo "Can't find a suitable user/group for $ME_PRODUCT" 1>&2
 		exit 255
 	fi
-    mkdir -p "$BIT_SPOOL_PREFIX" "$BIT_CACHE_PREFIX" "$BIT_LOG_PREFIX"
-    chown $username "$BIT_SPOOL_PREFIX" "$BIT_CACHE_PREFIX" "$BIT_LOG_PREFIX"
-    chgrp $groupname "$BIT_SPOOL_PREFIX" "$BIT_CACHE_PREFIX" "$BIT_LOG_PREFIX"
-    chmod 755 "$BIT_SPOOL_PREFIX" "$BIT_CACHE_PREFIX" "$BIT_LOG_PREFIX"
+    mkdir -p "$ME_SPOOL_PREFIX" "$ME_CACHE_PREFIX" "$ME_LOG_PREFIX"
+    chown $username "$ME_SPOOL_PREFIX" "$ME_CACHE_PREFIX" "$ME_LOG_PREFIX"
+    chgrp $groupname "$ME_SPOOL_PREFIX" "$ME_CACHE_PREFIX" "$ME_LOG_PREFIX"
+    chmod 755 "$ME_SPOOL_PREFIX" "$ME_CACHE_PREFIX" "$ME_LOG_PREFIX"
 }
 
 ###############################################################################
@@ -61,7 +61,7 @@ case $action in
             appman start
         fi
         echo
-		echo "$BIT_NAME installation successful."
+		echo "$ME_NAME installation successful."
 		;;
 	abort-upgrade)						# when old
 		;;

@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.5.0 Documentation</title>
+    <title>Embedthis Appweb 5.0.0-rc0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.5.0</div>
+                <div class="version">Embedthis Appweb 5.0.0-rc0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -63,13 +63,11 @@
             <p>Authorization directives manage user authentication and server access control.</p>
             <h2>Allow</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define which servers can access a section of the published content</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define which servers can access a section of the published content</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Allow from [all | host]</td>
@@ -98,13 +96,11 @@
             <a id="authAutoLogin"></a>
             <h2>AuthAutoLogin</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Automatically login as the designated user</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Automatically login as the designated user</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>AuthAutoLogin username</td>
@@ -132,13 +128,11 @@
             <a id="authCipher"></a>
             <h2>AuthCipher</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Defines the cipher used to encrypt passwords</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines the cipher used to encrypt passwords</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>AuthCipher [blowfish | md5]</td>
@@ -172,13 +166,11 @@
             <a id="authDigestQop"></a>
             <h2>AuthDigestQop</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Defines the quality of protection for Digest authentication</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines the quality of protection for Digest authentication</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>AuthDigestQop [none | auth | auth-int]</td>
@@ -211,13 +203,11 @@
             <a id="authRealm"></a>
             <h2>AuthRealm</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Defines a realm name for authentication.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines a realm name for authentication.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>AuthRealm realm</td>
@@ -251,13 +241,11 @@
             <a id="authStore"></a>
             <h2>AuthStore</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Defines the password store for user and password credentials.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines the password store for user and password credentials.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>AuthStore [file | system]</td>
@@ -291,13 +279,11 @@
             <a id="authType"></a>
             <h2>AuthType</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Defines the type of authentication to use.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines the type of authentication to use.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>AuthType [basic | digest | none] [realm]<br/>
@@ -347,13 +333,11 @@
             <a id="deny"></a>
             <h2>Deny</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Defines servers to deny access to content</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines servers to deny access to content</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Deny [all | host]</td>
@@ -376,13 +360,11 @@
             <a id="order"></a>
             <h2>Order</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Specifies the order in which the allow and deny directives apply</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Specifies the order in which the allow and deny directives apply</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Order allowSpec</td>
@@ -432,13 +414,11 @@ Deny from www.myCompetitor.com
             <a id="require"></a>
             <h2>Require</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Defines the required users and abilities to permitted access</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines the required users and abilities to permitted access</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Require user username...<br />
@@ -474,13 +454,11 @@ Deny from www.myCompetitor.com
             <a id="role"></a>
             <h2>Role</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Defines an authentication role with associated abilities.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines an authentication role with associated abilities.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Role name abilities...</td>
@@ -515,13 +493,11 @@ Deny from www.myCompetitor.com
             <a id="user"></a>
             <h2>User</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Defines a user with password and abilities.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines a user with password and abilities.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>User name password abilities...</td>

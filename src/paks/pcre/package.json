@@ -2,9 +2,10 @@
     "name": "pcre",
     "description": "PCRE Library",
     "title": "PCRE Library",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "keywords": [
         "pcre",
+        "me"
     ],
     "author": {
         "name": "Embedthis Software",
@@ -18,8 +19,16 @@
     "bugs": {
         "url": "http://github.com/embedthis/pcre/issues"
     },
-    "licenses": [{ 
-        "type": "ZLIB", 
-        "url": "https://github.com/embedthis/zlib/blob/master/LICENSE.md",
-    }]
+    "licenses": [
+        {
+            "type": "BSD",
+            "url": "https://github.com/embedthis/zlib/blob/master/LICENSE.md"
+        }
+    ],
+    "directories": {
+        "paks": "src/paks"
+    },
+    "dependencies": {
+        "me-dev": "~0.8"
+    }
 }

@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.5.0 Documentation</title>
+    <title>Embedthis Appweb 5.0.0-rc0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.5.0</div>
+                <div class="version">Embedthis Appweb 5.0.0-rc0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -154,8 +154,8 @@ X-Request-Timeout: 600
             consumed by the WebSockets layer at the peer. The application layer may initiate the peer message, but
             it will never see the pong response.</p>
             <p>Appweb has a <a href="dir/route.html#webSocketsPing">WebSocketsPing</a> appweb.conf directive that can be 
-            used to automatically send ping messages at a specified interval. Note: use of this directive defeats all Appweb 
-            timeouts for an idle WebSockets connection.</p>
+            used to automatically send ping messages at a specified interval. Note: use of this directive defeats the Appweb 
+            InactivityTimeout for an idle WebSockets connection.</p>
             <h2>Timeouts</h2>
             <p>The standard Appweb request and inactivity timeouts can be used for WebSocket communications.
             Typically, a route will be defined in the appweb.conf file for WebSockets and it will include
@@ -349,8 +349,8 @@ httpSendBlock(conn, WS_MSG_BINARY, buf, sizeof(buf), HTTP_BLOCK);</pre>
             message. This is the highest performance mode and consumes minimal memory. However it is more complex when the
             all returns having written less than requested. There is a sample that demonstrates this at:</p>
             
-            <pre><a href="https://github.com/embedthis/appweb-4/tree/master/samples/websockets-output"
-                    >https://github.com/embedthis/appweb-4/tree/master/samples/websockets-output</a></pre>
+            <pre><a href="https://github.com/embedthis/appweb/tree/master/samples/websockets-output"
+                    >https://github.com/embedthis/appweb/tree/master/samples/websockets-output</a></pre>
             <h4>Message Framing</h4>
             <p>The WebSockFilter may split the message into frames such that no frame is larger than the limits specified by
             the LimitWebSocketsFrame directive. However, if the HTTP_MORE flag is specified to indicate there is more data to
@@ -358,7 +358,7 @@ httpSendBlock(conn, WS_MSG_BINARY, buf, sizeof(buf), HTTP_BLOCK);</pre>
             previous or subsequent messages.  i.e. frame boundaries will be preserved and sent as-is to the peer.</p>
             <h2>WebSocket Samples</h2>
             <p>See the Appweb samples for some specific WebSockets samples</p>
-            <pre><a href="https://github.com/embedthis/appweb-4/tree/dev/samples">https://github.com/embedthis/appweb-4/tree/dev/samples</a></pre>
+            <pre><a href="https://github.com/embedthis/appweb/tree/dev/samples">https://github.com/embedthis/appweb/tree/dev/samples</a></pre>
             <h2>WebSocket References</h2>
             <table title="Standards" class="width">
                 <thead>

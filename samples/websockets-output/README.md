@@ -14,16 +14,16 @@ browse to:
 Requirements
 ---
 
-* [Appweb](http://embedthis.com/downloads/appweb/download.ejs)
-* [Bit Build Tool](http://embedthis.com/downloads/bit/download.ejs)
+* [Appweb](http://embedthis.com/downloads/appweb/download.esp)
+* [MakeMe Build Tool](http://embedthis.com/downloads/me/download.esp)
 
 To build:
 ---
-    bit 
+    me 
 
 To run:
 ---
-    bit run
+    me run
 
 The server listens on port 8080. Browse to: 
  
@@ -37,7 +37,7 @@ Code:
 * [cache](cache) - Directory for compiled ESP modules
 * [appweb.conf](appweb.conf) - Appweb server configuration file
 * [echo.c](echo.c) - WebSockets echo server code
-* [start.bit](start.bit) - Bit build instructions
+* [start.me](start.me) - MakeMe build instructions
 * [web](web) - Directory containing the index.html web page
 
 Documentation:

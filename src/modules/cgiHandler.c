@@ -11,7 +11,7 @@
 
 #include    "appweb.h"
 
-#if BIT_PACK_CGI
+#if ME_COM_CGI
 /************************************ Locals ***********************************/
 
 typedef struct Cgi {
@@ -39,17 +39,17 @@ static bool parseFirstCgiResponse(Cgi *cgi, HttpPacket *packet);
 static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet);
 static void readFromCgi(Cgi *cgi, int channel);
 
-#if BIT_DEBUG
+#if ME_DEBUG
     static void traceCGIData(MprCmd *cmd, char *src, ssize size);
     #define traceData(cmd, src, size) traceCGIData(cmd, src, size)
 #else
     #define traceData(cmd, src, size)
 #endif
 
-#if BIT_WIN_LIKE || VXWORKS
+#if ME_WIN_LIKE || VXWORKS
     static void findExecutable(HttpConn *conn, char **program, char **script, char **bangScript, cchar *fileName);
 #endif
-#if BIT_WIN_LIKE
+#if ME_WIN_LIKE
     static void checkCompletion(HttpQueue *q, MprEvent *event);
     static void waitForCgi(Cgi *cgi, MprEvent *event);
 #endif
@@ -58,7 +58,7 @@ static void readFromCgi(Cgi *cgi, int channel);
 /*
     Open the handler for a new request
  */
-static void openCgi(HttpQueue *q)
+static int openCgi(HttpQueue *q)
 {
     HttpConn    *conn;
     Cgi         *cgi;
@@ -67,17 +67,19 @@ static void openCgi(HttpQueue *q)
     conn = q->conn;
     mprTrace(5, "Open CGI handler");
     if ((nproc = (int) httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_PROCESSES, 1)) >= conn->limits->processMax) {
-        httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Server overloaded");
         mprLog(2, "Too many concurrent processes %d/%d", nproc, conn->limits->processMax);
-        return;
+        httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Server overloaded");
+        httpMonitorEvent(q->conn, HTTP_COUNTER_ACTIVE_PROCESSES, -1);
+        return MPR_ERR_CANT_OPEN;
     }
     if ((cgi = mprAllocObj(Cgi, manageCgi)) == 0) {
         /* Normal mem handler recovery */ 
-        return;
+        return MPR_ERR_MEMORY;
     }
     httpTrimExtraPath(conn);
     httpMapFile(conn);
     httpCreateCGIParams(conn);
+
     q->queueData = q->pair->queueData = cgi;
     cgi->conn = conn;
     cgi->readq = httpCreateQueue(conn, conn->http->cgiConnector, HTTP_QUEUE_RX, 0);
@@ -85,6 +87,7 @@ static void openCgi(HttpQueue *q)
     cgi->readq->pair = cgi->writeq;
     cgi->writeq->pair = cgi->readq;
     cgi->writeq->queueData = cgi->readq->queueData = cgi;
+    return 0;
 }
 
 
@@ -97,15 +100,6 @@ static void manageCgi(Cgi *cgi, int flags)
         mprMark(cgi->cmd);
         mprMark(cgi->headers);
         mprMark(cgi->location);
-#if UNUSED
-    } else {
-        assert(!cgi->cmd);
-        if (cgi->cmd) {
-            /* Just for safety */
-            //  MOB 
-            mprDestroyCmd(cgi->cmd);
-        }
-#endif
     }
 }
 
@@ -201,20 +195,13 @@ static void startCgi(HttpQueue *q)
         httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot run CGI process: %s, URI %s", fileName, rx->uri);
         return;
     }
-#if BIT_WIN_LIKE
-    /*
-        Start the windows-waiter via an event. This ensures it is serialized in the request dispatcher
-     */
+#if ME_WIN_LIKE
     mprCreateEvent(conn->dispatcher, "cgi-win", 10, waitForCgi, cgi, MPR_EVENT_CONTINUOUS);
 #endif
 }
 
 
-#if BIT_WIN_LIKE
-/*
-    Windows can't select on named pipes. So poll for events. This runs on the connection dispatcher thread. 
-    Don't actually service events here. Otherwise it becomes too complex with nested calls.
- */
+#if ME_WIN_LIKE
 static void waitForCgi(Cgi *cgi, MprEvent *event)
 {
     HttpConn    *conn;
@@ -223,9 +210,9 @@ static void waitForCgi(Cgi *cgi, MprEvent *event)
     conn = cgi->conn;
     cmd = cgi->cmd;
     if (cmd && !cmd->complete) {
-        mprPollWinCmd(cmd, 0);
         if (conn->error && cmd->pid) {
             mprStopCmd(cmd, -1);
+            mprStopContinuousEvent(event);
         }
     } else {
         mprStopContinuousEvent(event);
@@ -245,7 +232,9 @@ static void browserToCgiData(HttpQueue *q, HttpPacket *packet)
 
     assert(q);
     assert(packet);
-    cgi = q->queueData;
+    if ((cgi = q->queueData) == 0) {
+        return;
+    }
     conn = q->conn;
     assert(q == conn->readq);
 
@@ -273,7 +262,9 @@ static void browserToCgiService(HttpQueue *q)
     ssize       rc, len;
     int         err;
 
-    cgi = q->queueData;
+    if ((cgi = q->queueData) == 0) {
+        return;
+    }
     assert(q == cgi->writeq);
     cmd = cgi->cmd;
     assert(cmd);
@@ -330,7 +321,9 @@ static void cgiToBrowserService(HttpQueue *q)
     MprCmd      *cmd;
     Cgi         *cgi;
 
-    cgi = q->queueData;
+    if ((cgi = q->queueData) == 0) {
+        return;
+    }
     conn = q->conn;
     assert(q == conn->writeq);
     cmd = cgi->cmd;
@@ -366,7 +359,9 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
     Cgi         *cgi;
     int         suspended;
 
-    cgi = data;
+    if ((cgi = data) == 0) {
+        return;
+    }
     if ((conn = cgi->conn) == 0) {
         return;
     }
@@ -428,13 +423,13 @@ static void readFromCgi(Cgi *cgi, int channel)
     }
     while (mprGetCmdFd(cmd, channel) >= 0 && !tx->finalized && writeq->count < writeq->max) {
         if ((packet = cgi->headers) != 0) {
-            if (mprGetBufSpace(packet->content) < BIT_MAX_BUFFER && mprGrowBuf(packet->content, BIT_MAX_BUFFER) < 0) {
+            if (mprGetBufSpace(packet->content) < ME_MAX_BUFFER && mprGrowBuf(packet->content, ME_MAX_BUFFER) < 0) {
                 break;
             }
-        } else if ((packet = httpCreateDataPacket(BIT_MAX_BUFFER)) == 0) {
+        } else if ((packet = httpCreateDataPacket(ME_MAX_BUFFER)) == 0) {
             break;
         }
-        nbytes = mprReadCmd(cmd, channel, mprGetBufEnd(packet->content), BIT_MAX_BUFFER);
+        nbytes = mprReadCmd(cmd, channel, mprGetBufEnd(packet->content), ME_MAX_BUFFER);
         if (nbytes < 0) {
             err = mprGetError();
             if (err == EINTR) {
@@ -504,7 +499,7 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
     len = 0;
     if ((endHeaders = sncontains(headers, "\r\n\r\n", blen)) == NULL) {
         if ((endHeaders = sncontains(headers, "\n\n", blen)) == NULL) {
-            if (mprGetCmdFd(cgi->cmd, MPR_CMD_STDOUT) >= 0 && strlen(headers) < BIT_MAX_HEADERS) {
+            if (mprGetCmdFd(cgi->cmd, MPR_CMD_STDOUT) >= 0 && strlen(headers) < ME_MAX_HEADERS) {
                 /* Not EOF and less than max headers and have not yet seen an end of headers delimiter */
                 return 0;
             }
@@ -653,7 +648,7 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
         indexQuery = 0;
     }
 
-#if BIT_WIN_LIKE || VXWORKS
+#if ME_WIN_LIKE || VXWORKS
 {
     char    *bangScript, *cmdBuf, *program, *cmdScript;
 
@@ -757,7 +752,7 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
 }
 
 
-#if BIT_WIN_LIKE || VXWORKS
+#if ME_WIN_LIKE || VXWORKS
 /*
     If the program has a UNIX style "#!/program" string at the start of the file that program will be selected 
     and the original program will be passed as the first arg to that program with argv[] appended after that. If 
@@ -773,7 +768,7 @@ static void findExecutable(HttpConn *conn, char **program, char **script, char *
     MprKey      *kp;
     MprFile     *file;
     cchar       *actionProgram, *ext, *cmdShell, *cp, *start, *path;
-    char        *tok, buf[BIT_MAX_FNAME + 1];
+    char        *tok, buf[ME_MAX_FNAME + 1];
 
     rx = conn->rx;
     tx = conn->tx;
@@ -810,7 +805,7 @@ static void findExecutable(HttpConn *conn, char **program, char **script, char *
     }
     assert(path && *path);
 
-#if BIT_WIN_LIKE
+#if ME_WIN_LIKE
     if (ext && (strcmp(ext, ".bat") == 0 || strcmp(ext, ".cmd") == 0)) {
         /*
             Let a mime action override COMSPEC
@@ -833,9 +828,9 @@ static void findExecutable(HttpConn *conn, char **program, char **script, char *
         *program = sclone(actionProgram);
 
     } else if ((file = mprOpenFile(path, O_RDONLY, 0)) != 0) {
-        if (mprReadFile(file, buf, BIT_MAX_FNAME) > 0) {
+        if (mprReadFile(file, buf, ME_MAX_FNAME) > 0) {
             mprCloseFile(file);
-            buf[BIT_MAX_FNAME] = '\0';
+            buf[ME_MAX_FNAME] = '\0';
             if (buf[0] == '#' && buf[1] == '!') {
                 cp = start = &buf[2];
                 cmdShell = stok(&buf[2], "\r\n", &tok);
@@ -896,7 +891,7 @@ static char *getCgiToken(MprBuf *buf, cchar *delim)
 }
 
 
-#if BIT_DEBUG
+#if ME_DEBUG
 /*
     Trace output first part of output received from the cgi process
  */
@@ -1064,7 +1059,7 @@ PUBLIC int maCgiHandlerInit(Http *http, MprModule *module)
     return 0;
 }
 
-#endif /* BIT_PACK_CGI */
+#endif /* ME_COM_CGI */
 
 /*
     @copy   default

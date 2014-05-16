@@ -4,7 +4,7 @@
 
 const HTTP = App.config.uris.http || "127.0.0.1:4100"
 
-if (App.config.bit_php) {
+if (App.config.me_php) {
     let http: Http = new Http
 
     //  Simple Get 
@@ -31,6 +31,7 @@ if (App.config.bit_php) {
     while ((count = http.read(data))) {
         assert(data.toString().contains("aaaabbbb"))
     }
+    http.close()
 
 } else {
     test.skip("PHP not enabled")

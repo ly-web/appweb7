@@ -4,6 +4,7 @@
     "title": "Embedthis Ejscript",
     "version": "2.3.5",
     "keywords": [
+        "ejs",
         "ejscript",
         "javascript",
         "ecmascript"
@@ -16,11 +17,11 @@
     },
     "repository": {
         "type": "git",
-        "url": "git://github.com/embedthis/ejs-2.git"
+        "url": "git://github.com/embedthis/ejs.git"
     },
     "bugs": {
         "email": "dev@embedthis.com",
-        "url": "http://github.com/embedthis/ejs-2/issues"
+        "url": "http://github.com/embedthis/ejs/issues"
     },
     "licenses": [
         {
@@ -32,15 +33,21 @@
             "url": "http://embedthis.com/licensing/"
         }
     ],
+    "pak": "~0.9",
     "dependencies": {
-        "bitos": "~0.8",
-        "est": "~0.6",
-        "http": "~4.5",
-        "mpr": "~4.5",
+        "http": "~5.0",
+        "me-dev": "~0.8",
+        "mpr": "~5.0",
+        "osdep": "~0.8",
         "pcre": "~1.0",
         "zlib": "~1.0"
     },
-    "dirs": {
+    "optionalDependencies": {
+        "est": "~0.6",
+        "me-ssl": "~0.8",
+        "sqlite": "~1.0"
+    },
+    "directories": {
         "paks": "src/paks"
     }
 }

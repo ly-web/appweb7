@@ -7,7 +7,7 @@ const HTTP = App.config.uris.http || "127.0.0.1:4100"
 let http: Http = new Http
 
 //  TODO - convert to esp
-if (App.config.bit_ejscript) {
+if (App.config.me_ejscript) {
     http.post(HTTP + "/form.ejs", "Some data")
     assert(http.status == 200)
     http.close()

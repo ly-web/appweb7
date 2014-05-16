@@ -5,6 +5,7 @@
     "version": "1.0.2",
     "keywords": [
         "sqlite",
+        "me"
     ],
     "author": {
         "name": "Embedthis Software",
@@ -18,8 +19,16 @@
     "bugs": {
         "url": "http://github.com/embedthis/sqlite/issues"
     },
-    "licenses": [{ 
-        "type": "PUBLIC", 
-        "url": "https://github.com/embedthis/sqlite/blob/master/LICENSE.md",
-    }]
+    "licenses": [
+        {
+            "type": "PUBLIC",
+            "url": "https://github.com/embedthis/sqlite/blob/master/LICENSE.md"
+        }
+    ],
+    "directories": {
+        "paks": "src/paks"
+    },
+    "dependencies": {
+        "me-dev": "~0.8"
+    }
 }

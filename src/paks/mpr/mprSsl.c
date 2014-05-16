@@ -22,9 +22,9 @@
 
 /********************************** Includes **********************************/
 
-#include    "bit.h"
+#include    "me.h"
 
-#if BIT_PACK_MATRIXSSL
+#if ME_COM_MATRIXSSL
 
 #define MATRIX_USE_FILE_SYSTEM
 
@@ -490,7 +490,7 @@ static int handshakeMss(MprSocket *sp, short cipherSuite)
 {
     MatrixSocket    *msp;
     ssize           rc, written, toWrite;
-    char            *obuf, buf[BIT_MAX_BUFFER];
+    char            *obuf, buf[ME_MAX_BUFFER];
     int             mode;
 
     msp = sp->sslSocket;
@@ -742,7 +742,7 @@ static ssize flushMss(MprSocket *sp)
 
 #else
 void matrixsslDummy() {}
-#endif /* BIT_PACK_MATRIXSSL */
+#endif /* ME_COM_MATRIXSSL */
 
 /*
     @copy   default
@@ -782,7 +782,7 @@ void matrixsslDummy() {}
 
 #include    "mpr.h"
 
-#if BIT_PACK_EST
+#if ME_COM_EST
 
 #include    "est.h"
 
@@ -1334,7 +1334,7 @@ static void estTrace(void *fp, int level, char *str)
 
 #else
 void estDummy() {}
-#endif /* BIT_PACK_EST */
+#endif /* ME_COM_EST */
 
 /*
     @copy   default
@@ -1372,7 +1372,7 @@ void estDummy() {}
 
 #include    "mpr.h"
 
-#if BIT_PACK_OPENSSL
+#if ME_COM_OPENSSL
 
 /* Clashes with WinCrypt.h */
 #undef OCSP_RESPONSE
@@ -1455,7 +1455,7 @@ PUBLIC int mprCreateOpenSslModule()
     randBuf.now = mprGetTime();
     randBuf.pid = getpid();
     RAND_seed((void*) &randBuf, sizeof(randBuf));
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
     mprLog(6, "OpenSsl: Before calling RAND_load_file");
     RAND_load_file("/dev/urandom", 256);
     mprLog(6, "OpenSsl: After calling RAND_load_file");
@@ -1502,7 +1502,7 @@ PUBLIC int mprCreateOpenSslModule()
         CRYPTO_set_dynlock_create_callback(sslCreateDynLock);
         CRYPTO_set_dynlock_destroy_callback(sslDestroyDynLock);
         CRYPTO_set_dynlock_lock_callback(sslDynLock);
-#if !BIT_WIN_LIKE
+#if !ME_WIN_LIKE
         /* OPT - Should be a configure option to specify desired ciphers */
         OpenSSL_add_all_algorithms();
 #endif
@@ -1627,7 +1627,7 @@ static OpenConfig *createOpenSslConfig(MprSocket *sp)
         }
         if ((!SSL_CTX_load_verify_locations(context, ssl->caFile, ssl->caPath)) ||
                 (!SSL_CTX_set_default_verify_paths(context))) {
-            sp->errorMsg = sclone("OpenSSL: Unable to set certificate locations"); 
+            sp->errorMsg = sfmt("OpenSSL: Unable to set certificate locations: %s: %s", ssl->caFile, ssl->caPath); 
             SSL_CTX_free(context);
             return 0;
         }
@@ -1764,7 +1764,7 @@ static int upgradeOss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
 {
     OpenSocket      *osp;
     OpenConfig      *cfg;
-    char            ebuf[BIT_MAX_BUFFER];
+    char            ebuf[ME_MAX_BUFFER];
     ulong           error;
     int             rc;
 
@@ -1823,7 +1823,7 @@ static int upgradeOss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
         }
         mprSetSocketBlockingMode(sp, 0);
     }
-#if defined(BIT_MPR_SSL_RENEGOTIATE) && !BIT_MPR_SSL_RENEGOTIATE
+#if defined(ME_MPR_SSL_RENEGOTIATE) && !ME_MPR_SSL_RENEGOTIATE
     /*
         Disable renegotiation after the initial handshake if renegotiate is explicitly set to false (CVE-2009-3555).
         Note: this really is a bogus CVE as disabling renegotiation is not required nor does it enhance security if
@@ -1909,7 +1909,7 @@ static int checkCert(MprSocket *sp)
     OpenSocket  *osp;
     X509        *cert;
     X509_NAME   *xSubject;
-    char        subject[512], issuer[512], peer[512], *dp, *pp;
+    char        subject[512], issuer[512], peer[512], *target, *certName, *tp;
 
     ssl = sp->ssl;
     osp = (OpenSocket*) sp->sslSocket;
@@ -1935,25 +1935,33 @@ static int checkCert(MprSocket *sp)
         X509_free(cert);
     }
     if (ssl->verifyPeer && osp->peerName) {
-        if (smatch(peer, osp->peerName)) {
-            /* simple match */
-        } else if (*peer == '*' && peer[1] == '.') {
-            pp = &peer[2];
-            /* Cert peer must be of the form *.domain.tld. i.e. *.com is not valid */
-            if (!strchr(pp, '.')) {
+        target = osp->peerName;
+        certName = peer;
+
+        if (target == 0 || *target == '\0' || strchr(target, '.') == 0) {
+            sp->errorMsg = sfmt("Bad peer name");
+            return -1;
+        }
+        if (strchr(certName, '.') == 0) {
+            sp->errorMsg = sfmt("Peer certificate must have a domain: \"%s\"", certName);
+            return -1;
+        }
+        if (*certName == '*' && certName[1] == '.') {
+            /* Wildcard cert */
+            certName = &certName[2];
+            if (strchr(certName, '.') == 0) {
+                /* Peer must be of the form *.domain.tld. i.e. *.com is not valid */
                 sp->errorMsg = sfmt("Peer CN is not valid %s", peer);
                 return -1;
             }
-            /* Required peer name must have a domain portion. i.e. domain.tld */
-            if ((dp = strchr(osp->peerName, '.')) != 0) {
-                /* Strip the host portion and just test the domain portion */
-                if (!smatch(pp, &dp[1])) {
-                    sp->errorMsg = sfmt("Certificate common name mismatch CN \"%s\" vs required \"%s\"", peer, osp->peerName);
-                    return -1;
-                }
+            if ((tp = strchr(target, '.')) != 0 && strchr(&tp[1], '.')) {
+                /* Strip host name if target has a host name */
+                target = &tp[1];
             }
-        } else {
+        }
+        if (!smatch(target, certName)) {
             sp->errorMsg = sfmt("Certificate common name mismatch CN \"%s\" vs required \"%s\"", peer, osp->peerName);
+            return -1;
         }
     }
     return 0;
@@ -1967,7 +1975,7 @@ static int checkCert(MprSocket *sp)
 static ssize readOss(MprSocket *sp, void *buf, ssize len)
 {
     OpenSocket      *osp;
-    char            ebuf[BIT_MAX_BUFFER];
+    char            ebuf[ME_MAX_BUFFER];
     ulong           serror;
     int             rc, error, retries, i;
 
@@ -2152,8 +2160,12 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
         }
         break;
 
-    case X509_V_ERR_CERT_CHAIN_TOO_LONG:
     case X509_V_ERR_CERT_HAS_EXPIRED:
+        sp->errorMsg = sfmt("Certificate has expired");
+        ok = 0;
+        break;
+
+    case X509_V_ERR_CERT_CHAIN_TOO_LONG:
     case X509_V_ERR_CERT_NOT_YET_VALID:
     case X509_V_ERR_CERT_REJECTED:
     case X509_V_ERR_CERT_SIGNATURE_FAILURE:
@@ -2358,7 +2370,7 @@ static DH *get_dh1024()
 
 #else
 void opensslDummy() {}
-#endif /* BIT_PACK_OPENSSL */
+#endif /* ME_COM_OPENSSL */
 
 /*
     @copy   default
@@ -2419,7 +2431,7 @@ void opensslDummy() {}
     __ENABLE_MOCANA_SSL_CLIENT__
 #endif
 
-#if BIT_PACK_NANOSSL
+#if ME_COM_NANOSSL
  #include "common/moptions.h"
  #include "common/mdefs.h"
  #include "common/mtypes.h"
@@ -2458,7 +2470,7 @@ typedef struct NanoSocket {
 static MprSocketProvider *nanoProvider;
 static NanoConfig *defaultNanoConfig;
 
-#if BIT_DEBUG
+#if ME_DEBUG
     #define SSL_HELLO_TIMEOUT   15000
     #define SSL_RECV_TIMEOUT    300000
 #else
@@ -2902,7 +2914,7 @@ static void nanoLog(sbyte4 module, sbyte4 severity, sbyte *msg)
 
 #else
 void nanosslDummy() {}
-#endif /* BIT_PACK_NANOSSL */
+#endif /* ME_COM_NANOSSL */
 
 /*
     @copy   default
@@ -3027,31 +3039,31 @@ MprCipher mprCiphers[] = {
  */
 PUBLIC int mprSslInit(void *unused, MprModule *module)
 {
-#if BIT_PACK_SSL
+#if ME_COM_SSL
     assert(module);
 
     /*
         Order matters. The last enabled stack becomes the default.
      */
-#if BIT_PACK_MATRIXSSL
+#if ME_COM_MATRIXSSL
     if (mprCreateMatrixSslModule() < 0) {
         return MPR_ERR_CANT_OPEN;
     }
     MPR->socketService->sslProvider = sclone("matrixssl");
 #endif
-#if BIT_PACK_NANOSSL
+#if ME_COM_NANOSSL
     if (mprCreateNanoSslModule() < 0) {
         return MPR_ERR_CANT_OPEN;
     }
     MPR->socketService->sslProvider = sclone("nanossl");
 #endif
-#if BIT_PACK_OPENSSL
+#if ME_COM_OPENSSL
     if (mprCreateOpenSslModule() < 0) {
         return MPR_ERR_CANT_OPEN;
     }
     MPR->socketService->sslProvider = sclone("openssl");
 #endif
-#if BIT_PACK_EST
+#if ME_COM_EST
     if (mprCreateEstModule() < 0) {
         return MPR_ERR_CANT_OPEN;
     }
@@ -3060,7 +3072,7 @@ PUBLIC int mprSslInit(void *unused, MprModule *module)
     return 0;
 #else
     return MPR_ERR_BAD_STATE;
-#endif /* BLD_PACK_SSL */
+#endif /* BLD_COMP_SSL */
 }
 
 

@@ -66,7 +66,7 @@ int main(int argc, char **argv, char **envp)
         return -1;
     }
     mprStart();
-    appweb = maCreateAppweb(mpr);
+    appweb = maCreateAppweb(NULL);
     mprAddRoot(appweb);
 
     server = maCreateServer(appweb, 0);

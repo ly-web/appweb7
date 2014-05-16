@@ -10,16 +10,16 @@ You are encouraged to see the other typical appweb.conf samples:
 
 Requirements
 ---
-* [Appweb](http://embedthis.com/downloads/appweb/download.ejs)
-* [Bit Build Tool](http://embedthis.com/downloads/bit/download.ejs)
+* [Appweb](http://embedthis.com/downloads/appweb/download.esp)
+* [MakeMe Build Tool](http://embedthis.com/downloads/me/download.esp)
 
 To build:
 ---
-    bit 
+    me 
 
 To run:
 ---
-    bit run
+    me run
 
 The server listens on port 8080. Browse to: 
  
@@ -31,7 +31,7 @@ Code:
 * [auth.conf](auth.conf) - User/Password/Role authorization file
 * [index.html](index.html) - web page to serve
 * [web](web) - Web content to serve
-* [start.bit](start.bit) - Bit build instructions
+* [start.me](start.me) - MakeMe build instructions
 
 Documentation:
 ---

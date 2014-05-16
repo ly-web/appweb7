@@ -16,7 +16,7 @@ if (cookie) {
 }
 
 assert(cookie && cookie.contains("-http-session-="))
-http.close()
+http.reset()
 
 //  POST /session/login
 http.setCookie(cookie)
@@ -32,12 +32,17 @@ if (http.header("Set-Cookie")) {
     cookie = http.header("Set-Cookie");
     cookie = cookie.match(/(-http-session-=.*);/)[1]
 }
-http.close()
+http.reset()
 
 
 //  GET /session/login
 http.setCookie(cookie)
 http.get(HTTP + "/session/login")
 assert(http.status == 200)
+if (!http.response.contains("Logged in")) {
+    print("RESPONSE", http.response)
+    print("COOKIE WAS", cookie)
+    dump(http.headers)
+}
 assert(http.response.contains("Logged in"))
 http.close()

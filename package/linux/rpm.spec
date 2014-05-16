@@ -2,14 +2,14 @@
 #	RPM spec file for the Embedthis Appweb HTTP web server
 #
 Summary: ${settings.title} -- Embeddable HTTP Web Server
-Name: ${settings.product}
+Name: ${settings.name}
 Version: ${settings.version}
 License: Dual GPL/commercial
 Group: Applications/Internet
 URL: http://appwebserver.org
 Distribution: Embedthis
 Vendor: Embedthis Software
-BuildRoot: ${prefixes.rpm}/BUILDROOT/${settings.product}-${settings.version}.${platform.mappedCpu}
+BuildRoot: ${prefixes.rpm}/BUILDROOT/${settings.name}-${settings.version}.${platform.mappedCpu}
 AutoReqProv: no
 
 %description
@@ -23,8 +23,8 @@ Embedthis Appweb is the fast, little web server.
     if [ -x "${prefixes.vapp}/bin/uninstall" ] ; then
         appweb_HEADLESS=1 "${prefixes.vapp}/bin/uninstall" </dev/null 2>&1 >/dev/null
     fi
-    mkdir -p ${prefixes.rpm}/BUILDROOT/${settings.product}-${settings.version}.${platform.mappedCpu}
-    cp -r ${prefixes.content}/* ${prefixes.rpm}/BUILDROOT/${settings.product}-${settings.version}.${platform.mappedCpu}
+    mkdir -p ${prefixes.rpm}/BUILDROOT/${settings.name}-${settings.version}.${platform.mappedCpu}
+    cp -r ${prefixes.content}/* ${prefixes.rpm}/BUILDROOT/${settings.name}-${settings.version}.${platform.mappedCpu}
 
 %clean
 

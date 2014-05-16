@@ -8,3 +8,4 @@ let http: Http = new Http
 http.get(HTTP + "/route/cond")
 assert(http.status == 200)
 assert(http.response == "http")
+http.close()

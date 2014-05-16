@@ -1,0 +1,22 @@
+/*
+    start.me - MakeMe build file (esp-angular-mvc)
+ */
+
+Me.load({
+    targets: {
+        'build-angular-mvc': {
+            build: `
+                trace('Compile', 'esp compile')
+                run('esp -q compile')
+            `,
+        },
+        run: {
+            depends: ['build-angular-mvc'],
+            run: 'esp -v',
+        },
+        cleanCache: {
+            type: 'clean',
+            action: `rm('cache/*')`,
+        },
+    },
+})

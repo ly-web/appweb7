@@ -9,9 +9,18 @@ SYNOPSIS
        appweb [options]
        appweb [options] [IP][:port] [documentRoot]
 
-       appweb  [--config  configFile] [--chroot directory] [--debugger] [--exe
-       path] [--home directory] [--log logSpec] [--name uniqueName] [--threads
-       threads] [--version] [--verbose]
+       appweb
+           --config configFile
+           --chroot directory
+           --debugger
+           --exe path
+           --home directory
+           --log logSpec
+           --name uniqueName
+           --threads threads
+           --version
+           --verbose
+           [IP][:port] [documentRoot]
 
 DESCRIPTION
        Appweb  is  a  compact  embedded HTTP web server.  It is a fast, small-
@@ -85,7 +94,7 @@ OPTIONS
 FILES
        /etc/appweb/appweb.conf
        /var/www/appweb-default
-       /usr/lib/appweb
+       /usr/local/lib/appweb
        /var/log/appweb
 
 REPORTING BUGS

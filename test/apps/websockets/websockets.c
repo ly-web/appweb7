@@ -110,18 +110,20 @@ static void big_response()
     int         i, count;
 
     conn = getConn();
-    count = 10000;
-
     /*
         First message is big, but in a single send. The middleware should break this into frames unless you call:
             httpSetWebSocketPreserveFrames(conn, 1);
         This will regard each call to httpSendBlock as a frame.
         NOTE: this is not an ideal pattern (so don't copy it).
      */
-    buf = mprCreateBuf(0, 0);
+    buf = mprCreateBuf(51000, 0);
+    mprAddRoot(buf);
+    count = 1000;    
     for (i = 0; i < count; i++) {
         mprPutToBuf(buf, "%8d:01234567890123456789012345678901234567890\n", i);
+        mprYield(0);
     }
+    mprRemoveRoot(buf);
     mprAddNullToBuf(buf);
     /* Retain just for GC */
     httpSetWebSocketData(conn, buf);
@@ -163,7 +165,80 @@ static void frames_response()
 }
 
 
-ESP_EXPORT int esp_controller_websockets(HttpRoute *route, MprModule *module) {
+/*
+    Chat server
+ */
+static MprList  *clients;
+
+typedef struct Msg {
+    HttpConn    *conn;
+    HttpPacket  *packet;
+} Msg;
+
+static void manageMsg(Msg *msg, int flags)
+{
+    if (flags & MPR_MANAGE_MARK) {
+        mprMark(msg->conn);
+        mprMark(msg->packet);
+    }
+}
+
+static void chat(Msg *msg)
+{
+    HttpConn    *conn;
+    HttpPacket  *packet;
+
+    conn = msg->conn;
+    packet = msg->packet;
+    httpSendBlock(conn, packet->type, httpGetPacketStart(packet), httpGetPacketLength(packet), 0);
+}
+
+
+/*
+    Event callback. Invoked for incoming web socket messages and other events of interest.
+ */
+static void chat_callback(HttpConn *conn, int event, int arg)
+{
+    HttpPacket  *packet;
+    HttpConn    *client;
+    Msg         *msg;
+    int         next;
+
+    if (event == HTTP_EVENT_READABLE) {
+        packet = httpGetPacket(conn->readq);
+        if (packet->type == WS_MSG_TEXT || packet->type == WS_MSG_BINARY) {
+            for (ITERATE_ITEMS(clients, client, next)) {
+                msg = mprAllocObj(Msg, manageMsg);
+                msg->conn = client;
+                msg->packet = packet;
+                mprCreateEvent(client->dispatcher, "chat", 0, chat, msg, 0);
+            }
+        }
+    } else if (event == HTTP_EVENT_APP_CLOSE) {
+        mprLog(0, "chat.c: close event. Status status %d, orderly closed %d, reason %s", arg,
+        httpWebSocketOrderlyClosed(conn), httpGetWebSocketCloseReason(conn));
+        mprRemoveItem(clients, conn);
+    }
+}
+
+
+/*
+    Action to run in response to the "test/chat" URI
+ */
+static void chat_action()
+{
+    HttpConn    *conn;
+
+    conn = getConn();
+    mprAddItem(clients, conn);
+    dontAutoFinalize();
+    espSetNotifier(getConn(), chat_callback);
+}
+
+
+ESP_EXPORT int esp_controller_websockets(HttpRoute *route) {
+    clients = mprCreateList(0, 0);
+    mprAddRoot(clients);
     espDefineAction(route, "basic-construct", dummy_action);
     espDefineAction(route, "basic-open", dummy_action);
     espDefineAction(route, "basic-send", dummy_action);
@@ -174,5 +249,6 @@ ESP_EXPORT int esp_controller_websockets(HttpRoute *route, MprModule *module) {
     espDefineAction(route, "basic-empty", empty_response);
     espDefineAction(route, "basic-big", big_response);
     espDefineAction(route, "basic-frames", frames_response);
+    espDefineAction(route, "basic-chat", chat_action);
     return 0;
 }

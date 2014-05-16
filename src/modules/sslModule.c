@@ -7,7 +7,7 @@
 
 #include    "appweb.h"
 
-#if BIT_PACK_SSL
+#if ME_COM_SSL
 /*********************************** Code *************************************/
 
 static void checkSsl(MaState *state)
@@ -262,7 +262,7 @@ PUBLIC int maSslModuleInit(Http *http, MprModule *module)
     maAddDirective(appweb, "SSLVerifyClient", sslVerifyClientDirective);
     maAddDirective(appweb, "SSLVerifyIssuer", sslVerifyIssuerDirective);
     maAddDirective(appweb, "SSLVerifyDepth", sslVerifyDepthDirective);
-#if BIT_STATIC
+#if ME_STATIC
     /*
         Pull in the libmprssl code at link time.
      */
@@ -277,7 +277,7 @@ PUBLIC int maSslModuleInit(Http *http, MprModule *mp)
 {
     return 0;
 }
-#endif /* BIT_PACK_SSL */
+#endif /* ME_COM_SSL */
 
 /*
     @copy   default

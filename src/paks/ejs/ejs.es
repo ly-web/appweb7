@@ -1264,6 +1264,7 @@ module ejs {
         # DOC_ONLY
         native function - (arr: Array): Array
 
+        //  TODO - need a function equivalent for this
         /**
             Array union. Return the union of two arrays. 
             @param arr The array to join.
@@ -2510,7 +2511,7 @@ module ejs {
          */
         static function locate(program: Path, search = []): Path? {
             search += App.getenv("PATH").split(App.SearchSeparator)
-            for each (dir in App.getenv("PATH").split(App.SearchSeparator)) {
+            for each (dir in search) {
                 let path = Path(dir).join(program)
                 if (path.exists && !path.isDir) {
                     return path
@@ -9150,7 +9151,7 @@ module ejs {
             @return An object.
             @throws IOError if the file cannot be read
             @example:
-                data = Path("/tmp/a.json").readJson()
+                data = Path("/tmp/a.json").readJSON()
          */
         function readJSON(): Object? {
             let file: File = open(this)
@@ -10482,6 +10483,7 @@ module ejs {
          */
         native function toCamel(): String
 
+        //  TODO - rename toTitleCase()
         /**
             Copy the string into a new string and capitalize the first character if there is one. If the first non-white 
             character is not a character or if it is already capitalized there is no change.

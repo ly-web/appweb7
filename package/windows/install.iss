@@ -9,7 +9,7 @@ AppName=${settings.title}
 AppVerName=${settings.title} ${settings.version}
 DefaultDirName={pf}\${settings.title}
 DefaultGroupName=${settings.title}
-UninstallDisplayIcon={app}/${settings.product}.exe
+UninstallDisplayIcon={app}/${settings.name}.exe
 LicenseFile=LICENSE.TXT
 ArchitecturesInstallIn64BitMode=x64
 
@@ -186,7 +186,7 @@ end;
 
 
 [Icons]
-Name: "{group}\${settings.product}Monitor"; Filename: "{app}/bin/${settings.product}Monitor.exe";
+Name: "{group}\${settings.name}Monitor"; Filename: "{app}/bin/${settings.name}Monitor.exe";
 Name: "{group}\ReadMe"; Filename: "{app}/README.TXT"
 
 [Registry]
@@ -212,7 +212,7 @@ Type: filesandordirs; Name: "{app}\*.obj";
 Name: addpath; Description: Add ${settings.title} to the system PATH variable;
 
 [Run]
-Filename: "{app}/bin/${settings.product}Monitor.exe"; Parameters: "--stop"; WorkingDir: "{app}/bin"; Check: IsPresent('{app}/bin/${settings.product}Monitor.exe'); StatusMsg: "Stopping the Appweb Monitor"; Flags: waituntilterminated; BeforeInstall: SaveConf()
+Filename: "{app}/bin/${settings.name}Monitor.exe"; Parameters: "--stop"; WorkingDir: "{app}/bin"; Check: IsPresent('{app}/bin/${settings.name}Monitor.exe'); StatusMsg: "Stopping the Appweb Monitor"; Flags: waituntilterminated; BeforeInstall: SaveConf()
 
 Filename: "{app}/bin/appman.exe"; Parameters: "uninstall"; WorkingDir: "{app}"; Check: IsPresent('{app}/bin/appman.exe'); StatusMsg: "Stopping Appweb"; Flags: waituntilterminated;
 
@@ -220,12 +220,12 @@ Filename: "{app}/bin/appman.exe"; Parameters: "install enable"; WorkingDir: "{ap
 
 Filename: "{app}/bin/appman.exe"; Parameters: "start"; WorkingDir: "{app}"; StatusMsg: "Starting the Appweb Server"; Flags: waituntilterminated;
 
-Filename: "{app}/bin/${settings.product}Monitor.exe"; Parameters: ""; WorkingDir: "{app}/bin"; StatusMsg: "Starting the Appweb Monitor"; Flags: waituntilidle;
+Filename: "{app}/bin/${settings.name}Monitor.exe"; Parameters: ""; WorkingDir: "{app}/bin"; StatusMsg: "Starting the Appweb Monitor"; Flags: waituntilidle;
 
 Filename: "http://appwebserver.org/products/appweb/doc/index.html"; Description: "View the Documentation"; Flags: skipifsilent waituntilidle shellexec postinstall;
 
 [UninstallRun]
-Filename: "{app}/bin/${settings.product}Monitor.exe"; Parameters: "--stop"; WorkingDir: "{app}"; StatusMsg: "Stopping the Appweb Monitor"; Flags: waituntilterminated;
+Filename: "{app}/bin/${settings.name}Monitor.exe"; Parameters: "--stop"; WorkingDir: "{app}"; StatusMsg: "Stopping the Appweb Monitor"; Flags: waituntilterminated;
 Filename: "{app}/bin/appman.exe"; Parameters: "uninstall"; WorkingDir: "{app}"; Check: IsPresent('{app}/bin/appman.exe');
 Filename: "{app}/bin/removeFiles.exe"; Parameters: "-r -s 5"; WorkingDir: "{app}"; Flags:
 

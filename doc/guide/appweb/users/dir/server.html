@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.5.0 Documentation</title>
+    <title>Embedthis Appweb 5.0.0-rc0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.5.0</div>
+                <div class="version">Embedthis Appweb 5.0.0-rc0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -268,7 +268,9 @@
                         <td class="pivot">Notes</td>
                         <td>
                             <p>The GroupAccount directive specifies the account group in which Appweb will be a member when
-                            running.</p>
+                            running. If UserAccount and GroupAccount are defined, the supplemental
+                            groups will include only the specified group and not the other groups to which the user is a
+                            member of. If you require all supplemental groups, do not set the GroupAccount.</p
                             <p>It is important that you run Appweb with the lowest system privilege that will get the
                             job done. If any application is compromised, including Appweb, then the system will be
                             safest if the compromised application has as few privileges as possible.</p>
@@ -422,6 +424,10 @@
                             qualified domain name with port number if using a port other than port 80.</p>
                             <p>When used inside Name based VirtualHost blocks, this directive specifies the Host
                             HTTP header that should be supplied with the request.</p>
+                            <p>When using virtual hosting, the ServerName may begin with "*" in which case the 
+                                VirtualHost block will match a request with a Host header that "contains" the given
+                                name. For example: a ServerName directive of "*.embedthis.com" will match
+                                farm.embedthis.com and www.embedthis.com.</p>
                         </td>
                     </tr>
                 </tbody>
@@ -507,13 +513,11 @@
             <a id="userAccount"></a>
             <h2>UserAccount</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>The user account that Appweb will run as.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>The user account that Appweb will run as.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>UserAccount name</td>
@@ -531,14 +535,19 @@
                         <td class="pivot">Notes</td>
                         <td>
                             <p>The UserAccount directive instructs Appweb to change accounts to run as the specified
-                            accountName. The UserAccount directive can only be used if Appweb is started using a privileged
-                            account such as root. Normally Appweb is started using the account root or administrator
-                            and thereafter it changes to run with less privilege using the specified accountName.</p>
-                            <p>The account name chosen for the UserAccount directive should have minimal privilege and should
-                            not be able to read or modify any files outside the DocumentRoot or specified Alias
-                            directories.</p>
+                            account name. The account name chosen for the UserAccount directive should have minimal
+                            privilege and should not be able to read or modify any files outside the Documents directory
+                            or specified Alias directories.</p>
                             <p>If logged in as root or administrator, the pseudo name of APPWEB will change user to _www on
                             Mac OSX, nobody on Unix and Administrator on Windows.</p>
+                            <p>If UserAccount and GroupAccount are defined, the supplemental
+                            groups will be set to include only the specified group. This means you get one UID and one GID.
+                            No supplemental groups.</p>
+                            <p>If UserAccount is set and GroupAccount is not set, then Appweb will run with group membership set
+                            to include all groups to which the user account is a member of.</p>
+                            <P>The UserAccount directive can only be used if Appweb is started using a privileged
+                            account such as root. Normally Appweb is started using the account root or administrator
+                            and thereafter it changes to run with less privilege using the specified accountName.</p>
                         </td>
                     </tr>
                     <tr>

@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 4.5.0 Documentation</title>
+    <title>Embedthis Appweb 5.0.0-rc0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 4.5.0</div>
+                <div class="version">Embedthis Appweb 5.0.0-rc0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -43,13 +43,11 @@
                 <li><a href="#espEnv">EspEnv</a></li>
                 <li><a href="#espKeepSource">EspKeepSource</a></li>
                 <li><a href="#espLink">EspLink</a></li>
-                <li><a href="#espLoad">EspLoad</a></li>
                 <li><a href="#espPermResource">EspPermResource</a></li>
                 <li><a href="#espResource">EspResource</a></li>
                 <li><a href="#espResourceGroup">EspResourceGroup</a></li>
                 <li><a href="#espRoute">EspRoute</a></li>
                 <li><a href="#espRouteSet">EspRouteSet</a></li>
-                <li><a href="#espShowErrors">EspShowErrors</a></li>
                 <li><a href="#espUpdate">EspUpdate</a></li>
             </ul>
             <h1>See Also</h1>
@@ -64,13 +62,11 @@
             <a id="espApp"></a>
             <h2>EspApp</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define an ESP web application</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define an ESP web application</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>EspApp <br/>
@@ -78,8 +74,7 @@
                             &nbsp; &rarr; prefix=URI <br/>
                             &nbsp; &rarr; [dir=PATH] <br/>
                             &nbsp; &rarr; [routes=ROUTES] <br/>
-                            &nbsp; &rarr; [database=DATABASE]<br/>
-                            &nbsp; &rarr; [flat=false|true]</td>
+                            &nbsp; &rarr; [database=DATABASE]</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -95,15 +90,20 @@
                         <td>
                             <p>The EspApp directive defines an ESP application at the given directory that
                             will receive all requests that begin with specified URI prefix. 
-                            This one-line directive is often all you need to do to define an ESP application. It is
-                            loosely equivalent to the following directive sequence:</p>
+                            This one-line directive is often all you need to do to define an ESP application.</p>
+                            <p>The EspApp directive can be used as a one liner or as an opening tag. For example:</p>
+                            <pre class="dir">EspApp name="blog" dir="./blog"</pre>
+                            <p>or</p>
+                            <pre class="dir">&lt;EspApp name="blog" dir="./blog"&gt;
+    # Other directives
+&lt;/EspApp&gt;</pre>
+                            <p>It is loosely equivalent to the following directive sequence:</p>
                             <pre class="dir">
 &lt;Route UriPrefix&gt;
     <a href="route.html#name">Name</a> UriPrefix
     <a href="route.html#prefix">Prefix</a> UriPrefix
     <a href="route.html#documentRoot">DocumentRoot</a> Directory
     <a href="route.html#addHandler">AddHandler</a> espHandler
-    <a href="#espDir">EspDir</a> mvc
     <a href="#espRouteSet">EspRouteSet</a> Routes
     <a href="#espDb">EspDb</a> Database
 &lt;/Route&gt;
@@ -118,9 +118,9 @@
                             <p>The Routes argument specifies a set of routes to add for the applications. Permissable
                                 values for the Routes are: 
                                 <ul>
-                                    <li>simple &mdash; Adds a route for the home page URI ("/").</li>
-                                    <li>restful &mdash; Adds a home route, a static route and resource group routes 
-                                    mapping URIs. See <a href="#espResourceGroup">EspResourceGroup</a> for details.</li>
+                                    <li>esp-html-mvc &mdash; Adds a route set suitable for server-side MVC apps.</li>
+                                    <li>esp-angular-mvc &mdash; Adds a route set suitable for AngularJS MVC apps.
+                                    See <a href="#espResourceGroup">EspResourceGroup</a> for details on adding routes.</li>
                                 </ul>
                             <p>It is convenient to define applications using this directive in a separate configuration
                             file for each application. If the application config file is stored under the Appweb
@@ -147,13 +147,11 @@
             <a id="espCompile"></a>
             <h2>EspCompile</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define the command to compile ESP controllers and template pages</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define the command to compile ESP controllers and template pages</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>EspCompile commandline</td>
@@ -206,13 +204,11 @@
             <a id="espDb"></a>
             <h2>EspDb</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define the database to use for an ESP applications</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define the database to use for an ESP applications</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>EspDb database-spec</td>
@@ -253,17 +249,14 @@ EspDb sdb://test.sdb</pre>
             <a id="espDir"></a>
             <h2>EspDir</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define the directories to use for an ESP applications</th>
-                    </tr>
-                </thead>
                 <tbody>
                     <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define the directories to use for ESP applications</td>
+                    </tr>
+                    <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>EspDir mvc<br/>
-                            EspDir [cache|client|controllers|db|layouts|views] Directory
+                        <td>EspDir [app|cache|client|controllers|db|layouts|src|views] Directory
                         </td>
                     </tr>
                     <tr>
@@ -273,28 +266,26 @@ EspDb sdb://test.sdb</pre>
                     <tr>
                         <td class="pivot">Example</td>
                         <td>
-<pre>EspDir mvc
-EspDir client ./client</pre>
+<pre>EspDir client ./client</pre>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>
                             <p>The EspDir directive configures the directories used by ESP.</p>
-                            <p>There are two forms for the EspDir directive. The first takes a single argument set to 
-                                "<em>mvc</em>". This form sets each of the standard directories to their default values.
-                            The second form defines a single ESP directory to the given path value.</p>
                             <p>The standard directories are:
                             <ul>
+                                <li>app &mdash; Application code directory, defaults to client/app.</li>
                                 <li>cache &mdash; This is the directory where ESP puts compiled modules. Defaults to
                                     <em>cache</em>.</li>
-                                    <li>client &mdash; This is the directory for static client web files in an MVC application. 
-                                        Defaults to <em>client</em>.</li>
-                                    <li>controllers &mdash; This is the directory for MVC controller source code.
-                                        Defaults to <em>controllers.</em></li>
-                                    <li>db &mdash; This is the directory for database files. Defaults to <em>db</em>.</li>
-                                    <li>layouts &mdash; This is the directory for ESP template layouts. 
-                                        Defaults to <em>layouts</em>.</li>
-                                    <li>views &mdash; This is the directory for ESP view pages. Defaults to <em>views</em>.</li>
+                                <li>client &mdash; This is the directory for static client web files in an MVC application. 
+                                    Defaults to <em>client</em>.</li>
+                                <li>controllers &mdash; This is the directory for MVC controller source code.
+                                    Defaults to <em>controllers.</em></li>
+                                <li>db &mdash; This is the directory for database files. Defaults to <em>db</em>.</li>
+                                <li>layouts &mdash; This is the directory for ESP template layouts. 
+                                    Defaults to <em>layouts</em>.</li>
+                                <li>src &mdash; This is the directory application "C" source code.</li>
+                                <li>views &mdash; This is the directory for ESP view pages. Defaults to <em>client/app</em>.</li>
                             </ul>
                         </td>
                     </tr>
@@ -303,13 +294,11 @@ EspDir client ./client</pre>
             <a id="espEnv"></a>
             <h2>EspEnv</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define an environment variable to set before invoking the compile or link command lines.</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define an environment variable to set before invoking the compile or link command lines.</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>EspEnv String</td>
@@ -343,13 +332,11 @@ EspDir client ./client</pre>
             <a id="espKeepSource"></a>
             <h2>EspKeepSource</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Control whether to preserve intermediate source for template pages and views</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Control whether to preserve intermediate source for template pages and views</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>EspKeepSource on|off</td>
@@ -378,13 +365,11 @@ EspDir client ./client</pre>
             <a id="espLink"></a>
             <h2>EspLink</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define the command to link ESP controllers and template pages</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define the command to link ESP controllers and template pages</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>EspLink commandline</td>
@@ -439,65 +424,14 @@ EspDir client ./client</pre>
                     </tr>
                 </tbody>
             </table>
-            <a id="espLoad"></a>
-            <h2>EspLoad</h2>
-            <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Load an ESP application that has been compiled <em>flat</em> using the
-                            <em>esp</em> command.</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="pivot">Synopsis</td>
-                        <td>EspLoad Name Path</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Context</td>
-                        <td>Default server, Virtual host, Route</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Example</td>
-                        <td>
-<pre>EspLoad blog cache/app
-EspLoad blog cache/app.dylib
-</pre>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Notes</td>
-                        <td>
-                            <p>The EspLoad directive will pre-load an ESP application that has been compiled
-                            <em>flat</em>
-                            via the <em>esp compile flat</em> command. A flat application is one where all controllers, 
-                            views and ESP template pages have been compiled into a single module. Pre-loading a flat
-                            application provides the ultimate in performance and eliminates any per-request overhead
-                            in checking for changed modules or source code.</p>
-                            <p>The Name argument to the directive should be a unique, descriptive name for the application.
-                            By default, when esp compiles an application, this name is the folder name of the application, 
-                            though this can be overridden by the esp --name switch.</p>
-                            <p>
-                            The second argument is a path to the compiled, flat application. This by default is called
-                            <em>cache/app.so</em> where <em>.so</em> may vary depending on the O/S platform. The path
-                            may be specified with or without an extension. Omitting the extension will allow a common
-                            configuration file to be used across multiple platforms.</p>
-                            <p>See the <a href="../../../esp/users/generator.html">ESP Generator</a> documentation for more
-                            details.</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
             <a id="espPermResource"></a>
             <h2>EspPermResource</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Create a set of routes for a permanent resource</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Create a set of routes for a permanent resource</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>EspPermResource name [, name] ...</td>
@@ -535,13 +469,11 @@ Name            Method   Pattern                         Target
             <a id="espResource"></a>
             <h2>EspResource</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Create a set of routes for a singleton resource</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Create a set of routes for a singleton resource</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>EspResource name [, name] ...</td>
@@ -583,13 +515,11 @@ Name            Method   Pattern                         Target
             <a id="espResourceGroup"></a>
             <h2>EspResourceGroup</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Create a set of routes for a group of resources</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Create a set of routes for a group of resources</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>EspResourceGroup name [, name] ...</td>
@@ -639,13 +569,11 @@ Name          Method   Pattern                                   Target
             <a id="espRoute"></a>
             <h2>EspRoute</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define and configure a route for use by ESP</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define and configure a route for use by ESP</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>EspRoute <br/>
@@ -688,13 +616,11 @@ Name          Method   Pattern                                   Target
             <a id="espRouteSet"></a>
             <h2>EspRouteSet</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Define a set of routes</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define a set of routes</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>EspRouteSet simple|restful</td>
@@ -740,50 +666,14 @@ Name               Method   Pattern
                     </tr>
                 </tbody>
             </table>
-            <a id="espShowErrors"></a>
-            <h2>EspShowErrors</h2>
-            <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Control whether to display ESP server-side errors to the client.</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="pivot">Synopsis</td>
-                        <td>EspShowErrors on|off</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Context</td>
-                        <td>Default server, Virtual host, Route</td>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Example</td>
-                        <td>
-<pre>EspShowErrors on</pre>
-                    </tr>
-                    <tr>
-                        <td class="pivot">Notes</td>
-                        <td>
-                            <p>The EspShowErrors directive controls whether ESP errors are sent to the client 
-                            and displayed in the browser. If EspShowErrors is off, then ESP errors will be sent to the
-                            Appweb log file. If EspShowErrors is on, then the errors will also be sent back to the
-                            client. This is useful in development mode to quickly diagnose errors.</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
             <a id="espUpdate"></a>
             <h2>EspUpdate</h2>
             <table class="directive" title="directive">
-                <thead>
-                    <tr>
-                        <th class="pivot">Description</th>
-                        <th>Control whether to reload updated modules and compile controllers and template pages</th>
-                    </tr>
-                </thead>
                 <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Control whether to reload updated modules and compile controllers and template pages</td>
+                    </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>EspUpdate on|off</td>

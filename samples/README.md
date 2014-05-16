@@ -2,10 +2,10 @@ Embedthis Appweb Samples
 ===
 
 These samples are configured to use a locally built Appweb or Appweb installed to the default location
-(usually /usr/local/lib/apppweb). To build the samples, you will need to install Appweb and the Bit build tool from:
+(usually /usr/local/lib/apppweb). To build the samples, you will need to install Appweb and the MakeMe build tool from:
 
-* Appweb - [http://embedthis.com/downloads/appweb/download.ejs](http://embedthis.com/downloads/appweb/download.ejs)
-* Bit - [http://embedthis.com/downloads/bit/download.ejs](http://embedthis.com/downloads/bit/download.ejs)
+* Appweb - [http://embedthis.com/downloads/appweb/download.ejs](http://embedthis.com/downloads/appweb/download.esp)
+* MakeMe - [http://embedthis.com/downloads/makeme/download.ejs](http://embedthis.com/downloads/makeme/download.esp)
 
 The following samples are available:
 
@@ -42,7 +42,7 @@ The following samples are available:
 To build the samples, see the per-sample README instructions.
 To build all, use:
 
-    bit --file samples.bit  samples
+    me --file samples.me  samples
 
 ### Documentation
 

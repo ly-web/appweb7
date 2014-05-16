@@ -10,7 +10,7 @@ PKG_DIR="$1"
 INS_DIR="$2"
 
 COMPANY="${settings.company}"
-PRODUCT="${settings.product}"
+PRODUCT="${settings.name}"
 NAME="${settings.title}"
 LOG_PREFIX="${prefixes.log}"
 SPL_PREFIX="${prefixes.spool}"

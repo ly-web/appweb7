@@ -5,42 +5,42 @@
 #	Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 #
 
-BIT_PRODUCT=${settings.product}
-BIT_NAME="${settings.title}"
-BIT_ETC_PREFIX="${prefixes.etc}"
-BIT_CACHE_PREFIX="${prefixes.cache}"
+ME_PRODUCT=${settings.name}
+ME_NAME="${settings.title}"
+ME_ETC_PREFIX="${prefixes.etc}"
+ME_CACHE_PREFIX="${prefixes.cache}"
 
 remove() {
 	local cdir=`pwd`
 
-	if [ -x $BIT_ETC_PREFIX ] ; then
-		cd $BIT_ETC_PREFIX
-		removeIntermediateFiles access.log error.log '*.log.old' .dummy $BIT_PRODUCT.conf .*.log make.log
+	if [ -x $ME_ETC_PREFIX ] ; then
+		cd $ME_ETC_PREFIX
+		removeIntermediateFiles access.log error.log '*.log.old' .dummy $ME_PRODUCT.conf .*.log make.log
 		cleanDir
 		cd $cdir 
-		rmdir $BIT_ETC_PREFIX 2>/dev/null || true
+		rmdir $ME_ETC_PREFIX 2>/dev/null || true
 	fi
-	if [ -x $BIT_CACHE_PREFIX ] ; then
-		cd $BIT_CACHE_PREFIX
-		removeIntermediateFiles access.log error.log '*.log.old' .dummy $BIT_PRODUCT.conf .*.log make.log *.mod
+	if [ -x $ME_CACHE_PREFIX ] ; then
+		cd $ME_CACHE_PREFIX
+		removeIntermediateFiles access.log error.log '*.log.old' .dummy $ME_PRODUCT.conf .*.log make.log *.mod
 		cleanDir
 		cd $cdir 
-		rmdir $BIT_CACHE_PREFIX 2>/dev/null || true
+		rmdir $ME_CACHE_PREFIX 2>/dev/null || true
 	fi
 }
 
 purge() {
 	local cdir=`pwd`
 	remove
-	if [ -x $BIT_ETC_PREFIX ] ; then
-		cd $BIT_ETC_PREFIX
+	if [ -x $ME_ETC_PREFIX ] ; then
+		cd $ME_ETC_PREFIX
 		removeIntermediateFiles access.log error.log '*.log.old' .dummy \
-			$BIT_PRODUCT.conf .appweb_pid.log '.httpClient_pid.log' make.log \
+			$ME_PRODUCT.conf .appweb_pid.log '.httpClient_pid.log' make.log \
 			appweb.conf groups.db mime.types php.ini server.crt server.key \
 			server.key.pem users.db
 		cleanDir
 		cd $cdir 
-		rmdir $BIT_ETC_PREFIX 2>/dev/null || true
+		rmdir $ME_ETC_PREFIX 2>/dev/null || true
 	fi
 }
 
@@ -107,5 +107,5 @@ case $action in
 esac
 
 echo
-echo "$BIT_NAME $action successful"
+echo "$ME_NAME $action successful"
 exit 0

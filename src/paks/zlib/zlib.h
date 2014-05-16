@@ -9,7 +9,7 @@
 
 #define local static
 #define NO_DUMMY_DECL
-#include "bit.h"
+#include "me.h"
 
 /************************************************************************/
 /*
@@ -27,13 +27,17 @@
 #ifndef ZCONF_H
 #define ZCONF_H
 
-#include "bit.h"
-#include "bitos.h"
+#include "me.h"
 
 #if EMBEDTHIS || 1
+    #undef      _CRT_SECURE_NO_DEPRECATE
+    #define     _CRT_SECURE_NO_DEPRECATE 1
+    #undef      _CRT_SECURE_NO_WARNINGS
+    #define     _CRT_SECURE_NO_WARNINGS 1
     #undef TIME
 #if _WIN32
     #define ZLIB_DLL
+        #include <io.h>
 #endif
 #endif
 
@@ -2257,7 +2261,7 @@ ZEXTERN int            ZEXPORT deflateResetKeep OF((z_streamp));
  * Copyright (C) 2004, 2005, 2010, 2011, 2012 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
-#include "bit.h"
+#include "me.h"
 
 #ifndef GZGUTS_H 
 #define GZGUTS_H 

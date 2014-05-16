@@ -31,14 +31,11 @@ PUBLIC MaAppweb *maCreateAppweb()
     appweb->http = http = httpCreate(HTTP_CLIENT_SIDE | HTTP_SERVER_SIDE);
     httpSetContext(http, appweb);
     appweb->servers = mprCreateList(-1, MPR_LIST_STABLE);
-    appweb->localPlatform = slower(sfmt("%s-%s-%s", BIT_OS, BIT_CPU, BIT_PROFILE));
-    maSetPlatform(NULL);
-    maGetUserGroup(appweb);
     maParseInit(appweb);
     /* 
        Open the builtin handlers 
      */
-#if BIT_PACK_DIR
+#if ME_COM_DIR
     maOpenDirHandler(http);
 #endif
     maOpenFileHandler(http);
@@ -53,11 +50,6 @@ static void manageAppweb(MaAppweb *appweb, int flags)
         mprMark(appweb->servers);
         mprMark(appweb->directives);
         mprMark(appweb->http);
-        mprMark(appweb->user);
-        mprMark(appweb->group);
-        mprMark(appweb->localPlatform);
-        mprMark(appweb->platform);
-        mprMark(appweb->platformDir);
     }
 }
 
@@ -90,29 +82,16 @@ PUBLIC MaServer *maLookupServer(MaAppweb *appweb, cchar *name)
 
 PUBLIC int maStartAppweb(MaAppweb *appweb)
 {
-    MaServer    *server;
-    char        *timeText;
-    int         next;
-
-    for (next = 0; (server = mprGetNextItem(appweb->servers, &next)) != 0; ) {
-        if (maStartServer(server) < 0) {
-            return MPR_ERR_CANT_INITIALIZE;
-        }
-    }
-    timeText = mprGetDate(0);
-    mprLog(1, "Started at %s with max %d threads", timeText, mprGetMaxWorkers(appweb));
+    httpStartEndpoints();
+    mprLog(1, "Started at %s", mprGetDate(0));
     return 0;
 }
 
 
 PUBLIC int maStopAppweb(MaAppweb *appweb)
 {
-    MaServer  *server;
-    int     next;
-
-    for (next = 0; (server = mprGetNextItem(appweb->servers, &next)) != 0; ) {
-        maStopServer(server);
-    }
+    httpStopConnections(0);
+    httpStopEndpoints();
     return 0;
 }
 
@@ -126,7 +105,6 @@ static void manageServer(MaServer *server, int flags)
         mprMark(server->defaultHost);
         mprMark(server->limits);
         mprMark(server->endpoints);
-        mprMark(server->state);
     }
 }
 
@@ -176,7 +154,7 @@ PUBLIC MaServer *maCreateServer(MaAppweb *appweb, cchar *name)
 /*
     Configure the server. If the configFile is defined, use it. If not, then consider home, documents, ip and port.
  */
-PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port)
+PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port, int flags)
 {
     MaAppweb        *appweb;
     Http            *http;
@@ -187,6 +165,10 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
 
     appweb = server->appweb;
     http = appweb->http;
+
+    /* Suppress conditional compilation warnings */
+    mprNop(appweb);
+    mprNop(http);
 
     if (configFile) {
         path = mprGetAbsPath(configFile);
@@ -203,48 +185,49 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
         maAddEndpoint(server, endpoint);
         host = mprGetFirstItem(endpoint->hosts);
         assert(host);
-        route = mprGetFirstItem(host->routes);
+        route = host->defaultRoute;
         assert(route);
 
-#if BIT_PACK_CGI
-        maLoadModule(appweb, "cgiHandler", "libmod_cgi");
-        if (httpLookupStage(http, "cgiHandler")) {
-            httpAddRouteHandler(route, "cgiHandler", "cgi cgi-nph bat cmd pl py");
-            /*
-                Add cgi-bin with a route for the /cgi-bin URL prefix.
-             */
-            path = "cgi-bin";
-            if (mprPathExists(path, X_OK)) {
-                HttpRoute *cgiRoute;
-                cgiRoute = httpCreateAliasRoute(route, "/cgi-bin/", path, 0);
-                mprTrace(4, "ScriptAlias \"/cgi-bin/\":\"%s\"", path);
-                httpSetRouteHandler(cgiRoute, "cgiHandler");
-                httpFinalizeRoute(cgiRoute);
-            }
-        }
-#endif
-#if BIT_PACK_ESP
-        maLoadModule(appweb, "espHandler", "libmod_esp");
-        if (httpLookupStage(http, "espHandler")) {
-            httpAddRouteHandler(route, "espHandler", "esp");
-        }
-#endif
-#if BIT_PACK_EJSCRIPT
-        maLoadModule(appweb, "ejsHandler", "libmod_ejs");
-        if (httpLookupStage(http, "ejsHandler")) {
-            httpAddRouteHandler(route, "ejsHandler", "ejs");
-        }
-#endif
-#if BIT_PACK_PHP
-        maLoadModule(appweb, "phpHandler", "libmod_php");
-        if (httpLookupStage(http, "phpHandler")) {
-            httpAddRouteHandler(route, "phpHandler", "php");
-        }
-#endif
-        httpAddRouteHandler(route, "fileHandler", "");
-        httpFinalizeRoute(route);
         if (home) {
             httpSetRouteHome(route, home);
+        }
+        if (!(flags & MA_NO_MODULES)) {
+#if ME_COM_CGI
+            maLoadModule(appweb, "cgiHandler", "libmod_cgi");
+            if (httpLookupStage(http, "cgiHandler")) {
+                httpAddRouteHandler(route, "cgiHandler", "cgi cgi-nph bat cmd pl py");
+                /*
+                    Add cgi-bin with a route for the /cgi-bin URL prefix.
+                 */
+                path = "cgi-bin";
+                if (mprPathExists(path, X_OK)) {
+                    HttpRoute *cgiRoute;
+                    cgiRoute = httpCreateAliasRoute(route, "/cgi-bin/", path, 0);
+                    mprTrace(4, "ScriptAlias \"/cgi-bin/\":\"%s\"", path);
+                    httpSetRouteHandler(cgiRoute, "cgiHandler");
+                    httpFinalizeRoute(cgiRoute);
+                }
+            }
+#endif
+#if ME_COM_ESP || ME_ESP_PRODUCT
+            maLoadModule(appweb, "espHandler", "libmod_esp");
+            if (httpLookupStage(http, "espHandler")) {
+                httpAddRouteHandler(route, "espHandler", "esp");
+            }
+#endif
+#if ME_COM_EJS || ME_EJS_PRODUCT
+            maLoadModule(appweb, "ejsHandler", "libmod_ejs");
+            if (httpLookupStage(http, "ejsHandler")) {
+                httpAddRouteHandler(route, "ejsHandler", "ejs");
+            }
+#endif
+#if ME_COM_PHP
+            maLoadModule(appweb, "phpHandler", "libmod_php");
+            if (httpLookupStage(http, "phpHandler")) {
+                httpAddRouteHandler(route, "phpHandler", "php");
+            }
+#endif
+            httpAddRouteHandler(route, "fileHandler", "");
         }
     }
     return 0;
@@ -275,19 +258,6 @@ PUBLIC int maStartServer(MaServer *server)
     if (warned) {
         return MPR_ERR_CANT_OPEN;        
     }
-#if BIT_UNIX_LIKE
-    MaAppweb    *appweb = server->appweb;
-    if (appweb->userChanged || appweb->groupChanged) {
-        if (!smatch(MPR->logPath, "stdout") && !smatch(MPR->logPath, "stderr")) {
-            if (chown(MPR->logPath, appweb->uid, appweb->gid) < 0) {
-                mprError("Cannot change ownership on %s", MPR->logPath);
-            }
-        }
-    }
-    if (maApplyChangedGroup(appweb) < 0 || maApplyChangedUser(appweb) < 0) {
-        return MPR_ERR_CANT_COMPLETE;
-    }
-#endif
     return 0;
 }
 
@@ -303,6 +273,7 @@ PUBLIC void maStopServer(MaServer *server)
 }
 
 
+//  TODO - why does appweb need to keep per-server endpoint lists?
 PUBLIC void maAddEndpoint(MaServer *server, HttpEndpoint *endpoint)
 {
     mprAddItem(server->endpoints, endpoint);
@@ -312,78 +283,6 @@ PUBLIC void maAddEndpoint(MaServer *server, HttpEndpoint *endpoint)
 PUBLIC void maRemoveEndpoint(MaServer *server, HttpEndpoint *endpoint)
 {
     mprRemoveItem(server->endpoints, endpoint);
-}
-
-
-PUBLIC int maSetPlatform(cchar *platformPath)
-{
-    MaAppweb        *appweb;
-    MprDirEntry     *dp;
-    cchar           *platform, *dir, *junk, *appwebExe, *path;
-    int             next, i;
-
-    appweb = MPR->appwebService;
-    if (!platformPath) {
-        platformPath = appweb->localPlatform;
-    }
-    appweb->platform = appweb->platformDir = 0;
-    
-    platform = mprGetPathBase(platformPath);
-
-    if (mprPathExists(mprJoinPath(platformPath, "appweb" BIT_EXE), X_OK)) {
-        appweb->platform = platform;
-        appweb->platformDir = sclone(platformPath);
-
-    } else if (smatch(platform, appweb->localPlatform)) {
-        /*
-            If running inside an appweb source tree, locate the platform directory 
-         */
-        appwebExe = mprJoinPath(mprGetAppDir(), "appweb" BIT_EXE);
-        if (mprPathExists(appwebExe, R_OK)) {
-            appweb->platform = appweb->localPlatform;
-            appweb->platformDir = mprGetPathParent(mprGetAppDir());
-
-        } else {
-            /*
-                Check installed appweb
-             */
-            appwebExe = BIT_VAPP_PREFIX "/bin/appweb" BIT_EXE;
-            if (mprPathExists(appwebExe, R_OK)) {
-                appweb->platform = appweb->localPlatform;
-                appweb->platformDir = sclone(BIT_VAPP_PREFIX);
-            }
-        }
-    }
-    
-    /*
-        Last chance. Search up the tree for a similar platform directory.
-        This permits specifying a partial platform like "vxworks" without architecture and profile.
-     */
-    if (!appweb->platformDir) {
-        dir = mprGetCurrentPath();
-        for (i = 0; !mprSamePath(dir, "/") && i < 64; i++) {
-            for (ITERATE_ITEMS(mprGetPathFiles(dir, 0), dp, next)) {
-                if (dp->isDir && sstarts(mprGetPathBase(dp->name), platform)) {
-                    path = mprJoinPath(dir, dp->name);
-                    if (mprPathExists(mprJoinPath(path, "bin/appweb" BIT_EXE), X_OK)) {
-                        appweb->platform = mprGetPathBase(dp->name);
-                        appweb->platformDir = mprJoinPath(dir, dp->name);
-                        break;
-                    }
-                }
-            }
-            dir = mprGetPathParent(dir);
-        }
-    }
-    if (!appweb->platform) {
-        return MPR_ERR_CANT_FIND;
-    }
-    if (maParsePlatform(appweb->platform, &junk, &junk, &junk) < 0) {
-        return MPR_ERR_BAD_ARGS;
-    }
-    appweb->platformDir = mprGetAbsPath(appweb->platformDir);
-    mprLog(1, "Using platform %s at \"%s\"", appweb->platform, appweb->platformDir);
-    return 0;
 }
 
 
@@ -401,174 +300,6 @@ PUBLIC void maSetServerAddress(MaServer *server, cchar *ip, int port)
 }
 
 
-PUBLIC void maGetUserGroup(MaAppweb *appweb)
-{
-#if BIT_UNIX_LIKE
-    struct passwd   *pp;
-    struct group    *gp;
-
-    appweb->uid = getuid();
-    if ((pp = getpwuid(appweb->uid)) == 0) {
-        mprError("Cannot read user credentials: %d. Check your /etc/passwd file.", appweb->uid);
-    } else {
-        appweb->user = sclone(pp->pw_name);
-    }
-    appweb->gid = getgid();
-    if ((gp = getgrgid(appweb->gid)) == 0) {
-        mprError("Cannot read group credentials: %d. Check your /etc/group file", appweb->gid);
-    } else {
-        appweb->group = sclone(gp->gr_name);
-    }
-#else
-    appweb->uid = appweb->gid = -1;
-#endif
-}
-
-
-PUBLIC int maSetHttpUser(MaAppweb *appweb, cchar *newUser)
-{
-    //  TODO DEPRECATED _default_
-    if (smatch(newUser, "APPWEB") || smatch(newUser, "_default_")) {
-#if BIT_UNIX_LIKE
-        /* Only change user if root */
-        if (getuid() != 0) {
-            mprLog(2, "Running as user account \"%s\"", appweb->user);
-            return 0;
-        }
-#endif
-#if MACOSX || FREEBSD
-        newUser = "_www";
-#elif LINUX || BIT_UNIX_LIKE
-        newUser = "nobody";
-#elif WINDOWS
-        newUser = "Administrator";
-#endif
-    }
-#if BIT_UNIX_LIKE
-{
-    struct passwd   *pp;
-    if (snumber(newUser)) {
-        appweb->uid = atoi(newUser);
-        if ((pp = getpwuid(appweb->uid)) == 0) {
-            mprError("Bad user id: %d", appweb->uid);
-            return MPR_ERR_CANT_ACCESS;
-        }
-        newUser = pp->pw_name;
-
-    } else {
-        if ((pp = getpwnam(newUser)) == 0) {
-            mprError("Bad user name: %s", newUser);
-            return MPR_ERR_CANT_ACCESS;
-        }
-        appweb->uid = pp->pw_uid;
-    }
-    appweb->userChanged = 1;
-}
-#endif
-    appweb->user = sclone(newUser);
-    return 0;
-}
-
-
-PUBLIC int maSetHttpGroup(MaAppweb *appweb, cchar *newGroup)
-{
-    //  DEPRECATED _default_
-    if (smatch(newGroup, "APPWEB") || smatch(newGroup, "_default_")) {
-#if BIT_UNIX_LIKE
-        /* Only change group if root */
-        if (getuid() != 0) {
-            return 0;
-        }
-#endif
-#if MACOSX || FREEBSD
-        newGroup = "_www";
-#elif LINUX || BIT_UNIX_LIKE
-{
-        char    *buf;
-        newGroup = "nobody";
-        /*
-            Debian has nogroup, Fedora has nobody. Ugh!
-         */
-        if ((buf = mprReadPathContents("/etc/group", NULL)) != 0) {
-            if (scontains(buf, "nogroup:")) {
-                newGroup = "nogroup";
-            }
-        }
-}
-#elif WINDOWS
-        newGroup = "Administrator";
-#endif
-    }
-#if BIT_UNIX_LIKE
-    struct group    *gp;
-
-    if (snumber(newGroup)) {
-        appweb->gid = atoi(newGroup);
-        if ((gp = getgrgid(appweb->gid)) == 0) {
-            mprError("Bad group id: %d", appweb->gid);
-            return MPR_ERR_CANT_ACCESS;
-        }
-        newGroup = gp->gr_name;
-
-    } else {
-        if ((gp = getgrnam(newGroup)) == 0) {
-            mprError("Bad group name: %s", newGroup);
-            return MPR_ERR_CANT_ACCESS;
-        }
-        appweb->gid = gp->gr_gid;
-    }
-    appweb->groupChanged = 1;
-#endif
-    appweb->group = sclone(newGroup);
-    return 0;
-}
-
-
-PUBLIC int maApplyChangedUser(MaAppweb *appweb)
-{
-#if BIT_UNIX_LIKE
-    if (appweb->userChanged && appweb->uid >= 0) {
-        if ((setuid(appweb->uid)) != 0) {
-            mprError("Cannot change user to: %s: %d\n"
-                "WARNING: This is a major security exposure", appweb->user, appweb->uid);
-            if (getuid() != 0) {
-                mprError("Log in as administrator/root and retry");
-            }
-            return MPR_ERR_BAD_STATE;
-#if LINUX && PR_SET_DUMPABLE
-        } else {
-            prctl(PR_SET_DUMPABLE, 1);
-#endif
-        }
-        mprLog(MPR_CONFIG, "Changing user to %s (%d)", appweb->user, appweb->uid);
-    }
-#endif
-    return 0;
-}
-
-
-PUBLIC int maApplyChangedGroup(MaAppweb *appweb)
-{
-#if BIT_UNIX_LIKE
-    if (appweb->groupChanged && appweb->gid >= 0) {
-        if (setgid(appweb->gid) != 0) {
-            mprError("Cannot change group to %s: %d\n"
-                "WARNING: This is a major security exposure", appweb->group, appweb->gid);
-            if (getuid() != 0) {
-                mprError("Log in as administrator/root and retry");
-            }
-            return MPR_ERR_BAD_STATE;
-#if LINUX && PR_SET_DUMPABLE
-        } else {
-            prctl(PR_SET_DUMPABLE, 1);
-#endif
-        }
-        mprLog(MPR_CONFIG, "Changing group to %s (%d)", appweb->group, appweb->gid);
-    }
-#endif
-    return 0;
-}
-
 
 /*
     Load a module. Returns 0 if the modules is successfully loaded (may have already been loaded).
@@ -576,7 +307,7 @@ PUBLIC int maApplyChangedGroup(MaAppweb *appweb)
 PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
 {
     MprModule   *module;
-    char        entryPoint[BIT_MAX_FNAME];
+    char        entryPoint[ME_MAX_FNAME];
     char        *path;
 
     if (strcmp(name, "authFilter") == 0 || strcmp(name, "rangeFilter") == 0 || strcmp(name, "uploadFilter") == 0 ||
@@ -585,13 +316,13 @@ PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
         return 0;
     }
     if ((module = mprLookupModule(name)) != 0) {
-#if BIT_STATIC
-        mprLog(MPR_CONFIG, "Activating module (Builtin) %s", name);
+#if ME_STATIC
+        mprLog(MPR_INFO, "Activating module (Builtin) %s", name);
 #endif
         return 0;
     }
     if (libname == 0) {
-        path = sjoin("mod_", name, BIT_SHOBJ, NULL);
+        path = sjoin("mod_", name, ME_SHOBJ, NULL);
     } else {
         path = sclone(libname);
     }

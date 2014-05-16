@@ -1,40 +1,37 @@
 /*
-    bigUrl.tst - Stress test very long URLs 
+    bigUrl.tst - Stress test long URLs 
  */
 
 const HTTP = App.config.uris.http || "127.0.0.1:4100"
-// const HTTP = App.config.uris.http || "vx:4100"
-let depth = (global.test && test.depth) || 4
 
 let http: Http = new Http
 
-// Create a very long query
-let queryPart = ""
-for (i in 100) {
-    queryPart += + "key" + i + "=" + 1234567890 + "&"
+// Server configured to accept up to 5K URIs
+let query = ""
+for (i in 200) {
+    query += + "key" + i + "=" + 1234567890 + "&"
 }
+query = query.trim("&")
 
-//  Vary up the query length based on the depth
+// Test /index.html
+let uri = HTTP + "/index.html?" + query
+http.get(uri)
+assert(http.status == 200)
+assert(http.response.contains("Hello /index.html"))
+http.close()
 
+query = query + '&' + query
 
-for (iter in depth) {
-    let query = ""
-    for (i in 5 * (iter + 3)) {
-        query += queryPart + "&"
-    }
-    query = query.trim("&")
-
-    // Test /index.html
-    http.get(HTTP + "/index.html?" + query)
-    assert(http.status == 200)
-    assert(http.response.contains("Hello /index.html"))
-
-    if (App.config.bit_ejscript) {
-        //  Test /index.ejs
-        http.get(HTTP + "/index.ejs?" + query)
-        assert(http.status == 200)
-        assert(http.response.contains("Hello /index.ejs"))
-    }
-    //  TODO - esp, cgi, php
+// This should fail
+let uri = HTTP + "/index.html?" + query
+let caught
+try {
+    /* Server should disconnect without a response */
+    http.get(uri)
+    print(http.status)
+    assert(0)
+} catch (e) {
+    caught = true
 }
+assert(caught)
 http.close()

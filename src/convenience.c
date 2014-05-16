@@ -27,7 +27,7 @@ PUBLIC int maRunWebServer(cchar *configFile)
         if (mprStart() < 0) {
             mprError("Cannot start the web server runtime");
         } else {
-            if ((appweb = maCreateAppweb(mpr)) == 0) {
+            if ((appweb = maCreateAppweb()) == 0) {
                 mprError("Cannot create appweb object");
             } else {
                 mprAddRoot(appweb);
@@ -76,14 +76,14 @@ PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documen
         if (mprStart(mpr) < 0) {
             mprError("Cannot start the web server runtime");
         } else {
-            if ((appweb = maCreateAppweb(mpr)) == 0) {
+            if ((appweb = maCreateAppweb()) == 0) {
                 mprError("Cannot create the web server http services");
             } else {
                 mprAddRoot(appweb);
                 if ((server = maCreateServer(appweb, 0)) == 0) {
                     mprError("Cannot create the web server");
                 } else {
-                    if (maConfigureServer(server, 0, home, documents, ip, port) < 0) {
+                    if (maConfigureServer(server, 0, home, documents, ip, port, 0) < 0) {
                         mprError("Cannot create the web server");
                     } else {
                         if (maStartServer(server) < 0) {

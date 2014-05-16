@@ -126,7 +126,7 @@ MAIN(httpMain, int argc, char **argv, char **envp)
     start = mprGetTime();
     app->http = httpCreate(HTTP_CLIENT_SIDE);
 
-#if BIT_STATIC && BIT_PACK_SSL
+#if ME_STATIC && ME_COM_SSL
     extern MprModuleEntry mprSslInit;
     mprNop(mprSslInit);
 #endif
@@ -487,8 +487,7 @@ static int parseArgs(int argc, char **argv)
                 app->username = argv[++nextArg];
             }
 
-        //  DEPRECATED validate. Preserve verify.
-        } else if (smatch(argp, "--validate") || smatch(argp, "--verify")) {
+        } else if (smatch(argp, "--verify")) {
             app->verifyPeer = 1;
             ssl = 1;
 
@@ -499,7 +498,7 @@ static int parseArgs(int argc, char **argv)
             mprEprintf("%s %s\n"
                 "Copyright (C) Embedthis Software 2003-2014\n"
                 "Copyright (C) Michael O'Brien 2003-2014\n",
-               BIT_TITLE, BIT_VERSION);
+               ME_TITLE, ME_VERSION);
             exit(0);
 
         } else if (smatch(argp, "--workerTheads") || smatch(argp, "-w")) {
@@ -555,7 +554,7 @@ static int parseArgs(int argc, char **argv)
             app->method = "GET";
         }
     }
-#if BIT_PACK_SSL
+#if ME_COM_SSL
 {
     HttpUri *uri = httpCreateUri(app->target, 0);
     if (uri->secure || ssl) {
@@ -700,8 +699,6 @@ static void threadMain(void *data, MprThread *tp)
     e.mask = MPR_READABLE;
     e.data = tp;
     mprRelayEvent(conn->dispatcher, (MprEventProc) processThread, conn, &e);
-
-    mprDestroyDispatcher(td->dispatcher);
 }
 
 
@@ -771,6 +768,7 @@ static int processThread(HttpConn *conn, MprEvent *event)
         }
     }
     httpDestroyConn(conn);
+    mprDestroyDispatcher(conn->dispatcher);
     finishThread((MprThread*) event->data);
     return -1;
 }
@@ -884,7 +882,9 @@ static int issueRequest(HttpConn *conn, cchar *url, MprList *files)
             }
         }
         if ((rx = conn->rx) != 0) {
+            /* TODO - better define what requests are retried */
             if (rx->status == HTTP_CODE_REQUEST_TOO_LARGE || rx->status == HTTP_CODE_REQUEST_URL_TOO_LARGE ||
+                rx->status == HTTP_CODE_NOT_ACCEPTABLE || 
                 (rx->status == HTTP_CODE_UNAUTHORIZED && conn->username == 0)) {
                 /* No point retrying */
                 break;
@@ -961,7 +961,7 @@ static int reportResponse(HttpConn *conn, cchar *url)
 
 static void readBody(HttpConn *conn, MprFile *outFile)
 {
-    char        buf[BIT_MAX_BUFFER];
+    char        buf[ME_MAX_BUFFER];
     cchar       *result;
     ssize       bytes;
 
@@ -999,12 +999,12 @@ static int doRequest(HttpConn *conn, cchar *url, MprList *files)
     }
     mprAddRoot(outFile);
     readBody(conn, outFile);
-    while (conn->state < HTTP_STATE_COMPLETE && !httpRequestExpired(conn, 0)) {
+    while (conn->state < HTTP_STATE_COMPLETE && !httpRequestExpired(conn, -1)) {
         readBody(conn, outFile);
-        httpWait(conn, 0, conn->limits->inactivityTimeout);
+        httpWait(conn, 0, -1);
     }
     if (conn->state < HTTP_STATE_COMPLETE && !conn->error) {
-        httpError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TIMEOUT, "Inactive request timed out, exceeded request timeout %d", app->timeout);
+        httpError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TIMEOUT, "Request timed out");
     }
     if (app->outFilename) {
         mprCloseFile(outFile);
@@ -1057,7 +1057,7 @@ static int setContentLength(HttpConn *conn, MprList *files)
 static ssize writeBody(HttpConn *conn, MprList *files)
 {
     MprFile     *file;
-    char        buf[BIT_MAX_BUFFER], *path, *pair;
+    char        buf[ME_MAX_BUFFER], *path, *pair;
     ssize       bytes, len, count, nbytes, sofar;
     int         next;
 
@@ -1255,7 +1255,7 @@ static void trace(HttpConn *conn, cchar *url, int fetchCount, cchar *method, int
 }
 
 
-#if (BIT_WIN_LIKE && !WINCE) || VXWORKS
+#if (ME_WIN_LIKE && !WINCE) || VXWORKS
 static char *getpass(char *prompt)
 {
     static char password[80];
