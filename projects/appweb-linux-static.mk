@@ -3,7 +3,7 @@
 #
 
 NAME                  := appweb
-VERSION               := 5.0.0-rc0
+VERSION               := 5.0.0-rc1
 PROFILE               ?= static
 ARCH                  ?= $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
 CC_ARCH               ?= $(shell echo $(ARCH) | sed 's/x86/i686/;s/x64/x86_64/')
@@ -1936,7 +1936,7 @@ installBinary: $(DEPS_84)
 	cd .; \
 	mkdir -p "$(ME_APP_PREFIX)" ; \
 	rm -f "$(ME_APP_PREFIX)/latest" ; \
-	ln -s "5.0.0-rc0" "$(ME_APP_PREFIX)/latest" ; \
+	ln -s "5.0.0-rc1" "$(ME_APP_PREFIX)/latest" ; \
 	mkdir -p "$(ME_LOG_PREFIX)" ; \
 	chmod 755 "$(ME_LOG_PREFIX)" ; \
 	[ `id -u` = 0 ] && chown $(WEB_USER):$(WEB_GROUP) "$(ME_LOG_PREFIX)"; true ; \
@@ -2187,8 +2187,6 @@ DEPS_88 += stop
 uninstall: $(DEPS_88)
 	( \
 	cd package; \
-	rm -f "$(ME_CACHE_PREFIX)/view_7d8f413d270493ba141b22da61c498dd.c" ; \
-	rm -f "$(ME_CACHE_PREFIX)/view_7d8f413d270493ba141b22da61c498dd.dylib" ; \
 	rm -f "$(ME_ETC_PREFIX)/appweb.conf" ; \
 	rm -f "$(ME_ETC_PREFIX)/esp.conf" ; \
 	rm -f "$(ME_ETC_PREFIX)/mine.types" ; \
@@ -2212,5 +2210,5 @@ uninstall: $(DEPS_88)
 #   version
 #
 version: $(DEPS_89)
-	echo 5.0.0-rc0
+	echo 5.0.0-rc1
 

@@ -3,7 +3,7 @@
 #
 
 NAME                  = appweb
-VERSION               = 5.0.0-rc0
+VERSION               = 5.0.0-rc1
 
 OS                    = windows
 PA                    = $(PROCESSOR_ARCHITECTURE)
@@ -2379,5 +2379,5 @@ uninstall: $(DEPS_96)
 #   version
 #
 version: $(DEPS_97)
-	echo 5.0.0-rc0
+	echo 5.0.0-rc1
 
