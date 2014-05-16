@@ -1,7 +1,7 @@
 {
     "name": "esp-html-mvc",
     "description": "ESP Server-Side HTML MVC",
-    "version": "5.0.0-rc0",
+    "version": "5.0.0-rc1",
     "licenses": [
         {
             "type": "GPL",
@@ -35,7 +35,7 @@
             "generate": {
                 "-appweb": "esp-mvc/generate/appweb.conf",
                 "-controller": "esp-mvc/generate/controller.c",
-                "-controllerSingleton": "esp-mvc/generate/controller.c",
+                "-controllerSingleton": "esp-mvc/generate/controllerSingleton.c",
 
                 "?appweb": "esp-html-mvc/generate/appweb.conf",
                 "?clientList": "esp-html-mvc/generate/list.esp",
