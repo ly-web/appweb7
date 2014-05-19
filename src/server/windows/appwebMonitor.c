@@ -88,7 +88,7 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
     manage = 0;
     app->appInst = inst;
     app->company = sclone(ME_COMPANY);
-    app->serviceName = sclone(ME_PRODUCT);
+    app->serviceName = sclone(ME_NAME);
     mprSetLogHandler(logHandler);
 
     chdir(mprGetAppDir());
