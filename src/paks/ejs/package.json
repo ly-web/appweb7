@@ -33,7 +33,7 @@
         }
     ],
     "dependencies": {
-        "bitos": "~0.8",
+        "osdep": "~0.8",
         "est": "~0.6",
         "http": "~4.5",
         "mpr": "~4.5",

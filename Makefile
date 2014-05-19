@@ -4,7 +4,7 @@
 #	This Makefile is for Unix/Linux and Cygwin. On windows, it can be invoked via make.bat.
 #
 #	See projects/$(OS)-$(ARCH)-$(PROFILE)-bit.h for configuration default settings. Can override 
-#	via make environment variables. For example: make BIT_PACK_SQLITE=0. These are converted to 
+#	via make environment variables. For example: make ME_COM_SQLITE=0. These are converted to 
 #	DFLAGS and will then override the bit.h default values. Use "make help" for a list of available 
 #	make variable options.
 #
@@ -45,8 +45,8 @@ clean clobber install installBinary uninstall run:
 	@$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
 
 deploy:
-	@echo '       [Deploy] $(MAKE) BIT_ROOT_PREFIX=$(OS)-$(ARCH)-$(PROFILE)/deploy -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) installBinary'
-	@$(MAKE) BIT_ROOT_PREFIX=$(OS)-$(ARCH)-$(PROFILE)/deploy -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) installBinary
+	@echo '       [Deploy] $(MAKE) ME_ROOT_PREFIX=$(OS)-$(ARCH)-$(PROFILE)/deploy -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) installBinary'
+	@$(MAKE) ME_ROOT_PREFIX=$(OS)-$(ARCH)-$(PROFILE)/deploy -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) installBinary
 
 version:
 	@$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
@@ -59,33 +59,33 @@ help:
 	@echo 'Set to 0 to disable and 1 to enable:' >&2
 	@echo '' >&2
 	@echo '  PROFILE            # Select default or static for static linking' >&2
-	@echo '  BIT_EJS_DB         # Enable database support, ejs.db' >&2
-	@echo '  BIT_EJS_MAIL       # Enable mail support, ejs.mail' >&2
-	@echo '  BIT_EJS_MAPPER     # Enable database mapper support, ejs.mapper'
-	@echo '  BIT_EJS_TAR        # Enable tar support, ejs.tar' >&2
-	@echo '  BIT_EJS_TEMPLATE   # Enable template support, ejs.template' >&2
-	@echo '  BIT_EJS_WEB        # Enable web support, ejs.web' >&2
-	@echo '  BIT_EJS_ZLIB       # Enable zlib support, ejs.zlib' >&2
-	@echo '  BIT_ESP_MDB        # Enable ESP MDB database support' >&2
-	@echo '  BIT_ESP_SDB        # Enable ESP SQLite database support' >&2
-	@echo '  BIT_MPR_LOGGING    # Enable application logging' >&2
-	@echo '  BIT_MPR_TRACING    # Enable debug tracing' >&2
-	@echo '  BIT_PACK_CGI       # Enable the CGI handler' >&2
-	@echo '  BIT_PACK_DIR       # Enable the directory listing handler' >&2
-	@echo '  BIT_PACK_EJSCRIPT  # Enable the Ejscript handler' >&2
-	@echo '  BIT_PACK_ESP       # Enable the ESP web framework' >&2
-	@echo '  BIT_PACK_EST       # Enable the EST SSL stack' >&2
-	@echo '  BIT_PACK_NANOSSL   # Enable the Mocana NanoSSL stack' >&2
-	@echo '  BIT_PACK_MATRIXSSL # Enable the MatrixSSL SSL stack' >&2
-	@echo '  BIT_PACK_OPENSSL   # Enable the OpenSSL SSL stack' >&2
-	@echo '  BIT_PACK_PHP       # Enable the PHP framework' >&2
-	@echo '  BIT_PACK_SQLITE    # Enable the SQLite database' >&2
-	@echo '  BIT_ROM            # Build for ROM without a file system' >&2
-	@echo '  BIT_STACK_SIZE     # Define the VxWorks stack size' >&2
+	@echo '  ME_EJS_DB          # Enable database support, ejs.db' >&2
+	@echo '  ME_EJS_MAIL        # Enable mail support, ejs.mail' >&2
+	@echo '  ME_EJS_MAPPER      # Enable database mapper support, ejs.mapper'
+	@echo '  ME_EJS_TAR         # Enable tar support, ejs.tar' >&2
+	@echo '  ME_EJS_TEMPLATE    # Enable template support, ejs.template' >&2
+	@echo '  ME_EJS_WEB         # Enable web support, ejs.web' >&2
+	@echo '  ME_EJS_ZLIB        # Enable zlib support, ejs.zlib' >&2
+	@echo '  ME_ESP_MDB         # Enable ESP MDB database support' >&2
+	@echo '  ME_ESP_SDB         # Enable ESP SQLite database support' >&2
+	@echo '  ME_MPR_LOGGING     # Enable application logging' >&2
+	@echo '  ME_MPR_TRACING     # Enable debug tracing' >&2
+	@echo '  ME_COM_CGI         # Enable the CGI handler' >&2
+	@echo '  ME_COM_DIR         # Enable the directory listing handler' >&2
+	@echo '  ME_COM_EJSCRIPT    # Enable the Ejscript handler' >&2
+	@echo '  ME_COM_ESP         # Enable the ESP web framework' >&2
+	@echo '  ME_COM_EST         # Enable the EST SSL stack' >&2
+	@echo '  ME_COM_NANOSSL     # Enable the Mocana NanoSSL stack' >&2
+	@echo '  ME_COM_MATRIXSSL   # Enable the MatrixSSL SSL stack' >&2
+	@echo '  ME_COM_OPENSSL     # Enable the OpenSSL SSL stack' >&2
+	@echo '  ME_COM_PHP         # Enable the PHP framework' >&2
+	@echo '  ME_COM_SQLITE      # Enable the SQLite database' >&2
+	@echo '  ME_ROM             # Build for ROM without a file system' >&2
+	@echo '  ME_STACK_SIZE      # Define the VxWorks stack size' >&2
 	@echo '' >&2
 	@echo 'For example, to disable CGI:' >&2
 	@echo '' >&2
-	@echo '  BIT_PACK_CGI=0 make' >&2
+	@echo '  ME_COM_CGI=0 make' >&2
 	@echo '' >&2
 	@echo 'Other make environment variables:' >&2
 	@echo '  ARCH               # CPU architecture (x86, x64, ppc, ...)' >&2

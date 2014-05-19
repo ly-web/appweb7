@@ -100,15 +100,15 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <ClCompile Include="..\..\src\esp\edi.c" />
-    <ClCompile Include="..\..\src\esp\espAbbrev.c" />
-    <ClCompile Include="..\..\src\esp\espDeprecated.c" />
-    <ClCompile Include="..\..\src\esp\espFramework.c" />
-    <ClCompile Include="..\..\src\esp\espHandler.c" />
-    <ClCompile Include="..\..\src\esp\espHtml.c" />
-    <ClCompile Include="..\..\src\esp\espTemplate.c" />
-    <ClCompile Include="..\..\src\esp\mdb.c" />
-    <ClCompile Include="..\..\src\esp\sdb.c" />
+    <ClCompile Include="..\..\src\paks\esp\edi.c" />
+    <ClCompile Include="..\..\src\paks\esp\espAbbrev.c" />
+    <ClCompile Include="..\..\src\paks\esp\espDeprecated.c" />
+    <ClCompile Include="..\..\src\paks\esp\espFramework.c" />
+    <ClCompile Include="..\..\src\paks\esp\espHandler.c" />
+    <ClCompile Include="..\..\src\paks\esp\espHtml.c" />
+    <ClCompile Include="..\..\src\paks\esp\espTemplate.c" />
+    <ClCompile Include="..\..\src\paks\esp\mdb.c" />
+    <ClCompile Include="..\..\src\paks\esp\sdb.c" />
   </ItemGroup>
 
   <ItemGroup>
@@ -130,11 +130,11 @@
   </Link>
 
   <CustomBuildStep>
-    <Command>cd ..\..\src\esp
+    <Command>cd ..\..\src\paks\esp
 copy /Y edi.h $(IncDir)
 copy /Y esp.h $(IncDir)
 copy /Y mdb.h $(IncDir)
-cd ..\..\projects\appweb-windows-static</Command>
+cd ..\..\..\projects\appweb-windows-static</Command>
     <Outputs>$(BinDir)\libmod_esp.lib</Outputs>
   </CustomBuildStep>
   </ItemDefinitionGroup>

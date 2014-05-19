@@ -95,10 +95,10 @@
   </Link>
 
   <CustomBuildStep>
-    <Command>cd ..\..\src\esp
+    <Command>cd ..\..\src\paks\esp
 if exist $(BinDir)\esp.conf del /Q $(BinDir)\esp.conf
 copy /Y esp.conf $(BinDir)\esp.conf
-cd ..\..\projects\appweb-windows-default</Command>
+cd ..\..\..\projects\appweb-windows-default</Command>
     <Outputs>$(BinDir)\esp.conf</Outputs>
   </CustomBuildStep>
   </ItemDefinitionGroup>

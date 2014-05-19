@@ -22,9 +22,9 @@
     #endif
 #endif
 
-#include "bit.h"
+#include "me.h"
 
-#if BIT_PACK_SQLITE || BIT_SQLITE_PRODUCT
+#if ME_COM_SQLITE || ME_SQLITE_PRODUCT
 #ifndef _h_SQLITE3_
 #define _h_SQLITE3_ 1
 
@@ -171,7 +171,9 @@
      */
     #define fcntl(A,B,C) 0
     #define getpid mprGetpid
-    typedef int* intptr_t;
+    #if _WRS_VXWORKS_MAJOR < 6 || (_WRS_VXWORKS_MAJOR == 6 && _WRS_VXWORKS_MINOR < 9)
+        typedef int* intptr_t;
+    #endif
     #define semClose __semClose
 
 #endif /* VXWORKS */
@@ -7367,5 +7369,5 @@ struct sqlite3_rtree_geometry {
 
 
 #endif /* _h_SQLITE3_ */
-#endif /* BIT_PACK_SQLITE */
+#endif /* ME_COM_SQLITE */
 

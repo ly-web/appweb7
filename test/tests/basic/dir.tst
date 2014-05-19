@@ -5,7 +5,7 @@
 const HTTP = App.config.uris.http || "127.0.0.1:4100"
 let http: Http = new Http
 
-if (App.config.bit_dir) {
+if (App.config.me_dir) {
     /*  TODO DIRECTORY LISTINGS NEEDED 
     http.get(HTTP + "/dir/")
     assert(http.status == 200)

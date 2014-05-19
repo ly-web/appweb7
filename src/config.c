@@ -59,8 +59,8 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     httpSetRouteHome(route, dir);
     httpSetRouteDocuments(route, dir);
     httpSetRouteVar(route, "LOG_DIR", ".");
-    httpSetRouteVar(route, "INC_DIR", BIT_VAPP_PREFIX "/inc");
-    httpSetRouteVar(route, "SPL_DIR", BIT_SPOOL_PREFIX);
+    httpSetRouteVar(route, "INC_DIR", ME_VAPP_PREFIX "/inc");
+    httpSetRouteVar(route, "SPL_DIR", ME_SPOOL_PREFIX);
     httpSetRouteVar(route, "BIN_DIR", mprJoinPath(server->appweb->platformDir, "bin"));
 
 #if DEPRECATED || 1
@@ -194,7 +194,7 @@ static int parseLine(MaState *state, cchar *line)
 #endif
 
 
-#if !BIT_ROM
+#if !ME_ROM
 /*
     AccessLog path
     AccessLog conf/log.conf size=10K, backup=5, append, anew
@@ -241,7 +241,7 @@ static int accessLogDirective(MaState *state, cchar *key, cchar *value)
         mprError("Missing filename");
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpSetRouteLog(state->route, httpMakePath(state->route, state->configDir, path), size, backup, BIT_HTTP_LOG_FORMAT, flags);
+    httpSetRouteLog(state->route, httpMakePath(state->route, state->configDir, path), size, backup, ME_HTTP_LOG_FORMAT, flags);
     return 0;
 }
 #endif
@@ -643,7 +643,7 @@ static int cacheDirective(MaState *state, cchar *key, cchar *value)
  */
 static int chrootDirective(MaState *state, cchar *key, cchar *value)
 {
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
     MprKey  *kp;
     cchar   *oldConfigDir;
     char    *home;
@@ -1215,7 +1215,7 @@ static int limitConnectionsDirective(MaState *state, cchar *key, cchar *value)
  */
 static int limitFilesDirective(MaState *state, cchar *key, cchar *value)
 {
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
     mprSetFilesLimit(getint(value));
 #endif
     return 0;
@@ -1404,7 +1404,7 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
  */
 static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
 {
-#if BIT_PACK_SSL
+#if ME_COM_SSL
     HttpEndpoint    *endpoint;
     char            *ip;
     int             port;
@@ -1551,7 +1551,7 @@ static int loadModulePathDirective(MaState *state, cchar *key, cchar *value)
      */
     sep = MPR_SEARCH_SEP;
     value = stemplate(value, state->route->vars);
-    path = sjoin(value, sep, mprGetAppDir(), sep, BIT_VAPP_PREFIX "/bin", NULL);
+    path = sjoin(value, sep, mprGetAppDir(), sep, ME_VAPP_PREFIX "/bin", NULL);
     mprSetModuleSearchPath(path);
     return 0;
 }
@@ -1604,7 +1604,7 @@ static int limitWorkersDirective(MaState *state, cchar *key, cchar *value)
 
 static int userToID(cchar *user)
 {
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
     struct passwd   *pp;
     if ((pp = getpwnam(user)) == 0) {
         mprError("Bad user: %s", user);
@@ -1619,7 +1619,7 @@ static int userToID(cchar *user)
 
 static int groupToID(cchar *group)
 {
-#if BIT_UNIX_LIKE
+#if ME_UNIX_LIKE
     struct group    *gp;
     if ((gp = getgrnam(group)) == 0) {
         mprError("Bad group: %s", group);
@@ -2727,9 +2727,9 @@ static bool conditionalDefinition(MaState *state, cchar *key)
     } else if (scaselessmatch(key, state->appweb->platform)) {
         result = 1;
 
-#if BIT_DEBUG
-    } else if (scaselessmatch(key, "BIT_DEBUG")) {
-        result = BIT_DEBUG;
+#if ME_DEBUG
+    } else if (scaselessmatch(key, "ME_DEBUG")) {
+        result = ME_DEBUG;
 #endif
 
     } else if (scaselessmatch(key, "dynamic")) {
@@ -2744,27 +2744,27 @@ static bool conditionalDefinition(MaState *state, cchar *key)
     } else if (state->appweb->skipModules) {
         /* ESP utility needs to be able to load mod_esp */
         if (sstarts(mprGetAppName(), "esp") && scaselessmatch(key, "ESP_MODULE")) {
-            result = BIT_PACK_ESP;
+            result = ME_COM_ESP;
         }
 
     } else {
         if (scaselessmatch(key, "CGI_MODULE")) {
-            result = BIT_PACK_CGI;
+            result = ME_COM_CGI;
 
         } else if (scaselessmatch(key, "DIR_MODULE")) {
-            result = BIT_PACK_DIR;
+            result = ME_COM_DIR;
 
         } else if (scaselessmatch(key, "EJS_MODULE")) {
-            result = BIT_PACK_EJSCRIPT;
+            result = ME_COM_EJS;
 
         } else if (scaselessmatch(key, "ESP_MODULE")) {
-            result = BIT_PACK_ESP;
+            result = ME_COM_ESP;
 
         } else if (scaselessmatch(key, "PHP_MODULE")) {
-            result = BIT_PACK_PHP;
+            result = ME_COM_PHP;
 
         } else if (scaselessmatch(key, "SSL_MODULE")) {
-            result = BIT_PACK_SSL;
+            result = ME_COM_SSL;
         }
     }
     return (not) ? !result : result;
@@ -3202,7 +3202,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "WebSocketsProtocol", webSocketsProtocolDirective);
     maAddDirective(appweb, "WebSocketsPing", webSocketsPingDirective);
 
-#if !BIT_ROM
+#if !ME_ROM
     maAddDirective(appweb, "AccessLog", accessLogDirective);
 #endif
 

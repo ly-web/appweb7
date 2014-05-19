@@ -27,7 +27,7 @@ PATH="$WIND_GNU_PATH/$WIND_HOST_TYPE/bin:$PATH"
 export CC PATH WIND_BASE WIND_HOME WIND_PLATFORM WIND_HOST_TYPE WIND_GNU_PATH
 
 #
-#   Build the tools first. Required if using Ejscript or using BIT_ROM
+#   Build the tools first. Required if using Ejscript or using ME_ROM
 #
 make 
 

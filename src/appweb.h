@@ -20,6 +20,16 @@ extern "C" {
 
 #define MA_UNLOAD_TIMEOUT       "5mins"             /**< Default module inactivity unload timeout */
 
+/*
+    DEPRECATED definitions not defined by MakeMe 
+ */
+#ifndef ME_PRODUCT
+    #define ME_PRODUCT ME_NAME
+#endif
+#ifndef ME_BUILD_NUMBER
+    #define ME_BUILD_NUMBER 0
+#endif
+
 /********************************** Defines ***********************************/
 
 #if !DOXYGEN

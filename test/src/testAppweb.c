@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
         exit(4);
     }
 
-#if BIT_PACK_SSL
+#if ME_COM_SSL
     if (mprLoadSsl(0) < 0) {
         return 0;
     }
@@ -349,7 +349,7 @@ bool matchAnyCase(MprTestGroup *gp, char *key, char *value)
         return 1;
     }
     trim = strim(vp, "\"", MPR_TRIM_BOTH);
-#if BIT_WIN_LIKE
+#if ME_WIN_LIKE
     if (vp == 0 || scaselesscmp(trim, value) != 0)
 #else
     if (vp == 0 || value == 0 || scmp(trim, value) != 0)

@@ -7,7 +7,7 @@
 
 #include    "appweb.h"
 
-#if BIT_PACK_EJSCRIPT
+#if ME_COM_EJS
     #include    "ejs.h"
 
 /************************************* Data ***********************************/
@@ -153,14 +153,14 @@ PUBLIC int maEjsHandlerInit(Http *http, MprModule *module)
     maAddDirective(appweb, "EjsWorkers", ejsWorkersDirective);
     return 0;
 }
-#else /* BIT_PACK_EJSCRIPT */
+#else /* ME_COM_EJS */
 
 PUBLIC int maEjsHandlerInit(Http *http, MprModule *module)
 {
     mprNop(0);
     return 0;
 }
-#endif /* BIT_PACK_EJSCRIPT */
+#endif /* ME_COM_EJS */
 
 /*
     @copy   default

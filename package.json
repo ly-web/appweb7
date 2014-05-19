@@ -32,18 +32,47 @@
             "url": "http://embedthis.com/licensing/"
         }
     ],
-    "dirs": {
+    "directories": {
         "paks": "src/paks"
     },
-    "pak": "~0.8",
+    "pak": "~0.9",
     "dependencies": {
-        "bitos": "~0.8",
+        "http": "~4.6",
+        "me-dev": "~0.8",
+        "me-doc": "~0.8",
+        "me-package": "~0.8",
+        "mpr": "~4.6",
+        "osdep": "~0.8",
+        "pcre": "~1.0"
+    },
+    "optionalDependencies": {
         "ejs": "~2.3",
+        "esp": "~5.0",
+        "esp-html-mvc": "~5.0",
+        "esp-mvc": "~5.0",
+        "esp-server": "~5.0",
         "est": "~0.6",
-        "http": "~4.5",
-        "mpr": "~4.5",
-        "pcre": "~1.0",
+        "me-php": "~5",
+        "me-ssl": "~0.8",
+        "php": "~5",
         "sqlite": "~1.0",
         "zlib": "~1.0"
+    },
+    "paks": {
+        "esp": {
+            "noblend": true
+        },
+        "esp-html-mvc": {
+            "noblend": true,
+            "noexport": true
+        },
+        "esp-mvc": {
+            "noblend": true,
+            "noexport": true
+        },
+        "esp-server": {
+            "noblend": true,
+            "noexport": true
+        }
     }
 }

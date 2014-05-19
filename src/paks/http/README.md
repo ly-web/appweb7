@@ -23,7 +23,7 @@ See http://embedthis.com/licensing/index.html for licensing details.
 
     make
 
-Images are built into */bin. The build configuration is saved in */inc/bit.h.
+Images are built into */bin. The build configuration is saved in */inc/me.h.
 
 ### To Test:
 

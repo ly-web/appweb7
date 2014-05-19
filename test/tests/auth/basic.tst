@@ -37,7 +37,7 @@ http.get(HTTP + "/auth/basic/joshua/user.html")
 assert(http.status == 401)
 http.close()
 
-if (App.config.bit_cgi && global.test && test.hostOs != "VXWORKS") {
+if (App.config.me_cgi && global.test && test.hostOs != "VXWORKS") {
     // Requires /bin/sh 
     http.setCredentials(null, null)
     http.get(HTTP + "/auth/basic/basic.cgi")

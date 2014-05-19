@@ -95,10 +95,10 @@
   </Link>
 
   <CustomBuildStep>
-    <Command>cd ..\..\src\server
+    <Command>cd ..\..\src
 if not exist slink.c copy slink.empty slink.c
-cd ..\..\projects\appweb-windows-default</Command>
-    <Outputs>..\..\src\server\slink.c</Outputs>
+cd ..\projects\appweb-windows-default</Command>
+    <Outputs>..\..\src\slink.c</Outputs>
   </CustomBuildStep>
   </ItemDefinitionGroup>
 

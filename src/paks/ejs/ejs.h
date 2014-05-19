@@ -7,11 +7,11 @@
     Prepared by: orion
  */
 
-#include "bit.h"
+#include "me.h"
 #
-#if BIT_PACK_EJSCRIPT
+#if ME_COM_EJSCRIPT
 
-#include "bitos.h"
+#include "osdep.h"
 #include "mpr.h"
 #include "http.h"
 #include "ejs.slots.h"
@@ -33,7 +33,7 @@
 
 #define local static
 #define NO_DUMMY_DECL
-#include "bit.h"
+#include "me.h"
 
 /************************************************************************/
 /*
@@ -51,8 +51,8 @@
 #ifndef ZCONF_H
 #define ZCONF_H
 
-#include "bit.h"
-#include "bitos.h"
+#include "me.h"
+#include "osdep.h"
 
 #if EMBEDTHIS || 1
     #undef TIME
@@ -2281,7 +2281,7 @@ ZEXTERN int            ZEXPORT deflateResetKeep OF((z_streamp));
  * Copyright (C) 2004, 2005, 2010, 2011, 2012 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
-#include "bit.h"
+#include "me.h"
 
 #ifndef GZGUTS_H 
 #define GZGUTS_H 
@@ -3997,14 +3997,14 @@ extern "C" {
 
 /******************************* Tunable Constants ****************************/
 
-#ifndef BIT_XML_MAX_NODE_DEPTH
-    #define BIT_XML_MAX_NODE_DEPTH  64
+#ifndef ME_XML_MAX_NODE_DEPTH
+    #define ME_XML_MAX_NODE_DEPTH  64
 #endif
-#ifndef BIT_MAX_EJS_STACK
-#if BIT_HAS_MMU
-    #define BIT_MAX_EJS_STACK       (1024 * 1024)   /**< Stack size on virtual memory systems */
+#ifndef ME_MAX_EJS_STACK
+#if ME_COMPILER_HAS_MMU
+    #define ME_MAX_EJS_STACK       (1024 * 1024)   /**< Stack size on virtual memory systems */
 #else
-    #define BIT_MAX_EJS_STACK       (1024 * 32)     /**< Stack size without MMU */
+    #define ME_MAX_EJS_STACK       (1024 * 32)     /**< Stack size without MMU */
 #endif
 #endif
 
@@ -4145,8 +4145,8 @@ struct EjsVoid;
 /** 
     Configured numeric type
  */
-#define BIT_NUM_TYPE double
-typedef BIT_NUM_TYPE MprNumber;
+#define ME_NUM_TYPE double
+typedef ME_NUM_TYPE MprNumber;
 
 /*  
     Sizes (in bytes) of encoded types in a ByteArray
@@ -4237,7 +4237,7 @@ typedef BIT_NUM_TYPE MprNumber;
                                     ((value) << EJS_SHIFT_VISITED) | (((EjsObj*) obj)->xtype & ~EJS_MASK_VISITED)
 #define SET_DYNAMIC(obj, value) ((EjsObj*) obj)->xtype = \
                                     (((size_t) value) << EJS_SHIFT_DYNAMIC) | (((EjsObj*) obj)->xtype & ~EJS_MASK_DYNAMIC)
-#if BIT_DEBUG
+#if ME_DEBUG
     #define SET_TYPE_NAME(obj, t) \
     if (1) { \
         if (t && ((EjsType*) t)->qname.name) { \
@@ -4258,7 +4258,7 @@ typedef BIT_NUM_TYPE MprNumber;
 
 typedef void EjsAny;
 
-#if BIT_DEBUG
+#if ME_DEBUG
     #define ejsSetMemRef(obj) if (1) { ((EjsObj*) obj)->mem = MPR_GET_MEM(obj); } else 
 #else
     #define ejsSetMemRef(obj) 
@@ -4592,7 +4592,7 @@ PUBLIC void ejsFreePoolVM(EjsPool *pool, Ejs *ejs);
 typedef struct EjsObj {
     //  WARNING: changes to this structure require changes to mpr/src/mprPrintf.c
     ssize           xtype;              /**< xtype: typeBits | dynamic << 1 | visited */
-#if BIT_DEBUG
+#if ME_DEBUG
     char            *kind;              /**< If DEBUG, Type name of object (Type->qname.name) */
     struct EjsType  *type;              /**< If DEBUG, Pointer to object type */
     MprMem          *mem;               /**< If DEBUG, Pointer to underlying memory block */
@@ -4950,7 +4950,7 @@ typedef struct EjsTrait {
 #define visundefined(v) (viscore(v) && (v)->word & TAG_MASK) == TAG_UNDEFINED)
 #define visstring(v)    (viscore(v) && (v)->word & TAG_MASK) == TAG_STRING)
 
-#if BIT_64
+#if ME_64
     #define vpointer(v) ((v)->pointer & POINTER_VALUE)
     #define vinteger(v) ((v)->integer & INTEGER_VALUE)
 #else
@@ -4964,11 +4964,11 @@ typedef struct EjsTrait {
 typedef union EjsValue {
     uint64  word;
     double  number;
-#if BIT_64
+#if ME_64
     void    *pointer;
     int     integer;
 #else
-    #if CPU_ENDIAN == BIT_LITTLE_ENDIAN
+    #if CPU_ENDIAN == ME_LITTLE_ENDIAN
         struct {
             void    *pointer;
             int32   filler1;
@@ -5968,7 +5968,7 @@ typedef struct EjsBlock {
     EjsObj          **stackBase;                    /**< Start of stack in this block */
     uchar           *restartAddress;                /**< Restart instruction address */
     uint            nobind: 1;                      /**< Don't bind to properties in this block */
-#if BIT_DEBUG
+#if ME_DEBUG
     struct EjsLine  *line;
 #endif
 } EjsBlock;
@@ -6000,7 +6000,7 @@ PUBLIC void ejsManageBlock(EjsBlock *block, int flags);
 PUBLIC void ejsPopBlockNamespaces(EjsBlock *block, int count);
 PUBLIC void ejsResetBlockNamespaces(Ejs *ejs, EjsBlock *block);
 
-#if BIT_DEBUG
+#if ME_DEBUG
     #define ejsSetBlockLocation(block, loc) block->line = loc
 #else
     #define ejsSetBlockLocation(block, loc)
@@ -7878,7 +7878,7 @@ typedef struct EjsXmlTagState {
  */
 typedef struct EjsXmlState {
     //  TODO -- should not be fixed but should be growable
-    EjsXmlTagState  nodeStack[BIT_XML_MAX_NODE_DEPTH];      /**< nodeStack */
+    EjsXmlTagState  nodeStack[ME_XML_MAX_NODE_DEPTH];      /**< nodeStack */
     Ejs             *ejs;                                   /**< Convenient reference to ejs */
     struct EjsType  *xmlType;                               /**< Xml type reference */
     struct EjsType  *xmlListType;                           /**< Xml list type reference */
@@ -8450,8 +8450,8 @@ PUBLIC bool ejsIsTypeSubType(Ejs *ejs, EjsType *target, EjsType *baseType);
 /*
     Internal
  */
-#define VSPACE(space) space "-" BIT_VNUM
-#define ejsGetVType(ejs, space, name) ejsGetTypeByName(ejs, space "-" BIT_VNUM, name)
+#define VSPACE(space) space "-" ME_VNUM
+#define ejsGetVType(ejs, space, name) ejsGetTypeByName(ejs, space "-" ME_VNUM, name)
 PUBLIC void     ejsDefineTypeNamespaces(Ejs *ejs, EjsType *type);
 PUBLIC int      ejsFixupType(Ejs *ejs, EjsType *type, EjsType *baseType, int makeRoom);
 PUBLIC int      ejsGetTypeSize(Ejs *ejs, EjsType *type);
@@ -8540,10 +8540,10 @@ PUBLIC void     ejsSetSqliteMemCtx(MprThreadLocal *tls);
 PUBLIC void     ejsSetSqliteTls(MprThreadLocal *tls);
 PUBLIC void     ejsDefineConfigProperties(Ejs *ejs);
 
-#if BIT_PACK_SQLITE
+#if ME_COM_SQLITE
     PUBLIC int   ejs_db_sqlite_Init(Ejs *ejs, MprModule *mp);
 #endif
-#if BIT_PACK_ZLIB
+#if ME_COM_ZLIB
     PUBLIC int   ejs_zlib_Init(Ejs *ejs, MprModule *mp);
 #endif
 PUBLIC int       ejs_web_Init(Ejs *ejs, MprModule *mp);
@@ -9107,7 +9107,7 @@ typedef void (*EjsLoaderCallback)(struct Ejs *ejs, int kind, ...);
 #endif
 
 #ifndef EJS_VERSION
-    #define EJS_VERSION BIT_VERSION
+    #define EJS_VERSION ME_VERSION
 #endif
 
 /*
@@ -9781,7 +9781,7 @@ typedef struct EcCodeGen {
 //  TODO DOC
 typedef struct EcNode {
     char                *kindName;              /* Node kind string */
-#if BIT_DEBUG
+#if ME_DEBUG
     char                *tokenName;
 #endif
     EjsName             qname;
@@ -9823,7 +9823,7 @@ typedef struct EcNode {
 
     struct EcCompiler   *cp;                    /* Compiler instance reference */
 
-#if BIT_HAS_UNNAMED_UNIONS
+#if ME_COMPILER_HAS_UNNAMED_UNIONS
     union {
 #endif
         struct {
@@ -9997,7 +9997,7 @@ typedef struct EcNode {
             Node        object;
             Node        statement;
         } with;
-#if BIT_HAS_UNNAMED_UNIONS
+#if ME_COMPILER_HAS_UNNAMED_UNIONS
     };
 #endif
 } EcNode;
@@ -10275,7 +10275,7 @@ typedef struct EcToken {
     EcLocation  loc;                    /* Source code debug info */
     struct EcToken *next;               /* Putback and freelist linkage */
     EcStream    *stream;
-#if BIT_DEBUG
+#if ME_DEBUG
     char        *name;                  /* Debug token name */
 #endif
 } EcToken;
@@ -10600,8 +10600,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef _PCRE_H
 #define _PCRE_H
 
-#ifndef BIT_PACK_PCRE
-    #define BIT_PACK_PCRE 1
+#ifndef ME_COM_PCRE
+    #define ME_COM_PCRE 1
 #endif
 
 /* The current PCRE version information. */
@@ -10802,8 +10802,8 @@ typedef struct real_pcre pcre;
 replaced with a custom type. For conventional use, the public interface is a
 const char *. */
 
-#ifdef BIT_CHAR
-#define PCRE_SPTR const BIT_CHAR *
+#ifdef ME_CHAR
+#define PCRE_SPTR const ME_CHAR *
 #else
 #ifndef PCRE_SPTR
 #define PCRE_SPTR const char *
@@ -10905,4 +10905,4 @@ PCRE_EXP_DECL const char *pcre_version(void);
 #endif
 
 #endif /* End of pcre.h */
-#endif /* BIT_PACK_EJSCRIPT */
+#endif /* ME_COM_EJSCRIPT */
