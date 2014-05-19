@@ -43,20 +43,19 @@
         "me-package": "~0.8",
         "mpr": "~4.6",
         "osdep": "~0.8",
-        "pcre": "~1.0"
-    },
-    "optionalDependencies": {
+        "pcre": "~1.0",
         "ejs": "~2.3",
-        "esp": "~5.0",
-        "esp-html-mvc": "~5.0",
-        "esp-mvc": "~5.0",
-        "esp-server": "~5.0",
+        "esp": "~4.6",
+        "esp-html-mvc": "~4.6",
+        "esp-server": "~4.6",
         "est": "~0.6",
-        "me-php": "~5",
+        "me-php": "~5.5",
         "me-ssl": "~0.8",
-        "php": "~5",
         "sqlite": "~1.0",
         "zlib": "~1.0"
+    },
+    "optionalDependencies": {
+        "php": "~5",
     },
     "paks": {
         "esp": {
