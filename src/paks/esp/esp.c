@@ -548,7 +548,9 @@ static void setupRequirements(int argc, char **argv)
             fail("Cannot find %s", ME_ESP_PACKAGE);
             return;
         }
-        app->appName = mprGetPathBase(mprGetCurrentPath());
+        if (!app->appName) {
+            app->appName = mprGetPathBase(mprGetCurrentPath());
+        }
         app->title = stitle(app->appName);
         app->config = createPackage();
     }
@@ -884,7 +886,9 @@ static void install(int argc, char **argv)
         return;
     }
     if (!mprPathExists("package.json", R_OK)) {
+#if UNUSED
         app->appName = mprGetPathBase(mprGetCurrentPath());
+#endif
         if (!identifier(app->appName)) {
             fail("Directory name is used as application name and must be a valid C identifier");
             return;
