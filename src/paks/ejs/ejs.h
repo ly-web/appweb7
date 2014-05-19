@@ -9,7 +9,7 @@
 
 #include "me.h"
 #
-#if ME_COM_EJSCRIPT
+#if ME_COM_EJS
 
 #include "osdep.h"
 #include "mpr.h"
@@ -10905,4 +10905,4 @@ PCRE_EXP_DECL const char *pcre_version(void);
 #endif
 
 #endif /* End of pcre.h */
-#endif /* ME_COM_EJSCRIPT */
+#endif /* ME_COM_EJS */

@@ -27,7 +27,7 @@
 
 
 
-#if ME_COM_EJSCRIPT
+#if ME_COM_EJS
 #if ME_COMPILER_HAS_LIB_EDIT
   #include  <histedit.h>
 #endif
@@ -602,7 +602,7 @@ int main(int argc, char **argv)
     return 0;
 }
 
-#endif /* ME_COM_EJSCRIPT */
+#endif /* ME_COM_EJS */
 
 /*
     @copy   default

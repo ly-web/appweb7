@@ -10,7 +10,7 @@
 #define EJS_DEFINE_OPTABLE 1
 #include "ejs.h"
 
-#if ME_COM_EJSCRIPT
+#if ME_COM_EJS
 
 /************************************************************************/
 /*
@@ -68475,4 +68475,4 @@ void ejsDisableExit(Ejs *ejs)
 
     @end
  */
-#endif /* ME_COM_EJSCRIPT */
+#endif /* ME_COM_EJS */
