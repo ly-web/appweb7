@@ -80,6 +80,9 @@
                 <li>Appweb and ESP are now more modular and heavily use the Pak tool to install and manage
                     extension components from the href="http://embedthis.com/catalog/">Online Pak Catalog</a>.</p>
             </ul>
+            <p>Appweb 4.6+ and Appweb 5 use the MakeMe build system.
+                New configure options and cross compiling capabilities have been added. See more details below
+                in  <a href="#makeme">MakeMe Changes</a>.</p>
             <a id="changes"></a>
             <h2 class="section">Changes in Appweb 4</h2>
             <p>Appweb 4 provides equivalent or greater functionality to that in Appweb 3. 
@@ -105,9 +108,20 @@
                 APIs have a "http" prefix instead of an "ma" prefix.</li>
                 <li>Appweb 4 supports the Ejscript 2.X Web Framework. It is a major upgrade with new integration APIs.</li>
                 <li>The stand-alone Appweb command line program is upgraded with new switches and options.</li>
-                <li>The build system is upgraded and simplified. It now uses the MakeMe build system.
-                    New configure options and cross compiling capabilities have been added.</li>
+                <li>The build system is upgraded and simplified. Appweb 4.6+ and Appweb 5 use the MakeMe build system.
+                    New configure options and cross compiling capabilities have been added. See more details below
+                in  <a href="#makeme">MakeMe Changes</a>.</li>
             </ul>
+            <a name="makeme"></a>
+            <h3>MakeMe Changes</h3>
+            <p>When migrating from an Appweb version that used Bit for building, please not the following changes:</p>
+            <ul>
+            <li>All MakeMe files have a "<em>.me</em>" extension instead of "<em>.bit</em>".</li>
+            <li>The generated header is now named "<em>me.h</em>" instead of "<em>bit.h</em>".</li>
+            <li>The <em>me.h</em> header definitions use a <em>ME_</em> prefix instead of "<em>BIT_</em>".</li>
+            <li>The OS header is now named <em>osdep.h</em> instead of "<em>bitos.h</em>".</li>
+            </ul>
+
             <h3>Removed Capabilities</h3>
             <ul>
                 <li>The EGI handler has been removed and deprecated in favor of the ESP handler which has equivalent and
