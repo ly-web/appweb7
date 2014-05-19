@@ -75,6 +75,10 @@ static void updatePost() {
     }
 }
 
+static void redirectPost() {
+    redirect(sjoin(getConn()->rx->uri, "/", NULL));
+}
+
 static void common(HttpConn *conn) {
 }
 
@@ -91,13 +95,14 @@ ESP_EXPORT int esp_controller_blog_post(HttpRoute *route, MprModule *module) {
     espDefineAction(route, "post-list", listPost);
     espDefineAction(route, "post-update", updatePost);
     espDefineAction(route, "post-cmd-", listPost);
+    espDefineAction(route, "post", redirectPost);
     
 #if SAMPLE_VALIDATIONS
     Edi *edi = espGetRouteDatabase(route);
     ediAddValidation(edi, "present", "post", "title", 0);
     ediAddValidation(edi, "unique", "post", "title", 0);
     ediAddValidation(edi, "banned", "post", "body", "(swear|curse)");
-    ediAddValidation(edi, "format", "post", "phone", "/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/");
+    ediAddValidation(edi, "format", "post", "phone", "/^\\(?([0-9]{3})\\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/");
 #endif
     return 0;
 }

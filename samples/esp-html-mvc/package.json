@@ -2,52 +2,40 @@
     "name": "blog",
     "title": "blog",
     "description": "blog",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "dependencies": {
-        "esp-html-mvc": "*",
-        "esp-server": "*"
+        "esp-html-mvc": "~5.0"
     },
-    "client-scripts": [
-    ],
-    "dirs": {
-        "client": "client",
-        "paks": "client/paks"
-    },
-    "esp": {
-        "combined": false,
-        "update": true,
-        "serverPrefix": "/do",
-        "server": {
-            "generate": {
-                "appweb": "esp-html-mvc/appweb.conf",
-                "migration": "esp-server/migration.c",
-                "controller": "esp-html-mvc/controller.c",
-                "controller-singleton": "esp-html-mvc/controller-singleton.c",
-                "clientList": "esp-html-mvc/list.esp",
-                "clientEdit": "esp-html-mvc/edit.esp"
+    "app": {
+        "http": {
+            "database": "default",
+            "serverPrefix": "/do",
+            "auth": {
+                "type": "app"
             },
-            "database": "mdb://blog.mdb",
-            "routes": "esp-angular-mvc"
+            "routes": "esp-html-mvc"
         },
-        "auth": "app",
-        "logRoutes": false,
+        "esp": {
+            "generate": {
+                "appweb": "esp-server/generate/appweb.conf",
+                "migration": "esp-mvc/generate/migration.c",
+                "module": "esp-mvc/generate/src/app.c",
+                "controllerSingleton": "esp-mvc/generate/controller.c",
+                "clientList": "esp-html-mvc/generate/list.esp",
+                "clientEdit": "esp-html-mvc/generate/edit.esp",
+                "controller": "esp-html-mvc/generate/controller.c"
+            }
+        },
         "mode": "debug",
         "modes": {
             "debug": {
-                "combined": false,
-                "compile": "symbols",
-                "showErrors": true,
-                "keepSource": true,
-                "update": true
-            },
-            "release": {
-                "combined": true,
-                "cache": 86400,
-                "compile": "optimized",
-                "compressed": true,
-                "showErrors": false,
-                "update": false,
-                "keepSource": false
+                "http": {
+                    "content": {
+                        "keep": [
+                            "c"
+                        ]
+                    }
+                }
             }
         }
     }

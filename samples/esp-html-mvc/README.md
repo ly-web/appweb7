@@ -8,18 +8,16 @@ An alternative approach is to use a client-side Javascript framework to generate
 Te [esp-angular-mvc](../esp-angular-mvc/README.md) sample demonstrates such an approach.
 
 The app contains:
+
 * blog database with post table in the db directory
 * post controller to manage posts in the controllers directory
 * post views to create, list and display posts in the client/app/post directory
 * master view layout under the client/layouts directory
 
-This app was generated then edited via:
+This app was generated with these commands:
 
-    esp generate app blog html-mvc
-    cd blog
+    esp --name blog install esp-html-mvc
     esp generate scaffold post title:string body:text
-    cd ..
-    mv blog esp-html-mvc
 
 Requirements
 ---
@@ -36,7 +34,7 @@ To run:
 
 The server listens on port 8080. Browse to: 
  
-     http://localhost:8080/do/post/list
+     http://localhost:8080/do/post
 
 Notes:
 ---
