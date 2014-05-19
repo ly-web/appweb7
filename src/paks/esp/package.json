@@ -22,14 +22,14 @@
     },
     "pak": "~0.9",
     "dependencies": {
-        "http": "~5",
+        "http": "~4",
         "me-dev": "~0.8",
-        "mpr": "~5",
+        "mpr": "~4",
         "osdep": "~0.8",
         "pcre": "*"
     },
     "optionalDependencies": {
-        "appweb": "~5",
+        "appweb": "~4",
         "est": "~0.6",
         "me-ssl": "~0.8",
         "sqlite": "~1"

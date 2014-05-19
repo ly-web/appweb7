@@ -100,27 +100,11 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <ClCompile Include="..\..\src\paks\esp\edi.c" />
-    <ClCompile Include="..\..\src\paks\esp\espAbbrev.c" />
-    <ClCompile Include="..\..\src\paks\esp\espDeprecated.c" />
-    <ClCompile Include="..\..\src\paks\esp\espFramework.c" />
-    <ClCompile Include="..\..\src\paks\esp\espHandler.c" />
-    <ClCompile Include="..\..\src\paks\esp\espHtml.c" />
-    <ClCompile Include="..\..\src\paks\esp\espTemplate.c" />
-    <ClCompile Include="..\..\src\paks\esp\mdb.c" />
-    <ClCompile Include="..\..\src\paks\esp\sdb.c" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ClInclude Include="$(IncDir)\edi.h" />
+    <ClCompile Include="..\..\src\paks\esp\espLib.c" />
   </ItemGroup>
 
   <ItemGroup>
     <ClInclude Include="$(IncDir)\esp.h" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ClInclude Include="$(IncDir)\mdb.h" />
   </ItemGroup>
 
   <ItemDefinitionGroup>
@@ -131,9 +115,7 @@
 
   <CustomBuildStep>
     <Command>cd ..\..\src\paks\esp
-copy /Y edi.h $(IncDir)
 copy /Y esp.h $(IncDir)
-copy /Y mdb.h $(IncDir)
 cd ..\..\..\projects\appweb-windows-default</Command>
     <Outputs>$(BinDir)\libmod_esp.dll</Outputs>
   </CustomBuildStep>
