@@ -872,12 +872,12 @@ static HttpRoute *createRoute(cchar *dir)
 }
 
 
-static void exportCache()
+static void seedPakCache()
 {
     MprDirEntry *dp;
     MprList     *paks;
     MprPath     info;
-    cchar       *appwebPaks, *src, *dest;
+    cchar       *espPaks, *src, *dest, *dpath, *path;
     int         i;
 
     if (!mprPathExists(app->paksCacheDir, R_OK)) {
@@ -885,12 +885,26 @@ static void exportCache()
             fail("Cannot make directory %s", app->paksCacheDir);
         }
     }
-    appwebPaks = mprJoinPath(mprGetAppDir(), "../" ME_ESP_PAKS);
-    trace("Export", "ESP paks from %s to %s", appwebPaks, app->paksCacheDir);
+    espPaks = mprJoinPath(mprGetAppDir(), "../" ME_ESP_PAKS);
 
-    paks = mprGetPathFiles(appwebPaks, MPR_PATH_DESCEND | MPR_PATH_RELATIVE);
+    /*
+        Check the existence of esp-server/VERSION
+     */
+    paks = mprGetPathFiles(mprJoinPath(espPaks, "esp-server"), MPR_PATH_RELATIVE);
+    if ((dp = mprGetFirstItem(paks)) == 0) {
+        fail("Cannot locate esp-server in esp paks directory: %s", app->paksCacheDir);
+        return;
+    }
+    path = mprJoinPath("esp-server", dp->name);
+    dpath = mprJoinPath(app->paksCacheDir, path);
+    if (mprPathExists(dpath, X_OK)) {
+        return;
+    }
+    trace("Export", "ESP paks from %s to %s", espPaks, app->paksCacheDir);
+
+    paks = mprGetPathFiles(espPaks, MPR_PATH_DESCEND | MPR_PATH_RELATIVE);
     for (ITERATE_ITEMS(paks, dp, i)) {
-        src = mprJoinPath(appwebPaks, dp->name);
+        src = mprJoinPath(espPaks, dp->name);
         dest = mprJoinPath(app->paksCacheDir, dp->name);
         if (dp->isDir) {
             if (mprMakeDir(dest, 0775, -1, -1, 1) < 0) {
@@ -910,8 +924,7 @@ static void exportCache()
 
 static void initialize(int argc, char **argv)
 {
-    MprPath     src, dest;
-    cchar       *appwebPaks, *home, *path;
+    cchar   *home;
 
     if (app->error) {
         return;
@@ -935,18 +948,7 @@ static void initialize(int argc, char **argv)
      */
     if ((home = getenv("HOME")) != 0) {
         app->paksCacheDir = mprJoinPath(home, ".paks");
-        appwebPaks = mprJoinPath(mprGetAppDir(), "../" ME_ESP_PAKS);
-        if (!mprPathExists(app->paksCacheDir, R_OK)) {
-            if (mprMakeDir(app->paksCacheDir, 0775, -1, -1, 0) < 0) {
-                fail("Cannot make directory %s", app->paksCacheDir);
-            }
-        }
-        path = sjoin("esp-server/", stok(sclone(ESP_VERSION), "-", NULL), NULL);
-        mprGetPathInfo(mprJoinPath(appwebPaks, path), &src);
-        mprGetPathInfo(mprJoinPath(app->paksCacheDir, path), &dest);
-        if (!dest.valid || (src.mtime >= dest.mtime)) {
-            exportCache();
-        }
+        seedPakCache();
     } else {
         app->paksCacheDir = mprJoinPath(mprGetAppDir(), "../" ME_ESP_PAKS);
     }
