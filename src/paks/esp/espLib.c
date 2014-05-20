@@ -4672,7 +4672,8 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
         cchar       *errMsg, *source;
         char        *kind;
         int         i;
-            /*
+
+        /*
             Note: the config parser pauses GC, so this will never yield
          */
         if (!loadApp(route, NULL)) {
