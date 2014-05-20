@@ -40,7 +40,7 @@
         "pcre": "~1.0",
         "zlib": "~1.0"
     },
-    "dirs": {
+    "directories": {
         "paks": "src/paks"
     }
 }

@@ -2239,7 +2239,7 @@ static bool blendPak(cchar *name, cchar *version, bool topLevel)
         return 0;
     }
     /*
-        Blend dependencies bottom up so that lower paks can define dirs
+        Blend dependencies bottom up so that lower paks can define directories
      */
     deps = mprGetJsonObj(spec, "dependencies", MPR_JSON_TOP);
     if (deps) {
@@ -2288,17 +2288,17 @@ static bool blendSpec(cchar *name, cchar *version, MprJson *spec)
     if (mprGetJsonObj(spec, "esp", MPR_JSON_TOP) != 0) {
         blendJson(eroute->config, "esp", spec, "esp");
     }
-    if (mprGetJsonObj(spec, "dirs", MPR_JSON_TOP) != 0) {
-        blendJson(eroute->config, "dirs", spec, "dirs");
+    if (mprGetJsonObj(spec, "directories", MPR_JSON_TOP) != 0) {
+        blendJson(eroute->config, "directories", spec, "directories");
     }
     /*
         Aggregate client scripts and expand ${} references
      */
     if ((scripts = mprGetJsonObj(spec, "client-scripts", MPR_JSON_TOP)) != 0) {
-        if ((client = mprGetJson(eroute->config, "dirs.client", 0)) == 0) {
+        if ((client = mprGetJson(eroute->config, "directories.client", 0)) == 0) {
             client = sjoin(mprGetPathBase(eroute->clientDir), "/", NULL);
         }
-        if ((paks = mprGetJson(eroute->config, "dirs.paks", 0)) == 0) {
+        if ((paks = mprGetJson(eroute->config, "directories.paks", 0)) == 0) {
             paks = ESP_PAKS_DIR;
         }
         paks = strim(paks, sjoin(client, "/", NULL), MPR_TRIM_START);
@@ -2401,7 +2401,7 @@ static void generateSetup()
         mprSetJson(eroute->config, "version", "0.0.0", 0);
         mprSetJsonObj(eroute->config, "dependencies", mprCreateJson(0), 0);
         mprSetJsonObj(eroute->config, "client-scripts", mprCreateJson(MPR_JSON_ARRAY), 0);
-        mprSetJsonObj(eroute->config, "dirs", mprCreateJson(0), 0);
+        mprSetJsonObj(eroute->config, "directories", mprCreateJson(0), 0);
     }
 }
 
@@ -2437,7 +2437,7 @@ static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toD
             mprAddKey(relocate, fname, fname);
         }
     }
-    if ((base = mprGetJson(eroute->config, "dirs.paks", 0)) == 0) {
+    if ((base = mprGetJson(eroute->config, "directories.paks", 0)) == 0) {
         base = app->paksDir;
     }
     files = mprGetPathFiles(fromDir, MPR_PATH_DESCEND | MPR_PATH_RELATIVE | MPR_PATH_NODIRS);
