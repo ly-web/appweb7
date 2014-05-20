@@ -44,7 +44,7 @@
         "pcre": "~1.0"
     },
     "optionalDependencies": {
-        "ejs": "~2.3",
+        "ejs": "~2.4",
         "esp": "~5.0",
         "esp-html-mvc": "~5.0",
         "esp-mvc": "~5.0",
