@@ -9691,10 +9691,9 @@ PUBLIC int mprStartDispatcher(MprDispatcher *dispatcher)
     if (dispatcher->owner && dispatcher->owner != mprGetCurrentOsThread()) {
         return MPR_ERR_BAD_STATE;
     }
-    if (isRunning(dispatcher)) {
-        return MPR_ERR_BAD_STATE;
+    if (!isRunning(dispatcher)) {
+        queueDispatcher(dispatcher->service->runQ, dispatcher);
     }
-    queueDispatcher(dispatcher->service->runQ, dispatcher);
     dispatcher->owner = mprGetCurrentOsThread();
     return 0;
 }
