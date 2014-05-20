@@ -20,6 +20,11 @@ Me.load({
             sources: [ 'authpass.c' ],
             depends: [ 'libappweb' ],
             platforms: [ 'local' ],
+            postblend: function (target) {
+                if (target.static && me.targets.ssl.enable) {
+                    target.depends += ['libmprssl']
+                }
+            },
         },
     },
 })
