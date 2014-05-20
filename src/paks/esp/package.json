@@ -22,9 +22,9 @@
     },
     "pak": "~0.9",
     "dependencies": {
-        "http": "~4",
+        "http": "~4.6",
         "me-dev": "~0.8",
-        "mpr": "~4",
+        "mpr": "~4.6",
         "osdep": "~0.8",
         "pcre": "*"
     },
