@@ -5155,6 +5155,7 @@ static void closeEsp(HttpQueue *q)
 }
 
 
+#if !ME_STATIC
 /*
     This is called when unloading a view or controller module
     All of ESP must be quiesced.
@@ -5189,6 +5190,7 @@ static bool espUnloadModule(cchar *module, MprTicks timeout)
     }
     return 0;
 }
+#endif
 
 
 PUBLIC void espClearFlash(HttpConn *conn)
