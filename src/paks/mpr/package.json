@@ -23,10 +23,10 @@
     },
     "repository": {
         "type": "git",
-        "url": "git://github.com/embedthis/mpr-4.git"
+        "url": "git://github.com/embedthis/mpr.git"
     },
     "bugs": {
-        "url": "http://github.com/embedthis/mpr-4/issues"
+        "url": "http://github.com/embedthis/mpr/issues"
     },
     "export": [
         "doc/**"
