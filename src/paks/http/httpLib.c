@@ -6231,6 +6231,8 @@ PUBLIC HttpHost *httpCloneHost(HttpHost *parent)
     host->routes = parent->routes;
     host->flags = parent->flags | HTTP_HOST_VHOST;
     host->streams = parent->streams;
+    host->secureEndpoint = parent->secureEndpoint;
+    host->defaultEndpoint = parent->defaultEndpoint;
     httpAddHost(http, host);
     return host;
 }
