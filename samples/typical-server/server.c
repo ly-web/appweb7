@@ -242,22 +242,28 @@ static int changeRoot(cchar *jail)
 
 /*
     If doing a static build, must now reference required modules to force the linker to include them.
-    Don't actually call init routines here. They will be called via maConfigureServer.
+    On linux we cannot lookup symbols using dlsym(), so we must invoke explicitly here.
+
+    Add your modules here if you are doing a static link.
  */
 static void loadStaticModules()
 {
 #if ME_STATIC
-#if ME_PACK_CGI
-    mprNop(maCgiHandlerInit);
+    Http    *http = MPR->httpService;
+#if ME_COM_CGI
+    maCgiHandlerInit(http, mprCreateModule("cgiHandler", 0, 0, http));
 #endif
-#if ME_PACK_ESP
-    mprNop(maEspHandlerInit);
+#if ME_COM_ESP
+    maEspHandlerInit(http, mprCreateModule("espHandler", 0, 0, http));
 #endif
-#if ME_PACK_PHP
-    mprNop(maPhpHandlerInit);
+#if ME_COM_EJS
+    maEspHandlerInit(http, mprCreateModule("ejsHandler", 0, 0, http));
 #endif
-#if ME_SSL
-    mprNop(maSslModuleInit);
+#if ME_COM_PHP
+    maPhpHandlerInit(http, mprCreateModule("phpHandler", 0, 0, http));
+#endif
+#if ME_COM_SSL
+    maSslModuleInit(http, mprCreateModule("sslModule", 0, 0, http));
 #endif
 #endif /* ME_STATIC */
 }

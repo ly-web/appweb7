@@ -267,10 +267,11 @@ static void loadStaticModules()
 #if ME_STATIC
     /*
         If doing a static build, must now reference required modules to force the linker to include them.
-        On linux we cannot lookup symbols, so we must invoke explicitly here.
-        Users: add your modules here if you are doing a static link.
+        On linux we cannot lookup symbols with dlsym(), so we must invoke explicitly here.
+
+        Add your modules here if you are doing a static link.
      */
-    Http        *http = MPR->httpService;
+    Http    *http = MPR->httpService;
 #if ME_COM_CGI
     maCgiHandlerInit(http, mprCreateModule("cgiHandler", 0, 0, http));
 #endif
