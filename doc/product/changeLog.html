@@ -90,8 +90,9 @@
                 <li>Generated Makefiles are more configurable.
                     <a href="https://github.com/embedthis/appweb/issues/345">[issue 345]</a>.</li>
             </ul>
-            <h3>Fixes</h3>
+            <h3>Fixes since rc0</h3>
             <ul>
+                <li>The fixes from version 4.6.0 are also applied in release candidate rc1</li>
                 <li>Fix testing of XSRF token. Only re-create in views.
                     <a href="https://github.com/embedthis/appweb/issues/346">[issue 346]</a>.</li>
             </ul>
@@ -105,6 +106,20 @@
                 <li>ESP Package.json format is changed for many properties. Regenerate the application to get 
                     a new package.json file.</li>
                 <li>ESP Angular applications have a different Esp.config property layout. Upgrade all relevant paks.</li>
+            </ul>
+
+            <a id="4.6.0"></a>
+            <h2 class="section">Changes in 4.6.0</h2>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Switch to use MakeMe, previously called Bit. See the GitHub issue for details of the change.
+                    <a href="https://github.com/embedthis/appweb/issues/343">[issue 343]</a>.</li>
+                <li>UploadFilter with packet-spanning boundary in the last packet.
+                    <a href="https://github.com/embedthis/appweb/issues/348">[issue 348]</a>.</li>
+                <li>Redirection for virtual hosts to HTTPS
+                    <a href="https://github.com/embedthis/appweb/issues/349">[issue 349]</a>.</li>
+                <li>Static linking on linux
+                    <a href="https://github.com/embedthis/appweb/issues/350">[issue 350]</a>.</li>
             </ul>
 
             <a id="4.5.6"></a>
