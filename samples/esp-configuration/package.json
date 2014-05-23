@@ -7,15 +7,29 @@
     The format of this file is CommonJS package.json file with esp sections. It is an enhanced 
     JSON file. Property keys do not need to be enclosed in quotes.
     Also the last property in a collection may be terminated with a comma.
- */
 {
+    /*
+        Single word application name. Must be a C identifier
+     */
     "name": "blog",
-    "title": "My Blog",
-    "description": "My blog with tales of overseas travel",
+
+    /*
+        Multi-word title for the application. Used for display.
+     */
+    "title": "My Blog"
+
+    /*
+        One-line description for the application. Used in the Pak catalog.
+     */
+    "description": "My Blog detailing adventures in the Artic",
+
+    /*
+        SemVer compatible version string
+     */
     "version": "1.0.0",
 
     /*
-        List of dependent paks. Uses SemVer versioning. 
+        List of dependent paks. Uses SemVer version expressions. 
         See Pak http://embedthis.com/products/pak/doc/index.html for details.
      */
     "dependencies": {
@@ -36,164 +50,744 @@
     },
 
     /*
-        Set the paks directory
+        Opportunity to remap directories
      */
-    "dirs": {
+    "directories": {
+        "app": "",
+        "cache": "cache",
         "client": "client",
-        "paks": "client/paks"
+        "controllers": "controllers",
+        "db": "db",
+        "documents":  ".",
+        "home":       ".",
+        "layouts": "layouts",
+        "lib": "client/lib",
+        "paks": "paks",
+        "pakscache": "~/.paks",
+        "src": "src",
+        "upload": "/tmp",
+        "views: "views",
     },
 
     /*
-        List of scripts to serve to the client via the scripts() API
-        Also used when building the app to create a single, combined, minified, compressed JS file.
+        Application configuration
      */
-    "client-scripts": [
-        "paks/angular/angular.js",
-        "paks/angular/angular-animate.js",
-        "paks/angular/angular-route.js",
-        "paks/angular-bootstrap/*.js",
-        "paks/esp-angular/*.js",
-        "app/main.js",
-        "app/*/**.js*",
-        "paks/esp-gui/*.js",
-        "paks/html5/html5shiv.js",
-        "paks/less/less.js",
-        "paks/respond/respond.js"
-    ],
-
-    "esp": {
-        /* 
-            Name of the Auth Store to use, "app" means user credentials are stored in a server-side application database
-         */
-        "auth": "app",
-        
-        /*
-            Default presentation formats for various types
-         */
-        "formats": {
-            "date": "yyyy-MM-dd",
-            "float": 2,
-        },
+    "app": {
 
         /*
-            Expect requests and responses in JSON format
+            Client-side configurationf
          */
-        "json": true,
-
-        /*
-            Default refresh period to use for dynamic data polling
-         */
-        "refresh": 1000,
-
-        /*
-            Routing prefix for server-side URIs
-         */
-        "serverPrefix": "/do",
-
-        /*
-            Default timeouts (secs)
-         */
-        "timeouts": {
-            "session": 1800,
-        },
-
-        /*
-            Set to include a XSRF token to minimize CSRF vulnerabilies
-         */
-        "xsrf": true,
-
-        /*
-            Server side properties not passed to the client
-         */
-        "server": {
-            "database": "mdb://blog.mdb",
-
+        "client": {
             /*
-                Redirect all traffic over HTTPS
+                Selection of properties to send to the client
              */
-            "redirect": "secure",
-
+            mappings: {
+                auth:       "http.auth",
+                prefix:     "http.prefix",
+                server:     "http.serverPrefix",
+                formats:    "http.formats",
+                login: {
+                    name:   "http.auth.login.name",
+                    url:    "http.auth.login.url",
+                },
+                timeouts: {
+                    session: "http.timeouts.session",
+                    refresh: "http.timeouts.refresh",
+                }
+            },
+            /*
+                List of browser scripts to serve to the client via the scripts() API
+                Also used when building the app to create a single, combined, minified, compressed JS file.
+             */
+            "scripts": [
+                "paks/angular/angular.js",
+                "paks/angular/angular-animate.js",
+                "paks/angular/angular-route.js",
+                "paks/angular-bootstrap/*.js",
+                "paks/esp-angular/*.js",
+                "app/main.js",
+                "app/*/**.js*",
+                "paks/esp-gui/*.js",
+                "paks/html5/html5shiv.js",
+                "paks/less/less.js",
+                "paks/respond/respond.js"
+            ],
+        },
+        "esp": {
             /*
                 Templates used for "esp generate"
              */
             "generate": {
-                "appweb": "esp-angular-mvc/appweb.conf",
-                "migration": "esp-server/migration.c",
-                "controller": "esp-angular-mvc/controller.c",
-                "controller-singleton": "esp-angular-mvc/controller-singleton.c",
-                "clientModel": "esp-angular-mvc/model.js",
+                "appweb": "esp-best/appweb.conf",
                 "clientController": "esp-angular-mvc/controller.js",
+                "clientEdit": "esp-angular-mvc/edit.html",
                 "clientList": "esp-angular-mvc/list.html",
-                "clientEdit": "esp-angular-mvc/edit.html"
+                "clientModel": "esp-angular-mvc/model.js",
+                "controller": "esp-mvc/controller.c",
+                "controllerSingleton": "esp-angular-mvc/generate/controllerSingleton.c"
+                "migration": "esp-mvc/migration.c",
+                "module": "esp-mvc/src/app.c",
             },
         },
+
+        /*
+            HTTP related configuration
+         */
+        "http": {
+            /*
+                Server related configuration that applies globally
+                Ignored if hosted in Appweb, when server configuration comes from appweb.conf.
+             */
+            "server": {
+                /*
+                    Account execution 
+                 */
+                "account": {
+                    /*
+                        Run as user
+                     */
+                    "user": "name",
+
+                    /*
+                        Run as member of group
+                     */
+                    "group": "name",
+                },
+
+                /*
+                    Change the file system root. Unix only.
+                 */
+                "chroot": "/path",
+
+                /*
+                    Defensive counter-measures. These are referenced by "monitors"
+                 */
+                "defenses": {
+                    /*
+                        Name of defense and collection of properties for the remedy
+                     */
+                    "block": {
+                        "remedy": "ban",
+                        "status": 406,
+                        "message": "Client temporarily banned due to monitored limit exceeded",
+                        "period": "30mins",
+                    },
+                },
+
+                /*
+                    Listening endpoints. Ignored if hosted.
+                 */
+                "listen": [
+                    "http://*:4000",
+                    "http://127.0.0.1:4000",
+                    "https://127.0.0.1:4443",
+                ],
+
+                /*
+                    Log file configuration
+                 */
+                "log": {
+                    /*
+                        Log filename or destination
+                     */
+                    "location": "stdout",
+
+                    /*
+                        Verbosity level (0-9)
+                     */
+                    "level": "2",
+
+                    /*
+                        Keep up to 5 log files 
+                     */
+                    "backup": 5,
+
+                    /*
+                        Start a new log file on restart
+                     */
+                    "anew": true,
+
+                    /*
+                        Maximum log file size before starting a new log file
+                     */
+                    "size": "10MB",
+
+                    /*
+                        Add a timestamp to the log file
+                     */
+                    "timestamp": "1hr",
+                },
+
+                /*
+                    Defensive counter-measure monitor policies
+                 */
+                "monitors": {
+                    /*  
+                        Name of monitor 
+                     */
+                    "missing": {
+                        /*
+                            Monitor expression to evaluate
+                         */
+                        "expression": "NotFoundErrors > 5",
+
+                        /*
+                            Frequence to check the monitor expression
+                         */
+                        "period": "10 secs",
+
+                        /*
+                            List of defenses to invoke if monitor expression is true
+                         */
+                        "defenses": [ "block" ],
+
+                        /*
+                            Enable or disable the monitor
+                         */
+                        "enable": true,
+                    },
+                },
+
+            },
+
+            /*
+                All the properties below apply on a per-route basis
+             */
+
+            /*
+                Authentication configuration
+             */
+            "auth": {
+                /*
+                    Login configuration
+                 */
+                "login": {
+                    /*
+                        Automatically login as this username
+                     */
+                    "name": "",
+
+                    /*
+                        Give the automatically logged in user these roles and abilities
+                     */
+                    "roles": [ "*" ],
+
+                    /*
+                        URL for the application login dialog
+                     */
+                    "url": "",
+                }
+
+                /*
+                    Basic/Digest authentication realm
+                 */
+                "realm": "example.com",
+
+                /*
+                    Required usernames or roles for user to posses before authorizing
+                 */
+                "require": {
+                    /*
+                        List of roles a user must posess before authorizing
+                     */
+                    "roles": [],
+                    /*
+                        List of users to authorizing. Set to true or ["*"] for any valid user
+                     */
+                    "users": ["*"]
+                },
+
+                /*
+                    Defined roles for users with abilities that comprise the roles.
+                 */
+                "roles": {
+                    "executive":     ["manage", "direct"],
+                    "user":          ["view"],
+                    "administrator": ["view", "edit"],
+                },
+
+                /*
+                    Define user accounts. More typically, these are stored in a database.
+                 */
+                users: {
+                    ralph: {
+                        password: "BF1:00128:bWFG5x85BYfuf7GW:w+zzIU0WTZQYaNAe0sPecWyry8Z9GrKH",
+                        roles:    ["user", "administrator", "purchase"],
+                    },
+                },
+
+                /* 
+                    Auth Store to use, "app" means user credentials are stored in a server-side application database
+                 */
+                "type": "app",
+            },
+            
+            /*
+                Response caching directives
+             */
+            "cache": [ {
+                /*
+                    Cache at the client 
+                 */ 
+                "client": "1day",
+
+                /*
+                    Cache at the server
+                 */
+                "server": "1hour"
+                
+                /*
+                    File extensions to cache
+                 */
+                "extensions": [ "css", "gif", "ico", "jpeg", "jpg", "js", "html", "less", "png", "pdf", "txt" ] 
+
+                /*
+                    URIs to cache. If the URI has a query, then only that exact request will be cached.
+                    The query should be in sorted urlencoded form. If omitted, defaults to "/"
+                 */
+                "uris": [ "/" ],
+
+                /*
+                    Request methods eligible for caching. If omitted, defaults to all methods.
+                 */
+                "methods": [ "*" ],
+
+                /*
+                    Responses to cache based on mime type for the response document. If omitted, defaults to all mime types.
+                 */
+                "mime": [ "*" ],
+
+                /*
+                    Caching of responses will be handled manually. Automatic response caching is disabled. Defaults to false.
+                 */
+                "manual": true,
+
+                /*
+                    Uniquely cache requests with different parameters (query and post data). Defaults to false.
+                 */
+                "unique": true,
+            } ],
+
+            /*
+                Content processing instructions
+             */ 
+            "content": {
+                /*
+                    Combine multiple files into a single file
+                 */
+                "combine": [ "c", "css", "html", "js" ],
+
+                /*
+                    Compress using gzip
+                 */
+                "compress": [ "css", "html", "js" ],
+
+                /*
+                    Keep intermediate forms
+                 */
+                "keep": [ "c" ],
+
+                /*
+                    Minify using language-specific minification
+                 */
+                "minify": [ "css", "html", "js" ],
+
+                /*
+                    Kind of style sheets to serve (css, less, sass)
+                 */
+                "stylesheets": "css"
+            },
+
+            /*
+                Database specification. Supported providers: sdb for SQLite and mdb for Memory Database.
+             */
+            "database": "mdb://blog.mdb",
+
+            /*
+                Delete file uploads after the request completes
+             */
+            "deleteUploads": true,
+
+            /*
+                Domain to service. This supports virtual hosting. If the name contains "*", it tests if the
+                request Host header contains the substring.
+             */
+            "domain": "*embedthis",
+
+            /*
+                Error pages to serve for specific error response codes
+             */
+            "errors": {
+                "404": "/notFound.html",
+            },
+
+            /*
+                Default presentation formats for various types
+             */
+            "formats": {
+                "date": "yyyy-MM-dd",
+                "float": 2,
+                /*
+                    Expect requests and responses in JSON format
+                 */
+                "response": "json",
+            },
+
+            /*
+                Response header management
+             */
+            "headers": {
+                /*
+                    Headers to add if not already defined
+                 */
+                "add": {
+                    "Content-Security-Policy":   "allow \"self\"; unsafe-inline; img-src \"self\"",
+                    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+                    "CrossOrigin":               "origin=* credentials=yes headers=X-CORS-HEADER age=3000",
+                },
+                /*
+                    Headers to remove
+                 */
+                "remove": [],
+
+                /*
+                    Headers to set and overwrite any existing headers
+                 */
+                "set": {
+                },
+            },
+
+            /*
+                List of index documents to serve for directory level requests
+             */
+            indexes: [
+                "index.esp",
+                "index.html"
+            ],
+
+            /*
+                Per-language content
+             */
+            "languages": {
+                /*
+                    Language code
+                 */
+                "en": {
+                    /*
+                        If using a directory per-language
+                     */
+                    "path": "/path/to/english"
+
+                    /*
+                        If using a document prefix per-language
+                     */
+                    "prefix": "en",
+
+                    /*
+                        If using a document suffix per-language
+                     */
+                    "suffix": "en",
+
+                    /*
+                        Set to true if this is the default language
+                     */
+                    "default": true,
+                }
+            },
+
+            /*
+                Sandbox limits
+             */
+            limits: {
+                buffer:             "32KB",         /* Default buffer size */
+                cache:              "10MB",         /* Maximum response cache size */
+                cacheItem:          "200KB",        /* Per-item max cache size */
+                chunk:              "64KB",         /* Default chunk encoding size */
+                clients:            100,            /* Maximum number of simultaneous clients */
+                connections:        50,             /* Maximum number of simultaneous connections */
+                files:              "unlimited",    /* Maximum number of open files */
+                keepAlive:          200,            /* Number of request to permit on a connection */
+                processes:          "unlimited",    /* Maximum number of processes to run */
+                requestBody:        100K,           /* Maximum request body data */
+                requestForm:        32K,            /* Maximum request form body data */
+                requestHeader:      32K,            /* Maximum request HTTP headers size */
+                responseBody:       "2GB",          /* Maximum response body size */
+                memory:             "200MB",        /* Maximum memory heap usage */
+                requests:           20,             /* Maximum simultaneous requests */
+                sessions:           100,            /* Maximum client sessions */
+                upload:             "2GB",          /* Maximum file upload size */
+                uri:                "8K",           /* Maximum URL size */
+                webSockets:         20,             /* Maximum number of Web Sockets */
+                webSocketsMessage:  "50K",          /* Maximum WebSockets message size */
+                webSocketsPacket:   "50K",          /* Maximum WebSockets packet size */
+                webSocketsFrame:    "4K",           /* Maximum Websockts frame size */
+                workers:            4,              /* Maximum number of worker threads */
+            },
+
+            /*
+                Supported request methods for this route. Use "*" for all methods, or omit definition.
+             */
+            "methods": [ "get", "post" ],
+
+            /*
+                Required request parameters before this route will match a request
+             */
+            "params": [ {
+                "name":   "name",
+                "value":  "john",
+                "equals": true,
+            } ],
+
+            /*
+                Regular expression used to match the route with the request URI
+             */
+            "pattern":    "^/route/auth",
+
+            /*
+                Request pipeline construction
+             */
+            "pipeline": {
+                /*
+                    Ordered list of filters with extensions for which the filter will apply
+                 */
+                "filters": [{
+                    "name": "uploadFilter",
+                    "extensions": [ "txt", "*" ],
+                }],
+                /*
+                    Defined request handlers and the extensions for which they apply
+                 */
+                "handlers": {
+                    "fileHandler": [ "html", "gif", "jpeg", "jpg", "png", "pdf", "ico", "css", "js", "txt" ],
+                    "espHandler":  [ "*" ],
+                },
+            },
+
+            /*
+                Request URI prefix. This prefix is removed from the URI before processing the request
+             */
+            prefix: "/route/auth",
+
+            /*
+                Redirections
+             */
+            "redirect": [ {
+                    /* Redirect all traffic over SSL */
+                    "status": 302,
+                    "to":     "https://"
+                }, {
+                    /* Redirect a specific document */
+                    "from": "/pressRelease",
+                    "status": 301,
+                    "to": "${request.scheme}://${request:host}/fixedPressRelease.html"
+                }
+            ],
+
+            /*
+                Descriptive name for route
+             */
+            "routeName":  "",
+
+            /*
+                List of routes. This can be a route-set name, or an array of routes.
+             */
+            "routes": [ ],
+
+            /*
+                Supported scheme for this route. Set to https to require SSL.
+             */
+            "scheme": "https",
+
+            /*
+                URL prefix for server-side URIs
+             */
+            "serverPrefix": "/do",
+
+            /*
+                Display server-side errors in the browser
+             */
+            "showErrors": true,
+
+            /*
+                Source file responsible for responding to the request.
+             */
+            "source": "filename",
+
+            /*
+                SSL configuration
+             */
+            "ssl": {
+                /*
+                    Certificate authority of root certificates to verify peers
+                 */
+                "authority": {
+                    /*
+                        File of catentated certificates
+                     */
+                    "file": "",
+
+                    /*
+                        Directory of certificates
+                     */
+                    "directory":  "",
+                },
+                /*
+                    Server's own certificate filename
+                 */
+                "certificate": "server.crt",
+
+                /*
+                    Ordered list of preferred ciphers
+                 */
+                "ciphers": [
+                    "TLS_RSA_WITH_AES_256_CBC_SHA",
+                    "TLS_RSA_WITH_RC4_128_SHA"
+                ],
+                /*
+                    Server private key file
+                 */
+                "key": "server.key",
+
+                /*
+                    Verification options
+                 */
+                "verify": {
+                    /*
+                        Verification the client certificate. Self-signed certificates permitted.
+                     */
+                    "client": true,
+                    /*
+                        Verification the client certificate issuer. Self-signed certificates not permitted.
+                     */
+                    "issuer": true,
+                },
+            },
+
+            /*
+                Stealth mode operates a quietly as possible
+             */
+            "stealth": true,
+
+            /*
+                Target rule to process the request
+             */
+            "target": {
+                "operation": "run",
+                "args": "greetings-$1",
+            },
+
+            /*
+                Default timeouts. Can also use strings with unit suffixes. "5minutes"
+             */
+            "timeouts": {
+                /*
+                    Maximum time for application to exit when waiting for requests to complete 
+                 */
+                "exit":       "30secs",
+
+                /*
+                    Maximum time to receive request headers
+                 */
+                "parse":      "20secs",
+
+                /*
+                    Maximum time to of I/O inactivity for a request
+                 */
+                "inactivity": "300secs",
+
+                /*
+                    Default refresh period to use for dynamic data polling
+                 */
+                "refresh": "1sec",
+
+                /*
+                    Maximum request duration
+                 */
+                "request":    "infinite",
+    
+                /*
+                    Maximum user session duration
+                 */
+                "session": "30mins",
+            },
+
+            /*
+                Log trace control
+             */
+            "trace": {
+                /*
+                    Receive direction logging
+                 */
+                "rx": {
+                    /*
+                        Extensions to include in logging
+                     */
+                    "include": ['*'],
+                    /*
+                        Extensions to exclude from logging
+                     */
+                    "exclude": [ 'jpg', 'gif', 'png', 'ico', 'css', 'js' ],
+                    /*
+                        Trace level to emit for connection, first request line, request headers and body events.
+                     */
+                    "levels": {
+                        "conn": 5,
+                        "first": 2,
+                        "headers": 4,
+                        "body": 4,
+                    },
+                    /*
+                        Maximum request body size to trace
+                     */
+                    "size": 1024
+                },
+                "tx": {
+                    "include": ['*'],
+                    "exclude": [ 'jpg', 'gif', 'png', 'ico', 'css' ],
+                    "levels": {
+                        "headers": 4,
+                        "body": 5,
+                    },
+                    "size": 10240
+                }
+            },
+
+            /*
+                Transparently recompile updated views, controllers and source
+             */
+            "update": true,
+
+            /*
+                Set to include a XSRF token to minimize CSRF vulnerabilies
+             */
+            "xsrf": true,
+
+        },
+
         /*
             Application mode. This selects a set of properties below and copies them to esp
          */
         "mode": "debug",
+
+        /*
+            Mode specific property collections. The designated mode collection is copied to "app".
+         */
         "modes": {
-            "debug": {
+            "debug": { 
                 /*
-                    Cache html,gif,jpeg,jpg,png,pdf,ico,js,txt,less files on the client for this number of seconds
+                    Collection of properties that are copied to "app" if in debug mode
                  */
-                "cache": 60,
-
-                /*
-                    Application compiled combined into a single file
-                 */
-                "combined": false,
-
-                /*  
-                    Server minified and compressed content for: css,html,js,less,txt,xml
-                 */
-                "compressed": false,
-
-                /*
-                    Display server-side errors in the browser
-                 */
-                "showErrors": true,
-
-                /*
-                    Keep intermediate source for views in the cache directory
-                 */
-                "keepSource": true,
-
-                /*
-                    Transparently recompile updated views, controllers and source
-                 */
-                "update": true,
-
-                /*
-                    Automatic login credentials.
-                 */
-                "login": {
-                    "name": "",
-                    "abilities": {
-                        "edit": true,
-                        "view": true,
-                    },
-                    /*
-                        Set if a login is required to the login home page
-                     */
-                    "required": "",
-                },
             },
             "release": {
-                "combined": true,
-                "cache": 86400,
-                "compressed": true,
-                "showErrors": false,
-                "update": false,
-                "keepSource": false,
-                "login": {
-                    "name": "",
-                    "abilities": {
-                        "edit": true,
-                        "view": true,
-                    },
-                    "required": "",
-                },
-            },
+                /*
+                    Collection of properties that are copied to "app" if in release mode
+                 */
+            }
         }
-    },
+    }
+
+    /*
+        List of files to include. Files are textually included at the location of the include.
+     */
+    "include": [],
 }

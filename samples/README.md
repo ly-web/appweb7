@@ -6,6 +6,7 @@ These samples are configured to use a locally built Appweb or Appweb installed t
 
 * Appweb - [http://embedthis.com/downloads/appweb/download.ejs](http://embedthis.com/downloads/appweb/download.esp)
 * MakeMe - [http://embedthis.com/downloads/makeme/download.ejs](http://embedthis.com/downloads/makeme/download.esp)
+* Pak - [http://embedthis.com/downloads/pak/download.ejs](http://embedthis.com/downloads/pak/download.esp)
 
 The following samples are available:
 
