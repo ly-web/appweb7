@@ -886,9 +886,6 @@ static void install(int argc, char **argv)
         return;
     }
     if (!mprPathExists("package.json", R_OK)) {
-#if UNUSED
-        app->appName = mprGetPathBase(mprGetCurrentPath());
-#endif
         if (!identifier(app->appName)) {
             fail("Directory name is used as application name and must be a valid C identifier");
             return;
