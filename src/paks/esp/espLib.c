@@ -4918,9 +4918,6 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     httpSetDir(route, "client", 0);
     httpSetDir(route, "controllers", 0);
     httpSetDir(route, "db", 0);
-#if UNUSED
-    httpSetDir(route, "generate", 0);
-#endif
     httpSetDir(route, "layouts", 0);
     httpSetDir(route, "lib", "client/lib");
     httpSetDir(route, "paks", "paks");

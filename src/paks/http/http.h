@@ -673,18 +673,6 @@ PUBLIC int httpApplyUserGroup();
   */
 PUBLIC bool httpConfigure(HttpConfigureProc proc, void *arg, MprTicks timeout);
 
-#if UNUSED
-/**
-    Configure endpoints with named virtual hosts
-    @param http Http service object.
-    @param ip IP address for the named virtual host
-    @param port address for the named virtual host
-    @ingroup HttpEndpoint
-    @stability Stable
- */
-PUBLIC int httpConfigureNamedVirtualEndpoints(Http *http, cchar *ip, int port);
-#endif
-
 /**
     Create a Http service object
     @description Create a http service object. One http service object should be created per application.
@@ -6859,10 +6847,7 @@ PUBLIC ssize httpWriteUploadData(HttpConn *conn, MprList *formData, MprList *fil
 /*  
     Endpoint flags
  */
-#if UNUSED
-#define HTTP_NAMED_VHOST    0x1             /**< Using named virtual hosting */
-#endif
-#define HTTP_NEW_DISPATCHER 0x2             /**< New dispatcher for each connection */
+#define HTTP_NEW_DISPATCHER     0x1         /**< New dispatcher for each connection */
 
 /** 
     Listening endpoints. Endpoints may have multiple virtual named hosts.
@@ -6970,17 +6955,6 @@ PUBLIC void httpDestroyEndpoint(HttpEndpoint *endpoint);
  */
 PUBLIC void *httpGetEndpointContext(HttpEndpoint *endpoint);
 
-#if UNUSED
-/**
-    Test if an endpoint has named virtual hosts.
-    @param endpoint Endpoint object to examine
-    @return True if the endpoint has named virutal hosts.
-    @ingroup HttpEndpoint
-    @stability Deprecated
- */
-PUBLIC bool httpHasNamedVirtualHosts(HttpEndpoint *endpoint);
-#endif
-
 /**
     Get if the endpoint is running in asynchronous mode
     @param endpoint HttpEndpoint object created via #httpCreateEndpoint
@@ -7065,17 +7039,6 @@ PUBLIC void httpSetEndpointContext(HttpEndpoint *endpoint, void *context);
     @stability Stable
  */
 PUBLIC void httpSetEndpointNotifier(HttpEndpoint *endpoint, HttpNotifier fn);
-
-#if UNUSED
-/**
-    Control whether the endpoint has named virtual hosts.
-    @param endpoint Endpoint object to examine
-    @param on Set to true to enable named virtual hosts
-    @ingroup HttpEndpoint
-    @stability Stable
- */
-PUBLIC void httpSetHasNamedVirtualHosts(HttpEndpoint *endpoint, bool on);
-#endif
 
 /** 
     Start listening for client connections on an endpoint.
