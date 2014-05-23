@@ -4255,36 +4255,31 @@ static void parseCache(HttpRoute *route, MprJson *prop)
 {
     MprJson     *child;
     MprTicks    clientLifespan, serverLifespan;
-    cchar       *methods, *extensions, *uris, *mimeTypes;
+    cchar       *methods, *extensions, *uris, *mimeTypes, *client, *server;
     int         flags, ji;
 
     for (ITERATE_CONFIG(prop, child, ji)) {
-        clientLifespan = httpGetNumber(mprGetJson(child, "lifespan.client"));
-        serverLifespan = httpGetNumber(mprGetJson(child, "lifespan.server"));
+        flags = 0;
+        if ((client = mprGetJson(child, "client")) != 0) {
+            flags |= HTTP_CACHE_CLIENT;
+            clientLifespan = httpGetNumber(client);
+        }
+        if ((server = mprGetJson(child, "server")) != 0) {
+            flags |= HTTP_CACHE_SERVER;
+            serverLifespan = httpGetNumber(server);
+        }
         methods = getList(mprGetJsonObj(child, "methods"));
         extensions = getList(mprGetJsonObj(child, "extensions"));
         uris = getList(mprGetJsonObj(child, "uris"));
         mimeTypes = getList(mprGetJsonObj(child, "mime"));
 
-        flags = 0;
-        if (smatch(mprGetJson(child, "all"), "true")) {
-            /* Cache same pathInfo regardless of params */
-            flags |= HTTP_CACHE_ALL;
-            flags &= ~(HTTP_CACHE_ONLY | HTTP_CACHE_UNIQUE);
+        if (smatch(mprGetJson(child, "unique"), "true")) {
+            /* Uniquely cache requests with different params */
+            flags |= HTTP_CACHE_UNIQUE;
         }
         if (smatch(mprGetJson(child, "manual"), "true")) {
             /* User must manually call httpWriteCache */
             flags |= HTTP_CACHE_MANUAL;
-        }
-        if (smatch(mprGetJson(child, "only"), "true")) {
-            /* Cache only the specified URIs with parameters */
-            flags |= HTTP_CACHE_ONLY;
-            flags &= ~(HTTP_CACHE_ALL | HTTP_CACHE_UNIQUE);
-        }
-        if (smatch(mprGetJson(child, "unique"), "true")) {
-            /* Cache each request uniquely with different parameters */
-            flags |= HTTP_CACHE_UNIQUE;
-            flags &= ~(HTTP_CACHE_ALL | HTTP_CACHE_ONLY);
         }
         httpAddCache(route, methods, uris, extensions, mimeTypes, clientLifespan, serverLifespan, flags);
     }
