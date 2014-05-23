@@ -552,13 +552,12 @@ static int authDigestQopDirective(MaState *state, cchar *key, cchar *value)
 /*
     Cache options
     Options:
-        lifespan
         server=lifespan
         client=lifespan
         extensions="html,gif,..."
         methods="GET,PUT,*,..."
         types="mime-type,*,..."
-        all | only | unique
+        unique
  */
 static int cacheDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -603,17 +602,8 @@ static int cacheDirective(MaState *state, cchar *key, cchar *value)
         } else if (smatch(option, "types")) {
             types = ovalue;
 
-        } else if (smatch(option, "all")) {
-            flags |= HTTP_CACHE_ALL;
-            flags &= ~(HTTP_CACHE_ONLY | HTTP_CACHE_UNIQUE);
-
-        } else if (smatch(option, "only")) {
-            flags |= HTTP_CACHE_ONLY;
-            flags &= ~(HTTP_CACHE_ALL | HTTP_CACHE_UNIQUE);
-
         } else if (smatch(option, "unique")) {
             flags |= HTTP_CACHE_UNIQUE;
-            flags &= ~(HTTP_CACHE_ALL | HTTP_CACHE_ONLY);
 
         } else if (smatch(option, "manual")) {
             flags |= HTTP_CACHE_MANUAL;
@@ -625,9 +615,6 @@ static int cacheDirective(MaState *state, cchar *key, cchar *value)
             mprError("Unknown Cache option '%s'", option);
             return MPR_ERR_BAD_SYNTAX;
         }
-    }
-    if (!(flags & (HTTP_CACHE_ONLY | HTTP_CACHE_UNIQUE))) {
-        flags |= HTTP_CACHE_ALL;
     }
     if (lifespan > 0 && !uris && !extensions && !types && !methods) {
         state->route->lifespan = lifespan;
