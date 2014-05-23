@@ -123,7 +123,9 @@ ESP_EXPORT int esp_controller_greeting(HttpRoute *route)
         <a href="generator.html">esp</a> generator command. The <em>esp</em> command is used to create a bare ESP 
         MVC application with a directory for controllers, views, databases and other necessary configuration files. 
         For example:</p> 
-        <pre>esp generate app demo</pre>
+        <pre>mkdir demo
+cd demo
+esp install esp-html-mvc</pre>
         <p>The generated appweb.conf file will have an <a href="../../appweb/users/dir/esp.html#espApp">EspApp</a> 
         directive that defines the application and creates an initial set of MVC routes for the application.
         For example:</p>

@@ -30,9 +30,7 @@ commands ...
 .SH ""
 .B Commands:
  esp clean
- esp compile
  esp compile [pathFilters...]
- esp generate app name [packs]
  esp generate controller name [action [, action] ...]
  esp generate migration description model [field:type [, field:type] ...]
  esp generate scaffold model [field:type [, field:type] ...]
@@ -54,11 +52,13 @@ the \fB--overwrite\fR switch.
 .PP
 Esp can run your application by invoking a configured web server.
 .SH GENERATING APPLICATIONS
-To start a new web application, run \fBesp\fR to create the application directory and generate the application
-configuration and essential script files. For example:
+To start a new web application, create a directory and change into that directory. The directory name
+must be a valid C identifier name. Then run \fBesp\fR to install the desired packs. For example:
 
 .RS 5
- \fBesp generate app blog\fR
+ \fmkdir blog\fR
+ \fcd blog\fR
+ \fBesp install esp-html-mvc\fR
 .RE
 .PP
 This will will create a set of directories which have the following meaning: 
@@ -95,7 +95,7 @@ Esp will also create some files which have the following meaning:
 The esp command can generate various functionality by specifying extension packs on the command line.
 
 .RS 5
- \fBesp generate app NAME [packs...]\fR
+ \fBesp install [packs...]\fR
 .RE
 .PP
 Packs are modules of functionality for generated applications that are described by their
@@ -264,10 +264,8 @@ esp has the following command usage patterns:
 
 .RS 5
  esp clean
- esp compile
  esp compile controllers name
  esp compile path/*.esp
- esp generate app name
  esp generate controllers name [action [, action] ...]
  esp generate scaffold model [field:type [, field:type] ...]
  esp generate table name model [field:type [, field:type] ...]

@@ -93,9 +93,16 @@
             the client interaction and response data for the presentation views. View templates are dynamically 
             created and populated with server data before being and applied to the brower DOM for display.</p>
             <h2>Generating Applications</h2>
-            <p>The easiest way to get started with ESP for Angular is to use the <em>esp</em> generator program.
+            <p>The easiest way to get started with ESP for Angular is to use the <em>esp</em> generator program,
+            but first you need to download the esp-angular-mvc package from the 
+            <a href="https://embedthis.com/catalog/#/?keywords=esp">Pak Catalog</a> using
+            <a href="http://embedthis.com/products/pak/">Pak</a>.
             The following sequence will generate an application with ESP for Angular support.</p>
-            <pre>esp generate app myapp esp-angular-mvc</pre>
+            <pre>
+mkdir myapp
+cd myapp
+pak cache esp-angular-mvc
+esp install esp-angular-mvc</pre>
             <p>Once generated, you can generate controllers, scaffolds or database migrations. For example:
             <pre>cd myapp
 esp generate scaffold blog title:string body:text</pre>

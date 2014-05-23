@@ -76,47 +76,51 @@
             <h2 class="section">Generating Applications</h2>
             <p>To start a new web application, run <em>esp</em> to create the application directory and generate the
             essential application configuration and script files. For example:</p>
-            <pre>esp generate app blog
-[Create] Directory: blog
-[Create] File: blog/appweb.conf
-[Create] File: blog/app.conf
-[Create] File: blog/package.json
-[Create] Directory: blog/src
-[Create] blog/src/app.c
-  [Task] Compile</pre>
+            <pre>
+$> <b>mkdir blog</b>
+$> <b>cd blog</b>
+blog> <b>esp install esp-server</b>
+      [Save] package.json
+   [Install] esp-server 4.6.0
+    [Create] paks/esp-server/generate/appweb.conf
+    [Create] paks/esp-server/package.json
+      [Info] esp-server successfully installed
+    [Create] appweb.conf
+</pre>
             <p>This generates the bare minimum application without additional packs. The appweb.conf file
             is an Appweb configuration file. This defines the Appweb and ESP configuration when you run your application.
             Alternatively, you can use the app.conf file that is suitable when hosting the application from an 
             existing appweb configuration. The <em>package.json</em> file is the ESP configuration for the application.
             The application source code stub is generated in <em>app.c</em>.</p>
-            <p>The format of the "esp generate app" command is:</p>
-            <pre>esp generate app NAME [PACKS...]</pre>
-            <p>The given NAME is the name of the application and also the name of the directory into which esp will
-            generate the application. The PACKS are optional extension packs for the 
-            generated application. The supported packs are:</p>
+            <p>The format of the "esp install" command is:</p>
+            <pre>esp install [PACKS...]</pre>
+            <p>If this is the first install of any esp packages, a new package.json file will be created and the
+            application name will be set to the name of the directory. Alternatively, you can give the application a
+            name via the <em>--name NAME</em> option.
+            The PACKS are extension packs from the 
+            <a href="https://embedthis.com/catalog/">Pak Catalog</a> for the application. Some of the
+            supported packs are:</p>
             <ul>
                 <li>angular &mdash; The <a href="http://www.angularjs.org">AngularJS Client Framework</a></li>
 <li>esp-angular &mdash; Angular support for Embedthis ESP</li>
 <li>esp-angular-mvc &mdash; ESP MVC application skeleton for Angular</li>
-<li>esp-angular-session &mdash; Angular session state storage</li>
+<li>esp-html-mvc &mdash; Server-side HTML MVC skeleton</li>
 <li>esp-server &mdash; Default ESP service-side configuration for Appweb</li>
 <li>esp-html-mvc &mdash; ESP server-side MVC application skeleton</li>
 <li>less &mdash; The <a href="http://lesscss.org">Less</a> CSS pre-processor</li>
 <li>more &mdash; Collection of CSS polyfills for emerging HTML5 elements</li>
             </ul>
+            <p>The Appweb distribution bundles the following packs:</p>
+            <ul>
+<li>esp-server &mdash; Default ESP service-side configuration for Appweb</li>
+<li>esp-html-mvc &mdash; ESP server-side HTML application skeleton</li>
+<li>esp-mvc &mdash; ESP MVC application skeleton</li>
+</ul>
             <p> For example:</p>
             <pre>
-$ <b>esp generate app blog esp-angular-mvc</b>
-    [Create] Directory: blog
-  [Generate] Pack: esp-server
-  [Generate] Pack: esp-angular-mvc
-  [Generate] Pack: esp-angular
-  [Generate] Pack: less
-  [Generate] Pack: more
-    [Create] Directory: blog/src
-    [Create] blog/src/app.c
-    [Create] Directory: blog/db
-      [Task] Complete
+$ <b>mkdir blog</b>
+$ <b>cd blog</b>
+$ <b>esp install esp-angular-mvc</b>
 </pre>
             <h3>Pack Dependencies</h3>
             <p>Pack may depend on other packs. The <em>esp</em> generator will resolve these 
@@ -290,12 +294,10 @@ esp generate migration description MODEL [field:type ...]
             Generating a scaffold will create a database table, controller and a set of views that provide
             add, edit and list functionality for a database table. Scaffolds are useful to quickly generate prototype
             web pages and actions for managing a database table. </p>
-            <p>Generating scaffolds is available if you are using the <em>esp-angular-mvc</em> 
-            pack &mdash; as the view scaffold depends on the Angular libraries.</p>
+            <p>Generating scaffolds is available if you are using the <em>esp-html-mvc</em> or
+            <em>esp-angular-mvc</em> packs.</p>
             <p>To generate a scaffold:</p>
             <pre>
-esp generate app blog esp-angular-mvc
-cd blog
 <b>esp generate scaffold NAME [field:type ...]</b>
 </pre>
             <p>This will create a scaffold for the named database table and will generate a controller of the same name. 
@@ -428,15 +430,17 @@ ESP Usage:
     --why                      # Why compile or skip
   Commands:
     esp clean
-    esp compile
     esp compile [pathFilters ...]
-    esp migrate [forward|backward|NNN]
-    esp generate app name
     esp generate controller name [action [, action] ...
     esp generate migration description model [field:type [, field:type] ...]
     esp generate scaffold model [field:type [, field:type] ...]
     esp generate table name [field:type [, field:type] ...]
+    esp install paks...
+    esp list
+    esp migrate [forward|backward|NNN]
     esp run
+    esp uninstall paks...
+    esp upgrade paks...
 </pre>
             <table title="switches">
                 <thead>

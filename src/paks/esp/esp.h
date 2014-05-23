@@ -1400,6 +1400,7 @@ typedef struct EspRoute {
     cchar           *controllersDir;        /**< Directory for controllers */
     cchar           *dbDir;                 /**< Directory for databases */
     cchar           *layoutsDir;            /**< Directory for view layouts */
+    cchar           *libDir;                /**< Directory for client/lib */
     cchar           *srcDir;                /**< Directory for server-side source */
     cchar           *viewsDir;              /**< Directory for server-side views */
     cchar           *currentSession;        /**< Current login session when enforcing a single login */
@@ -1411,6 +1412,7 @@ typedef struct EspRoute {
     cchar           *database;              /**< Name of database for route */
     cchar           *routeSet;              /**< Route set to use */
     cchar           *winsdk;                /**< Windows SDK */
+    cchar           *client;                /**< Configuration to send to the client */
     int             combined;               /**< Compile the application in "combined" mode */
     int             compileMode;            /**< Compile the application debug or release mode */
     int             keepSource;             /**< Preserve generated source */

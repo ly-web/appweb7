@@ -225,68 +225,71 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
         "html5shiv": ">=3.6.2",
         "less": ">=1.3.3",
     },
-    "client-scripts": [
-        "paks/angular/angular.js",
-        "paks/angular/angular-animate.js",
-        "paks/angular/angular-route.js",
-        "paks/angular-bootstrap/*.js",
-        "paks/esp-angular/*.js",
-        "app/main.js",
-        "app/*/**.js*",
-        "paks/esp-gui/*.js",
-        "paks/html5/html5shiv.js",
-        "paks/less/less.js",
-    ],
-    esp: {
-        // Name of the Auth Store. "app" means server-side auth database
-        auth: "app",
-        // Default presentation formats for various types
-        formats: {
-            date: "yyyy-MM-dd",
-            float: 2,
-            int: 0,
+    "app": {
+        "client": {
+            "scripts": [
+                "lib/angular/angular.js",
+                "lib/angular/angular-animate.js",
+                "lib/angular/angular-route.js",
+                "lib/angular-bootstrap/*.js",
+                "lib/esp-angular/*.js",
+                "app/main.js",
+                "app/*/**.js*",
+                "lib/esp-gui/*.js",
+                "lib/html5/html5shiv.js",
+                "lib/less/less.js",
+            ],
         },
-        server: {
-            // Redirect all traffic over HTTPS
-            redirect: "secure"
+        http: {
+            auth: {
+                // Name of the Auth Store. "app" means server-side auth database
+                type: "app",
+            },
             // Server side database
             database: "mdb://blog.mdb"
-        },
-        // URI prefix for all server-side URIs
-        serverPrefix: "/do",
-        // Default timeouts (secs)
-        timeouts: {
-            session: 1800,
-        },
-        // Set to include a XSRF token to minimize CSRF vulnerabilies
-        xsrf: true,
-        // Application mode selects debug or release properties and 
-        // copies them to esp
-        mode: "debug",
-        modes: {
-            debug: {
-                // Application compiled in combined vs discrete mode
-                combined: false,
-                // Display server-side errors in the browser
-                showErrors: true,
-                // Keep intermediate source for views in the cache directory
-                keepSource: true,
-                // Transparently recompile views, controllers and source
-                update: true,
-                // Automatic login credentials.
-                login: {
-                    name: "",
-                    abilities: {
-                        edit: true,
-                        view: true,
+            // Default presentation formats for various types
+            formats: {
+                date: "yyyy-MM-dd",
+                float: 2,
+                int: 0,
+            },
+            // Redirect all traffic over HTTPS
+            redirect: "https://"
+            // URI prefix for all server-side URIs
+            serverPrefix: "/do",
+            // Default timeouts (secs)
+            timeouts: {
+                session: 1800,
+            },
+            // Application mode selects debug or release properties
+            mode: "debug",
+            modes: {
+                debug: {
+                    // Application compiled in combined vs discrete mode
+                    combined: false,
+                    // Display server-side errors in the browser
+                    showErrors: true,
+                    // Keep intermediate source for views in the cache directory
+                    keepSource: true,
+                    // Transparently recompile views, controllers and source
+                    update: true,
+                    // Automatic login credentials.
+                    auth: {
+                        login: {
+                            name: "",
+                            roles: [
+                                "edit",
+                                "view"
+                            ],
+                        },
                     },
                 },
-            },
-            release: {
-                //  Same fields as per debug
+                release: {
+                    //  Same fields as per debug
+                },
             },
         },
-    },
+    }
 },
 </pre>
             <p>The client does not receive the "esp.server" collection. </p>

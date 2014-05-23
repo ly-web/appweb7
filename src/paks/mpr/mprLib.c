@@ -9827,6 +9827,9 @@ static int dispatchEvents(MprDispatcher *dispatcher)
 
         (event->proc)(event->data, event);
 
+        if (dispatcher->flags & MPR_DISPATCHER_DESTROYED) {
+            break;
+        }
         event->flags &= ~MPR_EVENT_RUNNING;
 
         lock(es);
@@ -12433,9 +12436,13 @@ PUBLIC char *mprHashKeysToString(MprHash *hash, cchar *join)
 #define JTOK_EOF        8
 #define JTOK_ERR        9
 
+#define JSON_EXPR_CHARS "<>=!~"
+
 /****************************** Forward Declarations **************************/
 
-static int setProperty(MprJson *obj, cchar *name, MprJson *child, int flags);
+static void adoptChildren(MprJson *obj, MprJson *other);
+static void appendItem(MprJson *obj, MprJson *child);
+static void appendProperty(MprJson *obj, MprJson *child);
 static int checkBlockCallback(MprJsonParser *parser, cchar *name, bool leave);
 static void formatValue(MprBuf *buf, MprJson *obj, int flags);
 static int gettok(MprJsonParser *parser);
@@ -12443,6 +12450,9 @@ static MprJson *jsonParse(MprJsonParser *parser, MprJson *obj);
 static void jsonErrorCallback(MprJsonParser *parser, cchar *msg);
 static int peektok(MprJsonParser *parser);
 static void puttok(MprJsonParser *parser);
+static MprJson *queryCore(MprJson *obj, cchar *key, MprJson *value, int flags);
+static MprJson *queryLeaf(MprJson *obj, cchar *property, MprJson *value, int flags);
+static MprJson *setProperty(MprJson *obj, cchar *name, MprJson *child);
 static void setValue(MprJson *obj, cchar *value);
 static int setValueCallback(MprJsonParser *parser, MprJson *obj, cchar *name, MprJson *child);
 static void spaces(MprBuf *buf, int count);
@@ -12461,10 +12471,16 @@ static void manageJson(MprJson *obj, int flags)
 }
 
 
+/*
+    If value is null, return null so query can detect "set" operations
+ */
 static MprJson *createJsonValue(cchar *value)
 {
     MprJson  *obj;
 
+    if (!value) {
+        return 0;
+    }
     if ((obj = mprAllocObj(MprJson, manageJson)) == 0) {
         return 0;
     }
@@ -12545,7 +12561,7 @@ PUBLIC MprJson *mprParseJsonEx(cchar *str, MprJsonCallback *callback, void *data
     if (obj) {
         for (i = 0, child = result->children; child && i < result->length; child = next, i++) {
             next = child->next;
-            setProperty(obj, child->name, child, 0);
+            setProperty(obj, child->name, child);
         }
     } else {
         obj = result;
@@ -13020,51 +13036,115 @@ PUBLIC void mprSetJsonError(MprJsonParser *parser, cchar *fmt, ...)
     parser->tokid = JTOK_ERR;
 }
 
-
 /*
  **************** JSON object query API -- only works for MprJson implementations *****************
  */
 
-PUBLIC int mprBlendJson(MprJson *obj, MprJson *other, int flags)
+PUBLIC int mprBlendJson(MprJson *dest, MprJson *src, int flags)
 {
-    MprJson     *dp, *sp;
-    int         si, di;
+    MprJson     *dp, *sp, *child;
+    cchar       *trimmedName;
+    int         kind, si, pflags;
 
-    if (other == 0) {
+    if (src == 0) {
         return 0;
     }
-    if (obj == 0) {
-        obj = mprCreateJson(MPR_JSON_OBJ);
+    if (dest == 0) {
+        dest = mprCreateJson(MPR_JSON_OBJ);
     }
-    /*
-        Loop over source object properties
-     */
-    if (obj->type & MPR_JSON_ARRAY) {
-        for (ITERATE_JSON(other, sp, si)) {
-            for (ITERATE_JSON(obj, dp, di)) {
-                if (smatch(dp->value, sp->value)) break;
-            }
-            if (di >= obj->length) {
-                setProperty(obj, sp->name, mprCloneJson(sp), flags);
+    if ((MPR_JSON_TYPE_MASK & dest->type) != (MPR_JSON_TYPE_MASK & src->type)) {
+        if (flags & (MPR_JSON_APPEND | MPR_JSON_REPLACE)) {
+            return 0;
+        }
+    }
+    if (src->type & MPR_JSON_OBJ) {
+        if (flags & MPR_JSON_CREATE) {
+            /* Already present */
+        } else {
+            /* Examine each property for: MPR_JSON_APPEND (default) | MPR_JSON_REPLACE) */
+            pflags = flags;
+            for (ITERATE_JSON(src, sp, si)) {
+                trimmedName = sp->name;
+                pflags = flags;
+                if (flags & MPR_JSON_COMBINE && sp->name) {
+                    kind = sp->name[0];
+                    if (kind == '+') {
+                        pflags = MPR_JSON_APPEND | (flags & MPR_JSON_COMBINE);
+                        trimmedName = &sp->name[1];
+                    } else if (kind == '-') {
+                        pflags = MPR_JSON_REPLACE | (flags & MPR_JSON_COMBINE);
+                        trimmedName = &sp->name[1];
+                    } else if (kind == '?') {
+                        pflags = MPR_JSON_CREATE | (flags & MPR_JSON_COMBINE);
+                        trimmedName = &sp->name[1];
+                    } else if (kind == '=') {
+                        pflags = MPR_JSON_OVERWRITE | (flags & MPR_JSON_COMBINE);
+                        trimmedName = &sp->name[1];
+                    }
+                }
+                if ((dp = mprLookupJsonObj(dest, trimmedName)) == 0) {
+                    /* Absent in destination */
+                    if (pflags & MPR_JSON_COMBINE && sp->type == MPR_JSON_OBJ) {
+                        dp = mprCreateJson(sp->type);
+                        if (trimmedName == &sp->name[1]) {
+                            trimmedName = sclone(trimmedName);
+                        }
+                        setProperty(dest, trimmedName, dp);
+                        mprBlendJson(dp, sp, pflags);
+                    } else if (!(pflags & MPR_JSON_REPLACE)) {
+                        if (trimmedName == &sp->name[1]) {
+                            trimmedName = sclone(trimmedName);
+                        }
+                        setProperty(dest, trimmedName, mprCloneJson(sp));
+                    }
+                } else if (!(pflags & MPR_JSON_CREATE)) {
+                    /* Already present in destination */
+                    if (sp->type & MPR_JSON_OBJ && (MPR_JSON_TYPE_MASK & dp->type) != (MPR_JSON_TYPE_MASK & sp->type)) {
+                        dp = setProperty(dest, dp->name, mprCreateJson(sp->type));
+                    }
+                    mprBlendJson(dp, sp, pflags);
+
+                    if (pflags & MPR_JSON_REPLACE && 
+                            !(sp->type & (MPR_JSON_OBJ | MPR_JSON_ARRAY)) && sspace(dp->value)) {
+                        mprRemoveJsonChild(dest, dp);
+                    }
+                }
             }
         }
-    } else if (obj->type & MPR_JSON_OBJ) {
-        for (ITERATE_JSON(other, sp, si)) {
-            for (ITERATE_JSON(obj, dp, di)) {
-                if (smatch(dp->name, sp->name)) {
-                    break;
+    } else if (src->type & MPR_JSON_ARRAY) {
+        if (flags & MPR_JSON_REPLACE) {
+            for (ITERATE_JSON(src, sp, si)) {
+                if ((child = mprLookupJsonValue(dest, sp->value)) != 0) {
+                    mprRemoveJsonChild(dest, child);
                 }
             }
-            if (di < obj->length) {
-                /* Already present in destination */
-                if (dp->type & (MPR_JSON_OBJ | MPR_JSON_ARRAY)) {
-                    mprBlendJson(dp, sp, flags);
-                } else if (flags & MPR_JSON_OVERWRITE) {
-                    setProperty(obj, sp->name, mprCloneJson(sp), flags);
+        } else if (flags & MPR_JSON_CREATE) {
+            ;
+        } else if (flags & MPR_JSON_APPEND) {
+            for (ITERATE_JSON(src, sp, si)) {
+                if ((child = mprLookupJsonValue(dest, sp->value)) == 0) {
+                    appendProperty(dest, mprCloneJson(sp));
                 }
+            }
+        } else {
+            /* Default is to MPR_JSON_OVERWRITE */
+            if ((sp = mprCloneJson(src)) != 0) {
+                adoptChildren(dest, sp);
+            }
+        }
+
+    } else {
+        /* Ordinary string value */
+        if (src->value) {
+            if (flags & MPR_JSON_APPEND) {
+                setValue(dest, sjoin(dest->value, " ", src->value, NULL));
+            } else if (flags & MPR_JSON_REPLACE) {
+                setValue(dest, sreplace(dest->value, src->value, NULL));
+            } else if (flags & MPR_JSON_CREATE) {
+                /* Do nothing */
             } else {
-                /* Absent in destination */
-                setProperty(obj, sp->name, mprCloneJson(sp), flags);
+                /* MPR_JSON_OVERWRITE (default) */
+                dest->value = sclone(src->value);
             }
         }
     }
@@ -13090,6 +13170,13 @@ PUBLIC MprJson *mprLookupJsonObj(MprJson *obj, cchar *name)
             }
         }
     } else if (obj->type & MPR_JSON_ARRAY) {
+        /*
+            Note this does a linear traversal counting array elements. Not the fastest.
+            This code is not optimized for huge arrays.
+         */
+        if (*name == '$') {
+            return 0;
+        }
         index = (int) stoi(name);
         for (ITERATE_JSON(obj, child, i)) {
             if (i == index) {
@@ -13112,6 +13199,23 @@ PUBLIC cchar *mprLookupJson(MprJson *obj, cchar *name)
 }
 
 
+PUBLIC MprJson *mprLookupJsonValue(MprJson *obj, cchar *value)
+{
+    MprJson     *child;
+    int         i;
+
+    if (!obj || !value) {
+        return 0;
+    }
+    for (ITERATE_JSON(obj, child, i)) {
+        if (smatch(child->value, value)) {
+            return child;
+        }
+    }
+    return 0;
+}
+
+
 /*
     JSON expression operators
  */
@@ -13124,23 +13228,28 @@ PUBLIC cchar *mprLookupJson(MprJson *obj, cchar *name)
 #define JSON_OP_MATCH       7
 #define JSON_OP_NMATCH      8
 
-#define JSON_PROP_ELIPSIS   0x1         /* Current property was after elipsis:  ...name */
-#define JSON_PROP_ARRAY     0x2         /* Current property is array:  name[] */
+#define JSON_PROP_CONTENTS  0x1         /* property has "@" for 'contains'. Only for array contents */
+#define JSON_PROP_ELIPSIS   0x2         /* Property was after elipsis:  ..name */
+#define JSON_PROP_EXPR      0x4         /* property has expression. Only for objects */
+#define JSON_PROP_RANGE     0x8         /* Property is a range N:M */
+#define JSON_PROP_WILD      0x10        /* Property is wildcard "*" */
+#define JSON_PROP_COMPOUND  0xff        /* property is not just a simple string */
+#define JSON_PROP_ARRAY     0x100       /* Hint that an array should be created */
 
 /*
-    Split a mulitpart property string and extract the deliminator, next property and remaining portion.
+    Split a mulitpart property string and extract the token, deliminator and remaining portion.
     Format expected is: [delimitor] property [delimitor2] rest
-    Delimitor characters are: . . [ ]
-    Returns the next property.
+    Delimitor characters are: . .. [ ]
+    Properties may be simple expressions (field OP value)
+    Returns the next property token.
+    If value is set, the operation is a "set"
  */
-PUBLIC char *getNextTerm(char *str, char **rest, int *flags)
+PUBLIC char *getNextTerm(MprJson *obj, MprJson *value, char *str, char **rest, int *termType)
 {
     char    *start, *end, *seps, *dot, *expr;
     ssize   i;
 
-    if (flags) {
-        *flags = 0;
-    }
+    *termType = 0;
     seps = ".[]";
     start = (str || !rest) ? str : *rest;
     if (start == 0) {
@@ -13150,8 +13259,8 @@ PUBLIC char *getNextTerm(char *str, char **rest, int *flags)
         return 0;
     }
     while (isspace((int) *start)) start++;
-    if (flags && sstarts(start, "..")) {
-        *flags |= JSON_PROP_ELIPSIS;
+    if (termType && *start == '.') {
+        *termType |= JSON_PROP_ELIPSIS;
     }
     if ((i = strspn(start, seps)) > 0) {
         start += i;
@@ -13162,8 +13271,15 @@ PUBLIC char *getNextTerm(char *str, char **rest, int *flags)
         }
         return 0;
     }
+    if (*start == '*' && (start[1] == '\0' || start[1] == '.' || start[1] == ']')) {
+        *termType |= JSON_PROP_WILD;
+    } else if (*start == '@' && obj->type & MPR_JSON_ARRAY) {
+        *termType |= JSON_PROP_CONTENTS;
+    } else if (schr(start, ':') && obj->type & MPR_JSON_ARRAY) {
+        *termType |= JSON_PROP_RANGE;
+    }
     dot = strpbrk(start, ".[");
-    expr = strpbrk(start, " \t=<>~!]");
+    expr = strpbrk(start, " \t]" JSON_EXPR_CHARS);
 
     if (expr && (!dot || (expr < dot))) {
         /* Assume in [FIELD OP VALUE] */
@@ -13173,10 +13289,13 @@ PUBLIC char *getNextTerm(char *str, char **rest, int *flags)
     }
     if (end != 0) {
         if (*end == '[') {
-            *flags |= JSON_PROP_ARRAY;
-        }
-        *end++ = '\0';
-        if (!sstarts(end, "..")) {
+            /* Hint that an array vs object should be created if required */
+            *termType |= JSON_PROP_ARRAY;
+            *end++ = '\0';
+        } else if (*end == '.') {
+            *end++ = '\0';
+        } else {
+            *end++ = '\0';
             i = strspn(end, seps);
             end += i;
             if (*end == '\0') {
@@ -13184,12 +13303,13 @@ PUBLIC char *getNextTerm(char *str, char **rest, int *flags)
             }
         }
     }
+    if (spbrk(start, JSON_EXPR_CHARS) && !(*termType & JSON_PROP_CONTENTS)) {
+        *termType |= JSON_PROP_EXPR;
+    }
     *rest = end;
     return start;
 }
 
-
-#define JSON_EXPR_CHARS "<>=!~"
 
 static char *splitExpression(char *property, int *operator, char **value)
 {
@@ -13284,20 +13404,245 @@ static bool matchExpression(MprJson *obj, int operator, char *value)
 }
 
 
-static void appendItem(MprJson *obj, MprJson *child, int flags)
+static void appendProperty(MprJson *obj, MprJson *child)
 {
-    setProperty(obj, child->name, mprCloneJson(child), flags);
+    if (child) {
+        setProperty(obj, child->name, child);
+    }
 }
 
 
-static void appendItems(MprJson *obj, MprJson *items, int flags)
+static void appendItem(MprJson *obj, MprJson *child)
 {
-    MprJson  *child;
+    if (child) {
+        setProperty(obj, 0, child);
+    }
+}
+
+
+/*
+    WARNING: this steals properties from items
+ */
+static void appendItems(MprJson *obj, MprJson *items)
+{
+    MprJson  *child, *next;
     int     index;
 
-    for (ITERATE_JSON(items, child, index)) {
-        appendItem(obj, child, flags);
+    for (index = 0, child = items ? items->children: 0; items && index < items->length; child = next, index++) {
+        next = child->next;
+        appendItem(obj, child);
     }
+}
+
+
+/*
+    Search all descendants down multiple levels: ".."
+ */
+static MprJson *queryElipsis(MprJson *obj, cchar *property, cchar *rest, MprJson *value, int flags)
+{
+    MprJson     *child, *result;
+    cchar       *subkey;
+    int         index;
+
+    result = mprCreateJson(MPR_JSON_ARRAY);
+    for (ITERATE_JSON(obj, child, index)) {
+        if (smatch(child->name, property)) {
+            if (rest == 0) {
+                appendItem(result, queryLeaf(obj, property, value, flags));
+            } else {
+                appendItems(result, queryCore(child, rest, value, flags));
+            }
+        } else if (child->type & (MPR_JSON_ARRAY | MPR_JSON_OBJ)) {
+            if (rest) {
+                subkey = sjoin("..", property, ".", rest, NULL);
+            } else {
+                subkey = sjoin("..", property, NULL);
+            }
+            appendItems(result, queryCore(child, subkey, value, flags));
+        }
+    }
+    return result;
+}
+
+
+/*
+    Search wildcard values: "*"
+ */
+static MprJson *queryWild(MprJson *obj, cchar *property, cchar *rest, MprJson *value, int flags)
+{
+    MprJson     *child, *result;
+    int         index;
+
+    result = mprCreateJson(MPR_JSON_ARRAY);
+    for (ITERATE_JSON(obj, child, index)) {
+        if (rest == 0) {
+            appendItem(result, queryLeaf(obj, child->name, value, flags));
+        } else {
+            appendItems(result, queryCore(child, rest, value, flags));
+        }
+    } 
+    return result;
+}
+
+
+/*
+    Array contents match: [@ EXPR value]
+ */
+static MprJson *queryContents(MprJson *obj, char *property, cchar *rest, MprJson *value, int flags)
+{
+    MprJson     *child, *result;
+    char        *v, ibuf[16];
+    int         operator, index;
+
+    result = mprCreateJson(MPR_JSON_ARRAY);
+    if (!(obj->type & MPR_JSON_ARRAY)) {
+        /* Cannot get here */
+        assert(0);
+        return result;
+    }
+    if (splitExpression(property, &operator, &v) == 0) {
+        return result;
+    }
+    for (ITERATE_JSON(obj, child, index)) {
+        if (matchExpression(child, operator, v)) {
+            if (rest == 0) {
+                if (flags & MPR_JSON_REMOVE) {
+                    appendItem(result, mprRemoveJsonChild(obj, child));
+                } else {
+                    appendItem(result, queryLeaf(obj, itosbuf(ibuf, sizeof(ibuf), index, 10), value, flags));
+                }
+            } else {
+                assert(0);
+                /*  Should never get here as this means the array has objects instead of simple values */
+                appendItems(result, queryCore(child, rest, value, flags));
+            }
+        }
+    }
+    return result;
+}
+
+
+/*
+    Array range of elements
+ */
+static MprJson *queryRange(MprJson *obj, char *property, cchar *rest, MprJson *value, int flags)
+{
+    MprJson     *child, *result;
+    ssize       start, end;
+    char        *e, *s, ibuf[16];
+    int         index;
+
+    result = mprCreateJson(MPR_JSON_ARRAY);
+    if (!(obj->type & MPR_JSON_ARRAY)) {
+        return result;
+    }
+    s = stok(property, ": \t", &e);
+    start = (ssize) stoi(s);
+    end = (ssize) stoi(e);
+    if (start < 0) {
+        start = obj->length + start;
+    }
+    if (end < 0) {
+        end = obj->length + end;
+    }
+    for (ITERATE_JSON(obj, child, index)) {
+        if (index < start) continue;
+        if (index > end) break;
+        if (rest == 0) {
+            if (flags & MPR_JSON_REMOVE) {
+                appendItem(result, mprRemoveJsonChild(obj, child));
+            } else {
+                appendItem(result, queryLeaf(obj, itosbuf(ibuf, sizeof(ibuf), index, 10), value, flags));
+            }
+        } else {
+            appendItems(result, queryCore(child, rest, value, flags));
+        }
+    }
+    return result;
+}
+
+
+/*
+    Object property match: property EXPR value
+ */
+static MprJson *queryExpr(MprJson *obj, char *property, cchar *rest, MprJson *value, int flags)
+{
+    MprJson     *child, *result, *prop;
+    char        *v;
+    int         index, operator, pi;
+
+    result = mprCreateJson(MPR_JSON_ARRAY);
+    if ((property = splitExpression(property, &operator, &v)) == 0) {
+        /* Expression does not parse and so does not match */
+        return result;
+    }
+    for (ITERATE_JSON(obj, child, index)) {
+        for (ITERATE_JSON(child, prop, pi)) {
+            if (matchExpression(prop, operator, v)) {
+                if (rest == 0) {
+                    if (flags & MPR_JSON_REMOVE) {
+                        appendItem(result, mprRemoveJsonChild(obj, child));
+                    } else {
+                        appendItem(result, queryLeaf(obj, property, value, flags));
+                    }
+                } else {
+                    appendItems(result, queryCore(child, rest, value, flags));
+                }
+            }
+        }
+    }
+    return result;
+}
+
+
+static MprJson *queryCompound(MprJson *obj, char *property, cchar *rest, MprJson *value, int flags, int termType)
+{
+    if (termType & JSON_PROP_ELIPSIS) {
+        return queryElipsis(obj, property, rest, value, flags);
+
+    } else if (termType & JSON_PROP_WILD) {
+        return queryWild(obj, property, rest, value, flags);
+
+    } else if (termType & JSON_PROP_CONTENTS) {
+        return queryContents(obj, property, rest, value, flags);
+
+    } else if (termType & JSON_PROP_RANGE) {
+        return queryRange(obj, property, rest, value, flags);
+
+    } else if (termType & JSON_PROP_EXPR) {
+        return queryExpr(obj, property, rest, value, flags);
+
+    } else {
+        assert(0);
+    }
+    return 0;
+}
+
+
+/*
+    Property must be a managed reference
+    Value must be cloned so it can be freely linked
+ */
+static MprJson *queryLeaf(MprJson *obj, cchar *property, MprJson *value, int flags)
+{
+    MprJson     *child;
+
+    assert(obj);
+    assert(property && *property);
+
+    if (value) {
+        setProperty(obj, sclone(property), value);
+        return 0;
+
+    } else if (flags & MPR_JSON_REMOVE) {
+        if ((child = mprLookupJsonObj(obj, property)) != 0) {
+            return mprRemoveJsonChild(obj, child);
+        }
+        return 0;
+
+    } else {
+        return mprCloneJson(mprLookupJsonObj(obj, property));
+    }   
 }
 
 
@@ -13318,245 +13663,122 @@ static void appendItems(MprJson *obj, MprJson *items, int flags)
 
     If a value is provided, the property described by the keyPath is set to the value.
     If flags includes MPR_JSON_REMOVE, the property described by the keyPath is removed.
-    If flags includes MPR_JSON_SIMPLE, the property is not parsed for expressions.
-    Otherwise the the properties described by the keyPath are cloned and returned as a children of a container object.
+    If doing a get, the properties described by the keyPath are cloned and returned as the result.
+    If doing a set, ....
+    If doing a remove, the removed properties are returned.
+
+    This routine recurses for query expressions. Normal property references are handled without recursion.
+
+    For get, returns list of matching properties. These are cloned.
+    For set, returns empty list if successful, else null.
+
+    For remove, returns list of removed elements
  */
-PUBLIC MprJson *mprJsonQuery(MprJson *obj, cchar *keyPath, MprJson *value, int flags)
+static MprJson *queryCore(MprJson *obj, cchar *key, MprJson *value, int flags)
 {
-    MprJson      *result, *child, *np;
-    char        *property, *rest, *v, *s, *e, *subkey, *key;
-    ssize       start, end;
-    int         termType, operator, index;
+    MprJson     *result, *child;
+    char        *property, *rest;
+    int         termType;
 
-    result = mprCreateJson(MPR_JSON_ARRAY);
-    if (!obj) {
-        return result;
+    if (obj == 0 || key == 0 || *key == '\0' || obj->type & MPR_JSON_VALUE) {
+        return 0;
     }
-    if (keyPath == 0 || *keyPath == '\0' || obj->type & MPR_JSON_VALUE) {
-        appendItem(result, obj, flags);
-        return result;
-    }
-    key = sclone(keyPath);
-    for (property = getNextTerm(key, &rest, &termType); property; property = getNextTerm(0, &rest, &termType)) {
-        /*
-            Search for the property 
-         */
-        if (!(flags & MPR_JSON_SIMPLE)) {
-            if (termType & JSON_PROP_ELIPSIS) {
-                /*
-                    Search all descendants down multiple levels
-                 */
-                for (ITERATE_JSON(obj, child, index)) {
-                    if (smatch(child->name, property)) {
-                        appendItems(result, mprJsonQuery(child, rest, value, flags), flags);
-                    } else {
-                        if (child->type & MPR_JSON_VALUE) {
-                            continue;
-                        }
-                        if (rest) {
-                            subkey = sjoin("...", property, ".", rest, NULL);
-                        } else {
-                            subkey = sjoin("...", property, NULL);
-                        }
-                        appendItems(result, mprJsonQuery(child, subkey, value, flags), flags);
-                    }
-                }
-                return result;
+    result = 0;
+    for (property = getNextTerm(obj, value, sclone(key), &rest, &termType); property; ) {
+        if (termType & JSON_PROP_COMPOUND) {
+            result = queryCompound(obj, property, rest, value, flags, termType);
+            break;
 
-            } else if (*property == '*' && obj->type & MPR_JSON_ARRAY) {
-                if (!value) {
-                    /* 
-                        Property deemed to have matched: [*]
-                        TODO - but should we match all elements?
-                     */
-                    break;
-                }
-                /*
-                    Append value
-                 */
-                if (rest) {
-                    child = mprCreateJson(MPR_JSON_OBJ);
-                    setProperty(obj, 0, child, flags);
-                    /* Keep going to match rest */
-                } else {
-                    appendItem(obj, value, flags);
-                    return result;
-                }
-
-            } else if (*property == '@' && obj->type & MPR_JSON_ARRAY) {
-                /*
-                    Search array values: [@ EXPR value]
-                 */
-                if (splitExpression(property, &operator, &v) == 0) {
-                    /* Expression does not parse and so does not match */
-                    break;
-                }
-                for (ITERATE_JSON(obj, child, index)) {
-                    if (matchExpression(child, operator, v)) {
-                        appendItems(result, mprJsonQuery(child, rest, value, flags), flags);
-                    }
-                }
-                return result;
-
-            } else if (strchr(property, ':') && obj->type & MPR_JSON_ARRAY) {
-                /*
-                    Select range of array elements
-                 */
-                s = stok(property, ": \t", &e);
-                start = (ssize) stoi(s);
-                end = (ssize) stoi(e);
-                if (start < 0) {
-                    start = obj->length + start;
-                }
-                if (end < 0) {
-                    end = obj->length + end;
-                }
-                for (ITERATE_JSON(obj, child, index)) {
-                    if (index < start) continue;
-                    if (index > end) break;
-                    appendItems(result, mprJsonQuery(child, rest, value, flags), flags);
-                }
-                return result;
-
-            } else if (spbrk(property, JSON_EXPR_CHARS)) {
-                /*
-                    Pattern match: property EXPR value
-                 */
-                if ((property = splitExpression(property, &operator, &v)) == 0) {
-                    /* Expression does not parse and so does not match */
-                    break;
-                }
-                if (obj->type & MPR_JSON_ARRAY) {
-                    for (ITERATE_JSON(obj, child, index)) {
-                        if (child->type & MPR_JSON_OBJ) {
-                            for (np = child->children; np && np->next != child->children; np = np->next) {
-                                if (matchExpression(np, operator, v)) {
-                                    appendItems(result, mprJsonQuery(child, rest, value, flags), flags);
-                                }
-                            }
-                        }
-                    }
-                } else if (obj->type & MPR_JSON_OBJ) {
-                    for (ITERATE_JSON(obj, child, index)) {
-                        if (smatch(child->name, property)) {
-                            if (matchExpression(child, operator, v)) {
-                                appendItems(result, mprJsonQuery(child, rest, value, flags), flags);
-                            }
-                        }
-                    }
-                }
-                return result;
+        } else if (rest == 0) {
+            if (!result && !value) {
+                result = mprCreateJson(MPR_JSON_ARRAY);
             }
-        }
-        /*
-            Simple lookup for property
-         */
-        if ((child = mprLookupJsonObj(obj, property)) != 0) {
-            /* Found */
-            if (rest == 0) {
-                /* At terminus of the property key */
-                if (flags & MPR_JSON_REMOVE) {
-                    /* Remove */
-                    mprRemoveJsonChild(obj, child);
-                    appendItem(result, child, flags);
+            appendItem(result, queryLeaf(obj, property, value, flags));
+            break;
 
-                } else if (value) {
-                    /* Doing a "set" of a value */
-                    setProperty(obj, sclone(property), mprCloneJson(value), flags);
-                    appendItem(result, value, flags);
-                } else {
-                    /* Add to result set */
-                    appendItem(result, child, flags);
-                }
-                return result;
-            } 
-            if (child->type & MPR_JSON_VALUE) {
-                break;
-            }
-            
-        } else {
-            /* Not found */
+        } else if ((child = mprLookupJsonObj(obj, property)) == 0) {
             if (value) {
-                /* Create */
-                if (rest == 0) {
-                    setProperty(obj, sclone(property), mprCloneJson(value), flags);
-                    appendItem(result, value, flags);
-                    return result;
-                }
-                /* Intermediate property to create */
                 child = mprCreateJson(termType & JSON_PROP_ARRAY ? MPR_JSON_ARRAY : MPR_JSON_OBJ);
-                setProperty(obj, sclone(property), child, flags);
-
+                setProperty(obj, sclone(property), child);
+                obj = (MprJson*) child;
             } else {
                 break;
             }
         }
         obj = (MprJson*) child;
+        property = getNextTerm(obj, value, 0, &rest, &termType);
     }
-    return result;
+    return result ? result : mprCreateJson(MPR_JSON_ARRAY);
 }
 
 
-PUBLIC MprJson *mprQueryJson(MprJson *obj, cchar *key, int flags)
+PUBLIC MprJson *mprQueryJson(MprJson *obj, cchar *key, cchar *value, int flags)
 {
-    return mprJsonQuery(obj, key, 0, flags);
+    return queryCore(obj, key, createJsonValue(value), flags);
 }
 
 
-PUBLIC MprJson *mprGetJsonObj(MprJson *obj, cchar *key, int flags)
+PUBLIC MprJson *mprGetJsonObj(MprJson *obj, cchar *key)
 {
     MprJson      *result;
 
-    if (flags & MPR_JSON_TOP) {
+    if (key && !strpbrk(key, ".[]*")) {
         return mprLookupJsonObj(obj, key);
     }
-    if ((result = mprJsonQuery(obj, key, 0, flags)) != 0) {
-        return (result->children) ? result->children : 0;
+    if ((result = mprQueryJson(obj, key, 0, 0)) != 0 && result->children) {
+        return result->children;
     }
     return 0;
 }
 
 
-PUBLIC cchar *mprGetJson(MprJson *obj, cchar *key, int flags)
+PUBLIC cchar *mprGetJson(MprJson *obj, cchar *key)
 {
     MprJson      *result;
 
-    if (flags & MPR_JSON_TOP) {
+    if (key && !strpbrk(key, ".[]*")) {
         return mprLookupJson(obj, key);
     }
-    if ((result = mprGetJsonObj(obj, key, flags)) != 0) {
-        if (result->type & MPR_JSON_VALUE) {
-            return result->value;
+    if ((result = mprQueryJson(obj, key, 0, 0)) != 0) {
+        if (result->length == 1 && result->children->type & MPR_JSON_VALUE) {
+            return result->children->value;
+        } else if (result->length > 1) {
+            return mprJsonToString(result, 0);
         }
     }
     return 0;
 }
 
 
-PUBLIC int mprSetJsonObj(MprJson *obj, cchar *key, MprJson *value, int flags)
+PUBLIC int mprSetJsonObj(MprJson *obj, cchar *key, MprJson *value)
 {
-    MprJson     *result;
-
-    if (flags & MPR_JSON_TOP) {
-        return setProperty(obj, sclone(key), value, flags);
+    if (key && !strpbrk(key, ".[]*")) {
+        if (setProperty(obj, sclone(key), value) == 0) {
+            return MPR_ERR_CANT_WRITE;
+        }
+    } else if (queryCore(obj, key, value, 0) == 0) {
+        return MPR_ERR_CANT_WRITE;
     }
-    result = mprJsonQuery(obj, key, value, flags);
-    return (result && result->children) ? 0 : MPR_ERR_CANT_WRITE;
+    return 0;
 }
 
 
-PUBLIC int mprSetJson(MprJson *obj, cchar *key, cchar *value, int flags)
+PUBLIC int mprSetJson(MprJson *obj, cchar *key, cchar *value)
 {
-    if (flags & MPR_JSON_TOP) {
-        return setProperty(obj, sclone(key), createJsonValue(value), flags);
+    if (key && !strpbrk(key, ".[]*")) {
+        if (setProperty(obj, sclone(key), createJsonValue(value)) == 0) {
+            return MPR_ERR_CANT_WRITE;
+        }
+    } else if (queryCore(obj, key, createJsonValue(value), 0) == 0) {
+        return MPR_ERR_CANT_WRITE;
     }
-    return mprSetJsonObj(obj, key, createJsonValue(value), flags);
+    return 0;
 }
 
 
 PUBLIC MprJson *mprRemoveJson(MprJson *obj, cchar *key)
 {
-    return mprJsonQuery(obj, key, 0, MPR_JSON_REMOVE);
+    return mprQueryJson(obj, key, 0, MPR_JSON_REMOVE);
 }
 
 
@@ -13599,28 +13821,36 @@ PUBLIC int mprSaveJson(MprJson *obj, cchar *path, int flags)
 }
 
 
-PUBLIC void mprTraceJson(int level, MprJson *obj)
+PUBLIC void mprTraceJson(int level, MprJson *obj, cchar *fmt, ...)
 {
-    mprTrace(level, mprJsonToString(obj, MPR_JSON_PRETTY));
+    va_list     ap;
+    char        *msg;
+
+    va_start(ap, fmt);
+    msg = sfmtv(fmt, ap);
+    va_end(ap);
+    mprLog(level, "%s: %s", msg, mprJsonToString(obj, MPR_JSON_PRETTY));
 }
 
 
 /*
     Add the child as property in the given object. The child is not cloned and is dedicated to this object.
+    NOTE: name must be a managed reference. For arrays, name can be a string index value. If name is null or empty,
+    then the property will be appended. This is the typical pattern for appending to an array.
  */
-static int setProperty(MprJson *obj, cchar *name, MprJson *child, int flags)
+static MprJson *setProperty(MprJson *obj, cchar *name, MprJson *child)
 {
     MprJson      *prior, *existing;
 
     if (!obj || !child) {
-        return MPR_ERR_BAD_STATE;
+        return 0;
     }
-    if (!(flags & MPR_JSON_DUPLICATE) && (existing = mprLookupJsonObj(obj, name)) != 0) {
+    if ((existing = mprLookupJsonObj(obj, name)) != 0) {
         existing->value = child->value;
         existing->children = child->children;
         existing->type = child->type;
         existing->length = child->length;
-        return 0;
+        return existing;
     } 
     if (obj->children) {
         prior = obj->children->prev;
@@ -13634,7 +13864,16 @@ static int setProperty(MprJson *obj, cchar *name, MprJson *child, int flags)
     }
     child->name = name;
     obj->length++;
-    return 0;
+    return child;
+}
+
+
+static void adoptChildren(MprJson *obj, MprJson *other)
+{
+    if (obj && other) {
+        obj->children = other->children;
+        obj->length = other->length;
+    }
 }
 
 
@@ -13649,11 +13888,11 @@ static int checkBlockCallback(MprJsonParser *parser, cchar *name, bool leave)
  */
 static int setValueCallback(MprJsonParser *parser, MprJson *obj, cchar *name, MprJson *child)
 {
-    return setProperty(obj, name, child, 0);
+    return setProperty(obj, name, child) != 0;
 }
 
 
-PUBLIC void mprRemoveJsonChild(MprJson *obj, MprJson *child)
+PUBLIC MprJson *mprRemoveJsonChild(MprJson *obj, MprJson *child)
 {
     MprJson      *dep;
     int         index;
@@ -13672,9 +13911,10 @@ PUBLIC void mprRemoveJsonChild(MprJson *obj, MprJson *child)
             dep->prev->next = dep->next;
             dep->next->prev = dep->prev;
             child->next = child->prev = 0;
-            break;
+            return child;
         }
     }
+    return 0;
 }
 
 
@@ -13683,15 +13923,18 @@ PUBLIC void mprRemoveJsonChild(MprJson *obj, MprJson *child)
  */
 PUBLIC MprJson *mprCloneJson(MprJson *obj) 
 {
-    MprJson      *result, *child;
+    MprJson     *result, *child;
     int         index;
 
+    if (obj == 0) {
+        return 0;
+    }
     result = mprCreateJson(obj->type);
     result->name = obj->name;
     result->value = obj->value;
     result->type = obj->type;
     for (ITERATE_JSON(obj, child, index)) {
-        setProperty(result, child->name, mprCloneJson(child), 0);
+        setProperty(result, child->name, mprCloneJson(child));
     }
     return result;
 }
@@ -13729,10 +13972,12 @@ PUBLIC char *mprSerialize(MprHash *hash, int flags)
 {
     MprJson  *obj;
     MprKey   *kp;
+    cchar    *key;
 
     obj = mprCreateJson(MPR_JSON_OBJ);
     for (ITERATE_KEYS(hash, kp)) {
-        setProperty(obj, kp->key, createJsonValue(kp->data), 1);
+        key = (hash->flags & MPR_HASH_STATIC_KEYS) ? sclone(kp->key) : kp->key;
+        setProperty(obj, key, createJsonValue(kp->data));
     }
     return mprJsonToString(obj, flags);
 }
@@ -13742,10 +13987,12 @@ PUBLIC MprJson *mprHashToJson(MprHash *hash)
 {
     MprJson     *obj;
     MprKey      *kp;
+    cchar       *key;
 
     obj = mprCreateJson(0);
     for (ITERATE_KEYS(hash, kp)) {
-        setProperty(obj, kp->key, createJsonValue(kp->data), 0);
+        key = (hash->flags & MPR_HASH_STATIC_KEYS) ? sclone(kp->key) : kp->key;
+        setProperty(obj, key, createJsonValue(kp->data));
     }
     return obj;
 }
@@ -23708,6 +23955,21 @@ PUBLIC bool snumber(cchar *s)
 } 
 
 
+PUBLIC bool sspace(cchar *s)
+{
+    if (!s) {
+        return 1;
+    }
+    while (isspace((uchar) *s)) {
+        s++;
+    }
+    if (*s == '\0') {
+        return 1;
+    }
+    return 0;
+}
+
+
 /*
     Hex
  */
@@ -24143,7 +24405,7 @@ static char *stemplateInner(cchar *str, void *keys, int json)
                     tok = snclone(src, cp - src);
                 }
                 if (json) {
-                    value = mprGetJson(keys, tok, 0);
+                    value = mprGetJson(keys, tok);
                 } else {
                     value = mprLookupKey(keys, tok);
                 }

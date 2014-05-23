@@ -14,9 +14,7 @@ ESP(1)                           User Commands                          ESP(1)
 
        <B>Commands:</B>
         esp clean
-        esp compile
         esp compile [pathFilters...]
-        esp generate app name [packs]
         esp generate controller name [action [, action] ...]
         esp generate migration description model  [field:type  [,  field:type]
        ...]
@@ -43,11 +41,13 @@ ESP(1)                           User Commands                          ESP(1)
        Esp can run your application by invoking a configured web server.
 
 <B>GENERATING APPLICATIONS</B>
-       To  start  a  new  web  application,  run <B>esp </B>to create the application
-       directory and generate  the  application  configuration  and  essential
-       script files. For example:
+       To start a new web application, create a directory and change into that
+       directory. The directory name must be a valid C identifier  name.  Then
+       run <B>esp </B>to install the desired packs. For example:
 
-             <B>esp generate app blog</B>
+             kdir blog
+             d blog
+             <B>esp install esp-html-mvc</B>
 
        This  will  will  create  a set of directories which have the following
        meaning:
@@ -79,7 +79,7 @@ ESP(1)                           User Commands                          ESP(1)
        The esp command can generate various functionality by specifying exten-
        sion packs on the command line.
 
-             <B>esp generate app NAME [packs...]</B>
+             <B>esp install [packs...]</B>
 
        Packs  are modules of functionality for generated applications that are
        described by their package.json file. Packs may depend on  other  packs
@@ -238,10 +238,8 @@ ESP(1)                           User Commands                          ESP(1)
        esp has the following command usage patterns:
 
              esp clean
-             esp compile
              esp compile controllers name
              esp compile path/*.esp
-             esp generate app name
              esp generate controllers name [action [, action] ...]
              esp generate scaffold model [field:type [, field:type] ...]
              esp generate table name model [field:type [, field:type] ...]

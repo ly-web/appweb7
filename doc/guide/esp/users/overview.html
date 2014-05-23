@@ -379,18 +379,26 @@ static void update() {
             This program is called <em>esp</em> and automates many common tasks when dealing with MVC applications.</p>
            
             <p>To create a new bare-bones application called demo:</p>
-            <pre>esp generate app demo</pre>
+            <pre>mkdir demo
+cd demo
+esp install esp-server</pre>
             <p>This will create the following files:</p>
             <ul>
-                <li>demo/appweb.conf</li>
-                <li>demo/package.json</li>
-                <li>demo/src/app.c</li>
+                <li>appweb.conf</li>
+                <li>package.json</li>
+                <li>paks</li>
             </ul>
-            <p>The <em>esp</em> program creates the application directory and populates it with the necessary
-            directories, configuration files and stubs to begin the application.</p>
             <p>When you run Appweb, ESP will automatically compile and components as required. </p>
-            <p>To create a more featured MVC demo application with support for the Angular client framework, use:</p>
-            <pre>esp generate app demo esp-angular-mvc</pre>
+            <p>To create a more featured MVC demo application with support for the Angular client framework, first
+            first download the esp-angular-mvc package from the 
+            <a href="https://embedthis.com/catalog/">Pak Catalog</a> using
+            <a href="http://embedthis.com/products/pak/">Pak</a>.
+            The following sequence will generate an application with ESP for Angular support.</p>
+            <pre>
+mkdir demo
+cd demo
+pak cache esp-angular-mvc
+esp install esp-angular-mvc</pre>
             <a id="api"></a>
             <h2 class="section">ESP API</h2>
             <p>The ESP web framework has an extensive suite of APIs to cover all possible design needs. It also

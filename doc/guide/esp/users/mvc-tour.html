@@ -74,25 +74,9 @@
             <p>To create a new ESP application, you will use <em>esp</em>, the ESP application generator
             program. Type the following esp command in a command terminal window:</p>
             <pre>
-home&gt; <b>esp generate app blog angular-mvc</b>
-    [Create] Directory: blog
-  [Generate] Component: server
-  [Generate] Component: angular-mvc
-  [Generate] Component: angular
-  [Generate] Component: angular-local
-  [Generate] Component: angular-session
-  [Generate] Component: angular-esp
-  [Generate] Component: bootstrap
-  [Generate] Component: html5shiv
-  [Generate] Component: angular-ui-bootstrap
-  [Generate] Component: font-awesome
-  [Generate] Component: less
-  [Generate] Component: more
-  [Generate] Component: respond
-    [Create] Directory: blog/src
-    [Create] blog/src/app.c
-    [Create] Directory: blog/db
-      [Task] Complete
+home&gt; <b>mkdir blog
+cd blog
+esp install esp-angular-mvc</b>
 </pre>
             <p>This simple command accomplished quite a bit. It first created a new directory called <b>blog</b> for
             the application, and then created subdirectories for various parts of the application. Initially, some of

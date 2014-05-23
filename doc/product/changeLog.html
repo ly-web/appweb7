@@ -66,6 +66,18 @@
         
             <a id="4.6.0"></a>
             <h2 class="section">Changes in 4.6.0</h2>
+            <h3>Minor Changes</h3>
+            <ul>
+                <li>The format for ESP applications package.json has been upgraded for compatibility 
+                    with the <a href="http://wiki.commonjs.org/wiki/Packages/1.1">CommonJS Package</a>
+                    specification and the <a href="http://embedthis.com/products/pak/">Pak</a> package manager.
+                    <a href="https://github.com/embedthis/appweb/issues/NN">[issue NN]</a>.</li>
+                <li>The <em>esp</em> utility has been upgraded to support the simpler "make dir and install"
+                    paradigm for creating applications instead of "generate app"
+                    <a href="https://github.com/embedthis/appweb/issues/NN">[issue NN]</a>.</li>
+                </li>
+            </ul>
+
             <h3>Fixes</h3>
             <ul>
                 <li>Switch to use MakeMe, previously called Bit. See the GitHub issue for details of the change.
@@ -76,6 +88,24 @@
                     <a href="https://github.com/embedthis/appweb/issues/349">[issue 349]</a>.</li>
                 <li>Static linking on linux
                     <a href="https://github.com/embedthis/appweb/issues/350">[issue 350]</a>.</li>
+            </ul>
+
+            <h3>Incompatible Changes</h3>
+            <ul>
+                <li><p>ESP MVC applications will need to to have their package.json upgraded. The following
+                package.json properties have been moved or modified:</p>
+                    <ul>
+                        <li>A top level <em>app</em> collection contains all non <a
+                            href="http://wiki.commonjs.org/wiki/Packages/1.1">CommonJS</a> properties.</li>
+                        <li><em>client-scripts</em> has been renamed to <em>app.client.scripts</em>.</li>
+                        <li>Most properties under <em>esp</em> have been moved to the <em>app.http</em> collection.</li>
+                        <li>The <em>esp</em> property has been renamed <em>app.esp</em>.</li>
+                        <li>The <em>mode</em> and <em>modes</em> properties have been moved under the <em>app</em>
+                        collection.</li>
+                    </ul>
+                </li>
+                <li>The esp-angular-mvc, esp-angular and angular packs have been removed from the product and are
+                now available from the <a href="https://embedthis.com/catalog/#/?keywords=angular">Pak Catalog</a>.</li>
             </ul>
 
             <a id="4.5.6"></a>

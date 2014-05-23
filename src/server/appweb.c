@@ -18,7 +18,6 @@
 /********************************* Includes ***********************************/
 
 #include    "appweb.h"
-#include    "esp.h"
 
 /********************************** Locals ************************************/
 /*
@@ -172,6 +171,10 @@ MAIN(appweb, int argc, char **argv, char **envp)
 
         } else if (*argp == '-' && isdigit((uchar) argp[1])) {
             level = (int) stoi(&argp[1]);
+
+        } else if (smatch(argp, "-?") || scontains(argp, "-help")) {
+            usageError();
+            exit(5);
 
         } else if (!smatch(argp, "?")) {
             mprError("Unknown switch \"%s\"", argp);

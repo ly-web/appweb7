@@ -16,9 +16,7 @@ SYNOPSIS
 
        Commands:
         esp clean
-        esp compile
         esp compile [pathFilters...]
-        esp generate app name [packs]
         esp generate controller name [action [, action] ...]
         esp generate migration description model  [field:type  [,  field:type]
        ...]
@@ -45,11 +43,13 @@ DESCRIPTION
        Esp can run your application by invoking a configured web server.
 
 GENERATING APPLICATIONS
-       To  start  a  new  web  application,  run esp to create the application
-       directory and generate  the  application  configuration  and  essential
-       script files. For example:
+       To start a new web application, create a directory and change into that
+       directory. The directory name must be a valid C identifier  name.  Then
+       run esp to install the desired packs. For example:
 
-             esp generate app blog
+             kdir blog
+             d blog
+             esp install esp-html-mvc
 
        This  will  will  create  a set of directories which have the following
        meaning:
@@ -81,7 +81,7 @@ GENERATING APPLICATIONS
        The esp command can generate various functionality by specifying exten-
        sion packs on the command line.
 
-             esp generate app NAME [packs...]
+             esp install [packs...]
 
        Packs  are modules of functionality for generated applications that are
        described by their package.json file. Packs may depend on  other  packs
@@ -251,10 +251,8 @@ COMMANDS
        esp has the following command usage patterns:
 
              esp clean
-             esp compile
              esp compile controllers name
              esp compile path/*.esp
-             esp generate app name
              esp generate controllers name [action [, action] ...]
              esp generate scaffold model [field:type [, field:type] ...]
              esp generate table name model [field:type [, field:type] ...]

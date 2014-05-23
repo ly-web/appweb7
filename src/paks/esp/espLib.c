@@ -619,7 +619,6 @@ PUBLIC EdiGrid *ediQuery(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list v
 }
 
 
-//  MOB - fmt is unused
 PUBLIC cchar *ediReadFieldValue(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, cchar *columnName, cchar *defaultValue)
 {
     EdiField    field;
@@ -1940,7 +1939,7 @@ PUBLIC cchar *getConfig(cchar *field)
     cchar       *value;
 
     eroute = getConn()->rx->route->eroute;
-    if ((value = mprGetJson(eroute->config, "value", 0)) == 0) {
+    if ((value = mprGetJson(eroute->config, "value")) == 0) {
         return "";
     }
     return value;
@@ -2165,20 +2164,16 @@ PUBLIC ssize renderCached()
 }
 
 
+
 PUBLIC ssize renderConfig()
 {
     HttpConn    *conn;
     EspRoute    *eroute;
-    MprJson     *obj;
 
     conn = getConn();
     eroute = conn->rx->route->eroute;
-    obj = mprLookupJsonObj(eroute->config, "esp");
-    if (obj) {
-        //  TODO OPT
-        obj = mprCloneJson(obj);
-        mprRemoveJson(obj, "server");
-        return renderString(mprJsonToString(obj, MPR_JSON_QUOTES));
+    if (eroute && eroute->client) {
+        return renderString(eroute->client);
     }
     return 0;
 }
@@ -2278,7 +2273,7 @@ PUBLIC void scripts(cchar *patterns)
             name = sfmt("all-%s.min.js.gz", espGetConfig(route, "version", "1.0.0"));
             scripts(name);
         } else {
-            if ((cscripts = mprGetJsonObj(eroute->config, "client-scripts", 0)) != 0) {
+            if ((cscripts = mprGetJsonObj(eroute->config, "app.client.scripts")) != 0) {
                 for (ITERATE_JSON(cscripts, script, ci)) {
                     scripts(script->value);
                 }
@@ -3707,6 +3702,11 @@ PUBLIC void espInitHtmlOptions(Esp *esp)
 /********************************** Includes **********************************/
 
 #if ME_COM_ESP
+/************************************ Defines *********************************/
+
+#define ITERATE_CONFIG(obj, child, index) \
+    index = 0, child = obj ? obj->children: 0; obj && index < obj->length; child = child->next, index++
+
 /************************************* Code ***********************************/
 
 PUBLIC void espAddPak(HttpRoute *route, cchar *name, cchar *version)
@@ -3717,7 +3717,7 @@ PUBLIC void espAddPak(HttpRoute *route, cchar *name, cchar *version)
     if (!version || !*version || smatch(version, "0.0.0")) {
         version = "*";
     }
-    mprSetJson(eroute->config, sfmt("dependencies.%s", name), version, 0);
+    mprSetJson(eroute->config, sfmt("dependencies.%s", name), version);
 }
 
 
@@ -3900,7 +3900,7 @@ PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue)
     cchar       *value;
 
     eroute = route->eroute;
-    if ((value = mprGetJson(eroute->config, key, 0)) != 0) {
+    if ((value = mprGetJson(eroute->config, key)) != 0) {
         return value;
     }
     return defaultValue;
@@ -4147,7 +4147,7 @@ PUBLIC bool espHasPak(HttpRoute *route, cchar *name)
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    return mprGetJsonObj(eroute->config, sfmt("dependencies.%s", name), 0) != 0;
+    return mprGetJsonObj(eroute->config, sfmt("dependencies.%s", name)) != 0;
 }
 
 
@@ -4184,18 +4184,124 @@ PUBLIC bool espIsSecure(HttpConn *conn)
 }
 
 
+static void clientCopy(EspRoute *eroute, MprJson *dest, MprJson *obj)
+{
+    MprJson     *child, *job, *value;
+    int         ji;
+
+    for (ITERATE_CONFIG(obj, child, ji)) {
+        if (child->type & MPR_JSON_OBJ) {
+            job = mprCreateJson(MPR_JSON_OBJ);
+            clientCopy(eroute, job, child);
+            mprSetJsonObj(dest, child->name, job);
+        } else {
+            if ((value = mprGetJsonObj(eroute->config, child->value)) != 0) {
+                mprSetJsonObj(dest, child->name, mprCloneJson(value));
+            }
+        }
+    }
+}
+
+
+static void createRedirectAlias(HttpRoute *route, int status, cchar *from, cchar *to)
+{
+    HttpRoute   *alias;
+    cchar       *pattern, *prefix;
+
+    if (from == 0 || *from == '\0') {
+        from = "/";
+    }
+    prefix = route->prefix ? route->prefix : "";
+
+    if (sends(from, "/")) {
+        pattern = sfmt("^%s%s(.*)$", prefix, from);
+    } else {
+        /* Add a non-capturing optional trailing "/" */
+        pattern = sfmt("^%s%s(?:/)*(.*)$", prefix, from);
+    }
+    alias = httpCreateAliasRoute(route, pattern, 0, 0);
+    httpSetRouteMethods(alias, "*");
+    httpSetRouteTarget(alias, "redirect", sfmt("%d %s/$1", status, to));
+    if (sstarts(to, "https")) {
+        httpAddRouteCondition(alias, "secure", 0, HTTP_ROUTE_NOT);
+    }
+    httpFinalizeRoute(alias);
+}
+
+
+static cchar *getList(MprJson *prop)
+{
+    char    *jstr, *cp;
+
+    if (prop == 0) {
+        return 0;
+    }
+    if ((jstr = mprJsonToString(prop, 0)) == 0) {
+        return 0;
+    }
+    if (*jstr == '[') {
+        jstr = strim(jstr, "[]", 0);
+    }
+    for (cp = jstr; *cp; cp++) {
+        if (*cp == '"') {
+            *cp = ' ';
+        }
+    }
+    return jstr;
+}
+
+
+static void parseCache(HttpRoute *route, MprJson *prop)
+{
+    MprJson     *child;
+    MprTicks    clientLifespan, serverLifespan;
+    cchar       *methods, *extensions, *uris, *mimeTypes;
+    int         flags, ji;
+
+    for (ITERATE_CONFIG(prop, child, ji)) {
+        clientLifespan = httpGetNumber(mprGetJson(child, "lifespan.client"));
+        serverLifespan = httpGetNumber(mprGetJson(child, "lifespan.server"));
+        methods = getList(mprGetJsonObj(child, "methods"));
+        extensions = getList(mprGetJsonObj(child, "extensions"));
+        uris = getList(mprGetJsonObj(child, "uris"));
+        mimeTypes = getList(mprGetJsonObj(child, "mime"));
+
+        flags = 0;
+        if (smatch(mprGetJson(child, "all"), "true")) {
+            /* Cache same pathInfo regardless of params */
+            flags |= HTTP_CACHE_ALL;
+            flags &= ~(HTTP_CACHE_ONLY | HTTP_CACHE_UNIQUE);
+        }
+        if (smatch(mprGetJson(child, "manual"), "true")) {
+            /* User must manually call httpWriteCache */
+            flags |= HTTP_CACHE_MANUAL;
+        }
+        if (smatch(mprGetJson(child, "only"), "true")) {
+            /* Cache only the specified URIs with parameters */
+            flags |= HTTP_CACHE_ONLY;
+            flags &= ~(HTTP_CACHE_ALL | HTTP_CACHE_UNIQUE);
+        }
+        if (smatch(mprGetJson(child, "unique"), "true")) {
+            /* Cache each request uniquely with different parameters */
+            flags |= HTTP_CACHE_UNIQUE;
+            flags &= ~(HTTP_CACHE_ALL | HTTP_CACHE_ONLY);
+        }
+        httpAddCache(route, methods, uris, extensions, mimeTypes, clientLifespan, serverLifespan, flags);
+    }
+}
+
+
 /*
     Load the package.json
  */
 PUBLIC int espLoadConfig(HttpRoute *route)
 {
-    HttpRoute   *alias;
     EspRoute    *eroute;
-    MprJson     *msettings, *settings;
+    MprJson     *msettings, *settings, *client, *mappings, *prop, *child;
     MprPath     cinfo;
-    MprTicks    clientLifespan;
-    cchar       *cdata, *cpath, *value, *errorMsg, *pattern;
+    cchar       *cdata, *cpath, *value, *errorMsg, *from, *status, *to;
     bool        debug;
+    int         ji;
 
     eroute = route->eroute;
     lock(eroute);
@@ -4233,107 +4339,98 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             /*
                 Blend the mode properties into settings
              */
-            eroute->mode = mprGetJson(eroute->config, "esp.mode", 0);
+            eroute->mode = mprGetJson(eroute->config, "app.mode");
             if (!eroute->mode) {
                 eroute->mode = sclone("debug");
                 mprLog(2, "esp: application \"%s\" running in \"%s\" mode", eroute->appName, eroute->mode);
             }
             debug = smatch(eroute->mode, "debug");
-            if ((msettings = mprGetJsonObj(eroute->config, sfmt("esp.modes.%s", eroute->mode), 0)) != 0) {
-                settings = mprLookupJsonObj(eroute->config, "esp");
+            if ((msettings = mprGetJsonObj(eroute->config, sfmt("app.modes.%s", eroute->mode))) != 0) {
+                settings = mprLookupJsonObj(eroute->config, "app");
                 mprBlendJson(settings, msettings, MPR_JSON_OVERWRITE);
-                mprSetJson(settings, "esp.mode", eroute->mode, 0);
+                mprSetJson(settings, "app.mode", eroute->mode);
             }
-            if ((value = espGetConfig(route, "esp.auth", 0)) != 0) {
+            if ((value = espGetConfig(route, "app.http.auth.type", 0)) != 0) {
                 if (httpSetAuthStore(route->auth, value) < 0) {
                     mprError("The %s AuthStore is not available on this platform", value);
                 }
             }
-            if ((value = espGetConfig(route, "esp.combined", 0)) != 0) {
-                eroute->combined = smatch(value, "true");
-                if (eroute->combined) {
-                    mprLog(2, "esp: app %s configured for combined compilation", eroute->appName);
-                }
+            if (espGetConfig(route, "app.http.content.combine[@=c]", 0)) {
+                eroute->combined = 1;
+                mprLog(2, "esp: app %s configured for combined compilation", eroute->appName);
             }
-            if ((value = espGetConfig(route, "esp.compile", 0)) != 0) {
+            if ((value = espGetConfig(route, "app.esp.compile", 0)) != 0) {
                 if (smatch(value, "debug") || smatch(value, "symbols")) {
                     eroute->compileMode = ESP_COMPILE_DEBUG;
                 } else if (smatch(value, "release") || smatch(value, "optimized")) {
                     eroute->compileMode = ESP_COMPILE_RELEASE;
                 }
             }
-            if ((value = espGetConfig(route, "esp.server.redirect", 0)) != 0) {
-                if (smatch(value, "true") || smatch(value, "secure")) {
-                    pattern = route->prefix ? sfmt("%s/", route->prefix) : "/";
-                    alias = httpCreateAliasRoute(route, pattern, 0, 0);
-                    httpSetRouteTarget(alias, "redirect", "0 https://");
-                    /* A null age suppresses the strict transport security header */
-                    httpAddRouteCondition(alias, "secure", 0, HTTP_ROUTE_NOT);
-                    httpFinalizeRoute(alias);
+            if ((prop = mprGetJsonObj(eroute->config, "app.http.redirect")) != 0) {
+                if (prop->type & MPR_JSON_STRING) {
+                    createRedirectAlias(route, 0, "/", prop->value);
+                } else {
+                    for (ITERATE_CONFIG(prop, child, ji)) {
+                        if (child->type & MPR_JSON_STRING) {
+                            from = "/";
+                            to = child->value;
+                            status = "302";
+                        } else {
+                            from = mprGetJson(child, "from");
+                            to = mprGetJson(child, "to");
+                            status = mprGetJson(child, "status");
+                        }
+                        createRedirectAlias(route, (int) stoi(status), from, to);
+                    }
                 }
             }
-            if ((value = espGetConfig(route, "esp.showErrors", 0)) != 0) {
+            if ((value = espGetConfig(route, "app.http.showErrors", 0)) != 0) {
                 httpSetRouteShowErrors(route, smatch(value, "true"));
             } else if (debug) {
                 httpSetRouteShowErrors(route, 1);
             }
-            if ((value = espGetConfig(route, "esp.update", 0)) != 0) {
+            if ((value = espGetConfig(route, "app.http.update", 0)) != 0) {
                 eroute->update = smatch(value, "true");
             }
-            if ((value = espGetConfig(route, "esp.keepSource", 0)) != 0) {
+            if ((value = espGetConfig(route, "app.http.keepSource", 0)) != 0) {
                 eroute->keepSource = smatch(value, "true");
             }
-            if ((value = espGetConfig(route, "esp.serverPrefix", 0)) != 0) {
+            if ((value = espGetConfig(route, "app.http.serverPrefix", 0)) != 0) {
                 httpSetRouteServerPrefix(route, value);
                 httpSetRouteVar(route, "SERVER_PREFIX", sjoin(route->prefix ? route->prefix: "", route->serverPrefix, 0));
             }
-#if DEPRECATED || 1
-            if ((value = espGetConfig(route, "esp.routePrefix", 0)) != 0) {
-                httpSetRouteServerPrefix(route, value);
-                httpSetRouteVar(route, "SERVER_PREFIX", sjoin(route->prefix ? route->prefix: "", route->serverPrefix, 0));
-            }
-#endif
-            if ((value = espGetConfig(route, "esp.login.name", 0)) != 0) {
+            if ((value = espGetConfig(route, "app.http.auth.login.name", 0)) != 0) {
                 /* Automatic login as this user. Password not required */
                 httpSetAuthUsername(route->auth, value);
             }
-            if ((value = espGetConfig(route, "esp.xsrf", 0)) != 0) {
+            if ((value = espGetConfig(route, "app.http.xsrf", 0)) != 0) {
                 httpSetRouteXsrf(route, smatch(value, "true"));
-#if DEPRECATED || 1
-            } else if ((value = espGetConfig(route, "esp.xsrfToken", 0)) != 0) {
-                httpSetRouteXsrf(route, smatch(value, "true"));
-#endif
             } else {
                 httpSetRouteXsrf(route, 1);
             }
-            if ((value = espGetConfig(route, "esp.json", 0)) != 0) {
-                eroute->json = smatch(value, "true");
-#if DEPRECATED || 1
-            } else {
-                if ((value = espGetConfig(route, "esp.sendJson", 0)) != 0) {
+            if ((value = espGetConfig(route, "app.http.formats.response", 0)) != 0) {
+                if (smatch(value, "json")) {
                     eroute->json = smatch(value, "true");
                 }
-#endif
             }
-            if ((value = espGetConfig(route, "esp.timeouts.session", 0)) != 0) {
+            if ((value = espGetConfig(route, "app.http.timeouts.session", 0)) != 0) {
                 route->limits->sessionTimeout = httpGetTicks(value);
                 mprLog(2, "esp: set session timeout to %s", value);
             }
-#if DEPRECATED || 1
-            if (espTestConfig(route, "esp.map", "compressed")) {
-                httpAddRouteMapping(route, "css,html,js,less,txt,xml", "${1}.gz, min.${1}.gz, min.${1}");
+            if ((prop = mprGetJsonObj(eroute->config, "app.http.content.compress")) != 0) {
+                for (ITERATE_CONFIG(prop, child, ji)) {
+                    if (mprGetJson(eroute->config, sfmt("app.http.content.minify[@ = '%s']", child->value))) {
+                        httpAddRouteMapping(route, child->value, "${1}.gz, min.${1}.gz, min.${1}");
+                    } else {
+                        httpAddRouteMapping(route, child->value, "${1}.gz");
+                    }
+                }
             }
-#endif
-            if (espTestConfig(route, "esp.compressed", "true")) {
-                httpAddRouteMapping(route, "css,html,js,less,txt,xml", "${1}.gz, min.${1}.gz, min.${1}");
-            }
-            if ((value = espGetConfig(route, "esp.cache", 0)) != 0) {
-                clientLifespan = httpGetTicks(value);
-                httpAddCache(route, NULL, NULL, "html,gif,jpeg,jpg,png,pdf,ico,js,txt,less", NULL, clientLifespan, 0, 
-                    HTTP_CACHE_CLIENT | HTTP_CACHE_ALL);
+            if ((prop = mprGetJsonObj(eroute->config, "app.http.cache")) != 0) {
+                parseCache(route, prop);
             }
             if (!eroute->database) {
-                if ((eroute->database = espGetConfig(route, "esp.server.database", 0)) != 0) {
+                if ((eroute->database = espGetConfig(route, "app.http.database", 0)) != 0) {
                     if (espOpenDatabase(route, eroute->database) < 0) {
                         mprError("Cannot open database %s", eroute->database);
                         unlock(eroute);
@@ -4357,6 +4454,16 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             }
         }
 #endif
+    }
+    /*
+        Create a subset, optimized configuration to send to the client
+     */
+    if ((mappings = mprGetJsonObj(eroute->config, "app.client.mappings")) != 0) {
+        client = mprCreateJson(MPR_JSON_OBJ);
+        clientCopy(eroute, client, mappings);
+        mprSetJson(client, "prefix", route->prefix ? route->prefix : "");
+        eroute->client = mprJsonToString(client, MPR_JSON_QUOTES);
+        mprTrace(6, "Client Config: for %s, %s", route->name, mprJsonToString(client, MPR_JSON_PRETTY));
     }
     unlock(eroute);
     return 0;
@@ -4658,7 +4765,7 @@ PUBLIC int espSetConfig(HttpRoute *route, cchar *key, cchar *value)
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    return mprSetJson(eroute->config, key, value, 0);
+    return mprSetJson(eroute->config, key, value);
 }
 
 
@@ -4883,7 +4990,7 @@ PUBLIC bool espTestConfig(HttpRoute *route, cchar *key, cchar *desired)
     cchar       *value;
 
     eroute = route->eroute;
-    if ((value = mprGetJson(eroute->config, key, 0)) != 0) {
+    if ((value = mprGetJson(eroute->config, key)) != 0) {
         return smatch(value, desired);
     }
     return 0;
@@ -5618,9 +5725,11 @@ static bool loadApp(HttpRoute *route)
     } else {
         source = mprJoinPath(eroute->srcDir, "app.c");
     }
-    if (!loadEspModule(route, "app", source, &errMsg)) {
-        mprError("%s", errMsg);
-        return 0;
+    if (mprPathExists(source, R_OK)) {
+        if (!loadEspModule(route, "app", source, &errMsg)) {
+            mprError("%s", errMsg);
+            return 0;
+        }
     }
     eroute->loaded = 1;
     return 1;
@@ -5745,6 +5854,7 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->appDir);
         mprMark(eroute->appName);
         mprMark(eroute->cacheDir);
+        mprMark(eroute->client);
         mprMark(eroute->clientDir);
         mprMark(eroute->compile);
         mprMark(eroute->config);
@@ -5755,6 +5865,7 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->edi);
         mprMark(eroute->env);
         mprMark(eroute->layoutsDir);
+        mprMark(eroute->libDir);
         mprMark(eroute->link);
         mprMark(eroute->mutex);
         mprMark(eroute->searchPath);
@@ -5836,6 +5947,7 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
     eroute->configLoaded = parent->configLoaded;
     eroute->dbDir = parent->dbDir;
     eroute->layoutsDir = parent->layoutsDir;
+    eroute->libDir = parent->libDir;
     eroute->srcDir = parent->srcDir;
     eroute->controllersDir = parent->controllersDir;
     eroute->viewsDir = parent->viewsDir;
@@ -5859,6 +5971,7 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     eroute->srcDir      = mprJoinPath(dir, "src");
     eroute->appDir      = mprJoinPath(dir, "client/app");
     eroute->layoutsDir  = mprJoinPath(eroute->clientDir, "layouts");
+    eroute->libDir      = mprJoinPath(eroute->clientDir, "lib");
     eroute->viewsDir    = eroute->appDir;
 
     httpSetRouteVar(route, "CACHE_DIR", eroute->cacheDir);
@@ -5866,6 +5979,7 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     httpSetRouteVar(route, "CONTROLLERS_DIR", eroute->controllersDir);
     httpSetRouteVar(route, "DB_DIR", eroute->dbDir);
     httpSetRouteVar(route, "LAYOUTS_DIR", eroute->layoutsDir);
+    httpSetRouteVar(route, "LIB_DIR", eroute->libDir);
     httpSetRouteVar(route, "SRC_DIR", eroute->srcDir);
     httpSetRouteVar(route, "VIEWS_DIR", eroute->viewsDir);
 }
@@ -6040,7 +6154,7 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
         httpAddClientRoute(route, "", "/public");
         httpHideRoute(route, 1);
         eroute->viewsDir = eroute->appDir;
-        eroute->layoutsDir = mprJoinPath(eroute->clientDir, "layouts");
+        eroute->layoutsDir = mprJoinPath(route->home, "layouts");
 
     } else if (scaselessmatch(set, "esp-html-mvc")) {
         httpAddRestfulRoute(route, route->serverPrefix, "delete", "POST", "/{id=[0-9]+}/delete$", "delete", "{controller}");
@@ -6048,7 +6162,7 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set)
         httpAddClientRoute(route, "", "/public");
         httpHideRoute(route, 1);
         eroute->viewsDir = eroute->appDir;
-        eroute->layoutsDir = mprJoinPath(eroute->clientDir, "layouts");
+        eroute->layoutsDir = mprJoinPath(route->home, "layouts");
 
 #if ME_ESP_LEGACY
     /*
@@ -6164,6 +6278,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     }
     state->route = route;
     httpSetRouteDocuments(route, dir);
+    httpSetRouteHome(route, dir);
 
     if ((eroute = getEroute(route)) == 0) {
         return MPR_ERR_MEMORY;
@@ -6254,7 +6369,7 @@ static int finishEspAppDirective(MaState *state, cchar *key, cchar *value)
         if (!loadApp(route)) {
             return MPR_ERR_CANT_LOAD;
         }
-        if (!eroute->combined && (preload = mprGetJsonObj(eroute->config, "esp.preload", 0)) != 0) {
+        if (!eroute->combined && (preload = mprGetJsonObj(eroute->config, "app.esp.preload")) != 0) {
             for (ITERATE_JSON(preload, item, i)) {
                 source = stok(sclone(item->value), ":", &kind);
                 if (!kind) kind = "controller";
@@ -6329,16 +6444,30 @@ static int espCompileDirective(MaState *state, cchar *key, cchar *value)
 PUBLIC int espOpenDatabase(HttpRoute *route, cchar *spec)
 {
     EspRoute    *eroute;
-    char        *provider, *path;
+    char        *provider, *path, *dir;
     int         flags;
 
     eroute = route->eroute;
+    if (eroute->edi) {
+        return 0;
+    }
     flags = EDI_CREATE | EDI_AUTO_SAVE;
+    if (smatch(spec, "default")) {
+#if ME_COM_SQLITE
+        spec = sfmt("sdb://%s.sdb", eroute->appName);
+#elif ME_COM_MDB
+        spec = sfmt("mdb://%s.mdb", eroute->appName);
+#endif
+    }
     provider = stok(sclone(spec), "://", &path);
     if (provider == 0 || path == 0) {
         return MPR_ERR_BAD_ARGS;
     }
     path = mprJoinPath(eroute->dbDir, path);
+    dir = mprGetPathDir(path);
+    if (!mprPathExists(dir, X_OK)) {
+        mprMakeDir(dir, 0755, -1, -1, 1);
+    }
     if ((eroute->edi = ediOpen(mprGetRelPath(path, NULL), provider, flags)) == 0) {
         return MPR_ERR_CANT_OPEN;
     }
@@ -6395,6 +6524,8 @@ static int espDirDirective(MaState *state, cchar *key, cchar *value)
             eroute->dbDir = path;
         } else if (smatch(name, "layouts")) {
             eroute->layoutsDir = path;
+        } else if (smatch(name, "lib")) {
+            eroute->libDir = path;
         } else if (smatch(name, "src")) {
             eroute->srcDir = path;
         } else if (smatch(name, "views")) {
