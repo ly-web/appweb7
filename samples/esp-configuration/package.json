@@ -8,12 +8,28 @@
     JSON file. Property keys do not need to be enclosed in quotes.
     Also the last property in a collection may be terminated with a comma.
 {
+    /*
+        Single word application name. Must be a C identifier
+     */
     "name": "blog",
-    "description": "blog",
+
+    /*
+        Multi-word title for the application. Used for display.
+     */
+    "title": "My Blog"
+
+    /*
+        One-line description for the application. Used in the Pak catalog.
+     */
+    "description": "My Blog detailing adventures in the Artic",
+
+    /*
+        SemVer compatible version string
+     */
     "version": "1.0.0",
 
     /*
-        List of dependent paks. Uses SemVer versioning. 
+        List of dependent paks. Uses SemVer version expressions. 
         See Pak http://embedthis.com/products/pak/doc/index.html for details.
      */
     "dependencies": {
@@ -34,169 +50,280 @@
     },
 
     /*
-        Set the paks directory
+        Opportunity to remap directories
      */
-    "dirs": {
+    "directories": {
+        "app": "",
+        "cache": "cache",
         "client": "client",
-        "paks": "client/paks"
+        "controllers": "controllers",
+        "db": "db",
+        "layouts": "layouts",
+        "lib": "client/lib",
+        "paks": "paks",
+        "pakscache": "~/.paks",
+        "src": "src",
+        "views: "views",
     },
 
     /*
-        List of scripts to serve to the client via the scripts() API
-        Also used when building the app to create a single, combined, minified, compressed JS file.
+        Application configuration
      */
-    "client-scripts": [
-        "paks/angular/angular.js",
-        "paks/angular/angular-animate.js",
-        "paks/angular/angular-route.js",
-        "paks/angular-bootstrap/*.js",
-        "paks/esp-angular/*.js",
-        "app/main.js",
-        "app/*/**.js*",
-        "paks/esp-gui/*.js",
-        "paks/html5/html5shiv.js",
-        "paks/less/less.js",
-        "paks/respond/respond.js"
-    ],
-
-    "esp": {
-        /* 
-            Name of the Auth Store to use, "app" means user credentials are stored in a server-side application database
-         */
-        "auth": "app",
-        
-        /*
-            Default presentation formats for various types
-         */
-        "formats": {
-            "date": "yyyy-MM-dd",
-            "float": 2,
-        },
+    "app": {
 
         /*
-            Expect requests and responses in JSON format
+            Client-side configurationf
          */
-        "json": true,
-
-        /*
-            Set if a login is required to the login home page
-         */
-        "loginRequired": "",
-
-        /*
-            Default refresh period to use for dynamic data polling
-         */
-        "refresh": 1000,
-
-        /*
-            Routing prefix for server-side URIs
-         */
-        "serverPrefix": "/do",
-
-        /*
-            Default timeouts (secs)
-         */
-        "timeouts": {
-            "session": 1800,
-        },
-
-        /*
-            Set to include a XSRF token to minimize CSRF vulnerabilies
-         */
-        "xsrf": true,
-
-        /*
-            Server side properties not passed to the client
-         */
-        "server": {
-            "database": "mdb://blog.mdb"
-
+        "client": {
             /*
-                Redirect all traffic over HTTPS
+                Selection of properties to send to the client
              */
-            "redirect": "secure"
-
+            mappings: {
+                auth:       "http.auth",
+                prefix:     "http.prefix",
+                server:     "http.serverPrefix",
+                formats:    "http.formats",
+                login: {
+                    name:   "http.auth.login.name",
+                    url:    "http.auth.login.url",
+                },
+                timeouts: {
+                    session: "http.timeouts.session",
+                    refresh: "http.timeouts.refresh",
+                }
+            },
+            /*
+                List of browser scripts to serve to the client via the scripts() API
+                Also used when building the app to create a single, combined, minified, compressed JS file.
+             */
+            "scripts": [
+                "paks/angular/angular.js",
+                "paks/angular/angular-animate.js",
+                "paks/angular/angular-route.js",
+                "paks/angular-bootstrap/*.js",
+                "paks/esp-angular/*.js",
+                "app/main.js",
+                "app/*/**.js*",
+                "paks/esp-gui/*.js",
+                "paks/html5/html5shiv.js",
+                "paks/less/less.js",
+                "paks/respond/respond.js"
+            ],
+        },
+        "esp": {
             /*
                 Templates used for "esp generate"
              */
             "generate": {
-                "appweb": "esp-angular-mvc/appweb.conf",
-                "migration": "esp-server/migration.c",
-                "controller": "esp-angular-mvc/controller.c",
-                "controller-singleton": "esp-angular-mvc/controller-singleton.c",
-                "files": [
-                    "esp-server/src/app.c",
-                    "esp-angular-mvc/start.bit",
-                    "esp-angular-mvc/client/**"
-                ],
-                "clientModel": "esp-angular-mvc/model.js",
+                "appweb": "esp-best/appweb.conf",
                 "clientController": "esp-angular-mvc/controller.js",
+                "clientEdit": "esp-angular-mvc/edit.html",
                 "clientList": "esp-angular-mvc/list.html",
-                "clientEdit": "esp-angular-mvc/edit.html"
+                "clientModel": "esp-angular-mvc/model.js",
+                "controller": "esp-mvc/controller.c",
+                "controllerSingleton": "esp-angular-mvc/generate/controllerSingleton.c"
+                "migration": "esp-mvc/migration.c",
+                "module": "esp-mvc/src/app.c",
             },
         },
+
+        /*
+            HTTP related configuration
+         */
+        "http": {
+            /*
+                Authentication configuration
+             */
+            "auth": {
+                /*
+                    Login configuration
+                 */
+                "login": {
+                    /*
+                        Automatically login as this username
+                     */
+                    "name": "",
+                    /*
+                        Give the automatically logged in user these roles and abilities
+                     */
+                    "roles": [
+                        "*"
+                    ],
+                    /*
+                        URL for the application login dialog
+                     */
+                    "url": "",
+                }
+                /* 
+                    Auth Store to use, "app" means user credentials are stored in a server-side application database
+                 */
+                "type": "app",
+            },
+            
+            /*
+                Response caching directives
+             */
+            "cache": [ {
+                /*
+                    Cache at the client 
+                 */ 
+                "client": "1day",
+
+                /*
+                    Cache at the server
+                 */
+                "server": "1hour"
+                
+                /*
+                    File extensions to cache
+                 */
+                "extensions": [ "css", "gif", "ico", "jpeg", "jpg", "js", "html", "less", "png", "pdf", "txt" ] 
+
+                /*
+                    URIs to cache. If the URI has a query, then only that exact request will be cached.
+                    The query should be in sorted urlencoded form. If omitted, defaults to "/"
+                 */
+                "uris": [ "/" ],
+
+                /*
+                    Request methods eligible for caching. If omitted, defaults to all methods.
+                 */
+                "methods": [ "*" ],
+
+                /*
+                    Responses to cache based on mime type for the response document. If omitted, defaults to all mime types.
+                 */
+                "mime": [ "*" ],
+
+                /*
+                    Caching of responses will be handled manually. Automatic response caching is disabled. Defaults to false.
+                 */
+                "manual": true,
+
+                /*
+                    Uniquely cache requests with different parameters (query and post data). Defaults to false.
+                 */
+                "unique": true,
+            } ],
+
+            /*
+                Content processing instructions
+             */ 
+            "content": {
+                /*
+                    Combine multiple files into a single file
+                 */
+                "combine": [ "c", "css", "html", "js" ],
+
+                /*
+                    Compress using gzip
+                 */
+                "compress": [ "css", "html", "js" ],
+
+                /*
+                    Keep intermediate forms
+                 */
+                "keep": [ "c" ],
+
+                /*
+                    Minify using language-specific minification
+                 */
+                "minify": [ "css", "html", "js" ],
+
+                /*
+                    Kind of style sheets to serve (css, less, sass)
+                 */
+                "stylesheets": "css"
+            },
+
+            /*
+                Display server-side errors in the browser
+             */
+            "showErrors": true,
+
+            /*
+                Transparently recompile updated views, controllers and source
+             */
+            "update": true,
+
+            /*
+                Database specification
+             */
+            "database": "mdb://blog.mdb",
+
+            /*
+                Default presentation formats for various types
+             */
+            "formats": {
+                "date": "yyyy-MM-dd",
+                "float": 2,
+                /*
+                    Expect requests and responses in JSON format
+                 */
+                "response": "json",
+            },
+
+            /*
+                URL prefix for server-side URIs
+             */
+            "serverPrefix": "/do",
+
+            /*
+                Default timeouts. Can also use strings with unit suffixes. "5minutes"
+             */
+            "timeouts": {
+                /*
+                    Default refresh period to use for dynamic data polling
+                 */
+                "refresh": "1sec",
+
+                /*
+                    Default session timeout
+                 */
+                "session": "30mins",
+            },
+
+            /*
+                Set to include a XSRF token to minimize CSRF vulnerabilies
+             */
+            "xsrf": true,
+
+            /*
+                Redirctsions
+             */
+            redirect: [
+                {
+                    /* Redirect all traffic over SSL */
+                    status: 302,
+                    to: "https://"
+                }, {
+                    /* Redirect a specific document */
+                    from: "/pressRelease",
+                    status: 301,
+                    to: "http://${request:serverName}/fixedPressRelease.html"
+                }
+            ],
+        },
+
         /*
             Application mode. This selects a set of properties below and copies them to esp
          */
         "mode": "debug",
+
+        /*
+            Mode specific property collections. The designated mode collection is copied to "app".
+         */
         "modes": {
-            "debug": {
+            "debug": { 
                 /*
-                    Cache html,gif,jpeg,jpg,png,pdf,ico,js,txt,less files on the client for this number of seconds
+                    Collection of properties that are copied to "app" if in debug mode
                  */
-                "cache": 60,
-
-                /*
-                    Application compiled combined into a single file
-                 */
-                "combined": false,
-
-                /*  
-                    Server minified and compressed content for: css,html,js,less,txt,xml
-                 */
-                "compressed": false,
-
-                /*
-                    Display server-side errors in the browser
-                 */
-                "showErrors": true,
-
-                /*
-                    Keep intermediate source for views in the cache directory
-                 */
-                "keepSource": true,
-
-                /*
-                    Transparently recompile updated views, controllers and source
-                 */
-                "update": true,
-
-                /*
-                    Automatic login credentials.
-                 */
-                "login": {
-                    "name": "",
-                    "abilities": {
-                        "edit": true,
-                        "view": true,
-                    },
-                },
             },
             "release": {
-                "combined": true,
-                "cache": 86400,
-                "compressed": true,
-                "showErrors": false,
-                "update": false,
-                "keepSource": false,
-                "login": {
-                    "name": "",
-                    "abilities": {
-                        "edit": true,
-                        "view": true,
-                    },
-                },
-            },
+                /*
+                    Collection of properties that are copied to "app" if in release mode
+                 */
+            }
         }
-    },
-},
+    }
+}

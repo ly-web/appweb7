@@ -1,38 +1,39 @@
 {
-    "name": "blog",
-    "title": "blog",
-    "description": "blog",
-    "version": "0.0.0",
     "dependencies": {
-        "esp-server": "~4.5",
-        "esp-html-mvc": "~4.5"
+        "esp-legacy-mvc": "*",
+        "esp-html-mvc": "~4.6"
     },
-    "client-scripts": [
-    ],
-    "dirs": {
-        "client": "client",
-        "paks": "client/paks"
-    },
-    "esp": {
-        "combined": false,
-        "update": true,
-        "serverPrefix": "/do",
-        "server": {
+    "app": {
+        "esp": {
             "generate": {
-                "appweb": "esp-html-mvc/appweb.conf",
-                "migration": "esp-server/migration.c",
-                "controller": "esp-html-mvc/controller.c",
-                "controller-singleton": "esp-html-mvc/controller-singleton.c",
-                "files": [
-                    "esp-server/src/app.c",
-                    "esp-html-mvc/start.bit",
-                    "esp-html-mvc/client/**"
-                ],
-                "clientList": "esp-html-mvc/list.esp",
-                "clientEdit": "esp-html-mvc/edit.esp"
-            },
-            "database": "mdb://blog.mdb"
+                "migration": "esp-mvc/generate/migration.c",
+                "module": "esp-mvc/generate/src/app.c",
+                "controllerSingleton": "esp-mvc/generate/controller.c",
+                "appweb": "esp-html-mvc/generate/appweb.conf",
+                "clientList": "esp-html-mvc/generate/list.esp",
+                "clientEdit": "esp-html-mvc/generate/edit.esp",
+                "controller": "esp-html-mvc/generate/controller.c"
+            }
         },
-        "auth": "app"
+        "http": {
+            "routes": "esp-server",
+            "database": "mdb://blog.mdb",
+            "serverPrefix": "/do",
+            "auth": {
+                "type": "app"
+            }
+        },
+        "mode": "debug",
+        "modes": {
+            "debug": {
+                "http": {
+                    "content": {
+                        "keep": [
+                            "c"
+                        ]
+                    }
+                }
+            }
+        }
     }
 }

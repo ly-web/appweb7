@@ -16,19 +16,12 @@ The app contains:
 
 This app was generated, then edited for simplicity via:
 
-    esp generate app blog
-    cd blog
+    esp --name blog install esp-legacy-mvc
     esp generate scaffold post title:string body:text
-    cd ..
-    mv blog esp-legacy-mvc
 
 For the new style ESP MVC application, see the esp-html-mvc sample:
 
 * [esp-html-mvc](../esp-html-mvc/README.md)
-
-For the ESP Angular application, see the esp-angular-mvc sample:
-
-* [esp-angular-mvc](../esp-angular-mvc/README.md)
 
 Differences
 ---
@@ -41,18 +34,18 @@ The key changes in the new style html-mvc vs the legacy-mvc are:
 Requirements
 ---
 * [Appweb](http://embedthis.com/downloads/appweb/download.ejs)
-* [Bit Build Tool](http://embedthis.com/downloads/bit/download.ejs)
+* [MakeMe Build Tool](http://embedthis.com/downloads/me/download.ejs)
 
 To build:
 ---
-    bit 
+    me 
 or
 
     esp compile
 
 To run:
 ---
-    bit run
+    me run
 or
 
     esp run
@@ -75,7 +68,7 @@ Code:
 * [db/migrations](db/migrations) - Database base migrations to create / destroy the database schema
 * [layouts](layouts) - Master view layout templates 
 * [static](static) - Static web content
-* [start.bit](start.bit) - Bit build instructions
+* [start.me](start.me) - MakeMe build instructions
 * [views](views) - Web views
 
 Documentation:
