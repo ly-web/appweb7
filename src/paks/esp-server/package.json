@@ -23,15 +23,5 @@
         "http": {
             "?routes": "esp-server",
         },
-        "?mode": "debug",
-        "modes": {
-            "debug": {
-                "http": {
-                    "content": {
-                        "?keep": [ "c" ],
-                    },
-                },
-            },
-        },
     },
 }
