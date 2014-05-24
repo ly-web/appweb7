@@ -983,7 +983,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    ExitTimeout timeout
+    ExitTimeout msec
  */
 static int exitTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1123,7 +1123,7 @@ static int ifDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    InactivityTimeout secs
+    InactivityTimeout msecs
  */
 static int inactivityTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1979,7 +1979,7 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    RequestParseTimeout secs
+    RequestParseTimeout msecs
  */
 static int requestParseTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1990,7 +1990,7 @@ static int requestParseTimeoutDirective(MaState *state, cchar *key, cchar *value
 
 
 /*
-    RequestTimeout secs
+    RequestTimeout msecs
  */
 static int requestTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -2230,7 +2230,7 @@ static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    SessionTimeout secs
+    SessionTimeout msecs
  */
 static int sessionTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {

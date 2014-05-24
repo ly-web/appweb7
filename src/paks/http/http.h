@@ -3518,7 +3518,7 @@ typedef struct HttpAuth {
 PUBLIC int httpAddAuthType(cchar *name, HttpAskLogin askLogin, HttpParseAuth parse, HttpSetAuth setAuth);
 
 /**
-    Add an authorization store for password validation. The pre-supplied types are 'system' and 'file'
+    Add an authorization store for password validation. The pre-supplied types are "config" and "system".
     @description This creates an AuthType object with the defined name and callbacks.
     @param name Unique authorization type name
     @param verifyUser Callback to verify the username and password contained in the HttpConn object passed to the callback.
@@ -3803,7 +3803,7 @@ PUBLIC void httpSetAuthRequiredAbilities(HttpAuth *auth, cchar *abilities);
 /**
     Set the authentication password store to use
     @param auth Auth object allocated by #httpCreateAuth.
-    @param store Password store to use. Select from: 'system', 'file'
+    @param store Password store to use. Select from: "app", "config" or "system"
     @ingroup HttpAuth
     @stability Evolving
  */

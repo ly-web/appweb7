@@ -349,7 +349,7 @@
                             sorted www-urlencoded form to select a specific URI/parameter combination.  When responses are
                             cached, the response data and response headers are cached.</p>
                             <h3>Client-Side Caching</h3>
-                            <p>If client caching is requested by specifying "client" with an optional lifespan in seconds,
+                            <p>If client caching is requested by specifying "client" with an optional lifespan,
                             a "Cache-Control: max-age=lifespan" HTTP header will be added to the response.  This header will
                             define a client-side cache lifespan that instructs clients to cache response content for a
                             specified duration. If the document is subsequently requested by the client before the
@@ -384,10 +384,10 @@
                             very fast transaction with the client as no response data is sent.  </p>
                             <p>Note: Server-side caching will cache both the response headers and content.</p>
                             <h3>Cache Lifespans</h3>
-                            <p>The Cache directive may specify a lifespan in seconds using the "client=secs" or
-                            "server=secs" options.  If the lifespan is not specified, the default route lifespan will be
+                            <p>The Cache directive may specify a lifespan using the "client=time" or
+                            "server=time" options.  If the lifespan is not specified, the default route lifespan will be
                             used. To set the default lifespan for the route, just include a lifespan with no other
-                            arguments. E.g. Cache 8600.</p> 
+                            arguments. E.g. Cache 1day.</p> 
                             <h3>Summary</h3>
                             <p>    Use client-side caching for static content that will rarely change or for content for
                             which using "reload" in the browser is an adequate solution to force a refresh. Use 
@@ -398,6 +398,7 @@
                 </tbody>
             </table>
             
+            <!--
             <a id="clientCacheByType"></a>
             <h2>ClientCacheByType</h2>
             <table class="directive" title="details">
@@ -426,13 +427,15 @@
                             clients to cache response content for a specified duration. If the document is subsequently
                             required by the client before the response content has expired, the document will be served
                             from the client cache without contacting the server. </p>
-                            <p>The ClientCacheByType directive specifies a lifespan in seconds to be used for any document 
+                            <p>The ClientCacheByType directive specifies a lifespan to be used for any document 
                             that matches one of the set of given mime-types for the document. An empty mime-type "" may be 
                             given to match all documents regardless of type.</p>
                         </td>
                     </tr>
                 </tbody>
             </table>
+            -->
+
             <a id="condition"></a>
             <h2>Condition</h2>
             <table class="directive" title="details">
@@ -1459,7 +1462,7 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
                     </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>SessionTimeout seconds</td>
+                        <td>SessionTimeout time</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
