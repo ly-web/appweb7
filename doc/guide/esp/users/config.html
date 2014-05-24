@@ -243,7 +243,7 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
         http: {
             auth: {
                 // Name of the Auth Store. "app" means server-side auth database
-                type: "app",
+                store: "app",
             },
             // Server side database
             database: "mdb://blog.mdb"
@@ -257,9 +257,9 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
             redirect: "https://"
             // URI prefix for all server-side URIs
             serverPrefix: "/do",
-            // Default timeouts (secs)
+            // Default timeouts 
             timeouts: {
-                session: 1800,
+                session: '30mins',
             },
             // Application mode selects debug or release properties
             mode: "debug",
@@ -269,7 +269,7 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
                     combined: false,
                     // Display server-side errors in the browser
                     showErrors: true,
-                    // Keep intermediate source for views in the cache directory
+                    // Keep intermediate source for views
                     keepSource: true,
                     // Transparently recompile views, controllers and source
                     update: true,
@@ -277,10 +277,7 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
                     auth: {
                         login: {
                             name: "",
-                            roles: [
-                                "edit",
-                                "view"
-                            ],
+                            roles: [ "edit", "view" ],
                         },
                     },
                 },

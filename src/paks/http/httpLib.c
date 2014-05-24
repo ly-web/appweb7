@@ -11618,7 +11618,13 @@ PUBLIC uint64 httpGetNumber(cchar *value)
 
 PUBLIC MprTicks httpGetTicks(cchar *value)
 {
-    return httpGetNumber(value) * MPR_TICKS_PER_SEC;
+    uint64  num;
+
+    num = httpGetNumber(value);
+    if (num >= (MAXINT64 / MPR_TICKS_PER_SEC)) {
+        num = MAXINT64 / MPR_TICKS_PER_SEC;
+    }
+    return num * MPR_TICKS_PER_SEC;
 }
 
 

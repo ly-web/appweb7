@@ -4262,11 +4262,11 @@ static void parseCache(HttpRoute *route, MprJson *prop)
         flags = 0;
         if ((client = mprGetJson(child, "client")) != 0) {
             flags |= HTTP_CACHE_CLIENT;
-            clientLifespan = httpGetNumber(client);
+            clientLifespan = httpGetTicks(client);
         }
         if ((server = mprGetJson(child, "server")) != 0) {
             flags |= HTTP_CACHE_SERVER;
-            serverLifespan = httpGetNumber(server);
+            serverLifespan = httpGetTicks(server);
         }
         methods = getList(mprGetJsonObj(child, "methods"));
         extensions = getList(mprGetJsonObj(child, "extensions"));

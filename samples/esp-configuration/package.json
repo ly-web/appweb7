@@ -269,7 +269,7 @@
             "serverPrefix": "/do",
 
             /*
-                Default timeouts. Can also use strings with unit suffixes. "5minutes"
+                Default timeouts. Use strings with unit suffixes. "5minutes"
              */
             "timeouts": {
                 /*
