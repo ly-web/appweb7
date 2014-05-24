@@ -2654,7 +2654,7 @@ static void postParse(HttpRoute *route)
     HttpHost    *host;
     HttpRoute   *rp;
     MprJson     *mappings, *client;
-    int         nextHost, nextRoute, update, showErrors, keepSource, xsrf;
+    int         nextHost, nextRoute;
 
     if (route->error) {
         return;
@@ -2675,22 +2675,6 @@ static void postParse(HttpRoute *route)
 
     httpAddHostToEndpoints(route->host);
 
-    xsrf = 1;
-    keepSource = showErrors = update = smatch(route->mode, "debug");
-
-    if (mprGetJson(route->config, "app.http.showErrors")) {
-        showErrors = smatch(mprGetJson(route->config, "app.http.showErrors"), "true");
-    }
-    if (mprGetJson(route->config, "app.http.update")) {
-        update = smatch(mprGetJson(route->config, "app.http.update"), "true");
-    }
-    if (mprGetJson(route->config, "app.http.keepSource")) {
-        keepSource = smatch(mprGetJson(route->config, "app.http.keepSource"), "true");
-    }
-    if (mprGetJson(route->config, "app.http.xsrf")) {
-        xsrf = smatch(mprGetJson(route->config, "app.http.xsrf"), "true");
-    }
-
     /*
         Ensure the host home directory is set and the file handler is defined
         Propagate the HttpRoute.client to all child routes.
@@ -2704,22 +2688,7 @@ static void postParse(HttpRoute *route)
                 httpAddRouteIndex(rp, "index.html");
             }
             if (rp->parent == route) {
-                /*
-                    Apply defaults for if some properties are unspecified
-                 */
                 rp->client = route->client;
-                if (mprGetJson(rp->config, "app.http.showErrors") == 0) {
-                    httpSetRouteShowErrors(rp, showErrors);
-                }
-                if (mprGetJson(rp->config, "app.http.update") == 0) {
-                    rp->update = update;
-                }
-                if (mprGetJson(rp->config, "app.http.keepSource") == 0) {
-                    rp->keepSource = keepSource;
-                }
-                if (mprGetJson(rp->config, "app.http.xsrf") == 0) {
-                    httpSetRouteXsrf(rp, xsrf);
-                }
             }
         }
     }
@@ -2802,14 +2771,6 @@ static void parseAuth(HttpRoute *route, cchar *key, MprJson *prop)
         parseAuthStore(route, key, prop);
     } else if (prop->type == MPR_JSON_OBJ) {
         parseAll(route, key, prop);
-    }
-}
-
-
-static void parseAuthStore(HttpRoute *route, cchar *key, MprJson *prop)
-{
-    if (httpSetAuthStore(route->auth, prop->value) < 0) {
-        httpParseError(route, "The %s AuthStore is not available on this platform", prop->value);
     }
 }
 
@@ -2957,12 +2918,14 @@ static void parseContentCompress(HttpRoute *route, cchar *key, MprJson *prop)
 }
 
 
+#if DEPRECATED || 1
 static void parseContentKeep(HttpRoute *route, cchar *key, MprJson *prop)
 {
     if (mprGetJson(prop, "[@=c]")) {
         route->keepSource = 1;
     }
 }
+#endif
 
 
 static void parseContentMinify(HttpRoute *route, cchar *key, MprJson *prop)
@@ -3062,6 +3025,12 @@ static void parseIndexes(HttpRoute *route, cchar *key, MprJson *prop)
     for (ITERATE_CONFIG(route, prop, child, ji)) {
         httpAddRouteIndex(route, child->value);
     }
+}
+
+
+static void parseKeep(HttpRoute *route, cchar *key, MprJson *prop)
+{
+    route->keepSource = (prop->type & MPR_JSON_TRUE) ? 1 : 0;
 }
 
 
@@ -3427,15 +3396,32 @@ PUBLIC void httpAddRouteSet(HttpRoute *route, cchar *set)
 }
 
 
+static void setConfigDefaults(HttpRoute *route)
+{
+    route->mode = mprGetJson(route->config, "app.mode");
+    if (smatch(route->mode, "debug")) {
+        httpSetRouteShowErrors(route, 1);
+        route->keepSource = 1;
+    }
+}
+
+
 static void parseHttp(HttpRoute *route, cchar *key, MprJson *prop)
 {
     MprJson     *routes;
 
+    setConfigDefaults(route);
     parseAll(route, key, prop);
+
+    /*
+        Property order is not guaranteed, so must ensure routes are processed after all outer properties.
+     */
     if ((routes = mprGetJsonObj(prop, "routes")) != 0) {
         parseRoutes(route, key, routes);
     }
 }
+
+
 
 
 /*
@@ -3910,23 +3896,23 @@ PUBLIC int httpInitParser()
     httpAddConfig("app.http", parseHttp);
     //  MOB - should have Http in all names
     httpAddConfig("app.http.auth", parseAuth);
-#if DEPRECATED || 1
-    httpAddConfig("app.http.auth.type", parseAuthStore);
-#endif
-    httpAddConfig("app.http.auth.store", parseAuthStore);
     httpAddConfig("app.http.auth.login", parseAuthLogin);
     httpAddConfig("app.http.auth.realm", parseAuthRealm);
     httpAddConfig("app.http.auth.require", parseAll);
     httpAddConfig("app.http.auth.require.roles", parseAuthRequireRoles);
     httpAddConfig("app.http.auth.require.users", parseAuthRequireUsers);
     httpAddConfig("app.http.auth.roles", parseAuthRoles);
+    httpAddConfig("app.http.auth.store", parseAuthStore);
+    httpAddConfig("app.http.auth.type", parseAuthType);
     httpAddConfig("app.http.auth.users", parseAuthUsers);
     httpAddConfig("app.http.cache", parseCache);
     httpAddConfig("app.http.content", parseAll);
     httpAddConfig("app.http.content.combine", parseContentCombine);
     httpAddConfig("app.http.content.minify", parseContentMinify);
     httpAddConfig("app.http.content.compress", parseContentCompress);
+#if DEPRECATED || 1
     httpAddConfig("app.http.content.keep", parseContentKeep);
+#endif
     httpAddConfig("app.http.database", parseDatabase);
     httpAddConfig("app.http.deleteUploads", parseDeleteUploads);
     httpAddConfig("app.http.domain", parseDomain);
@@ -3938,6 +3924,7 @@ PUBLIC int httpInitParser()
     httpAddConfig("app.http.headers.remove", parseHeadersRemove);
     httpAddConfig("app.http.headers.set", parseHeadersSet);
     httpAddConfig("app.http.indexes", parseIndexes);
+    httpAddConfig("app.http.keep", parseKeep);
     httpAddConfig("app.http.languages", parseLanguages);
     httpAddConfig("app.http.limits", parseLimits);
     httpAddConfig("app.http.limits.buffer", parseLimitsBuffer);
@@ -9932,12 +9919,12 @@ PUBLIC HttpRoute *httpCreateRoute(HttpHost *host)
     route->auth = httpCreateAuth();
     route->defaultLanguage = sclone("en");
     route->home = route->documents = mprGetCurrentPath();
-    route->flags = HTTP_ROUTE_STEALTH;
+    route->flags = HTTP_ROUTE_STEALTH | HTTP_ROUTE_XSRF;
 #if ME_DEBUG
     route->flags |= HTTP_ROUTE_SHOW_ERRORS;
-    route->update = 1;
     route->keepSource = 1;
 #endif
+    route->update = 1;
     route->host = host;
     route->http = MPR->httpService;
     route->lifespan = ME_MAX_CACHE_DURATION;
@@ -13252,7 +13239,13 @@ PUBLIC uint64 httpGetNumber(cchar *value)
 
 PUBLIC MprTicks httpGetTicks(cchar *value)
 {
-    return httpGetNumber(value) * MPR_TICKS_PER_SEC;
+    uint64  num;
+
+    num = httpGetNumber(value);
+    if (num >= (MAXINT64 / MPR_TICKS_PER_SEC)) {
+        num = MAXINT64 / MPR_TICKS_PER_SEC;
+    }
+    return num * MPR_TICKS_PER_SEC;
 }
 
 

@@ -648,13 +648,11 @@ static void initialize(int argc, char **argv)
             return;
         }
     } else {
-        if (mprPathExists("package.json", R_OK) && mprGetJsonObj(app->config, "app.esp") != 0) {
+        if (mprPathExists("package.json", R_OK)) {
             if (espApp(route, ".", app->appName, 0, 0) < 0) {
                 fail("Cannot create ESP app");
                 return;
             }
-            httpAddRouteIndex(route, "index.html");
-
         } else {
             /*
                 Either no package.json or no "esp" definition
@@ -664,9 +662,9 @@ static void initialize(int argc, char **argv)
             espSetDefaultDirs(route);
             httpAddRouteHandler(route, "espHandler", "esp");
             httpAddRouteHandler(route, "fileHandler", "");
-            httpAddRouteIndex(route, "index.esp");
-            httpAddRouteIndex(route, "index.html");
         }
+        httpAddRouteIndex(route, "index.esp");
+        httpAddRouteIndex(route, "index.html");
         httpFinalizeRoute(route);
     }
     if (route->database && !app->eroute->edi) {
@@ -1340,38 +1338,6 @@ static bool similarRoute(HttpRoute *r1, HttpRoute *r2)
     if (r1->vars != r2->vars) {
         return 0;
     }
-#if UNUSED
-    EspRoute    *e1, *e2;
-    e1 = r1->eroute;
-    e2 = r2->eroute;
-
-    for (dp = dirs; dp; dp++) {
-        if (!smatch(httpGetDir(r1, dir), httpGetDir(r2, dir))) {
-            return 0;
-        }
-    }
-    if (!smatch(e1->clientDir, e2->clientDir)) {
-        return 0;
-    }
-    if (!smatch(e1->controllersDir, e2->controllersDir)) {
-        return 0;
-    }
-    if (!smatch(e1->layoutsDir, e2->layoutsDir)) {
-        return 0;
-    }
-    if (!smatch(e1->srcDir, e2->srcDir)) {
-        return 0;
-    }
-    if (!smatch(e1->viewsDir, e2->viewsDir)) {
-        return 0;
-    }
-    if (!smatch(e1->generateDir, e2->generateDir)) {
-        return 0;
-    }
-    if (!smatch(e1->paksDir, e2->paksDir)) {
-        return 0;
-    }
-#endif
     if (scontains(r1->sourceName, "${") == 0 && scontains(r2->sourceName, "${") == 0) {
         if (r1->sourceName || r2->sourceName) {
             return smatch(r1->sourceName, r2->sourceName);
