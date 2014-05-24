@@ -141,14 +141,15 @@ PUBLIC void httpInitAuth(Http *http)
     httpAddAuthType("form", formLogin, NULL, NULL);
 
     httpCreateAuthStore("app", NULL);
-    httpCreateAuthStore("internal", fileVerifyUser);
+    httpCreateAuthStore("config", fileVerifyUser);
 #if ME_COMPILER_HAS_PAM && ME_HTTP_PAM
     httpCreateAuthStore("system", httpPamVerifyUser);
 #endif
 #if DEPRECATED || 1
     /*
-        Deprecated in 4.4. Use "internal"
+        Deprecated in 4.4. Use "config"
      */
+    httpCreateAuthStore("internal", fileVerifyUser);
     httpCreateAuthStore("file", fileVerifyUser);
 #if ME_COMPILER_HAS_PAM && ME_HTTP_PAM
     httpCreateAuthStore("pam", httpPamVerifyUser);

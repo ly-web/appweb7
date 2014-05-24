@@ -23,7 +23,7 @@
             "database": "mdb://blog.mdb",
             "serverPrefix": "/do",
             "auth": {
-                "type": "app"
+                "store": "app"
             }
         },
         "mode": "debug",

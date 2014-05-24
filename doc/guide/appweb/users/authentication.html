@@ -233,14 +233,14 @@ AuthStore system
 </pre>
 This selects the Unix system PAM password database.
 <pre>
-AuthStore file
+AuthStore config
 User julie 9d8873a123eb506e7f8e84d1f2a26916 view
 </pre>
             <p>The Unix system password database is managed via the <a href="http://kb.iu.edu/data/anpn.html">PAM</a> 
             interface. The Windows ActiveDirectory password store is not currently supported.</p>
-            <p>The <em>AuthStore file</em> option specifies that passwords will be defined by the
+            <p>The <em>AuthStore config</em> option specifies that passwords will be defined by the
             <a href="dir/auth.html#user">User</a> directive and will be stored internally in Appweb.
-            The default password store for Appweb is "file". Typically, User directives are kept in a separate
+            The default password store for Appweb is "config". Typically, User directives are kept in a separate
             passwords are stored in a separate configuration file that is included from the <em>appweb.conf</em>
             master configuration file.</p>
 <pre>
