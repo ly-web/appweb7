@@ -318,8 +318,9 @@
 
                 /* 
                     Auth Store to use, "app" means user credentials are stored in a server-side application database
+                    Set to "app", "config" or "system".
                  */
-                "type": "app",
+                "store": "app",
             },
             
             /*
