@@ -476,7 +476,7 @@ static MprMem *allocMem(size_t required)
     baseQindex = qindex;
 
     if (qindex >= 0) {
-        heap->workDone += required;
+        heap->workDone += (int) required;
     retry:
         retryIndex = -1;
         baseBindex = qindex / MPR_ALLOC_BITMAP_BITS;
