@@ -2829,10 +2829,26 @@ static void parseAuthRoles(HttpRoute *route, cchar *key, MprJson *prop)
     int         ji;
     
     for (ITERATE_CONFIG(route, prop, child, ji)) {
-        if (httpAddRole(route->auth, prop->name, getList(prop)) == 0) {
-            httpParseError(route, "Cannot add user %s", prop->name);
+        if (httpAddRole(route->auth, child->name, getList(child)) < 0) {
+            httpParseError(route, "Cannot add role %s", child->name);
             break;
         }
+    }
+}
+
+
+static void parseAuthStore(HttpRoute *route, cchar *key, MprJson *prop)
+{
+    if (httpSetAuthStore(route->auth, prop->value) < 0) {
+        httpParseError(route, "The %s AuthStore is not available on this platform", prop->value);
+    }
+}
+
+
+static void parseAuthType(HttpRoute *route, cchar *key, MprJson *prop)
+{
+    if (httpSetAuthType(route->auth, prop->value, 0) < 0) {
+        httpParseError(route, "The %s AuthType is not available on this platform", prop->value);
     }
 }
 
@@ -2844,10 +2860,10 @@ static void parseAuthUsers(HttpRoute *route, cchar *key, MprJson *prop)
     int         ji;
     
     for (ITERATE_CONFIG(route, prop, child, ji)) {
-        password = mprGetJson(prop, "password");
-        roles = getList(mprGetJsonObj(prop, "roles"));
-        if (httpAddUser(route->auth, prop->name, password, roles) == 0) {
-            httpParseError(route, "Cannot add user %s", prop->name);
+        password = mprGetJson(child, "password");
+        roles = getList(mprGetJsonObj(child, "roles"));
+        if (httpAddUser(route->auth, child->name, password, roles) < 0) {
+            httpParseError(route, "Cannot add user %s", child->name);
             break;
         }
     }
@@ -2865,11 +2881,11 @@ static void parseCache(HttpRoute *route, cchar *key, MprJson *prop)
         flags = 0;
         if ((client = mprGetJson(child, "client")) != 0) {
             flags |= HTTP_CACHE_CLIENT;
-            clientLifespan = httpGetNumber(client);
+            clientLifespan = httpGetTicks(client);
         }
         if ((server = mprGetJson(child, "server")) != 0) {
             flags |= HTTP_CACHE_SERVER;
-            serverLifespan = httpGetNumber(server);
+            serverLifespan = httpGetTicks(server);
         }
         methods = getList(mprGetJsonObj(child, "methods"));
         extensions = getList(mprGetJsonObj(child, "extensions"));
