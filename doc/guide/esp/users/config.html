@@ -253,37 +253,26 @@ ESP_EXPORT int esp_module_greetings(HttpRoute *route) {
                 float: 2,
                 int: 0,
             },
+            // Keep intermediate source for views
+            keep: true,
             // Redirect all traffic over HTTPS
             redirect: "https://"
             // URI prefix for all server-side URIs
             serverPrefix: "/do",
             // Default timeouts 
+            // Display server-side errors in the browser
+            showErrors: true,
             timeouts: {
                 session: '30mins',
             },
+            // Transparently recompile views, controllers and source
+            update: true,
+
             // Application mode selects debug or release properties
             mode: "debug",
             modes: {
-                debug: {
-                    // Application compiled in combined vs discrete mode
-                    combined: false,
-                    // Display server-side errors in the browser
-                    showErrors: true,
-                    // Keep intermediate source for views
-                    keepSource: true,
-                    // Transparently recompile views, controllers and source
-                    update: true,
-                    // Automatic login credentials.
-                    auth: {
-                        login: {
-                            name: "",
-                            roles: [ "edit", "view" ],
-                        },
-                    },
-                },
-                release: {
-                    //  Same fields as per debug
-                },
+                debug: { },
+                release: { },
             },
         },
     }
