@@ -417,8 +417,6 @@ static void process(int argc, char **argv)
 {
     cchar       *cmd;
 
-    assert(argc >= 1);
-
     if (argc == 0) {
         app->routes = getRoutes();
         run(argc, argv);
