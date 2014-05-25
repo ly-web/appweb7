@@ -642,12 +642,18 @@ static void initialize(int argc, char **argv)
     
     if (app->appwebConfig) {
         flags = (app->require & REQ_SERVE) ? 0 : MA_PARSE_NON_SERVER;
-        /* This will call espApp when via the EspApp directive */
+        /* 
+            Appweb - hosted initialization.
+            This will call espApp when via the EspApp directive 
+         */
         if (maParseConfig(app->server, app->appwebConfig, flags) < 0) {
             fail("Cannot configure the server, exiting.");
             return;
         }
     } else {
+        /*
+            Incase there is no routes defined, must setup the file handler
+         */
         if (mprPathExists("package.json", R_OK)) {
             if (espApp(route, ".", app->appName, 0, 0) < 0) {
                 fail("Cannot create ESP app");
@@ -655,14 +661,14 @@ static void initialize(int argc, char **argv)
             }
         } else {
             /*
-                Either no package.json or no "esp" definition
+                No package.json
              */
             route->update = 1;
             httpSetRouteShowErrors(route, 1);
             espSetDefaultDirs(route);
-            httpAddRouteHandler(route, "espHandler", "esp");
-            httpAddRouteHandler(route, "fileHandler", "");
         }
+        httpAddRouteHandler(route, "espHandler", "esp");
+        httpAddRouteHandler(route, "fileHandler", "");
         httpAddRouteIndex(route, "index.esp");
         httpAddRouteIndex(route, "index.html");
         httpFinalizeRoute(route);

@@ -4651,11 +4651,15 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
     } else {
         httpSetRouteName(route, sfmt("/%s", name));
     }
+#if UNUSED
+    /* This messes up file handler */
     httpSetRouteTarget(route, "run", "$&");
+#endif
     httpAddRouteHandler(route, "espHandler", "");
     httpAddRouteHandler(route, "espHandler", "esp");
     httpAddRouteIndex(route, "index.esp");
     httpSetRouteVar(route, "APP", name);
+    httpSetRouteVar(route, "UAPP", stitle(name));
 
     if (httpLoadConfig(route, ME_ESP_PACKAGE) < 0) {
         return MPR_ERR_CANT_LOAD;
