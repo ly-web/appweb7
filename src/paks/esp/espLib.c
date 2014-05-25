@@ -4258,6 +4258,7 @@ static void parseCache(HttpRoute *route, MprJson *prop)
     cchar       *methods, *extensions, *uris, *mimeTypes, *client, *server;
     int         flags, ji;
 
+    serverLifespan = clientLifespan = 0;
     for (ITERATE_CONFIG(prop, child, ji)) {
         flags = 0;
         if ((client = mprGetJson(child, "client")) != 0) {
