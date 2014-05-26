@@ -1405,7 +1405,7 @@ static void sweep()
     }
 #if (ME_MPR_ALLOC_STATS && ME_MPR_ALLOC_DEBUG) && KEEP
     printf("GC: Marked %lld / %lld, Swept %lld / %lld, freed %lld, bytesFree %lld (prior %lld)\n"
-                 "    WeightedCount %d / %d, allocated blocks %lld allocated bytes %lld\n"
+                 "    WeightedCount %lld / %d, allocated blocks %lld allocated bytes %lld\n"
                  "    Unpins %lld, Collections %lld\n",
         heap->stats.marked, heap->stats.markVisited, heap->stats.swept, heap->stats.sweepVisited, 
         heap->stats.freed, heap->stats.bytesFree, heap->priorFree, heap->priorWeightedCount, heap->workQuota,

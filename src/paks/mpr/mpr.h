@@ -1218,15 +1218,15 @@ typedef struct MprHeap {
     int              mustYield;             /**< Threads must yield for GC which is due */
     int              nextSeqno;             /**< Next sequence number */
     int              pageSize;              /**< System page size */
-    int              priorWeightedCount;    /**< Prior weighted count after last sweep */
+    uint64           priorWeightedCount;    /**< Prior weighted count after last sweep */
     int              printStats;            /**< Print diagnostic heap statistics */
     uint64           priorFree;             /**< Last sweep free memory */
     int              scribble;              /**< Scribble over freed memory (slow) */
     int              sweeping;              /**< Actually sweeping objects now */
     int              track;                 /**< Track memory allocations (requires ME_MPR_ALLOC_DEBUG) */
     int              verify;                /**< Verify memory contents (very slow) */
-    int              workDone;              /**< Count of allocations weighted by block size */
-    int              workQuota;             /**< Quota of work done before idle GC worthwhile */
+    uint64           workDone;              /**< Count of allocations weighted by block size */
+    uint64           workQuota;             /**< Quota of work done before idle GC worthwhile */
 } MprHeap;
 
 /**
