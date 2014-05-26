@@ -14,14 +14,6 @@ The following samples are available:
 * [cpp-handler](cpp-handler/README.md)              C++ Handler
 * [cpp-module](cpp-module/README.md)                C++ Module
 * [deploy-server](deploy-server/README.md)          Deploy Appweb files for copying to a target.
-* [esp-controller](esp-controller/README.md)        Creating ESP controllers.
-* [esp-layout](esp-layout/README.md)                ESP layout templates.
-* [esp-login](esp-login/README.md)                  ESP form-based login.
-* [esp-mvc](esp-mvc/README.md)                      ESP MVC application (stand-alone).
-* [esp-legacy-mvc](esp-legacy-mvc/README.md)        Legacy ESP MVC application (stand-alone).
-* [esp-page](esp-page/README.md)                    Serving ESP web pages.
-* [esp-session](esp-session/README.md)              Using ESP session state storage.
-* [esp-upload](esp-upload/README.md)                ESP file upload.
 * [max-server](max-server/README.md)                Maximum configuration in appweb.conf.
 * [min-server](min-server/README.md)                Minimum configuration in appweb.conf.
 * [secure-server](secure-server/README.md)          Secure server using SSL, secure login, chroot and sandbox limits.

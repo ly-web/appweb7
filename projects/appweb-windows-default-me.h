@@ -88,7 +88,7 @@
     #define ME_EJS_ONE_MODULE 1
 #endif
 #ifndef ME_ESP_LEGACY
-    #define ME_ESP_LEGACY 1
+    #define ME_ESP_LEGACY 0
 #endif
 #ifndef ME_EST_CAMELLIA
     #define ME_EST_CAMELLIA 0

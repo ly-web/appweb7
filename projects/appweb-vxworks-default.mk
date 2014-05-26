@@ -1295,7 +1295,7 @@ DEPS_61 += $(CONFIG)/inc/appweb.h
 $(CONFIG)/obj/phpHandler.o: \
     src/modules/phpHandler.c $(DEPS_61)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.o'
-	$(CC) -c -o $(CONFIG)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)/main" "-I$(BIT_PACK_PHP_PATH)/Zend" "-I$(BIT_PACK_PHP_PATH)/TSRM" src/modules/phpHandler.c
+	$(CC) -c -o $(CONFIG)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) "-I$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)/main" "-I$(ME_COM_PHP_PATH)/Zend" "-I$(ME_COM_PHP_PATH)/TSRM" src/modules/phpHandler.c
 
 ifeq ($(ME_COM_PHP),1)
 #
@@ -1328,7 +1328,7 @@ DEPS_62 += $(CONFIG)/bin/libappweb.out
 DEPS_62 += $(CONFIG)/obj/phpHandler.o
 
 LIBS_62 += -lphp5
-LIBPATHS_62 += -L$(BIT_PACK_PHP_PATH)/libs
+LIBPATHS_62 += -L$(ME_COM_PHP_PATH)/libs
 
 $(CONFIG)/bin/libmod_php.out: $(DEPS_62)
 	@echo '      [Link] $(CONFIG)/bin/libmod_php.out'

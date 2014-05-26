@@ -961,7 +961,7 @@ DEPS_44 = $(DEPS_44) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\phpHandler.obj: \
     src\modules\phpHandler.c $(DEPS_44)
 	@echo '   [Compile] $(CONFIG)/obj/phpHandler.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\phpHandler.obj -Fd$(CONFIG)\obj\phpHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)\main" "-I$(BIT_PACK_PHP_PATH)\Zend" "-I$(BIT_PACK_PHP_PATH)\TSRM" src\modules\phpHandler.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\phpHandler.obj -Fd$(CONFIG)\obj\phpHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)\main" "-I$(ME_COM_PHP_PATH)\Zend" "-I$(ME_COM_PHP_PATH)\TSRM" src\modules\phpHandler.c
 
 !IF "$(ME_COM_PHP)" == "1"
 #
@@ -1053,7 +1053,7 @@ DEPS_48 = $(DEPS_48) $(CONFIG)\inc\appweb.h
 $(CONFIG)\obj\appweb.obj: \
     src\server\appweb.c $(DEPS_48)
 	@echo '   [Compile] $(CONFIG)/obj/appweb.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\appweb.obj -Fd$(CONFIG)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" "-I$(BIT_PACK_PHP_PATH)" "-I$(BIT_PACK_PHP_PATH)\main" "-I$(BIT_PACK_PHP_PATH)\Zend" "-I$(BIT_PACK_PHP_PATH)\TSRM" src\server\appweb.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\appweb.obj -Fd$(CONFIG)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)\main" "-I$(ME_COM_PHP_PATH)\Zend" "-I$(ME_COM_PHP_PATH)\TSRM" src\server\appweb.c
 
 #
 #   appweb
@@ -1179,7 +1179,7 @@ LIBS_49 = $(LIBS_49) libmod_php.lib
 !ENDIF
 !IF "$(ME_COM_PHP)" == "1"
 LIBS_49 = $(LIBS_49) libphp5ts.lib
-LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(BIT_PACK_PHP_PATH)/libs
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_PHP_PATH)/libs
 !ENDIF
 !IF "$(ME_COM_CGI)" == "1"
 LIBS_49 = $(LIBS_49) libmod_cgi.lib
@@ -2101,7 +2101,7 @@ installBinary: $(DEPS_92)
 	copy /Y $(CONFIG)\bin\appman.exe "$(ME_VAPP_PREFIX)\bin\appman.exe"
 	copy /Y $(CONFIG)\bin\http.exe "$(ME_VAPP_PREFIX)\bin\http.exe"
 !IF "$(ME_COM_ESP)" == "1"
-	copy /Y $(CONFIG)\bin\esp.exe "$(ME_VAPP_PREFIX)\bin\appesp"
+	copy /Y $(CONFIG)\bin\esp.exe "$(ME_VAPP_PREFIX)\bin\appesp.exe"
 !ENDIF
 	copy /Y $(CONFIG)\bin\appwebMonitor.exe "$(ME_VAPP_PREFIX)\bin\appwebMonitor.exe"
 	copy /Y $(CONFIG)\bin\appwebMonitor.ico "$(ME_VAPP_PREFIX)\bin\appwebMonitor.ico"
