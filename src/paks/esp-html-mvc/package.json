@@ -46,7 +46,7 @@
         },
         "http": {
             "auth": {
-                "?type": "app",
+                "?store": "app",
             },
             "-routes": "esp-server",
             "?routes": "esp-html-mvc",
