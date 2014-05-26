@@ -651,9 +651,8 @@ static void initialize(int argc, char **argv)
             return;
         }
     } else {
-        /*
-            Incase there is no routes defined, must setup the file handler
-         */
+        httpAddRouteHandler(route, "fileHandler", "");
+
         if (mprPathExists("package.json", R_OK)) {
             if (espApp(route, ".", app->appName, 0, 0) < 0) {
                 fail("Cannot create ESP app");
@@ -666,11 +665,10 @@ static void initialize(int argc, char **argv)
             route->update = 1;
             httpSetRouteShowErrors(route, 1);
             espSetDefaultDirs(route);
+            httpAddRouteHandler(route, "espHandler", "esp");
+            httpAddRouteIndex(route, "index.esp");
+            httpAddRouteIndex(route, "index.html");
         }
-        httpAddRouteHandler(route, "espHandler", "esp");
-        httpAddRouteHandler(route, "fileHandler", "");
-        httpAddRouteIndex(route, "index.esp");
-        httpAddRouteIndex(route, "index.html");
         httpFinalizeRoute(route);
     }
     if (route->database && !app->eroute->edi) {

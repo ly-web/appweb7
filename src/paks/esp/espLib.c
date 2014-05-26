@@ -2271,7 +2271,6 @@ PUBLIC void scripts(cchar *patterns)
 
 /*
     Add a security token to the response. The token is generated as a HTTP header and session cookie.
-    Note that views will automatically add security tokens to views.
  */
 PUBLIC void securityToken()
 {
@@ -2594,32 +2593,41 @@ static void parseCompile(HttpRoute *route, cchar *key, MprJson *prop)
 }
 
 
-static void serverRouteSet(HttpRoute *route, cchar *set)
+static void serverRouteSet(HttpRoute *parent, cchar *set)
 {
+    HttpRoute   *route;
+
     /* Simple controller/action route */
-    httpAddRestfulRoute(route, route->serverPrefix, "action", "GET,POST","/{action}(/)*$", 
+    route = httpAddRestfulRoute(parent, parent->serverPrefix, "action", "GET,POST","/{action}(/)*$",
         "${action}", "{controller}");
-    httpAddClientRoute(route, "", "/public");
-    httpHideRoute(route, 1);
+    httpAddRouteHandler(route, "espHandler", "");
 }
 
 
-static void angularRouteSet(HttpRoute *route, cchar *set)
+static void angularRouteSet(HttpRoute *parent, cchar *set)
 {
-    httpAddWebSocketsRoute(route, route->serverPrefix, "/*/stream");
-    httpAddResourceGroup(route, route->serverPrefix, "{controller}");
-    httpAddClientRoute(route, "", "/public");
-    httpHideRoute(route, 1);
+    httpAddRouteHandler(parent, "espHandler", "");
+    httpAddWebSocketsRoute(parent, 0, "/*/stream");
+    httpAddResourceGroup(parent, 0, "{controller}");
+    httpAddClientRoute(parent, "", "/public");
+    httpHideRoute(parent, 1);
 }
 
 
-static void htmlRouteSet(HttpRoute *route, cchar *set)
+static void htmlRouteSet(HttpRoute *parent, cchar *set)
 {
-    httpDefineRoute(route, sfmt("%s/*", route->serverPrefix), "GET", sfmt("^%s/{controller}$", route->serverPrefix), "$1", "${controller}.c");
-    httpAddRestfulRoute(route, route->serverPrefix, "delete", "POST", "/{id=[0-9]+}/delete$", "delete", "{controller}");
-    httpAddResourceGroup(route, route->serverPrefix, "{controller}");
-    httpAddClientRoute(route, "", "/public");
-    httpHideRoute(route, 1);
+    httpAddRouteHandler(parent, "espHandler", "");
+    httpDefineRoute(parent,
+        sfmt("%s%s/*", parent->prefix, parent->serverPrefix), 
+        "GET", 
+        sfmt("^%s%s/{controller}$", parent->prefix, parent->serverPrefix),
+        "$1", 
+        "${controller}.c");
+
+    httpAddRestfulRoute(parent, 0, "delete", "POST", "/{id=[0-9]+}/delete$", "delete", "{controller}");
+    httpAddResourceGroup(parent, 0, "{controller}");
+    httpAddClientRoute(parent, "", "/public");
+    httpHideRoute(parent, 1);
 }
 
 
@@ -3724,7 +3732,7 @@ PUBLIC void espClearCurrentSession(HttpConn *conn)
 
 
 /*
-    Remember this connections session as the current session. Use for single login tracking
+    Remember this connections session as the current session. Use for single login tracking.
  */
 PUBLIC void espSetCurrentSession(HttpConn *conn)
 {
@@ -4655,9 +4663,10 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
     /* This messes up file handler */
     httpSetRouteTarget(route, "run", "$&");
 #endif
-    httpAddRouteHandler(route, "espHandler", "");
     httpAddRouteHandler(route, "espHandler", "esp");
     httpAddRouteIndex(route, "index.esp");
+    httpAddRouteIndex(route, "index.html");
+
     httpSetRouteVar(route, "APP", name);
     httpSetRouteVar(route, "UAPP", stitle(name));
 
