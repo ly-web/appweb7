@@ -48,7 +48,7 @@ Me.load({
             shell: "
                 umask 77
                 openssl genrsa -out self.key 2048
-                openssl req -new -x509 -days 1095 -key self.key -out self.crt < self.ans
+                openssl req -new -x509 -days 3560 -key self.key -out self.crt < self.ans
             ",
         },
 
