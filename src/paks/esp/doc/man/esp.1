@@ -5,12 +5,14 @@ esp \- ESP Application Generator for Server-Side Web Applications.
 .B esp
     \fB--apply\fR
     \fB--appweb configFile\fR
+    \fB--cipher cipher DB\fR
     \fB--database DB\fR
     \fB--genlink slink.c\fR
     \fB--home dir\fR
     \fB--keep\fR
     \fB--listen [ip:]port\fR
     \fB--log logFile:level\fR
+    \fB--noupdate\fR
     \fB--nodeps\fR
     \fB--optimized\fR
     \fB--overwrite\fR
@@ -29,19 +31,24 @@ esp \- ESP Application Generator for Server-Side Web Applications.
 .SH ""
 .B Commands:
     esp clean
-    esp compile
     esp compile [pathFilters...]
+    esp config
     esp edit key[=value]
     esp generate controller name [action [, action] ...]
     esp generate migration description model [field:type ...]
     esp generate scaffold model [field:type ...]
     esp generate table name model [field:type ...]
+    esp init
     esp install paks...
+    esp list
     esp migrate [forward|backward|NNN]
     esp mode [debug|release|otherMode]
+    esp role [add|remove] rolename
     esp [run] [ip]:[port]
     esp uninstall paks...
     esp upgrade paks..
+    esp user [add|compute] username password roles...
+    esp user [remove|show] username 
 .SH DESCRIPTION
 The \fBesp\fR command generates, manages and runs ESP web applications. It includes a full HTTP/1.1 web server to 
 host your application but can also help to generate ESP web applications, controllers, database tables, and scaffolds.
@@ -197,6 +204,16 @@ To compile the entire application and produce a single combined shared library f
 the package.json file.
 .RS 5
 
+.SH AUTHENTICATION
+ESP can use the system password database or it can define passwords in the package.json or in an application database.
+To define passwords in the package.json, use:
+
+ \fBesp user add username password roles...\fR
+
+To define authentication roles, use:
+
+  \fBesp role add abilities...\fR
+
 .SH CROSS-COMPILING
 To compile for a target system of a different architecture, you must specify the target. 
 To do this, use the -platform switch to specify the target architecture. Specify the path to the platform directory
@@ -279,6 +296,9 @@ Level 3 will trace the request and response headers.
 .TP 6
 \fB\--nodeps\fR
 Do not install or upgrade dependencies.
+.TP 6
+\fB\--noupdate\fR
+Do not update package.json.
 .TP 6
 \fB\--optimize\fR
 Compile optimized without debug symbols. 

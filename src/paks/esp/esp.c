@@ -20,6 +20,7 @@ typedef struct App {
 
     cchar       *appName;               /* Application name */
     cchar       *appwebConfig;          /* Arg to --config */
+    cchar       *cipher;                /* Cipher for passwords: "md5" or "blowfish" */
     cchar       *currentDir;            /* Initial starting current directory */
     cchar       *database;              /* Database provider "mdb" | "sdb" */
 
@@ -60,6 +61,7 @@ typedef struct App {
     cchar       *base;                  /* Base filename */
     cchar       *entry;                 /* Module entry point */
     cchar       *controller;            /* Controller name for generated entities (lower case) */
+    cchar       *password;              /* Password for auth */
     cchar       *title;                 /* Title name for generated entities */
     cchar       *table;                 /* Override table name for migrations, tables */
 
@@ -69,6 +71,7 @@ typedef struct App {
     int         force;                  /* Force the requested action, ignoring unfullfilled dependencies */
     int         quiet;                  /* Don't trace progress */
     int         nodeps;                 /* Do not install or upgrade dependencies */
+    int         noupdate;               /* Do not update the package.json */
     int         require;                /* Initialization requirement flags */
     int         rebuild;                /* Force a rebuild */
     int         reverse;                /* Reverse migrations */
@@ -108,6 +111,7 @@ static int       nextMigration;         /* Sequence number for next migration */
 
 #define ESP_FOUND_TARGET 1
 
+#define MAX_PASS        64
 #define MAX_VER         1000000000
 #define VER_FACTOR      1000
 #define VER_FACTOR_MAX  "999"
@@ -141,6 +145,7 @@ static void generateController(int argc, char **argv);
 static void generateItem(cchar *item);
 static void genKey(cchar *key, cchar *path, MprHash *tokens);
 static void generateMigration(int argc, char **argv);
+static char *getPassword();
 static void generateScaffold(int argc, char **argv);
 static void generateTable(int argc, char **argv);
 static cchar *getConfigValue(cchar *key, cchar *defaultValue);
@@ -169,6 +174,7 @@ static void process(int argc, char **argv);
 static cchar *readTemplate(cchar *path, MprHash *tokens, ssize *len);
 static bool requiredRoute(HttpRoute *route);
 static int reverseSortFiles(MprDirEntry **d1, MprDirEntry **d2);
+static void role(int argc, char **argv);
 static void run(int argc, char **argv);
 static void savePackage();
 static bool selectResource(cchar *path, cchar *kind);
@@ -182,9 +188,13 @@ static void uninstallPak(cchar *name);
 static void upgrade(int argc, char **argv);
 static bool upgradePak(cchar *name);
 static void usageError();
+static void user(int argc, char **argv);
 static void vtrace(cchar *tag, cchar *fmt, ...);
 static void why(cchar *path, cchar *fmt, ...);
 
+#if ME_WIN_LIKE || VXWORKS
+static char *getpass(char *prompt);
+#endif
 /*********************************** Code *************************************/
 
 PUBLIC int main(int argc, char **argv)
@@ -228,6 +238,7 @@ static App *createApp(Mpr *mpr)
     mprError("No database provider defined");
 #endif
     app->topDeps = mprCreateHash(0, 0);
+    app->cipher = sclone("blowfish");
     return app;
 }
 
@@ -262,6 +273,7 @@ static void manageApp(App *app, int flags)
         mprMark(app->migrations);
         mprMark(app->controller);
         mprMark(app->platform);
+        mprMark(app->password);
         mprMark(app->title);
         mprMark(app->build);
         mprMark(app->slink);
@@ -273,6 +285,7 @@ static void manageApp(App *app, int flags)
         mprMark(app->targets);
         mprMark(app->table);
         mprMark(app->topDeps);
+        mprMark(app->cipher);
     }
 }
 
@@ -306,6 +319,13 @@ static int parseArgs(int argc, char **argv)
                 usageError();
             } else {
                 app->appwebConfig = sclone(argv[++argind]);
+            }
+
+        } else if (smatch(argp, "cipher")) {
+            if (argind >= argc) {
+                usageError();
+            } else {
+                app->cipher = sclone(argv[++argind]);
             }
 
         } else if (smatch(argp, "database")) {
@@ -365,6 +385,9 @@ static int parseArgs(int argc, char **argv)
         } else if (smatch(argp, "nodeps")) {
             app->nodeps = 1;
 
+        } else if (smatch(argp, "noupdate")) {
+            app->noupdate = 1;
+
         } else if (smatch(argp, "optimized")) {
             app->compileMode = ESP_COMPILE_OPTIMIZED;
 
@@ -382,6 +405,15 @@ static int parseArgs(int argc, char **argv)
 
         } else if (smatch(argp, "quiet") || smatch(argp, "q")) {
             app->quiet = 1;
+
+#if UNUSED
+        } else if (smatch(argp, "password") || smatch(argp, "p")) {
+            if (argind >= argc) {
+                usageError();
+            } else {
+                app->password = sclone(argv[++argind]);
+            }
+#endif
 
         } else if (smatch(argp, "rebuild") || smatch(argp, "r")) {
             app->rebuild = 1;
@@ -501,6 +533,9 @@ static void parseCommand(int argc, char **argv)
         /* Need config and routes because it does a clean */
         app->require = REQ_PACKAGE | REQ_ROUTES;
 
+    } else if (smatch(cmd, "role")) {
+        app->require = REQ_PACKAGE;
+
     } else if (smatch(cmd, "run")) {
         app->require = REQ_SERVE;
         if (argc > 1) {
@@ -511,6 +546,9 @@ static void parseCommand(int argc, char **argv)
         app->require = 0;
 
     } else if (smatch(cmd, "upgrade")) {
+        app->require = REQ_PACKAGE;
+
+    } else if (smatch(cmd, "user")) {
         app->require = REQ_PACKAGE;
 
     } else if (isdigit((uchar) *cmd)) {
@@ -685,10 +723,6 @@ static void initialize(int argc, char **argv)
     esp = stage->stageData;
     esp->compileMode = app->compileMode;
     mprGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
-
-    if (app->show) {
-        httpLogRoutes(app->host, 0);
-    }
 }
 
 
@@ -742,6 +776,9 @@ static void process(int argc, char **argv)
             setMode(argv[1]);
         }
 
+    } else if (smatch(cmd, "role")) {
+        role(argc - 1, &argv[1]);
+
     } else if (smatch(cmd, "run")) {
         run(argc - 1, &argv[1]);
 
@@ -751,6 +788,9 @@ static void process(int argc, char **argv)
     } else if (smatch(cmd, "upgrade")) {
         upgrade(argc - 1, &argv[1]);
         
+    } else if (smatch(cmd, "user")) {
+        user(argc - 1, &argv[1]);
+
     } else if (isdigit((uchar) *cmd)) {
         run(0, NULL);
     }
@@ -1112,6 +1152,73 @@ static void migrate(int argc, char **argv)
 }
 
 
+/*
+    esp role add ROLE ABILITIES
+    esp role remove ROLE
+ */
+static void role(int argc, char **argv)
+{
+    HttpAuth    *auth;
+    HttpRole    *role;
+    MprJson     *abilities;
+    MprBuf      *buf;
+    MprKey      *kp;
+    cchar       *cmd, *def, *key, *rolename;
+
+    if ((auth = app->route->auth) == 0) {
+        fail("Authentication not configured in package.json");
+        return;
+    }
+    if (argc < 2) {
+        usageError();
+        return;
+    }
+    cmd = argv[0];
+    rolename = argv[1];
+
+    if (smatch(cmd, "remove")) {
+        key = sfmt("app.http.auth.roles.%s", rolename);
+        if (mprRemoveJson(app->config, key) < 0) {
+            fail("Cannot remove %s", key);
+            return;
+        }
+        if (!app->noupdate) {
+            savePackage();
+            trace("Remove", "Role %s", rolename);
+        }
+        return;
+
+    } else if (smatch(cmd, "add")) {
+        if (smatch(cmd, "add")) {
+            def = sfmt("[%s]", sjoinArgs(argc - 2, (cchar**) &argv[2], ","));
+            abilities = mprParseJson(def);
+            key = sfmt("app.http.auth.roles.%s", rolename);
+            if (mprSetJsonObj(app->config, key, abilities) < 0) {
+                fail("Cannot update %s", key);
+                return;
+            }
+            savePackage();
+            if (!app->noupdate) {
+                trace("Update", "Role %s", rolename);
+            }
+        }
+        if (app->show) {
+            trace("Info", "%s %s", rolename, sjoinArgs(argc - 2, (cchar**) &argv[3], " "));
+        }
+    } else if (smatch(cmd, "show")) {
+        if ((role = httpLookupRole(app->route->auth, rolename)) == 0) {
+            fail("Cannot find role %s", rolename);
+            return;
+        }
+        buf = mprCreateBuf(0, 0);
+        for (ITERATE_KEYS(role->abilities, kp)) {
+            mprPutToBuf(buf, "%s ", kp->key);
+        }
+        trace("Info", "%s %s", role->name, mprBufToString(buf));
+    }
+}
+
+
 static void setMode(cchar *mode)
 {
     int     quiet;
@@ -1157,6 +1264,9 @@ static void run(int argc, char **argv)
         } else if (!app->quiet) {
             mprSetLogLevel(2);
         }
+    }
+    if (app->show) {
+        httpLogRoutes(app->host, 0);
     }
     if (!app->appwebConfig) {
         if (argc == 0) {
@@ -1228,6 +1338,93 @@ static void upgrade(int argc, char **argv)
         for (i = 0; i < argc; i++) {
             upgradePak(argv[i]);
         }
+    }
+}
+
+
+/*
+    esp user add NAME PASSWORD ROLES
+    esp user compute NAME PASSWORD ROLES
+    esp user remove NAME
+    esp user show NAME
+ */
+static void user(int argc, char **argv)
+{
+    HttpAuth    *auth;
+    HttpUser    *user;
+    MprJson     *credentials;
+    char        *password;
+    cchar       *cmd, *def, *key, *username, *encodedPassword, *roles;
+
+    if ((auth = app->route->auth) == 0) {
+        fail("Authentication not configured in package.json");
+        return;
+    }
+    if (argc < 2) {
+        usageError();
+        return;
+    }
+    cmd = argv[0];
+    username = argv[1];
+
+    if (smatch(cmd, "remove")) {
+        if (httpRemoveUser(app->route->auth, username) < 0) {
+            fail("Cannot remove user %s", username);
+            return;
+        }
+        key = sfmt("app.http.auth.users.%s", username);
+        if (mprRemoveJson(app->config, key) < 0) {
+            fail("Cannot remove %s", key);
+            return;
+        }
+        if (!app->noupdate) {
+            savePackage();
+            trace("Remove", "User %s", username);
+        }
+        return;
+
+    } else if (smatch(cmd, "add") || smatch(cmd, "compute")) {
+        if (argc < 3) {
+            usageError();
+            return;
+        }
+        password = argv[2];
+        if (smatch(password, "-")) {
+            password = getPassword();
+        }
+        if (smatch(app->cipher, "md5")) {
+            encodedPassword = mprGetMD5(sfmt("%s:%s:%s", username, auth->realm, password));
+        } else {
+            /* This uses the more secure blowfish cipher */
+            encodedPassword = mprMakePassword(sfmt("%s:%s:%s", username, auth->realm, password), 16, 128);
+        }
+        serase(password);
+        if (smatch(cmd, "add")) {
+            def = sfmt("{password:'%s',roles:[%s]}", encodedPassword, sjoinArgs(argc - 3, (cchar**) &argv[3], ","));
+            credentials = mprParseJson(def);
+            key = sfmt("app.http.auth.users.%s", username);
+            if (mprSetJsonObj(app->config, key, credentials) < 0) {
+                fail("Cannot update %s", key);
+                return;
+            }
+            savePackage();
+            if (!app->noupdate) {
+                trace("Update", "User %s", username);
+            }
+        }
+        if (smatch(cmd, "compute") || app->show) {
+            trace("Info", "%s %s %s", username, encodedPassword, sjoinArgs(argc - 3, (cchar**) &argv[3], " "));
+        }
+
+    } else if (smatch(cmd, "show")) {
+        if ((user = httpLookupUser(app->route->auth, username)) == 0) {
+            fail("Cannot find user %s", username);
+            return;
+        }
+        roles = sreplace(user->roles, ",", "");
+        roles = sreplace(roles, "  ", " ");
+        roles = strim(roles, " ", 0);
+        trace("Info", "%s %s %s", user->name, user->password, roles);
     }
 }
 
@@ -2846,6 +3043,7 @@ static void usageError()
     "  %s [options] [commands]\n\n"
     "  Options:\n"
     "    --appweb appwebConfig      # Use named appweb.conf\n"
+    "    --cipher cipher            # Password cipher 'md5' or 'blowfish'\n"
     "    --database name            # Database provider 'mdb|sdb'\n"
     "    --genlink filename         # Generate a static link module for combine compilations\n"
     "    --force                    # Force requested action\n"
@@ -2855,6 +3053,7 @@ static void usageError()
     "    --log logFile:level        # Log to file file at verbosity level\n"
     "    --name appName             # Name for the app when combining\n"
     "    --nodeps                   # Do not install or upgrade dependencies\n"
+    "    --noupdate                 # Do not update the package.json\n"
     "    --optimize                 # Compile optimized without symbols\n"
     "    --quiet                    # Don't emit trace\n"
     "    --platform os-arch-profile # Target platform\n"
@@ -2870,23 +3069,24 @@ static void usageError()
     "    --why                      # Why compile or skip building\n"
     "\n"
     "  Commands:\n"
-    "    esp config\n"
     "    esp clean\n"
     "    esp compile [pathFilters ...]\n"
-    "    esp debug|release\n"
-    "    esp generate app name [paks...]\n"
+    "    esp config\n"
+    "    esp edit key[=value]\n"
     "    esp generate controller name [action [, action] ...\n"
     "    esp generate migration description model [field:type [, field:type] ...]\n"
     "    esp generate scaffold model [field:type [, field:type] ...]\n"
     "    esp generate table name [field:type [, field:type] ...]\n"
-    "    esp edit key[=value]\n"
     "    esp init\n"
     "    esp install paks...\n"
     "    esp list\n"
     "    esp migrate [forward|backward|NNN]\n"
     "    esp mode [debug|release]\n"
+    "    esp role [add|remove] rolename abilities...\n"
     "    esp [run] [ip]:[port] ...\n"
     "    esp uninstall paks...\n"
+    "    esp user [add|compute] username password roles...\n"
+    "    esp user [remove|show] username\n"
     "    esp upgrade paks...\n"
     "\n", name);
 
@@ -3009,9 +3209,11 @@ static void savePackage()
 {
     cchar       *path;
 
-    path = mprJoinPath(app->route ? app->route->documents : ".", ME_ESP_PACKAGE);
-    if (mprSaveJson(app->config, path, MPR_JSON_PRETTY | MPR_JSON_QUOTES) < 0) {
-        fail("Cannot save %s", path);
+    if (!app->noupdate) {
+        path = mprJoinPath(app->route ? app->route->documents : ".", ME_ESP_PACKAGE);
+        if (mprSaveJson(app->config, path, MPR_JSON_PRETTY | MPR_JSON_QUOTES) < 0) {
+            fail("Cannot save %s", path);
+        }
     }
 }
 
@@ -3182,6 +3384,72 @@ static bool identifier(cchar *name)
     }
     return *cp == '\0' && isalpha(*name);
 }
+
+
+static char *getPassword()
+{
+    char    *password, *confirm;
+
+    password = getpass("New user password: ");
+    confirm = getpass("Confirm user password: ");
+    if (smatch(password, confirm)) {
+        return password;
+    }
+    mprError("esp: Password not confirmed");
+    return 0;
+}
+
+
+#if WINCE
+static char *getpass(char *prompt)
+{
+    return sclone("NOT-SUPPORTED");
+}
+
+#elif ME_WIN_LIKE || VXWORKS
+static char *getpass(char *prompt)
+{
+    static char password[MAX_PASS];
+    int     c, i;
+
+    fputs(prompt, stderr);
+    for (i = 0; i < (int) sizeof(password) - 1; i++) {
+#if VXWORKS
+        c = getchar();
+#else
+        c = _getch();
+#endif
+        if (c == '\r' || c == EOF) {
+            break;
+        }
+        if ((c == '\b' || c == 127) && i > 0) {
+            password[--i] = '\0';
+            fputs("\b \b", stderr);
+            i--;
+        } else if (c == 26) {           /* Control Z */
+            c = EOF;
+            break;
+        } else if (c == 3) {            /* Control C */
+            fputs("^C\n", stderr);
+            exit(255);
+        } else if (!iscntrl((uchar) c) && (i < (int) sizeof(password) - 1)) {
+            password[i] = c;
+            fputc('*', stderr);
+        } else {
+            fputc('', stderr);
+            i--;
+        }
+    }
+    if (c == EOF) {
+        return "";
+    }
+    fputc('\n', stderr);
+    password[i] = '\0';
+    return sclone(password);
+}
+
+#endif /* ME_WIN_LIKE */
+ 
 #endif /* ME_COM_ESP */
 
 /*

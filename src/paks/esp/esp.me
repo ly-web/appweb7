@@ -74,47 +74,5 @@ Me.load({
                 }
             `
         },
-
-/* UNUSED
-        UNUSED_pakcss: {
-            action: `
-                strace('Run', 'recess -compile paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/all.less')
-                let result = Cmd.run('recess -compile paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/all.less')
-                Path('paks/esp-angular-mvc/templates/esp-angular-mvc/client/css/all.css').write(result)
-
-                strace('Run', 'recess -compile paks/esp-html-mvc/templates/esp-html-mvc/client/css/all.less')
-                let result = Cmd.run('recess -compile paks/esp-html-mvc/templates/esp-html-mvc/client/css/all.less')
-                Path('paks/esp-html-mvc/templates/esp-html-mvc/client/css/all.css').write(result)
-            `
-        },
-
-        'UNUSED-esp-configure': {
-            scripts: {
-                postconfig: "
-                    if (me.platform.os == 'vxworks') {
-                        let evars = []
-                        for (let [key,value] in me.env) {
-                            evars.push('EspEnv ' + key + ' \"' + value + '\"\n')
-                        }
-                        me.dir.lib.join('esp-' + me.platform.os + '.conf').write(evars.join())
-                    }
-                ",
-            },
-        },
-
-        UNUSED_pakvers: {
-            action: `
-                if (Cmd.locate('pak')) {
-                    if (me.settings.version != Path('paks/esp-angular/package.json').readJSON().version) {
-                        run('pak -dir paks/esp-angular edit version=${settings.version}')
-                        run('pak -dir paks/esp-angular-mvc edit version=${settings.version}')
-                        run('pak -dir paks/esp-server edit version=${settings.version}')
-                        run('pak -dir paks/esp-html-mvc edit version=${settings.version}')
-                        run('pak -dir paks/esp-legacy-mvc edit version=${settings.version}')
-                    }
-                }
-            `
-        }
-*/
     },
 })
