@@ -429,7 +429,14 @@ typedef int (MaDirective)(MaState *state, cchar *key, cchar *value);
  */
 PUBLIC void maAddDirective(MaAppweb *appweb, cchar *directive, MaDirective proc);
 
-//  MOB DOC
+/**
+    Parse a configuration file
+    @param state Current state level object
+    @param path Filename to parse
+    @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
+    @ingroup MaAppweb
+    @stability Prototype
+ */
 PUBLIC int maParseFile(MaState *state, cchar *path);
 
 /**

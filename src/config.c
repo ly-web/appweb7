@@ -488,6 +488,7 @@ static int authTypeDirective(MaState *state, cchar *key, cchar *value)
     }
     if (realm) {
         httpSetAuthRealm(state->auth, strim(realm, "\"'", MPR_TRIM_BOTH));
+
     } else if (!state->auth->realm) {
         /* Try to detect users forgetting to define a realm */
         mprError("Must define an AuthRealm before defining the AuthType");
@@ -1873,8 +1874,6 @@ static int paramDirective(MaState *state, cchar *key, cchar *value)
 static int prefixDirective(MaState *state, cchar *key, cchar *value)
 {
     httpSetRoutePrefix(state->route, value);
-    //  MOB - this should be pushed into httpSetRoutePrefix
-    httpSetRouteVar(state->route, "PREFIX", value);
     return 0;
 }
 
@@ -2487,16 +2486,16 @@ static int uploadAutoDeleteDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    User name password abilities...
+    User name password roles...
  */
 static int userDirective(MaState *state, cchar *key, cchar *value)
 {
-    char    *name, *password, *abilities;
+    char    *name, *password, *roles;
 
-    if (!maTokenize(state, value, "%S %S ?*", &name, &password, &abilities)) {
+    if (!maTokenize(state, value, "%S %S ?*", &name, &password, &roles)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (httpAddUser(state->auth, name, password, abilities) == 0) {
+    if (httpAddUser(state->auth, name, password, roles) == 0) {
         mprError("Cannot add user %s", name);
         return MPR_ERR_BAD_SYNTAX;
     }
