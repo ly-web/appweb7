@@ -268,17 +268,27 @@ User mary 5b90553bea8ba3686f4239d62801f0f3 user executive
             <p>The <em>authpass</em> program will create and modify User directives in the authentication file.</p>
             <p>The command line syntax for authpass is:</p>
             <pre>
-authpass [--create] [--cipher blowfish|md5] [--password word] authFile realm username roles...
+authpass [--create] [--cipher blowfish|md5] [--password word] \
+    authFile realm username roles...
 </pre>
             <p>The authFile parameter specifies the name of the authentication file. 
             The --cipher option specifies the cipher used to hash/crypt the password. The default is MD5 which is required
-            for digest authentication. However blowfish is more secure.</p>
+            for digest authentication. However blowfish is more secure. Blowfish is prefereable for basic and
+            form-based authentication</p>
             <p>If the --password option is not used, authpass will prompt for the password. The --create option will
             cause authpass to create the authentication file if it does not already exist. Otherwise it will update the
             nominated file.</p> 
-            <p>The Realm is the name used in the AuthRealm directive.
+            <p>The Realm is the name specified via the AuthRealm directive and is typically set to a company or product
+            name.</p>
             <p><b>SECURITY WARNING</b>: it is essential that the authentication file be stored outside
             the Documents directory or any directory serving content.</p>
+            <a name="api"></a>
+            <h2 class="section">Authentiation APIs</h2>
+            <p>See the <a href="../../../api/http.html#group___http_auth">HttpAuth API</a> for APIs to 
+            manage authentication and authorization under program control. See also the 
+            <a href="../../../api/mpr.html#group___mpr_1gae8874a355db8bc6fa6d6bfa4dc8bbee6">mprMakePassword</a> and 
+            <a href="../../../api/mpr.html#group___mpr_1gaa7361e36abe129b975148d3f6faeff8c">mprCheckPassword</a> APIs to
+            create and check Blowfish encrypted passwords.</p>
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
