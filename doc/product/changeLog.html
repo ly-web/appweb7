@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 5.0.0-rc0 Documentation</title>
+    <title>Embedthis Appweb 5.0.0-rc1 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 5.0.0-rc0</div>
+                <div class="version">Embedthis Appweb 5.0.0-rc1</div>
             </div>
         </div>
         <div class="crumbs">
@@ -76,19 +76,25 @@
             <h3>Major Changes</h3>
             <ul>
                 <li>Deprecated APIs and Legacy code in Appweb 4 has been removed.
-                    <a href="https://github.com/embedthis/appweb/issues/NN">[issue NN]</a>.</li>
+                    <a href="https://github.com/embedthis/appweb/issues/341">[issue 341]</a>.</li>
                 <li>The ESP web framework has been extracted as a stand-alone product, but Appweb still 
                     includes the full ESP framework.
-                    <a href="https://github.com/embedthis/appweb/issues/NN">[issue NN]</a>.</li>
+                    <a href="https://github.com/embedthis/appweb/issues/342">[issue 342]</a>.</li>
                 <li>Appweb uses the MakeMe build tool. This was previously called Bit. 
-                    <a href="https://github.com/embedthis/appweb/issues/NN">[issue NN]</a>.</li>
-                <li>Appweb is more modular by using the Pak package manager tool .
-                    <a href="https://github.com/embedthis/appweb/issues/NN">[issue NN]</a>.</li>
+                    <a href="https://github.com/embedthis/appweb/issues/343">[issue 343]</a>.</li>
+                <li>Convert Appweb dependencies into Pak packages
+                    <a href="https://github.com/embedthis/appweb/issues/344">[issue 344]</a>.</li>
             </ul>
             <h3>Minor Changes</h3>
             <ul>
                 <li>Generated Makefiles are more configurable.
-                    <a href="https://github.com/embedthis/appweb/issues/NN">[issue NN]</a>.</li>
+                    <a href="https://github.com/embedthis/appweb/issues/345">[issue 345]</a>.</li>
+            </ul>
+            <h3>Fixes since rc0</h3>
+            <ul>
+                <li>The fixes from version 4.6.0 are also applied in release candidate rc1</li>
+                <li>Fix testing of XSRF token. Only re-create in views.
+                    <a href="https://github.com/embedthis/appweb/issues/346">[issue 346]</a>.</li>
             </ul>
             <h3>Incompatible Changes</h3>
             <ul>
@@ -101,6 +107,42 @@
                     a new package.json file.</li>
                 <li>ESP Angular applications have a different Esp.config property layout. Upgrade all relevant paks.</li>
             </ul>
+            <a id="4.6.0"></a>
+            <h2 class="section">Changes in 4.6.0</h2>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Switch to use MakeMe, previously called Bit. See the GitHub issue for details of the change.
+                    <a href="https://github.com/embedthis/appweb/issues/343">[issue 343]</a>.</li>
+                <li>UploadFilter with packet-spanning boundary in the last packet.
+                    <a href="https://github.com/embedthis/appweb/issues/348">[issue 348]</a>.</li>
+                <li>Redirection for virtual hosts to HTTPS
+                    <a href="https://github.com/embedthis/appweb/issues/349">[issue 349]</a>.</li>
+                <li>Static linking on linux
+                    <a href="https://github.com/embedthis/appweb/issues/350">[issue 350]</a>.</li>
+                <li>MprJoinPaths fails on windows
+                    <a href="https://github.com/embedthis/appweb/issues/351">[issue 351]</a>.</li>
+            </ul>
+
+            <h3>Incompatible Changes</h3>
+            <ul>
+                <li><p>ESP MVC applications will need to to have their package.json upgraded. The following
+                package.json properties have been moved or modified:</p>
+                    <ul>
+                        <li>A top level <em>app</em> collection contains all non <a
+                            href="http://wiki.commonjs.org/wiki/Packages/1.1">CommonJS</a> properties.</li>
+                        <li><em>client-scripts</em> has been renamed to <em>app.client.scripts</em>.</li>
+                        <li>Most properties under <em>esp</em> have been moved to the <em>app.http</em> collection.</li>
+                        <li>The <em>esp</em> property has been renamed <em>app.esp</em>.</li>
+                        <li>The <em>mode</em> and <em>modes</em> properties have been moved under the <em>app</em>
+                            collection.</li>
+                        <li>The <em>auth</em> property is renamed <em>app.http.auth.store</em>.</li>
+                    </ul>
+                    <p>See the <a href="https://github.com/embedthis/esp/blob/dev/samples/esp-configuration/package.json">esp-configuration Sample</a>    for details of all supported configuration file properties.</a>
+                </li>
+                <li>The esp-angular-mvc, esp-angular and angular packs have been removed from the product and are
+                now available from the <a href="https://embedthis.com/catalog/#/?keywords=angular">Pak Catalog</a>.</li>
+            </ul>
+
             <a id="4.5.6"></a>
             <h2 class="section">Changes in 4.5.6</h2>
             <h3>Fixes</h3>
@@ -137,7 +179,7 @@
             </ul>
             <a id="4.5.4"></a>
             <h2 class="section">Changes in 4.5.4</h2>
-            <h4>Notes:</h4>
+            <h3>Notes:</h3>
             <ul>
                 <li>Requires Bit version 0.9.4 if using "bit install, package or generate"</li>
                 <li>ESP packs moved under /usr/local/lib/appweb/latest/esp</li>

@@ -488,6 +488,7 @@ static int authTypeDirective(MaState *state, cchar *key, cchar *value)
     }
     if (realm) {
         httpSetAuthRealm(state->auth, strim(realm, "\"'", MPR_TRIM_BOTH));
+
     } else if (!state->auth->realm) {
         /* Try to detect users forgetting to define a realm */
         mprError("Must define an AuthRealm before defining the AuthType");
@@ -597,17 +598,8 @@ static int cacheDirective(MaState *state, cchar *key, cchar *value)
         } else if (smatch(option, "types")) {
             types = ovalue;
 
-        } else if (smatch(option, "all")) {
-            flags |= HTTP_CACHE_ALL;
-            flags &= ~(HTTP_CACHE_ONLY | HTTP_CACHE_UNIQUE);
-
-        } else if (smatch(option, "only")) {
-            flags |= HTTP_CACHE_ONLY;
-            flags &= ~(HTTP_CACHE_ALL | HTTP_CACHE_UNIQUE);
-
         } else if (smatch(option, "unique")) {
             flags |= HTTP_CACHE_UNIQUE;
-            flags &= ~(HTTP_CACHE_ALL | HTTP_CACHE_ONLY);
 
         } else if (smatch(option, "manual")) {
             flags |= HTTP_CACHE_MANUAL;
@@ -619,9 +611,6 @@ static int cacheDirective(MaState *state, cchar *key, cchar *value)
             mprError("Unknown Cache option '%s'", option);
             return MPR_ERR_BAD_SYNTAX;
         }
-    }
-    if (!(flags & (HTTP_CACHE_ONLY | HTTP_CACHE_UNIQUE))) {
-        flags |= HTTP_CACHE_ALL;
     }
     if (lifespan > 0 && !uris && !extensions && !types && !methods) {
         state->route->lifespan = lifespan;
@@ -995,7 +984,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    ExitTimeout timeout
+    ExitTimeout msec
  */
 static int exitTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1135,7 +1124,7 @@ static int ifDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    InactivityTimeout secs
+    InactivityTimeout msecs
  */
 static int inactivityTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1885,8 +1874,6 @@ static int paramDirective(MaState *state, cchar *key, cchar *value)
 static int prefixDirective(MaState *state, cchar *key, cchar *value)
 {
     httpSetRoutePrefix(state->route, value);
-    //  MOB - this should be pushed into httpSetRoutePrefix
-    httpSetRouteVar(state->route, "PREFIX", value);
     return 0;
 }
 
@@ -1991,7 +1978,7 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    RequestParseTimeout secs
+    RequestParseTimeout msecs
  */
 static int requestParseTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -2002,7 +1989,7 @@ static int requestParseTimeoutDirective(MaState *state, cchar *key, cchar *value
 
 
 /*
-    RequestTimeout secs
+    RequestTimeout msecs
  */
 static int requestTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -2242,7 +2229,7 @@ static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    SessionTimeout secs
+    SessionTimeout msecs
  */
 static int sessionTimeoutDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -2499,16 +2486,16 @@ static int uploadAutoDeleteDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    User name password abilities...
+    User name password roles...
  */
 static int userDirective(MaState *state, cchar *key, cchar *value)
 {
-    char    *name, *password, *abilities;
+    char    *name, *password, *roles;
 
-    if (!maTokenize(state, value, "%S %S ?*", &name, &password, &abilities)) {
+    if (!maTokenize(state, value, "%S %S ?*", &name, &password, &roles)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (httpAddUser(state->auth, name, password, abilities) == 0) {
+    if (httpAddUser(state->auth, name, password, roles) == 0) {
         mprError("Cannot add user %s", name);
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -2895,9 +2882,6 @@ PUBLIC MaState *maPushState(MaState *prev)
     state->filename = prev->filename;
     state->configDir = prev->configDir;
     state->file = prev->file;
-#if UNUSED
-    state->limits = prev->limits;
-#endif
     state->auth = state->route->auth;
     state->top->current = state;
     return state;
@@ -2926,9 +2910,6 @@ static void manageState(MaState *state, int flags)
         mprMark(state->auth);
         mprMark(state->route);
         mprMark(state->file);
-#if UNUSED
-        mprMark(state->limits);
-#endif
         mprMark(state->key);
         mprMark(state->configDir);
         mprMark(state->filename);

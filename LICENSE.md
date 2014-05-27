@@ -7,8 +7,7 @@ non-open source programs. Commercial licenses for this software and support
 services are available from Embedthis Software.
 
 * [GPL License](http://www.gnu.org/licenses/gpl-2.0.html)
-* [Embedthis Commercial License](http://embedthis.com/licensing/index.html)
-
+* [Embedthis Commercial License](http://embedthis.com/licensing/)
 
 Third Party Licenses
 ---
@@ -23,7 +22,6 @@ applications.
 
 
 ### Dtoa License
----
 
 The Dtoa module is used in Ejscript.
 

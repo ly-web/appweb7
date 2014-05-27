@@ -3,7 +3,7 @@
 #   configure -- Configure for building
 #
 #   Configure will invoke "me configure" to prepare for building.
-#   If building via "make" configuration is not requir
+#   If building via "make" configuration is not required
 #
 NAME=appweb
 OS=`uname | sed 's/CYGWIN.*/windows/;s/Darwin/macosx/' | tr '[A-Z]' '[a-z]'`

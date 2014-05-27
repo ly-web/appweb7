@@ -103,7 +103,7 @@
     #define ME_EJS_ONE_MODULE 1
 #endif
 #ifndef ME_ESP_LEGACY
-    #define ME_ESP_LEGACY 1
+    #define ME_ESP_LEGACY 0
 #endif
 #ifndef ME_EST_CAMELLIA
     #define ME_EST_CAMELLIA 0
@@ -172,7 +172,7 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "5.0.0-rc0"
+    #define ME_VERSION "5.0.0-rc1"
 #endif
 
 /* Prefixes */
@@ -192,7 +192,7 @@
     #define ME_APP_PREFIX "/usr/local/lib/appweb"
 #endif
 #ifndef ME_VAPP_PREFIX
-    #define ME_VAPP_PREFIX "/usr/local/lib/appweb/5.0.0-rc0"
+    #define ME_VAPP_PREFIX "/usr/local/lib/appweb/5.0.0-rc1"
 #endif
 #ifndef ME_BIN_PREFIX
     #define ME_BIN_PREFIX "/usr/local/bin"
@@ -225,7 +225,7 @@
     #define ME_CACHE_PREFIX "/var/spool/appweb/cache"
 #endif
 #ifndef ME_SRC_PREFIX
-    #define ME_SRC_PREFIX "appweb-5.0.0-rc0"
+    #define ME_SRC_PREFIX "appweb-5.0.0-rc1"
 #endif
 
 /* Suffixes */
@@ -267,10 +267,10 @@
     #define ME_MINOR_VERSION 0
 #endif
 #ifndef ME_PATCH_VERSION
-    #define ME_PATCH_VERSION 0-rc0
+    #define ME_PATCH_VERSION 0-rc1
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 500000000-rc0
+    #define ME_VNUM 500000000-rc1
 #endif
 
 /* Components */

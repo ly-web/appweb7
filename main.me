@@ -1,5 +1,5 @@
 /*
-    main.me -- Main Bit File for Appweb
+    main.me -- Main MakeMe File for Appweb
  */
 
 Me.load({
@@ -74,8 +74,7 @@ Me.load({
         },
 
         esp: {
-            /* Reverse this in 5.0 */
-            legacy: true,
+            legacy: false,
         },
 
         /*
@@ -106,12 +105,12 @@ Me.load({
                 tracing: true,
              */
             alloc: {
-                // quota: 204800,          /* Amount of memory to allocate before a GC */
-                // cache: 0,               /* Amount of memory to buffer for fast allocations */
-                // check: false,           /* Memory allocation debug and stats (slow) */
+                // quota: 204800,           /* Amount of memory to allocate before a GC */
+                // cache: 0,                /* Amount of memory to buffer for fast allocations */
+                // check: false,            /* Memory allocation debug and stats (slow) */
             },
             ssl: {
-                renegotiate: true,      /* Enable/Disable SSL renegotiation (defaults to true) */
+                renegotiate: true,          /* Enable/Disable SSL renegotiation (defaults to true) */
             },
         },
 

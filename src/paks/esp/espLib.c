@@ -2271,7 +2271,6 @@ PUBLIC void scripts(cchar *patterns)
 
 /*
     Add a security token to the response. The token is generated as a HTTP header and session cookie.
-    Note that views will automatically add security tokens to views.
  */
 PUBLIC void securityToken()
 {
@@ -2594,32 +2593,44 @@ static void parseCompile(HttpRoute *route, cchar *key, MprJson *prop)
 }
 
 
-static void serverRouteSet(HttpRoute *route, cchar *set)
+static void serverRouteSet(HttpRoute *parent, cchar *set)
 {
+    HttpRoute   *route;
+
     /* Simple controller/action route */
-    httpAddRestfulRoute(route, route->serverPrefix, "action", "GET,POST","/{action}(/)*$", 
+    httpSetRouteXsrf(parent, 1);
+    route = httpAddRestfulRoute(parent, parent->serverPrefix, "action", "GET,POST","/{action}(/)*$",
         "${action}", "{controller}");
-    httpAddClientRoute(route, "", "/public");
-    httpHideRoute(route, 1);
+    httpAddRouteHandler(route, "espHandler", "");
 }
 
 
-static void angularRouteSet(HttpRoute *route, cchar *set)
+static void angularRouteSet(HttpRoute *parent, cchar *set)
 {
-    httpAddWebSocketsRoute(route, route->serverPrefix, "/*/stream");
-    httpAddResourceGroup(route, route->serverPrefix, "{controller}");
-    httpAddClientRoute(route, "", "/public");
-    httpHideRoute(route, 1);
+    httpSetRouteXsrf(parent, 1);
+    httpAddRouteHandler(parent, "espHandler", "");
+    httpAddWebSocketsRoute(parent, 0, "/*/stream");
+    httpAddResourceGroup(parent, 0, "{controller}");
+    httpAddClientRoute(parent, "", "/public");
+    httpHideRoute(parent, 1);
 }
 
 
-static void htmlRouteSet(HttpRoute *route, cchar *set)
+static void htmlRouteSet(HttpRoute *parent, cchar *set)
 {
-    httpDefineRoute(route, sfmt("%s/*", route->serverPrefix), "GET", sfmt("^%s/{controller}$", route->serverPrefix), "$1", "${controller}.c");
-    httpAddRestfulRoute(route, route->serverPrefix, "delete", "POST", "/{id=[0-9]+}/delete$", "delete", "{controller}");
-    httpAddResourceGroup(route, route->serverPrefix, "{controller}");
-    httpAddClientRoute(route, "", "/public");
-    httpHideRoute(route, 1);
+    httpSetRouteXsrf(parent, 1);
+    httpAddRouteHandler(parent, "espHandler", "");
+    httpDefineRoute(parent,
+        sfmt("%s%s/*", parent->prefix, parent->serverPrefix), 
+        "GET", 
+        sfmt("^%s%s/{controller}$", parent->prefix, parent->serverPrefix),
+        "$1", 
+        "${controller}.c");
+
+    httpAddRestfulRoute(parent, 0, "delete", "POST", "/{id=[0-9]+}/delete$", "delete", "{controller}");
+    httpAddResourceGroup(parent, 0, "{controller}");
+    httpAddClientRoute(parent, "", "/public");
+    httpHideRoute(parent, 1);
 }
 
 
@@ -3724,7 +3735,7 @@ PUBLIC void espClearCurrentSession(HttpConn *conn)
 
 
 /*
-    Remember this connections session as the current session. Use for single login tracking
+    Remember this connections session as the current session. Use for single login tracking.
  */
 PUBLIC void espSetCurrentSession(HttpConn *conn)
 {
@@ -4627,10 +4638,6 @@ PUBLIC void espAddHomeRoute(HttpRoute *parent)
 PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet)
 {
     EspRoute    *eroute;
-    MprJson     *preload, *item;
-    cchar       *errMsg, *source;
-    char        *kind;
-    int         i;
 
     if ((eroute = getEroute(route)) == 0) {
         return MPR_ERR_MEMORY;
@@ -4655,11 +4662,16 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
     } else {
         httpSetRouteName(route, sfmt("/%s", name));
     }
+#if UNUSED
+    /* This messes up file handler */
     httpSetRouteTarget(route, "run", "$&");
-    httpAddRouteHandler(route, "espHandler", "");
+#endif
     httpAddRouteHandler(route, "espHandler", "esp");
     httpAddRouteIndex(route, "index.esp");
+    httpAddRouteIndex(route, "index.html");
+
     httpSetRouteVar(route, "APP", name);
+    httpSetRouteVar(route, "UAPP", stitle(name));
 
     if (httpLoadConfig(route, ME_ESP_PACKAGE) < 0) {
         return MPR_ERR_CANT_LOAD;
@@ -4670,7 +4682,13 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
             return MPR_ERR_CANT_LOAD;
         }
     }
+#if !ME_STATIC
     if (!eroute->skipApps) {
+        MprJson     *preload, *item;
+        cchar       *errMsg, *source;
+        char        *kind;
+        int         i;
+
         /*
             Note: the config parser pauses GC, so this will never yield
          */
@@ -4689,7 +4707,7 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
             }
         }
     }
-
+#endif
     if (routeSet) {
         httpAddRouteSet(route, routeSet);
     }
@@ -4916,9 +4934,6 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     httpSetDir(route, "client", 0);
     httpSetDir(route, "controllers", 0);
     httpSetDir(route, "db", 0);
-#if UNUSED
-    httpSetDir(route, "generate", 0);
-#endif
     httpSetDir(route, "layouts", 0);
     httpSetDir(route, "lib", "client/lib");
     httpSetDir(route, "paks", "paks");

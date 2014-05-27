@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 5.0.0-rc0 Documentation</title>
+    <title>Embedthis Appweb 5.0.0-rc1 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 5.0.0-rc0</div>
+                <div class="version">Embedthis Appweb 5.0.0-rc1</div>
             </div>
         </div>
         <div class="crumbs">
@@ -225,22 +225,23 @@ Listen 443
 </pre>
             <a id="authStores"></a>
             <h2 class="section">Password Stores</h2>
-            <p>Appweb can retrieve passwords from the default system password database or from a text password configuration 
-            file. Selection of the password store is controlled by the <a href="dir/auth.html#authStore">AuthStore</a>
+            <p>Appweb can retrieve passwords from the default system password database or from users configured
+            via the config file.
+            Selection of the password store is controlled by the <a href="dir/auth.html#authStore">AuthStore</a>
             directive. For example:</p>
 <pre>
 AuthStore system
 </pre>
 This selects the Unix system PAM password database.
 <pre>
-AuthStore file
+AuthStore config
 User julie 9d8873a123eb506e7f8e84d1f2a26916 view
 </pre>
             <p>The Unix system password database is managed via the <a href="http://kb.iu.edu/data/anpn.html">PAM</a> 
             interface. The Windows ActiveDirectory password store is not currently supported.</p>
-            <p>The <em>AuthStore file</em> option specifies that passwords will be defined by the
+            <p>The <em>AuthStore config</em> option specifies that passwords will be defined by the
             <a href="dir/auth.html#user">User</a> directive and will be stored internally in Appweb.
-            The default password store for Appweb is "file". Typically, User directives are kept in a separate
+            The default password store for Appweb is "config". Typically, User directives are kept in a separate
             passwords are stored in a separate configuration file that is included from the <em>appweb.conf</em>
             master configuration file.</p>
 <pre>
@@ -267,17 +268,27 @@ User mary 5b90553bea8ba3686f4239d62801f0f3 user executive
             <p>The <em>authpass</em> program will create and modify User directives in the authentication file.</p>
             <p>The command line syntax for authpass is:</p>
             <pre>
-authpass [--create] [--cipher blowfish|md5] [--password word] authFile realm username roles...
+authpass [--create] [--cipher blowfish|md5] [--password word] \
+    authFile realm username roles...
 </pre>
             <p>The authFile parameter specifies the name of the authentication file. 
             The --cipher option specifies the cipher used to hash/crypt the password. The default is MD5 which is required
-            for digest authentication. However blowfish is more secure.</p>
+            for digest authentication. However blowfish is more secure. Blowfish is prefereable for basic and
+            form-based authentication</p>
             <p>If the --password option is not used, authpass will prompt for the password. The --create option will
             cause authpass to create the authentication file if it does not already exist. Otherwise it will update the
             nominated file.</p> 
-            <p>The Realm is the name used in the AuthRealm directive.
+            <p>The Realm is the name specified via the AuthRealm directive and is typically set to a company or product
+            name.</p>
             <p><b>SECURITY WARNING</b>: it is essential that the authentication file be stored outside
             the Documents directory or any directory serving content.</p>
+            <a name="api"></a>
+            <h2 class="section">Authentiation APIs</h2>
+            <p>See the <a href="../../../api/http.html#group___http_auth">HttpAuth API</a> for APIs to 
+            manage authentication and authorization under program control. See also the 
+            <a href="../../../api/mpr.html#group___mpr_1gae8874a355db8bc6fa6d6bfa4dc8bbee6">mprMakePassword</a> and 
+            <a href="../../../api/mpr.html#group___mpr_1gaa7361e36abe129b975148d3f6faeff8c">mprCheckPassword</a> APIs to
+            create and check Blowfish encrypted passwords.</p>
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->

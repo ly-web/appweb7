@@ -69,6 +69,13 @@
     </member>
     <member kind="function">
       <type>int</type>
+      <name>maParseFile</name>
+      <anchorfile>group___ma_appweb.html</anchorfile>
+      <anchor>gaf65d5f6135abce2b2cbf625e02a5d1f4</anchor>
+      <arglist>(MaState *state, cchar *path)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
       <name>maParseInit</name>
       <anchorfile>group___ma_appweb.html</anchorfile>
       <anchor>gaf72ae42c5d6c767a221d6d84f4f0b83b</anchor>

@@ -3870,7 +3870,6 @@ PUBLIC HWND mprCreateWindow(MprThread *tp)
         return 0;
     }
     assert(!tp->hwnd);
-    //  MOB - try without WS_OVERLAPPED, set CW_USEDDEFAULT to 0
     if ((tp->hwnd = CreateWindow((LPCTSTR) ws->wclass, wide(name), WS_OVERLAPPED, CW_USEDEFAULT, 0, 0, 0, 
             NULL, NULL, 0, NULL)) == 0) {
         mprError("Cannot create window");
@@ -9792,10 +9791,9 @@ PUBLIC int mprStartDispatcher(MprDispatcher *dispatcher)
         mprError("Cannot start dispatcher - owned by another thread");
         return MPR_ERR_BAD_STATE;
     }
-    if (isRunning(dispatcher)) {
-        return MPR_ERR_BAD_STATE;
+    if (!isRunning(dispatcher)) {
+        queueDispatcher(dispatcher->service->runQ, dispatcher);
     }
-    queueDispatcher(dispatcher->service->runQ, dispatcher);
     dispatcher->owner = mprGetCurrentOsThread();
     return 0;
 }
@@ -18587,11 +18585,10 @@ PUBLIC char *mprJoinPaths(cchar *base, ...)
     cchar       *path;
 
     va_start(args, base);
-    va_end(args);
-
     while ((path = va_arg(args, char*)) != 0) {
         base = mprJoinPath(base, path);
     }
+    va_end(args);
     return (char*) base;
 }
 
@@ -24517,6 +24514,35 @@ PUBLIC MprList *stolist(cchar *src)
         mprAddItem(list, snclone(start, src - start));
     }
     return list;
+}
+
+
+PUBLIC cchar *sjoinArgs(int argc, cchar **argv, cchar *sep)
+{
+    MprBuf  *buf;
+    int     i;
+
+    if (sep == 0) {
+        sep = "";
+    }
+    buf = mprCreateBuf(0, 0);
+    for (i = 0; i < argc; i++) {
+        mprPutToBuf(buf, "%s%s", argv[i], sep);
+    }
+    if (argc > 0) {
+        mprAdjustBufEnd(buf, -1);
+    }
+    return mprBufToString(buf);
+}
+
+
+PUBLIC void serase(char *str)
+{
+    char    *cp;
+
+    for (cp = str; cp && *cp; ) {
+        *cp++ = '\0';
+    }
 }
 
 
