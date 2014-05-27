@@ -119,7 +119,29 @@
                     <a href="https://github.com/embedthis/appweb/issues/349">[issue 349]</a>.</li>
                 <li>Static linking on linux
                     <a href="https://github.com/embedthis/appweb/issues/350">[issue 350]</a>.</li>
+                <li>MprJoinPaths fails on windows
+                    <a href="https://github.com/embedthis/appweb/issues/351">[issue 351]</a>.</li>
             </ul>
+
+            <h3>Incompatible Changes</h3>
+            <ul>
+                <li><p>ESP MVC applications will need to to have their package.json upgraded. The following
+                package.json properties have been moved or modified:</p>
+                    <ul>
+                        <li>A top level <em>app</em> collection contains all non <a
+                            href="http://wiki.commonjs.org/wiki/Packages/1.1">CommonJS</a> properties.</li>
+                        <li><em>client-scripts</em> has been renamed to <em>app.client.scripts</em>.</li>
+                        <li>Most properties under <em>esp</em> have been moved to the <em>app.http</em> collection.</li>
+                        <li>The <em>esp</em> property has been renamed <em>app.esp</em>.</li>
+                        <li>The <em>mode</em> and <em>modes</em> properties have been moved under the <em>app</em>
+                            collection.</li>
+                        <li>The <em>auth</em> property is renamed <em>app.http.auth.store</em>.</li>
+                    </ul>
+                </li>
+                <li>The esp-angular-mvc, esp-angular and angular packs have been removed from the product and are
+                now available from the <a href="https://embedthis.com/catalog/#/?keywords=angular">Pak Catalog</a>.</li>
+            </ul>
+
             <a id="4.5.6"></a>
             <h2 class="section">Changes in 4.5.6</h2>
             <h3>Fixes</h3>
