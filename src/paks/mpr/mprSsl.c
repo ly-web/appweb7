@@ -1328,7 +1328,7 @@ static void estTrace(void *fp, int level, char *str)
 {
     level += 3;
     if (level <= MPR->logLevel) {
-        mprRawLog(level, "%s: %d: EST: %s", MPR->name, level, str);
+        mprLog("est", level, "%s: %d: EST: %s", MPR->name, level, str);
     }
 }
 
@@ -2899,7 +2899,7 @@ static int setNanoCiphers(MprSocket *sp, cchar *cipherSuite)
 
 static void DEBUG_PRINT(void *where, void *msg)
 {
-    mprRawLog(4, "%s", msg);
+    mprLog("nanossl", 4, "%s", msg);
 }
 
 static void DEBUG_PRINTNL(void *where, void *msg)

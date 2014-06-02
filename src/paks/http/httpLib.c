@@ -17507,7 +17507,7 @@ PUBLIC void httpTrace(HttpConn *conn, int event, cchar *fmt, ...)
 
     if (httpShouldTrace(conn, event) && !conn->rx->skipTrace) {
         va_start(ap, fmt);
-        httpFormatTrace(conn, HTTP_TRACE_MSG, sfmtv(fmt, ap), 0, 0);
+        httpFormatTrace(conn, event, sfmtv(fmt, ap), 0, 0);
         va_end(ap);
     }
 }
@@ -21402,7 +21402,7 @@ static int processFrame(HttpQueue *q, HttpPacket *packet)
 
     if (3 <= MPR->logLevel) {
         mprAddNullToBuf(content);
-        mprDebug("http websockets", 3, "WebSocket: %d: receive \"%s\" (%d) frame, last %d, length %d",
+        mprLog("http websockets", 3, "WebSocket: %d: receive \"%s\" (%d) frame, last %d, length %d",
              ws->rxSeq++, codetxt[packet->type], packet->type, packet->last, mprGetBufLength(content));
     }
     validated = 0;
@@ -21780,7 +21780,7 @@ static void outgoingWebSockService(HttpQueue *q)
             }
             *prefix = '\0';
             mprAdjustBufEnd(packet->prefix, prefix - packet->prefix->start);
-            mprDebug("http websockets", 3, "WebSocket: %d: send \"%s\" (%d) frame, last %d, length %d",
+            mprLog("http websockets", 3, "WebSocket: %d: send \"%s\" (%d) frame, last %d, length %d",
                 ws->txSeq++, codetxt[packet->type], packet->type, packet->last, httpGetPacketLength(packet));
         }
         httpPutPacketToNext(q, packet);
