@@ -65,9 +65,9 @@ static int openCgi(HttpQueue *q)
     int         nproc;
 
     conn = q->conn;
-    mprTrace(5, "Open CGI handler");
     if ((nproc = (int) httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_PROCESSES, 1)) >= conn->limits->processMax) {
-        mprLog(2, "Too many concurrent processes %d/%d", nproc, conn->limits->processMax);
+        httpTrace(conn, HTTP_TRACE_ERROR, "Too many concurrent processes; active=%d max=%d", 
+            nproc, conn->limits->processMax);
         httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Server overloaded");
         httpMonitorEvent(q->conn, HTTP_COUNTER_ACTIVE_PROCESSES, -1);
         return MPR_ERR_CANT_OPEN;
@@ -109,7 +109,6 @@ static void closeCgi(HttpQueue *q)
     Cgi     *cgi;
     MprCmd  *cmd;
 
-    mprTrace(5, "CGI: close");
     if ((cgi = q->queueData) != 0) {
         cmd = cgi->cmd;
         if (cmd) {
@@ -145,7 +144,6 @@ static void startCgi(HttpQueue *q)
     rx = conn->rx;
     route = rx->route;
     tx = conn->tx;
-    mprTrace(5, "CGI: Start");
 
     /*
         The command uses the conn dispatcher. This serializes all I/O for both the connection and the CGI gateway.
@@ -285,13 +283,13 @@ static void browserToCgiService(HttpQueue *q)
                 httpPutBackPacket(q, packet);
                 break;
             }
-            mprLog(2, "CGI: write to gateway failed for %d bytes, rc %d, errno %d", len, rc, mprGetOsError());
+            httpTrace(conn, HTTP_TRACE_ERROR, "Cannot write to CGI gateway; count=%d rc=%d errno=%d", 
+                len, rc, mprGetOsError());
             mprCloseCmdFd(cmd, MPR_CMD_STDIN);
             httpDiscardQueueData(q, 1);
             httpError(conn, HTTP_CODE_BAD_GATEWAY, "Cannot write body data to CGI gateway");
             break;
         }
-        mprTrace(6, "CGI: browserToCgiService %d/%d, qmax %d", rc, len, q->max);
         mprAdjustBufStart(buf, rc);
         if (mprGetBufLength(buf) > 0) {
             httpPutBackPacket(q, packet);
@@ -338,13 +336,9 @@ static void cgiToBrowserService(HttpQueue *q)
     httpDefaultOutgoingServiceStage(q);
     if (q->count < q->low) {
         mprEnableCmdOutputEvents(cmd, 1);
-        mprTrace(6, "CGI: ENABLE CGI events: cgiToBrowserService");
     } else if (q->count > q->max && conn->tx->writeBlocked) {
-        mprTrace(6, "CGI: SUSPEND WRITEQ: cgiToBrowserData writeq %d/%d", conn->writeq->count, conn->writeq->max);
         httpSuspendQueue(conn->writeq);
     }
-    mprTrace(6, "CGI: cgiToBrowserService pid %d, q->count %d, q->flags %x, blocked %d", 
-        cmd->pid, q->count, q->flags, conn->tx->writeBlocked);
 }
 
 
@@ -366,7 +360,6 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
         return;
     }
     conn->lastActivity = conn->http->now;
-    mprTrace(6, "CGI: cgiCallback event channel %d", channel);
 
     switch (channel) {
     case MPR_CMD_STDIN:
@@ -393,7 +386,6 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
         return;
     } 
     suspended = httpIsQueueSuspended(conn->writeq);
-    mprTrace(6, "CGI: %s CGI: cgiCallback. Conn->writeq %d", suspended ? "DISABLE" : "ENABLE", conn->writeq->count);
     assert(!suspended || conn->tx->writeBlocked);
     mprEnableCmdOutputEvents(cmd, !suspended);
     mprCreateEvent(conn->dispatcher, "cgi", 0, httpIOEvent, conn, 0);
@@ -437,17 +429,14 @@ static void readFromCgi(Cgi *cgi, int channel)
             } else if (err == EAGAIN || err == EWOULDBLOCK) {
                 break;
             }
-            mprTrace(6, "CGI: Gateway read error %d for %s", err, (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr");
             mprCloseCmdFd(cmd, channel);
             break;
             
         } else if (nbytes == 0) {
-            mprTrace(6, "CGI: Gateway EOF for %s, pid %d", (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr", cmd->pid);
             mprCloseCmdFd(cmd, channel);
             break;
 
         } else {
-            mprTrace(6, "CGI: Gateway read %d bytes from %s", nbytes, (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr");
             traceData(cmd, mprGetBufEnd(packet->content), nbytes);
             mprAdjustBufEnd(packet->content, nbytes);
         }
@@ -534,7 +523,6 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
             while (isspace((uchar) *value)) {
                 value++;
             }
-            mprTrace(4, "CGI: parseCgiHeader: key %s = %s", key, value);
             len = (int) strlen(value);
             while (len > 0 && (value[len - 1] == '\r' || value[len - 1] == '\n')) {
                 value[len - 1] = '\0';
@@ -594,7 +582,7 @@ static bool parseFirstCgiResponse(Cgi *cgi, HttpPacket *packet)
     }
     msg = getCgiToken(buf, "\n");
     mprNop(msg);
-    mprTrace(4, "CGI: Status line: %s %s %s", protocol, status, msg);
+    mprDebug("http cgi", 4, "CGI: Status line: %s %s %s", protocol, status, msg);
     return 1;
 }
 
@@ -745,9 +733,9 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
     *argcp = argc;
     *argvp = (cchar**) argv;
 
-    mprTrace(5, "CGI: command:");
+    mprDebug("http cgi", 5, "CGI: command:");
     for (i = 0; i < argind; i++) {
-        mprTrace(5, "   argv[%d] = %s", i, argv[i]);
+        mprDebug("http cgi", 5, "   argv[%d] = %s", i, argv[i]);
     }
 }
 
@@ -901,16 +889,15 @@ static void traceCGIData(MprCmd *cmd, char *src, ssize size)
     int     index, i;
 
     if (mprGetLogLevel() >= 5) {
-        mprRawLog(5, "CGI: process wrote (leading %d bytes) => \n", min(sizeof(dest), size));
+        mprDebug("http cgi", 5, "CGI: process wrote (leading %d bytes) => \n", min(sizeof(dest), size));
         for (index = 0; index < size; ) { 
             for (i = 0; i < (sizeof(dest) - 1) && index < size; i++) {
                 dest[i] = src[index];
                 index++;
             }
             dest[i] = '\0';
-            mprRawLog(5, "%s", dest);
+            mprDebug("http cgi", 5, "%s", dest);
         }
-        mprRawLog(5, "\n");
     }
 }
 #endif
@@ -1018,7 +1005,6 @@ static int scriptAliasDirective(MaState *state, cchar *key, cchar *value)
     httpSetRoutePattern(route, sfmt("^%s(.*)$", prefix), 0);
     httpSetRouteTarget(route, "run", "$1");
     httpFinalizeRoute(route);
-    mprTrace(4, "ScriptAlias \"%s\" for \"%s\"", prefix, path);
     return 0;
 }
 

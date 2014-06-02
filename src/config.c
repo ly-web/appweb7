@@ -31,12 +31,11 @@ PUBLIC int maOpenConfig(MaState *state, cchar *path)
 
     state->filename = sclone(path);
     state->configDir = mprGetAbsPath(mprGetPathDir(state->filename));
-    mprLog(3, "Open config file \"%s\"", mprGetAbsPath(state->filename));
+    mprLog("appweb config", 3, "Open config file \"%s\"", mprGetAbsPath(state->filename));
     if ((state->file = mprOpenFile(mprGetRelPath(path, NULL), O_RDONLY | O_TEXT, 0444)) == 0) {
-        mprError("Cannot open %s for config directives", path);
+        mprError("appweb config", "Cannot open %s for config directives", path);
         return MPR_ERR_CANT_OPEN;
     }
-    mprTrace(5, "Parsing config file: %s", state->filename);
     return 0;
 }
 
@@ -50,7 +49,7 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
     assert(server);
     assert(path && *path);
 
-    mprLog(2, "Using config file: \"%s\"", mprGetRelPath(path, 0));
+    mprLog("appweb config", 2, "Using config file: \"%s\"", mprGetRelPath(path, 0));
 
     state = createState(server, flags);
     mprAddRoot(state);
@@ -80,7 +79,7 @@ PUBLIC int maParseConfig(MaServer *server, cchar *path, int flags)
         return MPR_ERR_BAD_ARGS;
     }
     if (mprHasMemError()) {
-        mprError("Memory allocation error when initializing");
+        mprError("appweb config", "Memory allocation error when initializing");
         return MPR_ERR_MEMORY;
     }
     return 0;
@@ -91,22 +90,25 @@ PUBLIC int maParseFile(MaState *state, cchar *path)
 {
     MaAppweb    *appweb;
     MaState     *topState;
-    int         rc;
+    int         rc, lineNumber;
 
     assert(path && *path);
     if (!state) {
         appweb = MPR->appwebService;
+        lineNumber = 0;
         topState = state = createState(appweb->defaultServer, 0);
         mprAddRoot(state);
     } else {
         topState = 0;
+        lineNumber = state->lineNumber;
         state = maPushState(state);
     }
     rc = parseFileInner(state, path);
     if (topState) {
         mprRemoveRoot(state);
     } else {
-        maPopState(state);
+        state = maPopState(state);
+        state->lineNumber = lineNumber;
     }
     return rc;
 }
@@ -132,23 +134,21 @@ static int parseFileInner(MaState *state, cchar *path)
         key = getDirective(line, &value);
         if (!state->enabled) {
             if (key[0] != '<') {
-                mprTrace(8, "Skip: %s %s", key, value);
                 continue;
             }
         }
         if ((directive = mprLookupKey(state->appweb->directives, key)) == 0) {
-            mprError("Unknown directive \"%s\"\nAt line %d in %s\n\n", key, state->lineNumber, state->filename);
+            mprError("appweb config", "Unknown directive \"%s\"\nAt line %d in %s\n\n", key, state->lineNumber, state->filename);
             return MPR_ERR_BAD_SYNTAX;
         }
         state->key = key;
-        mprTrace(8, "Line %d, Parse %s %s", state->lineNumber, state->key, value ? value : "");
         /*
             Allow directives to run commands and yield without worring about holding references.
          */
         mprPauseGC();
         if ((*directive)(state, key, value) < 0) {
             mprResumeGC();
-            mprError("Error with directive \"%s\"\nAt line %d in %s\n\n", state->key, state->lineNumber, state->filename);
+            mprError("appweb config", "Error with directive \"%s\"\nAt line %d in %s\n\n", state->key, state->lineNumber, state->filename);
             return MPR_ERR_BAD_SYNTAX;
         }
         mprResumeGC();
@@ -157,7 +157,7 @@ static int parseFileInner(MaState *state, cchar *path)
     }
     /* EOF */
     if (state->prev && state->file == state->prev->file) {
-        mprError("Unclosed directives in %s", state->filename);
+        mprError("appweb config", "Unclosed directives in %s", state->filename);
         while (state->prev && state->file == state->prev->file) {
             state = state->prev;
         }
@@ -176,18 +176,16 @@ static int parseLine(MaState *state, cchar *line)
     key = getDirective(sclone(line), &value);
     if (!state->enabled) {
         if (key[0] != '<') {
-            mprTrace(8, "Skip: %s %s", key, value);
             return 0;
         }
     }
     if ((directive = mprLookupKey(state->appweb->directives, key)) == 0) {
-        mprError("Unknown directive \"%s\"\nAt line %d in %s\n\n", key, state->lineNumber, state->filename);
+        mprError("appweb config", "Unknown directive \"%s\"\nAt line %d in %s\n\n", key, state->lineNumber, state->filename);
         return MPR_ERR_BAD_SYNTAX;
     }
     state->key = key;
-    mprTrace(8, "Line %d, Parse %s %s", state->lineNumber, key, value ? value : "");
     if ((*directive)(state, key, value) < 0) {
-        mprError("Error with directive \"%s\"\nAt line %d in %s\n\n", key, state->lineNumber, state->filename);
+        mprError("appweb config", "Error with directive \"%s\"\nAt line %d in %s\n\n", key, state->lineNumber, state->filename);
         return MPR_ERR_BAD_SYNTAX;
     }
     return 0;
@@ -197,22 +195,26 @@ static int parseLine(MaState *state, cchar *line)
 
 #if !ME_ROM
 /*
-    AccessLog path
+    TraceLog path
         [size=bytes] 
-        [level=0-9] 
+        [level=0-5] 
         [backup=count] 
         [anew]
+        [format="format"]
+        [type="common|detail"]
  */
-static int accessLogDirective(MaState *state, cchar *key, cchar *value)
+static int traceLogDirective(MaState *state, cchar *key, cchar *value)
 {
-    char        *option, *ovalue, *tok, *path;
+    char        *format, *option, *ovalue, *tok, *path, *type;
     ssize       size;
-    int         flags, backup;
+    int         flags, backup, level;
 
     size = MAXINT;
     backup = 0;
     flags = 0;
     path = 0;
+    format = ME_HTTP_LOG_FORMAT;
+    type = "detail";
     
     for (option = maGetNextArg(sclone(value), &tok); option; option = maGetNextArg(tok, &tok)) {
         if (!path) {
@@ -220,35 +222,48 @@ static int accessLogDirective(MaState *state, cchar *key, cchar *value)
         } else {
             option = stok(option, " =\t,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
-            if (smatch(option, "size")) {
-                size = (ssize) getnum(ovalue);
-
-            } else if (smatch(option, "backup")) {
-                backup = atoi(ovalue);
+            if (smatch(option, "anew")) {
+                flags |= MPR_LOG_ANEW;
 
 #if DEPRECATED || 1
             } else if (smatch(option, "append")) {
                 flags |= MPR_LOG_APPEND;
 #endif
+            } else if (smatch(option, "backup")) {
+                backup = atoi(ovalue);
 
-            } else if (smatch(option, "anew")) {
-                flags |= MPR_LOG_ANEW;
+            } else if (smatch(option, "format")) {
+                format = ovalue;
+
+            } else if (smatch(option, "level")) {
+                level = (int) stoi(ovalue);
+
+            } else if (smatch(option, "size")) {
+                size = (ssize) getnum(ovalue);
+
+            } else if (smatch(option, "type")) {
+                type = ovalue;
 
             } else {
-                mprError("Unknown AccessLog option %s", option);
+                mprError("appweb config", "Unknown AccessLog option %s", option);
             }
         }
     }
-    if (size < (10 * 1024)) {
-        mprError("Size is too small. Must be larger than 10K");
-        return MPR_ERR_BAD_SYNTAX;
+    if (size < HTTP_TRACE_MIN_LOG_SIZE) {
+        size = HTTP_TRACE_MIN_LOG_SIZE;
     }
     if (path == 0) {
-        mprError("Missing filename");
+        mprError("appweb config", "Missing AccessLog filename");
         return MPR_ERR_BAD_SYNTAX;
     }
-    httpSetRouteLog(state->route, httpMakePath(state->route, state->configDir, path), size, backup, ME_HTTP_LOG_FORMAT, flags);
-    return 0;
+    if (type) {
+        httpSetTraceType(state->route->trace, type);
+    }
+    if (!smatch(path, "stdout") && !smatch(path, "stderr")) {
+        path = httpMakePath(state->route, state->configDir, path);
+    }
+    state->route->trace = httpCreateTrace(state->route->trace);
+    return httpSetTraceLogFile(state->route->trace, path, size, backup, format, flags);
 }
 #endif
 
@@ -264,7 +279,7 @@ static int addFilterDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (httpAddRouteFilter(state->route, filter, extensions, HTTP_STAGE_RX | HTTP_STAGE_TX) < 0) {
-        mprError("Cannot add filter %s", filter);
+        mprError("appweb config", "Cannot add filter %s", filter);
         return MPR_ERR_CANT_CREATE;
     }
     return 0;
@@ -282,7 +297,7 @@ static int addInputFilterDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (httpAddRouteFilter(state->route, filter, extensions, HTTP_STAGE_RX) < 0) {
-        mprError("Cannot add filter %s", filter);
+        mprError("appweb config", "Cannot add filter %s", filter);
         return MPR_ERR_CANT_CREATE;
     }
     return 0;
@@ -346,7 +361,7 @@ static int addOutputFilterDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (httpAddRouteFilter(state->route, filter, extensions, HTTP_STAGE_TX) < 0) {
-        mprError("Cannot add filter %s", filter);
+        mprError("appweb config", "Cannot add filter %s", filter);
         return MPR_ERR_CANT_CREATE;
     }
     return 0;
@@ -369,7 +384,7 @@ static int addHandlerDirective(MaState *state, cchar *key, cchar *value)
         extensions = "";
     }
     if (httpAddRouteHandler(state->route, handler, extensions) < 0) {
-        mprError("Cannot add handler %s", handler);
+        mprError("appweb config", "Cannot add handler %s", handler);
         return MPR_ERR_CANT_CREATE;
     }
     return 0;
@@ -443,7 +458,7 @@ static int allowDirective(MaState *state, cchar *key, cchar *value)
  */
 static int authGroupFileDirective(MaState *state, cchar *key, cchar *value)
 {
-    mprError("The AuthGroupFile directive is deprecated. Use new User/Group directives instead.");
+    mprError("appweb config", "The AuthGroupFile directive is deprecated. Use new User/Group directives instead.");
     return 0;
 }
 #endif
@@ -455,7 +470,7 @@ static int authGroupFileDirective(MaState *state, cchar *key, cchar *value)
 static int authStoreDirective(MaState *state, cchar *key, cchar *value)
 {
     if (httpSetAuthStore(state->auth, value) < 0) {
-        mprError("The \"%s\" AuthStore is not available on this platform", value);
+        mprError("appweb config", "The \"%s\" AuthStore is not available on this platform", value);
         return configError(state, key);
     }
     return 0;
@@ -491,7 +506,7 @@ static int authTypeDirective(MaState *state, cchar *key, cchar *value)
 
     } else if (!state->auth->realm) {
         /* Try to detect users forgetting to define a realm */
-        mprError("Must define an AuthRealm before defining the AuthType");
+        mprError("appweb config", "Must define an AuthRealm before defining the AuthType");
     }
     if (smatch(type, "form")) {
         if (!maTokenize(state, details, "%S ?S ?S ?S", &loginPage, &loginService, &logoutService, &loggedIn)) {
@@ -509,7 +524,7 @@ static int authTypeDirective(MaState *state, cchar *key, cchar *value)
  */
 static int authUserFileDirective(MaState *state, cchar *key, cchar *value)
 {
-    mprError("The AuthGroupFile directive is deprecated. Use new User/Group directives instead.");
+    mprError("appweb config", "The AuthGroupFile directive is deprecated. Use new User/Group directives instead.");
     return 0;
 }
 #endif
@@ -608,7 +623,7 @@ static int cacheDirective(MaState *state, cchar *key, cchar *value)
             methods = ovalue;
 
         } else {
-            mprError("Unknown Cache option '%s'", option);
+            mprError("appweb config", "Unknown Cache option '%s'", option);
             return MPR_ERR_BAD_SYNTAX;
         }
     }
@@ -633,18 +648,18 @@ static int chrootDirective(MaState *state, cchar *key, cchar *value)
     
     home = httpMakePath(state->route, state->configDir, value);
     if (chdir(home) < 0) {
-        mprError("Cannot change working directory to %s", home);
+        mprError("appweb config", "Cannot change working directory to %s", home);
         return MPR_ERR_CANT_OPEN;
     }
     if (state->http->flags & HTTP_UTILITY) {
         /* Not running a web server but rather a utility like the "esp" generator program */
-        mprLog(MPR_INFO, "Change directory to: \"%s\"", home);
+        mprLog("appweb config", MPR_INFO, "Change directory to: \"%s\"", home);
     } else {
         if (chroot(home) < 0) {
             if (errno == EPERM) {
-                mprError("Must be super user to use chroot\n");
+                mprError("appweb config", "Must be super user to use chroot\n");
             } else {
-                mprError("Cannot change change root directory to %s, errno %d\n", home, errno);
+                mprError("appweb config", "Cannot change change root directory to %s, errno %d\n", home, errno);
             }
             return MPR_ERR_BAD_SYNTAX;
         }
@@ -660,11 +675,11 @@ static int chrootDirective(MaState *state, cchar *key, cchar *value)
                 kp->data = mprGetAbsPath(mprGetRelPath(kp->data, oldConfigDir));
             }
         }
-        mprLog(MPR_INFO, "Chroot to: \"%s\"", home);
+        mprLog("appweb config", MPR_INFO, "Chroot to: \"%s\"", home);
     }
     return 0;
 #else
-    mprError("Chroot directive not supported on this operating system\n");
+    mprError("appweb config", "Chroot directive not supported on this operating system\n");
     return MPR_ERR_BAD_SYNTAX;
 #endif
 }
@@ -758,13 +773,13 @@ static int crossOriginDirective(MaState *state, cchar *key, cchar *value)
             route->corsAge = atoi(ovalue);
 
         } else {
-            mprError("Unknown CrossOrigin option %s", option);
+            mprError("appweb config", "Unknown CrossOrigin option %s", option);
             return MPR_ERR_BAD_SYNTAX;
         }
     }
 #if UNUSED
     if (smatch(route->corsOrigin, "*") && route->corsCredentials) {
-        mprError("CrossOrigin: Cannot use wildcard Origin if allowing credentials");
+        mprError("appweb config", "CrossOrigin: Cannot use wildcard Origin if allowing credentials");
         return MPR_ERR_BAD_STATE;
     }
 #endif
@@ -837,7 +852,7 @@ static int directoryDirective(MaState *state, cchar *key, cchar *value)
         The router and Route directives can't emulate this. The user needs to migrate such configurations to apply
         Auth directives to route URIs instead.
      */
-    mprError("The <Directory> directive is deprecated. Use <Route> with a Documents directive instead.");
+    mprError("appweb config", "The <Directory> directive is deprecated. Use <Route> with a Documents directive instead.");
     return MPR_ERR_BAD_SYNTAX;
 }
 
@@ -902,7 +917,7 @@ static int errorDocumentDirective(MaState *state, cchar *key, cchar *value)
 /*
     ErrorLog path
         [size=bytes] 
-        [level=0-9] 
+        [level=0-5] 
         [backup=count] 
         [anew]
         [stamp=period]
@@ -915,7 +930,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
     int         level, flags, backup;
 
     if (mprGetCmdlineLogging()) {
-        mprLog(4, "Already logging. Ignoring ErrorLog directive");
+        mprLog("appweb config", 4, "Already logging. Ignoring ErrorLog directive");
         return 0;
     }
     size = MAXINT;
@@ -953,25 +968,25 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
                 stamp = httpGetTicks(ovalue);
 
             } else {
-                mprError("Unknown ErrorLog option %s", option);
+                mprError("appweb config", "Unknown ErrorLog option %s", option);
             }
         }
     }
     if (size < (10 * 1000)) {
-        mprError("Size is too small. Must be larger than 10K");
+        mprError("appweb config", "Size is too small. Must be larger than 10K");
         return MPR_ERR_BAD_SYNTAX;
     }
     if (path == 0) {
-        mprError("Missing filename");
+        mprError("appweb config", "Missing filename");
         return MPR_ERR_BAD_SYNTAX;
     }
     mprSetLogBackup(size, backup, flags);
 
-    if (sncmp(path, "stdout", 6) != 0 && sncmp(path, "stderr", 6) != 0) {
+    if (!smatch(path, "stdout") && !smatch(path, "stderr")) {
         path = httpMakePath(state->route, state->configDir, path);
     }
     if (mprStartLogging(path, 0) < 0) {
-        mprError("Cannot write to ErrorLog: %s", path);
+        mprError("appweb config", "Cannot write to ErrorLog: %s", path);
         return MPR_ERR_BAD_SYNTAX;
     }
     mprSetLogLevel(level);
@@ -1032,7 +1047,7 @@ static int headerDirective(MaState *state, cchar *key, cchar *value)
     } else if (scaselessmatch(cmd, "set")) {
         op = HTTP_ROUTE_SET_HEADER;
     } else {
-        mprError("Unknown Header directive operation: %s", cmd);
+        mprError("appweb config", "Unknown Header directive operation: %s", cmd);
         return MPR_ERR_BAD_SYNTAX;
     }
     httpAddRouteResponseHeader(state->route, op, header, hvalue);
@@ -1051,7 +1066,6 @@ static int homeDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     httpSetRouteHome(state->route, path);
-    mprLog(MPR_INFO, "Server Root \"%s\"", path);
     return 0;
 }
 
@@ -1115,9 +1129,6 @@ static int ifDirective(MaState *state, cchar *key, cchar *value)
     state = maPushState(state);
     if (state->enabled) {
         state->enabled = conditionalDefinition(state, value);
-        if (!state->enabled) {
-            mprTrace(7, "If \"%s\" conditional is false at %s:%d", value, state->filename, state->lineNumber);
-        }
     }
     return 0;
 }
@@ -1251,7 +1262,7 @@ static int limitProcessesDirective(MaState *state, cchar *key, cchar *value)
  */
 static int limitRequestsDirective(MaState *state, cchar *key, cchar *value)
 {
-    mprError("The LimitRequests directive is deprecated. Use LimitConnections or LimitRequestsPerClient instead.");
+    mprError("appweb config", "The LimitRequests directive is deprecated. Use LimitConnections or LimitRequestsPerClient instead.");
     return 0;
 }
 #endif
@@ -1372,7 +1383,7 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
 
     mprParseSocketAddress(value, &ip, &port, NULL, 80);
     if (port == 0) {
-        mprError("Bad or missing port %d in Listen directive", port);
+        mprError("appweb config", "Bad or missing port %d in Listen directive", port);
         return -1;
     }
     endpoint = httpCreateEndpoint(ip, port, NULL);
@@ -1407,7 +1418,7 @@ static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
 
     mprParseSocketAddress(value, &ip, &port, NULL, 443);
     if (port == 0) {
-        mprError("Bad or missing port %d in ListenSecure directive", port);
+        mprError("appweb config", "Bad or missing port %d in ListenSecure directive", port);
         return -1;
     }
     endpoint = httpCreateEndpoint(ip, port, NULL);
@@ -1434,83 +1445,19 @@ static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
     }
     return 0;
 #else
-    mprError("Configuration lacks SSL support");
+    mprError("appweb config", "Configuration lacks SSL support");
     return -1;
 #endif
 }
 
 
-/*
-    Log options
-    Options:
-        tx|rx
-        conn=NN
-        first=NN
-        header=NN
-        body=NN
-        time=NN
-        size=NN
-        include="ext,ext,ext..."
-        exclude="ext,ext,ext..."
- */
+#if DEPRECATED || 1
 static int logDirective(MaState *state, cchar *key, cchar *value)
 {
-    char        *option, *ovalue, *tok, *include, *exclude;
-    ssize       size;
-    int         i, dir, levels[HTTP_TRACE_MAX_ITEM];
-
-    include = exclude = 0;
-    dir = HTTP_TRACE_RX;
-    size = MAXINT;
-    
-    for (i = 0; i < HTTP_TRACE_MAX_ITEM; i++) {
-        levels[i] = 0;
-    }
-    for (option = stok(sclone(value), " \t", &tok); option; option = stok(0, " \t", &tok)) {
-        option = stok(option, " =\t,", &ovalue);
-        ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
-        if (smatch(option, "tx")) {
-            dir = HTTP_TRACE_TX;
-
-        } else if (smatch(option, "rx")) {
-            dir = HTTP_TRACE_RX;
-
-        } else if (smatch(option, "conn")) {
-            levels[HTTP_TRACE_CONN] = atoi(ovalue);
-
-        } else if (smatch(option, "first")) {
-            levels[HTTP_TRACE_FIRST] = atoi(ovalue);
-
-        } else if (smatch(option, "headers")) {
-            levels[HTTP_TRACE_HEADER] = atoi(ovalue);
-
-        } else if (smatch(option, "body")) {
-            levels[HTTP_TRACE_BODY] = atoi(ovalue);
-
-        } else if (smatch(option, "limits")) {
-            levels[HTTP_TRACE_LIMITS] = atoi(ovalue);
-
-        } else if (smatch(option, "time")) {
-            levels[HTTP_TRACE_TIME] = atoi(ovalue);
-
-        } else if (smatch(option, "size")) {
-            size = (ssize) getnum(ovalue);
-
-        } else if (smatch(option, "include")) {
-            include = ovalue;
-
-        } else if (smatch(option, "exclude")) {
-            exclude = ovalue;
-
-        } else {
-            mprError("Unknown Cache option '%s'", option);
-            return MPR_ERR_BAD_SYNTAX;
-        }
-    }
-    httpSetRouteTraceFilter(state->route, dir, levels, size, include, exclude);
-    return 0;
+    mprError("appweb config", "Log directive is deprecated. Use Trace instead");
+    return -1;
 }
-
+#endif
 
 /*
     LogRoutes [full]
@@ -1524,7 +1471,7 @@ static int logRoutesDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (!(state->flags & MA_PARSE_NON_SERVER)) {
-        mprRawLog(0, "\nHTTP Routes for the '%s' host:\n\n", state->host->name ? state->host->name : "default");
+        mprLog("appweb config", 0, "HTTP Routes for '%s'", state->host->name ? state->host->name : "default");
         httpLogRoutes(state->host, smatch(full, "full"));
     }
     return 0;
@@ -1602,7 +1549,7 @@ static int userToID(cchar *user)
 #if ME_UNIX_LIKE
     struct passwd   *pp;
     if ((pp = getpwnam(user)) == 0) {
-        mprError("Bad user: %s", user);
+        mprError("appweb config", "Bad user: %s", user);
         return 0;
     }
     return pp->pw_uid;
@@ -1617,7 +1564,7 @@ static int groupToID(cchar *group)
 #if ME_UNIX_LIKE
     struct group    *gp;
     if ((gp = getgrnam(group)) == 0) {
-        mprError("Bad group: %s", group);
+        mprError("appweb config", "Bad group: %s", group);
         return MPR_ERR_CANT_ACCESS;
     }
     return gp->gr_gid;
@@ -1681,7 +1628,6 @@ static int makeDirDirective(MaState *state, cchar *key, cchar *value)
         if (mprGetPathInfo(path, &info) == 0 && info.isDir) {
             continue;
         }
-        mprLog(MPR_INFO, "Create directory: \"%s\"", path);
         if (mprMakeDir(path, mode, uid, gid, 1) < 0) {
             return MPR_ERR_BAD_SYNTAX;
         }
@@ -1744,7 +1690,7 @@ static int memoryPolicyDirective(MaState *state, cchar *key, cchar *value)
 #endif
 
     } else {
-        mprError("Unknown memory depletion policy '%s'", policy);
+        mprError("appweb config", "Unknown memory depletion policy '%s'", policy);
         return MPR_ERR_BAD_SYNTAX;
     }
     mprSetMemPolicy(flags);
@@ -1823,11 +1769,10 @@ static int nameVirtualHostDirective(MaState *state, cchar *key, cchar *value)
     char    *ip;
     int     port;
 
-    mprTrace(4, "NameVirtual Host: %s ", value);
     mprParseSocketAddress(value, &ip, &port, NULL, -1);
     httpConfigureNamedVirtualEndpoints(state->http, ip, port);
 #else
-    mprError("The NameVirtualHost directive is no longer needed");
+    mprError("appweb config", "The NameVirtualHost directive is no longer needed");
 #endif
     return 0;
 }
@@ -1887,7 +1832,7 @@ static int protocolDirective(MaState *state, cchar *key, cchar *value)
 {
     httpSetRouteProtocol(state->host, value);
     if (!scaselessmatch(value, "HTTP/1.0") && !scaselessmatch(value, "HTTP/1.1")) {
-        mprError("Unknown http protocol %s. Should be HTTP/1.0 or HTTP/1.1", value);
+        mprError("appweb config", "Unknown http protocol %s. Should be HTTP/1.0 or HTTP/1.1", value);
         return MPR_ERR_BAD_SYNTAX;
     }
     return 0;
@@ -2074,7 +2019,7 @@ static int rerouteDirective(MaState *state, cchar *key, cchar *value)
         if ((route = httpLookupRouteByPattern(state->host, pattern)) != 0) {
             state->route = route;
         } else {
-            mprError("Cannot open route %s", pattern);
+            mprError("appweb config", "Cannot open route %s", pattern);
             return MPR_ERR_CANT_OPEN;
         }
         /* Routes are added when the route block is closed (see closeDirective) */
@@ -2131,7 +2076,7 @@ static int roleDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (httpAddRole(state->auth, name, abilities) < 0) {
-        mprError("Cannot add role %s", name);
+        mprError("appweb config", "Cannot add role %s", name);
         return MPR_ERR_BAD_SYNTAX;
     }
     return 0;
@@ -2220,7 +2165,7 @@ static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
         } else if (smatch(option, "name")) {
             httpSetRouteCookie(state->route, ovalue);
         } else {
-            mprError("Unknown SessionCookie option %s", option);
+            mprError("appweb config", "Unknown SessionCookie option %s", option);
             return MPR_ERR_BAD_SYNTAX;
         }
     }
@@ -2260,7 +2205,7 @@ static int setDirective(MaState *state, cchar *key, cchar *value)
 static int setConnectorDirective(MaState *state, cchar *key, cchar *value)
 {
     if (httpSetRouteConnector(state->route, value) < 0) {
-        mprError("Cannot add handler %s", value);
+        mprError("appweb config", "Cannot add handler %s", value);
         return MPR_ERR_CANT_CREATE;
     }
     return 0;
@@ -2278,7 +2223,7 @@ static int setHandlerDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (httpSetRouteHandler(state->route, name) < 0) {
-        mprError("Cannot add handler %s", name);
+        mprError("appweb config", "Cannot add handler %s", name);
         return MPR_ERR_CANT_CREATE;
     }
     return 0;
@@ -2323,7 +2268,6 @@ static int stealthDirective(MaState *state, cchar *key, cchar *value)
     httpSetRouteStealth(state->route, on);
     return 0;
 }
-
 
 
 /*
@@ -2379,6 +2323,79 @@ static int threadStackDirective(MaState *state, cchar *key, cchar *value)
     return 0;
 }
 
+/*
+    Trace options
+    Options:
+        conn=NN
+        errors=NN
+        info=NN
+        rx-first=NN
+        tx-first=NN
+        rx-header=NN
+        tx-header=NN
+        rx-body=NN
+        tx-body=NN
+        time=NN
+        size=NN
+ */
+static int traceDirective(MaState *state, cchar *key, cchar *value)
+{
+    HttpRoute   *route;
+    char        *option, *ovalue, *tok;
+    ssize       size;
+    char        levels[HTTP_TRACE_MAX_ITEM];
+
+    size = MAXINT;
+    route = state->route;
+    
+    memset(levels, 0, sizeof(levels));
+    for (option = stok(sclone(value), " \t", &tok); option; option = stok(0, " \t", &tok)) {
+        option = stok(option, " =\t,", &ovalue);
+        ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
+
+        if (smatch(option, "conn")) {
+            levels[HTTP_TRACE_CONN] = atoi(ovalue);
+
+        } else if (smatch(option, "complete")) {
+            levels[HTTP_TRACE_COMPLETE] = atoi(ovalue);
+
+        } else if (smatch(option, "errors")) {
+            levels[HTTP_TRACE_ERROR] = (ssize) getnum(ovalue);
+
+        } else if (smatch(option, "info")) {
+            levels[HTTP_TRACE_INFO] = (ssize) getnum(ovalue);
+
+        } else if (smatch(option, "rx-first")) {
+            levels[HTTP_TRACE_RX_FIRST] = atoi(ovalue);
+
+        } else if (smatch(option, "rx-headers")) {
+            levels[HTTP_TRACE_RX_HEADERS] = atoi(ovalue);
+
+        } else if (smatch(option, "rx-body")) {
+            levels[HTTP_TRACE_RX_BODY] = atoi(ovalue);
+
+        } else if (smatch(option, "size")) {
+            size = (ssize) getnum(ovalue);
+
+        } else if (smatch(option, "tx-first")) {
+            levels[HTTP_TRACE_TX_FIRST] = atoi(ovalue);
+
+        } else if (smatch(option, "tx-headers")) {
+            levels[HTTP_TRACE_TX_HEADERS] = atoi(ovalue);
+
+        } else if (smatch(option, "tx-body")) {
+            levels[HTTP_TRACE_TX_BODY] = atoi(ovalue);
+
+        } else {
+            mprError("appweb config", "Unknown Cache option '%s'", option);
+            return MPR_ERR_BAD_SYNTAX;
+        }
+    }
+    state->route->trace = httpCreateTrace(state->route->trace);
+    httpSetTraceLevels(state->route->trace, levels, size);
+    return 0;
+}
+
 
 #if DEPRECATED
 /*
@@ -2410,7 +2427,7 @@ static int typesConfigDirective(MaState *state, cchar *key, cchar *value)
 
     path = httpMakePath(state->route, state->configDir, value);
     if ((state->route->mimeTypes = mprCreateMimeTypes(path)) == 0) {
-        mprError("Cannot open TypesConfig mime file %s", path);
+        mprError("appweb config", "Cannot open TypesConfig mime file %s", path);
         state->route->mimeTypes = mprCreateMimeTypes(NULL);
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -2432,11 +2449,11 @@ static int unloadModuleDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if ((module = mprLookupModule(name)) == 0) {
-        mprError("Cannot find module stage %s", name);
+        mprError("appweb config", "Cannot find module stage %s", name);
         return MPR_ERR_BAD_SYNTAX;
     }
     if ((stage = httpLookupStage(state->http, module->name)) != 0 && stage->match) {
-        mprError("Cannot unload module %s due to match routine", module->name);
+        mprError("appweb config", "Cannot unload module %s due to match routine", module->name);
         return MPR_ERR_BAD_SYNTAX;
     } else {
         module->timeout = httpGetTicks(timeout);
@@ -2496,7 +2513,7 @@ static int userDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     if (httpAddUser(state->auth, name, password, roles) == 0) {
-        mprError("Cannot add user %s", name);
+        mprError("appweb config", "Cannot add user %s", name);
         return MPR_ERR_BAD_SYNTAX;
     }
     return 0;
@@ -2565,7 +2582,7 @@ static int closeVirtualHostDirective(MaState *state, cchar *key, cchar *value)
                 addresses = 0;
                 mprParseSocketAddress(address, &ip, &port, NULL, -1);
                 if ((endpoint = httpLookupEndpoint(state->http, ip, port)) == 0) {
-                    mprError("Cannot find listen directive for virtual host %s", address);
+                    mprError("appweb config", "Cannot find listen directive for virtual host %s", address);
                     return MPR_ERR_BAD_SYNTAX;
                 } else {
                     httpAddHostToEndpoint(endpoint, state->host);
@@ -2673,7 +2690,7 @@ PUBLIC bool maValidateServer(MaServer *server)
     for (nextHost = 0; (host = mprGetNextItem(http->hosts, &nextHost)) != 0; ) {
         for (nextRoute = 0; (route = mprGetNextItem(host->routes, &nextRoute)) != 0; ) {
             if (!mprLookupKey(route->extensions, "")) {
-                mprLog(4, "Route %s in host %s is missing a catch-all handler. "
+                mprError("appweb config" "Route %s in host %s is missing a catch-all handler. "
                     "Adding: AddHandler fileHandler \"\"", route->name, host->name);
                 httpAddRouteHandler(route, "fileHandler", "");
                 httpAddRouteIndex(route, "index.html");
@@ -2682,25 +2699,6 @@ PUBLIC bool maValidateServer(MaServer *server)
     }
     return 1;
 }
-
-
-#if UNUSED
-PUBLIC int maParsePlatform(cchar *platform, cchar **os, cchar **arch, cchar **profile)
-{
-    char   *rest;
-
-    if (platform == 0 || *platform == '\0') {
-        return MPR_ERR_BAD_ARGS;
-    }
-    *os = stok(sclone(platform), "-", &rest);
-    *arch = sclone(stok(NULL, "-", &rest));
-    *profile = sclone(rest);
-    if (*os == 0 || *arch == 0 || *profile == 0 || **os == '\0' || **arch == '\0' || **profile == '\0') {
-        return MPR_ERR_BAD_ARGS;
-    }
-    return 0;
-}
-#endif
 
 
 static bool conditionalDefinition(MaState *state, cchar *key)
@@ -2740,14 +2738,6 @@ static bool conditionalDefinition(MaState *state, cchar *key)
 
     } else if (scaselessmatch(key, "IPv6")) {
         result = mprHasIPv6();
-
-#if UNUSED
-    } else if (state->appweb->skipModules) {
-        /* ESP utility needs to be able to load mod_esp */
-        if (sstarts(mprGetAppName(), "esp") && scaselessmatch(key, "ESP_MODULE")) {
-            result = ME_COM_ESP;
-        }
-#endif
 
     } else {
         if (scaselessmatch(key, "CGI_MODULE")) {
@@ -2790,7 +2780,7 @@ PUBLIC bool maTokenize(MaState *state, cchar *line, cchar *fmt, ...)
 
     va_start(ap, fmt);
     if (!httpTokenizev(state->route, line, fmt, ap)) {
-        mprError("Bad \"%s\" directive at line %d in %s\nLine: %s %s\n", 
+        mprError("appweb config", "Bad \"%s\" directive at line %d in %s\nLine: %s %s\n", 
                 state->key, state->lineNumber, state->filename, state->key, line);
         return 0;
     }
@@ -2802,7 +2792,7 @@ PUBLIC bool maTokenize(MaState *state, cchar *line, cchar *fmt, ...)
 static int addCondition(MaState *state, cchar *name, cchar *details, int flags)
 {
     if (httpAddRouteCondition(state->route, name, details, flags) < 0) {
-        mprError("Bad \"%s\" directive at line %d in %s\nLine: %s %s\n", 
+        mprError("appweb config", "Bad \"%s\" directive at line %d in %s\nLine: %s %s\n", 
             state->key, state->lineNumber, state->filename, state->key, details);
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -2813,7 +2803,7 @@ static int addCondition(MaState *state, cchar *name, cchar *details, int flags)
 static int addUpdate(MaState *state, cchar *name, cchar *details, int flags)
 {
     if (httpAddRouteUpdate(state->route, name, details, flags) < 0) {
-        mprError("Bad \"%s\" directive at line %d in %s\nLine: %s %s %s\n", 
+        mprError("appweb config", "Bad \"%s\" directive at line %d in %s\nLine: %s %s %s\n", 
                 state->key, state->lineNumber, state->filename, state->key, name, details);
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -2824,7 +2814,7 @@ static int addUpdate(MaState *state, cchar *name, cchar *details, int flags)
 static int setTarget(MaState *state, cchar *name, cchar *details)
 {
     if (httpSetRouteTarget(state->route, name, details) < 0) {
-        mprError("Bad \"%s\" directive at line %d in %s\nLine: %s %s %s\n", 
+        mprError("appweb config", "Bad \"%s\" directive at line %d in %s\nLine: %s %s %s\n", 
                 state->key, state->lineNumber, state->filename, state->key, name, details);
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -2891,7 +2881,7 @@ PUBLIC MaState *maPushState(MaState *prev)
 PUBLIC MaState *maPopState(MaState *state)
 {
     if (state->prev == 0) {
-        mprError("Too many closing blocks.\nAt line %d in %s\n\n", state->lineNumber, state->filename);
+        mprError("appweb config", "Too many closing blocks.\nAt line %d in %s\n\n", state->lineNumber, state->filename);
     }
     state->prev->lineNumber = state->lineNumber;
     state = state->prev;
@@ -2923,7 +2913,7 @@ static void manageState(MaState *state, int flags)
 
 static int configError(MaState *state, cchar *key)
 {
-    mprError("Error in directive \"%s\"\nAt line %d in %s\n\n", key, state->lineNumber, state->filename);
+    mprError("appweb config", "Error in directive \"%s\"\nAt line %d in %s\n\n", key, state->lineNumber, state->filename);
     return MPR_ERR_BAD_SYNTAX;
 }
 
@@ -3050,7 +3040,7 @@ PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path)
 
     tempFile = mprGetTempPath(mprGetPathDir(path));
     if ((file = mprOpenFile(tempFile, O_CREAT | O_TRUNC | O_WRONLY | O_TEXT, 0444)) == 0) {
-        mprError("Cannot open %s", tempFile);
+        mprError("appweb config", "Cannot open %s", tempFile);
         return MPR_ERR_CANT_OPEN;
     }
     mprWriteFileFmt(file, "#\n#   %s - Authorization data\n#\n\n", mprGetPathBase(path));
@@ -3070,7 +3060,7 @@ PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path)
     mprCloseFile(file);
     unlink(path);
     if (rename(tempFile, path) < 0) {
-        mprError("Cannot create new %s", path);
+        mprError("appweb config", "Cannot create new %s", path);
         return MPR_ERR_CANT_WRITE;
     }
     return 0;
@@ -3151,7 +3141,6 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "LimitWorkers", limitWorkersDirective);
     maAddDirective(appweb, "Listen", listenDirective);
     maAddDirective(appweb, "ListenSecure", listenSecureDirective);
-    maAddDirective(appweb, "Log", logDirective);
     maAddDirective(appweb, "LogRoutes", logRoutesDirective);
     maAddDirective(appweb, "LoadModulePath", loadModulePathDirective);
     maAddDirective(appweb, "LoadModule", loadModuleDirective);
@@ -3162,16 +3151,10 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "MinWorkers", minWorkersDirective);
     maAddDirective(appweb, "Monitor", monitorDirective);
     maAddDirective(appweb, "Name", nameDirective);
-#if DEPRECATED || 1
-    maAddDirective(appweb, "NameVirtualHost", nameVirtualHostDirective);
-#endif
     maAddDirective(appweb, "Order", orderDirective);
     maAddDirective(appweb, "Param", paramDirective);
     maAddDirective(appweb, "Prefix", prefixDirective);
     maAddDirective(appweb, "PreserveFrames", preserveFramesDirective);
-#if UNUSED && KEEP
-    maAddDirective(appweb, "Protocol", protocolDirective);
-#endif
     maAddDirective(appweb, "Redirect", redirectDirective);
     maAddDirective(appweb, "RequestHeader", requestHeaderDirective);
     maAddDirective(appweb, "RequestParseTimeout", requestParseTimeoutDirective);
@@ -3196,6 +3179,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "Target", targetDirective);
     maAddDirective(appweb, "Template", templateDirective);
     maAddDirective(appweb, "ThreadStack", threadStackDirective);
+    maAddDirective(appweb, "Trace", traceDirective);
     maAddDirective(appweb, "TypesConfig", typesConfigDirective);
     maAddDirective(appweb, "Update", updateDirective);
     maAddDirective(appweb, "UnloadModule", unloadModuleDirective);
@@ -3214,10 +3198,12 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "FixDotNetDigestAuth", fixDotNetDigestAuth);
 
 #if !ME_ROM
-    maAddDirective(appweb, "AccessLog", accessLogDirective);
+    maAddDirective(appweb, "TraceLog", traceLogDirective);
 #endif
 
 #if DEPRECATED
+    /* Use TraceLog */
+    maAddDirective(appweb, "AccessLog", traceLogDirective);
     /* Use AuthStore */
     maAddDirective(appweb, "AuthMethod", authStoreDirective);
     maAddDirective(appweb, "AuthGroupFile", authGroupFileDirective);
@@ -3260,7 +3246,12 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     /* Use Home */
     maAddDirective(appweb, "ServerRoot", homeDirective);
 #endif
-
+#if DEPRECATED || 1
+    /* Not needed */
+    maAddDirective(appweb, "NameVirtualHost", nameVirtualHostDirective);
+    /* Use Trace */
+    maAddDirective(appweb, "Log", logDirective);
+#endif
     return 0;
 }
 

@@ -25,18 +25,6 @@
                 "clientEdit": "esp-html-mvc/generate/edit.esp",
                 "controller": "esp-html-mvc/generate/controller.c"
             }
-        },
-        "mode": "debug",
-        "modes": {
-            "debug": {
-                "http": {
-                    "content": {
-                        "keep": [
-                            "c"
-                        ]
-                    }
-                }
-            }
         }
     }
 }

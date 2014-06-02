@@ -22,23 +22,23 @@ PUBLIC int maRunWebServer(cchar *configFile)
 
     rc = MPR_ERR_CANT_CREATE;
     if ((mpr = mprCreate(0, NULL, MPR_USER_EVENTS_THREAD)) == 0) {
-        mprError("Cannot create the web server runtime");
+        mprError("appweb", "Cannot create the web server runtime");
     } else {
         if (mprStart() < 0) {
-            mprError("Cannot start the web server runtime");
+            mprError("appweb", "Cannot start the web server runtime");
         } else {
             if ((appweb = maCreateAppweb()) == 0) {
-                mprError("Cannot create appweb object");
+                mprError("appweb", "Cannot create appweb object");
             } else {
                 mprAddRoot(appweb);
                 if ((server = maCreateServer(appweb, 0)) == 0) {
-                    mprError("Cannot create the web server");
+                    mprError("appweb", "Cannot create the web server");
                 } else {
                     if (maParseConfig(server, configFile, 0) < 0) {
-                        mprError("Cannot parse the config file %s", configFile);
+                        mprError("appweb", "Cannot parse the config file %s", configFile);
                     } else {
                         if (maStartServer(server) < 0) {
-                            mprError("Cannot start the web server");
+                            mprError("appweb", "Cannot start the web server");
                         } else {
                             mprServiceEvents(-1, 0);
                             rc = 0;
@@ -71,23 +71,23 @@ PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documen
      */
     rc = MPR_ERR_CANT_CREATE;
     if ((mpr = mprCreate(0, NULL, MPR_USER_EVENTS_THREAD)) == 0) {
-        mprError("Cannot create the web server runtime");
+        mprError("appweb", "Cannot create the web server runtime");
     } else {
         if (mprStart(mpr) < 0) {
-            mprError("Cannot start the web server runtime");
+            mprError("appweb", "Cannot start the web server runtime");
         } else {
             if ((appweb = maCreateAppweb()) == 0) {
-                mprError("Cannot create the web server http services");
+                mprError("appweb", "Cannot create the web server http services");
             } else {
                 mprAddRoot(appweb);
                 if ((server = maCreateServer(appweb, 0)) == 0) {
-                    mprError("Cannot create the web server");
+                    mprError("appweb", "Cannot create the web server");
                 } else {
                     if (maConfigureServer(server, 0, home, documents, ip, port, 0) < 0) {
-                        mprError("Cannot create the web server");
+                        mprError("appweb", "Cannot create the web server");
                     } else {
                         if (maStartServer(server) < 0) {
-                            mprError("Cannot start the web server");
+                            mprError("appweb", "Cannot start the web server");
                         } else {
                             mprServiceEvents(-1, 0);
                             rc = 0;
@@ -161,11 +161,11 @@ PUBLIC int maRunWebClient(cchar *method, cchar *uri, cchar *data, char **respons
         *response = 0;
     }
     if ((mpr = mprCreate(0, NULL, 0)) == 0) {
-        mprError("Cannot create the MPR runtime");
+        mprError("appweb", "Cannot create the MPR runtime");
         return MPR_ERR_CANT_CREATE;
     }
     if (mprStart() < 0) {
-        mprError("Cannot start the web server runtime");
+        mprError("appweb", "Cannot start the web server runtime");
         return MPR_ERR_CANT_INITIALIZE;
     }
     httpCreate(HTTP_CLIENT_SIDE);

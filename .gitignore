@@ -227,3 +227,4 @@ macosx-*.me
 /vxworks-*
 t.es
 blog.sdb
+request.log

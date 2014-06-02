@@ -25,6 +25,7 @@ esp \- ESP Application Generator for Server-Side Web Applications.
     \fB--static\fR
     \fB--symbols\fR
     \fB--table name\fR
+    \fB--trace traceFile:level\fR
     \fB--verbose\fR
     \fB--why\fR
     \fBcommands ...\fR
@@ -291,7 +292,7 @@ Define the listening endpoint address. This will be used when generating an appl
 will be patched into the generated appweb.conf configuration file.
 .TP 6
 \fB\--log logFile:level\fR
-Specify a file to log messages.  The syntax is: \fB"--log logName[,moduleName][:logLevel]"\fR.             
+Specify a file to log messages.  The syntax is: \fB"--log logName[:logLevel]"\fR.             
 Level 3 will trace the request and response headers. 
 .TP 6
 \fB\--nodeps\fR
@@ -342,6 +343,10 @@ Compile for debug with symbols.
 Override the database table name when generating tables, migrations or scaffolds. This is useful to request a plural 
 version of the model name. Alternatively, specify the model name when generating the scaffold, table or migration 
 with the desired plural suffix. For example: "-s" or "-ies".
+.TP 6
+\fB\--trace traceFile:level\fR
+Specify a file for trace messages.  The syntax is: \fB"--trace traceName[:traceLevel]"\fR.             
+Level 3 will trace the request and response headers. 
 .TP 6
 \fB\--verbose\fR or \fB\-v\fR
 Run in verbose mode and trace actions to the console.

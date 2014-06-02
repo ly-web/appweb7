@@ -113,8 +113,11 @@ MAIN(httpMain, int argc, char **argv, char **envp)
     }
     mprAddRoot(app);
     mprAddStandardSignals();
-
     initSettings();
+
+    if ((app->http = httpCreate(HTTP_CLIENT_SIDE)) == 0) {
+        return MPR_ERR_MEMORY;
+    }
     if (parseArgs(argc, argv) < 0) {
         return MPR_ERR_BAD_ARGS;
     }
@@ -124,7 +127,6 @@ MAIN(httpMain, int argc, char **argv, char **envp)
         exit(2);
     }
     start = mprGetTime();
-    app->http = httpCreate(HTTP_CLIENT_SIDE);
 
 #if ME_STATIC && ME_COM_SSL
     extern MprModuleEntry mprSslInit;
@@ -148,7 +150,7 @@ MAIN(httpMain, int argc, char **argv, char **envp)
         mprPrintf("Worker threads:      %13d\n", app->workers);
     }
     if (!app->success && app->verbose) {
-        mprError("Request failed");
+        mprError("http", "Request failed");
     }
     mprDestroy();
     return (app->success) ? 0 : 255;
@@ -212,11 +214,12 @@ static void initSettings()
 
 static int parseArgs(int argc, char **argv)
 {
-    char        *argp, *key, *value;
-    int         i, setWorkers, nextArg, ssl;
+    char    *argp, *key, *logSpec, *value, *traceSpec;
+    int     i, setWorkers, nextArg, ssl;
 
     setWorkers = 0;
     ssl = 0;
+    logSpec = traceSpec = 0;
 
     for (nextArg = 1; nextArg < argc; nextArg++) {
         argp = argv[nextArg];
@@ -264,7 +267,7 @@ static int parseArgs(int argc, char **argv)
                 value = argv[++nextArg];
                 app->chunkSize = atoi(value);
                 if (app->chunkSize < 0) {
-                    mprError("Bad chunksize %d", app->chunkSize);
+                    mprError("http", "Bad chunksize %d", app->chunkSize);
                     return MPR_ERR_BAD_ARGS;
                 }
             }
@@ -321,7 +324,7 @@ static int parseArgs(int argc, char **argv)
             } else {
                 key = argv[++nextArg];
                 if ((value = strchr(key, ':')) == 0) {
-                    mprError("Bad header format. Must be \"key: value\"");
+                    mprError("http", "Bad header format. Must be \"key: value\"");
                     return MPR_ERR_BAD_ARGS;
                 }
                 *value++ = '\0';
@@ -369,7 +372,7 @@ static int parseArgs(int argc, char **argv)
             if (nextArg >= argc) {
                 return showUsage();
             } else {
-                mprStartLogging(argv[++nextArg], 0);
+                logSpec = argv[++nextArg];
             }
 
         } else if (smatch(argp, "--method") || smatch(argp, "-m")) {
@@ -477,6 +480,13 @@ static int parseArgs(int argc, char **argv)
                 app->timeout = atoi(argv[++nextArg]) * MPR_TICKS_PER_SEC;
             }
 
+        } else if (smatch(argp, "--trace")) {
+            if (nextArg >= argc) {
+                return showUsage();
+            } else {
+                traceSpec = argv[++nextArg];
+            }
+
         } else if (smatch(argp, "--upload") || smatch(argp, "-u")) {
             app->upload++;
 
@@ -520,11 +530,22 @@ static int parseArgs(int argc, char **argv)
             break;
 
         } else if (isdigit((uchar) argp[1])) {
-            mprStartLogging(sfmt("stdout:%s", &argp[1]), 0);
+            if (!logSpec) {
+                logSpec = sfmt("stderr:%d", (int) stoi(&argp[1]));
+            }
+            if (!traceSpec) {
+                traceSpec = sfmt("stderr:%d", (int) stoi(&argp[1]));
+            }
 
         } else {
             return showUsage();
         }
+    }
+    if (logSpec) {
+        mprStartLogging(logSpec, MPR_LOG_CONFIG | MPR_LOG_CMDLINE);
+    }
+    if (traceSpec) {
+        httpStartTracing(traceSpec);
     }
     if (argc == nextArg) {
         return showUsage();
@@ -564,14 +585,14 @@ static int parseArgs(int argc, char **argv)
         }
         if (app->cert) {
             if (!app->key) {
-                mprError("Must specify key file");
+                mprError("http", "Must specify key file");
                 return 0;
             }
             mprSetSslCertFile(app->ssl, app->cert);
             mprSetSslKeyFile(app->ssl, app->key);
         }
         if (app->ca) {
-            mprLog(4, "Using CA: \"%s\"", app->ca);
+            mprLog("http", 4, "Using CA: \"%s\"", app->ca);
             mprSetSslCaFile(app->ssl, app->ca);
         }
         if (app->verifyIssuer == -1) {
@@ -890,7 +911,7 @@ static int issueRequest(HttpConn *conn, cchar *url, MprList *files)
                 break;
             }
         }
-        mprTrace(4, "retry %d of %d for: %s %s", count, conn->retries, app->method, url);
+        mprDebug("http", 4, "retry %d of %d for: %s %s", count, conn->retries, app->method, url);
     }
     if (conn->error) {
         msg = (conn->errorMsg) ? conn->errorMsg : "";
@@ -917,7 +938,7 @@ static int reportResponse(HttpConn *conn, cchar *url)
     if (bytesRead < 0 && conn->rx) {
         bytesRead = conn->rx->bytesRead;
     }
-    mprTrace(6, "Response status %d, elapsed %Ld", status, mprGetTicks() - conn->started);
+    mprDebug("http", 6, "Response status %d, elapsed %Ld", status, mprGetTicks() - conn->started);
     if (conn->error) {
         app->success = 0;
     }
@@ -982,7 +1003,7 @@ static int doRequest(HttpConn *conn, cchar *url, MprList *files)
     cchar       *path;
 
     assert(url && *url);
-    mprTrace(4, "fetch: %s %s", app->method, url);
+    mprDebug("http", 4, "fetch: %s %s", app->method, url);
 
     if (issueRequest(conn, url, files) < 0) {
         return MPR_ERR_CANT_CONNECT;

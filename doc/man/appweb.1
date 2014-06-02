@@ -15,6 +15,7 @@ appweb\- Embedded HTTP Web Server
     \fB--log logSpec\fR
     \fB--name uniqueName\fR
     \fB--threads threads\fR
+    \fB--trace traceSpec\fR
     \fB--version\fR
     \fB--verbose\fR
     \fB[IP][:port] [documentRoot]\fR
@@ -52,21 +53,28 @@ Set the path to the appweb.exe executable image. This may be required on VxWorks
 load modules which are located at "appweb.exe/../lib". This is necessary because VxWorks cannot determine
 the path to the executable image at runtime.
 .TP
-\fB\--log logSpec\fR
-Name the Appweb log file. This will override the ErrorLog directive 
-in the configuration file.  When the maximum size is exceeded, the log file will be rotated to logName.old 
-and a new log file will be started. The \fB-l\fR option is an alias for --log.
-The syntax is: 
-.PP
-.RS 6
- --log logName[:logLevel][.maxSize]
-.RE
-.TP
 \fB\--home directory\fR
 Define the server home directory for Appweb.
 .TP
+\fB\--log logSpec\fR
+Name the Appweb log file. This will override the ErrorLog directive 
+in the configuration file. The syntax is: 
+.PP
+.RS 6
+ --log logName[:logLevel]
+.RE
+.TP
 \fB\--name NAME\fR
 Define a unique name for this instance of Appweb. Useful for ps -ef listings.
+.TP
+\fB\--trace traceSpec\fR
+Name the Appweb request trace file. This will override the TraceLog directive 
+in the configuration file.  
+The syntax is: 
+.PP
+.RS 6
+ --trace traceName[:traceLevel]
+.RE
 .TP
 \fB\--verbose\fR
 Shorthand for --log stdout:4. The \fB-v\fR option is an alias for --verbose.

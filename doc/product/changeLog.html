@@ -67,7 +67,7 @@
         
             <a id="5.0.0"></a>
             <h2 class="section">Changes in 5.0.0</h2>
-            <h4>Notes</h4>
+            <h3>Notes</h3>
                 <ul>
                     <li>The Appweb 5 API is substantially backwards compatible with Appweb 4 applications. If
                     Legacy Appweb 4 APIs are not being used, there should be minimal code change to migrate to 
@@ -84,6 +84,8 @@
                     <a href="https://github.com/embedthis/appweb/issues/343">[issue 343]</a>.</li>
                 <li>Convert Appweb dependencies into Pak packages
                     <a href="https://github.com/embedthis/appweb/issues/344">[issue 344]</a>.</li>
+                <li>Split error log and request log
+                    <a href="https://github.com/embedthis/appweb/issues/352">[issue 352]</a>.</li>
             </ul>
             <h3>Minor Changes</h3>
             <ul>
@@ -95,6 +97,12 @@
                 <li>The fixes from version 4.6.0 are also applied in release candidate rc1</li>
                 <li>Fix testing of XSRF token. Only re-create in views.
                     <a href="https://github.com/embedthis/appweb/issues/346">[issue 346]</a>.</li>
+                <li>Update ESP to fix client.mappings timeouts
+                    <a href="https://github.com/embedthis/appweb/issues/353">[issue 353]</a>.</li>
+                <li>ESP upgrade should not overwrite overwrite files by default.
+                    <a href="https://github.com/embedthis/appweb/issues/354">[issue 354]</a>.</li>
+                <li>ESP command updated to create users and roles.
+                    <a href="https://github.com/embedthis/appweb/issues/355">[issue 355]</a>.</li>
             </ul>
             <h3>Incompatible Changes</h3>
             <ul>
@@ -105,7 +113,13 @@
                     framework.</li>
                 <li>ESP Package.json format is changed for many properties. Regenerate the application to get 
                     a new package.json file.</li>
-                <li>ESP Angular applications have a different Esp.config property layout. Upgrade all relevant paks.</li>
+                    <li>ESP applications have a different package.json property layout. Upgrade all relevant paks.
+                    See <a href="https://github.com/embedthis/esp/blob/dev/samples/esp-configuration/package.json">ESP
+                        Configuration Sample</a> for details.</li>
+                <li>With separating the error log and request log, the 
+                <a href="../api/mpr.html#group___mpr_log_1ga13660aa56e0e5945b6de8f2708aed520">mprLog</a>
+                and <a href="../api/mpr.html#group___mpr_log_1gaa29ca2fc7ccd5dc2314b1c0c53f5f788">mprError</a>
+                APIs have revised signatures.</li>
             </ul>
             <a id="4.6.0"></a>
             <h2 class="section">Changes in 4.6.0</h2>

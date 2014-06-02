@@ -83,7 +83,7 @@ PUBLIC MaServer *maLookupServer(MaAppweb *appweb, cchar *name)
 PUBLIC int maStartAppweb(MaAppweb *appweb)
 {
     httpStartEndpoints();
-    mprLog(1, "Started at %s", mprGetDate(0));
+    mprLog("appweb http", 1, "Started at %s", mprGetDate(0));
     return 0;
 }
 
@@ -173,7 +173,6 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
     if (configFile) {
         path = mprGetAbsPath(configFile);
         if (maParseConfig(server, path, 0) < 0) {
-            /* mprError("Cannot configure server using %s", path); */
             return MPR_ERR_CANT_INITIALIZE;
         }
         return 0;
@@ -203,7 +202,6 @@ PUBLIC int maConfigureServer(MaServer *server, cchar *configFile, cchar *home, c
                 if (mprPathExists(path, X_OK)) {
                     HttpRoute *cgiRoute;
                     cgiRoute = httpCreateAliasRoute(route, "/cgi-bin/", path, 0);
-                    mprTrace(4, "ScriptAlias \"/cgi-bin/\":\"%s\"", path);
                     httpSetRouteHandler(cgiRoute, "cgiHandler");
                     httpFinalizeRoute(cgiRoute);
                 }
@@ -251,7 +249,7 @@ PUBLIC int maStartServer(MaServer *server)
     }
     if (count == 0) {
         if (!warned) {
-            mprError("Server is not listening on any addresses");
+            mprError("appweb config", "Server is not listening on any addresses");
         }
         return MPR_ERR_CANT_OPEN;
     }
@@ -312,12 +310,12 @@ PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
 
     if (strcmp(name, "authFilter") == 0 || strcmp(name, "rangeFilter") == 0 || strcmp(name, "uploadFilter") == 0 ||
             strcmp(name, "fileHandler") == 0 || strcmp(name, "dirHandler") == 0) {
-        mprLog(1, "The %s module is now builtin. No need to use LoadModule", name);
+        mprLog("appweb config", 1, "The %s module is now builtin. No need to use LoadModule", name);
         return 0;
     }
     if ((module = mprLookupModule(name)) != 0) {
 #if ME_STATIC
-        mprLog(MPR_INFO, "Activating module (Builtin) %s", name);
+        mprLog("appweb config", MPR_INFO, "Activating module (Builtin) %s", name);
 #endif
         return 0;
     }

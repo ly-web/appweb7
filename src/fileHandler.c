@@ -76,9 +76,10 @@ static int openFileHandler(HttpQueue *q)
     if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
         if (!(info->valid || info->isDir)) {
             if (rx->referrer) {
-                mprLog(3, "fileHandler: Cannot find filename %s from referrer %s", tx->filename, rx->referrer);
+                httpTrace(conn, HTTP_TRACE_ERROR, "Cannot find file; filename=%s referrer=%s", 
+                    tx->filename, rx->referrer);
             } else {
-                mprLog(3, "fileHandler: Cannot find filename %s", tx->filename);
+                httpTrace(conn, HTTP_TRACE_ERROR, "Cannot find file; filename=%s", tx->filename);
             }
             httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find document");
             return 0;
@@ -104,7 +105,7 @@ static int openFileHandler(HttpQueue *q)
             tx->length = -1;
         }
         if (!tx->fileInfo.isReg && !tx->fileInfo.isLink) {
-            mprLog(3, "Document is not a regular file: %s", tx->filename);
+            httpTrace(conn, HTTP_TRACE_ERROR, "Document is not a regular file; filename=%s", tx->filename);
             httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot serve document");
             
         } else if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
@@ -121,9 +122,10 @@ static int openFileHandler(HttpQueue *q)
                 tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
                 if (tx->file == 0) {
                     if (rx->referrer) {
-                        mprLog(2, "fileHandler: Cannot find filename %s from referrer %s", tx->filename, rx->referrer);
+                        httpTrace(conn, HTTP_TRACE_ERROR, "Cannot find file; filename=%s referrer=%s", 
+                            tx->filename, rx->referrer);
                     } else {
-                        mprLog(2, "fileHandler: Cannot find filename %s", tx->filename);
+                        httpTrace(conn, HTTP_TRACE_ERROR, "Cannot find file; filename=%s", tx->filename);
                     }
                     httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find document");
                 }
@@ -213,8 +215,6 @@ static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize si
         return MPR_ERR_MEMORY;
     }
     assert(size <= mprGetBufSpace(packet->content));    
-    mprTrace(7, "readFileData size %Ld, pos %Ld", size, pos);
-    
     if (pos >= 0) {
         mprSeekFile(tx->file, SEEK_SET, pos);
     }
@@ -295,15 +295,12 @@ static void outgoingFileService(HttpQueue *q)
             if ((rc = prepPacket(q, packet)) < 0) {
                 return;
             } else if (rc == 0) {
-                mprTrace(7, "OutgoingFileService downstream full, putback");
                 httpPutBackPacket(q, packet);
                 return;
             }
-            mprTrace(7, "OutgoingFileService readData %d", rc);
         }
         httpPutPacketToNext(q, packet);
     }
-    mprTrace(7, "OutgoingFileService complete");
 }
 
 
