@@ -2383,8 +2383,8 @@ static int traceDirective(MaState *state, cchar *key, cchar *value)
             return MPR_ERR_BAD_SYNTAX;
         }
     }
-    state->route->trace = httpCreateTrace(state->route->trace);
-    httpSetTraceLevels(state->route->trace, levels, size);
+    route->trace = httpCreateTrace(route->trace);
+    httpSetTraceLevels(route->trace, levels, size);
     return 0;
 }
 
