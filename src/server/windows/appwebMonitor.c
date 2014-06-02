@@ -521,8 +521,7 @@ static int runBrowser(char *page)
         *pathArg = '\0';
         fmt(cmdBuf, ME_MAX_BUFFER, "%s \"http://localhost:%d/%s\"", path, port, page);
     }
-
-    mprLog(4, "Running %s\n", cmdBuf);
+    mprLog("appweb monitor", 4, "Running %s\n", cmdBuf);
     memset(&startInfo, 0, sizeof(startInfo));
     startInfo.cb = sizeof(startInfo);
 
@@ -556,7 +555,7 @@ static char *getBrowserPath(int size)
         }
         *cp = tolower(*cp);
     }
-    mprLog(4, "Browser path: %s\n", path);
+    mprLog("appweb monitor", 4, "Browser path: %s\n", path);
     return path;
 }
 
