@@ -104,7 +104,6 @@
     <ClCompile Include="..\..\src\convenience.c" />
     <ClCompile Include="..\..\src\dirHandler.c" />
     <ClCompile Include="..\..\src\fileHandler.c" />
-    <ClCompile Include="..\..\src\log.c" />
     <ClCompile Include="..\..\src\server.c" />
   </ItemGroup>
 

@@ -30229,7 +30229,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
         mprGetPathInfo(mp->path, &info);
         mp->modified = info.mtime;
         baseName = mprGetPathBase(mp->path);
-        mprLog(2, "Loading native module %s", baseName);
+        mprLog("mpr", 2, "Loading native module %s", baseName);
         if ((handle = LoadLibrary(wide(mp->path))) == 0) {
             mprError("mpr", "Cannot load module %s\nReason: \"%d\"\n", mp->path, mprGetOsError());
             return MPR_ERR_CANT_READ;
@@ -30238,7 +30238,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
 #endif /* !ME_STATIC */
 
     } else if (mp->entry) {
-        mprLog(2, "Activating native module %s", mp->name);
+        mprLog("mpr", 2, "Activating native module %s", mp->name);
     }
     if (mp->entry) {
         if ((fn = (MprModuleEntry) GetProcAddress((HINSTANCE) handle, mp->entry)) == 0) {
