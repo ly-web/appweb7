@@ -3719,7 +3719,7 @@ PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprT
 }
    
 
-//  MOB - rename clearSingleLogin (and trace)
+//  TODO - rename clearSingleLogin (and trace)
 PUBLIC void espClearCurrentSession(HttpConn *conn)
 {
     EspRoute    *eroute;
@@ -4657,10 +4657,6 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
     } else {
         httpSetRouteName(route, sfmt("/%s", name));
     }
-#if UNUSED
-    /* This messes up file handler */
-    httpSetRouteTarget(route, "run", "$&");
-#endif
     httpAddRouteHandler(route, "espHandler", "esp");
     httpAddRouteIndex(route, "index.esp");
     httpAddRouteIndex(route, "index.html");
@@ -4938,7 +4934,7 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     /*  Client relative LIB for client.scripts */
     httpSetRouteVar(route, "LIB", "lib");
 
-#if MOB
+#if TODO
     //  missing upload
     httpSetRouteUploadDir(route, httpMakePath(route, 0, value));
 #endif

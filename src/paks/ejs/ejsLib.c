@@ -56449,7 +56449,7 @@ static void manageHttpServer(EjsHttpServer *sp, int flags)
         mprMark(sp->ejs);
         mprMark(sp->endpoint);
         mprMark(sp->ssl);
-        httpManageTrace(sp->trace, flags);
+        mprMark(sp->trace);
         mprMark(sp->connector);
         mprMark(sp->keyFile);
         mprMark(sp->certFile);

@@ -15670,7 +15670,7 @@ PUBLIC int mprStartLogging(cchar *logSpec, int flags)
         } else {
             MprPath     info;
             int         mode;
-            mode = (MPR->flags & MPR_LOG_APPEND) ? O_APPEND : O_TRUNC;
+            mode = (MPR->flags & MPR_LOG_ANEW) ? O_TRUNC : O_APPEND;
             mode |= O_CREAT | O_WRONLY | O_TEXT;
             if (MPR->logBackup > 0) {
                 mprGetPathInfo(path, &info);
@@ -15744,7 +15744,7 @@ PUBLIC void mprSetLogBackup(ssize size, int backup, int flags)
 {
     MPR->logBackup = backup;
     MPR->logSize = size;
-    MPR->flags |= (flags & (MPR_LOG_APPEND | MPR_LOG_ANEW));
+    MPR->flags |= (flags & MPR_LOG_ANEW);
 }
 
 

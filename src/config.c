@@ -195,7 +195,7 @@ static int parseLine(MaState *state, cchar *line)
 
 #if !ME_ROM
 /*
-    TraceLog path
+    TraceLog path|-
         [size=bytes] 
         [level=0-5] 
         [backup=count] 
@@ -215,6 +215,7 @@ static int traceLogDirective(MaState *state, cchar *key, cchar *value)
     path = 0;
     format = ME_HTTP_LOG_FORMAT;
     type = "detail";
+    level = 0;
     
     for (option = maGetNextArg(sclone(value), &tok); option; option = maGetNextArg(tok, &tok)) {
         if (!path) {
@@ -225,10 +226,6 @@ static int traceLogDirective(MaState *state, cchar *key, cchar *value)
             if (smatch(option, "anew")) {
                 flags |= MPR_LOG_ANEW;
 
-#if DEPRECATED || 1
-            } else if (smatch(option, "append")) {
-                flags |= MPR_LOG_APPEND;
-#endif
             } else if (smatch(option, "backup")) {
                 backup = atoi(ovalue);
 
@@ -263,6 +260,7 @@ static int traceLogDirective(MaState *state, cchar *key, cchar *value)
         path = httpMakePath(state->route, state->configDir, path);
     }
     state->route->trace = httpCreateTrace(state->route->trace);
+    httpSetTraceLevel(level);
     return httpSetTraceLogFile(state->route->trace, path, size, backup, format, flags);
 }
 #endif
@@ -954,12 +952,6 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
 
             } else if (smatch(option, "backup")) {
                 backup = atoi(ovalue);
-
-#if DEPRECATED || 1
-            /* Defaults to append */
-            } else if (smatch(option, "append")) {
-                flags |= MPR_LOG_APPEND;
-#endif
 
             } else if (smatch(option, "anew")) {
                 flags |= MPR_LOG_ANEW;
@@ -2690,7 +2682,7 @@ PUBLIC bool maValidateServer(MaServer *server)
     for (nextHost = 0; (host = mprGetNextItem(http->hosts, &nextHost)) != 0; ) {
         for (nextRoute = 0; (route = mprGetNextItem(host->routes, &nextRoute)) != 0; ) {
             if (!mprLookupKey(route->extensions, "")) {
-                mprError("appweb config" "Route %s in host %s is missing a catch-all handler. "
+                mprError("appweb config", "Route %s in host %s is missing a catch-all handler. "
                     "Adding: AddHandler fileHandler \"\"", route->name, host->name);
                 httpAddRouteHandler(route, "fileHandler", "");
                 httpAddRouteIndex(route, "index.html");

@@ -407,15 +407,6 @@ static int parseArgs(int argc, char **argv)
         } else if (smatch(argp, "quiet") || smatch(argp, "q")) {
             app->quiet = 1;
 
-#if UNUSED
-        } else if (smatch(argp, "password") || smatch(argp, "p")) {
-            if (argind >= argc) {
-                usageError();
-            } else {
-                app->password = sclone(argv[++argind]);
-            }
-#endif
-
         } else if (smatch(argp, "rebuild") || smatch(argp, "r")) {
             app->rebuild = 1;
 

@@ -4079,8 +4079,7 @@ PUBLIC void mprLogConfig();
     @param logSize If the size is zero, then the log file will be rotated on each application boot. Otherwise,
         the log file will be rotated if on application boot, the log file is larger than this size.
     @param backupCount Count of the number of log files to keep
-    @param flags Set to MPR_LOG_APPEND to append to existing log files. Set to MPR_LOG_TRUNCATE to truncate log files
-        on application restart.
+    @param flags Set to MPR_LOG_ANEW to truncate existing files (after backup).
     @ingroup MprLog
     @stability Stable
  */
@@ -9466,8 +9465,7 @@ PUBLIC int mprSetMimeProgram(MprHash *table, cchar *mimeType, cchar *program);
 /*
     MPR flags
  */
-#define MPR_LOG_APPEND              0x10    /**< Append to existing log files */
-#define MPR_LOG_ANEW                0x20    /**< Start anew on boot (rotate) */
+#define MPR_LOG_ANEW                0x10    /**< Start anew on restart after backup */
 
 typedef bool (*MprIdleCallback)(bool traceRequests);
 
