@@ -1185,9 +1185,9 @@ static void markAndSweep()
     if (!pauseThreads()) {
         if (!pauseGC && warnOnce == 0 && !mprGetDebugMode()) {
             warnOnce++;
-            mprWarn("mpr memory", "GC synchronization timed out, some threads did not yield.");
-            mprWarn("mpr memory", "This can be caused by a thread doing a long running operation and not first calling mprYield.");
-            mprWarn("mpr memory", "If debugging, run the process with -D to enable debug mode.");
+            mprLog("mpr memory", 4, "GC synchronization timed out, some threads did not yield.");
+            mprLog("mpr memory", 4, "This can be caused by a thread doing a long running operation and not first calling mprYield.");
+            mprLog("mpr memory", 4, "If debugging, run the process with -D to enable debug mode.");
         }
         resumeThreads(YIELDED_THREADS | WAITING_THREADS);
         return;
@@ -15875,7 +15875,7 @@ static void backupLog()
         mode = O_CREAT | O_WRONLY | O_TEXT;
         if ((file = mprOpenFile(MPR->logPath, mode, 0664)) == 0) {
             mprError("mpr log", "Cannot open log file %s, errno=%d", MPR->logPath, errno);
-            MPR->logSize = MAXINT64;
+            MPR->logSize = MAXINT;
             unlock(MPR);
             return;
         }
