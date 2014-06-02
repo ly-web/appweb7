@@ -40,7 +40,6 @@ static int openEjs(HttpQueue *q)
     rx = conn->rx;
     route = rx->route;
 
-    mprTrace(5, "Open EJS handler");
     if (conn->ejs) {
         return -1;
     }
@@ -56,7 +55,6 @@ static int openEjs(HttpQueue *q)
         }
         route->context = ejsCreatePool(route->workers, "require ejs.web", route->script, route->scriptPath,
             route->home, route->documents);
-        mprTrace(5, "ejs: Create ejs pool for route %s", route->name);
     }
     pool = conn->pool = route->context;
 
@@ -122,7 +120,7 @@ static int ejsWorkersDirective(MaState *state, cchar *key, cchar *value)
     HttpStage   *stage;
 
     if ((stage = httpLookupStage(state->http, "ejsHandler")) == 0) {
-        mprError("EjsHandler is not configured");
+        mprError("ejs", "Handler is not configured");
         return MPR_ERR_BAD_SYNTAX;
     }
     httpSetRouteWorkers(state->route, atoi(value));
