@@ -20790,7 +20790,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
     for (rc = retries = 0; retries < maxTries; retries++) {
         breakSock = socket(AF_INET, SOCK_DGRAM, 0);
         if (breakSock < 0) {
-            mprWarn("Cannot open port %d to use for select. Retrying.\n");
+            mprWarn("mpr select", "Cannot open port %d to use for select. Retrying.\n");
         }
 #if ME_UNIX_LIKE
         fcntl(breakSock, F_SETFD, FD_CLOEXEC);
@@ -20819,7 +20819,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
         breakPort++;
     }
     if (breakSock < 0 || rc < 0) {
-        mprWarn("Cannot bind any port to use for select. Tried %d-%d\n", breakPort, breakPort - maxTries);
+        mprWarn("mpr select", "Cannot bind any port to use for select. Tried %d-%d\n", breakPort, breakPort - maxTries);
         return MPR_ERR_CANT_OPEN;
     }
     ws->breakSock = breakSock;
