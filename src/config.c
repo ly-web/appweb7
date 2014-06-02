@@ -91,21 +91,24 @@ PUBLIC int maParseFile(MaState *state, cchar *path)
 {
     MaAppweb    *appweb;
     MaState     *topState;
-    int         rc;
+    int         rc, lineNumber;
 
     assert(path && *path);
     if (!state) {
+        lineNumber = 0;
         appweb = MPR->appwebService;
         topState = state = createState(appweb->defaultServer, 0);
     } else {
         topState = 0;
+        lineNumber = state->lineNumber;
         state = maPushState(state);
     }
     rc = parseFileInner(state, path);
     if (topState) {
         state->server->state = 0;
     } else {
-        maPopState(state);
+        state = maPopState(state);
+        state->lineNumber = lineNumber;
     }
     return rc;
 }
