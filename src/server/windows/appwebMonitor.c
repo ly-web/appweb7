@@ -293,7 +293,7 @@ static int openMonitorIcon()
     }
     iconHandle = (HICON) LoadImage(app->appInst, APPWEB_ICON, IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE);
     if (iconHandle == 0) {
-        mprError("appweb monitor", Cannot load icon %s", APPWEB_ICON);
+        mprError("appweb monitor", "Cannot load icon %s", APPWEB_ICON);
         return MPR_ERR_CANT_INITIALIZE;
     }
     data.uID = APPWEB_MONITOR_ID;
