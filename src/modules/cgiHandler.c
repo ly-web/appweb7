@@ -442,7 +442,7 @@ static void readFromCgi(Cgi *cgi, int channel)
         }
         if (channel == MPR_CMD_STDERR) {
             //  FUTURE - should be an option to keep going despite stderr output
-            mprError("CGI: Error for \"%s\"\n\n%s", conn->rx->uri, mprGetBufStart(packet->content));
+            mprLog("cgi", 0, "Error for \"%s\"\n\n%s", conn->rx->uri, mprGetBufStart(packet->content));
             httpSetStatus(conn, HTTP_CODE_SERVICE_UNAVAILABLE);
             cgi->seenHeader = 1;
         }

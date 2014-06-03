@@ -236,7 +236,7 @@ static App *createApp(Mpr *mpr)
 #elif ME_COM_MDB
     app->database = sclone("mdb");
 #else
-    mprError("esp", "No database provider defined");
+    mprLog("esp", 0, "No database provider defined");
 #endif
     app->topDeps = mprCreateHash(0, 0);
     app->cipher = sclone("blowfish");
@@ -620,7 +620,7 @@ static void initRuntime()
         app->paksCacheDir = mprJoinPath(mprGetAppDir(), "../" ME_ESP_PAKS);
     }
     if (mprStart() < 0) {
-        mprError("esp", "Cannot start MPR for %s", mprGetAppName());
+        mprLog("esp", 0, "Cannot start MPR for %s", mprGetAppName());
         mprDestroy();
         app->error = 1;
         return;
@@ -1298,7 +1298,7 @@ static void run(int argc, char **argv)
         }
     }
     if (httpStartEndpoints() < 0) {
-        mprError("esp", "Cannot start HTTP service, exiting.");
+        mprLog("esp", 0, "Cannot start HTTP service, exiting.");
         return;
     }
     mprServiceEvents(-1, 0);
@@ -3117,7 +3117,7 @@ static void fail(cchar *fmt, ...)
 
     va_start(args, fmt);
     msg = sfmtv(fmt, args);
-    mprError("esp", "%s", msg);
+    mprLog("esp", 0, "%s", msg);
     va_end(args);
     app->error = 1;
 }
@@ -3130,8 +3130,9 @@ static void fatal(cchar *fmt, ...)
 
     va_start(args, fmt);
     msg = sfmtv(fmt, args);
-    mprFatal("%s", msg);
+    mprLog("esp", 0, "%s", msg);
     va_end(args);
+    exit(2);
 }
 
 
@@ -3376,7 +3377,7 @@ static cchar *findAcceptableVersion(cchar *name, cchar *originalCriteria)
     } else {
         fail("Cannot find pak: \"%s\" in %s", name, app->paksCacheDir);
     }
-    mprError("esp", "Use \"pak install %s\" to install", name);
+    mprLog("esp", 0, "Use \"pak install %s\" to install", name);
     return 0;
 }
 
@@ -3406,7 +3407,7 @@ static char *getPassword()
     if (smatch(password, confirm)) {
         return password;
     }
-    mprError("esp", "Password not confirmed");
+    mprLog("esp", 0, "Password not confirmed");
     return 0;
 }
 

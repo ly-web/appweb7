@@ -208,7 +208,7 @@ static void readyPhp(HttpQueue *q)
         CG(zend_lineno) = 0;
 
     } zend_catch {
-        mprError("php", "Cannot start request");
+        mprLog("php", 0, "Cannot start request");
         zend_try {
             php_request_shutdown(0);
         } zend_end_try();
@@ -485,7 +485,7 @@ static int initializePhp(Http *http)
     }
     sapi_startup(&phpSapiBlock);
     if (php_module_startup(&phpSapiBlock, 0, 0) == FAILURE) {
-        mprError("php", "Cannot initialize");
+        mprLog("php", 0, "Cannot initialize");
         return MPR_ERR_CANT_INITIALIZE;
     }
     zend_llist_init(&global_vars, sizeof(char *), 0, 0);

@@ -249,7 +249,7 @@ PUBLIC int maStartServer(MaServer *server)
     }
     if (count == 0) {
         if (!warned) {
-            mprError("appweb config", "Server is not listening on any addresses");
+            mprLog("appweb config", 0, "Server is not listening on any addresses");
         }
         return MPR_ERR_CANT_OPEN;
     }
@@ -315,7 +315,7 @@ PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
     }
     if ((module = mprLookupModule(name)) != 0) {
 #if ME_STATIC
-        mprLog("appweb config", MPR_INFO, "Activating module (Builtin) %s", name);
+        mprLog("appweb config", 2, "Activating module (Builtin) %s", name);
 #endif
         return 0;
     }

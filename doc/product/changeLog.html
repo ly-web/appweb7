@@ -36,7 +36,7 @@
             <h1>Quick Nav</h1>
             <ul>
                 <li><a href="5.0.0">Release 5.0.0</a></li>
-                <li><a href="4.5.5">Release 4.5.5</a></li>
+                <li><a href="4.6.1">Release 4.6.1</a></li>
                 <li><a href="3.4.1">Release 3.4.1</a></li>
                 <li><a href="2.4.4">Release 2.4.4</a></li>
             </ul>
@@ -121,8 +121,25 @@
                 and <a href="../api/mpr.html#group___mpr_log_1gaa29ca2fc7ccd5dc2314b1c0c53f5f788">mprError</a>
                 APIs have revised signatures.</li>
             </ul>
+            <a id="4.6.1"></a>
+            <h2 class="section">Changes in 4.6.1</h2>
+            <h3>Fixes</h3>
+            <ul>
+            </ul>
+
             <a id="4.6.0"></a>
             <h2 class="section">Changes in 4.6.0</h2>
+            <h3>Minor Changes</h3>
+            <ul>
+                <li>The format for ESP applications package.json has been upgraded for compatibility 
+                    with the <a href="http://wiki.commonjs.org/wiki/Packages/1.1">CommonJS Package</a>
+                    specification and the <a href="http://embedthis.com/products/pak/">Pak</a> package manager.
+                    <a href="https://github.com/embedthis/appweb/issues/NN">[issue NN]</a>.</li>
+                <li>The <em>esp</em> utility has been upgraded to support the simpler "make dir and install"
+                    paradigm for creating applications instead of "generate app"
+                    <a href="https://github.com/embedthis/appweb/issues/NN">[issue NN]</a>.</li>
+                </li>
+            </ul>
             <h3>Fixes</h3>
             <ul>
                 <li>Switch to use MakeMe, previously called Bit. See the GitHub issue for details of the change.
@@ -150,11 +167,12 @@
                             collection.</li>
                         <li>The <em>auth</em> property is renamed <em>app.http.auth.store</em>.</li>
                     </ul>
-                    <p>See the <a href="https://github.com/embedthis/esp/blob/dev/samples/esp-configuration/package.json">esp-configuration Sample</a>    for details of all supported configuration file properties.</a>
+                    <p>See the <a href="https://github.com/embedthis/esp/blob/dev/samples/esp-configuration/package.json">esp-configuration Sample</a> for details of all supported configuration file properties.</a>
                 </li>
                 <li>The esp-angular-mvc, esp-angular and angular packs have been removed from the product and are
                 now available from the <a href="https://embedthis.com/catalog/#/?keywords=angular">Pak Catalog</a>.</li>
             </ul>
+
             <a id="4.5.6"></a>
             <h2 class="section">Changes in 4.5.6</h2>
             <h3>Fixes</h3>
