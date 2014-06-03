@@ -6239,6 +6239,9 @@ PUBLIC void httpLogRoutes(HttpHost *host, bool full)
     HttpRoute   *route;
     int         next, foundDefault;
 
+    if (!host) {
+        host = httpGetDefaultHost();
+    }
     if (!full) {
         mprLog("http route", 0, "%-30s %-16s %-50s %-14s\n", "Name", "Methods", "Pattern", "Target");
     }
