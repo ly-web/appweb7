@@ -18,6 +18,10 @@
     "app": {
         "esp": {
             "generate": {
+                "-appweb": "esp-mvc/generate/appweb.conf",
+                "-controller": "esp-mvc/generate/controller.c",
+                "-controllerSingleton": "esp-mvc/generate/controllerSingleton.c",
+
                 "?appweb": "esp-legacy-mvc/generate/appweb.conf",
                 "?clientList": "esp-legacy-mvc/generate/list.esp",
                 "?clientEdit": "esp-legacy-mvc/generate/edit.esp",

@@ -3,7 +3,7 @@
 #
 
 NAME                  = appweb
-VERSION               = 4.6.0
+VERSION               = 4.6.1
 
 OS                    = windows
 PA                    = $(PROCESSOR_ARCHITECTURE)
@@ -2440,5 +2440,5 @@ uninstall: $(DEPS_96)
 #   version
 #
 version: $(DEPS_97)
-	echo 4.6.0
+	echo 4.6.1
 

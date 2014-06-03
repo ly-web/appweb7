@@ -3,7 +3,7 @@
 #
 
 NAME                  := appweb
-VERSION               := 4.6.0
+VERSION               := 4.6.1
 PROFILE               ?= static
 ARCH                  ?= $(shell echo $(WIND_HOST_TYPE) | sed 's/-.*//')
 CPU                   ?= $(subst X86,PENTIUM,$(shell echo $(ARCH) | tr a-z A-Z))
@@ -2004,5 +2004,5 @@ uninstall: $(DEPS_86)
 #   version
 #
 version: $(DEPS_87)
-	echo 4.6.0
+	echo 4.6.1
 
