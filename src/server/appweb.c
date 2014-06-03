@@ -10,8 +10,9 @@
             --debugger              # Disable timeouts to make debugging easier
             --home path             # Set the home working directory
             --log logFile:level     # Log to file file at verbosity level
-            --trace traceFile:level # Log to file file at verbosity level
             --name uniqueName       # Name for this instance
+            --show                  # Show route table
+            --trace traceFile:level # Log to file file at verbosity level
             --version               # Output version information
             -v                      # Same as --log stderr:2
             -DIGIT                  # Same as --log stderr:DIGIT
@@ -35,6 +36,7 @@ typedef struct AppwebApp {
     char        *home;
     char        *configFile;
     char        *pathVar;
+    int         show;
     int         workers;
 } AppwebApp;
 
@@ -166,6 +168,9 @@ MAIN(appweb, int argc, char **argv, char **envp)
             }
             app->workers = atoi(argv[++argind]);
 
+        } else if (smatch(argp, "--show") || smatch(argp, "-s")) {
+            app->show = 1;
+
         } else if (smatch(argp, "--trace") || smatch(argp, "-t")) {
             if (argind >= argc) {
                 usageError();
@@ -231,6 +236,9 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if (maStartAppweb(app->appweb) < 0) {
         mprError("appweb", "Cannot start HTTP service, exiting.");
         exit(9);
+    }
+    if (app->show) {
+        httpLogRoutes(0, 0);
     }
     mprServiceEvents(-1, 0);
 
@@ -410,8 +418,9 @@ static void usageError(Mpr *mpr)
         "    --exe path              # Set path to Appweb executable on Vxworks\n"
         "    --home directory        # Change to directory to run\n"
         "    --log logFile:level     # Log to file at verbosity level (0-5)\n"
-        "    --trace traceFile:level # Trace to file at verbosity level (0-5)\n"
         "    --name uniqueName       # Unique name for this instance\n"
+        "    --show                  # Show route table\n"
+        "    --trace traceFile:level # Trace to file at verbosity level (0-5)\n"
         "    --verbose               # Same as --log stderr:2\n"
         "    --version               # Output version information\n"
         "    --DIGIT                 # Same as --log stderr:DIGIT\n\n",
