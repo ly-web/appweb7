@@ -208,9 +208,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
         }
     }
     app->home = mprGetAbsPath(app->home);
-    if (logSpec) {
-        mprStartLogging(logSpec, MPR_LOG_CONFIG | MPR_LOG_CMDLINE);
-    }
+    mprStartLogging(logSpec, MPR_LOG_CONFIG | MPR_LOG_CMDLINE);
     if (traceSpec) {
         httpStartTracing(traceSpec);
     }
