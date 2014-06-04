@@ -15860,11 +15860,22 @@ PUBLIC void mprDefaultLogHandler(cchar *tags, int level, cchar *msg)
     if (MPR->logBackup && MPR->logSize && (check++ % 1000) == 0) {
         backupLog();
     }
-    if (level == 0 || tags) {
-        fmt(tbuf, sizeof(tbuf), "%s%-14s: ", level ? "" : "error ", tags ? tags : "");
-        mprWriteFileString(file, tbuf);
+    if (MPR->logPath) {
+        if (level == 0 || tags) {
+            if (level == 0) {
+                fmt(tbuf, sizeof(tbuf), "%s error %-14s: ", mprGetDate(MPR_LOG_DATE), tags ? tags : "");
+            } else {
+                fmt(tbuf, sizeof(tbuf), "%s %-20s: ", mprGetDate(MPR_LOG_DATE), tags ? tags : "");
+            }
+            mprWriteFileString(file, tbuf);
+        } else {
+            mprWriteFileString(file, ": ");
+        }
     } else {
-    mprWriteFileString(file, ": ");
+        if (level == 0) {
+            fmt(tbuf, sizeof(tbuf), "%s: error: ", MPR->name);
+            mprWriteFileString(file, tbuf);
+        }
     }
     mprWriteFileString(file, msg);
     mprWriteFileString(file, "\n");
