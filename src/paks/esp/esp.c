@@ -455,6 +455,12 @@ static int parseArgs(int argc, char **argv)
             }
         } else if (smatch(argp, "verbose") || smatch(argp, "v")) {
             app->verbose++;
+            if (!app->logSpec) {
+                app->logSpec = sfmt("stderr:2");
+            }
+            if (!app->traceSpec) {
+                app->traceSpec = sfmt("stderr:2");
+            }
 
         } else if (smatch(argp, "version") || smatch(argp, "V")) {
             mprPrintf("%s\n", ME_VERSION);
@@ -608,9 +614,15 @@ static void initRuntime()
     if (app->error) {
         return;
     }
-    mprStartLogging(app->logSpec, MPR_LOG_CMDLINE);
-    httpStartTracing(app->traceSpec);
+    httpCreate(HTTP_SERVER_SIDE | HTTP_UTILITY);
+    http = MPR->httpService;
     
+    if (app->logSpec) {
+        mprStartLogging(app->logSpec, MPR_LOG_CMDLINE);
+    }
+    if (app->traceSpec) {
+        httpStartTracing(app->traceSpec);
+    }
     app->currentDir = mprGetCurrentPath();
     app->binDir = mprGetAppDir();
 
@@ -625,8 +637,7 @@ static void initRuntime()
         app->error = 1;
         return;
     }
-    httpCreate(HTTP_SERVER_SIDE | HTTP_UTILITY);
-    http = MPR->httpService;
+
 
     if ((app->appweb = maCreateAppweb()) == 0) {
         fail("Cannot create HTTP service for %s", mprGetAppName());
@@ -737,7 +748,6 @@ static void process(int argc, char **argv)
     if (app->error) {
         return;
     }
-
     if (argc == 0) {
         run(argc, argv);
         return;
@@ -1261,6 +1271,7 @@ static void run(int argc, char **argv)
     if (app->error) {
         return;
     }
+#if UNUSED
     if (!app->logSpec) {
         if (app->verbose) {
             mprSetLogLevel(app->verbose + 1);
@@ -1275,6 +1286,7 @@ static void run(int argc, char **argv)
             httpSetTraceLevel(2);
         }
     }
+#endif
     if (app->show) {
         httpLogRoutes(app->host, 0);
     }

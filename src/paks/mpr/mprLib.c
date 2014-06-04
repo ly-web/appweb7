@@ -16024,7 +16024,6 @@ PUBLIC void mprSetLogLevel(int level)
 }
 
 
-#if UNUSED
 PUBLIC bool mprSetCmdlineLogging(bool on)
 {
     bool    wasLogging;
@@ -16036,7 +16035,6 @@ PUBLIC bool mprSetCmdlineLogging(bool on)
     }
     return wasLogging;
 }
-#endif
 
 
 PUBLIC bool mprGetCmdlineLogging()

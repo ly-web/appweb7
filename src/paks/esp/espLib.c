@@ -5809,7 +5809,7 @@ static int runCommand(HttpRoute *route, MprDispatcher *dispatcher, cchar *comman
         *errMsg = sfmt("Missing EspCompile directive for %s", csource);
         return MPR_ERR_CANT_READ;
     }
-    mprLog("esp", 4, "ESP command: %s\n", commandLine);
+    mprLog("esp", 4, "Run: %s", commandLine);
     if (eroute->env) {
         elist = mprCreateList(0, MPR_LIST_STABLE);
         for (ITERATE_KEYS(eroute->env, var)) {

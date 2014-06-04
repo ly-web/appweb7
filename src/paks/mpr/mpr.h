@@ -10032,7 +10032,6 @@ PUBLIC int mprSetAppName(cchar *name, cchar *title, cchar *version);
  */
 PUBLIC void mprSetAppPath(cchar *path);
 
-#if UNUSED
 /**
     Set if command line logging was requested.
     @description Logging may be initiated by invoking an MPR based program with a "--log" switch. This API assists
@@ -10043,7 +10042,6 @@ PUBLIC void mprSetAppPath(cchar *path);
     @stability Stable.
  */
 PUBLIC bool mprSetCmdlineLogging(bool on);
-#endif
 
 /** 
     Turn on debug mode.
