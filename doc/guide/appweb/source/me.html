@@ -503,10 +503,11 @@ me help       # Show MakeMe usage</pre>
             <h2 class="section">Static Linking</h2>
             <p>On some platforms, it is desirable to statically link the Appweb web server. The default Appweb MakeMe files
             will build Appweb using shared libraries. This is so that appweb can dynamically load modules at run-time.
-            It is best to use dynamic linking if using ESP so that it can dynamically reload applications to update them.
+            If using ESP or Ejscript, it is highly recommended taht you use dynamic linking so that applications
+            can be dynamically loaded and reloaded.
             This is ideal when developing so that you can quickly reload applications by simply clicking reload in your
             browser.</p>
-            <p>However, if you want to statically link Appweb and the modules together, run configure with the
+            <p>However, if you must statically link Appweb and the modules together, run configure with the
             <i>--static</i> option and then rebuild.</p>
 <pre>
 ./configure --static
