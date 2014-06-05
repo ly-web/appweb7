@@ -4388,7 +4388,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
             if ((value = espGetConfig(route, "app.http.update", 0)) != 0) {
                 eroute->update = smatch(value, "true");
             }
-            if ((value = espGetConfig(route, "app.http.keepSource", 0)) != 0) {
+            if ((value = espGetConfig(route, "app.http.keep", 0)) != 0) {
                 eroute->keepSource = smatch(value, "true");
             }
             if ((value = espGetConfig(route, "app.http.serverPrefix", 0)) != 0) {
