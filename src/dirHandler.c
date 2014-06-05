@@ -68,7 +68,7 @@ PUBLIC bool maRenderDirListing(HttpConn *conn)
         return 0;
     }
     if (dir->enabled && tx->fileInfo.isDir && sends(rx->pathInfo, "/")) {
-        conn->data = dir;
+        conn->reqData = dir;
         return 1;
     }
     return 0;
@@ -93,7 +93,7 @@ static void startDir(HttpQueue *q)
     conn = q->conn;
     rx = conn->rx;
     tx = conn->tx;
-    dir = conn->data;
+    dir = conn->reqData;
     assert(tx->filename);
 
     if (!(rx->flags & (HTTP_GET | HTTP_HEAD))) {
@@ -140,7 +140,7 @@ static void parseQuery(HttpConn *conn)
     char        *value, *query, *next, *tok;
 
     rx = conn->rx;
-    dir = conn->data;
+    dir = conn->reqData;
     
     query = sclone(rx->parsedUri->query);
     if (query == 0) {
@@ -191,7 +191,7 @@ static void sortList(HttpConn *conn, MprList *list)
     Dir         *dir;
     int         count, i, j, rc;
 
-    dir = conn->data;
+    dir = conn->reqData;
     
     if (dir->sortField == 0) {
         return;
@@ -267,7 +267,7 @@ static void outputHeader(HttpQueue *q, cchar *path, int nameSize)
     char    *parent, *parentSuffix;
     int     reverseOrder, fancy, isRootDir;
 
-    dir = q->conn->data;
+    dir = q->conn->reqData;
     fancy = 1;
     path = mprEscapeHtml(path);
 
@@ -368,7 +368,7 @@ static void outputLine(HttpQueue *q, MprDirEntry *ep, cchar *path, int nameSize)
     char        *months[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
     path = mprEscapeHtml(path);
-    dir = q->conn->data;
+    dir = q->conn->reqData;
     if (ep->size >= (1024 * 1024 * 1024)) {
         fmtNum(sizeBuf, sizeof(sizeBuf), (int) ep->size, 1024 * 1024 * 1024, "G");
 
@@ -438,7 +438,7 @@ static void outputFooter(HttpQueue *q)
     Dir         *dir;
     
     conn = q->conn;
-    dir = conn->data;
+    dir = conn->reqData;
     
     if (dir->fancyIndexing == 2) {
         httpWrite(q, "<tr><th colspan=\"5\"><hr /></th></tr>\r\n</table>\r\n");
@@ -460,7 +460,7 @@ static void filterDirList(HttpConn *conn, MprList *list)
     MprDirEntry     *dp;
     int             next;
 
-    dir = conn->data;
+    dir = conn->reqData;
     
     /*
         Do pattern matching. Entries that don't match, free the name to mark
