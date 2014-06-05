@@ -15848,10 +15848,20 @@ char *severities[] = {
 #endif
 
 
+/*
+    Output format is:
+
+        HH:MM:SS-YY-MM-DD LEVEL TAGS : Message [; key=value ...]
+
+    If output is just default error messsages, the format is:
+
+        NAME: error: Message
+ */
 PUBLIC void mprDefaultLogHandler(cchar *tags, int level, cchar *msg)
 {
     MprFile     *file;
     char        tbuf[128];
+    ssize       len, width;
     static int  check = 0;
 
     if ((file = MPR->logFile) == 0) {
@@ -15863,13 +15873,18 @@ PUBLIC void mprDefaultLogHandler(cchar *tags, int level, cchar *msg)
     if (MPR->logPath) {
         if (level == 0 || tags) {
             if (level == 0) {
-                fmt(tbuf, sizeof(tbuf), "%s error %-14s: ", mprGetDate(MPR_LOG_DATE), tags ? tags : "");
+                fmt(tbuf, sizeof(tbuf), "<%s %d error %s> ", mprGetDate(MPR_LOG_DATE), level, tags ? tags : "");
             } else {
-                fmt(tbuf, sizeof(tbuf), "%s %-20s: ", mprGetDate(MPR_LOG_DATE), tags ? tags : "");
+                fmt(tbuf, sizeof(tbuf), "<%s %d %s> ", mprGetDate(MPR_LOG_DATE), level, tags ? tags : "");
             }
             mprWriteFileString(file, tbuf);
+            len = slen(tbuf);
+            width = 40;
+            if (len < width) {
+                mprWriteFile(file, "                                          ", width - len);
+            }
         } else {
-            mprWriteFileString(file, ": ");
+            mprWriteFileString(file, "> ");
         }
     } else {
         if (level == 0) {
@@ -16014,9 +16029,13 @@ PUBLIC MprFile *mprGetLogFile()
 }
 
 
-PUBLIC void mprSetLogHandler(MprLogHandler handler)
+PUBLIC MprLogHandler mprSetLogHandler(MprLogHandler handler)
 {
+    MprLogHandler   priorHandler;
+
+    priorHandler = MPR->logHandler;
     MPR->logHandler = handler;
+    return priorHandler;
 }
 
 
@@ -17059,13 +17078,11 @@ static char *probe(cchar *filename)
 
     assert(filename && *filename);
 
-    mprDebug("mpr", 5, "Probe for native module %s", filename);
     if (mprPathExists(filename, R_OK)) {
         return sclone(filename);
     }
     if (strstr(filename, ME_SHOBJ) == 0) {
         path = sjoin(filename, ME_SHOBJ, NULL);
-        mprDebug("mpr", 5, "Probe for native module %s", path);
         if (mprPathExists(path, R_OK)) {
             return path;
         }
@@ -17089,7 +17106,6 @@ PUBLIC char *mprSearchForModule(cchar *filename)
         Search for the path directly
      */
     if ((path = probe(filename)) != 0) {
-        mprDebug("mpr", 5, "Found native module %s at %s", filename, path);
         return path;
     }
 
@@ -17102,7 +17118,6 @@ PUBLIC char *mprSearchForModule(cchar *filename)
     while (dir && *dir) {
         f = mprJoinPath(dir, filename);
         if ((path = probe(f)) != 0) {
-            mprDebug("mpr", 5, "Found native module %s at %s", filename, path);
             return path;
         }
         dir = stok(0, MPR_SEARCH_SEP, &tok);

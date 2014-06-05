@@ -4111,9 +4111,10 @@ PUBLIC void mprSetLogFile(struct MprFile *file);
     @description Defines a callback handler for MPR debug and error log messages. When output is sent to 
         the debug channel, the log handler will be invoked to accept the output message.
     @param handler Callback handler
-    @stability Stable
+    @return Prior log handler
+    @stability Evolving
  */
-PUBLIC void mprSetLogHandler(MprLogHandler handler);
+PUBLIC MprLogHandler mprSetLogHandler(MprLogHandler handler);
 
 /**
     Start logging 
