@@ -56,8 +56,9 @@ Me.load({
             'generate-capture': true,
             build: `
                 trace('Copy', me.dir.out.join('esp'))
+                /* Force all esp paks to be the same version as appweb */
+                let version = me.dir.src.join('package.json').readJSON().version || '0.0.0'
                 for each (pak in Path('.').files('esp-*')) {
-                    let version = pak.join('package.json').readJSON().version || '0.0.0'
                     makeDir(OUT.join('esp', pak, version))
                     for each (path in pak.files('**')) {
                         let stem = path.components.slice(1).join(path.separator)

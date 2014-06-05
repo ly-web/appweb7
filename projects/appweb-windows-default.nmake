@@ -1237,63 +1237,63 @@ DEPS_50 = $(DEPS_50) src\paks\esp-server\package.json
 
 $(CONFIG)\esp: $(DEPS_50)
 	cd src\paks
-	if not exist "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0" md "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0"
-	if not exist "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\client" md "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\client"
-	if not exist "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\client\assets" md "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\client\assets"
-	copy /Y esp-html-mvc\client\assets\favicon.ico ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\client\assets\favicon.ico
-	if not exist "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\client\css" md "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\client\css"
-	copy /Y esp-html-mvc\client\css\all.css ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\client\css\all.css
-	copy /Y esp-html-mvc\client\css\all.less ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\client\css\all.less
-	copy /Y esp-html-mvc\client\index.esp ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\client\index.esp
-	if not exist "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\css" md "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\css"
-	copy /Y esp-html-mvc\css\app.less ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\css\app.less
-	copy /Y esp-html-mvc\css\theme.less ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\css\theme.less
-	if not exist "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\generate" md "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\generate"
-	copy /Y esp-html-mvc\generate\appweb.conf ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\generate\appweb.conf
-	copy /Y esp-html-mvc\generate\controller.c ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\generate\controller.c
-	copy /Y esp-html-mvc\generate\controllerSingleton.c ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\generate\controllerSingleton.c
-	copy /Y esp-html-mvc\generate\edit.esp ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\generate\edit.esp
-	copy /Y esp-html-mvc\generate\list.esp ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\generate\list.esp
-	if not exist "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\layouts" md "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\layouts"
-	copy /Y esp-html-mvc\layouts\default.esp ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\layouts\default.esp
-	copy /Y esp-html-mvc\package.json ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.0\package.json
-	if not exist "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0" md "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0"
-	if not exist "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\generate" md "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\generate"
-	copy /Y esp-legacy-mvc\generate\appweb.conf ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\generate\appweb.conf
-	copy /Y esp-legacy-mvc\generate\controller.c ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\generate\controller.c
-	copy /Y esp-legacy-mvc\generate\edit.esp ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\generate\edit.esp
-	copy /Y esp-legacy-mvc\generate\list.esp ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\generate\list.esp
-	copy /Y esp-legacy-mvc\generate\migration.c ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\generate\migration.c
-	if not exist "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\generate\src" md "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\generate\src"
-	copy /Y esp-legacy-mvc\generate\src\app.c ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\generate\src\app.c
-	if not exist "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\layouts" md "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\layouts"
-	copy /Y esp-legacy-mvc\layouts\default.esp ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\layouts\default.esp
-	copy /Y esp-legacy-mvc\package.json ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\package.json
-	if not exist "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\static" md "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\static"
-	if not exist "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\static\css" md "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\static\css"
-	copy /Y esp-legacy-mvc\static\css\all.css ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\static\css\all.css
-	if not exist "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\static\images" md "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\static\images"
-	copy /Y esp-legacy-mvc\static\images\banner.jpg ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\static\images\banner.jpg
-	copy /Y esp-legacy-mvc\static\images\favicon.ico ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\static\images\favicon.ico
-	copy /Y esp-legacy-mvc\static\images\splash.jpg ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\static\images\splash.jpg
-	copy /Y esp-legacy-mvc\static\index.esp ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\static\index.esp
-	if not exist "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\static\js" md "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\static\js"
-	copy /Y esp-legacy-mvc\static\js\jquery.esp.js ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\static\js\jquery.esp.js
-	copy /Y esp-legacy-mvc\static\js\jquery.js ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.0\static\js\jquery.js
-	if not exist "..\..\$(CONFIG)\esp\esp-mvc\4.6.0" md "..\..\$(CONFIG)\esp\esp-mvc\4.6.0"
-	if not exist "..\..\$(CONFIG)\esp\esp-mvc\4.6.0\generate" md "..\..\$(CONFIG)\esp\esp-mvc\4.6.0\generate"
-	copy /Y esp-mvc\generate\appweb.conf ..\..\$(CONFIG)\esp\esp-mvc\4.6.0\generate\appweb.conf
-	copy /Y esp-mvc\generate\controller.c ..\..\$(CONFIG)\esp\esp-mvc\4.6.0\generate\controller.c
-	copy /Y esp-mvc\generate\migration.c ..\..\$(CONFIG)\esp\esp-mvc\4.6.0\generate\migration.c
-	if not exist "..\..\$(CONFIG)\esp\esp-mvc\4.6.0\generate\src" md "..\..\$(CONFIG)\esp\esp-mvc\4.6.0\generate\src"
-	copy /Y esp-mvc\generate\src\app.c ..\..\$(CONFIG)\esp\esp-mvc\4.6.0\generate\src\app.c
-	copy /Y esp-mvc\LICENSE.md ..\..\$(CONFIG)\esp\esp-mvc\4.6.0\LICENSE.md
-	copy /Y esp-mvc\package.json ..\..\$(CONFIG)\esp\esp-mvc\4.6.0\package.json
-	copy /Y esp-mvc\README.md ..\..\$(CONFIG)\esp\esp-mvc\4.6.0\README.md
-	if not exist "..\..\$(CONFIG)\esp\esp-server\4.6.0" md "..\..\$(CONFIG)\esp\esp-server\4.6.0"
-	if not exist "..\..\$(CONFIG)\esp\esp-server\4.6.0\generate" md "..\..\$(CONFIG)\esp\esp-server\4.6.0\generate"
-	copy /Y esp-server\generate\appweb.conf ..\..\$(CONFIG)\esp\esp-server\4.6.0\generate\appweb.conf
-	copy /Y esp-server\package.json ..\..\$(CONFIG)\esp\esp-server\4.6.0\package.json
+	if not exist "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1" md "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1"
+	if not exist "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\client" md "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\client"
+	if not exist "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\client\assets" md "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\client\assets"
+	copy /Y esp-html-mvc\client\assets\favicon.ico ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\client\assets\favicon.ico
+	if not exist "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\client\css" md "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\client\css"
+	copy /Y esp-html-mvc\client\css\all.css ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\client\css\all.css
+	copy /Y esp-html-mvc\client\css\all.less ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\client\css\all.less
+	copy /Y esp-html-mvc\client\index.esp ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\client\index.esp
+	if not exist "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\css" md "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\css"
+	copy /Y esp-html-mvc\css\app.less ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\css\app.less
+	copy /Y esp-html-mvc\css\theme.less ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\css\theme.less
+	if not exist "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\generate" md "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\generate"
+	copy /Y esp-html-mvc\generate\appweb.conf ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\generate\appweb.conf
+	copy /Y esp-html-mvc\generate\controller.c ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\generate\controller.c
+	copy /Y esp-html-mvc\generate\controllerSingleton.c ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\generate\controllerSingleton.c
+	copy /Y esp-html-mvc\generate\edit.esp ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\generate\edit.esp
+	copy /Y esp-html-mvc\generate\list.esp ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\generate\list.esp
+	if not exist "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\layouts" md "..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\layouts"
+	copy /Y esp-html-mvc\layouts\default.esp ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\layouts\default.esp
+	copy /Y esp-html-mvc\package.json ..\..\$(CONFIG)\esp\esp-html-mvc\4.6.1\package.json
+	if not exist "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1" md "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1"
+	if not exist "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\generate" md "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\generate"
+	copy /Y esp-legacy-mvc\generate\appweb.conf ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\generate\appweb.conf
+	copy /Y esp-legacy-mvc\generate\controller.c ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\generate\controller.c
+	copy /Y esp-legacy-mvc\generate\edit.esp ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\generate\edit.esp
+	copy /Y esp-legacy-mvc\generate\list.esp ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\generate\list.esp
+	copy /Y esp-legacy-mvc\generate\migration.c ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\generate\migration.c
+	if not exist "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\generate\src" md "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\generate\src"
+	copy /Y esp-legacy-mvc\generate\src\app.c ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\generate\src\app.c
+	if not exist "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\layouts" md "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\layouts"
+	copy /Y esp-legacy-mvc\layouts\default.esp ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\layouts\default.esp
+	copy /Y esp-legacy-mvc\package.json ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\package.json
+	if not exist "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\static" md "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\static"
+	if not exist "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\static\css" md "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\static\css"
+	copy /Y esp-legacy-mvc\static\css\all.css ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\static\css\all.css
+	if not exist "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\static\images" md "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\static\images"
+	copy /Y esp-legacy-mvc\static\images\banner.jpg ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\static\images\banner.jpg
+	copy /Y esp-legacy-mvc\static\images\favicon.ico ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\static\images\favicon.ico
+	copy /Y esp-legacy-mvc\static\images\splash.jpg ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\static\images\splash.jpg
+	copy /Y esp-legacy-mvc\static\index.esp ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\static\index.esp
+	if not exist "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\static\js" md "..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\static\js"
+	copy /Y esp-legacy-mvc\static\js\jquery.esp.js ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\static\js\jquery.esp.js
+	copy /Y esp-legacy-mvc\static\js\jquery.js ..\..\$(CONFIG)\esp\esp-legacy-mvc\4.6.1\static\js\jquery.js
+	if not exist "..\..\$(CONFIG)\esp\esp-mvc\4.6.1" md "..\..\$(CONFIG)\esp\esp-mvc\4.6.1"
+	if not exist "..\..\$(CONFIG)\esp\esp-mvc\4.6.1\generate" md "..\..\$(CONFIG)\esp\esp-mvc\4.6.1\generate"
+	copy /Y esp-mvc\generate\appweb.conf ..\..\$(CONFIG)\esp\esp-mvc\4.6.1\generate\appweb.conf
+	copy /Y esp-mvc\generate\controller.c ..\..\$(CONFIG)\esp\esp-mvc\4.6.1\generate\controller.c
+	copy /Y esp-mvc\generate\migration.c ..\..\$(CONFIG)\esp\esp-mvc\4.6.1\generate\migration.c
+	if not exist "..\..\$(CONFIG)\esp\esp-mvc\4.6.1\generate\src" md "..\..\$(CONFIG)\esp\esp-mvc\4.6.1\generate\src"
+	copy /Y esp-mvc\generate\src\app.c ..\..\$(CONFIG)\esp\esp-mvc\4.6.1\generate\src\app.c
+	copy /Y esp-mvc\LICENSE.md ..\..\$(CONFIG)\esp\esp-mvc\4.6.1\LICENSE.md
+	copy /Y esp-mvc\package.json ..\..\$(CONFIG)\esp\esp-mvc\4.6.1\package.json
+	copy /Y esp-mvc\README.md ..\..\$(CONFIG)\esp\esp-mvc\4.6.1\README.md
+	if not exist "..\..\$(CONFIG)\esp\esp-server\4.6.1" md "..\..\$(CONFIG)\esp\esp-server\4.6.1"
+	if not exist "..\..\$(CONFIG)\esp\esp-server\4.6.1\generate" md "..\..\$(CONFIG)\esp\esp-server\4.6.1\generate"
+	copy /Y esp-server\generate\appweb.conf ..\..\$(CONFIG)\esp\esp-server\4.6.1\generate\appweb.conf
+	copy /Y esp-server\package.json ..\..\$(CONFIG)\esp\esp-server\4.6.1\package.json
 	cd ..\..
 !ENDIF
 
@@ -2240,63 +2240,63 @@ installBinary: $(DEPS_92)
 	copy /Y src\paks\angular\angular-route.js "$(ME_VAPP_PREFIX)\esp\angular\1.2.6\angular-route.js"
 	copy /Y src\paks\angular\angular.js "$(ME_VAPP_PREFIX)\esp\angular\1.2.6\angular.js"
 	copy /Y src\paks\angular\package.json "$(ME_VAPP_PREFIX)\esp\angular\1.2.6\package.json"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\client" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\client"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\client\assets" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\client\assets"
-	copy /Y src\paks\esp-html-mvc\client\assets\favicon.ico "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\client\assets\favicon.ico"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\client\css" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\client\css"
-	copy /Y src\paks\esp-html-mvc\client\css\all.css "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\client\css\all.css"
-	copy /Y src\paks\esp-html-mvc\client\css\all.less "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\client\css\all.less"
-	copy /Y src\paks\esp-html-mvc\client\index.esp "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\client\index.esp"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\css" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\css"
-	copy /Y src\paks\esp-html-mvc\css\app.less "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\css\app.less"
-	copy /Y src\paks\esp-html-mvc\css\theme.less "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\css\theme.less"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\generate" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\generate"
-	copy /Y src\paks\esp-html-mvc\generate\appweb.conf "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\generate\appweb.conf"
-	copy /Y src\paks\esp-html-mvc\generate\controller.c "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\generate\controller.c"
-	copy /Y src\paks\esp-html-mvc\generate\controllerSingleton.c "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\generate\controllerSingleton.c"
-	copy /Y src\paks\esp-html-mvc\generate\edit.esp "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\generate\edit.esp"
-	copy /Y src\paks\esp-html-mvc\generate\list.esp "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\generate\list.esp"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\layouts" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\layouts"
-	copy /Y src\paks\esp-html-mvc\layouts\default.esp "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\layouts\default.esp"
-	copy /Y src\paks\esp-html-mvc\package.json "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.0\package.json"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0" md "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\generate" md "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\generate"
-	copy /Y src\paks\esp-legacy-mvc\generate\appweb.conf "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\generate\appweb.conf"
-	copy /Y src\paks\esp-legacy-mvc\generate\controller.c "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\generate\controller.c"
-	copy /Y src\paks\esp-legacy-mvc\generate\edit.esp "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\generate\edit.esp"
-	copy /Y src\paks\esp-legacy-mvc\generate\list.esp "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\generate\list.esp"
-	copy /Y src\paks\esp-legacy-mvc\generate\migration.c "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\generate\migration.c"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\generate\src" md "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\generate\src"
-	copy /Y src\paks\esp-legacy-mvc\generate\src\app.c "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\generate\src\app.c"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\layouts" md "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\layouts"
-	copy /Y src\paks\esp-legacy-mvc\layouts\default.esp "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\layouts\default.esp"
-	copy /Y src\paks\esp-legacy-mvc\package.json "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\package.json"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\static" md "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\static"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\static\css" md "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\static\css"
-	copy /Y src\paks\esp-legacy-mvc\static\css\all.css "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\static\css\all.css"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\static\images" md "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\static\images"
-	copy /Y src\paks\esp-legacy-mvc\static\images\banner.jpg "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\static\images\banner.jpg"
-	copy /Y src\paks\esp-legacy-mvc\static\images\favicon.ico "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\static\images\favicon.ico"
-	copy /Y src\paks\esp-legacy-mvc\static\images\splash.jpg "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\static\images\splash.jpg"
-	copy /Y src\paks\esp-legacy-mvc\static\index.esp "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\static\index.esp"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\static\js" md "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\static\js"
-	copy /Y src\paks\esp-legacy-mvc\static\js\jquery.esp.js "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\static\js\jquery.esp.js"
-	copy /Y src\paks\esp-legacy-mvc\static\js\jquery.js "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.0\static\js\jquery.js"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.0" md "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.0"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.0\generate" md "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.0\generate"
-	copy /Y src\paks\esp-mvc\generate\appweb.conf "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.0\generate\appweb.conf"
-	copy /Y src\paks\esp-mvc\generate\controller.c "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.0\generate\controller.c"
-	copy /Y src\paks\esp-mvc\generate\migration.c "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.0\generate\migration.c"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.0\generate\src" md "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.0\generate\src"
-	copy /Y src\paks\esp-mvc\generate\src\app.c "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.0\generate\src\app.c"
-	copy /Y src\paks\esp-mvc\LICENSE.md "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.0\LICENSE.md"
-	copy /Y src\paks\esp-mvc\package.json "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.0\package.json"
-	copy /Y src\paks\esp-mvc\README.md "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.0\README.md"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-server\4.6.0" md "$(ME_VAPP_PREFIX)\esp\esp-server\4.6.0"
-	if not exist "$(ME_VAPP_PREFIX)\esp\esp-server\4.6.0\generate" md "$(ME_VAPP_PREFIX)\esp\esp-server\4.6.0\generate"
-	copy /Y src\paks\esp-server\generate\appweb.conf "$(ME_VAPP_PREFIX)\esp\esp-server\4.6.0\generate\appweb.conf"
-	copy /Y src\paks\esp-server\package.json "$(ME_VAPP_PREFIX)\esp\esp-server\4.6.0\package.json"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\client" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\client"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\client\assets" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\client\assets"
+	copy /Y src\paks\esp-html-mvc\client\assets\favicon.ico "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\client\assets\favicon.ico"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\client\css" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\client\css"
+	copy /Y src\paks\esp-html-mvc\client\css\all.css "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\client\css\all.css"
+	copy /Y src\paks\esp-html-mvc\client\css\all.less "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\client\css\all.less"
+	copy /Y src\paks\esp-html-mvc\client\index.esp "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\client\index.esp"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\css" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\css"
+	copy /Y src\paks\esp-html-mvc\css\app.less "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\css\app.less"
+	copy /Y src\paks\esp-html-mvc\css\theme.less "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\css\theme.less"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\generate" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\generate"
+	copy /Y src\paks\esp-html-mvc\generate\appweb.conf "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\generate\appweb.conf"
+	copy /Y src\paks\esp-html-mvc\generate\controller.c "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\generate\controller.c"
+	copy /Y src\paks\esp-html-mvc\generate\controllerSingleton.c "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\generate\controllerSingleton.c"
+	copy /Y src\paks\esp-html-mvc\generate\edit.esp "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\generate\edit.esp"
+	copy /Y src\paks\esp-html-mvc\generate\list.esp "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\generate\list.esp"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\layouts" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\layouts"
+	copy /Y src\paks\esp-html-mvc\layouts\default.esp "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\layouts\default.esp"
+	copy /Y src\paks\esp-html-mvc\package.json "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\4.6.1\package.json"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1" md "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\generate" md "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\generate"
+	copy /Y src\paks\esp-legacy-mvc\generate\appweb.conf "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\generate\appweb.conf"
+	copy /Y src\paks\esp-legacy-mvc\generate\controller.c "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\generate\controller.c"
+	copy /Y src\paks\esp-legacy-mvc\generate\edit.esp "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\generate\edit.esp"
+	copy /Y src\paks\esp-legacy-mvc\generate\list.esp "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\generate\list.esp"
+	copy /Y src\paks\esp-legacy-mvc\generate\migration.c "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\generate\migration.c"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\generate\src" md "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\generate\src"
+	copy /Y src\paks\esp-legacy-mvc\generate\src\app.c "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\generate\src\app.c"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\layouts" md "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\layouts"
+	copy /Y src\paks\esp-legacy-mvc\layouts\default.esp "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\layouts\default.esp"
+	copy /Y src\paks\esp-legacy-mvc\package.json "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\package.json"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\static" md "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\static"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\static\css" md "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\static\css"
+	copy /Y src\paks\esp-legacy-mvc\static\css\all.css "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\static\css\all.css"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\static\images" md "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\static\images"
+	copy /Y src\paks\esp-legacy-mvc\static\images\banner.jpg "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\static\images\banner.jpg"
+	copy /Y src\paks\esp-legacy-mvc\static\images\favicon.ico "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\static\images\favicon.ico"
+	copy /Y src\paks\esp-legacy-mvc\static\images\splash.jpg "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\static\images\splash.jpg"
+	copy /Y src\paks\esp-legacy-mvc\static\index.esp "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\static\index.esp"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\static\js" md "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\static\js"
+	copy /Y src\paks\esp-legacy-mvc\static\js\jquery.esp.js "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\static\js\jquery.esp.js"
+	copy /Y src\paks\esp-legacy-mvc\static\js\jquery.js "$(ME_VAPP_PREFIX)\esp\esp-legacy-mvc\4.6.1\static\js\jquery.js"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.1" md "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.1"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.1\generate" md "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.1\generate"
+	copy /Y src\paks\esp-mvc\generate\appweb.conf "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.1\generate\appweb.conf"
+	copy /Y src\paks\esp-mvc\generate\controller.c "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.1\generate\controller.c"
+	copy /Y src\paks\esp-mvc\generate\migration.c "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.1\generate\migration.c"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.1\generate\src" md "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.1\generate\src"
+	copy /Y src\paks\esp-mvc\generate\src\app.c "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.1\generate\src\app.c"
+	copy /Y src\paks\esp-mvc\LICENSE.md "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.1\LICENSE.md"
+	copy /Y src\paks\esp-mvc\package.json "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.1\package.json"
+	copy /Y src\paks\esp-mvc\README.md "$(ME_VAPP_PREFIX)\esp\esp-mvc\4.6.1\README.md"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-server\4.6.1" md "$(ME_VAPP_PREFIX)\esp\esp-server\4.6.1"
+	if not exist "$(ME_VAPP_PREFIX)\esp\esp-server\4.6.1\generate" md "$(ME_VAPP_PREFIX)\esp\esp-server\4.6.1\generate"
+	copy /Y src\paks\esp-server\generate\appweb.conf "$(ME_VAPP_PREFIX)\esp\esp-server\4.6.1\generate\appweb.conf"
+	copy /Y src\paks\esp-server\package.json "$(ME_VAPP_PREFIX)\esp\esp-server\4.6.1\package.json"
 !ENDIF
 !IF "$(ME_COM_ESP)" == "1"
 	copy /Y $(CONFIG)\bin\esp.conf "$(ME_VAPP_PREFIX)\bin\esp.conf"
