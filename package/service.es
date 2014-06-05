@@ -12,12 +12,12 @@ public function startService() {
         trace('Skip', 'Must be root to install Appweb daemon')
         return
     }
-    if (!bit.cross) {
+    if (!me.cross) {
         stopService(true)
         trace('Run', 'appman install enable start')
-        Cmd([bit.prefixes.bin.join('appman' + bit.globals.EXE), 'install', 'enable', 'start'])
-        if (bit.platform.os == 'windows') {
-            Cmd([bit.prefixes.bin.join('appwebMonitor' + bit.globals.EXE)], {detach: true})
+        Cmd([me.prefixes.bin.join('appman' + me.globals.EXE), 'install', 'enable', 'start'])
+        if (me.platform.os == 'windows') {
+            Cmd([me.prefixes.bin.join('appwebMonitor' + me.globals.EXE)], {detach: true})
         }
     }
 }
@@ -27,16 +27,16 @@ public function stopService(quiet: Boolean = false) {
     if (Config.OS != 'windows' && App.uid != 0) {
         return
     }
-    if (!bit.cross) {
+    if (!me.cross) {
         if (!quiet) {
-            trace('Stop', bit.settings.title)                                                     
+            trace('Stop', me.settings.title)                                                     
         }
-        if (bit.platform.os == 'windows') {
+        if (me.platform.os == 'windows') {
             try {
-                Cmd([bit.prefixes.bin.join('appwebMonitor'), '--stop'])
+                Cmd([me.prefixes.bin.join('appwebMonitor'), '--stop'])
             } catch {}
         }
-        let appman = Cmd.locate(bit.prefixes.bin.join('appman'))
+        let appman = Cmd.locate(me.prefixes.bin.join('appman'))
         if (appman) {
             try {
                 Cmd([appman, '--continue', 'stop', 'disable', 'uninstall'])
