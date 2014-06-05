@@ -2,6 +2,7 @@
     http.c -- Http client program
 
     The http program is a client to issue HTTP requests. It is also a test platform for loading and testing web servers. 
+    Do NOT use this program as a sample for creating a simple http client. 
 
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
  */
