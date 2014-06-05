@@ -15,9 +15,7 @@
         "modes": {
             "debug": {
                 "http": {
-                    "content": {
-                        "?keep": [ "c" ],
-                    },
+                    "keep": true
                 },
             },
         },

@@ -340,7 +340,7 @@ PUBLIC int main(int argc, char **argv)
             app->verbose = 1;
 
         } else if (smatch(argp, "version") || smatch(argp, "V")) {
-            mprPrintf("%s %s\n", mprGetAppTitle(), ME_VERSION);
+            mprPrintf("%s\n", ME_VERSION);
             exit(0);
 
         } else if (smatch(argp, "why") || smatch(argp, "w")) {
