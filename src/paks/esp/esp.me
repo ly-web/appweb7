@@ -59,6 +59,10 @@ Me.load({
                 /* Force all esp paks to be the same version as appweb */
                 let version = me.dir.src.join('package.json').readJSON().version || '0.0.0'
                 for each (pak in Path('.').files('esp-*')) {
+                    let package = pak.join('package.json');
+                    let json = package.readJSON();
+                    json.version = version
+                    package.write(serialize(json, {pretty:true}) + '\n')
                     makeDir(OUT.join('esp', pak, version))
                     for each (path in pak.files('**')) {
                         let stem = path.components.slice(1).join(path.separator)
