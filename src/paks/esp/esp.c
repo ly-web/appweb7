@@ -1596,21 +1596,21 @@ static MprList *getRoutes()
     for (prev = -1; (route = mprGetPrevItem(app->host->routes, &prev)) != 0; ) {
         if ((eroute = route->eroute) == 0 || !eroute->compile) {
             /* No ESP configuration for compiling */
-            mprLog("esp", 5, "Skip route name %s - no esp configuration", route->name);
+            mprLog("esp", 6, "Skip route name %s - no esp configuration", route->name);
             continue;
         }
         if (filterRouteName) {
-            mprLog("esp", 5, "Check route name %s, prefix %s with %s", route->name, route->startWith, filterRouteName);
+            mprLog("esp", 6, "Check route name %s, prefix %s with %s", route->name, route->startWith, filterRouteName);
             if (!smatch(filterRouteName, route->name)) {
                 continue;
             }
         } else if (filterRoutePrefix) {
-            mprLog("esp", 5, "Check route name %s, prefix %s with %s", route->name, route->startWith, filterRoutePrefix);
+            mprLog("esp", 6, "Check route name %s, prefix %s with %s", route->name, route->startWith, filterRoutePrefix);
             if (!smatch(filterRoutePrefix, route->prefix) && !smatch(filterRoutePrefix, route->startWith)) {
                 continue;
             }
         } else {
-            mprLog("esp", 5, "Check route name %s, prefix %s", route->name, route->startWith);
+            mprLog("esp", 6, "Check route name %s, prefix %s", route->name, route->startWith);
         }
         parent = route->parent;
         if (parent && parent->eroute &&
@@ -1622,7 +1622,7 @@ static MprList *getRoutes()
             continue;
         }
         if (!requiredRoute(route)) {
-            mprLog("esp", 5, "Skip route %s not required for selected targets", route->name);
+            mprLog("esp", 6, "Skip route %s not required for selected targets", route->name);
             continue;
         }
         /*
@@ -1631,13 +1631,14 @@ static MprList *getRoutes()
         rp = 0;
         for (ITERATE_ITEMS(routes, rp, nextRoute)) {
             if (similarRoute(route, rp)) {
-                mprLog("esp", 5, "Skip route %s because of prior similar route: %s", route->name, rp->name);
+                mprLog("esp", 6, "Skip route %s because of prior similar route: %s", route->name, rp->name);
                 route = 0;
                 break;
             }
         }
         if (route && mprLookupItem(routes, route) < 0) {
-            mprLog("esp", 5, "Compiling route dir: %s name: %s prefix: %s", route->documents, route->name, route->startWith);
+            mprLog("esp", 6, "Using route name: %s documents:%s prefix: %s", route->name, route->documents, 
+                route->startWith);
             mprAddItem(routes, route);
         }
     }

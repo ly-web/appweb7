@@ -31,7 +31,7 @@ PUBLIC int maOpenConfig(MaState *state, cchar *path)
 
     state->filename = sclone(path);
     state->configDir = mprGetAbsPath(mprGetPathDir(state->filename));
-    mprLog("http", 3, "Open \"%s\"", mprGetAbsPath(state->filename));
+    mprLog("http", 3, "Parse \"%s\"", mprGetAbsPath(state->filename));
     if ((state->file = mprOpenFile(mprGetRelPath(path, NULL), O_RDONLY | O_TEXT, 0444)) == 0) {
         mprLog("appweb config", 0, "Cannot open %s for config directives", path);
         return MPR_ERR_CANT_OPEN;
