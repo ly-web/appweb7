@@ -48,7 +48,7 @@
             </ul>
         </div>
         <div class="contentLeft">
-            <h1>Logging Directives</h1><a id="traceLog"></a>
+            <h1>Logging Directives</h1>
             <a id="errorLog"></a>
             <h2>ErrorLog</h2>
             <table class="directive" title="directive">
@@ -147,15 +147,15 @@
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>Log [rx|tx] <br/>
-                            &nbsp; &rarr; conn=level <br/>
+                            &nbsp; &rarr; connection=level <br/>
                             &nbsp; &rarr; errors=level <br/>
                             &nbsp; &rarr; info=level <br/>
-                            &nbsp; &rarr; rx-first=level <br/>
-                            &nbsp; &rarr; rx-headers=level <br/>
-                            &nbsp; &rarr; rx-body=level <br/>
-                            &nbsp; &rarr; tx-first=level <br/>
-                            &nbsp; &rarr; tx-headers=level <br/>
-                            &nbsp; &rarr; tx-body=level <br/>
+                            &nbsp; &rarr; rxFirst=level <br/>
+                            &nbsp; &rarr; rxHeaders=level <br/>
+                            &nbsp; &rarr; rxBody=level <br/>
+                            &nbsp; &rarr; txFirst=level <br/>
+                            &nbsp; &rarr; txHeaders=level <br/>
+                            &nbsp; &rarr; txBody=level <br/>
                             &nbsp; &rarr; complete=level <br/>
                             &nbsp; &rarr; size=bytes
                         </td>
@@ -166,8 +166,8 @@
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>Trace errors=2 rx-first=2 rx-headers=3 tx-first=3 tx-headers=3 conn=4 <br/>
-                            &nbsp; &rarr; info=4 rx-body=5 tx-body=5 complete=4 size=10K</td>
+                        <td>Trace errors=2 rxFirst=2 rxHeaders=3 txFirst=3 txHeaders=3 connection=4 <br/>
+                            &nbsp; &rarr; info=4 rxBody=5 txBody=5 complete=4 size=10K</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -175,16 +175,16 @@
                             <p>The Trace directive controls how HTTP requests are traced to the request log file.
                             The following classes of information can be traces. 
                             <ul>
-                                <li>Conn &mdash; connection oriented events</li>
-                                <li>Errors &mdash; request errors resulting in abnormal termination</li>
-                                <li>Info &mdash; request processing information</li>
-                                <li>Rx-First &mdash; first line of the HTTP request header</li>
-                                <li>Rx-Headers &mdash; full request headers</li>
-                                <li>Rx-Body &mdash; request body content</li>
-                                <li>Tx-First &mdash; first line of the HTTP response header</li>
-                                <li>Tx-Headers &mdash; full response headers</li>
-                                <li>Tx-Body &mdash; response body content</li>
-                                <li>Complete &mdash; Request completion</li>
+                                <li>connection &mdash; connection oriented events</li>
+                                <li>errors &mdash; request errors resulting in abnormal termination</li>
+                                <li>info &mdash; request processing information</li>
+                                <li>rxFirst &mdash; first line of the HTTP request header</li>
+                                <li>rxHeaders &mdash; full request headers</li>
+                                <li>rxBody &mdash; request body content</li>
+                                <li>txFirst &mdash; first line of the HTTP response header</li>
+                                <li>txHeaders &mdash; full response headers</li>
+                                <li>txBody &mdash; response body content</li>
+                                <li>complete &mdash; Request completion</li>
                             </ul>
                             <p>For each class, the level defines the log level at which tracing will occur.</p>
                             <p>When tracing is enabled for a HTTP message, the headers and/or body of the message
@@ -194,6 +194,8 @@
                     </tr>
                 </tbody>
             </table>
+
+            <a name="traceLog"></a>
             <h2>TraceLog</h2>
             <table class="directive" title="directive">
                 <tbody>
@@ -206,10 +208,10 @@
                         <td>TraceLog path <br/>
                             &nbsp; &rarr; [anew]<br/>
                             &nbsp; &rarr; [backup=count] <br/>
+                            &nbsp; &rarr; [formatter=common|detail]<br/>
                             &nbsp; &rarr; [level=0-5] <br/>
                             &nbsp; &rarr; [size=bytes] <br/>
-                            &nbsp; &rarr; [stamp=period] <br/>
-                            &nbsp; &rarr; [type=common|detail]</td>
+                            &nbsp; &rarr; [stamp=period] </td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -226,7 +228,7 @@
                             request trace information. The given path may be an absolute filename or it may be
                             relative to the Home directory. The TraceLog directive applies per route and is 
                             inherited by default from outer routes in the config file.</p>
-                            <p>Two output formats are available. The <em>common</em> type writes single-line records
+                            <p>Two output formats are available. The <em>common</em> formatter writes single-line records
                             in the Common Log standard format. The <em>detail</em> format writes multi-line records
                             with full capture of request and response headers and other details.</p>
                             <p>The <em>size</em> parameter specifies a maximum size to write to a single log file.

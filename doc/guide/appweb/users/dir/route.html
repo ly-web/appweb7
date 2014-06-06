@@ -1442,7 +1442,8 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>
-                            <p>This directive can define a unique name to use for the session cookie used by the route.</p>
+                            <p>This directive can define a unique prefix to use for the session cookie used by the route.
+                            The default session cookie prefix is: "-http-session-".</p>
                             <p>It is also possible to set if the cookie is readable by Javascript in the browser.
                             By default, the session cookie is not visible to Javascript. It is desirable to keep the session
                             cookie invisible to minimize XSS security vulnerabilities.</p>

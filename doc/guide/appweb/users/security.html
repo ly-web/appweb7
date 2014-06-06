@@ -376,7 +376,7 @@ Accept-Ranges: bytes
             <a href="http://en.wikipedia.org/wiki/Cross-origin_resource_sharing">Cross Origin Resource Sharing (CORS)</a> is
             a mechanism that allows scripts to make XMLHttp requests to another domain different from that which served the 
             web page. This relaxes the same-origin policy of the browser, but in a controlled manner.</p>
-            <p>The Appweb <a href="dir/route.html#crossOrigin">CrossOrigin</a> directive defines
+            <p>The Appweb <a href="dir/route.html#crossOrigin">CrossOrigin</a> directive defines:</p>
             <pre>CrossOrigin origin=http://www.google.com credentials=yes age=3000</pre>
             <h3>Hidden Frames</h3>
             <p>Hidden frames may be inserted by attackers to provide a launch-pad for running malicious scripts. Denying 
@@ -555,7 +555,6 @@ AddType application/x-httpd-php .web
             In that case, you can easily remove or override these defaults by the relevant Appweb directives.</p>
             <p>Appweb uses the following built-in configuration for the default route.</p>
             <pre>
-Header set Content-Security-Policy  "default-src 'self'"
 Header set X-XSS-Protection         "1; mode=block"
 Header set X-Frame-Options          "deny"
 Header set X-Content-Type-Options   "nosniff"
@@ -584,7 +583,6 @@ LimitWorkers            5
             <p>You can override these directives globally in the main section of appweb.conf or locally in a specific route.
             (Except for LimitProcesses which always applies globally). You can remove the default security headers via:
 <pre>
-Header remove Content-Security-Policy
 Header remove X-XSS-Protection
 Header remove X-Frame-Options
 Header remove X-Content-Type-Options
