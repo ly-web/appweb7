@@ -1527,7 +1527,7 @@ static void logHandler(cchar *tags, int level, cchar *msg)
         MessageBoxEx(NULL, msg, mprGetAppTitle(), MB_OK, 0);
     }
 #endif
-    mprWriteToOsLog(msg, 0, 0);
+    mprWriteToOsLog(msg, 0);
 }
 
 
