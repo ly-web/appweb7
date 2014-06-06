@@ -53,7 +53,7 @@ static int      getAppwebPort();
 static char     *getBrowserPath(int size);
 static int      findInstance();
 static int      initWindow();
-static void     logHandler(int flags, cchar *tags, int level, cchar *msg);
+static void     logHandler(cchar *tags, int level, cchar *msg);
 static void     manageApp(App *app, int flags);
 static long     msgProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
 static int      openMonitorIcon();
@@ -432,7 +432,7 @@ static void updateMenu(int id, char *text, int enable, int check)
 /*
     Default log output is just to the console
  */
-static void logHandler(int flags, cchar *tags, int level, cchar *msg)
+static void logHandler(cchar *tags, int level, cchar *msg)
 {
     MessageBoxEx(NULL, msg, mprGetAppTitle(), MB_OK, 0);
 }

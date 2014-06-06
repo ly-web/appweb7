@@ -289,20 +289,6 @@ struct  MprXml;
 #define MPR_CONFIG          MPR_INFO
 #endif
 
-#if UNUSED
-/*
-    Log message types
- */
-#define MPR_DEBUG_MSG       1        /**< Originated from mprDebug */
-#define MPR_INFO_MSG        2        /**< Originated from mprInfo|mprLog */
-#define MPR_WARN_MSG        3        /**< Originated from mprWarn */
-#define MPR_ERROR_MSG       4        /**< Originated from mprError */
-#define MPR_CRITICAL_MSG    5        /**< Originated from mprCritical */
-#define MPR_FATAL_MSG       6        /**< Originated from mprFatal */
-#define MPR_RAW_MSG         7        /**< Raw message output */
-#define MPR_SEVERITY_MASK   7
-#endif
-
 /*
     Error line number information.
  */
@@ -3143,7 +3129,8 @@ PUBLIC ssize mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...);
 /**
     Date for use in log files (compact)
  */
-#define MPR_LOG_DATE     "%T-%F"
+#define MPR_LOG_DATE     "%D %T"
+// #define MPR_LOG_DATE     "%T-%F"
 // #define MPR_LOG_DATE        "%b %e %T"
 
 /********************************** Defines ***********************************/
@@ -3949,6 +3936,8 @@ typedef struct MprLog { int dummy; } MprLog;
     @param line Source line number. Derived by using __LINE__.
     @param flags Error flags.
     @param tags List of space separated tag words. May also be key=value.
+        By convention, tags may use one of the severity levels defined in RFC 5424:
+        "debug", "info", "notice", "warn", "error", "critical".
     @param level Message logging level. Levels are 0-5 with zero being the most verbose.
     @param msg Message being logged.
     @ingroup MprLog
@@ -3975,21 +3964,6 @@ PUBLIC void mprAssert(cchar *loc, cchar *msg);
  */
 PUBLIC void mprCreateLogService();
 
-#if UNUSED
-/**
-    Log a critical error message.
-    @description Send a critical error message to the MPR debug logging subsystem.
-        The message will be to the log handler defined by #mprSetLogHandler. It
-        is up to the log handler to respond appropriately and log the message.
-    @param tags List of space separated tag words. May also be key=value.
-    @param fmt Printf style format string. Variable number of arguments to
-    @param ... Variable number of arguments for printf data
-    @ingroup MprLog
-    @stability Stable
- */
-PUBLIC void mprCritical(cchar *tags, cchar *fmt, ...);
-#endif
-
 /**
     Backup a log
     @param path Base log filename
@@ -4003,6 +3977,8 @@ PUBLIC int mprBackupLog(cchar *path, int count);
     Default MPR log handler
     @param type Message type
     @param tags Descriptive tag words to classify this message.
+        By convention, tags may use one of the severity levels defined in RFC 5424:
+        "debug", "info", "notice", "warn", "error", "critical".
     @param level Logging level for this message. The level is 0-5 with zero being the most verbose.
     @param msg Message to log
     @ingroup MprLog
@@ -4015,6 +3991,7 @@ PUBLIC void mprDefaultLogHandler(cchar *tags, int level, cchar *msg);
     @description Send an error message to the MPR debug logging subsystem. The
         message will be to the log handler defined by #mprSetLogHandler. It
         is up to the log handler to respond appropriately and log the message.
+        This will invoke mprLog with a severity tag of "error".
     @param tags List of space separated tag words. May also be key=value.
     @param fmt Printf style format string. Variable number of arguments to
     @param ... Variable number of arguments for printf data
@@ -4022,21 +3999,6 @@ PUBLIC void mprDefaultLogHandler(cchar *tags, int level, cchar *msg);
     @stability Stable
  */
 PUBLIC void mprError(cchar *fmt, ...);
-
-#if UNUSED
-/**
-    Log a fatal error message and exit.
-    @description Send a fatal error message to the MPR debug logging subsystem and then exit the application by
-        calling exit(). The message will be to the log handler defined by #mprSetLogHandler. It
-        is up to the log handler to respond appropriately and log the message.
-    @param tags List of space separated tag words. May also be key=value.
-    @param fmt Printf style format string. Variable number of arguments to
-    @param ... Variable number of arguments for printf data
-    @ingroup MprLog
-    @stability Stable
- */
-PUBLIC void mprFatal(cchar *tags, cchar *fmt, ...);
-#endif
 
 /**
     Get the log file object
@@ -4064,6 +4026,8 @@ PUBLIC MprLogHandler mprGetLogHandler();
         Logging typically is enabled in both debug and release builds.
         The mprLog function is a macro which translates into the mprLogProc function.
     @param tags Descriptive tag words to classify this message.
+        By convention, tags may use one of the severity levels defined in RFC 5424:
+        "debug", "info", "notice", "warn", "error", "critical".
     @param level Logging level for this message. The level is 0-5 with zero being the most verbose.
     @param fmt Printf style format string. Variable number of arguments to
     @param ... Variable number of arguments for printf data
@@ -4145,6 +4109,8 @@ PUBLIC int mprStartLogging(cchar *logSpec, int flags);
         The mprDebug function is a macro which translates into the mprLogProc function.
     @description Sends a debug trace message to the MPR logging subsystem.
     @param tags List of space separated tag words. May also be key=value.
+        By convention, tags may use one of the severity levels defined in RFC 5424:
+        "debug", "info", "notice", "warn", "error", "critical".
     @param level Logging level for this message. The level is 0-5 with zero being the most verbose.
     @param fmt Printf style format string. Variable number of arguments to
     @param ... Variable number of arguments for printf data
@@ -4163,21 +4129,6 @@ PUBLIC void mprLogProc(cchar *tags, int level, cchar *fmt, ...);
     @stability Evolving
  */
 PUBLIC int mprUsingDefaultLogHandler();
-
-#if UNUSED
-/**
-    Log a warning message.
-    @description Send a warning message to the MPR debug logging subsystem. The
-        message will be to the log handler defined by #mprSetLogHandler. It
-        is up to the log handler to respond appropriately and log the message.
-    @param tags List of space separated tag words. May also be key=value.
-    @param fmt Printf style format string. Variable number of arguments to
-    @param ... Variable number of arguments for printf data
-    @ingroup MprLog
-    @stability Stable
- */
-PUBLIC void mprWarn(cchar *tags, cchar *fmt, ...);
-#endif
 
 #if ME_MPR_TRACING
     #define mprDebug(tags, l, ...) if ((l) <= MPR->logLevel) { mprLogProc(tags, l, __VA_ARGS__); } else

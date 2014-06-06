@@ -50,6 +50,7 @@
             },
             "-routes": "esp-server",
             "?routes": "esp-html-mvc",
+            "xsrf": true,
         },
     },
 }

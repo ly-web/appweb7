@@ -4427,7 +4427,7 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
     address = conn->address;
     if (address && address->banUntil) {
         if (address->banUntil < http->now) {
-            httpTrace(conn, "info", "Remove ban on client", "peer:\"%s:%d\"", conn->ip, conn->port);
+            httpTrace(conn, "info", "Remove ban on client", "peer:%s:%d", conn->ip, conn->port);
             address->banUntil = 0;
         } else {
             if (address->banStatus) {
@@ -4453,7 +4453,7 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
     httpSetState(conn, HTTP_STATE_CONNECTED);
 
     if (httpShouldTrace(conn, "connection")) {
-        httpTrace(conn, "connection", 0, "peer:\"%s:%d\", endpoint:\"%s:%d\", secure:%d", 
+        httpTrace(conn, "connection", 0, "peer:%s:%d, endpoint:%s:%d, secure:%d", 
              conn->ip, conn->port, sock->acceptIp, sock->acceptPort, conn->secure);
     }
     event->mask = MPR_READABLE;
@@ -14102,7 +14102,7 @@ static bool processParsed(HttpConn *conn)
             httpCreatePipeline(conn);
 
             httpTrace(conn, "info", 0,
-                "route:%s, handler:%s, target:\"%s\", endpoint:\"%s:%d\", host:\"%s\"",
+                "route:%s, handler:%s, target:\"%s\", endpoint:%s:%d, host:%s",
                 rx->route->name, tx->handler->name, rx->route->targetRule, conn->endpoint->ip, conn->endpoint->port,
                 conn->host->name ? conn->host->name : "default");
             /*
@@ -14350,7 +14350,7 @@ static void createErrorRequest(HttpConn *conn)
     if (!rx->headerPacket) {
         return;
     }
-    httpTrace(conn, "info", "Redirect to error document", "location:\"%s\", status:%d", tx->errorDocument, tx->status, rx->uri);
+    httpTrace(conn, "info", "Redirect to error document", "location:%s, status:%d", tx->errorDocument, tx->status, rx->uri);
 
     originalUri = rx->uri;
     conn->rx = httpCreateRx(conn);
@@ -14452,7 +14452,7 @@ static void measure(HttpConn *conn)
         elapsed = mprGetTicks() - conn->started;
 #if MPR_HIGH_RES_TIMER
         if (elapsed < 1000) {
-            httpTrace(conn, "complete", 0, "elapsed:%,Ld, elapsedTicks:%,Ld",
+            httpTrace(conn, "complete", 0, "elapsed:%Ld, elapsedTicks:%Ld",
                 elapsed, mprGetHiResTicks() - conn->startMark);
         } else
 #endif
@@ -17667,29 +17667,36 @@ PUBLIC cchar *httpMakePrintable(HttpConn *conn, cchar *event, cchar *buf, ssize 
 /*
     Format a detailed request message
  */
-PUBLIC void httpDetailTraceFormatter(HttpConn *conn, cchar *event, cchar *msg, cchar *values, cchar *buf, ssize len)
+PUBLIC void httpDetailTraceFormatter(HttpConn *conn, cchar *event, cchar *msg, cchar *values, cchar *data, ssize len)
 {
-    char    *boundary, prefix[64];
+    char    *boundary, buf[256];
     int     client, sessionSeqno;
 
     assert(conn);
     assert(event);
-    assert(msg && *msg);
 
     client = conn->address ? conn->address->seqno : 0;
     sessionSeqno = conn->rx->session ? (int) stoi(conn->rx->session->id) : 0;
-    fmt(prefix, sizeof(prefix), "\n<%s %d-%d-%d-%d> ", mprGetDate(MPR_LOG_DATE), client, sessionSeqno,
-        conn->seqno, conn->rx->seqno);
+    fmt(buf, sizeof(buf), "\n%s %d-%d-%d-%d ", mprGetDate(MPR_LOG_DATE), client, sessionSeqno, conn->seqno, 
+            conn->rx->seqno, event);
     lock(conn->trace);
-    httpWriteTrace(conn, prefix, slen(prefix));
-    httpWriteTrace(conn, msg, slen(msg));
-
-    if (buf) {
-        boundary = "; --details--\n";
+    httpWriteTrace(conn, buf, slen(buf));
+    if (msg) {
+        msg = fmt(buf, sizeof(buf), "%s msg=\"%s\", ", event, msg);
+        httpWriteTrace(conn, buf, slen(buf));
+    } else {
+        msg = fmt(buf, sizeof(buf), "%s, ", event);
+        httpWriteTrace(conn, buf, slen(buf));
+    }
+    if (values) {
+        httpWriteTrace(conn, values, slen(values));
+    }
+    if (data) {
+        boundary = " --details--\n";
         httpWriteTrace(conn, boundary, slen(boundary));
-        buf = httpMakePrintable(conn, event, buf, &len);
-        httpWriteTrace(conn, buf, len);
-        httpWriteTrace(conn, &boundary[2], slen(boundary) - 2);
+        data = httpMakePrintable(conn, event, data, &len);
+        httpWriteTrace(conn, data, len);
+        httpWriteTrace(conn, &boundary[1], slen(boundary) - 1);
     } else {
         httpWriteTrace(conn, "\n", 1);
     }
@@ -18618,7 +18625,7 @@ PUBLIC void httpSetFilename(HttpConn *conn, cchar *filename, int flags)
         tx->etag = sfmt("\"%Lx-%Lx-%Lx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
     }
     tx->filename = sclone(filename);
-    httpTrace(conn, "info", "Set filename", "filename:\"%s\", extension:%s", tx->filename, tx->ext);
+    httpTrace(conn, "info", "Set filename", "filename:\"%s\"", tx->filename);
 }
 
 

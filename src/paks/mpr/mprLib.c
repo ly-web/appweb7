@@ -13064,8 +13064,14 @@ static void formatValue(MprBuf *buf, MprJson *obj, int flags)
     for (cp = obj->value; *cp; cp++) {
         if (*cp == '\"' || *cp == '\\') {
             mprPutCharToBuf(buf, '\\');
+            mprPutCharToBuf(buf, *cp);
+        } else if (*cp == '\r') {
+            mprPutStringToBuf(buf, "\\\\r");
+        } else if (*cp == '\n') {
+            mprPutStringToBuf(buf, "\\\\n");
+        } else {
+            mprPutCharToBuf(buf, *cp);
         }
-        mprPutCharToBuf(buf, *cp);
     }
     mprPutCharToBuf(buf, '"');
 }
@@ -15833,19 +15839,6 @@ static void backupLog()
 }
 
 
-#if UNUSED
-char *severities[] = {
-    "",
-    "debug",
-    "",             /* inform */
-    "warn",
-    "error",
-    "critical",
-    "fatal",
-};
-#endif
-
-
 /*
     Output format is:
 
@@ -15871,9 +15864,9 @@ PUBLIC void mprDefaultLogHandler(cchar *tags, int level, cchar *msg)
     if (MPR->logPath) {
         if (level == 0 || tags) {
             if (level == 0) {
-                fmt(tbuf, sizeof(tbuf), "<%s %d error %s> ", mprGetDate(MPR_LOG_DATE), level, tags ? tags : "");
+                fmt(tbuf, sizeof(tbuf), "%s %d error %s, ", mprGetDate(MPR_LOG_DATE), level, tags ? tags : "");
             } else {
-                fmt(tbuf, sizeof(tbuf), "<%s %d %s> ", mprGetDate(MPR_LOG_DATE), level, tags ? tags : "");
+                fmt(tbuf, sizeof(tbuf), "%s %d %s, ", mprGetDate(MPR_LOG_DATE), level, tags ? tags : "");
             }
             mprWriteFileString(file, tbuf);
             len = slen(tbuf);
@@ -15882,7 +15875,7 @@ PUBLIC void mprDefaultLogHandler(cchar *tags, int level, cchar *msg)
                 mprWriteFile(file, "                                          ", width - len);
             }
         } else {
-            mprWriteFileString(file, "> ");
+            mprWriteFileString(file, ", ");
         }
     } else {
         if (level == 0) {
