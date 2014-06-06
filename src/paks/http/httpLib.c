@@ -182,7 +182,7 @@ PUBLIC bool httpAuthenticate(HttpConn *conn)
                 return 0;
             }
         }
-        httpTrace(conn, "error", "Using cached authentication data; user=%s", username);
+        httpTrace(conn, "error", "Using cached authentication data", "username:%s", username);
         conn->username = username;
         rx->authenticated = 1;
     }
@@ -245,7 +245,7 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
     rx = conn->rx;
     auth = rx->route->auth;
     if (!username || !*username) {
-        httpTrace(conn, "error", "httpLogin missing username");
+        httpTrace(conn, "error", "httpLogin missing username", 0);
         return 0;
     }
     if (!auth->store) {
@@ -306,8 +306,7 @@ PUBLIC bool httpCanUser(HttpConn *conn, cchar *abilities)
 
     auth = conn->rx->route->auth;
     if (auth->permittedUsers && !mprLookupKey(auth->permittedUsers, conn->username)) {
-        httpTrace(conn, "error", "User not permitted for access; name=%s uri=%s", 
-            conn->username, conn->rx->pathInfo);
+        httpTrace(conn, "error", "User not permitted for access", "username:%s", conn->username);
         return 0;
     }
     if (!auth->abilities && !abilities) {
@@ -319,24 +318,22 @@ PUBLIC bool httpCanUser(HttpConn *conn, cchar *abilities)
         return 0;
     }
     if (!conn->user && (conn->user = mprLookupKey(auth->userCache, conn->username)) == 0) {
-        httpTrace(conn, "error", "Cannot find user; name=%s", conn->username);
+        httpTrace(conn, "error", "Cannot find user", "username:%s", conn->username);
         return 0;
     }
     if (abilities) {
         for (ability = stok(sclone(abilities), " \t,", &tok); abilities; abilities = stok(NULL, " \t,", &tok)) {
             if (!mprLookupKey(conn->user->abilities, ability)) {
-                httpTrace(conn, "error", 
-                    "User does not possess the required ability; name=%s ability=%s uri= %s", 
-                    conn->username, ability, conn->rx->pathInfo);
+                httpTrace(conn, "error", "User does not possess the required ability", "username:%s, ability:%s", 
+                    conn->username, ability);
                 return 0;
             }
         }
     } else {
         for (ITERATE_KEYS(auth->abilities, kp)) {
             if (!mprLookupKey(conn->user->abilities, kp->key)) {
-                httpTrace(conn, "error", 
-                    "User does not possess the required ability; name=%s ability=%s uri=%s", 
-                    conn->username, kp->key, conn->rx->pathInfo);
+                httpTrace(conn, "error", "User does not possess the required ability", "username:%s, ability:%s", 
+                    conn->username, kp->key);
                 return 0;
             }
         }
@@ -885,7 +882,7 @@ static bool configVerifyUser(HttpConn *conn, cchar *username, cchar *password)
     rx = conn->rx;
     auth = rx->route->auth;
     if (!conn->user && (conn->user = mprLookupKey(auth->userCache, username)) == 0) {
-        httpTrace(conn, "error", "Unknown user; name=%s", username);
+        httpTrace(conn, "error", "Unknown user", "username:%s", username);
         return 0;
     }
     if (password) {
@@ -903,9 +900,9 @@ static bool configVerifyUser(HttpConn *conn, cchar *username, cchar *password)
             success = smatch(password, requiredPassword);
         }
         if (success) {
-            httpTrace(conn, "inform", "User authenticated; name =\"%s\"", username);
+            httpTrace(conn, "info", "User authenticated", "username:%s", username);
         } else {
-            httpTrace(conn, "error", "Password failed to authenticate; user=%s", username);
+            httpTrace(conn, "error", "Password failed to authenticate", "username:%s", username);
         }
         return success;
     }
@@ -1150,7 +1147,7 @@ static void readyCacheHandler(HttpQueue *q)
     tx = conn->tx;
 
     if (tx->cachedContent) {
-        httpTrace(conn, "inform", "Save cached content");
+        httpTrace(conn, "info", "Using cached content", 0);
         if ((data = setHeadersFromCache(conn, tx->cachedContent)) != 0) {
             tx->length = slen(data);
             httpWriteString(q, data);
@@ -1198,7 +1195,7 @@ static void outgoingCacheFilterService(HttpQueue *q)
      */
     if (mprLookupKey(conn->tx->headers, "X-SendCache") != 0) {
         if (fetchCachedResponse(conn)) {
-            httpTrace(conn, "inform", "Save cached content");
+            httpTrace(conn, "info", "Using cached content", 0);
             cachedData = setHeadersFromCache(conn, tx->cachedContent);
             tx->length = slen(cachedData);
         }
@@ -1238,8 +1235,8 @@ static void outgoingCacheFilterService(HttpQueue *q)
                     tx->cacheBufferLength += size;
                 } else {
                     tx->cacheBuffer = 0;
-                    httpTrace(conn, "inform", "Item too big to cache; size=%d, limit=%d", 
-                        tx->cacheBufferLength + size, conn->limits->cacheItemSize);
+                    httpTrace(conn, "info", "Item too big to cache", "size:%d, limit:%d", tx->cacheBufferLength + size, 
+                        conn->limits->cacheItemSize);
                 }
             }
             foundDataPacket = 1;
@@ -1358,7 +1355,7 @@ static bool fetchCachedResponse(HttpConn *conn)
     key = makeCacheKey(conn);
     if ((value = httpGetHeader(conn, "Cache-Control")) != 0 && 
             (scontains(value, "max-age=0") == 0 || scontains(value, "no-cache") == 0)) {
-        httpTrace(conn, "inform", "Client reload");
+        httpTrace(conn, "info", "Client reload", 0);
 
     } else if ((tx->cachedContent = mprReadCache(conn->host->responseCache, key, &modified, 0)) != 0) {
         /*
@@ -1385,13 +1382,13 @@ static bool fetchCachedResponse(HttpConn *conn)
             }
         }
         status = (canUseClientCache && cacheOk) ? HTTP_CODE_NOT_MODIFIED : HTTP_CODE_OK;
-        httpTrace(conn, "inform", "Use cached content; key=%s, status=%d", key, status);
+        httpTrace(conn, "info", "Use cached content", "key:%s, status:%d", key, status);
         httpSetStatus(conn, status);
         httpSetHeader(conn, "Etag", mprGetMD5(key));
         httpSetHeader(conn, "Last-Modified", mprFormatUniversalTime(MPR_HTTP_DATE, modified));
         return 1;
     }
-    httpTrace(conn, "inform", "No cached content; key=%s", key);
+    httpTrace(conn, "info", "No cached content", "key:%s", key);
     return 0;
 }
 
@@ -1426,10 +1423,10 @@ PUBLIC ssize httpWriteCached(HttpConn *conn)
     }
     cacheKey = makeCacheKey(conn);
     if ((content = mprReadCache(conn->host->responseCache, cacheKey, &modified, 0)) == 0) {
-        httpTrace(conn, "inform", "No response data in cache; key=%s", cacheKey);
+        httpTrace(conn, "info", "No response data in cache", "key:%s", cacheKey);
         return 0;
     }
-    httpTrace(conn, "inform", "Used cached response; key=", cacheKey);
+    httpTrace(conn, "info", "Used cached response", "key:%s", cacheKey);
     data = setHeadersFromCache(conn, content);
     httpSetHeader(conn, "Etag", mprGetMD5(cacheKey));
     httpSetHeader(conn, "Last-Modified", mprFormatUniversalTime(MPR_HTTP_DATE, modified));
@@ -1937,7 +1934,7 @@ static HttpConn *openConnection(HttpConn *conn, struct MprSsl *ssl)
             mprCloseSocket(conn->sock, 0);
             conn->sock = 0;
         } else {
-            httpTrace(conn, "inform", "Reuse socket; keepAliveCount=%d", conn->keepAliveCount);
+            httpTrace(conn, "info", "Reuse socket", "keepAlive:%d", conn->keepAliveCount);
         }
     }
     if (conn->sock) {
@@ -1967,7 +1964,7 @@ static HttpConn *openConnection(HttpConn *conn, struct MprSsl *ssl)
         peerName = isdigit(uri->host[0]) ? 0 : uri->host;
         if (mprUpgradeSocket(sp, ssl, peerName) < 0) {
             conn->errorMsg = sp->errorMsg;
-            httpTrace(conn, "error", "Cannot upgrade socket; error=\"%s\"", conn->errorMsg);
+            httpTrace(conn, "error", sfmt("Cannot upgrade socket, %s", conn->errorMsg), 0);
             return 0;
         }
     }
@@ -1979,7 +1976,7 @@ static HttpConn *openConnection(HttpConn *conn, struct MprSsl *ssl)
     }
 #endif
     if (httpShouldTrace(conn, "connection")) {
-        httpTrace(conn, "connection", "open; address: \"%s:%d\"", conn->ip, conn->port);
+        httpTrace(conn, "connection", 0, "peer:%s:%d", conn->ip, conn->port);
     }
     return conn;
 }
@@ -2025,7 +2022,7 @@ PUBLIC int httpConnect(HttpConn *conn, cchar *method, cchar *uri, struct MprSsl 
         httpError(conn, HTTP_CODE_BAD_GATEWAY, "Cannot call connect in a server");
         return MPR_ERR_BAD_STATE;
     }
-    httpTrace(conn, "inform", "Connect; method=%s uri=%s", method, uri);
+    httpTrace(conn, "info", "Connect", "method:%s, uri:%s", method, uri);
 
     if (conn->tx == 0 || conn->state != HTTP_STATE_BEGIN) {
         /* WARNING: this will erase headers */
@@ -2821,6 +2818,18 @@ static void parseAuthRoles(HttpRoute *route, cchar *key, MprJson *prop)
             break;
         }
     }
+}
+
+
+static void parseAuthSessionCookie(HttpRoute *route, cchar *key, MprJson *prop)
+{
+    httpSetRouteCookie(route, prop->value);
+}
+
+
+static void parseAuthSessionVisibility(HttpRoute *route, cchar *key, MprJson *prop)
+{
+    httpSetRouteSessionVisibility(route, scaselessmatch(prop->value, "visible"));
 }
 
 
@@ -3919,6 +3928,8 @@ PUBLIC int httpInitParser()
     httpAddConfig("app.http.auth.require.roles", parseAuthRequireRoles);
     httpAddConfig("app.http.auth.require.users", parseAuthRequireUsers);
     httpAddConfig("app.http.auth.roles", parseAuthRoles);
+    httpAddConfig("app.http.auth.session.cookie", parseAuthSessionCookie);
+    httpAddConfig("app.http.auth.session.vibility", parseAuthSessionVisibility);
     httpAddConfig("app.http.auth.store", parseAuthStore);
     httpAddConfig("app.http.auth.type", parseAuthType);
     httpAddConfig("app.http.auth.users", parseAuthUsers);
@@ -4242,7 +4253,7 @@ static void connTimeout(HttpConn *conn, MprEvent *event)
         if (conn->state < HTTP_STATE_FIRST) {
             httpDisconnect(conn);
             if (msg) {
-                httpTrace(conn, "inform", msg);
+                httpTrace(conn, "info", msg, 0);
             }
         } else {
             httpError(conn, HTTP_CODE_REQUEST_TIMEOUT, msg);
@@ -4403,21 +4414,20 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
     conn->ip = sclone(sock->ip);
 
     if ((value = httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_CONNECTIONS, 1)) > conn->limits->connectionsMax) {
-        httpTrace(conn, "error", "Too many concurrent connections; active=%d max=%d",
-            (int) value, conn->limits->connectionsMax);
+        httpTrace(conn, "error", "Too many concurrent connections", "active:%d, max:%d", (int) value, conn->limits->connectionsMax);
         httpDestroyConn(conn);
         return 0;
     }
     if (mprGetHashLength(http->addresses) > conn->limits->clientMax) {
-        httpTrace(conn, "error", "Too many concurrent clients; active=%d max=%d",
-            mprGetHashLength(http->addresses), conn->limits->clientMax);
+        httpTrace(conn, "error", "Too many concurrent clients", "active:%d, max:%d", mprGetHashLength(http->addresses), 
+            conn->limits->clientMax);
         httpDestroyConn(conn);
         return 0;
     }
     address = conn->address;
     if (address && address->banUntil) {
         if (address->banUntil < http->now) {
-            httpTrace(conn, "inform", "Remove ban on client; address=%s date=%s", sock->ip, mprGetDate(0));
+            httpTrace(conn, "info", "Remove ban on client", "peer:\"%s:%d\"", conn->ip, conn->port);
             address->banUntil = 0;
         } else {
             if (address->banStatus) {
@@ -4431,7 +4441,7 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
     }
     if (endpoint->ssl) {
         if (mprUpgradeSocket(sock, endpoint->ssl, 0) < 0) {
-            httpTrace(conn, "error", "Cannot upgrade socket; error=\"%s\"", sock->errorMsg);
+            httpTrace(conn, "error", sfmt("Cannot upgrade socket: %s", sock->errorMsg), 0);
             mprCloseSocket(sock, 0);
             httpMonitorEvent(conn, HTTP_COUNTER_SSL_ERRORS, 1);
             httpDestroyConn(conn);
@@ -4443,8 +4453,8 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
     httpSetState(conn, HTTP_STATE_CONNECTED);
 
     if (httpShouldTrace(conn, "connection")) {
-        httpTrace(conn, "connection", "Accept; date:%s, from:\"%s:%d\", to:\"%s:%d\", secure:%d", 
-             mprGetDate(MPR_LOG_DATE), conn->ip, conn->port, sock->acceptIp, sock->acceptPort, conn->secure);
+        httpTrace(conn, "connection", 0, "peer:\"%s:%d\", endpoint:\"%s:%d\", secure:%d", 
+             conn->ip, conn->port, sock->acceptIp, sock->acceptPort, conn->secure);
     }
     event->mask = MPR_READABLE;
     event->timestamp = conn->http->now;
@@ -4919,14 +4929,13 @@ PUBLIC bool httpRequestExpired(HttpConn *conn, MprTicks timeout)
     }
     if (mprGetRemainingTicks(conn->started, requestTimeout) < 0) {
         if (requestTimeout != timeout) {
-            httpTrace(conn, "error", "Request duration exceeded; timeout=%d", requestTimeout / 1000);
+            httpTrace(conn, "error", "Request duration exceeded", "timeout:%d", requestTimeout / 1000);
         }
         return 1;
     }
     if (mprGetRemainingTicks(conn->lastActivity, inactivityTimeout) < 0) {
         if (inactivityTimeout != timeout) {
-            httpTrace(conn, "error", "Request cancelled due to inactivity; timeout=%d",
-                inactivityTimeout / 1000);
+            httpTrace(conn, "error", "Request cancelled due to inactivity", "timeout:%d", inactivityTimeout / 1000);
         }
         return 1;
     }
@@ -5162,19 +5171,19 @@ PUBLIC int httpDigestParse(HttpConn *conn, cchar **username, cchar **password)
         when = 0;
         parseDigestNonce(dp->nonce, &secret, &realm, &when);
         if (!smatch(secret, secret)) {
-            httpTrace(conn, "error", "Access denied, Nonce mismatch\n");
+            httpTrace(conn, "error", "Access denied, Nonce mismatch", 0);
             return MPR_ERR_BAD_STATE;
 
         } else if (!smatch(realm, rx->route->auth->realm)) {
-            httpTrace(conn, "error", "Access denied, Realm mismatch\n");
+            httpTrace(conn, "error", "Access denied, Realm mismatch", 0);
             return MPR_ERR_BAD_STATE;
 
         } else if (dp->qop && !smatch(dp->qop, "auth")) {
-            httpTrace(conn, "error", "Access denied, Bad qop\n");
+            httpTrace(conn, "error", "Access denied, Bad qop", 0);
             return MPR_ERR_BAD_STATE;
 
         } else if ((when + (5 * 60)) < time(0)) {
-            httpTrace(conn, "error", "Access denied, Nonce is stale\n");
+            httpTrace(conn, "error", "Access denied, Nonce is stale", 0);
             return MPR_ERR_BAD_STATE;
         }
         rx->passwordDigest = calcDigest(conn, dp, *username);
@@ -5961,7 +5970,7 @@ static void errorv(HttpConn *conn, int flags, cchar *fmt, va_list args)
         conn->error++;
         httpOmitBody(conn);
         conn->errorMsg = formatErrorv(conn, status, fmt, args);
-        httpTrace(conn, "error", "Error: %s", conn->errorMsg);
+        httpTrace(conn, "error", conn->errorMsg, 0);
 
         HTTP_NOTIFY(conn, HTTP_EVENT_ERROR, 0);
         if (httpServerConn(conn)) {
@@ -6473,7 +6482,8 @@ PUBLIC void httpSetStreaming(HttpHost *host, cchar *mime, cchar *uri, bool enabl
     Common Log Formatter (NCSA)
     This formatter only emits messages for the TRACE_COMPLETE message.
  */
-PUBLIC void httpCommonTraceFormatter(HttpConn *conn, cchar *event, cchar *msgUnused, cchar *bufUnused, ssize lenUnused)
+PUBLIC void httpCommonTraceFormatter(HttpConn *conn, cchar *event, cchar *msgUnused, cchar *valuesUnused,
+    cchar *bufUnused, ssize lenUnused)
 {
     HttpRx      *rx;
     HttpTx      *tx;
@@ -7441,8 +7451,7 @@ static void netOutgoingService(HttpQueue *q)
         written = mprWriteSocketVector(conn->sock, q->iovec, q->ioIndex);
         if (written < 0) {
             errCode = mprGetError();
-            httpTrace(conn, "error", "Connector write error; wrote=%d, errno=%d, qflags=%x",
-                (int) written, errCode, q->flags);
+            httpTrace(conn, "error", "Connector write error", "errno:%d", errCode);
             if (errCode == EAGAIN || errCode == EWOULDBLOCK) {
                 /*  Socket full, wait for an I/O event */
                 tx->writeBlocked = 1;
@@ -7548,7 +7557,7 @@ static void addPacketForNet(HttpQueue *q, HttpPacket *packet)
     }
     event = (packet->flags & HTTP_PACKET_HEADER) ? "txHeaders" : "txBody";
     if (httpShouldTrace(conn, event)) {
-        httpTracePacket(conn, event, packet, 0);
+        httpTracePacket(conn, event, packet, 0, 0);
     }
 }
 
@@ -10424,7 +10433,7 @@ static cchar *mapContent(HttpConn *conn, cchar *filename)
                 }
                 path = mprReplacePathExt(filename, ext);
                 if (mprGetPathInfo(path, info) == 0) {
-                    httpTrace(conn, "inform", "Mapping content, from=%s to=%s", filename, path);
+                    httpTrace(conn, "info", "Mapping content", "originalFilename:\"%s\", filename:\"%s\"", filename, path);
                     filename = path;
                     if (zipped) {
                         httpSetHeader(conn, "Content-Encoding", "gzip");
@@ -11925,7 +11934,7 @@ static int authCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
         }
     }
     if (!httpCanUser(conn, NULL)) {
-        httpTrace(conn, "error", "Access denied, user is not authorized for access.");
+        httpTrace(conn, "error", "Access denied, user is not authorized for access", 0);
         if (!conn->tx->finalized) {
             if (route->auth && route->auth->type) {
                 (route->auth->type->askLogin)(conn);
@@ -13472,7 +13481,7 @@ static bool mapMethod(HttpConn *conn)
     rx = conn->rx;
     if (rx->flags & HTTP_POST && (method = httpGetParam(conn, "-http-method-", 0)) != 0) {
         if (!scaselessmatch(method, rx->method)) {
-            httpTrace(conn, "inform", "Change method; from:\"%s\", to:\"%s\", uri:\"%s\"", rx->method, method, rx->uri);
+            httpTrace(conn, "info", "Change method", "originalMethod:%s, method:%s", rx->method, method);
             httpSetMethod(conn, method);
             return 1;
         }
@@ -13514,14 +13523,14 @@ static void traceRequest(HttpConn *conn, HttpPacket *packet)
     if (httpShouldTrace(conn, "rxHeaders")) {
         endp = strstr((char*) content->start, "\r\n\r\n");
         len = (endp) ? (int) (endp - content->start + 4) : 0;
-        httpTraceContent(conn, "rxHeaders", content->start, len, 0);
+        httpTraceContent(conn, "rxHeaders", content->start, len, 0, 0);
 
     } else if (httpShouldTrace(conn, "rxFirst")) {
         endp = strstr((char*) content->start, "\r\n");
         len = (endp) ? (int) (endp - content->start + 2) : 0;
         if (len > 0) {
             content->start[len - 2] = '\0';
-            httpTrace(conn, "rxFirst", "rx; request:\"%s\"", content->start);
+            httpTrace(conn, "rxFirst", "; rxFirst:\"%s\"", content->start, 0);
             content->start[len - 2] = '\r';
         }
     }
@@ -13662,7 +13671,7 @@ static bool parseResponseLine(HttpConn *conn, HttpPacket *packet)
         content = packet->content;
         endp = strstr((char*) content->start, "\r\n\r\n");
         len = (endp) ? (int) (endp - content->start + 4) : 0;
-        httpTraceContent(conn, "rxHeaders", content->start, len, 0);
+        httpTraceContent(conn, "rxHeaders", content->start, len, 0, 0);
         traced = 1;
     }
     protocol = conn->protocol = supper(getToken(conn, 0));
@@ -13690,8 +13699,7 @@ static bool parseResponseLine(HttpConn *conn, HttpPacket *packet)
         return 0;
     }
     if (!traced && httpShouldTrace(conn, "rxFirst")) {
-        httpTrace(conn, "rxFirst", "protocol:\"%s\", status:%d, message:\"%s\"",
-            protocol, rx->status, rx->statusMessage);
+        httpTrace(conn, "rxFirst", 0, "protocol:%s, status:%d", protocol, rx->status);
     }
     return 1;
 }
@@ -14093,11 +14101,10 @@ static bool processParsed(HttpConn *conn)
         if (rx->streaming) {
             httpCreatePipeline(conn);
 
-            httpTrace(conn, "inform",
-                "Select route; route:\"%s\", handler:\"%s\", target:\"%s\", endpoint:\"%s:%d\", host:\"%s\"",
+            httpTrace(conn, "info", 0,
+                "route:%s, handler:%s, target:\"%s\", endpoint:\"%s:%d\", host:\"%s\"",
                 rx->route->name, tx->handler->name, rx->route->targetRule, conn->endpoint->ip, conn->endpoint->port,
                 conn->host->name ? conn->host->name : "default");
-
             /*
                 Delay starting uploads until the files are extracted.
              */
@@ -14180,7 +14187,7 @@ static ssize filterPacket(HttpConn *conn, HttpPacket *packet, int *more)
             "Receive form of %,Ld bytes (sofar) is too big. Limit %,Ld", size, conn->limits->receiveFormSize);
     }
     if (packet && httpShouldTrace(conn, "rxBody")) {
-        httpTraceContent(conn, "rxBody", packet->content->start, nbytes, 0);
+        httpTraceContent(conn, "rxBody", packet->content->start, nbytes, 0, 0);
     }
     if (rx->eof) {
         if ((rx->remainingContent > 0 && (rx->length > 0 || !conn->mustClose)) ||
@@ -14343,8 +14350,7 @@ static void createErrorRequest(HttpConn *conn)
     if (!rx->headerPacket) {
         return;
     }
-    httpTrace(conn, "inform", "Create error document; doc:\"%s\", status:%d, uri:\"%s\"",
-        tx->errorDocument, tx->status, rx->uri);
+    httpTrace(conn, "info", "Redirect to error document", "location:\"%s\", status:%d", tx->errorDocument, tx->status, rx->uri);
 
     originalUri = rx->uri;
     conn->rx = httpCreateRx(conn);
@@ -14446,11 +14452,11 @@ static void measure(HttpConn *conn)
         elapsed = mprGetTicks() - conn->started;
 #if MPR_HIGH_RES_TIMER
         if (elapsed < 1000) {
-            httpTrace(conn, "complete", "request complete; msec:%,Ld, ticks:%,Ld",
+            httpTrace(conn, "complete", 0, "elapsed:%,Ld, elapsedTicks:%,Ld",
                 elapsed, mprGetHiResTicks() - conn->startMark);
         } else
 #endif
-            httpTrace(conn, "complete", "request complete; msec:%,Ld", elapsed);
+            httpTrace(conn, "complete", 0, "elapsed:%,Ld", elapsed);
     }
 }
 
@@ -15285,8 +15291,7 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
     written = mprSendFileToSocket(conn->sock, file, q->ioPos, q->ioCount, q->iovec, q->ioIndex, NULL, 0);
     if (written < 0) {
         errCode = mprGetError();
-        httpTrace(conn, "error", "Connector write error; wrote=%d errno=%d qflags=%x",
-            (int) written, errCode, q->flags);
+        httpTrace(conn, "error", "Connector write error", "errno:%d", errCode);
         if (errCode == EAGAIN || errCode == EWOULDBLOCK) {
             /*  Socket full, wait for an I/O event */
             tx->writeBlocked = 1;
@@ -15391,7 +15396,7 @@ static void addPacketForSend(HttpQueue *q, HttpPacket *packet)
         addToSendVector(q, mprGetBufStart(packet->content), httpGetPacketLength(packet));
         event = (packet->flags & HTTP_PACKET_HEADER) ? "txHeaders" : "txBody";
         if (httpShouldTrace(conn, event)) {
-            httpTracePacket(conn, event, packet, 0);
+            httpTracePacket(conn, event, packet, 0, 0, 0);
         }
     }
 }
@@ -16924,7 +16929,7 @@ PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create)
             flags = (rx->route->flags & HTTP_ROUTE_VISIBLE_SESSION) ? 0 : HTTP_COOKIE_HTTP;
             cookie = rx->route->cookie ? rx->route->cookie : HTTP_SESSION_COOKIE;
             httpSetCookie(conn, cookie, rx->session->id, "/", NULL, rx->session->lifespan, flags);
-            httpTrace(conn, "inform", "Create new session cookie; %s=%s", cookie, rx->session->id);
+            httpTrace(conn, "info", "Create new session cookie", "cookie:%s, session:%s", cookie, rx->session->id);
 
             if ((rx->route->flags & HTTP_ROUTE_XSRF) && rx->securityToken) {
                 httpSetSessionVar(conn, ME_XSRF_COOKIE, rx->securityToken);
@@ -17161,15 +17166,14 @@ PUBLIC bool httpCheckSecurityToken(HttpConn *conn)
         if (!requestToken) {
             requestToken = httpGetParam(conn, ME_XSRF_PARAM, 0);
             if (!requestToken) {
-                httpTrace(conn, "error", "Missing security token in request");
+                httpTrace(conn, "error", "Missing security token in request", 0);
             }
         }
         if (!smatch(sessionToken, requestToken)) {
             /*
                 Potential CSRF attack. Deny request. Re-create a new security token so legitimate clients can retry.
              */
-            httpTrace(conn, "error", 
-                "Security token in request does not match session token; requestToken=%s securityToken=%s",
+            httpTrace(conn, "error", "Security token in request does not match session token", "xsrf:%s, sessionXsrf:%s",
                 requestToken, sessionToken);
             httpAddSecurityToken(conn, 1);
             return 0;
@@ -17517,18 +17521,20 @@ PUBLIC void httpSetTraceFormatterName(HttpTrace *trace, cchar *name)
 /*
     Trace a simple message
  */
-PUBLIC void httpTrace(HttpConn *conn, cchar *event, cchar *fmt, ...)
+PUBLIC void httpTrace(HttpConn *conn, cchar *event, cchar *msg, cchar *values, ...)
 {
     va_list     ap;
 
     assert(conn);
     assert(event && *event);
-    assert(fmt && *fmt);
 
     if (httpShouldTrace(conn, event) && !conn->rx->skipTrace) {
-        va_start(ap, fmt);
-        httpFormatTrace(conn, event, sfmtv(fmt, ap), 0, 0);
-        va_end(ap);
+        if (values) {
+            va_start(ap, values);
+            values = sfmtv(values, ap);
+            va_end(ap);
+        }
+        httpFormatTrace(conn, event, msg, values, 0, 0);
     }
 }
 
@@ -17536,7 +17542,7 @@ PUBLIC void httpTrace(HttpConn *conn, cchar *event, cchar *fmt, ...)
 /*
     Trace body content
  */
-PUBLIC void httpTraceContent(HttpConn *conn, cchar *event, cchar *buf, ssize len, cchar *fmt, ...)
+PUBLIC void httpTraceContent(HttpConn *conn, cchar *event, cchar *buf, ssize len, cchar *msg, cchar *values, ...)
 {
     va_list     ap;
 
@@ -17550,48 +17556,48 @@ PUBLIC void httpTraceContent(HttpConn *conn, cchar *event, cchar *buf, ssize len
         (smatch(event, "tx.body") && (conn->tx->bytesWritten >= conn->trace->size))) {
         if (!conn->rx->skipTrace && !conn->rx->webSocket) {
             conn->rx->skipTrace = 1;
-            httpTrace(conn, event, "Abbreviating body trace");
+            httpTrace(conn, event, "Abbreviating body trace", 0);
         }
         return;
     }
-    va_start(ap, fmt);
-    httpFormatTrace(conn, event, sfmtv(fmt, ap), buf, len);
-    va_end(ap);
+    if (values) {
+        va_start(ap, values);
+        values = sfmtv(values, ap);
+        va_end(ap);
+    }
+    httpFormatTrace(conn, event, msg, values, buf, len);
 }
 
 
 /*
     Trace a packet
  */
-PUBLIC void httpTracePacket(HttpConn *conn, cchar *event, HttpPacket *packet, cchar *fmt, ...)
+PUBLIC void httpTracePacket(HttpConn *conn, cchar *event, HttpPacket *packet, cchar *msg, cchar *values, ...)
 {
     va_list     ap;
-    cchar       *msg;
 
     assert(conn);
     assert(packet);
 
     if (packet->prefix) {
         mprAddNullToBuf(packet->prefix);
-        httpTraceContent(conn, event, mprGetBufStart(packet->prefix), mprGetBufLength(packet->prefix), 0);
+        httpTraceContent(conn, event, mprGetBufStart(packet->prefix), mprGetBufLength(packet->prefix), 0, 0);
     }
-    if (fmt) {
-        va_start(ap, fmt);
-        msg = sfmtv(fmt, ap);
+    if (values) {
+        va_start(ap, values);
+        values = sfmtv(values, ap);
         va_end(ap);
-    } else {
-        msg = event;
     }
     if (packet->content) {
         mprAddNullToBuf(packet->content);
-        httpTraceContent(conn, event, mprGetBufStart(packet->content), httpGetPacketLength(packet), msg);
+        httpTraceContent(conn, event, mprGetBufStart(packet->content), httpGetPacketLength(packet), msg, values);
     }
 }
 
 
-PUBLIC void httpFormatTrace(HttpConn *conn, cchar *event, cchar *msg, cchar *buf, ssize len)
+PUBLIC void httpFormatTrace(HttpConn *conn, cchar *event, cchar *msg, cchar *values, cchar *buf, ssize len)
 {
-    (conn->trace->formatter)(conn, event, msg, buf, len);
+    (conn->trace->formatter)(conn, event, msg, values, buf, len);
 }
 
 
@@ -17661,7 +17667,7 @@ PUBLIC cchar *httpMakePrintable(HttpConn *conn, cchar *event, cchar *buf, ssize 
 /*
     Format a detailed request message
  */
-PUBLIC void httpDetailTraceFormatter(HttpConn *conn, cchar *event, cchar *msg, cchar *buf, ssize len)
+PUBLIC void httpDetailTraceFormatter(HttpConn *conn, cchar *event, cchar *msg, cchar *values, cchar *buf, ssize len)
 {
     char    *boundary, prefix[64];
     int     client, sessionSeqno;
@@ -18311,7 +18317,8 @@ PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
                 if (endpoint) {
                     target->port = endpoint->port;
                 } else if (smatch(target->scheme, "https")) {
-                    httpTrace(conn, "error", "Missing secure endpoint to use with https redirection");
+                    //  MOB - should this be mprLog
+                    httpTrace(conn, "error", "Missing secure endpoint to use with https redirection", 0);
                 }
             }
         }
@@ -18334,7 +18341,7 @@ PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
             "<html><head><title>%s</title></head>\r\n"
             "<body><h1>%s</h1>\r\n<p>The document has moved <a href=\"%s\">here</a>.</p></body></html>\r\n",
             msg, msg, targetUri);
-        httpTrace(conn, "inform", "redirect; status=%d uri=%s", status, targetUri);
+        httpTrace(conn, "info", "redirect", "status:%d, location:%s", status, targetUri);
     } else {
         httpFormatResponse(conn,
             "<!DOCTYPE html>\r\n"
@@ -18611,8 +18618,7 @@ PUBLIC void httpSetFilename(HttpConn *conn, cchar *filename, int flags)
         tx->etag = sfmt("\"%Lx-%Lx-%Lx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
     }
     tx->filename = sclone(filename);
-    httpTrace(conn, "inform", "Set filename; filename:\"%s\", uri:\"%s\", extension:\"%s\"", 
-        tx->filename, conn->rx->uri, tx->ext);
+    httpTrace(conn, "info", "Set filename", "filename:\"%s\", extension:%s", tx->filename, tx->ext);
 }
 
 
@@ -18950,7 +18956,6 @@ static int matchUpload(HttpConn *conn, HttpRoute *route, int dir)
     len = strlen(pat);
     if (sncaselesscmp(rx->mimeType, pat, len) == 0) {
         rx->upload = 1;
-        httpTrace(conn, "inform", "Enable upload filter; uri=%s", rx->uri);
         return HTTP_ROUTE_OK;
     }
     return HTTP_ROUTE_OMIT_FILTER;
@@ -18995,7 +19000,6 @@ static int openUpload(HttpQueue *q)
 
     uploadDir = getUploadDir(rx->route);
     httpSetParam(conn, "UPLOAD_DIR", uploadDir);
-    httpTrace(conn, "inform", "Upload directory; path:\"%s\"", uploadDir);
 
     if ((boundary = strstr(rx->mimeType, "boundary=")) != 0) {
         boundary += 9;
@@ -19245,8 +19249,7 @@ static int processUploadHeader(HttpQueue *q, char *line)
                         "Cannot create upload temp file %s. Check upload temp dir %s", up->tmpPath, uploadDir);
                     return MPR_ERR_CANT_OPEN;
                 }
-                httpTrace(conn, "inform", "File upload; clientFilename=%s localFilename=%s",
-                    up->clientFilename, up->tmpPath);
+                httpTrace(conn, "info", "File upload", "clientFilename:%s, filename:%s", up->clientFilename, up->tmpPath);
 
                 up->file = mprOpenFile(up->tmpPath, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0600);
                 if (up->file == 0) {
@@ -19419,7 +19422,9 @@ static int processUploadData(HttpQueue *q)
                 Normal string form data variables
              */
             data[dataLen] = '\0';
-            httpTrace(conn, "rxBody", "upload form; form: { \"%s\": \"%s\"}", up->id, data);
+#if KEEP
+            httpTrace(conn, "info", 0, "\"%s\": \"%s\"", up->id, data);
+#endif
             key = mprUriDecode(up->id);
             data = mprUriDecode(data);
             httpSetParam(conn, key, data);
@@ -21195,7 +21200,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
          */
         httpJoinPacketForService(q, packet, 0);
     }
-    httpTracePacket(conn, "rxBody", packet, "WebSockets; state:%d, frame:%d, length:%d",
+    httpTracePacket(conn, "rxBody", packet, "WebSockets", "state:%d, frame:%d, length:%d",
         ws->state, ws->frameState, httpGetPacketLength(packet));
 
     if (packet->flags & HTTP_PACKET_END) {
@@ -21217,7 +21222,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
         switch (ws->frameState) {
         case WS_CLOSED:
             if (httpGetPacketLength(packet) > 0) {
-                httpTrace(conn, "error", "WebSockets closed: ignore incoming packet");
+                httpTrace(conn, "error", "WebSockets closed: ignore incoming packet", 0);
             }
             httpFinalize(conn);
             httpSetState(conn, HTTP_STATE_FINALIZED);
@@ -21232,32 +21237,31 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             fp = content->start;
             if (GET_RSV(*fp) != 0) {
                 error = WS_STATUS_PROTOCOL_ERROR;
-                httpTrace(conn, "error", "WebSockets protocol error: bad reserved field");
+                httpTrace(conn, "error", "WebSockets protocol error: bad reserved field", 0);
                 break;
             }
             packet->last = GET_FIN(*fp);
             opcode = GET_CODE(*fp);
             if (opcode == WS_MSG_CONT) {
                 if (!ws->currentMessageType) {
-                    httpTrace(conn, "error", "WebSockets protocol error: continuation frame but not prior message");
+                    httpTrace(conn, "error", "WebSockets protocol error: continuation frame but not prior message", 0);
                     error = WS_STATUS_PROTOCOL_ERROR;
                     break;
                 }
             } else if (opcode < WS_MSG_CONTROL && ws->currentMessageType) {
-                httpTrace(conn, "error",
-                    "WebSockets protocol error,: data frame received but expected a continuation frame");
+                httpTrace(conn, "error", "WebSockets protocol error: data frame received but expected a continuation frame", 0);
                 error = WS_STATUS_PROTOCOL_ERROR;
                 break;
             }
             if (opcode > WS_MSG_PONG) {
-                httpTrace(conn, "error", "WebSockets protocol error: bad frame opcode");
+                httpTrace(conn, "error", "WebSockets protocol error: bad frame opcode", 0);
                 error = WS_STATUS_PROTOCOL_ERROR;
                 break;
             }
             packet->type = opcode;
             if (opcode >= WS_MSG_CONTROL && !packet->last) {
                 /* Control frame, must not be fragmented */
-                httpTrace(conn, "error", "WebSockets protocol error: fragmented control frame");
+                httpTrace(conn, "error", "WebSockets protocol error: fragmented control frame", 0);
                 error = WS_STATUS_PROTOCOL_ERROR;
                 break;
             }
@@ -21284,7 +21288,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             }
             if (packet->type >= WS_MSG_CONTROL && len > WS_MAX_CONTROL) {
                 /* Too big */
-                httpTrace(conn, "error", "WebSockets protocol error: control frame too big");
+                httpTrace(conn, "error", "WebSockets protocol error: control frame too big", 0);
                 error = WS_STATUS_PROTOCOL_ERROR;
                 break;
             }
@@ -21325,7 +21329,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
                 if (httpServerConn(conn)) {
                     httpMonitorEvent(conn, HTTP_COUNTER_LIMIT_ERRORS, 1);
                 }
-                httpTrace(conn, "error", "WebSockets: Incoming message is too large; size=%d max=%d",
+                httpTrace(conn, "error", "WebSockets incoming message is too large", "wsLength:%d, wsMaxLength:%d",
                     len, limits->webSocketsMessageSize);
                 error = WS_STATUS_MESSAGE_TOO_LARGE;
                 break;
@@ -21375,7 +21379,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             break;
 
         default:
-            httpTrace(conn, "error", "WebSockets protocol error: unknown frame state");
+            httpTrace(conn, "error", "WebSockets protocol error: unknown frame state", 0);
             error = WS_STATUS_PROTOCOL_ERROR;
             break;
         }
@@ -21383,7 +21387,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
             /*
                 Notify of the error and send a close to the peer. The peer may or may not be still there.
              */
-            httpTrace(conn, "error", "Websockets error; status=%d", error);
+            httpTrace(conn, "error", "Websockets error", "webSocketError:%d", error);
             HTTP_NOTIFY(conn, HTTP_EVENT_ERROR, error);
             httpSendClose(conn, error, NULL);
             ws->frameState = WS_CLOSED;
@@ -21419,12 +21423,12 @@ static int processFrame(HttpQueue *q, HttpPacket *packet)
     assert(content);
 
     mprAddNullToBuf(content);
-    httpTrace(conn, "inform", "WebSockets; receive seq=%d type=%s ptype=%d last=%d length=%d",
+    httpTrace(conn, "info", "WebSockets receive", "wsSeq:%d, wsTypeName:%s, wsType:%d, wsLast:%d, wsLength:%d",
          ws->rxSeq++, codetxt[packet->type], packet->type, packet->last, mprGetBufLength(content));
 
     switch (packet->type) {
     case WS_MSG_TEXT:
-        httpTracePacket(conn, "rxBody", packet, "WebSockets receive text");
+        httpTracePacket(conn, "rxBody", packet, "WebSockets receive text", 0);
         /* Fall through */
 
     case WS_MSG_BINARY:
@@ -21438,7 +21442,7 @@ static int processFrame(HttpQueue *q, HttpPacket *packet)
         }
         if (packet->type == WS_MSG_CONT) {
             if (!ws->currentMessageType) {
-                httpTrace(conn, "error", "Websockets bad continuation packet");
+                httpTrace(conn, "error", "Websockets bad continuation packet", 0);
                 return WS_STATUS_PROTOCOL_ERROR;
             }
             packet->type = ws->currentMessageType;
@@ -21495,7 +21499,7 @@ static int processFrame(HttpQueue *q, HttpPacket *packet)
         if (httpGetPacketLength(packet) == 0) {
             ws->closeStatus = WS_STATUS_OK;
         } else if (httpGetPacketLength(packet) < 2) {
-            httpTrace(conn, "error", "Websockets missing close status");
+            httpTrace(conn, "error", "Websockets missing close status", 0);
             return WS_STATUS_PROTOCOL_ERROR;
         } else {
             ws->closeStatus = ((uchar) cp[0]) << 8 | (uchar) cp[1];
@@ -21508,7 +21512,7 @@ static int processFrame(HttpQueue *q, HttpPacket *packet)
                 (1004 <= ws->closeStatus && ws->closeStatus <= 1006) ||
                 (1012 <= ws->closeStatus && ws->closeStatus <= 1016) ||
                 (1100 <= ws->closeStatus && ws->closeStatus <= 2999)) {
-                httpTrace(conn, "error", "Websockets bad close; status=%d", ws->closeStatus);
+                httpTrace(conn, "error", "Websockets bad close", "wsCloseStatus:%d", ws->closeStatus);
                 return WS_STATUS_PROTOCOL_ERROR;
             }
             mprAdjustBufStart(content, 2);
@@ -21516,13 +21520,13 @@ static int processFrame(HttpQueue *q, HttpPacket *packet)
                 ws->closeReason = mprCloneBufMem(content);
                 if (!rx->route || !rx->route->ignoreEncodingErrors) {
                     if (validUTF8(ws->closeReason, slen(ws->closeReason)) != UTF8_ACCEPT) {
-                        httpTrace(conn, "error", "Websockets text packet has invalid UTF8");
+                        httpTrace(conn, "error", "Websockets text packet has invalid UTF8", 0);
                         return WS_STATUS_INVALID_UTF8;
                     }
                 }
             }
         }
-        httpTrace(conn, "inform", "WebSockets receive close packet; status=%d, reason=\"%s\" closing=%d",
+        httpTrace(conn, "info", "WebSockets receive close packet", "wsCloseStatus:%d, wsCloseReason:\"%s\" wsClosing:%d",
             ws->closeStatus, ws->closeReason, ws->closing);
         if (ws->closing) {
             httpDisconnect(conn);
@@ -21548,7 +21552,7 @@ static int processFrame(HttpQueue *q, HttpPacket *packet)
         break;
 
     default:
-        httpTrace(conn, "error", "Websockets bad message; type=%d", packet->type);
+        httpTrace(conn, "error", "Websockets bad message", "wsType:%d", packet->type);
         ws->state = WS_STATE_CLOSED;
         return WS_STATUS_PROTOCOL_ERROR;
     }
@@ -21596,7 +21600,7 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
     }
     if (type != WS_MSG_CONT && type != WS_MSG_TEXT && type != WS_MSG_BINARY && type != WS_MSG_CLOSE &&
             type != WS_MSG_PING && type != WS_MSG_PONG) {
-        httpTrace(conn, "error", "Websockets bad message; type=%d", type);
+        httpTrace(conn, "error", "Websockets bad message", "wsType:%d", type);
         return MPR_ERR_BAD_ARGS;
     }
     q = conn->writeq;
@@ -21610,7 +21614,7 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
         if (httpServerConn(conn)) {
             httpMonitorEvent(conn, HTTP_COUNTER_LIMIT_ERRORS, 1);
         }
-        httpTrace(conn, "error", "Outgoing websockets message is too large; size=%d max=%d",
+        httpTrace(conn, "error", "Outgoing websockets message is too large", "wsLength:%d, wsMaxLength:%d",
             len, conn->limits->webSocketsMessageSize);
         return MPR_ERR_WONT_FIT;
     }
@@ -21708,7 +21712,7 @@ PUBLIC ssize httpSendClose(HttpConn *conn, int status, cchar *reason)
     if (reason) {
         if (slen(reason) >= 124) {
             reason = "WebSockets reason message was too big";
-            httpTrace(conn, "error", reason);
+            httpTrace(conn, "error", reason, 0);
         }
         len += slen(reason) + 1;
     }
@@ -21717,7 +21721,7 @@ PUBLIC ssize httpSendClose(HttpConn *conn, int status, cchar *reason)
     if (reason) {
         scopy(&msg[2], len - 2, reason);
     }
-    httpTrace(conn, "inform", "WebSockets send close packet, status %d reason \"%s\"", status, reason);
+    httpTrace(conn, "info", "WebSockets send close packet", "wsCloseStatus:%d, wsCloseReason:\"%s\"", status, reason);
     return httpSendBlock(conn, WS_MSG_CLOSE, msg, len, HTTP_BUFFER);
 }
 
@@ -21778,7 +21782,7 @@ static void outgoingWebSockService(HttpQueue *q)
             if (packet->type == WS_MSG_TEXT && packet->content) {
                 mprAddNullToBuf(packet->content);
 #if UNUSED
-                httpTracePacket(conn, HTTP_TRACE_TX_BODY, packet, "websockets");
+                httpTracePacket(conn, HTTP_TRACE_TX_BODY, packet, "websockets", 0);
 #endif
             }
             if (httpClientConn(conn)) {
@@ -21794,7 +21798,8 @@ static void outgoingWebSockService(HttpQueue *q)
             }
             *prefix = '\0';
             mprAdjustBufEnd(packet->prefix, prefix - packet->prefix->start);
-            httpTracePacket(conn, "txBody", packet, "WebSocket: seqno:%d, send:\"%s\", type:%d, last:%d, length:%d",
+            httpTracePacket(conn, "txBody", packet, 
+                "WebSockets", "wsSeqno:%d, wsTypeName:\"%s\", wsType:%d, wsLast:%d, wsLength:%d",
                 ws->txSeq++, codetxt[packet->type], packet->type, packet->last, httpGetPacketLength(packet));
         }
         httpPutPacketToNext(q, packet);
@@ -21969,7 +21974,7 @@ static bool validateText(HttpConn *conn, HttpPacket *packet)
         valid = state != UTF8_REJECT;
     }
     if (!valid) {
-        httpTrace(conn, "error", "WebSocket text packet has invalid UTF8");
+        httpTrace(conn, "error", "WebSocket text packet has invalid UTF8", 0);
     }
     return valid;
 }

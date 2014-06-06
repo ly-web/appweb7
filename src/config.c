@@ -182,7 +182,7 @@ static int parseFileInner(MaState *state, cchar *path)
 static int traceLogDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpRoute   *route;
-    char        *format, *option, *ovalue, *tok, *path, *type;
+    char        *format, *option, *ovalue, *tok, *path, *formatter;
     ssize       size;
     int         flags, backup, level;
 
@@ -192,7 +192,7 @@ static int traceLogDirective(MaState *state, cchar *key, cchar *value)
     flags = 0;
     path = 0;
     format = ME_HTTP_LOG_FORMAT;
-    type = "detail";
+    formatter = "detail";
     level = 0;
 
     if (route->trace->flags & MPR_LOG_CMDLINE) {
@@ -220,8 +220,8 @@ static int traceLogDirective(MaState *state, cchar *key, cchar *value)
             } else if (smatch(option, "size")) {
                 size = (ssize) getnum(ovalue);
 
-            } else if (smatch(option, "type")) {
-                type = ovalue;
+            } else if (smatch(option, "formatter")) {
+                formatter = ovalue;
 
             } else {
                 mprLog("appweb config", 0, "Unknown TraceLog option %s", option);
@@ -235,8 +235,8 @@ static int traceLogDirective(MaState *state, cchar *key, cchar *value)
         mprLog("appweb config", 0, "Missing TraceLog filename");
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (type) {
-        httpSetTraceType(route->trace, type);
+    if (formatter) {
+        httpSetTraceFormatterName(route->trace, formatter);
     }
     if (!smatch(path, "stdout") && !smatch(path, "stderr")) {
         path = httpMakePath(route, state->configDir, path);
@@ -2304,16 +2304,16 @@ static int threadStackDirective(MaState *state, cchar *key, cchar *value)
 /*
     Trace options
     Options:
-        conn=NN
+        connection=NN
         errors=NN
         info=NN
-        rx-first=NN
-        tx-first=NN
-        rx-header=NN
-        tx-header=NN
-        rx-body=NN
-        tx-body=NN
-        time=NN
+        rxFirst=NN
+        txFirst=NN
+        rxHeader=NN
+        txHeader=NN
+        rxBody=NN
+        txBody=NN
+        complete=NN
         size=NN
  */
 static int traceDirective(MaState *state, cchar *key, cchar *value)
@@ -2321,56 +2321,21 @@ static int traceDirective(MaState *state, cchar *key, cchar *value)
     HttpRoute   *route;
     char        *option, *ovalue, *tok;
     ssize       size;
-    char        levels[HTTP_TRACE_MAX_ITEM];
 
     size = MAXINT;
     route = state->route;
+    route->trace = httpCreateTrace(route->trace);
     
-    memset(levels, 0, sizeof(levels));
     for (option = stok(sclone(value), " \t", &tok); option; option = stok(0, " \t", &tok)) {
         option = stok(option, " =\t,", &ovalue);
         ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
 
-        if (smatch(option, "conn")) {
-            levels[HTTP_TRACE_CONN] = atoi(ovalue);
-
-        } else if (smatch(option, "complete")) {
-            levels[HTTP_TRACE_COMPLETE] = atoi(ovalue);
-
-        } else if (smatch(option, "errors")) {
-            levels[HTTP_TRACE_ERROR] = (ssize) getnum(ovalue);
-
-        } else if (smatch(option, "info")) {
-            levels[HTTP_TRACE_INFO] = (ssize) getnum(ovalue);
-
-        } else if (smatch(option, "rx-first")) {
-            levels[HTTP_TRACE_RX_FIRST] = atoi(ovalue);
-
-        } else if (smatch(option, "rx-headers")) {
-            levels[HTTP_TRACE_RX_HEADERS] = atoi(ovalue);
-
-        } else if (smatch(option, "rx-body")) {
-            levels[HTTP_TRACE_RX_BODY] = atoi(ovalue);
-
-        } else if (smatch(option, "size")) {
-            size = (ssize) getnum(ovalue);
-
-        } else if (smatch(option, "tx-first")) {
-            levels[HTTP_TRACE_TX_FIRST] = atoi(ovalue);
-
-        } else if (smatch(option, "tx-headers")) {
-            levels[HTTP_TRACE_TX_HEADERS] = atoi(ovalue);
-
-        } else if (smatch(option, "tx-body")) {
-            levels[HTTP_TRACE_TX_BODY] = atoi(ovalue);
-
+        if (smatch(option, "size")) {
+            httpSetTraceSize(route->trace, (ssize) getnum(ovalue));
         } else {
-            mprLog("appweb config", 0, "Unknown Cache option '%s'", option);
-            return MPR_ERR_BAD_SYNTAX;
+            httpSetTraceEventLevel(route->trace, option, atoi(ovalue));
         }
     }
-    route->trace = httpCreateTrace(route->trace);
-    httpSetTraceLevels(route->trace, levels, size);
     return 0;
 }
 

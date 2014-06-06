@@ -76,10 +76,10 @@ static int openFileHandler(HttpQueue *q)
     if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
         if (!(info->valid || info->isDir)) {
             if (rx->referrer) {
-                httpTrace(conn, HTTP_TRACE_ERROR, "Cannot find file; filename=%s referrer=%s", 
+                httpTrace(conn, "error", "Cannot find document", "filename:%s, referrer:%s", 
                     tx->filename, rx->referrer);
             } else {
-                httpTrace(conn, HTTP_TRACE_ERROR, "Cannot find file; filename=%s", tx->filename);
+                httpTrace(conn, "error", "Cannot find document", "filename:%s", tx->filename);
             }
             httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find document");
             return 0;
@@ -105,7 +105,7 @@ static int openFileHandler(HttpQueue *q)
             tx->length = -1;
         }
         if (!tx->fileInfo.isReg && !tx->fileInfo.isLink) {
-            httpTrace(conn, HTTP_TRACE_ERROR, "Document is not a regular file; filename=%s", tx->filename);
+            httpTrace(conn, "error", "Document is not a regular file", "filename:%s", tx->filename);
             httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot serve document");
             
         } else if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
@@ -122,12 +122,12 @@ static int openFileHandler(HttpQueue *q)
                 tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
                 if (tx->file == 0) {
                     if (rx->referrer) {
-                        httpTrace(conn, HTTP_TRACE_ERROR, "Cannot find file; filename=%s referrer=%s", 
+                        httpTrace(conn, "error", "Cannot open document", "filename=%s, referrer:%s", 
                             tx->filename, rx->referrer);
                     } else {
-                        httpTrace(conn, HTTP_TRACE_ERROR, "Cannot find file; filename=%s", tx->filename);
+                        httpTrace(conn, "error", "Cannot open document", "filename=%s", tx->filename);
                     }
-                    httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find document");
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document");
                 }
             }
         }

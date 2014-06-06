@@ -2689,7 +2689,7 @@ PUBLIC void espAddPak(HttpRoute *route, cchar *name, cchar *version)
 }
 
 
-/* 
+/*
     Add a http header if not already defined
  */
 PUBLIC void espAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
@@ -2714,7 +2714,7 @@ PUBLIC void espAddHeaderString(HttpConn *conn, cchar *key, cchar *value)
 }
 
 
-PUBLIC void espAddParam(HttpConn *conn, cchar *var, cchar *value) 
+PUBLIC void espAddParam(HttpConn *conn, cchar *var, cchar *value)
 {
     if (!httpGetParam(conn, var, 0)) {
         httpSetParam(conn, var, value);
@@ -2722,7 +2722,7 @@ PUBLIC void espAddParam(HttpConn *conn, cchar *var, cchar *value)
 }
 
 
-/* 
+/*
    Append a header. If already defined, the value is catenated to the pre-existing value after a ", " separator.
    As per the HTTP/1.1 spec.
  */
@@ -2739,7 +2739,7 @@ PUBLIC void espAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
 }
 
 
-/* 
+/*
    Append a header string. If already defined, the value is catenated to the pre-existing value after a ", " separator.
    As per the HTTP/1.1 spec.
  */
@@ -2749,11 +2749,11 @@ PUBLIC void espAppendHeaderString(HttpConn *conn, cchar *key, cchar *value)
 }
 
 
-PUBLIC void espAutoFinalize(HttpConn *conn) 
+PUBLIC void espAutoFinalize(HttpConn *conn)
 {
     EspReq  *req;
 
-    req = conn->data;
+    req = conn->reqData;
     if (req->autoFinalize) {
         httpFinalize(conn);
     }
@@ -2836,13 +2836,13 @@ PUBLIC void espDestroySession(HttpConn *conn)
 }
 
 
-PUBLIC void espFinalize(HttpConn *conn) 
+PUBLIC void espFinalize(HttpConn *conn)
 {
     httpFinalize(conn);
 }
 
 
-PUBLIC void espFlush(HttpConn *conn) 
+PUBLIC void espFlush(HttpConn *conn)
 {
     httpFlush(conn);
 }
@@ -2877,7 +2877,7 @@ PUBLIC cchar *espGetCookie(HttpConn *conn, cchar *name)
 }
 
 
-PUBLIC cchar *espGetCookies(HttpConn *conn) 
+PUBLIC cchar *espGetCookies(HttpConn *conn)
 {
     return httpGetCookies(conn);
 }
@@ -2887,7 +2887,7 @@ PUBLIC void *espGetData(HttpConn *conn)
 {
     EspReq  *req;
 
-    req = conn->data;
+    req = conn->reqData;
     return req->data;
 }
 
@@ -2900,7 +2900,7 @@ PUBLIC Edi *espGetDatabase(HttpConn *conn)
     Edi         *edi;
 
     rx = conn->rx;
-    req = conn->data;
+    req = conn->reqData;
     edi = req ? req->edi : 0;
     if (edi == 0 && rx && rx->route) {
         if ((eroute = rx->route->eroute) != 0) {
@@ -2916,7 +2916,7 @@ PUBLIC Edi *espGetDatabase(HttpConn *conn)
 
 
 PUBLIC cchar *espGetDocuments(HttpConn *conn)
-{   
+{
     return conn->rx->route->documents;
 }
 
@@ -2932,8 +2932,8 @@ PUBLIC cchar *espGetFlash(HttpConn *conn, cchar *kind)
     EspReq      *req;
     MprKey      *kp;
     cchar       *msg;
-   
-    req = conn->data;
+
+    req = conn->reqData;
     if (kind == 0 || req->flash == 0 || mprGetHashLength(req->flash) == 0) {
         return 0;
     }
@@ -2952,8 +2952,8 @@ PUBLIC cchar *espGetFeedback(HttpConn *conn, cchar *kind)
     EspReq      *req;
     MprKey      *kp;
     cchar       *msg;
-   
-    req = conn->data;
+
+    req = conn->reqData;
     if (kind == 0 || req == 0 || req->feedback == 0 || mprGetHashLength(req->feedback) == 0) {
         return 0;
     }
@@ -2969,7 +2969,7 @@ PUBLIC cchar *espGetFeedback(HttpConn *conn, cchar *kind)
 
 
 PUBLIC EdiGrid *espGetGrid(HttpConn *conn)
-{           
+{
     return conn->grid;
 }
 
@@ -2997,11 +2997,11 @@ PUBLIC int espGetIntParam(HttpConn *conn, cchar *var, int defaultValue)
     return httpGetIntParam(conn, var, defaultValue);
 }
 
-  
+
 PUBLIC cchar *espGetMethod(HttpConn *conn)
-{   
+{
     return conn->rx->method;
-} 
+}
 
 
 PUBLIC cchar *espGetParam(HttpConn *conn, cchar *var, cchar *defaultValue)
@@ -3105,7 +3105,7 @@ PUBLIC bool espIsEof(HttpConn *conn)
 }
 
 
-PUBLIC bool espIsFinalized(HttpConn *conn) 
+PUBLIC bool espIsFinalized(HttpConn *conn)
 {
     return httpIsFinalized(conn);
 }
@@ -3124,7 +3124,7 @@ PUBLIC bool espMatchParam(HttpConn *conn, cchar *var, cchar *value)
 
 
 /*
-    Read rx data in non-blocking mode. Use standard connection timeouts. 
+    Read rx data in non-blocking mode. Use standard connection timeouts.
  */
 PUBLIC ssize espReceive(HttpConn *conn, char *buf, ssize len)
 {
@@ -3141,7 +3141,7 @@ PUBLIC void espRedirect(HttpConn *conn, int status, cchar *target)
 PUBLIC void espRedirectBack(HttpConn *conn)
 {
     if (conn->rx->referrer) {
-        espRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, conn->rx->referrer); 
+        espRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, conn->rx->referrer);
     }
 }
 
@@ -3156,7 +3156,7 @@ PUBLIC ssize espRender(HttpConn *conn, cchar *fmt, ...)
     va_end(vargs);
     return espRenderString(conn, buf);
 }
-    
+
 
 PUBLIC ssize espRenderBlock(HttpConn *conn, cchar *buf, ssize size)
 {
@@ -3177,7 +3177,7 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
     ssize       written;
     cchar       *msg, *title, *text;
 
-    va_start(args, fmt);    
+    va_start(args, fmt);
 
     rx = conn->rx;
     written = 0;
@@ -3199,10 +3199,10 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
             httpSetHeader(conn, "Content-Type", "text/html");
             written += espRenderString(conn, text);
             espFinalize(conn);
-            httpTrace(conn, HTTP_TRACE_ERROR, "Request error (%d) for: \"%s\"", status, rx->pathInfo);
+            httpTrace(conn, "error", "ESP request error", "status:%d, uri:\"%s\"", status, rx->pathInfo);
         }
     }
-    va_end(args);    
+    va_end(args);
     return written;
 }
 
@@ -3233,8 +3233,8 @@ PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds)
     EspReq      *req;
     MprKey      *kp;
     cchar       *msg;
-   
-    req = conn->data;
+
+    req = conn->reqData;
     if (kinds == 0 || req->flash == 0 || mprGetHashLength(req->flash) == 0) {
         return;
     }
@@ -3263,7 +3263,7 @@ static void espNotifier(HttpConn *conn, int event, int arg)
 {
     EspReq      *req;
 
-    if ((req = conn->data) != 0) {
+    if ((req = conn->reqData) != 0) {
         espSetConn(conn);
         (req->notifier)(conn, event, arg);
     }
@@ -3274,7 +3274,7 @@ PUBLIC void espSetNotifier(HttpConn *conn, HttpNotifier notifier)
 {
     EspReq      *req;
 
-    if ((req = conn->data) != 0) {
+    if ((req = conn->reqData) != 0) {
         req->notifier = notifier;
         httpSetConnNotifier(conn, espNotifier);
     }
@@ -3330,7 +3330,7 @@ PUBLIC int espRemoveHeader(HttpConn *conn, cchar *key)
 }
 
 
-PUBLIC void espRemoveSessionVar(HttpConn *conn, cchar *var) 
+PUBLIC void espRemoveSessionVar(HttpConn *conn, cchar *var)
 {
     httpRemoveSessionVar(conn, var);
 }
@@ -3362,7 +3362,7 @@ PUBLIC ssize espSendRec(HttpConn *conn, EdiRec *rec, int flags)
 {
     httpAddHeaderString(conn, "Content-Type", "application/json");
     if (rec) {
-        return espRender(conn, "{\n  \"data\": %s, \"schema\": %s}\n", ediRecAsJson(rec, flags), ediGetRecSchemaAsJson(rec)); 
+        return espRender(conn, "{\n  \"data\": %s, \"schema\": %s}\n", ediRecAsJson(rec, flags), ediGetRecSchemaAsJson(rec));
     }
     return espRender(conn, "{}");
 }
@@ -3373,26 +3373,26 @@ PUBLIC void espSendResult(HttpConn *conn, bool success)
     EspReq      *req;
     EdiRec      *rec;
 
-    req = conn->data;
+    req = conn->reqData;
     rec = getRec();
     if (rec && rec->errors) {
-        espRender(conn, "{\"error\": %d, \"feedback\": %s, \"fieldErrors\": %s}", !success, 
+        espRender(conn, "{\"error\": %d, \"feedback\": %s, \"fieldErrors\": %s}", !success,
             req->feedback ? mprSerialize(req->feedback, MPR_JSON_QUOTES) : "{}",
             mprSerialize(rec->errors, MPR_JSON_QUOTES));
     } else {
-        espRender(conn, "{\"error\": %d, \"feedback\": %s}", !success, 
+        espRender(conn, "{\"error\": %d, \"feedback\": %s}", !success,
             req->feedback ? mprSerialize(req->feedback, MPR_JSON_QUOTES) : "{}");
     }
     espFinalize(conn);
 }
 
 
-PUBLIC bool espSetAutoFinalizing(HttpConn *conn, bool on) 
+PUBLIC bool espSetAutoFinalizing(HttpConn *conn, bool on)
 {
     EspReq  *req;
     bool    old;
 
-    req = conn->data;
+    req = conn->reqData;
     old = req->autoFinalize;
     req->autoFinalize = on;
     return old;
@@ -3411,7 +3411,7 @@ PUBLIC void espSetContentLength(HttpConn *conn, MprOff length)
 }
 
 
-PUBLIC void espSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *cookieDomain, MprTicks lifespan, 
+PUBLIC void espSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *cookieDomain, MprTicks lifespan,
         bool isSecure)
 {
     httpSetCookie(conn, name, value, path, cookieDomain, lifespan, isSecure);
@@ -3428,7 +3428,7 @@ PUBLIC void espSetData(HttpConn *conn, void *data)
 {
     EspReq  *req;
 
-    req = conn->data;
+    req = conn->reqData;
     req->data = data;
 }
 
@@ -3448,7 +3448,7 @@ PUBLIC void espSetFeedbackv(HttpConn *conn, cchar *kind, cchar *fmt, va_list arg
     EspReq      *req;
     cchar       *prior, *msg;
 
-    if ((req = conn->data) == 0) {
+    if ((req = conn->reqData) == 0) {
         return;
     }
     msg = sfmtv(fmt, args);
@@ -3479,7 +3479,7 @@ PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
     EspReq      *req;
     cchar       *msg;
 
-    req = conn->data;
+    req = conn->reqData;
     msg = sfmtv(fmt, args);
 
     if (req->flash == 0) {
@@ -3499,7 +3499,7 @@ PUBLIC EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid)
 }
 
 
-/*  
+/*
     Set a http header. Overwrite if present.
  */
 PUBLIC void espSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
@@ -3521,13 +3521,13 @@ PUBLIC void espSetHeaderString(HttpConn *conn, cchar *key, cchar *value)
 }
 
 
-PUBLIC void espSetIntParam(HttpConn *conn, cchar *var, int value) 
+PUBLIC void espSetIntParam(HttpConn *conn, cchar *var, int value)
 {
     httpSetIntParam(conn, var, value);
 }
 
 
-PUBLIC void espSetParam(HttpConn *conn, cchar *var, cchar *value) 
+PUBLIC void espSetParam(HttpConn *conn, cchar *var, cchar *value)
 {
     httpSetParam(conn, var, value);
 }
@@ -3539,7 +3539,7 @@ PUBLIC EdiRec *espSetRec(HttpConn *conn, EdiRec *rec)
 }
 
 
-PUBLIC int espSetSessionVar(HttpConn *conn, cchar *var, cchar *value) 
+PUBLIC int espSetSessionVar(HttpConn *conn, cchar *var, cchar *value)
 {
     return httpSetSessionVar(conn, var, value);
 }
@@ -3701,23 +3701,24 @@ PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprT
     mprAddItem(lines, sfmt("%s--", boundary));
 
     body = mprListToString(lines, "\n");
-    httpTraceContent(conn, HTTP_TRACE_INFO, body, slen(body), "email");
+    httpTraceContent(conn, "info", body, slen(body), "email", 0);
 
     cmd = mprCreateCmd(conn->dispatcher);
     if (mprRunCmd(cmd, "sendmail -t", NULL, body, &out, &err, 0, 0) < 0) {
         return MPR_ERR_CANT_OPEN;
     }
     if (mprWaitForCmd(cmd, ME_ESP_EMAIL_TIMEOUT) < 0) {
-        httpTrace(conn, HTTP_TRACE_ERROR, "Timeout %d msec waiting for command to complete: %s", ME_ESP_EMAIL_TIMEOUT, cmd->argv[0]);
+        httpTrace(conn, "error", "Timeout waiting for command to complete", "timeout:%d, command: \"%s\"",
+            ME_ESP_EMAIL_TIMEOUT, cmd->argv[0]);
         return MPR_ERR_CANT_COMPLETE;
     }
     if ((status = mprGetCmdExitStatus(cmd)) != 0) {
-        httpTrace(conn, HTTP_TRACE_ERROR, "Send mail failed status %d, error %s", status, err);
+        httpTrace(conn, "error", "Sendmail failed", "status:%d, error:\"%s\"", status, err);
         return MPR_ERR_CANT_WRITE;
     }
     return 0;
 }
-   
+
 
 //  TODO - rename clearSingleLogin (and trace)
 PUBLIC void espClearCurrentSession(HttpConn *conn)
@@ -3726,7 +3727,7 @@ PUBLIC void espClearCurrentSession(HttpConn *conn)
 
     eroute = conn->rx->route->eroute;
     if (eroute->currentSession) {
-        httpTrace(conn, HTTP_TRACE_INFO, "esp clear current session %s", eroute->currentSession);
+        httpTrace(conn, "info", "esp clear current session", "session:%s", eroute->currentSession);
     }
     eroute->currentSession = 0;
 }
@@ -3741,7 +3742,7 @@ PUBLIC void espSetCurrentSession(HttpConn *conn)
 
     eroute = conn->rx->route->eroute;
     eroute->currentSession = httpGetSessionID(conn);
-    httpTrace(conn, HTTP_TRACE_INFO, "set esp current session %s", eroute->currentSession);
+    httpTrace(conn, "info", "set current esp session", "session:%s", eroute->currentSession);
 }
 
 
@@ -3773,7 +3774,7 @@ PUBLIC bool espIsCurrentSession(HttpConn *conn)
     Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the Embedthis Open Source license or you may acquire a 
+    You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
@@ -3875,7 +3876,7 @@ static int openEsp(HttpQueue *q)
         closeEsp(q);
         return MPR_ERR_CANT_OPEN;
     }
-    conn->data = req;
+    conn->reqData = req;
     req->esp = esp;
     req->route = route;
     req->autoFinalize = 1;
@@ -3938,7 +3939,7 @@ PUBLIC void espClearFlash(HttpConn *conn)
 {
     EspReq      *req;
 
-    req = conn->data;
+    req = conn->reqData;
     req->flash = 0;
 }
 
@@ -3947,7 +3948,7 @@ static void setupFlash(HttpConn *conn)
 {
     EspReq      *req;
 
-    req = conn->data;
+    req = conn->reqData;
     if (httpGetSession(conn, 0)) {
         req->flash = httpGetSessionObj(conn, ESP_FLASH_VAR);
         req->lastFlash = 0;
@@ -3964,7 +3965,7 @@ static void pruneFlash(HttpConn *conn)
     EspReq  *req;
     MprKey  *kp, *lp;
 
-    req = conn->data;
+    req = conn->reqData;
     if (req->flash && req->lastFlash) {
         for (ITERATE_KEYS(req->flash, kp)) {
             for (ITERATE_KEYS(req->lastFlash, lp)) {
@@ -3981,9 +3982,9 @@ static void finalizeFlash(HttpConn *conn)
 {
     EspReq  *req;
 
-    req = conn->data;
+    req = conn->reqData;
     if (req->flash && mprGetHashLength(req->flash) > 0) {
-        /*  
+        /*
             If the session does not exist, this will create one. However, must not have
             emitted the headers, otherwise cannot inform the client of the session cookie.
         */
@@ -3993,7 +3994,7 @@ static void finalizeFlash(HttpConn *conn)
 
 
 /*
-    Start the request. At this stage, body data may not have been fully received unless 
+    Start the request. At this stage, body data may not have been fully received unless
     the request is a form (POST method and Content-Type is application/x-www-form-urlencoded).
     Forms are a special case and delay invoking the start callback until all body data is received.
     WARNING: GC yield
@@ -4009,7 +4010,7 @@ static void startEsp(HttpQueue *q)
     conn = q->conn;
     route = conn->rx->route;
     eroute = route->eroute;
-    req = conn->data;
+    req = conn->reqData;
 
     if (req) {
         mprSetThreadData(req->esp->local, conn);
@@ -4062,7 +4063,7 @@ static int runAction(HttpConn *conn)
     char        *actionName, *key, *filename, *source;
 
     rx = conn->rx;
-    req = conn->data;
+    req = conn->reqData;
     route = rx->route;
     eroute = route->eroute;
     assert(eroute);
@@ -4114,8 +4115,8 @@ static int runAction(HttpConn *conn)
         if (!httpCheckSecurityToken(conn)) {
             httpSetStatus(conn, HTTP_CODE_UNAUTHORIZED);
             if (smatch(route->responseFormat, "json")) {
-                httpTrace(conn, HTTP_TRACE_INFO, "Stale esp security token");
-                espRenderString(conn, 
+                httpTrace(conn, "info", "Stale esp security token", 0);
+                espRenderString(conn,
                     "{\"retry\": true, \"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
                 espFinalize(conn);
             } else {
@@ -4144,10 +4145,10 @@ PUBLIC void espRenderView(HttpConn *conn, cchar *name)
     HttpRoute   *route;
     EspViewProc viewProc;
     cchar       *source;
-    
+
     rx = conn->rx;
     route = rx->route;
-    
+
     if (name) {
         source = mprJoinPathExt(mprJoinPath(httpGetDir(route, "views"), name), ".esp");
     } else {
@@ -4207,7 +4208,7 @@ static int cloneDatabase(HttpConn *conn)
     EspReq      *req;
     cchar       *id;
 
-    req = conn->data;
+    req = conn->reqData;
     eroute = conn->rx->route->eroute;
     assert(eroute->edi);
     assert(eroute->edi->flags & EDI_PRIVATE);
@@ -4238,7 +4239,7 @@ static int cloneDatabase(HttpConn *conn)
 static char *getModuleEntry(EspRoute *eroute, cchar *kind, cchar *source, cchar *cacheName)
 {
     char    *cp, *entry;
-    
+
     if (smatch(kind, "view")) {
         entry = sfmt("esp_%s", cacheName);
 
@@ -4279,7 +4280,7 @@ PUBLIC int espLoadModule(HttpRoute *route, MprDispatcher *dispatcher, cchar *kin
     *errMsg = "";
 
 #if VXWORKS
-    /* 
+    /*
         Trim the drive for VxWorks where simulated host drives only exist on the target
      */
     source = mprTrimPathDrive(source);
@@ -4331,8 +4332,8 @@ PUBLIC int espLoadModule(HttpRoute *route, MprDispatcher *dispatcher, cchar *kin
 }
 
 
-/* 
-    WARNING: GC yield 
+/*
+    WARNING: GC yield
  */
 static bool loadApp(HttpRoute *route, MprDispatcher *dispatcher)
 {
@@ -4462,7 +4463,7 @@ static bool pageExists(HttpConn *conn)
 {
     HttpRx      *rx;
     cchar       *source, *dir;
-    
+
     rx = conn->rx;
     if ((dir = httpGetDir(rx->route, "views")) == 0) {
         dir = rx->route->documents;
@@ -4496,7 +4497,7 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
 PUBLIC EspRoute *espCreateRoute(HttpRoute *route)
 {
     EspRoute    *eroute;
-    
+
     if ((eroute = mprAllocObj(EspRoute, espManageEspRoute)) == 0) {
         return 0;
     }
@@ -4514,7 +4515,7 @@ PUBLIC EspRoute *espCreateRoute(HttpRoute *route)
 static EspRoute *initRoute(HttpRoute *route)
 {
     EspRoute    *eroute;
-    
+
     if (route->eroute) {
         eroute = route->eroute;
         return eroute;
@@ -4526,7 +4527,7 @@ static EspRoute *initRoute(HttpRoute *route)
 static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
 {
     EspRoute      *eroute;
-    
+
     assert(parent);
     assert(route);
 
@@ -4589,7 +4590,7 @@ static void manageEsp(Esp *esp, int flags)
 
 
 /*
-    Get a dedicated EspRoute for an HttpRoute. Allocate if required. 
+    Get a dedicated EspRoute for an HttpRoute. Allocate if required.
     It is expected that the caller will modify the EspRoute.
  */
 static EspRoute *getEroute(HttpRoute *route)
@@ -4666,7 +4667,7 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
 
     if (httpLoadConfig(route, ME_ESP_PACKAGE) < 0) {
         return MPR_ERR_CANT_LOAD;
-    }    
+    }
     if (route->database && !eroute->edi) {
         if (espOpenDatabase(route, route->database) < 0) {
             mprLog("esp", 0, "Cannot open database %s", route->database);
@@ -4707,16 +4708,16 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
 
 
 /*
-    <EspApp 
-  or 
-    <EspApp 
-        auth=STORE 
-        database=DATABASE 
-        dir=DIR 
+    <EspApp
+  or
+    <EspApp
+        auth=STORE
+        database=DATABASE
+        dir=DIR
         combine=true|false
-        name=NAME 
-        prefix=PREFIX 
-        routes=ROUTES 
+        name=NAME
+        prefix=PREFIX
+        routes=ROUTES
  */
 static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -4760,8 +4761,8 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
         }
     }
     if (mprSamePath(state->route->documents, dir)) {
-        /* 
-            Can use existing route as it has the same prefix and documents directory. 
+        /*
+            Can use existing route as it has the same prefix and documents directory.
          */
         route = state->route;
     } else {
@@ -4958,7 +4959,7 @@ static int espDirDirective(MaState *state, cchar *key, cchar *value)
 #if DEPRECATED || 1
     if (smatch(name, "mvc")) {
         espSetDefaultDirs(state->route);
-    } else 
+    } else
 #endif
     {
         path = stemplate(path, state->route->vars);
@@ -4985,16 +4986,16 @@ static void defineVisualStudioEnv(MaState *state)
     }
     if (scontains(http->platform, "-x64-")) {
         is64BitSystem = smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432");
-        espEnvDirective(state, "EspEnv", 
+        espEnvDirective(state, "EspEnv",
             "LIB \"${WINSDK}\\LIB\\${WINVER}\\um\\x64;${WINSDK}\\LIB\\x64;${VS}\\VC\\lib\\amd64\"");
         if (is64BitSystem) {
-            espEnvDirective(state, "EspEnv", 
+            espEnvDirective(state, "EspEnv",
                 "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin\\amd64;${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;"
                 "${VS}\\VC\\VCPackages;${WINSDK}\\bin\\x64\"");
 
         } else {
             /* Cross building on x86 for 64-bit */
-            espEnvDirective(state, "EspEnv", 
+            espEnvDirective(state, "EspEnv",
                 "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin\\x86_amd64;"
                 "${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\\x86\"");
         }
@@ -5157,10 +5158,10 @@ static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    EspRoute 
+    EspRoute
         methods=METHODS
-        name=NAME 
-        prefix=PREFIX 
+        name=NAME
+        prefix=PREFIX
         source=SOURCE
         target=TARGET
  */
@@ -5281,9 +5282,9 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
         return MPR_ERR_CANT_CREATE;
     }
     http->espHandler = handler;
-    handler->open = openEsp; 
-    handler->close = closeEsp; 
-    handler->start = startEsp; 
+    handler->open = openEsp;
+    handler->close = closeEsp;
+    handler->start = startEsp;
     if ((esp = mprAllocObj(Esp, manageEsp)) == 0) {
         return MPR_ERR_MEMORY;
     }
@@ -5370,7 +5371,7 @@ static int unloadEsp(MprModule *mp)
     Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the Embedthis Open Source license or you may acquire a 
+    You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.

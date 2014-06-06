@@ -513,35 +513,6 @@ PUBLIC uint64 httpGetNumber(cchar *value);
 PUBLIC void httpPruneMonitors();
 
 /********************************** HttpTrace *********************************/
-/*
-    Trace events. The levels 0-5 are the normal verbosity levels.
-    Default levels:
-    Level 2: rx first line and errors
-    Level 3: rx headers, tx headers, info
-    Level 4: completion time
-    Level 5: rx/tx body
- */
-#if UNUSED
-#define HTTP_TRACE_MSG              0       /**< Generic message */
-#define HTTP_TRACE_0                0       /**< Least verbose level */
-#define HTTP_TRACE_1                1       /**< Level 1 */
-#define HTTP_TRACE_2                2       /**< Level 2 */
-#define HTTP_TRACE_3                3       /**< Level 3 */
-#define HTTP_TRACE_4                4       /**< Level 4 */
-#define HTTP_TRACE_5                5       /**< Most verbose level */
-#define HTTP_TRACE_CONN             6       /**< New connections */
-#define HTTP_TRACE_RX_FIRST         7       /**< First line of request */
-#define HTTP_TRACE_RX_HEADERS       8       /**< Headers */
-#define HTTP_TRACE_RX_BODY          9       /**< Body content */
-#define HTTP_TRACE_TX_FIRST         10      /**< First line of response */
-#define HTTP_TRACE_TX_HEADERS       11      /**< Header */
-#define HTTP_TRACE_TX_BODY          12      /**< Body content */
-#define HTTP_TRACE_COMPLETE         13      /**< Request complete */
-#define HTTP_TRACE_INFO             14      /**< Processing information */
-#define HTTP_TRACE_ERROR            14      /**< Processing error */
-#define HTTP_TRACE_MAX_ITEM         15
-#define HTTP_TRACE_CONTENT          0x100   /**< Tracing content */
-#endif
 
 #define HTTP_TRACE_MAX_SIZE         (10 * 1024) /**< Default maximum body size to trace */
 #define HTTP_TRACE_MIN_LOG_SIZE     (10 * 1024) /**< Minimum log file size */
@@ -550,13 +521,14 @@ PUBLIC void httpPruneMonitors();
     Request trace formatter callback
     @param conn Connection object
     @param type Type of event to trace
-    @param msg Message
+    @param msg Trace message to write
+    @param values Formatted comma separated key=value pairs
     @param buf Data buffer
     @param len Length of data in buf. May be zero.
     @stability Prototype
     @ingroup HttpTrace
  */
-typedef void (*HttpTraceFormatter)(struct HttpConn *conn, cchar *type, cchar *msg, cchar *buf, ssize len);
+typedef void (*HttpTraceFormatter)(struct HttpConn *conn, cchar *type, cchar *msg, cchar *values, cchar *buf, ssize len);
 typedef void (*HttpTraceLogger)(struct HttpConn *conn, cchar *buf, ssize len);
 
 /**
@@ -595,13 +567,14 @@ PUBLIC int httpBackupTraceLogFile(HttpTrace *trace);
     Common Log trace formatter
     @param conn HttpConn connection object created via #httpCreateConn
     @param event Event to trace
-    @param msg Trace message to write
-    @param buf Trace data buffer to write
-    @param len Length of data buffer
+    @param msg Trace message to write (unused)
+    @param values Formatted comma separated key=value pairs (unused)
+    @param buf Trace data buffer to write (unused)
+    @param len Length of data buffer (unused)
     @ingroup HttpTrace
     @stability Prototype
  */
-PUBLIC void httpCommonTraceFormatter(struct HttpConn *conn, cchar *event, cchar *msg, cchar *buf, ssize len);
+PUBLIC void httpCommonTraceFormatter(struct HttpConn *conn, cchar *event, cchar *msg, cchar *values, cchar *buf, ssize len);
 
 /**
     Create a trace object.
@@ -618,12 +591,13 @@ PUBLIC HttpTrace *httpCreateTrace(HttpTrace *parent);
     @param conn HttpConn connection object created via #httpCreateConn
     @param event Event to trace
     @param msg Trace message to write
+    @param values Formatted comma separated key=value pairs
     @param buf Trace data buffer to write
     @param len Length of data buffer
     @ingroup HttpTrace
     @stability Prototype
  */
-PUBLIC void httpDetailTraceFormatter(struct HttpConn *conn, cchar *event, cchar *msg, cchar *buf, ssize len);
+PUBLIC void httpDetailTraceFormatter(struct HttpConn *conn, cchar *event, cchar *msg, cchar *values, cchar *buf, ssize len);
 
 /**
     Convenience routine to format trace via the configured formatter
@@ -631,12 +605,13 @@ PUBLIC void httpDetailTraceFormatter(struct HttpConn *conn, cchar *event, cchar 
     @param conn HttpConn connection object created via #httpCreateConn
     @param event Event to trace
     @param msg Trace message to write
+    @param values Formatted comma separated key=value pairs
     @param buf Trace data buffer to write
     @param len Length of data buffer
     @ingroup HttpTrace
     @stability Prototype
  */
-PUBLIC void httpFormatTrace(struct HttpConn *conn, cchar *event, cchar *msg, cchar *buf, ssize len);
+PUBLIC void httpFormatTrace(struct HttpConn *conn, cchar *event, cchar *msg, cchar *values, cchar *buf, ssize len);
 
 /*
     Trace LogFile logger
@@ -747,7 +722,7 @@ PUBLIC void httpSetTraceFormatterName(HttpTrace *trace, cchar *name);
 PUBLIC bool httpShouldTrace(struct HttpConn *conn, cchar *event);
 #else
     #define httpShouldTrace(conn, event) \
-        (conn->http->traceLevel > 0 && PTOI(mprLookupKey(conn->trace->events, event)) >= conn->http->traceLevel)
+        (conn->http->traceLevel > 0 && PTOI(mprLookupKey(conn->trace->events, event)) <= conn->http->traceLevel)
 #endif
 
 /**
@@ -772,12 +747,14 @@ PUBLIC int httpStartTracing(cchar *traceSpec);
 /**
     Trace an event of interest
     @param conn HttpConn connection object created via #httpCreateConn
-    @param event Event to trace
-    @param fmt Formatted message to add to trace event
+    @param event Event to trace. The standard set of events is:
+        connection, error, info, rxFirst, rxHeaders, rxBody, txFirst, txHeaders, txBody, complete.
+    @param msg Message to add to trace event
+    @param values Formatted comma separated key=value pairs
     @ingroup HttpTrace
     @stability Prototype
  */
-PUBLIC void httpTrace(struct HttpConn *conn, cchar *event, cchar *fmt, ...);
+PUBLIC void httpTrace(struct HttpConn *conn, cchar *event, cchar *msg, cchar *values, ...);
 
 /**
     Trace request content
@@ -788,11 +765,12 @@ PUBLIC void httpTrace(struct HttpConn *conn, cchar *event, cchar *fmt, ...);
     @param event Event to trace
     @param buf Data buffer to trace
     @param len Size of the data buffer.
-    @param fmt Formatted message to add to trace event
+    @param msg message to add to trace event
+    @param values Formatted comma separated key=value pairs
     @ingroup HttpTrace
     @stability Prototype
  */
-PUBLIC void httpTraceContent(struct HttpConn *conn, cchar *event, cchar *buf, ssize len, cchar *fmt, ...);
+PUBLIC void httpTraceContent(struct HttpConn *conn, cchar *event, cchar *buf, ssize len, cchar *msg, cchar *values, ...);
 
 /**
     Trace request packet
@@ -802,11 +780,12 @@ PUBLIC void httpTraceContent(struct HttpConn *conn, cchar *event, cchar *buf, ss
     @param conn HttpConn connection object created via #httpCreateConn
     @param event Event to trace
     @param packet Packet to trace.
-    @param fmt Formatted message to add to trace event
+    @param msg message to add to trace event
+    @param values Formatted comma separated key=value pairs
     @ingroup HttpTrace
     @stability Prototype
  */
-PUBLIC void httpTracePacket(struct HttpConn *conn, cchar *event, struct HttpPacket *packet, cchar *fmt, ...);
+PUBLIC void httpTracePacket(struct HttpConn *conn, cchar *event, struct HttpPacket *packet, cchar *msg, cchar *values, ...);
 
 /**
     Convenience routine to write trace to the trace logger

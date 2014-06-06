@@ -15639,7 +15639,7 @@ PUBLIC void mprBreakpoint()
 }
 
 
-PUBLIC void mprCreateLogService() 
+PUBLIC void mprCreateLogService()
 {
     MPR->logFile = MPR->stdError;
 }
@@ -15692,7 +15692,7 @@ PUBLIC int mprStartLogging(cchar *logSpec, int flags)
     if (flags & MPR_LOG_CONFIG) {
         mprLogConfig();
     }
-    MPR->flags |= (flags & (MPR_LOG_ANEW | MPR_LOG_CONFIG | MPR_LOG_CMDLINE)); 
+    MPR->flags |= (flags & (MPR_LOG_ANEW | MPR_LOG_CONFIG | MPR_LOG_CMDLINE));
     return 0;
 }
 
@@ -15744,7 +15744,6 @@ PUBLIC void mprSetLogBackup(ssize size, int backup, int flags)
 }
 
 
-#if DEPRECATED || 1
 PUBLIC void mprError(cchar *fmt, ...)
 {
     va_list     args;
@@ -15754,7 +15753,6 @@ PUBLIC void mprError(cchar *fmt, ...)
     logOutput(MPR->name, 0, fmtv(buf, sizeof(buf), fmt, args));
     va_end(args);
 }
-#endif
 
 
 PUBLIC void mprLogProc(cchar *tags, int level, cchar *fmt, ...)
@@ -15839,7 +15837,7 @@ static void backupLog()
 char *severities[] = {
     "",
     "debug",
-    "",             /* info */
+    "",             /* inform */
     "warn",
     "error",
     "critical",
@@ -16089,7 +16087,7 @@ PUBLIC int _cmp(char *s1, char *s2)
     Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the Embedthis Open Source license or you may acquire a 
+    You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
