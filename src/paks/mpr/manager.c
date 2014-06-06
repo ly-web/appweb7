@@ -776,7 +776,7 @@ static void     WINAPI serviceCallback(ulong code);
 static bool     enableService(int enable);
 static void     setWinDefaults(HINSTANCE inst);
 static bool     installService();
-static void     logHandler(int flags, int level, cchar *msg);
+static void     logHandler(cchar *tags, int level, cchar *msg);
 static int      registerService();
 static bool     removeService(int removeFromScmDb);
 static void     gracefulShutdown(MprTicks timeout);
@@ -1520,7 +1520,7 @@ static LRESULT msgProc(HWND hwnd, uint msg, uint wp, long lp)
 /*
     Default log output is just to the console
  */
-static void logHandler(int flags, int level, cchar *msg)
+static void logHandler(cchar *tags, int level, cchar *msg)
 {
 #if KEEP
     if (flags & MPR_USER_MSG) {
