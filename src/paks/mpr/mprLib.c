@@ -23249,7 +23249,6 @@ PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, cchar *peerName)
         }
         ssl->providerName = providerName;
     }
-    mprLog("mpr socket", 4, "Using SSL provider: %s", ssl->providerName);
     sp->provider = ssl->provider;
 #if KEEP
     /* session resumption can cause problems with Nagle. However, appweb opens sockets with nodelay by default */

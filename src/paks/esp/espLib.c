@@ -3199,7 +3199,7 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
             httpSetHeader(conn, "Content-Type", "text/html");
             written += espRenderString(conn, text);
             espFinalize(conn);
-            httpTrace(conn, "error", "ESP request error", "status:%d, uri:\"%s\"", status, rx->pathInfo);
+            httpTrace(conn, "error", "ESP request error", "status=%d, uri=\"%s\"", status, rx->pathInfo);
         }
     }
     va_end(args);
@@ -3708,12 +3708,12 @@ PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprT
         return MPR_ERR_CANT_OPEN;
     }
     if (mprWaitForCmd(cmd, ME_ESP_EMAIL_TIMEOUT) < 0) {
-        httpTrace(conn, "error", "Timeout waiting for command to complete", "timeout:%d, command: \"%s\"",
+        httpTrace(conn, "error", "Timeout waiting for command to complete", "timeout=%d, command=\"%s\"",
             ME_ESP_EMAIL_TIMEOUT, cmd->argv[0]);
         return MPR_ERR_CANT_COMPLETE;
     }
     if ((status = mprGetCmdExitStatus(cmd)) != 0) {
-        httpTrace(conn, "error", "Sendmail failed", "status:%d, error:\"%s\"", status, err);
+        httpTrace(conn, "error", "Sendmail failed", "status=%d, error=\"%s\"", status, err);
         return MPR_ERR_CANT_WRITE;
     }
     return 0;
@@ -3727,7 +3727,7 @@ PUBLIC void espClearCurrentSession(HttpConn *conn)
 
     eroute = conn->rx->route->eroute;
     if (eroute->currentSession) {
-        httpTrace(conn, "info", "esp clear current session", "session:%s", eroute->currentSession);
+        httpTrace(conn, "info", "esp clear current session", "session=%s", eroute->currentSession);
     }
     eroute->currentSession = 0;
 }
@@ -3742,7 +3742,7 @@ PUBLIC void espSetCurrentSession(HttpConn *conn)
 
     eroute = conn->rx->route->eroute;
     eroute->currentSession = httpGetSessionID(conn);
-    httpTrace(conn, "info", "set current esp session", "session:%s", eroute->currentSession);
+    httpTrace(conn, "info", "set current esp session", "session=%s", eroute->currentSession);
 }
 
 

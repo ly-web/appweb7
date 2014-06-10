@@ -4253,7 +4253,7 @@ static void connTimeout(HttpConn *conn, MprEvent *event)
         if (conn->state < HTTP_STATE_FIRST) {
             httpDisconnect(conn);
             if (msg) {
-                httpTrace(conn, "info", msg, 0);
+                httpTrace(conn, "close", msg, 0);
             }
         } else {
             httpError(conn, HTTP_CODE_REQUEST_TIMEOUT, msg);
@@ -5972,7 +5972,6 @@ static void errorv(HttpConn *conn, int flags, cchar *fmt, va_list args)
         httpOmitBody(conn);
         conn->errorMsg = formatErrorv(conn, status, fmt, args);
         httpTrace(conn, "error", conn->errorMsg, 0);
-
         HTTP_NOTIFY(conn, HTTP_EVENT_ERROR, 0);
         if (httpServerConn(conn)) {
             if (status == HTTP_CODE_NOT_FOUND) {
@@ -13524,14 +13523,14 @@ static void traceRequest(HttpConn *conn, HttpPacket *packet)
     if (httpShouldTrace(conn, "rxHeaders")) {
         endp = strstr((char*) content->start, "\r\n\r\n");
         len = (endp) ? (int) (endp - content->start + 4) : 0;
-        httpTraceContent(conn, "rxHeaders", content->start, len, 0, 0);
+        httpTraceContent(conn, "rxHeaders", content->start, len, 0, "peer=%s", conn->ip);
 
     } else if (httpShouldTrace(conn, "rxFirst")) {
         endp = strstr((char*) content->start, "\r\n");
         len = (endp) ? (int) (endp - content->start + 2) : 0;
         if (len > 0) {
             content->start[len - 2] = '\0';
-            httpTrace(conn, "rxFirst", "; rxFirst=\"%s\"", content->start, 0);
+            httpTraceContent(conn, "rxFirst", content->start, len - 2, 0, "peer=%s", conn->ip);
             content->start[len - 2] = '\r';
         }
     }
@@ -14103,7 +14102,7 @@ static bool processParsed(HttpConn *conn)
             httpCreatePipeline(conn);
 
             httpTrace(conn, "info", 0,
-                "route:%s, handler:%s, target:\"%s\", endpoint:%s:%d, host:%s",
+                "route=%s, handler=%s, target=\"%s\", endpoint=%s:%d, host=%s",
                 rx->route->name, tx->handler->name, rx->route->targetRule, conn->endpoint->ip, conn->endpoint->port,
                 conn->host->name ? conn->host->name : "default");
             /*
@@ -14453,11 +14452,11 @@ static void measure(HttpConn *conn)
         elapsed = mprGetTicks() - conn->started;
 #if MPR_HIGH_RES_TIMER
         if (elapsed < 1000) {
-            httpTrace(conn, "complete", 0, "elapsed=%Ld, elapsedTicks=%Ld",
-                elapsed, mprGetHiResTicks() - conn->startMark);
+            httpTrace(conn, "complete", 0, "elapsed=%Ld, elapsedTicks=%Ld, sent=%Ld",
+                elapsed, mprGetHiResTicks() - conn->startMark, tx->bytesWritten);
         } else
 #endif
-            httpTrace(conn, "complete", 0, "elapsed=%,Ld", elapsed);
+            httpTrace(conn, "complete", 0, "elapsed=%Ld, sent=%Ld", elapsed, tx->bytesWritten);
     }
 }
 
@@ -21534,7 +21533,7 @@ static int processFrame(HttpQueue *q, HttpPacket *packet)
                 }
             }
         }
-        httpTrace(conn, "info", "WebSockets receive close packet", "wsCloseStatus=%d, wsCloseReason=\"%s\" wsClosing=%d",
+        httpTrace(conn, "info", "WebSockets receive close packet", "wsCloseStatus=%d, wsCloseReason=\"%s\", wsClosing=%d",
             ws->closeStatus, ws->closeReason, ws->closing);
         if (ws->closing) {
             httpDisconnect(conn);
