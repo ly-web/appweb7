@@ -104,7 +104,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
     }
     app->mpr = mpr;
     app->workers = -1;
-    app->configFile = sclone(ME_CONFIG_FILE);
     app->home = sclone(ME_SERVER_ROOT);
     app->documents = app->home;
     argc = mpr->argc;
@@ -220,7 +219,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if (checkEnvironment(argv[0]) < 0) {
         exit(6);
     }
-    if (argc == argind) {
+    if (argc == argind && !app->configFile) {
         if (findAppwebConf() < 0) {
             exit(7);
         }
@@ -373,28 +372,41 @@ static int createEndpoints(int argc, char **argv)
 }
 
 
+/*
+    If ME_CONFIG_FILE is defined, use that as the base name for appweb.conf. Otherwise, use
+    "programName.conf". Search order is:
+
+        "."/BASE
+        ME_SERVER_ROOT/BASE
+        EXE/../BASE
+        EXE/../appweb.conf
+ */
 static int findAppwebConf()
 {
-    cchar   *userPath;
+    char    *base, *filename;
 
-    userPath = app->configFile;
-    if (!app->configFile || *app->configFile == '\0') {
-        app->configFile = mprJoinPathExt(mprGetAppName(), ".conf");
+    if (ME_CONFIG_FILE) {
+        base = sclone(ME_CONFIG_FILE);
+    } else {
+        base = mprJoinPathExt(mprGetAppName(), ".conf");
     }
 #if !ME_ROM
-    if (!mprPathExists(app->configFile, R_OK)) {
-        if (!userPath) {
-            app->configFile = mprJoinPath(app->home, "appweb.conf");
-            if (!mprPathExists(app->configFile, R_OK)) {
-                app->configFile = mprJoinPath(mprGetAppDir(), sfmt("%s.conf", mprGetAppName()));
+    filename = base;
+    if (!mprPathExists(filename, R_OK)) {
+        filename = mprJoinPath(app->home, base);
+        if (!mprPathExists(filename, R_OK)) {
+            filename = mprJoinPath(mprGetPathParent(mprGetAppDir()), base);
+            if (!mprPathExists(filename, R_OK)) {
+                filename = mprJoinPath(mprGetPathParent(mprGetAppDir()), "appweb.conf");
+                if (!mprPathExists(filename, R_OK)) {
+                    mprError("Cannot find config file %s", base);
+                    return MPR_ERR_CANT_OPEN;
+                }
             }
-        }
-        if (!mprPathExists(app->configFile, R_OK)) {
-            mprLog("appweb", 0, "Cannot open config file %s", app->configFile);
-            return MPR_ERR_CANT_OPEN;
         }
     }
 #endif
+    app->configFile = filename;
     return 0;
 }
 
