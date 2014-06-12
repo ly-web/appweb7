@@ -655,6 +655,9 @@ PUBLIC void httpSetTraceFormat(HttpTrace *trace, cchar *format);
  */
 PUBLIC void httpSetTraceLevel(int level);
 
+//  MOB
+PUBLIC int httpGetTraceLevel();
+
 /**
     Configure the tracing level for an event
     @param trace Tracing object
@@ -747,8 +750,8 @@ PUBLIC int httpStartTracing(cchar *traceSpec);
 /**
     Trace an event of interest
     @param conn HttpConn connection object created via #httpCreateConn
-    @param event Event to trace. The standard set of events is:
-        connection, error, info, rxFirst, rxHeaders, rxBody, txFirst, txHeaders, txBody, complete.
+    @param event Event to trace. The standard set of events and their default trace levels are:
+    rxFirst:2, error:2, txFirst:3, connection:4, rxHeaders:4, context:4, complete:4, close:4, txHeaders:4, rxBody:5, txBody:5.
     @param msg Message to add to trace event
     @param values Formatted comma separated key=value pairs
     @ingroup HttpTrace

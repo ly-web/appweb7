@@ -16,34 +16,34 @@ static int runServer(cchar *configFile, cchar *ip, int port, cchar *home, cchar 
     MaServer    *server;
 
     if (mprStart() < 0) {
-        mprLog("appweb", 0, "Cannot start the web server runtime");
+        mprLog("error appweb", 0, "Cannot start the web server runtime");
         return MPR_ERR_CANT_CREATE;
     }
     if ((appweb = maCreateAppweb()) == 0) {
-        mprLog("appweb", 0, "Cannot create appweb object");
+        mprLog("error appweb", 0, "Cannot create appweb object");
         return MPR_ERR_CANT_CREATE;
     }
     mprAddRoot(appweb);
     if ((server = maCreateServer(appweb, 0)) == 0) {
-        mprLog("appweb", 0, "Cannot create the web server");
+        mprLog("error appweb", 0, "Cannot create the web server");
         mprRemoveRoot(appweb);
         return MPR_ERR_CANT_CREATE;
     }
     if (home) {
         if (maConfigureServer(server, 0, home, documents, ip, port, 0) < 0) {
-            mprLog("appweb", 0, "Cannot create the web server");
+            mprLog("error appweb", 0, "Cannot create the web server");
             mprRemoveRoot(appweb);
             return MPR_ERR_BAD_STATE;
         }
     } else {
         if (maParseConfig(server, configFile, 0) < 0) {
-            mprLog("appweb", 0, "Cannot parse the config file %s", configFile);
+            mprLog("error appweb", 0, "Cannot parse the config file %s", configFile);
             mprRemoveRoot(appweb);
             return MPR_ERR_CANT_READ;
         }
     }
     if (maStartServer(server) < 0) {
-        mprLog("appweb", 0, "Cannot start the web server");
+        mprLog("error appweb", 0, "Cannot start the web server");
         mprRemoveRoot(appweb);
         return MPR_ERR_CANT_COMPLETE;
     }
@@ -63,7 +63,7 @@ PUBLIC int maRunWebServer(cchar *configFile)
     int         rc;
 
     if ((mpr = mprCreate(0, NULL, MPR_USER_EVENTS_THREAD)) == 0) {
-        mprLog("appweb", 0, "Cannot create the web server runtime");
+        mprLog("error appweb", 0, "Cannot create the web server runtime");
         return MPR_ERR_CANT_CREATE;
     }
     rc = runServer(configFile, 0, 0, 0, 0);
@@ -82,7 +82,7 @@ PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documen
     int         rc;
 
     if ((mpr = mprCreate(0, NULL, MPR_USER_EVENTS_THREAD)) == 0) {
-        mprLog("appweb", 0, "Cannot create the web server runtime");
+        mprLog("error appweb", 0, "Cannot create the web server runtime");
         return MPR_ERR_CANT_CREATE;
     }
     rc = runServer(0, ip, port, home, documents);
@@ -138,11 +138,11 @@ PUBLIC int maRunWebClient(cchar *method, cchar *uri, cchar *data, char **respons
         *response = 0;
     }
     if ((mpr = mprCreate(0, NULL, 0)) == 0) {
-        mprLog("appweb", 0, "Cannot create the MPR runtime");
+        mprLog("error appweb", 0, "Cannot create the MPR runtime");
         return MPR_ERR_CANT_CREATE;
     }
     if (mprStart() < 0) {
-        mprLog("appweb", 0, "Cannot start the web server runtime");
+        mprLog("error appweb", 0, "Cannot start the web server runtime");
         return MPR_ERR_CANT_INITIALIZE;
     }
     httpCreate(HTTP_CLIENT_SIDE);

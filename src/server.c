@@ -83,7 +83,6 @@ PUBLIC MaServer *maLookupServer(MaAppweb *appweb, cchar *name)
 PUBLIC int maStartAppweb(MaAppweb *appweb)
 {
     httpStartEndpoints();
-    mprLog("appweb http", 1, "Started at %s", mprGetDate(0));
     return 0;
 }
 
@@ -249,7 +248,7 @@ PUBLIC int maStartServer(MaServer *server)
     }
     if (count == 0) {
         if (!warned) {
-            mprLog("appweb config", 0, "Server is not listening on any addresses");
+            mprLog("error appweb config", 0, "Server is not listening on any addresses");
         }
         return MPR_ERR_CANT_OPEN;
     }
@@ -310,12 +309,12 @@ PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname)
 
     if (strcmp(name, "authFilter") == 0 || strcmp(name, "rangeFilter") == 0 || strcmp(name, "uploadFilter") == 0 ||
             strcmp(name, "fileHandler") == 0 || strcmp(name, "dirHandler") == 0) {
-        mprLog("appweb config", 1, "The %s module is now builtin. No need to use LoadModule", name);
+        mprLog("info appweb config", 1, "The %s module is now builtin. No need to use LoadModule", name);
         return 0;
     }
     if ((module = mprLookupModule(name)) != 0) {
 #if ME_STATIC
-        mprLog("appweb config", 2, "Activating module (Builtin) %s", name);
+        mprLog("info appweb config", 2, "Activating module (Builtin) %s", name);
 #endif
         return 0;
     }

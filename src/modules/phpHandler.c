@@ -208,7 +208,7 @@ static void readyPhp(HttpQueue *q)
         CG(zend_lineno) = 0;
 
     } zend_catch {
-        mprLog("php", 0, "Cannot start request");
+        mprLog("error php", 0, "Cannot start request");
         zend_try {
             php_request_shutdown(0);
         } zend_end_try();
@@ -353,7 +353,7 @@ static void registerServerVars(zval *track_vars_array TSRMLS_DC)
 
 static void logMessage(char *message TSRMLS_DC)
 {
-    mprLog("php", 3, "%s", message);
+    mprLog("info php", 3, "%s", message);
 }
 
 
@@ -481,11 +481,11 @@ static int initializePhp(Http *http)
     phpSapiBlock.php_ini_path_override = appweb->defaultServer->defaultHost->defaultRoute->home;
 #endif
     if (phpSapiBlock.php_ini_path_override) {
-        mprLog("php", 2, "Look for php.ini at %s", phpSapiBlock.php_ini_path_override);
+        mprLog("info php", 2, "Look for php.ini at %s", phpSapiBlock.php_ini_path_override);
     }
     sapi_startup(&phpSapiBlock);
     if (php_module_startup(&phpSapiBlock, 0, 0) == FAILURE) {
-        mprLog("php", 0, "Cannot initialize");
+        mprLog("error php", 0, "Cannot initialize");
         return MPR_ERR_CANT_INITIALIZE;
     }
     zend_llist_init(&global_vars, sizeof(char *), 0, 0);

@@ -120,7 +120,7 @@ static int ejsWorkersDirective(MaState *state, cchar *key, cchar *value)
     HttpStage   *stage;
 
     if ((stage = httpLookupStage(state->http, "ejsHandler")) == 0) {
-        mprLog("ejs", 0, "Handler is not configured");
+        mprLog("error ejs", 0, "Handler is not configured");
         return MPR_ERR_BAD_SYNTAX;
     }
     httpSetRouteWorkers(state->route, atoi(value));

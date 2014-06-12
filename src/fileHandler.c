@@ -75,12 +75,14 @@ static int openFileHandler(HttpQueue *q)
     }
     if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
         if (!(info->valid || info->isDir)) {
+#if UNUSED
             if (rx->referrer) {
                 httpTrace(conn, "error", "Cannot find document", "filename=%s, referrer=%s", 
                     tx->filename, rx->referrer);
             } else {
                 httpTrace(conn, "error", "Cannot find document", "filename=%s", tx->filename);
             }
+#endif
             httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find document");
             return 0;
         } 
@@ -223,7 +225,7 @@ static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize si
             As we may have sent some data already to the client, the only thing we can do is abort and hope the client 
             notices the short data.
          */
-        httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Can't read file %s", tx->filename);
+        httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Cannot read file %s", tx->filename);
         return MPR_ERR_CANT_READ;
     }
     mprAdjustBufEnd(packet->content, nbytes);
@@ -345,10 +347,10 @@ static void incomingFile(HttpQueue *q, HttpPacket *packet)
 
     range = rx->inputRange;
     if (range && mprSeekFile(file, SEEK_SET, range->start) != range->start) {
-        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't seek to range start to %d", range->start);
+        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot seek to range start to %d", range->start);
 
     } else if (mprWriteFile(file, mprGetBufStart(buf), len) != len) {
-        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't PUT to %s", tx->filename);
+        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot PUT to %s", tx->filename);
     }
 }
 
@@ -377,7 +379,7 @@ static void handlePutRequest(HttpQueue *q)
          */
         if ((file = mprOpenFile(path, O_BINARY | O_WRONLY, 0644)) == 0) {
             if ((file = mprOpenFile(path, O_CREAT | O_TRUNC | O_BINARY | O_WRONLY, 0644)) == 0) {
-                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't create the put URI");
+                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot create the put URI");
                 return;
             }
         } else {
@@ -385,7 +387,7 @@ static void handlePutRequest(HttpQueue *q)
         }
     } else {
         if ((file = mprOpenFile(path, O_CREAT | O_TRUNC | O_BINARY | O_WRONLY, 0644)) == 0) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't create the put URI");
+            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot create the put URI");
             return;
         }
     }

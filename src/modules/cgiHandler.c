@@ -440,8 +440,7 @@ static void readFromCgi(Cgi *cgi, int channel)
             mprAdjustBufEnd(packet->content, nbytes);
         }
         if (channel == MPR_CMD_STDERR) {
-            //  FUTURE - should be an option to keep going despite stderr output
-            mprLog("cgi", 0, "Error for \"%s\"\n\n%s", conn->rx->uri, mprGetBufStart(packet->content));
+            mprLog("error cgi", 0, "CGI failed uri=\"%s\", details: %s", conn->rx->uri, mprGetBufStart(packet->content));
             httpSetStatus(conn, HTTP_CODE_SERVICE_UNAVAILABLE);
             cgi->seenHeader = 1;
         }
@@ -581,7 +580,7 @@ static bool parseFirstCgiResponse(Cgi *cgi, HttpPacket *packet)
     }
     msg = getCgiToken(buf, "\n");
     mprNop(msg);
-    mprDebug("http cgi", 4, "CGI: Status line: %s %s %s", protocol, status, msg);
+    mprDebug("http cgi", 4, "CGI response status: %s %s %s", protocol, status, msg);
     return 1;
 }
 
@@ -823,7 +822,7 @@ static void findExecutable(HttpConn *conn, char **program, char **script, char *
                 cmdShell = stok(&buf[2], "\r\n", &tok);
                 if (!mprIsPathAbs(cmdShell)) {
                     /*
-                        If we can't access the command shell and the command is not an absolute path, 
+                        If we cannot access the command shell and the command is not an absolute path, 
                         look in the same directory as the script.
                      */
                     if (mprPathExists(cmdShell, X_OK)) {

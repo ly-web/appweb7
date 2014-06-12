@@ -94,7 +94,6 @@
             </ul>
             <h3>Fixes since rc0</h3>
             <ul>
-                <li>The fixes from version 4.6.0 are also applied in release candidate rc1</li>
                 <li>Fix testing of XSRF token. Only re-create in views.
                     <a href="https://github.com/embedthis/appweb/issues/346">[issue 346]</a>.</li>
                 <li>Update ESP to fix client.mappings timeouts
@@ -103,6 +102,8 @@
                     <a href="https://github.com/embedthis/appweb/issues/354">[issue 354]</a>.</li>
                 <li>ESP command updated to create users and roles.
                     <a href="https://github.com/embedthis/appweb/issues/355">[issue 355]</a>.</li>
+                <li>The fixes from version 4.6.0 are applied in release candidate rc1.</li>
+                <li>The fixes from version 4.6.1 are applied in release candidate rc2.</li>
             </ul>
             <h3>Incompatible Changes</h3>
             <ul>
@@ -117,14 +118,27 @@
                     See <a href="https://github.com/embedthis/esp/blob/dev/samples/esp-configuration/package.json">ESP
                         Configuration Sample</a> for details.</li>
                 <li>With separating the error log and request log, the 
-                <a href="../api/mpr.html#group___mpr_log_1ga13660aa56e0e5945b6de8f2708aed520">mprLog</a>
-                and <a href="../api/mpr.html#group___mpr_log_1gaa29ca2fc7ccd5dc2314b1c0c53f5f788">mprError</a>
-                APIs have revised signatures.</li>
+                    <a href="../api/mpr.html#group___mpr_log_1ga13660aa56e0e5945b6de8f2708aed520">mprLog</a>, mprTrace,
+                    <a href="../api/mpr.html#group___mpr_log_1gaa29ca2fc7ccd5dc2314b1c0c53f5f788">mprError</a> APIs, and
+                    the MprLogHandler type have revised signatures. The mprLog API is the primary error logging API and
+                    mprError should not be used. The mprLog API takes a tag words argument that can specify severity levels
+                    and classification tags for filtering the error log.</li>
             </ul>
+
             <a id="4.6.1"></a>
             <h2 class="section">Changes in 4.6.1</h2>
             <h3>Fixes</h3>
             <ul>
+                <li>Fix old reference to bit in package/service.es
+                    <a href="https://github.com/embedthis/appweb/issues/356">[issue 356]</a>.</li>
+                <li>Fix esp -V to display just a pure version number
+                    <a href="https://github.com/embedthis/appweb/issues/357">[issue 357]</a>.</li>
+                <li>Fix ESP package.json "app.http.keep" property
+                    <a href="https://github.com/embedthis/appweb/issues/358">[issue 358]</a>.</li>
+                <li>Fix exporting ESP paks to have version numbers that match Appweb
+                    <a href="https://github.com/embedthis/appweb/issues/356">[issue 356]</a>.</li>
+                <li>Fix finding appweb.conf when executing outside the Appweb installation directory.
+                    <a href="https://github.com/embedthis/appweb/issues/360">[issue 360]</a>.</li>
             </ul>
 
             <a id="4.6.0"></a>

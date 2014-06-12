@@ -131,16 +131,16 @@ PUBLIC int ediAddValidation(Edi *edi, cchar *name, cchar *tableName, cchar *colu
     }
     vp->name = sclone(name);
     if ((vp->vfn = mprLookupKey(es->validations, name)) == 0) {
-        mprLog("esp edi", 0, "Cannot find validation '%s'", name);
+        mprLog("error esp edi", 0, "Cannot find validation '%s'", name);
         return MPR_ERR_CANT_FIND;
     }
     if (smatch(name, "format") || smatch(name, "banned")) {
         if (!data || ((char*) data)[0] == '\0') {
-            mprLog("esp edi", 0, "Bad validation format pattern for %s", name);
+            mprLog("error esp edi", 0, "Bad validation format pattern for %s", name);
             return MPR_ERR_BAD_SYNTAX;
         }
         if ((vp->mdata = pcre_compile2(data, 0, 0, &errMsg, &column, NULL)) == 0) {
-            mprLog("esp edi", 0, "Cannot compile validation pattern. Error %s at column %d", errMsg, column); 
+            mprLog("error esp edi", 0, "Cannot compile validation pattern. Error %s at column %d", errMsg, column); 
             return MPR_ERR_BAD_SYNTAX;
         }
         data = 0;
@@ -235,7 +235,7 @@ PUBLIC int ediDelete(Edi *edi, cchar *path)
 //  FUTURE - rename edi
 PUBLIC void espDumpGrid(EdiGrid *grid)
 {
-    mprDebug("esp edi", 0, "Grid: %s\nschema: %s,\ndata: %s", grid->tableName, 
+    mprLog("info esp edi", 0, "Grid: %s\nschema: %s,\ndata: %s", grid->tableName, 
         ediGetTableSchemaAsJson(grid->edi, grid->tableName), ediGridAsJson(grid, MPR_JSON_PRETTY));
 }
 
@@ -590,7 +590,7 @@ PUBLIC Edi *ediOpen(cchar *path, cchar *providerName, int flags)
     EdiProvider     *provider;
 
     if ((provider = lookupProvider(providerName)) == 0) {
-        mprLog("esp edi", 0, "Cannot find EDI provider '%s'", providerName);
+        mprLog("error esp edi", 0, "Cannot find EDI provider '%s'", providerName);
         return 0;
     }
     return provider->open(path, flags);
@@ -905,7 +905,7 @@ PUBLIC cchar *ediFormatField(cchar *fmt, EdiField *fp)
         return sfmt(fmt, fp->value);
 
     default:
-        mprDebug("esp edi", 0, "Unknown field type %d", fp->type);
+        mprLog("error esp edi", 0, "Unknown field type %d", fp->type);
     }
     return 0;
 }
@@ -947,7 +947,7 @@ static void formatFieldForJson(MprBuf *buf, EdiField *fp)
         return;
 
     default:
-        mprDebug("esp edi", 0, "Unknown field type %d", fp->type);
+        mprLog("error esp edi", 0, "Unknown field type %d", fp->type);
         mprPutStringToBuf(buf, "null");
     }
 }
@@ -1776,7 +1776,7 @@ PUBLIC HttpConn *getConn()
 
     conn = mprGetThreadData(((Esp*) MPR->espService)->local);
     if (conn == 0) {
-        mprDebug("esp", 0, "Connection is not defined in thread local storage.\n"
+        mprLog("error esp", 0, "Connection is not defined in thread local storage.\n"
         "If using a callback, make sure you invoke espSetConn with the connection before using the ESP abbreviated API");
     }
     return conn;
@@ -3701,7 +3701,7 @@ PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprT
     mprAddItem(lines, sfmt("%s--", boundary));
 
     body = mprListToString(lines, "\n");
-    httpTraceContent(conn, "info", body, slen(body), "email", 0);
+    httpTraceContent(conn, "context", body, slen(body), "email", 0);
 
     cmd = mprCreateCmd(conn->dispatcher);
     if (mprRunCmd(cmd, "sendmail -t", NULL, body, &out, &err, 0, 0) < 0) {
@@ -3727,7 +3727,7 @@ PUBLIC void espClearCurrentSession(HttpConn *conn)
 
     eroute = conn->rx->route->eroute;
     if (eroute->currentSession) {
-        httpTrace(conn, "info", "esp clear current session", "session=%s", eroute->currentSession);
+        httpTrace(conn, "context", "esp clear current session", "session=%s", eroute->currentSession);
     }
     eroute->currentSession = 0;
 }
@@ -3742,7 +3742,7 @@ PUBLIC void espSetCurrentSession(HttpConn *conn)
 
     eroute = conn->rx->route->eroute;
     eroute->currentSession = httpGetSessionID(conn);
-    httpTrace(conn, "info", "set current esp session", "session=%s", eroute->currentSession);
+    httpTrace(conn, "context", "set current esp session", "session=%s", eroute->currentSession);
 }
 
 
@@ -3917,7 +3917,7 @@ static bool espUnloadModule(cchar *module, MprTicks timeout)
             /* Own request will count as 1 */
             if (esp->inUse <= 1) {
                 if (mprUnloadModule(mp) < 0) {
-                    mprLog("esp", 0, "Cannot unload module %s", mp->name);
+                    mprLog("error esp", 0, "Cannot unload module %s", mp->name);
                     unlock(esp);
                 }
                 esp->reloading = 0;
@@ -4115,7 +4115,7 @@ static int runAction(HttpConn *conn)
         if (!httpCheckSecurityToken(conn)) {
             httpSetStatus(conn, HTTP_CODE_UNAUTHORIZED);
             if (smatch(route->responseFormat, "json")) {
-                httpTrace(conn, "info", "Stale esp security token", 0);
+                httpTrace(conn, "context", "Stale esp security token", 0);
                 espRenderString(conn,
                     "{\"retry\": true, \"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
                 espFinalize(conn);
@@ -4226,7 +4226,7 @@ static int cloneDatabase(HttpConn *conn)
     id = httpGetSessionID(conn);
     if ((req->edi = mprLookupKey(esp->databases, id)) == 0) {
         if ((req->edi = ediClone(eroute->edi)) == 0) {
-            mprLog("esp", 0, "Cannot clone database: %s", eroute->edi->path);
+            mprLog("error esp", 0, "Cannot clone database: %s", eroute->edi->path);
             return MPR_ERR_CANT_OPEN;
         }
         mprAddKey(esp->databases, id, req->edi);
@@ -4354,7 +4354,7 @@ static bool loadApp(HttpRoute *route, MprDispatcher *dispatcher)
     }
     if (mprPathExists(source, R_OK)) {
         if (espLoadModule(route, dispatcher, "app", source, &errMsg) < 0) {
-            mprLog("esp", 0, "%s", errMsg);
+            mprLog("error esp", 0, "%s", errMsg);
             return 0;
         }
     }
@@ -4379,34 +4379,34 @@ PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile)
     if (!minfo.valid) {
         if ((mp = mprLookupModule(source)) != 0) {
             if (!espUnloadModule(source, ME_ESP_RELOAD_TIMEOUT)) {
-                mprLog("esp", 0, "Cannot unload module %s. Connections still open. Continue using old version.", source);
+                mprLog("error esp", 0, "Cannot unload module %s. Connections still open. Continue using old version.", source);
                 return 0;
             }
         }
         *recompile = 1;
-        mprLog("esp", 4, "esp source %s is newer than module %s, recompiling ...", source, module);
+        mprLog("info esp", 4, "Source %s is newer than module %s, recompiling ...", source, module);
         return 1;
     }
     mprGetPathInfo(source, &sinfo);
     if (sinfo.valid && sinfo.mtime > minfo.mtime) {
         if ((mp = mprLookupModule(source)) != 0) {
             if (!espUnloadModule(source, ME_ESP_RELOAD_TIMEOUT)) {
-                mprLog("esp", 4, "Cannot unload module %s. Connections still open. Continue using old version.", source);
+                mprLog("warn esp", 4, "Cannot unload module %s. Connections still open. Continue using old version.", source);
                 return 0;
             }
         }
         *recompile = 1;
-        mprLog("esp", 4, "esp source %s is newer than module %s, recompiling ...", source, module);
+        mprLog("info esp", 4, "Source %s is newer than module %s, recompiling ...", source, module);
         return 1;
     }
     if ((mp = mprLookupModule(source)) != 0) {
         if (minfo.mtime > mp->modified) {
             /* Module file has been updated */
             if (!espUnloadModule(source, ME_ESP_RELOAD_TIMEOUT)) {
-                mprLog("esp", 4, "Cannot unload module %s. Connections still open. Continue using old version.", source);
+                mprLog("warn esp", 4, "Cannot unload module %s. Connections still open. Continue using old version.", source);
                 return 0;
             }
-            mprLog("esp", 4, "esp module %s has been externally updated, reloading ...", module);
+            mprLog("info esp", 4, "Module %s has been externally updated, reloading ...", module);
             return 1;
         }
     }
@@ -4441,7 +4441,7 @@ static bool layoutIsStale(EspRoute *eroute, cchar *source, cchar *module)
         if (layout) {
             stale = espModuleIsStale(layout, module, &recompile);
             if (stale) {
-                mprLog("esp", 4, "esp layout %s is newer than module %s", layout, module);
+                mprLog("info esp", 4, "esp layout %s is newer than module %s", layout, module);
             }
         }
     }
@@ -4648,7 +4648,7 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
     espSetDefaultDirs(route);
     if (prefix) {
         if (*prefix != '/') {
-            mprLog("esp", 0, "Prefix name should start with a \"/\"");
+            mprLog("warn esp", 0, "Prefix name should start with a \"/\"");
             prefix = sjoin("/", prefix, NULL);
         }
         prefix = stemplate(prefix, route->vars);
@@ -4670,7 +4670,7 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
     }
     if (route->database && !eroute->edi) {
         if (espOpenDatabase(route, route->database) < 0) {
-            mprLog("esp", 0, "Cannot open database %s", route->database);
+            mprLog("error esp", 0, "Cannot open database %s", route->database);
             return MPR_ERR_CANT_LOAD;
         }
     }
@@ -4693,7 +4693,7 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
                 if (!kind) kind = "controller";
                 source = mprJoinPath(httpGetDir(route, "controllers"), source);
                 if (espLoadModule(route, NULL, kind, source, &errMsg) < 0) {
-                    mprLog("esp", 0, "Cannot preload esp module %s. %s", source, errMsg);
+                    mprLog("error esp", 0, "Cannot preload esp module %s. %s", source, errMsg);
                     return MPR_ERR_CANT_LOAD;
                 }
             }
@@ -4756,7 +4756,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
             } else if (smatch(option, "routes")) {
                 routeSet = ovalue;
             } else {
-                mprLog("esp", 0, "Unknown EspApp option \"%s\"", option);
+                mprLog("error esp", 0, "Unknown EspApp option \"%s\"", option);
             }
         }
     }
@@ -4771,7 +4771,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
     state->route = route;
     if (auth) {
         if (httpSetAuthStore(route->auth, auth) < 0) {
-            mprLog("esp", 0, "The %s AuthStore is not available on this platform", auth);
+            mprLog("error esp", 0, "The %s AuthStore is not available on this platform", auth);
             return MPR_ERR_BAD_STATE;
         }
     }
@@ -4911,7 +4911,7 @@ static int espDbDirective(MaState *state, cchar *key, cchar *value)
     }
     if (espOpenDatabase(state->route, value) < 0) {
         if (!(state->flags & MA_PARSE_NON_SERVER)) {
-            mprLog("esp", 0, "Cannot open database '%s'. Use: provider://database", value);
+            mprLog("error esp", 0, "Cannot open database '%s'. Use: provider://database", value);
             return MPR_ERR_CANT_OPEN;
         }
     }
@@ -5091,7 +5091,7 @@ PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *rout
     HttpRoute   *route;
 
     if ((route = httpLookupRoute(NULL, routeName)) == 0) {
-        mprLog("esp", 0, "Cannot find route %s", routeName);
+        mprLog("error esp", 0, "Cannot find route %s", routeName);
         return MPR_ERR_CANT_ACCESS;
     }
     return (entry)(route, NULL);
@@ -5193,7 +5193,7 @@ static int espRouteDirective(MaState *state, cchar *key, cchar *value)
             } else if (smatch(option, "target")) {
                 target = ovalue;
             } else {
-                mprLog("esp", 0, "Unknown EspRoute option \"%s\"", option);
+                mprLog("error esp", 0, "Unknown EspRoute option \"%s\"", option);
             }
         }
     }
@@ -5339,7 +5339,7 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     path = mprJoinPath(mprGetAppDir(), "esp.conf");
     if (mprPathExists(path, R_OK) && (http->platformDir || httpSetPlatformDir(0) == 0)) {
         if (maParseFile(NULL, mprJoinPath(mprGetAppDir(), "esp.conf")) < 0) {
-            mprLog("esp", 0, "Cannot parse %s", path);
+            mprLog("error esp", 0, "Cannot parse %s", path);
             return MPR_ERR_CANT_OPEN;
         }
         esp->canCompile = 1;
@@ -5810,7 +5810,7 @@ static int runCommand(HttpRoute *route, MprDispatcher *dispatcher, cchar *comman
         *errMsg = sfmt("Missing EspCompile directive for %s", csource);
         return MPR_ERR_CANT_READ;
     }
-    mprLog("esp", 4, "Run: %s", commandLine);
+    mprLog("info esp run", 4, "%s", commandLine);
     if (eroute->env) {
         elist = mprCreateList(0, MPR_LIST_STABLE);
         for (ITERATE_KEYS(eroute->env, var)) {
@@ -5836,7 +5836,7 @@ static int runCommand(HttpRoute *route, MprDispatcher *dispatcher, cchar *comman
             /* Windows puts errors to stdout Ugh! */
             err = out;
         }
-        mprLog("esp", 0, "Cannot run command: %s, error %s", commandLine, err);
+        mprLog("error esp", 0, "Cannot run command: %s, error %s", commandLine, err);
         if (route->flags & HTTP_ROUTE_SHOW_ERRORS) {
             *errMsg = sfmt("Cannot run command: %s, error %s", commandLine, err);
         } else {
@@ -5869,7 +5869,7 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
     layout = 0;
     *errMsg = 0;
 
-    mprLog("esp", 2, "compile %s", source);
+    mprLog("info esp", 2, "Compile %s", source);
     if (isView) {
         if ((page = mprReadPathContents(source, &len)) == 0) {
             *errMsg = sfmt("Cannot read %s", source);
@@ -6681,7 +6681,7 @@ static cchar *getWinSDK(HttpRoute *route)
 
     /*
         MS has made a huge mess of where and how the windows SDKs are installed. The registry key at 
-        HKLM/Software/Microsoft/Microsoft SDKs/Windows/CurrentInstallFolder can't be trusted and often
+        HKLM/Software/Microsoft/Microsoft SDKs/Windows/CurrentInstallFolder cannot be trusted and often
         points to the old 7.X SDKs even when 8.X is installed and active. MS have also moved the 8.X
         SDK to Windows Kits, while still using the old folder for some bits. So the old-reliable
         CurrentInstallFolder registry key is now unusable. So we must scan for explicit SDK versions 
@@ -6735,7 +6735,7 @@ static cchar *getWinSDK(HttpRoute *route)
     if (!path) {
         path = "${WINSDK}";
     }
-    mprLog("esp", 4, "Using Windows SDK at %s", path);
+    mprLog("info esp", 4, "Using Windows SDK at %s", path);
     eroute->winsdk = strim(path, "\\", MPR_TRIM_END);
     return eroute->winsdk;
 #else
@@ -7103,7 +7103,7 @@ static int mdbAddColumn(Edi *edi, cchar *tableName, cchar *columnName, int type,
     col->flags = flags;
     if (flags & EDI_INDEX) {
         if (table->index) {
-            mprLog("esp mdb", 0, "Index already specified in table %s, replacing.", tableName);
+            mprLog("warn esp mdb", 0, "Index already specified in table %s, replacing.", tableName);
         }
         if ((table->index = mprCreateHash(0, MPR_HASH_STATIC_VALUES | MPR_HASH_STABLE)) != 0) {
             table->indexCol = col;
@@ -7385,7 +7385,7 @@ static int mdbLookupField(Edi *edi, cchar *tableName, cchar *fieldName)
 
 static EdiGrid *mdbQuery(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list vargs)
 {
-    mprLog("esp mdb", 0, "MDB does not implement ediQuery");
+    mprLog("error esp mdb", 0, "MDB does not implement ediQuery");
     return 0;
 }
 
@@ -7956,7 +7956,7 @@ static void autoSave(Mdb *mdb, MdbTable *table)
     }
     if (mdb->edi.flags & EDI_AUTO_SAVE && !(mdb->edi.flags & EDI_SUPPRESS_SAVE)) {
         if (mdbSave((Edi*) mdb) < 0) {
-            mprLog("esp mdb", 0, "Cannot save database %s", mdb->edi.path);
+            mprLog("error esp mdb", 0, "Cannot save database %s", mdb->edi.path);
         }
     }
 }
@@ -7983,12 +7983,12 @@ static int mdbSave(Edi *edi)
     }
     path = mdb->edi.path;
     if (path == 0) {
-        mprLog("esp mdb", 0, "No database path specified");
+        mprLog("error esp mdb", 0, "No database path specified");
         return MPR_ERR_BAD_ARGS;
     }
     npath = mprReplacePathExt(path, "new");
     if ((out = mprOpenFile(npath, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
-        mprLog("esp mdb", 0, "Cannot open database %s", npath);
+        mprLog("error esp mdb", 0, "Cannot open database %s", npath);
         return 0;
     }
     mprEnableFileBuffering(out, 0, 0);
@@ -8068,11 +8068,11 @@ static int mdbSave(Edi *edi)
     bak = mprReplacePathExt(path, "bak");
     mprDeletePath(bak);
     if (mprPathExists(path, R_OK) && rename(path, bak) < 0) {
-        mprLog("esp mdb", 0, "Cannot rename %s to %s", path, bak);
+        mprLog("error esp mdb", 0, "Cannot rename %s to %s", path, bak);
         return MPR_ERR_CANT_WRITE;
     }
     if (rename(npath, path) < 0) {
-        mprLog("esp mdb", 0, "Cannot rename %s to %s", npath, path);
+        mprLog("error esp mdb", 0, "Cannot rename %s to %s", npath, path);
         /* Restore backup */
         rename(bak, path);
         return MPR_ERR_CANT_WRITE;
@@ -8389,7 +8389,7 @@ static int parseOperation(cchar *operation)
             return OP_GTE;
         }
     }
-    mprLog("esp mdb", 0, "Unknown read operation '%s'", operation);
+    mprLog("error esp mdb", 0, "Unknown read operation '%s'", operation);
     return OP_ERR;
 }
 
@@ -8675,7 +8675,7 @@ static Edi *sdbOpen(cchar *path, int flags)
     }
     if (mprPathExists(path, R_OK) || (flags & EDI_CREATE)) {
         if (sqlite3_open(path, &sdb->db) != SQLITE_OK) {
-            mprLog("esp sdb", 0, "Cannot open database %s", path);
+            mprLog("error esp sdb", 0, "Cannot open database %s", path);
             return 0;
         }
         sqlite3_soft_heap_limit(ME_MAX_SQLITE_MEM);
@@ -8747,7 +8747,7 @@ static int sdbAddTable(Edi *edi, cchar *tableName)
 
 static int sdbChangeColumn(Edi *edi, cchar *tableName, cchar *columnName, int type, int flags)
 {
-    mprLog("esp sdb", 0, "SDB does not support changing columns");
+    mprLog("error esp sdb", 0, "SDB does not support changing columns");
     return MPR_ERR_BAD_STATE;
 }
 
@@ -8957,7 +8957,7 @@ static EdiGrid *sdbReadWhere(Edi *edi, cchar *tableName, cchar *columnName, ccha
 
 static int sdbRemoveColumn(Edi *edi, cchar *tableName, cchar *columnName)
 {
-    mprLog("esp sdb", 0, "SDB does not support removing columns");
+    mprLog("error esp sdb", 0, "SDB does not support removing columns");
     return MPR_ERR_BAD_STATE;
 }
 
@@ -9006,7 +9006,7 @@ static int sdbRenameTable(Edi *edi, cchar *tableName, cchar *newTableName)
 
 static int sdbRenameColumn(Edi *edi, cchar *tableName, cchar *columnName, cchar *newColumnName)
 {
-    mprLog("esp sdb", 0, "SQLite does not support renaming columns");
+    mprLog("error esp sdb", 0, "SQLite does not support renaming columns");
     return MPR_ERR_BAD_STATE;
 }
 
@@ -9190,7 +9190,7 @@ static EdiGrid *queryv(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list var
 
     while (cmd && *cmd && (rc == SQLITE_OK || (rc == SQLITE_SCHEMA && ++retries < 2))) {
         stmt = 0;
-        mprLog("esp sdb", 4, "SQL: %s", cmd);
+        mprLog("info esp sdb", 4, "SQL: %s", cmd);
         rc = sqlite3_prepare_v2(db, cmd, -1, &stmt, &tail);
         if (rc != SQLITE_OK) {
             sdbDebug(edi, 2, "SDB: cannot prepare command: %s, error: %s", cmd, sqlite3_errmsg(db));
@@ -9378,8 +9378,7 @@ static int mapToEdiType(cchar *type)
             return i;
         }
     }
-    mprLog("esp sdb", 0, "Cannot find type %s", type);
-    assert(0);
+    mprLog("error esp sdb", 0, "Cannot find type %s", type);
     return 0;
 }
 
@@ -9397,8 +9396,7 @@ static int mapSqliteTypeToEdiType(int type)
     } else if (type == SQLITE_NULL) {
         return EDI_TYPE_TEXT;
     }
-    mprLog("esp sdb", 0, "Cannot find query type %d", type);
-    assert(0);
+    mprLog("error esp sdb", 0, "Cannot find query type %d", type);
     return 0;
 }
 
@@ -9425,7 +9423,7 @@ static void sdbError(Edi *edi, cchar *fmt, ...)
     va_start(args, fmt);
     edi->errMsg = sfmtv(fmt, args);
     va_end(args);
-    mprLog("esp sdb", 0, edi->errMsg);
+    mprLog("error esp sdb", 0, edi->errMsg);
 }
 
 
@@ -9436,7 +9434,7 @@ static void sdbDebug(Edi *edi, int level, cchar *fmt, ...)
     va_start(args, fmt);
     edi->errMsg = sfmtv(fmt, args);
     va_end(args);
-    mprDebug("esp sdb", level, edi->errMsg);
+    mprDebug("debug esp sdb", level, edi->errMsg);
 }
 
 
@@ -9449,7 +9447,7 @@ static void initSqlite()
         sqlite3_config(SQLITE_CONFIG_MALLOC, &mem);
         sqlite3_config(SQLITE_CONFIG_MULTITHREAD);
         if (sqlite3_initialize() != SQLITE_OK) {
-            mprLog("esp sdb", 0, "Cannot initialize SQLite");
+            mprLog("error esp sdb", 0, "Cannot initialize SQLite");
             return;
         }
         sqliteInitialized = 1;
