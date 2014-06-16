@@ -387,16 +387,19 @@ void myEvent(HttpConn *conn, MprEvent *event) {
         <p>There are a few coding issues to keep in mind when creating handlers. Appweb is a multithreaded event loop
         server. As such, handlers must cooperate and take care when using resources.</p>
         <h3>Handler and Queue State</h3>
-        <p>Sometimes a handler needs to store state information. 
-            Appweb defines two empty fields that can be used by handlers to hold managed references. The HttpConn.data 
-            field is available for use by handlers and can store a managed-memory reference. Managed-memory is memory allocated
-            by the MPR layer APIs. See:
+        <p>Sometimes a handler needs to store state information that can be retained and preserved during a garbage
+        collection cycle. 
+        Appweb defines several fields that can be used by handlers to refer to state memory blocks.
+        These fields must refer to managed memory &mdash; i.e. memory that has been allocated by the MPR APIs.
+        During a garbage collection cycle, these fields will be automatically "marked" as being in-use.</p>
+        <p>The HttpConn.data field is available for use by handlers or applications. 
+        The HttpConn.reqData is available for use by web frameworks and the HttpQueue.queueData field is available 
+        for use by handlers or stages. </p>
+        <p>Appweb defines two fields that can be used to store un-managed memory references: HttpConn.staticData and
+            HttpQueue.staticData. Use these to store references to memory allocated by malloc.</p>
+        <p>See:
             <a href="../../../ref/appweb/memory.html">Appweb Memory</a> for details about memory allocation. </p>
-            <p>Similarly, HttpQueue.queueData field available for queue stages. This field is available for use by
-                either handlers or filters. Both these fields must only be used for managed memory and not for 
-                memory allocated by malloc. </p>
-            <p>Appweb defines two fields that can be used to store un-managed memory references: HttpConn.staticData and
-                HttpQueue.staticData. Use these to store references to memory allocated by malloc.</p>
+
         <a id="defining"></a>
         <h2>Defining a Handler</h2>
         <p>To define an Appweb handler, you must do three things:
@@ -413,12 +416,12 @@ void myEvent(HttpConn *conn, MprEvent *event) {
 int maMyModuleInit(Http *http, MprModule *mp)
 {
     HttpStage   *handler;
-    if ((handler = httpCreateHandler(http, "myHandler", 0, mp)) == 0) {
+    if ((handler = httpCreateHandler(http, "myHandler", 0)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
-    handler-&gt;open = openSimple; 
-    handler-&gt;close = closeSimple; 
-    handler-&gt;start = startSimple; 
+    handler-&gt;open = openSimple;
+    handler-&gt;close = closeSimple;
+    handler-&gt;start = startSimple;
     return 0;
 }
 </pre>
