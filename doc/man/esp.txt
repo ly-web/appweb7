@@ -29,6 +29,7 @@ SYNOPSIS
            --static
            --symbols
            --table name
+           --trace traceFile:level
            --verbose
            --why
            commands ...
@@ -309,8 +310,8 @@ OPTIONS
 
        --log logFile:level
              Specify a file to log  messages.   The  syntax  is:  "--log  log-
-             Name[,moduleName][:logLevel]".   Level  3  will trace the request
-             and response headers.
+             Name[:logLevel]".   Level  3  will trace the request and response
+             headers.
 
        --nodeps
              Do not install or upgrade dependencies.
@@ -371,6 +372,11 @@ OPTIONS
              the model name. Alternatively, specify the model name when gener-
              ating the scaffold, table or migration with  the  desired  plural
              suffix. For example: "-s" or "-ies".
+
+       --trace traceFile:level
+             Specify  a file for trace messages.  The syntax is: "--trace tra-
+             ceName[:traceLevel]".   Level  3  will  trace  the  request   and
+             response headers.
 
        --verbose or -v
              Run in verbose mode and trace actions to the console.
