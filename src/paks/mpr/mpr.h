@@ -3973,7 +3973,6 @@ PUBLIC int mprBackupLog(cchar *path, int count);
 
 /**
     Default MPR log handler
-    @param type Message type
     @param tags Descriptive tag words to classify this message.
     @param level Logging level for this message. The level is 0-5 with five being the most verbose.
     @param msg Message to log
@@ -3988,7 +3987,6 @@ PUBLIC void mprDefaultLogHandler(cchar *tags, int level, cchar *msg);
         message will be to the log handler defined by #mprSetLogHandler. It
         is up to the log handler to respond appropriately and log the message.
         This will invoke mprLog with a severity tag of "error".
-    @param tags List of space separated tag words. May also be key=value.
     @param fmt Printf style format string. Variable number of arguments to
     @param ... Variable number of arguments for printf data
     @ingroup MprLog
@@ -7978,8 +7976,8 @@ typedef struct MprSsl {
     bool            configured;         /**< Set if this SSL configuration has been processed */
     bool            verifyPeer;         /**< Verify the peer verificate */
     bool            verifyIssuer;       /**< Set if the certificate issuer should be also verified */
-    bool            verifyDepth;        /**< Set if the cert chain depth should be verified */
     bool            changed;            /**< Set if there is a change in the SSL config. Reset by providers */
+    int             verifyDepth;        /**< Cert chain depth that should be verified */
     int             protocols;          /**< SSL protocols */
     MprMutex        *mutex;             /**< Multithread sync */
 } MprSsl;

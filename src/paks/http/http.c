@@ -1003,12 +1003,10 @@ static int doRequest(HttpConn *conn, cchar *url, MprList *files)
     cchar       *path;
 
     assert(url && *url);
-    mprDebug("http", 4, "fetch: %s %s", app->method, url);
 
     if (issueRequest(conn, url, files) < 0) {
         return MPR_ERR_CANT_CONNECT;
     }
-
     if (app->outFilename) {
         path = app->loadThreads > 1 ? sfmt("%s-%s.tmp", app->outFilename, mprGetCurrentThreadName()): app->outFilename;
         if ((outFile = mprOpenFile(path, O_CREAT | O_WRONLY | O_TRUNC | O_TEXT, 0664)) == 0) {

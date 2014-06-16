@@ -4115,7 +4115,7 @@ static int runAction(HttpConn *conn)
         if (!httpCheckSecurityToken(conn)) {
             httpSetStatus(conn, HTTP_CODE_UNAUTHORIZED);
             if (smatch(route->responseFormat, "json")) {
-                httpTrace(conn, "context", "Stale esp security token", 0);
+                httpTrace(conn, "context", "Stale esp security token", 0, 0);
                 espRenderString(conn,
                     "{\"retry\": true, \"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
                 espFinalize(conn);

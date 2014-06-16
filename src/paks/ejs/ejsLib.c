@@ -36395,7 +36395,7 @@ static void setupTrace(Ejs *ejs, HttpTrace *trace, EjsObj *options)
     httpSetTraceEventLevel(trace, "txBody", getNumOption(ejs, options, "txBody"));
     httpSetTraceEventLevel(trace, "complete", getNumOption(ejs, options, "complete"));
 
-    httpSetTraceSize(trace, getNumOption(ejs, options, "size"));
+    httpSetTraceContentSize(trace, getNumOption(ejs, options, "size"));
 }
 
 
