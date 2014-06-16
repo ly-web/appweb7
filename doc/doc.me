@@ -33,7 +33,6 @@ Me.load({
                 Path('../src/paks/esp/doc/api/espBare.html').copy('api/espBare.html')
                 Path('../src/paks/esp/doc/api/ediBare.html').copy('api/ediBare.html')
                 Path('../src/paks/esp/doc/man/esp.1').copy('man/esp.1')
-                print('cp ../src/paks/esp/doc/man/esp.1', 'man/esp.1')
                 for each (let f: Path in ['api/appweb.html', 'api/http.html', 'api/mpr.html', 'api/esp.html', 'api/edi.html']) {
                     trace('Generate', f)
                     apiwrap(f)
