@@ -1229,7 +1229,11 @@ static ssize writeEst(MprSocket *sp, cvoid *buf, ssize len)
     mprHiddenSocketData(sp, est->ctx.out_left, MPR_WRITABLE);
 
     if (totalWritten == 0 && rc == EST_ERR_NET_TRY_AGAIN) {                                                          
+#if ME_WIN_LIKE
+        mprSetOsError(WSAEWOULDBLOCK);
+#else
         mprSetOsError(EAGAIN);
+#endif
         return -1;
     }
     return totalWritten;
