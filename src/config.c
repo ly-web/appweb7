@@ -2319,9 +2319,7 @@ static int traceDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpRoute   *route;
     char        *option, *ovalue, *tok;
-    ssize       size;
 
-    size = MAXINT;
     route = state->route;
     route->trace = httpCreateTrace(route->trace);
     
