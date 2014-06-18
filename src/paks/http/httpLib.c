@@ -4195,11 +4195,13 @@ static void manageConn(HttpConn *conn, int flags)
         mprMark(conn->protocol);
         mprMark(conn->protocols);
         mprMark(conn->headersCallbackArg);
+        mprMark(conn->trace);
 
         mprMark(conn->authType);
         mprMark(conn->authData);
         mprMark(conn->username);
         mprMark(conn->password);
+        mprMark(conn->user);
     }
 }
 
@@ -14464,11 +14466,11 @@ static bool processCompletion(HttpConn *conn)
         received = rx->headerPacketLength + rx->bytesRead;
 #if MPR_HIGH_RES_TIMER
         httpTrace(conn, 
-            "complete", 0, "status=%d, error=%d, connError=%d, elapsed=%Ld, elapsedTicks=%Ld, received=%Ld, sent=%Ld", 
+            "complete", 0, "status=%d, error=%d, connError=%d, elapsed=%Lu, elapsedTicks=%Lu, received=%Ld, sent=%Ld", 
             status, conn->error, conn->connError, elapsed, mprGetHiResTicks() - conn->startMark, 
             received, tx->bytesWritten);
 #else
-        httpTrace(conn, "complete", 0, "status=%d, error=%d, connError=%d, elapsed=%Ld, received=%Ld, sent=%Ld", 
+        httpTrace(conn, "complete", 0, "status=%d, error=%d, connError=%d, elapsed=%Lu, received=%Ld, sent=%Ld", 
             status, conn->error, conn->connError, elapsed, received, tx->bytesWritten);
 #endif
     }
@@ -17576,8 +17578,10 @@ PUBLIC void httpTracePacket(HttpConn *conn, cchar *event, HttpPacket *packet, cc
     assert(conn);
     assert(packet);
 
+    if (!httpShouldTrace(conn, event) || conn->rx->skipTrace) {
+        return;
+    }
     if (packet->prefix) {
-        mprAddNullToBuf(packet->prefix);
         httpTraceContent(conn, event, mprGetBufStart(packet->prefix), mprGetBufLength(packet->prefix), 0, 0);
     }
     if (values) {
@@ -17586,7 +17590,6 @@ PUBLIC void httpTracePacket(HttpConn *conn, cchar *event, HttpPacket *packet, cc
         va_end(ap);
     }
     if (packet->content) {
-        mprAddNullToBuf(packet->content);
         httpTraceContent(conn, event, mprGetBufStart(packet->content), httpGetPacketLength(packet), msg, values);
     }
 }

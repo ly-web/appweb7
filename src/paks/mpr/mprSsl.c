@@ -1747,6 +1747,7 @@ static void manageOpenSocket(OpenSocket *osp, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(osp->sock);
+        mprMark(osp->cfg);
         mprMark(osp->requiredPeerName);
 
     } else if (flags & MPR_MANAGE_FREE) {
@@ -2113,7 +2114,7 @@ static ssize writeOss(MprSocket *sp, cvoid *buf, ssize len)
     unlock(sp);
 
     if (totalWritten == 0 && rc == SSL_ERROR_WANT_WRITE) {
-        mprSetOsError(EAGAIN);
+        mprSetError(EAGAIN);
         return -1;
     }
     return totalWritten;

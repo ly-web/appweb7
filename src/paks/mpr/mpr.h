@@ -276,8 +276,7 @@ struct  MprXml;
 #define MPR_ERR_WOULD_BLOCK             -33     /**< Blocking operation would block */
 #define MPR_ERR_MAX                     -34
 
-//  MOB - REENABLE
-#if DEPRECATED
+#if DEPRECATED || 1
 /**
     Standard logging trace levels are 0 to 5 with 0 being the least verbose.
  */
@@ -375,15 +374,6 @@ PUBLIC void assert(bool cond);
     #undef assert
     #define assert(C)   if (1) ; else
 #endif
-
-/*
-    Tags:
-
-    mpr
-        cmd
-        event
-        thread
- */
 
 /*********************************** Thread Sync ******************************/
 /**
