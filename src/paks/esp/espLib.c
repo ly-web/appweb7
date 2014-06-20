@@ -3190,9 +3190,9 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
         msg = mprEscapeHtml(sfmtv(fmt, args));
         if (rx->route->flags & HTTP_ROUTE_SHOW_ERRORS) {
             text = sfmt(\
-                "<!DOCTYPE html>\r\n<html>\r\n<head><title> %s </title></head>\r\n" \
-                "<body>\r\n<h1> %s </h1>\r\n" \
-                "    <pre> %s </pre>\r\n" \
+                "<!DOCTYPE html>\r\n<html>\r\n<head><title>%s</title></head>\r\n" \
+                "<body>\r\n<h1>%s</h1>\r\n" \
+                "    <pre>%s</pre>\r\n" \
                 "    <p>To prevent errors being displayed in the browser, " \
                 "       set <b>ShowErrors off</b> in the appweb.conf file.</p>\r\n" \
                 "</body>\r\n</html>\r\n", title, title, msg);
