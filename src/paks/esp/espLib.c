@@ -3190,11 +3190,11 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
         msg = mprEscapeHtml(sfmtv(fmt, args));
         if (rx->route->flags & HTTP_ROUTE_SHOW_ERRORS) {
             text = sfmt(\
-                "<!DOCTYPE html>\r\n<html>\r\n<head><title>%s</title></head>\r\n" \
-                "<body>\r\n<h1>%s</h1>\r\n" \
-                "    <pre>%s</pre>\r\n" \
+                "<!DOCTYPE html>\r\n<html>\r\n<head><title> %s </title></head>\r\n" \
+                "<body>\r\n<h1> %s </h1>\r\n" \
+                "    <pre> %s </pre>\r\n" \
                 "    <p>To prevent errors being displayed in the browser, " \
-                "       set <b>ShowErrors off</b> in the appweb.conf file.</p>\r\n", \
+                "       set <b>ShowErrors off</b> in the appweb.conf file.</p>\r\n" \
                 "</body>\r\n</html>\r\n", title, title, msg);
             httpSetHeader(conn, "Content-Type", "text/html");
             written += espRenderString(conn, text);
@@ -3510,7 +3510,7 @@ PUBLIC void espSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
     assert(fmt && *fmt);
 
     va_start(vargs, fmt);
-    httpSetHeader(conn, key, sfmt(fmt, vargs));
+    httpSetHeaderString(conn, key, sfmtv(fmt, vargs));
     va_end(vargs);
 }
 
@@ -3701,7 +3701,7 @@ PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprT
     mprAddItem(lines, sfmt("%s--", boundary));
 
     body = mprListToString(lines, "\n");
-    httpTraceContent(conn, "context", body, slen(body), "email", 0);
+    httpTraceContent(conn, "context", "email", body, slen(body), 0);
 
     cmd = mprCreateCmd(conn->dispatcher);
     if (mprRunCmd(cmd, "sendmail -t", NULL, body, &out, &err, 0, 0) < 0) {
@@ -4654,7 +4654,7 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
         prefix = stemplate(prefix, route->vars);
         httpSetRouteName(route, prefix);
         httpSetRoutePrefix(route, prefix);
-        httpSetRoutePattern(route, sfmt("^%s%", prefix), 0);
+        httpSetRoutePattern(route, sfmt("^%s", prefix), 0);
     } else {
         httpSetRouteName(route, sfmt("/%s", name));
     }
@@ -6222,7 +6222,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
 
         case ESP_TOK_LITERAL:
             line = joinLine(token, &len);
-            mprPutToBuf(body, "  espRenderBlock(conn, \"%s\", %d);\n", line, len);
+            mprPutToBuf(body, "  espRenderBlock(conn, \"%s\", %zd);\n", line, len);
             break;
 
         default:
@@ -7847,7 +7847,7 @@ static int checkMdbState(MprJsonParser *jp, cchar *name, bool leave)
         break;
 
     default:
-        mprSetJsonError(jp, "Potential corrupt data. Bad state '%d'");
+        mprSetJsonError(jp, "Potential corrupt data. Bad state");
         return MPR_ERR_BAD_FORMAT;
     }
     return 0;
@@ -9423,7 +9423,7 @@ static void sdbError(Edi *edi, cchar *fmt, ...)
     va_start(args, fmt);
     edi->errMsg = sfmtv(fmt, args);
     va_end(args);
-    mprLog("error esp sdb", 0, edi->errMsg);
+    mprLog("error esp sdb", 0, "%s", edi->errMsg);
 }
 
 
@@ -9434,7 +9434,7 @@ static void sdbDebug(Edi *edi, int level, cchar *fmt, ...)
     va_start(args, fmt);
     edi->errMsg = sfmtv(fmt, args);
     va_end(args);
-    mprDebug("debug esp sdb", level, edi->errMsg);
+    mprDebug("debug esp sdb", level, "%s", edi->errMsg);
 }
 
 

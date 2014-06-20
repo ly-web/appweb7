@@ -1949,7 +1949,7 @@ static int requireDirective(MaState *state, cchar *key, cchar *value)
             option = stok(option, " =\t,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
             if (smatch(option, "age")) {
-                age = sfmt("%Ld", (int64) httpGetTicks(ovalue));
+                age = sfmt("%lld", (int64) httpGetTicks(ovalue));
             } else if (smatch(option, "domains")) {
                 domains = 1;
             }
