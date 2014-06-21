@@ -887,7 +887,7 @@ static void traceCGIData(MprCmd *cmd, char *src, ssize size)
     int     index, i;
 
     if (mprGetLogLevel() >= 5) {
-        mprDebug("http cgi", 5, "CGI: process wrote (leading %d bytes) => \n", min(sizeof(dest), size));
+        mprDebug("http cgi", 5, "CGI: process wrote (leading %zd bytes) => \n", min(sizeof(dest), size));
         for (index = 0; index < size; ) { 
             for (i = 0; i < (sizeof(dest) - 1) && index < size; i++) {
                 dest[i] = src[index];
