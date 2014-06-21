@@ -91,7 +91,7 @@ static void descape(MprTestGroup *gp)
     match = (strcmp(descaped, uri) == 0);
     if (!match) {
         mprLog(0, "Uri \"%s\" descaped to \"%s\" from \"%s\"\n", uri, descaped, escaped);
-        mprLog(0, "Lengths %d %d\n", strlen(descaped), strlen(uri));
+        mprLog(0, "Lengths %zd %zd\n", strlen(descaped), strlen(uri));
         for (i = 0; i < (int) strlen(descaped); i++) {
             mprLog(0, "Chr[%d] descaped %x, uri %x\n", i, descaped[i], uri[i]);
         }

@@ -1105,7 +1105,7 @@ static int pauseThreads()
 
     } while (mprGetElapsedTicks(start) < timeout);
 
-    mprTrace(7, "TIME: pauseThreads elapsed %,Ld msec %", mprGetElapsedTicks(start));
+    mprTrace(7, "TIME: pauseThreads elapsed %'lld msec", mprGetElapsedTicks(start));
     return (allYielded) ? 1 : 0;
 }
 
@@ -1395,7 +1395,7 @@ static void sweep()
                 }
             }
             ATOMIC_ADD(bytesAllocated, - (int64) region->size);
-            mprTrace(9, "DEBUG: Unpin %p to %p size %d, used %d", region, ((char*) region) + region->size, 
+            mprTrace(9, "DEBUG: Unpin %p to %p size %zd, used %zd", region, ((char*) region) + region->size, 
                 region->size, mprGetMem());
             mprVirtFree(region, region->size);
             INC(unpins);
@@ -1948,8 +1948,8 @@ static void printMemWarn(size_t used, bool critical)
     static int once = 0;
 
     if (once++ == 0 || critical) {
-        mprLog(0, "%s: Memory used %,d, redline %,d, limit %,d.", MPR->name, (int) used, (int) heap->stats.warnHeap,
-            (int) heap->stats.maxHeap);
+        mprLog(0, "%s: Memory used %'zd, redline %'zd, limit %'zd.", 
+            MPR->name, (int) used, (int) heap->stats.warnHeap, (int) heap->stats.maxHeap);
     }
 }
 
@@ -1968,23 +1968,23 @@ static void allocException(int cause, size_t size)
 
     if (cause == MPR_MEM_FAIL) {
         heap->hasError = 1;
-        mprError("%s: Cannot allocate memory block of size %,Ld bytes.", MPR->name, size);
+        mprError("%s: Cannot allocate memory block of size %'zd bytes.", MPR->name, size);
         printMemWarn(used, 1);
 
     } else if (cause == MPR_MEM_TOO_BIG) {
         heap->hasError = 1;
-        mprError("%s: Cannot allocate memory block of size %,Ld bytes.", MPR->name, size);
+        mprError("%s: Cannot allocate memory block of size %'zd bytes.", MPR->name, size);
         printMemWarn(used, 1);
 
     } else if (cause == MPR_MEM_WARNING) {
         if (once++ == 0) {
-            mprWarn("%s: Memory request for %,Ld bytes exceeds memory red-line.", MPR->name, size);
+            mprWarn("%s: Memory request for %'zd bytes exceeds memory red-line.", MPR->name, size);
         }
         mprPruneCache(NULL);
         printMemWarn(used, 0);
 
     } else if (cause == MPR_MEM_LIMIT) {
-        mprError("%s: Memory request for %,d bytes exceeds memory limit.", MPR->name, size);
+        mprError("%s: Memory request for %'zd bytes exceeds memory limit.", MPR->name, size);
         printMemWarn(used, 1);
     }
 
@@ -2679,7 +2679,7 @@ static void shutdownMonitor(void *data, MprEvent *event)
             }
         }
     } else {
-        mprLog(2, "Waiting for requests to complete, %d secs remaining ...", remaining / MPR_TICKS_PER_SEC);
+        mprLog(2, "Waiting for requests to complete, %lld secs remaining ...", remaining / MPR_TICKS_PER_SEC);
         mprRescheduleEvent(event, 1000);
     }
 }
@@ -5203,7 +5203,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
          */
         for (kp = 0; (kp = mprGetNextKey(cache->store, kp)) != 0; ) {
             item = (CacheItem*) kp->data;
-            mprTrace(5, "Cache: \"%s\" lifespan %Ld, expires in %Ld secs", item->key, 
+            mprTrace(5, "Cache: \"%s\" lifespan %lld, expires in %lld secs", item->key, 
                     item->lifespan / 1000, (item->expires - when) / 1000);
             if (item->expires && item->expires <= when) {
                 mprLog(3, "Cache prune expired key %s", kp->key);
@@ -5229,7 +5229,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
                 for (kp = 0; (kp = mprGetNextKey(cache->store, kp)) != 0; ) {
                     item = (CacheItem*) kp->data;
                     if (item->expires && item->expires <= when) {
-                        mprLog(3, "Cache too big, execess keys %Ld, mem %Ld, prune key %s", 
+                        mprLog(3, "Cache too big, execess keys %zd, mem %zd, prune key %s", 
                             excessKeys, (cache->maxMem - cache->usedMem), kp->key);
                         removeItem(cache, item);
                     }
@@ -6260,8 +6260,8 @@ static void defaultCmdCallback(MprCmd *cmd, int channel, void *data)
     }
     len = mprReadCmd(cmd, channel, mprGetBufEnd(buf), space);
     errCode = mprGetError();
-    mprTrace(6, "defaultCmdCallback channel %d, read len %d, pid %d, eof %d/%d", channel, len, cmd->pid, cmd->eofCount, 
-        cmd->requiredEof);
+    mprTrace(6, "defaultCmdCallback channel %d, read len %zd, pid %d, eof %d/%d", 
+        channel, len, cmd->pid, cmd->eofCount, cmd->requiredEof);
     if (len <= 0) {
         if (len == 0 || (len < 0 && !(errCode == EAGAIN || errCode == EWOULDBLOCK))) {
             mprCloseCmdFd(cmd, channel);
@@ -14280,7 +14280,7 @@ static void serviceIO(MprWaitService *ws, struct kevent *events, int count)
                 continue;
 
             } else if (err == EBADF || err == EINVAL) {
-                mprError("kqueue: invalid file descriptor %d, fd %d", wp->fd);
+                mprError("kqueue: invalid file descriptor %d", wp->fd);
                 mprRemoveWaitHandler(wp);
                 wp->presentMask = 0;
             }
@@ -19439,7 +19439,7 @@ PUBLIC void mprSetFilesLimit(int limit)
         }
     }
     getrlimit(RLIMIT_NOFILE, &r);
-    mprTrace(6, "Set files limit to soft %d, max %d", r.rlim_cur, r.rlim_max);
+    mprTrace(6, "Set files limit to soft %zd, max %zd", r.rlim_cur, r.rlim_max);
 }
 
 #endif /* ME_UNIX_LIKE */
@@ -19566,6 +19566,7 @@ static char classMap[] = {
 #define SPRINTF_INT64       0x80        /* 64-bit */
 #define SPRINTF_COMMA       0x100       /* Thousand comma separators */
 #define SPRINTF_UPPER_CASE  0x200       /* As the name says for numbers */
+#define SPRINTF_SSIZE       0x400       /* Size of ssize */
 
 typedef struct Format {
     uchar   *buf;
@@ -19859,6 +19860,7 @@ PUBLIC char *mprPrintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                 fmt.flags |= SPRINTF_LEAD_SPACE;
                 break;
             case ',':
+            case '\'':
                 fmt.flags |= SPRINTF_COMMA;
                 break;
             }
@@ -19902,12 +19904,20 @@ PUBLIC char *mprPrintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                 fmt.flags |= SPRINTF_INT64;
                 break;
 
-            case 'l':
-                fmt.flags |= SPRINTF_LONG;
-                break;
-
             case 'h':
                 fmt.flags |= SPRINTF_SHORT;
+                break;
+
+            case 'l':
+                if (fmt.flags & SPRINTF_LONG) {
+                    fmt.flags |= SPRINTF_INT64;
+                } else {
+                    fmt.flags |= SPRINTF_LONG;
+                }
+                break;
+
+            case 'z':
+                fmt.flags |= SPRINTF_SSIZE;
                 break;
             }
             break;

@@ -284,13 +284,13 @@ static void browserToCgiService(HttpQueue *q)
                 httpPutBackPacket(q, packet);
                 break;
             }
-            mprLog(2, "CGI: write to gateway failed for %d bytes, rc %d, errno %d", len, rc, mprGetOsError());
+            mprLog(2, "CGI: write to gateway failed for %zd bytes, rc %zd, errno %d", len, rc, mprGetOsError());
             mprCloseCmdFd(cmd, MPR_CMD_STDIN);
             httpDiscardQueueData(q, 1);
             httpError(conn, HTTP_CODE_BAD_GATEWAY, "Cannot write body data to CGI gateway");
             break;
         }
-        mprTrace(6, "CGI: browserToCgiService %d/%d, qmax %d", rc, len, q->max);
+        mprTrace(6, "CGI: browserToCgiService %zd/%zd, qmax %zd", rc, len, q->max);
         mprAdjustBufStart(buf, rc);
         if (mprGetBufLength(buf) > 0) {
             httpPutBackPacket(q, packet);
@@ -339,10 +339,10 @@ static void cgiToBrowserService(HttpQueue *q)
         mprEnableCmdOutputEvents(cmd, 1);
         mprTrace(6, "CGI: ENABLE CGI events: cgiToBrowserService");
     } else if (q->count > q->max && conn->tx->writeBlocked) {
-        mprTrace(6, "CGI: SUSPEND WRITEQ: cgiToBrowserData writeq %d/%d", conn->writeq->count, conn->writeq->max);
+        mprTrace(6, "CGI: SUSPEND WRITEQ: cgiToBrowserData writeq %zd/%zd", conn->writeq->count, conn->writeq->max);
         httpSuspendQueue(conn->writeq);
     }
-    mprTrace(6, "CGI: cgiToBrowserService pid %d, q->count %d, q->flags %x, blocked %d", 
+    mprTrace(6, "CGI: cgiToBrowserService pid %d, q->count %zd, q->flags %x, blocked %d", 
         cmd->pid, q->count, q->flags, conn->tx->writeBlocked);
 }
 
@@ -392,7 +392,7 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
         return;
     } 
     suspended = httpIsQueueSuspended(conn->writeq);
-    mprTrace(6, "CGI: %s CGI: cgiCallback. Conn->writeq %d", suspended ? "DISABLE" : "ENABLE", conn->writeq->count);
+    mprTrace(6, "CGI: %s CGI: cgiCallback. Conn->writeq %zd", suspended ? "DISABLE" : "ENABLE", conn->writeq->count);
     assert(!suspended || conn->tx->writeBlocked);
     mprEnableCmdOutputEvents(cmd, !suspended);
     mprCreateEvent(conn->dispatcher, "cgi", 0, httpIOEvent, conn, 0);
@@ -446,7 +446,7 @@ static void readFromCgi(Cgi *cgi, int channel)
             break;
 
         } else {
-            mprTrace(6, "CGI: Gateway read %d bytes from %s", nbytes, (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr");
+            mprTrace(6, "CGI: Gateway read %zd bytes from %s", nbytes, (channel == MPR_CMD_STDOUT) ? "stdout" : "stderr");
             traceData(cmd, mprGetBufEnd(packet->content), nbytes);
             mprAdjustBufEnd(packet->content, nbytes);
         }
@@ -900,7 +900,7 @@ static void traceCGIData(MprCmd *cmd, char *src, ssize size)
     int     index, i;
 
     if (mprGetLogLevel() >= 5) {
-        mprRawLog(5, "CGI: process wrote (leading %d bytes) => \n", min(sizeof(dest), size));
+        mprRawLog(5, "CGI: process wrote (leading %zd bytes) => \n", min(sizeof(dest), size));
         for (index = 0; index < size; ) { 
             for (i = 0; i < (sizeof(dest) - 1) && index < size; i++) {
                 dest[i] = src[index];

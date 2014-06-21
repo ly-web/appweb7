@@ -1808,7 +1808,7 @@ typedef struct MprString { void *dummy; } MprString;
     @ingroup MprString
     @stability Stable
  */
-PUBLIC char *fmt(char *buf, ssize maxSize, cchar *fmt, ...);
+PUBLIC char *fmt(char *buf, ssize maxSize, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
 /**
     Format a string into a statically allocated buffer.
@@ -1972,7 +1972,7 @@ PUBLIC bool sends(cchar *str, cchar *suffix);
     @ingroup MprString
     @stability Stable
  */
-PUBLIC char *sfmt(cchar *fmt, ...);
+PUBLIC char *sfmt(cchar *fmt, ...) PRINTF_ATTRIBUTE(1,2);
 
 /**
     Format a string. This is a secure verion of printf that can handle null args.
@@ -2535,7 +2535,7 @@ PUBLIC wchar    *mtrim(wchar *str, cchar *set, int where);
     @ingroup MprString
     @stability Evolving
  */
-PUBLIC ssize mprEprintf(cchar *fmt, ...);
+PUBLIC ssize mprEprintf(cchar *fmt, ...) PRINTF_ATTRIBUTE(1,2);
 
 /**
     Print a formatted message to a file descriptor
@@ -2548,7 +2548,7 @@ PUBLIC ssize mprEprintf(cchar *fmt, ...);
     @ingroup MprString
     @stability Stable
  */
-PUBLIC ssize mprFprintf(struct MprFile *file, cchar *fmt, ...);
+PUBLIC ssize mprFprintf(struct MprFile *file, cchar *fmt, ...) PRINTF_ATTRIBUTE(2,3);
 
 /**
     Formatted print. This is a secure verion of printf that can handle null args.
@@ -2559,13 +2559,13 @@ PUBLIC ssize mprFprintf(struct MprFile *file, cchar *fmt, ...);
     @ingroup MprString
     @stability Stable
  */
-PUBLIC ssize mprPrintf(cchar *fmt, ...);
+PUBLIC ssize mprPrintf(cchar *fmt, ...) PRINTF_ATTRIBUTE(1,2);
 
 /** 
     Print to stdout and add a trailing newline
     @internal 
  */
-PUBLIC ssize print(cchar *fmt, ...);
+PUBLIC ssize print(cchar *fmt, ...) PRINTF_ATTRIBUTE(1,2);
 
 #if DEPRECATED
 /**
@@ -2977,7 +2977,7 @@ PUBLIC int mprPutCharToBuf(MprBuf *buf, int c);
     @ingroup MprBuf
     @stability Stable.
  */
-PUBLIC ssize mprPutToBuf(MprBuf *buf, cchar *fmt, ...);
+PUBLIC ssize mprPutToBuf(MprBuf *buf, cchar *fmt, ...) PRINTF_ATTRIBUTE(2,3);
 
 #if DEPRECATED || 1
     /*
@@ -3135,7 +3135,7 @@ PUBLIC ssize mprPutStringToWideBuf(MprBuf *buf, cchar *str);
     @ingroup MprBuf
     @stability prototype
  */
-PUBLIC ssize mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...);
+PUBLIC ssize mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...) PRINTF_ATTRIBUTE(2,3);
 
 #endif /* KEEP */
 #else /* ME_CHAR_LEN == 1 */
@@ -3427,10 +3427,10 @@ PUBLIC uint64 mprGetHiResTicks();
                 op; \
                 elapsed = mprGetTicks() - start; \
                 if (elapsed < 1000) { \
-                    mprLog(level, "\nTIME: %s.%s elapsed %,Ld msec, %,Ld ticks", \
+                    mprLog(level, "\nTIME: %s.%s elapsed %'lld msec, %'lld ticks", \
                         tag1, tag2, elapsed, mprGetHiResTicks() - ticks); \
                 } else { \
-                    mprLog(level, "\nTIME: %s.%s elapsed %,Ld msec", tag1, tag2, elapsed); \
+                    mprLog(level, "\nTIME: %s.%s elapsed %'lld msec", tag1, tag2, elapsed); \
                 } \
             } else { \
                 op; \
@@ -3440,7 +3440,7 @@ PUBLIC uint64 mprGetHiResTicks();
             if ((level) <= MPR->logLevel) { \
                 MprTicks start = mprGetTicks(); \
                 op; \
-                mprLog(level, "\nTIME: %s.%s elapsed %,Ld msec", tag1, tag2, mprGetTicks() - start); \
+                mprLog(level, "\nTIME: %s.%s elapsed %'lld msec", tag1, tag2, mprGetTicks() - start); \
             } else { \
                 op; \
             }
@@ -4047,7 +4047,7 @@ PUBLIC void mprDefaultLogHandler(int flags, int level, cchar *msg);
     @ingroup MprLog
     @stability Stable
  */
-PUBLIC void mprError(cchar *fmt, ...);
+PUBLIC void mprError(cchar *fmt, ...) PRINTF_ATTRIBUTE(1,2);
 
 /**
     Log a fatal error message and exit.
@@ -4059,7 +4059,7 @@ PUBLIC void mprError(cchar *fmt, ...);
     @ingroup MprLog
     @stability Stable
  */
-PUBLIC void mprFatal(cchar *fmt, ...);
+PUBLIC void mprFatal(cchar *fmt, ...) PRINTF_ATTRIBUTE(1,2);
 
 /**
     Get the log file object
@@ -4089,7 +4089,7 @@ PUBLIC MprLogHandler mprGetLogHandler();
     @ingroup MprLog
     @stability Stable
  */
-PUBLIC void mprInfo(cchar *fmt, ...);
+PUBLIC void mprInfo(cchar *fmt, ...) PRINTF_ATTRIBUTE(1,2);
 
 #if DOXYGEN
 /**
@@ -4107,7 +4107,7 @@ PUBLIC void mprInfo(cchar *fmt, ...);
  */
 PUBLIC void mprLog(int level, cchar *fmt, ...);
 #endif
-PUBLIC void mprLogProc(int level, cchar *fmt, ...);
+PUBLIC void mprLogProc(int level, cchar *fmt, ...) PRINTF_ATTRIBUTE(2,3);
 
 /**
     Emit a descriptive log header
@@ -4145,7 +4145,7 @@ PUBLIC void mprMemoryError(cchar *fmt, ...);
     @ingroup MprLog
     @stability Stable
  */
-PUBLIC void mprRawLog(int level, cchar *fmt, ...);
+PUBLIC void mprRawLog(int level, cchar *fmt, ...) PRINTF_ATTRIBUTE(2,3);
 
 /**
     Set the log rotation parameters
@@ -4211,7 +4211,7 @@ PUBLIC int mprStartLogging(cchar *logSpec, int showConfig);
  */
 PUBLIC void mprTrace(int level, cchar *fmt, ...);
 #endif
-PUBLIC void mprTraceProc(int level, cchar *fmt, ...);
+PUBLIC void mprTraceProc(int level, cchar *fmt, ...) PRINTF_ATTRIBUTE(2,3);
 
 #if DEPRECATED
 /**
@@ -4249,7 +4249,7 @@ PUBLIC int mprUsingDefaultLogHandler();
     @ingroup MprLog
     @stability Stable
  */
-PUBLIC void mprWarn(cchar *fmt, ...);
+PUBLIC void mprWarn(cchar *fmt, ...) PRINTF_ATTRIBUTE(1,2);
 
 #if ME_MPR_TRACING
     #define mprTrace(l, ...) if ((l) <= MPR->logLevel) { mprTraceProc(l, __VA_ARGS__); } else
@@ -4386,7 +4386,7 @@ PUBLIC MprKey *mprAddKeyWithType(MprHash *table, cvoid *key, cvoid *ptr, int typ
     @ingroup MprHash
     @stability Stable.
  */
-PUBLIC MprKey *mprAddKeyFmt(MprHash *table, cvoid *key, cchar *fmt, ...);
+PUBLIC MprKey *mprAddKeyFmt(MprHash *table, cvoid *key, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
 /**
     Copy a hash table
@@ -4970,7 +4970,7 @@ PUBLIC ssize mprWriteFile(MprFile *file, cvoid *buf, ssize count);
     @ingroup MprFile
     @stability Stable
  */
-PUBLIC ssize mprWriteFileFmt(MprFile *file, cchar *fmt, ...);
+PUBLIC ssize mprWriteFileFmt(MprFile *file, cchar *fmt, ...) PRINTF_ATTRIBUTE(2,3);
 
 /**
     Write a string to a file.
@@ -6881,7 +6881,7 @@ PUBLIC char *mprSerialize(MprHash *hash, int flags);
     @ingroup MprJson
     @stability Evolving
  */
-PUBLIC void mprSetJsonError(MprJsonParser *jp, cchar *fmt, ...);
+PUBLIC void mprSetJsonError(MprJsonParser *jp, cchar *fmt, ...) PRINTF_ATTRIBUTE(2,3);
 
 /**
     Update a property in a JSON object
@@ -6917,7 +6917,7 @@ PUBLIC int mprSetJson(MprJson *obj, cchar *key, cchar *value);
     @ingroup MprJson
     @stability Prototype
  */
-PUBLIC void mprTraceJson(int level, MprJson *obj, cchar *fmt, ...);
+PUBLIC void mprTraceJson(int level, MprJson *obj, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
 /********************************* Threads ************************************/
 /**

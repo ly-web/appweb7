@@ -1264,8 +1264,8 @@ static void outgoingCacheFilterService(HttpQueue *q)
                     tx->cacheBufferLength += size;
                 } else {
                     tx->cacheBuffer = 0;
-                    mprLog(3, "cacheFilter: Item too big to cache %d bytes, limit %d", tx->cacheBufferLength + size,
-                        conn->limits->cacheItemSize);
+                    mprLog(3, "cacheFilter: Item too big to cache %zd bytes, limit %zd", 
+                        tx->cacheBufferLength + size, conn->limits->cacheItemSize);
                 }
             }
             foundDataPacket = 1;
@@ -1352,10 +1352,10 @@ static void cacheAtClient(HttpConn *conn)
     if (!mprLookupKey(tx->headers, "Cache-Control")) {
         if ((value = mprLookupKey(conn->tx->headers, "Cache-Control")) != 0) {
             if (strstr(value, "max-age") == 0) {
-                httpAppendHeader(conn, "Cache-Control", "public, max-age=%Ld", cache->clientLifespan / MPR_TICKS_PER_SEC);
+                httpAppendHeader(conn, "Cache-Control", "public, max-age=%lld", cache->clientLifespan / MPR_TICKS_PER_SEC);
             }
         } else {
-            httpAddHeader(conn, "Cache-Control", "public, max-age=%Ld", cache->clientLifespan / MPR_TICKS_PER_SEC);
+            httpAddHeader(conn, "Cache-Control", "public, max-age=%lld", cache->clientLifespan / MPR_TICKS_PER_SEC);
             /* 
                 Old HTTP/1.0 clients don't understand Cache-Control 
              */
@@ -1413,8 +1413,8 @@ static bool fetchCachedResponse(HttpConn *conn)
         status = (canUseClientCache && cacheOk) ? HTTP_CODE_NOT_MODIFIED : HTTP_CODE_OK;
         mprLog(3, "cacheHandler: Use cached content for %s, status %d", key, status);
         httpSetStatus(conn, status);
-        httpSetHeader(conn, "Etag", mprGetMD5(key));
-        httpSetHeader(conn, "Last-Modified", mprFormatUniversalTime(MPR_HTTP_DATE, modified));
+        httpSetHeaderString(conn, "Etag", mprGetMD5(key));
+        httpSetHeaderString(conn, "Last-Modified", mprFormatUniversalTime(MPR_HTTP_DATE, modified));
         return 1;
     }
     mprLog(3, "cacheHandler: No cached content for %s", key);
@@ -1452,13 +1452,13 @@ PUBLIC ssize httpWriteCached(HttpConn *conn)
     }
     cacheKey = makeCacheKey(conn);
     if ((content = mprReadCache(conn->host->responseCache, cacheKey, &modified, 0)) == 0) {
-        mprLog(3, "No cached data for ", cacheKey);
+        mprLog(3, "No cached data for %s", cacheKey);
         return 0;
     }
-    mprLog(5, "Used cached ", cacheKey);
+    mprLog(5, "Used cached %s", cacheKey);
     data = setHeadersFromCache(conn, content);
-    httpSetHeader(conn, "Etag", mprGetMD5(cacheKey));
-    httpSetHeader(conn, "Last-Modified", mprFormatUniversalTime(MPR_HTTP_DATE, modified));
+    httpSetHeaderString(conn, "Etag", mprGetMD5(cacheKey));
+    httpSetHeaderString(conn, "Last-Modified", mprFormatUniversalTime(MPR_HTTP_DATE, modified));
     conn->tx->cacheBuffer = 0;
     httpWriteString(conn->writeq, data);
     httpFinalizeOutput(conn);
@@ -1779,7 +1779,7 @@ PUBLIC ssize httpFilterChunkData(HttpQueue *q, HttpPacket *packet)
         return 0;
 
     case HTTP_CHUNK_DATA:
-        mprTrace(7, "chunkFilter: data %d bytes, rx->remainingContent %d", 
+        mprTrace(7, "chunkFilter: data %zd bytes, rx->remainingContent %zd", 
             httpGetPacketLength(packet), rx->remainingContent);
         if (rx->remainingContent > 0) {
             return (ssize) min(rx->remainingContent, mprGetBufLength(buf));
@@ -1830,7 +1830,7 @@ PUBLIC ssize httpFilterChunkData(HttpQueue *q, HttpPacket *packet)
         /* Remaining content is set to the next chunk size */
         rx->remainingContent = chunkSize;
         rx->chunkState = (chunkSize == 0) ? HTTP_CHUNK_EOF : HTTP_CHUNK_DATA;
-        mprTrace(7, "chunkFilter: start incoming chunk of %d bytes", chunkSize);
+        mprTrace(7, "chunkFilter: start incoming chunk of %zd bytes", chunkSize);
         return min(chunkSize, mprGetBufLength(buf));
 
     default:
@@ -1912,7 +1912,7 @@ static void setChunkPrefix(HttpQueue *q, HttpPacket *packet)
         NOTE: prefixes don't count in the queue length. No need to adjust q->count
      */
     if (httpGetPacketLength(packet)) {
-        mprPutToBuf(packet->prefix, "\r\n%x\r\n", httpGetPacketLength(packet));
+        mprPutToBuf(packet->prefix, "\r\n%zx\r\n", httpGetPacketLength(packet));
     } else {
         mprPutStringToBuf(packet->prefix, "\r\n0\r\n\r\n");
     }
@@ -2151,7 +2151,7 @@ PUBLIC bool httpNeedRetry(HttpConn *conn, char **url)
  */
 PUBLIC void httpEnableUpload(HttpConn *conn)
 {
-    conn->boundary = sfmt("--BOUNDARY--%Ld", conn->http->now);
+    conn->boundary = sfmt("--BOUNDARY--%lld", conn->http->now);
     httpSetHeader(conn, "Content-Type", "multipart/form-data; boundary=%s", &conn->boundary[2]);
 }
 
@@ -2656,13 +2656,13 @@ static void connTimeout(HttpConn *conn, MprEvent *event)
     if (!conn->connError) {
         prefix = (conn->state == HTTP_STATE_BEGIN) ? "Idle connection" : "Request";
         if (conn->timeout == HTTP_PARSE_TIMEOUT) {
-            msg = sfmt("%s exceeded parse headers timeout of %Ld sec", prefix, limits->requestParseTimeout  / 1000);
+            msg = sfmt("%s exceeded parse headers timeout of %lld sec", prefix, limits->requestParseTimeout  / 1000);
 
         } else if (conn->timeout == HTTP_INACTIVITY_TIMEOUT) {
-            msg = sfmt("%s exceeded inactivity timeout of %Ld sec", prefix, limits->inactivityTimeout / 1000);
+            msg = sfmt("%s exceeded inactivity timeout of %lld sec", prefix, limits->inactivityTimeout / 1000);
 
         } else if (conn->timeout == HTTP_REQUEST_TIMEOUT) {
-            msg = sfmt("%s exceeded timeout %Ld sec", prefix, limits->requestTimeout / 1000);
+            msg = sfmt("%s exceeded timeout %lld sec", prefix, limits->requestTimeout / 1000);
         }
         if (conn->rx && (conn->state > HTTP_STATE_CONNECTED)) {
             mprTrace(5, "  State %d, uri %s", conn->state, conn->rx->uri);
@@ -2670,10 +2670,10 @@ static void connTimeout(HttpConn *conn, MprEvent *event)
         if (conn->state < HTTP_STATE_FIRST) {
             httpDisconnect(conn);
             if (msg) {
-                mprLog(5, msg);
+                mprLog(5, "%s", msg);
             }
         } else {
-            httpError(conn, HTTP_CODE_REQUEST_TIMEOUT, msg);
+            httpError(conn, HTTP_CODE_REQUEST_TIMEOUT, "%s", msg);
         }
     }
     if (httpClientConn(conn)) {
@@ -2844,9 +2844,10 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
     address = conn->address;
     if (address && address->banUntil > http->now) {
         if (address->banStatus) {
-            httpError(conn, HTTP_CLOSE | address->banStatus, address->banMsg ? address->banMsg : "Client banned");
+            httpError(conn, HTTP_CLOSE | address->banStatus, "%s", 
+                address->banMsg ? address->banMsg : "Client banned");
         } else if (address->banMsg) {
-            httpError(conn, HTTP_CLOSE | HTTP_CODE_NOT_ACCEPTABLE, address->banMsg);
+            httpError(conn, HTTP_CLOSE | HTTP_CODE_NOT_ACCEPTABLE, "%s", address->banMsg);
         } else {
             httpDisconnect(conn);
             return 0;
@@ -2912,7 +2913,7 @@ PUBLIC void httpIOEvent(HttpConn *conn, MprEvent *event)
                 conn->keepAliveCount = 0;
                 conn->lastRead = 0;
             }
-            mprTrace(6, "http: readEvent read socket %d bytes", conn->lastRead);
+            mprTrace(6, "http: readEvent read socket %zd bytes", conn->lastRead);
         }
     }
     /*
@@ -3371,13 +3372,13 @@ PUBLIC bool httpRequestExpired(HttpConn *conn, MprTicks timeout)
     }
     if (mprGetRemainingTicks(conn->started, requestTimeout) < 0) {
         if (requestTimeout != timeout) {
-            mprLog(4, "http: Request duration exceeded timeout of %d secs", requestTimeout / 1000);
+            mprLog(4, "http: Request duration exceeded timeout of %lld secs", requestTimeout / 1000);
         }
         return 1;
     }
     if (mprGetRemainingTicks(conn->lastActivity, inactivityTimeout) < 0) {
         if (inactivityTimeout != timeout) {
-            mprLog(4, "http: Request timed out due to inactivity of %d secs", inactivityTimeout / 1000);
+            mprLog(4, "http: Request timed out due to inactivity of %lld secs", inactivityTimeout / 1000);
         }
         return 1;
     }
@@ -3695,9 +3696,9 @@ PUBLIC bool httpDigestSetHeaders(HttpConn *conn, cchar *username, cchar *passwor
     ha1 = mprGetMD5(sfmt("%s:%s:%s", username, dp->realm, password));
     ha2 = mprGetMD5(sfmt("%s:%s", tx->method, tx->parsedUri->path));
     if (smatch(dp->qop, "auth")) {
-        digest = mprGetMD5(sfmt("%s:%s:%08x:%s:%s:%s", ha1, dp->nonce, dp->nc, cnonce, dp->qop, ha2));
+        digest = mprGetMD5(sfmt("%s:%s:%s:%s:%s:%s", ha1, dp->nonce, dp->nc, cnonce, dp->qop, ha2));
         httpAddHeader(conn, "Authorization", "Digest username=\"%s\", realm=\"%s\", domain=\"%s\", "
-            "algorithm=\"MD5\", qop=\"%s\", cnonce=\"%s\", nc=\"%08x\", nonce=\"%s\", opaque=\"%s\", "
+            "algorithm=\"MD5\", qop=\"%s\", cnonce=\"%s\", nc=\"%s\", nonce=\"%s\", opaque=\"%s\", "
             "stale=\"FALSE\", uri=\"%s\", response=\"%s\"", username, dp->realm, dp->domain, dp->qop, 
             cnonce, dp->nc, dp->nonce, dp->opaque, tx->parsedUri->path, digest);
     } else {
@@ -3717,7 +3718,7 @@ static char *createDigestNonce(HttpConn *conn, cchar *secret, cchar *realm)
     static int64 next = 0;
 
     assert(realm && *realm);
-    return mprEncode64(sfmt("%s:%s:%Lx:%Lx", secret, realm, mprGetTime(), next++));
+    return mprEncode64(sfmt("%s:%s:%llx:%llx", secret, realm, mprGetTime(), next++));
 }
 
 
@@ -5258,12 +5259,12 @@ static void checkCounter(HttpMonitor *monitor, HttpCounter *counter, cchar *ip)
 
     if (monitor->expr == '>') {
         if (counter->value > monitor->limit) {
-            fmt = "WARNING: Monitor%s for %s at %Ld / %Ld secs exceeds limit of %Ld";
+            fmt = "WARNING: Monitor%s for %s at %lld / %lld secs exceeds limit of %lld";
         }
 
     } else if (monitor->expr == '>') {
         if (counter->value < monitor->limit) {
-            fmt = "WARNING: Monitor%s for %s at %Ld / %Ld secs outside limit of %Ld";
+            fmt = "WARNING: Monitor%s for %s at %lld / %lld secs outside limit of %lld";
         }
     }
     if (fmt) {
@@ -5272,14 +5273,14 @@ static void checkCounter(HttpMonitor *monitor, HttpCounter *counter, cchar *ip)
         msg = sfmt(fmt, address, monitor->counterName, counter->value, period, monitor->limit);
         subject = sfmt("Monitor %s Alert", monitor->counterName);
         args = mprDeserialize(
-            sfmt("{ COUNTER: '%s', DATE: '%s', IP: '%s', LIMIT: %Ld, MESSAGE: '%s', PERIOD: %Ld, SUBJECT: '%s', VALUE: %Ld }", 
+            sfmt("{ COUNTER: '%s', DATE: '%s', IP: '%s', LIMIT: %lld, MESSAGE: '%s', PERIOD: %lld, SUBJECT: '%s', VALUE: %lld }", 
             monitor->counterName, mprGetDate(NULL), ip, monitor->limit, msg, period, subject, counter->value));
         /*  
             WARNING: yields 
          */
         invokeDefenses(monitor, args);
     }
-    mprTrace(5, "CheckCounter \"%s\" (%Ld %c limit %Ld) every %Ld secs", monitor->counterName, counter->value, 
+    mprTrace(5, "CheckCounter \"%s\" (%lld %c limit %lld) every %lld secs", monitor->counterName, counter->value, 
             monitor->expr, monitor->limit, monitor->period / 1000);
     counter->value = 0;
 }
@@ -5437,7 +5438,7 @@ static void startMonitors()
         http->monitorsStarted = 1;
     }
     unlock(http);
-    mprTrace(4, "Start monitors: min %Ld, max %Ld",  http->monitorMinPeriod, http->monitorMaxPeriod);
+    mprTrace(4, "Start monitors: min %lld, max %lld",  http->monitorMinPeriod, http->monitorMaxPeriod);
 }
 
 
@@ -5573,9 +5574,9 @@ PUBLIC void httpDumpCounters()
 
     http = MPR->httpService;
     mprRawLog(0, "Monitor Counters:\n");
-    mprRawLog(0, "Memory counter     %,Ld\n", mprGetMem());
-    mprRawLog(0, "Active processes   %,Ld\n", mprGetListLength(MPR->cmdService->cmds));
-    mprRawLog(0, "Active clients     %,Ld\n", mprGetHashLength(http->addresses));
+    mprRawLog(0, "Memory counter     %'zd\n", mprGetMem());
+    mprRawLog(0, "Active processes   %d\n", mprGetListLength(MPR->cmdService->cmds));
+    mprRawLog(0, "Active clients     %d\n", mprGetHashLength(http->addresses));
 
     lock(http->addresses);
     for (ITERATE_KEY_DATA(http->addresses, kp, address)) {
@@ -5586,7 +5587,7 @@ PUBLIC void httpDumpCounters()
             if (name == NULL) {
                 break;
             }
-            mprRawLog(0, "  Counter          %s = %,Ld\n", name, counter->value);
+            mprRawLog(0, "  Counter          %s = %'lld\n", name, counter->value);
         }
     }
     unlock(http->addresses);
@@ -5610,7 +5611,7 @@ PUBLIC int httpBanClient(cchar *ip, MprTicks period, int status, cchar *msg)
     address->banUntil = max(banUntil, address->banUntil);
     address->banMsg = msg;
     address->banStatus = status;
-    mprLog(1, "Client %s banned for %Ld secs. %s", ip, period / 1000, address->banMsg ? address->banMsg : "");
+    mprLog(1, "Client %s banned for %lld secs. %s", ip, period / 1000, address->banMsg ? address->banMsg : "");
     return 0;
 }
 
@@ -5736,7 +5737,7 @@ static void httpRemedy(MprHash *args)
     }
     status = httpGetStatus(conn);
     if (status != HTTP_CODE_OK) {
-        mprError("Remedy URI %s responded with http status %d\n%s", uri, status);
+        mprError("Remedy URI %s responded with http status %d\n", uri, status);
     }
 }
 
@@ -5875,7 +5876,7 @@ static void netOutgoingService(HttpQueue *q)
     }
     if ((tx->bytesWritten + q->count) > conn->limits->transmissionBodySize) {
         httpLimitError(conn, HTTP_CODE_REQUEST_TOO_LARGE | ((tx->bytesWritten) ? HTTP_ABORT : 0),
-            "Http transmission aborted. Exceeded transmission max body of %,Ld bytes", conn->limits->transmissionBodySize);
+            "Http transmission aborted. Exceeded transmission max body of %'zd bytes", conn->limits->transmissionBodySize);
         if (tx->bytesWritten) {
             httpFinalizeConnector(conn);
             return;
@@ -5928,7 +5929,7 @@ static void netOutgoingService(HttpQueue *q)
             break;
 
         } else if (written > 0) {
-            mprTrace(6, "netConnector: wrote %d, ask %d, qflags %x", (int) written, q->ioCount, q->flags);
+            mprTrace(6, "netConnector: wrote %d, ask %lld, qflags %x", (int) written, q->ioCount, q->flags);
             tx->bytesWritten += written;
             freeNetPackets(q, written);
             adjustNetVec(q, written);
@@ -6898,7 +6899,7 @@ static void handleTrace(HttpConn *conn)
     q->count -= httpGetPacketLength(headers);
     assert(q->count == 0);
     mprFlushBuf(headers->content);
-    mprPutToBuf(traceData->content, mprGetBufStart(q->first->content));
+    mprPutStringToBuf(traceData->content, mprGetBufStart(q->first->content));
     httpSetContentType(conn, "message/http");
     httpPutForService(q, traceData, HTTP_DELAY_SERVICE);
     httpFinalize(conn);
@@ -8116,7 +8117,7 @@ static HttpPacket *createRangePacket(HttpConn *conn, HttpRange *range)
     packet->flags |= HTTP_PACKET_RANGE;
     mprPutToBuf(packet->content, 
         "\r\n--%s\r\n"
-        "Content-Range: bytes %Ld-%Ld/%s\r\n\r\n",
+        "Content-Range: bytes %lld-%lld/%s\r\n\r\n",
         tx->rangeBoundary, range->start, range->end - 1, length);
     return packet;
 }
@@ -10572,9 +10573,9 @@ static int secureCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
         /* Negative age means subDomains == true */
         age = stoi(op->details);
         if (age < 0) {
-            httpAddHeader(conn, "Strict-Transport-Security", "max-age=%Ld; includeSubDomains", -age / MPR_TICKS_PER_SEC);
+            httpAddHeader(conn, "Strict-Transport-Security", "max-age=%lld; includeSubDomains", -age / MPR_TICKS_PER_SEC);
         } else if (age > 0) {
-            httpAddHeader(conn, "Strict-Transport-Security", "max-age=%Ld", age / MPR_TICKS_PER_SEC);
+            httpAddHeader(conn, "Strict-Transport-Security", "max-age=%lld", age / MPR_TICKS_PER_SEC);
         }
     }
     if (!conn->secure) {
@@ -11875,14 +11876,14 @@ static bool parseIncoming(HttpConn *conn)
     if ((end = sncontains(start, "\r\n\r\n", len)) == 0 && (end = sncontains(start, "\n\n", len)) == 0) {
         if (len >= conn->limits->headerSize) {
             httpLimitError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE, 
-                "Header too big. Length %d vs limit %d", len, conn->limits->headerSize);
+                "Header too big. Length %zd vs limit %zd", len, conn->limits->headerSize);
         }
         return 0;
     }
     len = end - start;
     if (len >= conn->limits->headerSize) {
-        httpLimitError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE, "Header too big. Length %d vs limit %d", len, 
-            conn->limits->headerSize);
+        httpLimitError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE, "Header too big. Length %zd vs limit %zd",
+            len, conn->limits->headerSize);
         return 0;
     }
     if (httpServerConn(conn)) {
@@ -12093,7 +12094,7 @@ static bool parseRequestLine(HttpConn *conn, HttpPacket *packet)
         return 0;
     } else if (len >= limits->uriSize) {
         httpLimitError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_URL_TOO_LARGE, 
-            "Bad request. URI too long. Length %d vs limit %d", len, limits->uriSize);
+            "Bad request. URI too long. Length %zd vs limit %zd", len, limits->uriSize);
         return 0;
     }
     protocol = conn->protocol = supper(getToken(conn, "\r\n"));
@@ -12168,7 +12169,7 @@ static bool parseResponseLine(HttpConn *conn, HttpPacket *packet)
     len = slen(rx->statusMessage);
     if (len >= conn->limits->uriSize) {
         httpLimitError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_URL_TOO_LARGE, 
-            "Bad response. Status message too long. Length %d vs limit %d", len, conn->limits->uriSize);
+            "Bad response. Status message too long. Length %zd vs limit %zd", len, conn->limits->uriSize);
         return 0;
     }
     if (!traced && (level = httpShouldTrace(conn, HTTP_TRACE_RX, HTTP_TRACE_FIRST, tx->ext)) >= 0) {
@@ -12511,7 +12512,7 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
     }
     if (rx->form && rx->length >= conn->limits->receiveFormSize) {
         httpLimitError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
-            "Request form of %,Ld bytes is too big. Limit %,Ld", rx->length, conn->limits->receiveFormSize);
+            "Request form of %'zd bytes is too big. Limit %'zd", rx->length, conn->limits->receiveFormSize);
     }
     if (conn->error) {
         /* Cannot continue with keep-alive as the headers have not been correctly parsed */
@@ -12569,7 +12570,7 @@ static bool processParsed(HttpConn *conn)
          */
         if (!rx->upload && rx->length >= conn->limits->receiveBodySize) {
             httpLimitError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE,
-                "Request content length %,Ld bytes is too big. Limit %,Ld", rx->length, conn->limits->receiveBodySize);
+                "Request content length %'zd bytes is too big. Limit %'zd", rx->length, conn->limits->receiveBodySize);
             return 0;
         }
         if (rx->streaming) {
@@ -12649,11 +12650,11 @@ static ssize filterPacket(HttpConn *conn, HttpPacket *packet, int *more)
     size = rx->bytesRead - rx->bytesUploaded;
     if (size >= conn->limits->receiveBodySize) {
         httpLimitError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
-            "Receive body of %,Ld bytes (sofar) is too big. Limit %,Ld", size, conn->limits->receiveBodySize);
+            "Receive body of %'zd bytes (sofar) is too big. Limit %'zd", size, conn->limits->receiveBodySize);
 
     } else if (rx->form && size >= conn->limits->receiveFormSize) {
         httpLimitError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
-            "Receive form of %,Ld bytes (sofar) is too big. Limit %,Ld", size, conn->limits->receiveFormSize);
+            "Receive form of %'zd bytes (sofar) is too big. Limit %'zd", size, conn->limits->receiveFormSize);
     }
     if (httpShouldTrace(conn, HTTP_TRACE_RX, HTTP_TRACE_BODY, tx->ext) >= 0) {
         httpTraceContent(conn, HTTP_TRACE_RX, HTTP_TRACE_BODY, packet, nbytes, rx->bytesRead);
@@ -12676,7 +12677,7 @@ static ssize filterPacket(HttpConn *conn, HttpPacket *packet, int *more)
             *more = 1;
         }
     }
-    mprTrace(6, "filterPacket: read %d bytes, useful %d, remaining %d, more %d", conn->lastRead, nbytes, rx->remainingContent, *more);
+    mprTrace(6, "filterPacket: read %zd bytes, useful %zd, remaining %lld, more %d", conn->lastRead, nbytes, rx->remainingContent, *more);
     return nbytes;
 }
 
@@ -12823,10 +12824,10 @@ static void measure(HttpConn *conn)
         elapsed = mprGetTicks() - conn->started;
 #if MPR_HIGH_RES_TIMER
         if (elapsed < 1000) {
-            mprLog(level, "TIME: Request %s took %,Ld msec %,Ld ticks", uri, elapsed, mprGetHiResTicks() - conn->startMark);
+            mprLog(level, "TIME: Request %s took %'lld msec %'lld ticks", uri, elapsed, mprGetHiResTicks() - conn->startMark);
         } else
 #endif
-            mprLog(level, "TIME: Request %s took %,Ld msec", uri, elapsed);
+            mprLog(level, "TIME: Request %s took %'lld msec", uri, elapsed);
     }
 }
 
@@ -13690,7 +13691,7 @@ PUBLIC void httpSendOpen(HttpQueue *q)
         assert(tx->fileInfo.valid);
         if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
             httpLimitError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE,
-                "Http transmission aborted. File size exceeds max body of %,Ld bytes", conn->limits->transmissionBodySize);
+                "Http transmission aborted. File size exceeds max body of %'zd bytes", conn->limits->transmissionBodySize);
             return;
         }
         tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
@@ -13733,7 +13734,7 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
     }
     if ((tx->bytesWritten + q->ioCount) > conn->limits->transmissionBodySize) {
         httpLimitError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE | ((tx->bytesWritten) ? HTTP_ABORT : 0),
-            "Http transmission aborted. Exceeded max body of %,Ld bytes", conn->limits->transmissionBodySize);
+            "Http transmission aborted. Exceeded max body of %'zd bytes", conn->limits->transmissionBodySize);
         if (tx->bytesWritten) {
             httpFinalizeConnector(conn);
             return;
@@ -15277,7 +15278,7 @@ PUBLIC int httpAddSecurityToken(HttpConn *conn, bool recreate)
 
     securityToken = httpGetSecurityToken(conn, recreate);
     httpSetCookie(conn, ME_XSRF_COOKIE, securityToken, "/", NULL,  0, 0);
-    httpSetHeader(conn, ME_XSRF_HEADER, securityToken);
+    httpSetHeaderString(conn, ME_XSRF_HEADER, securityToken);
     return 0;
 }
 
@@ -15644,10 +15645,10 @@ static void traceBuf(HttpConn *conn, int dir, int level, cchar *msg, cchar *buf,
         data = mprAlloc(len + 1);
         memcpy(data, start, len);
         data[len] = '\0';
-        mprRawLog(level, "\n>>>>>>>>>> %s %s packet %d, len %d (conn %d) >>>>>>>>>>\n%s", tag, msg, seqno, 
+        mprRawLog(level, "\n>>>>>>>>>> %s %s packet %d, len %zd (conn %d) >>>>>>>>>>\n%s", tag, msg, seqno, 
             len, conn->seqno, data);
     } else {
-        mprRawLog(level, "\n>>>>>>>>>> %s %s packet %d, len %d (conn %d) >>>>>>>>>> (binary)\n", tag, msg, seqno, 
+        mprRawLog(level, "\n>>>>>>>>>> %s %s packet %d, len %zd (conn %d) >>>>>>>>>> (binary)\n", tag, msg, seqno, 
             len, conn->seqno);
         /* To trace binary, must be two levels higher (typically 6) */
         if (MPR->logLevel < (level + 2)) {
@@ -16235,7 +16236,7 @@ PUBLIC void httpSetContentLength(HttpConn *conn, MprOff length)
         return;
     }
     tx->length = length;
-    httpSetHeader(conn, "Content-Length", "%Ld", tx->length);
+    httpSetHeader(conn, "Content-Length", "%zd", tx->length);
 }
 
 
@@ -16287,7 +16288,7 @@ PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path
     /* 
        Allow multiple cookie headers. Even if the same name. Later definitions take precedence.
      */
-    httpAppendHeader(conn, "Set-Cookie", 
+    httpAppendHeaderString(conn, "Set-Cookie", 
         sjoin(name, "=", value, "; path=", path, domainAtt, domain, expiresAtt, expires, secure, httponly, NULL));
     if ((cp = mprLookupKey(conn->tx->headers, "Cache-Control")) == 0 || !scontains(cp, "no-cache")) {
         httpAppendHeader(conn, "Cache-Control", "no-cache=\"set-cookie\"");
@@ -16374,7 +16375,7 @@ static void setHeaders(HttpConn *conn, HttpPacket *packet)
         conn->tx->flags |= HTTP_TX_NO_BODY;
         httpDiscardData(conn, HTTP_QUEUE_TX);
         if (tx->chunkSize <= 0) {
-            httpAddHeader(conn, "Content-Length", "%Ld", length);
+            httpAddHeader(conn, "Content-Length", "%zd", length);
         }
 
     } else if (tx->length < 0 && tx->chunkSize > 0) {
@@ -16384,21 +16385,21 @@ static void setHeaders(HttpConn *conn, HttpPacket *packet)
         /* Server must not emit a content length header for 1XX, 204 and 304 status */
         if (!((100 <= tx->status && tx->status <= 199) || tx->status == 204 || tx->status == 304 || tx->flags & HTTP_TX_NO_LENGTH)) {
             if (length >= 0) {
-                httpAddHeader(conn, "Content-Length", "%Ld", length);
+                httpAddHeader(conn, "Content-Length", "%zd", length);
             }
         }
 
     } else if (tx->length > 0) {
         /* client with body */
-        httpAddHeader(conn, "Content-Length", "%Ld", length);
+        httpAddHeader(conn, "Content-Length", "%zd", length);
     }
     if (tx->outputRanges) {
         if (tx->outputRanges->next == 0) {
             range = tx->outputRanges;
             if (tx->entityLength > 0) {
-                httpSetHeader(conn, "Content-Range", "bytes %Ld-%Ld/%Ld", range->start, range->end - 1, tx->entityLength);
+                httpSetHeader(conn, "Content-Range", "bytes %lld-%lld/%lld", range->start, range->end - 1, tx->entityLength);
             } else {
-                httpSetHeader(conn, "Content-Range", "bytes %Ld-%Ld/*", range->start, range->end - 1);
+                httpSetHeader(conn, "Content-Range", "bytes %lld-%lld/*", range->start, range->end - 1);
             }
         } else {
             httpSetHeader(conn, "Content-Type", "multipart/byteranges; boundary=%s", tx->rangeBoundary);
@@ -16415,7 +16416,7 @@ static void setHeaders(HttpConn *conn, HttpPacket *packet)
         if (--conn->keepAliveCount > 0) {
             assert(conn->keepAliveCount >= 1);
             httpAddHeaderString(conn, "Connection", "Keep-Alive");
-            httpAddHeader(conn, "Keep-Alive", "timeout=%Ld, max=%d", conn->limits->inactivityTimeout / 1000, conn->keepAliveCount);
+            httpAddHeader(conn, "Keep-Alive", "timeout=%lld, max=%d", conn->limits->inactivityTimeout / 1000, conn->keepAliveCount);
         } else {
             /* Tell the peer to close the connection */
             httpAddHeaderString(conn, "Connection", "close");
@@ -16491,7 +16492,7 @@ PUBLIC void httpSetFilename(HttpConn *conn, cchar *filename, int flags)
     mprGetPathInfo(filename, info);
     if (info->valid) {
         //  OPT - using inodes mean this is harder to cache when served from multiple servers.
-        tx->etag = sfmt("\"%Lx-%Lx-%Lx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
+        tx->etag = sfmt("\"%llx-%llx-%llx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
     }
     tx->filename = sclone(filename);
     mprTrace(7, "httpSetFilename uri \"%s\", filename: \"%s\", extension: \"%s\"", conn->rx->uri, tx->filename, tx->ext);
@@ -16650,7 +16651,7 @@ PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize len, int flags)
     tx->responded = 1;
 
     for (totalWritten = 0; len > 0; ) {
-        mprTrace(7, "httpWriteBlock q_count %d, q_max %d", q->count, q->max);
+        mprTrace(7, "httpWriteBlock q_count %zd, q_max %zd", q->count, q->max);
         if (conn->state >= HTTP_STATE_FINALIZED) {
             return MPR_ERR_CANT_WRITE;
         }
@@ -16944,7 +16945,7 @@ static void incomingUpload(HttpQueue *q, HttpPacket *packet)
         httpPutPacketToNext(q, packet);
         return;
     }
-    mprTrace(7, "uploadIncomingData: %d bytes", httpGetPacketLength(packet));
+    mprTrace(7, "uploadIncomingData: %zd bytes", httpGetPacketLength(packet));
 
     /*
         Put the packet data onto the service queue for buffering. This aggregates input data incase we don't have
@@ -17201,7 +17202,7 @@ static int writeToFile(HttpQueue *q, char *data, ssize len)
         /*
             Abort the connection as we don't want the load of receiving the entire body
          */
-        httpLimitError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE, "Uploaded file exceeds maximum %,Ld", limits->uploadSize);
+        httpLimitError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE, "Uploaded file exceeds maximum %lld", limits->uploadSize);
         return MPR_ERR_CANT_WRITE;
     }
     if (len > 0) {
@@ -17211,12 +17212,12 @@ static int writeToFile(HttpQueue *q, char *data, ssize len)
         rc = mprWriteFile(up->file, data, len);
         if (rc != len) {
             httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, 
-                "Cannot write to upload temp file %s, rc %d, errno %d", up->tmpPath, rc, mprGetOsError());
+                "Cannot write to upload temp file %s, rc %zd, errno %d", up->tmpPath, rc, mprGetOsError());
             return MPR_ERR_CANT_WRITE;
         }
         file->size += len;
         conn->rx->bytesUploaded += len;
-        mprTrace(7, "uploadFilter: Wrote %d bytes to %s", len, up->tmpPath);
+        mprTrace(7, "uploadFilter: Wrote %zd bytes to %s", len, up->tmpPath);
     }
     return 0;
 }
@@ -17252,7 +17253,7 @@ static int processUploadData(HttpQueue *q)
     }
     bp = getBoundary(mprGetBufStart(content), size, up->boundary, up->boundaryLen, &pureData);
     if (bp == 0) {
-        mprTrace(7, "uploadFilter: Got boundary filename %x", up->clientFilename);
+        mprTrace(7, "uploadFilter: Got boundary filename %s", up->clientFilename);
         if (up->clientFilename) {
             /*
                 No signature found yet. probably more data to come. Must handle split boundaries.
@@ -18470,7 +18471,7 @@ PUBLIC void httpCreateCGIParams(HttpConn *conn)
             mprSetJson(params, sfmt("FILE_%d_CLIENT_FILENAME", index), up->clientFilename);
             mprSetJson(params, sfmt("FILE_%d_CONTENT_TYPE", index), up->contentType);
             mprSetJson(params, sfmt("FILE_%d_NAME", index), kp->key);
-            mprSetJson(params, sfmt("FILE_%d_SIZE", index), sfmt("%d", up->size));
+            mprSetJson(params, sfmt("FILE_%d_SIZE", index), sfmt("%zd", up->size));
         }
     }
     if (conn->http->envCallback) {
@@ -18550,7 +18551,7 @@ PUBLIC int httpAddBodyParams(HttpConn *conn)
             content = q->first->content;
             if (rx->form || rx->upload) {
                 mprAddNullToBuf(content);
-                mprTrace(6, "Form body data: length %d, \"%s\"", mprGetBufLength(content), mprGetBufStart(content));
+                mprTrace(6, "Form body data: length %zd, \"%s\"", mprGetBufLength(content), mprGetBufStart(content));
                 addParamsFromBuf(conn, mprGetBufStart(content), mprGetBufLength(content));
 
             } else if (sstarts(rx->mimeType, "application/json")) {
@@ -18972,14 +18973,14 @@ static int matchWebSock(HttpConn *conn, HttpRoute *route, int dir)
             ws->subProtocol = stok(sclone(protocols), " ,", NULL);
         }
         httpSetStatus(conn, HTTP_CODE_SWITCHING);
-        httpSetHeader(conn, "Connection", "Upgrade");
-        httpSetHeader(conn, "Upgrade", "WebSocket");
-        httpSetHeader(conn, "Sec-WebSocket-Accept", mprGetSHABase64(sjoin(key, WS_MAGIC, NULL)));
+        httpSetHeaderString(conn, "Connection", "Upgrade");
+        httpSetHeaderString(conn, "Upgrade", "WebSocket");
+        httpSetHeaderString(conn, "Sec-WebSocket-Accept", mprGetSHABase64(sjoin(key, WS_MAGIC, NULL)));
         if (ws->subProtocol && *ws->subProtocol) {
-            httpSetHeader(conn, "Sec-WebSocket-Protocol", ws->subProtocol);
+            httpSetHeaderString(conn, "Sec-WebSocket-Protocol", ws->subProtocol);
         }
-        httpSetHeader(conn, "X-Request-Timeout", "%Ld", conn->limits->requestTimeout / MPR_TICKS_PER_SEC);
-        httpSetHeader(conn, "X-Inactivity-Timeout", "%Ld", conn->limits->inactivityTimeout / MPR_TICKS_PER_SEC);
+        httpSetHeader(conn, "X-Request-Timeout", "%lld", conn->limits->requestTimeout / MPR_TICKS_PER_SEC);
+        httpSetHeader(conn, "X-Inactivity-Timeout", "%lld", conn->limits->inactivityTimeout / MPR_TICKS_PER_SEC);
 
         if (route->webSocketsPingPeriod) {
             ws->pingEvent = mprCreateEvent(conn->dispatcher, "webSocket", route->webSocketsPingPeriod, 
@@ -19087,7 +19088,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
          */
         httpJoinPacketForService(q, packet, 0);
     }
-    mprLog(5, "webSocketFilter: incoming data, state %d, frame state %d, length: %d", 
+    mprLog(5, "webSocketFilter: incoming data, state %d, frame state %d, length: %zd", 
         ws->state, ws->frameState, httpGetPacketLength(packet));
 
     if (packet->flags & HTTP_PACKET_END) {
@@ -19209,7 +19210,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
                 if ((tail = httpSplitPacket(packet, offset)) != 0) {
                     content = packet->content;
                     httpPutBackPacket(q, tail);
-                    mprTrace(5, "webSocketFilter: Split data packet, %d/%d", ws->frameLength, httpGetPacketLength(tail));
+                    mprTrace(5, "webSocketFilter: Split data packet, %zd/%zd", ws->frameLength, httpGetPacketLength(tail));
                     len = httpGetPacketLength(packet);
                 }
             }
@@ -19217,7 +19218,8 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
                 if (httpServerConn(conn)) {
                     httpMonitorEvent(conn, HTTP_COUNTER_LIMIT_ERRORS, 1);
                 }
-                mprError("webSocketFilter: Incoming message is too large %d/%d", len, limits->webSocketsMessageSize);
+                mprError("webSocketFilter: Incoming message is too large %zd/%zd", 
+                    len, limits->webSocketsMessageSize);
                 error = WS_STATUS_MESSAGE_TOO_LARGE;
                 break;
             }
@@ -19227,7 +19229,7 @@ static void incomingWebSockData(HttpQueue *q, HttpPacket *packet)
                 }
             } 
             if (packet->type == WS_MSG_CONT && ws->currentFrame) {
-                mprTrace(5, "webSocketFilter: Joining data packet %d/%d", currentFrameLen, len);
+                mprTrace(5, "webSocketFilter: Joining data packet %zd/%zd", currentFrameLen, len);
                 httpJoinPacket(ws->currentFrame, packet);
                 packet = ws->currentFrame;
                 content = packet->content;
@@ -19311,7 +19313,7 @@ static int processFrame(HttpQueue *q, HttpPacket *packet)
 
     if (3 <= MPR->logLevel) {
         mprAddNullToBuf(content);
-        mprLog(3, "WebSocket: %d: receive \"%s\" (%d) frame, last %d, length %d",
+        mprLog(3, "WebSocket: %d: receive \"%s\" (%d) frame, last %d, length %zd",
              ws->rxSeq++, codetxt[packet->type], packet->type, packet->last, mprGetBufLength(content));
     }
     validated = 0;
@@ -19505,7 +19507,7 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *buf, ssize len, int 
         if (httpServerConn(conn)) {
             httpMonitorEvent(conn, HTTP_COUNTER_LIMIT_ERRORS, 1);
         }
-        mprError("webSocketFilter: Outgoing message is too large %d/%d", len, conn->limits->webSocketsMessageSize);
+        mprError("webSocketFilter: Outgoing message is too large %zd/%zd", len, conn->limits->webSocketsMessageSize);
         return MPR_ERR_WONT_FIT;
     }
     totalWritten = 0;
@@ -19602,7 +19604,7 @@ PUBLIC ssize httpSendClose(HttpConn *conn, int status, cchar *reason)
     if (reason) {
         if (slen(reason) >= 124) {
             reason = "WebSockets reason message was too big";
-            mprError(reason);
+            mprError("%s", reason);
         }
         len += slen(reason) + 1;
     }
@@ -19688,7 +19690,7 @@ static void outgoingWebSockService(HttpQueue *q)
             }
             *prefix = '\0';
             mprAdjustBufEnd(packet->prefix, prefix - packet->prefix->start);
-            mprLog(3, "WebSocket: %d: send \"%s\" (%d) frame, last %d, length %d",
+            mprLog(3, "WebSocket: %d: send \"%s\" (%d) frame, last %d, length %zd",
                 ws->txSeq++, codetxt[packet->type], packet->type, packet->last, httpGetPacketLength(packet));
         }
         httpPutPacketToNext(q, packet);
@@ -19823,7 +19825,7 @@ static int validUTF8(cchar *str, ssize len)
          */
         state = utfTable[256 + (state * 16) + type];
         if (state == UTF8_REJECT) {
-            mprLog(0, "Invalid UTF8 at offset %d", cp - (uchar*) str);
+            mprLog(0, "Invalid UTF8 at offset %zd", cp - (uchar*) str);
             break;
         }
     }
@@ -19905,11 +19907,11 @@ PUBLIC int httpUpgradeWebSocket(HttpConn *conn)
     httpSetHeader(conn, "Connection", "Upgrade");
     mprGetRandomBytes(num, sizeof(num), 0);
     tx->webSockKey = mprEncode64Block(num, sizeof(num));
-    httpSetHeader(conn, "Sec-WebSocket-Key", tx->webSockKey);
-    httpSetHeader(conn, "Sec-WebSocket-Protocol", conn->protocols ? conn->protocols : "chat");
-    httpSetHeader(conn, "Sec-WebSocket-Version", "13");
-    httpSetHeader(conn, "X-Request-Timeout", "%Ld", conn->limits->requestTimeout / MPR_TICKS_PER_SEC);
-    httpSetHeader(conn, "X-Inactivity-Timeout", "%Ld", conn->limits->requestTimeout / MPR_TICKS_PER_SEC);
+    httpSetHeaderString(conn, "Sec-WebSocket-Key", tx->webSockKey);
+    httpSetHeaderString(conn, "Sec-WebSocket-Protocol", conn->protocols ? conn->protocols : "chat");
+    httpSetHeaderString(conn, "Sec-WebSocket-Version", "13");
+    httpSetHeader(conn, "X-Request-Timeout", "%lld", conn->limits->requestTimeout / MPR_TICKS_PER_SEC);
+    httpSetHeader(conn, "X-Inactivity-Timeout", "%lld", conn->limits->requestTimeout / MPR_TICKS_PER_SEC);
 
     conn->upgraded = 1;
     conn->keepAliveCount = 0;

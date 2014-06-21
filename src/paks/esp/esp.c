@@ -1888,7 +1888,7 @@ static void createMigration(cchar *name, cchar *table, cchar *comment, int field
             mprDeletePath(mprJoinPath("db/migrations/", dp->name));
         }
     }
-    path = sfmt("%s/%s_%s.c", dir, seq, name, ".c");
+    path = sfmt("%s/%s_%s.c", dir, seq, name);
     makeEspFile(path, data, 0);
 }
 

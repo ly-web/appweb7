@@ -3644,7 +3644,7 @@ static cchar *map(HttpConn *conn, MprHash *options)
                         /* Trim last "&" */
                         pstr[strlen(pstr) - 1] = '\0';
                     }
-                    mprPutToBuf(buf, "%s-params='%s", params);
+                    mprPutToBuf(buf, "params='%s'", pstr);
                 }
             }
             mprPutStringToBuf(buf, kp->key);
@@ -4543,7 +4543,7 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
                 "<body>\r\n<h1>%s</h1>\r\n" \
                 "    <pre>%s</pre>\r\n" \
                 "    <p>To prevent errors being displayed in the browser, " \
-                "       set <b>ShowErrors off</b> in the appweb.conf file.</p>\r\n", \
+                "       set <b>ShowErrors off</b> in the appweb.conf file.</p>\r\n" \
                 "</body>\r\n</html>\r\n", title, title, msg);
             httpSetHeader(conn, "Content-Type", "text/html");
             written += espRenderString(conn, text);
@@ -4870,7 +4870,7 @@ PUBLIC void espSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
     assert(fmt && *fmt);
 
     va_start(vargs, fmt);
-    httpSetHeader(conn, key, sfmt(fmt, vargs));
+    httpSetHeaderString(conn, key, sfmtv(fmt, vargs));
     va_end(vargs);
 }
 
@@ -6295,7 +6295,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
         prefix = stemplate(prefix, route->vars);
         httpSetRouteName(route, prefix);
         httpSetRoutePrefix(route, prefix);
-        httpSetRoutePattern(route, sfmt("^%s%", prefix), 0);
+        httpSetRoutePattern(route, sfmt("^%s", prefix), 0);
     } else {
         httpSetRouteName(route, sfmt("/%s", name));
     }
@@ -7855,7 +7855,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
 
         case ESP_TOK_LITERAL:
             line = joinLine(token, &len);
-            mprPutToBuf(body, "  espRenderBlock(conn, \"%s\", %d);\n", line, len);
+            mprPutToBuf(body, "  espRenderBlock(conn, \"%s\", %zd);\n", line, len);
             break;
 
         default:
@@ -9475,7 +9475,7 @@ static int checkMdbState(MprJsonParser *jp, cchar *name, bool leave)
         break;
 
     default:
-        mprSetJsonError(jp, "Potential corrupt data. Bad state '%d'");
+        mprSetJsonError(jp, "Potential corrupt data. Bad state");
         return MPR_ERR_BAD_FORMAT;
     }
     return 0;

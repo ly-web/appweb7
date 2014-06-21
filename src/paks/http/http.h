@@ -1879,7 +1879,7 @@ PUBLIC bool httpWillNextQueueAcceptSize(HttpQueue *q, ssize size);
     @ingroup HttpQueue
     @stability Stable
  */
-PUBLIC ssize httpWrite(HttpQueue *q, cchar *fmt, ...);
+PUBLIC ssize httpWrite(HttpQueue *q, cchar *fmt, ...) PRINTF_ATTRIBUTE(2,3);
 
 /*
     Set HTTP_BLOCK to 0x1 so that legacy calls to httpFlushQueue that supplied a boolean block value will function correctly
@@ -2687,7 +2687,7 @@ PUBLIC void httpEnableUpload(HttpConn *conn);
     @ingroup HttpConn
     @stability Stable
  */
-PUBLIC void httpError(HttpConn *conn, int status, cchar *fmt, ...);
+PUBLIC void httpError(HttpConn *conn, int status, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
 /**
     Emit an error message for limit violations
@@ -2698,7 +2698,7 @@ PUBLIC void httpError(HttpConn *conn, int status, cchar *fmt, ...);
     @ingroup HttpConn
     @stability Evolving
  */
-PUBLIC void httpLimitError(HttpConn *conn, int status, cchar *fmt, ...);
+PUBLIC void httpLimitError(HttpConn *conn, int status, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
 /**
     Emit an error message for a badly formatted request
@@ -2709,7 +2709,7 @@ PUBLIC void httpLimitError(HttpConn *conn, int status, cchar *fmt, ...);
     @ingroup HttpConn
     @stability Evolving
  */
-PUBLIC void httpBadRequestError(HttpConn *conn, int status, cchar *fmt, ...);
+PUBLIC void httpBadRequestError(HttpConn *conn, int status, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
 /**
     Respond to a HTTP IO event
@@ -6157,7 +6157,7 @@ typedef struct HttpTx {
     @ingroup HttpTx
     @stability Stable
  */
-PUBLIC void httpAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
+PUBLIC void httpAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
 /** 
     Add a header to the transmission
@@ -6182,7 +6182,7 @@ PUBLIC void httpAddHeaderString(HttpConn *conn, cchar *key, cchar *value);
     @ingroup HttpTx
     @stability Stable
  */
-PUBLIC void httpAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
+PUBLIC void httpAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
 /** 
     Append a transmission header string
@@ -6324,7 +6324,7 @@ PUBLIC void httpFollowRedirects(HttpConn *conn, bool follow);
     @ingroup HttpTx
     @stability Stable
  */
-PUBLIC void httpFormatError(HttpConn *conn, int status, cchar *fmt, ...);
+PUBLIC void httpFormatError(HttpConn *conn, int status, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
 /** 
     Format an alternate response
@@ -6339,7 +6339,7 @@ PUBLIC void httpFormatError(HttpConn *conn, int status, cchar *fmt, ...);
     @ingroup HttpTx
     @stability Stable
  */
-PUBLIC ssize httpFormatResponse(HttpConn *conn, cchar *fmt, ...);
+PUBLIC ssize httpFormatResponse(HttpConn *conn, cchar *fmt, ...) PRINTF_ATTRIBUTE(2,3);
 
 /** 
     Format an alternate response
@@ -6371,7 +6371,7 @@ PUBLIC ssize httpFormatResponsev(HttpConn *conn, cchar *fmt, va_list args);
     @ingroup HttpTx
     @stability Stable
  */
-PUBLIC ssize httpFormatResponseBody(HttpConn *conn, cchar *title, cchar *fmt, ...);
+PUBLIC ssize httpFormatResponseBody(HttpConn *conn, cchar *title, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
 /**
     Get the queue data for the connection
@@ -6568,7 +6568,7 @@ PUBLIC void httpSetHandler(HttpConn *conn, HttpStage *handler);
     @ingroup HttpTx
     @stability Stable
  */
-PUBLIC void httpSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
+PUBLIC void httpSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
 /** 
     Set a simple key/value transmission header
@@ -7236,7 +7236,7 @@ PUBLIC ssize httpGetWebSocketState(HttpConn *conn);
     @ingroup HttpWebSocket
     @stability Evolving
  */
-PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...);
+PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...) PRINTF_ATTRIBUTE(2,3);
 
 /** 
     Flag for #httpSendBlock to indicate there are more frames for this message 

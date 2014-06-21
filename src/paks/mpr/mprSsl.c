@@ -2070,7 +2070,7 @@ static ssize writeOss(MprSocket *sp, cvoid *buf, ssize len)
 
     do {
         rc = SSL_write(osp->handle, buf, (int) len);
-        mprLog(7, "OpenSSL: written %d, requested len %d", rc, len);
+        mprLog(7, "OpenSSL: written %d, requested len %zd", rc, len);
         if (rc <= 0) {
             if (SSL_get_error(osp->handle, rc) == SSL_ERROR_WANT_WRITE) {
                 break;
@@ -2081,7 +2081,7 @@ static ssize writeOss(MprSocket *sp, cvoid *buf, ssize len)
         totalWritten += rc;
         buf = (void*) ((char*) buf + rc);
         len -= rc;
-        mprLog(7, "OpenSSL: write: len %d, written %d, total %d, error %d", len, rc, totalWritten, SSL_get_error(osp->handle, rc));
+        mprLog(7, "OpenSSL: write: len %zd, written %d, total %zd, error %d", len, rc, totalWritten, SSL_get_error(osp->handle, rc));
     } while (len > 0);
     unlock(sp);
 
