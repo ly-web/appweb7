@@ -21893,7 +21893,7 @@ PUBLIC Socket mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
         if (errno == EADDRINUSE) {
             mprLog("error mpr socket", 3, "Cannot bind, address %s:%d already in use", ip, port);
         } else {
-            mprLog("error mpr socket", 3, "Cannot bind, address %s:%d errno", ip, port, errno);
+            mprLog("error mpr socket", 3, "Cannot bind, address %s:%d errno %d", ip, port, errno);
         }
         rc = mprGetOsError();
         closesocket(sp->fd);

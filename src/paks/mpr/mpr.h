@@ -3087,7 +3087,7 @@ PUBLIC ssize mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...) PRINTF_ATTRIBUTE(2
 /*
     Macros for speed
  */
-#define mprGetBufLength(bp) ((bp)->end - (bp)->start)
+#define mprGetBufLength(bp) ((ssize) ((bp)->end - (bp)->start))
 #define mprGetBufSize(bp) ((bp)->buflen)
 #define mprGetBufSpace(bp) ((bp)->endbuf - (bp)->end)
 #define mprGetBuf(bp) ((bp)->data)
