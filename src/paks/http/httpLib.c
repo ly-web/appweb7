@@ -1241,7 +1241,7 @@ static void outgoingCacheFilterService(HttpQueue *q)
                  */
                 mprPutToBuf(tx->cacheBuffer, "X-Status: %d\n", tx->status);
                 for (kp = 0; (kp = mprGetNextKey(tx->headers, kp)) != 0; ) {
-                    mprPutToBuf(tx->cacheBuffer, "%s: %s\n", kp->key, kp->data);
+                    mprPutToBuf(tx->cacheBuffer, "%s: %s\n", kp->key, (char*) kp->data);
                 }
                 mprPutCharToBuf(tx->cacheBuffer, '\n');
             }
@@ -1779,7 +1779,7 @@ PUBLIC ssize httpFilterChunkData(HttpQueue *q, HttpPacket *packet)
         return 0;
 
     case HTTP_CHUNK_DATA:
-        mprTrace(7, "chunkFilter: data %zd bytes, rx->remainingContent %zd", 
+        mprTrace(7, "chunkFilter: data %zd bytes, rx->remainingContent %lld", 
             httpGetPacketLength(packet), rx->remainingContent);
         if (rx->remainingContent > 0) {
             return (ssize) min(rx->remainingContent, mprGetBufLength(buf));
@@ -5702,7 +5702,7 @@ static void delayRemedy(MprHash *args)
             address->delayUntil = max(delayUntil, address->delayUntil);
             delay = (int) lookupTicks(args, "DELAY", ME_HTTP_DELAY);
             address->delay = max(delay, address->delay);
-            mprLog(0, "%s", mprLookupKey(args, "MESSAGE"));
+            mprLog(0, "%s", (char*) mprLookupKey(args, "MESSAGE"));
             mprLog(0, "Initiate delay of %d for IP address %s", address->delay, ip);
         }
     }
@@ -5744,7 +5744,7 @@ static void httpRemedy(MprHash *args)
 
 static void logRemedy(MprHash *args)
 {
-    mprLog(0, "%s", mprLookupKey(args, "MESSAGE"));
+    mprLog(0, "%s", (char*) mprLookupKey(args, "MESSAGE"));
 }
 
 
@@ -5876,7 +5876,7 @@ static void netOutgoingService(HttpQueue *q)
     }
     if ((tx->bytesWritten + q->count) > conn->limits->transmissionBodySize) {
         httpLimitError(conn, HTTP_CODE_REQUEST_TOO_LARGE | ((tx->bytesWritten) ? HTTP_ABORT : 0),
-            "Http transmission aborted. Exceeded transmission max body of %'zd bytes", conn->limits->transmissionBodySize);
+            "Http transmission aborted. Exceeded transmission max body of %'lld bytes", conn->limits->transmissionBodySize);
         if (tx->bytesWritten) {
             httpFinalizeConnector(conn);
             return;
@@ -12512,7 +12512,7 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
     }
     if (rx->form && rx->length >= conn->limits->receiveFormSize) {
         httpLimitError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
-            "Request form of %'zd bytes is too big. Limit %'zd", rx->length, conn->limits->receiveFormSize);
+            "Request form of %'lld bytes is too big. Limit %'lld", rx->length, conn->limits->receiveFormSize);
     }
     if (conn->error) {
         /* Cannot continue with keep-alive as the headers have not been correctly parsed */
@@ -12570,7 +12570,7 @@ static bool processParsed(HttpConn *conn)
          */
         if (!rx->upload && rx->length >= conn->limits->receiveBodySize) {
             httpLimitError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE,
-                "Request content length %'zd bytes is too big. Limit %'zd", rx->length, conn->limits->receiveBodySize);
+                "Request content length %'lld bytes is too big. Limit %'lld", rx->length, conn->limits->receiveBodySize);
             return 0;
         }
         if (rx->streaming) {
@@ -12650,11 +12650,11 @@ static ssize filterPacket(HttpConn *conn, HttpPacket *packet, int *more)
     size = rx->bytesRead - rx->bytesUploaded;
     if (size >= conn->limits->receiveBodySize) {
         httpLimitError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
-            "Receive body of %'zd bytes (sofar) is too big. Limit %'zd", size, conn->limits->receiveBodySize);
+            "Receive body of %'lld bytes (sofar) is too big. Limit %'lld", size, conn->limits->receiveBodySize);
 
     } else if (rx->form && size >= conn->limits->receiveFormSize) {
         httpLimitError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
-            "Receive form of %'zd bytes (sofar) is too big. Limit %'zd", size, conn->limits->receiveFormSize);
+            "Receive form of %'lld bytes (sofar) is too big. Limit %'lld", size, conn->limits->receiveFormSize);
     }
     if (httpShouldTrace(conn, HTTP_TRACE_RX, HTTP_TRACE_BODY, tx->ext) >= 0) {
         httpTraceContent(conn, HTTP_TRACE_RX, HTTP_TRACE_BODY, packet, nbytes, rx->bytesRead);
@@ -13691,7 +13691,7 @@ PUBLIC void httpSendOpen(HttpQueue *q)
         assert(tx->fileInfo.valid);
         if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
             httpLimitError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE,
-                "Http transmission aborted. File size exceeds max body of %'zd bytes", conn->limits->transmissionBodySize);
+                "Http transmission aborted. File size exceeds max body of %'lld bytes", conn->limits->transmissionBodySize);
             return;
         }
         tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
@@ -13734,7 +13734,7 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
     }
     if ((tx->bytesWritten + q->ioCount) > conn->limits->transmissionBodySize) {
         httpLimitError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE | ((tx->bytesWritten) ? HTTP_ABORT : 0),
-            "Http transmission aborted. Exceeded max body of %'zd bytes", conn->limits->transmissionBodySize);
+            "Http transmission aborted. Exceeded max body of %'lld bytes", conn->limits->transmissionBodySize);
         if (tx->bytesWritten) {
             httpFinalizeConnector(conn);
             return;
@@ -15921,7 +15921,7 @@ PUBLIC void httpAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...)
                 mprAddDuplicateKey(conn->tx->headers, key, value);
             }
         } else {
-            setHdr(conn, key, sfmt("%s, %s", kp->data, value));
+            setHdr(conn, key, sfmt("%s, %s", (char*) kp->data, value));
         }
     } else {
         setHdr(conn, key, value);
@@ -16236,7 +16236,7 @@ PUBLIC void httpSetContentLength(HttpConn *conn, MprOff length)
         return;
     }
     tx->length = length;
-    httpSetHeader(conn, "Content-Length", "%zd", tx->length);
+    httpSetHeader(conn, "Content-Length", "%lld", tx->length);
 }
 
 
@@ -16375,7 +16375,7 @@ static void setHeaders(HttpConn *conn, HttpPacket *packet)
         conn->tx->flags |= HTTP_TX_NO_BODY;
         httpDiscardData(conn, HTTP_QUEUE_TX);
         if (tx->chunkSize <= 0) {
-            httpAddHeader(conn, "Content-Length", "%zd", length);
+            httpAddHeader(conn, "Content-Length", "%lld", length);
         }
 
     } else if (tx->length < 0 && tx->chunkSize > 0) {
@@ -16385,13 +16385,13 @@ static void setHeaders(HttpConn *conn, HttpPacket *packet)
         /* Server must not emit a content length header for 1XX, 204 and 304 status */
         if (!((100 <= tx->status && tx->status <= 199) || tx->status == 204 || tx->status == 304 || tx->flags & HTTP_TX_NO_LENGTH)) {
             if (length >= 0) {
-                httpAddHeader(conn, "Content-Length", "%zd", length);
+                httpAddHeader(conn, "Content-Length", "%lld", length);
             }
         }
 
     } else if (tx->length > 0) {
         /* client with body */
-        httpAddHeader(conn, "Content-Length", "%zd", length);
+        httpAddHeader(conn, "Content-Length", "%lld", length);
     }
     if (tx->outputRanges) {
         if (tx->outputRanges->next == 0) {

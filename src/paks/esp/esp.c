@@ -1314,7 +1314,7 @@ static int runEspCommand(HttpRoute *route, cchar *command, cchar *csource, cchar
     if (eroute->env) {
         elist = mprCreateList(0, MPR_LIST_STABLE);
         for (ITERATE_KEYS(eroute->env, var)) {
-            mprAddItem(elist, sfmt("%s=%s", var->key, var->data));
+            mprAddItem(elist, sfmt("%s=%s", var->key, (char*) var->data));
         }
         mprAddNullItem(elist);
         env = (cchar**) &elist->items[0];
@@ -2427,12 +2427,10 @@ static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toD
     MprJson     *config;
     MprPath     info;
     MprKey      *exp;
-    EspRoute    *eroute;
     cchar       *base, *path;
     char        *fromData, *toData, *from, *to, *fromSum, *toSum;
     int         next;
 
-    eroute = app->eroute;
     path = mprJoinPath(fromDir, ME_ESP_PACKAGE);
     if (!mprPathExists(path, R_OK) || (config = loadPackage(path)) == 0) {
         fail("Cannot load %s", path);

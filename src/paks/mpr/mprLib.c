@@ -19439,7 +19439,6 @@ PUBLIC void mprSetFilesLimit(int limit)
         }
     }
     getrlimit(RLIMIT_NOFILE, &r);
-    mprTrace(6, "Set files limit to soft %zd, max %zd", r.rlim_cur, r.rlim_max);
 }
 
 #endif /* ME_UNIX_LIKE */
@@ -21840,7 +21839,7 @@ PUBLIC Socket mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
         if (errno == EADDRINUSE) {
             mprLog(3, "Cannot bind, address %s:%d already in use", ip, port);
         } else {
-            mprLog(3, "Cannot bind, address %s:%d errno", ip, port, errno);
+            mprLog(3, "Cannot bind, address %s:%d errno %d", ip, port, errno);
         }
         rc = mprGetOsError();
         closesocket(sp->fd);

@@ -376,7 +376,7 @@ PUBLIC cchar *ediGetTableSchemaAsJson(Edi *edi, cchar *tableName)
     for (c = 0; c < ncols; c++) {
         ediGetColumnSchema(edi, tableName, mprGetItem(columns, c), &type, &flags, &cid);
         mprPutToBuf(buf, "      \"%s\": {\n        \"type\": \"%s\"\n      },\n", 
-            mprGetItem(columns, c), ediGetTypeString(type));
+            (char*) mprGetItem(columns, c), ediGetTypeString(type));
     }
     if (ncols > 0) {
         mprAdjustBufEnd(buf, -2);
@@ -7450,7 +7450,7 @@ static int runCommand(HttpRoute *route, MprDispatcher *dispatcher, cchar *comman
     if (eroute->env) {
         elist = mprCreateList(0, MPR_LIST_STABLE);
         for (ITERATE_KEYS(eroute->env, var)) {
-            mprAddItem(elist, sfmt("%s=%s", var->key, var->data));
+            mprAddItem(elist, sfmt("%s=%s", var->key, (char*) var->data));
         }
         mprAddNullItem(elist);
         env = (cchar**) &elist->items[0];
