@@ -1698,7 +1698,7 @@ static int runEspCommand(HttpRoute *route, cchar *command, cchar *csource, cchar
     if (eroute->env) {
         elist = mprCreateList(0, MPR_LIST_STABLE);
         for (ITERATE_KEYS(eroute->env, var)) {
-            mprAddItem(elist, sfmt("%s=%s", var->key, var->data));
+            mprAddItem(elist, sfmt("%s=%s", var->key, (char*) var->data));
         }
         mprAddNullItem(elist);
         env = (cchar**) &elist->items[0];
