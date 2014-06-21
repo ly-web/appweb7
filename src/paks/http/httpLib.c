@@ -7138,7 +7138,7 @@ PUBLIC void httpDumpCounters()
     http = MPR->httpService;
     mprLog(0, 0, "Monitor Counters:\n");
     mprLog(0, 0, "Memory counter     %'zd\n", mprGetMem());
-    mprLog(0, 0, "Active processes   %zd\n", mprGetListLength(MPR->cmdService->cmds));
+    mprLog(0, 0, "Active processes   %d\n", mprGetListLength(MPR->cmdService->cmds));
     mprLog(0, 0, "Active clients     %d\n", mprGetHashLength(http->addresses));
 
     lock(http->addresses);

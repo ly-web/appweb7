@@ -19950,12 +19950,12 @@ PUBLIC char *mprPrintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
 
         case STATE_BITS:
             switch (c) {
-            case 'z':
-                fmt.flags |= SPRINTF_SSIZE;
-                break;
-
             case 'L':
                 fmt.flags |= SPRINTF_INT64;
+                break;
+
+            case 'h':
+                fmt.flags |= SPRINTF_SHORT;
                 break;
 
             case 'l':
@@ -19966,8 +19966,8 @@ PUBLIC char *mprPrintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                 }
                 break;
 
-            case 'h':
-                fmt.flags |= SPRINTF_SHORT;
+            case 'z':
+                fmt.flags |= SPRINTF_SSIZE;
                 break;
             }
             break;
