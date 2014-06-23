@@ -3199,7 +3199,7 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
             httpSetHeader(conn, "Content-Type", "text/html");
             written += espRenderString(conn, text);
             espFinalize(conn);
-            httpTrace(conn, "error", "ESP request error", "status=%d, uri=\"%s\"", status, rx->pathInfo);
+            httpTrace(conn, "esp.error", "error", "msg=\"%s\", status=%d, uri=\"%s\"", msg, status, rx->pathInfo);
         }
     }
     va_end(args);
@@ -3701,33 +3701,34 @@ PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprT
     mprAddItem(lines, sfmt("%s--", boundary));
 
     body = mprListToString(lines, "\n");
-    httpTraceContent(conn, "context", "email", body, slen(body), 0);
+    httpTraceContent(conn, "esp.email", "context", body, slen(body), 0);
 
     cmd = mprCreateCmd(conn->dispatcher);
     if (mprRunCmd(cmd, "sendmail -t", NULL, body, &out, &err, 0, 0) < 0) {
         return MPR_ERR_CANT_OPEN;
     }
     if (mprWaitForCmd(cmd, ME_ESP_EMAIL_TIMEOUT) < 0) {
-        httpTrace(conn, "error", "Timeout waiting for command to complete", "timeout=%d, command=\"%s\"",
+        httpTrace(conn, "esp.email.error", "error", 
+            "msg=\"Timeout waiting for command to complete\", timeout=%d, command=\"%s\"",
             ME_ESP_EMAIL_TIMEOUT, cmd->argv[0]);
         return MPR_ERR_CANT_COMPLETE;
     }
     if ((status = mprGetCmdExitStatus(cmd)) != 0) {
-        httpTrace(conn, "error", "Sendmail failed", "status=%d, error=\"%s\"", status, err);
+        httpTrace(conn, "esp.email.error", "error", "msg=\"Sendmail failed\", status=%d, error=\"%s\"", status, err);
         return MPR_ERR_CANT_WRITE;
     }
     return 0;
 }
 
 
-//  TODO - rename clearSingleLogin (and trace)
+//  TODO - rename espSingularClear (and trace)
 PUBLIC void espClearCurrentSession(HttpConn *conn)
 {
     EspRoute    *eroute;
 
     eroute = conn->rx->route->eroute;
     if (eroute->currentSession) {
-        httpTrace(conn, "context", "esp clear current session", "session=%s", eroute->currentSession);
+        httpTrace(conn, "esp.singular.clear", "context", "session=%s", eroute->currentSession);
     }
     eroute->currentSession = 0;
 }
@@ -3742,7 +3743,7 @@ PUBLIC void espSetCurrentSession(HttpConn *conn)
 
     eroute = conn->rx->route->eroute;
     eroute->currentSession = httpGetSessionID(conn);
-    httpTrace(conn, "context", "set current esp session", "session=%s", eroute->currentSession);
+    httpTrace(conn, "esp.singular.set", "context", "msg=\"Set singluar user\", session=%s", eroute->currentSession);
 }
 
 
@@ -4115,7 +4116,7 @@ static int runAction(HttpConn *conn)
         if (!httpCheckSecurityToken(conn)) {
             httpSetStatus(conn, HTTP_CODE_UNAUTHORIZED);
             if (smatch(route->responseFormat, "json")) {
-                httpTrace(conn, "context", "Stale esp security token", 0);
+                httpTrace(conn, "esp.xsrf.error", "error", 0);
                 espRenderString(conn,
                     "{\"retry\": true, \"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
                 espFinalize(conn);

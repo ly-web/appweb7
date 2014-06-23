@@ -66,7 +66,8 @@ static int openCgi(HttpQueue *q)
 
     conn = q->conn;
     if ((nproc = (int) httpMonitorEvent(conn, HTTP_COUNTER_ACTIVE_PROCESSES, 1)) >= conn->limits->processMax) {
-        httpTrace(conn, "error", "Too many concurrent processes", "activeProcesses=%d, maxProcesses=%d", 
+        httpTrace(conn, "cgi.limit.error", "error", 
+            "msg=\"Too many concurrent processes\", activeProcesses=%d, maxProcesses=%d", 
             nproc, conn->limits->processMax);
         httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Server overloaded");
         httpMonitorEvent(q->conn, HTTP_COUNTER_ACTIVE_PROCESSES, -1);
@@ -283,7 +284,7 @@ static void browserToCgiService(HttpQueue *q)
                 httpPutBackPacket(q, packet);
                 break;
             }
-            httpTrace(conn, "error", "Cannot write to CGI gateway", "errno=%d", mprGetOsError());
+            httpTrace(conn, "cgi.error", "error", "msg=\"Cannot write to CGI gateway\", errno=%d", mprGetOsError());
             mprCloseCmdFd(cmd, MPR_CMD_STDIN);
             httpDiscardQueueData(q, 1);
             httpError(conn, HTTP_CODE_BAD_GATEWAY, "Cannot write body data to CGI gateway");

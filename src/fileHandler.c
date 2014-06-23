@@ -77,10 +77,11 @@ static int openFileHandler(HttpQueue *q)
         if (!(info->valid || info->isDir)) {
 #if UNUSED
             if (rx->referrer) {
-                httpTrace(conn, "error", "Cannot find document", "filename=%s, referrer=%s", 
+                httpTrace(conn, "request.document.error", "error", "msg=\"Cannot find document\", filename=%s, referrer=%s", 
                     tx->filename, rx->referrer);
             } else {
-                httpTrace(conn, "error", "Cannot find document", "filename=%s", tx->filename);
+                httpTrace(conn, "request.document.error", "error", "msg=\"Cannot find document\", filename=%s", 
+                    tx->filename);
             }
 #endif
             httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find document");
@@ -107,7 +108,8 @@ static int openFileHandler(HttpQueue *q)
             tx->length = -1;
         }
         if (!tx->fileInfo.isReg && !tx->fileInfo.isLink) {
-            httpTrace(conn, "error", "Document is not a regular file", "filename=%s", tx->filename);
+            httpTrace(conn, "request.document.error", "error", "msg=\"Document is not a regular file\", filename=%s", 
+                tx->filename);
             httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot serve document");
             
         } else if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
@@ -124,10 +126,12 @@ static int openFileHandler(HttpQueue *q)
                 tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
                 if (tx->file == 0) {
                     if (rx->referrer) {
-                        httpTrace(conn, "error", "Cannot open document", "filename=%s, referrer=%s", 
+                        httpTrace(conn, "request.document.error", "error", 
+                            "msg=\"Cannot open document\", filename=%s, referrer=%s", 
                             tx->filename, rx->referrer);
                     } else {
-                        httpTrace(conn, "error", "Cannot open document", "filename=%s", tx->filename);
+                        httpTrace(conn, "request.document.error", "error", 
+                            "msg=\"Cannot open document\", filename=%s", tx->filename);
                     }
                     httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document");
                 }
