@@ -19486,19 +19486,19 @@ PUBLIC void mprSetFilesLimit(int limit)
 /*
     Class definitions
  */
-#define CLASS_NORMAL    0               /* [All other]      Normal characters */
-#define CLASS_PERCENT   1               /* [%]              Begin format */
-#define CLASS_MODIFIER  2               /* [-+ #,]          Modifiers */
-#define CLASS_ZERO      3               /* [0]              Special modifier - zero pad */
-#define CLASS_STAR      4               /* [*]              Width supplied by arg */
-#define CLASS_DIGIT     5               /* [1-9]            Field widths */
-#define CLASS_DOT       6               /* [.]              Introduce precision */
-#define CLASS_BITS      7               /* [hlL]            Length bits */
-#define CLASS_TYPE      8               /* [cdefginopsSuxX] Type specifiers */
+#define CLASS_NORMAL    0               /* [All other]       Normal characters */
+#define CLASS_PERCENT   1               /* [%]               Begin format */
+#define CLASS_MODIFIER  2               /* [-+ #,']          Modifiers */
+#define CLASS_ZERO      3               /* [0]               Special modifier - zero pad */
+#define CLASS_STAR      4               /* [*]               Width supplied by arg */
+#define CLASS_DIGIT     5               /* [1-9]             Field widths */
+#define CLASS_DOT       6               /* [.]               Introduce precision */
+#define CLASS_BITS      7               /* [hlLz]            Length bits */
+#define CLASS_TYPE      8               /* [cdefginopsSuxX]  Type specifiers */
 
 #define STATE_NORMAL    0               /* Normal chars in format string */
 #define STATE_PERCENT   1               /* "%" */
-#define STATE_MODIFIER  2               /* -+ #,*/
+#define STATE_MODIFIER  2               /* -+ #,' */
 #define STATE_WIDTH     3               /* Width spec */
 #define STATE_DOT       4               /* "." */
 #define STATE_PRECISION 5               /* Precision spec */
@@ -19527,7 +19527,7 @@ static char stateMap[] = {
  */
 static char classMap[] = {
     /*   0  ' '    !     "     #     $     %     &     ' */
-             2,    0,    0,    2,    0,    1,    0,    0,
+             2,    0,    0,    2,    0,    1,    0,    2,
     /*  07   (     )     *     +     ,     -     .     / */
              0,    0,    4,    2,    2,    2,    6,    0,
     /*  10   0     1     2     3     4     5     6     7 */
@@ -19549,7 +19549,7 @@ static char classMap[] = {
     /*  50   p     q     r     s     t     u     v     w */
              8,    0,    0,    8,    0,    8,    0,    8,
     /*  57   x     y     z  */
-             8,    0,    0,
+             8,    0,    7,
 };
 
 /*
@@ -19909,6 +19909,7 @@ PUBLIC char *mprPrintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
 
             case 'l':
                 if (fmt.flags & SPRINTF_LONG) {
+                    fmt.flags &= ~SPRINTF_LONG;
                     fmt.flags |= SPRINTF_INT64;
                 } else {
                     fmt.flags |= SPRINTF_LONG;
@@ -20013,6 +20014,8 @@ PUBLIC char *mprPrintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                     iValue = (short) va_arg(args, int);
                 } else if (fmt.flags & SPRINTF_LONG) {
                     iValue = (long) va_arg(args, long);
+                } else if (fmt.flags & SPRINTF_SSIZE) {
+                    iValue = (ssize) va_arg(args, ssize);
                 } else if (fmt.flags & SPRINTF_INT64) {
                     iValue = (int64) va_arg(args, int64);
                 } else {
@@ -20041,6 +20044,8 @@ PUBLIC char *mprPrintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                     uValue = (ushort) va_arg(args, uint);
                 } else if (fmt.flags & SPRINTF_LONG) {
                     uValue = (ulong) va_arg(args, ulong);
+                } else if (fmt.flags & SPRINTF_SSIZE) {
+                    uValue = (ssize) va_arg(args, ssize);
                 } else if (fmt.flags & SPRINTF_INT64) {
                     uValue = (uint64) va_arg(args, uint64);
                 } else {
