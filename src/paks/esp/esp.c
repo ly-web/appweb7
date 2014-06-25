@@ -1117,6 +1117,7 @@ static MprList *getRoutes()
         return 0;
     }
     if ((host = mprGetFirstItem(http->hosts)) == 0) {
+        fail("Cannot find any hosts for ESP - check missing configuration");
         return 0;
     }
     filterRouteName = app->filterRouteName;

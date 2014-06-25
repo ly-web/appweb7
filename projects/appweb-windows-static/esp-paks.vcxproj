@@ -96,63 +96,63 @@
 
   <CustomBuildStep>
     <Command>cd ..\..\src\paks
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1"
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\client" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\client"
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\client\assets" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\client\assets"
-copy /Y esp-html-mvc\client\assets\favicon.ico \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\client\assets\favicon.ico
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\client\css" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\client\css"
-copy /Y esp-html-mvc\client\css\all.css \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\client\css\all.css
-copy /Y esp-html-mvc\client\css\all.less \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\client\css\all.less
-copy /Y esp-html-mvc\client\index.esp \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\client\index.esp
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\css" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\css"
-copy /Y esp-html-mvc\css\app.less \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\css\app.less
-copy /Y esp-html-mvc\css\theme.less \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\css\theme.less
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\generate" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\generate"
-copy /Y esp-html-mvc\generate\appweb.conf \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\generate\appweb.conf
-copy /Y esp-html-mvc\generate\controller.c \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\generate\controller.c
-copy /Y esp-html-mvc\generate\controllerSingleton.c \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\generate\controllerSingleton.c
-copy /Y esp-html-mvc\generate\edit.esp \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\generate\edit.esp
-copy /Y esp-html-mvc\generate\list.esp \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\generate\list.esp
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\layouts" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\layouts"
-copy /Y esp-html-mvc\layouts\default.esp \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\layouts\default.esp
-copy /Y esp-html-mvc\package.json \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.1\package.json
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1"
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\generate" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\generate"
-copy /Y esp-legacy-mvc\generate\appweb.conf \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\generate\appweb.conf
-copy /Y esp-legacy-mvc\generate\controller.c \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\generate\controller.c
-copy /Y esp-legacy-mvc\generate\edit.esp \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\generate\edit.esp
-copy /Y esp-legacy-mvc\generate\list.esp \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\generate\list.esp
-copy /Y esp-legacy-mvc\generate\migration.c \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\generate\migration.c
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\generate\src" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\generate\src"
-copy /Y esp-legacy-mvc\generate\src\app.c \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\generate\src\app.c
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\layouts" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\layouts"
-copy /Y esp-legacy-mvc\layouts\default.esp \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\layouts\default.esp
-copy /Y esp-legacy-mvc\package.json \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\package.json
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\static" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\static"
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\static\css" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\static\css"
-copy /Y esp-legacy-mvc\static\css\all.css \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\static\css\all.css
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\static\images" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\static\images"
-copy /Y esp-legacy-mvc\static\images\banner.jpg \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\static\images\banner.jpg
-copy /Y esp-legacy-mvc\static\images\favicon.ico \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\static\images\favicon.ico
-copy /Y esp-legacy-mvc\static\images\splash.jpg \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\static\images\splash.jpg
-copy /Y esp-legacy-mvc\static\index.esp \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\static\index.esp
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\static\js" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\static\js"
-copy /Y esp-legacy-mvc\static\js\jquery.esp.js \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\static\js\jquery.esp.js
-copy /Y esp-legacy-mvc\static\js\jquery.js \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.1\static\js\jquery.js
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.1" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.1"
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.1\generate" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.1\generate"
-copy /Y esp-mvc\generate\appweb.conf \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.1\generate\appweb.conf
-copy /Y esp-mvc\generate\controller.c \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.1\generate\controller.c
-copy /Y esp-mvc\generate\migration.c \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.1\generate\migration.c
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.1\generate\src" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.1\generate\src"
-copy /Y esp-mvc\generate\src\app.c \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.1\generate\src\app.c
-copy /Y esp-mvc\LICENSE.md \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.1\LICENSE.md
-copy /Y esp-mvc\package.json \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.1\package.json
-copy /Y esp-mvc\README.md \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.1\README.md
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-server\4.6.1" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-server\4.6.1"
-if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-server\4.6.1\generate" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-server\4.6.1\generate"
-copy /Y esp-server\generate\appweb.conf \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-server\4.6.1\generate\appweb.conf
-copy /Y esp-server\package.json \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-server\4.6.1\package.json
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2"
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\client" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\client"
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\client\assets" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\client\assets"
+copy /Y esp-html-mvc\client\assets\favicon.ico \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\client\assets\favicon.ico
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\client\css" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\client\css"
+copy /Y esp-html-mvc\client\css\all.css \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\client\css\all.css
+copy /Y esp-html-mvc\client\css\all.less \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\client\css\all.less
+copy /Y esp-html-mvc\client\index.esp \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\client\index.esp
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\css" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\css"
+copy /Y esp-html-mvc\css\app.less \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\css\app.less
+copy /Y esp-html-mvc\css\theme.less \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\css\theme.less
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\generate" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\generate"
+copy /Y esp-html-mvc\generate\appweb.conf \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\generate\appweb.conf
+copy /Y esp-html-mvc\generate\controller.c \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\generate\controller.c
+copy /Y esp-html-mvc\generate\controllerSingleton.c \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\generate\controllerSingleton.c
+copy /Y esp-html-mvc\generate\edit.esp \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\generate\edit.esp
+copy /Y esp-html-mvc\generate\list.esp \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\generate\list.esp
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\layouts" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\layouts"
+copy /Y esp-html-mvc\layouts\default.esp \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\layouts\default.esp
+copy /Y esp-html-mvc\package.json \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-html-mvc\4.6.2\package.json
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2"
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\generate" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\generate"
+copy /Y esp-legacy-mvc\generate\appweb.conf \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\generate\appweb.conf
+copy /Y esp-legacy-mvc\generate\controller.c \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\generate\controller.c
+copy /Y esp-legacy-mvc\generate\edit.esp \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\generate\edit.esp
+copy /Y esp-legacy-mvc\generate\list.esp \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\generate\list.esp
+copy /Y esp-legacy-mvc\generate\migration.c \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\generate\migration.c
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\generate\src" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\generate\src"
+copy /Y esp-legacy-mvc\generate\src\app.c \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\generate\src\app.c
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\layouts" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\layouts"
+copy /Y esp-legacy-mvc\layouts\default.esp \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\layouts\default.esp
+copy /Y esp-legacy-mvc\package.json \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\package.json
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\static" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\static"
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\static\css" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\static\css"
+copy /Y esp-legacy-mvc\static\css\all.css \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\static\css\all.css
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\static\images" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\static\images"
+copy /Y esp-legacy-mvc\static\images\banner.jpg \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\static\images\banner.jpg
+copy /Y esp-legacy-mvc\static\images\favicon.ico \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\static\images\favicon.ico
+copy /Y esp-legacy-mvc\static\images\splash.jpg \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\static\images\splash.jpg
+copy /Y esp-legacy-mvc\static\index.esp \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\static\index.esp
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\static\js" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\static\js"
+copy /Y esp-legacy-mvc\static\js\jquery.esp.js \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\static\js\jquery.esp.js
+copy /Y esp-legacy-mvc\static\js\jquery.js \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-legacy-mvc\4.6.2\static\js\jquery.js
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.2" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.2"
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.2\generate" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.2\generate"
+copy /Y esp-mvc\generate\appweb.conf \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.2\generate\appweb.conf
+copy /Y esp-mvc\generate\controller.c \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.2\generate\controller.c
+copy /Y esp-mvc\generate\migration.c \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.2\generate\migration.c
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.2\generate\src" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.2\generate\src"
+copy /Y esp-mvc\generate\src\app.c \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.2\generate\src\app.c
+copy /Y esp-mvc\LICENSE.md \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.2\LICENSE.md
+copy /Y esp-mvc\package.json \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.2\package.json
+copy /Y esp-mvc\README.md \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-mvc\4.6.2\README.md
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-server\4.6.2" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-server\4.6.2"
+if not exist "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-server\4.6.2\generate" md "\Users\mob\git\appweb-lts\windows-x86-static\esp\esp-server\4.6.2\generate"
+copy /Y esp-server\generate\appweb.conf \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-server\4.6.2\generate\appweb.conf
+copy /Y esp-server\package.json \Users\mob\git\appweb-lts\windows-x86-static\esp\esp-server\4.6.2\package.json
 cd ..\..\projects\appweb-windows-static</Command>
     <Outputs>..\..\$(Cfg)\esp</Outputs>
   </CustomBuildStep>
