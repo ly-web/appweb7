@@ -241,7 +241,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
     }
     mprServiceEvents(-1, 0);
 
-    mprLog("error appweb", 1, "Stopping Appweb ...");
+    mprLog("info appweb", 1, "Stopping Appweb ...");
     mprDestroy();
     return mprGetExitStatus();
 }
