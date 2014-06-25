@@ -637,8 +637,6 @@ static void initRuntime()
         app->error = 1;
         return;
     }
-
-
     if ((app->appweb = maCreateAppweb()) == 0) {
         fail("Cannot create HTTP service for %s", mprGetAppName());
         return;
