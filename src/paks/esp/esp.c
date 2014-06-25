@@ -1248,7 +1248,7 @@ static void setMode(cchar *mode)
  */
 static void setPackageKey(cchar *key, cchar *value)
 {
-    qtrace("Set", sfmt("%s to %s", key, value));
+    qtrace("Set", sfmt("Key \"%s\" to \"%s\"", key, value));
     if (mprSetJson(app->config, key, value) < 0) {
         fail("Cannot update %s with %s", key, value);
         return;
@@ -1895,7 +1895,6 @@ static void compile(int argc, char **argv)
         app->slink = mprCreateList(0, MPR_LIST_STABLE);
     }
     for (ITERATE_ITEMS(app->routes, route, next)) {
-        mprMakeDir(httpGetDir(route, "cache"), 0755, -1, -1, 1);
         if (app->combine) {
             compileCombined(route);
         } else {
@@ -2047,8 +2046,8 @@ static void compileItems(HttpRoute *route)
             }
             if (selectResource(path, "esp")) {
                 compileFile(route, path, ESP_PAGE);
+                found++;
             }
-            found++;
         }
 
     } else {
@@ -2142,6 +2141,7 @@ static void compileCombined(HttpRoute *route)
         }
     }
     if (mprGetListLength(app->build) > 0) {
+        mprMakeDir(httpGetDir(route, "cache"), 0755, -1, -1, 1);
         if ((app->combineFile = mprOpenFile(app->combinePath, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
             fail("Cannot open %s", app->combinePath);
             return;
@@ -3148,6 +3148,9 @@ static void fatal(cchar *fmt, ...)
 }
 
 
+/*
+    Trace unless silent
+ */
 static void qtrace(cchar *tag, cchar *fmt, ...)
 {
     va_list     args;
@@ -3163,6 +3166,9 @@ static void qtrace(cchar *tag, cchar *fmt, ...)
 }
 
 
+/*
+    Trace unless quiet
+ */
 static void trace(cchar *tag, cchar *fmt, ...)
 {
     va_list     args;
@@ -3179,7 +3185,7 @@ static void trace(cchar *tag, cchar *fmt, ...)
 
 
 /*
-    Trace when run with --verbose
+    Trace only when run with --verbose
  */
 static void vtrace(cchar *tag, cchar *fmt, ...)
 {
