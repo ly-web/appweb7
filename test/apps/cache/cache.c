@@ -7,7 +7,7 @@
 
 //  This is configured for caching by API below
 static void api() {
-    render("{ when: %Ld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
+    render("{ when: %lld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
 }
 
 static void sml() {
@@ -16,7 +16,7 @@ static void sml() {
         render("Line: %05d %s", i, "aaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbccccccccccccccccccddddddd<br/>\r\n");
         mprYield(0);
     }
-    render("{ when: %Ld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
+    render("{ when: %lld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
 }
 
 static void medium() {
@@ -26,7 +26,7 @@ static void medium() {
         render("Line: %05d %s", i, "aaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbccccccccccccccccccddddddd<br/>\r\n");
         mprYield(0);
     }
-    render("{ when: %Ld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
+    render("{ when: %lld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
 }
 
 static void big() {
@@ -45,7 +45,7 @@ static void huge() {
         render("Line: %05d %s", i, "aaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbccccccccccccccccccddddddd<br/>\r\n");
         mprYield(0);
     }
-    render("{ when: %Ld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
+    render("{ when: %lld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
 }
 
 static void clear() { 
@@ -58,7 +58,7 @@ static void clear() {
 }
 
 static void client() { 
-    render("{ when: %Ld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
+    render("{ when: %lld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
 }
 
 static void manual() { 
@@ -66,12 +66,12 @@ static void manual() {
         setHeader("X-SendCache", "true");
         finalize();
     } else if (!espRenderCached(getConn())) {
-        render("{ when: %Ld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
+        render("{ when: %lld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
     }
 }
 
 static void update() { 
-    cchar   *data = sfmt("{ when: %Ld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
+    cchar   *data = sfmt("{ when: %lld, uri: '%s', query: '%s' }\r\n", mprGetTicks(), getUri(), getQuery());
     espUpdateCache(getConn(), "/cache/manual", data, 86400);
     render("done");
 }
