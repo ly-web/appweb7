@@ -77,7 +77,7 @@ typedef struct App {
     int         rebuild;                /* Force a rebuild */
     int         reverse;                /* Reverse migrations */
     int         show;                   /* Show routes and compilation commands */
-    int         silent;                 /* Totall silent */
+    int         silent;                 /* Totally silent */
     int         singleton;              /* Generate a singleton resource controller */
     int         staticLink;             /* Use static linking */
     int         upgrade;                /* Upgrade */
@@ -715,6 +715,7 @@ static void initialize(int argc, char **argv)
             route->update = 1;
             httpSetRouteShowErrors(route, 1);
             espSetDefaultDirs(route);
+            httpSetDir(route, "client", ".");
             httpAddRouteHandler(route, "espHandler", "esp");
             httpAddRouteIndex(route, "index.esp");
             httpAddRouteIndex(route, "index.html");
@@ -831,12 +832,12 @@ static void clean(int argc, char **argv)
     for (ITERATE_ITEMS(app->routes, route, next)) {
         cacheDir = httpGetDir(route, "cache");
         if (cacheDir) {
-            trace("clean", "Route \"%s\" at %s", route->name, route->documents);
+            trace("Clean", "Route \"%s\" at %s", route->name, mprGetRelPath(route->documents, 0));
             files = mprGetPathFiles(cacheDir, MPR_PATH_RELATIVE);
             for (nextFile = 0; (dp = mprGetNextItem(files, &nextFile)) != 0; ) {
                 path = mprJoinPath(cacheDir, dp->name);
                 if (mprPathExists(path, R_OK)) {
-                    trace("clean", "%s", path);
+                    trace("Clean", "%s", mprGetRelPath(path, 0));
                     mprDeletePath(path);
                 }
             }
@@ -1269,23 +1270,6 @@ static void run(int argc, char **argv)
     if (app->error) {
         return;
     }
-#if UNUSED
-    if (!app->logSpec) {
-        if (app->verbose) {
-            mprSetLogLevel(app->verbose + 1);
-        } else if (!app->quiet) {
-            mprSetLogLevel(2);
-        }
-    }
-    if (!app->traceSpec) {
-        if (app->verbose) {
-            httpSetTraceLevel(app->verbose + 1);
-        } else if (!app->quiet) {
-            httpSetTraceLevel(2);
-        }
-    }
-#endif
-    //  MOB - API
     MPR->flags |= MPR_LOG_DETAILED;
 
     if (app->show) {
@@ -1805,7 +1789,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
         why(source, "%s is missing", app->module);
     }
     if (app->combineFile) {
-        trace("Catenate", "%s", source);
+        trace("Catenate", "%s", mprGetRelPath(source, 0));
         mprWriteFileFmt(app->combineFile, "/*\n    Source from %s\n */\n", source);
     }
     if (kind & (ESP_CONTROlLER | ESP_MIGRATION | ESP_SRC)) {
@@ -1851,7 +1835,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
 
         } else {
             app->csource = mprJoinPathExt(mprTrimPathExt(app->module), ".c");
-            trace("Parse", "%s", source);
+            trace("Parse", "%s", mprGetRelPath(source, 0));
             mprMakeDir(cacheDir, 0755, -1, -1, 1);
             if (mprWritePathContents(app->csource, script, len, 0664) < 0) {
                 fail("Cannot write compiled script file %s", app->csource);
@@ -1863,7 +1847,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
         /*
             WARNING: GC yield here
          */
-        qtrace("Compile", "%s", app->csource);
+        trace("Compile", "%s", mprGetRelPath(app->csource, 0));
         if (!eroute->compile) {
             fail("Missing EspCompile directive for %s", app->csource);
             return;
@@ -1912,7 +1896,6 @@ static void compile(int argc, char **argv)
     }
     for (ITERATE_ITEMS(app->routes, route, next)) {
         mprMakeDir(httpGetDir(route, "cache"), 0755, -1, -1, 1);
-        mprLog("", 2, "Build with route \"%s\" at %s", route->name, route->documents);
         if (app->combine) {
             compileCombined(route);
         } else {
@@ -1966,7 +1949,7 @@ static bool requiredRoute(HttpRoute *route)
         return 1;
     }
     for (ITERATE_KEYS(app->targets, kp)) {
-        if (mprIsPathContained(route->documents, kp->key)) {
+        if (mprIsPathContained(kp->key, route->documents)) {
             kp->type = ESP_FOUND_TARGET;
             return 1;
         }
@@ -2013,35 +1996,44 @@ static bool selectResource(cchar *path, cchar *kind)
 static void compileItems(HttpRoute *route)
 {
     MprDirEntry *dp;
-    cchar       *path, *clientDir;
-    int         next;
+    cchar       *dir, *path;
+    int         found, next;
 
-    app->files = mprGetPathFiles(httpGetDir(route, "controllers"), MPR_PATH_DESCEND);
-    for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
-        path = dp->name;
-        if (selectResource(path, "c")) {
-            compileFile(route, path, ESP_CONTROlLER);
+    found = 0;
+    vtrace("Info", "Compile items for route \"%s\"", route->name);
+
+    if ((dir = httpGetDir(route, "controllers")) != 0) {
+        app->files = mprGetPathFiles(dir, MPR_PATH_DESCEND);
+        for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
+            path = dp->name;
+            if (selectResource(path, "c")) {
+                compileFile(route, path, ESP_CONTROlLER);
+            }
+            found++;
         }
     }
-    app->files = mprGetPathFiles(httpGetDir(route, "views"), MPR_PATH_DESCEND);
-    for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
-        path = dp->name;
-        if (sstarts(path, httpGetDir(route, "layouts"))) {
-            continue;
-        }
-        if (selectResource(path, "esp")) {
-            compileFile(route, path, ESP_VIEW);
+    if ((dir = httpGetDir(route, "views")) != 0) {
+        app->files = mprGetPathFiles(dir, MPR_PATH_DESCEND);
+        for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
+            path = dp->name;
+            if (sstarts(path, httpGetDir(route, "layouts"))) {
+                continue;
+            }
+            if (selectResource(path, "esp")) {
+                compileFile(route, path, ESP_VIEW);
+            }
+            found++;
         }
     }
 
-    path = mprJoinPath(httpGetDir(route, "src"), "app.c");
-    if (mprPathExists(path, R_OK) && selectResource(path, "c")) {
-        compileFile(route, path, ESP_SRC);
+    dir = mprJoinPath(httpGetDir(route, "src"), "app.c");
+    if (mprPathExists(dir, R_OK) && selectResource(dir, "c")) {
+        compileFile(route, dir, ESP_SRC);
+        found++;
     }
 
-    clientDir = httpGetDir(route, "client");
-    if (clientDir) {
-        app->files = mprGetPathFiles(clientDir, MPR_PATH_DESCEND | MPR_PATH_NODIRS);
+    if ((dir = httpGetDir(route, "client")) != 0) {
+        app->files = mprGetPathFiles(dir, MPR_PATH_DESCEND | MPR_PATH_NODIRS);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
             if (sstarts(path, httpGetDir(route, "layouts"))) {
@@ -2056,6 +2048,7 @@ static void compileItems(HttpRoute *route)
             if (selectResource(path, "esp")) {
                 compileFile(route, path, ESP_PAGE);
             }
+            found++;
         }
 
     } else {
@@ -2066,6 +2059,7 @@ static void compileItems(HttpRoute *route)
             if (selectResource(path, "esp")) {
                 compileFile(route, path, ESP_PAGE);
             }
+            found++;
         }
         /*
             Stand-alone controllers
@@ -2074,8 +2068,12 @@ static void compileItems(HttpRoute *route)
             path = mprJoinPath(route->home, route->sourceName);
             if (mprPathExists(path, R_OK)) {
                 compileFile(route, path, ESP_CONTROlLER);
+                found++;
             }
         }
+    }
+    if (!found) {
+        trace("Info", "No files to compile for route \"%s\"", route->name);
     }
 }
 
@@ -2174,7 +2172,7 @@ static void compileCombined(HttpRoute *route)
         mprCloseFile(app->combineFile);
 
         app->module = mprNormalizePath(sfmt("%s/%s%s", httpGetDir(route, "cache"), name, ME_SHOBJ));
-        qtrace("Compile", "%s", name);
+        trace("Compile", "%s", name);
         if (runEspCommand(route, eroute->compile, app->combinePath, app->module) < 0) {
             return;
         }
@@ -3066,7 +3064,7 @@ static void usageError()
     mprEprintf("\nESP Usage:\n\n"
     "  %s [options] [commands]\n\n"
     "  Options:\n"
-    "    --appweb appwebConfig      # Use named appweb.conf\n"
+    "    --appweb appweb.config     # Use file for appweb.conf\n"
     "    --cipher cipher            # Password cipher 'md5' or 'blowfish'\n"
     "    --database name            # Database provider 'mdb|sdb'\n"
     "    --genlink filename         # Generate a static link module for combine compilations\n"
