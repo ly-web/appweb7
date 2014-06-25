@@ -13118,48 +13118,48 @@ PUBLIC HttpRx *httpCreateRx(HttpConn *conn)
 static void manageRx(HttpRx *rx, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(rx->method);
-        mprMark(rx->uri);
-        mprMark(rx->pathInfo);
-        mprMark(rx->scriptName);
-        mprMark(rx->extraPath);
-        mprMark(rx->conn);
-        mprMark(rx->route);
-        mprMark(rx->session);
-        mprMark(rx->etags);
-        mprMark(rx->headerPacket);
-        mprMark(rx->headers);
-        mprMark(rx->inputPipeline);
-        mprMark(rx->parsedUri);
-        mprMark(rx->requestData);
-        mprMark(rx->statusMessage);
         mprMark(rx->accept);
         mprMark(rx->acceptCharset);
         mprMark(rx->acceptEncoding);
         mprMark(rx->acceptLanguage);
         mprMark(rx->authDetails);
-        mprMark(rx->cookie);
+        mprMark(rx->conn);
         mprMark(rx->connection);
         mprMark(rx->contentLength);
+        mprMark(rx->cookie);
+        mprMark(rx->etags);
+        mprMark(rx->extraPath);
+        mprMark(rx->files);
+        mprMark(rx->headerPacket);
+        mprMark(rx->headers);
         mprMark(rx->hostHeader);
-        mprMark(rx->pragma);
+        mprMark(rx->inputPipeline);
+        mprMark(rx->inputRange);
+        mprMark(rx->lang);
+        mprMark(rx->method);
         mprMark(rx->mimeType);
-        mprMark(rx->originalMethod);
         mprMark(rx->origin);
+        mprMark(rx->originalMethod);
         mprMark(rx->originalUri);
+        mprMark(rx->paramString);
+        mprMark(rx->params);
+        mprMark(rx->parsedUri);
+        mprMark(rx->passwordDigest);
+        mprMark(rx->pathInfo);
+        mprMark(rx->pragma);
         mprMark(rx->redirect);
         mprMark(rx->referrer);
+        mprMark(rx->requestData);
+        mprMark(rx->route);
+        mprMark(rx->scriptName);
         mprMark(rx->securityToken);
-        mprMark(rx->upgrade);
-        mprMark(rx->userAgent);
-        mprMark(rx->lang);
-        mprMark(rx->params);
+        mprMark(rx->session);
+        mprMark(rx->statusMessage);
         mprMark(rx->svars);
-        mprMark(rx->inputRange);
-        mprMark(rx->passwordDigest);
-        mprMark(rx->paramString);
-        mprMark(rx->files);
         mprMark(rx->target);
+        mprMark(rx->upgrade);
+        mprMark(rx->uri);
+        mprMark(rx->userAgent);
         mprMark(rx->webSocket);
     }
 }
@@ -18071,6 +18071,8 @@ PUBLIC HttpTx *httpCreateTx(HttpConn *conn, MprHash *headers)
     tx->length = -1;
     tx->entityLength = -1;
     tx->chunkSize = -1;
+    tx->cookies = mprCreateHash(HTTP_SMALL_HASH_SIZE, 0);
+    tx->headers = mprCreateHash(HTTP_SMALL_HASH_SIZE, 0);
     tx->queue[HTTP_QUEUE_TX] = httpCreateQueueHead(conn, "TxHead");
     conn->writeq = tx->queue[HTTP_QUEUE_TX]->nextQ;
     tx->queue[HTTP_QUEUE_RX] = httpCreateQueueHead(conn, "RxHead");
@@ -18111,6 +18113,7 @@ static void manageTx(HttpTx *tx, int flags)
         mprMark(tx->cachedContent);
         mprMark(tx->conn);
         mprMark(tx->connector);
+        mprMark(tx->cookies);
         mprMark(tx->currentRange);
         mprMark(tx->ext);
         mprMark(tx->etag);
@@ -18560,7 +18563,8 @@ PUBLIC void httpSetContentLength(HttpConn *conn, MprOff length)
     Set lifespan == 0 for no expiry.
     WARNING: Some browsers (Chrome, Firefox) do not delete session cookies when you exit the browser.
  */
-PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *cookieDomain, MprTicks lifespan, int flags)
+PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path, cchar *cookieDomain, 
+    MprTicks lifespan, int flags)
 {
     HttpRx      *rx;
     char        *cp, *expiresAtt, *expires, *domainAtt, *domain, *secure, *httponly;
@@ -18600,11 +18604,16 @@ PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path
     secure = (conn->secure & (flags & HTTP_COOKIE_SECURE)) ? "; secure" : "";
     httponly = (flags & HTTP_COOKIE_HTTP) ?  "; httponly" : "";
 
+#if UNUSED
     /*
        Allow multiple cookie headers. Even if the same name. Later definitions take precedence.
      */
     httpAppendHeaderString(conn, "Set-Cookie",
         sjoin(name, "=", value, "; path=", path, domainAtt, domain, expiresAtt, expires, secure, httponly, NULL));
+#else
+    mprAddKey(conn->tx->cookies, name, 
+        sjoin(value, "; path=", path, domainAtt, domain, expiresAtt, expires, secure, httponly, NULL));
+#endif
     if ((cp = mprLookupKey(conn->tx->headers, "Cache-Control")) == 0 || !scontains(cp, "no-cache")) {
         httpAppendHeader(conn, "Cache-Control", "no-cache=\"set-cookie\"");
     }
@@ -18613,7 +18622,11 @@ PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path
 
 PUBLIC void httpRemoveCookie(HttpConn *conn, cchar *name)
 {
+#if UNUSED
     httpSetCookie(conn, name, "", NULL, NULL, -1, 0);
+#else
+    mprAddKey(conn->tx->cookies, name, MPR->emptyString);
+#endif
 }
 
 
@@ -18658,6 +18671,7 @@ static void setHeaders(HttpConn *conn, HttpPacket *packet)
     HttpRoute   *route;
     HttpRange   *range;
     MprKeyValue *item;
+    MprKey      *kp;
     MprOff      length;
     int         next;
 
@@ -18666,6 +18680,13 @@ static void setHeaders(HttpConn *conn, HttpPacket *packet)
     rx = conn->rx;
     tx = conn->tx;
     route = rx->route;
+
+    /*
+        Create headers for cookies
+     */
+    for (ITERATE_KEYS(tx->cookies, kp)) {
+        httpAppendHeaderString(conn, "Set-Cookie", sjoin(kp->key, "=", kp->data, NULL));
+    }
 
     /*
         Mandatory headers that must be defined here use httpSetHeader which overwrites existing values.

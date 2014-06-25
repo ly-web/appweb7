@@ -6583,6 +6583,7 @@ typedef struct HttpTx {
     HttpStage       *connector;             /**< Network connector to send / receive socket data */
     HttpQueue       *queue[2];              /**< Pipeline queue heads */
 
+    MprHash         *cookies;               /**< Browser cookies */
     MprHash         *headers;               /**< Transmission headers */
     HttpCache       *cache;                 /**< Cache control entry (only set if this request is being cached) */
     MprBuf          *cacheBuffer;           /**< Response caching buffer */
