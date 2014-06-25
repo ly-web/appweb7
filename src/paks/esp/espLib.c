@@ -4202,6 +4202,10 @@ static void pruneDatabases(Esp *esp)
     unlock(esp);
 }
 
+
+/*
+    This clones a database to give a private view per user.
+ */
 static int cloneDatabase(HttpConn *conn)
 {
     Esp         *esp;
@@ -4223,6 +4227,9 @@ static int cloneDatabase(HttpConn *conn)
         }
         unlock(esp);
     }
+    /*
+        If the user is logging in or out, this will create a redundant session here.
+     */
     httpGetSession(conn, 1);
     id = httpGetSessionID(conn);
     if ((req->edi = mprLookupKey(esp->databases, id)) == 0) {
