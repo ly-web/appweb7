@@ -161,6 +161,10 @@ PUBLIC void httpInitAuth()
 }
 
 
+/*
+    Authenticate a user using the session stored username. This will set HttpRx.authenticated if authentication succeeds.
+    Note: this does not call httpLogin except for auto-login cases where a password is not used.
+ */
 PUBLIC bool httpAuthenticate(HttpConn *conn)
 {
     HttpRx      *rx;
@@ -170,11 +174,13 @@ PUBLIC bool httpAuthenticate(HttpConn *conn)
     rx = conn->rx;
     auth = rx->route->auth;
 
-    if (!rx->authenticated) {
+    if (!rx->authenticateProbed) {
+        rx->authenticateProbed = 1;
         ip = httpGetSessionVar(conn, HTTP_SESSION_IP, 0);
         username = httpGetSessionVar(conn, HTTP_SESSION_USERNAME, 0);
         if (!smatch(ip, conn->ip) || !username) {
             if (auth->username && *auth->username) {
+                /* Auto-login */
                 httpLogin(conn, auth->username, NULL);
                 username = httpGetSessionVar(conn, HTTP_SESSION_USERNAME, 0);
             }
@@ -193,10 +199,7 @@ PUBLIC bool httpAuthenticate(HttpConn *conn)
 
 PUBLIC bool httpLoggedIn(HttpConn *conn)
 {
-    if (!conn->rx->authenticated) {
-        httpAuthenticate(conn);
-    }
-    return conn->rx->authenticated;
+    return httpAuthenticate(conn);
 }
 
 
@@ -279,6 +282,7 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
         httpSetSessionVar(conn, HTTP_SESSION_IP, conn->ip);
     }
     rx->authenticated = 1;
+    rx->authenticateProbed = 1;
     conn->username = sclone(username);
     conn->encoded = 0;
     return 1;
