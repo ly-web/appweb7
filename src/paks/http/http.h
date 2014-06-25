@@ -549,6 +549,8 @@ typedef void (*HttpTraceLogger)(struct HttpTrace *trace, cchar *buf, ssize len);
 typedef struct HttpTrace {
     cchar               *format;                        /**< Output format (used by Common Log Format) */
     cchar               *path;                          /**< Trace logger filename */
+    cchar               *lastTime;                      /**< Most recent time string */
+    MprTime             lastMark;                       /**< When lastTime was last updated */
     MprFile             *file;                          /**< Trace logger file object */
     int                 backupCount;                    /**< Trace logger backup count */
     int                 flags;                          /**< Trace control flags (append|anew) */
