@@ -55,7 +55,7 @@ The \fBesp\fR command generates, manages and runs ESP web applications. It inclu
 host your application but can also help to generate ESP web applications, controllers, database tables, and scaffolds.
 .PP
 The esp command will create directories and generate configuration and source code files that can then be manually 
-edited as required.  Esp is intelligent and will not overwrite existing files, so you can safely edit 
+edited as required.  ESP is intelligent and will not overwrite existing files, so you can safely edit 
 and regenerate without losing your changes. You can overwrite your changes if you wish to by using 
 the \fB--overwrite\fR switch.
 .PP
@@ -175,7 +175,7 @@ If the --singleton switch is ues, the controller will be generated for a singlet
 action. 
 
 .SH COMPILING
-Esp compiles controllers and ESP pages native code shared libraries. These are then loaded and
+ESP compiles controllers and ESP pages native code shared libraries. These are then loaded and
 run by ESP in response to incoming client requests. Code is compiled only once but can be run many times to
 service incoming requests.
 .PP
@@ -183,15 +183,15 @@ In development mode, ESP will automatically compile the relevant portions of the
 is modified. It can intelligently recompile controllers and ESP pages. However, you can also explicilty recompile 
 portions or the complete appliction via the esp command.
 .PP
-Esp can recompile everything via:
+ESP can recompile everything via:
 
 .RS 5
- \fBesp compile ...\fR.
+ \fBesp compile\fR.
 .RE
 
-This will re-compile all ESP pages and MVC applications for routes defined in the appweb.conf file.
+This will re-compile all ESP resources.
 .PP
-Esp also provides options for you to individually compile controllers and ESP pages. To recompile named pages or controllers:
+ESP also provides options for you to individually compile controllers and ESP pages. To recompile named pages or controllers:
 .RS 5
 
  \fBesp compile path/*.esp...\fR.
@@ -201,8 +201,9 @@ matching the filter pathnames are compiled.
 
 .RE
 .PP
-To compile the entire application and produce a single combined shared library file, set the "esp.combo" to true in
-the package.json file.
+To compile the entire application and produce a single combined shared library file, set the "http.content.combine" 
+property in the package.json file, to include "c" files. This is typically achieved by setting the ESP mode to 
+release which selects the release profile in the package.json.
 .RS 5
 
 .SH AUTHENTICATION
@@ -270,7 +271,8 @@ esp has the following command usage patterns:
 .PP
 .TP 6
 \fB\--appweb configFile\fR
-Use the specified appweb config file to host the ESP application.
+Use the specified appweb config file to define and host the ESP application.
+By default the esp command looks for a package.json and uses that to define the applicaiton. 
 .TP 6
 \fB\--database Database provider\fR
 Use the specified database provider. Set to "mdb" or "sdb" for SQLite.

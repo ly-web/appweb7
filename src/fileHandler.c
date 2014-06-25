@@ -75,15 +75,6 @@ static int openFileHandler(HttpQueue *q)
     }
     if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
         if (!(info->valid || info->isDir)) {
-#if UNUSED
-            if (rx->referrer) {
-                httpTrace(conn, "request.document.error", "error", "msg=\"Cannot find document\", filename=%s, referrer=%s", 
-                    tx->filename, rx->referrer);
-            } else {
-                httpTrace(conn, "request.document.error", "error", "msg=\"Cannot find document\", filename=%s", 
-                    tx->filename);
-            }
-#endif
             httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find document");
             return 0;
         } 

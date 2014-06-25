@@ -760,7 +760,7 @@ static int crossOriginDirective(MaState *state, cchar *key, cchar *value)
             return MPR_ERR_BAD_SYNTAX;
         }
     }
-#if UNUSED
+#if KEEP
     if (smatch(route->corsOrigin, "*") && route->corsCredentials) {
         mprLog("error appweb config", 0, "CrossOrigin: Cannot use wildcard Origin if allowing credentials");
         return MPR_ERR_BAD_STATE;
