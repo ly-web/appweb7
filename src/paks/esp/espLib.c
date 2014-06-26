@@ -2443,6 +2443,7 @@ PUBLIC void stylesheets(cchar *patterns)
         } else {
             /*
                 Not combining into a single stylesheet, so give priority to all.less over all.css if present
+                Load a pure CSS incase some styles need to be applied before the lesssheet is parsed
              */
             ext = espGetConfig(route, "app.http.content.stylesheets", "css");
             filename = mprJoinPathExt("css/all", ext);
@@ -2455,15 +2456,14 @@ PUBLIC void stylesheets(cchar *patterns)
                     stylesheets("css/all.less");
                 }
             }
-            if (smatch(ext, "less")) {
-                /* Load a pure CSS incase some styles need to be applied before the lesssheet is parsed */
-                path = mprJoinPath(clientDir, "css/fix.css");
-                if (mprPathExists(path, R_OK)) {
-                    stylesheets("css/fix.css");
-                }
-            }
         }
     } else {
+        if (sends(patterns, "all.less")) {
+            path = mprJoinPath(clientDir, "css/fix.css");
+            if (mprPathExists(path, R_OK)) {
+                stylesheets("css/fix.css");
+            }
+        }
         if ((files = mprGlobPathFiles(clientDir, patterns, MPR_PATH_RELATIVE)) == 0 || mprGetListLength(files) == 0) {
             files = mprCreateList(0, 0);
             mprAddItem(files, patterns);
