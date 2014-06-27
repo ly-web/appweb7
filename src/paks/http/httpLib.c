@@ -2627,6 +2627,7 @@ PUBLIC void httpDisconnect(HttpConn *conn)
         conn->tx->finalized = 1;
         conn->tx->finalizedOutput = 1;
         conn->tx->finalizedConnector = 1;
+        conn->tx->responded = 1;
     }
     if (conn->rx) {
         httpSetEof(conn);
