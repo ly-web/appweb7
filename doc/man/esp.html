@@ -61,7 +61,7 @@ ESP(1)                           User Commands                          ESP(1)
        tables, and scaffolds.
 
        The esp command will create directories and generate configuration  and
-       source code files that can then be manually edited as required.  Esp is
+       source code files that can then be manually edited as required.  ESP is
        intelligent and will not overwrite existing files, so  you  can  safely
        edit and regenerate without losing your changes. You can overwrite your
        changes if you wish to by using the <B>--overwrite </B>switch.
@@ -175,7 +175,7 @@ ESP(1)                           User Commands                          ESP(1)
        a singleton resource and will not have a list action.
 
 <B>COMPILING</B>
-       Esp compiles controllers and ESP pages native  code  shared  libraries.
+       ESP compiles controllers and ESP pages native  code  shared  libraries.
        These  are  then  loaded  and run by ESP in response to incoming client
        requests. Code is compiled only once but can be run many times to  ser-
        vice incoming requests.
@@ -186,24 +186,26 @@ ESP(1)                           User Commands                          ESP(1)
        explicilty recompile portions or the complete appliction  via  the  esp
        command.
 
-       Esp can recompile everything via:
+       ESP can recompile everything via:
 
-             <B>esp compile ...</B>.
+             <B>esp compile</B>.
 
-       This  will  re-compile  all  ESP  pages and MVC applications for routes
-       defined in the appweb.conf file.
+       This will re-compile all ESP resources.
 
-       Esp also provides options for you to individually  compile  controllers
+       ESP  also  provides options for you to individually compile controllers
        and ESP pages. To recompile named pages or controllers:
 
              <B>esp compile path/*.esp...</B>.
 
-            The  arguments  after  "compile"  are  pathname filters. These are
-            resolved relative to the current directory.  Only  items  matching
+            The arguments after "compile"  are  pathname  filters.  These  are
+            resolved  relative  to  the current directory. Only items matching
             the filter pathnames are compiled.
 
-       To  compile the entire application and produce a single combined shared
-       library file, set the "esp.combo" to true in the package.json file.
+       To compile the entire application and produce a single combined  shared
+       library  file,  set  the  "http.content.combine"  property in the pack-
+       age.json file, to include "c" files. This is typically achieved by set-
+       ting  the  ESP mode to release which selects the release profile in the
+       package.json.
 
 <B>AUTHENTICATION</B>
        ESP can use the system password database or it can define passwords  in
@@ -265,17 +267,19 @@ ESP(1)                           User Commands                          ESP(1)
 
 <B>OPTIONS</B>
        <B>--appweb configFile</B>
-             Use the specified appweb config file to host the ESP application.
+             Use the specified appweb config file to define and host  the  ESP
+             application.  By default the esp command looks for a package.json
+             and uses that to define the applicaiton.
 
        <B>--database Database provider</B>
-             Use  the  specified  database provider. Set to "mdb" or "sdb" for
+             Use the specified database provider. Set to "mdb"  or  "sdb"  for
              SQLite.
 
        <B>--genlink slink.c</B>
-             Generate a static link initialization  file  for  ESP  pages  and
-             applications.   This  is used with --static to generate a appweb-
-             StaticInitialize() function that will invoke all  ESP  initializ-
-             ers.    By   default,   appweb   expects   this   to  be  in  the
+             Generate  a  static  link  initialization  file for ESP pages and
+             applications.  This is used with --static to generate  a  appweb-
+             StaticInitialize()  function  that will invoke all ESP initializ-
+             ers.   By  default,  appweb   expects   this   to   be   in   the
              src/server/slink.c file.
 
        <B>--home dir</B>
@@ -286,13 +290,13 @@ ESP(1)                           User Commands                          ESP(1)
              rides the EspKeepSource setting in the appweb.conf file.
 
        <B>--listen [ip:]port</B>
-             Define the listening endpoint address. This  will  be  used  when
-             generating  an  application.  The  value will be patched into the
+             Define  the  listening  endpoint  address. This will be used when
+             generating an application. The value will  be  patched  into  the
              generated appweb.conf configuration file.
 
        <B>--log logFile:level</B>
-             Specify a file to log  messages.   The  syntax  is:  <B>"--log  log-</B>
-             <B>Name[:logLevel]"</B>.   Level  3  will trace the request and response
+             Specify  a  file  to  log  messages.   The syntax is: <B>"--log log-</B>
+             <B>Name[:logLevel]"</B>.  Level 3 will trace the  request  and  response
              headers.
 
        <B>--nodeps</B>
@@ -305,8 +309,8 @@ ESP(1)                           User Commands                          ESP(1)
              Compile optimized without debug symbols.
 
        <B>--overwrite</B>
-             Overwrite existing files.  Ejsweb  normally  will  not  overwrite
-             existing  files.  This  is to preserve user changes to previously
+             Overwrite  existing  files.  Ejsweb  normally  will not overwrite
+             existing files. This is to preserve user  changes  to  previously
              generated files.
 
        <B>--quiet</B>
@@ -314,27 +318,27 @@ ESP(1)                           User Commands                          ESP(1)
 
        <B>--platform [path/]os-arch-profile</B>
              Target platform configuration to build for and directory contain-
-             ing  appweb  objects and libraries for the target platform.  If a
+             ing appweb objects and libraries for the target platform.   If  a
              path is supplied, the specified platform directory is used.  Oth-
-             erwise,  esp  searches  from  the current directory upwards for a
+             erwise, esp searches from the current  directory  upwards  for  a
              parent platform directory.
 
        <B>--rebuild</B>
-             Force a recompile of all items when used with  the  compile  com-
-             mand.   When  used  with migrate, this will recreate the database
+             Force  a  recompile  of all items when used with the compile com-
+             mand.  When used with migrate, this will  recreate  the  database
              and apply all migrations.
 
        <B>--routeName name</B>
-             This selects the Appweb route by name that will be used  for  the
-             ESP  configuration.  Routes can be given an explicit name via the
+             This  selects  the Appweb route by name that will be used for the
+             ESP configuration. Routes can be given an explicit name  via  the
              "Name" appweb.conf directive. Otherwise routes are named by their
              route pattern.
 
        <B>--routePrefix prefix</B>
              This selects the Appweb route by prefix that will be used for the
              ESP configuration. Routes can be given an explicit prefix via the
-             "Prefix"  appweb.conf  directive.  If  the  route prefix does not
-             match, the first portion of the route pattern is  tested  against
+             "Prefix" appweb.conf directive. If  the  route  prefix  does  not
+             match,  the  first portion of the route pattern is tested against
              the requested prefix.
 
        <B>--single</B>
@@ -342,22 +346,22 @@ ESP(1)                           User Commands                          ESP(1)
              of resources. A singleton controller omits a list action.
 
        <B>--static</B>
-             Use static linking when building ESP  applications.  This  causes
+             Use  static  linking  when building ESP applications. This causes
              esp to create archive libraries instead of shared libraries.
 
        <B>--symbols</B>
              Compile for debug with symbols.
 
        <B>--table name</B>
-             Override  the  database table name when generating tables, migra-
+             Override the database table name when generating  tables,  migra-
              tions or scaffolds. This is useful to request a plural version of
              the model name. Alternatively, specify the model name when gener-
-             ating the scaffold, table or migration with  the  desired  plural
+             ating  the  scaffold,  table or migration with the desired plural
              suffix. For example: "-s" or "-ies".
 
        <B>--trace traceFile:level</B>
-             Specify  a file for trace messages.  The syntax is: <B>"--trace tra-</B>
-             <B>ceName[:traceLevel]"</B>.   Level  3  will  trace  the  request   and
+             Specify a file for trace messages.  The syntax is: <B>"--trace  tra-</B>
+             <B>ceName[:traceLevel]"</B>.    Level  3  will  trace  the  request  and
              response headers.
 
        <B>--verbose </B>or <B>-v</B>
@@ -370,7 +374,7 @@ ESP(1)                           User Commands                          ESP(1)
        Report bugs to dev@embedthis.com.
 
 <B>COPYRIGHT</B>
-       Copyright  (C)  2004-2014 Embedthis Software. Embedthis ESP is a trade-
+       Copyright (C) 2004-2014 Embedthis Software. Embedthis ESP is  a  trade-
        mark of Embedthis Software.
 
 <B>SEE ALSO</B>
