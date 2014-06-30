@@ -3,7 +3,7 @@
 #
 
 NAME                  = appweb
-VERSION               = 5.0.0-rc2
+VERSION               = 5.0.0
 
 OS                    = windows
 PA                    = $(PROCESSOR_ARCHITECTURE)
@@ -1457,7 +1457,7 @@ DEPS_60 = $(DEPS_60) $(CONFIG)\inc\osdep.h
 $(CONFIG)\obj\estLib.obj: \
     src\paks\est\estLib.c $(DEPS_60)
 	@echo '   [Compile] $(CONFIG)/obj/estLib.obj'
-	"$(CC)" -c -Fo$(CONFIG)\obj\estLib.obj -Fd$(CONFIG)\obj\estLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\est\estLib.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\estLib.obj -Fd$(CONFIG)\obj\estLib.pdb -nologo -GR- -Zi -Od -MDd $(DFLAGS) $(IFLAGS) src\paks\est\estLib.c
 
 !IF "$(ME_COM_EST)" == "1"
 #
@@ -2353,5 +2353,5 @@ uninstall: $(DEPS_95)
 #   version
 #
 version: $(DEPS_96)
-	echo 5.0.0-rc2
+	echo 5.0.0
 

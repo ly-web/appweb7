@@ -3,7 +3,7 @@
 #
 
 NAME                  := appweb
-VERSION               := 5.0.0-rc2
+VERSION               := 5.0.0
 PROFILE               ?= static
 ARCH                  ?= $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
 CC_ARCH               ?= $(shell echo $(ARCH) | sed 's/x86/i686/;s/x64/x86_64/')
@@ -1910,7 +1910,7 @@ installBinary: $(DEPS_83)
 	cd .; \
 	mkdir -p "$(ME_APP_PREFIX)" ; \
 	rm -f "$(ME_APP_PREFIX)/latest" ; \
-	ln -s "5.0.0-rc2" "$(ME_APP_PREFIX)/latest" ; \
+	ln -s "5.0.0" "$(ME_APP_PREFIX)/latest" ; \
 	mkdir -p "$(ME_LOG_PREFIX)" ; \
 	chmod 755 "$(ME_LOG_PREFIX)" ; \
 	[ `id -u` = 0 ] && chown $(WEB_USER):$(WEB_GROUP) "$(ME_LOG_PREFIX)"; true ; \
@@ -2180,5 +2180,5 @@ uninstall: $(DEPS_87)
 #   version
 #
 version: $(DEPS_88)
-	echo 5.0.0-rc2
+	echo 5.0.0
 

@@ -780,6 +780,10 @@ PUBLIC int ediSave(Edi *edi)
     if (!edi || !edi->provider) {
         return MPR_ERR_BAD_STATE;
     }
+    if (edi->flags & EDI_PRIVATE) {
+        /* Skip saving for in-memory private databases */
+        return 0;
+    }
     return edi->provider->save(edi);
 }
 
