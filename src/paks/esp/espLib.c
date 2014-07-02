@@ -5625,10 +5625,8 @@ static cchar *map(HttpConn *conn, MprHash *options)
 #define ESP_TOK_EXPR            8            /* <%= expression %> */
 #define ESP_TOK_CONTROL         9            /* <%@ control */
 
-/**
+/*
     ESP page parser structure
-    @defgroup EspParse EspParse
-    @see
  */
 typedef struct EspParse {
     int     lineNumber;                     /**< Line number for error reporting */
