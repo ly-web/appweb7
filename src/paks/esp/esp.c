@@ -1294,6 +1294,7 @@ static void run(int argc, char **argv)
             httpAddHostToEndpoints(app->host);
         }
     }
+    trace("Run", "Web server");
     if (httpStartEndpoints() < 0) {
         mprLog("", 0, "Cannot start HTTP service, exiting.");
         return;
