@@ -4,7 +4,7 @@
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
 
-    Prepared by: orion
+    Prepared by: orion.local
  */
 
 #include "me.h"
@@ -15,7 +15,7 @@
 #include "appweb.h"
 
 #ifndef ESP_VERSION
-    #define ESP_VERSION "5.0.0-rc1"
+    #define ESP_VERSION "5.0.0"
 #endif
 
 /************************************************************************/
@@ -1904,6 +1904,14 @@ PUBLIC void espFinalize(HttpConn *conn);
 PUBLIC void espFlush(HttpConn *conn);
 
 /**
+    Get the current route HttpAuth object.
+    @return The HttpAuth object
+    @ingroup EspReq
+    @stability Evolving
+ */
+PUBLIC HttpAuth *espGetAuth();
+
+/**
     Get the current request connection.
     @return The HttpConn connection object
     @ingroup EspReq
@@ -2123,6 +2131,14 @@ PUBLIC cchar *espGetQueryString(HttpConn *conn);
     @stability Evolving
  */
 PUBLIC char *espGetReferrer(HttpConn *conn);
+
+/**
+    Get the current route HttpRoute object.
+    @return The HttpRoute object
+    @ingroup EspReq
+    @stability Evolving
+ */
+PUBLIC HttpRoute *espGetRoute();
 
 /**
     Get the default database defined on a route.
@@ -2974,6 +2990,13 @@ PUBLIC bool feedback(cchar *kind, cchar *fmt, ...);
 PUBLIC void flush();
 
 /**
+    Get the auth object for the current route
+    @ingroup EspAbbrev
+    @stability Prototype
+ */
+PUBLIC HttpAuth *getAuth();
+
+/**
     Get a list of column names.
     @param rec Database record. 
     @return An MprList of column names in the given table. If there is no record defined, an empty list is returned.
@@ -3145,6 +3168,13 @@ PUBLIC cchar *getReferrer();
     @stability Prototype
  */
 PUBLIC EspReq *getReq();
+
+/**
+    Get the HttpRoute object for the current route
+    @ingroup EspAbbrev
+    @stability Prototype
+ */
+PUBLIC HttpRoute *getRoute();
 
 /**
     Get a session state variable

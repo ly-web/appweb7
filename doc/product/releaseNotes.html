@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 5.0.0-rc1 Documentation</title>
+    <title>Embedthis Appweb 5.0.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 5.0.0-rc1</div>
+                <div class="version">Embedthis Appweb 5.0.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -112,7 +112,7 @@
             <a id="hints"></a>
             <h2 class="section">Helpful Hints</h2>
             <h3>Debug Trace and Logging</h3>
-            <p>Appweb has a debug logging and trace facility that can help when debugging configuration issues or
+            <p>Appweb has logging and request trace facilities that can help when debugging configuration issues or
             developing your application code that uses Appweb. You can vary the level of logging via the <b>--log
             logfile</b> command line switch for the <b>appweb</b> commands. The log command line switch has the
             format:</p>
@@ -123,7 +123,11 @@ appweb --log logFile:logLevel
             <pre>
 appweb -v
 </pre>
-            <p>The log level can be from 0 to 9, with 9 being the most verbose level.</p>
+            <p>The log level can be from 0 to 5, with 5 being the most verbose level.</p>
+            <p>Similarly you can emit HTTP request trace using the <em>--trace</em> switch.</p>
+            <pre>appweb --trace traceFile:traceLevel</pre>
+            <p>The <em>-v</em> switch will emit request trace to the standard output at level 2 combined with the 
+            error log.</p>
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->

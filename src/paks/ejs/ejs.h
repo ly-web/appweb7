@@ -4,11 +4,13 @@
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
 
-    Prepared by: orion
+    Prepared by: orion.local
  */
 
 #include "me.h"
 #if ME_COM_EJS
+
+#define PRINTF_ATTRIBUTE(x,y)
 
 #include "osdep.h"
 #include "mpr.h"
@@ -578,6 +580,11 @@ PUBLIC EjsOptable *ejsGetOptable();
 
 #ifndef _h_EJS_CORE
 #define _h_EJS_CORE 1
+
+/*
+    Using custom mprPrintf specifiers
+ */
+#define PRINTF_ATTRIBUTE(x,y)
 
 #include    "mpr.h"
 #include    "http.h"
@@ -5290,8 +5297,6 @@ PUBLIC void ejsSetDispatcher(Ejs *ejs, MprDispatcher *dispatcher);
     @param ejs Interpreter to destroy
  */
 PUBLIC void ejsDestroyVM(Ejs *ejs);
-
-//  MOB
 PUBLIC void ejsDestroy(Ejs *ejs);
 
 /**
@@ -6058,7 +6063,7 @@ typedef struct EjsHttpServer {
     Ejs             *ejs;                       /**< Ejscript interpreter handle */
     HttpEndpoint    *endpoint;                  /**< Http endpoint object */
     struct MprSsl   *ssl;                       /**< SSL configuration */
-    HttpTrace       trace[2];                   /**< Default tracing for requests */
+    HttpTrace       *trace;                     /**< Default tracing for requests */
     cchar           *connector;                 /**< Pipeline connector */
     char            *keyFile;                   /**< SSL key file */
     char            *certFile;                  /**< SSL certificate file */

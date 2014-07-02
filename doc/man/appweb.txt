@@ -18,6 +18,7 @@ SYNOPSIS
            --log logSpec
            --name uniqueName
            --threads threads
+           --trace traceSpec
            --version
            --verbose
            [IP][:port] [documentRoot]
@@ -67,21 +68,24 @@ OPTIONS
               VxWorks cannot determine the path to  the  executable  image  at
               runtime.
 
-       --log logSpec
-              Name the Appweb log file. This will override the ErrorLog direc-
-              tive in the  configuration  file.   When  the  maximum  size  is
-              exceeded,  the log file will be rotated to logName.old and a new
-              log file will be started. The -l option is an alias  for  --log.
-              The syntax is:
-
-              --log logName[:logLevel][.maxSize]
-
        --home directory
               Define the server home directory for Appweb.
 
+       --log logSpec
+              Name the Appweb log file. This will override the ErrorLog direc-
+              tive in the configuration file. The syntax is:
+
+              --log logName[:logLevel]
+
        --name NAME
-              Define  a unique name for this instance of Appweb. Useful for ps
+              Define a unique name for this instance of Appweb. Useful for  ps
               -ef listings.
+
+       --trace traceSpec
+              Name  the  Appweb  request  trace  file.  This will override the
+              TraceLog directive in the configuration file.  The syntax is:
+
+              --trace traceName[:traceLevel]
 
        --verbose
               Shorthand for --log stdout:4. The -v  option  is  an  alias  for

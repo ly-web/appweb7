@@ -11,8 +11,11 @@
             --home path             # Set the home working directory
             --log logFile:level     # Log to file file at verbosity level
             --name uniqueName       # Name for this instance
+            --show                  # Show route table
+            --trace traceFile:level # Log to file file at verbosity level
             --version               # Output version information
             -v                      # Same as --log stderr:2
+            -DIGIT                  # Same as --log stderr:DIGIT
  */
 
 /********************************* Includes ***********************************/
@@ -33,6 +36,7 @@ typedef struct AppwebApp {
     char        *home;
     char        *configFile;
     char        *pathVar;
+    int         show;
     int         workers;
 } AppwebApp;
 
@@ -75,12 +79,12 @@ MAIN(appweb, int argc, char **argv, char **envp)
 {
     Mpr     *mpr;
     cchar   *argp, *jail;
-    char    *logSpec;
-    int     argind, level;
+    char    *logSpec, *traceSpec;
+    int     argind;
 
     jail = 0;
-    level = 0;
     logSpec = 0;
+    traceSpec = 0;
 
     if ((mpr = mprCreate(argc, argv, MPR_USER_EVENTS_THREAD)) == NULL) {
         exit(1);
@@ -90,15 +94,16 @@ MAIN(appweb, int argc, char **argv, char **envp)
     }
     mprAddRoot(app);
     mprAddStandardSignals();
-
 #if ME_ROM
     extern MprRomInode romFiles[];
     mprSetRomFileSystem(romFiles);
 #endif
 
+    if (httpCreate(HTTP_CLIENT_SIDE | HTTP_SERVER_SIDE) == 0) {
+        exit(3);
+    }
     app->mpr = mpr;
     app->workers = -1;
-    app->configFile = sclone(ME_CONFIG_FILE);
     app->home = sclone(ME_SERVER_ROOT);
     app->documents = app->home;
     argc = mpr->argc;
@@ -140,7 +145,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
             }
             app->home = sclone(argv[++argind]);
             if (chdir(app->home) < 0) {
-                mprError("%s: Cannot change directory to %s", mprGetAppName(), app->home);
+                mprLog("error appweb", 0, "Cannot change directory to %s", app->home);
                 exit(4);
             }
 
@@ -162,44 +167,61 @@ MAIN(appweb, int argc, char **argv, char **envp)
             }
             app->workers = atoi(argv[++argind]);
 
+        } else if (smatch(argp, "--show") || smatch(argp, "-s")) {
+            app->show = 1;
+
+        } else if (smatch(argp, "--trace") || smatch(argp, "-t")) {
+            if (argind >= argc) {
+                usageError();
+            }
+            traceSpec = argv[++argind];
+
         } else if (smatch(argp, "--verbose") || smatch(argp, "-v")) {
-            level = 2;
+            if (!logSpec) {
+                logSpec = sfmt("stderr:2");
+            }
+            if (!traceSpec) {
+                traceSpec = sfmt("stderr:2");
+            }
 
         } else if (smatch(argp, "--version") || smatch(argp, "-V")) {
             mprPrintf("%s\n", ME_VERSION);
             exit(0);
 
         } else if (*argp == '-' && isdigit((uchar) argp[1])) {
-            level = (int) stoi(&argp[1]);
+            if (!logSpec) {
+                logSpec = sfmt("stderr:%d", (int) stoi(&argp[1]));
+            }
+            if (!traceSpec) {
+                traceSpec = sfmt("stderr:%d", (int) stoi(&argp[1]));
+            }
 
         } else if (smatch(argp, "-?") || scontains(argp, "-help")) {
             usageError();
             exit(5);
 
         } else if (*argp == '-') {
-            mprError("Unknown switch \"%s\"", argp);
+            mprLog("error appweb", 0, "Unknown switch \"%s\"", argp);
             usageError();
             exit(5);
         }
     }
     app->home = mprGetAbsPath(app->home);
-
     if (logSpec) {
-        mprStartLogging(logSpec, 1);
-        mprSetCmdlineLogging(1);
-    } else if (level) {
-        mprStartLogging(sfmt("stderr:%d", level), 1);
-        mprSetCmdlineLogging(1);
+        mprStartLogging(logSpec, MPR_LOG_DETAILED | MPR_LOG_CONFIG | MPR_LOG_CMDLINE);
+    }
+    if (traceSpec) {
+        httpStartTracing(traceSpec);
     }
     if (mprStart() < 0) {
-        mprError("Cannot start MPR for %s", mprGetAppName());
+        mprLog("error appweb", 0, "Cannot start MPR");
         mprDestroy();
         return MPR_ERR_CANT_INITIALIZE;
     }
     if (checkEnvironment(argv[0]) < 0) {
         exit(6);
     }
-    if (argc == argind) {
+    if (argc == argind && !app->configFile) {
         if (findAppwebConf() < 0) {
             exit(7);
         }
@@ -211,12 +233,15 @@ MAIN(appweb, int argc, char **argv, char **envp)
         return MPR_ERR_CANT_INITIALIZE;
     }
     if (maStartAppweb(app->appweb) < 0) {
-        mprError("Cannot start HTTP service, exiting.");
+        mprLog("error appweb", 0, "Cannot start HTTP service, exiting.");
         exit(9);
+    }
+    if (app->show) {
+        httpLogRoutes(0, 0);
     }
     mprServiceEvents(-1, 0);
 
-    mprLog(1, "Stopping Appweb ...");
+    mprLog("info appweb", 1, "Stopping Appweb ...");
     mprDestroy();
     return mprGetExitStatus();
 }
@@ -244,18 +269,18 @@ static int changeRoot(cchar *jail)
 {
 #if ME_UNIX_LIKE
     if (chdir(app->home) < 0) {
-        mprError("%s: Cannot change directory to %s", mprGetAppName(), app->home);
+        mprLog("error appweb", 0, "Cannot change directory to %s", app->home);
         return MPR_ERR_CANT_INITIALIZE;
     }
     if (chroot(jail) < 0) {
         if (errno == EPERM) {
-            mprError("%s: Must be super user to use the --chroot option", mprGetAppName());
+            mprLog("error appweb", 0, "Must be super user to use the --chroot option");
         } else {
-            mprError("%s: Cannot change change root directory to %s, errno %d", mprGetAppName(), jail, errno);
+            mprLog("error appweb", 0, "Cannot change change root directory to %s, errno %d", jail, errno);
         }
         return MPR_ERR_CANT_INITIALIZE;
     } else {
-        mprLog(MPR_INFO, "Chroot to: \"%s\"", jail);
+        mprLog("error appweb", 2, "Chroot to: \"%s\"", jail);
     }
 #endif
     return 0;
@@ -303,11 +328,11 @@ static int createEndpoints(int argc, char **argv)
     argind = 0;
 
     if ((app->appweb = maCreateAppweb()) == 0) {
-        mprError("Cannot create HTTP service for %s", mprGetAppName());
+        mprLog("error appweb", 0, "Cannot create HTTP service");
         return MPR_ERR_CANT_CREATE;
     }
     if ((app->server = maCreateServer(app->appweb, "default")) == 0) {
-        mprError("Cannot create HTTP server for %s", mprGetAppName());
+        mprLog("error appweb", 0, "Cannot create HTTP server");
         return MPR_ERR_CANT_CREATE;
     }
     loadStaticModules();
@@ -319,7 +344,6 @@ static int createEndpoints(int argc, char **argv)
         }
     } else {
         app->documents = sclone(argv[argind++]);
-        mprLog(2, "Documents %s", app->documents);
         if (argind == argc) {
             if (maConfigureServer(app->server, NULL, app->home, app->documents, NULL, ME_HTTP_PORT, 0) < 0) {
                 return MPR_ERR_CANT_CREATE;
@@ -350,28 +374,41 @@ static int createEndpoints(int argc, char **argv)
 }
 
 
+/*
+    If ME_CONFIG_FILE is defined, use that as the base name for appweb.conf. Otherwise, use
+    "programName.conf". Search order is:
+
+        "."/BASE
+        ME_SERVER_ROOT/BASE
+        EXE/../BASE
+        EXE/../appweb.conf
+ */
 static int findAppwebConf()
 {
-    cchar   *userPath;
+    char    *base, *filename;
 
-    userPath = app->configFile;
-    if (!app->configFile || *app->configFile == '\0') {
-        app->configFile = mprJoinPathExt(mprGetAppName(), ".conf");
+    if (ME_CONFIG_FILE) {
+        base = sclone(ME_CONFIG_FILE);
+    } else {
+        base = mprJoinPathExt(mprGetAppName(), ".conf");
     }
 #if !ME_ROM
-    if (!mprPathExists(app->configFile, R_OK)) {
-        if (!userPath) {
-            app->configFile = mprJoinPath(app->home, "appweb.conf");
-            if (!mprPathExists(app->configFile, R_OK)) {
-                app->configFile = mprJoinPath(mprGetAppDir(), sfmt("%s.conf", mprGetAppName()));
+    filename = base;
+    if (!mprPathExists(filename, R_OK)) {
+        filename = mprJoinPath(app->home, base);
+        if (!mprPathExists(filename, R_OK)) {
+            filename = mprJoinPath(mprGetPathParent(mprGetAppDir()), base);
+            if (!mprPathExists(filename, R_OK)) {
+                filename = mprJoinPath(mprGetPathParent(mprGetAppDir()), "appweb.conf");
+                if (!mprPathExists(filename, R_OK)) {
+                    mprError("Cannot find config file %s", base);
+                    return MPR_ERR_CANT_OPEN;
+                }
             }
-        }
-        if (!mprPathExists(app->configFile, R_OK)) {
-            mprError("Cannot open config file %s", app->configFile);
-            return MPR_ERR_CANT_OPEN;
         }
     }
 #endif
+    app->configFile = filename;
     return 0;
 }
 
@@ -387,15 +424,18 @@ static void usageError(Mpr *mpr)
         "  %s [options] documents ip[:port] ...\n\n"
         "  Without [documents ip:port], %s will read the appweb.conf configuration file.\n\n"
         "  Options:\n"
-        "    --config configFile    # Use named config file instead appweb.conf\n"
-        "    --chroot directory     # Change root directory to run more securely (Unix)\n"
-        "    --debugger             # Disable timeouts to make debugging easier\n"
-        "    --exe path             # Set path to Appweb executable on Vxworks\n"
-        "    --home directory       # Change to directory to run\n"
-        "    --log logFile:level    # Log to file file at verbosity level\n"
-        "    --name uniqueName      # Unique name for this instance\n"
-        "    --verbose              # Same as --log stderr:2\n"
-        "    --version              # Output version information\n\n",
+        "    --config configFile     # Use named config file instead appweb.conf\n"
+        "    --chroot directory      # Change root directory to run more securely (Unix)\n"
+        "    --debugger              # Disable timeouts to make debugging easier\n"
+        "    --exe path              # Set path to Appweb executable on Vxworks\n"
+        "    --home directory        # Change to directory to run\n"
+        "    --log logFile:level     # Log to file at verbosity level (0-5)\n"
+        "    --name uniqueName       # Unique name for this instance\n"
+        "    --show                  # Show route table\n"
+        "    --trace traceFile:level # Trace to file at verbosity level (0-5)\n"
+        "    --verbose               # Same as --log stderr:2\n"
+        "    --version               # Output version information\n"
+        "    --DIGIT                 # Same as --log stderr:DIGIT\n\n",
         mprGetAppTitle(), name, name, name);
     exit(10);
 }
@@ -445,8 +485,9 @@ static void traceHandler(void *ignored, MprSignal *sp)
     int     level;
 
     level = mprGetLogLevel() > 2 ? 2 : 4;
-    mprLog(0, "Change log level to %d", level);
+    mprLog("info appweb", 0, "Change log and trace level to %d", level);
     mprSetLogLevel(level);
+    httpSetTraceLevel(level);
 }
 
 
@@ -456,7 +497,7 @@ static void traceHandler(void *ignored, MprSignal *sp)
  */
 static void statusCheck(void *ignored, MprSignal *sp)
 {
-    mprRawLog(0, "%s", httpStatsReport(0));
+    mprLog(0, 0, "%s", httpStatsReport(0));
     if (MPR->heap->track) {
         mprPrintMem("MPR Memory Report", MPR_MEM_DETAIL);
     } else {
@@ -474,11 +515,11 @@ static int unixSecurityChecks(cchar *program, cchar *home)
     struct stat     sbuf;
 
     if (((stat(home, &sbuf)) != 0) || !(S_ISDIR(sbuf.st_mode))) {
-        mprError("Cannot access directory: %s", home);
+        mprLog("error appweb", 0, "Cannot access directory: %s", home);
         return MPR_ERR_BAD_STATE;
     }
     if ((sbuf.st_mode & S_IWOTH) || (sbuf.st_mode & S_IWGRP)) {
-        mprError("Security risk, directory %s is writeable by others", home);
+        mprLog("error appweb", 0, "Security risk, directory %s is writeable by others", home);
     }
 
     /*
@@ -486,17 +527,17 @@ static int unixSecurityChecks(cchar *program, cchar *home)
      */
     if (*program == '/') {
         if ((stat(program, &sbuf)) != 0) {
-            mprError("Cannot access program: %s", program);
+            mprLog("error appweb", 0, "Cannot access program: %s", program);
             return MPR_ERR_BAD_STATE;
         }
         if ((sbuf.st_mode & S_IWOTH) || (sbuf.st_mode & S_IWGRP)) {
-            mprError("Security risk, Program %s is writeable by others", program);
+            mprLog("error appweb", 0, "Security risk, Program %s is writeable by others", program);
         }
         if (sbuf.st_mode & S_ISUID) {
-            mprError("Security risk, %s is setuid", program);
+            mprLog("error appweb", 0, "Security risk, %s is setuid", program);
         }
         if (sbuf.st_mode & S_ISGID) {
-            mprError("Security risk, %s is setgid", program);
+            mprLog("error appweb", 0, "Security risk, %s is setgid", program);
         }
     }
 #endif /* !ME_ROM */
@@ -516,13 +557,13 @@ static int writePort(MaServer *server)
     int             fd, len;
 
     if ((endpoint = mprGetFirstItem(server->http->endpoints)) == 0) {
-        mprError("No configured endpoints");
+        mprLog("error appweb", 0, "No configured endpoints");
         return MPR_ERR_CANT_ACCESS;
     }
     //  FUTURE - should really go to a ME_LOG_DIR (then fix uninstall.sh)
     path = mprJoinPath(mprGetAppDir(), "../.port.log");
     if ((fd = open(path, O_CREAT | O_WRONLY | O_TRUNC, 0666)) < 0) {
-        mprError("Could not create port file %s", path);
+        mprLog("error appweb", 0, "Could not create port file %s", path);
         return MPR_ERR_CANT_CREATE;
     }
     fmt(numBuf, sizeof(numBuf), "%d", endpoint->port);
@@ -530,7 +571,7 @@ static int writePort(MaServer *server)
     len = (int) strlen(numBuf);
     numBuf[len++] = '\n';
     if (write(fd, numBuf, len) != len) {
-        mprError("Write to file %s failed", path);
+        mprLog("error appweb", 0, "Write to file %s failed", path);
         return MPR_ERR_CANT_WRITE;
     }
     close(fd);

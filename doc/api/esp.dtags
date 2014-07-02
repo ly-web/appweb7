@@ -39,6 +39,13 @@
     </member>
     <member kind="function">
       <type>int</type>
+      <name>espApp</name>
+      <anchorfile>group___esp_route.html</anchorfile>
+      <anchor>gad01dbff7dee8ea0cf2f2804f46f47ae7</anchor>
+      <arglist>(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
       <name>espBindProc</name>
       <anchorfile>group___esp_route.html</anchorfile>
       <anchor>ga0d812aed0ff96f0ffa281860270e8910</anchor>
@@ -109,10 +116,10 @@
     </member>
     <member kind="function">
       <type>int</type>
-      <name>espLoadConfig</name>
+      <name>espLoadModule</name>
       <anchorfile>group___esp_route.html</anchorfile>
-      <anchor>ga8719b78bdfb4e3228c6e9be843f45140</anchor>
-      <arglist>(HttpRoute *route)</arglist>
+      <anchor>ga24a90a6be3709ef846828deb50ceb0c8</anchor>
+      <arglist>(HttpRoute *route, MprDispatcher *dispatcher, cchar *kind, cchar *source, cchar **errMsg)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -223,6 +230,13 @@
       <anchorfile>group___esp_req.html</anchorfile>
       <anchor>gadf50b51bf7ab10d828e85be140c005c5</anchor>
       <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>HttpAuth *</type>
+      <name>espGetAuth</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>ga71e492b0a2ad58a5eb75616556da4f92</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>HttpConn *</type>
@@ -370,6 +384,13 @@
       <anchorfile>group___esp_req.html</anchorfile>
       <anchor>ga400095fc3f1743660baedac7c95ff53c</anchor>
       <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>HttpRoute *</type>
+      <name>espGetRoute</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>ga769c951ecdea1f7ab0666eb54e5419df</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>Edi *</type>
@@ -888,6 +909,13 @@
       <arglist>()</arglist>
     </member>
     <member kind="function">
+      <type>HttpAuth *</type>
+      <name>getAuth</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga35c88eaa69d732f54eb5829a85dffcce</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
       <type>MprList *</type>
       <name>getColumns</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
@@ -1032,6 +1060,13 @@
       <name>getReq</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>ga3dea06818770c33f63a8b60f793a6999</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>HttpRoute *</type>
+      <name>getRoute</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga3e7e849481e913c3971b7e0bf73ce088</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">
@@ -1491,6 +1526,13 @@
       <name>actions</name>
       <anchorfile>struct_esp.html</anchorfile>
       <anchor>a69abe25c82410c2d1f1f2ebe679f3fcf</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>int</type>
+      <name>canCompile</name>
+      <anchorfile>struct_esp.html</anchorfile>
+      <anchor>a351e3545dfe7dbcee2e5c753c7d1bc48</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">

@@ -39,7 +39,7 @@ static int sslCaCertificatePathDirective(MaState *state, cchar *key, cchar *valu
     }
     checkSsl(state);
     if (!mprPathExists(path, R_OK)) {
-        mprError("Cannot locate %s", path);
+        mprLog("error ssl", 0, "Cannot locate %s", path);
         return MPR_ERR_CANT_FIND;
     }
     mprSetSslCaPath(state->route->ssl, path);
@@ -55,7 +55,7 @@ static int sslCaCertificateFileDirective(MaState *state, cchar *key, cchar *valu
     }
     checkSsl(state);
     if (!mprPathExists(path, R_OK)) {
-        mprError("Cannot locate %s", path);
+        mprLog("error ssl", 0, "Cannot locate %s", path);
         return MPR_ERR_CANT_FIND;
     }
     mprSetSslCaFile(state->route->ssl, path);
@@ -71,7 +71,7 @@ static int sslCertificateFileDirective(MaState *state, cchar *key, cchar *value)
     }
     checkSsl(state);
     if (!mprPathExists(path, R_OK)) {
-        mprError("Cannot locate %s", path);
+        mprLog("error ssl", 0, "Cannot locate %s", path);
         return MPR_ERR_CANT_FIND;
     }
     mprSetSslCertFile(state->route->ssl, path);
@@ -87,7 +87,7 @@ static int sslCertificateKeyFileDirective(MaState *state, cchar *key, cchar *val
     }
     checkSsl(state);
     if (!mprPathExists(path, R_OK)) {
-        mprError("Cannot locate %s", path);
+        mprLog("error ssl", 0, "Cannot locate %s", path);
         return MPR_ERR_CANT_FIND;
     }
     mprSetSslKeyFile(state->route->ssl, path);
@@ -135,7 +135,7 @@ static int sslEngineDirective(MaState *state, cchar *key, cchar *value)
         mprSetSslProvider(state->route->ssl, provider);
         if (!state->host->secureEndpoint) {
             if (httpSecureEndpointByName(state->host->name, state->route->ssl) < 0) {
-                mprError("No HttpEndpoint at %s to secure. Must use inside a VirtualHost block", state->host->name);
+                mprLog("error ssl", 0, "No HttpEndpoint at %s to secure. Must use inside a VirtualHost block", state->host->name);
                 return MPR_ERR_BAD_STATE;
             }
         }

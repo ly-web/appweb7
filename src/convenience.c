@@ -9,47 +9,64 @@
 #include    "appweb.h"
 
 /************************************ Code ************************************/
-//  TODO: REFACTOR with an inner function
+
+static int runServer(cchar *configFile, cchar *ip, int port, cchar *home, cchar *documents)
+{
+    MaAppweb    *appweb;
+    MaServer    *server;
+
+    if (mprStart() < 0) {
+        mprLog("error appweb", 0, "Cannot start the web server runtime");
+        return MPR_ERR_CANT_CREATE;
+    }
+    if ((appweb = maCreateAppweb()) == 0) {
+        mprLog("error appweb", 0, "Cannot create appweb object");
+        return MPR_ERR_CANT_CREATE;
+    }
+    mprAddRoot(appweb);
+    if ((server = maCreateServer(appweb, 0)) == 0) {
+        mprLog("error appweb", 0, "Cannot create the web server");
+        mprRemoveRoot(appweb);
+        return MPR_ERR_CANT_CREATE;
+    }
+    if (home) {
+        if (maConfigureServer(server, 0, home, documents, ip, port, 0) < 0) {
+            mprLog("error appweb", 0, "Cannot create the web server");
+            mprRemoveRoot(appweb);
+            return MPR_ERR_BAD_STATE;
+        }
+    } else {
+        if (maParseConfig(server, configFile, 0) < 0) {
+            mprLog("error appweb", 0, "Cannot parse the config file %s", configFile);
+            mprRemoveRoot(appweb);
+            return MPR_ERR_CANT_READ;
+        }
+    }
+    if (maStartServer(server) < 0) {
+        mprLog("error appweb", 0, "Cannot start the web server");
+        mprRemoveRoot(appweb);
+        return MPR_ERR_CANT_COMPLETE;
+    }
+    mprServiceEvents(-1, 0);
+    maStopServer(server);
+    mprRemoveRoot(appweb);
+    return 0;
+}
+
+
 /*  
     Create a web server described by a config file. 
  */
 PUBLIC int maRunWebServer(cchar *configFile)
 {
     Mpr         *mpr;
-    MaAppweb    *appweb;
-    MaServer    *server;
     int         rc;
 
-    rc = MPR_ERR_CANT_CREATE;
     if ((mpr = mprCreate(0, NULL, MPR_USER_EVENTS_THREAD)) == 0) {
-        mprError("Cannot create the web server runtime");
-    } else {
-        if (mprStart() < 0) {
-            mprError("Cannot start the web server runtime");
-        } else {
-            if ((appweb = maCreateAppweb()) == 0) {
-                mprError("Cannot create appweb object");
-            } else {
-                mprAddRoot(appweb);
-                if ((server = maCreateServer(appweb, 0)) == 0) {
-                    mprError("Cannot create the web server");
-                } else {
-                    if (maParseConfig(server, configFile, 0) < 0) {
-                        mprError("Cannot parse the config file %s", configFile);
-                    } else {
-                        if (maStartServer(server) < 0) {
-                            mprError("Cannot start the web server");
-                        } else {
-                            mprServiceEvents(-1, 0);
-                            rc = 0;
-                        }
-                        maStopServer(server);
-                    }
-                }
-                mprRemoveRoot(appweb);
-            }
-        }
+        mprLog("error appweb", 0, "Cannot create the web server runtime");
+        return MPR_ERR_CANT_CREATE;
     }
+    rc = runServer(configFile, 0, 0, 0, 0);
     mprDestroy();
     return rc;
 }
@@ -62,44 +79,14 @@ PUBLIC int maRunWebServer(cchar *configFile)
 PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documents)
 {
     Mpr         *mpr;
-    MaServer    *server;
-    MaAppweb    *appweb;
     int         rc;
 
-    /*  
-        Initialize and start the portable runtime services.
-     */
-    rc = MPR_ERR_CANT_CREATE;
     if ((mpr = mprCreate(0, NULL, MPR_USER_EVENTS_THREAD)) == 0) {
-        mprError("Cannot create the web server runtime");
-    } else {
-        if (mprStart(mpr) < 0) {
-            mprError("Cannot start the web server runtime");
-        } else {
-            if ((appweb = maCreateAppweb()) == 0) {
-                mprError("Cannot create the web server http services");
-            } else {
-                mprAddRoot(appweb);
-                if ((server = maCreateServer(appweb, 0)) == 0) {
-                    mprError("Cannot create the web server");
-                } else {
-                    if (maConfigureServer(server, 0, home, documents, ip, port, 0) < 0) {
-                        mprError("Cannot create the web server");
-                    } else {
-                        if (maStartServer(server) < 0) {
-                            mprError("Cannot start the web server");
-                        } else {
-                            mprServiceEvents(-1, 0);
-                            rc = 0;
-                        }
-                        maStopServer(server);
-                    }
-                }
-                mprRemoveRoot(appweb);
-            }
-        }
-        mprDestroy();
+        mprLog("error appweb", 0, "Cannot create the web server runtime");
+        return MPR_ERR_CANT_CREATE;
     }
+    rc = runServer(0, ip, port, home, documents);
+    mprDestroy();
     return rc;
 }
 
@@ -120,16 +107,6 @@ PUBLIC void maRestartServer(cchar *ip, int port)
     lock(appweb->servers);
     endpoint = mprGetFirstItem(server->endpoints);
     httpStopEndpoint(endpoint);
-
-    /* 
-        Alternatively, iterate over all endpoints by
-
-        Http *http = MPR->httpService;
-        int  next;
-        for (ITERATE_ITEMS(http->endpoints, endpoint, next)) {
-            ...
-        }
-     */
 
     if (port) {
         endpoint->port = port;
@@ -161,11 +138,11 @@ PUBLIC int maRunWebClient(cchar *method, cchar *uri, cchar *data, char **respons
         *response = 0;
     }
     if ((mpr = mprCreate(0, NULL, 0)) == 0) {
-        mprError("Cannot create the MPR runtime");
+        mprLog("error appweb", 0, "Cannot create the MPR runtime");
         return MPR_ERR_CANT_CREATE;
     }
     if (mprStart() < 0) {
-        mprError("Cannot start the web server runtime");
+        mprLog("error appweb", 0, "Cannot start the web server runtime");
         return MPR_ERR_CANT_INITIALIZE;
     }
     httpCreate(HTTP_CLIENT_SIDE);

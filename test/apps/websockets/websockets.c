@@ -16,15 +16,17 @@ static void traceEvent(HttpConn *conn, int event, int arg)
             The last frame in a message has packet->last == true
          */
         packet = conn->readq->first;
-        mprLog(3, "websock.c: read %s event, last %d", packet->type == WS_MSG_TEXT ? "text" : "binary", packet->last);
-        mprLog(3, "websock.c: read: (start of data only) \"%s\"", snclone(mprGetBufStart(packet->content), 40));
+        mprDebug("webock test", 5, "read %s event, last %d", packet->type == WS_MSG_TEXT ? "text" : "binary", 
+            packet->last);
+        mprDebug("webock test", 5, "read: (start of data only) \"%s\"", 
+            snclone(mprGetBufStart(packet->content), 40));
 
     } else if (event == HTTP_EVENT_APP_CLOSE) {
-        mprLog(3, "websock.c: close event. Status status %d, orderly closed %d, reason %s", arg,
+        mprDebug("webock test", 5, "close event. Status status %d, orderly closed %d, reason %s", arg,
             httpWebSocketOrderlyClosed(conn), httpGetWebSocketCloseReason(conn));
 
     } else if (event == HTTP_EVENT_ERROR) {
-        mprLog(2, "websock.c: error event");
+        mprDebug("webock test", 2, "error event");
     }
 }
 
@@ -215,7 +217,7 @@ static void chat_callback(HttpConn *conn, int event, int arg)
             }
         }
     } else if (event == HTTP_EVENT_APP_CLOSE) {
-        mprLog(0, "chat.c: close event. Status status %d, orderly closed %d, reason %s", arg,
+        mprDebug("websock", 5, "close event. Status status %d, orderly closed %d, reason %s", arg,
         httpWebSocketOrderlyClosed(conn), httpGetWebSocketCloseReason(conn));
         mprRemoveItem(clients, conn);
     }

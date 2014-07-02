@@ -17,6 +17,7 @@ APPWEB(1)                        User Commands                       APPWEB(1)
            <B>--log logSpec</B>
            <B>--name uniqueName</B>
            <B>--threads threads</B>
+           <B>--trace traceSpec</B>
            <B>--version</B>
            <B>--verbose</B>
            <B>[IP][:port] [documentRoot]</B>
@@ -66,21 +67,24 @@ APPWEB(1)                        User Commands                       APPWEB(1)
               VxWorks cannot determine the path to  the  executable  image  at
               runtime.
 
-       <B>--log logSpec</B>
-              Name the Appweb log file. This will override the ErrorLog direc-
-              tive in the  configuration  file.   When  the  maximum  size  is
-              exceeded,  the log file will be rotated to logName.old and a new
-              log file will be started. The <B>-l </B>option is an alias  for  --log.
-              The syntax is:
-
-              --log logName[:logLevel][.maxSize]
-
        <B>--home directory</B>
               Define the server home directory for Appweb.
 
+       <B>--log logSpec</B>
+              Name the Appweb log file. This will override the ErrorLog direc-
+              tive in the configuration file. The syntax is:
+
+              --log logName[:logLevel]
+
        <B>--name NAME</B>
-              Define  a unique name for this instance of Appweb. Useful for ps
+              Define a unique name for this instance of Appweb. Useful for  ps
               -ef listings.
+
+       <B>--trace traceSpec</B>
+              Name  the  Appweb  request  trace  file.  This will override the
+              TraceLog directive in the configuration file.  The syntax is:
+
+              --trace traceName[:traceLevel]
 
        <B>--verbose</B>
               Shorthand for --log stdout:4. The <B>-v  </B>option  is  an  alias  for

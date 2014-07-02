@@ -54,7 +54,8 @@ typedef struct App {
     cchar       *genlink;               /* Static link resolution file */
     cchar       *filterRouteName;       /* Name of route to use for ESP configuration */
     cchar       *filterRoutePrefix;     /* Prefix of route to use for ESP configuration */
-    cchar       *log;                   /* Arg for --log */
+    cchar       *logSpec;               /* Arg for --log */
+    cchar       *traceSpec;             /* Arg for --trace */
     cchar       *routeSet;              /* Desired route set package */
     cchar       *mode;                  /* New app.mode to use */
     cchar       *module;                /* Compiled module name */
@@ -76,7 +77,7 @@ typedef struct App {
     int         rebuild;                /* Force a rebuild */
     int         reverse;                /* Reverse migrations */
     int         show;                   /* Show routes and compilation commands */
-    int         silent;                 /* Totall silent */
+    int         silent;                 /* Totally silent */
     int         singleton;              /* Generate a singleton resource controller */
     int         staticLink;             /* Use static linking */
     int         upgrade;                /* Upgrade */
@@ -235,7 +236,7 @@ static App *createApp(Mpr *mpr)
 #elif ME_COM_MDB
     app->database = sclone("mdb");
 #else
-    mprError("No database provider defined");
+    mprLog("", 0, "No database provider defined");
 #endif
     app->topDeps = mprCreateHash(0, 0);
     app->cipher = sclone("blowfish");
@@ -266,7 +267,7 @@ static void manageApp(App *app, int flags)
         mprMark(app->paksCacheDir);
         mprMark(app->paksDir);
         mprMark(app->listen);
-        mprMark(app->log);
+        mprMark(app->logSpec);
         mprMark(app->module);
         mprMark(app->mpr);
         mprMark(app->base);
@@ -285,6 +286,7 @@ static void manageApp(App *app, int flags)
         mprMark(app->targets);
         mprMark(app->table);
         mprMark(app->topDeps);
+        mprMark(app->traceSpec);
         mprMark(app->cipher);
     }
 }
@@ -366,9 +368,8 @@ static int parseArgs(int argc, char **argv)
             if (argind >= argc) {
                 usageError();
             } else {
-                app->log = sclone(argv[++argind]);
+                app->logSpec = sclone(argv[++argind]);
             }
-
 
         } else if (smatch(argp, "name")) {
             if (argind >= argc) {
@@ -405,15 +406,6 @@ static int parseArgs(int argc, char **argv)
 
         } else if (smatch(argp, "quiet") || smatch(argp, "q")) {
             app->quiet = 1;
-
-#if UNUSED
-        } else if (smatch(argp, "password") || smatch(argp, "p")) {
-            if (argind >= argc) {
-                usageError();
-            } else {
-                app->password = sclone(argv[++argind]);
-            }
-#endif
 
         } else if (smatch(argp, "rebuild") || smatch(argp, "r")) {
             app->rebuild = 1;
@@ -455,15 +447,32 @@ static int parseArgs(int argc, char **argv)
                 app->table = sclone(argv[++argind]);
             }
 
+        } else if (smatch(argp, "trace") || smatch(argp, "l")) {
+            if (argind >= argc) {
+                usageError();
+            } else {
+                app->traceSpec = sclone(argv[++argind]);
+            }
         } else if (smatch(argp, "verbose") || smatch(argp, "v")) {
             app->verbose++;
+            if (!app->logSpec) {
+                app->logSpec = sfmt("stderr:2");
+            }
+            if (!app->traceSpec) {
+                app->traceSpec = sfmt("stderr:2");
+            }
 
         } else if (smatch(argp, "version") || smatch(argp, "V")) {
             mprPrintf("%s\n", ME_VERSION);
             exit(0);
 
         } else if (isdigit((uchar) *argp)) {
-            app->log = sfmt("stdout:%d", (int) stoi(argp));
+            if (!app->logSpec) {
+                app->logSpec = sfmt("stderr:%d", (int) stoi(argp));
+            }
+            if (!app->traceSpec) {
+                app->traceSpec = sfmt("stderr:%d", (int) stoi(argp));
+            }
 
         } else if (smatch(argp, "why") || smatch(argp, "w")) {
             app->why = 1;
@@ -605,9 +614,15 @@ static void initRuntime()
     if (app->error) {
         return;
     }
-    mprStartLogging(app->log, 0);
-    mprSetCmdlineLogging(1);
+    httpCreate(HTTP_SERVER_SIDE | HTTP_UTILITY);
+    http = MPR->httpService;
     
+    if (app->logSpec) {
+        mprStartLogging(app->logSpec, MPR_LOG_CMDLINE);
+    }
+    if (app->traceSpec) {
+        httpStartTracing(app->traceSpec);
+    }
     app->currentDir = mprGetCurrentPath();
     app->binDir = mprGetAppDir();
 
@@ -617,14 +632,11 @@ static void initRuntime()
         app->paksCacheDir = mprJoinPath(mprGetAppDir(), "../" ME_ESP_PAKS);
     }
     if (mprStart() < 0) {
-        mprError("Cannot start MPR for %s", mprGetAppName());
+        mprLog("", 0, "Cannot start MPR for %s", mprGetAppName());
         mprDestroy();
         app->error = 1;
         return;
     }
-    httpCreate(HTTP_SERVER_SIDE | HTTP_UTILITY);
-    http = MPR->httpService;
-
     if ((app->appweb = maCreateAppweb()) == 0) {
         fail("Cannot create HTTP service for %s", mprGetAppName());
         return;
@@ -703,6 +715,7 @@ static void initialize(int argc, char **argv)
             route->update = 1;
             httpSetRouteShowErrors(route, 1);
             espSetDefaultDirs(route);
+            httpSetDir(route, "client", ".");
             httpAddRouteHandler(route, "espHandler", "esp");
             httpAddRouteIndex(route, "index.esp");
             httpAddRouteIndex(route, "index.html");
@@ -734,7 +747,6 @@ static void process(int argc, char **argv)
     if (app->error) {
         return;
     }
-
     if (argc == 0) {
         run(argc, argv);
         return;
@@ -820,12 +832,12 @@ static void clean(int argc, char **argv)
     for (ITERATE_ITEMS(app->routes, route, next)) {
         cacheDir = httpGetDir(route, "cache");
         if (cacheDir) {
-            trace("clean", "Route \"%s\" at %s", route->name, route->documents);
+            trace("Clean", "Route \"%s\" at %s", route->name, mprGetRelPath(route->documents, 0));
             files = mprGetPathFiles(cacheDir, MPR_PATH_RELATIVE);
             for (nextFile = 0; (dp = mprGetNextItem(files, &nextFile)) != 0; ) {
                 path = mprJoinPath(cacheDir, dp->name);
                 if (mprPathExists(path, R_OK)) {
-                    trace("clean", "%s", path);
+                    trace("Clean", "%s", mprGetRelPath(path, 0));
                     mprDeletePath(path);
                 }
             }
@@ -1236,7 +1248,7 @@ static void setMode(cchar *mode)
  */
 static void setPackageKey(cchar *key, cchar *value)
 {
-    qtrace("Set", sfmt("%s to %s", key, value));
+    qtrace("Set", sfmt("Key \"%s\" to \"%s\"", key, value));
     if (mprSetJson(app->config, key, value) < 0) {
         fail("Cannot update %s with %s", key, value);
         return;
@@ -1258,13 +1270,8 @@ static void run(int argc, char **argv)
     if (app->error) {
         return;
     }
-    if (!app->log) {
-        if (app->verbose) {
-            mprSetLogLevel(app->verbose + 1);
-        } else if (!app->quiet) {
-            mprSetLogLevel(2);
-        }
-    }
+    MPR->flags |= MPR_LOG_DETAILED;
+
     if (app->show) {
         httpLogRoutes(app->host, 0);
     }
@@ -1287,12 +1294,13 @@ static void run(int argc, char **argv)
             httpAddHostToEndpoints(app->host);
         }
     }
+    trace("Run", "Web server");
     if (httpStartEndpoints() < 0) {
-        mprError("Cannot start HTTP service, exiting.");
+        mprLog("", 0, "Cannot start HTTP service, exiting.");
         return;
     }
     mprServiceEvents(-1, 0);
-    mprLog(1, "Stopping esp ...");
+    mprLog("", 1, "Stopping ...");
 }
 
 
@@ -1574,21 +1582,21 @@ static MprList *getRoutes()
     for (prev = -1; (route = mprGetPrevItem(app->host->routes, &prev)) != 0; ) {
         if ((eroute = route->eroute) == 0 || !eroute->compile) {
             /* No ESP configuration for compiling */
-            mprTrace(5, "Skip route name %s - no esp configuration", route->name);
+            mprLog("", 6, "Skip route name %s - no esp configuration", route->name);
             continue;
         }
         if (filterRouteName) {
-            mprTrace(6, "Check route name %s, prefix %s with %s", route->name, route->startWith, filterRouteName);
+            mprLog("", 6, "Check route name %s, prefix %s with %s", route->name, route->startWith, filterRouteName);
             if (!smatch(filterRouteName, route->name)) {
                 continue;
             }
         } else if (filterRoutePrefix) {
-            mprTrace(6, "Check route name %s, prefix %s with %s", route->name, route->startWith, filterRoutePrefix);
+            mprLog("", 6, "Check route name %s, prefix %s with %s", route->name, route->startWith, filterRoutePrefix);
             if (!smatch(filterRoutePrefix, route->prefix) && !smatch(filterRoutePrefix, route->startWith)) {
                 continue;
             }
         } else {
-            mprTrace(6, "Check route name %s, prefix %s", route->name, route->startWith);
+            mprLog("", 6, "Check route name %s, prefix %s", route->name, route->startWith);
         }
         parent = route->parent;
         if (parent && parent->eroute &&
@@ -1600,7 +1608,7 @@ static MprList *getRoutes()
             continue;
         }
         if (!requiredRoute(route)) {
-            mprTrace(7, "Skip route %s not required for selected targets", route->name);
+            mprLog("", 6, "Skip route %s not required for selected targets", route->name);
             continue;
         }
         /*
@@ -1609,13 +1617,14 @@ static MprList *getRoutes()
         rp = 0;
         for (ITERATE_ITEMS(routes, rp, nextRoute)) {
             if (similarRoute(route, rp)) {
-                mprTrace(7, "Skip route %s because of prior similar route: %s", route->name, rp->name);
+                mprLog("", 6, "Skip route %s because of prior similar route: %s", route->name, rp->name);
                 route = 0;
                 break;
             }
         }
         if (route && mprLookupItem(routes, route) < 0) {
-            mprTrace(5, "Compiling route dir: %s name: %s prefix: %s", route->documents, route->name, route->startWith);
+            mprLog("", 6, "Using route name: %s documents:%s prefix: %s", route->name, route->documents, 
+                route->startWith);
             mprAddItem(routes, route);
         }
     }
@@ -1668,11 +1677,11 @@ static int runEspCommand(HttpRoute *route, cchar *command, cchar *csource, cchar
         fail("Missing EspCompile directive for %s", csource);
         return MPR_ERR_CANT_READ;
     }
-    mprTrace(4, "ESP command: %s\n", app->command);
+    mprLog("", 4, "command: %s", app->command);
     if (eroute->env) {
         elist = mprCreateList(0, MPR_LIST_STABLE);
         for (ITERATE_KEYS(eroute->env, var)) {
-            mprAddItem(elist, sfmt("%s=%s", var->key, var->data));
+            mprAddItem(elist, sfmt("%s=%s", var->key, (char*) var->data));
         }
         mprAddNullItem(elist);
         env = (cchar**) &elist->items[0];
@@ -1698,15 +1707,15 @@ static int runEspCommand(HttpRoute *route, cchar *command, cchar *csource, cchar
 #if ME_WIN_LIKE
         if (!scontains(out, "Creating library ")) {
             if (!smatch(mprGetPathBase(csource), strim(out, " \t\r\n", MPR_TRIM_BOTH))) {
-                mprRawLog(0, "%s\n", out);
+                mprLog("", 0, "%s", out);
             }
         }
 #else
-        mprRawLog(0, "%s\n", out);
+        mprLog("", 0, "%s", out);
 #endif
     }
     if (err && *err) {
-        mprRawLog(0, "%s\n", err);
+        mprLog("", 0, "%s", err);
     }
     return 0;
 }
@@ -1781,7 +1790,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
         why(source, "%s is missing", app->module);
     }
     if (app->combineFile) {
-        trace("Catenate", "%s", source);
+        trace("Catenate", "%s", mprGetRelPath(source, 0));
         mprWriteFileFmt(app->combineFile, "/*\n    Source from %s\n */\n", source);
     }
     if (kind & (ESP_CONTROlLER | ESP_MIGRATION | ESP_SRC)) {
@@ -1827,7 +1836,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
 
         } else {
             app->csource = mprJoinPathExt(mprTrimPathExt(app->module), ".c");
-            trace("Parse", "%s", source);
+            trace("Parse", "%s", mprGetRelPath(source, 0));
             mprMakeDir(cacheDir, 0755, -1, -1, 1);
             if (mprWritePathContents(app->csource, script, len, 0664) < 0) {
                 fail("Cannot write compiled script file %s", app->csource);
@@ -1839,7 +1848,7 @@ static void compileFile(HttpRoute *route, cchar *source, int kind)
         /*
             WARNING: GC yield here
          */
-        qtrace("Compile", "%s", app->csource);
+        trace("Compile", "%s", mprGetRelPath(app->csource, 0));
         if (!eroute->compile) {
             fail("Missing EspCompile directive for %s", app->csource);
             return;
@@ -1887,8 +1896,6 @@ static void compile(int argc, char **argv)
         app->slink = mprCreateList(0, MPR_LIST_STABLE);
     }
     for (ITERATE_ITEMS(app->routes, route, next)) {
-        mprMakeDir(httpGetDir(route, "cache"), 0755, -1, -1, 1);
-        mprTrace(2, "Build with route \"%s\" at %s", route->name, route->documents);
         if (app->combine) {
             compileCombined(route);
         } else {
@@ -1942,7 +1949,7 @@ static bool requiredRoute(HttpRoute *route)
         return 1;
     }
     for (ITERATE_KEYS(app->targets, kp)) {
-        if (mprIsPathContained(route->documents, kp->key)) {
+        if (mprIsPathContained(kp->key, route->documents)) {
             kp->type = ESP_FOUND_TARGET;
             return 1;
         }
@@ -1989,35 +1996,44 @@ static bool selectResource(cchar *path, cchar *kind)
 static void compileItems(HttpRoute *route)
 {
     MprDirEntry *dp;
-    cchar       *path, *clientDir;
-    int         next;
+    cchar       *dir, *path;
+    int         found, next;
 
-    app->files = mprGetPathFiles(httpGetDir(route, "controllers"), MPR_PATH_DESCEND);
-    for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
-        path = dp->name;
-        if (selectResource(path, "c")) {
-            compileFile(route, path, ESP_CONTROlLER);
+    found = 0;
+    vtrace("Info", "Compile items for route \"%s\"", route->name);
+
+    if ((dir = httpGetDir(route, "controllers")) != 0) {
+        app->files = mprGetPathFiles(dir, MPR_PATH_DESCEND);
+        for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
+            path = dp->name;
+            if (selectResource(path, "c")) {
+                compileFile(route, path, ESP_CONTROlLER);
+            }
+            found++;
         }
     }
-    app->files = mprGetPathFiles(httpGetDir(route, "views"), MPR_PATH_DESCEND);
-    for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
-        path = dp->name;
-        if (sstarts(path, httpGetDir(route, "layouts"))) {
-            continue;
-        }
-        if (selectResource(path, "esp")) {
-            compileFile(route, path, ESP_VIEW);
+    if ((dir = httpGetDir(route, "views")) != 0) {
+        app->files = mprGetPathFiles(dir, MPR_PATH_DESCEND);
+        for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
+            path = dp->name;
+            if (sstarts(path, httpGetDir(route, "layouts"))) {
+                continue;
+            }
+            if (selectResource(path, "esp")) {
+                compileFile(route, path, ESP_VIEW);
+            }
+            found++;
         }
     }
 
-    path = mprJoinPath(httpGetDir(route, "src"), "app.c");
-    if (mprPathExists(path, R_OK) && selectResource(path, "c")) {
-        compileFile(route, path, ESP_SRC);
+    dir = mprJoinPath(httpGetDir(route, "src"), "app.c");
+    if (mprPathExists(dir, R_OK) && selectResource(dir, "c")) {
+        compileFile(route, dir, ESP_SRC);
+        found++;
     }
 
-    clientDir = httpGetDir(route, "client");
-    if (clientDir) {
-        app->files = mprGetPathFiles(clientDir, MPR_PATH_DESCEND | MPR_PATH_NODIRS);
+    if ((dir = httpGetDir(route, "client")) != 0) {
+        app->files = mprGetPathFiles(dir, MPR_PATH_DESCEND | MPR_PATH_NODIRS);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
             if (sstarts(path, httpGetDir(route, "layouts"))) {
@@ -2031,6 +2047,7 @@ static void compileItems(HttpRoute *route)
             }
             if (selectResource(path, "esp")) {
                 compileFile(route, path, ESP_PAGE);
+                found++;
             }
         }
 
@@ -2042,6 +2059,7 @@ static void compileItems(HttpRoute *route)
             if (selectResource(path, "esp")) {
                 compileFile(route, path, ESP_PAGE);
             }
+            found++;
         }
         /*
             Stand-alone controllers
@@ -2050,8 +2068,12 @@ static void compileItems(HttpRoute *route)
             path = mprJoinPath(route->home, route->sourceName);
             if (mprPathExists(path, R_OK)) {
                 compileFile(route, path, ESP_CONTROlLER);
+                found++;
             }
         }
+    }
+    if (!found) {
+        trace("Info", "No files to compile for route \"%s\"", route->name);
     }
 }
 
@@ -2120,6 +2142,7 @@ static void compileCombined(HttpRoute *route)
         }
     }
     if (mprGetListLength(app->build) > 0) {
+        mprMakeDir(httpGetDir(route, "cache"), 0755, -1, -1, 1);
         if ((app->combineFile = mprOpenFile(app->combinePath, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, 0664)) == 0) {
             fail("Cannot open %s", app->combinePath);
             return;
@@ -2150,7 +2173,7 @@ static void compileCombined(HttpRoute *route)
         mprCloseFile(app->combineFile);
 
         app->module = mprNormalizePath(sfmt("%s/%s%s", httpGetDir(route, "cache"), name, ME_SHOBJ));
-        qtrace("Compile", "%s", name);
+        trace("Compile", "%s", name);
         if (runEspCommand(route, eroute->compile, app->combinePath, app->module) < 0) {
             return;
         }
@@ -2279,7 +2302,7 @@ static void createMigration(cchar *name, cchar *table, cchar *comment, int field
             mprDeletePath(mprJoinPath("db/migrations/", dp->name));
         }
     }
-    path = sfmt("%s/%s_%s.c", dir, seq, name, ".c");
+    path = sfmt("%s/%s_%s.c", dir, seq, name);
     makeEspFile(path, data, 0);
 }
 
@@ -3042,7 +3065,7 @@ static void usageError()
     mprEprintf("\nESP Usage:\n\n"
     "  %s [options] [commands]\n\n"
     "  Options:\n"
-    "    --appweb appwebConfig      # Use named appweb.conf\n"
+    "    --appweb appweb.config     # Use file for appweb.conf\n"
     "    --cipher cipher            # Password cipher 'md5' or 'blowfish'\n"
     "    --database name            # Database provider 'mdb|sdb'\n"
     "    --genlink filename         # Generate a static link module for combine compilations\n"
@@ -3050,7 +3073,7 @@ static void usageError()
     "    --home directory           # Change to directory first\n"
     "    --keep                     # Keep intermediate source\n"
     "    --listen [ip:]port         # Generate app to listen at address\n"
-    "    --log logFile:level        # Log to file file at verbosity level\n"
+    "    --log logFile:level        # Log to file at verbosity level (0-5)\n"
     "    --name appName             # Name for the app when combining\n"
     "    --nodeps                   # Do not install or upgrade dependencies\n"
     "    --noupdate                 # Do not update the package.json\n"
@@ -3065,6 +3088,7 @@ static void usageError()
     "    --static                   # Use static linking\n"
     "    --symbols                  # Compile for debug with symbols\n"
     "    --table name               # Override table name if plural required\n"
+    "    --trrace traceFile:level   # Trace to file at verbosity level (0-5)\n"
     "    --verbose                  # Emit more verbose trace\n"
     "    --why                      # Why compile or skip building\n"
     "\n"
@@ -3106,7 +3130,7 @@ static void fail(cchar *fmt, ...)
 
     va_start(args, fmt);
     msg = sfmtv(fmt, args);
-    mprError("%s", msg);
+    mprLog("error esp", 0, "%s", msg);
     va_end(args);
     app->error = 1;
 }
@@ -3119,11 +3143,15 @@ static void fatal(cchar *fmt, ...)
 
     va_start(args, fmt);
     msg = sfmtv(fmt, args);
-    mprFatal("%s", msg);
+    mprLog("error esp", 0, "%s", msg);
     va_end(args);
+    exit(2);
 }
 
 
+/*
+    Trace unless silent
+ */
 static void qtrace(cchar *tag, cchar *fmt, ...)
 {
     va_list     args;
@@ -3133,12 +3161,15 @@ static void qtrace(cchar *tag, cchar *fmt, ...)
         va_start(args, fmt);
         msg = sfmtv(fmt, args);
         tag = sfmt("[%s]", tag);
-        mprRawLog(0, "%12s %s\n", tag, msg);
+        mprPrintf("%12s %s\n", tag, msg);
         va_end(args);
     }
 }
 
 
+/*
+    Trace unless quiet
+ */
 static void trace(cchar *tag, cchar *fmt, ...)
 {
     va_list     args;
@@ -3148,14 +3179,14 @@ static void trace(cchar *tag, cchar *fmt, ...)
         va_start(args, fmt);
         msg = sfmtv(fmt, args);
         tag = sfmt("[%s]", tag);
-        mprRawLog(0, "%12s %s\n", tag, msg);
+        mprPrintf("%12s %s\n", tag, msg);
         va_end(args);
     }
 }
 
 
 /*
-    Trace when run with --verbose
+    Trace only when run with --verbose
  */
 static void vtrace(cchar *tag, cchar *fmt, ...)
 {
@@ -3166,7 +3197,7 @@ static void vtrace(cchar *tag, cchar *fmt, ...)
         va_start(args, fmt);
         msg = sfmtv(fmt, args);
         tag = sfmt("[%s]", tag);
-        mprRawLog(0, "%12s %s\n", tag, msg);
+        mprPrintf("%12s %s\n", tag, msg);
         va_end(args);
     }
 }
@@ -3179,7 +3210,7 @@ static void why(cchar *path, cchar *fmt, ...)
     if (app->why) {
         va_start(args, fmt);
         msg = sfmtv(fmt, args);
-        mprRawLog(0, "%14s %s %s\n", "[Why]", path, msg);
+        mprPrintf("%14s %s %s\n", "[Why]", path, msg);
         va_end(args);
     }
 }
@@ -3365,7 +3396,7 @@ static cchar *findAcceptableVersion(cchar *name, cchar *originalCriteria)
     } else {
         fail("Cannot find pak: \"%s\" in %s", name, app->paksCacheDir);
     }
-    mprError("Use \"pak install %s\" to install", name);
+    mprLog("", 0, "Use \"pak install %s\" to install", name);
     return 0;
 }
 
@@ -3395,7 +3426,7 @@ static char *getPassword()
     if (smatch(password, confirm)) {
         return password;
     }
-    mprError("esp: Password not confirmed");
+    mprLog("", 0, "Password not confirmed");
     return 0;
 }
 

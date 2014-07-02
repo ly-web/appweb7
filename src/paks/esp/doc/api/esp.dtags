@@ -232,6 +232,13 @@
       <arglist>(HttpConn *conn)</arglist>
     </member>
     <member kind="function">
+      <type>HttpAuth *</type>
+      <name>espGetAuth</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>ga71e492b0a2ad58a5eb75616556da4f92</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
       <type>HttpConn *</type>
       <name>espGetConn</name>
       <anchorfile>group___esp_req.html</anchorfile>
@@ -377,6 +384,13 @@
       <anchorfile>group___esp_req.html</anchorfile>
       <anchor>ga400095fc3f1743660baedac7c95ff53c</anchor>
       <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>HttpRoute *</type>
+      <name>espGetRoute</name>
+      <anchorfile>group___esp_req.html</anchorfile>
+      <anchor>ga769c951ecdea1f7ab0666eb54e5419df</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>Edi *</type>
@@ -895,6 +909,13 @@
       <arglist>()</arglist>
     </member>
     <member kind="function">
+      <type>HttpAuth *</type>
+      <name>getAuth</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga35c88eaa69d732f54eb5829a85dffcce</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
       <type>MprList *</type>
       <name>getColumns</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
@@ -1039,6 +1060,13 @@
       <name>getReq</name>
       <anchorfile>group___esp_abbrev.html</anchorfile>
       <anchor>ga3dea06818770c33f63a8b60f793a6999</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>HttpRoute *</type>
+      <name>getRoute</name>
+      <anchorfile>group___esp_abbrev.html</anchorfile>
+      <anchor>ga3e7e849481e913c3971b7e0bf73ce088</anchor>
       <arglist>()</arglist>
     </member>
     <member kind="function">

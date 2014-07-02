@@ -3,7 +3,6 @@
  */
 
 Me.load({
-
     targets: {
         patch: {
             action: "
@@ -29,18 +28,20 @@ Me.load({
         api: {
             action: `
                 apidoc('api/appweb.dox', '${SRC}/src/appweb.h', 'APPWEB', 'api/*.tags')
-                for each (let f: Path in ['api/appweb.html', 'api/http.html', 'api/mpr.html', 'api/esp.html', 'api/edi.html']) {
+                for each (let f: Path in ['api/appweb.html', 'api/http.html', 'api/mpr.html', 'api/osdep.html', 'api/esp.html', 'api/edi.html']) {
                     trace('Generate', f)
                     apiwrap(f)
                     let data = f.readString() || ''
                     f.write(data.replace(/mprBare.html/g, 'mpr.html').
-                                           replace(/httpBare.html/g, 'http.html').
-                                           replace(/external=\"mpr.dtags\"/g, '').
-                                           replace(/external=\"http.dtags\"/g, ''))
+                       replace(/osdepBare.html/g, 'osdep.html').
+                       replace(/httpBare.html/g, 'http.html').
+                       replace(/external=\"mpr.dtags\"/g, '').
+                       replace(/external=\"http.dtags\"/g, ''))
                 }
             `,
         },
 
+/* UNUSED
         'esp-doc': {
             action: "
                 if (Cmd.locate('ejsc')) {
@@ -57,6 +58,7 @@ Me.load({
                 }
             ",
         },
+*/
 
         tidy: {
             action: "

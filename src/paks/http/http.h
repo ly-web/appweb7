@@ -1,6 +1,9 @@
 /*
     http.h -- Header for the Embedthis Http Library.
 
+    The http program is a client to issue HTTP requests. It is also a test platform for loading and testing web servers.
+    Do NOT use this program as a sample for creating a simple http client.
+
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
  */
 
@@ -30,6 +33,7 @@ struct HttpRoute;
 struct HttpRx;
 struct HttpSession;
 struct HttpStage;
+struct HttpTrace;
 struct HttpTx;
 struct HttpUri;
 struct HttpUser;
@@ -192,6 +196,7 @@ struct HttpWebSocket;
 #endif
 
 #ifndef ME_HTTP_LOG
+    /* Host, "-" username time requeset-line response-status bytes-written local-host */
     #define ME_HTTP_LOG_FORMAT     "%h %l %u %t \"%r\" %>s %b %n"
 #endif
 
@@ -381,6 +386,7 @@ typedef struct HttpAddress {
     int         banStatus;                      /**< Ban response status */
     int         delay;                          /**< Delay per request */
     int         ncounters;                      /**< Number of counters in ncounters */
+    int         seqno;                          /**< Uniqueu client sequence number */
     HttpCounter counters[1];                    /**< Counters allocated here */
 } HttpAddress;
 
@@ -407,7 +413,7 @@ typedef struct HttpDefense {
 } HttpDefense;
 
 /**
-    Trace an event and validate against defined limits and monitored resources
+    Monitor an event and validate against defined limits and monitored resources
     @description The Http library supports a suite of resource limits that restrict the impact of a request on
         the system. This call validates a processing event for the current request against the server's endpoint limits.
     @param conn Connection object.
@@ -461,7 +467,7 @@ PUBLIC int httpAddDefenseFromJson(cchar *name, cchar *remedy, MprJson *jargs);
 
 /**
     Add a counter to be monitored
-    @param name Name of the counter 
+    @param name Name of the counter
     @return The counter index in HttpAddress.counters[] to use
     @ingroup HttpMonitor
     @stability Prototype
@@ -470,7 +476,7 @@ PUBLIC int httpAddCounter(cchar *name);
 
 /**
     Add a remedy
-    @param name Name of the remedy 
+    @param name Name of the remedy
     @param remedy Remedy callback function
     @return Zero if successful, otherwise a negative MPR error code.
     @ingroup HttpMonitor
@@ -506,14 +512,356 @@ PUBLIC MprTicks httpGetTicks(cchar *value);
 PUBLIC uint64 httpGetNumber(cchar *value);
 PUBLIC void httpPruneMonitors();
 
+/********************************** HttpTrace *********************************/
+
+#define HTTP_TRACE_MAX_SIZE         (10 * 1024) /**< Default maximum body size to trace */
+#define HTTP_TRACE_MIN_LOG_SIZE     (10 * 1024) /**< Minimum log file size */
+
+/**
+    Trace formatter callback
+    @param trace Trace object
+    @param conn Connection object
+    @param event Event to trace
+    @param type Type of event to trace
+    @param values Formatted comma separated key=value pairs
+    @param buf Data buffer
+    @param len Length of data in buf. May be zero.
+    @stability Prototype
+    @ingroup HttpTrace
+ */
+typedef void (*HttpTraceFormatter)(struct HttpTrace *trace, struct HttpConn *conn, cchar *event, cchar *type, 
+    cchar *values, cchar *buf, ssize len);
+/**
+    Trace logger callback
+    @param trace Trace object
+    @param buf Data buffer to write.
+    @param len Length of data in buf.
+    @stability Prototype
+    @ingroup HttpTrace
+ */
+typedef void (*HttpTraceLogger)(struct HttpTrace *trace, cchar *buf, ssize len);
+
+/**
+    Trace management structure
+    @stability Prototype
+    @defgroup HttpTrace HttpTrace
+  */
+typedef struct HttpTrace {
+    cchar               *format;                        /**< Output format (used by Common Log Format) */
+    cchar               *path;                          /**< Trace logger filename */
+    cchar               *lastTime;                      /**< Most recent time string */
+    MprTime             lastMark;                       /**< When lastTime was last updated */
+    MprFile             *file;                          /**< Trace logger file object */
+    int                 backupCount;                    /**< Trace logger backup count */
+    int                 flags;                          /**< Trace control flags (append|anew) */
+    MprOff              size;                           /**< Max trace log size */
+    ssize               maxContent;                     /**< Maximum content size to trace */
+    MprHash             *events;                        /**< Configuration of events */
+    HttpTraceFormatter  formatter;                      /**< Trace formatter */
+    HttpTraceLogger     logger;                         /**< Trace logger */
+    struct HttpTrace    *parent;                        /**< Parent trace */
+    MprMutex            *mutex;                         /**< Multithread sync */
+} HttpTrace;
+
+/**
+    Backup the request trace log if required
+    @description If the log file is greater than the maximum configured, or MPR_ANEW was set via httpSetTraceLog,
+    then archive the log.
+    @param trace HttpTrace object
+    @return Zero if successful, otherwise a negative MPR error code.
+    @ingroup HttpTrace
+    @stability Evolving
+ */
+PUBLIC int httpBackupTraceLogFile(HttpTrace *trace);
+
+/**
+    Common Log trace formatter
+    @param trace HttpTrace object
+    @param conn HttpConn connection object created via #httpCreateConn
+    @param event Event to trace
+    @param type Event type
+    @param values Formatted comma separated key=value pairs (unused)
+    @param buf Trace data buffer to write (unused)
+    @param len Length of data buffer (unused)
+    @ingroup HttpTrace
+    @stability Prototype
+ */
+PUBLIC void httpCommonTraceFormatter(HttpTrace *trace, struct HttpConn *conn, cchar *event, cchar *type, cchar *values, 
+    cchar *buf, ssize len);
+
+/**
+    Create a trace object.
+    @description If parent is defined, inherit default settings from the parent
+    @param parent Parent trace object from which to inherit settings
+    @ingroup HttpTrace
+    @stability Prototype
+    @internal
+ */
+PUBLIC HttpTrace *httpCreateTrace(HttpTrace *parent);
+
+/**
+    Detailed log trace formatter
+    @param trace HttpTrace object 
+    @param conn HttpConn connection object created via #httpCreateConn
+    @param event Event to trace
+    @param type Event type to trace
+    @param values Formatted comma separated key=value pairs
+    @param buf Trace data buffer to write
+    @param len Length of data buffer
+    @ingroup HttpTrace
+    @stability Prototype
+ */
+PUBLIC void httpDetailTraceFormatter(HttpTrace *trace, struct HttpConn *conn, cchar *event, cchar *type, cchar *values, 
+    cchar *buf, ssize len);
+
+/**
+    Convenience routine to format trace via the configured formatter
+    @description The formatter will invoke the trace logger and actually write the trace mesage
+    @param trace HttpTrace object
+    @param conn HttpConn connection object created via #httpCreateConn
+    @param type Event type to trace
+    @param event Event name to trace
+    @param values Formatted comma separated key=value pairs
+    @param buf Trace data buffer to write
+    @param len Length of data buffer
+    @ingroup HttpTrace
+    @stability Prototype
+ */
+PUBLIC void httpFormatTrace(HttpTrace *trace, struct HttpConn *conn, cchar *event, cchar *type, cchar *values, 
+    cchar *buf, ssize len);
+
+/*
+    Trace LogFile logger
+    @description Open the trace log file defined in the HttpTrace object
+    @param trace Trace object
+    @stability Prototype
+    @internal
+ */
+PUBLIC int httpOpenTraceLogFile(HttpTrace *trace);
+
+/**
+    Set the formatter callback to use with a trace object
+    @description The trace formatter should
+    @param trace Trace object to configure
+    @param callback Formatter callback
+    @return Prior trace formatter
+    @ingroup HttpTrace
+    @stability Prototype
+ */
+PUBLIC HttpTraceFormatter httpSetTraceFormatter(HttpTrace *trace, HttpTraceFormatter callback);
+
+/**
+    Set the logging format
+    @description This is used by the Common log formatter to define the fields written to the log
+    @param trace Trace object
+    @param format The format string defaults to: "%h %l %u %t \"%r\" %>s %b %n".
+    @ingroup HttpTrace
+    @stability Prototype
+ */
+
+PUBLIC void httpSetTraceFormat(HttpTrace *trace, cchar *format);
+
+/**
+    Set the current tracing verbosity level.
+    @description This call defines the maximum trace level of messages that will be
+        traced. Trace events have an associated verbosity level at which they will be enabled.
+        If the event level is greater than the defined tracing verbosity level, the event is ignored.
+    @param level New tracing level. Must be 0-5 inclusive.
+    @ingroup HttpTrace
+    @stability Prototype.
+ */
+PUBLIC void httpSetTraceLevel(int level);
+
+/**
+    Get the current tracing level
+    @return The tracing level 0-5
+    @ingroup HttpTrace
+    @stability Prototype
+ */
+PUBLIC int httpGetTraceLevel();
+
+/**
+    Configure the tracing level for an event type
+    @param trace Tracing object
+    @param type Event type to modify
+    @param level Desired trace level (0-5)
+    @ingroup HttpTrace
+    @stability Prototype.
+    @internal
+ */
+PUBLIC void httpSetTraceEventLevel(HttpTrace *trace, cchar *type, int level);
+
+/**
+    Set the maximum content size to trace
+    @description Tracing will be suspended for files that are larger than this size. 
+    @param trace Tracing object
+    @param size Maximum content size to trace
+    @ingroup HttpTrace
+    @stability Prototype.
+ */
+PUBLIC void httpSetTraceContentSize(HttpTrace *trace, ssize size);
+
+/**
+    Set the trace callback to use with a trace object
+    @description The trace logger is responsible for taking formatted messages and writing to the log.
+    @param trace Trace object to configure
+    @param callback Trace logger callback
+    @ingroup HttpTrace
+    @stability Prototype
+ */
+PUBLIC void httpSetTraceLogger(HttpTrace *trace, HttpTraceLogger callback);
+
+/**
+    Configure the request trace log
+    @param trace HttpTrace object
+    @param path Path for request trace log file.
+    @param size Maximum size of the log file before archiving
+    @param backup Set to true to create a backup of the log file if archiving.
+    @param format Log file format
+    @param flags Set to MPR_LOG_ANEW to archive the log when the application reboots.
+    @return Zero if successful, otherwise a negative MPR error code.
+    @ingroup HttpTrace
+    @stability Evolving
+ */
+PUBLIC int httpSetTraceLogFile(HttpTrace *trace, cchar *path, ssize size, int backup, cchar *format, int flags);
+
+/**
+    Define the trace formatter by name
+    @param trace Tracing object
+    @param name Formatter name. Set to "common" for the Common Log format or "detail" for the Appweb detailed trace format.
+    @ingroup HttpTrace
+    @stability Prototype.
+    @internal
+ */
+PUBLIC void httpSetTraceFormatterName(HttpTrace *trace, cchar *name);
+
+#define httpTracing(conn) (conn->http->traceLevel > 0)
+
+/**
+    Start tracing for the given trace log file when instructed via a command line switch.
+    @param traceSpec Set the trace log file name and level. The format is "pathName[:level]".
+    The following levels are generally observed:
+    <ul>
+        <li>0 - Essential messages, fatal errors and critical warnings</li>
+        <li>1 - Hard errors</li>
+        <li>2 - Configuration setup and soft warnings</li>
+        <li>3 - Useful informational messages</li>
+        <li>4 - Debug information</li>
+        <li>5 - Most verbose levels of messages useful for debugging</li>
+    </ul>
+    If the traceSpec is null, not tracing is enabled.
+    @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
+    @ingroup HttpTrace
+    @stability Prototype
+*/
+PUBLIC int httpStartTracing(cchar *traceSpec);
+
+#if DOXYGEN
+/**
+    Trace an event of interest
+    @description The Http trace log is for operational request and server messages and should be used in preference to 
+    the MPR error log which should be used only for configuration and hard system-wide errors.
+    @param conn HttpConn connection object created via #httpCreateConn
+    @param event Event name to trace.
+    @param type Event type to trace. Events are grouped into types that are traced at the same level.
+    The standard set of types and their default trace levels are:
+    request:1, result:2, context:3, form:4, body:5, debug:5. Users can create custom types.
+    The request type is used for the initial http request line. The result type is used for the request status.
+    The context type is used for general information including http headers. The form type is used for POST form data.
+    The body type is used for request body data.
+    \n\n
+    Context type events may include a "msg" field. By convention, these messages should be aggregated by trace 
+    formatters so that subsequent context events do not overwrite prior messages. All errors, should be in 
+    \n\n
+    Event types are orthogonal to event names. 
+    @param values Printf style format string. String should be comma separated key=value pairs
+    @return True if the event was traced
+    @ingroup HttpTrace
+    @stability Prototype
+ */
+PUBLIC bool httpTrace(struct HttpConn *conn, cchar *event, cchar *type, cchar *values, ...);
+#else
+    #define httpTrace(conn, event, type, ...) \
+        if (HTTP->traceLevel > 0) { \
+            HttpTrace *trace = conn ? ((HttpConn*) conn)->trace : HTTP->trace; \
+            int __tlevel = PTOI(mprLookupKey(trace->events, type)); \
+            if (__tlevel > 0 && __tlevel <= HTTP->traceLevel) { \
+                httpTraceProc(conn, event, type, __VA_ARGS__); \
+            } \
+        } else 
+#endif
+PUBLIC bool httpTraceProc(struct HttpConn *conn, cchar *event, cchar *type, cchar *values, ...) PRINTF_ATTRIBUTE(4,5);
+
+/**
+    Trace request content
+    @description This is similar to #httpTrace but will also trace the contents of a data buffer.
+    If the buffer contains binary data, it will be displayed in hex format. The content will be traced up
+    to the maximum size defined via #httpSetTraceLogFile.
+    @param conn HttpConn connection object created via #httpCreateConn
+    @param event Event to trace
+    @param type Event type to trace
+    @param buf Data buffer to trace
+    @param len Size of the data buffer.
+    @param values Formatted comma separated key=value pairs
+    @return True if the event was traced
+    @ingroup HttpTrace
+    @stability Prototype
+ */
+PUBLIC bool httpTraceContent(struct HttpConn *conn, cchar *event, cchar *type, cchar *buf, ssize len, 
+    cchar *values, ...) PRINTF_ATTRIBUTE(6,7);
+
+/**
+    Trace request packet
+    @description This is similar to #httpTraceContent but accepts a packet as a parameter.
+    If the buffer contains binary data, it will be displayed in hex format. The content will be traced up
+    to the maximum size defined via #httpSetTraceLogFile.
+    @param conn HttpConn connection object created via #httpCreateConn
+    @param event Event to trace
+    @param type Event type to trace
+    @param packet Packet to trace.
+    @param values Formatted comma separated key=value pairs
+    @return True if the event was traced
+    @ingroup HttpTrace
+    @stability Prototype
+ */
+PUBLIC bool httpTracePacket(struct HttpConn *conn, cchar *event, cchar *type, struct HttpPacket *packet, 
+    cchar *values, ...) PRINTF_ATTRIBUTE(5,6);
+
+/**
+    Convenience routine to write trace to the trace logger
+    @param trace HttpTrace object
+    @param buf Trace message to write
+    @param len Length of trace message
+    @ingroup HttpTrace
+    @stability Prototype
+ */
+PUBLIC void httpWriteTrace(HttpTrace *trace, cchar *buf, ssize len);
+
+/**
+    Write a message to the trace file logger
+    @param trace HttpTrace object
+    @param buf Message to write
+    @param len Length of message
+    @ingroup HttpTrace
+    @stability Evolving
+ */
+PUBLIC void httpWriteTraceLogFile(HttpTrace *trace, cchar *buf, ssize len);
+
+/*
+    Internal
+ */
+PUBLIC bool httpTraceBody(struct HttpConn *conn, bool outgoing, struct HttpPacket *packet, ssize len);
+PUBLIC cchar *httpMakePrintable(HttpTrace *trace, struct HttpConn *conn, cchar *event, cchar *buf, ssize *lenp);
+
 /************************************ Http **********************************/
-/** 
+/**
     Http service object
-    @description Configuration is not thread safe and must occur at initialization time when the application is single threaded. 
-    If the configuration is modified when the application is multithreaded, all requests must be first be quiesced.
+    @description Configuration is not thread safe and must occur at initialization time when the application is 
+    single threaded. If the configuration is modified when the application is multithreaded, all requests must be 
+    first be quiesced.
     @defgroup Http Http
-    @see Http HttpConn HttpEndpoint gettGetDateString httpCreate httpGetContext httpGetDateString 
-        httpLookupEndpoint httpLookupStatus httpLooupHost httpSetContext httpSetDefaultClientHost 
+    @see Http HttpConn HttpEndpoint gettGetDateString httpCreate httpGetContext httpGetDateString
+        httpLookupEndpoint httpLookupStatus httpLooupHost httpSetContext httpSetDefaultClientHost
         httpSetDefaultClientPort httpSetDefaultPort httpSetForkCallback httpSetProxy httpSetSoftware httpConfigure
     @stability Internal
  */
@@ -541,7 +889,7 @@ typedef struct Http {
     MprHash         *remedies;              /**< List of Defense Remedies */
     MprHash         *addresses;             /**< Monitored per-IP-address counters */
 
-    /*  
+    /*
         Some standard pipeline stages
      */
     struct HttpStage *actionHandler;        /**< Action handler */
@@ -573,6 +921,7 @@ typedef struct Http {
     MprTime         booted;                 /**< Time the server started */
     MprTicks        now;                    /**< Current time in ticks */
     MprMutex        *mutex;                 /**< Multithread sync */
+    HttpTrace       *trace;                 /**< Default tracing configuration */
 
     char            *software;              /**< Software name and version */
     void            *forkData;
@@ -608,6 +957,7 @@ typedef struct Http {
     int             gid;                    /**< Group Id */
     int             userChanged;            /**< User name changed */
     int             groupChanged;           /**< Group name changed */
+    int             traceLevel;             /**< Current request trace level */
 
     /*
         Callbacks
@@ -615,8 +965,22 @@ typedef struct Http {
     HttpEnvCallback     envCallback;        /**< SetEnv callback */
     MprForkCallback     forkCallback;       /**< Callback in child after fork() */
     HttpListenCallback  listenCallback;     /**< Invoked when creating listeners */
-    HttpRequestCallback logCallback;        /**< Request completion callback */
+    HttpRequestCallback requestCallback;    /**< Request completion callback */
+
 } Http;
+
+#if DOXYGEN
+    /**
+        Return the MPR control instance.
+        @description Return the MPR singleton control object.
+        @return Returns the MPR control object.
+        @ingroup Mpr
+        @stability Stable.
+     */
+    PUBLIC Http *HTTP;
+#else
+    #define HTTP ((Http*) (MPR->httpService))
+#endif
 
 /**
     Callback procedure for HttpConfigure
@@ -660,7 +1024,7 @@ PUBLIC int httpApplyUserGroup();
 #define HTTP_UTILITY        0x4             /**< Http engine for utilities (esp) */
 
 /**
-    Alter the configuration by first quiescing all Http activity. This waits until there are no open connections 
+    Alter the configuration by first quiescing all Http activity. This waits until there are no open connections
     and then invokes the configuration callback while blocking further connections. When the callback completes,
     connections are resumed with the new configuration.
     This callback is required because configuration of the Http engine must be done when single-threaded.
@@ -676,7 +1040,7 @@ PUBLIC bool httpConfigure(HttpConfigureProc proc, void *arg, MprTicks timeout);
 /**
     Create a Http service object
     @description Create a http service object. One http service object should be created per application.
-    @param flags Set to zero to initialize bo Initialize the client-side support only. 
+    @param flags Set to zero to initialize bo Initialize the client-side support only.
     @return The http service object.
     @ingroup Http
     @stability Stable
@@ -705,7 +1069,7 @@ PUBLIC void *httpGetContext(Http *http);
     Get the time as an ISO date string
     @param sbuf Optional path buffer. If supplied, the modified time of the path is used. If NULL, then the current
         time is used.
-    @return RFC822 formatted date string. 
+    @return RFC822 formatted date string.
     @ingroup Http
     @stability Stable
  */
@@ -780,7 +1144,7 @@ PUBLIC int httpParsePlatform(cchar *platform, cchar **os, cchar **arch, cchar **
  */
 PUBLIC void httpSetContext(Http *http, void *context);
 
-/** 
+/**
     Define a default client host
     @description Define a default host to use for client connections if the URI does not specify a host
     @param http Http object created via #httpCreateConn
@@ -790,7 +1154,7 @@ PUBLIC void httpSetContext(Http *http, void *context);
  */
 PUBLIC void httpSetDefaultClientHost(Http *http, cchar *host);
 
-/** 
+/**
     Define a default client port
     @description Define a default port to use for client connections if the URI does not define a port
     @param http Http object created via #httpCreateConn
@@ -804,7 +1168,7 @@ PUBLIC void httpSetDefaultClientPort(Http *http, int port);
     Set the group account
     @description Define the group account name under which to run the process
     @param group Group name. Must be defined in the system group database.
-    @return Zero if successful, otherwise a negative Mpr error code. 
+    @return Zero if successful, otherwise a negative Mpr error code.
     @ingroup Http
     @stability Prototype
  */
@@ -831,7 +1195,7 @@ PUBLIC int httpSetPlatform(cchar *platform);
  */
 PUBLIC int httpSetPlatformDir(cchar *platform);
 
-/** 
+/**
     Define a Http proxy host to use for all client connect requests.
     @description Define a http proxy host to communicate via when accessing the net.
     @param http Http object created via #httpCreate
@@ -841,16 +1205,6 @@ PUBLIC int httpSetPlatformDir(cchar *platform);
     @stability Stable
  */
 PUBLIC void httpSetProxy(Http *http, cchar *host, int port);
-
-/**
-    Define a request completion callback
-    @description This routine is used to define a callback that is invoked when each request is completed.
-    The callback is passed the HttpConn object prior to destruction.
-    @param callback HttpRequestCallback function
-    @ingroup Http
-    @stability Prototype
- */
-PUBLIC void httpSetRequestLogCallback(HttpRequestCallback callback);
 
 /**
     Set the software description
@@ -893,7 +1247,7 @@ PUBLIC void httpRemoveHost(Http *http, struct HttpHost *host);
 PUBLIC void httpDefineRouteBuiltins();
 
 /*********************************** HttpStats ********************************/
-/** 
+/**
     HttpStats
     @defgroup HttpStats HttpStats
     @stability Internal
@@ -903,7 +1257,7 @@ typedef struct HttpStats {
     uint64  mem;                        /**< Current application memory (includes code + data + heap) */
     uint64  memRedline;                 /**< Memory heap warnHeap limit */
     uint64  memMax;                     /**< Memory heap maximum permitted */
-    uint64  memSessions;                /**< Memory used for sessions */ 
+    uint64  memSessions;                /**< Memory used for sessions */
 
     uint64  heap;                       /**< Current application heap memory */
     uint64  heapPeak;                   /**< Peak heap memory usage */
@@ -932,7 +1286,7 @@ typedef struct HttpStats {
 #define HTTP_STATS_MEMORY   0x1
 #define HTTP_STATS_ALL      0x1
 
-/** 
+/**
     Get an Http performance report
     @param flags reserved
     @return String containing the report
@@ -941,7 +1295,7 @@ typedef struct HttpStats {
  */
 PUBLIC char *httpStatsReport(int flags);
 
-/** 
+/**
     Get the Http performance statistics
     @param sp Reference to a HttpStats structure
     @ingroup HttpStats
@@ -950,7 +1304,7 @@ PUBLIC char *httpStatsReport(int flags);
 PUBLIC void httpGetStats(HttpStats *sp);
 
 /************************************* Limits *********************************/
-/** 
+/**
     Http limits
     @defgroup HttpLimits HttpLimits
     @see HttpLimits httpInitLimits httpCreateLimits httpEaseLimits
@@ -985,7 +1339,7 @@ typedef struct HttpLimits {
 
     int      webSocketsMax;             /**< Maximum number of WebSockets */
     ssize    webSocketsMessageSize;     /**< Maximum total size of a WebSocket message including all frames */
-    ssize    webSocketsFrameSize;       /**< Maximum size of sent WebSocket frames. Incoming frames have no limit 
+    ssize    webSocketsFrameSize;       /**< Maximum size of sent WebSocket frames. Incoming frames have no limit
                                              except message size.  */
     ssize    webSocketsPacketSize;      /**< Maximum size of a WebSocket packet exchanged with the user callback */
 } HttpLimits;
@@ -1011,7 +1365,7 @@ PUBLIC HttpLimits *httpCreateLimits(int serverSide);
 
 /**
     Ease the limits
-    @description This increases the receive body size, transmission body size and upload size to the maximum 
+    @description This increases the receive body size, transmission body size and upload size to the maximum
         sizes supported by the system. Client side limits are eased by default.
     @param limits Limits object. This can be either HttpHost.limits HttpConn.limits or HttpEndpoint.limits
     @ingroup HttpLimits
@@ -1020,13 +1374,13 @@ PUBLIC HttpLimits *httpCreateLimits(int serverSide);
 PUBLIC void httpEaseLimits(HttpLimits *limits);
 
 /************************************* URI Services ***************************/
-/** 
+/**
     URI management
     @description The HTTP provides routines for formatting and parsing URIs. Routines are also provided
         to escape dangerous characters for URIs as well as HTML content and shell commands.
-    @see HttpConn httpCloneUri httpCompleteUri httpCreateUri httpCreateUriFromParts httpFormatUri httpGetRelativeUri 
-        httpJoinUri httpJoinUriPath httpLookupMimeType httpMakeUriLocal httpNormalizeUriPath httpResolveUri 
-        httpUriToString 
+    @see HttpConn httpCloneUri httpCompleteUri httpCreateUri httpCreateUriFromParts httpFormatUri httpGetRelativeUri
+        httpJoinUri httpJoinUriPath httpLookupMimeType httpMakeUriLocal httpNormalizeUriPath httpResolveUri
+        httpUriToString
     @defgroup HttpUri HttpUri
     @stability Internal
  */
@@ -1037,10 +1391,10 @@ typedef struct HttpUri {
     char        *ext;                   /**< Document extension */
     char        *reference;             /**< Reference fragment within the specified resource */
     char        *query;                 /**< Query string */
+    char        *uri;                   /**< Original URI (not decoded) */
     int         port;                   /**< Port number */
     int         secure;                 /**< Using https */
     int         webSockets;             /**< Using WebSockets */
-    char        *uri;                   /**< Original URI (not decoded) */
 } HttpUri;
 
 #define HTTP_COMPLETE_URI       0x1     /**< Complete all missing URI fields. Set from "http://localhost/" */
@@ -1050,7 +1404,7 @@ typedef struct HttpUri {
     Clone a URI
     @description This call copies the base URI and optionally completes missing fields in the URI
     @param base Base URI to copy
-    @param flags Set to HTTP_COMPLETE_URI to add missing components. ie. Add scheme, host and port if not supplied. 
+    @param flags Set to HTTP_COMPLETE_URI to add missing components. ie. Add scheme, host and port if not supplied.
     @return A new URI object
     @ingroup HttpUri
     @stability Stable
@@ -1069,12 +1423,12 @@ PUBLIC HttpUri *httpCloneUri(HttpUri *base, int flags);
   */
 PUBLIC HttpUri *httpCompleteUri(HttpUri *uri, HttpUri *other);
 
-/** 
+/**
     Create and initialize a URI.
     @description Parse a uri and return a tokenized HttpUri structure.
     @param uri Uri string to parse
-    @param flags Set to HTTP_COMPLETE_URI to add missing components. ie. Add scheme, host and port if not supplied. 
-    @return A newly allocated HttpUri structure. 
+    @param flags Set to HTTP_COMPLETE_URI to add missing components. ie. Add scheme, host and port if not supplied.
+    @return A newly allocated HttpUri structure.
     @ingroup HttpUri
     @stability Stable
  */
@@ -1090,15 +1444,15 @@ PUBLIC HttpUri *httpCreateUri(cchar *uri, int flags);
     @param path The URI path to the requested document.
     @param reference URI reference with an HTML document. This is the URI component after the "#" in the URI path.
     @param query URI query component. This is the URI component after the "?" in the URI.
-    @param flags Set to HTTP_COMPLETE_URI to add missing components. ie. Add scheme, host and port if not supplied. 
-    @return A new URI 
+    @param flags Set to HTTP_COMPLETE_URI to add missing components. ie. Add scheme, host and port if not supplied.
+    @return A new URI
     @ingroup HttpUri
     @stability Stable
  */
-PUBLIC HttpUri *httpCreateUriFromParts(cchar *scheme, cchar *host, int port, cchar *path, cchar *reference, 
+PUBLIC HttpUri *httpCreateUriFromParts(cchar *scheme, cchar *host, int port, cchar *path, cchar *reference,
         cchar *query, int flags);
 
-/** 
+/**
     Format a URI
     @description Format a URI string using the input components.
     @param scheme Protocol string for the uri. Example: "http"
@@ -1107,7 +1461,7 @@ PUBLIC HttpUri *httpCreateUriFromParts(cchar *scheme, cchar *host, int port, cch
     @param path URL path
     @param ref URL reference fragment
     @param query Additiona query parameters.
-    @param flags Set to HTTP_COMPLETE_URI to add missing components. ie. Add scheme, host and port if not supplied. 
+    @param flags Set to HTTP_COMPLETE_URI to add missing components. ie. Add scheme, host and port if not supplied.
     @return A newly allocated uri string
     @ingroup HttpUri
     @stability Stable
@@ -1128,7 +1482,7 @@ PUBLIC HttpUri *httpJoinUri(HttpUri *base, int argc, HttpUri **others);
 /**
     Join a URI path
     @param result URI that will be modified with a joined path
-    @param base URI supplying the base path 
+    @param base URI supplying the base path
     @param other Other URI whose path is joined to the base
     @return The result URI
     @ingroup HttpUri
@@ -1136,7 +1490,7 @@ PUBLIC HttpUri *httpJoinUri(HttpUri *base, int argc, HttpUri **others);
  */
 PUBLIC HttpUri *httpJoinUriPath(HttpUri *result, HttpUri *base, HttpUri *other);
 
-/** 
+/**
     Get the mime type for an extension.
     This call will return the mime type from a limited internal set of mime types for the given path or extension.
     @param ext Path or extension to examine
@@ -1156,12 +1510,12 @@ PUBLIC cchar *httpLookupMimeType(cchar *ext);
  */
 PUBLIC HttpUri *httpNormalizeUri(HttpUri *uri);
 
-/** 
+/**
     Normalize a URI
-    @description Validate and canonicalize a URI path. This removes redundant "./" sequences and simplifies "../dir" 
-        references. 
+    @description Validate and canonicalize a URI path. This removes redundant "./" sequences and simplifies "../dir"
+        references.
     @param uri Uri path string to normalize. This is the URI path portion without scheme, host and port components.
-    @return A new validated uri string. 
+    @return A new validated uri string.
     @ingroup HttpUri
     @stability Stable
  */
@@ -1176,7 +1530,7 @@ PUBLIC char *httpNormalizeUriPath(cchar *uri);
         the target will be returned. If clone is true, then a clone of the target will be returned.
     @param base The base URI considered to be the current URI. Think of this as the current directory.
     @param target The destination URI for which a relative URI will be crafted to reach.
-    @param clone If true, the target URI will be cloned if the target is an absolute URI or if a relative URI 
+    @param clone If true, the target URI will be cloned if the target is an absolute URI or if a relative URI
         cannot be constructed.
     @ingroup HttpUri
     @stability Stable
@@ -1187,7 +1541,7 @@ PUBLIC HttpUri *httpGetRelativeUri(HttpUri *base, HttpUri *target, int clone);
     Make a URI local
     @description This routine removes the scheme, host and port portions of a URI
     @param uri URI to modify
-    @return The given URI. 
+    @return The given URI.
     @ingroup HttpUri
     @stability Stable
  */
@@ -1204,36 +1558,36 @@ PUBLIC HttpUri *httpMakeUriLocal(HttpUri *uri);
   */
 PUBLIC HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool local);
 
-/** 
-    Create a URI link 
-    @description Create a URI link based on a given target relative to the current request. 
-        This API expands embedded tokens based on the current request and route state. 
+/**
+    Create a URI link
+    @description Create a URI link based on a given target relative to the current request.
+        This API expands embedded tokens based on the current request and route state.
         The target URI parameter may contain partial or complete URI information. The missing parts are
-        supplied using the current request and route tables. The resulting URI is a normalized, server-local URI (that 
-        begins with "/"). The URI will include a required application route prefix, but will not include scheme, host or 
+        supplied using the current request and route tables. The resulting URI is a normalized, server-local URI (that
+        begins with "/"). The URI will include a required application route prefix, but will not include scheme, host or
         port components.
-    @param [in] conn HttpConn connection object 
-    @param target The URI target. The target parameter can be a URI string or JSON style set of options. 
+    @param [in] conn HttpConn connection object
+    @param target The URI target. The target parameter can be a URI string or JSON style set of options.
         The target will have any embedded "{tokens}" expanded by using token values from the request parameters.
         If the target has an absolute URI path, that path is used directly after tokenization. If the target begins with
-        "~", that character will be replaced with the route prefix. This is a very convenient way to create application 
+        "~", that character will be replaced with the route prefix. This is a very convenient way to create application
         top-level relative links.
         \n\n
-        If the target is a string that begins with "{AT}" it will be interpreted as a service/action pair of the 
-        form "{AT}Service/action". If the "service/" portion is absent, the current service is used. If 
-        the action component is missing, the "list" action is used. A bare "{AT}" refers to the "list" action 
+        If the target is a string that begins with "{AT}" it will be interpreted as a service/action pair of the
+        form "{AT}Service/action". If the "service/" portion is absent, the current service is used. If
+        the action component is missing, the "list" action is used. A bare "{AT}" refers to the "list" action
         of the current service.
         \n\n
         If the target starts with "{" it is interpreted as being a JSON style set of options that describe the link.
-        If the target is a relative URI path, it is appended to the current request URI path.  
+        If the target is a relative URI path, it is appended to the current request URI path.
         \n\n
         If the is a JSON style of options, it can specify the URI components: scheme, host, port, path, reference and
         query. If these component properties are supplied, these will be combined to create a URI.
         \n\n
-        If the target specifies either a service/action or a JSON set of options, The URI will be created according 
+        If the target specifies either a service/action or a JSON set of options, The URI will be created according
         to the route URI template. The template may be explicitly specified
         via a "route" target property. Otherwise, if an "action" property is specified, the route of the same
-        name will be used. If these don't result in a usable route, the "default" route will be used. 
+        name will be used. If these don't result in a usable route, the "default" route will be used.
         \n\n
         These are the properties supported in a JSON style "{ ... }" target:
         <ul>
@@ -1273,11 +1627,11 @@ PUBLIC HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool l
  */
 PUBLIC char *httpLink(struct HttpConn *conn, cchar *target);
 
-/** 
-    Extended URI link creation. 
+/**
+    Extended URI link creation.
     @description Extended httpLink with custom options. This routine extends the #httpLink API with an options hash
-        of token values. 
-    @param [in] conn HttpConn connection object 
+        of token values.
+    @param [in] conn HttpConn connection object
     @param target The URI target. See #httpLink for details.
     @param options Hash of option values for embedded tokens. This hash is blended with the route variables.
     @return A normalized, server-local Uri string.
@@ -1288,12 +1642,12 @@ PUBLIC char *httpLinkEx(struct HttpConn *conn, cchar *target, MprHash *options);
 
 PUBLIC HttpUri *httpLinkUri(struct HttpConn *conn, cchar *target, MprHash *options);
 
-/** 
+/**
     Convert a Uri to a string.
     @description Convert the given Uri to a string, optionally completing missing parts such as the host, port and path.
-    @param uri A Uri object created via httpCreateUri 
-    @param flags Set to HTTP_COMPLETE_URI to add missing components. ie. Add scheme, host and port if not supplied. 
-    @return A newly allocated uri string. 
+    @param uri A Uri object created via httpCreateUri
+    @param flags Set to HTTP_COMPLETE_URI to add missing components. ie. Add scheme, host and port if not supplied.
+    @return A newly allocated uri string.
     @ingroup HttpUri
     @stability Stable
  */
@@ -1303,7 +1657,7 @@ PUBLIC char *httpUriToString(HttpUri *uri, int flags);
     Validate a URI path as expected in a HTTP request line
     @description This expects a URI beginning with "/" and containing only valid URI characters.
     The URI is decoded, and normalized removing "../" and "." segments.
-    The URI must begin with a "/" both before and after decoding and normalization. 
+    The URI must begin with a "/" both before and after decoding and normalization.
     @param uri URI to validate.
     @return A validated, normalized URI path
     @stability Evolving
@@ -1312,8 +1666,8 @@ PUBLIC char *httpValidateUriPath(cchar *uri);
 
 /**
     Test if a URI is using only valid characters
-    Note this does not test if the URI is fully legal. Some components of the URI have restricted character sets 
-    that this routine does not test. This tests if the URI has only characters valid to use in a URI before decoding. 
+    Note this does not test if the URI is fully legal. Some components of the URI have restricted character sets
+    that this routine does not test. This tests if the URI has only characters valid to use in a URI before decoding.
     i.e. It will permit %NN encodings. The set of valid characters is:
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%"
     @param uri Uri to test
@@ -1322,7 +1676,7 @@ PUBLIC char *httpValidateUriPath(cchar *uri);
 PUBLIC bool httpValidUriChars(cchar *uri);
 
 /************************************* Range **********************************/
-/** 
+/**
     Content range structure
     @pre
         Range:  0,  49  First 50 bytes
@@ -1340,7 +1694,7 @@ typedef struct HttpRange {
 } HttpRange;
 
 /************************************* Packet *********************************/
-/*  
+/*
     Packet flags
  */
 #define HTTP_PACKET_HEADER    0x1               /**< Packet contains HTTP headers */
@@ -1361,20 +1715,20 @@ typedef struct HttpRange {
  */
 typedef ssize (*HttpFillProc)(struct HttpQueue *q, struct HttpPacket *packet, MprOff pos, ssize size);
 
-/** 
-    Packet object. 
+/**
+    Packet object.
     @description The request/response pipeline sends data and control information in HttpPacket objects. The output
         stream typically consists of a HEADER packet followed by zero or more data packets and terminated by an END
         packet. If the request has input data, the input stream consists of one or more data packets followed by
         an END packet.
         \n\n
-        Packets contain data and optional prefix or suffix headers. Packets can be split, joined, filled, or emptied. 
+        Packets contain data and optional prefix or suffix headers. Packets can be split, joined, filled, or emptied.
         The pipeline stages will fill or transform packet data as required.
     @defgroup HttpPacket HttpPacket
-    @see HttpFillProc HttpPacket HttpQueue httpAdjustPacketEnd httpAdjustPacketStart httpClonePacket 
-        httpCreateDataPacket httpCreateEndPacket httpCreateEntityPacket httpCreateHeaderPacket httpCreatePacket 
-        httpGetPacket httpGetPacketLength httpIsLastPacket httpJoinPacket 
-        httpPutBackPacket httpPutForService httpPutPacket httpPutPacketToNext httpSplitPacket 
+    @see HttpFillProc HttpPacket HttpQueue httpAdjustPacketEnd httpAdjustPacketStart httpClonePacket
+        httpCreateDataPacket httpCreateEndPacket httpCreateEntityPacket httpCreateHeaderPacket httpCreatePacket
+        httpGetPacket httpGetPacketLength httpIsLastPacket httpJoinPacket
+        httpPutBackPacket httpPutForService httpPutPacket httpPutPacketToNext httpSplitPacket
     @stability Internal
  */
 typedef struct HttpPacket {
@@ -1392,7 +1746,7 @@ typedef struct HttpPacket {
 /**
     Adjust the packet starting position.
     @description This adjusts the packet content by the given size. The packet position is incremented by start and the
-    packet length (size) is decremented. If the packet describes entity data, the given size amount to the Packet.epos and 
+    packet length (size) is decremented. If the packet describes entity data, the given size amount to the Packet.epos and
     decrements the Packet.esize fields. If the packet has actual data buffered in Packet.content, the content buffer
     start is incremeneted by the size amount.
     @param packet Packet to modify
@@ -1404,8 +1758,8 @@ PUBLIC void httpAdjustPacketStart(HttpPacket *packet, MprOff size);
 
 /**
     Adjust the packet end position.
-    @description This adjusts the packet content by the given size. The packet length (size) is decremented by the requested 
-    amount. If the packet describes entity data, the Packet.esize field is reduced by the requested size amount. If the 
+    @description This adjusts the packet content by the given size. The packet length (size) is decremented by the requested
+    amount. If the packet describes entity data, the Packet.esize field is reduced by the requested size amount. If the
     packet has actual data buffered in Packet.content, the content buffer end position is reduced by
     by the size amount.
     @param packet Packet to modify
@@ -1424,7 +1778,7 @@ PUBLIC void httpAdjustPacketEnd(HttpPacket *packet, MprOff size);
  */
 PUBLIC HttpPacket *httpClonePacket(HttpPacket *orig);
 
-/** 
+/**
     Create a data packet
     @description Create a packet and set the HTTP_PACKET_DATA flag
         Data packets convey data through the response pipeline.
@@ -1435,9 +1789,9 @@ PUBLIC HttpPacket *httpClonePacket(HttpPacket *orig);
  */
 PUBLIC HttpPacket *httpCreateDataPacket(ssize size);
 
-/** 
+/**
     Create an end-of-stream packet
-    @description Create an end-of-stream packet and set the HTTP_PACKET_END flag. The end pack signifies the 
+    @description Create an end-of-stream packet and set the HTTP_PACKET_END flag. The end pack signifies the
         end of data. It is used on both incoming and outgoing streams through the request/response pipeline.
     @return HttpPacket object.
     @ingroup HttpPacket
@@ -1445,12 +1799,12 @@ PUBLIC HttpPacket *httpCreateDataPacket(ssize size);
  */
 PUBLIC HttpPacket *httpCreateEndPacket();
 
-/** 
+/**
     Create an entity data packet
     @description Create an entity packet and set the HTTP_PACKET_DATA flag.
         Entity packets describe the resource (entity) to send to the client and provide a #HttpFillProc procedure
         used to fill packets with data from the entity.
-    @param pos Position within the entity for packet data 
+    @param pos Position within the entity for packet data
     @param size Size of the entity data
     @param fill HttpFillProc callback to supply the entity data.
     @return HttpPacket object.
@@ -1459,9 +1813,9 @@ PUBLIC HttpPacket *httpCreateEndPacket();
  */
 PUBLIC HttpPacket *httpCreateEntityPacket(MprOff pos, MprOff size, HttpFillProc fill);
 
-/** 
+/**
     Create a response header packet
-    @description Create a response header packet and set the HTTP_PACKET_HEADER flag. 
+    @description Create a response header packet and set the HTTP_PACKET_HEADER flag.
         A header packet is used by the pipeline to hold the response headers.
     @return HttpPacket object.
     @ingroup HttpPacket
@@ -1469,7 +1823,7 @@ PUBLIC HttpPacket *httpCreateEntityPacket(MprOff pos, MprOff size, HttpFillProc 
  */
 PUBLIC HttpPacket *httpCreateHeaderPacket();
 
-/** 
+/**
     Create a data packet
     @description Create a packet of the required size.
     @param size Size of the package data storage.
@@ -1479,7 +1833,7 @@ PUBLIC HttpPacket *httpCreateHeaderPacket();
  */
 PUBLIC HttpPacket *httpCreatePacket(ssize size);
 
-/** 
+/**
     Get the next packet from a queue
     @description Get the next packet. This will remove the packet from the queue and adjust the queue counts
         accordingly. If the queue is full and upstream queues are blocked, they will be enabled.
@@ -1491,7 +1845,7 @@ PUBLIC HttpPacket *httpCreatePacket(ssize size);
 PUBLIC HttpPacket *httpGetPacket(struct HttpQueue *q);
 
 #if DOXYGEN
-/** 
+/**
     Get the packet data contents.
     @description Get the packet content reference. This is an MprBuf object.
     @param packet Packet to examine.
@@ -1505,10 +1859,10 @@ PUBLIC ssize httpGetPacketContents(HttpPacket *packet);
 #endif
 
 #if DOXYGEN
-/** 
+/**
     Get the length of the packet data contents.
     @description Get the content length of a packet. This does not include the prefix or virtual data length -- just
-    the pure buffered data contents. 
+    the pure buffered data contents.
     @param packet Packet to examine.
     @return Count of bytes contained by the packet.
     @ingroup HttpPacket
@@ -1519,7 +1873,7 @@ PUBLIC ssize httpGetPacketLength(HttpPacket *packet);
     #define httpGetPacketLength(p) ((p && p->content) ? mprGetBufLength(p->content) : 0)
 #endif
 
-/** 
+/**
     Get the start of the packet data contents.
     @param packet Packet to examine.
     @return A reference to the start of the packet contents.
@@ -1528,7 +1882,7 @@ PUBLIC ssize httpGetPacketLength(HttpPacket *packet);
  */
 PUBLIC char *httpGetPacketStart(HttpPacket *packet);
 
-/** 
+/**
     Get the packet data contents as a string.
     @description Get the packet content reference. The packet contents will be null terminated.
     @param packet Packet to examine.
@@ -1548,10 +1902,10 @@ PUBLIC char *httpGetPacketString(HttpPacket *packet);
  */
 PUBLIC bool httpIsLastPacket(HttpPacket *packet);
 
-/** 
+/**
     Join two packets
-    @description Join the contents of one packet to another by copying the data from the \a other packet into 
-        the first packet. 
+    @description Join the contents of one packet to another by copying the data from the \a other packet into
+        the first packet.
     @param packet Destination packet
     @param other Other packet to copy data from.
     @return "Zero" if successful, otherwise a negative Mpr error code
@@ -1560,13 +1914,13 @@ PUBLIC bool httpIsLastPacket(HttpPacket *packet);
  */
 PUBLIC int httpJoinPacket(HttpPacket *packet, HttpPacket *other);
 
-/** 
+/**
     Split a data packet
     @description Split a data packet at the specified offset. Packets may need to be split so that downstream
         stages can digest their contents. If a packet is too large for the queue maximum size, it should be split.
         When the packet is split, a new packet is created containing the data after the offset. Any suffix headers
         are moved to the new packet.
-        NOTE: when splitting packets, the HttpPacket.content reference may be modified. 
+        NOTE: when splitting packets, the HttpPacket.content reference may be modified.
     @param packet Packet to split
     @param offset Route in the original packet at which to split
     @return New HttpPacket object containing the data after the offset. No need to free, unless you have a very long
@@ -1582,14 +1936,14 @@ PUBLIC HttpPacket *httpSplitPacket(HttpPacket *packet, ssize offset);
 #define httpGetPacketEntityLength(p) (p->content ? mprGetBufLength(p->content) : packet->esize)
 
 /************************************* Queue *********************************/
-/*  
+/*
     Queue directions
  */
 #define HTTP_QUEUE_TX             0         /**< Send (transmit to client) queue */
 #define HTTP_QUEUE_RX             1         /**< Receive (read from client) queue */
 #define HTTP_MAX_QUEUE            2         /**< Number of queue types */
 
-/* 
+/*
    Queue flags
  */
 #define HTTP_QUEUE_OPEN_TRIED     0x1       /**< Queue's open routine has been called */
@@ -1602,7 +1956,7 @@ PUBLIC HttpPacket *httpSplitPacket(HttpPacket *packet, ssize offset);
 #define HTTP_QUEUE_READY          0x80      /**< Handler stage ready routine called */
 #define HTTP_QUEUE_RESERVICE      0x100     /**< Queue requires reservicing */
 
-/*  
+/*
     Queue callback prototypes
  */
 typedef int  (*HttpQueueOpen)(struct HttpQueue *q);
@@ -1611,7 +1965,7 @@ typedef void (*HttpQueueStart)(struct HttpQueue *q);
 typedef void (*HttpQueueData)(struct HttpQueue *q, HttpPacket *packet);
 typedef void (*HttpQueueService)(struct HttpQueue *q);
 
-/** 
+/**
     Queue object
     @description The request pipeline consists of a full-duplex pipeline of stages. Each stage has two queues,
         one for outgoing data and one for incoming. A HttpQueue object manages the data flow for a request stage
@@ -1620,9 +1974,9 @@ typedef void (*HttpQueueService)(struct HttpQueue *q);
         Queue's provide open, close, put, and service methods. These methods manage and respond to incoming packets.
         A queue can respond immediately to an incoming packet by processing or dispatching a packet in its put() method.
         Alternatively, the queue can defer processing by queueing the packet on it's service queue and then waiting for
-        it's service() method to be invoked. 
+        it's service() method to be invoked.
         \n\n
-        If a queue does not define a put() method, the default put() method will 
+        If a queue does not define a put() method, the default put() method will
         be used which queues data onto the service queue. The default incoming put() method joins incoming packets
         into a single packet on the service queue.
         \n\n
@@ -1632,7 +1986,7 @@ typedef void (*HttpQueueService)(struct HttpQueue *q);
         httpIsEof httpIsPacketTooBig httpIsQueueEmpty httpIsQueueSuspended httpJoinPacketForService httpJoinPackets
         httpPutBackPacket httpPutForService httpPutPacket httpPutPacketToNext httpRemoveQueue httpResizePacket
         httpResumeQueue httpScheduleQueue httpServiceQueue httpSetQueueLimits httpSuspendQueue
-        httpWillNextQueueAcceptPacket httpWillNextQueueAcceptSize httpWrite httpWriteBlock httpWriteBody httpWriteString 
+        httpWillNextQueueAcceptPacket httpWillNextQueueAcceptSize httpWrite httpWriteBlock httpWriteBody httpWriteString
     @stability Internal
  */
 typedef struct HttpQueue {
@@ -1662,7 +2016,7 @@ typedef struct HttpQueue {
     void                *queueData;             /**< Stage instance data - must be a managed reference */
     void                *staticData;            /**< Stage instance data - must be an unmanaged reference */
 
-    /*  
+    /*
         Connector instance data
      */
     MprIOVec            iovec[ME_MAX_IOVEC];
@@ -1673,7 +2027,7 @@ typedef struct HttpQueue {
 } HttpQueue;
 
 
-/** 
+/**
     Disable a queue
     @description Disable a queue so that it will not be scheduled for service. The queue will remain disabled until
         httpEnableQueue is called.
@@ -1683,7 +2037,7 @@ typedef struct HttpQueue {
  */
 PUBLIC void httpDisableQueue(HttpQueue *q);
 
-/** 
+/**
     Discard all data from the queue
     @description Discard data from the queue. If removePackets (not yet implemented) is "true", then remove the packets.
         Oherwise, just discard the data and preserve the packets.
@@ -1694,7 +2048,7 @@ PUBLIC void httpDisableQueue(HttpQueue *q);
  */
 PUBLIC void httpDiscardQueueData(HttpQueue *q, bool removePackets);
 
-/** 
+/**
     Enable a queue after it has been disabled.
     @description Enable a queue for service and schedule it to run. This will cause the service routine
         to run as soon as possible.
@@ -1706,9 +2060,9 @@ PUBLIC void httpEnableQueue(HttpQueue *q);
 
 /**
     Flush queue data
-    @description This initiates writing buffered data (flushes) by scheduling the queue and servicing the queues. 
+    @description This initiates writing buffered data (flushes) by scheduling the queue and servicing the queues.
     \n\n
-    If blocking mode is selected, all queues will be immediately serviced and the call may block while output drains. 
+    If blocking mode is selected, all queues will be immediately serviced and the call may block while output drains.
     If non-blocking, the queues will be serviced but the call will not block nor yield.
     In blocking mode, this routine may invoke mprYield before it blocks to consent for the garbage collector to trun. Callers must
     ensure they have retained all required temporary memory before invoking this routine.
@@ -1723,7 +2077,7 @@ PUBLIC void httpEnableQueue(HttpQueue *q);
  */
 PUBLIC bool httpFlushQueue(HttpQueue *q, int flags);
 
-/** 
+/**
     Get the room in the queue
     @description Get the amount of data the queue can accept before being full.
     @param q Queue reference
@@ -1737,15 +2091,15 @@ PUBLIC ssize httpGetQueueRoom(HttpQueue *q);
     Test if the connection has received all incoming content
     @description This tests if the connection is at an "End of File condition.
     @param conn HttpConn object created via #httpCreateConn
-    @return "True" if all Receive content has been received 
+    @return "True" if all Receive content has been received
     @ingroup HttpQueue
     @stability Stable
  */
 PUBLIC bool httpIsEof(struct HttpConn *conn);
 
-/** 
-    Test if a packet is too big 
-    @description Test if a packet is too big to fit downstream. If the packet content exceeds the downstream queue's 
+/**
+    Test if a packet is too big
+    @description Test if a packet is too big to fit downstream. If the packet content exceeds the downstream queue's
         maximum or exceeds the downstream queue's requested packet size -- then this routine will return "true".
     @param q Queue reference
     @param packet Packet to test
@@ -1755,7 +2109,7 @@ PUBLIC bool httpIsEof(struct HttpConn *conn);
  */
 PUBLIC bool httpIsPacketTooBig(struct HttpQueue *q, HttpPacket *packet);
 
-/** 
+/**
     Determine if the queue is empty
     @description Determine if the queue has no packets queued. This does not test if the queue has no data content.
     @param q Queue reference
@@ -1765,7 +2119,7 @@ PUBLIC bool httpIsPacketTooBig(struct HttpQueue *q, HttpPacket *packet);
  */
 PUBLIC bool httpIsQueueEmpty(HttpQueue *q);
 
-/** 
+/**
     Test if a queue is suspended.
     @param q Queue reference
     @return true if the queue is suspended.
@@ -1780,14 +2134,14 @@ PUBLIC bool httpIsQueueSuspended(HttpQueue *q);
     maximum size of data to be joined. The maximum size may also limited by the downstream queue maximum packet size.
     @param q Queue to examine
     @param size The maximum-sized packet that will be created by joining queue packets is the minimum of the given size
-        and the downstream queues maximum packet size. Note: this routine will not split packets and so the 
+        and the downstream queues maximum packet size. Note: this routine will not split packets and so the
         maximum is advisory only.
     @ingroup HttpQueue
     @stability Stable
  */
 PUBLIC void httpJoinPackets(HttpQueue *q, ssize size);
 
-/** 
+/**
     Join a packet onto the service queue
     @description Add a packet to the service queue. If the queue already has data, then this packet
         will be joined (aggregated) into the existing packet. If serviceQ is true, the queue will be scheduled
@@ -1800,7 +2154,7 @@ PUBLIC void httpJoinPackets(HttpQueue *q, ssize size);
  */
 PUBLIC void httpJoinPacketForService(struct HttpQueue *q, HttpPacket *packet, bool serviceQ);
 
-/** 
+/**
     Put a packet back onto a queue
     @description Put the packet back onto the front of the queue. The queue's put() method is not called.
         This is typically used by the queue's service routine when a packet cannot complete processing.
@@ -1817,7 +2171,7 @@ PUBLIC void httpPutBackPacket(struct HttpQueue *q, HttpPacket *packet);
 #define HTTP_DELAY_SERVICE      0           /**< Delay servicing the queue */
 #define HTTP_SCHEDULE_QUEUE     1           /**< Schedule the queue for service */
 
-/** 
+/**
     Put a packet into the service queue for deferred processing.
     @description Add a packet to the service queue. If serviceQ is true, the queue will be scheduled for service.
     @param q Queue reference
@@ -1828,9 +2182,9 @@ PUBLIC void httpPutBackPacket(struct HttpQueue *q, HttpPacket *packet);
  */
 PUBLIC void httpPutForService(struct HttpQueue *q, HttpPacket *packet, bool serviceQ);
 
-/** 
+/**
     Put a packet to the queue.
-    @description The packet is passed to the queue by invoking its put() callback. 
+    @description The packet is passed to the queue by invoking its put() callback.
         Note the receiving queue may immediately process the packet or it may choose to defer processing by putting to
         its service queue.  @param q Queue reference
     \n\n
@@ -1843,9 +2197,9 @@ PUBLIC void httpPutForService(struct HttpQueue *q, HttpPacket *packet, bool serv
  */
 PUBLIC void httpPutPacket(struct HttpQueue *q, HttpPacket *packet);
 
-/** 
+/**
     Put a packet to the next queue downstream.
-    @description Put a packet onto the next downstream queue by calling the downstream queue's put() method. 
+    @description Put a packet onto the next downstream queue by calling the downstream queue's put() method.
         Note the receiving queue may immediately process the packet or it may choose to defer processing by putting to
         its service queue.  @param q Queue reference
     \n\n
@@ -1859,7 +2213,7 @@ PUBLIC void httpPutPacket(struct HttpQueue *q, HttpPacket *packet);
  */
 PUBLIC void httpPutPacketToNext(struct HttpQueue *q, HttpPacket *packet);
 
-/** 
+/**
     Remove a queue
     @description Remove a queue from the request/response pipeline. This will remove a queue so that it does
         not participate in the pipeline, effectively removing the processing stage from the pipeline. This is
@@ -1870,7 +2224,7 @@ PUBLIC void httpPutPacketToNext(struct HttpQueue *q, HttpPacket *packet);
  */
 PUBLIC void httpRemoveQueue(HttpQueue *q);
 
-/** 
+/**
     Resize a packet
     @description Resize a packet, if required, so that it fits in the downstream queue. This may split the packet
         if it is too big to fit in the downstream queue. If it is split, the tail portion is put back on the queue.
@@ -1883,7 +2237,7 @@ PUBLIC void httpRemoveQueue(HttpQueue *q);
  */
 PUBLIC HttpPacket *httpResizePacket(struct HttpQueue *q, HttpPacket *packet, ssize size);
 
-/** 
+/**
     Resume a queue
     @description Resume a queue for service and schedule it to run. This will cause the service routine
         to run as soon as possible. This is normally called automatically called by the pipeline when downstream
@@ -1894,7 +2248,7 @@ PUBLIC HttpPacket *httpResizePacket(struct HttpQueue *q, HttpPacket *packet, ssi
  */
 PUBLIC void httpResumeQueue(HttpQueue *q);
 
-/** 
+/**
     Schedule a queue
     @description Schedule a queue by adding it to the schedule queue. Queues are serviced FIFO.
     @param q Queue reference
@@ -1903,9 +2257,9 @@ PUBLIC void httpResumeQueue(HttpQueue *q);
  */
 PUBLIC void httpScheduleQueue(HttpQueue *q);
 
-/** 
+/**
     Service a queue
-    @description Service a queue by invoking its service() routine. 
+    @description Service a queue by invoking its service() routine.
     @param q Queue reference
     @ingroup HttpQueue
     @stability Stable
@@ -1922,9 +2276,9 @@ PUBLIC void httpServiceQueue(HttpQueue *q);
  */
 PUBLIC void httpSetQueueLimits(HttpQueue *q, ssize low, ssize max);
 
-/** 
-    Suspend a queue. 
-    @description Suspended a queue so that it will not be scheduled for service. The pipeline will 
+/**
+    Suspend a queue.
+    @description Suspended a queue so that it will not be scheduled for service. The pipeline will
     will automatically call httpResumeQueue when the downstream queues are less congested.
     @param q Queue reference
     @ingroup HttpQueue
@@ -1934,7 +2288,7 @@ PUBLIC void httpSuspendQueue(HttpQueue *q);
 
 #if ME_DEBUG
 /**
-    Verify a queue 
+    Verify a queue
     @param q Queue reference
     @return "True" if the queue verifies
     @internal
@@ -1945,14 +2299,14 @@ PUBLIC bool httpVerifyQueue(HttpQueue *q);
 #define VERIFY_QUEUE(q)
 #endif
 
-/** 
+/**
     Determine if the downstream queue will accept this packet.
     @description Test if the downstream queue will accept a packet. The packet will be resized, if required, in an
         attempt to get the downstream queue to accept it. If the downstream queue is full, disable this queue
         and mark the downstream queue as full, and service it immediately to try to relieve the congestion.
     @param q Queue reference
     @param packet Packet to put
-    @return "True" if the downstream queue will accept the packet. Use #httpPutPacketToNext to send the 
+    @return "True" if the downstream queue will accept the packet. Use #httpPutPacketToNext to send the
         packet downstream
     @ingroup HttpQueue
     @stability Stable
@@ -1969,20 +2323,20 @@ PUBLIC bool httpWillNextQueueAcceptPacket(HttpQueue *q, HttpPacket *packet);
  */
 PUBLIC bool httpNextQueueFull(HttpQueue *q);
 
-/** 
+/**
     Determine if the given queue will accept this packet.
     @description Test if the queue will accept a packet. The packet will be resized, if split is true, in an
-        attempt to get the downstream queue to accept it. 
+        attempt to get the downstream queue to accept it.
     @param q Queue reference
     @param packet Packet to put
     @param split Set to true to split the packet if required to fit into the queue.
-    @return "True" if the queue will accept the packet. 
+    @return "True" if the queue will accept the packet.
     @ingroup HttpQueue
     @stability Stable
  */
 PUBLIC bool httpWillQueueAcceptPacket(HttpQueue *q, HttpPacket *packet, bool split);
 
-/** 
+/**
     Determine if the downstream queue will accept a certain amount of data.
     @description Test if the downstream queue will accept data of a given size.
     @param q Queue reference
@@ -1993,10 +2347,10 @@ PUBLIC bool httpWillQueueAcceptPacket(HttpQueue *q, HttpPacket *packet, bool spl
  */
 PUBLIC bool httpWillNextQueueAcceptSize(HttpQueue *q, ssize size);
 
-/** 
+/**
     Write a formatted string
     @description Write a formatted string of data into packets onto the end of the queue. Data packets will be created
-        as required to store the write data. This call always accepts all the data and will buffer as required. 
+        as required to store the write data. This call always accepts all the data and will buffer as required.
         This call may block waiting for the downstream queue to drain if it is or becomes full.
         Data written after #httpFinalizeOutput or #httpError is called will be ignored.
         \n\n
@@ -2012,7 +2366,7 @@ PUBLIC bool httpWillNextQueueAcceptSize(HttpQueue *q, ssize size);
     @ingroup HttpQueue
     @stability Stable
  */
-PUBLIC ssize httpWrite(HttpQueue *q, cchar *fmt, ...);
+PUBLIC ssize httpWrite(HttpQueue *q, cchar *fmt, ...) PRINTF_ATTRIBUTE(2,3);
 
 /*
     Set HTTP_BLOCK to 0x1 so that legacy calls to httpFlushQueue that supplied a boolean block value will function correctly
@@ -2021,24 +2375,24 @@ PUBLIC ssize httpWrite(HttpQueue *q, cchar *fmt, ...);
 #define HTTP_NON_BLOCK  0x2    /**< Flag for httpSendBlock and httpWriteBlock to indicate non-blocking operation */
 #define HTTP_BUFFER     0x4    /**< Flag for httpSendBlock and httpWriteBlock to always absorb the data without blocking */
 
-/** 
+/**
     Write a block of data to the queue
     @description Write a block of data onto the end of the queue. This will queue the data and may initiaite writing
-        to the connection if the queue is full. Data will be appended to last packet in the queue if there is room. 
-        Otherwise, data packets will be created as required to store the write data. 
+        to the connection if the queue is full. Data will be appended to last packet in the queue if there is room.
+        Otherwise, data packets will be created as required to store the write data.
         \n\n
-        This call operates in buffering mode by default unless either the HTTP_BLOCK OR HTTP_NON_BLOCK flag is specified. 
-        When blocking, the call will either accept and write all the data or it will fail, it will never return "short" 
+        This call operates in buffering mode by default unless either the HTTP_BLOCK OR HTTP_NON_BLOCK flag is specified.
+        When blocking, the call will either accept and write all the data or it will fail, it will never return "short"
         with a partial write.
         \n\n
-        In blocking mode (HTTP_BLOCK), it block for up to the inactivity timeout specified in the 
-        conn->limits->inactivityTimeout value. In blocking mode, this routine may invoke mprYield before blocking to 
-        consent for the garbage collector to run. Callers must ensure they have retained all required temporary memory 
+        In blocking mode (HTTP_BLOCK), it block for up to the inactivity timeout specified in the
+        conn->limits->inactivityTimeout value. In blocking mode, this routine may invoke mprYield before blocking to
+        consent for the garbage collector to run. Callers must ensure they have retained all required temporary memory
         before invoking this routine.
         \n\n
-        In non-blocking mode (HTTP_NON_BLOCK), the call may return having written fewer bytes than requested. 
+        In non-blocking mode (HTTP_NON_BLOCK), the call may return having written fewer bytes than requested.
         \n\n
-        In buffering mode (HTTP_BUFFER), the data is always absorbed without blocking and queue size limits are ignored. 
+        In buffering mode (HTTP_BUFFER), the data is always absorbed without blocking and queue size limits are ignored.
         \n\n
         Data written after calling #httpFinalize, #httpFinalizeOutput or #httpError will be discarded.
     @param q Queue reference
@@ -2052,10 +2406,10 @@ PUBLIC ssize httpWrite(HttpQueue *q, cchar *fmt, ...);
  */
 PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize size, int flags);
 
-/** 
+/**
     Write a string of data to the queue
     @description Write a string of data into packets onto the end of the queue. Data packets will be created
-        as required to store the write data. This call may block waiting for the downstream queue to drain if it is 
+        as required to store the write data. This call may block waiting for the downstream queue to drain if it is
         or becomes full.
         Data written after #httpFinalizeOutput or #httpError is called will be ignored.
     @param q Queue reference
@@ -2066,10 +2420,10 @@ PUBLIC ssize httpWriteBlock(HttpQueue *q, cchar *buf, ssize size, int flags);
  */
 PUBLIC ssize httpWriteString(HttpQueue *q, cchar *s);
 
-/** 
+/**
     Write a safe string of data to the queue
-    @description This will escape any HTML sequences before writing the string into packets onto the end of the queue. 
-        Data packets will be created as required to store the write data. This call may block waiting for the 
+    @description This will escape any HTML sequences before writing the string into packets onto the end of the queue.
+        Data packets will be created as required to store the write data. This call may block waiting for the
         downstream queue to drain if it is or becomes full.
         Data written after #httpFinalizeOutput or #httpError is called will be ignored.
     @param q Queue reference
@@ -2106,21 +2460,21 @@ PUBLIC void httpAssignQueue(HttpQueue *q, struct HttpStage *stage, int dir);
 
 typedef int (*HttpParse)(Http *http, cchar *key, char *value, void *state);
 
-/** 
+/**
     Pipeline Stages
-    @description The request pipeline consists of a full-duplex pipeline of stages. 
+    @description The request pipeline consists of a full-duplex pipeline of stages.
         Stages are used to process client HTTP requests in a modular fashion. Each stage either creates, filters or
         consumes data packets. The HttpStage structure describes the stage capabilities and callbacks.
         Each stage has two queues, one for outgoing data and one for incoming data.
         \n\n
         Stages provide callback methods for parsing configuration, matching requests, open/close, run and the
         acceptance and service of incoming and outgoing data.
-    Configuration is not thread safe and must occur at initialization time when the application is single threaded. 
+    Configuration is not thread safe and must occur at initialization time when the application is single threaded.
     If the configuration is modified when the application is multithreaded, all requests must be first be quiesced.
-    @defgroup HttpStage HttpStage 
-    @see HttpConn HttpQueue HttpStage httpCloneStage httpCreateConnector httpCreateFilter httpCreateHandler 
-        httpCreateStage httpDefaultOutgoingServiceStage httpGetStageData httpHandleOptionsTrace httpLookupStage 
-        httpLookupStageData httpSetStageData 
+    @defgroup HttpStage HttpStage
+    @see HttpConn HttpQueue HttpStage httpCloneStage httpCreateConnector httpCreateFilter httpCreateHandler
+        httpCreateStage httpDefaultOutgoingServiceStage httpGetStageData httpHandleOptionsTrace httpLookupStage
+        httpLookupStageData httpSetStageData
     @stability Internal
  */
 typedef struct HttpStage {
@@ -2133,12 +2487,12 @@ typedef struct HttpStage {
 
     /*  These callbacks apply to all stages */
 
-    /** 
+    /**
         Match a request
-        @description This routine is invoked to see if the stage wishes to handle the request. For handlers, 
-            the match callback is invoked when selecting the appropriate route for the request. For filters, 
+        @description This routine is invoked to see if the stage wishes to handle the request. For handlers,
+            the match callback is invoked when selecting the appropriate route for the request. For filters,
             the callback is invoked subsequently when constructing the request pipeline.
-            If a filter declines to handle a request, the filter will be removed from the pipeline for the 
+            If a filter declines to handle a request, the filter will be removed from the pipeline for the
             specified direction. The direction argument should be ignored for handlers.
             Handlers and filters must not actually handle the request in the match callback and must not call httpError.
             Errors can be reported via mprError. Handlers can defer error reporting until their start callback.
@@ -2152,7 +2506,7 @@ typedef struct HttpStage {
       */
     int (*match)(struct HttpConn *conn, struct HttpRoute *route, int dir);
 
-    /** 
+    /**
         Rewrite a request after matching.
         @description This callback will be invoked for handlers after matching and selecting the handler.
         @param conn HttpConn connection object
@@ -2162,7 +2516,7 @@ typedef struct HttpStage {
      */
     int (*rewrite)(struct HttpConn *conn);
 
-    /** 
+    /**
         Open the stage
         @description Open the stage for this request instance. A handler may service the request in the open routine
             and may call #httpError if required.
@@ -2174,7 +2528,7 @@ typedef struct HttpStage {
      */
     int (*open)(HttpQueue *q);
 
-    /** 
+    /**
         Close the stage
         @description Close the stage and cleanup any request resources.
         Handlers may block or yield in this callback.
@@ -2184,13 +2538,13 @@ typedef struct HttpStage {
      */
     void (*close)(HttpQueue *q);
 
-    /** 
+    /**
         Process outgoing data.
         @description Accept a packet as outgoing data. Not used by handlers as handler generate packets internally.
             Filters will use this entry point to accept outgoing packets.
             Filters can choose to immediately process or forward the packet, or they can queue the packet on their
-            queue and schedule their outgoingService callback for batch processing of all queued packets. This is 
-            a common pattern where the outgoing routine is not used and packets are automatically queued and the 
+            queue and schedule their outgoingService callback for batch processing of all queued packets. This is
+            a common pattern where the outgoing routine is not used and packets are automatically queued and the
             outgoingService callback is used to process data. Filters should not block or yield in this callback.
         @param q Queue instance object
         @param packet Packet of data
@@ -2199,10 +2553,10 @@ typedef struct HttpStage {
      */
     void (*outgoing)(HttpQueue *q, HttpPacket *packet);
 
-    /** 
+    /**
         Service the outgoing data queue
         @description This callback should service packets on the queue and process or forward as appropriate.
-        A service routine should check downstream queues by calling #httpWillNextQueueAcceptPacket before forwarding 
+        A service routine should check downstream queues by calling #httpWillNextQueueAcceptPacket before forwarding
         packets to ensure they do not overfow downstream queues. Stages should not block or yield in this callback.
         @param q Queue instance object
         @ingroup HttpStage
@@ -2210,12 +2564,12 @@ typedef struct HttpStage {
      */
     void (*outgoingService)(HttpQueue *q);
 
-    /** 
+    /**
         Process incoming data.
-        @description Accept an incoming packet of data. 
+        @description Accept an incoming packet of data.
             Filters and handlers recieve packets via their incoming callback. They can choose to immediately process or
             forward the packet, or they can queue the packet on their queue and schedule their incomingService callback
-            for batch processing of all queued packets. This is a common pattern where the incoming routine is not 
+            for batch processing of all queued packets. This is a common pattern where the incoming routine is not
             used and packets are automatically queued and the incomingService callback is used to process.
             Not used by connectors.  Stages should not block or yield in this callback.
         @param q Queue instance object
@@ -2225,10 +2579,10 @@ typedef struct HttpStage {
      */
     void (*incoming)(HttpQueue *q, HttpPacket *packet);
 
-    /** 
+    /**
         Service the incoming data queue
         @description This callback should service packets on the queue and process or forward as appropriate.
-        A service routine should check upstream queues by calling #httpWillNextQueueAcceptPacket before forwarding 
+        A service routine should check upstream queues by calling #httpWillNextQueueAcceptPacket before forwarding
         packets to ensure they do not overfow upstream queues.  Handlers may not block or yield in this callback.
         @param q Queue instance object
         @ingroup HttpStage
@@ -2238,15 +2592,15 @@ typedef struct HttpStage {
 
     /*  These callbacks apply only to handlers */
 
-    /** 
+    /**
         Start the handler
-        @description The start callback is primarily responsible for starting the request processing. 
-        Depending on the request Content Type, the request will be started at different times. 
-        Form requests with a Content-Type of "application/x-www-form-urlencoded", will be started after fully 
-        receiving all input data. Other requests will be started immediately after the request headers have been 
-        parsed and before receiving input data. This enables such requests to stream large quantities of input 
-        data without buffering. The start callback should test the HTTP method in conn->rx->method and only 
-        respond to supported HTTP methods. It should call httpError for unsupported methods. The start callback 
+        @description The start callback is primarily responsible for starting the request processing.
+        Depending on the request Content Type, the request will be started at different times.
+        Form requests with a Content-Type of "application/x-www-form-urlencoded", will be started after fully
+        receiving all input data. Other requests will be started immediately after the request headers have been
+        parsed and before receiving input data. This enables such requests to stream large quantities of input
+        data without buffering. The start callback should test the HTTP method in conn->rx->method and only
+        respond to supported HTTP methods. It should call httpError for unsupported methods. The start callback
         will not be called if the request already has an error. Handlers may block or yield in this callback.
         @param q Queue instance object
         @ingroup HttpStage
@@ -2254,9 +2608,9 @@ typedef struct HttpStage {
      */
     void (*start)(HttpQueue *q);
 
-    /** 
+    /**
         The request is now fully ready.
-        @description This callback will be invoked when all incoming data has been received. 
+        @description This callback will be invoked when all incoming data has been received.
             The ready callback will not be called if the request already has an error.
             If a handler finishes processing the request, it should call #httpFinalizeOutput in the ready routine.
         Handlers may block or yield in this callback.
@@ -2266,7 +2620,7 @@ typedef struct HttpStage {
      */
     void (*ready)(HttpQueue *q);
 
-    /** 
+    /**
         The outgoing pipeline is writable and can accept more response data.
         @description This callback will be invoked after all incoming data has been receeived and whenever the outgoing
         pipeline can absorb more output data (writable). As such, it may be called multiple times and can be effectively
@@ -2292,7 +2646,7 @@ typedef struct HttpStage {
 */
 PUBLIC HttpStage *httpCloneStage(Http *http, HttpStage *stage);
 
-/** 
+/**
     Create a connector stage
     @description Create a new connector. Connectors are the final stage for outgoing data. Their job is to transmit
         outgoing data to the client.
@@ -2305,7 +2659,7 @@ PUBLIC HttpStage *httpCloneStage(Http *http, HttpStage *stage);
  */
 PUBLIC HttpStage *httpCreateConnector(Http *http, cchar *name, MprModule *module);
 
-/** 
+/**
     Create a filter stage
     @description Create a new filter. Filters transform data generated by handlers and before connectors transmit to
         the client. Filters can apply transformations to incoming, outgoing or bi-directional data.
@@ -2318,9 +2672,9 @@ PUBLIC HttpStage *httpCreateConnector(Http *http, cchar *name, MprModule *module
  */
 PUBLIC HttpStage *httpCreateFilter(Http *http, cchar *name, MprModule *module);
 
-/** 
+/**
     Create a request handler stage
-    @description Create a new handler. Handlers generate outgoing data and are the final stage for incoming data. 
+    @description Create a new handler. Handlers generate outgoing data and are the final stage for incoming data.
         Their job is to process requests and send outgoing data downstream toward the client consumer.
         There is ever only one handler for a request.
     @param http Http object
@@ -2332,7 +2686,7 @@ PUBLIC HttpStage *httpCreateFilter(Http *http, cchar *name, MprModule *module);
  */
 PUBLIC HttpStage *httpCreateHandler(Http *http, cchar *name, MprModule *module);
 
-/** 
+/**
     Create a connector stage
     @description Create a new stage.
     @param http Http object returned from #httpCreate
@@ -2345,7 +2699,7 @@ PUBLIC HttpStage *httpCreateHandler(Http *http, cchar *name, MprModule *module);
  */
 PUBLIC HttpStage *httpCreateStage(Http *http, cchar *name, int flags, MprModule *module);
 
-/** 
+/**
     Lookup a stage by name
     @param http Http object
     @param name Name of stage to locate
@@ -2355,8 +2709,8 @@ PUBLIC HttpStage *httpCreateStage(Http *http, cchar *name, int flags, MprModule 
 */
 PUBLIC struct HttpStage *httpLookupStage(Http *http, cchar *name);
 
-/** 
-    Default incoming put callback. 
+/**
+    Default incoming put callback.
     @description Adds packet to the service queue
     @param q Current queue
     @param packet Packet containg data
@@ -2365,7 +2719,7 @@ PUBLIC struct HttpStage *httpLookupStage(Http *http, cchar *name);
 */
 PUBLIC void httpDefaultIncoming(HttpQueue *q, HttpPacket *packet);
 
-/** 
+/**
     Default outgoing data handling
     @description This routine provides default handling of outgoing data for stages. It simply sends all packets
         downstream.
@@ -2376,7 +2730,7 @@ PUBLIC void httpDefaultIncoming(HttpQueue *q, HttpPacket *packet);
 PUBLIC void httpDefaultOutgoingServiceStage(HttpQueue *q);
 
 /**
-    Get stage data   
+    Get stage data
     @description Stages can store extra configuration information indexed by key. This is used by handlers, filters,
         connectors and and handlers.
     @param conn HttpConn connection object
@@ -2389,14 +2743,14 @@ PUBLIC cvoid *httpGetStageData(struct HttpConn *conn, cchar *key);
 
 /**
     Handle a Http Options method request
-    @description Convenience routine to respond to an OPTIONS request. 
+    @description Convenience routine to respond to an OPTIONS request.
     @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpStage
     @stability Evolving
  */
 PUBLIC void httpHandleOptions(struct HttpConn *conn);
 
-/** 
+/**
     Lookup stage data
     @description This looks up the stage by name and returns the private stage data.
     @param http Http object
@@ -2408,7 +2762,7 @@ PUBLIC void httpHandleOptions(struct HttpConn *conn);
 PUBLIC void *httpLookupStageData(Http *http, cchar *name);
 
 /**
-    Set stage data   
+    Set stage data
     @description Stages can store extra configuration information indexed by key. This is used by handlers, filters,
         connectors and and handlers.
     @param conn HttpConn connection object
@@ -2435,7 +2789,7 @@ PUBLIC int httpSendOpen(HttpQueue *q);
 PUBLIC void httpSendOutgoingService(HttpQueue *q);
 
 /********************************** HttpConn *********************************/
-/** 
+/**
     Notifier events
  */
 #define HTTP_EVENT_STATE            1       /**< The request is changing state */
@@ -2445,7 +2799,7 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q);
 #define HTTP_EVENT_DESTROY          5       /**< The connection is being closed and destroyed */
 
 /*
-    Application level events 
+    Application level events
  */
 
 #define HTTP_EVENT_APP_CLOSE        6       /**< The request is now closed */
@@ -2456,7 +2810,7 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q);
 #define HTTP_EVENT_APP_OPEN         7       /* The request is now open */
 #define HTTP_EVENT_MAX              8       /**< Maximum event plus one */
 
-/*  
+/*
     Connection / Request states
     It is critical that the states be ordered and the values be contiguous. The httpSetState relies on this.
  */
@@ -2470,42 +2824,11 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q);
 #define HTTP_STATE_FINALIZED        8       /**< Input received, request processed and response transmitted */
 #define HTTP_STATE_COMPLETE         9       /**< Request complete */
 
-/*
-    Trace directions
- */
-#define HTTP_TRACE_RX               0       /**< Trace reception */
-#define HTTP_TRACE_TX               1       /**< Trace transmission */
-#define HTTP_TRACE_MAX_DIR          2       /**< Trace transmission */
 
-/*
-    Trace items
- */
-#define HTTP_TRACE_CONN             0       /**< New connections */
-#define HTTP_TRACE_FIRST            1       /**< First line of header only */
-#define HTTP_TRACE_HEADER           2       /**< Header */
-#define HTTP_TRACE_BODY             3       /**< Body content */
-#define HTTP_TRACE_LIMITS           4       /**< Request and connection count limits */
-#define HTTP_TRACE_TIME             5       /**< Instrument http pipeline */
-#define HTTP_TRACE_MAX_ITEM         6
 
 /**
-    Trace management structure
-    @defgroup HttpTrace HttpTrace
-    @stability Internal
-  */
-typedef struct HttpTrace {
-    int             disable;                     /**< If tracing is disabled for this request */
-    int             levels[HTTP_TRACE_MAX_ITEM]; /**< Level at which to trace this item */
-    MprOff          size;                        /**< Maximum size of content to trace */
-    MprHash         *include;                    /**< Extensions to include in trace */
-    MprHash         *exclude;                    /**< Extensions to exclude from trace */
-} HttpTrace;
-
-PUBLIC void httpManageTrace(HttpTrace *trace, int flags);
-
-/**
-    Callback to fill headers 
-    @description If defined, the headers callback will run before the standard response headers are generated. This gives an 
+    Callback to fill headers
+    @description If defined, the headers callback will run before the standard response headers are generated. This gives an
     opportunity to pre-populate the response headers.
     @param arg Argument provided to httpSetHeadersCallback when the callback was established.
     @ingroup HttpConn
@@ -2515,7 +2838,7 @@ typedef int (*HttpHeadersCallback)(void *arg);
 
 /**
     Define a headers callback
-    @description The headers callback will run before the standard response headers are generated. This gives an 
+    @description The headers callback will run before the standard response headers are generated. This gives an
         opportunity to pre-populate the response headers.
     @param conn HttpConn object created via #httpCreateConn
     @param fn Callback function to invoke
@@ -2545,10 +2868,10 @@ typedef void (*HttpIOCallback)(struct HttpConn *conn, MprEvent *event);
   */
 PUBLIC void httpSetIOCallback(struct HttpConn *conn, HttpIOCallback fn);
 
-/** 
+/**
     Http Connections
     @description The HttpConn object represents a TCP/IP connection to the client. A connection object is created for
-        each socket connection initiated by the client. One HttpConn object may service many Http requests due to 
+        each socket connection initiated by the client. One HttpConn object may service many Http requests due to
         HTTP/1.1 keep-alive.
         Each connection has a request timeout and inactivity timeout. These can be set via #httpSetTimeout.
         The set of APIs that block and yield to the garbage collector are:
@@ -2565,7 +2888,7 @@ PUBLIC void httpSetIOCallback(struct HttpConn *conn, HttpIOCallback fn);
         managed reference. Read Appweb memory allocation at http://embedthis.com/products/appweb/doc/ref/appweb/memory.html.
 
     @defgroup HttpConn HttpConn
-    @see HttpConn HttpEnvCallback HttpGetPassword HttpListenCallback HttpNotifier HttpQueue HttpRedirectCallback 
+    @see HttpConn HttpEnvCallback HttpGetPassword HttpListenCallback HttpNotifier HttpQueue HttpRedirectCallback
         HttpRx HttpStage HttpTx HtttpListenCallback httpCallEvent httpFinalizeConnector httpScheduleConnTimeout
         httpCreateConn httpCreateRxPipeline httpCreateTxPipeline httpDestroyConn httpClosePipeline httpDiscardData
         httpDisconnect httpEnableUpload httpError httpIOEvent httpGetAsync httpGetChunkSize httpGetConnContext httpGetConnHost
@@ -2573,11 +2896,11 @@ PUBLIC void httpSetIOCallback(struct HttpConn *conn, HttpIOCallback fn);
         httpAfterEvent httpPrepClientConn httpResetCredentials httpRouteRequest httpRunHandlerReady httpService
         httpSetAsync httpSetChunkSize httpSetConnContext httpSetConnHost httpSetConnNotifier httpSetCredentials
         httpSetKeepAliveCount httpSetProtocol httpSetRetries httpSetSendConnector httpSetState httpSetTimeout
-        httpSetTimestamp httpShouldTrace httpStartPipeline
+        httpSetTimestamp httpStartPipeline
     @stability Internal
  */
 typedef struct HttpConn {
-    /*  Ordered for debugability */
+    /*  Ordered for debugability and packing */
 
     int             state;                  /**< Connection state */
     int             error;                  /**< A connection and/or request error has occurred */
@@ -2615,6 +2938,7 @@ typedef struct HttpConn {
     void            *ejs;                   /**< Embedding VM */
     void            *pool;                  /**< Pool of VMs */
     void            *mark;                  /**< Reference for GC marking */
+    void            *reqData;               /**< Extended request data for use by web frameworks */
     void            *data;                  /**< Custom data for request - must be a managed reference */
     void            *grid;                  /**< Current request database grid for MVC apps */
     void            *record;                /**< Current request database record for MVC apps */
@@ -2625,34 +2949,38 @@ typedef struct HttpConn {
     char            *protocol;              /**< HTTP protocol */
     char            *protocols;             /**< Supported WebSocket protocols (clients) */
 
-    int             async;                  /**< Connection is in async mode (non-blocking) */
     int             delay;                  /**< Delay servicing request due to defense strategy */
-    int             borrowed;               /**< Connection has been borrowed */
-    int             destroyed;              /**< Connection has been destroyed */
-    int             followRedirects;        /**< Follow redirects for client requests */
     int             keepAliveCount;         /**< Count of remaining Keep-Alive requests for this connection */
-    int             mustClose;              /**< Peer explicitly requested the connection be closed via "Connection: close" */
-    int             http10;                 /**< Using legacy HTTP/1.0 */
-    int             ownDispatcher;          /**< Own the dispatcher and should destroy when closing connection */
     int             port;                   /**< Remote port */
     int             retries;                /**< Client request retries */
-    int             secure;                 /**< Using https */
     int             seqno;                  /**< Unique connection sequence number */
     int             timeout;                /**< Connection timeout indication */
-    int             upgraded;               /**< Request protocol upgraded */
-    int             worker;                 /**< Use worker */
+    int             totalRequests;          /**< Total number of requests serviced */
 
-    HttpTrace       trace[2];               /**< Tracing for [rx|tx] */
+    bool            async: 1;               /**< Connection is in async mode (non-blocking) */
+    bool            authRequested: 1;       /**< Authorization requested based on user credentials */
+    bool            borrowed: 1;            /**< Connection has been borrowed */
+    bool            destroyed: 1;           /**< Connection has been destroyed */
+    bool            encoded: 1;             /**< True if the password is MD5(username:realm:password) */
+    bool            followRedirects: 1;     /**< Follow redirects for client requests */
+    bool            http10: 1;              /**< Using legacy HTTP/1.0 */
+    bool            mustClose: 1;           /**< Peer requested the connection be closed via "Connection: close" */
+    bool            ownDispatcher: 1;       /**< Own the dispatcher and should destroy when closing connection */
+    bool            secure: 1;              /**< Using https */
+    bool            suppressTrace: 1;       /**< Do not trace this connection */
+    bool            upgraded: 1;            /**< Request protocol upgraded */
+    bool            worker: 1;              /**< Use worker */
 
-    /*  
+
+    HttpTrace       *trace;                 /**< Tracing configuration */
+
+    /*
         Authentication
      */
-    int             authRequested;          /**< Authorization requested based on user credentials */
     char            *authType;              /**< Type of authentication: set to basic, digest, post or a custom name */
     void            *authData;              /**< Authorization state data */
     cchar           *username;              /**< Supplied user name */
     cchar           *password;              /**< Password for client requests (only) */
-    int             encoded;                /**< True if the password is MD5(username:realm:password) */
     struct HttpUser *user;                  /**< Authorized User record for access checking */
 
     HttpTimeoutCallback timeoutCallback;    /**< Request and inactivity timeout callback */
@@ -2663,7 +2991,7 @@ typedef struct HttpConn {
 } HttpConn;
 
 /**
-    Destroy the request pipeline. 
+    Destroy the request pipeline.
     @description This is called at the conclusion of a request.
     @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpConn
@@ -2676,24 +3004,24 @@ PUBLIC void httpClosePipeline(HttpConn *conn);
 #define HTTP_PARSE_TIMEOUT          3
 
 /**
-    Borrow a connection 
-    @description Borrow the connection from Http. This effectively gains an exclusive loan of the connection so that it 
-    cannot be destroyed while the loan is active. After the loan is complete, you must call return the connection 
-    by calling #httpReturnConn. Otherwise the connection will not be freed and memory will leak. 
+    Borrow a connection
+    @description Borrow the connection from Http. This effectively gains an exclusive loan of the connection so that it
+    cannot be destroyed while the loan is active. After the loan is complete, you must call return the connection
+    by calling #httpReturnConn. Otherwise the connection will not be freed and memory will leak.
     \n\n
-    The httpBorrowConn routine is used to stabilize a connection while interacting with some outside service. 
-    Without this routine, the connection could be destroyed while waiting. Many things can happen while waiting. 
-    For example: the client could disconnect or the connection could timeout. These events will still be serviced 
+    The httpBorrowConn routine is used to stabilize a connection while interacting with some outside service.
+    Without this routine, the connection could be destroyed while waiting. Many things can happen while waiting.
+    For example: the client could disconnect or the connection could timeout. These events will still be serviced
     while the connection is borrowed, but the connection object will not be destroyed.
     \n\n
-    While borrowed, you must not access the connection using foreign / non-MPR threads. If you need to do this, 
-    use #mprCreateEventOutside to schedule an event to run on the connection's event dispatcher. 
+    While borrowed, you must not access the connection using foreign / non-MPR threads. If you need to do this,
+    use #mprCreateEventOutside to schedule an event to run on the connection's event dispatcher.
     This is essential to serialize access to the connection object.
-    Inside the event callback, you should first check the connection state via HttpConn.state to ensure the request 
+    Inside the event callback, you should first check the connection state via HttpConn.state to ensure the request
     is still active. If the request has completed, the state will be HTTP_STATE_COMPLETE.
     \n\n
-    Before returning from the event callback, you must call #httpReturnConn to end the exclusive loan. 
-    This restores normal processing of the connection and enables any required I/O events. 
+    Before returning from the event callback, you must call #httpReturnConn to end the exclusive loan.
+    This restores normal processing of the connection and enables any required I/O events.
     \n\n
     @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpConn
@@ -2701,9 +3029,9 @@ PUBLIC void httpClosePipeline(HttpConn *conn);
  */
 PUBLIC void httpBorrowConn(HttpConn *conn);
 
-/** 
+/**
     Create a connection object.
-    @description Most interactions with the Http library are via a connection object. It is used for server-side 
+    @description Most interactions with the Http library are via a connection object. It is used for server-side
         communications when responding to client requests and it is used to initiate outbound client requests.
     @param http Http object created via #httpCreate
     @param endpoint Endpoint object owning the connection.
@@ -2734,11 +3062,11 @@ PUBLIC void httpCreateTxPipeline(HttpConn *conn, struct HttpRoute *route);
 
 /**
     Destroy the connection object
-    @description This call closes the connection socket, destroys the connection dispatcher, disconnects the HttpTx and 
-        HttpRx property objects and removes the connection from the HttpHost list of connections. Thereafter, the 
-        garbage collector can reclaim all memory. It may be called by client connections at any time from a 
-        top-level event running on the connection's dispatcher. Server-side code should not need to explicitly 
-        destroy the connection as it will be done automatically via httpIOEvent. This routine should not be called 
+    @description This call closes the connection socket, destroys the connection dispatcher, disconnects the HttpTx and
+        HttpRx property objects and removes the connection from the HttpHost list of connections. Thereafter, the
+        garbage collector can reclaim all memory. It may be called by client connections at any time from a
+        top-level event running on the connection's dispatcher. Server-side code should not need to explicitly
+        destroy the connection as it will be done automatically via httpIOEvent. This routine should not be called
         deep within the stack as it will zero the HttpConn.http property to signify the connection is destroyed.
     @param conn HttpConn object created via #httpCreateConn
     @ingroup HttpConn
@@ -2757,7 +3085,7 @@ PUBLIC void httpDiscardData(HttpConn *conn, int dir);
 
 /**
     Disconnect the connection's socket
-    @description This call will close the socket and signal a connection error by setting connError. 
+    @description This call will close the socket and signal a connection error by setting connError.
         Subsequent use of the connection socket will not be possible. It will also set HttpRx.eof and will finalize
         the request. Used internally when a connection times out and for abortive errors.
         This should not be generally used. Rather, #httpDestroyConn and #httpError should be used in preference.
@@ -2769,10 +3097,10 @@ PUBLIC void httpDisconnect(HttpConn *conn);
 
 /**
     Enable connection events
-    @description Connection events are automatically disabled upon receipt of an I/O event on a connection. This 
+    @description Connection events are automatically disabled upon receipt of an I/O event on a connection. This
         permits a connection to process the I/O without fear of interruption by another I/O event. At the completion
         of processing of the I/O request, the connection should be re-enabled via httpEnableConnEvents. This call is
-        made for requests in #httpIOEvent. Client-side connections may need to enable connection events if the are 
+        made for requests in #httpIOEvent. Client-side connections may need to enable connection events if the are
         running in async mode and encounter a blocking condition.
     @param conn HttpConn connection object created via #httpCreateConn
     @ingroup HttpConn
@@ -2780,7 +3108,7 @@ PUBLIC void httpDisconnect(HttpConn *conn);
  */
 PUBLIC void httpEnableConnEvents(HttpConn *conn);
 
-/** 
+/**
     Enable Multipart-Mime File Upload for this request. This will define a "Content-Type: multipart/form-data..."
     header and will create a mime content boundary for use to delimit the various upload content files and fields.
     @param conn HttpConn connection object
@@ -2789,44 +3117,44 @@ PUBLIC void httpEnableConnEvents(HttpConn *conn);
  */
 PUBLIC void httpEnableUpload(HttpConn *conn);
 
-/** 
+/**
     Error handling for the connection.
     @description The httpError call is used to flag the current request as failed. If httpError is called multiple
         times, those calls are ignored and only the first call to httpError has effect.
-        This call will discard all data in the output pipeline queues. If some data has already been written to the 
+        This call will discard all data in the output pipeline queues. If some data has already been written to the
         client the connection will be aborted so the client can get some indication that an error has occurred after the
         headers have been transmitted.
     @param conn HttpConn connection object created via #httpCreateConn
-    @param status Http status code. The status code can be ored with the flags HTTP_ABORT to immediately abort 
+    @param status Http status code. The status code can be ored with the flags HTTP_ABORT to immediately abort
         the connection or HTTP_CLOSE to close the connection at the completion of the request.
     @param fmt Printf style formatted string
     @param ... Arguments for fmt
     @ingroup HttpConn
     @stability Stable
  */
-PUBLIC void httpError(HttpConn *conn, int status, cchar *fmt, ...);
+PUBLIC void httpError(HttpConn *conn, int status, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
 /**
     Emit an error message for limit violations
     @param conn HttpConn connection object created via #httpCreateConn
-    @param status Http status code. The status code can be ored with the flags HTTP_ABORT to immediately abort the 
+    @param status Http status code. The status code can be ored with the flags HTTP_ABORT to immediately abort the
         connection or HTTP_CLOSE to close the connection at the completion of the request.
     @param fmt Printf style formatted string
     @ingroup HttpConn
     @stability Evolving
  */
-PUBLIC void httpLimitError(HttpConn *conn, int status, cchar *fmt, ...);
+PUBLIC void httpLimitError(HttpConn *conn, int status, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
 /**
     Emit an error message for a badly formatted request
     @param conn HttpConn connection object created via #httpCreateConn
-    @param status Http status code. The status code can be ored with the flags HTTP_ABORT to immediately abort 
+    @param status Http status code. The status code can be ored with the flags HTTP_ABORT to immediately abort
         the connection or HTTP_CLOSE to close the connection at the completion of the request.
     @param fmt Printf style formatted string
     @ingroup HttpConn
     @stability Evolving
  */
-PUBLIC void httpBadRequestError(HttpConn *conn, int status, cchar *fmt, ...);
+PUBLIC void httpBadRequestError(HttpConn *conn, int status, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
 /**
     Respond to a HTTP IO event
@@ -2876,7 +3204,7 @@ PUBLIC void *httpGetConnContext(HttpConn *conn);
  */
 PUBLIC void *httpGetConnHost(HttpConn *conn);
 
-/** 
+/**
     Get the error message associated with the last request.
     @description Error messages may be generated for internal or client side errors.
     @param conn HttpConn connection object created via #httpCreateConn
@@ -2887,7 +3215,7 @@ PUBLIC void *httpGetConnHost(HttpConn *conn);
 PUBLIC cchar *httpGetError(HttpConn *conn);
 
 /**
-    Get a URI extension 
+    Get a URI extension
     @description If the URI has no extension and the response content filename (HttpTx.filename) has been calculated,
         it will be tested for an extension.
     @param conn HttpConn connection object created via #httpCreateConn
@@ -2897,19 +3225,19 @@ PUBLIC cchar *httpGetError(HttpConn *conn);
   */
 PUBLIC char *httpGetExt(HttpConn *conn);
 
-/** 
+/**
     Get the count of Keep-Alive requests that will be used for this connection object.
     @description Http Keep-Alive means that the TCP/IP connection is preserved accross multiple requests. This
-        typically means much higher performance and better response. Http Keep-Alive is enabled by default 
+        typically means much higher performance and better response. Http Keep-Alive is enabled by default
         for Http/1.1 (the default). Disable Keep-Alive when talking to old, broken HTTP servers.
     @param conn HttpConn connection object created via #httpCreateConn
-    @return The maximum count of Keep-Alive requests. 
+    @return The maximum count of Keep-Alive requests.
     @ingroup HttpConn
     @stability Stable
  */
 PUBLIC int httpGetKeepAliveCount(HttpConn *conn);
 
-/** 
+/**
     Get the count of bytes buffered on the write queue.
     @param conn HttpConn connection object created via #httpCreateConn
     @return The number of bytes buffered.
@@ -2967,7 +3295,7 @@ PUBLIC void httpMemoryError(HttpConn *conn);
     @param arg Argument to event
     @ingroup HttpConn
     @stability Stable
- */ 
+ */
 PUBLIC void httpNotify(HttpConn *conn, int event, int arg);
 
 #define HTTP_NOTIFY(conn, event, arg) \
@@ -2986,7 +3314,7 @@ PUBLIC void httpNotify(HttpConn *conn, int event, int arg);
 PUBLIC void httpAfterEvent(HttpConn *conn);
 
 /**
-    Prepare a client connection for a new request. 
+    Prepare a client connection for a new request.
     @param conn HttpConn object created via #httpCreateConn
     @param keepHeaders If true, keep the headers already defined on the connection object
     @ingroup HttpConn
@@ -3009,14 +3337,14 @@ PUBLIC void httpReadyHandler(HttpConn *conn);
     It uses the HttpConn.started and HttpConn.lastActivity time markers.
     @param conn HttpConn object created via #httpCreateConn
     @param timeout Overriding timeout in milliseconds. If timeout is zero, override default limits and wait forever.
-        If timeout is < 0, use default connection inactivity and duration timeouts. If timeout is > 0, then use this 
+        If timeout is < 0, use default connection inactivity and duration timeouts. If timeout is > 0, then use this
         timeout as an additional timeout.
     @ingroup HttpConn
     @stability Evolving
  */
 PUBLIC bool httpRequestExpired(HttpConn *conn, MprTicks timeout);
 
-/** 
+/**
     Reset the current security credentials
     @description Remove any existing security credentials.
     @param conn HttpConn connection object created via #httpCreateConn
@@ -3026,13 +3354,13 @@ PUBLIC bool httpRequestExpired(HttpConn *conn, MprTicks timeout);
 PUBLIC void httpResetCredentials(HttpConn *conn);
 
 /**
-    Return a borrowed a connection 
-    @description Returns a borrowed connection back to the Http engine. This ends the exclusive loan of the 
-        connection so that the current request can be completed. It also enables I/O events based on the 
+    Return a borrowed a connection
+    @description Returns a borrowed connection back to the Http engine. This ends the exclusive loan of the
+        connection so that the current request can be completed. It also enables I/O events based on the
         current state of the connection.
     \n\n
-    While the connection is borrowed, you must not access the connection using foreign / non-MPR threads. 
-    Use #mprCreateEventOutside to schedule an event to run on the connection's event dispatcher. This is 
+    While the connection is borrowed, you must not access the connection using foreign / non-MPR threads.
+    Use #mprCreateEventOutside to schedule an event to run on the connection's event dispatcher. This is
     essential to serialize access to the connection object.
     \n\n
     You should only call this routine (once) after calling #httpBorrowConn.
@@ -3054,7 +3382,7 @@ PUBLIC void httpRouteRequest(HttpConn *conn);
 /**
     Schedule a connection timeout event on a connection
     @description This call schedules an event to run serialized on the connection dispatcher. When run, it will
-        cancels the current request, disconnects the socket and issues an error to the error log. 
+        cancels the current request, disconnects the socket and issues an error to the error log.
         This call is normally invoked by the httpTimer which runs regularly to check for timed out requests.
     @param conn HttpConn connection object created via #httpCreateConn
     @ingroup HttpConn
@@ -3093,14 +3421,14 @@ PUBLIC bool httpQueuesNeedService(HttpConn *conn);
  */
 PUBLIC void httpSetAsync(HttpConn *conn, int enable);
 
-/** 
+/**
     Set the chunk size for transfer chunked encoding. When set, a "Transfer-Encoding: Chunked" header will
     be added to the request, and all write data will be broken into chunks of the requested size.
     @param conn HttpConn connection object created via #httpCreateConn
     @param size Requested chunk size.
     @ingroup HttpConn
     @stability Stable
- */ 
+ */
 PUBLIC void httpSetChunkSize(HttpConn *conn, ssize size);
 
 /**
@@ -3114,6 +3442,9 @@ PUBLIC void httpSetConnContext(HttpConn *conn, void *context);
 
 /**
     Set the connection data field
+    @description The HttpConn.data field is a managed reference that applications can use to retain their 
+        own per connection state. It will be marked for GC retention by Http.
+        See also HttpConn.reqData and HttpQueue.stageData;
     @param conn HttpConn object created via #httpCreateConn
     @param data Data object to associate with the connection. Must be a managed memory reference.
     @stability Stable
@@ -3129,7 +3460,7 @@ PUBLIC void httpSetConnData(HttpConn *conn, void *data);
  */
 PUBLIC void httpSetConnHost(HttpConn *conn, void *host);
 
-/** 
+/**
     Define a notifier callback for this connection.
     @description The notifier callback will be invoked for state changes and I/O events as Http requests are processed.
     The supported events are:
@@ -3140,7 +3471,7 @@ PUBLIC void httpSetConnHost(HttpConn *conn, void *host);
         notifier will be invoked for each and every state. This is true even if the request has no content, the
         HTTP_STATE_CONTENT will still be visited.</li>
     <li>HTTP_EVENT_READABLE &mdash; There is data available to read</li>
-    <li>HTTP_EVENT_WRITABLE &mdash; The outgoing pipeline can absorb more data. The WRITABLE event is issued when the 
+    <li>HTTP_EVENT_WRITABLE &mdash; The outgoing pipeline can absorb more data. The WRITABLE event is issued when the
         outgoing pipeline is empties and can absorb more data.</li>
     <li>HTTP_EVENT_ERROR &mdash; The request has encountered an error</li>
     <li>HTTP_EVENT_DESTROY &mdash; The connection structure is about to be destoyed</li>
@@ -3148,7 +3479,7 @@ PUBLIC void httpSetConnHost(HttpConn *conn, void *host);
     <li>HTTP_EVENT_APP_CLOSE &mdash; The application layer is now closed</li>
     </ul>
     @param conn HttpConn connection object created via #httpCreateConn
-    @param notifier Notifier function. 
+    @param notifier Notifier function.
     @ingroup HttpConn
     @stability Stable
  */
@@ -3163,7 +3494,7 @@ PUBLIC void httpSetConnNotifier(HttpConn *conn, HttpNotifier notifier);
  */
 PUBLIC void httpSetConnUser(HttpConn *conn, struct HttpUser *user);
 
-/** 
+/**
     Set the Http credentials
     @description Define a user and password to use with Http authentication for sites that require it. This will
         be used for the next client connection.
@@ -3176,10 +3507,10 @@ PUBLIC void httpSetConnUser(HttpConn *conn, struct HttpUser *user);
  */
 PUBLIC void httpSetCredentials(HttpConn *conn, cchar *user, cchar *password, cchar *authType);
 
-/** 
+/**
     Control Http Keep-Alive for the connection.
     @description Http Keep-Alive means that the TCP/IP connection is preserved accross multiple requests. This
-        typically means much higher performance and better response. Http Keep-Alive is enabled by default 
+        typically means much higher performance and better response. Http Keep-Alive is enabled by default
         for Http/1.1 (the default). Disable Keep-Alive when talking to old, broken HTTP servers.
     @param conn HttpConn connection object created via #httpCreateConn
     @param count Count of Keep-Alive transactions to use before closing the connection. Set to zero to disable keep-alive.
@@ -3188,9 +3519,9 @@ PUBLIC void httpSetCredentials(HttpConn *conn, cchar *user, cchar *password, cch
  */
 PUBLIC void httpSetKeepAliveCount(HttpConn *conn, int count);
 
-/** 
+/**
     Set the Http protocol variant for this connection
-    @description Set the Http protocol variant to use. 
+    @description Set the Http protocol variant to use.
     @param conn HttpConn connection object created via #httpCreateConn
     @param protocol  String representing the protocol variant. Valid values are: "HTTP/1.0", "HTTP/1.1". This parameter
         must be persistent.
@@ -3200,7 +3531,7 @@ PUBLIC void httpSetKeepAliveCount(HttpConn *conn, int count);
  */
 PUBLIC void httpSetProtocol(HttpConn *conn, cchar *protocol);
 
-/** 
+/**
     Set the Http retry count
     @description Define the number of retries before failing a request. It is normative for network errors
         to require that requests be sometimes retried. The default retries is set to (2).
@@ -3227,9 +3558,9 @@ PUBLIC void httpSetSendConnector(HttpConn *conn, cchar *path);
 /**
     Set the connection state and invoke notifiers.
     @description The connection states are, in order : HTTP_STATE_BEGIN HTTP_STATE_CONNECTED HTTP_STATE_FIRST
-    HTTP_STATE_PARSED HTTP_STATE_CONTENT HTTP_STATE_READY HTTP_STATE_RUNNING HTTP_STATE_FINALIZED HTTP_STATE_COMPLETE. 
+    HTTP_STATE_PARSED HTTP_STATE_CONTENT HTTP_STATE_READY HTTP_STATE_RUNNING HTTP_STATE_FINALIZED HTTP_STATE_COMPLETE.
     When httpSetState advances the state it will invoke any registered #HttpNotifier. If the state is set to a state beyond
-        the next intermediate state, the HttpNotifier will be invoked for all intervening states. 
+        the next intermediate state, the HttpNotifier will be invoked for all intervening states.
         This is true even if the request has no content, the HTTP_STATE_CONTENT will still be visited..
     @param conn HttpConn object created via #httpCreateConn
     @param state New state to enter
@@ -3238,9 +3569,9 @@ PUBLIC void httpSetSendConnector(HttpConn *conn, cchar *path);
  */
 PUBLIC void httpSetState(HttpConn *conn, int state);
 
-/** 
+/**
     Set the Http inactivity timeout
-    @description Define an inactivity timeout after which the Http connection will be closed. 
+    @description Define an inactivity timeout after which the Http connection will be closed.
     @param conn HttpConn object created via #httpCreateConn
     @param requestTimeout Request timeout in msec. This is the total time for the request. Set to -1 to preserve the
         existing value.
@@ -3269,18 +3600,6 @@ PUBLIC void httpSetTimestamp(MprTicks period);
  */
 PUBLIC void httpSetupWaitHandler(HttpConn *conn, int eventMask);
 
-/**
-    Test if the item should be traced
-    @param conn HttpConn connection object created via #httpCreateConn
-    @param dir Direction of data flow. Set to HTTP_TRACE_RX or HTTP_TRACE_TX
-    @param item Item to trace. Set to HTTP_TRACE_CONN, HTTP_TRACE_FIRST, HTTP_TRACE_HEADER, HTTP_TRACE_BODY, or 
-        HTTP_TRACE_TIME
-    @param ext URI resource extension (without ".").
-    @return The level at which tracing should be done. Returns -1 if tracing should not be done for this item.
-    @ingroup HttpConn
-    @stability Internal
-  */
-PUBLIC int httpShouldTrace(HttpConn *conn, int dir, int item, cchar *ext);
 
 /**
     Start the pipeline. This starts the request handler.
@@ -3300,10 +3619,10 @@ PUBLIC void httpStartPipeline(HttpConn *conn);
 PUBLIC void httpCreatePipeline(HttpConn *conn);
 
 /**
-    Steal a socket from a connection 
+    Steal a socket from a connection
     @description Steal the MprSocket object from a connection so the caller can assume total responsibility for the socket.
     This routine returns a clone of the connection's socket object with the socket O/S handle. The handle is removed from the
-    connection's socket object. The connection retains ownership of the original socket object. This is done to preserve 
+    connection's socket object. The connection retains ownership of the original socket object. This is done to preserve
     the HttpConn.sock object but remove the socket handle from its management.
     \n\n
     Note: The current request is aborted and queue data is discarded.
@@ -3320,8 +3639,8 @@ PUBLIC MprSocket *httpStealSocket(HttpConn *conn);
 
 /**
     Steal the O/S socket handle from the connection socket object.
-    @description This removes the O/S socket handle from active management by the connection. After calling, 
-    normal request and inactivity timeouts will apply to the connection, but will not disturb the underlying 
+    @description This removes the O/S socket handle from active management by the connection. After calling,
+    normal request and inactivity timeouts will apply to the connection, but will not disturb the underlying
     actual socket handle.  It is the callers responsibility to call close() on the socket handle when ready.
     @param conn HttpConn object created via #httpCreateConn
     @return The O/S Socket handle.
@@ -3342,16 +3661,62 @@ PUBLIC bool httpVerifyWebSocketsHandshake(HttpConn *conn);
 /* Internal APIs */
 PUBLIC struct HttpConn *httpAccept(struct HttpEndpoint *endpoint);
 PUBLIC void httpEnableConnEvents(HttpConn *conn);
-PUBLIC void httpInitTrace(HttpTrace *trace);
 PUBLIC void httpParseMethod(HttpConn *conn);
 PUBLIC HttpLimits *httpSetUniqueConnLimits(HttpConn *conn);
-PUBLIC int httpShouldTrace(HttpConn *conn, int dir, int item, cchar *ext);
-PUBLIC void httpTraceContent(HttpConn *conn, int dir, int item, HttpPacket *packet, ssize len, MprOff total);
 PUBLIC void httpUsePrimary(HttpConn *conn);
 PUBLIC void httpUseWorker(HttpConn *conn, MprDispatcher *dispatcher, MprEvent *event);
 
+/********************************** HttpAuthStore *********************************/
+/**
+    AuthStore callback Verify the user credentials
+    @param conn HttpConn connection object
+    @param username Users login name
+    @param password Actual user password
+    @return True if the user credentials can validate
+    @ingroup HttpAuth
+    @stability Evolving
+ */
+typedef bool (*HttpVerifyUser)(HttpConn *conn, cchar *username, cchar *password);
+
+/**
+    Password backend store. Support stores are: system, file
+    @ingroup HttpAuth
+    @stability Evolving
+    @see HttpAskLogin HttpParseAuth HttpSetAuth
+    httpCreateAuthStore httpSetAuthStore httpsetAuthStoreSessions
+ */
+typedef struct HttpAuthStore {
+    char            *name;                  /**< Authentication password store name: 'system', 'file' */
+    int             noSession;              /**< Do not create a session after login */
+    HttpVerifyUser  verifyUser;             /**< Default user verification routine */
+} HttpAuthStore;
+
+/**
+    Add an authorization store for password validation. The pre-supplied types are "config" and "system".
+    @description This creates an AuthType object with the defined name and callbacks.
+    @param name Unique authorization type name
+    @param verifyUser Callback to verify the username and password contained in the HttpConn object passed to the callback.
+    @return Auth store if successful, otherwise zero.
+    @ingroup HttpAuth
+    @stability Evolving
+ */
+PUBLIC HttpAuthStore *httpCreateAuthStore(cchar *name, HttpVerifyUser verifyUser);
+
+
+/**
+    Control whether sessions and session cookies are created for user logins
+    @description By default, a session and response cookie are created when a user is authenticated via #httpLogin.
+    This boosts performance because subsequent requests can supply the cookie and bypass authentication for each
+    subseqent request. This API permits the default behavior to be suppressed and thus no cookie or session will be created.
+    @param store AuthStore object created via #httpCreateAuthStore.
+    @param noSession Set to true to suppress creation of sessions or cookies.
+    @ingroup HttpAuth
+    @stability Prototype
+ */
+PUBLIC void httpSetAuthStoreSessions(HttpAuthStore *store, bool noSession);
+
 /********************************** HttpAuth *********************************/
-/*  
+/*
     Authorization flags for HttpAuth.flags
  */
 #define HTTP_ALLOW_DENY     0x1           /**< Run allow checks before deny checks */
@@ -3363,7 +3728,7 @@ PUBLIC void httpUseWorker(HttpConn *conn, MprDispatcher *dispatcher, MprEvent *e
 /**
     AuthType callback to generate a response requesting the user login
     This should call httpError if such a response cannot be generated.
-    @param conn HttpConn connection object 
+    @param conn HttpConn connection object
     @ingroup HttpAuth
     @stability Evolving
  */
@@ -3373,7 +3738,7 @@ typedef void (*HttpAskLogin)(HttpConn *conn);
     AuthType callback to parse the HTTP 'Authorize' (client) and 'www-authenticate' (server) headers
     @description This callback must extract the username and password. The username is set on HttpConn.username.
     The password is returned by this call.
-    @param conn HttpConn connection object 
+    @param conn HttpConn connection object
     @return The password if successful, otherwise NULL.
     @ingroup HttpAuth
     @stability Evolving
@@ -3382,24 +3747,12 @@ typedef int (*HttpParseAuth)(HttpConn *conn, cchar **username, cchar **password)
 
 /**
     AuthType callback to set the necessary HTTP authorization headers for a client request
-    @param conn HttpConn connection object 
-    @return True if the authorization headers can be set. 
+    @param conn HttpConn connection object
+    @return True if the authorization headers can be set.
     @ingroup HttpAuth
     @stability Evolving
  */
 typedef bool (*HttpSetAuth)(HttpConn *conn, cchar *username, cchar *password);
-
-/**
-    AuthStore callback Verify the user credentials
-    @param conn HttpConn connection object 
-    @param username Users login name
-    @param password Actual user password
-    @return True if the user credentials can validate
-    @ingroup HttpAuth
-    @stability Evolving
- */
-typedef bool (*HttpVerifyUser)(HttpConn *conn, cchar *username, cchar *password);
-
 
 /**
     Authentication Protocol. Supported protocols  are: basic, digest, form.
@@ -3413,74 +3766,18 @@ typedef struct HttpAuthType {
     HttpSetAuth         setAuth;            /**< Callback to set the HTTP response authentication headers */
 } HttpAuthType;
 
-
 /**
-    Password backend store. Support stores are: system, file
-    @ingroup HttpAuth
-    @stability Internal
- */
-typedef struct HttpAuthStore {
-    char            *name;                  /**< Authentication password store name: 'system', 'file' */
-    int             noSession;              /**< Do not create a session after login */
-    HttpVerifyUser  verifyUser;             /**< Default user verification routine */
-} HttpAuthStore;
-
-/**
-    Per-request digest authorization data
-    @see HttpAuth
-    @ingroup HttpAuth
-    @stability Evolving
- */
-typedef struct HttpDigest 
-{
-    char    *algorithm;
-    char    *cnonce;
-    char    *domain;
-    char    *nc;
-    char    *nonce;
-    char    *opaque;
-    char    *qop;
-    char    *realm;
-    char    *stale;
-    char    *uri;
-} HttpDigest;
-
-/** 
-    User Authorization. A user has a name, password and a set of roles. These roles define a set of abilities.
-    @see HttpAuth
-    @ingroup HttpAuth
-    @stability Internal
- */
-typedef struct HttpUser {
-    char            *name;                  /**< User name */
-    char            *password;              /**< User password for "internal" auth store - (actually the password hash */
-    char            *roles;                 /**< Original list of roles */
-    MprHash         *abilities;             /**< User abilities */
-} HttpUser;
-
-/** 
-    Authorization Roles. Roles are named sets of abilities.
-    @see HttpAuth
-    @ingroup HttpAuth
-    @stability Internal
- */
-typedef struct  HttpRole {
-    char            *name;                  /**< Role name */
-    MprHash         *abilities;             /**< Role's abilities */
-} HttpRole;
-
-/** 
     Authorization
     @description HttpAuth is the foundation authorization object and is used by HttpRoute.
-    It stores the authorization configuration information required to determine if a client request should be permitted 
+    It stores the authorization configuration information required to determine if a client request should be permitted
     access to a given resource.
     @defgroup HttpAuth HttpAuth
-    @see HttpAskLogin HttpAuth HttpAuthStore HttpAuthType HttpGetCredentials HttpRole HttpSetAuth HttpVerifyUser HttpUser
-        HttpVerifyUser httpAddAuthType httpAddAuthStore httpAddRole httpAddUser httpCanUser httpAuthenticate
+    @see HttpAskLogin HttpAuth HttpAuthType HttpGetCredentials HttpRole HttpSetAuth HttpVerifyUser HttpUser
+        HttpVerifyUser httpAddAuthType httpAddRole httpAddUser httpCanUser httpAuthenticate
         httpComputeAllUserAbilities httpComputeUserAbilities httpCreateRole httpCreateAuth httpAdduser
         httpIsAuthenticated httpLogin httpRemoveRole httpRemoveUser httpSetAuthAllow httpSetAuthAnyValidUser
         httpSetAuthUsername httpSetAuthDeny httpSetAuthOrder httpSetAuthPermittedUsers httpSetAuthForm httpSetAuthQop
-        httpSetAuthRealm httpSetAuthRequiredAbilities httpSetAuthStore httpSetAuthType
+        httpSetAuthRealm httpSetAuthRequiredAbilities httpSetAuthType
     @stability Internal
  */
 typedef struct HttpAuth {
@@ -3503,11 +3800,19 @@ typedef struct HttpAuth {
     HttpVerifyUser  verifyUser;             /**< Password verification */
 } HttpAuth;
 
+/**
+    Create an authentication object
+    @return An empty authentiction object
+    @ingroup HttpAuth
+    @stability Evolving
+    @internal
+ */
+PUBLIC HttpAuth *httpCreateAuth();
 
 /**
     Create an authorization protocol type. The pre-supplied types are 'basic', 'digest' and 'form'.
-    @description This creates an AuthType with the defined name and callbacks.
-        The basic and digest types are supported by most browsers. The form type is implemented via web form requests over HTTP.
+    @description This creates an AuthType with the defined name and callbacks. The basic and digest types are 
+        supported by most browsers. The form type is implemented via web form requests over HTTP.
     @param name Unique authorization type name
     @param askLogin Callback to generate a client login response
     @param parse Callback to parse the HTTP authentication headers
@@ -3522,40 +3827,34 @@ PUBLIC int httpCreateAuthType(cchar *name, HttpAskLogin askLogin, HttpParseAuth 
 #define httpAddAuthType httpCreateAuthType
 #endif
 
+/********************************* Users and Roles ***************************/
+
 /**
-    Add an authorization store for password validation. The pre-supplied types are "config" and "system".
-    @description This creates an AuthType object with the defined name and callbacks.
-    @param name Unique authorization type name
-    @param verifyUser Callback to verify the username and password contained in the HttpConn object passed to the callback.
-    @return Auth store if successful, otherwise zero.
+    User Authorization. A user has a name, password and a set of roles. These roles define a set of abilities.
+    @see HttpAuth
     @ingroup HttpAuth
-    @stability Evolving
+    @stability Internal
  */
-PUBLIC HttpAuthStore *httpCreateAuthStore(cchar *name, HttpVerifyUser verifyUser);
+typedef struct HttpUser {
+    char            *name;                  /**< User name */
+    char            *password;              /**< User password for "internal" auth store - (actually the password hash */
+    char            *roles;                 /**< Original list of roles */
+    MprHash         *abilities;             /**< User abilities */
+} HttpUser;
 
 /**
-    Control whether sessions are created for authenticated logins
-    @description By default, a session and response cookie are created when a user is authenticated via #httpLogin.
-    This boosts performance because subsequent requests that quote the cookie can bypass authentication.
-    This API permits the default behavior to be suppressed and thus no cookie or session will be created.
-    @param store AuthStore object created via #httpCreateAuthStore.
-    @param noSession Set to true to suppress creation of sessions or cookies.
+    Authorization Roles. Roles are named sets of abilities.
+    @see HttpAuth
     @ingroup HttpAuth
-    @stability Prototype
+    @stability Internal
  */
-PUBLIC void httpSetAuthStoreSessions(HttpAuthStore *store, bool noSession);
+typedef struct  HttpRole {
+    char            *name;                  /**< Role name */
+    MprHash         *abilities;             /**< Role's abilities */
+} HttpRole;
 
 /**
-    Set the verify callback for a authentication store
-    @param auth Auth object allocated by #httpCreateAuth.
-    @param verifyUser Verification callback
-    @ingroup HttpAuth
-    @stability Prototype
-  */
-PUBLIC void httpSetAuthVerify(HttpAuth *auth, HttpVerifyUser verifyUser);
-
-/**
-    Add a role
+    Add a role. If the role already exists, the role is updated.
     @description This creates the role with given abilities. Ability words can also be other roles.
     @param auth Auth object allocated by #httpCreateAuth.
     @param role Role name to add
@@ -3580,26 +3879,48 @@ PUBLIC HttpRole *httpAddRole(HttpAuth *auth, cchar *role, cchar *abilities);
 PUBLIC HttpUser *httpAddUser(HttpAuth *auth, cchar *user, cchar *password, cchar *abilities);
 
 /**
-    Authenticate a user
-    This routine authenticates a user by testing the user supplied session cookie against the server session store.
-    The result is saved in HttpRx.authenticated and supplied as a return result. Thereafter, #httpIsAuthenticated may be called
-    to test HttpRx.authenticated.
-    The httpAuthenticate call is not automatically performed by the request pipeline. Web Frameworks should call this if required.
-    @param conn HttpConn connection object created via #httpCreateConn object.
-    @return True if the user is authenticated. 
- */
-PUBLIC bool httpAuthenticate(HttpConn *conn);
+    Lookup a role by name
+    @param auth HttpAuth object. Stored in HttpConn.rx.route.auth
+    @param name Role name
+    @return Role object
+    @ingroup HttpAuth
+    @stability Prototype
+  */
+PUBLIC HttpRole *httpLookupRole(HttpAuth *auth, cchar *name);
 
 /**
-    Test if a user has the required abilities
-    @param conn HttpConn connection object created via #httpCreateConn object.
-    @param abilities Comma separated list of abilities to test for. If null, then use the required abilities defined
-        for the current request route.
-    @return True if the user has all the required abilities
+    Lookup a user by username
+    @description This looks up a user in the internal user store. 
+    This is only used i
+    @param auth HttpAuth object. Stored in HttpConn.rx.route.auth
+    @param name Username
+    @return User object
+    @ingroup HttpAuth
+    @stability Prototype
+  */
+PUBLIC HttpUser *httpLookupUser(HttpAuth *auth, cchar *name);
+
+/**
+    Remove a role
+    @param auth Auth object allocated by #httpCreateAuth.
+    @param role Role name to remove
+    @return Zero if successful, otherwise a negative MPR error code
     @ingroup HttpAuth
     @stability Evolving
+    @internal
  */
-PUBLIC bool httpCanUser(HttpConn *conn, cchar *abilities);
+PUBLIC int httpRemoveRole(HttpAuth *auth, cchar *role);
+
+/**
+    Remove a user
+    @param auth Auth object allocated by #httpCreateAuth.
+    @param user User name to remove
+    @return Zero if successful, otherwise a negative MPR error code
+    @ingroup HttpAuth
+    @stability Evolving
+    @internal
+ */
+PUBLIC int httpRemoveUser(HttpAuth *auth, cchar *user);
 
 /**
     Compute all the user abilities for a route using the given auth
@@ -3618,31 +3939,48 @@ PUBLIC void httpComputeAllUserAbilities(HttpAuth *auth);
  */
 PUBLIC void httpComputeUserAbilities(HttpAuth *auth, HttpUser *user);
 
+/*
+    Internal
+ */
+PUBLIC char *httpRolesToAbilities(HttpAuth *auth, cchar *roles, cchar *separator);
+
+/********************************* Login *************************************/
 /**
-    Create an authentication object
-    @return An empty authentiction object
+    Authenticate a user based on session data
+    @description This authenticates a user by testing the user supplied session cookie against login credentials 
+    stored in the server-side session store. The httpAuthenticate call is not automatically performed by the 
+    request pipeline. Web Frameworks should call this if required.
+    @param conn HttpConn connection object created via #httpCreateConn object.
+    @return True if the user is authenticated.
+ */
+PUBLIC bool httpAuthenticate(HttpConn *conn);
+
+/**
+    Test if a user has the required abilities
+    @param conn HttpConn connection object created via #httpCreateConn object.
+    @param abilities Comma separated list of abilities to test for. If null, then use the required abilities defined
+        for the current request route.
+    @return True if the user has all the required abilities
     @ingroup HttpAuth
     @stability Evolving
-    @internal 
  */
-PUBLIC HttpAuth *httpCreateAuth();
+PUBLIC bool httpCanUser(HttpConn *conn, cchar *abilities);
 
 /**
     Test if the user is authenticated
-    @param conn HttpConn connection object 
-    @return True if the username and password have been authenticated and the user has the abilities required
-        to access the requested resource document.
+    @param conn HttpConn connection object
+    @return True if the username and password have been authenticated.
     @ingroup HttpAuth
     @stability Evolving
  */
 PUBLIC bool httpIsAuthenticated(HttpConn *conn);
 
 /**
-    Log the user in. 
-    @description This will verify the supplied username and password. If the user is successfully logged in, 
+    Log the user in.
+    @description This will verify the supplied username and password. If the user is successfully logged in,
     the user identity will be stored in session state for fast authentication on subsequent requests.
     Note: this does not verify any user abilities.
-    @param conn HttpConn connection object 
+    @param conn HttpConn connection object
     @param username User name to authenticate
     @param password Password for the user
     @return True if the username and password have been authenticated.
@@ -3651,66 +3989,35 @@ PUBLIC bool httpIsAuthenticated(HttpConn *conn);
  */
 PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password);
 
-/**
-    Test if the client for the current request is logged in
-    @description This tests if there is a login session for the client
-    @param conn HttpConn connection object 
-    @return True if the user is authenticated and logged in
-    @ingroup HttpAuth
-    @stability Prototype
-  */
-PUBLIC bool httpLoggedIn(HttpConn *conn);
+#if DEPRECATED || 1
+#define httpLoggedIn httpIsAuthenticated
+#endif
 
 /**
     Logout the user.
-    @param conn HttpConn connection object 
+    @param conn HttpConn connection object
     @ingroup HttpAuth
     @stability Prototype
  */
 PUBLIC void httpLogout(HttpConn *conn);
 
 /**
-    Lookup a role by name
-    @param auth HttpAuth object. Stored in HttpConn.rx.route.auth
-    @param name Role name
-    @return Role object
-    @ingroup HttpAuth
-    @stability Prototype
-  */
-PUBLIC HttpRole *httpLookupRole(HttpAuth *auth, cchar *name);
-
-/**
-    Lookup a user by username
-    @param auth HttpAuth object. Stored in HttpConn.rx.route.auth
-    @param name Username
-    @return User object
-    @ingroup HttpAuth
-    @stability Prototype
-  */
-PUBLIC HttpUser *httpLookupUser(HttpAuth *auth, cchar *name);
-
-/**
-    Remove a role
-    @param auth Auth object allocated by #httpCreateAuth.
-    @param role Role name to remove
-    @return Zero if successful, otherwise a negative MPR error code
+    Define the callbabcks for the 'form' authentication type.
+    @description This creates a new route for the login page.
+    @param parent Parent route from which to inherit when creating a route for the login page.
+    @param loginPage Web page URI for the user to enter username and password.
+    @param loginService URI to use for the internal login service. To use your own login URI, set to this the empty string.
+    @param logoutService URI to use to log the user out. To use your won logout URI, set this to the empty string.
+    @param loggedIn The client is redirected to this URI once logged in. Use a "referrer:" prefix to the URI to
+        redirect the user to the referring URI before the loginPage. If the referrer cannot be determined, the base
+        URI is utilized.
     @ingroup HttpAuth
     @stability Evolving
-    @internal 
  */
-PUBLIC int httpRemoveRole(HttpAuth *auth, cchar *role);
+PUBLIC void httpSetAuthForm(struct HttpRoute *parent, cchar *loginPage, cchar *loginService, cchar *logoutService,
+    cchar *loggedIn);
 
-/**
-    Remove a user
-    @param auth Auth object allocated by #httpCreateAuth.
-    @param user User name to remove
-    @return Zero if successful, otherwise a negative MPR error code
-    @ingroup HttpAuth
-    @stability Evolving
-    @internal 
- */
-PUBLIC int httpRemoveUser(HttpAuth *auth, cchar *user);
-
+/***************************** Auth Route ************************************/
 /**
     Allow access by a client IP IP address
     @param auth Authorization object allocated by #httpCreateAuth.
@@ -3749,29 +4056,13 @@ PUBLIC void httpSetAuthDeny(HttpAuth *auth, cchar *ip);
 PUBLIC void httpSetAuthOrder(HttpAuth *auth, int order);
 
 /**
-    Define the set of permitted users 
+    Define the set of permitted users
     @param auth Auth object allocated by #httpCreateAuth.
     @param users Space separated list of acceptable users.
     @ingroup HttpAuth
     @stability Evolving
  */
 PUBLIC void httpSetAuthPermittedUsers(HttpAuth *auth, cchar *users);
-
-/**
-    Define the callbabcks for the 'form' authentication type.
-    @description This creates a new route for the login page.
-    @param parent Parent route from which to inherit when creating a route for the login page.
-    @param loginPage Web page URI for the user to enter username and password.
-    @param loginService URI to use for the internal login service. To use your own login URI, set to this the empty string. 
-    @param logoutService URI to use to log the user out. To use your won logout URI, set this to the empty string.
-    @param loggedIn The client is redirected to this URI once logged in. Use a "referrer:" prefix to the URI to 
-        redirect the user to the referring URI before the loginPage. If the referrer cannot be determined, the base
-        URI is utilized.
-    @ingroup HttpAuth
-    @stability Evolving
- */
-PUBLIC void httpSetAuthForm(struct HttpRoute *parent, cchar *loginPage, cchar *loginService, cchar *logoutService, 
-    cchar *loggedIn);
 
 /**
     Set the required quality of service for digest authentication
@@ -3797,7 +4088,7 @@ PUBLIC void httpSetAuthRealm(HttpAuth *auth, cchar *realm);
 /**
     Set the required abilities for access
     @param auth Auth object allocated by #httpCreateAuth.
-    @param abilities Spaces separated list of all the required abilities.
+    @param abilities Space separated list of the required abilities. May supply roles in the abilities string.
     @ingroup HttpAuth
     @stability Evolving
  */
@@ -3813,7 +4104,7 @@ PUBLIC void httpSetAuthRequiredAbilities(HttpAuth *auth, cchar *abilities);
 PUBLIC int httpSetAuthStore(HttpAuth *auth, cchar *store);
 
 /**
-    Set the authentication protocol to use
+    Set the authentication protocol type to use
     @param auth Auth object allocated by #httpCreateAuth.
     @param proto Protocol name to use. Select from: 'basic', 'digest', 'form'
     @param details Extra protocol details.
@@ -3832,24 +4123,31 @@ PUBLIC int httpSetAuthType(HttpAuth *auth, cchar *proto, cchar *details);
  */
 PUBLIC void httpSetAuthUsername(HttpAuth *auth, cchar *username);
 
+/**
+    Set the verify callback for a authentication store
+    @param auth Auth object allocated by #httpCreateAuth.
+    @param verifyUser Verification callback
+    @ingroup HttpAuth
+    @stability Prototype
+  */
+PUBLIC void httpSetAuthVerify(HttpAuth *auth, HttpVerifyUser verifyUser);
+
 /*
     Internal
  */
 PUBLIC void httpBasicLogin(HttpConn *conn);
 PUBLIC int httpBasicParse(HttpConn *conn, cchar **username, cchar **password);
 PUBLIC bool httpBasicSetHeaders(HttpConn *conn, cchar *username, cchar *password);
+PUBLIC void httpComputeRoleAbilities(HttpAuth *auth, MprHash *abilities, cchar *role);
+PUBLIC HttpAuth *httpCreateInheritedAuth(HttpAuth *parent);
 PUBLIC void httpDigestLogin(HttpConn *conn);
 PUBLIC int httpDigestParse(HttpConn *conn, cchar **username, cchar **password);
 PUBLIC bool httpDigestSetHeaders(HttpConn *conn, cchar *username, cchar *password);
-PUBLIC bool httpPamVerifyUser(HttpConn *conn, cchar *username, cchar *password);
-PUBLIC bool httpInternalVerifyUser(HttpConn *conn, cchar *username, cchar *password);
-PUBLIC void httpComputeAllUserAbilities(HttpAuth *auth);
-PUBLIC void httpComputeUserAbilities(HttpAuth *auth, HttpUser *user);
-PUBLIC void httpInitAuth();
-PUBLIC HttpAuth *httpCreateInheritedAuth(HttpAuth *parent);
-PUBLIC HttpAuthType *httpLookupAuthType(cchar *type);
 PUBLIC bool httpGetCredentials(HttpConn *conn, cchar **username, cchar **password);
-PUBLIC void httpComputeUserAbilities(HttpAuth *auth, HttpUser *user);
+PUBLIC void httpInitAuth();
+PUBLIC bool httpInternalVerifyUser(HttpConn *conn, cchar *username, cchar *password);
+PUBLIC HttpAuthType *httpLookupAuthType(cchar *type);
+PUBLIC bool httpPamVerifyUser(HttpConn *conn, cchar *username, cchar *password);
 
 /********************************** HttpLang  ********************************/
 
@@ -3878,7 +4176,7 @@ typedef struct HttpLang {
 
 /**
     Cache Control
-    @description Configuration is not thread safe and must occur at initialization time when the application is single threaded. 
+    @description Configuration is not thread safe and must occur at initialization time when the application is single threaded.
     If the configuration is modified when the application is multithreaded, all requests must be first be quiesced.
     @defgroup HttpCache HttpCache
     @see HttpCache httpAddCache httpUpdateCache httpWriteCache
@@ -3896,23 +4194,23 @@ typedef struct HttpCache {
 
 /**
     Add caching for response content
-    @description This call configures caching for request responses. Caching may be used for any HTTP method, 
-    though typically it is most useful for state-less GET requests. Output data may be uniquely cached for requests 
+    @description This call configures caching for request responses. Caching may be used for any HTTP method,
+    though typically it is most useful for state-less GET requests. Output data may be uniquely cached for requests
     with different request parameters (query, post, and route parameters).
     \n\n
-    When server-side caching is requested and manual-mode is not enabled, the request response will be automatically 
-    cached. Subsequent client requests will revalidate the cached content with the server. If the server-side cached 
-    content has not expired, a HTTP Not-Modified (304) response will be sent and the client will use its client-side 
+    When server-side caching is requested and manual-mode is not enabled, the request response will be automatically
+    cached. Subsequent client requests will revalidate the cached content with the server. If the server-side cached
+    content has not expired, a HTTP Not-Modified (304) response will be sent and the client will use its client-side
     cached content.  This results in a very fast transaction with the client as no response data is sent.
     Server-side caching will cache both the response headers and content.
     \n\n
     If manual server-side caching is requested, the response will be automatically cached, but subsequent requests will
     require the handler to explicitly send cached content by calling #httpWriteCached.
     \n\n
-    If client-side caching is requested, a "Cache-Control" Http header will be sent to the client with the caching 
-    "max-age" set to the lifespan argument value (converted to seconds). This causes the client to serve client-cached 
-    content and to not contact the server at all until the max-age expires. 
-    Alternatively, you can use #httpSetHeader to explicitly set a "Cache-Control header. For your reference, here are 
+    If client-side caching is requested, a "Cache-Control" Http header will be sent to the client with the caching
+    "max-age" set to the lifespan argument value (converted to seconds). This causes the client to serve client-cached
+    content and to not contact the server at all until the max-age expires.
+    Alternatively, you can use #httpSetHeader to explicitly set a "Cache-Control header. For your reference, here are
     some keywords that can be used in the Cache-Control Http header.
     \n\n
         "max-age" Maximum time in seconds the resource is considered fresh.
@@ -3924,7 +4222,7 @@ typedef struct HttpCache {
         "must-revalidate" forces clients to revalidate the request with the server.
         "proxy-revalidate" similar to must-revalidate except only for proxy caches.
     \n\n
-    Use client-side caching for static content that will rarely change or for content for which using "reload" in 
+    Use client-side caching for static content that will rarely change or for content for which using "reload" in
     the browser is an adequate solution to force a refresh. Use manual server-side caching for situations where you need to
     explicitly control when and how cached data is returned to the client. For most other situations, use server-side
     caching.
@@ -3932,25 +4230,25 @@ typedef struct HttpCache {
     @param methods List of methods for which caching should be enabled. Set to a comma or space separated list
         of method names. Method names can be any case. Set to null or "*" for all methods. Example:
         "GET, POST".
-    @param uris Set of URIs to cache. 
-        If the URI is set to "*" all URIs for that action are uniquely cached. If the request has POST data, 
+    @param uris Set of URIs to cache.
+        If the URI is set to "*" all URIs for that action are uniquely cached. If the request has POST data,
         the URI may include such post data in a sorted query format. E.g. {uri: /buy?item=scarf&quantity=1}.
-    @param extensions List of document extensions for which caching should be enabled. Set to a comma or space 
+    @param extensions List of document extensions for which caching should be enabled. Set to a comma or space
         separated list of extensions. Extensions should not have a period prefix. Set to null or "*" for all extensions.
         Example: "html, css, js". The URI may include request parameters in sorted www-urlencoded format. For example:
         /example.esp?hobby=sailing&name=john.
-    @param types List of document mime types for which caching should be enabled. Set to a comma or space 
+    @param types List of document mime types for which caching should be enabled. Set to a comma or space
         separated list of types. The mime types are those that correspond to the document extension and NOT the
         content type defined by the handler serving the document. Set to null or "*" for all types.
         Example: "image/gif, application/x-php".
-    @param clientLifespan Lifespan of client cache items in milliseconds. If not set to positive integer, 
+    @param clientLifespan Lifespan of client cache items in milliseconds. If not set to positive integer,
         the lifespan will default to the route lifespan.
-    @param serverLifespan Lifespan of server cache items in milliseconds. If not set to positive integer, 
+    @param serverLifespan Lifespan of server cache items in milliseconds. If not set to positive integer,
         the lifespan will default to the route lifespan.
     @param flags Cache control flags. Select HTTP_CACHE_MANUAL to enable manual mode. In manual mode, cached content
         will not be automatically sent. Use #httpWriteCached in the request handler to write previously cached content.
         \n\n
-        Select HTTP_CACHE_CLIENT to enable client-side caching. In this mode a "Cache-Control" Http header will be 
+        Select HTTP_CACHE_CLIENT to enable client-side caching. In this mode a "Cache-Control" Http header will be
         sent to the client with the caching "max-age". WARNING: the client will not send any request for this URI
         until the max-age timeout has expired.
         \n\n
@@ -3958,18 +4256,18 @@ typedef struct HttpCache {
         \n\n
         Select HTTP_CACHE_SERVER to define the server-side caching mode.
         \n\n
-        Select HTTP_CACHE_UNIQUE to uniquely cache requests with different request parameters. 
+        Select HTTP_CACHE_UNIQUE to uniquely cache requests with different request parameters.
     @return A count of the bytes actually written
     @ingroup HttpCache
     @stability Evolving
  */
-PUBLIC void httpAddCache(struct HttpRoute *route, cchar *methods, cchar *uris, cchar *extensions, cchar *types, 
+PUBLIC void httpAddCache(struct HttpRoute *route, cchar *methods, cchar *uris, cchar *extensions, cchar *types,
         MprTicks clientLifespan, MprTicks serverLifespan, int flags);
 
 /**
     Update the cached content for a URI
-    @param conn HttpConn connection object 
-    @param uri The request URI for which to update the cache. The URI may 
+    @param conn HttpConn connection object
+    @param uri The request URI for which to update the cache. The URI may
         contain the request parameters in sorted www-urlencoded format.
     @param data Data to cache for the URI. If you wish to cache response headers, include those at the start of the
     data followed by an additional new line. For example: "Content-Type: text/plain\n\nHello World\n".
@@ -3981,9 +4279,9 @@ PUBLIC ssize httpUpdateCache(HttpConn *conn, cchar *uri, cchar *data, MprTicks l
 
 /**
     Write the cached content for a URI to the client
-    @description This call explicitly writes cached content to the client. It is useful when the caching is 
+    @description This call explicitly writes cached content to the client. It is useful when the caching is
         configured in manual mode via the HTTP_CACHE_MANUAL flag to #httpAddCache.
-    @param conn HttpConn connection object 
+    @param conn HttpConn connection object
     @ingroup HttpCache
     @stability Evolving
   */
@@ -4002,7 +4300,7 @@ typedef void (*HttpAction)(HttpConn *conn);
 /**
     Define a function procedure to invoke when the specified URI is requested.
     @description This creates the role with given abilities. Ability words can also be other roles.
-    @param uri URI to bind with. When this URI is requested, the callback will be invoked if the procHandler is 
+    @param uri URI to bind with. When this URI is requested, the callback will be invoked if the procHandler is
         configured for the request route.
     @param fun Callback function procedure
     @ingroup HttpAction
@@ -4012,7 +4310,7 @@ PUBLIC void httpDefineAction(cchar *uri, HttpAction fun);
 
 /********************************** HttpStream  ********************************/
 /**
-    Determine if input body content should be streamed or buffered for requests with content of a given mime type 
+    Determine if input body content should be streamed or buffered for requests with content of a given mime type
     @description The mime type and URI are used to match the request.
     @param host Host to modify
     @param mime Mime type to configure
@@ -4025,7 +4323,7 @@ PUBLIC void httpDefineAction(cchar *uri, HttpAction fun);
 PUBLIC bool httpGetStreaming(struct HttpHost *host, cchar *mime, cchar *uri);
 
 /**
-    Control if input body content should be streamed or buffered for requests with content of a given mime type 
+    Control if input body content should be streamed or buffered for requests with content of a given mime type
     @param host Host to modify
     @param mime Mime type to configure
     @param uri URI prefix to match.
@@ -4057,20 +4355,20 @@ PUBLIC void httpSetStreaming(struct HttpHost *host, cchar *mime, cchar *uri, boo
 
 /**
     Route Control
-    @description Configuration is not thread safe and must occur at initialization time when the application is single threaded. 
+    @description Configuration is not thread safe and must occur at initialization time when the application is single threaded.
     If the configuration is modified when the application is multithreaded, all requests must be first be quiesced.
     @defgroup HttpRoute HttpRoute
     @see HttpRoute httpAddRouteCondition httpAddRouteErrorDocument
-        httpAddRouteFilter httpAddRouteHandler httpAddRouteHeader httpAddRouteLanguageDir httpAddRouteLanguageSuffix 
-        httpAddRouteLoad httpAddRouteQuery httpAddRouteUpdate httpClearRouteStages httpCreateAliasRoute 
+        httpAddRouteFilter httpAddRouteHandler httpAddRouteHeader httpAddRouteLanguageDir httpAddRouteLanguageSuffix
+        httpAddRouteLoad httpAddRouteQuery httpAddRouteUpdate httpClearRouteStages httpCreateAliasRoute
         httpCreateDefaultRoute httpCreateInheritedRoute httpCreateRoute httpDefineRoute
-        httpDefineRouteCondition httpDefineRouteTarget httpDefineRouteUpdate httpFinalizeRoute httpGetRouteData 
-        httpGetRouteDocuments httpLookupRouteErrorDocument httpMakePath httpResetRoutePipeline 
-        httpSetRouteAuth httpSetRouteAutoDelete httpSetRouteConnector httpSetRouteData 
-        httpSetRouteDefaultLanguage httpSetRouteDocuments httpSetRouteFlags httpSetRouteHandler httpSetRouteHost 
-        httpSetRouteIndex httpSetRouteMethods httpSetRouteName httpSetRouteVar httpSetRoutePattern 
-        httpSetRoutePrefix httpSetRouteScript httpSetRouteSource httpSetRouteTarget httpSetRouteWorkers httpTemplate 
-        httpSetTrace httpSetTraceFilter httpTokenize httpTokenizev httpLink httpLinkEx
+        httpDefineRouteCondition httpDefineRouteTarget httpDefineRouteUpdate httpFinalizeRoute httpGetRouteData
+        httpGetRouteDocuments httpLookupRouteErrorDocument httpMakePath httpResetRoutePipeline
+        httpSetRouteAuth httpSetRouteAutoDelete httpSetRouteConnector httpSetRouteData
+        httpSetRouteDefaultLanguage httpSetRouteDocuments httpSetRouteFlags httpSetRouteHandler httpSetRouteHost
+        httpSetRouteIndex httpSetRouteMethods httpSetRouteName httpSetRouteVar httpSetRoutePattern
+        httpSetRoutePrefix httpSetRouteScript httpSetRouteSource httpSetRouteTarget httpSetRouteWorkers httpTemplate
+        httpTokenize httpTokenizev httpLink httpLinkEx
     @stability Internal
  */
 typedef struct HttpRoute {
@@ -4106,10 +4404,14 @@ typedef struct HttpRoute {
     cchar           *database;              /**< Name of database for route */
     cchar           *responseFormat;        /**< Client response format */
     cchar           *client;                /**< Configuration to send to the client */
-    int             combine;                /**< Compile the application in "combine" mode */
-    int             keepSource;             /**< Preserve generated source */
-    int             loaded;                 /**< App has been loaded */
-    int             update;                 /**< Auto-update modified ESP source */
+
+    bool            combine: 1;             /**< Compile the application in "combine" mode */
+    bool            error: 1;               /**< Parse or runtime error */
+    bool            keepSource: 1;          /**< Preserve generated source */
+    bool            loaded: 1;              /**< App has been loaded */
+    bool            update: 1;              /**< Auto-update modified ESP source */
+    bool            debug: 1;               /**< Application running in debug mode */
+    bool            ignoreEncodingErrors: 1;/**< Ignore UTF8 encoding errors */
 
     MprList         *caching;               /**< Items to cache */
     MprTicks        lifespan;               /**< Default lifespan for all cache items in route */
@@ -4117,7 +4419,6 @@ typedef struct HttpRoute {
     Http            *http;                  /**< Http service object (copy of appweb->http) */
     struct HttpHost *host;                  /**< Owning host */
     int             flags;                  /**< Route flags */
-    int             error;                  /**< Parse or runtime error */
 
     char            *defaultLanguage;       /**< Default language */
     MprHash         *extensions;            /**< Hash of handlers by extensions */
@@ -4134,17 +4435,10 @@ typedef struct HttpRoute {
     void            *eroute;                /**< Extended route information for handler (only) */
     int             autoDelete;             /**< Automatically delete uploaded files */
 
-    MprFile         *log;                   /**< File object for access logging */
-    char            *logFormat;             /**< Access log format */
-    char            *logPath;               /**< Access log filename */
-    int             logFlags;               /**< Log control flags (append|anew) */
-    int             logBackup;              /**< Number of log backups */
-    ssize           logSize;                /**< Max log size */
     HttpLimits      *limits;                /**< Host resource limits */
     MprHash         *mimeTypes;             /**< Hash table of mime types (key is extension) */
 
-    HttpTrace       trace[2];               /**< Default route request tracing */
-    int             traceMask;              /**< Request/response trace mask */
+    HttpTrace       *trace;                 /**< Per-route tracing configuration */
 
     cchar           *cookie;                /**< Cookie name for session data */
     cchar           *corsOrigin;            /**< CORS permissible client origins */
@@ -4176,7 +4470,7 @@ typedef struct HttpRoute {
 
     char            *webSocketsProtocol;    /**< WebSockets sub-protocol */
     MprTicks        webSocketsPingPeriod;   /**< Time between pings (msec) */
-    int             ignoreEncodingErrors;   /**< Ignore UTF8 encoding errors */
+
 } HttpRoute;
 
 
@@ -4248,9 +4542,9 @@ PUBLIC HttpRouteSetProc httpDefineRouteSet(cchar *name, HttpRouteSetProc fn);
 
 /**
     Get a route directory variable
-    @description This looks up the value of the directory 
+    @description This looks up the value of the directory
     @param route Route to modify
-    @param name Lower case name of the directory. This should not include the "_DIR" suffix. 
+    @param name Lower case name of the directory. This should not include the "_DIR" suffix.
     @return Directory path
     @ingroup HttpRoute
     @stability Prototype
@@ -4297,7 +4591,7 @@ PUBLIC void httpSetDir(HttpRoute *route, cchar *name, cchar *value);
         <tr><td>home</td><td>GET,POST,PUT</td><td>^/$</td><td>index.esp</td></tr>
     </table>
     @param route Parent route from which to inherit configuration.
-    @param set Route set to select. Use "angular-mvc", or "html-mvc".  
+    @param set Route set to select. Use "angular-mvc", or "html-mvc".
     @ingroup HttpRoute
     @stability Prototype
  */
@@ -4384,19 +4678,19 @@ PUBLIC void httpAddClientRoute(HttpRoute *parent, cchar *prefix, cchar *name);
         must match. Route conditions are built-in rules that can be applied to routes.
     @param route Route to modify
     @param name Condition rule to add. Supported conditions are: "auth", "missing", "directory", "exists", and "match".
-        The "auth" rule is used internally to implement basic and digest authentication. 
+        The "auth" rule is used internally to implement basic and digest authentication.
         \n\n
-        The "missing" rule tests if the target filename is missing. The "missing" rule takes no arguments. 
+        The "missing" rule tests if the target filename is missing. The "missing" rule takes no arguments.
         \n\n
-        The "directory" rule tests if the condition argument is a directory. The form of the "directory" rule is: 
+        The "directory" rule tests if the condition argument is a directory. The form of the "directory" rule is:
             "directory pathString". For example: "directory /stuff/${request:pathInfo}.txt"
         \n\n
         The "exists" rule tests if the condition argument is present in the file system. The form of the "exists" rule is:
-            "exists pathString". For example: "exists ${request.filename}.gz", 
+            "exists pathString". For example: "exists ${request.filename}.gz",
         \n\n
-        The match directory tests a regular expression pattern against the rest of the condition arguments. The form of 
+        The match directory tests a regular expression pattern against the rest of the condition arguments. The form of
         the match rule is: "match RegExp string". For example: "match https ${request.scheme}".
-    @param details Condition parameters. 
+    @param details Condition parameters.
         See #httpSetRouteTarget for a list of the token values that can be included in the condition rule details.
     @param flags Set to HTTP_ROUTE_NOT to negate the condition test
     @return "Zero" if successful, otherwise a negative MPR error code.
@@ -4407,7 +4701,7 @@ PUBLIC int httpAddRouteCondition(HttpRoute *route, cchar *name, cchar *details, 
 
 /**
     Add an error document
-    @description This defines an error document to be used when the requested document cannot be found. 
+    @description This defines an error document to be used when the requested document cannot be found.
         This definition is used by some handlers for error processing.
     @param route Route to modify
     @param status The HTTP status code to use with the error document.
@@ -4451,7 +4745,7 @@ PUBLIC int httpAddRouteHandler(HttpRoute *route, cchar *name, cchar *extensions)
     @description Set the name of the index document to serve. Index documents may be served when the request corresponds
         to a directory on the file system.
     @param route Route to modify
-    @param path Path name to the index document. If the path is a relative path, it may be joined to the route 
+    @param path Path name to the index document. If the path is a relative path, it may be joined to the route
         directory to create an absolute path.
     @return A reference to the route data. Otherwise return null if the route data for the given key was not found.
     @ingroup HttpRoute
@@ -4480,7 +4774,7 @@ PUBLIC int httpAddRouteLanguageDir(HttpRoute *route, cchar *language, cchar *pat
     @param language Language symbolic name. For example: "en" for english.
     @param suffix Extension suffix to add when creating filenames for the request. For example: "fr" to add to "index.html"
         could produce: "index.fr.html".
-    @param flags Set to HTTP_LANG_BEFORE to insert the suffix before the filename extension. Set to HTTP_LANG_AFTER to 
+    @param flags Set to HTTP_LANG_BEFORE to insert the suffix before the filename extension. Set to HTTP_LANG_AFTER to
         append after the extension. For example: HTTP_LANG_AFTER would produce "index.html.fr".
     @return "Zero" if successful, otherwise a negative MPR error code.
     @ingroup HttpRoute
@@ -4504,7 +4798,7 @@ PUBLIC void httpAddRouteMapping(HttpRoute *route, cchar *extensions, cchar *mapp
     Add HTTP methods for the route
     @description This defines additional HTTP methods for requests to match this route
     @param route Route to modify
-    @param methods Set to a comma or space separated list of methods. Can also set to "All" or "*" for all possible 
+    @param methods Set to a comma or space separated list of methods. Can also set to "All" or "*" for all possible
         methods.  Typical methods include: "DELETE, GET, OPTIONS, POST, PUT, TRACE".
     @ingroup HttpRoute
     @stability Evolving
@@ -4548,7 +4842,7 @@ PUBLIC void httpAddRouteRequestHeaderCheck(HttpRoute *route, cchar *header, ccha
     @description This modifies the response header set
     @param route Route to modify
     @param cmd Set to HTTP_ROUTE_HEADER_ADD to add a header if it is not already present in the response header set.
-        Set to HTTP_ROUTE_HEADER_REMOVE to remove a header. Set to HTTP_ROUTE_HEADER_SET to define a header and overwrite any 
+        Set to HTTP_ROUTE_HEADER_REMOVE to remove a header. Set to HTTP_ROUTE_HEADER_SET to define a header and overwrite any
         prior values. Set to HTTP_ROUTE_HEADER_APPEND to append to an existing header value.
     @param header Header field to interrogate
     @param value Header value that will match
@@ -4562,11 +4856,11 @@ PUBLIC void httpAddRouteResponseHeader(HttpRoute *route, int cmd, cchar *header,
     @description This configures the route pipeline by adding processing update rules for a request.
         Updates are built-in rules that can be applied to routes.
     @param route Route to modify
-    @param name Update rule to add. Supported update rules include: "cmd", "field" and "lang". 
+    @param name Update rule to add. Supported update rules include: "cmd", "field" and "lang".
         \n\n
         The "cmd" rule is used to run external commands. For example: "cmd touch /tmp/filename".
         \n\n
-        The "param" rule is used to set values in the request param fields. For example: "param priority high". 
+        The "param" rule is used to set values in the request param fields. For example: "param priority high".
         \n\n
         The "lang" update rule is used internally to implement the various language options.
         See #httpSetRouteTarget for a list of the token values that can be included in the condition rule details.
@@ -4579,7 +4873,7 @@ PUBLIC void httpAddRouteResponseHeader(HttpRoute *route, int cmd, cchar *header,
 PUBLIC int httpAddRouteUpdate(HttpRoute *route, cchar *name, cchar *details, int flags);
 
 /**
-    Add a route using the WebSockets filter 
+    Add a route using the WebSockets filter
     @param parent Parent route from which to inherit configuration.
     @param prefix URI prefix to append to the application prefix when constructing route URIs.
     @param name Route name.
@@ -4589,15 +4883,6 @@ PUBLIC int httpAddRouteUpdate(HttpRoute *route, cchar *name, cchar *details, int
  */
 PUBLIC HttpRoute *httpAddWebSocketsRoute(HttpRoute *parent, cchar *prefix, cchar *name);
 
-/**
-    Backup the route log if required
-    @description If the log file is greater than the maximum configured, or MPR_ANEW was set via httpSetRouteLog, then 
-    archive the log.
-    @param route Route to modify
-    @ingroup HttpRoute
-    @stability Evolving
- */
-PUBLIC void httpBackupRouteLog(HttpRoute *route);
 
 /**
     Clear the pipeline stages for the route
@@ -4614,7 +4899,7 @@ PUBLIC void httpClearRouteStages(HttpRoute *route, int direction);
     @description The parent supplies the owning host for the route. A route is not added to its owning host until it
         is finalized by calling #httpFinalizeRoute
     @param parent Parent route to inherit from
-    @param pattern Pattern to match URIs 
+    @param pattern Pattern to match URIs
     @param path File system directory containing documents for this route
     @param status Http redirect status for matching requests. Set to zero if not using redirects
     @return Allocated HttpRoute object
@@ -4624,7 +4909,7 @@ PUBLIC void httpClearRouteStages(HttpRoute *route, int direction);
 PUBLIC HttpRoute *httpCreateAliasRoute(HttpRoute *parent, cchar *pattern, cchar *path, int status);
 
 /**
-    Create a configured route 
+    Create a configured route
     @description This creates a route and configures the request pipeline with range, chunk and upload filters.
     @param host HttpHost object owning the route
     @param serverSide Set to "true" if this is a server side route. Set to "false" for client side.
@@ -4659,7 +4944,7 @@ PUBLIC HttpRoute *httpCreateInheritedRoute(HttpRoute *route);
     @description This call creates a route inheriting from a parent route. The new route is configured for use with the
         actionHandler and the given callback procedure.
     @param parent Parent route from which to inherit
-    @param pattern Pattern to match URIs 
+    @param pattern Pattern to match URIs
     @param action Action to invoke
     @return Newly created route
     @ingroup HttpRoute
@@ -4688,7 +4973,7 @@ PUBLIC HttpRoute *httpCreateRoute(struct HttpHost *host);
     @param pattern Matching URI pattern for which this route will qualify
     @param target Route target string expression. This is used by handlers to determine the physical or virtual resource
         to serve.
-    @param source Source file pattern containing the resource to activate or serve. 
+    @param source Source file pattern containing the resource to activate or serve.
     @return Created route.
     @ingroup HttpRoute
     @stability Evolving
@@ -4711,13 +4996,13 @@ PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *name, cchar *methods
     @ingroup HttpRoute
     @stability Evolving
  */
-PUBLIC HttpRoute *httpAddRestfulRoute(HttpRoute *parent, cchar *prefix, cchar *action, cchar *methods, cchar *pattern, 
+PUBLIC HttpRoute *httpAddRestfulRoute(HttpRoute *parent, cchar *prefix, cchar *action, cchar *methods, cchar *pattern,
     cchar * target, cchar *resource);
 
 /**
     Define a route condition rule
     @description This creates a new condition rule.
-    @param name Condition name 
+    @param name Condition name
     @param proc Condition function to process the condition during route matching.
     @ingroup HttpRoute
     @stability Evolving
@@ -4727,7 +5012,7 @@ PUBLIC void httpDefineRouteCondition(cchar *name, HttpRouteProc *proc);
 /**
     Define a route target rule
     @description This creates a new target rule.
-    @param name Target name 
+    @param name Target name
     @param proc Target function to process the target during route matching.
     @ingroup HttpRoute
     @stability Evolving
@@ -4737,7 +5022,7 @@ PUBLIC void httpDefineRouteTarget(cchar *name, HttpRouteProc *proc);
 /**
     Define a route update rule
     @description This creates a new update rule.
-    @param name Update name 
+    @param name Update name
     @param proc Update function to process the update during route matching.
     @ingroup HttpRoute
     @stability Evolving
@@ -4761,6 +5046,15 @@ PUBLIC cchar *httpExpandRouteVars(HttpRoute *route, cchar *str);
     @stability Evolving
  */
 PUBLIC void httpFinalizeRoute(HttpRoute *route);
+
+/**
+    Parse a boolean token
+    @param tok Token to parse
+    @return True if tok is set to "yes", "on", "true" or "1"
+    @ingroup HttpRoute
+    @stability Evolving
+ */
+PUBLIC bool httpGetBoolToken(cchar *tok);
 
 /**
     Get extra route data
@@ -4788,7 +5082,7 @@ PUBLIC cchar *httpGetRouteDocuments(HttpRoute *route);
 
 /**
     Get the route home directory
-    @description Routes can define a home directory for configuration files. 
+    @description Routes can define a home directory for configuration files.
     @param route Route to modify
     @return The route home directory pathname.
     @ingroup HttpRoute
@@ -4825,8 +5119,8 @@ PUBLIC cchar *httpGetRouteVar(HttpRoute *route, cchar *key);
 PUBLIC HttpLimits *httpGraduateLimits(HttpRoute *route, HttpLimits *limits);
 
 /**
-    Hide the route from route tables. 
-    The route is still active, just not displayed in route tables. This is used to hide 
+    Hide the route from route tables.
+    The route is still active, just not displayed in route tables. This is used to hide
     parent routes that are used just for inheritance for child routes.
     @param route Route to hide
     @param on Set to true to hide the route
@@ -4838,7 +5132,7 @@ PUBLIC void httpHideRoute(HttpRoute *route, bool on);
     Lookup an error document by HTTP status code
     @description This looks up error documents configured via #httpAddRouteErrorDocument
     @param route Route to modify
-    @param status HTTP status code integer 
+    @param status HTTP status code integer
     @return URI associated with the error document for the requested status.
     @ingroup HttpRoute
     @stability Evolving
@@ -4850,14 +5144,14 @@ PUBLIC cchar *httpLookupRouteErrorDocument(HttpRoute *route, int status);
     @description This makes a filename by expanding the tokens "${token}" and then normalizing the path. Relative paths
         are resolved relative to the optional dir parameter.
         The supported tokens are:
-        <ul>  
+        <ul>
             <li>DOCUMENTS_DIR - for the default directory containing documents to serve</li>
             <li>HOME_DIR - for the directory containing the web server configuration files</li>
             <li>BIN_DIR - for the shared library directory. E.g. /usr/local/lib/appweb/bin </li>
             <li>OS - for the operating system name. E.g. LINUX, MACOSX, VXWORKS, or WIN</li>
             <li>PRODUCT - for the product name</li>
             <li>VERSION - for the product version. E.g. 4.0.2</li>
-        </ul>  
+        </ul>
         Additional tokens can be defined via #httpSetRouteVar.
     @param route Route to modify
     @param dir Directory to use as a base directory for relative paths.
@@ -4871,7 +5165,7 @@ PUBLIC char *httpMakePath(HttpRoute *route, cchar *dir, cchar *path);
 /**
     Map the request URI to a filename in physical storage for a handler.
     @description This routine is invoked by handlers to map the request URI to a filename and should be called by handlers
-    that serve physical documents. The request URI is resolved relative to the route documents directory. 
+    that serve physical documents. The request URI is resolved relative to the route documents directory.
     If a route language directory is defined, that directory is prefixed to the filename after the route documents directory.
     \n\n
     If route maps have been defined, the filename may be mapped to a preferred compressed or minified filename to serve.
@@ -4879,7 +5173,7 @@ PUBLIC char *httpMakePath(HttpRoute *route, cchar *dir, cchar *path);
     After computing the filename, this routine calls #httpSetFilename to set the HttpTx.filename, ext, etag and fileInfo fields.
     If a filename has already been defined by a prior call to httpMapFile or #httpSetFilename, this routine will do nothing.
     To reset a prior filename, use #httpSetFilename with a null argument.
-    @param conn HttpConn connection object 
+    @param conn HttpConn connection object
     @ingroup HttpRoute
     @stability Evolving
  */
@@ -4896,7 +5190,7 @@ PUBLIC void httpMapFile(HttpConn *conn);
 PUBLIC void httpRemoveRouteMethods(HttpRoute *route, cchar *methods);
 
 /**
-    Reset all defined indexes 
+    Reset all defined indexes
  */
 PUBLIC void httpResetRouteIndexes(HttpRoute *route);
 
@@ -4942,7 +5236,7 @@ PUBLIC int httpSetRouteConnector(HttpRoute *route, cchar *name);
 
 /**
     Make session cookies that are visible to javascript.
-    @description If not visible, cookies will be created with httponly. This helps reduce the XSS risk as 
+    @description If not visible, cookies will be created with httponly. This helps reduce the XSS risk as
     Javascripts cannot read the session cookie.
     @param route Route to modify
     @param visible Set to true to create session cookies that are visible to Javascript.
@@ -4987,8 +5281,8 @@ PUBLIC void httpSetRouteDocuments(HttpRoute *route, cchar *path);
 
 /**
     Define a prefix string for environment variables
-    @description When mapping URI query parameters and form variables to environment variables, it is 
-    important to prevent important system variables like SHELL, PATH and IFS being overwritten or 
+    @description When mapping URI query parameters and form variables to environment variables, it is
+    important to prevent important system variables like SHELL, PATH and IFS being overwritten or
     corrupted. Defining a unique prefix for such parameters ensures they have their own namespace.
     @param route Route to modify
     @param prefix Prefix to use in front of environment variables for URI and form parameters.
@@ -5013,7 +5307,7 @@ PUBLIC void httpSetRouteEnvEscape(HttpRoute *route, bool on);
     Update the route flags
     @description Low level routine to manipulate the route flags
     @param route Route to modify
-    @param flags Flags mask 
+    @param flags Flags mask
     @ingroup HttpRoute
     @stability Evolving
     @internal
@@ -5034,9 +5328,9 @@ PUBLIC int httpSetRouteHandler(HttpRoute *route, cchar *name);
 
 /**
     Set the route directory for configuration files
-    @description Routes can define a default directory for configuration files. 
+    @description Routes can define a default directory for configuration files.
     @param route Route to modify
-    @param home Directory path name for configuration files 
+    @param home Directory path name for configuration files
     @ingroup HttpRoute
     @stability Evolving
  */
@@ -5066,7 +5360,7 @@ PUBLIC void httpSetRouteIgnoreEncodingErrors(HttpRoute *route, bool on);
     Define the methods for the route
     @description This defines the set of valid HTTP methods for requests to match this route
     @param route Route to modify
-    @param methods Set to a comma or space separated list of methods. Can also set to "All" or "*" for all possible 
+    @param methods Set to a comma or space separated list of methods. Can also set to "All" or "*" for all possible
         methods.  Typical methods include: "DELETE, GET, OPTIONS, POST, PUT, TRACE".
     @ingroup HttpRoute
     @stability Evolving
@@ -5086,7 +5380,7 @@ PUBLIC void httpSetRouteCookie(HttpRoute *route, cchar *cookie);
     Set the route name
     @description Symbolic route names are used by httpLink and when displaying route tables.
     @param route Route to modify
-    @param name Unique symbolic name for the route. If a name is not defined, the route pattern will be used as the name. 
+    @param name Unique symbolic name for the route. If a name is not defined, the route pattern will be used as the name.
     @ingroup HttpRoute
     @stability Evolving
  */
@@ -5095,14 +5389,14 @@ PUBLIC void httpSetRouteName(HttpRoute *route, cchar *name);
 /**
     Set the route pattern
     @description This call defines the route regular expression pattern that is used to match against the request URI.
-        The route pattern is an enhanced JavaScript-compatibile regular expression. It is enhanced by optionally 
+        The route pattern is an enhanced JavaScript-compatibile regular expression. It is enhanced by optionally
         embedding braced tokens "{name}" in the pattern. During request URI matching, these tokens are extracted and
-        defined in the request params and are available to the request. The normal regular expression repeat syntax 
+        defined in the request params and are available to the request. The normal regular expression repeat syntax
         also uses "{}". To use the traditional (uncommon) repeat syntax, back quote with "\\".
         Sub-expressions and token expressions are also available in various rules as numbered tokens "$1". For example:
         the pattern "/app/(.*)(\.html)$" will permit a file target "$1.${request.Language=fr}.$2".
     @param route Route to modify
-    @param pattern Route regular expression pattern 
+    @param pattern Route regular expression pattern
     @param flags Set to HTTP_ROUTE_NOT to negate the pattern match result
     @ingroup HttpRoute
     @stability Evolving
@@ -5114,7 +5408,7 @@ PUBLIC void httpSetRoutePattern(HttpRoute *route, cchar *pattern, int flags);
     @description Routes may have a prefix which will be stripped from the request URI if the request matches.
         The prefix is made available as the "${request:prefix}" token and also as the ScriptName via some handlers.
     @param route Route to modify
-    @param prefix URI prefix to define for the route. 
+    @param prefix URI prefix to define for the route.
     @ingroup HttpRoute
     @stability Evolving
  */
@@ -5157,7 +5451,7 @@ PUBLIC void httpSetRouteScript(HttpRoute *route, cchar *script, cchar *scriptPat
 /**
     Define whether to show errors to the client
     @param route Route to modify
-    @param on Set to true to show errors to the client. 
+    @param on Set to true to show errors to the client.
     @ingroup HttpRoute
     @stability Evolving
  */
@@ -5167,7 +5461,7 @@ PUBLIC void httpSetRouteShowErrors(HttpRoute *route, bool on);
     Set the source code module for the route
     @description Some handlers can dynamically load web applications and services to serve requests.
     @param route Route to modify
-    @param source Source path or description 
+    @param source Source path or description
     @ingroup HttpRoute
     @stability Evolving
  */
@@ -5186,19 +5480,19 @@ PUBLIC void httpSetRouteStealth(HttpRoute *route, bool on);
 /**
     Set a route target
     @description This configures the route pipeline by defining a route target. The route target is interpreted by
-        the selected route handler to process the request. 
-        Route targets can contain symbolic tokens that are expanded at run-time with their corresponding values. There are 
+        the selected route handler to process the request.
+        Route targets can contain symbolic tokens that are expanded at run-time with their corresponding values. There are
         three classes of tokens:
-        <ul>  
+        <ul>
             <li>System and Route varibles - such as DOCUMENTS_DIR, HOME_DIR, BIN_DIR, PRODUCT, OS, VERSION.</li>
             <li>Route URI tokens - these are the braced tokens in the route pattern.</li>
             <li>Request fields - these are request state and property values.</li>
         </ul>
-        System and URI tokens are of the form: "${token}" where "token" is the name of the variable or URI token. 
-        Request fields are of the form: "${family:name=defaultValue}" where the family defines a set of values. 
+        System and URI tokens are of the form: "${token}" where "token" is the name of the variable or URI token.
+        Request fields are of the form: "${family:name=defaultValue}" where the family defines a set of values.
         If the named field is not present, an optional default value "=defaultValue" will be used instead.
         These supported request field families are:
-        <ul>  
+        <ul>
             <li>header - for request HTTP header values</li>
             <li>param - for request params</li>
             <li>query - for request query field values</li>
@@ -5235,23 +5529,23 @@ PUBLIC void httpSetRouteStealth(HttpRoute *route, bool on);
         Also see #httpMakePath for additional tokens (DOCUMENTS_DIR, HOME_DIR, BIN_DIR, PRODUCT, OS, VERSION).
     @param route Route to modify
     @param name Target rule to add. Supported update rules include:
-        "close", "redirect", "run" and "write". 
+        "close", "redirect", "run" and "write".
         \n\n
         The "close" rule is used to do abortive closes for the request. This is useful for ward off known security attackers.
-        For example: "close immediate". The "close" rule takes no addition parameters. 
+        For example: "close immediate". The "close" rule takes no addition parameters.
         \n\n
         \n\n
-        The "redirect" rule is used to redirect the request to a new resource. For example: "redirect 302 /tryAgain.html". 
+        The "redirect" rule is used to redirect the request to a new resource. For example: "redirect 302 /tryAgain.html".
         The "redirect" takes the form: "redirect status URI". The status code is used as the HTTP response
         code. The URI can be a fully qualified URI beginning with "http" or it can be a relative URI.
         \n\n
         The "run" target is used to run the configured handler to respond to the request.
-        For example: "file ${DOCUMENTS}/${request.uri}.gz". 
+        For example: "file ${DOCUMENTS}/${request.uri}.gz".
         \n\n
-        The "write" rule is used to write literal data back to the client. For example: "write 200 Hello World\r\n". 
+        The "write" rule is used to write literal data back to the client. For example: "write 200 Hello World\r\n".
         The "write" rule takes the form: "write [-r] status message". Write data is by default HTML encoded to help
         eliminate XSS security exposures. The "-r" option selects "raw" output and bypasses the HTML encoding of the
-        write data string. 
+        write data string.
         \n\n
         WARNING: Take great care when using raw writes with tokens. Write data is not HTML encoded and echoing back to
         raw data to the client can cause XSS and other security issues.
@@ -5268,34 +5562,19 @@ PUBLIC int httpSetRouteTarget(HttpRoute *route, cchar *name, cchar *details);
     @description Set the route URI template uses when constructing URIs via httpLink.
     @param route Route to modify
     @param tplate URI template to use. Templates may contain embedded tokens "{token}" where the token names correspond
-        to the token names in the route pattern. 
+        to the token names in the route pattern.
     @ingroup HttpRoute
     @stability Evolving
  */
 PUBLIC void httpSetRouteTemplate(HttpRoute *route, cchar *tplate);
 
-/**
-    Set the route trace filter
-    @description Trace filters include or exclude trace items based on the request filename extension.
-    @param route HttpRoute object
-    @param dir Trace direction. Set to HTTP_TRACE_TX or HTTP_TRACE_RX
-    @param levels Trace class levels. Indicies are: HTTP_TRACE_CONN, HTTP_TRACE_FIRST, HTTP_TRACE_HEADER, HTTP_TRACE_BODY,
-        HTTP_TRACE_LIMITS, HTTP_TRACE_TIME.
-    @param len Maximum content length eligible for tracing.
-    @param include Comma or space separated list of extensions to include in tracing
-    @param exclude Comma or space separated list of extensions to exclude from tracing
-    @ingroup HttpRoute
-    @stability Evolving
- */
-PUBLIC void httpSetRouteTraceFilter(HttpRoute *route, int dir, int levels[HTTP_TRACE_MAX_ITEM], ssize len, cchar *include, 
-        cchar *exclude);
 
 /**
     Define a route variable
-    @description This defines a route variable that will be used by #httpMakePath and route conditions, 
-        updates, headers, fields and targets to expand tokenized expressions "${token}". 
+    @description This defines a route variable that will be used by #httpMakePath and route conditions,
+        updates, headers, fields and targets to expand tokenized expressions "${token}".
     @param route Route to modify
-    @param token Name of the token to define 
+    @param token Name of the token to define
     @param value Value of the token
     @ingroup HttpRoute
     @stability Evolving
@@ -5323,7 +5602,7 @@ PUBLIC void httpSetRouteWorkers(HttpRoute *route, int workers);
 
 /**
     Control whether an XSRF token will be emitted during a user login sequence.
-    @description The XSRF token is emitted in the HTTP response headers and may be used to match with a 
+    @description The XSRF token is emitted in the HTTP response headers and may be used to match with a
         session XSRF token to mitigate XSS security threats.
     @param route Route to modify
     @param enable Set to true to emit and XSRF header token
@@ -5346,8 +5625,8 @@ PUBLIC char *httpTemplate(HttpConn *conn, cchar *tplate, MprHash *options);
 
 /**
     Tokenize a string based on route data
-    @description This is a utility routine to parse a string into tokens given a format specifier. 
-    Mandatory tokens can be specified with "%" format specifier. Optional tokens are specified with "?" format. 
+    @description This is a utility routine to parse a string into tokens given a format specifier.
+    Mandatory tokens can be specified with "%" format specifier. Optional tokens are specified with "?" format.
     Supported tokens:
     <ul>
     <li>%B - Boolean. Parses: on/off, true/false, yes/no.</li>
@@ -5369,7 +5648,7 @@ PUBLIC bool httpTokenize(HttpRoute *route, cchar *str, cchar *fmt, ...);
 
 /**
     Tokenize a string based on route data
-    @description This is a utility routine to parse a string into tokens given a format specifier. 
+    @description This is a utility routine to parse a string into tokens given a format specifier.
     This call is similar to #httpTokenize but uses a va_list argument.
     @param route Route to modify
     @param str String to expand
@@ -5381,45 +5660,9 @@ PUBLIC bool httpTokenize(HttpRoute *route, cchar *str, cchar *fmt, ...);
  */
 PUBLIC bool httpTokenizev(HttpRoute *route, cchar *str, cchar *fmt, va_list args);
 
-/**
-    Parse a boolean token
-    @param tok Token to parse
-    @return True if tok is set to "yes", "on", "true" or "1"
-    @ingroup HttpRoute
-    @stability Evolving
- */
-PUBLIC bool httpGetBoolToken(cchar *tok);
-
-/**
-    Configure the route access log
-    @param route Route to modify
-    @param path Path for route access log file.
-    @param size Maximum size of the log file before archiving
-    @param backup Set to true to create a backup of the log file if archiving.
-    @param format Log file format
-    @param flags Set to MPR_LOG_ANEW to archive the log when the application reboots.
-    @return "Zero" if successful, otherwise a negative MPR error code.
-    @ingroup HttpRoute
-    @stability Evolving
- */
-PUBLIC int httpSetRouteLog(HttpRoute *route, cchar *path, ssize size, int backup, cchar *format, int flags);
-
-/**
-    Write data to the route access log
-    @description Write data after archiving if required.
-    @param route Route to modify
-    @param buf Data buffer to write
-    @param len Size of the data buffer.
-    @ingroup HttpRoute
-    @stability Evolving
- */
-PUBLIC void httpWriteRouteLog(HttpRoute *route, cchar *buf, ssize len);
-
 /*
     Internal
  */
-PUBLIC void httpLogRequest(HttpConn *conn);
-PUBLIC MprFile *httpOpenRouteLog(HttpRoute *route);
 PUBLIC int httpStartRoute(HttpRoute *route);
 PUBLIC void httpStopRoute(HttpRoute *route);
 PUBLIC char *httpExpandUri(HttpConn *conn, cchar *str);
@@ -5443,6 +5686,7 @@ typedef struct HttpSession {
     MprTicks        lifespan;                   /**< Session inactivity timeout (msecs) */
     MprHash         *data;                      /**< Intermediate session data before writing to cache */
     int             dirty;                      /**< Session updated and needs saving */
+    int             seqno;                      /**< Unique sequence number */
 } HttpSession;
 
 /**
@@ -5554,7 +5798,7 @@ PUBLIC int httpSetCacheLink(HttpConn *conn, void *link);
     Set a notification callback to be invoked for session notification events.
     WARNING: the callback may happen on any thread. Use careful locking to synchronize access to data. Take care
             not to block the thread issuing the callback.
-    @param notifyProc MprCacheProc notification callback. Invoked for events of interest on cache items. 
+    @param notifyProc MprCacheProc notification callback. Invoked for events of interest on cache items.
         The event is set to MPR_CACHE_NOTIFY_REMOVE when items are removed from the cache.  Invoked as:
         \n\n
         (*MprCacheProc)(MprCache *cache, cchar *key, cchar *data, int event);
@@ -5622,7 +5866,7 @@ PUBLIC cchar *httpGetSecurityToken(HttpConn *conn, bool recreate);
 /**
     Add the security token to the response.
     @description To minimize form replay attacks, a security token may be required for POST requests on a route.
-    This call will set a security token in the response as a response header and as a response cookie.  
+    This call will set a security token in the response as a response header and as a response cookie.
     Client-side Javascript must then send this token as a request header in subsquent POST requests.
     To configure a route to require security tokens, use #httpSetRouteXsrf.
     @param conn Http connection object
@@ -5652,7 +5896,7 @@ typedef struct HttpUploadFile {
     Add an Uploaded file
     @description Add an uploaded file to the Rx.files collection.
     @param conn HttpConn connection object created via #httpCreateConn
-    @param id Unique identifier for the file  
+    @param id Unique identifier for the file
     @param file Instance of HttpUploadFile
     @ingroup HttpUploadFile
     @stability Internal
@@ -5682,7 +5926,7 @@ PUBLIC void httpRemoveAllUploadedFiles(HttpConn *conn);
 PUBLIC void httpRemoveUploadFile(HttpConn *conn, cchar *id);
 
 /********************************** HttpRx *********************************/
-/* 
+/*
     Rx flags
  */
 #define HTTP_DELETE             0x1         /**< DELETE method  */
@@ -5699,7 +5943,7 @@ PUBLIC void httpRemoveUploadFile(HttpConn *conn, cchar *id);
 #define HTTP_ADDED_BODY_PARAMS  0x800       /**< Body data added to params */
 #define HTTP_EXPECT_CONTINUE    0x1000      /**< Client expects an HTTP 100 Continue response */
 
-/*  
+/*
     Incoming chunk encoding states
  */
 #define HTTP_CHUNK_UNCHUNKED  0             /**< Data is not transfer-chunk encoded */
@@ -5707,16 +5951,16 @@ PUBLIC void httpRemoveUploadFile(HttpConn *conn, cchar *id);
 #define HTTP_CHUNK_DATA       2             /**< Start of chunk data */
 #define HTTP_CHUNK_EOF        3             /**< End of last chunk */
 
-/** 
+/**
     Http Rx
     @description Most of the APIs in the rx group still take a HttpConn object as their first parameter. This is
         to make the API easier to remember - APIs take a connection object rather than a rx or tx object.
     @defgroup HttpRx HttpRx
-    @see HttpConn HttpRx HttpTx httpAddBodyVars httpAddParamsFromBuf httpContentNotModified 
-        httpCreateCGIParams httpGetContentLength httpGetCookies httpGetParam httpGetParams httpGetHeader 
-        httpGetHeaderHash httpGetHeaders httpGetIntParam httpGetLanguage httpGetQueryString httpGetReadCount httpGetStatus 
-        httpGetStatusMessage httpMatchParam httpRead httpReadString httpSetParam httpSetIntParam httpSetUri 
-        httpTestParam httpTrimExtraPath 
+    @see HttpConn HttpRx HttpTx httpAddBodyVars httpAddParamsFromBuf httpContentNotModified
+        httpCreateCGIParams httpGetContentLength httpGetCookies httpGetParam httpGetParams httpGetHeader
+        httpGetHeaderHash httpGetHeaders httpGetIntParam httpGetLanguage httpGetQueryString httpGetReadCount httpGetStatus
+        httpGetStatusMessage httpMatchParam httpRead httpReadString httpSetParam httpSetIntParam httpSetUri
+        httpTestParam httpTrimExtraPath
     @stability Internal
  */
 typedef struct HttpRx {
@@ -5726,7 +5970,6 @@ typedef struct HttpRx {
     char            *pathInfo;              /**< Path information after the scriptName (Decoded and normalized) */
     char            *scriptName;            /**< ScriptName portion of the uri (Decoded). May be empty or start with "/" */
     char            *extraPath;             /**< Extra path information (CGI|PHP) */
-    int             eof;                    /**< All read data has been received (eof) */
     MprOff          bytesUploaded;          /**< Length of uploaded content by user */
     MprOff          bytesRead;              /**< Length of content read by user (includes bytesUloaded) */
     MprOff          length;                 /**< Content length header value (ENV: CONTENT_LENGTH) */
@@ -5735,7 +5978,8 @@ typedef struct HttpRx {
     HttpConn        *conn;                  /**< Connection object */
     HttpRoute       *route;                 /**< Route for request */
     HttpSession     *session;               /**< Session for request */
-    int             sessionProbed;          /**< Session has been resolved */
+    ssize           headerPacketLength;     /**< Size of the headers */
+    int             seqno;                  /**< Unique request sequence number */
 
     MprList         *etags;                 /**< Document etag to uniquely identify the document version */
     HttpPacket      *headerPacket;          /**< HTTP headers */
@@ -5745,26 +5989,30 @@ typedef struct HttpRx {
     MprHash         *requestData;           /**< General request data storage. Users must create hash table if required */
     MprTime         since;                  /**< If-Modified date */
 
-    int             authenticated;          /**< Request has been authenticated */
     int             chunkState;             /**< Chunk encoding state */
     int             flags;                  /**< Rx modifiers */
-    int             form;                   /**< Using mime-type application/x-www-form-urlencoded */
-    int             needInputPipeline;      /**< Input pipeline required to process received data */
-    int             ownParams;              /**< Do own parameter handling */
-    int             streaming;              /**< Stream incoming content. Forms typically buffer and dont stream */
-    int             traceLevel;             /**< General trace level for header level info */
-    int             upload;                 /**< Request is using file upload */
 
-    bool            ifModified;             /**< If-Modified processing requested */
-    bool            ifMatch;                /**< If-Match processing requested */
+    bool            authenticateProbed: 1;  /**< Request has been authenticated */
+    bool            authenticated: 1;       /**< Request has been authenticated */
+    bool            autoDelete: 1;          /**< Automatically delete uploaded files */
+    bool            eof: 1;                 /**< All read data has been received (eof) */
+    bool            form: 1;                /**< Using mime-type application/x-www-form-urlencoded */
+    bool            ifModified: 1;          /**< If-Modified processing requested */
+    bool            ifMatch: 1;             /**< If-Match processing requested */
+    bool            needInputPipeline: 1;   /**< Input pipeline required to process received data */
+    bool            ownParams: 1;           /**< Do own parameter handling */
+    bool            sessionProbed: 1;       /**< Session has been resolved */
+    bool            skipTrace: 1;           /**< Omit trace for this request */
+    bool            streaming: 1;           /**< Stream incoming content. Forms typically buffer and dont stream */
+    bool            upload: 1;              /**< Request is using file upload */
 
-    /*  
-        Incoming response line if a client request 
+    /*
+        Incoming response line if a client request
      */
     int             status;                 /**< HTTP response status */
     char            *statusMessage;         /**< HTTP Response status message */
 
-    /* 
+    /*
         Header values
         TODO - these should be cchar
      */
@@ -5779,7 +6027,7 @@ typedef struct HttpRx {
     char            *hostHeader;            /**< Client supplied host name header */
 
     char            *pragma;                /**< Pragma header */
-    char            *mimeType;              /**< Mime type of the request payload (ENV: CONTENT_TYPE) */
+    cchar           *mimeType;              /**< Mime type of the request payload (ENV: CONTENT_TYPE) */
     char            *originalMethod;        /**< Original method from the client */
     char            *origin;                /**< Origin header (not used) */
     char            *originalUri;           /**< Original URI passed by the client */
@@ -5796,11 +6044,10 @@ typedef struct HttpRx {
     char            *passwordDigest;        /**< User password digest for authentication */
     char            *paramString;           /**< Cached param data as a string */
 
-    /*  
+    /*
         Upload details
      */
     MprHash         *files;                 /**< Uploaded files. Managed by the upload filter */
-    int             autoDelete;             /**< Automatically delete uploaded files */
 
     struct HttpWebSocket *webSocket;        /**< WebSocket state */
 
@@ -5856,8 +6103,8 @@ PUBLIC bool httpContentNotModified(HttpConn *conn);
 
 /**
     Create CGI parameters
-    @description This call creates request params corresponding to the standard CGI/1.1 environment variables. 
-    This is used by the CGI and PHP handlers. It may also be useful to handlers that wish to expose CGI style 
+    @description This call creates request params corresponding to the standard CGI/1.1 environment variables.
+    This is used by the CGI and PHP handlers. It may also be useful to handlers that wish to expose CGI style
     environment variables
     through the form vars interface.
     @param conn HttpConn connection object
@@ -5866,7 +6113,7 @@ PUBLIC bool httpContentNotModified(HttpConn *conn);
  */
 PUBLIC void httpCreateCGIParams(HttpConn *conn);
 
-/** 
+/**
     Get the receive body content length
     @description Get the length of the receive body content (if any). This is used in servers to get the length of posted
         data and in clients to get the response body length.
@@ -5877,7 +6124,7 @@ PUBLIC void httpCreateCGIParams(HttpConn *conn);
  */
 PUBLIC MprOff httpGetContentLength(HttpConn *conn);
 
-/** 
+/**
     Get a request cookie
     @description Get a request cookie by name
     @param conn HttpConn connection object created via #httpCreateConn
@@ -5888,7 +6135,7 @@ PUBLIC MprOff httpGetContentLength(HttpConn *conn);
  */
 PUBLIC cchar *httpGetCookie(HttpConn *conn, cchar *name);
 
-/** 
+/**
     Get the request cookies
     @description Get the cookies defined in the current requeset
     @param conn HttpConn connection object created via #httpCreateConn
@@ -5926,8 +6173,8 @@ PUBLIC MprJson *httpGetParams(HttpConn *conn);
 
 /**
     Get the request params table as a string
-    @description This call gets the request params encoded as a string. The params are always in the same order 
-        regardless of the form parameter order. Request parameters include query parameters, form data and routing 
+    @description This call gets the request params encoded as a string. The params are always in the same order
+        regardless of the form parameter order. Request parameters include query parameters, form data and routing
         parameters.
     @param conn HttpConn connection object
     @return A string representation in www-urlencoded format.
@@ -5936,7 +6183,7 @@ PUBLIC MprJson *httpGetParams(HttpConn *conn);
  */
 PUBLIC char *httpGetParamsString(HttpConn *conn);
 
-/** 
+/**
     Get an rx http header.
     @description Get a http request header value for a given header key.
     @param conn HttpConn connection object created via #httpCreateConn
@@ -5947,7 +6194,7 @@ PUBLIC char *httpGetParamsString(HttpConn *conn);
  */
 PUBLIC cchar *httpGetHeader(HttpConn *conn, cchar *key);
 
-/** 
+/**
     Get the hash table of rx Http headers
     @description Get the internal hash table of rx headers
     @param conn HttpConn connection object created via #httpCreateConn
@@ -5957,7 +6204,7 @@ PUBLIC cchar *httpGetHeader(HttpConn *conn, cchar *key);
  */
 PUBLIC MprHash *httpGetHeaderHash(HttpConn *conn);
 
-/** 
+/**
     Get all the request http headers.
     @description Get all the rx headers. The returned string formats all the headers in the form:
         key: value\\nkey2: value2\\n...
@@ -5980,7 +6227,7 @@ PUBLIC char *httpGetHeadersFromHash(MprHash *hash);
 
 /**
     Get a form variable as an integer
-    @description Get the value of a named form variable as an integer. Form variables are define via 
+    @description Get the value of a named form variable as an integer. Form variables are define via
         www-urlencoded query or post data contained in the request.
     @param conn HttpConn connection object
     @param var Name of the form variable to retrieve
@@ -5996,7 +6243,7 @@ PUBLIC int httpGetIntParam(HttpConn *conn, cchar *var, int defaultValue);
     @description This call tests if the file content to be served has been modified since the client last
         requested this resource. The client must provide an Etag and Since or If-Modified headers.
     @param conn HttpConn connection object
-    @param spoken Hash table of HttpLang records. This is typically route->languages. 
+    @param spoken Hash table of HttpLang records. This is typically route->languages.
     @param defaultLang Default language to use if none specified in the request Accept-Language header.
     @return A HttpLang reference, or null if no language requested or no language found in the spoken table.
     @ingroup HttpRx
@@ -6005,7 +6252,7 @@ PUBLIC int httpGetIntParam(HttpConn *conn, cchar *var, int defaultValue);
 PUBLIC HttpLang *httpGetLanguage(HttpConn *conn, MprHash *spoken, cchar *defaultLang);
 
 /**
-    Get a path extension 
+    Get a path extension
     @param path File pathname to examine
     @return The path extension sans "."
     @ingroup HttpRx
@@ -6013,7 +6260,7 @@ PUBLIC HttpLang *httpGetLanguage(HttpConn *conn, MprHash *spoken, cchar *default
   */
 PUBLIC char *httpGetPathExt(cchar *path);
 
-/** 
+/**
     Get the request query string
     @description Get query string sent with the current request.
     @param conn HttpConn connection object
@@ -6032,8 +6279,8 @@ PUBLIC cchar *httpGetQueryString(HttpConn *conn);
  */
 PUBLIC ssize httpGetReadCount(HttpConn *conn);
 
-/** 
-    Get the response status 
+/**
+    Get the response status
     @param conn HttpConn connection object created via #httpCreateConn
     @return An integer Http response code. Typically 200 is success.
     @ingroup HttpRx
@@ -6041,10 +6288,10 @@ PUBLIC ssize httpGetReadCount(HttpConn *conn);
  */
 PUBLIC int httpGetStatus(HttpConn *conn);
 
-/** 
+/**
     Get the Http response status message. The Http status message is supplied on the first line of the Http response.
     @param conn HttpConn connection object created via #httpCreateConn
-    @returns A Http status message. 
+    @returns A Http status message.
     @ingroup HttpRx
     @stability Stable
  */
@@ -6054,7 +6301,7 @@ PUBLIC char *httpGetStatusMessage(HttpConn *conn);
     Match a form variable with an expected value
     @description Compare a form variable and return true if it exists and its value matches.
     @param conn HttpConn connection object
-    @param var Name of the form variable 
+    @param var Name of the form variable
     @param expected Expected value to match with
     @return True if the value matches
     @ingroup HttpRx
@@ -6062,21 +6309,21 @@ PUBLIC char *httpGetStatusMessage(HttpConn *conn);
  */
 PUBLIC bool httpMatchParam(HttpConn *conn, cchar *var, cchar *expected);
 
-/** 
-    Read rx body data. 
+/**
+    Read rx body data.
     @description This routine will read body data from the connection read queue (HttpConn.readq) which is at the head
     of the response pipeline.
     \n\n
-    This call will block depending on whether the connection is in async or sync mode. Sync mode is 
+    This call will block depending on whether the connection is in async or sync mode. Sync mode is
     the default for client connections and async for server connections.
     \n\n
-    If in sync mode, this call may block to wait for data. If in async mode, the call will not block and will 
+    If in sync mode, this call may block to wait for data. If in async mode, the call will not block and will
     return with whatever data is available.
     \n\n
     In sync mode, this routine may invoke mprYield before blocking to consent for the garbage collector to run. Callers must
     ensure they have retained all required temporary memory before invoking this routine.
     \n\n
-    This call will block for at most the timeout specified by the connection inactivity timeout defined in 
+    This call will block for at most the timeout specified by the connection inactivity timeout defined in
     HttpConn.limits.inactivityTimeout. Use #httpSetTimeout to change the timeout value.
     \n\n
     Server applications often prefer to access packets directly from the connection readq which offers a higher performance
@@ -6084,38 +6331,38 @@ PUBLIC bool httpMatchParam(HttpConn *conn, cchar *var, cchar *expected);
 
     @param conn HttpConn connection object created via #httpCreateConn
     @param buffer Buffer to receive read data
-    @param size Size of buffer. 
+    @param size Size of buffer.
     @return The number of bytes read. Returns zero for not data. EOF can be detected by testing #httpIsEof.
     @ingroup HttpRx
     @stability Stable
  */
 PUBLIC ssize httpRead(HttpConn *conn, char *buffer, ssize size);
 
-/** 
-    Read a block of rx body data. 
-    @description This routine will read body data and provide control over blocking and call duration. 
+/**
+    Read a block of rx body data.
+    @description This routine will read body data and provide control over blocking and call duration.
     \n\n
     If in blocking mode (the default for client connections), this call may block to wait for data. If in non-blocking
     mode (the default for server connections), the call will not block and will return with whatever data is available.
-    The blocking mode is set via the flags parameter. 
+    The blocking mode is set via the flags parameter.
     \n\n
     In blocking mode, this routine may invoke mprYield before blocking to consent for the garbage collector to run.
     Callers must ensure they have retained all required temporary memory before invoking this routine.
     \n\n
-    This call will block for at most the timeout specified by the connection inactivity timeout defined in 
+    This call will block for at most the timeout specified by the connection inactivity timeout defined in
     HttpConn.limits.inactivityTimeout. Use #httpSetTimeout to change the timeout value.
     \n\n
     Server applications should not call httpReadBlock in blocking mode as it will consume a valuable thread.
-    Rather, server apps should perform non-blocking reads or access packets directly from the connection readq 
+    Rather, server apps should perform non-blocking reads or access packets directly from the connection readq
    which offers a higher performance interface.
 
     @param conn HttpConn connection object created via #httpCreateConn
     @param buffer Buffer to receive read data
-    @param size Size of buffer. 
+    @param size Size of buffer.
     @param timeout Timeout in milliseconds to wait. Set to -1 to use the default inactivity timeout. Set to zero
         to wait forever.
-    @param flags Set to HTTP_BLOCK to wait for data before returning. Set to HTTP_NON_BLOCK to read what is 
-        available and return without blocking. If set to zero, it will default to HTTP_BLOCK for sync connections 
+    @param flags Set to HTTP_BLOCK to wait for data before returning. Set to HTTP_NON_BLOCK to read what is
+        available and return without blocking. If set to zero, it will default to HTTP_BLOCK for sync connections
         and HTTP_NON_BLOCK for async connections.
     @return The number of bytes read. Returns zero for not data. EOF can be detected by testing #httpIsEof.
     @ingroup HttpRx
@@ -6126,15 +6373,15 @@ PUBLIC ssize httpReadBlock(HttpConn *conn, char *buffer, ssize size, MprTicks ti
 /**
     Get the receive body input
     @description This will return all the body input. The request must have received all input (rx->eof == 1) and
-        must not be streaming (rx->streaming). 
+        must not be streaming (rx->streaming).
     @param conn HttpConn connection object created via #httpCreateConn
     @return A string containing the body input.
     @stability Evolving
  */
 PUBLIC cchar *httpGetBodyInput(HttpConn *conn);
 
-/** 
-    Read response data as a string. This will read all rx body and return a string that the caller should free. 
+/**
+    Read response data as a string. This will read all rx body and return a string that the caller should free.
     This will block and should not be used in async mode.
     @param conn HttpConn connection object created via #httpCreateConn
     @returns A string containing the rx body. Caller should free.
@@ -6165,7 +6412,7 @@ PUBLIC void httpSetEof(HttpConn *conn);
 
 /**
     Set a request param value
-    @description Set the value of a named request param to a string value. Form variables are define via 
+    @description Set the value of a named request param to a string value. Form variables are define via
         www-urlencoded query or post data contained in the request.
     @param conn HttpConn connection object
     @param var Name of the request param to retrieve
@@ -6177,7 +6424,7 @@ PUBLIC void httpSetParam(HttpConn *conn, cchar *var, cchar *value);
 
 /**
     Set an integer request param value
-    @description Set the value of a named request param to an integer value. Form variables are define via 
+    @description Set the value of a named request param to an integer value. Form variables are define via
         www-urlencoded query or post data contained in the request.
     @param conn HttpConn connection object
     @param var Name of the request param to retrieve
@@ -6192,18 +6439,27 @@ PUBLIC void httpSetIntParam(HttpConn *conn, cchar *var, int value);
     @description This modifies the request method to alter request processing. The original method is preserved in
         the HttpRx.originalMethod field. This is only useful to do before request routing has matched a route.
     @param conn HttpConn connection object
-    @param method New method to use. 
+    @param method New method to use.
     @ingroup HttpRx
     @stability Stable
  */
 PUBLIC void httpSetMethod(HttpConn *conn, cchar *method);
 
 /**
+    Define a request completion callback
+    @description This callback is invoked when the request is completed.
+    @param callback The callback is invoked with the signature: void callback(HttpConn *conn).
+    @ingroup HttpRx
+    @stability Prototype
+ */
+PUBLIC void httpSetRequestCallback(HttpRequestCallback callback);
+
+/**
     Set a new URI for processing
     @description This modifies the request URI to alter request processing. The original URI is preserved in
         the HttpRx.originalUri field. This is only useful to do before request routing has matched a route.
     @param conn HttpConn connection object
-    @param uri New URI to use. The URI can be fully qualified starting with a scheme ("http") or it can be 
+    @param uri New URI to use. The URI can be fully qualified starting with a scheme ("http") or it can be
         a partial/relative URI. Missing portions of the URI will be completed with equivalent portions from the
         current URI. For example: if the current request URI was http://example.com:7777/index.html, then
         a call to httpSetUri(conn, "/new.html", 0)  will set the request URI to http://example.com:7777/new.html.
@@ -6226,10 +6482,10 @@ PUBLIC int httpTestParam(HttpConn *conn, cchar *var);
 
 /**
     Trim extra path from the URI
-    @description This call trims extra path information after the uri extension. This is used by CGI and PHP. 
-    The strategy is to heuristically find the script name in the uri. This is assumed to be the original uri 
-    up to and including first path component containing a "." Any path information after that is regarded as 
-    extra path.  WARNING: Extra path is an old, unreliable, CGI specific technique. Do not use directories 
+    @description This call trims extra path information after the uri extension. This is used by CGI and PHP.
+    The strategy is to heuristically find the script name in the uri. This is assumed to be the original uri
+    up to and including first path component containing a "." Any path information after that is regarded as
+    extra path.  WARNING: Extra path is an old, unreliable, CGI specific technique. Do not use directories
     with embedded periods.
     @param conn HttpConn connection object
     @ingroup HttpRx
@@ -6256,23 +6512,23 @@ PUBLIC bool httpProcessCompletion(HttpConn *conn);
 PUBLIC void httpProcessWriteEvent(HttpConn *conn);
 
 /********************************** HttpTx *********************************/
-/*  
+/*
     Tx flags
  */
 #define HTTP_TX_NO_BODY             0x1     /**< No transmission body, only send headers */
 #define HTTP_TX_HEADERS_CREATED     0x2     /**< Response headers have been created */
-#define HTTP_TX_SENDFILE            0x4     /**< Relay output via Send connector */
+#define HTTP_TX_SENDFILE            0x4     /**< Relay output via send connector */
 #define HTTP_TX_USE_OWN_HEADERS     0x8     /**< Skip adding default headers */
 #define HTTP_TX_NO_CHECK            0x10    /**< Do not check if the filename is inside the route documents directory */
 #define HTTP_TX_NO_LENGTH           0x20    /**< Do not emit a content length (used for TRACE) */
 #define HTTP_TX_NO_MAP              0x40    /**< Do not map the filename to compressed or minified alternatives */
 #define HTTP_TX_PIPELINE            0x80    /**< Created Tx pipeline */
 
-/** 
+/**
     Http Tx
     @description The tx object controls the transmission of data. This may be client requests or responses to
-        client requests. Most of the APIs in the Response group still take a HttpConn object as their first parameter. 
-        This is to make the API easier to remember - APIs take a connection object rather than a rx or 
+        client requests. Most of the APIs in the Response group still take a HttpConn object as their first parameter.
+        This is to make the API easier to remember - APIs take a connection object rather than a rx or
         transmission object.
     @defgroup HttpTx HttpTx
     @see HttpConn HttpRx HttpTx httpAddHeader httpAddHeaderString httpAppendHeader httpAppendHeaderString httpFinalize
@@ -6280,21 +6536,24 @@ PUBLIC void httpProcessWriteEvent(HttpConn *conn);
     httpFormatErrorV httpFormatResponse httpFormatResponseBody httpFormatResponsev httpGetQueueData
     httpIsChunked httpIsComplete httpIsOutputFinalized httpNeedRetry httpOmitBody httpRedirect httpRemoveHeader
     httpSetContentLength httpSetContentType httpSetCookie httpSetEntityLength httpSetHeader httpSetHeaderString
-    httpSetResponded httpSetStatus httpSocketBlocked httpWait httpWriteHeaders httpWriteUploadData 
+    httpSetResponded httpSetStatus httpSocketBlocked httpWait httpWriteHeaders httpWriteUploadData
     @stability Internal
  */
 typedef struct HttpTx {
     /* Ordered for debugging */
+    HttpUri         *parsedUri;             /**< Client request uri */
+    cchar           *filename;              /**< Name of a real file being served (typically pathInfo mapped) */
+
     int             finalized;              /**< Request response generated and handler processing is complete */
     int             pendingFinalize;        /**< Call httpFinalize again once the Tx pipeline is created */
     int             finalizedConnector;     /**< Connector has finished sending the response */
     int             finalizedOutput;        /**< Handler or surrogate has finished writing output response */
-    HttpUri         *parsedUri;             /**< Client request uri */
-    cchar           *filename;              /**< Name of a real file being served (typically pathInfo mapped) */
     int             flags;                  /**< Response flags */
     int             status;                 /**< HTTP response status */
     int             responded;              /**< The request has started to respond. Some output has been initiated. */
     int             started;                /**< Handler has started */
+    int             writeBlocked;           /**< Transmission writing is blocked */
+
     MprOff          bytesWritten;           /**< Bytes written including headers */
     MprOff          entityLength;           /**< Original content length before range subsetting */
     ssize           chunkSize;              /**< Chunk size to use when using transfer encoding. Zero for unchunked. */
@@ -6302,16 +6561,17 @@ typedef struct HttpTx {
     char            *etag;                  /**< Unique identifier tag */
     HttpStage       *handler;               /**< Final handler serving the request */
     MprOff          length;                 /**< Transmission content length */
-    int             writeBlocked;           /**< Transmission writing is blocked */
     char            *method;                /**< Client request method GET, HEAD, POST, DELETE, OPTIONS, PUT, TRACE */
     cchar           *errorDocument;         /**< Error document to render */
     char            *authType;              /**< Type of authentication: set to basic, digest, post or a custom name */
+    cchar           *mimeType;              /**< Mime type of the request payload (ENV: CONTENT_TYPE) */
 
     struct HttpConn *conn;                  /**< Current connection object */
     MprList         *outputPipeline;        /**< Output processing */
     HttpStage       *connector;             /**< Network connector to send / receive socket data */
     HttpQueue       *queue[2];              /**< Pipeline queue heads */
 
+    MprHash         *cookies;               /**< Browser cookies */
     MprHash         *headers;               /**< Transmission headers */
     HttpCache       *cache;                 /**< Cache control entry (only set if this request is being cached) */
     MprBuf          *cacheBuffer;           /**< Response caching buffer */
@@ -6334,7 +6594,7 @@ typedef struct HttpTx {
     char            *webSockKey;            /**< Sec-WebSocket-Key header */
 } HttpTx;
 
-/** 
+/**
     Add a header to the transmission using a format string.
     @description Add a header if it does not already exits.
     @param conn HttpConn connection object created via #httpCreateConn
@@ -6346,9 +6606,9 @@ typedef struct HttpTx {
     @ingroup HttpTx
     @stability Stable
  */
-PUBLIC void httpAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
+PUBLIC void httpAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
-/** 
+/**
     Add a header to the transmission
     @description Add a header if it does not already exits.
     @param conn HttpConn connection object created via #httpCreateConn
@@ -6361,7 +6621,7 @@ PUBLIC void httpAddHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
  */
 PUBLIC void httpAddHeaderString(HttpConn *conn, cchar *key, cchar *value);
 
-/** 
+/**
     Append a transmission header
     @description Set the header if it does not already exists. Append with a ", " separator if the header already exists.
     @param conn HttpConn connection object created via #httpCreateConn
@@ -6371,9 +6631,9 @@ PUBLIC void httpAddHeaderString(HttpConn *conn, cchar *key, cchar *value);
     @ingroup HttpTx
     @stability Stable
  */
-PUBLIC void httpAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
+PUBLIC void httpAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
-/** 
+/**
     Append a transmission header string
     @description Set the header if it does not already exists. Append with a ", " separator if the header already exists.
     @param conn HttpConn connection object created via #httpCreateConn
@@ -6384,21 +6644,21 @@ PUBLIC void httpAppendHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
  */
 PUBLIC void httpAppendHeaderString(HttpConn *conn, cchar *key, cchar *value);
 
-/** 
+/**
     Connect to a server and issue Http client request.
     @description Start a new Http request on the http object and return. This routine does not block.
         After starting the request, you can use #httpWait to wait for the request to achieve a certain state or to complete.
     @param conn HttpConn connection object created via #httpCreateConn
-    @param method Http method to use. Valid methods include: "GET", "POST", "PUT", "DELETE", "OPTIONS" and "TRACE" 
+    @param method Http method to use. Valid methods include: "GET", "POST", "PUT", "DELETE", "OPTIONS" and "TRACE"
     @param uri URI to fetch
-    @param ssl SSL configuration to use if a secure connection. 
+    @param ssl SSL configuration to use if a secure connection.
     @return "Zero" if the request was successfully sent to the server. Otherwise a negative MPR error code is returned.
     @ingroup HttpTx
     @stability Stable
  */
 PUBLIC int httpConnect(HttpConn *conn, cchar *method, cchar *uri, struct MprSsl *ssl);
 
-/** 
+/**
     Create the tx object. This is used internally by the http library.
     @param conn HttpConn connection object created via #httpCreateConn
     @param headers Optional headers to use for the transmission
@@ -6417,15 +6677,15 @@ PUBLIC HttpTx *httpCreateTx(HttpConn *conn, MprHash *headers);
  */
 PUBLIC void httpDestroyTx(HttpTx *tx);
 
-/** 
+/**
     Indicate the request is finalized.
     @description Calling this routine indicates that the handler has fully finished processing the request including
-        processing all input, generating a full response and any other required processing. This call will invoke 
-        #httpFinalizeOutput and then set the request finalized flag. If the request is already finalized, this call does nothing. 
+        processing all input, generating a full response and any other required processing. This call will invoke
+        #httpFinalizeOutput and then set the request finalized flag. If the request is already finalized, this call does nothing.
         A handler MUST call httpFinalize when it has completed processing a request.
         As background: there are three finalize concepts: HttpTx.finalizedConnector means the connector has sent all the output
         to the network. HttpTx.finalizedOutput means the handler has generated all the response output but it may not yet be fully
-        transmited through the pipeline and to the network by the connector. HttpTx.finalized means the application has fully 
+        transmited through the pipeline and to the network by the connector. HttpTx.finalized means the application has fully
         processed the request including reading all the input data it wishes to read and has generated all the output that will
         be generated. A fully finalized request has both HttpTx.finalized and HttpTx.finalizedConnector true.
     @param conn HttpConn connection object
@@ -6441,16 +6701,16 @@ PUBLIC void httpFinalize(HttpConn *conn);
     @ingroup HttpTx
     @stability Internal
     @internal
- */ 
+ */
 PUBLIC void httpFinalizeConnector(HttpConn *conn);
 
-/** 
+/**
     Finalize transmission of the http response
-    @description This routine should be called by clients and Handlers to signify the end of the body content being sent with 
+    @description This routine should be called by clients and Handlers to signify the end of the body content being sent with
         the request or response body. This call will force the transmission of buffered content to the peer.
     HttpFinalizeOutput will set the finalizedOutput flag and write a final chunk trailer if using chunked transfers. If the
     output is already finalized, this call does nothing.  Note that after finalization, incoming content may continue to be processed.
-    i.e. httpFinalizeOutput can be called before all incoming data has been received. 
+    i.e. httpFinalizeOutput can be called before all incoming data has been received.
     \n\n
     The difference between #httpFinalize and #httpFinalizeOutput is that #httpFinalize implies that all request processing is also
     complete whereas #httpFinalizeOutput implies that the output is generated. Note that while the output may be fully generated, it
@@ -6463,7 +6723,7 @@ PUBLIC void httpFinalizeConnector(HttpConn *conn);
 PUBLIC void httpFinalizeOutput(HttpConn *conn);
 
 /**
-    Flush transmit data. 
+    Flush transmit data.
     @description This call initiates writing buffered data an will not block.
     If you need to wait until all the data has been written to the socket, use #httpFlushAll.
     Handlers may only call this routine in their open, close, ready, start and writable callbacks.
@@ -6474,8 +6734,8 @@ PUBLIC void httpFinalizeOutput(HttpConn *conn);
 PUBLIC void httpFlush(HttpConn *conn);
 
 /**
-    Flush transmit data and wait for all the data to be written to the socket. 
-    @description This call initiates writing buffered data. 
+    Flush transmit data and wait for all the data to be written to the socket.
+    @description This call initiates writing buffered data.
     If in sync mode this call may block until the output queues drain.
     In sync mode, this may invoke mprYield before blocking to consent for the garbage collector to run. Callers must
     ensure they have retained all required temporary memory before invoking this routine.
@@ -6488,7 +6748,7 @@ PUBLIC void httpFlush(HttpConn *conn);
  */
 PUBLIC void httpFlushAll(HttpConn *conn);
 
-/** 
+/**
     Follow redirctions
     @description Enabling follow redirects enables the Http service to transparently follow 301 and 302 redirections
         and fetch the redirected URI.
@@ -6499,7 +6759,7 @@ PUBLIC void httpFlushAll(HttpConn *conn);
  */
 PUBLIC void httpFollowRedirects(HttpConn *conn, bool follow);
 
-/** 
+/**
     Format an error transmission
     @description Format an error message to use instead of data generated by the request processing pipeline.
         This is typically used to send errors and redirections. The message is also sent to the error log.
@@ -6513,9 +6773,9 @@ PUBLIC void httpFollowRedirects(HttpConn *conn, bool follow);
     @ingroup HttpTx
     @stability Stable
  */
-PUBLIC void httpFormatError(HttpConn *conn, int status, cchar *fmt, ...);
+PUBLIC void httpFormatError(HttpConn *conn, int status, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
-/** 
+/**
     Format an alternate response
     @description Format a response to use instead of data generated by the request processing pipeline.
         This is used for alternate responses that are not errors.
@@ -6528,9 +6788,9 @@ PUBLIC void httpFormatError(HttpConn *conn, int status, cchar *fmt, ...);
     @ingroup HttpTx
     @stability Stable
  */
-PUBLIC ssize httpFormatResponse(HttpConn *conn, cchar *fmt, ...);
+PUBLIC ssize httpFormatResponse(HttpConn *conn, cchar *fmt, ...) PRINTF_ATTRIBUTE(2,3);
 
-/** 
+/**
     Format an alternate response
     @description Format a response to use instead of data generated by the request processing pipeline.
         This is similar to #httpFormatResponse.
@@ -6545,7 +6805,7 @@ PUBLIC ssize httpFormatResponse(HttpConn *conn, cchar *fmt, ...);
  */
 PUBLIC ssize httpFormatResponsev(HttpConn *conn, cchar *fmt, va_list args);
 
-/** 
+/**
     Format a response body.
     @description Format a transmission body to use instead of data generated by the request processing pipeline.
         The body will be created in HTML or in plain text depending on the value of the request Accept header.
@@ -6560,7 +6820,7 @@ PUBLIC ssize httpFormatResponsev(HttpConn *conn, cchar *fmt, va_list args);
     @ingroup HttpTx
     @stability Stable
  */
-PUBLIC ssize httpFormatResponseBody(HttpConn *conn, cchar *title, cchar *fmt, ...);
+PUBLIC ssize httpFormatResponseBody(HttpConn *conn, cchar *title, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
 /**
     Get the queue data for the connection
@@ -6569,13 +6829,13 @@ PUBLIC ssize httpFormatResponseBody(HttpConn *conn, cchar *title, cchar *fmt, ..
  */
 PUBLIC void *httpGetQueueData(HttpConn *conn);
 
-/** 
+/**
     Return whether transfer chunked encoding will be used on this request
     @param conn HttpConn connection object created via #httpCreateConn
     @returns true if chunk encoding will be used
     @ingroup HttpTx
     @stability Stable
- */ 
+ */
 PUBLIC int httpIsChunked(HttpConn *conn);
 
 /**
@@ -6597,9 +6857,9 @@ PUBLIC int httpIsFinalized(HttpConn *conn);
  */
 PUBLIC int httpIsOutputFinalized(HttpConn *conn);
 
-/** 
+/**
     Determine if the transmission needs a transparent retry to implement authentication or redirection. This is used
-    by client requests. If authentication is required, a request must first be tried once to receive some authentication 
+    by client requests. If authentication is required, a request must first be tried once to receive some authentication
     key information that must be resubmitted to gain access.
     @param conn HttpConn connection object created via #httpCreateConn
     @param url Reference to a string to receive a redirection URL. Set to NULL if not redirection is required.
@@ -6615,7 +6875,7 @@ PUBLIC bool httpNeedRetry(HttpConn *conn, char **url);
  */
 PUBLIC void httpOmitBody(HttpConn *conn);
 
-/** 
+/**
     Redirect the client
     @description Redirect the client to a new uri.
     @param conn HttpConn connection object created via #httpCreateConn
@@ -6626,7 +6886,7 @@ PUBLIC void httpOmitBody(HttpConn *conn);
  */
 PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *uri);
 
-/** 
+/**
     Remove a header from the transmission
     @description Remove a header if present.
     @param conn HttpConn connection object created via #httpCreateConn
@@ -6649,7 +6909,7 @@ PUBLIC int httpRemoveHeader(HttpConn *conn, cchar *key);
  */
 PUBLIC HttpConn *httpRequest(cchar *method, cchar *uri, cchar *data, char **err);
 
-/** 
+/**
     Define a content length header in the transmission. This will define a "Content-Length: NNN" request header and
         set Tx.length.
     @param conn HttpConn connection object created via #httpCreateConn
@@ -6659,7 +6919,7 @@ PUBLIC HttpConn *httpRequest(cchar *method, cchar *uri, cchar *data, char **err)
  */
 PUBLIC void httpSetContentLength(HttpConn *conn, MprOff length);
 
-/** 
+/**
     Set the transmission (response) content mime type
     @description Set the mime type Http header in the transmission
     @param conn HttpConn connection object created via #httpCreateConn
@@ -6675,7 +6935,7 @@ PUBLIC void httpSetContentType(HttpConn *conn, cchar *mimeType);
 #define HTTP_COOKIE_SECURE   0x1         /**< Flag for Set-Cookie for SSL only */
 #define HTTP_COOKIE_HTTP     0x2         /**< Flag for Set-Cookie httponly. Not visible to Javascript */
 
-/** 
+/**
     Set a transmission cookie
     @description Define a cookie to send in the transmission Http header
     @param conn HttpConn connection object created via #httpCreateConn
@@ -6718,8 +6978,8 @@ PUBLIC void httpSetEntityLength(HttpConn *conn, MprOff len);
 /**
     Set the filename to serve for a request
     @description This routine defines a non-default response document filename.
-       The filename may be virtual and not correspond to a physical file. It also may be a file outside the documents root 
-       directory. If it is not a file under the route documents directory, set the flags parameter to HTTP_TX_NO_CHECK. 
+       The filename may be virtual and not correspond to a physical file. It also may be a file outside the documents root
+       directory. If it is not a file under the route documents directory, set the flags parameter to HTTP_TX_NO_CHECK.
        Otherwise, the filename will be checked to ensure it is inside the route documents directory.
        \n\n
        Typically a handler will call #httpMapFile to perform default request URI to filename mapping and should not need
@@ -6728,10 +6988,10 @@ PUBLIC void httpSetEntityLength(HttpConn *conn, MprOff len);
        This routine will set the HttpTx filename, ext, etag and fileInfo fields.
        \n\n
         Note: the response header mime type will be set based on the request URI. To override, use #httpSetContentType
-    @param conn HttpConn connection object 
+    @param conn HttpConn connection object
     @param filename Tx filename to define. Set to NULL to reset the filename.
-    @param flags Flags word. Or together the desired flags. Include to HTTP_TX_NO_CHECK to bypass checking if the 
-        filename resides inside the route documents directory. 
+    @param flags Flags word. Or together the desired flags. Include to HTTP_TX_NO_CHECK to bypass checking if the
+        filename resides inside the route documents directory.
     @ingroup HttpTx
     @stability Evolving
  */
@@ -6747,7 +7007,7 @@ PUBLIC void httpSetFilename(HttpConn *conn, cchar *filename, int flags);
  */
 PUBLIC void httpSetHandler(HttpConn *conn, HttpStage *handler);
 
-/** 
+/**
     Set a transmission header
     @description Set a Http header to send with the request. If the header already exists, it its value is overwritten.
     @param conn HttpConn connection object created via #httpCreateConn
@@ -6757,9 +7017,9 @@ PUBLIC void httpSetHandler(HttpConn *conn, HttpStage *handler);
     @ingroup HttpTx
     @stability Stable
  */
-PUBLIC void httpSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
+PUBLIC void httpSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...) PRINTF_ATTRIBUTE(3,4);
 
-/** 
+/**
     Set a simple key/value transmission header
     @description Set a Http header to send with the request. If the header already exists, it its value is overwritten.
     @param conn HttpConn connection object created via #httpCreateConn
@@ -6770,7 +7030,7 @@ PUBLIC void httpSetHeader(HttpConn *conn, cchar *key, cchar *fmt, ...);
  */
 PUBLIC void httpSetHeaderString(HttpConn *conn, cchar *key, cchar *value);
 
-/** 
+/**
     Set a Http response status.
     @description Set the Http response status for the request. This defaults to 200 (OK).
     @param conn HttpConn connection object created via #httpCreateConn
@@ -6782,7 +7042,7 @@ PUBLIC void httpSetStatus(HttpConn *conn, int status);
 
 /**
     Set the responded flag for the request
-    @description This call sets the requests responded status. Once the HTTP response status code has been defined, 
+    @description This call sets the requests responded status. Once the HTTP response status code has been defined,
         HTTP response headers or any output has been generated, the request is regarded as having "responded" in-part to the client.
         This means that any errors cannot revise the HTTP response status and may need to prematurely abort the request to signify
         to the clien that the request has failed.
@@ -6800,10 +7060,10 @@ PUBLIC void httpSetResponded(HttpConn *conn);
  */
 PUBLIC void httpSocketBlocked(HttpConn *conn);
 
-/** 
+/**
     Wait for the client connection to achieve the requested state.
     @description This call blocks until the connection reaches the desired state. It creates a wait handler and
-        services events while waiting. This is useful for blocking client requests, and should never be used on 
+        services events while waiting. This is useful for blocking client requests, and should never be used on
         server-side connections.
         \n\n
         This routine may invoke mprYield before it sleeps to consent for the garbage collector to turn. Callers must
@@ -6819,11 +7079,11 @@ PUBLIC void httpSocketBlocked(HttpConn *conn);
  */
 PUBLIC int httpWait(HttpConn *conn, int state, MprTicks timeout);
 
-/** 
+/**
     Write the transmission headers into the given packet
     @description Write the Http transmission headers into the given packet. This should only be called by connectors
         just prior to sending output to the client. It should be delayed as long as possible if the content length is
-        not yet known to give the pipeline a chance to determine the transmission length. This way, a non-chunked 
+        not yet known to give the pipeline a chance to determine the transmission length. This way, a non-chunked
         transmission can be sent with a content-length header. This is the fastest HTTP transmission.
     @param q Queue owning the packet
     @param packet Packet into which to place the headers
@@ -6832,9 +7092,9 @@ PUBLIC int httpWait(HttpConn *conn, int state, MprTicks timeout);
  */
 PUBLIC void httpWriteHeaders(HttpQueue *q, HttpPacket *packet);
 
-/** 
+/**
     Write Http upload body data
-    @description Write files and form fields as request body data. This will use transfer chunk encoding. This routine 
+    @description Write files and form fields as request body data. This will use transfer chunk encoding. This routine
         will block until all the buffer is written.
         This routine may invoke mprYield before it blocks to consent for the garbage collector to turn. Callers must
         ensure they have retained all required temporary memory before invoking this routine.
@@ -6848,17 +7108,17 @@ PUBLIC void httpWriteHeaders(HttpQueue *q, HttpPacket *packet);
 PUBLIC ssize httpWriteUploadData(HttpConn *conn, MprList *formData, MprList *fileData);
 
 /********************************* HttpEndpoint ***********************************/
-/*  
+/*
     Endpoint flags
  */
 #define HTTP_NEW_DISPATCHER     0x1         /**< New dispatcher for each connection */
 
-/** 
+/**
     Listening endpoints. Endpoints may have multiple virtual named hosts.
     @defgroup HttpEndpoint HttpEndpoint
-    @see HttpEndpoint httpAcceptConn httpAddHostToEndpoint httpCreateConfiguredEndpoint httpCreateEndpoint 
+    @see HttpEndpoint httpAcceptConn httpAddHostToEndpoint httpCreateConfiguredEndpoint httpCreateEndpoint
         httpDestroyEndpoint httpGetEndpointContext httpIsEndpointAsync
-        httpLookupHostOnEndpoint httpSecureEndpoint httpSecureEndpointByName httpSetEndpointAddress 
+        httpLookupHostOnEndpoint httpSecureEndpoint httpSecureEndpointByName httpSetEndpointAddress
         httpSetEndpointAsync httpSetEndpointContext httpSetEndpointNotifier
         httpStartEndpoint httpStopEndpoint
     @stability Internal
@@ -6881,7 +7141,7 @@ typedef struct HttpEndpoint {
 
 /**
     Accept a new connection.
-    Accept a new client connection on a new socket. If multithreaded, this will come in on a worker thread 
+    Accept a new client connection on a new socket. If multithreaded, this will come in on a worker thread
         dedicated to this connection. This is called from the listen wait handler.
     @param endpoint The endpoint on which the server was listening
     @param event Mpr event object
@@ -6906,7 +7166,7 @@ PUBLIC void httpAddHostToEndpoint(HttpEndpoint *endpoint, struct HttpHost *host)
 
 /**
     Add a host to all unassigned endpoints
-    @description Add the host to any endpoints that do not have an assigned host. 
+    @description Add the host to any endpoints that do not have an assigned host.
     @param host HttpHost object to add.
     @ingroup HttpEndpoint
     @stability Internal
@@ -6918,8 +7178,8 @@ PUBLIC void httpAddHostToEndpoints(struct HttpHost *host);
     @description Convenience function to create and configure a new endpoint without using a config file.
         If no host is supplied, a default host and route are created.
     @param host Optional HttpHost object.
-    @param home Home directory for configuration files for the endpoint 
-    @param documents Directory containing the 
+    @param home Home directory for configuration files for the endpoint
+    @param documents Directory containing the
     @param ip IP address to use for the endpoint. Set to null to listen on all interfaces.
     @param port Listening port number to use for the endpoint
     @return A configured HttpEndpoint object instance
@@ -6928,7 +7188,7 @@ PUBLIC void httpAddHostToEndpoints(struct HttpHost *host);
 */
 PUBLIC HttpEndpoint *httpCreateConfiguredEndpoint(struct HttpHost *host, cchar *home, cchar *documents, cchar *ip, int port);
 
-/** 
+/**
     Create an endpoint  object.
     @description Creates a listening endpoint on the given IP:PORT. Use httpStartEndpoint to begin listening for client
         connections.
@@ -6980,7 +7240,7 @@ PUBLIC int httpIsEndpointAsync(HttpEndpoint *endpoint);
 PUBLIC struct HttpHost *httpLookupHostOnEndpoint(HttpEndpoint *endpoint, cchar *name);
 
 /**
-    Secure an endpoint 
+    Secure an endpoint
     @description Define the SSL parameters for an endpoint. This must be done before starting listening on
         the endpoint via #httpStartEndpoint.
     @param endpoint HttpEndpoint object created via #httpCreateEndpoint
@@ -6993,9 +7253,9 @@ PUBLIC int httpSecureEndpoint(HttpEndpoint *endpoint, struct MprSsl *ssl);
 
 /**
     Secure an endpoint by name
-    @description Define the SSL parameters for an endpoint that is selected by name. This must be done before 
+    @description Define the SSL parameters for an endpoint that is selected by name. This must be done before
     starting listening on the endpoint via #httpStartEndpoint.
-    @param name Endpoint name. The endpoint name is comprised of the IP and port. For example: "127.0.0.1:7777" 
+    @param name Endpoint name. The endpoint name is comprised of the IP and port. For example: "127.0.0.1:7777"
     @param ssl MprSsl object
     @returns Zero if successful, otherwise a negative MPR error code.
     @ingroup HttpEndpoint
@@ -7034,17 +7294,17 @@ PUBLIC void httpSetEndpointAsync(HttpEndpoint *endpoint, int enable);
  */
 PUBLIC void httpSetEndpointContext(HttpEndpoint *endpoint, void *context);
 
-/** 
+/**
     Define a notifier callback for this endpoint.
     @description The notifier callback will be invoked as Http requests are processed.
     @param endpoint HttpEndpoint object created via #httpCreateEndpoint
-    @param fn Notifier function. 
+    @param fn Notifier function.
     @ingroup HttpEndpoint
     @stability Stable
  */
 PUBLIC void httpSetEndpointNotifier(HttpEndpoint *endpoint, HttpNotifier fn);
 
-/** 
+/**
     Start listening for client connections on an endpoint.
     @description Opens the endpoint socket and starts listening for connections.
     @param endpoint HttpEndpoint object created via #httpCreateEndpoint
@@ -7054,7 +7314,7 @@ PUBLIC void httpSetEndpointNotifier(HttpEndpoint *endpoint, HttpNotifier fn);
  */
 PUBLIC int httpStartEndpoint(HttpEndpoint *endpoint);
 
-/** 
+/**
     Start listening for client connections on all endpoints
     @description Opens all endpoints and starts listening for connections.
     @returns "Zero" if successful, otherwise a negative MPR error code.
@@ -7063,7 +7323,7 @@ PUBLIC int httpStartEndpoint(HttpEndpoint *endpoint);
  */
 PUBLIC int httpStartEndpoints();
 
-/** 
+/**
     Stop listening for client connections on all endpoints
     @description Closes all endpoints and stops listening for connections. Does not impact running requests.
     @returns "Zero" if successful, otherwise a negative MPR error code.
@@ -7071,7 +7331,7 @@ PUBLIC int httpStartEndpoints();
  */
 PUBLIC void httpStopEndpoints();
 
-/** 
+/**
     Stop the server listening for client connections.
     @description Closes the socket endpoint. This preserves connections accepted via the listening endpoint.
     @param endpoint HttpEndpoint object created via #httpCreateEndpoint
@@ -7112,7 +7372,7 @@ typedef struct HttpHost {
 
 /**
     Add a route to a host
-    @description Add the route to the host list of routes. During request route matching, routes are processed 
+    @description Add the route to the host list of routes. During request route matching, routes are processed
     in order, so it is important to define routes in the order in which you wish to match them.
     @param host HttpHost object
     @param route Route to add
@@ -7161,7 +7421,7 @@ PUBLIC HttpRoute *httpGetDefaultRoute(HttpHost *host);
 /**
     Return the default route for a host
     @description The host has a default route which holds default configuration. Typically the default route
-        is not directly used when routing URIs. Rather other routes inherit from the default route and are used to 
+        is not directly used when routing URIs. Rather other routes inherit from the default route and are used to
         respond to client requests.
     @param host Host to examine.
     @return Default route object
@@ -7229,7 +7489,7 @@ PUBLIC void httpSetHostDefaultEndpoint(HttpHost *host, HttpEndpoint *endpoint);
 /**
     Set the default route for a host
     @description The host has a default route which holds default configuration. Typically the default route
-        is not directly used when routing URIs. Rather other routes inherit from the default route and are used to 
+        is not directly used when routing URIs. Rather other routes inherit from the default route and are used to
         respond to client requests.
     @param host Host to examine.
     @param route Route to define as the default
@@ -7288,7 +7548,7 @@ PUBLIC int httpStartHost(HttpHost *host);
 PUBLIC void httpStopHost(HttpHost *host);
 
 /********************************* Web Sockets *************************************/
-/** 
+/**
     WebSocket Service to implement the WebSockets RFC 6455 specification for client and server communications.
     @description WebSockets is a technology providing interactive communication between a server and client. Normal HTML
     connections follow a request / response paradigm and do not easily support asynchronous communications or unsolicited
@@ -7297,8 +7557,8 @@ PUBLIC void httpStopHost(HttpHost *host);
     then upgraded without impacting the original connection. This means it will work with existing networking infrastructure
     including firewalls and proxies.
     @defgroup HttpWebSocket HttpWebSocket
-    @see httpGetWebSocketCloseReason httpGetWebSocketData httpGetWebSocketMessageLength httpGetWebSocketProtocol 
-        httpGetWebSocketState httpGetWriteQueueCount httpIsLastPacket httpSend httpSendBlock httpSendClose 
+    @see httpGetWebSocketCloseReason httpGetWebSocketData httpGetWebSocketMessageLength httpGetWebSocketProtocol
+        httpGetWebSocketState httpGetWriteQueueCount httpIsLastPacket httpSend httpSendBlock httpSendClose
         httpSetWebSocketPreserveFrames httpSetWebSocketData httpSetWebSocketProtocols httpWebSocketOrderlyClosed
     @stability Internal
  */
@@ -7307,23 +7567,24 @@ typedef struct HttpWebSocket {
     int             frameState;             /**< Message frame state */
     int             closing;                /**< Started closing sequnce */
     int             closeStatus;            /**< Close status provided by peer */
-    ssize           frameLength;            /**< Length of the current frame */
-    ssize           messageLength;          /**< Length of the current message */
-    char            *subProtocol;           /**< Application level sub-protocol */
-    HttpPacket      *currentFrame;          /**< Message frame being currently read */
-    HttpPacket      *currentMessage;        /**< Current incoming messsage so far */
-    HttpPacket      *tailMessage;           /**< Subsequent message frames */
-    MprEvent        *pingEvent;             /**< Ping timer event */
-    char            *closeReason;           /**< Reason for closure */
-    uchar           dataMask[4];            /**< Mask for data */
     int             currentMessageType;     /**< Current incoming messsage type */
     int             maskOffset;             /**< Offset in dataMask */
     int             more;                   /**< More data to send in a message */
     int             preserveFrames;         /**< Do not join frames */
-    int             partialUTF;             /**< Last frame had a partial UTF codepoint */ 
+    int             partialUTF;             /**< Last frame had a partial UTF codepoint */
     int             rxSeq;                  /**< Incoming packet number */
     int             txSeq;                  /**< Outgoing packet number */
+    ssize           frameLength;            /**< Length of the current frame */
+    ssize           messageLength;          /**< Length of the current message */
+    HttpPacket      *currentFrame;          /**< Message frame being currently read */
+    HttpPacket      *currentMessage;        /**< Current incoming messsage so far */
+    HttpPacket      *tailMessage;           /**< Subsequent message frames */
+    MprEvent        *pingEvent;             /**< Ping timer event */
+    char            *subProtocol;           /**< Application level sub-protocol */
+    cchar           *errorMsg;              /**< Error message for last I/O */
+    cchar           *closeReason;           /**< Reason for closure */
     void            *data;                  /**< Custom data for applications (marked) */
+    uchar           dataMask[4];            /**< Mask for data */
 } HttpWebSocket;
 
 #define WS_MAGIC        "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
@@ -7381,7 +7642,7 @@ typedef struct HttpWebSocket {
     @ingroup HttpWebSocket
     @stability Evolving
  */
-PUBLIC char *httpGetWebSocketCloseReason(HttpConn *conn);
+PUBLIC cchar *httpGetWebSocketCloseReason(HttpConn *conn);
 
 /**
     Get the WebSocket private data
@@ -7395,7 +7656,7 @@ PUBLIC void *httpGetWebSocketData(HttpConn *conn);
 
 /**
     Get the message length for the current message
-    @description The message length will be updated as the message frames are received. The message length is 
+    @description The message length will be updated as the message frames are received. The message length is
         only complete when the last frame has been received. See #httpIsLastPacket
     @param conn HttpConn connection object created via #httpCreateConn
     @return The size of the message.
@@ -7432,10 +7693,10 @@ PUBLIC ssize httpGetWebSocketState(HttpConn *conn);
     @ingroup HttpWebSocket
     @stability Evolving
  */
-PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...);
+PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...) PRINTF_ATTRIBUTE(2,3);
 
-/** 
-    Flag for #httpSendBlock to indicate there are more frames for this message 
+/**
+    Flag for #httpSendBlock to indicate there are more frames for this message
  */
 #define HTTP_MORE   0x1000
 
@@ -7443,9 +7704,9 @@ PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...);
     Send a message of a given type to the WebSocket peer
     @description This is the lower-level message send routine. It permits control of message types and message framing.
     \n\n
-    This routine can operate in a blocking, non-blocking or buffered mode. Blocking mode is specified via the HTTP_BLOCK flag.  
-    When blocking, the call will wait until it has written all the data. The call will either accept and write all the data 
-    or it will fail, it will never return "short" with a partial write. If in blocking mode, the call may block for up to the 
+    This routine can operate in a blocking, non-blocking or buffered mode. Blocking mode is specified via the HTTP_BLOCK flag.
+    When blocking, the call will wait until it has written all the data. The call will either accept and write all the data
+    or it will fail, it will never return "short" with a partial write. If in blocking mode, the call may block for up to the
     inactivity timeout specified in the conn->limits->inactivityTimeout value.
     \n\n
     Non-blocking mode is specified via the HTTP_NON_BLOCK flag. In this mode, the call will consume that amount of data
@@ -7453,11 +7714,11 @@ PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...);
     the next call to httpSendBlock should set the message type to WS_MSG_CONT to indicate a continued message. This is required
     by the WebSockets specification.
     \n\n
-    Buffered mode is the default and may be explicitly specified via the HTTP_BUFFER flag. In buffered mode, the entire message 
-    will be accepted and will be buffered if required. 
+    Buffered mode is the default and may be explicitly specified via the HTTP_BUFFER flag. In buffered mode, the entire message
+    will be accepted and will be buffered if required.
     \n\n
     This API may split the message into frames such that no frame is larger than the limit conn->limits->webSocketsFrameSize.
-    However, if the HTTP_MORE flag is specified to indicate there is more data to complete this entire message, the data provided 
+    However, if the HTTP_MORE flag is specified to indicate there is more data to complete this entire message, the data provided
     to this call will not be split into frames and will not be aggregated with previous or subsequent messages. i.e. frame
     boundaries will be presserved and sent as-is to the peer.
     \n\n
@@ -7465,16 +7726,16 @@ PUBLIC ssize httpSend(HttpConn *conn, cchar *fmt, ...);
         ensure they have retained all required temporary memory before invoking this routine.
 
     @param conn HttpConn connection object created via #httpCreateConn
-    @param type Web socket message type. Choose from WS_MSG_TEXT, WS_MSG_BINARY or WS_MSG_PING. 
+    @param type Web socket message type. Choose from WS_MSG_TEXT, WS_MSG_BINARY or WS_MSG_PING.
         Use httpSendClose to send a close message. Do not send a WS_MSG_PONG message as it is generated internally
         by the Web Sockets module. If using HTTP_NON_BLOCK and the call returns having written only a portion of the data,
-        you must set the type to WS_MSG_CONT for the 
+        you must set the type to WS_MSG_CONT for the
     @param msg Message data buffer to send
     @param len Length of msg
     @param flags Include the flag HTTP_BLOCK for blocking operation or HTTP_NON_BLOCK for non-blocking. Set to HTTP_BUFFER to
         buffer the data if required and never block. Set to zero will default to HTTP_BUFFER.
-        Include the flag HTTP_MORE to indicate there is more data to come to complete this message. This will set 
-        frame continuation bit. Setting HTTP_MORE preserve the frame boundaries. i.e. it will ensure the data written is 
+        Include the flag HTTP_MORE to indicate there is more data to come to complete this message. This will set
+        frame continuation bit. Setting HTTP_MORE preserve the frame boundaries. i.e. it will ensure the data written is
         not split into frames or aggregated with other data.
     @return Number of data message bytes written. Should equal len if successful, otherwise returns a negative
         MPR error code.
@@ -7485,7 +7746,7 @@ PUBLIC ssize httpSendBlock(HttpConn *conn, int type, cchar *msg, ssize len, int 
 
 /**
     Send a close message to the WebSocket peer
-    @description This call invokes httpSendBlock with a type of WS_MSG_CLOSE and flags of HTTP_BUFFER. 
+    @description This call invokes httpSendBlock with a type of WS_MSG_CLOSE and flags of HTTP_BUFFER.
         The status and reason are encoded in the message. The reason is an optional UTF8 closure reason message.
     @param conn HttpConn connection object created via #httpCreateConn
     @param status Web socket status
@@ -7501,7 +7762,7 @@ PUBLIC ssize httpSendClose(HttpConn *conn, int status, cchar *reason);
     Set the WebSocket private data
     @description Set private data to be retained by the garbage collector
     @param conn HttpConn connection object created via #httpCreateConn
-    @param data Managed data reference. 
+    @param data Managed data reference.
     @ingroup HttpWebSocket
     @stability Evolving
  */
@@ -7510,8 +7771,8 @@ PUBLIC void httpSetWebSocketData(HttpConn *conn, void *data);
 /**
     Preserve frames for incoming messages
     @description This routine enables user control of message framing.
-        When preserving frames, sent message boundaries will be preserved and  will not be split into frames or 
-        aggregated with other message frames. Received messages will similarly have their frame boundaries preserved 
+        When preserving frames, sent message boundaries will be preserved and  will not be split into frames or
+        aggregated with other message frames. Received messages will similarly have their frame boundaries preserved
         and will be stored one frame per HttpPacket.
         Note: enabling this option may prevent full validation of UTF8 text messages if UTF8 codepoints span frame boundaries.
     @param conn HttpConn connection object created via #httpCreateConn
@@ -7565,7 +7826,7 @@ PUBLIC bool httpWebSocketOrderlyClosed(HttpConn *conn);
 PUBLIC void httpAddOption(MprHash *options, cchar *field, cchar *value);
 
 /**
-    Add an option to the options table. 
+    Add an option to the options table.
     @description If the field already exists, the added value is inserted prior to the existing value.
     @param options Option table returned from httpGetOptions
     @param field Field key name
@@ -7576,7 +7837,7 @@ PUBLIC void httpAddOption(MprHash *options, cchar *field, cchar *value);
 PUBLIC void httpInsertOption(MprHash *options, cchar *field, cchar *value);
 
 /**
-    Extract a field value from an option string. 
+    Extract a field value from an option string.
     @param options Option string of the form: "field='value' field='value'..."
     @param field Field key name
     @param defaultValue Value to use if "field" is not found in options
@@ -7589,7 +7850,7 @@ PUBLIC void *httpGetOption(MprHash *options, cchar *field, cchar *defaultValue);
 /**
     Get an option value that is itself an object (hash)
     @description This returns an option value that is an instance of MprHash. When deserializing a JSON option string which
-    contains multiple levels, this routine can be used to extract lower option container values. 
+    contains multiple levels, this routine can be used to extract lower option container values.
     @param options Options object to examine.
     @param field Property to return.
     @return An MprHash instance for the given field. This will contain option sub-properties.
@@ -7609,7 +7870,7 @@ PUBLIC MprHash *httpGetOptionHash(MprHash *options, cchar *field);
 PUBLIC MprHash *httpGetOptions(cchar *options);
 
 /**
-    Test a field value from an option string. 
+    Test a field value from an option string.
     @param options Option string of the form: "field='value' field='value'..."
     @param field Field key name
     @param value Test if the field is set to this value
@@ -7653,7 +7914,7 @@ PUBLIC void httpSetOption(MprHash *options, cchar *field, cchar *value);
     Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the Embedthis Open Source license or you may acquire a 
+    You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.

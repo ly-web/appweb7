@@ -55,7 +55,7 @@ Me.load({
             ifdef: ['esp'],
             'generate-capture': true,
             build: `
-                trace('Copy', me.dir.out.join('esp'))
+                trace('Copy', me.dir.out.join('esp').relativeTo(me.dir.top))
                 for each (pak in Path('.').files('esp-*')) {
                     let version = pak.join('package.json').readJSON().version || '0.0.0'
                     makeDir(OUT.join('esp', pak, version))

@@ -20,7 +20,7 @@ static bool okEscapeHtml(MprTestGroup *gp, char *html, char *expectedHtml);
 static void setup(MprTestGroup *gp)
 {
     if (!simpleGet(gp, "/index.html", 0)) {
-        mprError("Can't access web server at http://%s:%d/index.html", getDefaultHost(gp), getDefaultPort(gp));
+        mprLog("test http", 0, "Can't access web server at http://%s:%d/index.html", getDefaultHost(gp), getDefaultPort(gp));
         exit(5);
     }
 }
@@ -90,10 +90,10 @@ static void descape(MprTestGroup *gp)
     descaped = mprDecode64(escaped);
     match = (strcmp(descaped, uri) == 0);
     if (!match) {
-        mprLog(0, "Uri \"%s\" descaped to \"%s\" from \"%s\"\n", uri, descaped, escaped);
-        mprLog(0, "Lengths %d %d\n", strlen(descaped), strlen(uri));
+        mprLog("appweb test descape", 0, "Uri \"%s\" descaped to \"%s\" from \"%s\"\n", uri, descaped, escaped);
+        mprLog("appweb test descape", 0, "Lengths %zd %zd\n", strlen(descaped), strlen(uri));
         for (i = 0; i < (int) strlen(descaped); i++) {
-            mprLog(0, "Chr[%d] descaped %x, uri %x\n", i, descaped[i], uri[i]);
+            mprLog("appweb test descape", 0, "Chr[%d] descaped %x, uri %x\n", i, descaped[i], uri[i]);
         }
     }
     tassert(match);
@@ -108,7 +108,7 @@ static bool normalize(MprTestGroup *gp, char *uri, char *expectedUri)
     if (strcmp(expectedUri, validated) == 0) {
         return 1;
     } else {
-        mprLog(0, "Uri \"%s\" validated to \"%s\" instead of \"%s\"\n", uri, validated, expectedUri);
+        mprLog("appweb test normalize", 0, "Uri \"%s\" validated to \"%s\" instead of \"%s\"\n", uri, validated, expectedUri);
         return 0;
     }
 }
@@ -122,7 +122,9 @@ static bool okEscapeUri(MprTestGroup *gp, char *uri, char *expectedUri, int map)
     if (strcmp(expectedUri, escaped) == 0) {
         return 1;
     }
-    mprLog(0, "Uri \"%s\" is escaped to be \n" "\"%s\" instead of \n\"%s\"\n", uri, escaped, expectedUri);
+    //  MOB - better to have a test error API that uses "gp"
+    mprLog("appweb test okEscapeUri",  0, "Uri \"%s\" is escaped to be \n" "\"%s\" instead of \n\"%s\"\n", 
+        uri, escaped, expectedUri);
     return 0;
 }
 
@@ -135,7 +137,7 @@ static bool okEscapeCmd(MprTestGroup *gp, char *cmd, char *validCmd)
     if (strcmp(validCmd, escaped) == 0) {
         return 1;
     }
-    mprLog(0, "Cmd \"%s\" is escaped to be \n"
+    mprLog("appweb test okEscapeCmd", 0, "Cmd \"%s\" is escaped to be \n"
         "\"%s\" instead of \n"
         "\"%s\"\n", cmd, escaped, validCmd);
     return 0;
@@ -150,7 +152,7 @@ static bool okEscapeHtml(MprTestGroup *gp, char *html, char *expectedHtml)
     if (strcmp(expectedHtml, escaped) == 0) {
         return 1;
     }
-    mprLog(0, "HTML \"%s\" is escaped to be \n"
+    mprLog("appweb test okEsacpeHtml", 0, "HTML \"%s\" is escaped to be \n"
         "\"%s\" instead of \n"
         "\"%s\"\n", html, escaped, expectedHtml);
     return 0;

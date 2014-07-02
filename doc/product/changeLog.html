@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 5.0.0-rc1 Documentation</title>
+    <title>Embedthis Appweb 5.0.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -22,7 +22,7 @@
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 5.0.0-rc1</div>
+                <div class="version">Embedthis Appweb 5.0.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -36,7 +36,7 @@
             <h1>Quick Nav</h1>
             <ul>
                 <li><a href="5.0.0">Release 5.0.0</a></li>
-                <li><a href="4.5.5">Release 4.5.5</a></li>
+                <li><a href="4.6.1">Release 4.6.1</a></li>
                 <li><a href="3.4.1">Release 3.4.1</a></li>
                 <li><a href="2.4.4">Release 2.4.4</a></li>
             </ul>
@@ -67,7 +67,7 @@
         
             <a id="5.0.0"></a>
             <h2 class="section">Changes in 5.0.0</h2>
-            <h4>Notes</h4>
+            <h3>Notes</h3>
                 <ul>
                     <li>The Appweb 5 API is substantially backwards compatible with Appweb 4 applications. If
                     Legacy Appweb 4 APIs are not being used, there should be minimal code change to migrate to 
@@ -84,17 +84,39 @@
                     <a href="https://github.com/embedthis/appweb/issues/343">[issue 343]</a>.</li>
                 <li>Convert Appweb dependencies into Pak packages
                     <a href="https://github.com/embedthis/appweb/issues/344">[issue 344]</a>.</li>
+                <li>Split error log and request log
+                    <a href="https://github.com/embedthis/appweb/issues/352">[issue 352]</a>.</li>
             </ul>
             <h3>Minor Changes</h3>
             <ul>
                 <li>Generated Makefiles are more configurable.
                     <a href="https://github.com/embedthis/appweb/issues/345">[issue 345]</a>.</li>
             </ul>
-            <h3>Fixes since rc0</h3>
+            <h3>Fixes and changes since rc1</h3>
             <ul>
-                <li>The fixes from version 4.6.0 are also applied in release candidate rc1</li>
+                <li>Parsing corrupted cookies of the form "name=" and mulitple cookie handling
+                    <a href="https://github.com/embedthis/appweb/issues/366">[issue 366]</a>.</li>
+                <li>Improve bit packing in Mpr and Http structures
+                    <a href="https://github.com/embedthis/appweb/issues/367">[issue 367]</a>.</li>
+                <li>Update Ejscript JSON parsing to detect missing commas
+                    <a href="https://github.com/embedthis/appweb/issues/368">[issue 368]</a>.</li>
+                <li>Fix for ESP to load fix.css when using all.less
+                    <a href="https://github.com/embedthis/appweb/issues/369">[issue 369]</a>.</li>
+                <li>Fix httpAuthenticate being run multiple times
+                    <a href="https://github.com/embedthis/appweb/issues/370">[issue 370]</a>.</li>
+            </ul>
+            <h3>Fixes and changes since rc0</h3>
+            <ul>
                 <li>Fix testing of XSRF token. Only re-create in views.
                     <a href="https://github.com/embedthis/appweb/issues/346">[issue 346]</a>.</li>
+                <li>Update ESP to fix client.mappings timeouts
+                    <a href="https://github.com/embedthis/appweb/issues/353">[issue 353]</a>.</li>
+                <li>ESP upgrade should not overwrite overwrite files by default.
+                    <a href="https://github.com/embedthis/appweb/issues/354">[issue 354]</a>.</li>
+                <li>ESP command updated to create users and roles.
+                    <a href="https://github.com/embedthis/appweb/issues/355">[issue 355]</a>.</li>
+                <li>The fixes from version 4.6.0 are applied in release candidate rc1.</li>
+                <li>The fixes from version 4.6.1 are applied in release candidate rc2.</li>
             </ul>
             <h3>Incompatible Changes</h3>
             <ul>
@@ -105,10 +127,57 @@
                     framework.</li>
                 <li>ESP Package.json format is changed for many properties. Regenerate the application to get 
                     a new package.json file.</li>
-                <li>ESP Angular applications have a different Esp.config property layout. Upgrade all relevant paks.</li>
+                    <li>ESP applications have a different package.json property layout. Upgrade all relevant paks.
+                    See <a href="https://github.com/embedthis/esp/blob/dev/samples/esp-configuration/package.json">ESP
+                        Configuration Sample</a> for details.</li>
+                <li>With separating the error log and request log, the 
+                    <a href="../api/mpr.html#group___mpr_log_1ga13660aa56e0e5945b6de8f2708aed520">mprLog</a>, mprTrace,
+                    <a href="../api/mpr.html#group___mpr_log_1gaa29ca2fc7ccd5dc2314b1c0c53f5f788">mprError</a> APIs, and
+                    the MprLogHandler type have revised signatures. The mprLog API is the primary error logging API and
+                    mprError should not be used. The mprLog API takes a tag words argument that can specify severity levels
+                    and classification tags for filtering the error log.</li>
+            </ul>
+            <a id="4.6.2"></a>
+            <h2 class="section">Changes in 4.6.2</h2>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Client initiated disconnect not setting HttpTx.responded.
+                    <a href="https://github.com/embedthis/appweb/issues/365">[issue 365]</a>.</li>
+            </ul>
+            <a id="4.6.1"></a>
+            <h2 class="section">Changes in 4.6.1</h2>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Fix old reference to bit in package/service.es
+                    <a href="https://github.com/embedthis/appweb/issues/356">[issue 356]</a>.</li>
+                <li>Fix esp -V to display just a pure version number
+                    <a href="https://github.com/embedthis/appweb/issues/357">[issue 357]</a>.</li>
+                <li>Fix ESP package.json "app.http.keep" property
+                    <a href="https://github.com/embedthis/appweb/issues/358">[issue 358]</a>.</li>
+                <li>Fix exporting ESP paks to have version numbers that match Appweb
+                    <a href="https://github.com/embedthis/appweb/issues/356">[issue 356]</a>.</li>
+                <li>Fix finding appweb.conf when executing outside the Appweb installation directory.
+                    <a href="https://github.com/embedthis/appweb/issues/361">[issue 361]</a>.</li>
+                <li>Fix loading the esp module when appesp is run inside /etc/appweb or appweb binary installation directory.
+                    <a href="https://github.com/embedthis/appweb/issues/362">[issue 362]</a>.</li>
+                <li>Fix EST write blocking
+                    <a href="https://github.com/embedthis/appweb/issues/363">[issue 363]</a>.</li>
+                <li>Fix printf format strings. Enable compiler printf format checking.
+                    <a href="https://github.com/embedthis/appweb/issues/364">[issue 364]</a>.</li>
             </ul>
             <a id="4.6.0"></a>
             <h2 class="section">Changes in 4.6.0</h2>
+            <h3>Minor Changes</h3>
+            <ul>
+                <li>The format for ESP applications package.json has been upgraded for compatibility 
+                    with the <a href="http://wiki.commonjs.org/wiki/Packages/1.1">CommonJS Package</a>
+                    specification and the <a href="http://embedthis.com/products/pak/">Pak</a> package manager.
+                    <a href="https://github.com/embedthis/appweb/issues/NN">[issue NN]</a>.</li>
+                <li>The <em>esp</em> utility has been upgraded to support the simpler "make dir and install"
+                    paradigm for creating applications instead of "generate app"
+                    <a href="https://github.com/embedthis/appweb/issues/NN">[issue NN]</a>.</li>
+                </li>
+            </ul>
             <h3>Fixes</h3>
             <ul>
                 <li>Switch to use MakeMe, previously called Bit. See the GitHub issue for details of the change.
@@ -122,7 +191,6 @@
                 <li>MprJoinPaths fails on windows
                     <a href="https://github.com/embedthis/appweb/issues/351">[issue 351]</a>.</li>
             </ul>
-
             <h3>Incompatible Changes</h3>
             <ul>
                 <li><p>ESP MVC applications will need to to have their package.json upgraded. The following
@@ -137,12 +205,11 @@
                             collection.</li>
                         <li>The <em>auth</em> property is renamed <em>app.http.auth.store</em>.</li>
                     </ul>
-                    <p>See the <a href="https://github.com/embedthis/esp/blob/dev/samples/esp-configuration/package.json">esp-configuration Sample</a>    for details of all supported configuration file properties.</a>
+                    <p>See the <a href="https://github.com/embedthis/esp/blob/dev/samples/esp-configuration/package.json">esp-configuration Sample</a> for details of all supported configuration file properties.</a>
                 </li>
                 <li>The esp-angular-mvc, esp-angular and angular packs have been removed from the product and are
                 now available from the <a href="https://embedthis.com/catalog/#/?keywords=angular">Pak Catalog</a>.</li>
             </ul>
-
             <a id="4.5.6"></a>
             <h2 class="section">Changes in 4.5.6</h2>
             <h3>Fixes</h3>

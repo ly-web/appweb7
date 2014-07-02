@@ -62,7 +62,7 @@ PUBLIC int main(int argc, char *argv[])
                 } else {
                     cipher = argv[i];
                     if (!smatch(cipher, "md5") && !smatch(cipher, "blowfish")) {
-                        mprError("Unknown cipher \"%s\". Use \"md5\" or \"blowfish\".", cipher);
+                        mprLog("error authpass", 0, "Unknown cipher \"%s\". Use \"md5\" or \"blowfish\".", cipher);
                     }
                     break;
                 }
@@ -111,11 +111,11 @@ PUBLIC int main(int argc, char *argv[])
             exit(2);
         }
         if (!mprPathExists(authFile, W_OK)) {
-            mprError("%s: Cannot write to %s", programName, authFile);
+            mprLog("error authpass", 0, "Cannot write to %s", authFile);
             exit(4);
         }
     } else if (mprPathExists(authFile, R_OK)) {
-        mprError("%s: Cannot create %s, already exists", programName, authFile);
+        mprLog("error authpass", 0, "Cannot create %s, already exists", authFile);
         exit(5);
     }
     if (!password && (password = getPassword()) == 0) {
@@ -148,7 +148,7 @@ static char *getPassword()
     if (smatch(password, confirm)) {
         return password;
     }
-    mprError("%s: Error: Password not verified", programName);
+    mprLog("error authpass", 0, "Password not verified");
     return 0;
 }
 

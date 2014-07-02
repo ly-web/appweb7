@@ -75,17 +75,12 @@ static int openFileHandler(HttpQueue *q)
     }
     if (rx->flags & (HTTP_GET | HTTP_HEAD | HTTP_POST)) {
         if (!(info->valid || info->isDir)) {
-            if (rx->referrer) {
-                mprLog(3, "fileHandler: Cannot find filename %s from referrer %s", tx->filename, rx->referrer);
-            } else {
-                mprLog(3, "fileHandler: Cannot find filename %s", tx->filename);
-            }
             httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find document");
             return 0;
         } 
         if (!tx->etag) {
             /* Set the etag for caching in the client */
-            tx->etag = sfmt("\"%Lx-%Lx-%Lx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
+            tx->etag = sfmt("\"%llx-%llx-%llx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
         }
         if (info->mtime) {
             dateCache = conn->http->dateCache;
@@ -96,7 +91,7 @@ static int openFileHandler(HttpQueue *q)
                 date = httpGetDateString(&tx->fileInfo);
                 mprAddKey(dateCache, itosbuf(dbuf, sizeof(dbuf), (int64) info->mtime, 10), date);
             }
-            httpSetHeader(conn, "Last-Modified", date);
+            httpSetHeaderString(conn, "Last-Modified", date);
         }
         if (httpContentNotModified(conn)) {
             httpSetStatus(conn, HTTP_CODE_NOT_MODIFIED);
@@ -104,12 +99,13 @@ static int openFileHandler(HttpQueue *q)
             tx->length = -1;
         }
         if (!tx->fileInfo.isReg && !tx->fileInfo.isLink) {
-            mprLog(3, "Document is not a regular file: %s", tx->filename);
+            httpTrace(conn, "request.document.error", "error", "msg=\"Document is not a regular file\", filename=%s", 
+                tx->filename);
             httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot serve document");
             
         } else if (tx->fileInfo.size > conn->limits->transmissionBodySize) {
             httpError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE,
-                "Http transmission aborted. File size exceeds max body of %,Ld bytes", 
+                "Http transmission aborted. File size exceeds max body of %'lld bytes",
                     conn->limits->transmissionBodySize);
             
         } else if (!(tx->connector == conn->http->sendConnector)) {
@@ -121,11 +117,14 @@ static int openFileHandler(HttpQueue *q)
                 tx->file = mprOpenFile(tx->filename, O_RDONLY | O_BINARY, 0);
                 if (tx->file == 0) {
                     if (rx->referrer) {
-                        mprLog(2, "fileHandler: Cannot find filename %s from referrer %s", tx->filename, rx->referrer);
+                        httpTrace(conn, "request.document.error", "error", 
+                            "msg=\"Cannot open document\", filename=%s, referrer=%s", 
+                            tx->filename, rx->referrer);
                     } else {
-                        mprLog(2, "fileHandler: Cannot find filename %s", tx->filename);
+                        httpTrace(conn, "request.document.error", "error", 
+                            "msg=\"Cannot open document\", filename=%s", tx->filename);
                     }
-                    httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find document");
+                    httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot open document");
                 }
             }
         }
@@ -213,8 +212,6 @@ static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize si
         return MPR_ERR_MEMORY;
     }
     assert(size <= mprGetBufSpace(packet->content));    
-    mprTrace(7, "readFileData size %Ld, pos %Ld", size, pos);
-    
     if (pos >= 0) {
         mprSeekFile(tx->file, SEEK_SET, pos);
     }
@@ -223,7 +220,7 @@ static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize si
             As we may have sent some data already to the client, the only thing we can do is abort and hope the client 
             notices the short data.
          */
-        httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Can't read file %s", tx->filename);
+        httpError(conn, HTTP_CODE_SERVICE_UNAVAILABLE, "Cannot read file %s", tx->filename);
         return MPR_ERR_CANT_READ;
     }
     mprAdjustBufEnd(packet->content, nbytes);
@@ -295,15 +292,12 @@ static void outgoingFileService(HttpQueue *q)
             if ((rc = prepPacket(q, packet)) < 0) {
                 return;
             } else if (rc == 0) {
-                mprTrace(7, "OutgoingFileService downstream full, putback");
                 httpPutBackPacket(q, packet);
                 return;
             }
-            mprTrace(7, "OutgoingFileService readData %d", rc);
         }
         httpPutPacketToNext(q, packet);
     }
-    mprTrace(7, "OutgoingFileService complete");
 }
 
 
@@ -338,7 +332,7 @@ static void incomingFile(HttpQueue *q, HttpPacket *packet)
         if (!tx->etag) {
             /* Set the etag for caching in the client */
             mprGetPathInfo(tx->filename, &tx->fileInfo);
-            tx->etag = sfmt("\"%Lx-%Lx-%Lx\"", tx->fileInfo.inode, tx->fileInfo.size, tx->fileInfo.mtime);
+            tx->etag = sfmt("\"%llx-%llx-%llx\"", tx->fileInfo.inode, tx->fileInfo.size, tx->fileInfo.mtime);
         }
         return;
     }
@@ -348,10 +342,10 @@ static void incomingFile(HttpQueue *q, HttpPacket *packet)
 
     range = rx->inputRange;
     if (range && mprSeekFile(file, SEEK_SET, range->start) != range->start) {
-        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't seek to range start to %d", range->start);
+        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot seek to range start to %lld", range->start);
 
     } else if (mprWriteFile(file, mprGetBufStart(buf), len) != len) {
-        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't PUT to %s", tx->filename);
+        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot PUT to %s", tx->filename);
     }
 }
 
@@ -380,7 +374,7 @@ static void handlePutRequest(HttpQueue *q)
          */
         if ((file = mprOpenFile(path, O_BINARY | O_WRONLY, 0644)) == 0) {
             if ((file = mprOpenFile(path, O_CREAT | O_TRUNC | O_BINARY | O_WRONLY, 0644)) == 0) {
-                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't create the put URI");
+                httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot create the put URI");
                 return;
             }
         } else {
@@ -388,12 +382,12 @@ static void handlePutRequest(HttpQueue *q)
         }
     } else {
         if ((file = mprOpenFile(path, O_CREAT | O_TRUNC | O_BINARY | O_WRONLY, 0644)) == 0) {
-            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Can't create the put URI");
+            httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot create the put URI");
             return;
         }
     }
     if (!tx->fileInfo.isReg) {
-        httpSetHeader(conn, "Location", conn->rx->uri);
+        httpSetHeaderString(conn, "Location", conn->rx->uri);
     }
     httpSetStatus(conn, tx->fileInfo.isReg ? HTTP_CODE_NO_CONTENT : HTTP_CODE_CREATED);
     q->pair->queueData = (void*) file;

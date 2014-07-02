@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     app->port = 4100;
 
     if ((ts = mprCreateTestService(mpr)) == 0) {
-        mprError("Can't create test service");
+        mprLog("appweb test", 0, "Cannot create test service");
         exit(2);
     }
     if (mprParseTestArgs(ts, argc, argv, parseArgs) < 0) {
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
         Need a background event thread as we use the main thread to run the tests.
      */
     if (mprStart(mpr)) {
-        mprError("Can't start mpr services");
+        mprLog("appweb test", 0, "Cannot start mpr services");
         exit(5);
     }
     /*
@@ -170,13 +170,12 @@ bool simpleGet(MprTestGroup *gp, cchar *uri, int expectStatus)
 
     tassert(status == expectStatus);
     if (status != expectStatus) {
-        mprLog(0, "simpleGet: HTTP response code %d, expected %d", status, expectStatus);
+        mprLog("appweb test get", 0, "HTTP response code %d, expected %d", status, expectStatus);
         return 0;
     }
     tassert(httpGetError(gp->conn) != 0);
     gp->content = httpReadString(gp->conn);
     tassert(gp->content != NULL);
-    mprLog(4, "Response content %s", gp->content);
     httpDestroyConn(gp->conn);
     gp->conn = 0;
     return 1;
@@ -213,7 +212,8 @@ bool simpleForm(MprTestGroup *gp, char *uri, char *formData, int expectStatus)
     }
     status = httpGetStatus(conn);
     if (status != expectStatus) {
-        mprLog(0, "Client failed for %s, response code: %d, msg %s\n", uri, status, httpGetStatusMessage(conn));
+        mprLog("appweb test form", 0, "Client failed for %s, response code: %d, msg %s", 
+            uri, status, httpGetStatusMessage(conn));
         return 0;
     }
     gp->content = httpReadString(conn);
@@ -221,7 +221,6 @@ bool simpleForm(MprTestGroup *gp, char *uri, char *formData, int expectStatus)
     if (! tassert(gp->content != 0 && contentLen > 0)) {
         return 0;
     }
-    mprLog(4, "Response content %s", gp->content);
     return 1;
 }
 
@@ -253,7 +252,8 @@ bool simplePost(MprTestGroup *gp, char *uri, char *bodyData, ssize len, int expe
 
     status = httpGetStatus(conn);
     if (status != expectStatus) {
-        mprLog(0, "Client failed for %s, response code: %d, msg %s\n", uri, status, httpGetStatusMessage(conn));
+        mprLog("appweb test post", 0, "Client failed for %s, response code: %d, msg %s", 
+            uri, status, httpGetStatusMessage(conn));
         return 0;
     }
     gp->content = httpReadString(conn);
@@ -261,7 +261,6 @@ bool simplePost(MprTestGroup *gp, char *uri, char *bodyData, ssize len, int expe
     if (! tassert(gp->content != 0 && contentLen > 0)) {
         return 0;
     }
-    mprLog(4, "Response content %s", gp->content);
     return 1;
 }
 
@@ -329,8 +328,8 @@ bool match(MprTestGroup *gp, char *key, char *value)
     }
     trim = strim(vp, "\"", MPR_TRIM_BOTH);
     if (vp == 0 || value == 0 || scmp(trim, value) != 0) {
-        mprLog(1, "Match %s failed. Got \"%s\" expected \"%s\"", key, vp, value);
-        mprLog(1, "Content %s", gp->content);
+        mprLog("appweb test match", 0, "Match %s failed. Got \"%s\" expected \"%s\"", key, vp, value);
+        mprLog("appweb test match", 0, "Content %s", gp->content);
         return 0;
     }
     return 1;
@@ -355,7 +354,7 @@ bool matchAnyCase(MprTestGroup *gp, char *key, char *value)
     if (vp == 0 || value == 0 || scmp(trim, value) != 0)
 #endif
     {
-        mprLog(1, "Match %s failed. Got %s expected %s", key, vp, value);
+        mprLog("appweb test match", 0, "Match %s failed. Got %s expected %s", key, vp, value);
         return 0;
     }
     return 1;
