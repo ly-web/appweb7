@@ -4,7 +4,7 @@
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
 
-    Prepared by: orion
+    Prepared by: orion.local
  */
 
 #include "esp.h"
@@ -2114,7 +2114,7 @@ PUBLIC bool removeRec(cchar *tableName, cchar *key)
         feedback("error", "Cannot delete %s", stitle(tableName));
         return 0;
     }
-    feedback("inform", "Deleted %s", stitle(tableName));
+    feedback("info", "Deleted %s", stitle(tableName));
     return 1;
 }
 
@@ -2534,7 +2534,7 @@ PUBLIC bool updateRec(EdiRec *rec)
         feedback("error", "Cannot save %s", stitle(rec->tableName));
         return 0;
     }
-    feedback("inform", "Saved %s", stitle(rec->tableName));
+    feedback("info", "Saved %s", stitle(rec->tableName));
     return 1;
 }
 

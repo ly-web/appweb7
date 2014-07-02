@@ -4,7 +4,7 @@
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
 
-    Prepared by: orion
+    Prepared by: orion.local
  */
 
 #include "me.h"
@@ -15,7 +15,7 @@
 #include "appweb.h"
 
 #ifndef ESP_VERSION
-    #define ESP_VERSION "5.0.0-rc2"
+    #define ESP_VERSION "5.0.0"
 #endif
 
 /************************************************************************/
