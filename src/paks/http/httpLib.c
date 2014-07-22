@@ -18990,6 +18990,7 @@ PUBLIC int httpStartTracing(cchar *traceSpec)
     char        *lspec;
 
     if ((http = MPR->httpService) == 0 || http->trace == 0 || traceSpec == 0 || *traceSpec == '\0') {
+        assert(http);
         return MPR_ERR_BAD_STATE;
     }
     trace = http->trace;
