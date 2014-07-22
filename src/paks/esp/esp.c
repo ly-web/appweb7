@@ -702,7 +702,6 @@ static void initialize(int argc, char **argv)
         }
     } else {
         httpAddRouteHandler(route, "fileHandler", "");
-
         if (mprPathExists("package.json", R_OK)) {
             if (espApp(route, ".", app->appName, 0, 0) < 0) {
                 fail("Cannot create ESP app");
