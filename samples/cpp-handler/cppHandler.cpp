@@ -19,7 +19,7 @@ static void readySimple(HttpQueue *q)
     HttpConn    *conn;
 
     conn = q->conn;
-    httpSetHeader(conn, "Custom-Date", conn->http->currentDate);
+    httpSetHeaderString(conn, "Custom-Date", conn->http->currentDate);
 
     /*
         Generate some dynamic data. If you generate a lot, this will buffer up to a configured maximum. 
@@ -42,7 +42,7 @@ static void incomingSimple(HttpQueue *q, HttpPacket *packet)
         Do something with the incoming data in packet and then free the packet.
      */
     if (packet->content) {
-        mprLog(0, "Data in packet is %s", mprGetBufStart(packet->content));
+        mprLog("debug", 0, "Data in packet is %s", mprGetBufStart(packet->content));
     }
 }
 
@@ -62,7 +62,7 @@ int maSimpleHandlerInit(Http *http, MprModule *module)
     }
     stage->ready = readySimple;
     stage->incoming = incomingSimple;
-    mprLog(0, "Loaded SimpleHandler");
+    mprLog("debug", 0, "Loaded SimpleHandler");
     return 0;
 }
 

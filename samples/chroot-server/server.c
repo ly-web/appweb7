@@ -200,7 +200,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
         mprServiceEvents(-1, 0);
     }
     status = mprGetExitStatus();
-    mprLog(1, "Stopping Appweb ...");
+    mprLog("info appweb", 1, "Stopping Appweb ...");
     maStopAppweb(app->appweb);
     mprDestroy();
     return status;
@@ -238,7 +238,7 @@ static int changeRoot(cchar *jail)
         }
         return MPR_ERR_CANT_INITIALIZE;
     } else {
-        mprLog(MPR_INFO, "Chroot to: \"%s\"", jail);
+        mprLog("info appweb", 1, "Chroot to: \"%s\"", jail);
     }
 #endif
     return 0;
@@ -294,7 +294,7 @@ static int createEndpoints(int argc, char **argv)
 
     if (argc > argind) {
         app->documents = sclone(argv[argind++]);
-        mprLog(2, "Documents %s", app->documents);
+        mprLog("info appweb", 2, "Documents %s", app->documents);
     }
     if (argind == argc) {
         if (maParseConfig(app->server, app->configFile, 0) < 0) {

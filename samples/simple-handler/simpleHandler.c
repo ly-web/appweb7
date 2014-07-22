@@ -19,7 +19,7 @@ static void readySimple(HttpQueue *q)
     HttpConn    *conn;
 
     conn = q->conn;
-    httpSetHeader(conn, "Custom-Date", conn->http->currentDate);
+    httpSetHeaderString(conn, "Custom-Date", conn->http->currentDate);
     httpSetStatus(conn, 200);
 
     /*
