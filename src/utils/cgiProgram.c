@@ -355,7 +355,7 @@ static int getArgv(int *pargc, char ***pargv, int originalArgc, char **originalA
         next = strtok(sbuf, " \t\n");
         i = 1;
         for (i = 1; next && i < (MAX_ARGV - 1); i++) {
-            argvList[i] = next;
+            argvList[i] = strdup(next);
             next = strtok(0, " \t\n");
         }
         argvList[0] = originalArgv[0];
@@ -492,11 +492,11 @@ static int getPostData(char **bufp, size_t *lenp)
         size = 4096;
         limit = INT_MAX;
     }
-    if ((buf = malloc(size + 1)) == 0) {
+    bufsize = size + 1;
+    if ((buf = malloc(bufsize)) == 0) {
         error("Could not allocate memory to read post data");
         return -1;
     }
-    bufsize = size + 1;
     len = 0;
 
     while (len < limit) {
