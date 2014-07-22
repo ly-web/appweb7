@@ -4,14 +4,6 @@
 
 Me.load({
     targets: {
-        testAppweb: {
-            type: 'exe',
-            headers:   [ 'src/*.h' ],
-            sources:   [ 'src/testAppweb.c', 'src/testHttp.c' ],
-            depends:   [ 'libappweb' ],
-            platforms: [ 'local' ],
-        },
-
         'test-testScript': {
             path: 'cgi-bin/testScript',
             build: "
@@ -23,7 +15,6 @@ Me.load({
             depends: ['cgiProgram'],
             platforms: [ 'local' ],
             ifdef: [ 'cgi' ],
-            depends: ['testAppweb'],
         },
 
         'test-cache.cgi': {
@@ -41,7 +32,6 @@ Me.load({
             ",
             platforms: [ 'local' ],
             ifdef: [ 'cgi' ],
-            depends: ['testAppweb'],
         },
 
         'test-basic.cgi': {
@@ -60,7 +50,6 @@ Me.load({
             ",
             platforms: [ 'local' ],
             ifdef: [ 'cgi' ],
-            depends: ['testAppweb'],
         },
 
         'test-cgiProgram': {
@@ -85,7 +74,7 @@ Me.load({
             ifdef: [ 'cgi' ],
         },
 
-        //  TODO
+//  MOB
         'test.js': {
             enable: false,
             type:   'file',
@@ -94,32 +83,7 @@ Me.load({
         },
 
         test: {
-            action: "
-                let ro = {noio: true}
-                let depth = me.settings.depth
-                Path('cache').makeDir()
-                run('utest -v -i 1 --depth ' + depth, ro)
-                if (depth >= 2) {
-                    trace('Test', 'Light load tests')
-                    run('utest -v -i 5 --depth ' + depth, ro)
-                }
-                //  TODO - thread tests don't work yet
-                if (depth >= 3) {
-                    for each (t in [2, 4]) {
-                        trace('Test', 'Light thread tests')
-                        run('utest -v -i 20 --depth ' + depth + ' --threads ' + t, ro)
-                    }
-                }
-                if (depth >= 4) {
-                    trace('Test', 'Longevity load tests')
-                    run('utest -v -i 100 --depth ' + depth, ro)
-                    for each (t in [8, 16]) {
-                        trace('Test', 'Light thread tests')
-                        run('utest -v -i 100 --depth ' + depth + ' --threads ' + t, ro)
-                    }
-                }
-                trace('Test', 'Unit tests complete')
-            ",
+            action: `run('testme --depth ' + me.settings.depth, {noio: true})`,
             platforms: [ 'local' ],
         },
 
@@ -194,6 +158,7 @@ Me.load({
         'clean-test': {
             type: 'clean',                                                                                 
             action: "                                                                                      
+                run('testme --clean')
                 rm('cache/*')
                 rm('app/cache/*')
                 rm('apps/*/cache/*')
