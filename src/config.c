@@ -1099,6 +1099,55 @@ static int includeDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    IndexOrder ascending|descending name|date|size 
+ */
+static int indexOrderDirective(MaState *state, cchar *key, cchar *value)
+{
+    HttpDir *dir;
+    char    *option;
+
+    dir = httpGetDirObj(state->route);
+    if (!maTokenize(state, value, "%S %S", &option, &dir->sortField)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    dir->sortField = 0;
+    if (scaselessmatch(option, "ascending")) {
+        dir->sortOrder = 1;
+    } else {
+        dir->sortOrder = -1;
+    }
+    if (dir->sortField) {
+        dir->sortField = sclone(dir->sortField);
+    }
+    return 0;
+}
+
+
+/*  
+    IndexOptions FancyIndexing|FoldersFirst ... (set of options) 
+ */
+static int indexOptionsDirective(MaState *state, cchar *key, cchar *value)
+{
+    HttpDir *dir;
+    char    *option, *tok;
+
+    dir = httpGetDirObj(state->route);
+    option = stok(sclone(value), " \t", &tok);
+    while (option) {
+        if (scaselessmatch(option, "FancyIndexing")) {
+            dir->fancyIndexing = 1;
+        } else if (scaselessmatch(option, "HTMLTable")) {
+            dir->fancyIndexing = 2;
+        } else if (scaselessmatch(option, "FoldersFirst")) {
+            dir->foldersFirst = 1;
+        }
+        option = stok(tok, " \t", &tok);
+    }
+    return 0;
+}
+
+
+/*
     <If DEFINITION>
  */
 static int ifDirective(MaState *state, cchar *key, cchar *value)
@@ -1752,6 +1801,26 @@ static int nameVirtualHostDirective(MaState *state, cchar *key, cchar *value)
 #else
     mprLog("warn appweb config", 0, "The NameVirtualHost directive is no longer needed");
 #endif
+    return 0;
+}
+
+
+/*
+    Options Indexes 
+ */
+static int optionsDirective(MaState *state, cchar *key, cchar *value)
+{
+    HttpDir *dir;
+    char    *option, *tok;
+
+    dir = httpGetDirObj(state->route);
+    option = stok(sclone(value), " \t", &tok);
+    while (option) {
+        if (scaselessmatch(option, "Indexes")) {
+            dir->enabled = 1;
+        }
+        option = stok(tok, " \t", &tok);
+    }
     return 0;
 }
 
@@ -3055,6 +3124,8 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "IgnoreEncodingErrors", ignoreEncodingErrorsDirective);
     maAddDirective(appweb, "InactivityTimeout", inactivityTimeoutDirective);
     maAddDirective(appweb, "Include", includeDirective);
+    maAddDirective(appweb, "IndexOrder", indexOrderDirective);
+    maAddDirective(appweb, "IndexOptions", indexOptionsDirective);
     maAddDirective(appweb, "LimitBuffer", limitBufferDirective);
     maAddDirective(appweb, "LimitCache", limitCacheDirective);
     maAddDirective(appweb, "LimitCacheItem", limitCacheItemDirective);
@@ -3091,6 +3162,7 @@ PUBLIC int maParseInit(MaAppweb *appweb)
     maAddDirective(appweb, "MinWorkers", minWorkersDirective);
     maAddDirective(appweb, "Monitor", monitorDirective);
     maAddDirective(appweb, "Name", nameDirective);
+    maAddDirective(appweb, "Options", optionsDirective);
     maAddDirective(appweb, "Order", orderDirective);
     maAddDirective(appweb, "Param", paramDirective);
     maAddDirective(appweb, "Prefix", prefixDirective);
