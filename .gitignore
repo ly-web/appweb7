@@ -228,3 +228,4 @@ macosx-*.me
 t.es
 blog.sdb
 request.log
+/build/
