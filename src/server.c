@@ -32,13 +32,6 @@ PUBLIC MaAppweb *maCreateAppweb()
     httpSetContext(http, appweb);
     appweb->servers = mprCreateList(-1, MPR_LIST_STABLE);
     maParseInit(appweb);
-    /* 
-       Open the builtin handlers 
-     */
-#if ME_COM_DIR
-    maOpenDirHandler(http);
-#endif
-    maOpenFileHandler(http);
     return appweb; 
 }
 
