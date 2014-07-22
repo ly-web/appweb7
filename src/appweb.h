@@ -124,6 +124,7 @@ PUBLIC int maLoadModule(MaAppweb *appweb, cchar *name, cchar *libname);
  */
 PUBLIC struct MaServer *maLookupServer(MaAppweb *appweb, cchar *name);
 
+#if UNUSED
 /**
     Test if a directory listing should be rendered for the request.
     @param conn Connection object
@@ -133,6 +134,7 @@ PUBLIC struct MaServer *maLookupServer(MaAppweb *appweb, cchar *name);
     @internal
  */
 PUBLIC bool maRenderDirListing(HttpConn *conn);
+#endif
 
 /**
     Initialize the config file parser.
@@ -182,8 +184,6 @@ PUBLIC int maEjsHandlerInit(Http *http, MprModule *mp);
 PUBLIC int maEspHandlerInit(Http *http, MprModule *mp);
 PUBLIC int maPhpHandlerInit(Http *http, MprModule *mp);
 PUBLIC int maSslModuleInit(Http *http, MprModule *mp);
-PUBLIC int maOpenDirHandler(Http *http);
-PUBLIC int maOpenFileHandler(Http *http);
 
 /*
     This is exported from slink.c which is either manually created or generated locally
