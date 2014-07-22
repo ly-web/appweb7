@@ -227,3 +227,4 @@ src/paks/openssl
 src/paks/php
 /start.me
 /macosx-*.me
+/build/
