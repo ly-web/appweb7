@@ -280,7 +280,7 @@ static int changeRoot(cchar *jail)
         }
         return MPR_ERR_CANT_INITIALIZE;
     } else {
-        mprLog("error appweb", 2, "Chroot to: \"%s\"", jail);
+        mprLog("info appweb", 2, "Chroot to: \"%s\"", jail);
     }
 #endif
     return 0;
