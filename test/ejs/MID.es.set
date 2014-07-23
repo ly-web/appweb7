@@ -1,3 +1,3 @@
 if (!thas('ME_EJS')) {
-    tskip("Ejscript not enabled")
+    tskip("ejs not enabled")
 }

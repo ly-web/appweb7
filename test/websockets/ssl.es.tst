@@ -3,10 +3,10 @@
  */
 
 if (!Config.SSL) {
-    tskip("SSL not enabled in ejs")
+    tskip("ssl not enabled in ejs")
 
 } else if (!thas('ME_SSL')) {
-    tskip("SSL not enabled")
+    tskip("ssl not enabled")
 
 } else {
     const HTTPS = tget('TM_HTTPS') || "https://localhost:4443"

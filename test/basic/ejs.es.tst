@@ -1,5 +1,5 @@
 /*
-    ejs.tst - Ejscript basic tests
+    ejs.tst - ejs basic tests
  */
 
 const HTTP = tget('TM_HTTP') || "127.0.0.1:4100"
@@ -138,5 +138,5 @@ if (thas('ME_EJS')) {
     http.close()
 
 } else {
-    tskip("Ejscript not enabled")
+    tskip("ejs not enabled")
 }

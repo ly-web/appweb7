@@ -11,5 +11,5 @@ if (thas('ME_PHP')) {
     ttrue(http.response.contains("Hello PHP World"))
     http.close()
 } else {
-    tskip("PHP not enabled")
+    tskip("php not enabled")
 }

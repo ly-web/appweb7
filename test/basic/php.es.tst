@@ -34,5 +34,5 @@ if (thas('ME_PHP')) {
     http.close()
 
 } else {
-    tskip("PHP tests not enabled")
+    tskip("php not enabled")
 }

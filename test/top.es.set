@@ -1,19 +1,21 @@
 /*
-    testme.es.set - Server-side test setup
+    TOP.es.set - Server-side test setup
  */
 require ejs.unix
 
-tset('libraries', 'http mpr')
-
-let conf = Path('appweb.conf').readString()
-tset('TM_HTTP',       'http://'  + conf.replace(/.*Listen *([\.:0-9]+) *# <HTTPv4>.*/ms, '$1'))
-tset('TM_HTTPV6',     'http://'  + conf.replace(/.*Listen *([\[\]:0-9]+) *# <HTTPv6>.*/ms, '$1'))
-tset('TM_HTTPS',      'https://' + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <HTTPSv4>.*/ms, '$1'))
-tset('TM_SELFCERT',   'https://' + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <SELFCERT>.*/ms, '$1'))
-tset('TM_CLIENTCERT', 'https://' + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <CLIENTCERT>.*/ms, '$1'))
-tset('TM_OPENSSL',    'https://' + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <OPENSSL>.*/ms, '$1'))
-tset('TM_NAMED',      'http://'  + conf.replace(/.*Listen *([\.:0-9]+) *# <NAMED>.*/ms, '$1'))
-tset('TM_VIRT',       'http://'  + conf.replace(/.*Listen *([\.:0-9]+) *# <IPHOST>.*/ms, '$1'))
-tset('TM_HTTP_PORT',  conf.replace(/.*Listen *([\.:0-9]+) *# <HTTPv4>.*/ms, '$1').split(':')[1])
-
+if (tphase() == 'Setup') {
+    tset('libraries', 'http mpr')
+    let conf = Path('appweb.conf').readString()
+    tset('TM_HTTP',       'http://'  + conf.replace(/.*Listen *([\.:0-9]+) *# <HTTPv4>.*/ms, '$1'))
+    tset('TM_HTTPV6',     'http://'  + conf.replace(/.*Listen *([\[\]:0-9]+) *# <HTTPv6>.*/ms, '$1'))
+    tset('TM_HTTPS',      'https://' + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <HTTPSv4>.*/ms, '$1'))
+    tset('TM_SELFCERT',   'https://' + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <SELFCERT>.*/ms, '$1'))
+    tset('TM_CLIENTCERT', 'https://' + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <CLIENTCERT>.*/ms, '$1'))
+    tset('TM_OPENSSL',    'https://' + conf.replace(/.*ListenSecure *([\.:0-9]+) *# <OPENSSL>.*/ms, '$1'))
+    tset('TM_NAMED',      'http://'  + conf.replace(/.*Listen *([\.:0-9]+) *# <NAMED>.*/ms, '$1'))
+    tset('TM_VIRT',       'http://'  + conf.replace(/.*Listen *([\.:0-9]+) *# <IPHOST>.*/ms, '$1'))
+    tset('TM_HTTP_PORT',  conf.replace(/.*Listen *([\.:0-9]+) *# <HTTPv4>.*/ms, '$1').split(':')[1])
+}
 startStopService('appweb', {address: tget('TM_HTTP')})
+
+twrite('LAST')

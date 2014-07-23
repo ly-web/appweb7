@@ -20,5 +20,5 @@ if (tdepth() > 0 && nc && Config.OS != "windows" && thas('ME_EJS')) {
     }
 
 } else {
-    tskip("Test requires ejscript, nc and depth >= 1")
+    tskip("requires ejs, nc and depth >= 1")
 }

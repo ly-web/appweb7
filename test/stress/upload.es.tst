@@ -41,5 +41,5 @@ if (thas('ME_EJS')) {
     Path(TESTFILE).remove()
 
 } else {
-    tskip("Ejscript not enabled")
+    tskip("ejs not enabled")
 }

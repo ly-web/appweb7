@@ -3,7 +3,7 @@
  */
 
 if (!Config.SSL) {
-    tskip("SSL not enabled in ejs")
+    tskip("ssl not enabled in ejs")
 
 } else if (thas('ME_SSL')) {
     let http: Http
@@ -74,5 +74,5 @@ if (!Config.SSL) {
     }
 
 } else {
-    tskip("SSL not enabled")
+    tskip("ssl not enabled")
 }

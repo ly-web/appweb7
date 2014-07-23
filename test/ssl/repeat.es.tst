@@ -3,7 +3,7 @@
  */
 
 if (!Config.SSL) {
-    tinfo("SSL not enabled in ejs")
+    tinfo("ssl not enabled in ejs")
 
 } else if (thas('ME_SSL')) {
     const HTTPS = tget('TM_HTTPS') || "https://127.0.0.1:4443"
@@ -33,5 +33,5 @@ if (!Config.SSL) {
     }
 
 } else {
-    tskip("SSL not enabled")
+    tskip("ssl not enabled")
 }

@@ -66,5 +66,5 @@ if (tdepth() >= 5) {
     http.close()
 
 } else {
-    tinfo("Runs at depth 5")
+    tskip("runs at depth 5")
 }

@@ -30,5 +30,5 @@ if (tdepth() >= 6) {
     tinfo("%12s %s" % ["[Benchmark]", "finalizing ..."])
 
 } else {
-    tskip("Test runs at depth 6")
+    tskip("runs at depth 6")
 }

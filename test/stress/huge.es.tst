@@ -89,5 +89,5 @@ if (tdepth() >= 6) {
     http.close()
 */
 } else {
-    tskip("Runs at depth 6")
+    tskip("runs at depth 6")
 }

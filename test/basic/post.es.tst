@@ -18,7 +18,7 @@ if (thas('ME_EJS')) {
     http.close()
 
 } else {
-    tskip("Ejscript not enabled")
+    tskip("ejs not enabled")
 }
 
 //  TODO MORE 

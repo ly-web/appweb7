@@ -72,8 +72,8 @@ if (Config.OS == 'linux' && tdepth() >= 4 && valgrind) {
 
 } else {
     if (Config.OS == "linux" && !valgrind) {
-        tskip("Run with valgrind installed")
+        tskip("runs with valgrind installed")
     } else {
-        tskip("Run on Linux at depth 4 with valgrind installed")
+        tskip("runs on linux with valgrind at depth 4")
     }
 }

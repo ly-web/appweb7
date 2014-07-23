@@ -31,11 +31,10 @@ static int setTarget(MaState *state, cchar *name, cchar *details);
 
 static int configureHandlers(HttpRoute *route)
 {
-    char    *path;
-
 #if ME_COM_CGI
     maLoadModule("cgiHandler", "libmod_cgi");
     if (httpLookupStage("cgiHandler")) {
+        char    *path;
         httpAddRouteHandler(route, "cgiHandler", "cgi cgi-nph bat cmd pl py");
         /*
             Add cgi-bin with a route for the /cgi-bin URL prefix.
