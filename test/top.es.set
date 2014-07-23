@@ -17,5 +17,3 @@ if (tphase() == 'Setup') {
     tset('TM_HTTP_PORT',  conf.replace(/.*Listen *([\.:0-9]+) *# <HTTPv4>.*/ms, '$1').split(':')[1])
 }
 startStopService('appweb', {address: tget('TM_HTTP')})
-
-twrite('LAST')
