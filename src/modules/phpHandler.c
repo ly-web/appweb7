@@ -475,7 +475,7 @@ static int initializePhp(Http *http)
 #if defined(ME_COM_PHP_INI)
     phpSapiBlock.php_ini_path_override = ME_COM_PHP_INI;
 #else
-    phpSapiBlock.php_ini_path_override = httpGetDefaultRoute()->home;
+    phpSapiBlock.php_ini_path_override = httpGetDefaultRoute(NULL)->home;
 #endif
     if (phpSapiBlock.php_ini_path_override) {
         mprLog("info php", 2, "Look for php.ini at %s", phpSapiBlock.php_ini_path_override);
@@ -498,7 +498,7 @@ static int finalizePhp(MprModule *mp)
 {
     HttpStage   *stage;
 
-    if ((stage = httpLookupStage(MPR->httpService, "phpHandler")) == 0) {
+    if ((stage = httpLookupStage("phpHandler")) == 0) {
         return 0;
     }
     if (stage->stageData) {
