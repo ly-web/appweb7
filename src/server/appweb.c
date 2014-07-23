@@ -28,8 +28,6 @@
  */
 typedef struct AppwebApp {
     Mpr         *mpr;
-    MaAppweb    *appweb;
-    MaServer    *server;
     MprSignal   *traceToggle;
     MprSignal   *statusCheck;
     char        *documents;
@@ -47,6 +45,7 @@ static AppwebApp *app;
 static int changeRoot(cchar *jail);
 static int checkEnvironment(cchar *program);
 static int findAppwebConf();
+static void loadStaticModules();
 static void manageApp(AppwebApp *app, int flags);
 static int createEndpoints(int argc, char **argv);
 static void usageError();
@@ -59,7 +58,7 @@ static void usageError();
     static void traceHandler(void *ignored, MprSignal *sp);
     static int  unixSecurityChecks(cchar *program, cchar *home);
 #elif ME_WIN_LIKE
-    static int writePort(MaServer *server);
+    static int writePort();
     static long msgProc(HWND hwnd, uint msg, uint wp, long lp);
 #endif
 
@@ -98,7 +97,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
     extern MprRomInode romFiles[];
     mprSetRomFileSystem(romFiles);
 #endif
-
     if (httpCreate(HTTP_CLIENT_SIDE | HTTP_SERVER_SIDE) == 0) {
         exit(3);
     }
@@ -226,13 +224,17 @@ MAIN(appweb, int argc, char **argv, char **envp)
             exit(7);
         }
     }
+    loadStaticModules();
+
     if (jail && changeRoot(jail) < 0) {
         exit(8);
     }
     if (createEndpoints(argc - argind, &argv[argind]) < 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
-    if (maStartAppweb(app->appweb) < 0) {
+    appwebStaticInitialize();
+
+    if (httpStartEndpoints() < 0) {
         mprLog("error appweb", 0, "Cannot start HTTP service, exiting.");
         exit(9);
     }
@@ -250,8 +252,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
 static void manageApp(AppwebApp *app, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(app->appweb);
-        mprMark(app->server);
         mprMark(app->traceToggle);
         mprMark(app->statusCheck);
         mprMark(app->documents);
@@ -296,7 +296,7 @@ static void loadStaticModules()
 
         Add your modules here if you are doing a static link.
      */
-    Http    *http = MPR->httpService;
+    Http *http = HTTP;
 #if ME_COM_CGI
     maCgiHandlerInit(http, mprCreateModule("cgiHandler", 0, 0, http));
 #endif
@@ -318,40 +318,28 @@ static void loadStaticModules()
 
 static int createEndpoints(int argc, char **argv)
 {
-    cchar   *endpoint;
     char    *ip;
     int     argind, port, secure;
 
     ip = 0;
     port = -1;
-    endpoint = 0;
     argind = 0;
 
-    if ((app->appweb = maCreateAppweb()) == 0) {
-        mprLog("error appweb", 0, "Cannot create HTTP service");
-        return MPR_ERR_CANT_CREATE;
-    }
-    if ((app->server = maCreateServer(app->appweb, "default")) == 0) {
-        mprLog("error appweb", 0, "Cannot create HTTP server");
-        return MPR_ERR_CANT_CREATE;
-    }
-    loadStaticModules();
     mprGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
 
-    if (argind == argc) {
-        if (maParseConfig(app->server, app->configFile, 0) < 0) {
+    if (argc == 0) {
+        if (maParseConfig(app->configFile, 0) < 0) {
             return MPR_ERR_CANT_CREATE;
         }
     } else {
         app->documents = sclone(argv[argind++]);
         if (argind == argc) {
-            if (maConfigureServer(app->server, NULL, app->home, app->documents, NULL, ME_HTTP_PORT, 0) < 0) {
+            if (maConfigureServer(NULL, app->home, app->documents, NULL, ME_HTTP_PORT, 0) < 0) {
                 return MPR_ERR_CANT_CREATE;
             }
         } else while (argind < argc) {
-            endpoint = argv[argind++];
-            mprParseSocketAddress(endpoint, &ip, &port, &secure, 80);
-            if (maConfigureServer(app->server, NULL, app->home, app->documents, ip, port, 0) < 0) {
+            mprParseSocketAddress(argv[argind++], &ip, &port, &secure, 80);
+            if (maConfigureServer(NULL, app->home, app->documents, ip, port, 0) < 0) {
                 return MPR_ERR_CANT_CREATE;
             }
         }
@@ -359,13 +347,9 @@ static int createEndpoints(int argc, char **argv)
     if (app->workers >= 0) {
         mprSetMaxWorkers(app->workers);
     }
-    /*
-        Call any ESP initializers from slink.c
-     */
-    appwebStaticInitialize();
     
 #if ME_WIN_LIKE
-    writePort(app->server);
+    writePort();
 #elif ME_UNIX_LIKE
     addSignals();
 #endif
@@ -550,13 +534,13 @@ static int unixSecurityChecks(cchar *program, cchar *home)
 /*
     Write the port so the monitor can manage
  */ 
-static int writePort(MaServer *server)
+static int writePort()
 {
     HttpEndpoint    *endpoint;
     char            numBuf[16], *path;
     int             fd, len;
 
-    if ((endpoint = mprGetFirstItem(server->http->endpoints)) == 0) {
+    if ((endpoint = mprGetFirstItem(HTTP->endpoints)) == 0) {
         mprLog("error appweb", 0, "No configured endpoints");
         return MPR_ERR_CANT_ACCESS;
     }

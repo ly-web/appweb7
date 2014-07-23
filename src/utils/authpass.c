@@ -30,8 +30,7 @@ PUBLIC int main(int argc, char *argv[])
 {
     Mpr         *mpr;
     MprBuf      *buf;
-    MaAppweb    *appweb;
-    MaServer    *server;
+    HttpRoute   *route;
     HttpAuth    *auth;
     char        *password, *authFile, *username, *encodedPassword, *realm, *cp, *roles, *cipher;
     int         i, errflg, create, nextArg;
@@ -102,24 +101,26 @@ PUBLIC int main(int argc, char *argv[])
     }
     roles = sclone(mprGetBufStart(buf));
 
-    appweb = maCreateAppweb();
-    server = maCreateServer(appweb, "default");
-    auth = maGetDefaultAuth(server);
+    if (httpCreate(HTTP_SERVER_SIDE) == 0) {
+        exit(3);
+    }
+    route = httpGetDefaultRoute(NULL);
+    auth = route->auth;
 
     if (!create) {
-        if (maParseConfig(server, authFile, 0) < 0) {
-            exit(2);
+        if (maParseConfig(authFile, 0) < 0) {
+            exit(4);
         }
         if (!mprPathExists(authFile, W_OK)) {
             mprLog("error authpass", 0, "Cannot write to %s", authFile);
-            exit(4);
+            exit(5);
         }
     } else if (mprPathExists(authFile, R_OK)) {
         mprLog("error authpass", 0, "Cannot create %s, already exists", authFile);
-        exit(5);
+        exit(6);
     }
     if (!password && (password = getPassword()) == 0) {
-        exit(1);
+        exit(7);
     }
     if (smatch(cipher, "md5")) {
         encodedPassword = mprGetMD5(sfmt("%s:%s:%s", username, realm, password));
@@ -129,10 +130,10 @@ PUBLIC int main(int argc, char *argv[])
     }
     httpRemoveUser(auth, username);
     if (httpAddUser(auth, username, encodedPassword, roles) == 0) {
-        exit(7);
+        exit(8);
     }
     if (maWriteAuthFile(auth, authFile) < 0) {
-        exit(6);
+        exit(9);
     }
     mprDestroy();
     return 0;

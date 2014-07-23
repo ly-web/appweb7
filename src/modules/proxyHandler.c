@@ -249,9 +249,8 @@ static int proxyDirective(MaState *state, cchar *key, cchar *value)
 PUBLIC int maProxyHandlerInit(Http *http, MprModule *module)
 {
     HttpStage   *handler;
-    MaAppweb    *appweb;
 
-    if ((handler = httpCreateHandler(http, module->name, 0, module)) == 0) {
+    if ((handler = httpCreateHandler(module->name, 0, module)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     handler->open = openProxy; 
@@ -262,8 +261,7 @@ PUBLIC int maProxyHandlerInit(Http *http, MprModule *module)
     handler->ready = readyProxy; 
     handler->process = processProxy; 
 
-    appweb = httpGetContext(http);
-    maAddDirective(appweb, "Proxy", proxyDirective);
+    maAddDirective("Proxy", proxyDirective);
     return 0;
 }
 #else

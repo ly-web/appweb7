@@ -15,8 +15,10 @@
  */
 typedef struct App {
     Mpr         *mpr;
+#if UNUSED
     MaAppweb    *appweb;
     MaServer    *server;
+#endif
 
     cchar       *appName;               /* Application name */
     cchar       *appwebConfig;          /* Arg to --config */
@@ -88,7 +90,6 @@ typedef struct App {
 static App       *app;                  /* Top level application object */
 static Esp       *esp;                  /* ESP control object */
 static Http      *http;                 /* HTTP service object */
-static MaAppweb  *appweb;               /* Appweb service object */
 static int       nextMigration;         /* Sequence number for next migration */
 
 /*
@@ -248,7 +249,9 @@ static void manageApp(App *app, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(app->appName);
+#if UNUSED
         mprMark(app->appweb);
+#endif
         mprMark(app->cacheName);
         mprMark(app->command);
         mprMark(app->appwebConfig);
@@ -282,7 +285,9 @@ static void manageApp(App *app, int flags)
         mprMark(app->route);
         mprMark(app->routes);
         mprMark(app->routeSet);
+#if UNUSED
         mprMark(app->server);
+#endif
         mprMark(app->targets);
         mprMark(app->table);
         mprMark(app->topDeps);
@@ -614,7 +619,10 @@ static void initRuntime()
     if (app->error) {
         return;
     }
-    httpCreate(HTTP_SERVER_SIDE | HTTP_UTILITY);
+    if (httpCreate(HTTP_SERVER_SIDE | HTTP_UTILITY) < 0) {
+        fail("Cannot create HTTP service for %s", mprGetAppName());
+        return;
+    }
     http = MPR->httpService;
     
     if (app->logSpec) {
@@ -637,11 +645,13 @@ static void initRuntime()
         app->error = 1;
         return;
     }
+#if UNUSED
     if ((app->appweb = maCreateAppweb()) == 0) {
         fail("Cannot create HTTP service for %s", mprGetAppName());
         return;
     }
     appweb = MPR->appwebService = app->appweb;
+#endif
 
     if (app->platform) {
         httpSetPlatformDir(app->platform);
@@ -655,16 +665,19 @@ static void initRuntime()
         }
         return;
     }
-    appweb->staticLink = app->staticLink;
+//  MOB - API
+    HTTP->staticLink = app->staticLink;
     
     if (app->error) {
         return;
     }
-    if ((app->server = maCreateServer(appweb, "default")) == 0) {
+#if UNUSED
+    if ((app->server = maCreateServer("default")) == 0) {
         fail("Cannot create HTTP server for %s", mprGetAppName());
         return;
     }
-    maLoadModule(appweb, "espHandler", "libmod_esp");
+#endif
+    maLoadModule("espHandler", "libmod_esp");
 }
 
 
@@ -696,7 +709,7 @@ static void initialize(int argc, char **argv)
             Appweb - hosted initialization.
             This will call espApp when via the EspApp directive 
          */
-        if (maParseConfig(app->server, app->appwebConfig, flags) < 0) {
+        if (maParseConfig(app->appwebConfig, flags) < 0) {
             fail("Cannot configure the server, exiting.");
             return;
         }
@@ -728,7 +741,7 @@ static void initialize(int argc, char **argv)
         }
     }
     app->routes = getRoutes();
-    if ((stage = httpLookupStage(http, "espHandler")) == 0) {
+    if ((stage = httpLookupStage("espHandler")) == 0) {
         fail("Cannot find ESP handler");
         return;
     }

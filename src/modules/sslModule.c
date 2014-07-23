@@ -245,23 +245,21 @@ static int sslProtocolDirective(MaState *state, cchar *key, cchar *value)
 PUBLIC int maSslModuleInit(Http *http, MprModule *module)
 {
     HttpStage   *stage;
-    MaAppweb    *appweb;
 
-    if ((stage = httpCreateStage(http, "sslModule", HTTP_STAGE_MODULE, module)) == 0) {
+    if ((stage = httpCreateStage("sslModule", HTTP_STAGE_MODULE, module)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
-    appweb = httpGetContext(http);
-    maAddDirective(appweb, "SSLEngine", sslEngineDirective);
-    maAddDirective(appweb, "SSLCACertificateFile", sslCaCertificateFileDirective);
-    maAddDirective(appweb, "SSLCACertificatePath", sslCaCertificatePathDirective);
-    maAddDirective(appweb, "SSLCertificateFile", sslCertificateFileDirective);
-    maAddDirective(appweb, "SSLCertificateKeyFile", sslCertificateKeyFileDirective);
-    maAddDirective(appweb, "SSLCipherSuite", sslCipherSuiteDirective);
-    maAddDirective(appweb, "SSLProtocol", sslProtocolDirective);
-    maAddDirective(appweb, "SSLProvider", sslProviderDirective);
-    maAddDirective(appweb, "SSLVerifyClient", sslVerifyClientDirective);
-    maAddDirective(appweb, "SSLVerifyIssuer", sslVerifyIssuerDirective);
-    maAddDirective(appweb, "SSLVerifyDepth", sslVerifyDepthDirective);
+    maAddDirective("SSLEngine", sslEngineDirective);
+    maAddDirective("SSLCACertificateFile", sslCaCertificateFileDirective);
+    maAddDirective("SSLCACertificatePath", sslCaCertificatePathDirective);
+    maAddDirective("SSLCertificateFile", sslCertificateFileDirective);
+    maAddDirective("SSLCertificateKeyFile", sslCertificateKeyFileDirective);
+    maAddDirective("SSLCipherSuite", sslCipherSuiteDirective);
+    maAddDirective("SSLProtocol", sslProtocolDirective);
+    maAddDirective("SSLProvider", sslProviderDirective);
+    maAddDirective("SSLVerifyClient", sslVerifyClientDirective);
+    maAddDirective("SSLVerifyIssuer", sslVerifyIssuerDirective);
+    maAddDirective("SSLVerifyDepth", sslVerifyDepthDirective);
 #if ME_STATIC
     /*
         Pull in the libmprssl code at link time.

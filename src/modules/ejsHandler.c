@@ -119,7 +119,7 @@ static int ejsWorkersDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpStage   *stage;
 
-    if ((stage = httpLookupStage(state->http, "ejsHandler")) == 0) {
+    if ((stage = httpLookupStage("ejsHandler")) == 0) {
         mprLog("error ejs", 0, "Handler is not configured");
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -133,10 +133,9 @@ static int ejsWorkersDirective(MaState *state, cchar *key, cchar *value)
  */
 PUBLIC int maEjsHandlerInit(Http *http, MprModule *module)
 {
-    MaAppweb    *appweb;
     HttpStage   *stage;
 
-    if ((stage = httpCreateHandler(http, "ejsHandler", module)) != 0) {
+    if ((stage = httpCreateHandler("ejsHandler", module)) != 0) {
         http->ejsHandler = stage;
         stage->open = openEjs;
         /*
@@ -146,10 +145,9 @@ PUBLIC int maEjsHandlerInit(Http *http, MprModule *module)
     /*
         Add configuration file directives
      */
-    appweb = httpGetContext(http);
-    maAddDirective(appweb, "EjsAlias", ejsAliasDirective);
-    maAddDirective(appweb, "EjsStartup", ejsStartupDirective);
-    maAddDirective(appweb, "EjsWorkers", ejsWorkersDirective);
+    maAddDirective("EjsAlias", ejsAliasDirective);
+    maAddDirective("EjsStartup", ejsStartupDirective);
+    maAddDirective("EjsWorkers", ejsWorkersDirective);
     return 0;
 }
 #else /* ME_COM_EJS */

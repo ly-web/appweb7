@@ -56,33 +56,30 @@ static void myaction(HttpConn *conn)
 int main(int argc, char **argv, char **envp)
 {
     Mpr         *mpr;
-    MaAppweb    *appweb;
-    MaServer    *server;
     int         rc;
 
     rc = MPR_ERR_CANT_CREATE;
     if ((mpr = mprCreate(0, NULL, MPR_USER_EVENTS_THREAD)) == 0) {
-        mprError("Cannot create the web server runtime");
+        mprError("Cannot create runtime");
+        return -1;
+    }
+    if (httpCreate(HTTP_CLIENT_SIDE | HTTP_SERVER_SIDE) == 0) {
+        mprError("Cannot create the HTTP services");
         return -1;
     }
     mprStart();
-    appweb = maCreateAppweb(NULL);
-    mprAddRoot(appweb);
 
-    server = maCreateServer(appweb, 0);
-    if (maParseConfig(server, "appweb.conf", 0) < 0) {
+    if (maParseConfig("appweb.conf", 0) < 0) {
         mprError("Cannot parse the config file %s", "appweb.conf");
         return -1;
     }
     httpDefineAction("/action/myaction", myaction);
 
-    if (maStartServer(server) < 0) {
+    if (httpStartEndpoints() < 0) {
         mprError("Cannot start the web server");
         return -1;
     }
     mprServiceEvents(-1, 0);
-    maStopServer(server);
-    mprRemoveRoot(appweb);
     mprDestroy();
     return 0;
 }

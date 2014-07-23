@@ -1272,7 +1272,6 @@ extern "C" {
 #endif
 
 /********************************** Defines ***********************************/
-
 /**
     Procedure callback
     @ingroup Esp

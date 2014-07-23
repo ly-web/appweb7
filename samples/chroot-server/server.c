@@ -9,7 +9,8 @@
             --config configFile     # Use given config file instead 
             --debugger              # Disable timeouts to make debugging easier
             --home path             # Set the home working directory
-            --log logFile:level     # Log to file file at verbosity level
+            --log logFile:level     # Log to file at verbosity level
+            --trace logFile:level   # Trace HTTP requests to file
             --name uniqueName       # Name for this instance
             --version               # Output version information
             -v                      # Same as --log stderr:2
@@ -27,8 +28,6 @@
  */
 typedef struct AppwebApp {
     Mpr         *mpr;
-    MaAppweb    *appweb;
-    MaServer    *server;
     char        *documents;
     char        *home;
     char        *configFile;
@@ -41,9 +40,10 @@ static AppwebApp *app;
 
 static int changeRoot(cchar *jail);
 static int checkEnvironment(cchar *program);
-static int findAppwebConf();
-static void manageApp(AppwebApp *app, int flags);
 static int createEndpoints(int argc, char **argv);
+static int findAppwebConf();
+static void loadStaticModules();
+static void manageApp(AppwebApp *app, int flags);
 static void usageError();
 
 #if ME_UNIX_LIKE
@@ -58,24 +58,28 @@ MAIN(appweb, int argc, char **argv, char **envp)
 {
     Mpr     *mpr;
     cchar   *argp, *jail;
-    char    *logSpec;
+    char    *logSpec, *traceSpec;
     int     argind, status, verbose;
 
     jail = 0;
     verbose = 0;
     logSpec = 0;
+    traceSpec = 0;
 
     if ((mpr = mprCreate(argc, argv, MPR_USER_EVENTS_THREAD)) == NULL) {
         exit(1);
     }
     mprSetAppName(ME_NAME, ME_TITLE, ME_VERSION);
 
+    if (httpCreate(HTTP_CLIENT_SIDE | HTTP_SERVER_SIDE) == 0) {
+        exit(2);
+    }
     /*
         Allocate the top level application object. ManageApp is the GC manager function and is called
         by the GC to mark references in the app object.
      */
     if ((app = mprAllocObj(AppwebApp, manageApp)) == NULL) {
-        exit(2);
+        exit(3);
     }
     mprAddRoot(app);
     mprAddStandardSignals();
@@ -139,28 +143,47 @@ MAIN(appweb, int argc, char **argv, char **envp)
             }
             mprSetAppName(argv[++argind], 0, 0);
 
+        } else if (smatch(argp, "--trace") || smatch(argp, "-t")) {
+            if (argind >= argc) {
+                usageError();
+            }
+            traceSpec = argv[++argind];
+
         } else if (smatch(argp, "--verbose") || smatch(argp, "-v")) {
-            verbose++;
+            if (!logSpec) {
+                logSpec = sfmt("stderr:2");
+            }
+            if (!traceSpec) {
+                traceSpec = sfmt("stderr:2");
+            }
 
         } else if (smatch(argp, "--version") || smatch(argp, "-V")) {
             mprPrintf("%s\n", ME_VERSION);
             exit(0);
 
-        } else {
-            if (!smatch(argp, "?")) {
-                mprError("Unknown switch \"%s\"", argp);
+        } else if (*argp == '-' && isdigit((uchar) argp[1])) {
+            if (!logSpec) {
+                logSpec = sfmt("stderr:%d", (int) stoi(&argp[1]));
             }
+            if (!traceSpec) {
+                traceSpec = sfmt("stderr:%d", (int) stoi(&argp[1]));
+            }
+
+        } else if (smatch(argp, "-?") || scontains(argp, "-help")) {
+            usageError();
+            exit(5);
+
+        } else if (*argp == '-') {
+            mprLog("error appweb", 0, "Unknown switch \"%s\"", argp);
             usageError();
             exit(5);
         }
     }
     if (logSpec) {
-        mprStartLogging(logSpec, 1);
-        mprSetCmdlineLogging(1);
-
-    } else if (verbose) {
-        mprStartLogging(sfmt("stderr:%d", verbose + 1), 1);
-        mprSetCmdlineLogging(1);
+        mprStartLogging(logSpec, MPR_LOG_DETAILED | MPR_LOG_CONFIG | MPR_LOG_CMDLINE);
+    }
+    if (traceSpec) {
+        httpStartTracing(traceSpec);
     }
     /*
         Start the multithreaded portable runtime (MPR)
@@ -176,32 +199,22 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if (findAppwebConf() < 0) {
         exit(7);
     }
+    loadStaticModules();
 
-    /*
-        Open the sockets to listen on
-     */
-    if (createEndpoints(argc - argind, &argv[argind]) < 0) {
-        return MPR_ERR_CANT_INITIALIZE;
-    }
     if (jail && changeRoot(jail) < 0) {
         exit(8);
     }
-    /*
-        Start HTTP services
-     */
-    if (maStartAppweb(app->appweb) < 0) {
+    if (createEndpoints(argc - argind, &argv[argind]) < 0) {
+        return MPR_ERR_CANT_INITIALIZE;
+    }
+    if (httpStartEndpoints() < 0) {
         mprError("Cannot start HTTP service, exiting.");
         exit(9);
     }
-    /*
-        Service I/O events until instructed to exit
-     */
-    while (!mprIsStopping()) {
-        mprServiceEvents(-1, 0);
-    }
+    mprServiceEvents(-1, 0);
+
     status = mprGetExitStatus();
     mprLog("info appweb", 1, "Stopping Appweb ...");
-    maStopAppweb(app->appweb);
     mprDestroy();
     return status;
 }
@@ -210,8 +223,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
 static void manageApp(AppwebApp *app, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(app->appweb);
-        mprMark(app->server);
         mprMark(app->documents);
         mprMark(app->configFile);
         mprMark(app->pathVar);
@@ -239,6 +250,7 @@ static int changeRoot(cchar *jail)
         return MPR_ERR_CANT_INITIALIZE;
     } else {
         mprLog("info appweb", 1, "Chroot to: \"%s\"", jail);
+        app->home = mprGetCurrentPath();
     }
 #endif
     return 0;
@@ -273,38 +285,30 @@ static void loadStaticModules()
  */
 static int createEndpoints(int argc, char **argv)
 {
-    cchar   *endpoint;
     char    *ip;
     int     argind, port, secure;
 
     ip = 0;
     port = -1;
-    endpoint = 0;
     argind = 0;
-
-    if ((app->appweb = maCreateAppweb(NULL)) == 0) {
-        mprError("Cannot create HTTP service for %s", mprGetAppName());
-        return MPR_ERR_CANT_CREATE;
-    }
-    if ((app->server = maCreateServer(app->appweb, "default")) == 0) {
-        mprError("Cannot create HTTP server for %s", mprGetAppName());
-        return MPR_ERR_CANT_CREATE;
-    }
-    loadStaticModules();
 
     if (argc > argind) {
         app->documents = sclone(argv[argind++]);
         mprLog("info appweb", 2, "Documents %s", app->documents);
     }
-    if (argind == argc) {
-        if (maParseConfig(app->server, app->configFile, 0) < 0) {
+    if (argc == 0) {
+        if (maParseConfig(app->configFile, 0) < 0) {
             return MPR_ERR_CANT_CREATE;
         }
     } else {
-        while (argind < argc) {
-            endpoint = argv[argind++];
-            mprParseSocketAddress(endpoint, &ip, &port, &secure, 80);
-            if (maConfigureServer(app->server, NULL, app->home, app->documents, ip, port, 0) < 0) {
+        app->documents = sclone(argv[argind++]);
+        if (argind == argc) {
+            if (maConfigureServer(NULL, app->home, app->documents, NULL, ME_HTTP_PORT, 0) < 0) {
+                return MPR_ERR_CANT_CREATE;
+            }
+        } else while (argind < argc) {
+            mprParseSocketAddress(argv[argind++], &ip, &port, &secure, 80);
+            if (maConfigureServer(NULL, app->home, app->documents, ip, port, 0) < 0) {
                 return MPR_ERR_CANT_CREATE;
             }
         }
