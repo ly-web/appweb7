@@ -108,13 +108,13 @@ ttrue(data.contains('Content-Type'))
 if (thas('ME_EJS')) {
     let files = Path(".").files().join(" ")
     data = run("--upload " + files + " /upload.ejs")
-    ttrue(data.contains('"clientFilename": "http.tst"'))
-    ttrue(Path("../web/tmp/http.tst").exists)
+    ttrue(data.contains('"clientFilename": "http.es.tst"'))
+    ttrue(Path("../web/tmp/http.es.tst").exists)
 
     let files = Path(".").files().join(" ")
     data = run("--upload --form 'name=John+Smith&address=300+Park+Avenue' " + files + " /upload.ejs")
     ttrue(data.contains('"address": "300 Park Avenue"'))
-    ttrue(data.contains('"clientFilename": "http.tst"'))
+    ttrue(data.contains('"clientFilename": "http.es.tst"'))
 
     data = run("--cookie 'test-id=12341234; $domain=site.com; $path=/dir/' /form.ejs")
 
