@@ -33,7 +33,7 @@ if (thas('ME_EJS')) {
     ttrue(http.status == 200)
     http.close()
 
-    let uploaded = Path("../../web/tmp").join(Path(TESTFILE).basename)
+    let uploaded = Path("../web/tmp").join(Path(TESTFILE).basename)
     ttrue(uploaded.size == size)
     //  TODO - remove need for diff
     Cmd.sh("diff " + uploaded + " " + TESTFILE)
