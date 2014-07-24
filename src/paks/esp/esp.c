@@ -15,10 +15,6 @@
  */
 typedef struct App {
     Mpr         *mpr;
-#if UNUSED
-    MaAppweb    *appweb;
-    MaServer    *server;
-#endif
 
     cchar       *appName;               /* Application name */
     cchar       *appwebConfig;          /* Arg to --config */
@@ -249,9 +245,6 @@ static void manageApp(App *app, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(app->appName);
-#if UNUSED
-        mprMark(app->appweb);
-#endif
         mprMark(app->cacheName);
         mprMark(app->command);
         mprMark(app->appwebConfig);
@@ -285,9 +278,6 @@ static void manageApp(App *app, int flags)
         mprMark(app->route);
         mprMark(app->routes);
         mprMark(app->routeSet);
-#if UNUSED
-        mprMark(app->server);
-#endif
         mprMark(app->targets);
         mprMark(app->table);
         mprMark(app->topDeps);
@@ -645,20 +635,13 @@ static void initRuntime()
         app->error = 1;
         return;
     }
-#if UNUSED
-    if ((app->appweb = maCreateAppweb()) == 0) {
-        fail("Cannot create HTTP service for %s", mprGetAppName());
-        return;
-    }
-    appweb = MPR->appwebService = app->appweb;
-#endif
-
     if (app->platform) {
         httpSetPlatformDir(app->platform);
     } else {
         app->platform = http->platform;
         httpSetPlatformDir(0);
     }
+    trace("Info", "Platform \"%s\"", http->platformDir);
     if (!http->platformDir) {
         if (app->platform) {
             fail("Cannot find platform: \"%s\"", app->platform);
@@ -671,12 +654,6 @@ static void initRuntime()
     if (app->error) {
         return;
     }
-#if UNUSED
-    if ((app->server = maCreateServer("default")) == 0) {
-        fail("Cannot create HTTP server for %s", mprGetAppName());
-        return;
-    }
-#endif
     maLoadModule("espHandler", "libmod_esp");
 }
 

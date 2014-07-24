@@ -5196,7 +5196,7 @@ static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
     EspRoute
         methods=METHODS
         name=NAME
-        prefix=PREFIX
+        pattern=PATTERN
         source=SOURCE
         target=TARGET
  */
@@ -5204,10 +5204,10 @@ static int espRouteDirective(MaState *state, cchar *key, cchar *value)
 {
     EspRoute    *eroute;
     HttpRoute   *route;
-    cchar       *methods, *name, *prefix, *source, *target;
+    cchar       *methods, *name, *pattern, *source, *target;
     char        *option, *ovalue, *tok;
 
-    prefix = 0;
+    pattern = 0;
     name = 0;
     source = 0;
     target = 0;
@@ -5221,8 +5221,9 @@ static int espRouteDirective(MaState *state, cchar *key, cchar *value)
                 methods = ovalue;
             } else if (smatch(option, "name")) {
                 name = ovalue;
-            } else if (smatch(option, "prefix")) {
-                prefix = ovalue;
+            } else if (smatch(option, "pattern") || smatch(option, "prefix")) {
+                /* DEPRECATED prefix */
+                pattern = ovalue;
             } else if (smatch(option, "source")) {
                 source = ovalue;
             } else if (smatch(option, "target")) {
@@ -5232,14 +5233,14 @@ static int espRouteDirective(MaState *state, cchar *key, cchar *value)
             }
         }
     }
-    if (!prefix || !target) {
+    if (!pattern || !target) {
         return MPR_ERR_BAD_SYNTAX;
     }
     if (target == 0 || *target == 0) {
         target = "$&";
     }
     target = stemplate(target, state->route->vars);
-    if ((route = httpDefineRoute(state->route, name, methods, prefix, target, source)) == 0) {
+    if ((route = httpDefineRoute(state->route, name, methods, pattern, target, source)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     httpSetRouteHandler(route, "espHandler");

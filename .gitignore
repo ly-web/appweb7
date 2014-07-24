@@ -175,7 +175,6 @@ test/app/cache/controller_*.*
 test/app/cache/view_*.*
 *.dmp
 *.user
-.keep
 *-xcode
 test/web/tmp
 access.log.*
