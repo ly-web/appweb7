@@ -400,7 +400,7 @@ static int unixSecurityChecks(cchar *program, cchar *home)
         return MPR_ERR_BAD_STATE;
     }
     if ((sbuf.st_mode & S_IWOTH) || (sbuf.st_mode & S_IWGRP)) {
-        mprError("Security risk, directory %s is writeable by others", home);
+        mprError("Security risk, %s is writeable by others", home);
     }
 
     /*
@@ -412,7 +412,7 @@ static int unixSecurityChecks(cchar *program, cchar *home)
             return MPR_ERR_BAD_STATE;
         }
         if ((sbuf.st_mode & S_IWOTH) || (sbuf.st_mode & S_IWGRP)) {
-            mprError("Security risk, Program %s is writeable by others", program);
+            mprError("Security risk, %s is writeable by others", program);
         }
         if (sbuf.st_mode & S_ISUID) {
             mprError("Security risk, %s is setuid", program);

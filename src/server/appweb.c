@@ -503,7 +503,7 @@ static int unixSecurityChecks(cchar *program, cchar *home)
         return MPR_ERR_BAD_STATE;
     }
     if ((sbuf.st_mode & S_IWOTH) || (sbuf.st_mode & S_IWGRP)) {
-        mprLog("error appweb", 0, "Security risk, directory %s is writeable by others", home);
+        mprLog("error appweb", 0, "Security risk %s is writeable by others", home);
     }
 
     /*
@@ -515,7 +515,7 @@ static int unixSecurityChecks(cchar *program, cchar *home)
             return MPR_ERR_BAD_STATE;
         }
         if ((sbuf.st_mode & S_IWOTH) || (sbuf.st_mode & S_IWGRP)) {
-            mprLog("error appweb", 0, "Security risk, Program %s is writeable by others", program);
+            mprLog("error appweb", 0, "Security risk, %s is writeable by others", program);
         }
         if (sbuf.st_mode & S_ISUID) {
             mprLog("error appweb", 0, "Security risk, %s is setuid", program);
