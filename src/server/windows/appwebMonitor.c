@@ -126,7 +126,7 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
         mprError("appweb monitor", "Application %s is already active.", mprGetAppTitle());
         return MPR_ERR_BUSY;
     }
-    app->hwnd = mprSetNotifierThread(0);
+    app->hwnd = mprSetWindowsThread(0);
     mprSetWinMsgCallback(msgProc);
 
     if (app->taskBarIcon > 0) {
