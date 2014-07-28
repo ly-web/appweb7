@@ -17,6 +17,4 @@ if (tphase() == 'Setup') {
     tset('TM_HTTP_PORT',  conf.replace(/.*Listen *([\.:0-9]+) *# <HTTPv4>.*/ms, '$1').split(':')[1])
 }
 
-//  TODO - use TM_BIN
-let appweb = Path(tget('TM_CFG')).join('bin/appweb')
-startStopService(appweb, {address: tget('TM_HTTP')})
+startStopService('appweb', {address: tget('TM_HTTP')})

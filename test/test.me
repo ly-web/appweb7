@@ -74,14 +74,6 @@ Me.load({
             ifdef: [ 'cgi' ],
         },
 
-//  MOB
-        'test.js': {
-            enable: false,
-            type:   'file',
-            path:   'web/js/',
-            files:  ['../src/esp/proto/angular/client/lib/'],
-        },
-
         test: {
             action: `run('testme --depth ' + me.settings.depth, {noio: true})`,
             platforms: [ 'local' ],
