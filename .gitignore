@@ -228,3 +228,4 @@ t.es
 blog.sdb
 request.log
 /build/
+cache/
