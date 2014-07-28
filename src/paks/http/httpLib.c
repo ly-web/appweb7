@@ -18896,8 +18896,9 @@ PUBLIC cchar *httpMakePrintable(HttpTrace *trace, HttpConn *conn, cchar *event, 
 PUBLIC void httpDetailTraceFormatter(HttpTrace *trace, HttpConn *conn, cchar *event, cchar *type, cchar *values, 
     cchar *data, ssize len)
 {
-    MprTime     now;
-    char        buf[256];
+    MprTime now;
+    char    *boundary, buf[256];
+    int     client, sessionSeqno;
 
     assert(trace);
     assert(event);
@@ -18905,8 +18906,6 @@ PUBLIC void httpDetailTraceFormatter(HttpTrace *trace, HttpConn *conn, cchar *ev
 
     lock(trace);
     now = mprGetTime();
-#if UNUSED
-    int         client, sessionSeqno;
     if (conn) {
         if (trace->lastMark < (now + TPS)) {
             trace->lastTime = mprGetDate(MPR_LOG_DATE);
@@ -18919,40 +18918,23 @@ PUBLIC void httpDetailTraceFormatter(HttpTrace *trace, HttpConn *conn, cchar *ev
     } else {
         fmt(buf, sizeof(buf), "\n%s 0-0-0-0 ", trace->lastTime);
     }
+#if KEEP
     httpWriteTrace(trace, buf, slen(buf));
 #endif
-    fmt(buf, sizeof(buf), "\n%s:\n", event);
+    fmt(buf, sizeof(buf), "%s, ", event);
     httpWriteTrace(trace, buf, slen(buf));
 
     if (values) {
-        MprBuf *sbuf = mprCreateBuf(0, 0);
-        cchar *ip;
-        mprPutStringToBuf(sbuf, "    ");
-        for (ip = values; *ip; ip++) {
-            if (*ip == ',') {
-                mprPutStringToBuf(sbuf, "\n    ");
-                if (ip[1] == ' ') {
-                    ip++;
-                }
-            } else if (*ip == '=') {
-                mprPutStringToBuf(sbuf, ": ");
-            } else {
-                mprPutCharToBuf(sbuf, *ip);
-            }
-        }
-        mprPutCharToBuf(sbuf, '\n');
-        mprAddNullToBuf(sbuf);
-        httpWriteTrace(trace, mprGetBufStart(sbuf), mprGetBufLength(sbuf));
+        httpWriteTrace(trace, values, slen(values));
     }
     if (data) {
-        httpWriteTrace(trace, "    data:\n----\n", 15);
+        boundary = " --details--\n";
+        httpWriteTrace(trace, boundary, slen(boundary));
         data = httpMakePrintable(trace, conn, event, data, &len);
         httpWriteTrace(trace, data, len);
-        if (len > 0 && data[len - 1] != '\n') {
-            httpWriteTrace(trace, "\n----\n", 6);
-        } else {
-            httpWriteTrace(trace, "----\n", 5);
-        }
+        httpWriteTrace(trace, &boundary[1], slen(boundary) - 1);
+    } else {
+        httpWriteTrace(trace, "\n", 1);
     }
     unlock(trace);
 }
