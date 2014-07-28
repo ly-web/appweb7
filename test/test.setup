@@ -53,12 +53,11 @@ if (test.hostOs == "VXWORKS") {
         }
     }
 } else {
-    let path = Cmd.locate("appweb").portable.toString().toLower()
+    let path = test.bin.join("appweb").portable.toString().toLower()
     let tree = App.dir.parent.portable.toString().toLower()
     if (!path.startsWith(tree) && !path.startsWith(tree.trimStart('/private'))) {
         let tree = App.dir.parent.portable
-        throw 'Appweb is located outside of the build tree:\nappweb: ' + path + '\nPATH: ' + 
-            App.getenv('PATH').split(App.SearchSeparator)
+        throw 'Appweb is located outside of the build tree:\nappweb: ' + path + '\nTREE: ' + tree
     }
     service = path + " --log trace.txt:4 --name forAppwebTest --config appweb.conf"
 }
