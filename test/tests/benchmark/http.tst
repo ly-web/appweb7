@@ -6,7 +6,8 @@ if (test.depth >= 6) {
     const HTTP = App.config.uris.http || "127.0.0.1:4100"
     const ITER = 10000
 
-    let command = Cmd.locate("http").portable + " --host " + HTTP + " "
+    let http = test.bin.join("http").portable
+    let command = http + " --host " + HTTP + " "
     if (test.verbosity > 2) {
         command += "-v "
     }

@@ -3,7 +3,8 @@
  */
 const HTTP = App.config.uris.http || "127.0.0.1:4100"
 
-let command = Cmd.locate("http").portable + " --host " + HTTP + " "
+let http = test.bin.join("http").portable
+let command = http + " --host " + HTTP + " "
 if (test.verbosity > 2) {
     command += "-v "
 }
