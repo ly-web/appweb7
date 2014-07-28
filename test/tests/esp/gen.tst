@@ -9,7 +9,8 @@ let junk = Path('junk')
 junk.removeAll()
 assert(!junk.exists)
 
-Cmd.run('esp generate app junk esp-server')
+let esp = test.bin.join("esp").portable
+Cmd.run(esp + ' generate app junk esp-server')
 assert(junk.exists)
 
 let junk = Path('junk')
@@ -17,7 +18,7 @@ junk.removeAll()
 assert(!junk.exists)
 
 junk.makeDir()
-Cmd.run('esp install esp-html-mvc', {dir: junk})
+Cmd.run(esp + ' install esp-html-mvc', {dir: junk})
 assert(junk.exists)
 
 let junk = Path('junk')
