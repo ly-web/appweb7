@@ -229,3 +229,4 @@ blog.sdb
 request.log
 /build/
 cache/
+.testme-pidfile
