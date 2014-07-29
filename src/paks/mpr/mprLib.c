@@ -9595,7 +9595,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout)
     if (dispatcher->flags & MPR_DISPATCHER_WAITING) {
         return MPR_ERR_BUSY;
     }
-    expires = timeout < 0 ? (es->now + MPR_MAX_TIMEOUT) : (es->now + timeout);
+    expires = timeout < 0 ? MPR_MAX_TIMEOUT : (es->now + timeout);
     signalled = 0;
 
     lock(es);

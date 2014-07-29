@@ -2395,7 +2395,8 @@ PUBLIC ssize httpWriteUploadData(HttpConn *conn, MprList *fileData, MprList *for
  */
 PUBLIC int httpWait(HttpConn *conn, int state, MprTicks timeout)
 {
-    int     justOne;
+    MprTicks    delay;
+    int         justOne;
 
     if (httpServerConn(conn)) {
         mprError("Should not call httpWait on the server side");
@@ -2427,7 +2428,9 @@ PUBLIC int httpWait(HttpConn *conn, int state, MprTicks timeout)
     while (conn->state < state && !conn->error && !mprIsSocketEof(conn->sock) && !httpRequestExpired(conn, timeout)) {
         httpEnableConnEvents(conn);
         assert(httpClientConn(conn));
-        mprWaitForEvent(conn->dispatcher, min(conn->limits->inactivityTimeout, timeout));
+        delay = min(conn->limits->inactivityTimeout, timeout);
+        delay = max(delay, 0);
+        mprWaitForEvent(conn->dispatcher, delay);
         if (justOne) break;
     }
     if (conn->error) {
