@@ -39,12 +39,6 @@ function postTest(url: String) {
     http.close()
 }
 
-postTest("/index.html")
-
 if (thas('ME_ESP')) {
-    postTest("/stream.esp")
-}
-
-if (thas('ME_CGI')) {
-    postTest("/cgi-bin/cgiProgram")
+    postTest("/solo/stream")
 }
