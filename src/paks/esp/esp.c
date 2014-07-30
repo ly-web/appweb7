@@ -201,7 +201,7 @@ PUBLIC int main(int argc, char **argv)
     Mpr     *mpr;
     int     options, rc;
 
-    if ((mpr = mprCreate(argc, argv, MPR_USER_EVENTS_THREAD)) == 0) {
+    if ((mpr = mprCreate(argc, argv, 0)) == 0) {
         exit(1);
     }
     if ((app = createApp(mpr)) == 0) {
@@ -650,7 +650,6 @@ static void initRuntime()
         }
         return;
     }
-//  MOB - API
     HTTP->staticLink = app->staticLink;
     
     if (app->error) {
@@ -701,7 +700,7 @@ static void initialize(int argc, char **argv)
             }
         } else {
             /*
-                No package.json
+                No package.json - not an ESP app
              */
             route->update = 1;
             httpSetRouteShowErrors(route, 1);
@@ -1235,7 +1234,7 @@ static void setMode(cchar *mode)
 
 
 /*
-    Edit a key value in the package.json
+    Edit a key value in the package json
  */
 static void setPackageKey(cchar *key, cchar *value)
 {
@@ -1290,7 +1289,14 @@ static void run(int argc, char **argv)
         mprLog("", 0, "Cannot start HTTP service, exiting.");
         return;
     }
-    mprServiceEvents(-1, 0);
+    /*
+        Events thread will service requests
+     */
+    mprYield(MPR_YIELD_STICKY);
+    while (!mprIsStopping()) {
+        mprSuspendThread(-1);
+    }
+    mprResetYield();
     mprLog("", 1, "Stopping ...");
 }
 
