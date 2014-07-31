@@ -18,7 +18,7 @@
 
 <body>
     <div class="top">
-        <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
+        <a class="logo" href="http://embedthis.com/">&nbsp;</a>
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
@@ -140,22 +140,23 @@
             <a id="yielding-functions"></a>
             <h3>Yielding Functions</h3>
             <p>The following functions are the only functions in Appweb that yield:</p>
-            <li>httpFlushQueue(, HTTP_BLOCK)</li>
-            <li>httpConnect used for client requests</li>
-            <li>httpRead() used for client requests and to read responses </li>
-            <li>httpReadBlock(, HTTP_BLOCK) used for client requests and to read responses </li>
-            <li>httpSendBlock(, HTTP_BLOCK)</li>
-            <li>httpWait() used for client requests</li>
-            <li>httpWriteBlock(, HTTP_BLOCK)</li>
-            <li>httpWriteUploadData client side</li>
-            <li>mprDestroy</li>
-            <li>mprGC</li>
-            <li>mprSleep</li>
-            <li>mprWaitForSingleIO</li>
-            <li>mprWaitForIO</li>
-            <li>mprWaitForEvent</li>
-            <li>mprWaitTillIdle</li>
-            <li>mprYield</li>
+            <ul>
+                <li>httpFlushQueue(, HTTP_BLOCK)</li>
+                <li>httpConnect used for client requests</li>
+                <li>httpRead() used for client requests and to read responses </li>
+                <li>httpReadBlock(, HTTP_BLOCK) used for client requests and to read responses </li>
+                <li>httpSendBlock(, HTTP_BLOCK)</li>
+                <li>httpWait() used for client requests</li>
+                <li>httpWriteBlock(, HTTP_BLOCK)</li>
+                <li>httpWriteUploadData client side</li>
+                <li>mprDestroy</li>
+                <li>mprGC</li>
+                <li>mprSleep</li>
+                <li>mprWaitForSingleIO</li>
+                <li>mprWaitForIO</li>
+                <li>mprWaitForEvent</li>
+                <li>mprWaitTillIdle</li>
+                <li>mprYield</li>
             </ul>
             <p>When calling any of these routines, you must be prepared for the GC to run and so you must have
             secured all temporary allocations.</p> 
@@ -289,7 +290,7 @@ void manageBlock(MyBlock *blk, int flags)
           '000262706376373952077:1hs0lhenihk');
         customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
         var options = new google.search.DrawOptions();
-        options.enableSearchboxOnly("http://appwebserver.org/search.html");
+        options.enableSearchboxOnly("http://embedthis.com/search.html");
         customSearchControl.draw('cse-search-form', options);
       }, true);
     </script>

@@ -1259,7 +1259,6 @@ static void invokeDestructors()
 
     for (region = heap->regions; region; region = region->next) {
         for (mp = region->start; mp < region->end; mp = GET_NEXT(mp)) {
-            assert(mp->size > 0);
             /*
                 OPT - could optimize by requiring a separate flag for managers that implement destructors.
              */

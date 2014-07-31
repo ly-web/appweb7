@@ -18,7 +18,7 @@
 
 <body>
     <div class="top">
-        <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
+        <a class="logo" href="http://embedthis.com/">&nbsp;</a>
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
@@ -103,7 +103,7 @@
             zero or more filters and a finally a network connector. Each stage has two queues, one for outgoing data and one
             for incoming. A queue also has two links to refer to the upstream and downstream queues in the pipeline.</p>
            
-            <a id="queues"></a>
+            <a id="stages"></a>
             <h3>Stages</h3>
             <p>All pipeline stages provide a set of callbacks that are invoked by the pipeline as requests are 
             received and data flows through the pipeline. A stage may provide <em>incoming</em> and <em>outgoing</em> 
@@ -310,7 +310,7 @@ static void writable(HttpQueue *q)
             <p>Calling httpWrite will not automatically send the data to the client. Appweb buffers such output data to aggregate data into more efficient larger packets. If you wish to send buffered data to the client immediately, call 
             <a href="../../../api/http.html#group___http_tx_1ga23c2dd9ef6d1b76a146bb93731fa7b7d">httpFlush</a>.
             To ensure output data has been fully written to the network, use 
-            <a href="../../../api/http.html#group___http_queue_1gac9d6922973cb9cbb0debd5c20e14577b">httpFlushQueue</a>(conn->writeq, HTTP_BLOCK).</p>
+            <a href="../../../api/http.html#group___http_queue_1gac9d6922973cb9cbb0debd5c20e14577b">httpFlushQueue</a>(conn-&gt;writeq, HTTP_BLOCK).</p>
         <a id="paradigms"></a>
         <h2>Response Paradigms</h2>
         <p>A handler may use one of several paradigms to implement how it responds to requests.</p>
@@ -361,7 +361,7 @@ mprCreateEvent(q-&gt;conn-&gt;dispatcher, "deviceEvent", 0, doMoreOutput, q, 0);
             your event callback to resume normal processing of the connection.</p>
             <pre>
 httpBorrowConn(conn);
-httpCreateEventOutside(conn->dispatcher, 0, 0, myEvent, conn, HTTP_EVENT_BLOCK);
+httpCreateEventOutside(conn-&gt;dispatcher, 0, 0, myEvent, conn, HTTP_EVENT_BLOCK);
 void myEvent(HttpConn *conn, MprEvent *event) {
     /* Running serialized on an Appweb thread */
     httpWrite(conn, "Login Successful");
@@ -463,8 +463,7 @@ int maMyModuleInit(Http *http, MprModule *mp)
             <p>Handlers
             should call <a href="../../../api/mpr.html#mpr_8h_1af140a2fda18b2e8461236cc44c0a2cc4">mprYield</a>(MPR_YIELD_STICK) 
             whenever they block and are not calling an MPR function that blocks. This ensures that the garbage collector can work and
-            collect memory while the worker thread is asleep. When the sleeping API returns, they should call 
-            <a href="../../api/mpr.html#mpr_8h_1a126f6aef245167a628a6c0717369b0f7">mprResetYield</a>.</p>
+            collect memory while the worker thread is asleep. When the sleeping API returns, they should call mprResetYield.</p>
             <a name="rules"></a>
             <h4>Blocking Rules</h4>
             <ul>
@@ -483,8 +482,8 @@ int maMyModuleInit(Http *http, MprModule *mp)
             </ul>
             <h4>Recommended Paradigms</h4>
             <ul>
-            <li>Handlers generating smaller responses (< 64K) should use httpWrite and/or httpWriteBlock(HTTP_BUFFER).</li>
-            <li>To minimize memory consumption, handlers generating big responses (> 64K) should either use 
+            <li>Handlers generating smaller responses (&lt; 64K) should use httpWrite and/or httpWriteBlock(HTTP_BUFFER).</li>
+            <li>To minimize memory consumption, handlers generating big responses (&gt; 64K) should either use 
                 httpWriteBlock(HTTP_BLOCK) which will consume a thread. Or preferably, use non-blocking paradigms while 
                 measuring the downstream queue count to avoid saturating.</li>
             </ul>
@@ -529,7 +528,7 @@ int maMyModuleInit(Http *http, MprModule *mp)
           '000262706376373952077:1hs0lhenihk');
         customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
         var options = new google.search.DrawOptions();
-        options.enableSearchboxOnly("http://appwebserver.org/search.html");
+        options.enableSearchboxOnly("http://embedthis.com/search.html");
         customSearchControl.draw('cse-search-form', options);
       }, true);
     </script>

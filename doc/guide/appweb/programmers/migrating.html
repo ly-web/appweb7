@@ -18,7 +18,7 @@
 
 <body>
     <div class="top">
-        <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
+        <a class="logo" href="http://embedthis.com/">&nbsp;</a>
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
@@ -36,7 +36,6 @@
             <h1>Quick Nav</h1>
             <ul>
                 <li><a href="#compatibility">Appweb 3 Compatibility</a></li>
-                <li><a href="#support">Legacy Support</a></li>
                 <li><a href="#changes">Appweb 5 Changes</a></li>
                 <li><a href="#config">Migrating Config Files</a></li>
                 <li><a href="#modules">Migrating Modules</a></li>
@@ -78,12 +77,12 @@
                 <li>ESP is now a stand-alone product and can be run separately</li>
                 <li>ESP applications can be configured via package.json directives</li>
                 <li>Appweb and ESP are now more modular and heavily use the Pak tool to install and manage
-                    extension components from the href="http://embedthis.com/catalog/">Online Pak Catalog</a>.</p>
+                    extension components from the <a href="http://embedthis.com/catalog/">Online Pak Catalog</a>.</p>
             </ul>
             <p>Appweb 4.6+ and Appweb 5 use the MakeMe build system.
                 New configure options and cross compiling capabilities have been added. See more details below
                 in  <a href="#makeme">MakeMe Changes</a>.</p>
-            <a id="changes"></a>
+
             <h2 class="section">Changes in Appweb 4</h2>
             <p>Appweb 4 provides equivalent or greater functionality to that in Appweb 3. 
             While Appweb 4 may have a different interface or API, the capabilities of Appweb 3 have been continued 
@@ -159,8 +158,7 @@
             See the <a href="modules.html">Creating Modules</a> document for more details. </p>
             <p>In many cases, the new Embedded Server Pages (ESP) web framework provides a simpler and more flexible
             way to add functionality to Appweb compared with custom handlers and modules. ESP allows the easy binding
-            of "C" language functions to request URIs via powerful Controllers and the Appweb routing engine.
-            See the <a href="../../esp/users/index.html">Using ESP</a> document for more details. </p>
+            of "C" language functions to request URIs via powerful Controllers and the Appweb routing engine.</p>
             
             <h2 class="section">Embedded Server Pages</h2>
             <p>ESP is the single biggest change in Appweb 4. ESP is a powerful Model/View/Controller web framework
@@ -211,7 +209,7 @@
           '000262706376373952077:1hs0lhenihk');
         customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
         var options = new google.search.DrawOptions();
-        options.enableSearchboxOnly("http://appwebserver.org/search.html");
+        options.enableSearchboxOnly("http://embedthis.com/search.html");
         customSearchControl.draw('cse-search-form', options);
       }, true);
     </script>
