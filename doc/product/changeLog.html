@@ -35,9 +35,9 @@
         <div class="contentRight">
             <h1>Quick Nav</h1>
             <ul>
-                <li><a href="4.6.2">Release 4.6.2</a></li>
-                <li><a href="3.4.1">Release 3.4.1</a></li>
-                <li><a href="2.4.4">Release 2.4.4</a></li>
+                <li><a href="#4.6.2">Release 4.6.2</a></li>
+                <li><a href="#3.4.1">Release 3.4.1</a></li>
+                <li><a href="#2.4.4">Release 2.4.4</a></li>
             </ul>
 <!-- BeginDsi "dsi/genSeeAlso.html" -->
             <h1>See Also</h1>
@@ -104,12 +104,9 @@
             <ul>
                 <li>The format for ESP applications package.json has been upgraded for compatibility 
                     with the <a href="http://wiki.commonjs.org/wiki/Packages/1.1">CommonJS Package</a>
-                    specification and the <a href="http://embedthis.com/products/pak/">Pak</a> package manager.
-                    <a href="https://github.com/embedthis/appweb/issues/NN">[issue NN]</a>.</li>
+                    specification and the <a href="http://embedthis.com/pak/">Pak</a> package manager.</li>
                 <li>The <em>esp</em> utility has been upgraded to support the simpler "make dir and install"
-                    paradigm for creating applications instead of "generate app"
-                    <a href="https://github.com/embedthis/appweb/issues/NN">[issue NN]</a>.</li>
-                </li>
+                    paradigm for creating applications instead of "generate app".</li>
             </ul>
             <h3>Fixes</h3>
             <ul>
@@ -127,7 +124,7 @@
             <h3>Incompatible Changes</h3>
             <ul>
                 <li><p>ESP MVC applications will need to to have their package.json upgraded. The following
-                package.json properties have been moved or modified:</p>
+                    package.json properties have been moved or modified:</p>
                     <ul>
                         <li>A top level <em>app</em> collection contains all non <a
                             href="http://wiki.commonjs.org/wiki/Packages/1.1">CommonJS</a> properties.</li>
@@ -138,7 +135,8 @@
                             collection.</li>
                         <li>The <em>auth</em> property is renamed <em>app.http.auth.store</em>.</li>
                     </ul>
-                    <p>See the <a href="https://github.com/embedthis/esp/blob/dev/samples/esp-configuration/package.json">esp-configuration Sample</a> for details of all supported configuration file properties.</a>
+                    <p>See the <a href="https://github.com/embedthis/esp/blob/dev/samples/esp-configuration/package.json">esp-configuration 
+                        Sample</a> for details of all supported configuration file properties.</p>
                 </li>
                 <li>The esp-angular-mvc, esp-angular and angular packs have been removed from the product and are
                 now available from the <a href="https://embedthis.com/catalog/#/?keywords=angular">Pak Catalog</a>.</li>
@@ -283,7 +281,7 @@
                     <a href="https://github.com/embedthis/appweb/issues/292">[issue 292]</a></li>
                 <li>Add MakeDir directive
                     <a href="https://github.com/embedthis/appweb/issues/293">[issue 293]</a></li>
-                <li>Add httpBorrowConn and httpReleaseConn to make it easier to use mprCreateEventOutside</li>
+                <li>Add httpBorrowConn and httpReleaseConn to make it easier to use mprCreateEventOutside
                     <a href="https://github.com/embedthis/appweb/issues/302">[issue 302]</a></li>
                 <li>Increase default WebSockets inactivity timeout to five minutes
                     <a href="https://github.com/embedthis/appweb/issues/307">[issue 307]</a></li>
@@ -310,7 +308,7 @@
                     <a href="https://github.com/embedthis/appweb/issues/254">[issue 254]</a></li>
                 <li>Add documentation on new httpWriteBlock behavior
                     <a href="https://github.com/embedthis/appweb/issues/255">[issue 255]</a></li>
-                <li>Update conn->lastActivity in readEvent
+                <li>Update conn-&gt;lastActivity in readEvent
                     <a href="https://github.com/embedthis/appweb/issues/256">[issue 256]</a></li>
                 <li>Use 401 when user fails authorization
                     <a href="https://github.com/embedthis/appweb/issues/257">[issue 257]</a></li>

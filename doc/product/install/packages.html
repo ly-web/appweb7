@@ -165,42 +165,7 @@ cp -r inc32/openssl include
 DIR=/usr/local ; \<br />export CC=arm-linux-uclibc-gcc ; \<br />GCC_DIR=`$$CC -print-libgcc-file-name 2&gt;&amp;1 | sed -e 's/\/libgcc.a//'` ; \<br />AR=arm-linux-uclibc-ar \<br />LD=arm-linux-uclibc-ld \<br />RANLIB=arm-linux-uclibc-ranlib \<br />IFLAGS="-I$$DIR/arm-linux-uclibc/include -I$$GCC_DIR/include" \<br />LDFLAGS="-L$$GCC_DIR/lib -L$$DIR/arm-linux-uclibc/lib \<br />    -Wl,--dynamic-linker -Wl,$$DIR/i386-linux/lib/ld-uClibc.so.0" \<br />./configure
 </pre>
             <p>See <a href="../../guide/appweb/source/building.html">Building Appweb from Source</a> for full details
-            on all the available <b>configure</b> switches.</p><a id="uclinux"></a> <!--
-            <h2 class="section">uClinux</h2>
-            <p>TODO - these instructions are not accurate or current</p>
-            <p>A patch for uClinux has been submitted and hopefully will soon be included in the default uClinux
-            distributions from <a href="http://www.snapgear.org">SnapGear</a> and the <a href=
-            "http://www.uclinux.org">uClinux project</a>. Until then, a <a href=
-            "http://embedthis.com/downloads/Ejscript/patches.html" target="site">patch</a> is available to update
-            uClinux with Ejscript support. We have used the SnapGear distribution and have followed the included
-            instructions.</p>
-            <p>Once you have uClinux installed, you should extract the Ejscript source code into the user/Ejscript
-            directory. The following commands are a suggestion:</p>
-            <pre>
-cd UCLINUX_DIR/user<br />tar xvfz Ejscript-src-VERSION.tar.gz<br />mv Ejscript-VERSION Ejscript
-</pre>
-            <p>First you need to run the configuration utility. This can be either X based or curses based. To run the
-            X utility:</p>
-            <pre>
-make xconfig
-</pre>
-            <p>After selecting your embedded board vendor, go into the Kernel/Library/Defaults Selection and Toggle
-            Customize Vendor/User Settings to be <span style="font-weight: bold;">"y"</span>. After you then click Main
-            Menu, then Save and Exit, a new dialog will be displayed with the Application Configuration options. Select
-            Network Applications and you should see Ejscript configuration options toward the top of the screen. Select
-            <span style="font-weight: bold;">"y"</span> for the Ejscript option and select "y" for any other Ejscript
-            options you require. The Help button will explain each option.</p>
-            <p>After configuring uClinux, you should type:</p>
-            <pre>
-make depend<br />make
-</pre>
-            <p>TODO - not correct: After the initial build, Ejscript remembers all the cross-compiler settings and you
-            can recompile directly in the Ejscript directory. You can also customize your Ejscript configuration and
-            then rebuild. For example: to enable the Embedded Gateway Interface:</p>
-            <pre>
-cd user/Ejscript<br />./configure<br />cd ../..<br />make user_only
-</pre>
--->
+            on all the available <b>configure</b> switches.</p><a id="uclinux"></a> 
         </div>
     </div>
 <!-- BeginDsi "dsi/bottom.html" -->
