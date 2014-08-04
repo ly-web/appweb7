@@ -15,7 +15,7 @@
 #include "appweb.h"
 
 #ifndef ESP_VERSION
-    #define ESP_VERSION "4.6.0"
+    #define ESP_VERSION ME_VERSION
 #endif
 
 /************************************************************************/
