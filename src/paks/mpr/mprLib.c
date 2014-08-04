@@ -23333,6 +23333,9 @@ PUBLIC int mprLoadSsl()
     if (!mprPathExists(path, R_OK)) {
         path = mprSearchForModule("libmprssl");
     }
+    if (!path) {
+        return MPR_ERR_CANT_FIND;
+    }
     if ((mp = mprCreateModule("sslModule", path, "mprSslInit", NULL)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
