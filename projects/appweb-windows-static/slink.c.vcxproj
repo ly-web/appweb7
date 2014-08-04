@@ -98,7 +98,7 @@
     <Command>cd ..\..\src
 if not exist slink.c copy slink.empty slink.c
 cd ..\projects\appweb-windows-static</Command>
-    <Outputs>..\..\src\slink.c</Outputs>
+    <Outputs>\Users\mob\git\appweb-lts\projects\appweb-windows-static\..\..\src\slink.c</Outputs>
   </CustomBuildStep>
   </ItemDefinitionGroup>
 

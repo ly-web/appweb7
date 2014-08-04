@@ -139,7 +139,7 @@
     #define ME_MANIFEST "package/manifest.me"
 #endif
 #ifndef ME_ME
-    #define ME_ME "~0.8"
+    #define ME_ME ">=0.8.2"
 #endif
 #ifndef ME_MPR_LOGGING
     #define ME_MPR_LOGGING 1
@@ -172,7 +172,7 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "4.6.2"
+    #define ME_VERSION "4.6.3"
 #endif
 
 /* Prefixes */
@@ -192,7 +192,7 @@
     #define ME_APP_PREFIX "/usr/local/lib/appweb"
 #endif
 #ifndef ME_VAPP_PREFIX
-    #define ME_VAPP_PREFIX "/usr/local/lib/appweb/4.6.2"
+    #define ME_VAPP_PREFIX "/usr/local/lib/appweb/4.6.3"
 #endif
 #ifndef ME_BIN_PREFIX
     #define ME_BIN_PREFIX "/usr/local/bin"
@@ -225,7 +225,7 @@
     #define ME_CACHE_PREFIX "/var/spool/appweb/cache"
 #endif
 #ifndef ME_SRC_PREFIX
-    #define ME_SRC_PREFIX "appweb-4.6.2"
+    #define ME_SRC_PREFIX "appweb-4.6.3"
 #endif
 
 /* Suffixes */
@@ -267,10 +267,10 @@
     #define ME_MINOR_VERSION 6
 #endif
 #ifndef ME_PATCH_VERSION
-    #define ME_PATCH_VERSION 2
+    #define ME_PATCH_VERSION 3
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 400060002
+    #define ME_VNUM 400060003
 #endif
 
 /* Components */
