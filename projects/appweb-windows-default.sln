@@ -181,28 +181,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "server-cache", "appweb-wind
 		{467DCB7C-9406-49DF-B865-A532AE2D74A8} = {467DCB7C-9406-49DF-B865-A532AE2D74A8}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testAppweb", "appweb-windows-default\testAppweb.vcxproj", "{125C9085-1D6D-401A-B829-5845AD1F4D7F}"
-	ProjectSection(ProjectDependencies) = postProject
-		{467DCB7C-9406-49DF-B865-A532AE2D74A8} = {467DCB7C-9406-49DF-B865-A532AE2D74A8}
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{6F3FAAD3-BFEA-4AF7-B4D9-514E9E44AD75} = {6F3FAAD3-BFEA-4AF7-B4D9-514E9E44AD75}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test-basic.cgi", "appweb-windows-default\test-basic.cgi.vcxproj", "{B0E356D5-D7D2-45A8-B591-2C42F8A7047C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{467DCB7C-9406-49DF-B865-A532AE2D74A8} = {467DCB7C-9406-49DF-B865-A532AE2D74A8}
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{125C9085-1D6D-401A-B829-5845AD1F4D7F} = {125C9085-1D6D-401A-B829-5845AD1F4D7F}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test-cache.cgi", "appweb-windows-default\test-cache.cgi.vcxproj", "{1BF6FE79-5F07-4944-8520-9375700C1714}"
 	ProjectSection(ProjectDependencies) = postProject
 		{467DCB7C-9406-49DF-B865-A532AE2D74A8} = {467DCB7C-9406-49DF-B865-A532AE2D74A8}
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{125C9085-1D6D-401A-B829-5845AD1F4D7F} = {125C9085-1D6D-401A-B829-5845AD1F4D7F}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test-cgiProgram", "appweb-windows-default\test-cgiProgram.vcxproj", "{80C38BBC-CAA1-491C-B4EC-893B0DFDCB27}"
@@ -218,7 +204,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test-testScript", "appweb-w
 		{467DCB7C-9406-49DF-B865-A532AE2D74A8} = {467DCB7C-9406-49DF-B865-A532AE2D74A8}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
-		{125C9085-1D6D-401A-B829-5845AD1F4D7F} = {125C9085-1D6D-401A-B829-5845AD1F4D7F}
+		{D58DAC33-8E20-4FDA-B15A-3BEA88BFB823} = {D58DAC33-8E20-4FDA-B15A-3BEA88BFB823}
 	EndProjectSection
 EndProject
 
@@ -438,14 +424,6 @@ Global
 {6C4D0198-8480-45E2-968E-2E56998A1AB5}.Release|Win32.Build.0 = Release|Win32
 {6C4D0198-8480-45E2-968E-2E56998A1AB5}.Release|x64.ActiveCfg = Release|x64
 {6C4D0198-8480-45E2-968E-2E56998A1AB5}.Release|x64.Build.0 = Release|x64
-{125C9085-1D6D-401A-B829-5845AD1F4D7F}.Debug|Win32.ActiveCfg = Debug|Win32
-{125C9085-1D6D-401A-B829-5845AD1F4D7F}.Debug|Win32.Build.0 = Debug|Win32
-{125C9085-1D6D-401A-B829-5845AD1F4D7F}.Debug|x64.ActiveCfg = Debug|x64
-{125C9085-1D6D-401A-B829-5845AD1F4D7F}.Debug|x64.Build.0 = Debug|x64
-{125C9085-1D6D-401A-B829-5845AD1F4D7F}.Release|Win32.ActiveCfg = Release|Win32
-{125C9085-1D6D-401A-B829-5845AD1F4D7F}.Release|Win32.Build.0 = Release|Win32
-{125C9085-1D6D-401A-B829-5845AD1F4D7F}.Release|x64.ActiveCfg = Release|x64
-{125C9085-1D6D-401A-B829-5845AD1F4D7F}.Release|x64.Build.0 = Release|x64
 {B0E356D5-D7D2-45A8-B591-2C42F8A7047C}.Debug|Win32.ActiveCfg = Debug|Win32
 {B0E356D5-D7D2-45A8-B591-2C42F8A7047C}.Debug|Win32.Build.0 = Debug|Win32
 {B0E356D5-D7D2-45A8-B591-2C42F8A7047C}.Debug|x64.ActiveCfg = Debug|x64

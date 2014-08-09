@@ -39,6 +39,7 @@
 /*
     Matrixssl defines int*, uint*, but does not provide HAS_XXX or any other means to disable. Ugh!
     So must include matrixsslApi.h first and then workaround. 
+    Indent includes to bypass MakeMe dependencies
  */
 #if WIN32
  #include   <winsock2.h>
@@ -788,8 +789,10 @@ void matrixsslDummy() {}
 #include    "mpr.h"
 
 #if ME_COM_EST
-
-#include    "est.h"
+ /*
+    Indent to bypass MakeMe dependencies
+  */
+ #include    "est.h"
 
 /************************************* Defines ********************************/
 /*
@@ -956,7 +959,7 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     est->sock = sp;
     sp->sslSocket = est;
     sp->ssl = ssl;
-    verifyMode = (sp->flags & MPR_SOCKET_SERVER && !ssl->verifyPeer) ? SSL_VERIFY_NO_CHECK : SSL_VERIFY_OPTIONAL;
+    verifyMode = ssl->verifyPeer ? SSL_VERIFY_OPTIONAL : SSL_VERIFY_NO_CHECK;
 
     lock(ssl);
     if (ssl->config && !ssl->changed) {
@@ -975,7 +978,7 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
             /*
                 Load a PEM format certificate file
              */
-            if (x509parse_crtfile(&cfg->cert, ssl->certFile) != 0) {
+            if (x509parse_crtfile(&cfg->cert, (char*) ssl->certFile) != 0) {
                 sp->errorMsg = sfmt("Unable to parse certificate %s", ssl->certFile); 
                 unlock(ssl);
                 return MPR_ERR_CANT_READ;
@@ -986,7 +989,7 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
                 Load a decrypted PEM format private key
                 Last arg is password if you need to use an encrypted private key
              */
-            if (x509parse_keyfile(&cfg->rsa, ssl->keyFile, 0) != 0) {
+            if (x509parse_keyfile(&cfg->rsa, (char*) ssl->keyFile, 0) != 0) {
                 sp->errorMsg = sfmt("Unable to parse key file %s", ssl->keyFile); 
                 unlock(ssl);
                 return MPR_ERR_CANT_READ;
@@ -998,7 +1001,7 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
                 unlock(ssl);
                 return MPR_ERR_CANT_READ;
             }
-            if (x509parse_crtfile(&cfg->ca, ssl->caFile) != 0) {
+            if (x509parse_crtfile(&cfg->ca, (char*) ssl->caFile) != 0) {
                 sp->errorMsg = sfmt("Unable to open or parse certificate authority file %s", ssl->caFile); 
                 unlock(ssl);
                 return MPR_ERR_CANT_READ;
@@ -1082,7 +1085,7 @@ static int handshakeEst(MprSocket *sp)
         sp->peerName = sclone(est->ctx.peer_cn);
     }
     sp->cipher = sclone(ssl_get_cipher(&est->ctx));
-    if (est->ctx.peer_cert) {
+    if (est->ctx.peer_cert && rc == 0) {
         x509parse_dn_gets("", cbuf, sizeof(cbuf), &est->ctx.peer_cert->subject);
         sp->peerCert = sclone(cbuf);
         x509parse_dn_gets("", cbuf, sizeof(cbuf), &est->ctx.peer_cert->issuer);
@@ -1390,11 +1393,14 @@ void estDummy() {}
 /* Clashes with WinCrypt.h */
 #undef OCSP_RESPONSE
 
-#include    <openssl/ssl.h>
-#include    <openssl/evp.h>
-#include    <openssl/rand.h>
-#include    <openssl/err.h>
-#include    <openssl/dh.h>
+ /*
+    Indent includes to bypass MakeMe dependencies
+  */
+ #include    <openssl/ssl.h>
+ #include    <openssl/evp.h>
+ #include    <openssl/rand.h>
+ #include    <openssl/err.h>
+ #include    <openssl/dh.h>
 
 /************************************* Defines ********************************/
 
@@ -1617,14 +1623,18 @@ static OpenConfig *createOpenSslConfig(MprSocket *sp)
     RAND_bytes(resume, sizeof(resume));
     SSL_CTX_set_session_id_context(context, resume, sizeof(resume));
 
-    verifyMode = (sp->flags & MPR_SOCKET_SERVER && !ssl->verifyPeer) ? SSL_VERIFY_NONE : 
-        SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
+    if (ssl->verifyPeer && !(ssl->caFile || ssl->caPath)) {
+        sp->errorMsg = sfmt("Cannot verify peer due to undefined CA certificates");
+        SSL_CTX_free(context);
+        return 0;
+    }
+    verifyMode = ssl->verifyPeer ? SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT : SSL_VERIFY_NONE;
 
     /*
         Configure the certificates
      */
     if (ssl->keyFile || ssl->certFile) {
-        if (configureCertificateFiles(ssl, context, ssl->keyFile, ssl->certFile) != 0) {
+        if (configureCertificateFiles(ssl, context, (char*) ssl->keyFile, (char*) ssl->certFile) != 0) {
             SSL_CTX_free(context);
             return 0;
         }
@@ -1637,7 +1647,7 @@ static OpenConfig *createOpenSslConfig(MprSocket *sp)
             SSL_CTX_free(context);
             return 0;
         }
-        if ((!SSL_CTX_load_verify_locations(context, ssl->caFile, ssl->caPath)) ||
+        if ((!SSL_CTX_load_verify_locations(context, (char*) ssl->caFile, (char*) ssl->caPath)) ||
                 (!SSL_CTX_set_default_verify_paths(context))) {
             sp->errorMsg = sfmt("Unable to set certificate locations: %s: %s", ssl->caFile, ssl->caPath); 
             SSL_CTX_free(context);
@@ -1673,7 +1683,7 @@ static OpenConfig *createOpenSslConfig(MprSocket *sp)
 #ifdef SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION
     SSL_CTX_set_options(context, SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
 #endif
-    SSL_CTX_set_mode(context, SSL_MODE_ENABLE_PARTIAL_WRITE | SSL_MODE_AUTO_RETRY);
+    SSL_CTX_set_mode(context, SSL_MODE_ENABLE_PARTIAL_WRITE | SSL_MODE_AUTO_RETRY | SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
 #ifdef SSL_OP_MSIE_SSLV2_RSA_PADDING
     SSL_CTX_set_options(context, SSL_OP_MSIE_SSLV2_RSA_PADDING);
 #endif
@@ -1683,7 +1693,10 @@ static OpenConfig *createOpenSslConfig(MprSocket *sp)
 #ifdef SSL_MODE_RELEASE_BUFFERS                                                                                      
     SSL_CTX_set_mode(context, SSL_MODE_RELEASE_BUFFERS);                                                            
 #endif
-#if 0
+#ifdef SSL_OP_CIPHER_SERVER_PREFERENCE                                                                                      
+    SSL_CTX_set_mode(context, SSL_OP_CIPHER_SERVER_PREFERENCE);                                                            
+#endif
+#if KEEP
     SSL_CTX_set_read_ahead(context, 1);                                                                             
     SSL_CTX_set_info_callback(context, info_callback); 
 #endif
@@ -2456,6 +2469,9 @@ void opensslDummy() {}
     __ENABLE_MOCANA_SSL_CLIENT__
 #endif
 
+/*
+    Indent includes to bypass MakeMe dependencies
+ */
 #if ME_COM_NANOSSL
  #include "common/moptions.h"
  #include "common/mdefs.h"

@@ -1,7 +1,7 @@
 {
     "name": "esp-mvc",
     "description": "ESP MVC Framework",
-    "version": "5.0.0",
+    "version": "5.1.0",
     "licenses": [
         {
             "type": "GPL",
@@ -15,7 +15,7 @@
         "esp",
     ],
     "dependencies": {
-        "esp-server": "~5.0",
+        "esp-server": "~5",
     },
     "app": {
         "esp": {

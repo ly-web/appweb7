@@ -28,19 +28,17 @@ static int customConfig(MaState *state, cchar *key, cchar *value)
 int maSimpleModuleInit(Http *http, MprModule *mp)
 {
     HttpStage   *stage;
-    MaAppweb    *appweb;
 
     /*
         Create a stage so we can process configuration file data
      */
-    if ((stage = httpCreateStage(http, "simpleModule", HTTP_STAGE_MODULE, mp)) == 0) {
+    if ((stage = httpCreateStage("simpleModule", HTTP_STAGE_MODULE, mp)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     /*
         Create an appweb.conf custom directive
      */
-    appweb = httpGetContext(http);
-    maAddDirective(appweb, "CustomConfig", customConfig);
+    maAddDirective("CustomConfig", customConfig);
     return 0;
 }
 

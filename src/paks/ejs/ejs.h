@@ -10,6 +10,7 @@
 #include "me.h"
 #if ME_COM_EJS
 
+#undef PRINTF_ATTRIBUTE
 #define PRINTF_ATTRIBUTE(x,y)
 
 #include "osdep.h"
@@ -584,6 +585,7 @@ PUBLIC EjsOptable *ejsGetOptable();
 /*
     Using custom mprPrintf specifiers
  */
+#undef PRINTF_ATTRIBUTE
 #define PRINTF_ATTRIBUTE(x,y)
 
 #include    "mpr.h"

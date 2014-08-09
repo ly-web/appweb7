@@ -26496,6 +26496,7 @@ static EjsNumber *app_pid(Ejs *ejs, EjsObj *unused, int argc, EjsObj **argv)
 static EjsObj *app_run(Ejs *ejs, EjsObj *unused, int argc, EjsObj **argv)
 {
     MprTicks    mark, remaining;
+    int64       dispatcherMark;
     int         rc, oneEvent, timeout;
 
     timeout = (argc > 0) ? ejsGetInt(ejs, argv[0]) : MAXINT;
@@ -26509,9 +26510,11 @@ static EjsObj *app_run(Ejs *ejs, EjsObj *unused, int argc, EjsObj **argv)
     }
     mark = mprGetTicks();
     remaining = timeout;
+    dispatcherMark = mprGetEventMark(ejs->dispatcher);
     do {
-        rc = mprWaitForEvent(ejs->dispatcher, remaining); 
+        rc = mprWaitForEvent(ejs->dispatcher, remaining, dispatcherMark); 
         remaining = mprGetRemainingTicks(mark, timeout);
+        dispatcherMark = mprGetEventMark(ejs->dispatcher);
     } while (!ejs->exception && !oneEvent && !ejs->exiting && remaining > 0 && !mprIsStopping());
     return (rc == 0) ? ESV(true) : ESV(false);
 }
@@ -26526,6 +26529,7 @@ static EjsObj *app_run(Ejs *ejs, EjsObj *unused, int argc, EjsObj **argv)
 static EjsObj *app_sleep(Ejs *ejs, EjsObj *unused, int argc, EjsObj **argv)
 {
     MprTicks    mark, remaining;
+    int64       dispatcherMark;
     int         timeout;
 
     timeout = (argc > 0) ? ejsGetInt(ejs, argv[0]) : MAXINT;
@@ -26534,9 +26538,11 @@ static EjsObj *app_sleep(Ejs *ejs, EjsObj *unused, int argc, EjsObj **argv)
     }
     mark = mprGetTicks();
     remaining = timeout;
+    dispatcherMark = mprGetEventMark(ejs->dispatcher);
     do {
-        mprWaitForEvent(ejs->dispatcher, (int) remaining); 
+        mprWaitForEvent(ejs->dispatcher, remaining, dispatcherMark); 
         remaining = mprGetRemainingTicks(mark, timeout);
+        dispatcherMark = mprGetEventMark(ejs->dispatcher);
     } while (!ejs->exiting && remaining > 0 && !mprIsStopping());
     return 0;
 }
@@ -30856,7 +30862,6 @@ static EjsNumber *cmd_read(Ejs *ejs, EjsCmd *cmd, int argc, EjsObj **argv)
         nbytes = mprGetBufLength(cmd->stdoutBuf);
     }
     count = min(count, nbytes);
-    //  TODO - should use RC Value (== count)
     ejsCopyToByteArray(ejs, buffer, buffer->writePosition, (char*) mprGetBufStart(cmd->stdoutBuf), count);
     ejsSetByteArrayPositions(ejs, buffer, -1, buffer->writePosition + count);
     mprAdjustBufStart(cmd->stdoutBuf, count);
@@ -35599,7 +35604,7 @@ static EjsHttp *httpConstructor(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
     ejsLoadHttpService(ejs);
     hp->ejs = ejs;
 
-    if ((hp->conn = httpCreateConn(ejs->http, NULL, ejs->dispatcher)) == 0) {
+    if ((hp->conn = httpCreateConn(NULL, ejs->dispatcher)) == 0) {
         ejsThrowMemoryError(ejs);
         return 0;
     }
@@ -35697,7 +35702,7 @@ static EjsObj *http_close(Ejs *ejs, EjsHttp *hp, int argc, EjsObj **argv)
         }
         sendHttpCloseEvent(ejs, hp);
         httpDestroyConn(hp->conn);
-        hp->conn = httpCreateConn(ejs->http, NULL, ejs->dispatcher);
+        hp->conn = httpCreateConn(NULL, ejs->dispatcher);
         httpPrepClientConn(hp->conn, 0);
         httpSetConnNotifier(hp->conn, httpEventChange);
         httpSetConnContext(hp->conn, hp);
@@ -39311,7 +39316,7 @@ static EjsNumber *lf_emit(Ejs *ejs, EjsObj *unused, int argc, EjsObj **argv)
         msg = srejoin(msg, arg, NULL);
     }
     if (msg) {
-        mprLog("ejs", level, "%s", msg);
+        mprLog(NULL, level, "%s", strim(msg, "\n", MPR_TRIM_END));
         written += slen(msg);
     }
     ejsUnblockGC(ejs, paused);
@@ -42106,14 +42111,13 @@ PUBLIC EjsArray *ejsGetPathFiles(Ejs *ejs, EjsPath *fp, int argc, EjsObj **argv)
         } 
     }
     for (i = 0; i < patterns->length; i++) {
-        /* 
-            Optimize by converting absolute pattern path prefixes into the base directory.
-            This allows path.files('/path/ *')
-         */
         pattern = ejsToMulti(ejs, ejsGetItem(ejs, patterns, i));
         path = fp->value;
         base = "";
+
+#if UNUSED
         if (mprIsPathAbs(pattern)) {
+#endif
             start = pattern;
             if ((special = strpbrk(start, "*?")) != 0) {
                 if (special > start) {
@@ -42132,7 +42136,9 @@ PUBLIC EjsArray *ejsGetPathFiles(Ejs *ejs, EjsPath *fp, int argc, EjsObj **argv)
                     base = start;
                 }
             }
+#if UNUSED
         }
+#endif
         if (!globPath(ejs, result, path, base, pattern, flags, exclude, include)) {
             return 0;
         }
@@ -48174,6 +48180,7 @@ PUBLIC void ejsDestroyIntern(EjsIntern *ip)
     for (i = ip->size - 1; i >= 0; i--) {
         head = &ip->buckets[i];
         for (sp = head->next; sp != head; sp = next) {
+            if (sp == sp->next) break;
             next = sp->next;
             ip->count--;
             unlinkString(sp);
@@ -51299,7 +51306,7 @@ static EjsWebSocket *wsConstructor(Ejs *ejs, EjsWebSocket *ws, int argc, EjsObj 
             ws->certFile = ejsToMulti(ejs, argv[0]);
         }
     }
-    if ((ws->conn = httpCreateConn(MPR->httpService, NULL, ejs->dispatcher)) == 0) {
+    if ((ws->conn = httpCreateConn(NULL, ejs->dispatcher)) == 0) {
         ejsThrowMemoryError(ejs);
         return 0;
     }
@@ -51812,11 +51819,12 @@ static bool waitForHttpState(EjsWebSocket *ws, int state, MprTicks timeout, int 
 
 static bool waitForReadyState(EjsWebSocket *ws, int state, MprTicks timeout, int throw)
 {
-    Ejs             *ejs;
-    HttpConn        *conn;
-    HttpRx          *rx;
-    MprTicks        mark, remaining, inactivityTimeout;
-    int             eventMask;
+    Ejs         *ejs;
+    HttpConn    *conn;
+    HttpRx      *rx;
+    MprTicks    mark, remaining, inactivityTimeout;
+    int64       dispatcherMark;
+    int         eventMask;
 
     ejs = ws->ejs;
     conn = ws->conn;
@@ -51843,12 +51851,14 @@ static bool waitForReadyState(EjsWebSocket *ws, int state, MprTicks timeout, int
     }
     mark = mprGetTicks();
     remaining = timeout;
+    dispatcherMark = mprGetEventMark(conn->dispatcher);
     while (conn->state < HTTP_STATE_CONTENT || rx->webSocket->state < state) {
         if (conn->error || ejs->exiting || mprIsStopping(conn) || remaining < 0) {
             break;
         }
-        mprWaitForEvent(conn->dispatcher, min(inactivityTimeout, remaining));
+        mprWaitForEvent(conn->dispatcher, min(inactivityTimeout, remaining), dispatcherMark);
         remaining = mprGetRemainingTicks(mark, timeout);
+        dispatcherMark = mprGetEventMark(conn->dispatcher);
     }
     return rx->webSocket->state >= state;
 }
@@ -52279,12 +52289,14 @@ static int reapJoins(Ejs *ejs, EjsObj *workers)
 static int join(Ejs *ejs, EjsObj *workers, int timeout)
 {
     MprTicks    mark;
+    int64       dispatcherMark;
     int         result, remaining;
 
     mprDebug("ejs worker", 5, "Worker.join: joining %d", ejs->joining);
     
     mark = mprGetTicks();
     remaining = timeout;
+    dispatcherMark = mprGetEventMark(ejs->dispatcher);
     do {
         ejs->joining = !reapJoins(ejs, workers);
         if (!ejs->joining) {
@@ -52294,8 +52306,9 @@ static int join(Ejs *ejs, EjsObj *workers, int timeout)
             ejsThrowStateError(ejs, "Program instructed to exit");
             break;
         }
-        mprWaitForEvent(ejs->dispatcher, remaining);
+        mprWaitForEvent(ejs->dispatcher, remaining, dispatcherMark);
         remaining = (int) mprGetRemainingTicks(mark, timeout);
+        dispatcherMark = mprGetEventMark(ejs->dispatcher);
     } while (remaining > 0 && !ejs->exception);
 
     if (ejs->exception) {
@@ -52683,8 +52696,8 @@ static EjsObj *workerTerminate(Ejs *ejs, EjsWorker *worker, int argc, EjsObj **a
  */
 static EjsBoolean *workerWaitForMessage(Ejs *ejs, EjsWorker *worker, int argc, EjsObj **argv)
 {
-    MprTicks    mark, remaining;
-    int         timeout;
+    MprTicks    mark, remaining, timeout;
+    int64       dispatcherMark;
 
     timeout = (argc > 0) ? ejsGetInt(ejs, argv[0]): MAXINT;
     if (timeout < 0) {
@@ -52694,9 +52707,11 @@ static EjsBoolean *workerWaitForMessage(Ejs *ejs, EjsWorker *worker, int argc, E
     remaining = timeout;
 
     worker->gotMessage = 0;
+    dispatcherMark = mprGetEventMark(ejs->dispatcher);
     do {
-        mprWaitForEvent(ejs->dispatcher, (int) remaining);
+        mprWaitForEvent(ejs->dispatcher, remaining, dispatcherMark);
         remaining = mprGetRemainingTicks(mark, timeout);
+        dispatcherMark = mprGetEventMark(ejs->dispatcher);
     } while (!worker->gotMessage && remaining > 0 && !ejs->exception);
 
     if (worker->gotMessage) {
@@ -55866,7 +55881,7 @@ static EjsVoid *hs_listen(Ejs *ejs, EjsHttpServer *sp, int argc, EjsObj **argv)
         if (sp->name) {
             httpSetHostName(host, sp->name);
         }
-        httpSetSoftware(endpoint->http, EJS_HTTPSERVER_NAME);
+        httpSetSoftware(EJS_HTTPSERVER_NAME);
         httpSetEndpointAsync(endpoint, sp->async);
         httpSetEndpointContext(endpoint, sp);
         httpSetEndpointNotifier(endpoint, stateChangeNotifier);
@@ -55965,9 +55980,13 @@ static EjsNumber *hs_port(Ejs *ejs, EjsHttpServer *sp, int argc, EjsObj **argv)
  */
 static EjsVoid *hs_run(Ejs *ejs, EjsHttpServer *sp, int argc, EjsObj **argv)
 {
+    int64   dispatcherMark;
+
     if (!sp->hosted) {
+        dispatcherMark = mprGetEventMark(ejs->dispatcher);
         while (!ejs->exiting && !mprIsStopping()) {
-            mprWaitForEvent(ejs->dispatcher, MAXINT); 
+            mprWaitForEvent(ejs->dispatcher, MPR_MAX_TIMEOUT, dispatcherMark); 
+            dispatcherMark = mprGetEventMark(ejs->dispatcher);
         }
     }
     return 0;
@@ -56149,13 +56168,11 @@ static void setHttpPipeline(Ejs *ejs, EjsHttpServer *sp)
     EjsString       *vs;
     HttpHost        *host;
     HttpRoute       *route;
-    Http            *http;
     HttpStage       *stage;
     cchar           *name;
     int             i;
 
     assert(sp->endpoint);
-    http = sp->endpoint->http;
     host = mprGetFirstItem(sp->endpoint->hosts);
     route = mprGetFirstItem(host->routes);
 
@@ -56165,7 +56182,7 @@ static void setHttpPipeline(Ejs *ejs, EjsHttpServer *sp)
             vs = ejsGetProperty(ejs, sp->outgoingStages, i);
             if (vs && ejsIs(ejs, vs, String)) {
                 name = vs->value;
-                if (httpLookupStage(http, name) == 0) {
+                if (httpLookupStage(name) == 0) {
                     ejsThrowArgError(ejs, "Cannot find pipeline stage name %s", name);
                     return;
                 }
@@ -56179,7 +56196,7 @@ static void setHttpPipeline(Ejs *ejs, EjsHttpServer *sp)
             vs = ejsGetProperty(ejs, sp->incomingStages, i);
             if (vs && ejsIs(ejs, vs, String)) {
                 name = vs->value;
-                if (httpLookupStage(http, name) == 0) {
+                if (httpLookupStage(name) == 0) {
                     ejsThrowArgError(ejs, "Cannot find pipeline stage name %s", name);
                     return;
                 }
@@ -56188,7 +56205,7 @@ static void setHttpPipeline(Ejs *ejs, EjsHttpServer *sp)
         }
     }
     if (sp->connector) {
-        if ((stage = httpLookupStage(http, sp->connector)) == 0) {
+        if ((stage = httpLookupStage(sp->connector)) == 0) {
             ejsThrowArgError(ejs, "Cannot find pipeline stage name %s", sp->connector);
             return;
         }
@@ -56419,7 +56436,7 @@ HttpStage *ejsAddWebHandler(Http *http, MprModule *module)
 
     assert(http);
     if ((handler = http->ejsHandler) == 0) {
-        if ((handler = httpCreateHandler(http, "ejsHandler", module)) == 0) {
+        if ((handler = httpCreateHandler("ejsHandler", module)) == 0) {
             return 0;
         }
     }

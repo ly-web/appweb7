@@ -18,14 +18,14 @@
 /**
     mem.c - Memory Allocator and Garbage Collector. 
 
-    This is the MPR memory allocation service. It provides an application specific memory allocator to use instead of malloc. 
-    This allocator is tailored to the needs of embedded applications and is faster than most general purpose malloc allocators. 
-    It is deterministic and allocates and frees in constant time O(1). It exhibits very low fragmentation and accurate
-    coalescing.
+    This is the MPR memory allocation service. It provides an application specific memory allocator to use instead 
+    of malloc. This allocator is tailored to the needs of embedded applications and is faster than most general 
+    purpose malloc allocators. It is deterministic and allocates and frees in constant time O(1). It exhibits very 
+    low fragmentation and accurate coalescing.
 
     The allocator uses a garbage collector for freeing unused memory. The collector is a cooperative, non-compacting,
-    parallel collector.  The allocator is optimized for frequent allocations of small blocks (< 4K) and uses a scheme
-    of free queues for fast allocation.
+    parallel collector.  The allocator is optimized for frequent allocations of small blocks (< 4K) and uses a 
+    scheme of free queues for fast allocation.
     
     The allocator handles memory allocation errors globally. The application may configure a memory limit so that
     memory depletion can be proactively detected and handled before memory allocations actually fail.
@@ -1259,7 +1259,6 @@ static void invokeDestructors()
 
     for (region = heap->regions; region; region = region->next) {
         for (mp = region->start; mp < region->end; mp = GET_NEXT(mp)) {
-            assert(mp->size > 0);
             /*
                 OPT - could optimize by requiring a separate flag for managers that implement destructors.
              */
@@ -2665,6 +2664,7 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
     mpr->socketService = mprCreateSocketService();
     mpr->pathEnv = sclone(getenv("PATH"));
     mpr->cond = mprCreateCond();
+    mpr->stopCond = mprCreateCond();
 
     mpr->dispatcher = mprCreateDispatcher("main", 0);
     mpr->nonBlock = mprCreateDispatcher("nonblock", 0);
@@ -2673,7 +2673,7 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
     if (flags & MPR_USER_EVENTS_THREAD) {
         if (!(flags & MPR_NO_WINDOW)) {
             /* Used by apps that need to use FindWindow after calling mprCreate() (appwebMonitor) */
-            mprSetNotifierThread(0);
+            mprSetWindowsThread(0);
         }
     } else {
         mprStartEventsThread();
@@ -2729,11 +2729,11 @@ static void manageMpr(Mpr *mpr, int flags)
         mprMark(mpr->ejsService);
         mprMark(mpr->espService);
         mprMark(mpr->httpService);
-        mprMark(mpr->testService);
         mprMark(mpr->terminators);
         mprMark(mpr->mutex);
         mprMark(mpr->spin);
         mprMark(mpr->cond);
+        mprMark(mpr->stopCond);
         mprMark(mpr->emptyString);
         mprMark(mpr->oneString);
         mprMark(mpr->argv);
@@ -2792,6 +2792,7 @@ PUBLIC void mprShutdown(int how, int exitStatus, MprTicks timeout)
         return;
     }
     mprState = MPR_STOPPING;
+    mprSignalMultiCond(MPR->stopCond);
     mprGlobalUnlock();
 
     MPR->exitStrategy = how;
@@ -3051,7 +3052,7 @@ PUBLIC int mprStartEventsThread()
 static void serviceEventsThread(void *data, MprThread *tp)
 {
     mprLog("info mpr", 2, "Service thread started");
-    mprSetNotifierThread(tp);
+    mprSetWindowsThread(tp);
     mprSignalCond(MPR->cond);
     mprServiceEvents(-1, 0);
     mprRescheduleDispatcher(MPR->dispatcher);
@@ -3579,7 +3580,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 }
 
 
-PUBLIC HWND mprSetNotifierThread(MprThread *tp)
+PUBLIC HWND mprSetWindowsThread(MprThread *tp)
 {
     MprWaitService  *ws;
 
@@ -6170,12 +6171,10 @@ static void pollWinTimer(MprCmd *cmd, MprEvent *event)
  */
 PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout)
 {
-    MprThreadService    *ts;
-    MprTicks            expires, remaining, delay;
+    MprTicks    expires, remaining, delay;
+    int64       dispatcherMark;
 
     assert(cmd);
-    ts = MPR->threadService;
-
     if (timeout < 0) {
         timeout = MAXINT;
     }
@@ -6190,24 +6189,16 @@ PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout)
 
     /* Add root to allow callers to use mprRunCmd without first managing the cmd */
     mprAddRoot(cmd);
+    dispatcherMark = mprGetEventMark(cmd->dispatcher);
 
     while (!cmd->complete && remaining > 0) {
         if (mprShouldAbortRequests()) {
             break;
         }
         delay = (cmd->eofCount >= cmd->requiredEof) ? 10 : remaining;
-        if (!ts->eventsThread && mprGetCurrentThread() == ts->mainThread) {
-            /*
-                Main program without any events loop
-             */
-            mprServiceEvents(10, MPR_SERVICE_NO_BLOCK);
-        } else {
-            if (cmd->dispatcher->owner != mprGetCurrentOsThread()) {
-                delay = 10;
-            }
-            mprWaitForEvent(cmd->dispatcher, delay);
-        }
+        mprWaitForEvent(cmd->dispatcher, delay, dispatcherMark);
         remaining = (expires - mprGetTicks());
+        dispatcherMark = mprGetEventMark(cmd->dispatcher);
     }
     mprRemoveRoot(cmd);
     if (cmd->pid) {
@@ -6620,7 +6611,7 @@ static int sanitizeArgs(MprCmd *cmd, int argc, cchar **argv, cchar **env, int fl
     cmd->command[len] = '\0';
 
     /*
-        Add quotes around all args that have spaces and backquote [", ', \\]
+        Add quotes around all args that have spaces and backquote double quotes.
         Example:    ["showColors", "red", "light blue", "Cannot \"render\""]
         Becomes:    "showColors" "red" "light blue" "Cannot \"render\""
      */
@@ -6628,7 +6619,7 @@ static int sanitizeArgs(MprCmd *cmd, int argc, cchar **argv, cchar **env, int fl
     for (ap = &argv[0]; *ap; ) {
         start = cp = *ap;
         quote = '"';
-        if (strchr(cp, ' ') != 0 && cp[0] != quote) {
+        if (cp[0] != quote && (strchr(cp, ' ') != 0 || strchr(cp, quote) != 0)) {
             for (*dp++ = quote; *cp; ) {
                 if (*cp == quote && !(cp > start && cp[-1] == '\\')) {
                     *dp++ = '\\';
@@ -8989,6 +8980,14 @@ static int makeDir(MprDiskFileSystem *fs, cchar *path, int perms, int owner, int
 {
     int     rc;
 
+#if ME_WIN_LIKE
+    if (sends(path, "/")) {
+        /* Windows mkdir fails with a trailing "/" */
+        path = strim(path, "/", MPR_TRIM_END);
+    } else if (sends(path, "\\")) {
+        path = strim(path, "\\", MPR_TRIM_END);
+    }
+#endif
 #if VXWORKS
     rc = mkdir((char*) path);
 #else
@@ -9581,7 +9580,7 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
     if (expires < 0) {
         expires = MPR_MAX_TIMEOUT;
     }
-    mprSetNotifierThread(0);
+    mprSetWindowsThread(0);
 
     while (es->now <= expires) {
         eventCount = es->eventCount;
@@ -9637,79 +9636,112 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
 }
 
 
-/*
-    Must be called locked
- */
-static bool canRun(MprDispatcher *dispatcher)
+PUBLIC void mprSuspendThread(MprTicks timeout)
 {
-    return !isRunning(dispatcher) || !dispatcher->owner || dispatcher->owner == mprGetCurrentOsThread();
+    mprWaitForMultiCond(MPR->stopCond, timeout);
+}
+
+
+PUBLIC int64 mprGetEventMark(MprDispatcher *dispatcher)
+{
+    int64   result;
+
+    /*
+        Ensure all writes are flushed so user state will be valid across all threads
+     */
+    result = dispatcher->mark;
+    mprAtomicBarrier();
+    return result;
 }
 
 
 /*
-    Wait for an event to occur and dispatch the event. This is not called by mprServiceEvents.
-    Return 0 if an event was signalled. Return MPR_ERR_TIMEOUT if no event was seen before the timeout.
+    Wait for an event to occur on the dispatcher and service the event. This is not called by mprServiceEvents.
+    The dispatcher may be "started" and owned by the thread, or it may be unowned.
+    WARNING: the event may have already happened by the time this API is invoked.
     WARNING: this will enable GC while sleeping.
  */
-PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout)
+PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout, int64 mark)
 {
     MprEventService     *es;
     MprTicks            expires, delay;
-    int                 signalled, wasRunning, runEvents, nevents;
-
-    es = MPR->eventService;
-    es->now = mprGetTicks();
+    int                 runEvents, changed;
 
     if (dispatcher == NULL) {
         dispatcher = MPR->dispatcher;
     }
-    assert(!(dispatcher->flags & MPR_DISPATCHER_WAITING));
-    if (dispatcher->flags & MPR_DISPATCHER_WAITING) {
-        return MPR_ERR_BUSY;
+    if ((runEvents = (dispatcher->owner == mprGetCurrentOsThread())) != 0) {
+        /* Called from an event on a running dispatcher */
+        assert(isRunning(dispatcher));
+        if (dispatchEvents(dispatcher)) {
+            return 0;
+        }
     }
-    expires = timeout < 0 ? (es->now + MPR_MAX_TIMEOUT) : (es->now + timeout);
-    signalled = 0;
+    es = MPR->eventService;
+    es->now = mprGetTicks();
+    expires = timeout < 0 ? MPR_MAX_TIMEOUT : (es->now + timeout);
+    delay = expires - es->now;
 
     lock(es);
-    wasRunning = isRunning(dispatcher);
-    runEvents = canRun(dispatcher);
-    if (runEvents && !wasRunning) {
-        queueDispatcher(es->runQ, dispatcher);
-    }
+    delay = getDispatcherIdleTicks(dispatcher, delay);
+    dispatcher->flags |= MPR_DISPATCHER_WAITING;
+    changed = dispatcher->mark != mark && mark != -1;
     unlock(es);
 
-    for (; es->now <= expires && !mprIsDestroying(); es->now = mprGetTicks()) {
-        if (runEvents) {
-            if (dispatchEvents(dispatcher)) {
-                signalled++;
-                break;
-            }
-        }
-        lock(es);
-        delay = getDispatcherIdleTicks(dispatcher, expires - es->now);
-        dispatcher->flags |= MPR_DISPATCHER_WAITING;
-        unlock(es);
-
-        mprYield(MPR_YIELD_STICKY);
-
-        nevents = mprWaitForCond(dispatcher->cond, delay);
-        mprResetYield();
-        dispatcher->flags &= ~MPR_DISPATCHER_WAITING;
-
-        if (nevents == 0) {
-            if (runEvents) {
-                dispatchEvents(dispatcher);
-            }
-            signalled++;
-            break;
-        }
-        es->now = mprGetTicks();
+    if (changed) {
+        return 0;
     }
-    if (runEvents && !wasRunning) {
-        dequeueDispatcher(dispatcher);
-        mprScheduleDispatcher(dispatcher);
+    mprYield(MPR_YIELD_STICKY);
+    mprWaitForCond(dispatcher->cond, delay);
+    mprResetYield();
+    es->now = mprGetTicks();
+
+    lock(es);
+    dispatcher->flags &= ~MPR_DISPATCHER_WAITING;
+    unlock(es);
+
+    if (runEvents) {
+        dispatchEvents(dispatcher);
+        assert(isRunning(dispatcher));
     }
-    return signalled ? 0 : MPR_ERR_TIMEOUT;
+    return 0;
+}
+
+
+PUBLIC void mprSignalCompletion(MprDispatcher *dispatcher)
+{
+    if (dispatcher == 0) {
+        dispatcher = MPR->dispatcher;
+    }
+    dispatcher->flags |= MPR_DISPATCHER_COMPLETE;
+    mprSignalDispatcher(dispatcher);
+}
+
+
+/*
+    Wait for an event to complete signified by the 'completion' flag being set.
+    This will wait for events on the dispatcher.
+    The completion flag will be reset on return.
+ */
+PUBLIC bool mprWaitForCompletion(MprDispatcher *dispatcher, MprTicks timeout)
+{
+    MprTicks    mark;
+    bool        success;
+
+    assert(timeout >= 0);
+
+    if (dispatcher == 0) {
+        dispatcher = MPR->dispatcher;
+    }
+    if (mprGetDebugMode()) {
+        timeout *= 100;
+    }
+    for (mark = mprGetTicks(); !(dispatcher->flags & MPR_DISPATCHER_COMPLETE) && mprGetElapsedTicks(mark) < timeout; ) {
+        mprWaitForEvent(dispatcher, 10, -1);
+    }
+    success = (dispatcher->flags & MPR_DISPATCHER_COMPLETE) ? 1 : 0;
+    dispatcher->flags &= ~MPR_DISPATCHER_COMPLETE;
+    return success;
 }
 
 
@@ -9758,6 +9790,11 @@ PUBLIC int mprDispatchersAreIdle()
 }
 
 
+/*
+    Start the dispatcher by putting it on the runQ. This prevents the event service from 
+    starting any events in parallel. The invoking thread should service events directly by
+    calling mprServiceEvents or mprWaitForEvent.
+ */
 PUBLIC int mprStartDispatcher(MprDispatcher *dispatcher)
 {
     if (dispatcher->owner && dispatcher->owner != mprGetCurrentOsThread()) {
@@ -9775,33 +9812,17 @@ PUBLIC int mprStartDispatcher(MprDispatcher *dispatcher)
 PUBLIC int mprStopDispatcher(MprDispatcher *dispatcher)
 {
     if (dispatcher->owner != mprGetCurrentOsThread()) {
+        assert(dispatcher->owner == mprGetCurrentOsThread());
         return MPR_ERR_BAD_STATE;
     }
     if (!isRunning(dispatcher)) {
+        assert(isRunning(dispatcher));
         return MPR_ERR_BAD_STATE;
     }
     dispatcher->owner = 0;
     dequeueDispatcher(dispatcher);
     mprScheduleDispatcher(dispatcher);
     return 0;
-}
-
-
-/*
-    Relay an event to a dispatcher. This invokes the callback proc as though it was invoked from the given dispatcher. 
- */
-PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, MprEvent *event)
-{
-    if (mprStartDispatcher(dispatcher) < 0) {
-        return;
-    }
-    if (proc) {
-        if (event) {
-            event->timestamp = dispatcher->service->now;
-        }
-        ((MprEventProc) proc)(data, event);
-    }
-    mprStopDispatcher(dispatcher);
 }
 
 
@@ -9822,16 +9843,16 @@ PUBLIC void mprScheduleDispatcher(MprDispatcher *dispatcher)
     }
     es = dispatcher->service;
     lock(es);
+    mustWakeWaitService = es->waiting;
+
     if (isRunning(dispatcher)) {
-        mustWakeWaitService = es->waiting;
+        mustWakeCond = dispatcher->flags & MPR_DISPATCHER_WAITING;
+
+    } else if (isEmpty(dispatcher)) {
+        queueDispatcher(es->idleQ, dispatcher);
         mustWakeCond = dispatcher->flags & MPR_DISPATCHER_WAITING;
 
     } else {
-        if (isEmpty(dispatcher)) {
-            queueDispatcher(es->idleQ, dispatcher);
-            unlock(es);
-            return;
-        }
         event = dispatcher->eventQ->next;
         mustWakeWaitService = mustWakeCond = 0;
         if (event->due > es->now) {
@@ -9896,6 +9917,8 @@ static int dispatchEvents(MprDispatcher *dispatcher)
         event->flags |= MPR_EVENT_RUNNING;
 
         assert(event->proc);
+        mprAtomicAdd64(&dispatcher->mark, 1);
+
         (event->proc)(event->data, event);
 
         if (dispatcher->flags & MPR_DISPATCHER_DESTROYED) {
@@ -12623,6 +12646,7 @@ PUBLIC MprJson *mprParseJsonEx(cchar *str, MprJsonCallback *callback, void *data
     parser->state = MPR_JSON_STATE_VALUE;
     parser->tolerant = 1;
     parser->buf = mprCreateBuf(128, 0); 
+    parser->lineNumber = 1;
 
     if ((result = jsonParse(parser, 0)) == 0) {
         if (errorMsg) {
@@ -12773,6 +12797,7 @@ static void eatRestOfComment(MprJsonParser *parser)
     cp = parser->input;
     if (*cp == '/') {
         for (cp++; *cp && *cp != '\n'; cp++) {}
+        parser->lineNumber++;
 
     } else if (*cp == '*') {
         for (cp++; cp[0] && (cp[0] != '*' || cp[1] != '/'); cp++) {
@@ -12913,7 +12938,8 @@ static int gettok(MprJsonParser *parser)
                         for (cp = parser->input; *cp; cp++) {
                             c = *cp;
                             if (c == '\\' && cp[1]) {
-                                if (isxdigit((uchar) cp[1]) && isxdigit((uchar) cp[2]) && isxdigit((uchar) cp[3]) && isxdigit((uchar) cp[4])) {
+                                if (isxdigit((uchar) cp[1]) && isxdigit((uchar) cp[2]) && 
+                                    isxdigit((uchar) cp[3]) && isxdigit((uchar) cp[4])) {
                                     c = (int) stoiradix(cp, 16, NULL);
                                     cp += 3;
                                 } else {
@@ -15878,13 +15904,8 @@ PUBLIC void mprDefaultLogHandler(cchar *tags, int level, cchar *msg)
         if (len < width) {
             mprWriteFile(file, "                                          ", width - len);
         }
-    } else if (tags) {
-        if (level == 0) {
-            fmt(tbuf, sizeof(tbuf), "%s: error: ", MPR->name);
-        } else {
-            fmt(tbuf, sizeof(tbuf), "%s: ", MPR->name);
-        }
-        mprWriteFileString(file, tbuf);
+    } else if (tags && level == 0) {
+        mprWriteFileString(file, "error: ");
     }
     mprWriteFileString(file, msg);
     mprWriteFileString(file, "\n");
@@ -19384,7 +19405,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
         mp->path = at;
         mprGetPathInfo(mp->path, &info);
         mp->modified = info.mtime;
-        mprLog("info mpr", 2, "Loading native module %s", mprGetPathBase(mp->path));
+        mprLog("info mpr", 4, "Loading native module %s", mprGetPathBase(mp->path));
         if ((handle = dlopen(mp->path, RTLD_LAZY | RTLD_GLOBAL)) == 0) {
             mprLog("error mpr", 0, "Cannot load module %s, reason: \"%s\"", mp->path, dlerror());
             return MPR_ERR_CANT_OPEN;
@@ -19393,7 +19414,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
 #endif /* !ME_STATIC */
 
     } else if (mp->entry) {
-        mprLog("info mpr", 2, "Activating native module %s", mp->name);
+        mprLog("info mpr", 4, "Activating native module %s", mp->name);
     }
     if (mp->entry) {
         if ((fn = (MprModuleEntry) dlsym(handle, mp->entry)) != 0) {
@@ -22692,6 +22713,12 @@ PUBLIC char *mprGetSocketState(MprSocket *sp)
 }
 
 
+PUBLIC bool mprSocketHasBuffered(MprSocket *sp)
+{
+    return (sp->flags & (MPR_SOCKET_BUFFERED_READ | MPR_SOCKET_BUFFERED_WRITE)) ? 1 : 0;
+}
+
+
 PUBLIC bool mprSocketHasBufferedRead(MprSocket *sp)
 {
     return (sp->flags & MPR_SOCKET_BUFFERED_READ) ? 1 : 0;
@@ -23243,6 +23270,7 @@ static void manageSsl(MprSsl *ssl, int flags)
 PUBLIC MprSsl *mprCreateSsl(int server)
 {
     MprSsl      *ssl;
+    cchar       *path;
 
     if ((ssl = mprAllocObj(MprSsl, manageSsl)) == 0) {
         return 0;
@@ -23259,9 +23287,14 @@ PUBLIC MprSsl *mprCreateSsl(int server)
         ssl->verifyIssuer = 0;
     } else {
         ssl->verifyDepth = 10;
-        ssl->verifyPeer = MPR->verifySsl;
-        ssl->verifyIssuer = MPR->verifySsl;
-        ssl->caFile = mprJoinPath(mprGetAppDir(), MPR_CA_CERT);
+        if (MPR->verifySsl) {
+            ssl->verifyPeer = MPR->verifySsl;
+            ssl->verifyIssuer = MPR->verifySsl;
+            path = mprJoinPath(mprGetAppDir(), MPR_CA_CERT);
+            if (mprPathExists(path, R_OK)) {
+                ssl->caFile = path;
+            }
+        }
     }
     ssl->mutex = mprCreateLock();
     return ssl;
@@ -23297,6 +23330,12 @@ PUBLIC int mprLoadSsl()
         return 0;
     }
     path = mprJoinPath(mprGetAppDir(), "libmprssl");
+    if (!mprPathExists(path, R_OK)) {
+        path = mprSearchForModule("libmprssl");
+    }
+    if (!path) {
+        return MPR_ERR_CANT_FIND;
+    }
     if ((mp = mprCreateModule("sslModule", path, "mprSslInit", NULL)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
@@ -23338,7 +23377,7 @@ static int loadProviders()
 PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, cchar *peerName)
 {
     MprSocketService    *ss;
-    char                *providerName;
+    cchar               *providerName;
 
     ss  = sp->service;
     assert(sp);
@@ -24565,1026 +24604,6 @@ PUBLIC void serase(char *str)
     }
 }
 
-
-/*
-    @copy   default
-
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
-
-    This software is distributed under commercial and open source licenses.
-    You may use the Embedthis Open Source license or you may acquire a 
-    commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.md distributed with
-    this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
- */
-
-/************************************************************************/
-/*
-    Start of file "src/test.c"
- */
-/************************************************************************/
-
-/*
-    test.c - Embedthis Unit Test Framework
-
-    Copyright (c) All Rights Reserved. See details at the end of the file.
- */
-
-/********************************** Includes **********************************/
-
-
-
-#if ME_MPR_TEST
-/***************************** Forward Declarations ***************************/
-
-static void     adjustFailedCount(int adj);
-static void     adjustThreadCount(int adj);
-static void     buildFullNames(MprTestGroup *gp, cchar *runName);
-static MprList  *copyGroups(MprTestService *sp, MprList *groups);
-static MprTestFailure *createFailure(MprTestGroup *gp, cchar *loc, cchar *message);
-static MprTestGroup *createTestGroup(MprTestService *sp, MprTestDef *def, MprTestGroup *parent);
-static bool     filterTestGroup(MprTestGroup *gp);
-static bool     filterTestCast(MprTestGroup *gp, MprTestCase *tc);
-static char     *getErrorMessage(MprTestGroup *gp);
-static int      loadTestModule(MprTestService *sp, cchar *fileName);
-static void     manageTestService(MprTestService *ts, int flags);
-static int      parseFilter(MprTestService *sp, cchar *str);
-static void     relayEvent(MprList *groups, MprThread *tp);
-static void     runInit(MprTestGroup *parent);
-static void     runTerm(MprTestGroup *parent);
-static void     runTestGroup(MprTestGroup *gp);
-static void     runTestProc(MprTestGroup *gp, MprTestCase *test);
-static void     runTestThread(MprList *groups, MprThread *tp);
-static int      setLogging(char *logSpec);
-
-/******************************************************************************/
-
-PUBLIC MprTestService *mprCreateTestService()
-{
-    MprTestService      *sp;
-
-    if ((sp = mprAllocObj(MprTestService, manageTestService)) == 0) {
-        return 0;
-    }
-    MPR->testService = sp;
-    sp->iterations = 1;
-    sp->numThreads = 1;
-    sp->workers = 0;
-    sp->testFilter = mprCreateList(-1, 0);
-    sp->groups = mprCreateList(-1, 0);
-    sp->threadData = mprCreateList(-1, 0);
-    sp->start = mprGetTime();
-    sp->mutex = mprCreateLock();
-    return sp;
-}
-
-
-static void manageTestService(MprTestService *ts, int flags)
-{
-    if (flags & MPR_MANAGE_MARK) {
-        mprMark(ts->commandLine);
-        mprMark(ts->groups);
-        mprMark(ts->threadData);
-        mprMark(ts->name);
-        mprMark(ts->testFilter);
-        mprMark(ts->mutex);
-    }
-}
-
-
-PUBLIC int mprParseTestArgs(MprTestService *sp, int argc, char *argv[], MprTestParser extraParser)
-{
-    cchar       *programName;
-    char        *argp;
-    int         rc, err, i, depth, nextArg, outputVersion;
-
-    i = 0;
-    err = 0;
-    outputVersion = 0;
-
-    programName = mprGetPathBase(argv[0]);
-    sp->name = sclone(ME_NAME);
-
-    /*
-        Save the command line
-     */
-    sp->commandLine = sclone(mprGetPathBase(argv[i++]));
-    for (; i < argc; i++) {
-        sp->commandLine = sjoin(sp->commandLine, " ", argv[i], NULL);
-    }
-
-    for (nextArg = 1; nextArg < argc; nextArg++) {
-        argp = argv[nextArg];
-
-        if (strcmp(argp, "--continue") == 0) {
-            sp->continueOnFailures = 1; 
-
-        } else if (strcmp(argp, "--depth") == 0 || strcmp(argp, "-d") == 0) {
-            if (nextArg >= argc) {
-                err++;
-            } else {
-                depth = atoi(argv[++nextArg]);
-                if (depth < 0 || depth > 10) {
-                    mprLog("error mpr test", 0, "Bad test depth %d, (range 0-9)", depth);
-                    err++;
-                } else {
-                    sp->testDepth = depth;
-                }
-            }
-
-        } else if (strcmp(argp, "--debugger") == 0 || strcmp(argp, "-D") == 0) {
-            mprSetDebugMode(1);
-            sp->debugOnFailures = 1;
-
-        } else if (strcmp(argp, "--echo") == 0) {
-            sp->echoCmdLine = 1;
-
-        } else if (strcmp(argp, "--filter") == 0 || strcmp(argp, "-f") == 0) {
-            if (nextArg >= argc) {
-                err++;
-            } else {
-                if (parseFilter(sp, argv[++nextArg]) < 0) {
-                    err++;
-                }
-            }
-
-        } else if (strcmp(argp, "--iterations") == 0 || (strcmp(argp, "-i") == 0)) {
-            if (nextArg >= argc) {
-                err++;
-            } else {
-                sp->iterations = atoi(argv[++nextArg]);
-            }
-
-        } else if (strcmp(argp, "--log") == 0 || strcmp(argp, "-l") == 0) {
-            if (nextArg >= argc) {
-                err++;
-            } else {
-                setLogging(argv[++nextArg]);
-            }
-
-        } else if (strcmp(argp, "--module") == 0) {
-            if (nextArg >= argc) {
-                err++;
-            } else if (loadTestModule(sp, argv[++nextArg]) < 0) {
-                return MPR_ERR_CANT_OPEN;
-            }
-
-        } else if (strcmp(argp, "--name") == 0) {
-            if (nextArg >= argc) {
-                err++;
-            } else {
-                sp->name = sclone(argv[++nextArg]);
-            }
-
-        } else if (strcmp(argp, "--step") == 0 || strcmp(argp, "-s") == 0) {
-            sp->singleStep = 1; 
-
-        } else if (strcmp(argp, "--threads") == 0 || strcmp(argp, "-t") == 0) {
-            if (nextArg >= argc) {
-                err++;
-            } else {
-                i = atoi(argv[++nextArg]);
-                if (i <= 0 || i > 100) {
-                    mprLog("error mpr test", 0, "%s: Bad number of threads (1-100)", programName);
-                    return MPR_ERR_BAD_ARGS;
-                }
-                sp->numThreads = i;
-            }
-
-        } else if (strcmp(argp, "--verbose") == 0 || strcmp(argp, "-v") == 0) {
-            sp->verbose++;
-
-        } else if (strcmp(argp, "--version") == 0 || strcmp(argp, "-V") == 0) {
-            outputVersion++;
-
-        } else if (strcmp(argp, "--workers") == 0 || strcmp(argp, "-w") == 0) {
-            if (nextArg >= argc) {
-                err++;
-            } else {
-                i = atoi(argv[++nextArg]);
-                if (i < 0 || i > 100) {
-                    mprLog("error mpr test", 0, "%s: Bad number of worker threads (0-100)", programName);
-                    return MPR_ERR_BAD_ARGS;
-                }
-                sp->workers = i;
-            }
-
-        } else if (strcmp(argp, "-?") == 0 || (strcmp(argp, "--help") == 0 || strcmp(argp, "--?") == 0)) {
-            err++;
-
-        } else if (*argp != '-') {
-            break;
-
-        } else if (extraParser) {
-            rc = extraParser(argc - nextArg, &argv[nextArg]);
-            if (rc < 0) {
-                err++;
-            } else {
-                nextArg += rc;
-            }
-        } else {
-            mprLog("error mpr test", 0, "Unknown arg %s", argp);
-            err++;
-        }
-    }
-
-    if (sp->workers == 0) {
-        sp->workers = 2 + sp->numThreads * 2;
-    }
-    if (nextArg < argc) {
-        if (parseFilter(sp, argv[nextArg++]) < 0) {
-            err++;
-        }
-    }
-    if (err) {
-        mprEprintf("usage: %s [options] [filter paths]\n"
-        "    --continue            # Continue on errors\n"
-        "    --depth number        # Zero == basic, 1 == throrough, 2 extensive\n"
-        "    --debug               # Run in debug mode\n"
-        "    --echo                # Echo the command line\n"
-        "    --iterations count    # Number of iterations to run the test\n"
-        "    --log logFile:level   # Log to file file at verbosity level\n"
-        "    --name testName       # Set test name\n"
-        "    --step                # Single step tests\n"
-        "    --threads count       # Number of test threads\n"
-        "    --verbose             # Verbose mode\n"
-        "    --version             # Output version information\n"
-        "    --workers count       # Set maximum worker threads\n\n",
-        programName);
-        return MPR_ERR_BAD_ARGS;
-    }
-    if (outputVersion) {
-        mprEprintf("%s: Version: %s\n", ME_TITLE, ME_VERSION);
-        return MPR_ERR_BAD_ARGS;
-    }
-    sp->argc = argc;
-    sp->argv = argv;
-    sp->firstArg = nextArg;
-
-    mprSetMaxWorkers(sp->workers);
-    return 0;
-}
-
-
-static int parseFilter(MprTestService *sp, cchar *filter)
-{
-    char    *str, *word, *tok;
-
-    assert(filter);
-    if (filter == 0 || *filter == '\0') {
-        return 0;
-    }
-
-    tok = 0;
-    str = sclone(filter);
-    word = stok(str, " \t\r\n", &tok);
-    while (word) {
-        if (mprAddItem(sp->testFilter, sclone(word)) < 0) {
-            assert(!MPR_ERR_MEMORY);
-            return MPR_ERR_MEMORY;
-        }
-        word = stok(0, " \t\r\n", &tok);
-    }
-    return 0;
-}
-
-
-static int loadTestModule(MprTestService *sp, cchar *fileName)
-{
-    MprModule   *mp;
-    char        *cp, *base, entry[ME_MAX_FNAME], path[ME_MAX_FNAME];
-
-    assert(fileName && *fileName);
-
-    base = mprGetPathBase(fileName);
-    assert(base);
-    if ((cp = strrchr(base, '.')) != 0) {
-        *cp = '\0';
-    }
-    if (mprLookupModule(base)) {
-        return 0;
-    }
-    fmt(entry, sizeof(entry), "%sInit", base);
-    if (fileName[0] == '/' || (*fileName && fileName[1] == ':')) {
-        fmt(path, sizeof(path), "%s%s", fileName, ME_SHOBJ);
-    } else {
-        fmt(path, sizeof(path), "./%s%s", fileName, ME_SHOBJ);
-    }
-    if ((mp = mprCreateModule(base, path, entry, sp)) == 0) {
-        mprLog("error mpr test", 0, "Cannot create module %s", path);
-        return -1;
-    }
-    if (mprLoadModule(mp) < 0) {
-        mprLog("error mpr test", 0, "Cannot load module %s", path);
-        return -1;
-    }
-    return 0;
-}
-
-
-PUBLIC int mprRunTests(MprTestService *sp)
-{
-    MprTestGroup    *gp;
-    MprThread       *tp;
-    MprList         *lp;
-    char            tName[64];
-    int             i, next;
-
-    /*
-        Build the full names for all groups
-     */
-    next = 0; 
-    while ((gp = mprGetNextItem(sp->groups, &next)) != 0) {
-        buildFullNames(gp, gp->name);
-    }
-    sp->activeThreadCount = sp->numThreads;
-
-    if (sp->echoCmdLine) {
-        mprPrintf("%12s %s ... ", "[Test]", sp->commandLine);
-        if (sp->verbose) {
-            mprPrintf("\n");
-        }
-    }
-    sp->start = mprGetTime();
-
-    /*
-        Create worker threads for each test thread. 
-     */
-    for (i = 0; i < sp->numThreads; i++) {
-        fmt(tName, sizeof(tName), "test.%d", i);
-        if ((lp = copyGroups(sp, sp->groups)) == 0) {
-            assert(!MPR_ERR_MEMORY);
-            return MPR_ERR_MEMORY;
-        }
-        if (mprAddItem(sp->threadData, lp) < 0) {
-            assert(!MPR_ERR_MEMORY);
-            return MPR_ERR_MEMORY;
-        }
-        /*
-            Build the full names for all groups
-         */
-        next = 0; 
-        while ((gp = mprGetNextItem(lp, &next)) != 0) {
-            buildFullNames(gp, gp->name);
-        }
-        if ((tp = mprCreateThread(tName, relayEvent, lp, 0)) == 0) {
-            assert(!MPR_ERR_MEMORY);
-            return MPR_ERR_MEMORY;
-        }
-        if (mprStartThread(tp) < 0) {
-            mprLog("error mpr test", 0, "Cannot start thread %d", i);
-            return MPR_ERR_CANT_INITIALIZE;
-        }
-    }
-    mprServiceEvents(-1, 0);
-    return (sp->totalFailedCount == 0) ? 0 : 1;
-}
-
-
-static MprList *copyGroups(MprTestService *sp, MprList *groups)
-{
-    MprTestGroup    *gp, *newGp;
-    MprList         *lp;
-    int             next;
-
-    if ((lp = mprCreateList(0, 0)) == NULL) {
-        return 0;
-    }
-    next = 0; 
-    while ((gp = mprGetNextItem(groups, &next)) != 0) {
-        newGp = createTestGroup(sp, gp->def, NULL);
-        if (newGp == 0) {
-            return 0;
-        }
-        if (mprAddItem(lp, newGp) < 0) {
-            return 0;
-        }
-    }
-    return lp;
-}
-
-
-/*
-    Relay the event to claim the dispatcher
- */
-static void relayEvent(MprList *groups, MprThread *tp)
-{
-    MprTestGroup    *gp;
-
-    gp = mprGetFirstItem(groups);
-    assert(gp);
-
-    mprRelayEvent(gp->dispatcher, runTestThread, groups, NULL);
-    if (tp) {
-        adjustThreadCount(-1);
-    }
-}
-
-
-/*
-    Run the test groups. One invocation per thread. Used even if not multithreaded.
- */
-static void runTestThread(MprList *groups, MprThread *tp)
-{
-    MprTestService  *sp;
-    MprTestGroup    *gp;
-    int             next, i, count;
-
-    sp = MPR->testService;
-    assert(sp);
-
-    for (next = 0; (gp = mprGetNextItem(groups, &next)) != 0; ) {
-        runInit(gp);
-    }
-    count = 0;
-    for (i = (sp->iterations + sp->numThreads - 1) / sp->numThreads; i > 0; i--) {
-        if (sp->totalFailedCount > 0 && !sp->continueOnFailures) {
-            break;
-        }
-        next = 0; 
-        while ((gp = mprGetNextItem(groups, &next)) != 0) {
-            runTestGroup(gp);
-        }
-        mprPrintf("%12s Iteration %d complete (%s)\n", "[Notice]", ++count, mprGetCurrentThreadName());
-    }
-    for (next = 0; (gp = mprGetNextItem(groups, &next)) != 0; ) {
-        runTerm(gp);
-    }
-}
-
-
-PUBLIC void mprReportTestResults(MprTestService *sp)
-{
-    if (sp->totalFailedCount == 0 && sp->verbose >= 1) {
-        mprPrintf("%12s All tests PASSED for \"%s\"\n", "[REPORT]", sp->name);
-    }
-    if (sp->totalFailedCount > 0 || sp->verbose >= 2) {
-        double  elapsed;
-        elapsed = ((mprGetTime() - sp->start) * 1.0 / 1000.0);
-        mprPrintf("%12s %d tests completed, %d test(s) failed.\n", 
-            "[DETAILS]", sp->totalTestCount, sp->totalFailedCount);
-        mprPrintf("%12s Elapsed time: %5.2f seconds.\n", "[BENCHMARK]", elapsed);
-    }
-    if (MPR->heap->track) {
-        mprPrintMem("Memory Results", MPR_MEM_DETAIL);
-    }
-}
-
-
-static void buildFullNames(MprTestGroup *gp, cchar *name)
-{
-    MprTestGroup    *np;
-    char            *nameBuf;
-    cchar           *nameStack[MPR_TEST_MAX_STACK];
-    int             next, tos;
-
-    tos = 0;
-
-    /*
-        Build the full name for this case
-     */
-    nameStack[tos++] = name;
-    for (np = gp->parent; np && np != np->parent && tos < MPR_TEST_MAX_STACK;  np = np->parent) {
-        nameStack[tos++] = np->name;
-    }
-    nameBuf = sclone(gp->service->name);
-    while (--tos >= 0) {
-        nameBuf = sjoin(nameBuf, ".", nameStack[tos], NULL);
-    }
-    assert(gp->fullName == 0);
-    gp->fullName = sclone(nameBuf);
-
-    /*
-        Recurse for all test case groups
-     */
-    next = 0;
-    np = mprGetNextItem(gp->groups, &next);
-    while (np) {
-        buildFullNames(np, np->name);
-        np = mprGetNextItem(gp->groups, &next);
-    }
-}
-
-
-/*
-    Used by main program to add the top level test group(s)
- */
-PUBLIC MprTestGroup *mprAddTestGroup(MprTestService *sp, MprTestDef *def)
-{
-    MprTestGroup    *gp;
-
-    gp = createTestGroup(sp, def, NULL);
-    if (gp == 0) {
-        return 0;
-    }
-    if (mprAddItem(sp->groups, gp) < 0) {
-        return 0;
-    }
-    return gp;
-}
-
-
-static void manageTestGroup(MprTestGroup *gp, int flags)
-{
-    if (flags & MPR_MANAGE_MARK) {
-        mprMark(gp->name);
-        mprMark(gp->fullName);
-        mprMark(gp->failures);
-        mprMark(gp->service);
-        mprMark(gp->dispatcher);
-        mprMark(gp->parent);
-        mprMark(gp->root);
-        mprMark(gp->groups);
-        mprMark(gp->cases);
-        mprMark(gp->http);
-        mprMark(gp->conn);
-        mprMark(gp->content);
-        mprMark(gp->data);
-        mprMark(gp->mutex);
-    }
-}
-
-
-static MprTestGroup *createTestGroup(MprTestService *sp, MprTestDef *def, MprTestGroup *parent)
-{
-    MprTestGroup    *gp, *child;
-    MprTestDef      **dp;
-    MprTestCase     *tc;
-    char            name[80];
-    static int      counter = 0;
-
-    assert(sp);
-    assert(def);
-
-    gp = mprAllocObj(MprTestGroup, manageTestGroup);
-    if (gp == 0) {
-        return 0;
-    }
-    gp->service = sp;
-    if (parent) {
-        gp->dispatcher = parent->dispatcher;
-    } else {
-        fmt(name, sizeof(name), "Test-%d", counter++);
-        gp->dispatcher = mprCreateDispatcher(name, 0);
-    }
-    gp->failures = mprCreateList(0, 0);
-    if (gp->failures == 0) {
-        return 0;
-    }
-    gp->cases = mprCreateList(0, MPR_LIST_STATIC_VALUES);
-    if (gp->cases == 0) {
-        return 0;
-    }
-    gp->groups = mprCreateList(0, 0);
-    if (gp->groups == 0) {
-        return 0;
-    }
-    gp->def = def;
-    gp->name = sclone(def->name);
-    gp->success = 1;
-
-    for (tc = def->caseDefs; tc->proc; tc++) {
-        if (mprAddItem(gp->cases, tc) < 0) {
-            return 0;
-        }
-    }
-    if (def->groupDefs) {
-        for (dp = &def->groupDefs[0]; *dp && (*dp)->name; dp++) {
-            child = createTestGroup(sp, *dp, gp);
-            if (child == 0) {
-                return 0;
-            }
-            if (mprAddItem(gp->groups, child) < 0) {
-                return 0;
-            }
-            child->parent = gp;
-            child->root = gp->parent;
-        }
-    }
-    return gp;
-}
-
-
-PUBLIC void mprResetTestGroup(MprTestGroup *gp)
-{
-    gp->success = 1;
-    gp->mutex = mprCreateLock();
-}
-
-
-static void runInit(MprTestGroup *parent)
-{
-    MprTestGroup    *gp;
-    int             next;
-
-    next = 0; 
-    while ((gp = mprGetNextItem(parent->groups, &next)) != 0) {
-        if (! filterTestGroup(gp)) {
-            continue;
-        }
-        if (gp->def->init && (*gp->def->init)(gp) < 0) {
-            gp->failedCount++;
-            if (!gp->service->continueOnFailures) {
-                break;
-            }
-        }
-        runInit(gp);
-    }
-}
-
-
-static void runTerm(MprTestGroup *parent)
-{
-    MprTestGroup    *gp;
-    int             next;
-
-    next = 0; 
-    while ((gp = mprGetNextItem(parent->groups, &next)) != 0) {
-        if (! filterTestGroup(gp)) {
-            continue;
-        }
-        if (gp->def->term && (*gp->def->term)(gp) < 0) {
-            gp->failedCount++;
-            if (!gp->service->continueOnFailures) {
-                break;
-            }
-        }
-        runInit(gp);
-    }
-}
-
-
-static void runTestGroup(MprTestGroup *parent)
-{
-    MprTestService  *sp;
-    MprTestGroup    *gp, *nextGroup;
-    MprTestCase     *tc;
-    int             nextItem, count;
-
-    sp = parent->service;
-
-    /*
-        Recurse over sub groups
-     */
-    nextItem = 0;
-    gp = mprGetNextItem(parent->groups, &nextItem);
-    while (gp && (parent->success || sp->continueOnFailures)) {
-        nextGroup = mprGetNextItem(parent->groups, &nextItem);
-        if (gp->testDepth > sp->testDepth) {
-            gp = nextGroup;
-            continue;
-        }
-
-        /*
-            See if this group has been filtered for execution
-         */
-        if (! filterTestGroup(gp)) {
-            gp = nextGroup;
-            continue;
-        }
-        count = sp->totalFailedCount;
-        if (count > 0 && !sp->continueOnFailures) {
-            return;
-        }
-
-        /*
-            Recurse over all tests in this group
-         */
-        runTestGroup(gp);
-        gp->testCount++;
-
-        if (! gp->success) {
-            /*  Propagate the failures up the parent chain */
-            parent->failedCount++;
-            parent->success = 0;
-        }
-        gp = nextGroup;
-    }
-
-    /*
-        Run test cases for this group
-     */
-    nextItem = 0;
-    tc = mprGetNextItem(parent->cases, &nextItem);
-    while (tc && (parent->success || sp->continueOnFailures)) {
-        if (parent->testDepth <= sp->testDepth) {
-            if (filterTestCast(parent, tc)) {
-                runTestProc(parent, tc);
-            }
-        }
-        tc = mprGetNextItem(parent->cases, &nextItem);
-    }
-}
-
-
-/*
-    Return true if we are to run the test group
- */
-static bool filterTestGroup(MprTestGroup *gp)
-{
-    MprTestService  *sp;
-    MprList         *testFilter;
-    char            *pattern;
-    ssize           len;
-    int             next;
-
-    sp = gp->service;
-    testFilter = sp->testFilter;
-
-    if (testFilter == 0) {
-        return 1;
-    }
-
-    /*
-        See if this test has been filtered
-     */
-    if (mprGetListLength(testFilter) > 0) {
-        next = 0;
-        pattern = mprGetNextItem(testFilter, &next);
-        while (pattern) {
-            len = min(slen(pattern), slen(gp->fullName));
-            if (sncaselesscmp(gp->fullName, pattern, len) == 0) {
-                break;
-            }
-            pattern = mprGetNextItem(testFilter, &next);
-        }
-        if (pattern == 0) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-
-/*
-    Return true if we are to run the test case
- */
-static bool filterTestCast(MprTestGroup *gp, MprTestCase *tc)
-{
-    MprTestService  *sp;
-    MprList         *testFilter;
-    char            *pattern, *fullName;
-    ssize           len;
-    int             next;
-
-    sp = gp->service;
-    testFilter = sp->testFilter;
-
-    if (testFilter == 0) {
-        return 1;
-    }
-
-    /*
-        See if this test has been filtered
-     */
-    if (mprGetListLength(testFilter) > 0) {
-        fullName = sfmt("%s.%s", gp->fullName, tc->name);
-        next = 0;
-        pattern = mprGetNextItem(testFilter, &next);
-        while (pattern) {
-            len = min(slen(pattern), slen(fullName));
-            if (sncaselesscmp(fullName, pattern, len) == 0) {
-                break;
-            }
-            pattern = mprGetNextItem(testFilter, &next);
-        }
-        if (pattern == 0) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-
-static void runTestProc(MprTestGroup *gp, MprTestCase *test)
-{
-    MprTestService      *sp;
-
-    if (test->proc == 0) {
-        return;
-    }
-    sp = gp->service;
-
-    mprResetTestGroup(gp);
-
-    if (sp->singleStep) {
-        mprPrintf("%12s Run test \"%s.%s\", press <ENTER>: ", "[Test]", gp->fullName, test->name);
-        getchar();
-
-    } else if (sp->verbose) {
-        mprPrintf("%12s Run test \"%s.%s\": ", "[Test]", gp->fullName, test->name);
-    }
-    if (gp->skip) {
-        if (sp->verbose) {
-            if (gp->skipWarned++ == 0) {
-                mprPrintf("%12s Skipping test: \"%s.%s\": \n", "[Skip]", gp->fullName, test->name);
-            }
-        }
-    } else {
-        (test->proc)(gp);
-        mprYield(0);
-
-        mprLock(sp->mutex);
-        if (gp->success) {
-            ++sp->totalTestCount;
-            if (sp->verbose) {
-                mprPrintf("PASSED\n");
-            }
-        } else {
-            mprEprintf("FAILED test \"%s.%s\"\nDetails: %s\n", gp->fullName, test->name, getErrorMessage(gp));
-        }
-    }
-    mprUnlock(sp->mutex);
-}
-
-
-static char *getErrorMessage(MprTestGroup *gp)
-{
-    MprTestFailure  *fp;
-    char            msg[ME_MAX_BUFFER], *errorMsg;
-    int             next;
-
-    next = 0;
-    errorMsg = sclone("");
-    fp = mprGetNextItem(gp->failures, &next);
-    while (fp) {
-        fmt(msg, sizeof(msg), "Failure in %s\nAssertion: \"%s\"\n", fp->loc, fp->message);
-        if ((errorMsg = sjoin(errorMsg, msg, NULL)) == NULL) {
-            break;
-        }
-        fp = mprGetNextItem(gp->failures, &next);
-    }
-    return errorMsg;
-}
-
-
-static int addFailure(MprTestGroup *gp, cchar *loc, cchar *message)
-{
-    MprTestFailure  *fp;
-
-    fp = createFailure(gp, loc, message);
-    if (fp == 0) {
-        assert(fp);
-        assert(!MPR_ERR_MEMORY);
-        return MPR_ERR_MEMORY;
-    }
-    mprAddItem(gp->failures, fp);
-    return 0;
-}
-
-
-static void manageTestFailure(MprTestFailure *fp, int flags)
-{
-    if (flags & MPR_MANAGE_MARK) {
-        mprMark(fp->loc);
-        mprMark(fp->message);
-    }
-}
-
-
-static MprTestFailure *createFailure(MprTestGroup *gp, cchar *loc, cchar *message)
-{
-    MprTestFailure  *fp;
-
-    if ((fp = mprAllocObj(MprTestFailure, manageTestFailure)) == 0) {
-        return 0;
-    }
-    fp->loc = sclone(loc);
-    fp->message = sclone(message);
-    return fp;
-}
-
-
-PUBLIC bool assertTrue(MprTestGroup *gp, cchar *loc, int isTrue, cchar *msg)
-{
-    if (! isTrue) {
-        gp->success = isTrue;
-    }
-    if (! isTrue) {
-        if (gp->service->debugOnFailures) {
-            mprBreakpoint();
-        }
-        addFailure(gp, loc, msg);
-        gp->failedCount++;
-        adjustFailedCount(1);
-    }
-    return isTrue;
-}
-
-
-PUBLIC bool mprWaitForTestToComplete(MprTestGroup *gp, MprTicks timeout)
-{
-    MprTicks    expires, remaining;
-    int         rc;
-
-    assert(gp->dispatcher);
-    assert(timeout >= 0);
-
-    if (mprGetDebugMode()) {
-        timeout *= 100;
-    }
-    expires = mprGetTicks() + timeout;
-    remaining = timeout;
-    do {
-        mprWaitForEvent(gp->dispatcher, remaining);
-        remaining = expires - mprGetTicks();
-    } while (!gp->testComplete && remaining > 0);
-    rc = gp->testComplete;
-    gp->testComplete = 0;
-    return rc;
-}
-
-
-PUBLIC void mprSignalTestComplete(MprTestGroup *gp)
-{
-    gp->testComplete = 1;
-    mprSignalDispatcher(gp->dispatcher);
-}
-
-
-static void adjustThreadCount(int adj)
-{
-    MprTestService  *sp;
-
-    sp = MPR->testService;
-    mprLock(sp->mutex);
-    sp->activeThreadCount += adj;
-    if (sp->activeThreadCount <= 0) {
-        mprShutdown(MPR_EXIT_NORMAL, 0, 0);
-    }
-    mprUnlock(sp->mutex);
-}
-
-
-static void adjustFailedCount(int adj)
-{
-    MprTestService  *sp;
-
-    sp = MPR->testService;
-    mprLock(sp->mutex);
-    sp->totalFailedCount += adj;
-    mprUnlock(sp->mutex);
-}
-
-
-static void logHandler(cchar *tags, int level, cchar *msg)
-{
-    MprFile     *file;
-
-    file = MPR->logFile;
-    while (*msg == '\n') {
-        mprFprintf(file, "\n");
-        msg++;
-    }
-    if (level == 0) {
-        mprFprintf(file, "%s: Error: %s\n", MPR->name, msg);
-        mprBreakpoint();
-    } else {
-        mprFprintf(file, "%s: %d: %s\n", MPR->name, level, msg);
-    }
-}
-
-
-static int setLogging(char *logSpec)
-{
-    MprFile     *file;
-    char        *levelSpec;
-    int         level;
-
-    level = 0;
-
-    if ((levelSpec = strchr(logSpec, ':')) != 0) {
-        *levelSpec++ = '\0';
-        level = atoi(levelSpec);
-    }
-
-    if (strcmp(logSpec, "stdout") == 0) {
-        file = MPR->stdOutput;
-
-    } else if (strcmp(logSpec, "stderr") == 0) {
-        file = MPR->stdError;
-
-    } else {
-        if ((file = mprOpenFile(logSpec, O_CREAT | O_WRONLY | O_TRUNC | O_TEXT, 0664)) == 0) {
-            mprEprintf("Cannot open log file %s\n", logSpec);
-            return MPR_ERR_CANT_OPEN;
-        }
-    }
-    mprSetLogLevel(level);
-    mprSetLogHandler(logHandler);
-    mprSetLogFile(file);
-    return 0;
-}
-
-#endif /* ME_MPR_TEST */
 
 /*
     @copy   default
@@ -28610,7 +27629,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
         mprGetPathInfo(mp->path, &info);
         mp->modified = info.mtime;
 
-        mprLog("info mpr", 2, "Loading native module %s", mp->path);
+        mprLog("info mpr", 4, "Loading native module %s", mp->path);
         if ((fd = open(mp->path, O_RDONLY, 0664)) < 0) {
             mprLog("error mpr", 0, "Cannot open module \"%s\"", mp->path);
             return MPR_ERR_CANT_OPEN;
@@ -30293,7 +29312,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
         mprGetPathInfo(mp->path, &info);
         mp->modified = info.mtime;
         baseName = mprGetPathBase(mp->path);
-        mprLog("info mpr", 2, "Loading native module %s", baseName);
+        mprLog("info mpr", 4, "Loading native module %s", baseName);
         if ((handle = LoadLibrary(wide(mp->path))) == 0) {
             mprLog("error mpr", 0, "Cannot load module %s, errno=\"%d\"", mp->path, mprGetOsError());
             return MPR_ERR_CANT_READ;
@@ -30302,7 +29321,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
 #endif /* !ME_STATIC */
 
     } else if (mp->entry) {
-        mprLog("info mpr", 2, "Activating native module %s", mp->name);
+        mprLog("info mpr", 4, "Activating native module %s", mp->name);
     }
     if (mp->entry) {
         if ((fn = (MprModuleEntry) GetProcAddress((HINSTANCE) handle, mp->entry)) == 0) {

@@ -465,8 +465,6 @@ static int startup(sapi_module_struct *sapi_module)
 
 static int initializePhp(Http *http)
 {
-    MaAppweb    *appweb;
-
     tsrm_startup(128, 1, 0, NULL);
     compiler_globals = (zend_compiler_globals*)  ts_resource(compiler_globals_id);
     executor_globals = (zend_executor_globals*)  ts_resource(executor_globals_id);
@@ -474,11 +472,10 @@ static int initializePhp(Http *http)
     sapi_globals = (sapi_globals_struct*) ts_resource(sapi_globals_id);
     tsrm_ls = (void***) ts_resource(0);
 
-    appweb = httpGetContext(http);
 #if defined(ME_COM_PHP_INI)
     phpSapiBlock.php_ini_path_override = ME_COM_PHP_INI;
 #else
-    phpSapiBlock.php_ini_path_override = appweb->defaultServer->defaultHost->defaultRoute->home;
+    phpSapiBlock.php_ini_path_override = httpGetDefaultRoute(NULL)->home;
 #endif
     if (phpSapiBlock.php_ini_path_override) {
         mprLog("info php", 2, "Look for php.ini at %s", phpSapiBlock.php_ini_path_override);
@@ -501,7 +498,7 @@ static int finalizePhp(MprModule *mp)
 {
     HttpStage   *stage;
 
-    if ((stage = httpLookupStage(MPR->httpService, "phpHandler")) == 0) {
+    if ((stage = httpLookupStage("phpHandler")) == 0) {
         return 0;
     }
     if (stage->stageData) {
@@ -540,7 +537,7 @@ PUBLIC int maPhpHandlerInit(Http *http, MprModule *module)
     if (module) {
         mprSetModuleFinalizer(module, finalizePhp); 
     }
-    if ((handler = httpCreateHandler(http, "phpHandler", module)) == 0) {
+    if ((handler = httpCreateHandler("phpHandler", module)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     handler->open = openPhp;

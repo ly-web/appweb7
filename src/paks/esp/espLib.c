@@ -5196,7 +5196,7 @@ static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
     EspRoute
         methods=METHODS
         name=NAME
-        prefix=PREFIX
+        pattern=PATTERN
         source=SOURCE
         target=TARGET
  */
@@ -5204,10 +5204,10 @@ static int espRouteDirective(MaState *state, cchar *key, cchar *value)
 {
     EspRoute    *eroute;
     HttpRoute   *route;
-    cchar       *methods, *name, *prefix, *source, *target;
+    cchar       *methods, *name, *pattern, *source, *target;
     char        *option, *ovalue, *tok;
 
-    prefix = 0;
+    pattern = 0;
     name = 0;
     source = 0;
     target = 0;
@@ -5221,8 +5221,9 @@ static int espRouteDirective(MaState *state, cchar *key, cchar *value)
                 methods = ovalue;
             } else if (smatch(option, "name")) {
                 name = ovalue;
-            } else if (smatch(option, "prefix")) {
-                prefix = ovalue;
+            } else if (smatch(option, "pattern") || smatch(option, "prefix")) {
+                /* DEPRECATED prefix */
+                pattern = ovalue;
             } else if (smatch(option, "source")) {
                 source = ovalue;
             } else if (smatch(option, "target")) {
@@ -5232,14 +5233,14 @@ static int espRouteDirective(MaState *state, cchar *key, cchar *value)
             }
         }
     }
-    if (!prefix || !target) {
+    if (!pattern || !target) {
         return MPR_ERR_BAD_SYNTAX;
     }
     if (target == 0 || *target == 0) {
         target = "$&";
     }
     target = stemplate(target, state->route->vars);
-    if ((route = httpDefineRoute(state->route, name, methods, prefix, target, source)) == 0) {
+    if ((route = httpDefineRoute(state->route, name, methods, pattern, target, source)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     httpSetRouteHandler(route, "espHandler");
@@ -5308,12 +5309,9 @@ static int espUpdateDirective(MaState *state, cchar *key, cchar *value)
 PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
 {
     HttpStage   *handler;
-    MaAppweb    *appweb;
     cchar       *path;
 
-    appweb = httpGetContext(http);
-
-    if ((handler = httpCreateHandler(http, "espHandler", module)) == 0) {
+    if ((handler = httpCreateHandler("espHandler", module)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     http->espHandler = handler;
@@ -5343,21 +5341,22 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     /*
         Add appweb configuration file directives
      */
-    maAddDirective(appweb, "EspApp", espAppDirective);
-    maAddDirective(appweb, "<EspApp", openEspAppDirective);
-    maAddDirective(appweb, "</EspApp", closeEspAppDirective);
-    maAddDirective(appweb, "EspCompile", espCompileDirective);
-    maAddDirective(appweb, "EspDb", espDbDirective);
-    maAddDirective(appweb, "EspDir", espDirDirective);
-    maAddDirective(appweb, "EspEnv", espEnvDirective);
-    maAddDirective(appweb, "EspKeepSource", espKeepSourceDirective);
-    maAddDirective(appweb, "EspLink", espLinkDirective);
-    maAddDirective(appweb, "EspPermResource", espPermResourceDirective);
-    maAddDirective(appweb, "EspResource", espResourceDirective);
-    maAddDirective(appweb, "EspResourceGroup", espResourceGroupDirective);
-    maAddDirective(appweb, "EspRoute", espRouteDirective);
-    maAddDirective(appweb, "EspRouteSet", espRouteSetDirective);
-    maAddDirective(appweb, "EspUpdate", espUpdateDirective);
+    maAddDirective("EspApp", espAppDirective);
+    maAddDirective("<EspApp", openEspAppDirective);
+    maAddDirective("</EspApp", closeEspAppDirective);
+    maAddDirective("EspCompile", espCompileDirective);
+    maAddDirective("EspDb", espDbDirective);
+    maAddDirective("EspDir", espDirDirective);
+    maAddDirective("EspEnv", espEnvDirective);
+    maAddDirective("EspKeepSource", espKeepSourceDirective);
+    maAddDirective("EspLink", espLinkDirective);
+    maAddDirective("EspPermResource", espPermResourceDirective);
+    maAddDirective("EspResource", espResourceDirective);
+    maAddDirective("EspResourceGroup", espResourceGroupDirective);
+    maAddDirective("EspRoute", espRouteDirective);
+    maAddDirective("EspRouteSet", espRouteSetDirective);
+    maAddDirective("EspUpdate", espUpdateDirective);
+
     if ((esp->ediService = ediCreateService()) == 0) {
         return 0;
     }
@@ -5393,7 +5392,7 @@ static int unloadEsp(MprModule *mp)
     if (mprIsStopping()) {
         return 0;
     }
-    if ((stage = httpLookupStage(MPR->httpService, mp->name)) != 0) {
+    if ((stage = httpLookupStage(mp->name)) != 0) {
         stage->flags |= HTTP_STAGE_UNLOADED;
     }
     return 0;

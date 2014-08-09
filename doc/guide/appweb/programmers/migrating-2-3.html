@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 5.0.0 Documentation</title>
+    <title>Embedthis Appweb 5.1.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -18,11 +18,11 @@
 
 <body>
     <div class="top">
-        <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
+        <a class="logo" href="http://embedthis.com/">&nbsp;</a>
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 5.0.0</div>
+                <div class="version">Embedthis Appweb 5.1.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -35,8 +35,6 @@
         <div class="contentRight">
             <h2>Quick Nav</h2>
             <ul>
-                <li><a href="#compatibility">Appweb 2 Compatibility</a></li>
-                <li><a href="#support">Appweb 2 and Appweb 3 Support</a></li>
                 <li><a href="#changes">Appweb 3 Changes</a></li>
                 <li><a href="#config">Migrating Config Files</a></li>
                 <li><a href="#modules">Migrating Modules</a></li>
@@ -72,11 +70,13 @@
             improvements that necessitated breaking compatibility with Appweb 2. Rather than make several ongoing
             compatibility breaks &mdash; we decided to make all the changes in one release. In this way we can ensure
             that Appweb 3 quickly becomes a stable platform going forward. Please see our <a href=
-            "../../../product/compatibility.html">Compatibility Policy</a>.</p><a id="support"></a>
+            "../../../product/compatibility.html">Compatibility Policy</a>.</p>
+            <a id="support"></a>
             <h3>Ongoing Support for Appweb 2</h3>
             <p>To address the needs of users for whom upgrading to Appweb 3 will take some time, we intend to support
             Appweb 2 till the end of 2014 and to continue to issue updates and upgrades for Appweb 2 during that
-            period.</p><a id="changes"></a>
+            period.</p>
+            <a id="changes"></a>
             <h2 class="section">Changes in Appweb 3</h2>
             <p>Appweb 3 provides equivalent functionality to that in Appweb 2 in nearly all cases. While Appweb 3 may
             have a different interface or API, the capabilities of Appweb 2 have been continued in Appweb 3 &mdash; and
@@ -363,7 +363,7 @@ write("Using session: " + <b>request.sessionID</b>)
           '000262706376373952077:1hs0lhenihk');
         customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
         var options = new google.search.DrawOptions();
-        options.enableSearchboxOnly("http://appwebserver.org/search.html");
+        options.enableSearchboxOnly("http://embedthis.com/search.html");
         customSearchControl.draw('cse-search-form', options);
       }, true);
     </script>

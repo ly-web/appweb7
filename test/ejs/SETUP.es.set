@@ -1,0 +1,3 @@
+if (!thas('ME_EJS')) {
+    tskip("ejs not enabled")
+}

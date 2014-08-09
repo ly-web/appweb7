@@ -355,7 +355,7 @@ static int getArgv(int *pargc, char ***pargv, int originalArgc, char **originalA
         next = strtok(sbuf, " \t\n");
         i = 1;
         for (i = 1; next && i < (MAX_ARGV - 1); i++) {
-            argvList[i] = next;
+            argvList[i] = strdup(next);
             next = strtok(0, " \t\n");
         }
         argvList[0] = originalArgv[0];

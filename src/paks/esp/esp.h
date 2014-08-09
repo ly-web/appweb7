@@ -15,7 +15,7 @@
 #include "appweb.h"
 
 #ifndef ESP_VERSION
-    #define ESP_VERSION "5.0.0"
+    #define ESP_VERSION "5.1.0"
 #endif
 
 /************************************************************************/
@@ -1272,7 +1272,6 @@ extern "C" {
 #endif
 
 /********************************** Defines ***********************************/
-
 /**
     Procedure callback
     @ingroup Esp

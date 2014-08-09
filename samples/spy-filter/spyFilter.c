@@ -45,7 +45,7 @@ MprModule *maSpyFilterInit(Http *http, MprModule *module)
 {
     HttpStage     *filter;
 
-    if ((filter = httpCreateFilter(http, "spyFilter", module)) == 0) {
+    if ((filter = httpCreateFilter("spyFilter", module)) == 0) {
         return 0;
     }
     filter->match = matchSpy; 

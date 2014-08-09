@@ -98,7 +98,7 @@
     <Command>cd ..\..\src\server
 md cache
 cd ..\..\projects\appweb-windows-default</Command>
-    <Outputs>..\..\src\server\cache</Outputs>
+    <Outputs>\Users\mob\git\appweb\projects\appweb-windows-default\..\..\src\server\cache</Outputs>
   </CustomBuildStep>
   </ItemDefinitionGroup>
 

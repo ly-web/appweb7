@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 5.0.0 Documentation</title>
+    <title>Embedthis Appweb 5.1.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -18,11 +18,11 @@
 
 <body>
     <div class="top">
-        <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
+        <a class="logo" href="http://embedthis.com/">&nbsp;</a>
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 5.0.0</div>
+                <div class="version">Embedthis Appweb 5.1.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -144,7 +144,7 @@
                         <td>Escape environment variables passed to CGI programs for special shell characters.
                         If using shell scripts as CGI programs, this directive will escape all special 
                             shell characters to make scripting easier and more secure. This will escape 
-                           (with \) the following characters: &;`'\"|*?~<>^()[]{}$\\\n and also on windows \r%.</td>
+                           (with \) the following characters: &amp;;`'\"|*?~&lt;&gt;^()[]{}$\\\n and also on windows \r%.</td>
                     </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
@@ -270,7 +270,7 @@
                             <p>The GroupAccount directive specifies the account group in which Appweb will be a member when
                             running. If UserAccount and GroupAccount are defined, the supplemental
                             groups will include only the specified group and not the other groups to which the user is a
-                            member of. If you require all supplemental groups, do not set the GroupAccount.</p
+                            member of. If you require all supplemental groups, do not set the GroupAccount.</p>
                             <p>It is important that you run Appweb with the lowest system privilege that will get the
                             job done. If any application is compromised, including Appweb, then the system will be
                             safest if the compromised application has as few privileges as possible.</p>
@@ -574,7 +574,7 @@
           '000262706376373952077:1hs0lhenihk');
         customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
         var options = new google.search.DrawOptions();
-        options.enableSearchboxOnly("http://appwebserver.org/search.html");
+        options.enableSearchboxOnly("http://embedthis.com/search.html");
         customSearchControl.draw('cse-search-form', options);
       }, true);
     </script>

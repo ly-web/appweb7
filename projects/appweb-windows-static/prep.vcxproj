@@ -98,9 +98,19 @@
     <Command>if not exist "$(ObjDir)" md "$(ObjDir)"
 if not exist "$(BinDir)" md "$(BinDir)"
 if not exist "$(IncDir)" md "$(IncDir)"
-if not exist "$(IncDir)\osdep.h" copy "..\..\src\paks\osdep\osdep.h" "$(IncDir)\osdep.h"
-if not exist "$(IncDir)\me.h" copy "..\appweb-windows-static-me.h" "$(IncDir)\me.h"</Command>
-    <Outputs>..\..\always</Outputs>
+if not exist "$(IncDir)\me.h" copy "..\appweb-windows-static-me.h" "$(IncDir)\me.h"
+copy /Y ..\src\appweb.h $(IncDir)
+copy /Y ..\src\server\windows\appwebMonitor.h $(IncDir)
+copy /Y ..\src\customize.h $(IncDir)
+copy /Y ..\src\paks\esp\esp.h $(IncDir)
+copy /Y ..\src\paks\est\est.h $(IncDir)
+copy /Y ..\src\paks\http\http.h $(IncDir)
+copy /Y ..\build\$(Cfg)\inc\me.h $(IncDir)
+copy /Y ..\src\server\windows\monitorResources.h $(IncDir)
+copy /Y ..\src\paks\mpr\mpr.h $(IncDir)
+copy /Y ..\src\paks\osdep\osdep.h $(IncDir)
+copy /Y ..\src\paks\pcre\pcre.h $(IncDir)</Command>
+    <Outputs>\Users\mob\git\appweb\projects\appweb-windows-static\..\..\always</Outputs>
   </CustomBuildStep>
   </ItemDefinitionGroup>
 

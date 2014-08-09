@@ -90,17 +90,10 @@
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>libappweb.lib;libhttp.lib;libmpr.lib;libpcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    <AdditionalDependencies>;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalLibraryDirectories>$(OutDir);;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
   </ItemDefinitionGroup>
-
-<ItemGroup>
-  <ProjectReference Include="testAppweb.vcxproj">
-  <Project>125c9085-1d6d-401a-b829-5845ad1f4d7f</Project>
-  <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-  </ProjectReference>
-</ItemGroup>
 
   <Import Project="$(VCTargetsPath)Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

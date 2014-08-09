@@ -178,17 +178,6 @@ struct  MprXml;
 #define MPR_TIMER_TOLERANCE     2           /* Used in timer calculations */
 #define MPR_CMD_TIMER_PERIOD    5000        /* Check for expired commands */
 
-/*
-    Other tunable constants
- */
-#define MPR_TEST_POLL_NAP       25
-#define MPR_TEST_SLEEP          (60 * 1000)
-#define MPR_TEST_MAX_STACK      16
-#define MPR_TEST_TIMEOUT        10000       /* Ten seconds */
-#define MPR_TEST_LONG_TIMEOUT   300000      /* 5 minutes */
-#define MPR_TEST_SHORT_TIMEOUT  200         /* 1/5 sec */
-#define MPR_TEST_NAP            50          /* Short timeout to prevent busy waiting */
-
 /**
     Events
  */
@@ -5825,6 +5814,7 @@ typedef struct MprEvent {
 #define MPR_DISPATCHER_WAITING    0x2   /**< Dispatcher waiting for an event in mprWaitForEvent */
 #define MPR_DISPATCHER_DESTROYED  0x4   /**< Dispatcher has been destroyed */
 #define MPR_DISPATCHER_AUTO       0x8   /**< Dispatcher was auto created in response to accept event */
+#define MPR_DISPATCHER_COMPLETE   0x10  /**< Test operation is complete */
 
 /**
     Event Dispatcher
@@ -5837,11 +5827,12 @@ typedef struct MprDispatcher {
     MprEvent        *currentQ;          /**< Currently executing events */
     MprCond         *cond;              /**< Multi-thread sync */
     int             flags;              /**< Dispatcher control flags */
+    int64           mark;               /**< Last event sequence mark (may reuse over time) */
     struct MprDispatcher *next;         /**< Next dispatcher linkage */
     struct MprDispatcher *prev;         /**< Previous dispatcher linkage */
     struct MprDispatcher *parent;       /**< Queue pointer */
     struct MprEventService *service;    /**< Event service reference */
-    MprOsThread     owner;              /**< Owning thread of the dispatcher */
+    MprOsThread     owner;              /**< Thread currently dispatching events, otherwise zero */
 } MprDispatcher;
 
 
@@ -5944,17 +5935,47 @@ PUBLIC int mprServiceEvents(MprTicks delay, int flags);
 PUBLIC void mprSetEventServiceSleep(MprTicks delay);
 
 /**
+    Suspend the current thread
+    @description Suspend the current thread until the application is shutting down.
+    @param timeout Timeout to wait for shutdown.
+    @ingroup MprDispatcher
+    @stability Prototype
+ */
+PUBLIC void mprSuspendThread(MprTicks timeout);
+
+/**
     Wait for an event to occur on the given dispatcher
     @description Use this routine to wait for an event and service the event on the given dispatcher.
+    This routine should only be called in blocking code.
+    \n\n
     This routine yields to the garbage collector by calling #mprYield. Callers must retain all required memory.
+    \n\n
+    Note that an event may occur before or while invoking this API. To address this window of time, you should
+    call #mprGetEventMark to get a Dispatcher event mark and then test your application state to determine if 
+    waiting is required. If so, then pass the mark to mprWaitForEvent so it can detect
+    if any events have been processed since calling mprGetEventMark.
     @param dispatcher Event dispatcher to monitor
     @param timeout for waiting in milliseconds
+    @param mark Dispatcher mark returned from #mprGetEventMark
     @return Zero if successful and an event occurred before the timeout expired. Returns #MPR_ERR_TIMEOUT if no event
         is fired before the timeout expires.
     @ingroup MprDispatcher
-    @stability Stable
+    @stability Evolving
  */
-PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout);
+PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout, int64 mark);
+
+/**
+    Get an event mark for a dispatcher
+    @description An event mark indicates a point in time for a dispatcher. Event marks are incremented for each
+    event serviced. This API is used with #mprWaitForEvent to supply an event mark so that mprWaitForEvent can
+    detect if any events have been serviced since the mark was taken. This is important so that mprWaitForEvent
+    will not miss events that occur before or while invoking #mprWaitForEvent.
+    @param dispatcher Event dispatcher
+    @return Event mark 64 bit integer
+    @ingroup MprDispatcher
+    @stability Prototype
+*/
+PUBLIC int64 mprGetEventMark(MprDispatcher *dispatcher);
 
 /**
     Wake the event service
@@ -6103,18 +6124,9 @@ PUBLIC MprEvent *mprCreateTimerEvent(MprDispatcher *dispatcher, cchar *name, Mpr
 PUBLIC void mprRescheduleEvent(MprEvent *event, MprTicks period);
 
 /**
-    Relay an event to a dispatcher. This invokes the callback proc as though it was invoked from the given dispatcher.
-    @param dispatcher Dispatcher object created via #mprCreateDispatcher
-    @param proc Procedure to invoke
-    @param data Argument to proc
-    @param event Event object
-    @internal
-    @stability Internal
- */
-PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, MprEvent *event);
-
-/**
     Start a dispatcher by setting it on the run queue
+    @description This is used to ensure that all event activity will only happen on the thread that
+    calls mprStartDispatcher.
     @param dispatcher Dispatcher object created via #mprCreateDispatcher
     @return Zero if successful, otherwise a negative MPR status code.
     @stability Prototype
@@ -6151,6 +6163,12 @@ PUBLIC void mprSetDispatcherImmediate(MprDispatcher *dispatcher);
 PUBLIC void mprStopEventService();
 PUBLIC void mprWakeDispatchers();
 PUBLIC void mprWakePendingDispatchers();
+
+/*
+    Used in testme scripts
+ */
+PUBLIC void mprSignalCompletion(MprDispatcher *dispatcher);
+PUBLIC bool mprWaitForCompletion(MprDispatcher *dispatcher, MprTicks timeout);
 
 /*********************************** XML **************************************/
 /*
@@ -7114,9 +7132,9 @@ PUBLIC void mprWakeNotifier();
     PUBLIC void mprDestroyWindow(HWND hwnd);
     PUBLIC void mprDestroyWindowClass(ATOM wclass);
     PUBLIC HWND mprGetWindow(bool *created);
-    PUBLIC HWND mprSetNotifierThread(MprThread *tp);
+    PUBLIC HWND mprSetWindowsThread(MprThread *tp);
 #else
-    #define mprSetNotifierThread(tp)
+    #define mprSetWindowsThread(tp)
 #endif
 
 /**
@@ -7875,6 +7893,16 @@ PUBLIC int mprSetSocketNoDelay(MprSocket *sp, bool on);
 PUBLIC bool mprSocketHandshaking(MprSocket *sp);
 
 /**
+    Test if the socket has buffered data.
+    @description Use this function to avoid waiting for incoming I/O if data is already buffered.
+    @param sp Socket object returned from #mprCreateSocket
+    @return True if the socket has pending data to read or write.
+    @ingroup MprSocket
+    @stability Prototype
+ */
+PUBLIC bool mprSocketHasBuffered(MprSocket *sp);
+
+/**
     Test if the socket has buffered read data.
     @description Use this function to avoid waiting for incoming I/O if data is already buffered.
     @param sp Socket object returned from #mprCreateSocket
@@ -7924,7 +7952,8 @@ PUBLIC int mprUpgradeSocket(MprSocket *sp, struct MprSsl *ssl, cchar *peerName);
     @param len Length of data to write. This may be less than the requested write length if the socket is in non-blocking
         mode. Will return a negative MPR error code on errors.
     @return A count of bytes actually written. Return a negative MPR error code on errors and if the socket cannot absorb any
-        more data. If the transport is saturated, will return a negative error and mprGetError() returns EAGAIN or EWOULDBLOCK
+        more data. If the transport is saturated, will return a negative error and mprGetError() returns EAGAIN 
+        or EWOULDBLOCK.
     @ingroup MprSocket
     @stability Stable
  */
@@ -7965,14 +7994,14 @@ PUBLIC ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count);
     @stability Internal
  */
 typedef struct MprSsl {
-    char            *providerName;      /**< SSL provider to use - null if default */
+    cchar           *providerName;      /**< SSL provider to use - null if default */
     struct MprSocketProvider *provider; /**< Cached SSL provider to use */
-    char            *key;               /**< Key string */
-    char            *keyFile;           /**< Alternatively, locate the key in a file */
-    char            *certFile;          /**< Alternatively, locate the cert in a file */
-    char            *caFile;            /**< Certificate verification cert file or bundle */
-    char            *caPath;            /**< Certificate verification cert directory (OpenSSL only) */
-    char            *ciphers;           /**< Candidate ciphers to use */
+    cchar           *key;               /**< Key string */
+    cchar           *keyFile;           /**< Alternatively, locate the key in a file */
+    cchar           *certFile;          /**< Alternatively, locate the cert in a file */
+    cchar           *caFile;            /**< Certificate verification cert file or bundle */
+    cchar           *caPath;            /**< Certificate verification cert directory (OpenSSL only) */
+    cchar           *ciphers;           /**< Candidate ciphers to use */
     bool            verified;           /**< Peer has been verified */
     void            *config;            /**< Extended provider SSL configuration */
     bool            configured;         /**< Set if this SSL configuration has been processed */
@@ -8773,10 +8802,10 @@ typedef struct MprCmd {
     MprWaitHandler  *handlers[MPR_CMD_MAX_PIPE];
     MprDispatcher   *dispatcher;        /**< Dispatcher to use for wait events */
     MprCmdProc      callback;           /**< Handler for client output and completion */
-    void            *callbackData;
+    void            *callbackData;      /**< Managed callback data reference */
     MprForkCallback forkCallback;       /**< Forked client callback */
     MprSignal       *signal;            /**< Signal handler for SIGCHLD */
-    void            *forkData;
+    void            *forkData;          /**< Managed fork callback data reference */
     MprBuf          *stdoutBuf;         /**< Standard output from the client */
     MprBuf          *stderrBuf;         /**< Standard error output from the client */
     void            *userData;          /**< User data storage */
@@ -9558,7 +9587,6 @@ typedef struct Mpr {
     void            *ejsService;            /**< Ejscript service */
     void            *espService;            /**< ESP service object */
     void            *httpService;           /**< Http service object */
-    void            *testService;           /**< Test service object */
 
     MprTicks        shutdownStarted;        /**< When the shutdown started */
     MprList         *terminators;           /**< Termination callbacks */
@@ -9567,6 +9595,7 @@ typedef struct Mpr {
     MprMutex        *mutex;                 /**< Thread synchronization used for global lock */
     MprSpin         *spin;                  /**< Quick thread synchronization */
     MprCond         *cond;                  /**< Sync after starting events thread */
+    MprCond         *stopCond;              /**< Sync for stopping */
 
     char            *emptyString;           /**< "" string */
     char            *oneString;             /**< "1" string */
@@ -10335,252 +10364,6 @@ PUBLIC int mprFindVxSym(SYMTAB_ID sid, char *name, char **pvalue);
     Internal
  */
 PUBLIC void mprWriteToOsLog(cchar *msg, int level);
-
-/************************************* Test ***********************************/
-
-struct MprTestGroup;
-
-/**
-    Unit test callback procedure
-    @ingroup MprTestService
-    @stability Internal
- */
-typedef void (*MprTestProc)(struct MprTestGroup *tp);
-
-/**
-    Test case structure
-    @ingroup MprTestService
-    @stability Internal
- */
-typedef struct MprTestCase {
-    char            *name;
-    int             level;
-    MprTestProc     proc;
-    int             (*init)(struct MprTestGroup *gp);
-    int             (*term)(struct MprTestGroup *gp);
-} MprTestCase;
-
-/**
-    Test case definition
-    @ingroup MprTestService
-    @stability Internal
- */
-typedef struct MprTestDef {
-    char                *name;
-    struct MprTestDef   **groupDefs;
-    int                 (*init)(struct MprTestGroup *gp);
-    int                 (*term)(struct MprTestGroup *gp);
-    MprTestCase         caseDefs[32];
-} MprTestDef;
-
-
-/**
-    Assert macro for use by unit tests
-    @ingroup MprTestService
-    @stability Internal
- */
-#define tassert(C)   assertTrue(gp, MPR_LOC, C, #C)
-
-#define MPR_TEST(level, functionName) { #functionName, level, functionName, 0, 0 }
-
-/**
-    Test service facility
-    @defgroup MprTestService MprTestService
-    @stability Internal
- */
-typedef struct MprTestService {
-    char            **argv;                 /**< Arguments for test (not alloced) */
-    char            *commandLine;
-    cchar           *name;                  /**< Name for entire test */
-    MprList         *groups;                /**< Master list of test groups */
-    MprList         *threadData;            /**< Per thread objects */
-    MprList         *testFilter;            /**< Test groups to run */
-    MprMutex        *mutex;                 /**< Multi-thread sync */
-    MprTime         start;                  /**< When testing began */
-    int             argc;                   /**< Count of arguments */
-    int             activeThreadCount;      /**< Currently active test threads */
-    int             firstArg;               /**< Count of arguments */
-    int             iterations;             /**< Times to run the test */
-    int             numThreads;             /**< Number of test threads */
-    int             workers;                /**< Count of worker threads */
-    int             testDepth;              /**< Depth of entire test */
-    int             totalFailedCount;       /**< Total count of failing tests */
-    int             totalTestCount;         /**< Total count of all tests */
-    int             verbose;                /**< Output activity trace */
-    bool            continueOnFailures: 1;  /**< Keep testing on failures */
-    bool            debugOnFailures: 1;     /**< Break to the debugger */
-    int             echoCmdLine: 1;         /**< Echo the command line */
-    bool            singleStep: 1;          /**< Pause between tests */
-} MprTestService;
-
-/**
-    Callback parser for non-standard command line arguments
-    @ingroup MprTestService
-    @stability Internal
- */
-typedef int (*MprTestParser)(int argc, char **argv);
-
-/**
-    Create the test service
-    @return An MprTestService control object
-    @ingroup MprTestService
-    @stability Internal
-    @internal
- */
-PUBLIC MprTestService *mprCreateTestService();
-
-/**
-    Parse test command arguments
-    @param ts Test service object returned from #mprCreateTestService
-    @param argc Count of arguments in argv
-    @param argv Argument array
-    @param extraParser Callback function to invoke to parse non-standard arguments.
-    @return Zero if the command have been successfully parsed. Otherwise return a negative MPR error code.
-    @ingroup MprTestService
-    @stability Internal
- */
-PUBLIC int mprParseTestArgs(MprTestService *ts, int argc, char **argv, MprTestParser extraParser);
-
-/**
-    Run the define unit tests
-    @param ts Test service object returned from #mprCreateTestService
-    @ingroup MprTestService
-    @stability Internal
- */
-PUBLIC int mprRunTests(MprTestService *ts);
-
-/**
-    Report the test results
-    @description Test results are written to stdout.
-    @param ts Test service object returned from #mprCreateTestService
-    @ingroup MprTestService
-    @stability Internal
- */
-PUBLIC void mprReportTestResults(MprTestService *ts);
-
-/**
-    A test group is a group of tests to cover a unit of functionality. A test group may contain other test groups.
-    @ingroup MprTestService
-    @stability Internal
- */
-typedef struct MprTestGroup {
-    char            *name;                  /**< Name of test */
-    char            *fullName;              /**< Fully qualified name of test */
-    char            *content;               /**< Cached response content */
-    void            *data;                  /**< Test specific data */
-
-    MprList         *failures;              /**< List of all failures */
-    MprTestService  *service;               /**< Reference to the service */
-    MprDispatcher   *dispatcher;            /**< Per group thread dispatcher */
-    MprList         *groups;                /**< List of groups */
-    MprList         *cases;                 /**< List of tests in this group */
-    MprTestDef      *def;                   /**< Test definition ref */
-    MprMutex        *mutex;                 /**< Multi-thread sync */
-
-    struct MprTestGroup *parent;            /**< Parent test group */
-    struct MprTestGroup *root;              /**< Top level test group parent */
-    struct Http     *http;                  /**< Http service */
-    struct HttpConn *conn;                  /**< Http connection for this group */
-
-    int             failedCount;            /**< Total failures of this test */
-    int             testCount;              /**< Count of tests */
-    int             testComplete;           /**< Test complete signal */
-    int             testDepth;              /**< Depth at which test should run */
-    bool            hasInternet: 1;         /**< Convenience flag for internet available for use */
-    bool            hasIPv6: 1;             /**< Convenience flag for IPv6 service */
-    bool            skip: 1;                /**< Skip this test */
-    bool            skipWarned: 1;          /**< Warned that test will be skipped */
-    bool            success: 1;             /**< Result of last run */
-} MprTestGroup;
-
-
-/**
-    Add a test group to the test service
-    @param ts Test service object returned from #mprCreateTestService
-    @param def Test group definition to add
-    @return MprTestGroup record for the test group
-    @ingroup MprTestService
-    @stability Internal
- */
-PUBLIC MprTestGroup *mprAddTestGroup(MprTestService *ts, MprTestDef *def);
-
-/**
-    Reset a test group.
-    @description This resets the success/fail flag for the group
-    @param gp Test group reference
-    @ingroup MprTestService
-    @stability Internal
- */
-PUBLIC void mprResetTestGroup(MprTestGroup *gp);
-
-/**
-    Test assert
-    @description This is the primary assertion test routine for unit tests. This is typically invoked by using the
-        #assert macro.
-    @param gp Test group reference
-    @param loc Program location string including filename and line number
-    @param success Boolean indicating whether the test passed or failed.
-    @param msg Message to display if the test failed.
-    @ingroup MprTestService
-    @stability Internal
- */
-PUBLIC bool assertTrue(MprTestGroup *gp, cchar *loc, int success, cchar *msg);
-
-/**
-    Signal a test is complete
-    @description This awakens a thread that has called mprWaitForTestToComplete
-    @param gp Test group reference
-    @ingroup MprTestService
-    @stability Internal
- */
-PUBLIC void mprSignalTestComplete(MprTestGroup *gp);
-
-/**
-    Signal a test is complete.
-    @description This awakens a thread that has called mprWaitForTest2ToComplete
-    @param gp Test group reference
-    @ingroup MprTestService
-    @stability Internal
-    @internal
- */
-PUBLIC void mprSignalTest2Complete(MprTestGroup *gp);
-
-/**
-    Wait for a test to complete
-    @description This blocks a thread until a test has completed and is signalled by
-        another thread calling #mprSignalTestComplete.
-    @param gp Test group reference
-    @param timeout Timeout in milliseconds to block waiting for the test to complete
-    @return True if the test was completed within the timeout
-    @ingroup MprTestService
-    @stability Internal
- */
-PUBLIC bool mprWaitForTestToComplete(MprTestGroup *gp, MprTicks timeout);
-
-/**
-    Wait for a test to complete
-    @description This blocks a thread until a test has completed and is signalled by
-        another thread calling #mprSignalTest2Complete.
-    @param gp Test group reference
-    @param timeout Timeout in milliseconds to block waiting for the test to complete
-    @return True if the test was completed within the timeout
-    @ingroup MprTestService
-    @stability Internal
-    @internal
- */
-PUBLIC bool mprWaitForTest2ToComplete(MprTestGroup *gp, MprTicks timeout);
-
-/**
-    Test failure record
-    @ingroup MprTestService
-    @stability Internal
-    @internal
- */
-typedef struct MprTestFailure {
-    char            *loc;               /**< Program location of the failure */
-    char            *message;           /**< Failure message typically the assertion program text */
-} MprTestFailure;
-
 
 #ifdef __cplusplus
 }

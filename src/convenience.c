@@ -1,6 +1,7 @@
 /*
     convenience.c -- High level convenience API
-    This module provides simple, high-level APIs for creating servers.
+
+    This module provides simple high-level APIs.
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
  */
 
@@ -12,44 +13,29 @@
 
 static int runServer(cchar *configFile, cchar *ip, int port, cchar *home, cchar *documents)
 {
-    MaAppweb    *appweb;
-    MaServer    *server;
-
     if (mprStart() < 0) {
         mprLog("error appweb", 0, "Cannot start the web server runtime");
         return MPR_ERR_CANT_CREATE;
     }
-    if ((appweb = maCreateAppweb()) == 0) {
-        mprLog("error appweb", 0, "Cannot create appweb object");
-        return MPR_ERR_CANT_CREATE;
-    }
-    mprAddRoot(appweb);
-    if ((server = maCreateServer(appweb, 0)) == 0) {
-        mprLog("error appweb", 0, "Cannot create the web server");
-        mprRemoveRoot(appweb);
+    if (httpCreate(HTTP_CLIENT_SIDE | HTTP_SERVER_SIDE) == 0) {
+        mprLog("error http", 0, "Cannot create http services");
         return MPR_ERR_CANT_CREATE;
     }
     if (home) {
-        if (maConfigureServer(server, 0, home, documents, ip, port, 0) < 0) {
+        if (maConfigureServer(0, home, documents, ip, port, 0) < 0) {
             mprLog("error appweb", 0, "Cannot create the web server");
-            mprRemoveRoot(appweb);
             return MPR_ERR_BAD_STATE;
         }
-    } else {
-        if (maParseConfig(server, configFile, 0) < 0) {
-            mprLog("error appweb", 0, "Cannot parse the config file %s", configFile);
-            mprRemoveRoot(appweb);
-            return MPR_ERR_CANT_READ;
-        }
+    } else if (maParseConfig(configFile, 0) < 0) {
+        mprLog("error appweb", 0, "Cannot parse the config file %s", configFile);
+        return MPR_ERR_CANT_READ;
     }
-    if (maStartServer(server) < 0) {
+    if (httpStartEndpoints() < 0) {
         mprLog("error appweb", 0, "Cannot start the web server");
-        mprRemoveRoot(appweb);
         return MPR_ERR_CANT_COMPLETE;
     }
     mprServiceEvents(-1, 0);
-    maStopServer(server);
-    mprRemoveRoot(appweb);
+    httpStopEndpoints();
     return 0;
 }
 
@@ -72,7 +58,6 @@ PUBLIC int maRunWebServer(cchar *configFile)
 }
 
 
-//  TODO: REFACTOR with an inner function
 /*
     Run a web server not based on a config file.
  */
@@ -88,34 +73,6 @@ PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documen
     rc = runServer(0, ip, port, home, documents);
     mprDestroy();
     return rc;
-}
-
-
-/*
-    This will restart the default server on a new IP:PORT. It will stop listening on the default endpoint on 
-    the default server, optionally modify the IP:PORT and resume listening. NOTE: running requests will be
-    unaffected.  WARNING: this is demonstration code and has no error checking.
- */
-PUBLIC void maRestartServer(cchar *ip, int port)
-{
-    MaAppweb        *appweb;
-    MaServer        *server;
-    HttpEndpoint    *endpoint;
-
-    appweb = MPR->appwebService;
-    server = mprGetFirstItem(appweb->servers);
-    lock(appweb->servers);
-    endpoint = mprGetFirstItem(server->endpoints);
-    httpStopEndpoint(endpoint);
-
-    if (port) {
-        endpoint->port = port;
-    }
-    if (ip) {
-        endpoint->ip = sclone(ip);
-    }
-    httpStartEndpoint(endpoint);
-    unlock(appweb->servers);
 }
 
 
@@ -145,8 +102,14 @@ PUBLIC int maRunWebClient(cchar *method, cchar *uri, cchar *data, char **respons
         mprLog("error appweb", 0, "Cannot start the web server runtime");
         return MPR_ERR_CANT_INITIALIZE;
     }
-    httpCreate(HTTP_CLIENT_SIDE);
-    conn = httpRequest(method, uri, data, err);
+    if (httpCreate(HTTP_CLIENT_SIDE) < 0) {
+        mprLog("error appweb", 0, "Cannot create HTTP services");
+        return MPR_ERR_CANT_INITIALIZE;
+    }
+    if ((conn = httpRequest(method, uri, data, err)) == 0) {
+        mprLog("error appweb", 0, "Cannot create connection");
+        return MPR_ERR_CANT_INITIALIZE;
+    }
     status = httpGetStatus(conn);
     if (response) {
         *response = httpReadString(conn);

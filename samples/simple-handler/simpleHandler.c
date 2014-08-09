@@ -19,7 +19,7 @@ static void readySimple(HttpQueue *q)
     HttpConn    *conn;
 
     conn = q->conn;
-    httpSetHeader(conn, "Custom-Date", conn->http->currentDate);
+    httpSetHeaderString(conn, "Custom-Date", conn->http->currentDate);
     httpSetStatus(conn, 200);
 
     /*
@@ -54,7 +54,7 @@ int maSimpleHandlerInit(Http *http, MprModule *module)
 {
     HttpStage   *stage;
 
-    if ((stage = httpCreateHandler(http, "simpleHandler", module)) == 0) {
+    if ((stage = httpCreateHandler("simpleHandler", module)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     stage->ready = readySimple;

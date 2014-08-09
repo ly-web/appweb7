@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Embedthis Appweb 5.0.0 Documentation</title>
+    <title>Embedthis Appweb 5.1.0 Documentation</title>
     <meta name="keywords" content="embedded web server, web server software, embedded HTTP, application web server, 
         embedded server, small web server, HTTP server, library web server, library HTTP, HTTP library" />
     <meta name="description" content="Embedthis Sofware provides commercial and open source embedded web servers for 
@@ -18,11 +18,11 @@
 
 <body>
     <div class="top">
-        <a class="logo" href="http://appwebserver.org/">&nbsp;</a>
+        <a class="logo" href="http://embedthis.com/">&nbsp;</a>
         <div class="topRight">
             <div class="search">
                 <div id="cse-search-form"></div>
-                <div class="version">Embedthis Appweb 5.0.0</div>
+                <div class="version">Embedthis Appweb 5.1.0</div>
             </div>
         </div>
         <div class="crumbs">
@@ -35,10 +35,10 @@
         <div class="contentRight">
             <h1>Quick Nav</h1>
             <ul>
-                <li><a href="5.0.0">Release 5.0.0</a></li>
-                <li><a href="4.6.1">Release 4.6.1</a></li>
-                <li><a href="3.4.1">Release 3.4.1</a></li>
-                <li><a href="2.4.4">Release 2.4.4</a></li>
+                <li><a href="#5.1.0">Release 5.1.0</a></li>
+                <li><a href="#4.6.2">Release 4.6.2</a></li>
+                <li><a href="#3.4.1">Release 3.4.1</a></li>
+                <li><a href="#2.4.4">Release 2.4.4</a></li>
             </ul>
 <!-- BeginDsi "dsi/genSeeAlso.html" -->
             <h1>See Also</h1>
@@ -59,12 +59,32 @@
         </div>
         <div class="contentLeft">
             <h1>Appweb Change Log</h1>
+            <p>The change log is now provided on GitHub at:
+                <a href="https://github.com/embedthis/appweb/releases">GitHub Appweb Releases</a>.</p>
+            <h2>Historical Change Log</h2>
             <p>Brief Appweb change log of the the major features and changes for each release.</p>
             <h4>Note to security researchers:</h4>
             <p>Please do not mine this list and create security advisories.
             Please see the <a href="http://github.com/embedthis/appweb/issues">Appweb Issue Database</a> 
             for the official product issue list and for comprehensive CVE dispositions.</p>
         
+            <a id="5.1.0"></a>
+            <h2 class="section">Changes in 5.1.0</h2>
+            <h3>Minor Features</h3>
+            <ul>
+                <li>Simplify log and trace output to the console via --trace and --log switches
+                    <a href="https://github.com/embedthis/appweb/issues/371">[issue 371]</a>.</li>
+                <li>Add unit tests using TestMe
+                    <a href="https://github.com/embedthis/appweb/issues/372">[issue 372]</a>.</li>
+            </ul>
+            <h3>Fixes</h3>
+            <ul>
+                <li>Fix race condition with mprWaitForEvent
+                    <a href="https://github.com/embedthis/appweb/issues/373">[issue 373]</a>.</li>
+                <li>Fix JSON config file parsing
+                    <a href="https://github.com/embedthis/appweb/issues/374">[issue 374]</a>.</li>
+                <li>The fixes from version 4.6.2 are applied.</li>
+            </ul>
             <a id="5.0.0"></a>
             <h2 class="section">Changes in 5.0.0</h2>
             <h3>Notes</h3>
@@ -121,7 +141,7 @@
             <h3>Incompatible Changes</h3>
             <ul>
                 <li>Configuring for Ejscript now requires "--with ejs" instead of "--with ejscript"</li>
-                <li>Since Bit is rebranded as MakeMe, conditional definitions are using the "ME_" prefix instead of "BIT_"</li>
+                <li>Since Bit is rebranded as MakeMe, conditional definitions are using the "ME_" prefix instead of "BIT_"
                     Also, configured components are described using "ME_COM_" instead of "BIT_PACK"</li>
                 <li>APIs previously nominated in 4.X as deprecated are now removed. This includes the ESP legacy mvc
                     framework.</li>
@@ -143,6 +163,12 @@
             <ul>
                 <li>Client initiated disconnect not setting HttpTx.responded.
                     <a href="https://github.com/embedthis/appweb/issues/365">[issue 365]</a>.</li>
+                <li>Add OpenSSL SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER option
+                    <a href="https://github.com/embedthis/appweb/issues/375">[issue 375]</a>.</li>
+                <li>Require MakeMe 0.8.2
+                    <a href="https://github.com/embedthis/appweb/issues/376">[issue 376]</a>.</li>
+                <li>Negative timeouts in httpWait for client HTTP requests causing delays.
+                    <a href="https://github.com/embedthis/appweb/issues/377">[issue 377]</a>.</li>
             </ul>
             <a id="4.6.1"></a>
             <h2 class="section">Changes in 4.6.1</h2>
@@ -171,12 +197,9 @@
             <ul>
                 <li>The format for ESP applications package.json has been upgraded for compatibility 
                     with the <a href="http://wiki.commonjs.org/wiki/Packages/1.1">CommonJS Package</a>
-                    specification and the <a href="http://embedthis.com/products/pak/">Pak</a> package manager.
-                    <a href="https://github.com/embedthis/appweb/issues/NN">[issue NN]</a>.</li>
+                    specification and the <a href="http://embedthis.com/pak/">Pak</a> package manager.</li>
                 <li>The <em>esp</em> utility has been upgraded to support the simpler "make dir and install"
-                    paradigm for creating applications instead of "generate app"
-                    <a href="https://github.com/embedthis/appweb/issues/NN">[issue NN]</a>.</li>
-                </li>
+                    paradigm for creating applications instead of "generate app".</li>
             </ul>
             <h3>Fixes</h3>
             <ul>
@@ -205,7 +228,8 @@
                             collection.</li>
                         <li>The <em>auth</em> property is renamed <em>app.http.auth.store</em>.</li>
                     </ul>
-                    <p>See the <a href="https://github.com/embedthis/esp/blob/dev/samples/esp-configuration/package.json">esp-configuration Sample</a> for details of all supported configuration file properties.</a>
+                    <p>See the <a href="https://github.com/embedthis/esp/blob/dev/samples/esp-configuration/package.json">esp-configuration 
+                       Sample</a> for details of all supported configuration file properties.</p>
                 </li>
                 <li>The esp-angular-mvc, esp-angular and angular packs have been removed from the product and are
                 now available from the <a href="https://embedthis.com/catalog/#/?keywords=angular">Pak Catalog</a>.</li>
@@ -350,7 +374,7 @@
                     <a href="https://github.com/embedthis/appweb/issues/292">[issue 292]</a></li>
                 <li>Add MakeDir directive
                     <a href="https://github.com/embedthis/appweb/issues/293">[issue 293]</a></li>
-                <li>Add httpBorrowConn and httpReleaseConn to make it easier to use mprCreateEventOutside</li>
+                <li>Add httpBorrowConn and httpReleaseConn to make it easier to use mprCreateEventOutside
                     <a href="https://github.com/embedthis/appweb/issues/302">[issue 302]</a></li>
                 <li>Increase default WebSockets inactivity timeout to five minutes
                     <a href="https://github.com/embedthis/appweb/issues/307">[issue 307]</a></li>
@@ -377,7 +401,7 @@
                     <a href="https://github.com/embedthis/appweb/issues/254">[issue 254]</a></li>
                 <li>Add documentation on new httpWriteBlock behavior
                     <a href="https://github.com/embedthis/appweb/issues/255">[issue 255]</a></li>
-                <li>Update conn->lastActivity in readEvent
+                <li>Update conn-&gt;lastActivity in readEvent
                     <a href="https://github.com/embedthis/appweb/issues/256">[issue 256]</a></li>
                 <li>Use 401 when user fails authorization
                     <a href="https://github.com/embedthis/appweb/issues/257">[issue 257]</a></li>
@@ -2602,7 +2626,7 @@
           '000262706376373952077:1hs0lhenihk');
         customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
         var options = new google.search.DrawOptions();
-        options.enableSearchboxOnly("http://appwebserver.org/search.html");
+        options.enableSearchboxOnly("http://embedthis.com/search.html");
         customSearchControl.draw('cse-search-form', options);
       }, true);
     </script>

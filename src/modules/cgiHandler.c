@@ -1014,9 +1014,8 @@ static int scriptAliasDirective(MaState *state, cchar *key, cchar *value)
 PUBLIC int maCgiHandlerInit(Http *http, MprModule *module)
 {
     HttpStage   *handler, *connector;
-    MaAppweb    *appweb;
 
-    if ((handler = httpCreateHandler(http, "cgiHandler", module)) == 0) {
+    if ((handler = httpCreateHandler("cgiHandler", module)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     http->cgiHandler = handler;
@@ -1026,7 +1025,7 @@ PUBLIC int maCgiHandlerInit(Http *http, MprModule *module)
     handler->open = openCgi; 
     handler->start = startCgi; 
 
-    if ((connector = httpCreateConnector(http, "cgiConnector", module)) == 0) {
+    if ((connector = httpCreateConnector("cgiConnector", module)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     http->cgiConnector = connector;
@@ -1036,11 +1035,10 @@ PUBLIC int maCgiHandlerInit(Http *http, MprModule *module)
     /*
         Add configuration file directives
      */
-    appweb = httpGetContext(http);
-    maAddDirective(appweb, "Action", actionDirective);
-    maAddDirective(appweb, "ScriptAlias", scriptAliasDirective);
-    maAddDirective(appweb, "CgiEscape", cgiEscapeDirective);
-    maAddDirective(appweb, "CgiPrefix", cgiPrefixDirective);
+    maAddDirective("Action", actionDirective);
+    maAddDirective("ScriptAlias", scriptAliasDirective);
+    maAddDirective("CgiEscape", cgiEscapeDirective);
+    maAddDirective("CgiPrefix", cgiPrefixDirective);
     return 0;
 }
 
