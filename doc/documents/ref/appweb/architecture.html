@@ -1,6 +1,6 @@
 {
     title:  "Appweb Architecture",
-    crumbs: [ { 'Programmers Reference': 'index.html' }, { '': '' } ],
+    crumbs: [ { 'Reference': 'index.html' }, { '': '' } ],
 }
 
             <h1>Appweb Architecture</h1><!--
@@ -295,7 +295,7 @@ AddHandler espHandler myDoc
             of <b>stages</b>. Each stage has a data queue with two service routines, one to accept data without queuing
             and one for delayed servicing of previously queued data. Pipeline stages support flow-control and can queue
             data for delayed servicing if the downstream stage cannot currently accept data.</p><img src=
-            "../../images/pipeline.jpg" alt="" />
+            "../../images/pipeline.jpg" alt="pipeline" />
             <p>A typical pipeline consists of the following <b>stages</b>.</p>
             <ul>
                 <li>One handler</li>
@@ -366,11 +366,13 @@ AddHandler espHandler myDoc
             an application generator, templating and layout engine, a Model/View/Controller framework, extensive caching,
             and a library of Ajax view controls. It is blazing fast via the use of "C" and caching of 
             compiled web pages and rendered HTML.
+<!-- KEEP
             <h3>Ejscript Web Framework</h3>
             <p>The Ejscript Web Framework was designed to make it easier to create dynamic web applications. It uses
                 server-side JavaScript as the application language and provides provides an application generator,
                 templating engine, a powerful Model/View/Controller framework, and a library of Ajax view controls. See
                 the <a href="ejsArchitecture.html">Ejscript Web Framework</a> for more details.</p>
+-->
             <h3>PHP</h3>
             <p>PHP is a widely-used general-purpose scripting language that is especially suited for Web development
             and can be embedded into HTML. Appweb provides a fast, in-memory handler for the PHP web framework.</p>
@@ -437,4 +439,4 @@ maRunWebServer("appweb.conf");
             <h3>Expanded Control</h3>
             <p>Appweb also provides a detailed API so you can create an embedded web server instance and control
             virtual hosts, port binding, directory and location blocks and every other part of Appweb. See the <a href=
-            "../../api/appweb.html">Appweb Native API</a> for full details.</p>
+            "../../ref/appweb/api/appweb.html">Appweb Native API</a> for full details.</p>

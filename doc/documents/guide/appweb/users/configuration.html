@@ -10,7 +10,7 @@
             read when Appweb starts up, and it manages every aspect of Appweb's configuration including what ports and
             addresses to listen to, what modules to load, where to find the web pages and how to log requests.</p>
             <p>Appweb can also be configured programmatically. For details, please read the <a href=
-            "../../../api/appweb.html">Appweb API</a>.</p>
+            "../../../ref/appweb/api/appweb.html">Appweb API</a>.</p>
             <p>The top-level configuration file is usually called <b>appweb.conf</b> and is read once when appweb is
             started. Changes to the configuration file will require Appweb to be restarted.</p>
             <p>An alternative configuration file may be specified by using the <b>--config</b> Appweb command
@@ -254,6 +254,7 @@ Include conf/applications/*.conf
                         <td><a href="dir/route.html#documents">Documents</a></td>
                         <td>Directory containing web content.</td>
                     </tr>
+<!-- KEEP
                     <tr>
                         <td><a href="dir/ejs.html#ejsAlias">EjsAlias</a></td>
                         <td>Define an Ejscript application alias.</td>
@@ -266,6 +267,7 @@ Include conf/applications/*.conf
                         <td><a href="dir/ejs.html#ejsWorkers">EjsWorkers</a></td>
                         <td>Define the maximum number of worker threads.</td>
                     </tr>
+-->
                     <tr>
                         <td><a href="dir/server.html#errorDocument">ErrorDocument</a></td>
                         <td>Define an error document to serve.</td>

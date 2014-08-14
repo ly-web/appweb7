@@ -1,0 +1,8 @@
+{
+    title: 'Embedthis Appweb Documentation',
+    preserve: [
+        'documents/images/',
+        'documents/lib/',
+        'documents/man/',
+    ],
+},

@@ -80,7 +80,6 @@ bin/*.res
 *.out
 src/test/regress/tcp
 */x86_64-*
-out
 src/server/conf/apps/web.conf
 project.xcworkspace
 xcuserdata

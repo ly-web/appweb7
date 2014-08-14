@@ -40,12 +40,10 @@
             <ul>
                 <li>The core of Appweb is now written in C not C++. This was done for portability to some platforms and
                 to eliminate the C API module.</li>
-                <li>Added new Ejscript Web Framework.</li>
                 <li>Moved Chunk and Ranged request processing into modular filters in the Request Pipeline.</li>
                 <li>The stand-alone Appweb command line program is upgraded with all new switches and options.</li>
 				<li>Removed the windows winAppweb program. In its place, the Appweb manager (appman) starts the 
 				standard Appweb program.</li>
-                <li>The Ejscript Web Framework replaces Embedded Server Pages.</li>
                 <li>The build system is upgraded and simplified. New configure options and cross compiling capabilities
                 are added.</li>
                 <li>The Http client is upgraded with new switches and options. Also now supports SSL, transfer chunk
@@ -209,6 +207,8 @@ static void myEgi(MaQueue *q)
 }
 maDefineEgiForm(http, "/myEgi.egi", myEgi);
 </pre><a id="esp"></a>
+
+<!-- KEEP
             <h2 class="section">Migrating ESP Applications to Ejscript</h2>
             <p>The upgrade to Ejscript from ESP is the single biggest change in Appweb 3. ESP was a minimal subset of
             the JavaScript language with a trivial embedding in HTML pages. Ejscript supports these capabilities, but
@@ -283,6 +283,5 @@ write("Using session: " + <b>request.sessionID</b>)
             <p>For more details, please read</p>
             <ul>
                 <li><a href="../../../product/changeLog.html">Appweb Change Log</a></li>
-                <li><a href="../users/ejs.html">Using Ejscript</a></li>
-                <li><a href="../../../ejs/index.html">Ejscript Documentation</a></li>
             </ul>
+-->

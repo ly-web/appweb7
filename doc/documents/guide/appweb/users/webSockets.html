@@ -83,7 +83,7 @@ X-Request-Timeout: 600
             correspond to frame boundaries.</p>
             <p>Frame boundaries can be preserved by setting PreserveFrames directive or by calling
             the 
-            <a href="../../../api/http.html#group___http_web_socket_1ga31d43df04a526af4103c41d0deecedc1">
+            <a href="../../../ref/appweb/api/http.html#group___http_web_socket_1ga31d43df04a526af4103c41d0deecedc1">
                 httpSetWebSocketPreserveFrames</a> API. If enabled, each frame is passed as-is to the user callback without
             splitting or aggregating with other frames. Note that if enabled, some text messages may not have their UTF-8
             fully validated if UTF code points span message frames.</p>
@@ -154,25 +154,25 @@ X-Request-Timeout: 600
             <table title="API" class="ui table segment">
                 <thead><tr><th>Directive</th><th>Purpose</th></tr></thead>
                 <tbody>
-                    <tr><td><a href="../../../api/http.html#group___http_queue_1ga289893521c40788edc06280530167a85">httpGetPacket</a></td><td>Get the next message</td></tr>
-                    <tr><td><a href="../../../api/http.html#http_8h_1a6c1a4a4b4d9cfc2ce626bb5fd005e6ac">httpGetWebSocketCloseReason</a></td><td>Get the close reason supplied 
+                    <tr><td><a href="../../../ref/appweb/api/http.html#group___http_queue_1ga289893521c40788edc06280530167a85">httpGetPacket</a></td><td>Get the next message</td></tr>
+                    <tr><td><a href="../../../ref/appweb/api/http.html#http_8h_1a6c1a4a4b4d9cfc2ce626bb5fd005e6ac">httpGetWebSocketCloseReason</a></td><td>Get the close reason supplied 
                         by the peer</td></tr>
-                    <tr><td><a href="../../../api/http.html#http_8h_1ad908e15f337a359e0f90258621d1329b">httpGetWebSocketProtocol</a></td><td> Get the selected web 
+                    <tr><td><a href="../../../ref/appweb/api/http.html#http_8h_1ad908e15f337a359e0f90258621d1329b">httpGetWebSocketProtocol</a></td><td> Get the selected web 
                         socket protocol selected by the server</td></tr>
-                    <tr><td><a href="../../../api/http.html#http_8h_1a038d5c42a1ef5bce910dc617987a222c">httpSend</a></td><td>Send a UTF-8 text message to 
+                    <tr><td><a href="../../../ref/appweb/api/http.html#http_8h_1a038d5c42a1ef5bce910dc617987a222c">httpSend</a></td><td>Send a UTF-8 text message to 
                         the web socket peer</td></tr>
-                    <tr><td><a href="../../../api/http.html#http_8h_1ae7ef3ebbb7bbbbd701bdf84ab10cb6c1">httpSendBlock</a></td><td>Send a message of a given type to 
+                    <tr><td><a href="../../../ref/appweb/api/http.html#http_8h_1ae7ef3ebbb7bbbbd701bdf84ab10cb6c1">httpSendBlock</a></td><td>Send a message of a given type to 
                         the web socket peer</td></tr>
-                    <tr><td><a href="../../../api/http.html#http_8h_1adb22d418a67109b699890888ca66053a">httpSendClose</a></td><td>Send a close message to the web 
+                    <tr><td><a href="../../../ref/appweb/api/http.html#http_8h_1adb22d418a67109b699890888ca66053a">httpSendClose</a></td><td>Send a close message to the web 
                         socket peer</td></tr>
-                    <tr><td><a href="../../../api/http.html#group___http_conn_1ga6c39eab8e8b50e632f7e5620fce05318">httpSetConnNotifier</a></td><td>Define a connection callback notifier function</td></tr>
+                    <tr><td><a href="../../../ref/appweb/api/http.html#group___http_conn_1ga6c39eab8e8b50e632f7e5620fce05318">httpSetConnNotifier</a></td><td>Define a connection callback notifier function</td></tr>
                     <tr><td><a
-                                href="../../../api/http.html#group___http_web_socket_1ga31d43df04a526af4103c41d0deecedc1 ">httpSetWebSocketPreserveFrames</a></td><td>Preserve
+                                href="../../../ref/appweb/api/http.html#group___http_web_socket_1ga31d43df04a526af4103c41d0deecedc1 ">httpSetWebSocketPreserveFrames</a></td><td>Preserve
                             frame boundaries and do not split or aggregate frames. </td></tr>
-                    <tr><td><a href="../../../api/http.html#http_8h_1a96f8cb3db541d8a1340caf0d2afbbb1f">httpSetWebSocketProtocols</a></td><td>Set the list of 
+                    <tr><td><a href="../../../ref/appweb/api/http.html#http_8h_1a96f8cb3db541d8a1340caf0d2afbbb1f">httpSetWebSocketProtocols</a></td><td>Set the list of 
                         application-level protocols supported by the client. This is a client-only API. </td></tr>
-                    <tr><td><a href="../../../api/http.html#http_8h_1acb7184072bfb15ebf2c95f9ef6d0ba8c">httpWebSocketOrderlyClosed</a></td><td>Test if a close was orderly</td></tr>
-                    <tr><td><a href="../../../api/esp.html#group___esp_req_1ga0ea346bbee09c401e90f0b908e7476ba">
+                    <tr><td><a href="../../../ref/appweb/api/http.html#http_8h_1acb7184072bfb15ebf2c95f9ef6d0ba8c">httpWebSocketOrderlyClosed</a></td><td>Test if a close was orderly</td></tr>
+                    <tr><td><a href="../../../ref/appweb/api/esp.html#group___esp_req_1ga0ea346bbee09c401e90f0b908e7476ba">
                             espSetNotifier</a></td><td>Define a connection callback notifier function for ESP applications.</td></tr>
                 </tbody>
             </table>
@@ -217,7 +217,7 @@ ESP_EXPORT int esp_controller_websock(HttpRoute *route, MprModule *module) {
             contains one frame, provided the frame is smaller than the configured maximum packet size (LimitWebSocketsPacket).</p>
             
             <p>The packet is retrieved via the
-            <a href="../../../api/http.html#group___http_queue_1ga289893521c40788edc06280530167a85">
+            <a href="../../../ref/appweb/api/http.html#group___http_queue_1ga289893521c40788edc06280530167a85">
                 httpGetPacket</a> API. This removes the first packet from the given read queue.</p>
             <pre class="ui code segment">HttpPacket *packet = httpGetPacket(conn-&gt;readq);</pre>
             <p>The packet contains information about the message and the message contents. Packet fields of interest are:</p>
@@ -236,12 +236,12 @@ ESP_EXPORT int esp_controller_websock(HttpRoute *route, MprModule *module) {
                 <li> WS_MSG_PONG     &mdash; Pong message</li>
             </ul>
             <p>The message contents is stored in the packet-&gt;content buffer. This is an instance of the 
-            <a href="../../../api/mpr.html#group___mpr_buf">MprBuf</a> buffer object. A pointer to
+            <a href="../../../ref/appweb/api/mpr.html#group___mpr_buf">MprBuf</a> buffer object. A pointer to
             the start of the message can be retrieved via:</p>
-            <pre class="ui code segment"><a href="../../../api/mpr.html#group___mpr_buf_1gac982291efef3d49cce4bc2ecec6566e5"
+            <pre class="ui code segment"><a href="../../../ref/appweb/api/mpr.html#group___mpr_buf_1gac982291efef3d49cce4bc2ecec6566e5"
                 >mprGetBufStart(packet-&gt;content)</a></pre>
             <p>The length of the message can be determined via:</p>
-            <pre class="ui code segment"><a href="../../../api/mpr.html#group___mpr_buf_1gaa543b610b67691faf917b4b79229fc34"
+            <pre class="ui code segment"><a href="../../../ref/appweb/api/mpr.html#group___mpr_buf_1gaa543b610b67691faf917b4b79229fc34"
                 >mprGetBufLength(packet-&gt;content)</a></pre>
             <p>Note TEXT messages are null terminated and you can use the start reference as a c-string reference.</p>
             <h3>Sending Messages</h3>
@@ -251,14 +251,14 @@ ESP_EXPORT int esp_controller_websock(HttpRoute *route, MprModule *module) {
                 <li>httpSendBlock &mdash; a lower-level API for maximal control over message transmission</li>
             </ul>
             <p>To send messages of type TEXT, Appweb provides a simple API: 
-            <a href="../../../api/http.html#group___http_web_socket_1ga038d5c42a1ef5bce910dc617987a222c">httpSend</a>.</p>
+            <a href="../../../ref/appweb/api/http.html#group___http_web_socket_1ga038d5c42a1ef5bce910dc617987a222c">httpSend</a>.</p>
             <pre class="ui code segment">ssize httpSend (HttpConn *conn, cchar *fmt, ...)</pre>
             <p>This API sends UTF-8 messages to the client. Messages are fully buffered, i.e. the call will always accept the
             given data. The call returns the number of bytes accepted. For example:</p>
             <pre class="ui code segment">httpSend(conn, "The temperature today is: %d", temp);</pre>
             <h4>httpSendBlock</h4>
             <p>The WebSockFilter also provides a lower-level and more powerful API: 
-                <a href="file:///Users/mob/git/appweb/doc/api/http.html#group___http_web_socket_1ga01475cb98667018a573c4347c847217f"
+                <a href="../../../ref/appweb/api/http.html#group___http_web_socket_1ga01475cb98667018a573c4347c847217f"
                     >httpSendBlock</a> for sending messages.</p>
             <pre class="ui code segment">ssize httpSendBlock(HttpConn *conn, int type, cchar *msg, ssize len, int flags)</pre>
             <p>This API can send messages and can control how messages are framed, buffered or whether the API should wait

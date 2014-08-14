@@ -54,9 +54,9 @@
             
             <h3>ESP Uploads</h3>
             <p>ESP provides direct access to the internal Appweb uploaded files structure. Each uploaded file is described
-            by a <a href="../../../api/http.html#group___http_upload_file">HttpUploadFile</a> structure. 
+            by a <a href="../../../ref/appweb/api/http.html#group___http_upload_file">HttpUploadFile</a> structure. 
             These structures are stored in an MprHash table indexed by their HTML file upload ID.</p>
-            <p>The <a href="../../../api/http.html#group___http_upload_file">HttpUploadFile</a> structure is defined as:
+            <p>The <a href="../../../ref/appweb/api/http.html#group___http_upload_file">HttpUploadFile</a> structure is defined as:
             <pre class="ui code segment">
 typedef HttpUploadFile {
     cchar *filename;        /* Local (temp) name of the file */
@@ -80,9 +80,9 @@ for (ITERATE_KEY_DATA(conn-&gt;rx-&gt;files, kp, file)) {
 </pre>
             <h3>Ejscript Uploads</h3>
             <p>Ejscript stores uploaded files in the <em><a
-                    href="http://embedthis.com/ejs/doc/api/ejscript/ejs.web-Request.html">request.files</a></em> property. Files is an object hash
+                    href="https://embedthis.com/ejs/doc/api/ejscript/ejs.web-Request.html">request.files</a></em> property. Files is an object hash
             of files indexed by the HTML ID. Each file is represented by an instance of the 
-            <a href="http://embedthis.com/ejs/doc/api/ejscript/ejs.web-UploadFile.html">UploadFile</a> class.
+            <a href="https://embedthis.com/ejs/doc/api/ejscript/ejs.web-UploadFile.html">UploadFile</a> class.
             <a id="post"></a>
             <h2>Alternative Upload Technique</h2>
             <p>File upload using POST requests is one way to upload files. Another is to use the HTTP PUT method.

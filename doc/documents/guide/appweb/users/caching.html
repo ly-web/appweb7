@@ -88,7 +88,7 @@
             server state has changed that would require regenerating the response. The handler will manually send the cached
             response (if it is current) by using the 
             
-            <a href="../../../api/esp.html#group___esp_req_1ga94594750521ce6621691dcec43a2d670"><em>espRenderCached</em></a>
+            <a href="../../../ref/appweb/api/esp.html#group___esp_req_1ga94594750521ce6621691dcec43a2d670"><em>espRenderCached</em></a>
             API. If the response is stale, it will generate a new response. In both cases, the
             Appweb cacheFilter will automatically capture the response and save it to the cache for future requests.
             This paradigm is useful when a stale page must <i>never</i> be sent to the client and the handler must
@@ -97,7 +97,7 @@
             <p>In Event Driven mode, the web page is not generated in response to a client request, but rather in
             response to some state change on the server system. The pre-generated web page is then manually stored in
             the cache by calling the
-            <a href="../../../api/esp.html#group___esp_req_1ga2d10fdd68ab00d306d344c815f7655e7"><em>espUpdateCache</em></a>
+            <a href="../../../ref/appweb/api/esp.html#group___esp_req_1ga2d10fdd68ab00d306d344c815f7655e7"><em>espUpdateCache</em></a>
             API.  When the client request is subsequently received, the response is retrieved from the cache without
             running a request handler. This paradigm is effective if the delay in creating a response web page is large.
             In that case, pre-computing the web page in the background means that the client request can be serviced very

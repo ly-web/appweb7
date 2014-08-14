@@ -419,6 +419,8 @@ href="https://github.com/embedthis/appweb/search?q=CVE-&amp;type=Issues">https:/
             <h2 class="section">Frameworks</h2>
             <p>Appweb supports several Web Frameworks for creating dynamic content. These frameworks sometimes require
             special security considerations because they are executing code or scripts to render the content.</p>
+
+<!-- KEEP
             <h3>Ejscript Web Framework</h3>
             <p>Appweb supports the Ejscript web framework for dynamic web applications. Ejscript will execute HTML
             pages with embedded script code and process the pages before returning the result to the client. Properly
@@ -428,6 +430,7 @@ href="https://github.com/embedthis/appweb/search?q=CVE-&amp;type=Issues">https:/
             handler may process the page and return the raw script back to the user. As installed, Appweb defines the
             ".ejs" extension for Ejscript pages. Using the <a href="dir/ejs.html#ejsAppAlias">EjsAppAlias</a> directive
             will correctly configure an Ejscript application to prevent access to raw script code.</p>
+-->
             <h3>PHP</h3>
             <p>The php.ini file controls the setup and execution of the PHP web framework. The following table lists
             several parameters that should be set for enhanced security:</p>
@@ -475,6 +478,7 @@ href="https://github.com/embedthis/appweb/search?q=CVE-&amp;type=Issues">https:/
                     </tr>
                 </tbody>
             </table>
+
             <h3>Changing the extension</h3>
             <p>To obscure the fact that PHP is being run on the server-side, you can change the extension for pages
             from <b>.php</b> to say ".web". You then need to add the following directive to the appweb.conf file.</p>
@@ -483,7 +487,7 @@ AddType application/x-httpd-php .web
 </pre>
             <h2 class="section">Embedded Server Pages</h2>
             <p>ESP applications are not immune to security flaws. It is highly recommended that
-            you use the <a href="../../../api/mpr.html">MPR</a> services for all your ESP code. This portable runtime
+            you use the <a href="../../../ref/appweb/api/mpr.html">MPR</a> services for all your ESP code. This portable runtime
             has been extensively tested and includes routines to guard against common buffer overflows and other such
             exploits.</p>
             <a name="securedefaults"></a>
