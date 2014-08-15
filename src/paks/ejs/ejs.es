@@ -10523,6 +10523,7 @@ module ejs {
          */
         native function remove(start: Number, end: Number = -1): String
 
+        //  TODO - need options to do a global replace when pattern is a string
         /**
             Search and replace. Search for the given pattern which can be either a string or a regular expression 
             and replace it with the replace text. If the pattern is a string, only the first occurrence is replaced.
@@ -16424,9 +16425,21 @@ module ejs.template  {
                     tid = Token.Literal
                     break
 
+                case "\\":
+                    if (script[pos] == '@') {
+                        token.write('@')
+                        pos++
+                    } else if (script[pos] == '<' && script[pos+1] == '%') {
+                        token.write('<%')
+                        pos += 2
+                    } else {
+                        token.write('\\')
+                        token.write(c)
+                    }
+                    break
+
                 default:
-                    //  TODO - triple quotes would eliminate the need for this
-                    if (c == '\"' || c == '\\') {
+                    if (c == '\"') {
                         token.write('\\')
                     }
                     token.write(c)
