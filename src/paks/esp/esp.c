@@ -643,7 +643,7 @@ static void initRuntime()
         app->platform = http->platform;
         httpSetPlatformDir(0);
     }
-    trace("Info", "Platform \"%s\"", http->platformDir);
+    vtrace("Info", "Platform \"%s\"", http->platformDir);
     if (!http->platformDir) {
         if (app->platform) {
             fail("Cannot find platform: \"%s\"", app->platform);
