@@ -16569,6 +16569,7 @@ module ejs.unix {
             list = base.files(pattern, options)
 
             if (!list || list.length == 0) {
+                //  TODO - this has downside that you cannot copy an empty directory
                 throw 'cp: Cannot find files to copy "' + pattern + '" to ' + dest
             }
             destIsDir = (dest.isDir || list.length > 1 || dest.name.endsWith('/'))
