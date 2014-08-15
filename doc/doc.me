@@ -49,16 +49,6 @@ Me.load({
                 for each (f in Path('out').files('**/*.css')) {
                     f.write('.rule {}\n')
                 }
-/* UNUSED
-                for each (f in Path('out').files('man/*.html')) {
-                    let data = f.readString().toLowerCase().
-                        replace(/&amp/g, '\&amp;').
-                        replace(/&gt/g, '\&gt;').
-                        replace(/&lt/g, '\&lt;')
-                    f.write('<!DOCTYPE html>\n<html lang="eng"><head><title>' + f.basename.trimExt().toString().toPascal() + 
-                        ' Man Page</title></head>\n' + data + '</html>')
-                }
-*/
             `
         },
     },

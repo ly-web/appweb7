@@ -26,6 +26,7 @@ body {
 }
 
 .ui.sidebar {
+  width: 240px !important;
   -webkit-transition: none !important;
      -moz-transition: none !important;
           transition: none !important;
