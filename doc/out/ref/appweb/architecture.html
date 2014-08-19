@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <meta name="keywords" content="appweb, embedded web server, embedded, devices, http server, internet of things, esp, goahead" />
     <meta name="description" content="The fastest little web server" />
-    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,+Sans:300italic,400,300,700'
+    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
         rel='stylesheet' type='text/css'>
     <link href="../../lib/semantic/packaged/css/semantic.css" rel="stylesheet" type="text/css" />
     <link href="../../css/all.css" rel="stylesheet" type="text/css" />
@@ -27,7 +27,7 @@
                 <a class="item" href="../../index.html">Appweb Overview</a>
                 <a class="item" href="../../guide/appweb/features.html">Appweb Features</a>
                 <a class="item" href="../../install/releaseNotes.html">Release Notes</a>
-                <a class="item" href="https://embedthis.com/download/appweb.html">Download</a> 
+                <a class="item" href="https://embedthis.com/appweb/download.html">Download</a> 
                 <a class="item" href="../../licensing/index.html">Licensing</a>
             </div>
         </div>
@@ -96,14 +96,13 @@
                 <a class="item" href="https://github.com/embedthis/appweb/issues">Project Issue Database</a>
                 <a class="item" href="https://github.com/embedthis/appweb/releases">Change Log</a>
                 <a class="item" href="https://github.com/embedthis/appweb/milestones">Roadmap</a>
-                <a class="item" href="https://embedthis.com/scripts/contributors.esp">Contributors Agreement</a>
+                <a class="item" href="https://embedthis.com/developers/contributors.html">Contributors Agreement</a>
             </div>
         </div>
         <div class="item">
             <b>Links</b>
             <div class="menu">
                 <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
-                <a class="item" href="http://groups.google.com/group/appweb">Community Support</a>
                 <a class="item" href="https://embedthis.com/">Embedthis Web Site</a>
                 <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
                 <a class="item" href="https://embedthis.com/blog/">Embedthis Blog</a>
@@ -169,7 +168,7 @@
             top-tier web sites.
             Rather, it aims to be robust, secure and blazing fast with low and predictable memory utilization.</p>
             <a id="deployment"></a>
-            <h2 class="section">Deployment Models</h2>
+            <h2>Deployment Models</h2>
             <p>Appweb can be deployed in several ways:</p>
             <ul>
                 <li>As a stand-alone web server</li>
@@ -190,7 +189,7 @@
             ESP, Ejscript or PHP applications.</p>
             
             <a id="processing"></a>
-            <h2 class="section">Processing Architecture</h2>
+            <h2>Processing Architecture</h2>
             <p>Appweb typically runs one, multi-threaded, event driven process. Appweb uses a non-blocking
             event driven architecture and is capable of running many requests simultaneously.</p>
             <h3>Event Driven and Multi-threaded</h3>
@@ -201,7 +200,7 @@
             pool. Further, it scales well, as one thread can service many requests.</p>
             
             <a id="modules"></a>
-            <h2 class="section">Appweb Modules</h2>
+            <h2>Appweb Modules</h2>
             <p>Embeddable web servers have several competing goals:</p>
             <ul>
                 <li>Minimize memory footprint</li>
@@ -228,7 +227,7 @@
                 </thead>
                 <tbody>
                 <tr>
-                    <td class="">Multithreaded Portable Runtime</td>
+                    <td class="nowrap">Multithreaded Portable Runtime</td>
                     <td>Cross-platform, multi-threaded portable runtime. Includes services for memory allocation,
                     dynamic module loading, safe string handling, lists, hashing, command execution, socket
                     communications, threads, thread synchronization, thread-pool, events, timers, debug trace and
@@ -313,7 +312,7 @@
             thousands of requests per second if required.</p>
             
             <a id="configuration"></a>
-            <h2 class="section">Appweb Configuration</h2>
+            <h2>Appweb Configuration</h2>
             <p>Appweb uses an Apache style configuration file. This configuration file is read when Appweb starts and
             it manages every aspect of Appweb's configuration including what ports and addresses to listen to, what
             modules to load, where to find the web pages, and how to log requests.</p>
@@ -323,7 +322,7 @@
             configuration file which means that the order of directives matters.</p>
             
             <a id="requests"></a>
-            <h2 class="section">Request Processing</h2>
+            <h2>Request Processing</h2>
             <p>The Appweb HTTP core manages the processing of requests and the construction of the request processing
             pipeline. When a new HTTP request arrives, Appweb will examine the network interface on which the request
             arrived, and if it is assigned to an IP based virtual host, Appweb will route the request to be handled by
@@ -347,7 +346,7 @@ HeaderName: value
             <table title="Headers" class="ui celled table segment">
                 <thead>
                     <tr>
-                        <th >Header</th>
+                        <th nowrap="nowrap">Header</th>
                         <th>Description</th>
                     </tr>
                 </thead>
@@ -379,7 +378,7 @@ HeaderName: value
                     hosting.</td>
                 </tr>
                 <tr>
-                    <td >If-Modified-Since</td>
+                    <td nowrap="nowrap">If-Modified-Since</td>
                     <td>Only return the content if it has been modified since the date specified. Clients who have
                     cached copies of a document (or graphics) use this header to allow the server to skip copying the
                     document if it has not changed.</td>
@@ -431,7 +430,7 @@ AddHandler espHandler myDoc
             to create the response for the client.</p>
             
             <a id="pipeline"></a>
-            <h2 class="section">Request Pipeline</h2>
+            <h2>Request Pipeline</h2>
             <p>The Appweb core uses a bidirectional pipeline to process requests and generate responses. This consists
             of a mechanism of queues, packets, buffering and event scheduling. The pipeline architecture is highly
             optimized and supports the efficient transmission of data without copying. It uses vectored, scatter/gather
@@ -505,7 +504,7 @@ AddHandler espHandler myDoc
             headers.</p>
             
             <a id="frameworks"></a>
-            <h2 class="section">Web Frameworks</h2>
+            <h2>Web Frameworks</h2>
             <p>Appweb supports loadable modules for the ESP, Ejscript and PHP web frameworks.</p>
             <h3>Embedded Server Pages  Web Framework</h3>
             <p>The ESP web framework is a high performance, Model/View/Controller web framework. 
@@ -525,7 +524,7 @@ AddHandler espHandler myDoc
             and can be embedded into HTML. Appweb provides a fast, in-memory handler for the PHP web framework.</p>
             
             <a id="security"></a>
-            <h2 class="section">Security</h2>
+            <h2>Security</h2>
             <p>Appweb provides a suite of measures designed to increase the security of your web server:</p>
             <ul>
                 <li>Secure Sockets Layer</li>
@@ -546,7 +545,7 @@ AddHandler espHandler myDoc
             application and system will not be compromised by malicious requests.</p>
             
             <a id="mpr"></a>
-            <h2 class="section">Multithreaded Portable Runtime (MPR)</h2>
+            <h2>Multithreaded Portable Runtime (MPR)</h2>
             <p>Appweb is built upon a portable runtime layer called the MPR. This layer insulates the rest of the
             product from the underlying platform and allows it to be highly portable to new operating systems or
             hardware.</p>
@@ -570,11 +569,11 @@ AddHandler espHandler myDoc
             garbage collection. This means that a managed reference must be held for all active memory. 
             See <a href="memory.html">Memory Allocation</a> for more details.</p>
             <a id="misc"></a>
-            <h2 class="section">Misc Features</h2>
+            <h2>Misc Features</h2>
             <h3>IP Networking</h3>
             <p>Appweb fully supports both IPv4 and IPv6 for both server and client operations. You can configure Appweb
             to listen on both IPv4 and IPv6 addresses.</p>
-            <h2 class="section">Embedding APIs</h2>
+            <h2>Embedding APIs</h2>
             <p>The Appweb HTTP server library can be embedded in an application to web-enable that application. 
             Appweb provides two levels of embedding:</p>
             <h3>One Line Embedding</h3>

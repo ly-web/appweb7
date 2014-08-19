@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <meta name="keywords" content="appweb, embedded web server, embedded, devices, http server, internet of things, esp, goahead" />
     <meta name="description" content="The fastest little web server" />
-    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,+Sans:300italic,400,300,700'
+    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
         rel='stylesheet' type='text/css'>
     <link href="../../../lib/semantic/packaged/css/semantic.css" rel="stylesheet" type="text/css" />
     <link href="../../../css/all.css" rel="stylesheet" type="text/css" />
@@ -27,7 +27,7 @@
                 <a class="item" href="../../../index.html">Appweb Overview</a>
                 <a class="item" href="../../../guide/appweb/features.html">Appweb Features</a>
                 <a class="item" href="../../../install/releaseNotes.html">Release Notes</a>
-                <a class="item" href="https://embedthis.com/download/appweb.html">Download</a> 
+                <a class="item" href="https://embedthis.com/appweb/download.html">Download</a> 
                 <a class="item" href="../../../licensing/index.html">Licensing</a>
             </div>
         </div>
@@ -96,14 +96,13 @@
                 <a class="item" href="https://github.com/embedthis/appweb/issues">Project Issue Database</a>
                 <a class="item" href="https://github.com/embedthis/appweb/releases">Change Log</a>
                 <a class="item" href="https://github.com/embedthis/appweb/milestones">Roadmap</a>
-                <a class="item" href="https://embedthis.com/scripts/contributors.esp">Contributors Agreement</a>
+                <a class="item" href="https://embedthis.com/developers/contributors.html">Contributors Agreement</a>
             </div>
         </div>
         <div class="item">
             <b>Links</b>
             <div class="menu">
                 <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
-                <a class="item" href="http://groups.google.com/group/appweb">Community Support</a>
                 <a class="item" href="https://embedthis.com/">Embedthis Web Site</a>
                 <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
                 <a class="item" href="https://embedthis.com/blog/">Embedthis Blog</a>
@@ -173,7 +172,7 @@
             line of code.</p>
             
             <a id="appwebProgram"></a>
-            <h2 class="section">The Appweb Server Program</h2>
+            <h2>The Appweb Server Program</h2>
             <p>The Appweb product includes a fully-featured HTTP server program that uses the Appweb HTTP library. This
             server (called <b>appweb</b>) is run by default when you install the Appweb binary distribution or run
             "make install" after building from source.</p>
@@ -187,7 +186,7 @@
             </ul>
             
             <a id="module"></a>
-            <h2 class="section">Creating a Module</h2>
+            <h2>Creating a Module</h2>
             <p>You can extend the Appweb program by creating a loadable module for your application code.</p>
             <p>To initialize your module and register with Appweb, you must create an initialization function that is
             called when Appweb loads your module. This must be named according to the form:</p>
@@ -204,7 +203,7 @@ int mprSimpleModuleInit(Http *http, MprModule *module)
 }
 </pre>
             <p>See <a href="modules.html">Creating Appweb Modules</a> for more details.</p><a id="library"></a>
-            <h2 class="section">Embed the Appweb Library</h2>
+            <h2>Embed the Appweb Library</h2>
             <p>You can link the Appweb HTTP library with your main program to enable it to function as a HTTP
             server itself. This is ideal if your application is large and/or has a complex I/O, eventing or threading
             paradigm.</p>

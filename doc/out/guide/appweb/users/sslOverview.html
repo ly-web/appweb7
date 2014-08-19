@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <meta name="keywords" content="appweb, embedded web server, embedded, devices, http server, internet of things, esp, goahead" />
     <meta name="description" content="The fastest little web server" />
-    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,+Sans:300italic,400,300,700'
+    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
         rel='stylesheet' type='text/css'>
     <link href="../../../lib/semantic/packaged/css/semantic.css" rel="stylesheet" type="text/css" />
     <link href="../../../css/all.css" rel="stylesheet" type="text/css" />
@@ -27,7 +27,7 @@
                 <a class="item" href="../../../index.html">Appweb Overview</a>
                 <a class="item" href="../../../guide/appweb/features.html">Appweb Features</a>
                 <a class="item" href="../../../install/releaseNotes.html">Release Notes</a>
-                <a class="item" href="https://embedthis.com/download/appweb.html">Download</a> 
+                <a class="item" href="https://embedthis.com/appweb/download.html">Download</a> 
                 <a class="item" href="../../../licensing/index.html">Licensing</a>
             </div>
         </div>
@@ -96,14 +96,13 @@
                 <a class="item" href="https://github.com/embedthis/appweb/issues">Project Issue Database</a>
                 <a class="item" href="https://github.com/embedthis/appweb/releases">Change Log</a>
                 <a class="item" href="https://github.com/embedthis/appweb/milestones">Roadmap</a>
-                <a class="item" href="https://embedthis.com/scripts/contributors.esp">Contributors Agreement</a>
+                <a class="item" href="https://embedthis.com/developers/contributors.html">Contributors Agreement</a>
             </div>
         </div>
         <div class="item">
             <b>Links</b>
             <div class="menu">
                 <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
-                <a class="item" href="http://groups.google.com/group/appweb">Community Support</a>
                 <a class="item" href="https://embedthis.com/">Embedthis Web Site</a>
                 <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
                 <a class="item" href="https://embedthis.com/blog/">Embedthis Blog</a>
@@ -164,7 +163,7 @@
             to skip the background and read immediately how to setup 
             <a href="ssl.html">SSL for Appweb</a>.</p>
             <a id="cryptographicTechniques"></a>
-            <h2 class="section">Cryptographic Techniques</h2>
+            <h2>Cryptographic Techniques</h2>
             <p>Understanding SSL requires an understanding of cryptographic algorithms, message digest functions (aka.
             one-way or hash functions), and digital signatures. The following section provides a brief introduction to
             the cryptographic foundations of SSL. If you are already familiar with this material, please skip forward
@@ -221,7 +220,7 @@
             <p>To guard against interception and reuse of the signature by an intruder at a later date, the signature
             contains a unique sequence number. This protects the bank from a fraudulent claim from Alice that she did
             not send the message &mdash; only she could have signed it (non-repudiation).</p><a id="certificates"></a>
-            <h2 class="section">Certificates</h2>
+            <h2>Certificates</h2>
             <p>Although Alice could have sent a private message to the bank, signed it, and ensured the integrity of
             the message, she still needs to be sure that she is really communicating with the bank. This means that she
             needs to be sure that the public key she is using corresponds to the bank's private key. Similarly, the
@@ -394,7 +393,7 @@ dUHzICxBVC1lnHyYGjDuAMhe396lYAn8bCld1/L4NMGBCQ==
             certificates signed by that Certificate Authority. Doing so may be dangerous, since once loaded, the
             browser will accept all certificates signed by that Certificate Authority.</p>
         <a id="sslOverview"></a>
-        <h2 class="section">Secure Sockets Layer (SSL) Overview</h2>
+        <h2>Secure Sockets Layer (SSL) Overview</h2>
         <p>The Secure Sockets Layer protocols designed to support a range of choices for specific algorithms used for cryptography, digests, and signatures. This allows algorithm selection for specific servers to be made based on legal, export or other concerns, and also enables the protocol to take advantage of new algorithms. Choices are negotiated between client and server at the start of establishing a protocol session.</p>
         <h3>Table 4: Versions of the SSL protocol</h3>
         <a id="table4"></a>

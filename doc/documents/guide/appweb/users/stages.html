@@ -25,7 +25,7 @@
             different content. Appweb provides the following handlers: PHP, CGI, ESP, Ejscript, directory listings,
             and a file handler for static file content. An API is also provided so you can create your own
             request handlers and pipeline filters and connectors.</p>
-            <h2 class="section">Handlers</h2>
+            <h2>Handlers</h2>
             <p>Appweb handlers typically utilize the Appweb <a href="modules.html">loadable module</a> interface and
             may be dynamically loaded and configured via the <a href="configuration.html">Appweb configuration
             file</a>. The configuration file defines the handlers to use and the order in which they are matched to a
@@ -48,12 +48,12 @@ LoadModule file mod_file
             result is a list of handlers that will be applied to the request in the order they appear in the
             configuration file. The first matching handler to accept the request will be responsible for the
             request.</p>
-            <h2 class="section">Filters</h2>
+            <h2>Filters</h2>
             <p>Filters can manipulate the request as it passes through the request pipeline. Typical uses are to
             compress or encrypt data. Appweb implements Transfer Chunk Encoding and Ranged requests via filters. 
             Filters are configured via the <a href="dir/route.html#addInputFilter">AddInputFilter</a>
             and <a href="dir/route.html#addOutputFilter">AddOutputFilter</a> configuration file directives.</p>
-            <h2 class="section">Connectors</h2>
+            <h2>Connectors</h2>
             <p>Network connectors are the end of the outgoing stream of the pipeline. Their job is to transmit data
             back to the client. Appweb supplies two connectors. One general purpose <b>net</b> connector and a
             specialize <b>send</b> connector for static file content.</p>

@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <meta name="keywords" content="appweb, embedded web server, embedded, devices, http server, internet of things, esp, goahead" />
     <meta name="description" content="The fastest little web server" />
-    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,+Sans:300italic,400,300,700'
+    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
         rel='stylesheet' type='text/css'>
     <link href="../../../lib/semantic/packaged/css/semantic.css" rel="stylesheet" type="text/css" />
     <link href="../../../css/all.css" rel="stylesheet" type="text/css" />
@@ -27,7 +27,7 @@
                 <a class="item" href="../../../index.html">Appweb Overview</a>
                 <a class="item" href="../../../guide/appweb/features.html">Appweb Features</a>
                 <a class="item" href="../../../install/releaseNotes.html">Release Notes</a>
-                <a class="item" href="https://embedthis.com/download/appweb.html">Download</a> 
+                <a class="item" href="https://embedthis.com/appweb/download.html">Download</a> 
                 <a class="item" href="../../../licensing/index.html">Licensing</a>
             </div>
         </div>
@@ -96,14 +96,13 @@
                 <a class="item" href="https://github.com/embedthis/appweb/issues">Project Issue Database</a>
                 <a class="item" href="https://github.com/embedthis/appweb/releases">Change Log</a>
                 <a class="item" href="https://github.com/embedthis/appweb/milestones">Roadmap</a>
-                <a class="item" href="https://embedthis.com/scripts/contributors.esp">Contributors Agreement</a>
+                <a class="item" href="https://embedthis.com/developers/contributors.html">Contributors Agreement</a>
             </div>
         </div>
         <div class="item">
             <b>Links</b>
             <div class="menu">
                 <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
-                <a class="item" href="http://groups.google.com/group/appweb">Community Support</a>
                 <a class="item" href="https://embedthis.com/">Embedthis Web Site</a>
                 <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
                 <a class="item" href="https://embedthis.com/blog/">Embedthis Blog</a>
@@ -158,12 +157,12 @@
             <p>This document describes the pipeline stage interface and how to create Appweb handlers, filters and
             connectors. See the <a href="../users/stages.html">Configuring Pipeline Stages</a> document for
             background.</p><img src="../../../images/pipeline.jpg" alt="pipeline" />
-            <h2 class="section">Handlers</h2>
+            <h2>Handlers</h2>
             <p>The core Appweb HTTP server cannot serve any requests or generate responses by itself. It relies on
             request handlers to generate response content for HTTP requests. The standard distribution of Appweb is
             itself comprised of seven different handlers which serve all the content provided by an Appweb
             server.</p><a id="createHandler"></a>
-            <h2 class="section">Creating a Handler</h2>
+            <h2>Creating a Handler</h2>
             <p>To create an Appweb handler, you need to call <b>maCreateHandler</b> and supply a unique handler name
             and flags that modify the behavior of the handler.</p>
             <p>The following demonstrates the creation of a "sample" handler.</p>
@@ -190,7 +189,7 @@ int maSimpleHandlerInit(Http *http, MprModule *module)
     return 0;
 }
 </pre><a id="createFilter"></a>
-            <h2 class="section">Creating a Filter</h2>
+            <h2>Creating a Filter</h2>
             <p>Creating a filter is very similar to creating a handler. An MaStage object is created and
             initialized.</p>
             <p>To create an Appweb filter, you need to call <b>maCreateFilter</b> and supply a unique filter name and
@@ -210,7 +209,7 @@ int maCompressFilterInit(Http *http, MprModule *module)
     return 0;
 }
 </pre><a id="createConnector"></a>
-            <h2 class="section">Creating a Connector</h2>
+            <h2>Creating a Connector</h2>
             <p>Creating a connector is similar to creating a handler. An MaStage object is created and initialized.</p>
             <p>To create an Appweb connector, you need to call <b>maCreateConnector</b> and supply a unique connector
             name and flags that modify the behavior of the connector.</p>
@@ -229,7 +228,7 @@ int maTurboConnectorInit(Http *http, MprModule *module)
     return 0;
 }
 </pre>
-            <h2 class="section">Pipeline Stages Callbacks</h2>
+            <h2>Pipeline Stages Callbacks</h2>
             <p>Pipeline stages can optionally provide callback functions which are run at various stages of the HTTP
             request processing. If they are not provided, a default implementation is used.</p>
             <h3>match</h3>
@@ -315,7 +314,7 @@ int maTurboConnectorInit(Http *http, MprModule *module)
                     </tr>
                 </tbody>
             </table>
-            <h2 class="section">Packaging as a Module</h2>
+            <h2>Packaging as a Module</h2>
             <p>Stages are usually delivered as loadable modules. In this manner, users can decide for themselves if the
             functionality provided by the stage is needed or not. Stages can also be statically linked. See the
             <a href="modules.html">Creating Modules</a> section for more information about how to create a module.</p>

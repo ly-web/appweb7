@@ -32,7 +32,7 @@
             to generate the response can be eliminated.</p>
             
             <a id="options"></a>
-            <h2 class="section">Caching Options</h2>
+            <h2>Caching Options</h2>
             <p>When responding to a client request, there are four alternative ways to utilize Appweb caching:</p>
             <p><img class="xbare-screen" src="../../../images/caching/caching-steps.jpg" alt="steps"/></p>
             <h3>Options</h3>
@@ -67,7 +67,7 @@
             <P>This kind of caching is best for dynamic web pages that are viewed more often than the data on which they
             depend is updated.</p>
             <a id="server"></a>
-            <h2 class="section">Caching on the Server</h2>
+            <h2>Caching on the Server</h2>
             <p>On the server, there are three paradigms for how and when to update cached responses.</p>
             <ol>
                 <li>Pull-Through</li>
@@ -103,7 +103,7 @@
             In that case, pre-computing the web page in the background means that the client request can be serviced very
             quickly without waiting for the page to be generated.</p>
             <a id="configuring"></a>
-            <h2 class="section">Configuring Caching</h2>
+            <h2>Configuring Caching</h2>
             <p>Appweb caching is configured via the <a href="dir/route.html#cache"><em>Cache</em></a> configuration
             directive. This directive specifies: </p>
             <ol>
@@ -159,7 +159,7 @@ Cache server manual /dashboard.esp
             you define a caching record at the default server level, all subsequent routes will inherit that caching
             definition.</p>
             <a id="performance"></a>
-            <h2 class="section">Performance Considerations</h2>
+            <h2>Performance Considerations</h2>
             <h3>Cache Lifespans</h3>
             <p>When selecting a lifespan for a resource, ask the questions:
             <ul>
@@ -185,7 +185,7 @@ Cache server manual /dashboard.esp
             information about whether cached responses have been found and are suitable for use.</p>
             <pre class="ui code segment">appweb --log stdout:4</pre>
             <a id="criteria"></a>
-            <h2 class="section">Deciding Criteria</h2>
+            <h2>Deciding Criteria</h2>
             <p>In summary, here are some rules of thumb to assist in designing your caching strategy.</p>
             <ul>
                 <li>If a resource is accessed frequently, use server-side caching.</li>

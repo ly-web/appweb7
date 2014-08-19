@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <meta name="keywords" content="appweb, embedded web server, embedded, devices, http server, internet of things, esp, goahead" />
     <meta name="description" content="The fastest little web server" />
-    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,+Sans:300italic,400,300,700'
+    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
         rel='stylesheet' type='text/css'>
     <link href="../../../lib/semantic/packaged/css/semantic.css" rel="stylesheet" type="text/css" />
     <link href="../../../css/all.css" rel="stylesheet" type="text/css" />
@@ -27,7 +27,7 @@
                 <a class="item" href="../../../index.html">Appweb Overview</a>
                 <a class="item" href="../../../guide/appweb/features.html">Appweb Features</a>
                 <a class="item" href="../../../install/releaseNotes.html">Release Notes</a>
-                <a class="item" href="https://embedthis.com/download/appweb.html">Download</a> 
+                <a class="item" href="https://embedthis.com/appweb/download.html">Download</a> 
                 <a class="item" href="../../../licensing/index.html">Licensing</a>
             </div>
         </div>
@@ -96,14 +96,13 @@
                 <a class="item" href="https://github.com/embedthis/appweb/issues">Project Issue Database</a>
                 <a class="item" href="https://github.com/embedthis/appweb/releases">Change Log</a>
                 <a class="item" href="https://github.com/embedthis/appweb/milestones">Roadmap</a>
-                <a class="item" href="https://embedthis.com/scripts/contributors.esp">Contributors Agreement</a>
+                <a class="item" href="https://embedthis.com/developers/contributors.html">Contributors Agreement</a>
             </div>
         </div>
         <div class="item">
             <b>Links</b>
             <div class="menu">
                 <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
-                <a class="item" href="http://groups.google.com/group/appweb">Community Support</a>
                 <a class="item" href="https://embedthis.com/">Embedthis Web Site</a>
                 <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
                 <a class="item" href="https://embedthis.com/blog/">Embedthis Blog</a>
@@ -166,7 +165,7 @@
             <p>A route may modify the request during processing by changing the request URI or request data. The
             route may also run commands as a side-effect during processing.</p>
             <a id="configuration"></a>
-            <h2 class="section">Route Configuration</h2>
+            <h2>Route Configuration</h2>
             <p>Routes are defined in the appweb.conf configuration file or via an API and are processed at run-time when 
             client HTTP requests are received.</p>
             <p>The most fundamental directive is the Route Block directive which declares a new route block and defines the
@@ -213,7 +212,7 @@
             configuration that existed at the point in the configuration file where the VirtualHost is defined, but they
             can override this to create a unique route configuration for the virtual host.</p>
             <a id="directives"></a>
-            <h2 class="section">Route Directives</h2>
+            <h2>Route Directives</h2>
             <p>Other route related configuration directives include:</p>
             <h3><a href="dir/route.html#addHandler">AddHandler</a> and 
                 <a href="dir/route.html#setHandler">SetHandler</a></h3>
@@ -280,7 +279,7 @@
             they are accessed via the <em>espGetParam</em> API, and in Ejscript, request parameters are exposed via
             the Request.params[] collection.</p>
             <a id="tokens"></a>
-            <h2 class="section"><a href="dir/route.html#tokens">Tokens</a></h2>
+            <h2><a href="dir/route.html#tokens">Tokens</a></h2>
             <p>Target, Condition and Update directives can reference tokenized values that are expanded
             when evaluated at run-time. There are three classes of tokens:</p>
             <ul>  
@@ -377,7 +376,7 @@
             <em>^/info/{name}</em>. Then the <em>${name}</em> token could be used in a Target run rule as such:</p>
 <pre class="ui code segment">run ${name}.html</pre>
             <a id="processing"></a>
-            <h2 class="section">Route Processing</h2>
+            <h2>Route Processing</h2>
             <p>To process a request, The Appweb route engine examines each of the configured routes to determine the 
             best matching route for a request.  It does this by considering each route in the order it is defined in
             the configuration file. Each route is tested over a sequence of steps. 
@@ -543,7 +542,7 @@ Target write 200 "Running controller ${controller} action ${action}\n\n"
             is selected. If the route defines a header, form or condition that is not satisfied, the prefix is restored
             to let other routes see the full URI.</p>
             <a id="examples"></a>
-            <h2 class="section">Route Examples</h2>
+            <h2>Route Examples</h2>
             <h3>Redirecting Old URIs</h3>
             <p>To redirect requests for old documents to newer versions:</p>
 <pre class="ui code segment">

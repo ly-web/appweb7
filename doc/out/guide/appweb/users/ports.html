@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <meta name="keywords" content="appweb, embedded web server, embedded, devices, http server, internet of things, esp, goahead" />
     <meta name="description" content="The fastest little web server" />
-    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,+Sans:300italic,400,300,700'
+    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
         rel='stylesheet' type='text/css'>
     <link href="../../../lib/semantic/packaged/css/semantic.css" rel="stylesheet" type="text/css" />
     <link href="../../../css/all.css" rel="stylesheet" type="text/css" />
@@ -27,7 +27,7 @@
                 <a class="item" href="../../../index.html">Appweb Overview</a>
                 <a class="item" href="../../../guide/appweb/features.html">Appweb Features</a>
                 <a class="item" href="../../../install/releaseNotes.html">Release Notes</a>
-                <a class="item" href="https://embedthis.com/download/appweb.html">Download</a> 
+                <a class="item" href="https://embedthis.com/appweb/download.html">Download</a> 
                 <a class="item" href="../../../licensing/index.html">Licensing</a>
             </div>
         </div>
@@ -96,14 +96,13 @@
                 <a class="item" href="https://github.com/embedthis/appweb/issues">Project Issue Database</a>
                 <a class="item" href="https://github.com/embedthis/appweb/releases">Change Log</a>
                 <a class="item" href="https://github.com/embedthis/appweb/milestones">Roadmap</a>
-                <a class="item" href="https://embedthis.com/scripts/contributors.esp">Contributors Agreement</a>
+                <a class="item" href="https://embedthis.com/developers/contributors.html">Contributors Agreement</a>
             </div>
         </div>
         <div class="item">
             <b>Links</b>
             <div class="menu">
                 <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
-                <a class="item" href="http://groups.google.com/group/appweb">Community Support</a>
                 <a class="item" href="https://embedthis.com/">Embedthis Web Site</a>
                 <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
                 <a class="item" href="https://embedthis.com/blog/">Embedthis Blog</a>
@@ -156,7 +155,7 @@
             process of opening TCP/IP ports to listen for requests is called binding. By default, Appweb will listen on
             all the interface network cards in the system, but the Appweb configuration file allows explicit control
             over which interfaces, IP addresses and ports are used.</p>
-            <h2 class="section">Listen Directive</h2>
+            <h2>Listen Directive</h2>
             <p>The <a href="dir/server.html#listen">Listen</a> configuration file directive specifies the IP endpoints
             on which Appweb will listen for incoming HTTP requests. It takes the form:</p>
             <pre class="ui inverted code segment">
@@ -170,7 +169,7 @@ Listen 80
 Listen 209.108.201.67:8888
 Listen 209.108.201.68
 </pre>
-            <h2 class="section">IPv6</h2>
+            <h2>IPv6</h2>
             <p>Appweb will listen on both IPv4 and IPv6 endpoints. To specify IPv6 endpoints you need to use IPv6
             encoding. IPv6 addresses have eight colon separated segments. For example:</p>
             <pre class="ui inverted code segment">
@@ -191,7 +190,7 @@ http://[2001:0db8:85a3:08d3:1319:8a2e:0370:7348]:7777/
                 Addresses</a></li>
                 <li><a href="http://en.wikipedia.org/wiki/IPv6">Wikipedia IPv6</a></li>
             </ul>
-            <h2 class="section">Virtual Hosts</h2>
+            <h2>Virtual Hosts</h2>
             <p>When a Listen directive is defined inside a Virtual Host, all requests on that endpoint will be managed
             by the directives inside the VirtualHost block. See the <a href=
             "dir/vhost.html#virtualHost">VirtualHost</a> configuration file directive for more information.</p>

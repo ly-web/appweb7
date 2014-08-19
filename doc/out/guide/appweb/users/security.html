@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <meta name="keywords" content="appweb, embedded web server, embedded, devices, http server, internet of things, esp, goahead" />
     <meta name="description" content="The fastest little web server" />
-    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,+Sans:300italic,400,300,700'
+    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
         rel='stylesheet' type='text/css'>
     <link href="../../../lib/semantic/packaged/css/semantic.css" rel="stylesheet" type="text/css" />
     <link href="../../../css/all.css" rel="stylesheet" type="text/css" />
@@ -27,7 +27,7 @@
                 <a class="item" href="../../../index.html">Appweb Overview</a>
                 <a class="item" href="../../../guide/appweb/features.html">Appweb Features</a>
                 <a class="item" href="../../../install/releaseNotes.html">Release Notes</a>
-                <a class="item" href="https://embedthis.com/download/appweb.html">Download</a> 
+                <a class="item" href="https://embedthis.com/appweb/download.html">Download</a> 
                 <a class="item" href="../../../licensing/index.html">Licensing</a>
             </div>
         </div>
@@ -96,14 +96,13 @@
                 <a class="item" href="https://github.com/embedthis/appweb/issues">Project Issue Database</a>
                 <a class="item" href="https://github.com/embedthis/appweb/releases">Change Log</a>
                 <a class="item" href="https://github.com/embedthis/appweb/milestones">Roadmap</a>
-                <a class="item" href="https://embedthis.com/scripts/contributors.esp">Contributors Agreement</a>
+                <a class="item" href="https://embedthis.com/developers/contributors.html">Contributors Agreement</a>
             </div>
         </div>
         <div class="item">
             <b>Links</b>
             <div class="menu">
                 <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
-                <a class="item" href="http://groups.google.com/group/appweb">Community Support</a>
                 <a class="item" href="https://embedthis.com/">Embedthis Web Site</a>
                 <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
                 <a class="item" href="https://embedthis.com/blog/">Embedthis Blog</a>
@@ -170,7 +169,7 @@
             </ul>
             
             <a id="updates"></a>
-            <h2 class="section">Updates</h2>
+            <h2>Updates</h2>
             <p>Even the best application or HTTP server can experience some security vulnerabilities that are
             discovered after being deployed in the field. It is highly recommended that you stay up to date with the
             latest version of Appweb.</p>
@@ -179,7 +178,7 @@
             and will expedite fixes or workarounds to minimize any vulnerabilities.</p>
             
             <a id="sandBoxing"></a>
-            <h2 class="section">Sandboxing</h2>
+            <h2>Sandboxing</h2>
             <p>Sandboxing is the term applied to running Appweb in a confined environment. When embedding a HTTP server,
             the profile of client access is often well known, and the profile of malicious attacks are well outside this
             profile. The profile includes the rate of accesses, the length of URLs and the size of pages returned to the
@@ -307,7 +306,7 @@
             </table>
             <p>See the <a href="dir/sandbox.html">Sandbox Directives</a> for further details.</p>
             <a id="account"></a>
-            <h2 class="section">Appweb User Account</h2>
+            <h2>Appweb User Account</h2>
             <p>It is important that you run Appweb with the lowest system privilege that will get the job done. If any
             application is compromised, including Appweb, then the system will be safest if the compromised application
             has as few privileges as possible.</p>
@@ -331,7 +330,7 @@
                 <li>Give the account read and execute rights to the appweb.exe and the DLLs in the libs directory.</li>
             </ul>
             <a id="directoryPermissions"></a>
-            <h2 class="section">Directory and File Permissions</h2>
+            <h2>Directory and File Permissions</h2>
             <p>When Appweb is installed, it is configured for maximum security. This section explains the policy 
             should you need to move or modify files and directories.</p>
             <p>To enhance security you need to consider the directory and file permissions for three classes of
@@ -362,7 +361,7 @@ chgrp root . lib logs
 chmod 755  . lib logs
 </pre>
             <a id="chroot"></a>
-            <h2 class="section">Chroot Jail</h2>
+            <h2>Chroot Jail</h2>
             <p>One of the best forms of isolation for the server is to run inside a 
             <a href="http://en.wikipedia.org/wiki/Chroot">chroot</a> jail. A chroot jail is when an application changes
             its root directory to be isolated from the real file system root directory. Any access then to files outside the jail is protected and impossible. Appweb supports chroot jails via the 
@@ -370,7 +369,7 @@ chmod 755  . lib logs
             <p>See also the <a href="https://github.com/embedthis/appweb/tree/dev/samples/chroot-server"
                 >Chroot Sample</a> for a working example.</p>
             <a id="ssl"></a>
-            <h2 class="section">Securing SSL</h2>
+            <h2>Securing SSL</h2>
             <p>If you configure a SSL virtual server, remember to define a separate Documents directory if you want to only serve private content to SSL users. Otherwise those pages will also be visible via the default server.</p>
             <h3>Cipher Selection</h3>
             <p>It is important to select a sufficiently long key length and strong cipher to protect SSL communications. It is recommended to use the AES cipher and avoid the older RC4 cipher suite. See the section below regarding 
@@ -383,18 +382,18 @@ chmod 755  . lib logs
                 <li><a href="ssl.html">Configuring SSL</a></li>
             </ul>
             <a id="authentication"></a>
-            <h2 class="section">Authentication</h2>
+            <h2>Authentication</h2>
             <p>It is important to adequately secure all passwords stored at the server. Simply hashing the passwords with MD5 is now insufficient as MD5 and other "fast" hashing techniques can be quickly compromised by dedicated password cracking and hashing tools.</p>
             <p>Appweb includes the blowfish cipher as an alternative that is more secure than MD5. The <a href="http://en.wikipedia.org/wiki/Blowfish_(cipher)">Blowfish</a> cipher is especially well suited for password hashing partly. Partly because it is slow, it does not easily succumb to brute-force cracking. </p>
             <p>If you wish to use the Digest authentication scheme, unfortunately you cannot use blowfish as the browser uses MD5 to encrypt the password before transmitting over the wire. This and other shortcomings of Digest authentication should encourage you to select other schemes. A better alternative is Basic authentication over SSL using blowfish to encrypt the passwords. Alternatively, use web form authentication with blowfish for password storage.</p> 
             <p>If using a web page for users to submit their credentials, it is strongly recommended that you use SSL for both the web form page and for the request validating the user credentials.</p>
             <a id="logFiles"></a>
-            <h2 class="section">Log Files</h2>
+            <h2>Log Files</h2>
             <p>Appweb will log satisfied requests to the access log (usually logs/access.log) and errors to the error
             log (usually logs/error.log). It is recommended that you regularly review these logs for suspicious
             activity.</p>
             <a id="threats"></a>
-            <h2 class="section">Common Security Threats</h2>
+            <h2>Common Security Threats</h2>
             <p>This section details some common security threats and issues and the steps you can take to mitigate them.</p>
             <h3>Server Information Disclosure</h3>
             <p>HTTP responses often disclose information that an attacker can use to refine their attack. At a minimum, too much information enables the attack to proceed faster. Appweb includes a stealth directive that suppresses unnecessary information. Here is a typical HTTP response from Appweb</p>
@@ -468,7 +467,7 @@ Accept-Ranges: bytes
             <p>The following Appweb directive will prevent frames or iframes from running in the web page.</p>
             <pre class="ui code segment">Header set X-Frame-Options deny</pre>
             <a name="high"></a>
-            <h2 class="section">High Profile Threats</h2>
+            <h2>High Profile Threats</h2>
             <p>There have been several high profile exploits that pose specific risks and have captured media attention.
             These are addressed specifically below with details on how to mitigate their effects.</p>
             <h3>Crime Exploit</h3>
@@ -528,7 +527,7 @@ Accept-Ranges: bytes
                 <li>RC4 was not the default cipher in any Appweb release</li>
             </ul>
             <a name="cve"></a>
-            <h2 class="section">Documented Vulnerabilities</h2>
+            <h2>Documented Vulnerabilities</h2>
             <p>Appweb documents discovered security errors in its GitHub issue database 
             at </p>
             <pre class="ui code segment"><a href="https://github.com/embedthis/appweb/issues?state=open"
@@ -539,7 +538,7 @@ Accept-Ranges: bytes
             <pre class="ui code segment"><a
 href="https://github.com/embedthis/appweb/search?q=CVE-&amp;type=Issues">https://github.com/embedthis/appweb/search?q=CVE-&amp;type=Issues</a></pre>
             <p>Unfortunately some security researchers publish poorly diagnosed security alerts and sometimes do not contact the vendor for confirmation of the report. Consequently there exist some security CVE reports which are bogus. Appweb creates parallel CVE issues in the Appweb GitHub issue database to comment on these reports and provide accurate resolution information.</p>
-            <h2 class="section">Other Security References</h2>
+            <h2>Other Security References</h2>
             <p>Some of these articles may provide good background regarding security web servers.</p>
             <ul>
                 <li><a href="http://www.isg.rhul.ac.uk/tls/TLStiming.pdf"
@@ -561,7 +560,7 @@ href="https://github.com/embedthis/appweb/search?q=CVE-&amp;type=Issues">https:/
                     >https://www.owasp.org/images/b/be/Cracking-into-embedded-devices-and-beyond.pdf</a></li>
             </ul>
             <a id="frameworks"></a>
-            <h2 class="section">Frameworks</h2>
+            <h2>Frameworks</h2>
             <p>Appweb supports several Web Frameworks for creating dynamic content. These frameworks sometimes require
             special security considerations because they are executing code or scripts to render the content.</p>
 
@@ -603,7 +602,7 @@ href="https://github.com/embedthis/appweb/search?q=CVE-&amp;type=Issues">https:/
                         access.</td>
                     </tr>
                     <tr>
-                        <td class="">safe_mode_exec_dir = directory[:...]</td>
+                        <td class="nowrap">safe_mode_exec_dir = directory[:...]</td>
                         <td>Define a set of directories that will be the only directories from which PHP can execute
                         programs.</td>
                     </tr>
@@ -630,13 +629,13 @@ href="https://github.com/embedthis/appweb/search?q=CVE-&amp;type=Issues">https:/
             <pre class="ui code segment">
 AddType application/x-httpd-php .web
 </pre>
-            <h2 class="section">Embedded Server Pages</h2>
+            <h2>Embedded Server Pages</h2>
             <p>ESP applications are not immune to security flaws. It is highly recommended that
             you use the <a href="../../../ref/appweb/api/mpr.html">MPR</a> services for all your ESP code. This portable runtime
             has been extensively tested and includes routines to guard against common buffer overflows and other such
             exploits.</p>
             <a name="securedefaults"></a>
-            <h2 class="section">Appweb Secure By Default</h2>
+            <h2>Appweb Secure By Default</h2>
             <p>Appweb is designed to be secure by default. This means that the default configuration enables 
             security best-practices to limit cross-site-scripting vulnerabilities. It also implies a fairly
             restrictive security sandbox. This default configuration may be a little too restrictive for your application. 

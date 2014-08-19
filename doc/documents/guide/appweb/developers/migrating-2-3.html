@@ -5,7 +5,7 @@
             <h1>Migrating to Appweb 3</h1>
             <p>Appweb 3 is a major upgrade from Appweb 2. It incorporates an extensive set of new features and upgrades
             to existing capabilities. It also changes many APIs and interfaces.</p><a id="compatibility"></a>
-            <h2 class="section">Compatibility with Appweb 2</h2>
+            <h2>Compatibility with Appweb 2</h2>
             <p>We make every effort to preserve compatibility, but with Appweb 3, we needed to make some important
             improvements that necessitated breaking compatibility with Appweb 2. Rather than make several ongoing
             compatibility breaks &mdash; we decided to make all the changes in one release. In this way we can ensure
@@ -17,7 +17,7 @@
             Appweb 2 till the end of 2014 and to continue to issue updates and upgrades for Appweb 2 during that
             period.</p>
             <a id="changes"></a>
-            <h2 class="section">Changes in Appweb 3</h2>
+            <h2>Changes in Appweb 3</h2>
             <p>Appweb 3 provides equivalent functionality to that in Appweb 2 in nearly all cases. While Appweb 3 may
             have a different interface or API, the capabilities of Appweb 2 have been continued in Appweb 3 &mdash; and
             in many cases, the features have been enhanced.</p>
@@ -81,7 +81,7 @@
             <p>The memory allocation APIs are changed to always take another memory block as the first parameter. This
             block becomes the parent block for the new allocation. See the <a href="../../../api/mpr.html">Portable
             Runtime API</a> for more details.</p><a id="config"></a>
-            <h2 class="section">Migrating Appweb Configuration Files</h2>
+            <h2>Migrating Appweb Configuration Files</h2>
             <p>The Appweb 3 configuration file is substantially the same. It does support conditional directive blocks
             which were introduced in Appweb 2.4. It also supports included configuration files which should not be an
             issue migrating forward.</p>
@@ -100,7 +100,7 @@
             but still requiring directory redirections.</p>
             <p>In Appweb 3, directory redirections are performed by the HTTP core and do not require the directory
             handler.</p><a id="modules"></a>
-            <h2 class="section">Migrating Modules</h2>
+            <h2>Migrating Modules</h2>
             <p>Modules in Appweb 3 have a different API to register themselves with Appweb.</p>
             <p>In Appweb 2 a module looked like this:</p>
             <pre>
@@ -128,7 +128,7 @@ MprModule *mprSimpleModuleInit(MaHttp *http)
 }
 </pre>See the <a href="modules.html">Creating Modules</a> document for more details. <a id="handlers">
             </a>
-            <h2 class="section">Migrating Handlers</h2>
+            <h2>Migrating Handlers</h2>
             <p>Handlers in Appweb 3 have a different API to the Appweb 2 equivalent. In Appweb 2, you had to create a
             module, a handler service and a master handler from which to clone instances. In Appweb 3 this is greatly
             simplified.</p>
@@ -189,10 +189,10 @@ int maOpenSimpleHandler(MaHttp *http)
 }
 </pre>See the <a href="stages.html">Pipeline Stages</a> document for more details about creating Handlers.
             <a id="cgi"></a>
-            <h2 class="section">Migrating CGI Programs</h2>
+            <h2>Migrating CGI Programs</h2>
             <p>CGI programs should migrate unchanged. The CGI handler in Appweb 3 offers much higher performance by
             using pipes for I/O instead of files.</p><a id="egi"></a>
-            <h2 class="section">Migrating EGI Programs</h2>
+            <h2>Migrating EGI Programs</h2>
             <p>The EGI API has changed very little. Mainly the arguments have changed.</p>
             <p>In Appweb 2 an EGI form looked like this:</p>
             <pre>
@@ -209,7 +209,7 @@ maDefineEgiForm(http, "/myEgi.egi", myEgi);
 </pre><a id="esp"></a>
 
 <!-- KEEP
-            <h2 class="section">Migrating ESP Applications to Ejscript</h2>
+            <h2>Migrating ESP Applications to Ejscript</h2>
             <p>The upgrade to Ejscript from ESP is the single biggest change in Appweb 3. ESP was a minimal subset of
             the JavaScript language with a trivial embedding in HTML pages. Ejscript supports these capabilities, but
             adds many upgrades and a complete web framework. The bigger changes in Ejscript vs ESP are:</p>

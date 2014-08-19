@@ -11,7 +11,7 @@
             process of opening TCP/IP ports to listen for requests is called binding. By default, Appweb will listen on
             all the interface network cards in the system, but the Appweb configuration file allows explicit control
             over which interfaces, IP addresses and ports are used.</p>
-            <h2 class="section">Listen Directive</h2>
+            <h2>Listen Directive</h2>
             <p>The <a href="dir/server.html#listen">Listen</a> configuration file directive specifies the IP endpoints
             on which Appweb will listen for incoming HTTP requests. It takes the form:</p>
             <pre class="ui inverted code segment">
@@ -25,7 +25,7 @@ Listen 80
 Listen 209.108.201.67:8888
 Listen 209.108.201.68
 </pre>
-            <h2 class="section">IPv6</h2>
+            <h2>IPv6</h2>
             <p>Appweb will listen on both IPv4 and IPv6 endpoints. To specify IPv6 endpoints you need to use IPv6
             encoding. IPv6 addresses have eight colon separated segments. For example:</p>
             <pre class="ui inverted code segment">
@@ -46,7 +46,7 @@ http://[2001:0db8:85a3:08d3:1319:8a2e:0370:7348]:7777/
                 Addresses</a></li>
                 <li><a href="http://en.wikipedia.org/wiki/IPv6">Wikipedia IPv6</a></li>
             </ul>
-            <h2 class="section">Virtual Hosts</h2>
+            <h2>Virtual Hosts</h2>
             <p>When a Listen directive is defined inside a Virtual Host, all requests on that endpoint will be managed
             by the directives inside the VirtualHost block. See the <a href=
             "dir/vhost.html#virtualHost">VirtualHost</a> configuration file directive for more information.</p>

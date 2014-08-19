@@ -12,7 +12,7 @@
             manually, you must first stop it running as a system service. See <a href="service.html">Running as a
             service</a> for how to stop Appweb running as a system service.</p><a id="programs"></a>
             <a id="commandLine"></a>
-            <h2 class="section">Appweb Command Line</h2>
+            <h2>Appweb Command Line</h2>
             <p>The Appweb command line options are:</p>
             <pre class="ui inverted code segment">
 appweb [options]
@@ -72,7 +72,7 @@ appweb [options]
                     </tr>
                 </tbody>
             </table><a id="noconfig"></a>
-            <h2 class="section">No Config File</h2>
+            <h2>No Config File</h2>
             <p>Appweb normally reads the "appweb.conf" file for configuration directives. However, if appweb is invoked
             with an IP address or port number on the command line, Appweb will not read the configuration file. Rather, 
             it will listen for requests on the specified IP:PORT address. Usage:</p>
@@ -93,6 +93,6 @@ of the web pages.
                 <li>Create a /cgi-bin/ location block set to the cgi-bin directory in the server root.</li>
             </ul>
             <a name="signals"></a>
-            <h2 class="section">Signals</h2>
+            <h2>Signals</h2>
             <p>Appweb responds to the SIGUSR2 signal to toggle the trace level from 2 to 4 and vice-versa. Appweb responds
             to the SIGINFO on Mac OSX and SIGPWR on Unix to emit some operational stats to the trace log.</p>

@@ -10,7 +10,7 @@
             Use of this protocol enables secure data transmission to and from clients in a standards-based manner.</p>
             <p>This document provides step-by-step instructions for configuring SSL in Appweb. If you are unfamiliar
             with SSL, please read the <a href="sslOverview.html">SSL Overview</a> first.</p><a id="sslQuickStart"></a>
-            <h2 class="section">SSL Quick Start</h2>
+            <h2>SSL Quick Start</h2>
             <p>The default binary installation of Appweb will support SSL for all network interfaces. You
             can immediately test SSL access to documents by using the <b>https://</b> scheme. 
             For example, to access the home page using SSL, use this URL in your browser:</p>
@@ -22,7 +22,7 @@ https://localhost/index.html
             <p><b>SECURITY WARNING</b>: This certificate is suitable for testing purposes only and 
             your browser will issue a warning when you access the server. For
             production use, you should obtain your own service certificate from signing authorities such as <a href="http://www.verisign.com">Verisign</a>.</p><a id="sslConfigurationDirectives"></a>
-            <h2 class="section">SSL Configuration Directives</h2>
+            <h2>SSL Configuration Directives</h2>
             <p>Appweb uses several configuration file directives to control SSL and manage secure access to the server. These directives can be specified in the Default Server section or in a Virtual Host section. </p>
             <p>The relevant SSL directives are:</p>
             <ul>
@@ -39,7 +39,7 @@ https://localhost/index.html
                 <li><a href="dir/ssl.html#sslCaCertificateFile">SSLCACertificateFile</a></li>
                 <li><a href="dir/ssl.html#sslCaCertificatePath">SSLCACertificatePath</a></li>
             </ul><a id="sslConfigurationExample"></a>
-            <h2 class="section">SSL Configuration Example</h2>
+            <h2>SSL Configuration Example</h2>
             <p>Consider the default Appweb SSL configuration in the appweb.conf configuration file:</p>
             <pre class="ui code segment">
 SSLCertificateFile "self.crt"
@@ -59,7 +59,7 @@ ListenSecure 443
             decrypted private key. If you use an encrypted private key, the server will prompt you for a pass-phrase to
             decrypt the key when the server boots.</p><a id="generatingKeys"></a>
 <!--
-            <h2 class="section">Generating Keys and Certificates</h2>
+            <h2>Generating Keys and Certificates</h2>
             <p>To generate a request file that you can send to a certificate issuing authority such as <a href=
             "http://www.verisign.com">Verisign</a>, use the following openssl command or equivalent command from your
             SSL provider:</p>
@@ -77,7 +77,7 @@ openssl req -new -key server.key -out server.csr
             hands, then your server identity may be hijacked by another site.</p><a id="sslProviders"></a>
 -->
             <a name="sslProviders"></a>
-            <h2 class="section">SSL Providers</h2>
+            <h2>SSL Providers</h2>
             <p>Appweb employs an open architecture SSL Provider interface so that customers can select or create an SSL
             provider for their needs.</p>
             <p>Appweb provides two SSL implementations:</p>

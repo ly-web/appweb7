@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <meta name="keywords" content="appweb, embedded web server, embedded, devices, http server, internet of things, esp, goahead" />
     <meta name="description" content="The fastest little web server" />
-    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,+Sans:300italic,400,300,700'
+    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
         rel='stylesheet' type='text/css'>
     <link href="../../../lib/semantic/packaged/css/semantic.css" rel="stylesheet" type="text/css" />
     <link href="../../../css/all.css" rel="stylesheet" type="text/css" />
@@ -27,7 +27,7 @@
                 <a class="item" href="../../../index.html">Appweb Overview</a>
                 <a class="item" href="../../../guide/appweb/features.html">Appweb Features</a>
                 <a class="item" href="../../../install/releaseNotes.html">Release Notes</a>
-                <a class="item" href="https://embedthis.com/download/appweb.html">Download</a> 
+                <a class="item" href="https://embedthis.com/appweb/download.html">Download</a> 
                 <a class="item" href="../../../licensing/index.html">Licensing</a>
             </div>
         </div>
@@ -96,14 +96,13 @@
                 <a class="item" href="https://github.com/embedthis/appweb/issues">Project Issue Database</a>
                 <a class="item" href="https://github.com/embedthis/appweb/releases">Change Log</a>
                 <a class="item" href="https://github.com/embedthis/appweb/milestones">Roadmap</a>
-                <a class="item" href="https://embedthis.com/scripts/contributors.esp">Contributors Agreement</a>
+                <a class="item" href="https://embedthis.com/developers/contributors.html">Contributors Agreement</a>
             </div>
         </div>
         <div class="item">
             <b>Links</b>
             <div class="menu">
                 <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
-                <a class="item" href="http://groups.google.com/group/appweb">Community Support</a>
                 <a class="item" href="https://embedthis.com/">Embedthis Web Site</a>
                 <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
                 <a class="item" href="https://embedthis.com/blog/">Embedthis Blog</a>
@@ -158,7 +157,7 @@
             server. You can migrate code from Appweb 2 or 3 to Appweb 5, however, you should anticipate 
             significant refactoring work in the transition.</p>
             <a id="changes"></a>
-            <h2 class="section">Changes in Appweb 5</h2>
+            <h2>Changes in Appweb 5</h2>
             <p>Appweb 5 APIs are highly compatible with Appweb 4, though previously deprecated APIs have been 
                 removed.</p>
             <h3>New Capabilities</h3>
@@ -171,7 +170,7 @@
             <p>Appweb 4.6+ and Appweb 5 use the MakeMe build system.
                 New configure options and cross compiling capabilities have been added. See more details below
                 in  <a href="#makeme">MakeMe Changes</a>.</p>
-            <h2 class="section">Changes in Appweb 4</h2>
+            <h2>Changes in Appweb 4</h2>
             <p>Appweb 4 provides equivalent or greater functionality to that in Appweb 3. 
             While Appweb 4 may have a different interface or API, the capabilities of Appweb 3 have been continued 
             in Appweb 4, and in many cases, the features have been enhanced.</p>
@@ -227,7 +226,7 @@
             collection. This means that a <em>managed reference</em> must be held for all active memory.
             See <a href="../../../ref/appweb/memory.html">Memory Allocation</a> for more details.</p>
             <a id="config"></a>
-            <h2 class="section">Migrating Appweb Configuration Files</h2>
+            <h2>Migrating Appweb Configuration Files</h2>
             <p>The Appweb 4 configuration file is substantially the same as the Appweb 3. 'Include' directives can now
             contain wild cards and there are several new directives supporting Routing, Multi-language support and the
             Embedded Server Pages web framework. The big change is that Route directives replace the Directory and Location
@@ -239,7 +238,7 @@
             <p>See <a href="../users/configuration.html">Configuring Appweb</a> and <a href=
             "../users/configuration.html#directives">Configuration Directives</a> for more details.</p>
             <a id="modules"></a>
-            <h2 class="section">Migrating Modules and Handlers</h2>
+            <h2>Migrating Modules and Handlers</h2>
             <p>Appweb 4 modules use modified API signatures to initialize with Appweb.
             In Appweb 4, the MPR module is pre-created and passed into the module.
             See the <a href="modules.html">Creating Modules</a> document for more details. </p>
@@ -247,7 +246,7 @@
             way to add functionality to Appweb compared with custom handlers and modules. ESP allows the easy binding
             of "C" language functions to request URIs via powerful Controllers and the Appweb routing engine.</p>
             
-            <h2 class="section">Embedded Server Pages</h2>
+            <h2>Embedded Server Pages</h2>
             <p>ESP is the single biggest change in Appweb 4. ESP is a powerful Model/View/Controller web framework
             that offers:
             <ul>
@@ -262,15 +261,15 @@
                 <li>Compact memory footprint</li>
             </ul>
             <a id="cgi"></a>
-            <h2 class="section">Migrating CGI Programs</h2>
+            <h2>Migrating CGI Programs</h2>
             <p>CGI programs should migrate unchanged. The CGI handler in Appweb 4 offers much higher performance by
             using pipes for I/O instead of files.</p>
             
             <a id="egi"></a>
-            <h2 class="section">Migrating EGI Programs</h2>
+            <h2>Migrating EGI Programs</h2>
             <p>The EGI handler has been deprecated and removed. EGI programs should be migrated to use the ESP web
             framework.</p>
-            <h2 class="section">Ejscript</h2>
+            <h2>Ejscript</h2>
             <p>Ejscript is now a separate product.</p>
             <h2>More Information</h2>
             <p>For more details, please read</p>

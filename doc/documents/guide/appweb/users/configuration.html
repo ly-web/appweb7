@@ -31,7 +31,7 @@ configuration file into sections &mdash; especially application definitions.
             </ul>
             <p>By processing directives on a single-pass, Appweb is more efficient, but the order of directives does
             matter with Appweb.</p><a id="syntax"></a>
-            <h2 class="section">Configuration File Syntax</h2>
+            <h2>Configuration File Syntax</h2>
             <p>Configuration directives are one per line and are case-insensitive for the directive names. Lines
             beginning with a "#" character are comments and are ignored.</p>
             <h2>Sample configuration file</h2>
@@ -44,7 +44,7 @@ Listen 7777
 LoadModule fileHandler mod_file
 AddHandler fileHandler html
 </pre><a id="blocks"></a>
-            <h2 class="section">Configuration Blocks</h2>
+            <h2>Configuration Blocks</h2>
             <p>The configuration file is comprised of several directive groups or blocks:</p>
             <ul>
                 <li>Global Directives</li>
@@ -86,7 +86,7 @@ AddHandler fileHandler html
 &lt;/VirtualHost&gt;
 </pre>
             <p>See <a href="vhosts.html">Virtual Hosting</a> for more details.</p><a id="include"></a>
-            <h2 class="section">Include Directives</h2>
+            <h2>Include Directives</h2>
             <p>The <b>include</b> directive allows other files to be included in the configuration file. The include
             directive can be a single filename or filename with wildcards.</p>
             <pre class="ui inverted code segment">
@@ -94,7 +94,7 @@ Include myconfig.conf
 Include conf/applications/*.conf
 </pre>
             <a id="conditional"></a>
-            <h2 class="section">Conditional Directives</h2>
+            <h2>Conditional Directives</h2>
             <p>The configuration file supports conditional processing via the <b>&lt;if&gt;</b> directive. The
             <b>if</b> directive tests a symbolic value and if true, it enables parsing the nested directives. If the
             value is false, the nested directives are ignored.</p>
@@ -123,14 +123,14 @@ Include conf/applications/*.conf
                     </tr>
                 </tbody>
             </table><a id="order"></a>
-            <h2 class="section">Order of Processing</h2>
+            <h2>Order of Processing</h2>
             <p>The configuration file is parsed in a single top-to-bottom pass. The order of directives is important
             as certain directives depend on others. For example, you must define the Home before using the
             LoadModule directive. Also, block level directives inherit their configuration from the outer block. 
             For example: a Route block will inherit the outer configuration and may modify that inside the Route block.</p>
             
             <a id="directives"></a>
-            <h2 class="section">Configuration File Directives</h2>
+            <h2>Configuration File Directives</h2>
             <p>This is the list of Appweb supported configuration directives.</p>
             <table title="directives" class="ui table segment">
                 <thead>

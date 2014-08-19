@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <meta name="keywords" content="appweb, embedded web server, embedded, devices, http server, internet of things, esp, goahead" />
     <meta name="description" content="The fastest little web server" />
-    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,+Sans:300italic,400,300,700'
+    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
         rel='stylesheet' type='text/css'>
     <link href="../../../lib/semantic/packaged/css/semantic.css" rel="stylesheet" type="text/css" />
     <link href="../../../css/all.css" rel="stylesheet" type="text/css" />
@@ -27,7 +27,7 @@
                 <a class="item" href="../../../index.html">Appweb Overview</a>
                 <a class="item" href="../../../guide/appweb/features.html">Appweb Features</a>
                 <a class="item" href="../../../install/releaseNotes.html">Release Notes</a>
-                <a class="item" href="https://embedthis.com/download/appweb.html">Download</a> 
+                <a class="item" href="https://embedthis.com/appweb/download.html">Download</a> 
                 <a class="item" href="../../../licensing/index.html">Licensing</a>
             </div>
         </div>
@@ -96,14 +96,13 @@
                 <a class="item" href="https://github.com/embedthis/appweb/issues">Project Issue Database</a>
                 <a class="item" href="https://github.com/embedthis/appweb/releases">Change Log</a>
                 <a class="item" href="https://github.com/embedthis/appweb/milestones">Roadmap</a>
-                <a class="item" href="https://embedthis.com/scripts/contributors.esp">Contributors Agreement</a>
+                <a class="item" href="https://embedthis.com/developers/contributors.html">Contributors Agreement</a>
             </div>
         </div>
         <div class="item">
             <b>Links</b>
             <div class="menu">
                 <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
-                <a class="item" href="http://groups.google.com/group/appweb">Community Support</a>
                 <a class="item" href="https://embedthis.com/">Embedthis Web Site</a>
                 <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
                 <a class="item" href="https://embedthis.com/blog/">Embedthis Blog</a>
@@ -177,7 +176,7 @@
             to generate the response can be eliminated.</p>
             
             <a id="options"></a>
-            <h2 class="section">Caching Options</h2>
+            <h2>Caching Options</h2>
             <p>When responding to a client request, there are four alternative ways to utilize Appweb caching:</p>
             <p><img class="xbare-screen" src="../../../images/caching/caching-steps.jpg" alt="steps"/></p>
             <h3>Options</h3>
@@ -212,7 +211,7 @@
             <P>This kind of caching is best for dynamic web pages that are viewed more often than the data on which they
             depend is updated.</p>
             <a id="server"></a>
-            <h2 class="section">Caching on the Server</h2>
+            <h2>Caching on the Server</h2>
             <p>On the server, there are three paradigms for how and when to update cached responses.</p>
             <ol>
                 <li>Pull-Through</li>
@@ -248,7 +247,7 @@
             In that case, pre-computing the web page in the background means that the client request can be serviced very
             quickly without waiting for the page to be generated.</p>
             <a id="configuring"></a>
-            <h2 class="section">Configuring Caching</h2>
+            <h2>Configuring Caching</h2>
             <p>Appweb caching is configured via the <a href="dir/route.html#cache"><em>Cache</em></a> configuration
             directive. This directive specifies: </p>
             <ol>
@@ -304,7 +303,7 @@ Cache server manual /dashboard.esp
             you define a caching record at the default server level, all subsequent routes will inherit that caching
             definition.</p>
             <a id="performance"></a>
-            <h2 class="section">Performance Considerations</h2>
+            <h2>Performance Considerations</h2>
             <h3>Cache Lifespans</h3>
             <p>When selecting a lifespan for a resource, ask the questions:
             <ul>
@@ -330,7 +329,7 @@ Cache server manual /dashboard.esp
             information about whether cached responses have been found and are suitable for use.</p>
             <pre class="ui code segment">appweb --log stdout:4</pre>
             <a id="criteria"></a>
-            <h2 class="section">Deciding Criteria</h2>
+            <h2>Deciding Criteria</h2>
             <p>In summary, here are some rules of thumb to assist in designing your caching strategy.</p>
             <ul>
                 <li>If a resource is accessed frequently, use server-side caching.</li>
