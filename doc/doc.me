@@ -22,12 +22,17 @@ Me.load({
                     data = data.replace('700|Open', '').
                         replace(/appweb.download.html/g, 'download/appweb.html').
                         replace(/developers.contributors.html/g, 'scripts/contributors.esp').
-                        replace(/\\/developers\\//g, '/appweb/').
                         replace(/nowrap="nowrap"/g, '').
+                        replace(/https:..embedthis.com.appweb.licensing.html/g, 'https://embedthis.com/').
+                        replace(/https:..embedthis.com.me.doc.guide.me.source.building.htm/g, 'https://embedthis.com/').
+                        replace(/https:..embedthis.com.developers./g, 'https://embedthis.com/').
+
                         replace(/nowrap/g, '')
                     trace('Patch', f)
                     f.write(data)
                 }
+                trace('Listen', 'exp --nogen')
+                Cmd.run('exp --nogen')
             `
         },
     },

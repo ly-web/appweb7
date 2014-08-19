@@ -78,20 +78,12 @@ openssl req -new -key server.key -out server.csr
 -->
             <a name="sslProviders"></a>
             <h2 class="section">SSL Providers</h2>
-            <p>Appweb employs an open architecture SSL Provider interface so that customers can select the ideal SSL
-            provider for their needs. Different SSL implementations excel in various ways. Some are compact, others are
-            fast and some are extensive in their cipher support.</p>
-            <p>Appweb supports four SSL implementations:</p>
+            <p>Appweb employs an open architecture SSL Provider interface so that customers can select or create an SSL
+            provider for their needs.</p>
+            <p>Appweb provides two SSL implementations:</p>
             <ul>
                 <li>OpenSSL -- designed for enterprise use. See <a href=
                     "http://www.openssl.org">http://www.openssl.org</a>.</li>
-                <li>PeerSec MatrixSSL -- designed for embedding. See <a href=
-                    "http://www.peersec.com">http://www.peersec.com</a>.</li>
-                <li>Mocana NanoSSL -- designed for embedding. See <a href=
-                    "https://mocana.com/nanossl.html">https://mocana.com/nanossl.html</a>.</li>
                 <li>EST SSL (Prototype) -- included with Appweb and designed for embedding.</li>
             </ul>
-            <p>If building an SSL provider from source, please consult  
-            <a href="../source/ssl.html">Building SSL Providers</a> for the suggested SSL provider compilation flags
-            to work with Appweb.</p>
             <p>The binary installation will use the OpenSSL provider by default.</p>

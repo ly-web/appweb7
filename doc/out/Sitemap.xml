@@ -1,6 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/developers/embedding.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/developers/handlers.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/developers/index.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/developers/man.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/developers/migrating-2-3.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/developers/migrating.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/developers/modules.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/developers/project.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/developers/rom.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/developers/source.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/developers/stages.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
         <loc>https://embedthis.com/esp/doc/guide/appweb/features.html</loc>
         <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
@@ -15,114 +81,6 @@
     <url>
         <loc>https://embedthis.com/esp/doc/guide/appweb/internals.html</loc>
         <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/embedding.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/handlers.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/index.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/man.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/migrating-2-3.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/migrating.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/modules.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/rom.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/source.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/stages.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/source/building.html</loc>
-        <lastmod>2014-08-18</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/source/ide.html</loc>
-        <lastmod>2014-08-18</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/source/index.html</loc>
-        <lastmod>2014-08-18</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/source/make.html</loc>
-        <lastmod>2014-08-18</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/source/me.html</loc>
-        <lastmod>2014-08-18</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/source/openwrt.html</loc>
-        <lastmod>2014-08-18</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/source/porting.html</loc>
-        <lastmod>2014-08-18</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/source/ssl.html</loc>
-        <lastmod>2014-08-18</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
@@ -230,12 +188,6 @@
     </url>
     <url>
         <loc>https://embedthis.com/esp/doc/guide/appweb/users/dir/vhost.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/guide/appweb/users/faq.html</loc>
         <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
@@ -367,19 +319,61 @@
         <priority>0.5</priority>
     </url>
     <url>
+        <loc>https://embedthis.com/esp/doc/historical/changeLog.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://embedthis.com/esp/doc/historical/roadmap.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
         <loc>https://embedthis.com/esp/doc/index.html</loc>
         <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>https://embedthis.com/esp/doc/licenses/gpl.html</loc>
+        <loc>https://embedthis.com/esp/doc/install/index.html</loc>
         <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>https://embedthis.com/esp/doc/licenses/index.html</loc>
+        <loc>https://embedthis.com/esp/doc/install/linux.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://embedthis.com/esp/doc/install/mac.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://embedthis.com/esp/doc/install/releaseNotes.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://embedthis.com/esp/doc/install/windows.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://embedthis.com/esp/doc/licensing/gpl.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://embedthis.com/esp/doc/licensing/index.html</loc>
         <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
@@ -439,78 +433,6 @@
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>https://embedthis.com/esp/doc/product/changeLog.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/product/compatibility.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/product/copyright.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/product/install/index.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/product/install/linux.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/product/install/mac.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/product/install/packages.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/product/install/windows.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/product/project.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/product/releaseNotes.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/product/roadmap.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>https://embedthis.com/esp/doc/product/version.html</loc>
-        <lastmod>2014-08-19</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
         <loc>https://embedthis.com/esp/doc/ref/appweb/api/appweb.html</loc>
         <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
@@ -548,6 +470,12 @@
     </url>
     <url>
         <loc>https://embedthis.com/esp/doc/ref/appweb/architecture.html</loc>
+        <lastmod>2014-08-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://embedthis.com/esp/doc/ref/appweb/compatibility.html</loc>
         <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>

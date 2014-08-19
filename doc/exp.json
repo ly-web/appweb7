@@ -1,8 +1,8 @@
 {
     title:       'Embedthis Appweb Documentation',
     url:         'https://embedthis.com/esp/doc/',
-    description: 'Embedded Web Technologies for the Internet of Things',
-    keywords:    'embedded web server, embedded, devices, http server, internet of things, embedded javascript',
+    description: 'The fastest little web server',
+    keywords:    'appweb, embedded web server, embedded, devices, http server, internet of things, esp, goahead',
 
     exclude: [
         'documents/css/app.less',
