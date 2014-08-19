@@ -794,7 +794,7 @@ static void process(int argc, char **argv)
         user(argc - 1, &argv[1]);
 
     } else if (isdigit((uchar) *cmd)) {
-        run(0, NULL);
+        run(1, (char**) &cmd);
     }
 }
 
@@ -1285,6 +1285,7 @@ static void run(int argc, char **argv)
             httpAddHostToEndpoints(app->host);
         }
     }
+    httpSetEndpointStartLevel(0);
     if (httpStartEndpoints() < 0) {
         mprLog("", 0, "Cannot start HTTP service, exiting.");
         return;

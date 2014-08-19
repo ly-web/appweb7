@@ -140,11 +140,6 @@
                 <a class="section" href="../../../">Home</a>
                 
                 <div class="divider">/</div>
-                <a class="section " href="index.html">
-                    Programmers Guide
-                </a>
-                
-                <div class="divider">/</div>
                 <a class="section active" href="index.html">
                     Source Code
                 </a>
@@ -172,19 +167,32 @@
             <a id="building"></a>
             <h2>Building Appweb from Source</h2>
             <p>The Appweb source distribution contains all the required source files, headers, tools, and test framework
-            to reconfigure, build, and verify Appweb. For details, see the <a href="building.html">building from
-                source</a> instructions.</p>
+            to reconfigure, build, and verify Appweb. The software supports three tools for building from source. 
+            <ul>
+                <li>Make</li>
+                <li><a href="https://embedthis.com/me/">MakeMe</a></li>
+                <li>IDE project for Visual Studio or Xcode</li>
+            </ul>
+            <p>Building via <em>make</em> is the simplest and quickest way to build. Use <em>make</em> if you want 
+            a default build or if you need to integrate Appweb with an existing make-based build system.
+            Build with <a href="https://embedthis.com/me/">MakeMe</a> if you want to customize or configure the software 
+            for your system, or if you need to cross-compile for another operating system or architecture. 
+            Use the IDE projects for Visual Studio or Xcode if you are most comfortable with these tools and want 
+            a default build.</p>
+            <p>We use the MakeMe tool internally to generate the Makefiles, MakeMe and IDE projects. This cool tool
+            generates clean, efficient makefiles and projects. The MakeMe project documents how to configure these
+            generated Makefiles and projects on the MakeMe site. For full details, read on, courtesy of MakeMe:</p>
+            <a class="ui green large right labeled icon button" 
+                href="https://embedthis.com/me/doc/guide/me/source/building.htm">
+                <i class="right long arrow icon"></i>Building from Source
+            </a>
             
-            <a id="porting"></a>
-            <h2>Porting the Source to a New Platform</h2>
-            <p>Appweb currently runs on a wide variety of operating platforms including: FreeBSD, Linux, MAC OS X and
-            Windows. If your system is not one of these, you may like to try porting Appweb to your system. See the
-            detailed <a href="porting.html">porting instructions</a> for tips on this process.</p>
             <a id="get"></a>
             <h2>Accessing the Source Code</h2>
             <p>With each Appweb release, a complete source code snapshot is provided. You can get the latest source
             code from the <a href="https://embedthis.com/appweb/download.html">download</a> site or you can
             access the <a href="https://github.com/embedthis/appweb">source code repository</a>.</p>
+
             <a id="repository"></a>
             <h3>Source Repository</h3>
             <p>The Appweb source code is hosted in a Git repository. We provide open read-only access. Write
@@ -194,24 +202,38 @@ $ git clone http://github.com/embedthis/appweb
 </pre>
             <p>You can also view the repository at <a
                 href="https://github.com/embedthis/appweb">https://github.com/embedthis/appweb</a>. This is also a
-            convenient way to get the source code. </p>
-            <h3>Repository Branches</h3>
-            The repository has three primary branches for development and release: master, lts and dev. 
-            <h4>Master Branch</h4>
-            <p>The master branch in the repository is used for released versions. The HEAD of the branch contains the 
-            most recent release of the software. This branch is regarded as stable and ready for production use.</p>
-            <h4>LTS Branch</h4>
-            <p>The lts branch in the repository is used for the LTS release versions. 
-            The HEAD of the branch contains the most recent LTS release of the software. 
-            This branch is regarded as stable and ready for production use.</p>
-            <h4>Dev Branch</h4>
-            <p>The Dev branch in the repository is used for ongoing development. New features and test fixes are pushed
-            to this repository on a regular basis. It is not as bug-free as the Master branch and should not be used
-            for production.</p>
+            convenient way to get the source code. Please use the <em>master</em> branch for the most recent stable 
+            snapshot. For daily builds, use the <em>dev</em> branch.</p>
+
+            <h2 class="section">Static Linking with ESP</h2>
+            <p>If using ESP with static linking, you must take extra steps to pre-compile your ESP pages and applications.
+            These steps are:
+            <ol>
+                <li>Pre-compile your ESP pages and applications.</li>
+                <li>Link the ESP initializer code into appweb.</li>
+            </ol>
+
+            <h3>Pre-compile ESP</h3>
+            <p>Use the following command to compile all ESP pages and applications that are defined in the appweb.conf file.
+            <pre>cd src/server
+appesp --static --genlink slink.c compile</pre>
+            <p>This will create a static library in the cache directory for each ESP application and in the 
+                src/server/cache directory for stand-alone ESP pages.</p>
+
+            <p>The <em>--genlink slink.c</em> option will generate the slink.c file which contains a 
+            function <em>appwebStaticInitialize()</em> that will invoke the ESP initializers for the ESP pages 
+            and applications. Appweb contains a reference to this function in 
+            src/server/appweb.c. When rebuilt, it will then resolve and link with the ESP static libraries.</p>
+
+            <p>Note that static linking implies significant limitations on Appweb:</p>
+            <ul>
+                <li>Modules cannot be dynamically loaded and must be statically linked</li>
+                <li>Reloading ESP applications without restarting the server is not possible</li>
+            </ul>
     </div>
     <div class="ui basic center aligned segment" id="terms">
         <p>&copy; Embedthis Software, 2003-2014. All rights reserved.
-            Generated on Aug 15, 2014.
+            Generated on Aug 18, 2014.
         </p>
     </div>
 

@@ -19,16 +19,15 @@ body {
   font-family: "Open Sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
   color: #555;
   text-rendering: optimizeLegibility;
+  background-image: -webkit-linear-gradient(45deg, #0a1855 0px, #da0024 100%);
   background-image: linear-gradient(45deg, #0a1855 0px, #da0024 100%);
   -webkit-transition: none !important;
-     -moz-transition: none !important;
           transition: none !important;
 }
 
 .ui.sidebar {
   width: 240px !important;
   -webkit-transition: none !important;
-     -moz-transition: none !important;
           transition: none !important;
 }
 
@@ -158,7 +157,8 @@ body {
 .ui.banded.grid .band {
   padding: 2rem 3rem 1rem 3rem;
   margin: 0;
-  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+       box-sizing: border-box;
 }
 
 .ui.banded.grid .band .basic.row,
@@ -310,10 +310,10 @@ h3 + ul {
   font-weight: bold;
 }
 
-.logos .logo {
-  width: 100px;
-  padding: 10px;
-  background: #FFF;
+.centered {
+  display: block;
+  margin-right: auto;
+  margin-left: auto;
 }
 
 .ui.code.inverted.code.segment {
@@ -333,6 +333,11 @@ h3 + ul {
   -webkit-box-shadow: 2px 2px 2px #DDD;
      -moz-box-shadow: 2px 2px 2px #DDD;
   -box-shadow: 2px 2px 2px #DDD;
+}
+
+.ui.code.segment b {
+  font-weight: normal;
+  color: #168;
 }
 
 img.screen {
@@ -384,7 +389,6 @@ a {
   color: #6080A0;
   text-decoration: none;
   -webkit-transition: color 0.3s ease;
-     -moz-transition: color 0.3s ease;
           transition: color 0.3s ease;
 }
 
@@ -405,7 +409,6 @@ a {
   background-image: none;
   border: none;
   -webkit-transform: rotate(0deg);
-     -moz-transform: rotate(0deg);
       -ms-transform: rotate(0deg);
           transform: rotate(0deg);
 }

@@ -234,6 +234,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
     }
     appwebStaticInitialize();
 
+    httpSetEndpointStartLevel(0);
     if (httpStartEndpoints() < 0) {
         mprLog("error appweb", 0, "Cannot start HTTP service, exiting.");
         exit(9);

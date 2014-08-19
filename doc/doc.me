@@ -7,30 +7,12 @@ Me.load({
         api: {
             action: `
                 apidoc('api/appweb.dox', '${SRC}/src/appweb.h', 'APPWEB', 'api/*.tags')
-                for each (let f: Path in ['appweb.html', 'http.html', 'mpr.html', 'osdep.html', 'esp.html', 'edi.html']) {
-                    let path = Path('out/ref/appweb/api').join(f)
-                    trace('Generate', path)
-                    let source = Path('api').join(f.trimExt() + 'Bare.html')
-                    let contents = source.readString()
-                    contents = contents.replace(/\\$/mg, '$$$$')
-                    let data = path.readString()
-                    path.write(data.
-                        replace(/DOC_CONTENT/g, contents).
-                        replace(/mprBare.html/g, 'mpr.html').
-                        replace(/osdepBare.html/g, 'osdep.html').
-                        replace(/httpBare.html/g, 'http.html').
-                        replace(/external=\"mpr.dtags\"/g, '').
-                        replace(/external=\"http.dtags\"/g, ''))
+                for each (let src: Path in ['api/appweb.html', 'api/http.html', 'api/mpr.html', 'api/osdep.html', 
+                        'api/esp.html', 'api/edi.html']) {
+                    apiLayout(src, Path('out/ref/appweb').join(src))
                 }
             `
         }
-
-        'clean-doc': {
-            type: 'clean',
-            action: `
-                rmdir(['../doc/api/html', '../doc/api/xml'])
-            `
-        },
 
         validate: {
             depends: [ 'gen-doc' ],
@@ -45,9 +27,6 @@ Me.load({
                         replace(/nowrap/g, '')
                     trace('Patch', f)
                     f.write(data)
-                }
-                for each (f in Path('out').files('**/*.css')) {
-                    f.write('.rule {}\n')
                 }
             `
         },

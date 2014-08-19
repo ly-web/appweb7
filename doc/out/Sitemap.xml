@@ -1,1112 +1,584 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>undefinedcss</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/features.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedcss/all.css</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/goals.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedcss/api.css</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/internals.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedcss/app</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/embedding.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedcss/theme</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/handlers.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide</loc>
-        <lastmod>2014-08-14</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/index.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/man.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/features.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/migrating-2-3.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/goals.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/migrating.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/internals.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/modules.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/programmers</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/rom.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/programmers/embedding.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/source.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/programmers/handlers.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/programmers/stages.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/programmers/index.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/source/building.html</loc>
+        <lastmod>2014-08-18</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/programmers/man.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/source/ide.html</loc>
+        <lastmod>2014-08-18</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/programmers/migrating-2-3.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/source/index.html</loc>
+        <lastmod>2014-08-18</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/programmers/migrating.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/source/make.html</loc>
+        <lastmod>2014-08-18</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/programmers/modules.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/source/me.html</loc>
+        <lastmod>2014-08-18</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/programmers/rom.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/source/openwrt.html</loc>
+        <lastmod>2014-08-18</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/programmers/stages.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/source/porting.html</loc>
+        <lastmod>2014-08-18</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/source</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/source/ssl.html</loc>
+        <lastmod>2014-08-18</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/source/building.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/standards/http.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/source/ide.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/standards/index.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/source/index.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/action.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/source/make.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/authentication.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/source/me.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/caching.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/source/openwrt.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/cgi.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/source/porting.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/client.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/source/ssl.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/configuration.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/standards</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/dir/auth.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/standards/http.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/dir/dir.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/standards/index.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/dir/esp.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/dir/log.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/action.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/dir/module.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/authentication.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/dir/route.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/caching.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/dir/sandbox.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/cgi.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/dir/server.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/client.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/dir/ssl.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/configuration.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/dir/vhost.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/dir</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/faq.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/dir/auth.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/frameworks.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/dir/dir.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/gettingStarted.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/dir/ejs.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/index.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/dir/ejs.old</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/lang.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/dir/esp.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/logFiles.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/dir/log.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/modules.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/dir/module.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/monitor.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/dir/route.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/php.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/dir/sandbox.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/ports.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/dir/server.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/quickStart.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/dir/ssl.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/routing.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/dir/vhost.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/security.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/ejs.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/service.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/ejs.old</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/ssl.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/faq.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/sslOverview.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/frameworks.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/stages.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/gettingStarted.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/starting.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/index.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/uploading.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/lang.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/vhosts.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/logFiles.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/users/webSockets.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/modules.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/guide/appweb/uses.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/monitor.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/index.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/php.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/licenses/gpl.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/ports.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/licenses/index.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/quickStart.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/man/appman.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/routing.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/man/appweb.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/security.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/man/appwebMonitor.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/service.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/man/authpass.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/ssl.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/man/esp.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/sslOverview.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/man/http.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/stages.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/man/makerom.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/starting.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/man/manager.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/uploading.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/man/regexp.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/vhosts.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/product/changeLog.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/users/webSockets.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/product/compatibility.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedguide/appweb/uses.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/product/copyright.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedimages</loc>
-        <lastmod>2014-08-14</lastmod>
+        <loc>https://embedthis.com/esp/doc/product/install/index.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedimages/board.jpg</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/product/install/linux.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedimages/caching</loc>
-        <lastmod>2014-08-14</lastmod>
+        <loc>https://embedthis.com/esp/doc/product/install/mac.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedimages/caching/caching-steps.jpg</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/product/install/packages.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedimages/favicon.ico</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/product/install/windows.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedimages/modules.jpg</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/product/project.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedimages/pipeline.jpg</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/product/releaseNotes.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedimages/routeSteps.jpg</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/product/roadmap.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedimages/routing.jpg</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/product/version.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedimages/services.jpg</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/ref/appweb/api/appweb.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedimages/tray.jpg</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/ref/appweb/api/edi.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedindex.html</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/ref/appweb/api/esp.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedlib</loc>
-        <lastmod>2014-08-14</lastmod>
+        <loc>https://embedthis.com/esp/doc/ref/appweb/api/http.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedlib/jquery</loc>
-        <lastmod>2014-08-14</lastmod>
+        <loc>https://embedthis.com/esp/doc/ref/appweb/api/mpr.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedlib/jquery/jquery.js</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/ref/appweb/api/osdep.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedlib/semantic</loc>
-        <lastmod>2014-08-14</lastmod>
+        <loc>https://embedthis.com/esp/doc/ref/appweb/architecture.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedlib/semantic/packaged</loc>
-        <lastmod>2014-08-14</lastmod>
+        <loc>https://embedthis.com/esp/doc/ref/appweb/index.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedlib/semantic/packaged/css</loc>
-        <lastmod>2014-08-14</lastmod>
+        <loc>https://embedthis.com/esp/doc/ref/appweb/memory.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedlib/semantic/packaged/css/semantic.css</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/ref/appweb/multithread.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedlib/semantic/packaged/css/semantic.min.css</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/ref/appweb/native.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>undefinedlib/semantic/packaged/fonts</loc>
-        <lastmod>2014-08-14</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/fonts/basic.icons.eot</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/fonts/basic.icons.svg</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/fonts/basic.icons.ttf</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/fonts/basic.icons.woff</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/fonts/icons.eot</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/fonts/icons.otf</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/fonts/icons.svg</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/fonts/icons.ttf</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/fonts/icons.woff</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/images</loc>
-        <lastmod>2014-08-14</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/images/loader-large-inverted.gif</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/images/loader-large.gif</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/images/loader-medium-inverted.gif</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/images/loader-medium.gif</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/images/loader-mini-inverted.gif</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/images/loader-mini.gif</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/images/loader-small-inverted.gif</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/images/loader-small.gif</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/javascript</loc>
-        <lastmod>2014-08-14</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/javascript/semantic.js</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlib/semantic/packaged/javascript/semantic.min.js</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlicenses</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlicenses/gpl.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedlicenses/index.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman</loc>
-        <lastmod>2014-08-14</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/appman.1</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/appman.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/appman.txt</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/appweb.1</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/appweb.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/appweb.txt</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/appwebMonitor.1</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/appwebMonitor.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/appwebMonitor.txt</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/authpass.1</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/authpass.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/authpass.txt</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/esp.1</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/esp.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/esp.txt</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/http.1</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/http.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/http.txt</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/makerom.1</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/makerom.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/makerom.txt</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/manager.1</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/manager.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/manager.txt</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/regexp.3</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/regexp.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedman/regexp.txt</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedproduct</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedproduct/changelog</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedproduct/changeLog.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedproduct/compatibility.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedproduct/copyright.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedproduct/install</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedproduct/install/index.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedproduct/install/inst.txt</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedproduct/install/linux.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedproduct/install/mac.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedproduct/install/packages.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedproduct/install/uninst.txt</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedproduct/install/windows.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedproduct/project.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedproduct/README.TXT</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedproduct/releaseNotes.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedproduct/roadmap.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedproduct/version.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedref</loc>
-        <lastmod>2014-08-14</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedref/appweb</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedref/appweb/api</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedref/appweb/api/appweb.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedref/appweb/api/edi.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedref/appweb/api/esp.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedref/appweb/api/http.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedref/appweb/api/mpr.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedref/appweb/api/osdep.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedref/appweb/architecture.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedref/appweb/ejs.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedref/appweb/ejs.old</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedref/appweb/index.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedref/appweb/memory.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedref/appweb/multithread.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedref/appweb/native.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedref/appweb/stability.html</loc>
-        <lastmod>2014-08-15</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.5</priority>
-    </url>
-    <url>
-        <loc>undefinedSitemap.xml</loc>
-        <lastmod>2014-08-15</lastmod>
+        <loc>https://embedthis.com/esp/doc/ref/appweb/stability.html</loc>
+        <lastmod>2014-08-19</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.5</priority>
     </url>
