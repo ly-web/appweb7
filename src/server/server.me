@@ -19,6 +19,47 @@ Me.load({
             },
         },
 
+        /*
+            Static library for esp applications. Always built but only contains code if static linking.
+            The slink.c is generated to contain the static initializer calls for ESP apps. See 'me genslink'
+            to generate/update slink.c.
+         */
+        libslink: {
+            type: 'lib',
+            depends: [ 'slink.c' ],
+            sources: [ 'slink.c' ],
+            postblend: function (target) {
+                if (Path('slink.c').exists) {
+                    /* Dynamically compute the required sources for static linking */
+                    let sources = me.targets.libslink.sources
+                    for each (file in Path('slink.c').readString().match(/SOURCE [^ ]*/g)) {
+                        sources.push(TARGET.home.join(file.replace(/SOURCE /mg, '')))
+                    }
+                }
+                if (target.static) {
+                    target.depends += ['esp', 'libmod_esp']
+                }
+            },
+        },
+
+        'genslink': {
+            action: "run('esp --static --genlink slink.c compile')",
+            generate: "esp --static --genlink slink.c compile",
+        },
+
+        'slink.c': {
+            path: 'slink.c',
+            precious: true,
+            build: "
+                if (!Path('slink.c').exists) {
+                    trace('Generate', 'slink.c')
+                    cp('slink.empty', 'slink.c')
+                }
+            ",
+            'generate-nmake': 'if not exist slink.c copy slink.empty slink.c',
+            'generate-sh': '[ ! -f slink.c ] && cp slink.empty slink.c ; true',
+        },
+
         appwebMonitor: {
             enable: "me.platform.like == 'windows'",
             type: 'exe',
