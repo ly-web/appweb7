@@ -17,7 +17,6 @@ if ! type me >/dev/null 2>&1 ; then
     make help
     exit 0
 fi
-set -x
 if [ -f start.me ] ; then
     [ "$*" != "--help" ] && me clean >/dev/null 2>&1
 fi
