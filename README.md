@@ -17,11 +17,11 @@ See [LICENSE.md](LICENSE.md) for details.
 
 ### To read documentation:
 
-  See http://embedthis.com/products/appweb/doc/product/index.html
+  See https://embedthis.com/products/appweb/doc/product/index.html
 
 ### Building
     You can build with make or with Bit. Bit is quicker and more flexible.
-    To install Bit, download Bit from http://embedthis.com/downloads/bit/download.ejs
+    To install Bit, download Bit from https://embedthis.com/downloads/bit/download.ejs
 
 ### To build with make:
 
@@ -73,4 +73,4 @@ Resources
   - [Appweb web site](http://appwebserver.org/)
   - [Appweb GitHub repository](http://github.com/embedthis/appweb)
   - [Appweb Mailing list](http://groups.google.com/groups/appweb)
-  - [Embedthis web site](http://embedthis.com/)
+  - [Embedthis web site](https://embedthis.com/)
