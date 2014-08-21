@@ -432,9 +432,9 @@ build/$(CONFIG)/bin/libappweb.a: $(DEPS_16)
 #
 #   slink.c
 #
-src/slink.c: $(DEPS_17)
+src/server/slink.c: $(DEPS_17)
 	( \
-	cd src; \
+	cd src/server; \
 	[ ! -f slink.c ] && cp slink.empty slink.c ; true ; \
 	)
 
@@ -501,14 +501,14 @@ DEPS_21 += build/$(CONFIG)/inc/mpr.h
 DEPS_21 += build/$(CONFIG)/inc/esp.h
 
 build/$(CONFIG)/obj/slink.o: \
-    src/slink.c $(DEPS_21)
+    src/server/slink.c $(DEPS_21)
 	@echo '   [Compile] build/$(CONFIG)/obj/slink.o'
-	$(CC) -c -o build/$(CONFIG)/obj/slink.o $(CFLAGS) $(DFLAGS) "-Ibuild/$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/slink.c
+	$(CC) -c -o build/$(CONFIG)/obj/slink.o $(CFLAGS) $(DFLAGS) "-Ibuild/$(CONFIG)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/server/slink.c
 
 #
 #   libslink
 #
-DEPS_22 += src/slink.c
+DEPS_22 += src/server/slink.c
 DEPS_22 += build/$(CONFIG)/inc/mpr.h
 DEPS_22 += build/$(CONFIG)/inc/me.h
 DEPS_22 += build/$(CONFIG)/inc/osdep.h
@@ -930,7 +930,7 @@ DEPS_45 += build/$(CONFIG)/inc/customize.h
 DEPS_45 += build/$(CONFIG)/obj/config.o
 DEPS_45 += build/$(CONFIG)/obj/convenience.o
 DEPS_45 += build/$(CONFIG)/bin/libappweb.a
-DEPS_45 += src/slink.c
+DEPS_45 += src/server/slink.c
 DEPS_45 += build/$(CONFIG)/inc/esp.h
 DEPS_45 += build/$(CONFIG)/obj/espLib.o
 ifeq ($(ME_COM_ESP),1)
@@ -1435,7 +1435,7 @@ endif
 #
 genslink: $(DEPS_59)
 	( \
-	cd src; \
+	cd src/server; \
 	esp --static --genlink slink.c compile ; \
 	)
 

@@ -452,9 +452,9 @@ build/$(CONFIG)/bin/libappweb.dylib: $(DEPS_16)
 #
 #   slink.c
 #
-src/slink.c: $(DEPS_17)
+src/server/slink.c: $(DEPS_17)
 	( \
-	cd src; \
+	cd src/server; \
 	[ ! -f slink.c ] && cp slink.empty slink.c ; true ; \
 	)
 
@@ -474,14 +474,14 @@ DEPS_19 += build/$(CONFIG)/inc/mpr.h
 DEPS_19 += build/$(CONFIG)/inc/esp.h
 
 build/$(CONFIG)/obj/slink.o: \
-    src/slink.c $(DEPS_19)
+    src/server/slink.c $(DEPS_19)
 	@echo '   [Compile] build/$(CONFIG)/obj/slink.o'
-	$(CC) -c $(DFLAGS) -o build/$(CONFIG)/obj/slink.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/slink.c
+	$(CC) -c $(DFLAGS) -o build/$(CONFIG)/obj/slink.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/server/slink.c
 
 #
 #   libslink
 #
-DEPS_20 += src/slink.c
+DEPS_20 += src/server/slink.c
 DEPS_20 += build/$(CONFIG)/inc/me.h
 DEPS_20 += build/$(CONFIG)/inc/mpr.h
 DEPS_20 += build/$(CONFIG)/inc/esp.h
@@ -525,7 +525,7 @@ DEPS_22 += build/$(CONFIG)/inc/customize.h
 DEPS_22 += build/$(CONFIG)/obj/config.o
 DEPS_22 += build/$(CONFIG)/obj/convenience.o
 DEPS_22 += build/$(CONFIG)/bin/libappweb.dylib
-DEPS_22 += src/slink.c
+DEPS_22 += src/server/slink.c
 DEPS_22 += build/$(CONFIG)/inc/esp.h
 DEPS_22 += build/$(CONFIG)/obj/slink.o
 DEPS_22 += build/$(CONFIG)/bin/libslink.dylib
@@ -1123,7 +1123,7 @@ endif
 #
 genslink: $(DEPS_46)
 	( \
-	cd src; \
+	cd src/server; \
 	esp --static --genlink slink.c compile ; \
 	)
 
@@ -1894,29 +1894,29 @@ installBinary: $(DEPS_76)
 	cp build/$(CONFIG)/bin/ejs.mod $(ME_VAPP_PREFIX)/bin/ejs.mod ; \
 	fi ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/doc/man1" ; \
-	cp doc/man/appman.1 $(ME_VAPP_PREFIX)/doc/man1/appman.1 ; \
+	cp doc/documents/man/appman.1 $(ME_VAPP_PREFIX)/doc/man1/appman.1 ; \
 	mkdir -p "$(ME_MAN_PREFIX)/man1" ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/appman.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/appman.1" "$(ME_MAN_PREFIX)/man1/appman.1" ; \
-	cp doc/man/appweb.1 $(ME_VAPP_PREFIX)/doc/man1/appweb.1 ; \
+	cp doc/documents/man/appweb.1 $(ME_VAPP_PREFIX)/doc/man1/appweb.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/appweb.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/appweb.1" "$(ME_MAN_PREFIX)/man1/appweb.1" ; \
-	cp doc/man/appwebMonitor.1 $(ME_VAPP_PREFIX)/doc/man1/appwebMonitor.1 ; \
+	cp doc/documents/man/appwebMonitor.1 $(ME_VAPP_PREFIX)/doc/man1/appwebMonitor.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/appwebMonitor.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/appwebMonitor.1" "$(ME_MAN_PREFIX)/man1/appwebMonitor.1" ; \
-	cp doc/man/authpass.1 $(ME_VAPP_PREFIX)/doc/man1/authpass.1 ; \
+	cp doc/documents/man/authpass.1 $(ME_VAPP_PREFIX)/doc/man1/authpass.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/authpass.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/authpass.1" "$(ME_MAN_PREFIX)/man1/authpass.1" ; \
-	cp doc/man/esp.1 $(ME_VAPP_PREFIX)/doc/man1/esp.1 ; \
+	cp doc/documents/man/esp.1 $(ME_VAPP_PREFIX)/doc/man1/esp.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/esp.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/esp.1" "$(ME_MAN_PREFIX)/man1/esp.1" ; \
-	cp doc/man/http.1 $(ME_VAPP_PREFIX)/doc/man1/http.1 ; \
+	cp doc/documents/man/http.1 $(ME_VAPP_PREFIX)/doc/man1/http.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/http.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/http.1" "$(ME_MAN_PREFIX)/man1/http.1" ; \
-	cp doc/man/makerom.1 $(ME_VAPP_PREFIX)/doc/man1/makerom.1 ; \
+	cp doc/documents/man/makerom.1 $(ME_VAPP_PREFIX)/doc/man1/makerom.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/makerom.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/makerom.1" "$(ME_MAN_PREFIX)/man1/makerom.1" ; \
-	cp doc/man/manager.1 $(ME_VAPP_PREFIX)/doc/man1/manager.1 ; \
+	cp doc/documents/man/manager.1 $(ME_VAPP_PREFIX)/doc/man1/manager.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/manager.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/manager.1" "$(ME_MAN_PREFIX)/man1/manager.1" ; \
 	mkdir -p "$(ME_ROOT_PREFIX)/Library/LaunchDaemons" ; \

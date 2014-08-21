@@ -505,10 +505,10 @@ build\$(CONFIG)\bin\libappweb.lib: $(DEPS_16)
 #
 #   slink.c
 #
-src\slink.c: $(DEPS_17)
-	cd src
+src\server\slink.c: $(DEPS_17)
+	cd src\server
 	if not exist slink.c copy slink.empty slink.c
-	cd ..
+	cd ..\..
 
 #
 #   esp.h
@@ -573,14 +573,14 @@ DEPS_21 = $(DEPS_21) build\$(CONFIG)\inc\mpr.h
 DEPS_21 = $(DEPS_21) build\$(CONFIG)\inc\esp.h
 
 build\$(CONFIG)\obj\slink.obj: \
-    src\slink.c $(DEPS_21)
+    src\server\slink.c $(DEPS_21)
 	@echo '   [Compile] build/$(CONFIG)/obj/slink.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\slink.obj -Fdbuild\$(CONFIG)\obj\slink.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\slink.c
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\slink.obj -Fdbuild\$(CONFIG)\obj\slink.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\slink.c
 
 #
 #   libslink
 #
-DEPS_22 = $(DEPS_22) src\slink.c
+DEPS_22 = $(DEPS_22) src\server\slink.c
 DEPS_22 = $(DEPS_22) build\$(CONFIG)\inc\mpr.h
 DEPS_22 = $(DEPS_22) build\$(CONFIG)\inc\me.h
 DEPS_22 = $(DEPS_22) build\$(CONFIG)\inc\osdep.h
@@ -1002,7 +1002,7 @@ DEPS_45 = $(DEPS_45) build\$(CONFIG)\inc\customize.h
 DEPS_45 = $(DEPS_45) build\$(CONFIG)\obj\config.obj
 DEPS_45 = $(DEPS_45) build\$(CONFIG)\obj\convenience.obj
 DEPS_45 = $(DEPS_45) build\$(CONFIG)\bin\libappweb.lib
-DEPS_45 = $(DEPS_45) src\slink.c
+DEPS_45 = $(DEPS_45) src\server\slink.c
 DEPS_45 = $(DEPS_45) build\$(CONFIG)\inc\esp.h
 DEPS_45 = $(DEPS_45) build\$(CONFIG)\obj\espLib.obj
 !IF "$(ME_COM_ESP)" == "1"
@@ -1590,9 +1590,9 @@ build\$(CONFIG)\bin\esp.exe: $(DEPS_64)
 #   genslink
 #
 genslink: $(DEPS_65)
-	cd src
+	cd src\server
 	esp --static --genlink slink.c compile
-	cd ..
+	cd ..\..
 
 #
 #   http-ca-crt

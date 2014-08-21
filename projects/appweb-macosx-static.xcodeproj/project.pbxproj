@@ -1045,7 +1045,7 @@
 		85B9C39085B9D1860000007D /* libmprssl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmprssl.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		85B9C39085B9D18600000067 /* pcre.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pcre.c; path = src/paks/pcre/pcre.c; sourceTree = "<group>"; };
 		85B9C39085B9D18600000075 /* libpcre */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpcre.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		85B9C39085B9D18600000069 /* slink.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = slink.c; path = src/slink.c; sourceTree = "<group>"; };
+		85B9C39085B9D18600000069 /* slink.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = slink.c; path = src/server/slink.c; sourceTree = "<group>"; };
 		85B9C39085B9D18600000077 /* libslink */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libslink.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		85B9C39085B9D1860000006B /* makerom.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = makerom.c; path = src/paks/mpr/makerom.c; sourceTree = "<group>"; };
 		85B9C39085B9D18600000138 /* makerom */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = makerom; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1986,12 +1986,12 @@ mkdir -p cache";
 
 			);
 			outputPaths = (
-../src/slink.c
+../src/server/slink.c
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
 			shellScript = "PATH=$PATH:/usr/local/bin
-cd ../src
+cd ../src/server
 [ ! -f slink.c ] && cp slink.empty slink.c ; true";
 		};
 		85B9C39085B9D1860000001B /* ShellScript for test-basic.cgi */ = {
