@@ -19,7 +19,7 @@
             handler to support the Ejscript framework.
             The Appweb opens source binary distribution includes the Ejscript web framework. Commercial distributions will
             require a separate Ejscript license.</p>
-            <p>See also the <a href="http://ejscript.org/">Ejscript Web Site</a>.</p>
+            <p>See also the <a href="http://embedthis.com/ejs/">Ejscript Web Site</a>.</p>
             <h2>Ejscript Web Framework Architecture</h2>
             <p>Ejscript uses JavaScript for server-side web programming. Using the same language in the client and 
             server makes web programming that much easier.</p>
