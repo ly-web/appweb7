@@ -17,11 +17,11 @@ See [LICENSE.md](LICENSE.md) for details.
 
 ### To read documentation:
 
-  See http://embedthis.com/products/appweb/doc/index.html
+  See https://embedthis.com/products/appweb/doc/index.html
 
 ### Building
     You can build with make or with MakeMe. MakeMe is quicker and more flexible.
-    To install MakeMe, download it from http://embedthis.com/downloads/makeme/download.esp
+    To install MakeMe, download it from https://embedthis.com/downloads/makeme/download.esp
 
 ### To build with make:
 
@@ -73,4 +73,4 @@ Resources
   - [Appweb web site](http://appwebserver.org/)
   - [Appweb GitHub repository](http://github.com/embedthis/appweb)
   - [Appweb Community Support](http://groups.google.com/group/appweb)
-  - [Embedthis web site](http://embedthis.com/)
+  - [Embedthis web site](https://embedthis.com/)
