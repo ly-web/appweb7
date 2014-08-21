@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Running the Appweb Service</title>
+    <!-- Copyright Embedthis Software, LLC, 2003-2014. All Rights Reserved. -->
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="keywords" content="appweb, embedded web server, embedded, devices, http server, internet of things, esp, goahead" />
+    <meta name="description" content="The fastest little web server" />
+    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,+Sans:300italic,400,300,700'
+        rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Julius+Sans+One' rel='stylesheet' type='text/css'>
+    <link href="../lib/semantic/packaged/css/semantic.css" rel="stylesheet" type="text/css" />
+    <link href="../css/all.css" rel="stylesheet" type="text/css" />
+    <link href="../images/favicon.ico" rel="shortcut icon" />
+
+</head>
+<body>
+        
+    <div class="ui large left vertical inverted labeled overlay sidebar menu">
+        <div class="item">
+            <a href="../">
+                <b>General</b>
+            </a>
+            <div class="menu">
+                <a class="item" href="../index.html">Appweb Overview</a>
+                <a class="item" href="..//users/features.html">Appweb Features</a>
+                <a class="item" href="https://embedthis.com/download/appweb.html">Download</a> 
+                <a class="item" href="../licensing/index.html">Licensing</a>
+            </div>
+        </div>
+        <div class="item">
+            <a href="../start/index.html">
+                <b>Getting Started</b>
+            </a>
+            <div class="menu">
+                <a class="item" href="../start/quick.html">Quick Start</a>
+                <a class="item" href="../start/installing.html">Installing Appweb</a>
+                <a class="item" href="../start/starting.html">Starting and Stopping</a>
+                <a class="item" href="../start/service.html">Running as a Service</a>
+                <a class="item" href="../start/releaseNotes.html">Release Notes</a>
+            </div>
+        </div>
+        <div class="item">
+            <a href="..//users/index.html"><b>Users Guide</b></a>
+            <div class="menu">
+                <a class="item" href="..//users/configuration.html">Configuring Appweb</a>
+                <a class="item" href="..//users/configuration.html#directives">Configuration Directives</a>
+                <a class="item" href="..//users/frameworks.html">Web Frameworks</a>
+                <a class="item" href="..//users/modules.html">Using Loadable Modules</a>
+                <a class="item" href="..//users/ports.html">Ports and Binding</a>
+                <a class="item" href="..//users/routing.html">Routing Requests</a>
+                <a class="item" href="..//users/stages.html">Request Pipeline</a>
+                <a class="item" href="..//users/lang.html">Multi-Language Content</a>
+                <a class="item" href="..//users/authentication.html">User Authorization</a>
+                <a class="item" href="..//users/logFiles.html">Logging</a>
+                <a class="item" href="..//users/caching.html">Caching</a>
+                <a class="item" href="..//users/vhosts.html">Virtual Hosts</a>
+                <a class="item" href="..//users/ssl.html">Secure Sockets (SSL)</a>
+                <a class="item" href="..//users/client.html">Http Client</a>
+                <a class="item" href="..//users/security.html">Security Considerations</a>
+                <a class="item" href="..//users/monitor.html">Monitoring and Defending</a>
+                <a class="item" href="..//users/uploading.html">File Upload</a>
+                <a class="item" href="..//users/webSockets.html">WebSockets</a>
+            </div>
+        </div>
+        <div class="item">
+            <a href="..//developers/index.html">Programmer Guide</a>
+            <div class="menu">
+                <a class="item" href="..//developers/source.html">Building from Source</a>
+                <a class="item" href="..//developers/embedding.html">Embedding Appweb</a>
+                <a class="item" href="..//developers/modules.html">Creating Appweb Modules</a>
+                <a class="item" href="..//developers/handlers.html">Creating Appweb Handlers</a>
+                <a class="item" href="..//developers/stages.html">Creating Pipeline Stages</a>
+                <a class="item" href="..//developers/migrating.html">Migrating to Appweb 5</a>
+                <a class="item" href="..//developers/rom.html">Serving Pages from ROM</a>
+                <a class="item" href="..//developers/man.html">Man Pages</a>
+            </div>
+        </div>
+        <div class="item">
+            <a href="../ref/index.html">Reference Guide</a>
+            <div class="menu">
+                <a class="item" href="../ref/compatibility.html">Compatibility</a>
+                <a class="item" href="../ref/native.html">Native APIs</a>
+                <a class="item" href="../ref/architecture.html">Appweb Architecture</a>
+                <a class="item" href="../ref/memory.html">Appweb Memory Allocation</a>
+                <a class="item" href="../ref/multithread.html">Multithreaded Programming</a>
+                <a class="item" href="..//standards/http.html">HTTP References</a>
+            </div>
+        </div>
+        <div class="item">
+            <a href="..//developers/project.html">Project Resources</a>
+            <div class="menu">
+                <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
+                <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
+                <a class="item" href="https://github.com/embedthis/appweb">Source Code Repository</a>
+                <a class="item" href="https://github.com/embedthis/appweb/issues">Project Issue Database</a>
+                <a class="item" href="https://github.com/embedthis/appweb/releases">Change Log</a>
+                <a class="item" href="https://github.com/embedthis/appweb/milestones">Roadmap</a>
+                <a class="item" href="https://embedthis.com/scripts/contributors.esp">Contributors Agreement</a>
+            </div>
+        </div>
+        <div class="item">
+            <b>Links</b>
+            <div class="menu">
+                <a class="item" href="https://embedthis.com/">Embedthis Web Site</a>
+                <a class="item" href="https://embedthis.com/blog/">Embedthis Blog</a>
+                <a class="item" href="http://twitter.com/mobstream">Twitter</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui inverted masthead">
+                <div class="column">
+            <div class="inverted secondary pointing ui menu">
+                <div class="header left item">
+                    <a href="/index.html">Embedthis Appweb</a>
+                </div>
+                <div class="right menu">
+                    <div class="ui top right">
+                        <a class="item" href="https://embedthis.com/appweb/">Appweb</a>
+                        <a class="item" href="https://github.com/embedthis/appweb">Repository</a>
+                        <a class="item" href="http://groups.google.com/group/appweb">Support</a>
+                    </div>
+                </div>
+            </div>
+            <div class="ui breadcrumb">
+                <a class="section" href="../">Home</a>
+                
+                <div class="divider">/</div>
+                <a class="section " href="index.html">
+                    Getting Started
+                </a>
+                
+                <div class="divider">/</div>
+                <a class="section " href="installing.html">
+                    Installing
+                </a>
+                
+                <div class="divider">/</div>
+                <a class="section active" href="service.html">
+                    Running the Appweb Service
+                </a>
+                
+            </div>
+        </div>
+        <div class="ui black small launch right attached toggle button" style="width: 40px;">
+            <i class="icon list layout">
+                <span class="text" style="display: none;">Menu</span>
+            </i>
+        </div>
+
+    </div>
+    <div class="content">
+<h1>Running Appweb as a System Service or Daemon</h1>
+            <p>After installation, Appweb is started automatically as a system service or daemon. You can change this
+            behavior and only start Appweb manually if you wish.</p>
+            <p>This page gives generic and windows -specific information about starting and stopping the Appweb service.</p>
+            <ul>
+                <li><a href="#generic">Generic Instructions</a></li>
+                <li><a href="#windows">Windows Instructions</a></li>
+            </ul>
+            
+            <a id="generic"></a>
+            <h2>Generic Instructions</h2>
+            <p>Appweb includes a manager program called <em>appman</em>. This program is used to configure the running 
+            of Appweb as service. Appman provides a generic way to install/uninstall, enable/disable, start/stop, and
+            run the Appweb service regardless of the Operating System.</p>
+            <p>The Appman command takes the form:</p>
+            <pre class="ui code segment">appman commands...</pre>
+            <p>Where commands can be:</p>
+            <table title="commands" class="ui table segment">
+                <thead><tr><th>Command</th><th>Details</th></tr></thead>
+                <tbody>
+                    <tr><td>install</td><td>Install Appweb service</td></tr>
+                    <tr><td>uninstall</td><td>Uninstall Appweb service</td></tr>
+                    <tr><td>enable</td><td>Enable Appweb to start automatically on system boot</td></tr>
+                    <tr><td>disable</td><td>Disable Appweb from automatically starting</td></tr>
+                    <tr><td>start</td><td>Start Appweb manually</td></tr>
+                    <tr><td>stop</td><td>Stop Appweb</td></tr>
+                    <tr><td>run</td><td>Run Appweb and monitor its execution. Restart if it fails.</td></tr>
+                </tbody>
+            </table>
+            <h3>Stopping Appweb as a Service</h3>
+            <p>Use the following command to stop Appweb running as a service permanently:</p>
+            <pre class="ui code segment">
+appman disable
+</pre>
+            <p>Run the following commands to restore Appweb running as a service:</p>
+            <pre class="ui code segment">
+appman enable
+appman start
+</pre>
+            <a id="windows"></a>
+            <h2>Windows Instructions</h2>
+            <p>On Windows, Appweb is managed by two programs:</p>
+            <ul>
+                <li><a href="#appman">The Appweb Manager</a></li>
+                <li><a href="#monitor">The Appweb Monitor</a></li>
+            </ul><a id="appman"></a>
+            <p>The Appman manager program is installed as a windows service that starts, 
+            manages and restarts Appweb. If Appweb fails, Appman will automatically restart it.</p>
+            <p>Windows services run in the background with little interaction with the user. So to provide more
+            convenient access to manage Appweb, the <a href="#monitor">Appweb Monitor</a> program runs and is
+            accessible from the windows system tray (taskbar notification area). You can start and stop Appweb using
+            either the manager or Monitor programs.</p>
+            <h3>Appman &mdash; Appweb Manager Service</h3>
+            <p>You can interface with the Appman program via the Windows Services Applet. To invoke the applet select:</p>
+            <pre class="ui code segment">
+Start -&gt; Control Panel -&gt; Administrative Tools -&gt; Services
+</pre>
+            <p>Then select and double click on the <b>Embedthis Appweb</b> service. A dialog panel will be displayed
+            from which you can start and stop the manager (appman) process.</p>
+
+            <img src="../images/services.jpg" alt="services" class="bare-screen" />
+            <p>When started or stopped, the manager will first do the same operation on the real Appweb instance. Pausing
+            the manager will have no effect on Appweb, but will pause the manager itself.</p>
+            <p>Once installed, you will need to start the service via the Services control applet.</p>
+            <a id="monitor"></a>
+            <h3>Appweb Monitor</h3>
+            <p>The Windows Appweb Monitor is launched when you log in. It a quick and easy way to start, stop, and
+            restart Appweb. You can also launch a browser to display the documentation or the Appweb management console
+            (future feature).</p>
+
+            <img src="../images/tray.jpg" alt="tray" class="bare-screen" />
+            <p>When you select 'stop' Appweb, you actually stop the manager process which in turn stops Appweb. Similarly,
+            when you select 'start' Appweb, you are really starting the manager which detects that Appweb is not running
+            and automatically launches it. </p>
+    </div>
+    <div class="ui basic center aligned segment" id="terms">
+        <p>&copy; Embedthis Software, 2003-2014. All rights reserved.
+            Generated on Aug 21, 2014.
+        </p>
+    </div>
+
+    <script src="../lib/jquery/jquery.js"></script>
+    <script src="../lib/semantic/packaged/javascript/semantic.js"></script>
+    <script>
+        $('.sidebar').sidebar({overlay: false}).sidebar('toggle');
+        $('.sidebar').first().sidebar('attach events', '.toggle.button');
+    </script>
+</body>
+</html>
