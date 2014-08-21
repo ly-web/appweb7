@@ -1,6 +1,6 @@
 # Embedthis ESP
 
-<img align="right" src="http://embedthis.com/images/pak.png">
+<img align="right" src="https://embedthis.com/images/pak.png">
 
 ESP is a light-weight web framework that makes it easy to create blazing fast, dynamic web applications. 
 ESP uses the "C" language for server-side web programming which allows easy access to low-level data for
@@ -26,7 +26,7 @@ See [LICENSE.md](LICENSE.md) for details.
 
 ### Building
     You can build with make or with MakeMe. MakeMe is quicker and more flexible.
-    To install MakeMe, download it from http://embedthis.com/downloads/makeme/download.esp
+    To install MakeMe, download it from https://embedthis.com/downloads/makeme/download.esp
 
 ### To build with make:
 
@@ -78,4 +78,4 @@ Resources
   - [ESP web site](http://esp.embedthis.org/)
   - [ESP GitHub repository](http://github.com/embedthis/esp)
   - [ESP Mailing list](http://groups.google.com/groups/esp)
-  - [Embedthis web site](http://embedthis.com/)
+  - [Embedthis web site](https://embedthis.com/)

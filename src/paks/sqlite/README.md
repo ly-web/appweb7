@@ -10,7 +10,7 @@ This software is dual-licensed under a GPLv2 license and commercial licenses are
 See LICENSE.md for details.
 
 ### Prerequisites: 
-    MakeMe (http://embedthis.com/downloads/makeme/download.esp) for MakeMe to configure and build.
+    MakeMe (https://embedthis.com/downloads/makeme/download.esp) for MakeMe to configure and build.
     Ejscript (http://ejscript.org/downloads/ejs/download.esp) for utest to test.
 
 ### To Build:
