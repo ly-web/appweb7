@@ -171,7 +171,6 @@ view_*.exp
 controller_*.exp
 controller_*.ilk
 *.ilk
-*.exp
 src/samples/c/simpleClient/simpleClient
 src/samples/c/simpleServer/simpleServer
 test/cache/view_*.*
