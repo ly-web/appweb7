@@ -1,6 +1,6 @@
 Embedthis Appweb(TM)
 
-Welcome to the Appweb -- the fastest little web server.
+Welcome to Appweb -- the fastest little web server.
 
 This document contains details regarding the installation procedure for the binary Embedthis Appweb package.  This package contains pre-built stand-alone web server and an embeddable HTTP library with headers. You can read the documentation for the latest release online at:
 

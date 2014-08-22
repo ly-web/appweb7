@@ -22,7 +22,6 @@
     },
     "pak": "~0.9",
     "dependencies": {
-        "appweb": "~5",
         "http": "~5",
         "me-dev": "~0.8",
         "mpr": "~5",
@@ -30,6 +29,7 @@
         "pcre": "*"
     },
     "optionalDependencies": {
+        "appweb": "~5",
         "est": "~0.6",
         "me-ssl": "~0.8",
         "sqlite": "~1"

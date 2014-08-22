@@ -1,0 +1,93 @@
+    
+    <div class="ui large left vertical inverted labeled overlay sidebar menu">
+        <div class="item">
+            <a href="@@{top}">
+                <b>General</b>
+            </a>
+            <div class="menu">
+                <a class="item" href="@@{top}index.html">Appweb Overview</a>
+                <a class="item" href="@@{top}users/features.html">Appweb Features</a>
+                <a class="item" href="https://embedthis.com/appweb/download.html">Download</a> 
+                <a class="item" href="@@{top}licensing/index.html">Licensing</a>
+            </div>
+        </div>
+        <div class="item">
+            <a href="@@{top}start/index.html">
+                <b>Getting Started</b>
+            </a>
+            <div class="menu">
+                <a class="item" href="@@{top}start/quick.html">Quick Start</a>
+                <a class="item" href="@@{top}start/installing.html">Installing Appweb</a>
+                <a class="item" href="@@{top}start/starting.html">Starting and Stopping</a>
+                <a class="item" href="@@{top}start/service.html">Running as a Service</a>
+                <a class="item" href="@@{top}start/releaseNotes.html">Release Notes</a>
+                <a class="item" href="@@{top}start/source.html">Building from Source</a>
+            </div>
+        </div>
+        <div class="item">
+            <a href="@@{top}users/index.html"><b>User's Guide</b></a>
+            <div class="menu">
+                <a class="item" href="@@{top}users/configuration.html">Configuring Appweb</a>
+                <a class="item" href="@@{top}users/configuration.html#directives">Configuration Directives</a>
+                <a class="item" href="@@{top}users/frameworks.html">Web Frameworks</a>
+                <a class="item" href="@@{top}users/modules.html">Using Loadable Modules</a>
+                <a class="item" href="@@{top}users/ports.html">Ports and Binding</a>
+                <a class="item" href="@@{top}users/routing.html">Routing Requests</a>
+                <a class="item" href="@@{top}users/stages.html">Request Pipeline</a>
+                <a class="item" href="@@{top}users/lang.html">Multi-Language Content</a>
+                <a class="item" href="@@{top}users/authentication.html">User Authorization</a>
+                <a class="item" href="@@{top}users/logFiles.html">Logging</a>
+                <a class="item" href="@@{top}users/caching.html">Caching</a>
+                <a class="item" href="@@{top}users/vhosts.html">Virtual Hosts</a>
+                <a class="item" href="@@{top}users/ssl.html">Secure Sockets (SSL)</a>
+                <a class="item" href="@@{top}users/client.html">Http Client</a>
+                <a class="item" href="@@{top}users/security.html">Security Considerations</a>
+                <a class="item" href="@@{top}users/monitor.html">Monitoring and Defending</a>
+                <a class="item" href="@@{top}users/uploading.html">File Upload</a>
+                <a class="item" href="@@{top}users/webSockets.html">WebSockets</a>
+                <a class="item" href="@@{top}users/man.html">Man Pages</a>
+            </div>
+        </div>
+        <div class="item">
+            <a href="@@{top}developers/index.html">Developer's Guide</a>
+            <div class="menu">
+                <a class="item" href="@@{top}developers/embedding.html">Embedding Appweb</a>
+                <a class="item" href="@@{top}developers/modules.html">Creating Appweb Modules</a>
+                <a class="item" href="@@{top}developers/handlers.html">Creating Appweb Handlers</a>
+                <a class="item" href="@@{top}developers/stages.html">Creating Pipeline Stages</a>
+                <a class="item" href="@@{top}developers/migrating.html">Migrating to Appweb 5</a>
+                <a class="item" href="@@{top}developers/rom.html">Serving Pages from ROM</a>
+            </div>
+        </div>
+        <div class="item">
+            <a href="@@{top}ref/index.html">Reference Guide</a>
+            <div class="menu">
+                <a class="item" href="@@{top}ref/compatibility.html">Compatibility</a>
+                <a class="item" href="@@{top}ref/native.html">Native APIs</a>
+                <a class="item" href="@@{top}ref/architecture.html">Appweb Architecture</a>
+                <a class="item" href="@@{top}ref/memory.html">Appweb Memory Allocation</a>
+                <a class="item" href="@@{top}ref/multithread.html">Multithreaded Programming</a>
+                <a class="item" href="@@{top}standards/http.html">HTTP References</a>
+            </div>
+        </div>
+        <div class="item">
+            <a href="@@{top}developers/project.html">Project Resources</a>
+            <div class="menu">
+                <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
+                <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
+                <a class="item" href="https://github.com/embedthis/appweb">Source Code Repository</a>
+                <a class="item" href="https://github.com/embedthis/appweb/issues">Project Issue Database</a>
+                <a class="item" href="https://github.com/embedthis/appweb/releases">Change Log</a>
+                <a class="item" href="https://github.com/embedthis/appweb/milestones">Roadmap</a>
+                <a class="item" href="https://embedthis.com/developers/contributors.html">Contributors Agreement</a>
+            </div>
+        </div>
+        <div class="item">
+            <b>Links</b>
+            <div class="menu">
+                <a class="item" href="https://embedthis.com/">Embedthis Web Site</a>
+                <a class="item" href="https://embedthis.com/blog/">Embedthis Blog</a>
+                <a class="item" href="http://twitter.com/mobstream">Twitter</a>
+            </div>
+        </div>
+    </div>
