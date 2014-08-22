@@ -1,8 +1,7 @@
 {
     title:  'Response Caching',
     crumbs: [
-        { 'Users Guide': 'index.html' },
-        { '': '' }
+        { "User's Guide": 'index.html' },
     ],
 }
             <h1>Response Caching</h1>
@@ -15,8 +14,8 @@
             <a id="why"></a>
             <h2>Why Cache?</h2>
             <p>When a browser issues an HTTP request to a server, that request must be transmitted and received. Then the 
-            response must be computed, delivered and finally rendered in the browser. This process may take from fractions of a 
-            second up to many seconds to complete. The delays are comprised of the many steps the request and 
+            response must be computed, delivered and finally rendered in the browser. This process may take from fractions 
+            of a second up to many seconds to complete. The delays are comprised of the many steps the request and 
             response must traverse from the browser to the server and back. These steps all impart delay. The key
             delays are:</p>
             <ul>
@@ -38,7 +37,8 @@
             <h3>Options</h3>
             <ol>
                 <li>Use the client cache and don't contact the server at all.</li>
-                <li>Use the client cache but first check with the server to determine whether the client cache is acceptable.</li>
+                <li>Use the client cache but first check with the server to determine whether the client cache is 
+                    acceptable.</li>
                 <li>Use the server cache because the client doesn't have a usable response.</li> 
                 <li>Don't use any cache and generate a new response</li>
             </ol>

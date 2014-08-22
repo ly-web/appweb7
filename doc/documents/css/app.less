@@ -20,6 +20,10 @@ body {
 .ui.sidebar {
     width: 240px !important;
     transition: none !important;
+    &.inverted.menu {
+//  MOB - theme and set opactity? (333
+        background: rgba(51, 51, 51, 0.3);
+    }
 }
 
 .ui.masthead {
@@ -40,7 +44,7 @@ body {
             padding-bottom: .5rem;
         }
         .active.section {
-//  MOB - them and set opactity?
+//  MOB - theme and set opactity?
             color: rgba(256, 256, 256, 0.8);
             font-weight: normal;
         }
@@ -158,7 +162,7 @@ img.screen {
 }
 
 img.bare-screen {
-    x-width: 615px;
+    width: 100%;
     margin: 8px 0 10px 0;
     border: 1px solid #AAA;
     border-radius: 7px;
