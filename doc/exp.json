@@ -33,7 +33,17 @@
                 }
             }
         }
+        /*
+            UNUSED 
+
+            dump("META", expansive.getFileMeta('documents/users/configuration.html'))
+            print("META", expansive.meta)
+            print("COLL", expansive.meta.coll)
+            print("LIST", expansive.collection({title: 'Internals'}))
+         */
     `,
+    coll: ['a', 'b'],
+
     sitemap: {
         include: /\.html/,
         exclude: /\/doc-|docpad\//,
