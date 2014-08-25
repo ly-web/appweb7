@@ -17,7 +17,7 @@ See [LICENSE.md](LICENSE.md) for details.
 
 ### To read documentation:
 
-  See https://embedthis.com/products/appweb/doc/product/index.html
+  See https://embedthis.com/appweb/doc/index.html
 
 ### Building
     You can build with make or with Bit. Bit is quicker and more flexible.
