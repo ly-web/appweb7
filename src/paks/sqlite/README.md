@@ -10,8 +10,7 @@ This software is dual-licensed under a GPLv2 license and commercial licenses are
 See LICENSE.md for details.
 
 ### Prerequisites: 
-    MakeMe (https://embedthis.com/downloads/makeme/download.esp) for MakeMe to configure and build.
-    Ejscript (http://ejscript.org/downloads/ejs/download.esp) for utest to test.
+    MakeMe (https://embedthis.com/me/download.html) for MakeMe to configure and build.
 
 ### To Build:
 
@@ -21,26 +20,6 @@ See LICENSE.md for details.
     Alternatively to build without MakeMe:
 
     make 
-
-Images are built into */bin. The build configuration is saved in */inc/me.h.
-
-### To Test:
-
-    me test 
-
-### To Run:
-
-    me run
-
-This will run appweb in the src/server directory using the src/server/appweb.conf configuration file.
-
-### To Install: 
-
-    me install
-
-### To Create Packages:
-
-    me package
 
 ### Copyright
 

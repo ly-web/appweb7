@@ -36,7 +36,7 @@
 #define PACKAGE_TARNAME     PACKAGE
 #define PACKAGE_VERSION     VERSION
 #define PACKAGE_STRING      "sqlite" VERSION
-#define PACKAGE_BUGREPORT   "http://embedthis.com"
+#define PACKAGE_BUGREPORT   "https://github.com/embedthis/sqlite/issues"
 
 #ifndef SQLITE_OMIT_BUILTIN_TEST
 #define SQLITE_OMIT_BUILTIN_TEST        1
