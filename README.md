@@ -17,7 +17,7 @@ See [LICENSE.md](LICENSE.md) for details.
 
 ### To read documentation:
 
-  See https://embedthis.com/products/appweb/doc/index.html
+  See https://embedthis.com/appweb/doc/index.html
 
 ### Building
     You can build with make or with MakeMe. MakeMe is quicker and more flexible.

@@ -7,8 +7,8 @@ actions.
 
 Requirements
 ---
-* [Appweb](http://embedthis.com/downloads/appweb/download.esp)
-* [MakeMe Build Tool](http://embedthis.com/downloads/me/download.esp)
+* [Appweb](https://embedthis.com/appweb/download.html)
+* [MakeMe Build Tool](https://embedthis.com/me/download.html)
 
 To build:
 ---
@@ -36,10 +36,10 @@ Code:
 
 Documentation:
 ---
-* [Appweb Documentation](http://embedthis.com/products/appweb/doc/index.html)
-* [Action Handler](http://embedthis.com/products/appweb/doc/guide/appweb/users/frameworks.html#action)
-* [Configuration Directives](http://embedthis.com/products/appweb/doc/guide/appweb/users/configuration.html#directives)
-* [Sandbox Limits](http://embedthis.com/products/appweb/doc/guide/appweb/users/dir/sandbox.html)
+* [Appweb Documentation](https://embedthis.com/appweb/doc/index.html)
+* [Action Handler](https://embedthis.com/appweb/doc/users/frameworks.html#action)
+* [Configuration Directives](https://embedthis.com/appweb/doc/users/configuration.html#directives)
+* [Sandbox Limits](https://embedthis.com/appweb/doc/users/dir/sandbox.html)
 
 See Also:
 ---

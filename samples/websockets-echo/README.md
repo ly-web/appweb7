@@ -17,8 +17,8 @@ then close the connection.
 Requirements
 ---
 
-* [Appweb](http://embedthis.com/downloads/appweb/download.esp)
-* [MakeMe Build Tool](http://embedthis.com/downloads/me/download.esp)
+* [Appweb](https://embedthis.com/appweb/download.html)
+* [MakeMe Build Tool](https://embedthis.com/me/download.html)
 
 To build:
 ---
@@ -45,13 +45,13 @@ Code:
 
 Documentation:
 ---
-* [Appweb Documentation](http://embedthis.com/products/appweb/doc/index.html)
-* [ESP Directives](http://embedthis.com/products/appweb/doc/guide/appweb/users/dir/esp.html)
-* [ESP Tour](http://embedthis.com/products/appweb/doc/guide/esp/users/tour.html)
-* [ESP Controllers](http://embedthis.com/products/appweb/doc/guide/esp/users/controllers.html)
-* [ESP APIs](http://embedthis.com/products/appweb/doc/api/esp.html)
-* [ESP Guide](http://embedthis.com/products/appweb/doc/guide/esp/users/index.html)
-* [ESP Overview](http://embedthis.com/products/appweb/doc/guide/esp/users/using.html)
+* [Appweb Documentation](https://embedthis.com/appweb/doc/index.html)
+* [ESP Directives](https://embedthis.com/appweb/doc/users/dir/esp.html)
+* [ESP Tour](https://embedthis.com/appweb/doc/guide/esp/users/tour.html)
+* [ESP Controllers](https://embedthis.com/appweb/doc/guide/esp/users/controllers.html)
+* [ESP APIs](https://embedthis.com/appweb/doc/api/esp.html)
+* [ESP Guide](https://embedthis.com/appweb/doc/guide/esp/users/index.html)
+* [ESP Overview](https://embedthis.com/appweb/doc/guide/esp/users/using.html)
 
 See Also:
 ---

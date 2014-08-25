@@ -22,7 +22,7 @@ See [LICENSE.md](LICENSE.md) for details.
 
 ### To read documentation:
 
-  See http://embedthis.org/products/esp/doc/product/index.html
+  See http://embedthis.org/esp/doc/index.html
 
 ### Building
     You can build with make or with MakeMe. MakeMe is quicker and more flexible.

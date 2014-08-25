@@ -7,11 +7,11 @@
         "esp",
         "package"
     ],
-    "homepage": "http://embedthis.com/esp",
+    "homepage": "https://embedthis.com/esp",
     "author": {
         "name": "Embedthis Software",
         "email": "dev@embedthis.com",
-        "url": "http://embedthis.com"
+        "url": "https://embedthis.com"
     },
     "repository": {
         "type": "git",
@@ -51,7 +51,7 @@
         },
         {
             "type": "Commercial",
-            "url": "http://embedthis.com/licensing/"
+            "url": "https://embedthis.com/licensing/"
         }
     ],
     "paks": {

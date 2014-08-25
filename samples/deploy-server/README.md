@@ -5,8 +5,8 @@ This sample demonstrates the commands to use to deploy Appweb files to a staging
 
 Requirements
 ---
-* [Appweb](http://embedthis.com/downloads/appweb/download.esp)
-* [MakeMe Build Tool](http://embedthis.com/downloads/me/download.esp)
+* [Appweb](https://embedthis.com/appweb/download.html)
+* [MakeMe Build Tool](https://embedthis.com/me/download.html)
 
 Steps:
 ---
@@ -25,8 +25,8 @@ Other sets include: 'web', 'service', 'php', 'utils', 'test', 'dev', 'doc', 'pac
 
 Documentation:
 ---
-* [Appweb Documentation](http://embedthis.com/products/appweb/doc/index.html)
-* [Building Appweb with MakeMe](http://embedthis.com/products/appweb/doc/guide/appweb/source/me.html)
+* [Appweb Documentation](https://embedthis.com/appweb/doc/index.html)
+* [Building Appweb with MakeMe](https://embedthis.com/appweb/doc/source/me.html)
 
 See Also:
 ---

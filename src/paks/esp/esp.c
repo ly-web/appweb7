@@ -3115,7 +3115,7 @@ static void usageError()
     initRuntime();
     paks = getCachedPaks();
     if (paks) {
-        mprEprintf("  Local Paks: (See also http://embedthis.com/catalog)\n%s\n", paks);
+        mprEprintf("  Local Paks: (See also https://embedthis.com/catalog/)\n%s\n", paks);
     }
     app->error = 1;
 }

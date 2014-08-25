@@ -15,7 +15,7 @@ Notes:
 
 Requirements
 ---
-* [ESP](http://embedthis.com/downloads/esp/download.esp)
+* [ESP](https://embedthis.com/esp/download.html)
 
 To run:
 ---
@@ -38,13 +38,13 @@ Code:
 
 Documentation:
 ---
-* [Apwpeb Documentation](http://embedthis.com/products/appweb/doc/index.html)
-* [ESP Documentation](http://embedthis.com/products/esp/doc/index.html)
-* [ESP Configuration in Appweb](http://embedthis.com/products/appweb/doc/guide/esp/users/configuration.html#directives)
-* [ESP Configuration](http://embedthis.com/products/esp/doc/guide/esp/users/config.html)
-* [Sandbox Limits](http://embedthis.com/products/appweb/doc/guide/appweb/users/dir/sandbox.html)
-* [Security Considerations](http://embedthis.com/products/appweb/doc/guide/appweb/users/security.html)
-* [User Authentication](http://embedthis.com/products/appweb/doc/guide/appweb/users/authentication.html)
+* [Apwpeb Documentation](https://embedthis.com/appweb/doc/index.html)
+* [ESP Documentation](https://embedthis.com/esp/doc/index.html)
+* [ESP Configuration in Appweb](https://embedthis.com/appweb/doc/guide/esp/users/configuration.html#directives)
+* [ESP Configuration](https://embedthis.com/esp/doc/guide/esp/users/config.html)
+* [Sandbox Limits](https://embedthis.com/appweb/doc/users/dir/sandbox.html)
+* [Security Considerations](https://embedthis.com/appweb/doc/users/security.html)
+* [User Authentication](https://embedthis.com/appweb/doc/users/authentication.html)
 
 See Also:
 ---
