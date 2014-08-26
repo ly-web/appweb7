@@ -3,7 +3,7 @@
 #
 
 NAME                  := appweb
-VERSION               := 5.1.0
+VERSION               := 5.2.0
 PROFILE               ?= default
 ARCH                  ?= $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
 CC_ARCH               ?= $(shell echo $(ARCH) | sed 's/x86/i686/;s/x64/x86_64/')
@@ -24,6 +24,7 @@ ME_COM_MATRIXSSL      ?= 0
 ME_COM_MDB            ?= 1
 ME_COM_NANOSSL        ?= 0
 ME_COM_OPENSSL        ?= 0
+ME_COM_OSDEP          ?= 1
 ME_COM_PCRE           ?= 1
 ME_COM_PHP            ?= 0
 ME_COM_SQLITE         ?= 0
@@ -61,7 +62,7 @@ ME_COM_OPENSSL_PATH   ?= /usr/src/openssl
 ME_COM_PHP_PATH       ?= /usr/src/php
 
 CFLAGS                += -fPIC -w
-DFLAGS                += -D_REENTRANT -DPIC $(patsubst %,-D%,$(filter ME_%,$(MAKEFLAGS))) -DME_COM_CGI=$(ME_COM_CGI) -DME_COM_DIR=$(ME_COM_DIR) -DME_COM_EJS=$(ME_COM_EJS) -DME_COM_ESP=$(ME_COM_ESP) -DME_COM_EST=$(ME_COM_EST) -DME_COM_HTTP=$(ME_COM_HTTP) -DME_COM_MATRIXSSL=$(ME_COM_MATRIXSSL) -DME_COM_MDB=$(ME_COM_MDB) -DME_COM_NANOSSL=$(ME_COM_NANOSSL) -DME_COM_OPENSSL=$(ME_COM_OPENSSL) -DME_COM_PCRE=$(ME_COM_PCRE) -DME_COM_PHP=$(ME_COM_PHP) -DME_COM_SQLITE=$(ME_COM_SQLITE) -DME_COM_SSL=$(ME_COM_SSL) -DME_COM_VXWORKS=$(ME_COM_VXWORKS) -DME_COM_WINSDK=$(ME_COM_WINSDK) -DME_COM_ZLIB=$(ME_COM_ZLIB) 
+DFLAGS                += -D_REENTRANT -DPIC $(patsubst %,-D%,$(filter ME_%,$(MAKEFLAGS))) -DME_COM_CGI=$(ME_COM_CGI) -DME_COM_DIR=$(ME_COM_DIR) -DME_COM_EJS=$(ME_COM_EJS) -DME_COM_ESP=$(ME_COM_ESP) -DME_COM_EST=$(ME_COM_EST) -DME_COM_HTTP=$(ME_COM_HTTP) -DME_COM_MATRIXSSL=$(ME_COM_MATRIXSSL) -DME_COM_MDB=$(ME_COM_MDB) -DME_COM_NANOSSL=$(ME_COM_NANOSSL) -DME_COM_OPENSSL=$(ME_COM_OPENSSL) -DME_COM_OSDEP=$(ME_COM_OSDEP) -DME_COM_PCRE=$(ME_COM_PCRE) -DME_COM_PHP=$(ME_COM_PHP) -DME_COM_SQLITE=$(ME_COM_SQLITE) -DME_COM_SSL=$(ME_COM_SSL) -DME_COM_VXWORKS=$(ME_COM_VXWORKS) -DME_COM_WINSDK=$(ME_COM_WINSDK) -DME_COM_ZLIB=$(ME_COM_ZLIB) 
 IFLAGS                += "-Ibuild/$(CONFIG)/inc"
 LDFLAGS               += '-rdynamic' '-Wl,--enable-new-dtags' '-Wl,-rpath,$$ORIGIN/'
 LIBPATHS              += -Lbuild/$(CONFIG)/bin
@@ -1689,7 +1690,7 @@ installBinary: $(DEPS_76)
 	cd .; \
 	mkdir -p "$(ME_APP_PREFIX)" ; \
 	rm -f "$(ME_APP_PREFIX)/latest" ; \
-	ln -s "5.1.0" "$(ME_APP_PREFIX)/latest" ; \
+	ln -s "5.2.0" "$(ME_APP_PREFIX)/latest" ; \
 	mkdir -p "$(ME_LOG_PREFIX)" ; \
 	chmod 755 "$(ME_LOG_PREFIX)" ; \
 	[ `id -u` = 0 ] && chown $(WEB_USER):$(WEB_GROUP) "$(ME_LOG_PREFIX)"; true ; \
@@ -1894,29 +1895,29 @@ installBinary: $(DEPS_76)
 	cp build/$(CONFIG)/bin/ejs.mod $(ME_VAPP_PREFIX)/bin/ejs.mod ; \
 	fi ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/doc/man1" ; \
-	cp doc/documents/man/appman.1 $(ME_VAPP_PREFIX)/doc/man1/appman.1 ; \
+	cp doc/final/man/appman.1 $(ME_VAPP_PREFIX)/doc/man1/appman.1 ; \
 	mkdir -p "$(ME_MAN_PREFIX)/man1" ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/appman.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/appman.1" "$(ME_MAN_PREFIX)/man1/appman.1" ; \
-	cp doc/documents/man/appweb.1 $(ME_VAPP_PREFIX)/doc/man1/appweb.1 ; \
+	cp doc/final/man/appweb.1 $(ME_VAPP_PREFIX)/doc/man1/appweb.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/appweb.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/appweb.1" "$(ME_MAN_PREFIX)/man1/appweb.1" ; \
-	cp doc/documents/man/appwebMonitor.1 $(ME_VAPP_PREFIX)/doc/man1/appwebMonitor.1 ; \
+	cp doc/final/man/appwebMonitor.1 $(ME_VAPP_PREFIX)/doc/man1/appwebMonitor.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/appwebMonitor.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/appwebMonitor.1" "$(ME_MAN_PREFIX)/man1/appwebMonitor.1" ; \
-	cp doc/documents/man/authpass.1 $(ME_VAPP_PREFIX)/doc/man1/authpass.1 ; \
+	cp doc/final/man/authpass.1 $(ME_VAPP_PREFIX)/doc/man1/authpass.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/authpass.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/authpass.1" "$(ME_MAN_PREFIX)/man1/authpass.1" ; \
-	cp doc/documents/man/esp.1 $(ME_VAPP_PREFIX)/doc/man1/esp.1 ; \
+	cp doc/final/man/esp.1 $(ME_VAPP_PREFIX)/doc/man1/esp.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/esp.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/esp.1" "$(ME_MAN_PREFIX)/man1/esp.1" ; \
-	cp doc/documents/man/http.1 $(ME_VAPP_PREFIX)/doc/man1/http.1 ; \
+	cp doc/final/man/http.1 $(ME_VAPP_PREFIX)/doc/man1/http.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/http.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/http.1" "$(ME_MAN_PREFIX)/man1/http.1" ; \
-	cp doc/documents/man/makerom.1 $(ME_VAPP_PREFIX)/doc/man1/makerom.1 ; \
+	cp doc/final/man/makerom.1 $(ME_VAPP_PREFIX)/doc/man1/makerom.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/makerom.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/makerom.1" "$(ME_MAN_PREFIX)/man1/makerom.1" ; \
-	cp doc/documents/man/manager.1 $(ME_VAPP_PREFIX)/doc/man1/manager.1 ; \
+	cp doc/final/man/manager.1 $(ME_VAPP_PREFIX)/doc/man1/manager.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/manager.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/manager.1" "$(ME_MAN_PREFIX)/man1/manager.1" ; \
 	mkdir -p "$(ME_ROOT_PREFIX)/etc/init.d" ; \
@@ -1992,5 +1993,5 @@ uninstall: $(DEPS_80)
 #   version
 #
 version: $(DEPS_81)
-	echo 5.1.0
+	echo 5.2.0
 

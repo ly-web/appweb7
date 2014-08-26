@@ -3,7 +3,7 @@
 #
 
 NAME                  := appweb
-VERSION               := 5.1.0
+VERSION               := 5.2.0
 PROFILE               ?= default
 ARCH                  ?= $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
 CC_ARCH               ?= $(shell echo $(ARCH) | sed 's/x86/i686/;s/x64/x86_64/')
@@ -24,6 +24,7 @@ ME_COM_MATRIXSSL      ?= 0
 ME_COM_MDB            ?= 1
 ME_COM_NANOSSL        ?= 0
 ME_COM_OPENSSL        ?= 0
+ME_COM_OSDEP          ?= 1
 ME_COM_PCRE           ?= 1
 ME_COM_PHP            ?= 0
 ME_COM_SQLITE         ?= 0
@@ -61,7 +62,7 @@ ME_COM_OPENSSL_PATH   ?= /usr/src/openssl
 ME_COM_PHP_PATH       ?= /usr/src/php
 
 CFLAGS                += -g -w
-DFLAGS                +=  $(patsubst %,-D%,$(filter ME_%,$(MAKEFLAGS))) -DME_COM_CGI=$(ME_COM_CGI) -DME_COM_DIR=$(ME_COM_DIR) -DME_COM_EJS=$(ME_COM_EJS) -DME_COM_ESP=$(ME_COM_ESP) -DME_COM_EST=$(ME_COM_EST) -DME_COM_HTTP=$(ME_COM_HTTP) -DME_COM_MATRIXSSL=$(ME_COM_MATRIXSSL) -DME_COM_MDB=$(ME_COM_MDB) -DME_COM_NANOSSL=$(ME_COM_NANOSSL) -DME_COM_OPENSSL=$(ME_COM_OPENSSL) -DME_COM_PCRE=$(ME_COM_PCRE) -DME_COM_PHP=$(ME_COM_PHP) -DME_COM_SQLITE=$(ME_COM_SQLITE) -DME_COM_SSL=$(ME_COM_SSL) -DME_COM_VXWORKS=$(ME_COM_VXWORKS) -DME_COM_WINSDK=$(ME_COM_WINSDK) -DME_COM_ZLIB=$(ME_COM_ZLIB) 
+DFLAGS                +=  $(patsubst %,-D%,$(filter ME_%,$(MAKEFLAGS))) -DME_COM_CGI=$(ME_COM_CGI) -DME_COM_DIR=$(ME_COM_DIR) -DME_COM_EJS=$(ME_COM_EJS) -DME_COM_ESP=$(ME_COM_ESP) -DME_COM_EST=$(ME_COM_EST) -DME_COM_HTTP=$(ME_COM_HTTP) -DME_COM_MATRIXSSL=$(ME_COM_MATRIXSSL) -DME_COM_MDB=$(ME_COM_MDB) -DME_COM_NANOSSL=$(ME_COM_NANOSSL) -DME_COM_OPENSSL=$(ME_COM_OPENSSL) -DME_COM_OSDEP=$(ME_COM_OSDEP) -DME_COM_PCRE=$(ME_COM_PCRE) -DME_COM_PHP=$(ME_COM_PHP) -DME_COM_SQLITE=$(ME_COM_SQLITE) -DME_COM_SSL=$(ME_COM_SSL) -DME_COM_VXWORKS=$(ME_COM_VXWORKS) -DME_COM_WINSDK=$(ME_COM_WINSDK) -DME_COM_ZLIB=$(ME_COM_ZLIB) 
 IFLAGS                += "-Ibuild/$(CONFIG)/inc"
 LDFLAGS               += '-Wl,-rpath,@executable_path/' '-Wl,-rpath,@loader_path/'
 LIBPATHS              += -Lbuild/$(CONFIG)/bin
@@ -290,7 +291,7 @@ DEPS_5 += build/$(CONFIG)/obj/mprLib.o
 
 build/$(CONFIG)/bin/libmpr.dylib: $(DEPS_5)
 	@echo '      [Link] build/$(CONFIG)/bin/libmpr.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmpr.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmpr.dylib -compatibility_version 5.1 -current_version 5.1 "build/$(CONFIG)/obj/mprLib.o" $(LIBS) 
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmpr.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmpr.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/mprLib.o" $(LIBS) 
 
 #
 #   pcre.h
@@ -321,7 +322,7 @@ DEPS_8 += build/$(CONFIG)/obj/pcre.o
 
 build/$(CONFIG)/bin/libpcre.dylib: $(DEPS_8)
 	@echo '      [Link] build/$(CONFIG)/bin/libpcre.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libpcre.dylib -arch $(CC_ARCH) $(LDFLAGS) -compatibility_version 5.1 -current_version 5.1 $(LIBPATHS) -install_name @rpath/libpcre.dylib -compatibility_version 5.1 -current_version 5.1 "build/$(CONFIG)/obj/pcre.o" $(LIBS) 
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libpcre.dylib -arch $(CC_ARCH) $(LDFLAGS) -compatibility_version 5.2 -current_version 5.2 $(LIBPATHS) -install_name @rpath/libpcre.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/pcre.o" $(LIBS) 
 endif
 
 #
@@ -368,7 +369,7 @@ endif
 
 build/$(CONFIG)/bin/libhttp.dylib: $(DEPS_11)
 	@echo '      [Link] build/$(CONFIG)/bin/libhttp.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libhttp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libhttp.dylib -compatibility_version 5.1 -current_version 5.1 "build/$(CONFIG)/obj/httpLib.o" $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libhttp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libhttp.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/httpLib.o" $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS) -lpam 
 endif
 
 #
@@ -447,7 +448,7 @@ endif
 
 build/$(CONFIG)/bin/libappweb.dylib: $(DEPS_16)
 	@echo '      [Link] build/$(CONFIG)/bin/libappweb.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libappweb.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 5.1 -current_version 5.1 "build/$(CONFIG)/obj/config.o" "build/$(CONFIG)/obj/convenience.o" $(LIBPATHS_16) $(LIBS_16) $(LIBS_16) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libappweb.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/config.o" "build/$(CONFIG)/obj/convenience.o" $(LIBPATHS_16) $(LIBS_16) $(LIBS_16) $(LIBS) -lpam 
 
 #
 #   slink.c
@@ -489,7 +490,7 @@ DEPS_20 += build/$(CONFIG)/obj/slink.o
 
 build/$(CONFIG)/bin/libslink.dylib: $(DEPS_20)
 	@echo '      [Link] build/$(CONFIG)/bin/libslink.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libslink.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 5.1 -current_version 5.1 "build/$(CONFIG)/obj/slink.o" $(LIBS) 
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libslink.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/slink.o" $(LIBS) 
 
 #
 #   appweb.o
@@ -645,7 +646,7 @@ DEPS_29 += build/$(CONFIG)/obj/zlib.o
 
 build/$(CONFIG)/bin/libzlib.dylib: $(DEPS_29)
 	@echo '      [Link] build/$(CONFIG)/bin/libzlib.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libzlib.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libzlib.dylib -compatibility_version 5.1 -current_version 5.1 "build/$(CONFIG)/obj/zlib.o" $(LIBS) 
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libzlib.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libzlib.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/zlib.o" $(LIBS) 
 endif
 
 #
@@ -734,7 +735,7 @@ endif
 
 build/$(CONFIG)/bin/libejs.dylib: $(DEPS_34)
 	@echo '      [Link] build/$(CONFIG)/bin/libejs.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 5.1 -current_version 5.1 "build/$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_34) $(LIBS_34) $(LIBS_34) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_34) $(LIBS_34) $(LIBS_34) $(LIBS) -lpam 
 endif
 
 #
@@ -1056,7 +1057,7 @@ endif
 
 build/$(CONFIG)/bin/libmod_esp.dylib: $(DEPS_43)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_esp.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_esp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 5.1 -current_version 5.1 "build/$(CONFIG)/obj/espLib.o" $(LIBPATHS_43) $(LIBS_43) $(LIBS_43) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_esp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/espLib.o" $(LIBPATHS_43) $(LIBS_43) $(LIBS_43) $(LIBS) -lpam 
 endif
 
 #
@@ -1209,7 +1210,7 @@ DEPS_52 += build/$(CONFIG)/obj/estLib.o
 
 build/$(CONFIG)/bin/libest.dylib: $(DEPS_52)
 	@echo '      [Link] build/$(CONFIG)/bin/libest.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libest.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libest.dylib -compatibility_version 5.1 -current_version 5.1 "build/$(CONFIG)/obj/estLib.o" $(LIBS) 
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libest.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libest.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/estLib.o" $(LIBS) 
 endif
 
 #
@@ -1260,7 +1261,7 @@ endif
 
 build/$(CONFIG)/bin/libmod_cgi.dylib: $(DEPS_54)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_cgi.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_cgi.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 5.1 -current_version 5.1 "build/$(CONFIG)/obj/cgiHandler.o" $(LIBPATHS_54) $(LIBS_54) $(LIBS_54) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_cgi.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/cgiHandler.o" $(LIBPATHS_54) $(LIBS_54) $(LIBS_54) $(LIBS) -lpam 
 endif
 
 #
@@ -1328,7 +1329,7 @@ endif
 
 build/$(CONFIG)/bin/libmod_ejs.dylib: $(DEPS_56)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_ejs.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_ejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 5.1 -current_version 5.1 "build/$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_56) $(LIBS_56) $(LIBS_56) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_ejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_56) $(LIBS_56) $(LIBS_56) $(LIBS) -lpam 
 endif
 
 #
@@ -1381,7 +1382,7 @@ LIBPATHS_58 += -L$(ME_COM_PHP_PATH)/libs
 
 build/$(CONFIG)/bin/libmod_php.dylib: $(DEPS_58)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_php.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_php.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmod_php.dylib -compatibility_version 5.1 -current_version 5.1 "build/$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_58) $(LIBS_58) $(LIBS_58) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_php.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmod_php.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_58) $(LIBS_58) $(LIBS_58) $(LIBS) -lpam 
 endif
 
 #
@@ -1433,7 +1434,7 @@ endif
 
 build/$(CONFIG)/bin/libmprssl.dylib: $(DEPS_60)
 	@echo '      [Link] build/$(CONFIG)/bin/libmprssl.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmprssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmprssl.dylib -compatibility_version 5.1 -current_version 5.1 "build/$(CONFIG)/obj/mprSsl.o" $(LIBPATHS_60) $(LIBS_60) $(LIBS_60) $(LIBS) 
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmprssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmprssl.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/mprSsl.o" $(LIBPATHS_60) $(LIBS_60) $(LIBS_60) $(LIBS) 
 
 #
 #   sslModule.o
@@ -1510,7 +1511,7 @@ endif
 
 build/$(CONFIG)/bin/libmod_ssl.dylib: $(DEPS_62)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_ssl.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_ssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmod_ssl.dylib -compatibility_version 5.1 -current_version 5.1 "build/$(CONFIG)/obj/sslModule.o" $(LIBPATHS_62) $(LIBS_62) $(LIBS_62) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_ssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmod_ssl.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/sslModule.o" $(LIBPATHS_62) $(LIBS_62) $(LIBS_62) $(LIBS) -lpam 
 endif
 
 #
@@ -1542,7 +1543,7 @@ DEPS_65 += build/$(CONFIG)/obj/sqlite3.o
 
 build/$(CONFIG)/bin/libsql.dylib: $(DEPS_65)
 	@echo '      [Link] build/$(CONFIG)/bin/libsql.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libsql.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libsql.dylib -compatibility_version 5.1 -current_version 5.1 "build/$(CONFIG)/obj/sqlite3.o" $(LIBS) 
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libsql.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libsql.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/sqlite3.o" $(LIBS) 
 endif
 
 #
@@ -1689,7 +1690,7 @@ installBinary: $(DEPS_76)
 	cd .; \
 	mkdir -p "$(ME_APP_PREFIX)" ; \
 	rm -f "$(ME_APP_PREFIX)/latest" ; \
-	ln -s "5.1.0" "$(ME_APP_PREFIX)/latest" ; \
+	ln -s "5.2.0" "$(ME_APP_PREFIX)/latest" ; \
 	mkdir -p "$(ME_LOG_PREFIX)" ; \
 	chmod 755 "$(ME_LOG_PREFIX)" ; \
 	[ `id -u` = 0 ] && chown $(WEB_USER):$(WEB_GROUP) "$(ME_LOG_PREFIX)"; true ; \
@@ -1894,29 +1895,29 @@ installBinary: $(DEPS_76)
 	cp build/$(CONFIG)/bin/ejs.mod $(ME_VAPP_PREFIX)/bin/ejs.mod ; \
 	fi ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/doc/man1" ; \
-	cp doc/documents/man/appman.1 $(ME_VAPP_PREFIX)/doc/man1/appman.1 ; \
+	cp doc/final/man/appman.1 $(ME_VAPP_PREFIX)/doc/man1/appman.1 ; \
 	mkdir -p "$(ME_MAN_PREFIX)/man1" ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/appman.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/appman.1" "$(ME_MAN_PREFIX)/man1/appman.1" ; \
-	cp doc/documents/man/appweb.1 $(ME_VAPP_PREFIX)/doc/man1/appweb.1 ; \
+	cp doc/final/man/appweb.1 $(ME_VAPP_PREFIX)/doc/man1/appweb.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/appweb.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/appweb.1" "$(ME_MAN_PREFIX)/man1/appweb.1" ; \
-	cp doc/documents/man/appwebMonitor.1 $(ME_VAPP_PREFIX)/doc/man1/appwebMonitor.1 ; \
+	cp doc/final/man/appwebMonitor.1 $(ME_VAPP_PREFIX)/doc/man1/appwebMonitor.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/appwebMonitor.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/appwebMonitor.1" "$(ME_MAN_PREFIX)/man1/appwebMonitor.1" ; \
-	cp doc/documents/man/authpass.1 $(ME_VAPP_PREFIX)/doc/man1/authpass.1 ; \
+	cp doc/final/man/authpass.1 $(ME_VAPP_PREFIX)/doc/man1/authpass.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/authpass.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/authpass.1" "$(ME_MAN_PREFIX)/man1/authpass.1" ; \
-	cp doc/documents/man/esp.1 $(ME_VAPP_PREFIX)/doc/man1/esp.1 ; \
+	cp doc/final/man/esp.1 $(ME_VAPP_PREFIX)/doc/man1/esp.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/esp.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/esp.1" "$(ME_MAN_PREFIX)/man1/esp.1" ; \
-	cp doc/documents/man/http.1 $(ME_VAPP_PREFIX)/doc/man1/http.1 ; \
+	cp doc/final/man/http.1 $(ME_VAPP_PREFIX)/doc/man1/http.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/http.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/http.1" "$(ME_MAN_PREFIX)/man1/http.1" ; \
-	cp doc/documents/man/makerom.1 $(ME_VAPP_PREFIX)/doc/man1/makerom.1 ; \
+	cp doc/final/man/makerom.1 $(ME_VAPP_PREFIX)/doc/man1/makerom.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/makerom.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/makerom.1" "$(ME_MAN_PREFIX)/man1/makerom.1" ; \
-	cp doc/documents/man/manager.1 $(ME_VAPP_PREFIX)/doc/man1/manager.1 ; \
+	cp doc/final/man/manager.1 $(ME_VAPP_PREFIX)/doc/man1/manager.1 ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/manager.1" ; \
 	ln -s "$(ME_VAPP_PREFIX)/doc/man1/manager.1" "$(ME_MAN_PREFIX)/man1/manager.1" ; \
 	mkdir -p "$(ME_ROOT_PREFIX)/Library/LaunchDaemons" ; \
@@ -2003,5 +2004,5 @@ uninstall: $(DEPS_81)
 #   version
 #
 version: $(DEPS_82)
-	echo 5.1.0
+	echo 5.2.0
 
