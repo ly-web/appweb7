@@ -112,20 +112,17 @@
         </div>
     </div>
 
-    <div class="ui inverted masthead">
+    <div class="masthead">
                 <div class="column">
-            <div class="inverted secondary pointing ui menu">
-                <div class="header left item">
-                    <a href="/index.html">Embedthis Appweb</a>
-                </div>
+            <div class="ui inverted menu">
+                <a href="/index.html" class="logo">Appweb Docs</a>
                 <div class="right menu">
-                    <div class="ui top right">
-                        <a class="item" href="http://goo.gl/dGRDl4">News</a>
-                        <a class="item" href="https://embedthis.com/appweb/">Appweb Site</a>
-                        <a class="item" href="https://github.com/embedthis/appweb">Repository</a>
-                        <a class="item" href="https://embedthis.com/blog/">Blog</a>
-                        <a class="item" href="https://twitter.com/mobstream">Twitter</a>
-                    </div>
+                    <a class="item" href="https://embedthis.com/">Embedthis</a>
+                    <a class="item" href="https://embedthis.com/appweb/">Appweb Site</a>
+                    <a class="item" href="http://goo.gl/dGRDl4">Appweb News</a>
+                    <a class="item" href="https://github.com/embedthis/appweb">Repository</a>
+                    <a class="item" href="https://embedthis.com/blog/">Blog</a>
+                    <a class="item" href="https://twitter.com/mobstream">Twitter</a>
                 </div>
             </div>
             <div class="ui breadcrumb">
@@ -138,6 +135,9 @@
                 
                 <div class="divider">/</div>
                 <a class="section active" href="handlers.html">Handlers</a>
+            </div>
+            <div class="ui right floated basic segment version">
+                Version: 5.2.0
             </div>
         </div>
         <div class="ui black small launch right attached toggle button" style="width: 40px;">
@@ -177,7 +177,7 @@
             downstream. Data flows inbound from the network connector, optionally through filters and terminates that the
             handler. Response data starts with the handler, optionally through output filters and is finally sent by the 
             network connector to the client.</p>
-            <img src="../images/pipeline.jpg" alt="pipeline"/>
+            <img src="../images/pipeline.jpg" alt="pipeline" class="centered"/>
             <p>The request pipeline consists of a sequence of processing stages. The first stage is the handler followed by
             zero or more filters and a finally a network connector. Each stage has two queues, one for outgoing data and one
             for incoming. A queue also has two links to refer to the upstream and downstream queues in the pipeline.</p>
@@ -594,9 +594,9 @@ int maMyModuleInit(Http *http, MprModule *mp)
                 <li><a href="https://github.com/embedthis/http/blob/master/src/sendConnector.c">Send Connector</a></li>
             </ul>
     </div>
-    <div class="ui basic center aligned segment" id="terms">
+    <div class="terms ui basic center aligned segment">
         <p>&copy; Embedthis Software, 2003-2014. All rights reserved.
-            Generated on Aug 25, 2014.
+            Generated on Aug 26, 2014.
         </p>
     </div>
 
