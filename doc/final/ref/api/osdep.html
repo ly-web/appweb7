@@ -22,21 +22,19 @@
         
     <div class="ui large left vertical inverted labeled overlay sidebar menu">
         <div class="item">
-            <a href="../../">
-                <b>General</b>
-            </a>
+            <a href="/index.html" class="logo">Appweb Docs</a>
+        </div>
+        <div class="item">
             <div class="menu">
-                <a class="item" href="../../index.html">Appweb Overview</a>
+                <a class="header item" href="../../index.html">Home</a>
                 <a class="item" href="../../users/features.html">Appweb Features</a>
                 <a class="item" href="https://embedthis.com/appweb/download.html">Download</a> 
                 <a class="item" href="../../licensing/index.html">Licensing</a>
             </div>
         </div>
         <div class="item">
-            <a href="../../start/index.html">
-                <b>Getting Started</b>
-            </a>
             <div class="menu">
+                <a class="header item" href="../../start/index.html">Getting Started</a>
                 <a class="item" href="../../start/quick.html">Quick Start</a>
                 <a class="item" href="../../start/installing.html">Installing Appweb</a>
                 <a class="item" href="../../start/starting.html">Starting and Stopping</a>
@@ -46,10 +44,10 @@
             </div>
         </div>
         <div class="item">
-            <a href="../../users/index.html"><b>User's Guide</b></a>
             <div class="menu">
+                <a class="header item" href="../../users/index.html">User's Guide</a>
                 <a class="item" href="../../users/configuration.html">Configuring Appweb</a>
-                <a class="item" href="../../users/configuration.html#directives">Configuration Directives</a>
+                <a class="item" href="../../users/directives.html">Configuration Directives</a>
                 <a class="item" href="../../users/frameworks.html">Web Frameworks</a>
                 <a class="item" href="../../users/modules.html">Using Loadable Modules</a>
                 <a class="item" href="../../users/ports.html">Ports and Binding</a>
@@ -70,8 +68,8 @@
             </div>
         </div>
         <div class="item">
-            <a href="../../developers/index.html">Developer's Guide</a>
             <div class="menu">
+                <a class="header item" href="../../developers/index.html">Developer's Guide</a>
                 <a class="item" href="../../developers/embedding.html">Embedding Appweb</a>
                 <a class="item" href="../../developers/modules.html">Creating Appweb Modules</a>
                 <a class="item" href="../../developers/handlers.html">Creating Appweb Handlers</a>
@@ -81,8 +79,8 @@
             </div>
         </div>
         <div class="item">
-            <a href="../../ref/index.html">Reference Guide</a>
             <div class="menu">
+                <a class="header item" href="../../ref/index.html">Reference Guide</a>
                 <a class="item" href="../../ref/compatibility.html">Compatibility</a>
                 <a class="item" href="../../ref/native.html">Native APIs</a>
                 <a class="item" href="../../ref/architecture.html">Appweb Architecture</a>
@@ -92,8 +90,8 @@
             </div>
         </div>
         <div class="item">
-            <a href="../../developers/project.html">Project Resources</a>
             <div class="menu">
+                <a class="header item" href="../../developers/project.html">Project Resources</a>
                 <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
                 <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
                 <a class="item" href="https://github.com/embedthis/appweb">Source Code Repository</a>
@@ -104,8 +102,8 @@
             </div>
         </div>
         <div class="item">
-            <b>Links</b>
             <div class="menu">
+                <span class="header item">Links</span>
                 <a class="item" href="https://embedthis.com/">Embedthis Web Site</a>
                 <a class="item" href="https://embedthis.com/blog/">Embedthis Blog</a>
                 <a class="item" href="http://twitter.com/mobstream">Twitter</a>
@@ -114,9 +112,12 @@
     </div>
 
     <div class="masthead">
-                <div class="column">
+         
+        <div class="column">
             <div class="ui inverted menu">
-                <a href="/index.html" class="logo">Appweb Docs</a>
+                <div class="ui black small launch right attached toggle button">
+                    <i class="icon list layout"></i>
+                </div>
                 <div class="right menu">
                     <a class="item" href="https://embedthis.com/">Embedthis</a>
                     <a class="item" href="https://embedthis.com/appweb/">Appweb Site</a>
@@ -126,6 +127,7 @@
                     <a class="item" href="https://twitter.com/mobstream">Twitter</a>
                 </div>
             </div>
+            
             <div class="ui breadcrumb">
                 <a class="section" href="../../">Home</a>
                 
@@ -140,16 +142,12 @@
                 </a>
                 
                 <div class="divider">/</div>
-                <a class="section active" href="osdep.html">OSDEP API</a>
+                <a class="active section" href="osdep.html">OSDEP API</a>
             </div>
+            
             <div class="ui right floated basic segment version">
-                Version: 5.2.0
+                v5.2.0
             </div>
-        </div>
-        <div class="ui black small launch right attached toggle button" style="width: 40px;">
-            <i class="icon list layout">
-                <span class="text" style="display: none;">Menu</span>
-            </i>
         </div>
 
     </div>
@@ -158,15 +156,28 @@ DOC_CONTENT
     </div>
     <div class="terms ui basic center aligned segment">
         <p>&copy; Embedthis Software, 2003-2014. All rights reserved.
-            Generated on Aug 26, 2014.
+            Generated on Aug 27, 2014.
         </p>
     </div>
 
+     
     <script src="../../lib/jquery/jquery.js"></script>
     <script src="../../lib/semantic/packaged/javascript/semantic.js"></script>
     <script>
         $('.sidebar').sidebar({overlay: false}).sidebar('toggle');
         $('.sidebar').first().sidebar('attach events', '.toggle.button');
+        $(function() {
+            var url = '../../' + window.location.pathname.slice(1);
+            var active = $('.sidebar a[href="' + url +'"]');
+            active.addClass('active');
+            var sidebar = $(".sidebar");
+            var height = sidebar.height();
+            if (active.offset().top >= height) {
+                var diff = height - active.offset().top;
+                sidebar.scrollTop(height);
+            }
+        });
     </script>
+
 </body>
 </html>

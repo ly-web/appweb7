@@ -4,48 +4,52 @@
     description: 'The fastest little web server',
     keywords:    'appweb, embedded web server, embedded, devices, http server, internet of things, esp, goahead',
 
-    exclude: [
-        'documents/css/app.less',
-        'documents/css/theme.less',
-    ],
-    copy: [
-        'documents/images/',
-        'documents/lib/',
-        'documents/scripts/',
-    ],
-    script: `
-        function menu(item) meta.menu == item ? 'active' : ''
+    control: {
+        exclude: [
+            'css/app.less',
+            'css/theme.less',
+            'css/override.less',
+        ],
+        copy: [
+            'images',
+            'lib',
+            'scripts',
+        ],
+        plugins: [ 'less', 'css', 'js' ]
+        script: `
+            function menu(item) meta.menu == item ? 'active' : ''
 
-        function onchange(file, meta) {
-            let path = Path('documents/css/all.css.less')
-            if (file.extension == 'less' && file != path) {
-                touch(path)
-            }
-        }
-
-        function check(mark) {
-            for each (file in ['app.less', 'theme.less']) {
-                if (Path('documents/css').join(file).modified >= mark) {
-                    let path = Path('documents/css/all.css.less')
-                    vtrace('Touch', path)
+            /* Detect changes to *.less and then touch all.css.less */
+            function onchange(file, meta) {
+                let path = Path('documents/css/all.css.less')
+                if (file.extension == 'less' && file != path) {
                     touch(path)
-                    break
                 }
             }
-        }
-        /*
-            UNUSED 
 
-            dump("META", expansive.getFileMeta('documents/users/configuration.html'))
-            print("META", expansive.meta)
-            print("COLL", expansive.meta.coll)
-            print("LIST", expansive.collection({title: 'Internals'}))
-         */
-    `,
-    coll: ['a', 'b'],
+            /* If app.less and theme.less are being excluded - then manually check if they have been modified */
+            function check(mark) {
+                for each (file in ['app.less', 'theme.less']) {
+                    if (Path('documents/css').join(file).modified >= mark) {
+                        let path = Path('documents/css/all.css.less')
+                        vtrace('Touch', path)
+                        touch(path)
+                        break
+                    }
+                }
+            }
+            /*
+                UNUSED 
 
-    sitemap: {
-        include: /\.html/,
-        exclude: /\/doc-|docpad\//,
+                dump("META", expansive.getFileMeta('documents/users/configuration.html'))
+                print("META", expansive.meta)
+                print("COLL", expansive.meta.coll)
+                print("LIST", expansive.collection({title: 'Internals'}))
+             */
+        `,
+        sitemap: {
+            include: /\.html/,
+            exclude: /\/doc-|docpad\//,
+        },
     },
 },

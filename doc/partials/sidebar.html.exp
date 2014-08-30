@@ -1,21 +1,19 @@
     
     <div class="ui large left vertical inverted labeled overlay sidebar menu">
         <div class="item">
-            <a href="@@{top}">
-                <b>General</b>
-            </a>
+            <a href="/index.html" class="logo">Appweb Docs</a>
+        </div>
+        <div class="item">
             <div class="menu">
-                <a class="item" href="@@{top}index.html">Appweb Overview</a>
+                <a class="header item" href="@@{top}index.html">Home</a>
                 <a class="item" href="@@{top}users/features.html">Appweb Features</a>
                 <a class="item" href="https://embedthis.com/appweb/download.html">Download</a> 
                 <a class="item" href="@@{top}licensing/index.html">Licensing</a>
             </div>
         </div>
         <div class="item">
-            <a href="@@{top}start/index.html">
-                <b>Getting Started</b>
-            </a>
             <div class="menu">
+                <a class="header item" href="@@{top}start/index.html">Getting Started</a>
                 <a class="item" href="@@{top}start/quick.html">Quick Start</a>
                 <a class="item" href="@@{top}start/installing.html">Installing Appweb</a>
                 <a class="item" href="@@{top}start/starting.html">Starting and Stopping</a>
@@ -25,10 +23,10 @@
             </div>
         </div>
         <div class="item">
-            <a href="@@{top}users/index.html"><b>User's Guide</b></a>
             <div class="menu">
+                <a class="header item" href="@@{top}users/index.html">User's Guide</a>
                 <a class="item" href="@@{top}users/configuration.html">Configuring Appweb</a>
-                <a class="item" href="@@{top}users/configuration.html#directives">Configuration Directives</a>
+                <a class="item" href="@@{top}users/directives.html">Configuration Directives</a>
                 <a class="item" href="@@{top}users/frameworks.html">Web Frameworks</a>
                 <a class="item" href="@@{top}users/modules.html">Using Loadable Modules</a>
                 <a class="item" href="@@{top}users/ports.html">Ports and Binding</a>
@@ -49,8 +47,8 @@
             </div>
         </div>
         <div class="item">
-            <a href="@@{top}developers/index.html">Developer's Guide</a>
             <div class="menu">
+                <a class="header item" href="@@{top}developers/index.html">Developer's Guide</a>
                 <a class="item" href="@@{top}developers/embedding.html">Embedding Appweb</a>
                 <a class="item" href="@@{top}developers/modules.html">Creating Appweb Modules</a>
                 <a class="item" href="@@{top}developers/handlers.html">Creating Appweb Handlers</a>
@@ -60,8 +58,8 @@
             </div>
         </div>
         <div class="item">
-            <a href="@@{top}ref/index.html">Reference Guide</a>
             <div class="menu">
+                <a class="header item" href="@@{top}ref/index.html">Reference Guide</a>
                 <a class="item" href="@@{top}ref/compatibility.html">Compatibility</a>
                 <a class="item" href="@@{top}ref/native.html">Native APIs</a>
                 <a class="item" href="@@{top}ref/architecture.html">Appweb Architecture</a>
@@ -71,8 +69,8 @@
             </div>
         </div>
         <div class="item">
-            <a href="@@{top}developers/project.html">Project Resources</a>
             <div class="menu">
+                <a class="header item" href="@@{top}developers/project.html">Project Resources</a>
                 <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
                 <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
                 <a class="item" href="https://github.com/embedthis/appweb">Source Code Repository</a>
@@ -83,8 +81,8 @@
             </div>
         </div>
         <div class="item">
-            <b>Links</b>
             <div class="menu">
+                <span class="header item">Links</span>
                 <a class="item" href="https://embedthis.com/">Embedthis Web Site</a>
                 <a class="item" href="https://embedthis.com/blog/">Embedthis Blog</a>
                 <a class="item" href="http://twitter.com/mobstream">Twitter</a>

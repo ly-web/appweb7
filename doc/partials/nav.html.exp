@@ -1,6 +1,9 @@
+ 
         <div class="column">
             <div class="ui inverted menu">
-                <a href="/index.html" class="logo">Appweb Docs</a>
+                <div class="ui black small launch right attached toggle button">
+                    <i class="icon list layout"></i>
+                </div>
                 <div class="right menu">
                     <a class="item" href="https://embedthis.com/">Embedthis</a>
                     <a class="item" href="https://embedthis.com/appweb/">Appweb Site</a>
@@ -10,6 +13,7 @@
                     <a class="item" href="https://twitter.com/mobstream">Twitter</a>
                 </div>
             </div>
+            <% if (meta.crumbs ) { %>
             <div class="ui breadcrumb">
                 <a class="section" href="@@top">Home</a>
                 <% for each (crumb in meta.crumbs ) { 
@@ -20,14 +24,10 @@
                 </a>
                 <% } } %>
                 <div class="divider">/</div>
-                <a class="section active" href="<%= meta.basename %>"><%= meta.cookie || meta.title %></a>
+                <a class="active section" href="<%= meta.basename %>"><%= meta.cookie || meta.title %></a>
             </div>
+            <% } %>
             <div class="ui right floated basic segment version">
-                Version: <%= Path('../package.json').readJSON().version %>
+                v<%= Path('../package.json').readJSON().version %>
             </div>
-        </div>
-        <div class="ui black small launch right attached toggle button" style="width: 40px;">
-            <i class="icon list layout">
-                <span class="text" style="display: none;">Menu</span>
-            </i>
         </div>
