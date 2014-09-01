@@ -23,14 +23,19 @@
     "pak": "~0.9",
     "dependencies": {
         "http": "~5",
-        "me-dev": "~0.8",
         "mpr": "~5",
         "osdep": "~0.8",
         "pcre": "*"
     },
     "optionalDependencies": {
         "appweb": "~5",
+        "esp-html-mvc": "~5",
+        "esp-mvc": "~5",
+        "esp-server": "~5",
         "est": "~0.6",
+        "me-dev": "~0.8",
+        "me-doc": "~0.8",
+        "me-package": "~0.8",
         "me-ssl": "~0.8",
         "sqlite": "~1"
     },

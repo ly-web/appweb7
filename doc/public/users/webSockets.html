@@ -118,12 +118,14 @@
                     <i class="icon list layout"></i>
                 </div>
                 <div class="right menu">
+                     
                     <a class="item" href="https://embedthis.com/">Embedthis</a>
                     <a class="item" href="https://embedthis.com/appweb/">Appweb Site</a>
                     <a class="item" href="http://goo.gl/dGRDl4">Appweb News</a>
                     <a class="item" href="https://github.com/embedthis/appweb">Repository</a>
                     <a class="item" href="https://embedthis.com/blog/">Blog</a>
                     <a class="item" href="https://twitter.com/mobstream">Twitter</a>
+
                 </div>
             </div>
             
@@ -519,7 +521,7 @@ httpSendBlock(conn, WS_MSG_BINARY, buf, sizeof(buf), HTTP_BLOCK);</pre>
         $('.sidebar').sidebar({overlay: false}).sidebar('toggle');
         $('.sidebar').first().sidebar('attach events', '.toggle.button');
         $(function() {
-            var url = '../' + window.location.pathname.slice(1);
+            var url = '../users/webSockets.html';
             var active = $('.sidebar a[href="' + url +'"]');
             active.addClass('active');
             var sidebar = $(".sidebar");
