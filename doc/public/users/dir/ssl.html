@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>SSL</title>
+    <!-- Copyright Embedthis Software, LLC, 2003-2014. All Rights Reserved. -->
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="keywords" content="appweb, embedded web server, embedded, devices, http server, internet of things, esp, goahead" />
+    <meta name="description" content="The fastest little web server" />
+    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
+        rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Julius+Sans+One' rel='stylesheet' type='text/css'>
+    <link href="../../lib/semantic/packaged/css/semantic.css" rel="stylesheet" type="text/css" />
+    <link href="../../css/all.css" rel="stylesheet" type="text/css" />
+    <link href="../../images/favicon.ico" rel="shortcut icon" />
+
+</head>
+<body>
+        
+    <div class="ui large left vertical inverted labeled overlay sidebar menu">
+        <div class="item">
+            <a href="/index.html" class="logo">Appweb Docs</a>
+        </div>
+        <div class="item">
+            <div class="menu">
+                <a class="header item" href="../../index.html">Home</a>
+                <a class="item" href="../../users/features.html">Appweb Features</a>
+                <a class="item" href="https://embedthis.com/appweb/download.html">Download</a> 
+                <a class="item" href="../../licensing/index.html">Licensing</a>
+            </div>
+        </div>
+        <div class="item">
+            <div class="menu">
+                <a class="header item" href="../../start/index.html">Getting Started</a>
+                <a class="item" href="../../start/quick.html">Quick Start</a>
+                <a class="item" href="../../start/installing.html">Installing Appweb</a>
+                <a class="item" href="../../start/starting.html">Starting and Stopping</a>
+                <a class="item" href="../../start/service.html">Running as a Service</a>
+                <a class="item" href="../../start/releaseNotes.html">Release Notes</a>
+                <a class="item" href="../../start/source.html">Building from Source</a>
+            </div>
+        </div>
+        <div class="item">
+            <div class="menu">
+                <a class="header item" href="../../users/index.html">User's Guide</a>
+                <a class="item" href="../../users/configuration.html">Configuring Appweb</a>
+                <a class="item" href="../../users/directives.html">Configuration Directives</a>
+                <a class="item" href="../../users/frameworks.html">Web Frameworks</a>
+                <a class="item" href="../../users/modules.html">Using Loadable Modules</a>
+                <a class="item" href="../../users/ports.html">Ports and Binding</a>
+                <a class="item" href="../../users/routing.html">Routing Requests</a>
+                <a class="item" href="../../users/stages.html">Request Pipeline</a>
+                <a class="item" href="../../users/lang.html">Multi-Language Content</a>
+                <a class="item" href="../../users/authentication.html">User Authorization</a>
+                <a class="item" href="../../users/logFiles.html">Logging</a>
+                <a class="item" href="../../users/caching.html">Caching</a>
+                <a class="item" href="../../users/vhosts.html">Virtual Hosts</a>
+                <a class="item" href="../../users/ssl.html">Secure Sockets (SSL)</a>
+                <a class="item" href="../../users/client.html">Http Client</a>
+                <a class="item" href="../../users/security.html">Security Considerations</a>
+                <a class="item" href="../../users/monitor.html">Monitoring and Defending</a>
+                <a class="item" href="../../users/uploading.html">File Upload</a>
+                <a class="item" href="../../users/webSockets.html">WebSockets</a>
+                <a class="item" href="../../users/man.html">Man Pages</a>
+            </div>
+        </div>
+        <div class="item">
+            <div class="menu">
+                <a class="header item" href="../../developers/index.html">Developer's Guide</a>
+                <a class="item" href="../../developers/embedding.html">Embedding Appweb</a>
+                <a class="item" href="../../developers/modules.html">Creating Appweb Modules</a>
+                <a class="item" href="../../developers/handlers.html">Creating Appweb Handlers</a>
+                <a class="item" href="../../developers/stages.html">Creating Pipeline Stages</a>
+                <a class="item" href="../../developers/migrating.html">Migrating to Appweb 5</a>
+                <a class="item" href="../../developers/rom.html">Serving Pages from ROM</a>
+            </div>
+        </div>
+        <div class="item">
+            <div class="menu">
+                <a class="header item" href="../../ref/index.html">Reference Guide</a>
+                <a class="item" href="../../ref/compatibility.html">Compatibility</a>
+                <a class="item" href="../../ref/native.html">Native APIs</a>
+                <a class="item" href="../../ref/architecture.html">Appweb Architecture</a>
+                <a class="item" href="../../ref/memory.html">Appweb Memory Allocation</a>
+                <a class="item" href="../../ref/multithread.html">Multithreaded Programming</a>
+                <a class="item" href="../../standards/http.html">HTTP References</a>
+            </div>
+        </div>
+        <div class="item">
+            <div class="menu">
+                <a class="header item" href="../../developers/project.html">Project Resources</a>
+                <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
+                <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
+                <a class="item" href="https://github.com/embedthis/appweb">Source Code Repository</a>
+                <a class="item" href="https://github.com/embedthis/appweb/issues">Project Issue Database</a>
+                <a class="item" href="https://github.com/embedthis/appweb/releases">Change Log</a>
+                <a class="item" href="https://github.com/embedthis/appweb/milestones">Roadmap</a>
+                <a class="item" href="https://embedthis.com/developers/contributors.html">Contributors Agreement</a>
+            </div>
+        </div>
+        <div class="item">
+            <div class="menu">
+                <span class="header item">Links</span>
+                <a class="item" href="https://embedthis.com/">Embedthis Web Site</a>
+                <a class="item" href="https://embedthis.com/blog/">Embedthis Blog</a>
+                <a class="item" href="http://twitter.com/mobstream">Twitter</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="masthead">
+         
+        <div class="column">
+            <div class="ui inverted menu">
+                <div class="ui black small launch right attached toggle button">
+                    <i class="icon list layout"></i>
+                </div>
+                <div class="right menu">
+                    <a class="item" href="https://embedthis.com/">Embedthis</a>
+                    <a class="item" href="https://embedthis.com/appweb/">Appweb Site</a>
+                    <a class="item" href="http://goo.gl/dGRDl4">Appweb News</a>
+                    <a class="item" href="https://github.com/embedthis/appweb">Repository</a>
+                    <a class="item" href="https://embedthis.com/blog/">Blog</a>
+                    <a class="item" href="https://twitter.com/mobstream">Twitter</a>
+                </div>
+            </div>
+            
+            <div class="ui breadcrumb">
+                <a class="section" href="../../">Home</a>
+                
+                <div class="divider">/</div>
+                <a class="section" href="../index.html">
+                    User's Guide
+                </a>
+                
+                <div class="divider">/</div>
+                <a class="section" href="../configuration.html">
+                    Configuration
+                </a>
+                
+                <div class="divider">/</div>
+                <a class="active section" href="ssl.html">SSL</a>
+            </div>
+            
+            <div class="ui right floated basic segment version">
+                v5.2.0
+            </div>
+        </div>
+
+    </div>
+    <div class="content">
+
+            <h1>SSL Directives</h1>
+            <a id="listenSecure"></a>
+            <h2>ListenSecure</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>IP address and port on which to listing for incoming SSL/TLS requests.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>ListenSecure [IP address:]portNumber</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, Virtual Host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Examples</td>
+                        <td>Listen 80<br />
+                            ListenSecure 205.162.77.64:7777<br/>
+                            ListenSecure [::]
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The ListenSecure directive specifies the IP endpoints on which Appweb will listen for 
+                            incoming SSL/TLS HTTP requests. If you specify only the port number and omit the IP address,
+                            Appweb will listen on all network interfaces including the loop-back adaptor. Multiple Listen
+                            directives may be given and Appweb will listen on all the specified endpoints for SSL/TLS.</p>
+                            <p>In Appweb 4 and later, you do not need to use a Virtual Host to use SSL/TLS.</p>
+                            <p>For IPv6 endpoints, enclose the IP address in square brackets. For example:
+                                Listen [2001:05c0:9168:0000:0000:0000:0000:0001]
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- DEPRECATED
+            <a id="sslEngine"></a>
+            <h2>SSLEngine</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Enable SSL processing.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>SSLEngine [on | off]</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>ListenSecure 443<br/>
+                        &lt;VirtualHost *:443&gt;<br />
+                        &nbsp; &nbsp; SSLEngine on<br />
+                        &lt;/VirtualHost&gt;</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The SSLEngine directive enables SSL processing for the enclosing block of directives.
+                            They may be for either the default server or a Virtual Host.</p>
+                            <p>By default the SSL engine is enabled.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            DEPRECATED -->
+            
+            <a id="sslProtocol"></a>
+            <h2>SSLProtocol</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Restrict the SSL protocols for OpenSSL.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>SSLProtocol [+ | -] protocol ...</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>OpenSSL only. Default Server, Virtual Host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>SSLProtocol all -SSLV2</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The SSLProtocol directive defines which SSL protocol variants to enable for use. The
+                                following protocol options are available:</p>
+                            <h3>SSLv2</h3>
+                            <p>This is the original Secure Sockets Layer (SSL) protocol defined by Netscape. It has
+                                several flaws and should not be used if SSLv3 or TLSv1 are available.</p>
+                            <h3>SSLv3</h3>
+                                <p>This is the Secure Sockets Layer (SSL) protocol version 3.</p>
+                            <h3>TLSv1</h3>
+                            <p>This is the Transport Layer Security (TLS) protocol version 1. It is the most current SSL
+                            standard defined by the IETF and should be used if available.</p>
+                            <h3>TLSv1.1, TLSv1.2</h3>
+                            <p>Available when using OpenSSL 1.0.1 or later.</p>
+                            <h3>ALL</h3>
+                                <p>Enables all SSL protocol variants.</p>
+                            <p>If unspecified, the default is: TLSv1, TLSv1.1 or TLSv1.2.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="security">Security</td>
+                        <td>
+                            <p>You should not use SSLv2 if possible. </p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <a id="sslCipherSuite"></a>
+            <h2>SSLCipherSuite</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines the permissible SSL Cipher suites.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>SSLCipherSuite cipher-spec</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route (with EST and OpenSSL stacks only)</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>
+                        #<br/># For EST<br/>#<br/>
+                            CipherSuite TLS_RSA_WITH_AES_128_CBC_SHA<br/>
+                            CipherSuite TLS_RSA_WITH_RC4_128_SHA<br/><br/>
+                        #<br/># For OpenSSL<br/>#<br/>
+                        CipherSuite HIGH:RC4+SHA</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The SSLCipherSuite directive specifies the permissible set of cipher algorithms to use when 
+                            communicating with the client. If unspecified, the cipher suite is defined by the SSL
+                            protocol stack and negotiated with the client. You may use this directive multiple times or
+                            may specify multiple ciphers separated by commas. This directive is only supported with the
+                            EST and OpenSSL stacks.</p>
+                            
+                            <p>The format of this directive varies depending on the SSL protocol stack. The EST, 
+                            stack use the standard 
+                            <a href="http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-3">IANA
+                                Cipher Suite Registry</a> names. The OpenSSL stack uses its own proprietary cipher
+                            naming. If using OpenSSL, please consult
+                            the <a href="http://www.openssl.org/docs/apps/ciphers.html">OpenSSL</a> documentation for
+                            how to format the cipher suite argument. </p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <a id="sslCertificateFile"></a>
+            <h2>SSLCertificateFile</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines the location of the X.509 file containing the server certificate</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>SSLCertificateFile path</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>SSLCertificateFile /var/appweb/server.crt</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The SSLCertificateFile directive defines the file containing the PEM encoded X.509
+                            certificate for the server. The file may also contain the private key for the server in
+                            which case you do not need to use the SSLCertificateKeyFile directive.</p>
+                            <p>The path may be an absolute path or it may be relative to the Home directory.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <a id="sslCertificateKeyFile"></a>
+            <h2>SSLCertificateKeyFile</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines the location of the server's private key</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>SSLCertificateKeyFile</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>SSLCertificateKeyFile /var/appweb/server.key.pem</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The SSLCertificateKeyFile directive defines the file containing the PEM encoded private
+                            key file for the server. This directive is not required if the server's private key is
+                            combined with the certificate file.</p>
+                            <p>If the private key is encrypted, you will be prompted to enter the pass-phrase to
+                            decrypt the private key on system reboot.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="security">Security</td>
+                        <td>There is a dilemma here. If you use an encrypted private key, the server will pause until you
+                        enter the pass-phrase which makes headless operation impossible. If you do not encrypt the
+                        private key, your private key is more vulnerable should the server be compromised. Which option
+                        you choose depends on whether headless operation is essential or not.</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <a id="sslCaCertificateFile"></a>
+            <h2>SSLCACertificateFile</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines the location of the certificate file for client authentication</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>SSLCACertificateFile path</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>SSLCACertificateFile /var/appweb/ca.crt</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The SSLCACertificateFile directive defines the file containing the certificates to use
+                            when authenticating client certificates. This directive is only necessary if you wish to
+                            verify client certificates. If so, you must specify the "SSLVerifyClient on"
+                            directive.</p>
+                            <p>The certificate file contains the concatenated certificates to use in preference order.
+                            The path may be an absolute path or it may be relative to the Home directory.</p>
+                            <p>If using the OpenSSL stack, You may alternatively use SSLCACertificatePath if you have
+                            separate certificates.</p> 
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <a id="sslCaCertificatePath"></a>
+            <h2>SSLCACertificatePath</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines a directory of client authentication certificates.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>SSLCACertificatePath</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>OpenSSL only. Default Server, Virtual Host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>SSLCACertificatePath /var/appweb/certs</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The SSLCACertificatePath directive is an OpenSSL directive that defines the directory
+                            containing the certificates to use when authenticating client certificates. This directive is
+                            only necessary if you wish to verify client certificates. If so, you must specify the
+                            "SSLVerifyClient on" directive.</p>
+                            <p>The path may be an absolute path or it may be relative to the Home directory.</p>
+                            <p>This directive is only supported for OpenSSL. If using another SSL stack, you may use
+                            SSLCACertificateFile if you have a bundle of certificates concatenated together.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <a id="sslVerifyClient"></a>
+            <h2>SSLVerifyClient</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines the type of client certificate verification.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>SSLVerifyClient [off | on]</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>SSLVerifyClient on</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>This directive controls whether the client must provide a client certificate for the
+                            server to verify the identity of the client. If set to <b>off</b>, no certificate is
+                            required. If one is supplied, it will be ignored. The certificate and the certificate's
+                            issuer will be verified. Use the SSLVerifyIssuer directive to turn off verification of the
+                            issuer if you need to use a self-signed test certificate.</p>
+                            <p>If the directive is set to <b>on</b>, the client must provide a valid certificate.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <a id="sslVerifyIssuer"></a>
+            <h2>SSLVerifyIssuer</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Defines whether the issuer of the client certificate is verified.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>SSLVerifyIssuer [off | on]</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>SSLVerifyIssuer on</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>This directive controls whether the issuer of the client certificate will be verified.
+                            If set to <b>off</b>, the certificate issuer will not be verified. This is useful to 
+                            accept self-signed test certificates.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+    </div>
+    <div class="terms ui basic center aligned segment">
+        <p>&copy; Embedthis Software, 2003-2014. All rights reserved.
+            Generated on Aug 31, 2014.
+        </p>
+    </div>
+
+     
+    <script src="../../lib/jquery/jquery.js"></script>
+    <script src="../../lib/semantic/packaged/javascript/semantic.js"></script>
+    <script>
+        $('.sidebar').sidebar({overlay: false}).sidebar('toggle');
+        $('.sidebar').first().sidebar('attach events', '.toggle.button');
+        $(function() {
+            var url = '../../' + window.location.pathname.slice(1);
+            var active = $('.sidebar a[href="' + url +'"]');
+            active.addClass('active');
+            var sidebar = $(".sidebar");
+            var height = sidebar.height();
+            if (active.offset().top >= height) {
+                var diff = height - active.offset().top;
+                sidebar.scrollTop(height);
+            }
+        });
+    </script>
+
+</body>
+</html>

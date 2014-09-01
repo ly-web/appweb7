@@ -57,6 +57,7 @@
         "sqlite": "~1.0",
         "zlib": "~1.0"
     },
+    "import": true,
     "paks": {
         "esp": {
             "noblend": true

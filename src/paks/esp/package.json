@@ -54,6 +54,7 @@
             "url": "https://embedthis.com/licensing/"
         }
     ],
+    "import": true,
     "paks": {
         "appweb": {
             "noblend": true,

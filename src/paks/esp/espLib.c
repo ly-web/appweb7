@@ -2268,6 +2268,9 @@ PUBLIC void scripts(cchar *patterns)
         }
         return;
     }
+#if FUTURE
+    client => public
+#endif
     if ((files = mprGlobPathFiles(httpGetDir(route, "client"), patterns, MPR_PATH_RELATIVE)) == 0 || 
             mprGetListLength(files) == 0) {
         files = mprCreateList(0, 0);
@@ -2440,6 +2443,9 @@ PUBLIC void stylesheets(cchar *patterns)
     route = rx->route;
     eroute = route->eroute;
     patterns = httpExpandRouteVars(route, patterns);
+#if FUTURE
+    client => public
+#endif
     clientDir = httpGetDir(route, "client");
 
     if (!patterns || !*patterns) {
@@ -4956,6 +4962,10 @@ static int espDbDirective(MaState *state, cchar *key, cchar *value)
 
 PUBLIC void espSetDefaultDirs(HttpRoute *route)
 {
+#if FUTURE
+    client => documents
+    Add public
+#endif
     httpSetDir(route, "app", "client/app");
     httpSetDir(route, "cache", 0);
     httpSetDir(route, "client", 0);
@@ -4963,7 +4973,7 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     httpSetDir(route, "db", 0);
     httpSetDir(route, "layouts", 0);
     httpSetDir(route, "lib", "client/lib");
-    httpSetDir(route, "paks", "paks");
+    httpSetDir(route, "paks", 0);
     httpSetDir(route, "src", 0);
     httpSetDir(route, "views", "client/app");
 
