@@ -3288,10 +3288,10 @@
       <arglist>(cchar *name, struct MprSsl *ssl)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
+      <type>int</type>
       <name>httpSetEndpointAddress</name>
       <anchorfile>group___http_endpoint.html</anchorfile>
-      <anchor>ga713af86f8914a5cd3ad2a5832b1ffb35</anchor>
+      <anchor>gaf5f90c735a94924983f25a894d79fdcd</anchor>
       <arglist>(HttpEndpoint *endpoint, cchar *ip, int port)</arglist>
     </member>
     <member kind="function">
