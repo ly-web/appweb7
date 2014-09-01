@@ -73,5 +73,6 @@
             "noblend": true,
             "noexport": true
         }
-    }
+    },
+    import: true,
 }
