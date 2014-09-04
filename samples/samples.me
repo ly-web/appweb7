@@ -10,8 +10,8 @@ Me.load({
                     if (me.platform.os == 'windows' && sample.contains('chroot-server')) {
                         continue
                     }
-                    trace('Sample', sample.dirname)
-                    run('me', {dir: sample.dirname, noio: true})
+                    trace('Build', sample.dirname)
+                    run('me', {dir: sample.dirname})
                 }
             }
         },
@@ -21,8 +21,8 @@ Me.load({
                     if (me.platform.os == 'windows' && sample.contains('chroot-server')) {
                         continue
                     }
-                    trace('Sample', sample.dirname)
-                    run('me clean', {dir: sample.dirname, noio: true})
+                    trace('Clean', sample.dirname)
+                    run('me clean', {dir: sample.dirname})
                 }
             }
         },

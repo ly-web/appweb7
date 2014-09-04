@@ -36,13 +36,13 @@ Me.load({
 
         'test-basic.cgi': {
             path: 'web/auth/basic/basic.cgi',
-            build: "
+            build: `
                 let path = Path('web/auth/basic/basic.cgi')
                 path.write('#!' + Cmd.locate('ejs') + '\n' + 
                     'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n\" + serialize(App.env, {pretty: true}) + \"\n\")')
                 path.setAttributes({permissions: 0755})
                 trace('Generate', path)
-            ",
+            `,
             'generate-sh': "\
                 echo \"#!`type -p ejs`\" >web/auth/basic/basic.cgi
                 echo 'print(\"HTTP/1.0 200 OK\\nContent-Type: text/plain\\n\\n\" + serialize(App.env, {pretty: true}) + \"\\n\")' >>web/auth/basic/basic.cgi
@@ -54,14 +54,14 @@ Me.load({
 
         'test-cgiProgram': {
             path: 'cgi-bin/cgiProgram${EXE}',
-            build: "
+            build: `
                 let perms = { permissions: 0755 }
                 let cgiProgram = me.dir.bin.join('cgiProgram${EXE}')
                 cp(cgiProgram, Path('cgi-bin/cgiProgram${EXE}'), perms)
                 cp(cgiProgram, Path('cgi-bin/nph-cgiProgram${EXE}'), perms)
                 cp(cgiProgram, Path('cgi-bin/cgi Program${EXE}'), perms)
                 cp(cgiProgram, Path('web/cgiProgram.cgi'), perms)
-            ",
+            `,
             'generate-sh': "\
                 cp ${BIN}/cgiProgram${EXE} cgi-bin/cgiProgram${EXE}
                 cp ${BIN}/cgiProgram${EXE} cgi-bin/nph-cgiProgram${EXE}
@@ -75,7 +75,7 @@ Me.load({
         },
 
         test: {
-            action: `run('testme --depth ' + me.settings.depth, {noio: true})`,
+            action: `run('testme --depth ' + me.settings.depth)`,
             platforms: [ 'local' ],
         },
 
@@ -140,17 +140,17 @@ Me.load({
         'test-run': {
             enable: "!me.platform.cross",
             depends: [ 'compile' ],
-            action: "
+            action: `
                 trace('Run', 'From directory src/server')
-                run('appweb -v', {noio: true})
-            ",
+                run('appweb -v')
+            `,
             generate: "${BIN}/appweb -v"
         },
 
         'clean-test': {
             type: 'clean',                                                                                 
-            action: "                                                                                      
-                run('testme --clean')
+            action: `                                                                                      
+                Cmd.run('testme --clean')
                 rm('cache/*')
                 rm('app/cache/*')
                 rm('apps/*/cache/*')
@@ -162,7 +162,7 @@ Me.load({
                 Path('app/cache/.keep').write()
                 Path('web/caching/cache.cgi').remove()
                 Path('web/auth/basic/basic.cgi').remove()
-            ",
+            `,
         },  
     },
 })

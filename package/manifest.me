@@ -4,7 +4,7 @@
 
 Me.load({
     scripts: {
-        loaded: "
+        loaded: `
             if (me.generating) {
                 me.settings.webUser = '$(WEB_USER)'
                 me.settings.webGroup = '$(WEB_GROUP)'
@@ -12,13 +12,13 @@ Me.load({
                 me.settings.webUser = getWebUser()
                 me.settings.webGroup = getWebGroup()
             }
-        ",
-        gencustom: "
+        `,
+        gencustom: `
             if (me.platform.os != 'windows') {
                 genWriteLine(\"WEB_USER    = $(shell egrep 'www-data|_www|nobody' /etc/passwd | sed 's/:.*$$//' |  tail -1)\")
                 genWriteLine(\"WEB_GROUP   = $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group | sed 's/:.*$$//' |  tail -1)\")
             }
-        ",
+        `,
     },
 
     manifest: {

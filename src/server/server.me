@@ -43,7 +43,7 @@ Me.load({
         },
 
         'genslink': {
-            action: "run('esp --static --genlink slink.c compile')",
+            action: `run('esp --static --genlink slink.c compile')`,
             generate: "esp --static --genlink slink.c compile",
         },
 
@@ -87,10 +87,10 @@ Me.load({
 
         run: {
             depends: [ 'compile' ],
-            action: "
+            action: `
                 trace('Run', 'From directory src/server')
-                run('appweb -v', {noio: true})
-            ",
+                run('appweb -v')
+            `,
             generate: "sudo ${BIN}/appweb -v"
         },
 

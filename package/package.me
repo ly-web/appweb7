@@ -24,12 +24,12 @@ Me.load({
             home: '${TOP}',
             generate: ' ',
             depends: [ 'all', 'stop', 'installBinary', 'start' ],
-            action: " 
+            action: ` 
                 trace('Info', me.settings.title + ' installed at ' + me.prefixes.vapp)
                 trace('Info', 'Configuration directory ' + me.prefixes.etc)
                 trace('Info', 'Documents directory ' + me.prefixes.web)
                 trace('Info', 'Executables directory ' + me.prefixes.vapp.join('bin'))
-                trace('Info', 'Use \"man appweb\" for usage')
+                trace('Info', 'Use "man appweb" for usage')
                 let pid = Cmd.ps(/bin.appweb$/)
                 if (pid && pid.length > 0) {
                     trace('Info', me.settings.title + ' PID: ' + pid[0].pid)
@@ -39,12 +39,12 @@ Me.load({
                 let [,port] = RegExp('Listen *(.*)').exec(config)
                 let address = ('http://localhost:' + port).replace(':80')
                 trace('Info', 'Browse to ' + address)
-            ",
+            `,
         },
 
         uninstall: {
             depends: [ 'build', 'stop' ],
-            action: "
+            action: `
                 for each (f in me.prefixes.cache.files()) {
                     removeFile(f)
                 }
@@ -54,8 +54,8 @@ Me.load({
                 removeFile(me.prefixes.etc.join('install.conf'))
                 removeDir(me.prefixes.inc.join(me.settings.name))
                 uninstallBinary()
-            ",
-            'generate-action': true,
+            `,
+            generate: true,
         },
     },
 })
