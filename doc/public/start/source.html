@@ -21,7 +21,99 @@
 
 </head>
 <body>
-    
+        
+    <div class="ui large left vertical inverted labeled overlay sidebar menu">
+        <div class="item">
+            <a href="../index.html" class="logo">Appweb Docs</a>
+        </div>
+        <div class="item">
+            <div class="menu">
+                <a class="header item" href="../index.html">Home</a>
+                <a class="item" href="../users/features.html">Appweb Features</a>
+                <a class="item" href="https://embedthis.com/appweb/download.html">Download</a> 
+                <a class="item" href="../licensing/index.html">Licensing</a>
+            </div>
+        </div>
+        <div class="item">
+            <div class="menu">
+                <a class="header item" href="../start/index.html">Getting Started</a>
+                <a class="item" href="../start/quick.html">Quick Start</a>
+                <a class="item" href="../start/installing.html">Installing Appweb</a>
+                <a class="item" href="../start/starting.html">Starting and Stopping</a>
+                <a class="item" href="../start/service.html">Running as a Service</a>
+                <a class="item" href="../start/releaseNotes.html">Release Notes</a>
+                <a class="item" href="../start/source.html">Building from Source</a>
+            </div>
+        </div>
+        <div class="item">
+            <div class="menu">
+                <a class="header item" href="../users/index.html">User's Guide</a>
+                <a class="item" href="../users/configuration.html">Configuring Appweb</a>
+                <a class="item" href="../users/directives.html">Configuration Directives</a>
+                <a class="item" href="../users/frameworks.html">Web Frameworks</a>
+                <a class="item" href="../users/modules.html">Using Loadable Modules</a>
+                <a class="item" href="../users/ports.html">Ports and Binding</a>
+                <a class="item" href="../users/routing.html">Routing Requests</a>
+                <a class="item" href="../users/stages.html">Request Pipeline</a>
+                <a class="item" href="../users/lang.html">Multi-Language Content</a>
+                <a class="item" href="../users/authentication.html">User Authorization</a>
+                <a class="item" href="../users/logFiles.html">Logging</a>
+                <a class="item" href="../users/caching.html">Caching</a>
+                <a class="item" href="../users/vhosts.html">Virtual Hosts</a>
+                <a class="item" href="../users/ssl.html">Secure Sockets (SSL)</a>
+                <a class="item" href="../users/client.html">Http Client</a>
+                <a class="item" href="../users/security.html">Security Considerations</a>
+                <a class="item" href="../users/monitor.html">Monitoring and Defending</a>
+                <a class="item" href="../users/uploading.html">File Upload</a>
+                <a class="item" href="../users/webSockets.html">WebSockets</a>
+                <a class="item" href="../users/man.html">Man Pages</a>
+            </div>
+        </div>
+        <div class="item">
+            <div class="menu">
+                <a class="header item" href="../developers/index.html">Developer's Guide</a>
+                <a class="item" href="../developers/embedding.html">Embedding Appweb</a>
+                <a class="item" href="../developers/modules.html">Creating Appweb Modules</a>
+                <a class="item" href="../developers/handlers.html">Creating Appweb Handlers</a>
+                <a class="item" href="../developers/stages.html">Creating Pipeline Stages</a>
+                <a class="item" href="../developers/migrating.html">Migrating to Appweb 5</a>
+                <a class="item" href="../developers/rom.html">Serving Pages from ROM</a>
+            </div>
+        </div>
+        <div class="item">
+            <div class="menu">
+                <a class="header item" href="../ref/index.html">Reference Guide</a>
+                <a class="item" href="../ref/compatibility.html">Compatibility</a>
+                <a class="item" href="../ref/native.html">Native APIs</a>
+                <a class="item" href="../ref/architecture.html">Appweb Architecture</a>
+                <a class="item" href="../ref/memory.html">Appweb Memory Allocation</a>
+                <a class="item" href="../ref/multithread.html">Multithreaded Programming</a>
+                <a class="item" href="../standards/http.html">HTTP References</a>
+            </div>
+        </div>
+        <div class="item">
+            <div class="menu">
+                <a class="header item" href="../developers/project.html">Project Resources</a>
+                <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
+                <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
+                <a class="item" href="https://github.com/embedthis/appweb">Source Code Repository</a>
+                <a class="item" href="https://github.com/embedthis/appweb/issues">Project Issue Database</a>
+                <a class="item" href="https://github.com/embedthis/appweb/releases">Change Log</a>
+                <a class="item" href="https://github.com/embedthis/appweb/milestones">Roadmap</a>
+                <a class="item" href="https://embedthis.com/developers/contributors.html">Contributors Agreement</a>
+            </div>
+        </div>
+        <div class="item">
+            <div class="menu">
+                <span class="header item">Links</span>
+                <a class="item" href="https://embedthis.com/">Embedthis Web Site</a>
+                <a class="item" href="https://embedthis.com/blog/">Embedthis Blog</a>
+                <a class="item" href="http://twitter.com/mobstream">Twitter</a>
+            </div>
+        </div>
+    </div>
+
+
 
     <div class="masthead">
          
@@ -151,15 +243,17 @@
     </div>
     <div class="terms ui basic center aligned segment">
         <p>&copy; Embedthis Software, 2003-2014. All rights reserved.
-            Generated on Sep  2, 2014.
+            Generated on Sep  3, 2014.
         </p>
     </div>
 
     <script src="../lib/jquery/jquery.js"></script>
-    <script src="../lib/semantic/javascript/query.js"></script>
+    <script src="../lib/semantic/javascript/semantic.js"></script>
     <script>
+        $('.sidebar').sidebar({overlay: false}).sidebar('toggle');
+        $('.sidebar').first().sidebar('attach events', '.toggle.button');
         $(function() {
-            var url = '@@{top}@@{meta.url}';
+            var url = '../start/source.html';
             var active = $('.sidebar a[href="' + url +'"]');
             active.addClass('active');
             var sidebar = $(".sidebar");

@@ -1,7 +1,7 @@
     
     <div class="ui large left vertical inverted labeled overlay sidebar menu">
         <div class="item">
-            <a href="/index.html" class="logo">Appweb Docs</a>
+            <a href="@~index.html" class="logo">Appweb Docs</a>
         </div>
         <div class="item">
             <div class="menu">
