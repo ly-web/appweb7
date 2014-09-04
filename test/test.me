@@ -6,30 +6,27 @@ Me.load({
     targets: {
         'test-testScript': {
             path: 'cgi-bin/testScript',
-            build: "
+            build: `
                 let path = Path('cgi-bin/testScript')
                 path.write('#!' + me.dir.bin.join('cgiProgram${EXE}' + '\n'))
                 path.setAttributes({permissions: 0755})
-            ",
-            'generate-sh': "echo '#!${BIN}/cgiProgram${EXE}' >cgi-bin/testScript ; chmod +x cgi-bin/testScript",
-            depends: ['cgiProgram'],
+            `,
+            message: [ 'Create', '${target.path}' ],
+            depends: [ 'cgiProgram' ],
             platforms: [ 'local' ],
             ifdef: [ 'cgi' ],
         },
 
         'test-cache.cgi': {
             path: 'web/caching/cache.cgi',
-            build: "
+            build: `
                 let path = Path('web/caching/cache.cgi')
                 path.write('#!' + Cmd.locate('ejs') + '\n' + 
                     'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n{number:\" + Date().now() + \"}\n\")')
                 path.setAttributes({permissions: 0755})
-            ",
-            'generate-sh': "\
-                echo \"#!`type -p ejs`\" >web/caching/cache.cgi
-                echo 'print(\"HTTP/1.0 200 OK\\nContent-Type: text/plain\\n\\n{number:\" + Date().now() + \"}\\n\")' >>web/caching/cache.cgi
-                chmod +x web/caching/cache.cgi
-            ",
+            `,
+            message: [ 'Create', '${target.path}' ],
+            depends: [ 'cgiProgram' ],
             platforms: [ 'local' ],
             ifdef: [ 'cgi' ],
         },
@@ -41,13 +38,9 @@ Me.load({
                 path.write('#!' + Cmd.locate('ejs') + '\n' + 
                     'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n\" + serialize(App.env, {pretty: true}) + \"\n\")')
                 path.setAttributes({permissions: 0755})
-                trace('Generate', path)
             `,
-            'generate-sh': "\
-                echo \"#!`type -p ejs`\" >web/auth/basic/basic.cgi
-                echo 'print(\"HTTP/1.0 200 OK\\nContent-Type: text/plain\\n\\n\" + serialize(App.env, {pretty: true}) + \"\\n\")' >>web/auth/basic/basic.cgi
-                chmod +x web/auth/basic/basic.cgi
-            ",
+            message: [ 'Create', '${target.path}' ],
+            depends: [ 'cgiProgram' ],
             platforms: [ 'local' ],
             ifdef: [ 'cgi' ],
         },
@@ -62,14 +55,7 @@ Me.load({
                 cp(cgiProgram, Path('cgi-bin/cgi Program${EXE}'), perms)
                 cp(cgiProgram, Path('web/cgiProgram.cgi'), perms)
             `,
-            'generate-sh': "\
-                cp ${BIN}/cgiProgram${EXE} cgi-bin/cgiProgram${EXE}
-                cp ${BIN}/cgiProgram${EXE} cgi-bin/nph-cgiProgram${EXE}
-                cp ${BIN}/cgiProgram${EXE} 'cgi-bin/cgi Program${EXE}'
-                cp ${BIN}/cgiProgram${EXE} web/cgiProgram.cgi
-                chmod +x cgi-bin/* web/cgiProgram.cgi
-            ",
-            depends: ['cgiProgram'],
+            depends: [ 'cgiProgram' ],
             platforms: [ 'local' ],
             ifdef: [ 'cgi' ],
         },
@@ -80,7 +66,7 @@ Me.load({
         },
 
         'auth.conf': {
-            action: "
+            action: `
                 let path = Path('auth.conf')
                 trace('Generate', 'Authorization file: ' + path)
                 path.write('#\n#   ' + path + ' - Authorization roles and users\n#\n\n')
@@ -90,12 +76,12 @@ Me.load({
                 run('authpass --cipher md5 --password pass2 ' + path + ' example.com mary user executive')
                 run('authpass --cipher md5 --password pass1 ' + path + ' example.com joshua user administrator purchase')
                 run('authpass --cipher blowfish --password pass5 ' + path + ' example.com ralph user administrator purchase')
-            ",
+            `,
         },
 
         testPackage: {
             type: 'test',
-            action: "
+            action: `
                 let package = packageName()
                 if (!package || !package.exists) {
                     trace('Test', 'testPackage -- SKIPPED (Missing package to install)')
@@ -134,7 +120,7 @@ Me.load({
                         }
                     }
                 }
-            ",
+            `,
         },
 
         'test-run': {
@@ -144,7 +130,6 @@ Me.load({
                 trace('Run', 'From directory src/server')
                 run('appweb -v')
             `,
-            generate: "${BIN}/appweb -v"
         },
 
         'clean-test': {
@@ -162,7 +147,7 @@ Me.load({
                 Path('app/cache/.keep').write()
                 Path('web/caching/cache.cgi').remove()
                 Path('web/auth/basic/basic.cgi').remove()
-            `,
-        },  
-    },
+            `
+        }
+    }
 })
