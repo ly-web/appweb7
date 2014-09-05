@@ -272,7 +272,7 @@ DEPS_5 += build/$(CONFIG)/obj/mprLib.o
 
 build/$(CONFIG)/bin/libmpr.so: $(DEPS_5)
 	@echo '      [Link] build/$(CONFIG)/bin/libmpr.so'
-	$(CC) -shared -o build/$(CONFIG)/bin/libmpr.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/mprLib.o" $(LIBS)  >>build\nmake.log
+	$(CC) -shared -o build/$(CONFIG)/bin/libmpr.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/mprLib.o" $(LIBS) 
 
 #
 #   pcre.h
@@ -305,7 +305,7 @@ DEPS_8 += build/$(CONFIG)/obj/pcre.o
 
 build/$(CONFIG)/bin/libpcre.so: $(DEPS_8)
 	@echo '      [Link] build/$(CONFIG)/bin/libpcre.so'
-	$(CC) -shared -o build/$(CONFIG)/bin/libpcre.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/pcre.o" $(LIBS)  >>build\nmake.log
+	$(CC) -shared -o build/$(CONFIG)/bin/libpcre.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/pcre.o" $(LIBS) 
 endif
 
 #
@@ -354,7 +354,7 @@ endif
 
 build/$(CONFIG)/bin/libhttp.so: $(DEPS_11)
 	@echo '      [Link] build/$(CONFIG)/bin/libhttp.so'
-	$(CC) -shared -o build/$(CONFIG)/bin/libhttp.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/httpLib.o" $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS)  >>build\nmake.log
+	$(CC) -shared -o build/$(CONFIG)/bin/libhttp.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/httpLib.o" $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS) 
 endif
 
 #
@@ -437,7 +437,7 @@ endif
 
 build/$(CONFIG)/bin/libappweb.so: $(DEPS_16)
 	@echo '      [Link] build/$(CONFIG)/bin/libappweb.so'
-	$(CC) -shared -o build/$(CONFIG)/bin/libappweb.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/config.o" "build/$(CONFIG)/obj/convenience.o" $(LIBPATHS_16) $(LIBS_16) $(LIBS_16) $(LIBS)  >>build\nmake.log
+	$(CC) -shared -o build/$(CONFIG)/bin/libappweb.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/config.o" "build/$(CONFIG)/obj/convenience.o" $(LIBPATHS_16) $(LIBS_16) $(LIBS_16) $(LIBS) 
 
 #
 #   esp.h
@@ -471,7 +471,7 @@ DEPS_19 += build/$(CONFIG)/obj/slink.o
 
 build/$(CONFIG)/bin/libslink.so: $(DEPS_19)
 	@echo '      [Link] build/$(CONFIG)/bin/libslink.so'
-	$(CC) -shared -o build/$(CONFIG)/bin/libslink.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/slink.o" $(LIBS)  >>build\nmake.log
+	$(CC) -shared -o build/$(CONFIG)/bin/libslink.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/slink.o" $(LIBS) 
 
 #
 #   appweb.o
@@ -628,7 +628,7 @@ DEPS_28 += build/$(CONFIG)/obj/zlib.o
 
 build/$(CONFIG)/bin/libzlib.so: $(DEPS_28)
 	@echo '      [Link] build/$(CONFIG)/bin/libzlib.so'
-	$(CC) -shared -o build/$(CONFIG)/bin/libzlib.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/zlib.o" $(LIBS)  >>build\nmake.log
+	$(CC) -shared -o build/$(CONFIG)/bin/libzlib.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/zlib.o" $(LIBS) 
 endif
 
 #
@@ -723,7 +723,7 @@ endif
 
 build/$(CONFIG)/bin/libejs.so: $(DEPS_33)
 	@echo '      [Link] build/$(CONFIG)/bin/libejs.so'
-	$(CC) -shared -o build/$(CONFIG)/bin/libejs.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_33) $(LIBS_33) $(LIBS_33) $(LIBS)  >>build\nmake.log
+	$(CC) -shared -o build/$(CONFIG)/bin/libejs.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_33) $(LIBS_33) $(LIBS_33) $(LIBS) 
 endif
 
 #
@@ -1045,7 +1045,7 @@ endif
 
 build/$(CONFIG)/bin/libmod_esp.so: $(DEPS_42)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_esp.so'
-	$(CC) -shared -o build/$(CONFIG)/bin/libmod_esp.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/espLib.o" $(LIBPATHS_42) $(LIBS_42) $(LIBS_42) $(LIBS)  >>build\nmake.log
+	$(CC) -shared -o build/$(CONFIG)/bin/libmod_esp.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/espLib.o" $(LIBPATHS_42) $(LIBS_42) $(LIBS_42) $(LIBS) 
 endif
 
 #
@@ -1227,7 +1227,7 @@ DEPS_51 += build/$(CONFIG)/obj/estLib.o
 
 build/$(CONFIG)/bin/libest.so: $(DEPS_51)
 	@echo '      [Link] build/$(CONFIG)/bin/libest.so'
-	$(CC) -shared -o build/$(CONFIG)/bin/libest.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/estLib.o" $(LIBS)  >>build\nmake.log
+	$(CC) -shared -o build/$(CONFIG)/bin/libest.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/estLib.o" $(LIBS) 
 endif
 
 #
@@ -1278,7 +1278,7 @@ endif
 
 build/$(CONFIG)/bin/libmod_cgi.so: $(DEPS_53)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_cgi.so'
-	$(CC) -shared -o build/$(CONFIG)/bin/libmod_cgi.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/cgiHandler.o" $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS)  >>build\nmake.log
+	$(CC) -shared -o build/$(CONFIG)/bin/libmod_cgi.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/cgiHandler.o" $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS) 
 endif
 
 #
@@ -1346,7 +1346,7 @@ endif
 
 build/$(CONFIG)/bin/libmod_ejs.so: $(DEPS_55)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_ejs.so'
-	$(CC) -shared -o build/$(CONFIG)/bin/libmod_ejs.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_55) $(LIBS_55) $(LIBS_55) $(LIBS)  >>build\nmake.log
+	$(CC) -shared -o build/$(CONFIG)/bin/libmod_ejs.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_55) $(LIBS_55) $(LIBS_55) $(LIBS) 
 endif
 
 #
@@ -1399,7 +1399,7 @@ LIBPATHS_57 += -L$(ME_COM_PHP_PATH)/libs
 
 build/$(CONFIG)/bin/libmod_php.so: $(DEPS_57)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_php.so'
-	$(CC) -shared -o build/$(CONFIG)/bin/libmod_php.so $(LDFLAGS) $(LIBPATHS)  "build/$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_57) $(LIBS_57) $(LIBS_57) $(LIBS)  >>build\nmake.log
+	$(CC) -shared -o build/$(CONFIG)/bin/libmod_php.so $(LDFLAGS) $(LIBPATHS)  "build/$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_57) $(LIBS_57) $(LIBS_57) $(LIBS) 
 endif
 
 #
@@ -1443,7 +1443,7 @@ endif
 
 build/$(CONFIG)/bin/libmprssl.so: $(DEPS_59)
 	@echo '      [Link] build/$(CONFIG)/bin/libmprssl.so'
-	$(CC) -shared -o build/$(CONFIG)/bin/libmprssl.so $(LDFLAGS) $(LIBPATHS)  "build/$(CONFIG)/obj/mprSsl.o" $(LIBPATHS_59) $(LIBS_59) $(LIBS_59) $(LIBS)  >>build\nmake.log
+	$(CC) -shared -o build/$(CONFIG)/bin/libmprssl.so $(LDFLAGS) $(LIBPATHS)  "build/$(CONFIG)/obj/mprSsl.o" $(LIBPATHS_59) $(LIBS_59) $(LIBS_59) $(LIBS) 
 
 #
 #   sslModule.o
@@ -1512,7 +1512,7 @@ endif
 
 build/$(CONFIG)/bin/libmod_ssl.so: $(DEPS_61)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_ssl.so'
-	$(CC) -shared -o build/$(CONFIG)/bin/libmod_ssl.so $(LDFLAGS) $(LIBPATHS)  "build/$(CONFIG)/obj/sslModule.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS)  >>build\nmake.log
+	$(CC) -shared -o build/$(CONFIG)/bin/libmod_ssl.so $(LDFLAGS) $(LIBPATHS)  "build/$(CONFIG)/obj/sslModule.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS) 
 endif
 
 #
@@ -1546,7 +1546,7 @@ DEPS_64 += build/$(CONFIG)/obj/sqlite3.o
 
 build/$(CONFIG)/bin/libsql.so: $(DEPS_64)
 	@echo '      [Link] build/$(CONFIG)/bin/libsql.so'
-	$(CC) -shared -o build/$(CONFIG)/bin/libsql.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/sqlite3.o" $(LIBS)  >>build\nmake.log
+	$(CC) -shared -o build/$(CONFIG)/bin/libsql.so $(LDFLAGS) $(LIBPATHS) "build/$(CONFIG)/obj/sqlite3.o" $(LIBS) 
 endif
 
 #

@@ -272,7 +272,7 @@ DEPS_5 += build/$(CONFIG)/obj/mprLib.o
 
 build/$(CONFIG)/bin/libmpr.dylib: $(DEPS_5)
 	@echo '      [Link] build/$(CONFIG)/bin/libmpr.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmpr.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmpr.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/mprLib.o" $(LIBS)  >>build\nmake.log
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmpr.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmpr.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/mprLib.o" $(LIBS) 
 
 #
 #   pcre.h
@@ -305,7 +305,7 @@ DEPS_8 += build/$(CONFIG)/obj/pcre.o
 
 build/$(CONFIG)/bin/libpcre.dylib: $(DEPS_8)
 	@echo '      [Link] build/$(CONFIG)/bin/libpcre.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libpcre.dylib -arch $(CC_ARCH) $(LDFLAGS) -compatibility_version 5.2 -current_version 5.2 $(LIBPATHS) -install_name @rpath/libpcre.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/pcre.o" $(LIBS)  >>build\nmake.log
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libpcre.dylib -arch $(CC_ARCH) $(LDFLAGS) -compatibility_version 5.2 -current_version 5.2 $(LIBPATHS) -install_name @rpath/libpcre.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/pcre.o" $(LIBS) 
 endif
 
 #
@@ -354,7 +354,7 @@ endif
 
 build/$(CONFIG)/bin/libhttp.dylib: $(DEPS_11)
 	@echo '      [Link] build/$(CONFIG)/bin/libhttp.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libhttp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libhttp.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/httpLib.o" $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS) -lpam  >>build\nmake.log
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libhttp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libhttp.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/httpLib.o" $(LIBPATHS_11) $(LIBS_11) $(LIBS_11) $(LIBS) -lpam 
 endif
 
 #
@@ -437,7 +437,7 @@ endif
 
 build/$(CONFIG)/bin/libappweb.dylib: $(DEPS_16)
 	@echo '      [Link] build/$(CONFIG)/bin/libappweb.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libappweb.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/config.o" "build/$(CONFIG)/obj/convenience.o" $(LIBPATHS_16) $(LIBS_16) $(LIBS_16) $(LIBS) -lpam  >>build\nmake.log
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libappweb.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/config.o" "build/$(CONFIG)/obj/convenience.o" $(LIBPATHS_16) $(LIBS_16) $(LIBS_16) $(LIBS) -lpam 
 
 #
 #   esp.h
@@ -471,7 +471,7 @@ DEPS_19 += build/$(CONFIG)/obj/slink.o
 
 build/$(CONFIG)/bin/libslink.dylib: $(DEPS_19)
 	@echo '      [Link] build/$(CONFIG)/bin/libslink.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libslink.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/slink.o" $(LIBS)  >>build\nmake.log
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libslink.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/slink.o" $(LIBS) 
 
 #
 #   appweb.o
@@ -628,7 +628,7 @@ DEPS_28 += build/$(CONFIG)/obj/zlib.o
 
 build/$(CONFIG)/bin/libzlib.dylib: $(DEPS_28)
 	@echo '      [Link] build/$(CONFIG)/bin/libzlib.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libzlib.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libzlib.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/zlib.o" $(LIBS)  >>build\nmake.log
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libzlib.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libzlib.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/zlib.o" $(LIBS) 
 endif
 
 #
@@ -723,7 +723,7 @@ endif
 
 build/$(CONFIG)/bin/libejs.dylib: $(DEPS_33)
 	@echo '      [Link] build/$(CONFIG)/bin/libejs.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_33) $(LIBS_33) $(LIBS_33) $(LIBS) -lpam  >>build\nmake.log
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/ejsLib.o" $(LIBPATHS_33) $(LIBS_33) $(LIBS_33) $(LIBS) -lpam 
 endif
 
 #
@@ -1045,7 +1045,7 @@ endif
 
 build/$(CONFIG)/bin/libmod_esp.dylib: $(DEPS_42)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_esp.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_esp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/espLib.o" $(LIBPATHS_42) $(LIBS_42) $(LIBS_42) $(LIBS) -lpam  >>build\nmake.log
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_esp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/espLib.o" $(LIBPATHS_42) $(LIBS_42) $(LIBS_42) $(LIBS) -lpam 
 endif
 
 #
@@ -1227,7 +1227,7 @@ DEPS_51 += build/$(CONFIG)/obj/estLib.o
 
 build/$(CONFIG)/bin/libest.dylib: $(DEPS_51)
 	@echo '      [Link] build/$(CONFIG)/bin/libest.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libest.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libest.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/estLib.o" $(LIBS)  >>build\nmake.log
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libest.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libest.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/estLib.o" $(LIBS) 
 endif
 
 #
@@ -1278,7 +1278,7 @@ endif
 
 build/$(CONFIG)/bin/libmod_cgi.dylib: $(DEPS_53)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_cgi.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_cgi.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/cgiHandler.o" $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS) -lpam  >>build\nmake.log
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_cgi.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/cgiHandler.o" $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS) -lpam 
 endif
 
 #
@@ -1346,7 +1346,7 @@ endif
 
 build/$(CONFIG)/bin/libmod_ejs.dylib: $(DEPS_55)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_ejs.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_ejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_55) $(LIBS_55) $(LIBS_55) $(LIBS) -lpam  >>build\nmake.log
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_ejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/ejsHandler.o" $(LIBPATHS_55) $(LIBS_55) $(LIBS_55) $(LIBS) -lpam 
 endif
 
 #
@@ -1399,7 +1399,7 @@ LIBPATHS_57 += -L$(ME_COM_PHP_PATH)/libs
 
 build/$(CONFIG)/bin/libmod_php.dylib: $(DEPS_57)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_php.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_php.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmod_php.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_57) $(LIBS_57) $(LIBS_57) $(LIBS) -lpam  >>build\nmake.log
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_php.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmod_php.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/phpHandler.o" $(LIBPATHS_57) $(LIBS_57) $(LIBS_57) $(LIBS) -lpam 
 endif
 
 #
@@ -1443,7 +1443,7 @@ endif
 
 build/$(CONFIG)/bin/libmprssl.dylib: $(DEPS_59)
 	@echo '      [Link] build/$(CONFIG)/bin/libmprssl.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmprssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmprssl.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/mprSsl.o" $(LIBPATHS_59) $(LIBS_59) $(LIBS_59) $(LIBS)  >>build\nmake.log
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmprssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmprssl.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/mprSsl.o" $(LIBPATHS_59) $(LIBS_59) $(LIBS_59) $(LIBS) 
 
 #
 #   sslModule.o
@@ -1512,7 +1512,7 @@ endif
 
 build/$(CONFIG)/bin/libmod_ssl.dylib: $(DEPS_61)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_ssl.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_ssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmod_ssl.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/sslModule.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS) -lpam  >>build\nmake.log
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libmod_ssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmod_ssl.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/sslModule.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS) -lpam 
 endif
 
 #
@@ -1546,7 +1546,7 @@ DEPS_64 += build/$(CONFIG)/obj/sqlite3.o
 
 build/$(CONFIG)/bin/libsql.dylib: $(DEPS_64)
 	@echo '      [Link] build/$(CONFIG)/bin/libsql.dylib'
-	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libsql.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libsql.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/sqlite3.o" $(LIBS)  >>build\nmake.log
+	$(CC) -dynamiclib -o build/$(CONFIG)/bin/libsql.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libsql.dylib -compatibility_version 5.2 -current_version 5.2 "build/$(CONFIG)/obj/sqlite3.o" $(LIBS) 
 endif
 
 #

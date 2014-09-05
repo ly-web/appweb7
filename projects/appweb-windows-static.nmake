@@ -7,6 +7,8 @@ VERSION               = 5.2.0
 
 OS                    = windows
 PA                    = $(PROCESSOR_ARCHITECTURE)
+LOG                   = build\nmake.log
+
 !IF "$(PROFILE)" == ""
 PROFILE               = static
 !ENDIF
@@ -183,12 +185,14 @@ prep:
 	echo "ME_APP_PREFIX not set."
 	exit 255
 !ENDIF
-	@echo See build\nmake.log for any build error details.
 	@if not exist $(BUILD)\bin md $(BUILD)\bin
 	@if not exist $(BUILD)\inc md $(BUILD)\inc
 	@if not exist $(BUILD)\obj md $(BUILD)\obj
 	@if not exist $(BUILD)\inc\me.h copy projects\appweb-windows-static-me.h $(BUILD)\inc\me.h
 
+!IF "$(LOG) != ""
+	@echo See build\nmake.log for any build error details.
+!ENDIF
 clean:
 	if exist "build\$(CONFIG)\obj\appweb.obj" del /Q "build\$(CONFIG)\obj\appweb.obj"
 	if exist "build\$(CONFIG)\obj\appwebMonitor.obj" del /Q "build\$(CONFIG)\obj\appwebMonitor.obj"
@@ -323,7 +327,7 @@ DEPS_4 = $(DEPS_4) build\$(CONFIG)\inc\osdep.h
 build\$(CONFIG)\obj\mprLib.obj: \
     src\paks\mpr\mprLib.c $(DEPS_4)
 	@echo '   [Compile] build\$(CONFIG)\obj\mprLib.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\mprLib.obj -Fdbuild\$(CONFIG)\obj\mprLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\mpr\mprLib.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\mprLib.obj -Fdbuild\$(CONFIG)\obj\mprLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\mpr\mprLib.c $(LOG)
 
 #
 #   libmpr
@@ -335,7 +339,7 @@ DEPS_5 = $(DEPS_5) build\$(CONFIG)\obj\mprLib.obj
 
 build\$(CONFIG)\bin\libmpr.lib: $(DEPS_5)
 	@echo '      [Link] build\$(CONFIG)\bin\libmpr.lib'
-	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libmpr.lib "build\$(CONFIG)\obj\mprLib.obj" >>build\nmake.log
+	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libmpr.lib "build\$(CONFIG)\obj\mprLib.obj" $(LOG)
 
 #
 #   pcre.h
@@ -356,7 +360,7 @@ DEPS_7 = $(DEPS_7) build\$(CONFIG)\inc\pcre.h
 build\$(CONFIG)\obj\pcre.obj: \
     src\paks\pcre\pcre.c $(DEPS_7)
 	@echo '   [Compile] build\$(CONFIG)\obj\pcre.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\pcre.obj -Fdbuild\$(CONFIG)\obj\pcre.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\pcre\pcre.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\pcre.obj -Fdbuild\$(CONFIG)\obj\pcre.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\pcre\pcre.c $(LOG)
 
 !IF "$(ME_COM_PCRE)" == "1"
 #
@@ -368,7 +372,7 @@ DEPS_8 = $(DEPS_8) build\$(CONFIG)\obj\pcre.obj
 
 build\$(CONFIG)\bin\libpcre.lib: $(DEPS_8)
 	@echo '      [Link] build\$(CONFIG)\bin\libpcre.lib'
-	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libpcre.lib "build\$(CONFIG)\obj\pcre.obj" >>build\nmake.log
+	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libpcre.lib "build\$(CONFIG)\obj\pcre.obj" $(LOG)
 !ENDIF
 
 #
@@ -391,7 +395,7 @@ DEPS_10 = $(DEPS_10) build\$(CONFIG)\inc\mpr.h
 build\$(CONFIG)\obj\httpLib.obj: \
     src\paks\http\httpLib.c $(DEPS_10)
 	@echo '   [Compile] build\$(CONFIG)\obj\httpLib.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\httpLib.obj -Fdbuild\$(CONFIG)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\http\httpLib.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\httpLib.obj -Fdbuild\$(CONFIG)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\http\httpLib.c $(LOG)
 
 !IF "$(ME_COM_HTTP)" == "1"
 #
@@ -412,7 +416,7 @@ DEPS_11 = $(DEPS_11) build\$(CONFIG)\obj\httpLib.obj
 
 build\$(CONFIG)\bin\libhttp.lib: $(DEPS_11)
 	@echo '      [Link] build\$(CONFIG)\bin\libhttp.lib'
-	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libhttp.lib "build\$(CONFIG)\obj\httpLib.obj" >>build\nmake.log
+	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libhttp.lib "build\$(CONFIG)\obj\httpLib.obj" $(LOG)
 !ENDIF
 
 #
@@ -449,7 +453,7 @@ DEPS_14 = $(DEPS_14) build\$(CONFIG)\inc\customize.h
 build\$(CONFIG)\obj\config.obj: \
     src\config.c $(DEPS_14)
 	@echo '   [Compile] build\$(CONFIG)\obj\config.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\config.obj -Fdbuild\$(CONFIG)\obj\config.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\config.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\config.obj -Fdbuild\$(CONFIG)\obj\config.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\config.c $(LOG)
 
 #
 #   convenience.obj
@@ -460,7 +464,7 @@ DEPS_15 = $(DEPS_15) build\$(CONFIG)\inc\appweb.h
 build\$(CONFIG)\obj\convenience.obj: \
     src\convenience.c $(DEPS_15)
 	@echo '   [Compile] build\$(CONFIG)\obj\convenience.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\convenience.obj -Fdbuild\$(CONFIG)\obj\convenience.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\convenience.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\convenience.obj -Fdbuild\$(CONFIG)\obj\convenience.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\convenience.c $(LOG)
 
 #
 #   libappweb
@@ -487,7 +491,7 @@ DEPS_16 = $(DEPS_16) build\$(CONFIG)\obj\convenience.obj
 
 build\$(CONFIG)\bin\libappweb.lib: $(DEPS_16)
 	@echo '      [Link] build\$(CONFIG)\bin\libappweb.lib'
-	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libappweb.lib "build\$(CONFIG)\obj\config.obj" "build\$(CONFIG)\obj\convenience.obj" >>build\nmake.log
+	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libappweb.lib "build\$(CONFIG)\obj\config.obj" "build\$(CONFIG)\obj\convenience.obj" $(LOG)
 
 #
 #   esp.h
@@ -512,7 +516,7 @@ DEPS_18 = $(DEPS_18) build\$(CONFIG)\inc\appweb.h
 build\$(CONFIG)\obj\espLib.obj: \
     src\paks\esp\espLib.c $(DEPS_18)
 	@echo '   [Compile] build\$(CONFIG)\obj\espLib.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\espLib.obj -Fdbuild\$(CONFIG)\obj\espLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\esp\espLib.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\espLib.obj -Fdbuild\$(CONFIG)\obj\espLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\esp\espLib.c $(LOG)
 
 !IF "$(ME_COM_ESP)" == "1"
 #
@@ -543,7 +547,7 @@ DEPS_19 = $(DEPS_19) build\$(CONFIG)\obj\espLib.obj
 
 build\$(CONFIG)\bin\libmod_esp.lib: $(DEPS_19)
 	@echo '      [Link] build\$(CONFIG)\bin\libmod_esp.lib'
-	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libmod_esp.lib "build\$(CONFIG)\obj\espLib.obj" >>build\nmake.log
+	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libmod_esp.lib "build\$(CONFIG)\obj\espLib.obj" $(LOG)
 !ENDIF
 
 #
@@ -556,7 +560,7 @@ DEPS_20 = $(DEPS_20) build\$(CONFIG)\inc\esp.h
 build\$(CONFIG)\obj\slink.obj: \
     src\server\slink.c $(DEPS_20)
 	@echo '   [Compile] build\$(CONFIG)\obj\slink.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\slink.obj -Fdbuild\$(CONFIG)\obj\slink.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\slink.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\slink.obj -Fdbuild\$(CONFIG)\obj\slink.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\slink.c $(LOG)
 
 #
 #   libslink
@@ -590,7 +594,7 @@ DEPS_21 = $(DEPS_21) build\$(CONFIG)\obj\slink.obj
 
 build\$(CONFIG)\bin\libslink.lib: $(DEPS_21)
 	@echo '      [Link] build\$(CONFIG)\bin\libslink.lib'
-	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libslink.lib "build\$(CONFIG)\obj\slink.obj" >>build\nmake.log
+	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libslink.lib "build\$(CONFIG)\obj\slink.obj" $(LOG)
 
 #
 #   est.h
@@ -612,7 +616,7 @@ DEPS_23 = $(DEPS_23) build\$(CONFIG)\inc\osdep.h
 build\$(CONFIG)\obj\estLib.obj: \
     src\paks\est\estLib.c $(DEPS_23)
 	@echo '   [Compile] build\$(CONFIG)\obj\estLib.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\estLib.obj -Fdbuild\$(CONFIG)\obj\estLib.pdb -nologo -GR- -Zi -Od -MDd $(DFLAGS) $(IFLAGS) src\paks\est\estLib.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\estLib.obj -Fdbuild\$(CONFIG)\obj\estLib.pdb -nologo -GR- -Zi -Od -MDd $(DFLAGS) $(IFLAGS) src\paks\est\estLib.c $(LOG)
 
 !IF "$(ME_COM_EST)" == "1"
 #
@@ -625,7 +629,7 @@ DEPS_24 = $(DEPS_24) build\$(CONFIG)\obj\estLib.obj
 
 build\$(CONFIG)\bin\libest.lib: $(DEPS_24)
 	@echo '      [Link] build\$(CONFIG)\bin\libest.lib'
-	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libest.lib "build\$(CONFIG)\obj\estLib.obj" >>build\nmake.log
+	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libest.lib "build\$(CONFIG)\obj\estLib.obj" $(LOG)
 !ENDIF
 
 #
@@ -637,7 +641,7 @@ DEPS_25 = $(DEPS_25) build\$(CONFIG)\inc\mpr.h
 build\$(CONFIG)\obj\mprSsl.obj: \
     src\paks\mpr\mprSsl.c $(DEPS_25)
 	@echo '   [Compile] build\$(CONFIG)\obj\mprSsl.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\mprSsl.obj -Fdbuild\$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\paks\mpr\mprSsl.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\mprSsl.obj -Fdbuild\$(CONFIG)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\paks\mpr\mprSsl.c $(LOG)
 
 #
 #   libmprssl
@@ -656,7 +660,7 @@ DEPS_26 = $(DEPS_26) build\$(CONFIG)\obj\mprSsl.obj
 
 build\$(CONFIG)\bin\libmprssl.lib: $(DEPS_26)
 	@echo '      [Link] build\$(CONFIG)\bin\libmprssl.lib'
-	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libmprssl.lib "build\$(CONFIG)\obj\mprSsl.obj" >>build\nmake.log
+	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libmprssl.lib "build\$(CONFIG)\obj\mprSsl.obj" $(LOG)
 
 #
 #   sslModule.obj
@@ -667,7 +671,7 @@ DEPS_27 = $(DEPS_27) build\$(CONFIG)\inc\appweb.h
 build\$(CONFIG)\obj\sslModule.obj: \
     src\modules\sslModule.c $(DEPS_27)
 	@echo '   [Compile] build\$(CONFIG)\obj\sslModule.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\sslModule.obj -Fdbuild\$(CONFIG)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\modules\sslModule.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\sslModule.obj -Fdbuild\$(CONFIG)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\modules\sslModule.c $(LOG)
 
 !IF "$(ME_COM_SSL)" == "1"
 #
@@ -704,7 +708,7 @@ DEPS_28 = $(DEPS_28) build\$(CONFIG)\obj\sslModule.obj
 
 build\$(CONFIG)\bin\libmod_ssl.lib: $(DEPS_28)
 	@echo '      [Link] build\$(CONFIG)\bin\libmod_ssl.lib'
-	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libmod_ssl.lib "build\$(CONFIG)\obj\sslModule.obj" >>build\nmake.log
+	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libmod_ssl.lib "build\$(CONFIG)\obj\sslModule.obj" $(LOG)
 !ENDIF
 
 #
@@ -726,7 +730,7 @@ DEPS_30 = $(DEPS_30) build\$(CONFIG)\inc\zlib.h
 build\$(CONFIG)\obj\zlib.obj: \
     src\paks\zlib\zlib.c $(DEPS_30)
 	@echo '   [Compile] build\$(CONFIG)\obj\zlib.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\zlib.obj -Fdbuild\$(CONFIG)\obj\zlib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\zlib\zlib.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\zlib.obj -Fdbuild\$(CONFIG)\obj\zlib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\zlib\zlib.c $(LOG)
 
 !IF "$(ME_COM_ZLIB)" == "1"
 #
@@ -738,7 +742,7 @@ DEPS_31 = $(DEPS_31) build\$(CONFIG)\obj\zlib.obj
 
 build\$(CONFIG)\bin\libzlib.lib: $(DEPS_31)
 	@echo '      [Link] build\$(CONFIG)\bin\libzlib.lib'
-	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libzlib.lib "build\$(CONFIG)\obj\zlib.obj" >>build\nmake.log
+	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libzlib.lib "build\$(CONFIG)\obj\zlib.obj" $(LOG)
 !ENDIF
 
 #
@@ -786,7 +790,7 @@ DEPS_35 = $(DEPS_35) build\$(CONFIG)\inc\zlib.h
 build\$(CONFIG)\obj\ejsLib.obj: \
     src\paks\ejs\ejsLib.c $(DEPS_35)
 	@echo '   [Compile] build\$(CONFIG)\obj\ejsLib.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\ejsLib.obj -Fdbuild\$(CONFIG)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejsLib.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\ejsLib.obj -Fdbuild\$(CONFIG)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejsLib.c $(LOG)
 
 !IF "$(ME_COM_EJS)" == "1"
 #
@@ -819,7 +823,7 @@ DEPS_36 = $(DEPS_36) build\$(CONFIG)\obj\ejsLib.obj
 
 build\$(CONFIG)\bin\libejs.lib: $(DEPS_36)
 	@echo '      [Link] build\$(CONFIG)\bin\libejs.lib'
-	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libejs.lib "build\$(CONFIG)\obj\ejsLib.obj" >>build\nmake.log
+	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libejs.lib "build\$(CONFIG)\obj\ejsLib.obj" $(LOG)
 !ENDIF
 
 #
@@ -831,7 +835,7 @@ DEPS_37 = $(DEPS_37) build\$(CONFIG)\inc\appweb.h
 build\$(CONFIG)\obj\ejsHandler.obj: \
     src\modules\ejsHandler.c $(DEPS_37)
 	@echo '   [Compile] build\$(CONFIG)\obj\ejsHandler.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\ejsHandler.obj -Fdbuild\$(CONFIG)\obj\ejsHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\ejsHandler.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\ejsHandler.obj -Fdbuild\$(CONFIG)\obj\ejsHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\ejsHandler.c $(LOG)
 
 !IF "$(ME_COM_EJS)" == "1"
 #
@@ -871,7 +875,7 @@ DEPS_38 = $(DEPS_38) build\$(CONFIG)\obj\ejsHandler.obj
 
 build\$(CONFIG)\bin\libmod_ejs.lib: $(DEPS_38)
 	@echo '      [Link] build\$(CONFIG)\bin\libmod_ejs.lib'
-	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libmod_ejs.lib "build\$(CONFIG)\obj\ejsHandler.obj" >>build\nmake.log
+	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libmod_ejs.lib "build\$(CONFIG)\obj\ejsHandler.obj" $(LOG)
 !ENDIF
 
 #
@@ -883,7 +887,7 @@ DEPS_39 = $(DEPS_39) build\$(CONFIG)\inc\appweb.h
 build\$(CONFIG)\obj\phpHandler.obj: \
     src\modules\phpHandler.c $(DEPS_39)
 	@echo '   [Compile] build\$(CONFIG)\obj\phpHandler.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\phpHandler.obj -Fdbuild\$(CONFIG)\obj\phpHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)\main" "-I$(ME_COM_PHP_PATH)\Zend" "-I$(ME_COM_PHP_PATH)\TSRM" src\modules\phpHandler.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\phpHandler.obj -Fdbuild\$(CONFIG)\obj\phpHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)\main" "-I$(ME_COM_PHP_PATH)\Zend" "-I$(ME_COM_PHP_PATH)\TSRM" src\modules\phpHandler.c $(LOG)
 
 !IF "$(ME_COM_PHP)" == "1"
 #
@@ -913,7 +917,7 @@ DEPS_40 = $(DEPS_40) build\$(CONFIG)\obj\phpHandler.obj
 
 build\$(CONFIG)\bin\libmod_php.lib: $(DEPS_40)
 	@echo '      [Link] build\$(CONFIG)\bin\libmod_php.lib'
-	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libmod_php.lib "build\$(CONFIG)\obj\phpHandler.obj" >>build\nmake.log
+	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libmod_php.lib "build\$(CONFIG)\obj\phpHandler.obj" $(LOG)
 !ENDIF
 
 #
@@ -925,7 +929,7 @@ DEPS_41 = $(DEPS_41) build\$(CONFIG)\inc\appweb.h
 build\$(CONFIG)\obj\cgiHandler.obj: \
     src\modules\cgiHandler.c $(DEPS_41)
 	@echo '   [Compile] build\$(CONFIG)\obj\cgiHandler.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\cgiHandler.obj -Fdbuild\$(CONFIG)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\cgiHandler.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\cgiHandler.obj -Fdbuild\$(CONFIG)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\cgiHandler.c $(LOG)
 
 !IF "$(ME_COM_CGI)" == "1"
 #
@@ -955,7 +959,7 @@ DEPS_42 = $(DEPS_42) build\$(CONFIG)\obj\cgiHandler.obj
 
 build\$(CONFIG)\bin\libmod_cgi.lib: $(DEPS_42)
 	@echo '      [Link] build\$(CONFIG)\bin\libmod_cgi.lib'
-	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libmod_cgi.lib "build\$(CONFIG)\obj\cgiHandler.obj" >>build\nmake.log
+	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libmod_cgi.lib "build\$(CONFIG)\obj\cgiHandler.obj" $(LOG)
 !ENDIF
 
 #
@@ -967,7 +971,7 @@ DEPS_43 = $(DEPS_43) build\$(CONFIG)\inc\appweb.h
 build\$(CONFIG)\obj\appweb.obj: \
     src\server\appweb.c $(DEPS_43)
 	@echo '   [Compile] build\$(CONFIG)\obj\appweb.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\appweb.obj -Fdbuild\$(CONFIG)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)\main" "-I$(ME_COM_PHP_PATH)\Zend" "-I$(ME_COM_PHP_PATH)\TSRM" src\server\appweb.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\appweb.obj -Fdbuild\$(CONFIG)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)\main" "-I$(ME_COM_PHP_PATH)\Zend" "-I$(ME_COM_PHP_PATH)\TSRM" src\server\appweb.c $(LOG)
 
 #
 #   appweb
@@ -1127,7 +1131,7 @@ DEPS_48 = $(DEPS_48) build\$(CONFIG)\inc\mpr.h
 build\$(CONFIG)\obj\appwebMonitor.obj: \
     src\server\windows\appwebMonitor.c $(DEPS_48)
 	@echo '   [Compile] build\$(CONFIG)\obj\appwebMonitor.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\appwebMonitor.obj -Fdbuild\$(CONFIG)\obj\appwebMonitor.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\windows\appwebMonitor.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\appwebMonitor.obj -Fdbuild\$(CONFIG)\obj\appwebMonitor.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\windows\appwebMonitor.c $(LOG)
 
 #
 #   appwebMonitor
@@ -1189,7 +1193,7 @@ DEPS_51 = $(DEPS_51) build\$(CONFIG)\inc\appweb.h
 build\$(CONFIG)\obj\authpass.obj: \
     src\utils\authpass.c $(DEPS_51)
 	@echo '   [Compile] build\$(CONFIG)\obj\authpass.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\authpass.obj -Fdbuild\$(CONFIG)\obj\authpass.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\authpass.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\authpass.obj -Fdbuild\$(CONFIG)\obj\authpass.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\authpass.c $(LOG)
 
 #
 #   authpass
@@ -1237,7 +1241,7 @@ DEPS_53 = $(DEPS_53) build\$(CONFIG)\inc\me.h
 build\$(CONFIG)\obj\cgiProgram.obj: \
     src\utils\cgiProgram.c $(DEPS_53)
 	@echo '   [Compile] build\$(CONFIG)\obj\cgiProgram.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\cgiProgram.obj -Fdbuild\$(CONFIG)\obj\cgiProgram.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\cgiProgram.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\cgiProgram.obj -Fdbuild\$(CONFIG)\obj\cgiProgram.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\cgiProgram.c $(LOG)
 
 !IF "$(ME_COM_CGI)" == "1"
 #
@@ -1260,7 +1264,7 @@ DEPS_55 = $(DEPS_55) build\$(CONFIG)\inc\ejs.h
 build\$(CONFIG)\obj\ejsc.obj: \
     src\paks\ejs\ejsc.c $(DEPS_55)
 	@echo '   [Compile] build\$(CONFIG)\obj\ejsc.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\ejsc.obj -Fdbuild\$(CONFIG)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejsc.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\ejsc.obj -Fdbuild\$(CONFIG)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejsc.c $(LOG)
 
 !IF "$(ME_COM_EJS)" == "1"
 #
@@ -1361,7 +1365,7 @@ DEPS_58 = $(DEPS_58) build\$(CONFIG)\inc\ejs.h
 build\$(CONFIG)\obj\ejs.obj: \
     src\paks\ejs\ejs.c $(DEPS_58)
 	@echo '   [Compile] build\$(CONFIG)\obj\ejs.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\ejs.obj -Fdbuild\$(CONFIG)\obj\ejs.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejs.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\ejs.obj -Fdbuild\$(CONFIG)\obj\ejs.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejs.c $(LOG)
 
 !IF "$(ME_COM_EJS)" == "1"
 #
@@ -1521,7 +1525,7 @@ DEPS_62 = $(DEPS_62) build\$(CONFIG)\inc\esp.h
 build\$(CONFIG)\obj\esp.obj: \
     src\paks\esp\esp.c $(DEPS_62)
 	@echo '   [Compile] build\$(CONFIG)\obj\esp.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\esp.obj -Fdbuild\$(CONFIG)\obj\esp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\esp\esp.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\esp.obj -Fdbuild\$(CONFIG)\obj\esp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\esp\esp.c $(LOG)
 
 !IF "$(ME_COM_ESP)" == "1"
 #
@@ -1625,7 +1629,7 @@ DEPS_66 = $(DEPS_66) build\$(CONFIG)\inc\http.h
 build\$(CONFIG)\obj\http.obj: \
     src\paks\http\http.c $(DEPS_66)
 	@echo '   [Compile] build\$(CONFIG)\obj\http.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\http.obj -Fdbuild\$(CONFIG)\obj\http.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\paks\http\http.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\http.obj -Fdbuild\$(CONFIG)\obj\http.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\paks\http\http.c $(LOG)
 
 !IF "$(ME_COM_HTTP)" == "1"
 #
@@ -1695,7 +1699,7 @@ DEPS_69 = $(DEPS_69) build\$(CONFIG)\inc\sqlite3.h
 build\$(CONFIG)\obj\sqlite3.obj: \
     src\paks\sqlite\sqlite3.c $(DEPS_69)
 	@echo '   [Compile] build\$(CONFIG)\obj\sqlite3.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\sqlite3.obj -Fdbuild\$(CONFIG)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\sqlite\sqlite3.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\sqlite3.obj -Fdbuild\$(CONFIG)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\sqlite\sqlite3.c $(LOG)
 
 !IF "$(ME_COM_SQLITE)" == "1"
 #
@@ -1707,7 +1711,7 @@ DEPS_70 = $(DEPS_70) build\$(CONFIG)\obj\sqlite3.obj
 
 build\$(CONFIG)\bin\libsql.lib: $(DEPS_70)
 	@echo '      [Link] build\$(CONFIG)\bin\libsql.lib'
-	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libsql.lib "build\$(CONFIG)\obj\sqlite3.obj" >>build\nmake.log
+	"lib.exe" -nologo -out:build\$(CONFIG)\bin\libsql.lib "build\$(CONFIG)\obj\sqlite3.obj" $(LOG)
 !ENDIF
 
 #
@@ -1719,7 +1723,7 @@ DEPS_71 = $(DEPS_71) build\$(CONFIG)\inc\mpr.h
 build\$(CONFIG)\obj\manager.obj: \
     src\paks\mpr\manager.c $(DEPS_71)
 	@echo '   [Compile] build\$(CONFIG)\obj\manager.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\manager.obj -Fdbuild\$(CONFIG)\obj\manager.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\mpr\manager.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\manager.obj -Fdbuild\$(CONFIG)\obj\manager.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\mpr\manager.c $(LOG)
 
 #
 #   manager
@@ -1745,7 +1749,7 @@ DEPS_73 = $(DEPS_73) build\$(CONFIG)\inc\me.h
 build\$(CONFIG)\obj\removeFiles.obj: \
     package\windows\removeFiles.c $(DEPS_73)
 	@echo '   [Compile] build\$(CONFIG)\obj\removeFiles.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\removeFiles.obj -Fdbuild\$(CONFIG)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) package\windows\removeFiles.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\removeFiles.obj -Fdbuild\$(CONFIG)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) package\windows\removeFiles.c $(LOG)
 
 #
 #   removeFiles
@@ -1774,7 +1778,7 @@ DEPS_76 = $(DEPS_76) build\$(CONFIG)\inc\sqlite3.h
 build\$(CONFIG)\obj\sqlite.obj: \
     src\paks\sqlite\sqlite.c $(DEPS_76)
 	@echo '   [Compile] build\$(CONFIG)\obj\sqlite.obj'
-	"$(CC)" -c -Fobuild\$(CONFIG)\obj\sqlite.obj -Fdbuild\$(CONFIG)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\sqlite\sqlite.c >>build\nmake.log
+	"$(CC)" -c -Fobuild\$(CONFIG)\obj\sqlite.obj -Fdbuild\$(CONFIG)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\sqlite\sqlite.c $(LOG)
 
 !IF "$(ME_COM_SQLITE)" == "1"
 #

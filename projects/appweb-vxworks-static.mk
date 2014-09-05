@@ -265,7 +265,7 @@ DEPS_5 += build/$(CONFIG)/obj/mprLib.o
 
 build/$(CONFIG)/bin/libmpr.a: $(DEPS_5)
 	@echo '      [Link] build/$(CONFIG)/bin/libmpr.a'
-	ar -cr build/$(CONFIG)/bin/libmpr.a "build/$(CONFIG)/obj/mprLib.o" >>build\nmake.log
+	ar -cr build/$(CONFIG)/bin/libmpr.a "build/$(CONFIG)/obj/mprLib.o"
 
 #
 #   pcre.h
@@ -298,7 +298,7 @@ DEPS_8 += build/$(CONFIG)/obj/pcre.o
 
 build/$(CONFIG)/bin/libpcre.a: $(DEPS_8)
 	@echo '      [Link] build/$(CONFIG)/bin/libpcre.a'
-	ar -cr build/$(CONFIG)/bin/libpcre.a "build/$(CONFIG)/obj/pcre.o" >>build\nmake.log
+	ar -cr build/$(CONFIG)/bin/libpcre.a "build/$(CONFIG)/obj/pcre.o"
 endif
 
 #
@@ -342,7 +342,7 @@ DEPS_11 += build/$(CONFIG)/obj/httpLib.o
 
 build/$(CONFIG)/bin/libhttp.a: $(DEPS_11)
 	@echo '      [Link] build/$(CONFIG)/bin/libhttp.a'
-	ar -cr build/$(CONFIG)/bin/libhttp.a "build/$(CONFIG)/obj/httpLib.o" >>build\nmake.log
+	ar -cr build/$(CONFIG)/bin/libhttp.a "build/$(CONFIG)/obj/httpLib.o"
 endif
 
 #
@@ -417,7 +417,7 @@ DEPS_16 += build/$(CONFIG)/obj/convenience.o
 
 build/$(CONFIG)/bin/libappweb.a: $(DEPS_16)
 	@echo '      [Link] build/$(CONFIG)/bin/libappweb.a'
-	ar -cr build/$(CONFIG)/bin/libappweb.a "build/$(CONFIG)/obj/config.o" "build/$(CONFIG)/obj/convenience.o" >>build\nmake.log
+	ar -cr build/$(CONFIG)/bin/libappweb.a "build/$(CONFIG)/obj/config.o" "build/$(CONFIG)/obj/convenience.o"
 
 #
 #   esp.h
@@ -473,7 +473,7 @@ DEPS_19 += build/$(CONFIG)/obj/espLib.o
 
 build/$(CONFIG)/bin/libmod_esp.a: $(DEPS_19)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_esp.a'
-	ar -cr build/$(CONFIG)/bin/libmod_esp.a "build/$(CONFIG)/obj/espLib.o" >>build\nmake.log
+	ar -cr build/$(CONFIG)/bin/libmod_esp.a "build/$(CONFIG)/obj/espLib.o"
 endif
 
 #
@@ -520,7 +520,7 @@ DEPS_21 += build/$(CONFIG)/obj/slink.o
 
 build/$(CONFIG)/bin/libslink.a: $(DEPS_21)
 	@echo '      [Link] build/$(CONFIG)/bin/libslink.a'
-	ar -cr build/$(CONFIG)/bin/libslink.a "build/$(CONFIG)/obj/slink.o" >>build\nmake.log
+	ar -cr build/$(CONFIG)/bin/libslink.a "build/$(CONFIG)/obj/slink.o"
 
 #
 #   est.h
@@ -555,7 +555,7 @@ DEPS_24 += build/$(CONFIG)/obj/estLib.o
 
 build/$(CONFIG)/bin/libest.a: $(DEPS_24)
 	@echo '      [Link] build/$(CONFIG)/bin/libest.a'
-	ar -cr build/$(CONFIG)/bin/libest.a "build/$(CONFIG)/obj/estLib.o" >>build\nmake.log
+	ar -cr build/$(CONFIG)/bin/libest.a "build/$(CONFIG)/obj/estLib.o"
 endif
 
 #
@@ -586,7 +586,7 @@ DEPS_26 += build/$(CONFIG)/obj/mprSsl.o
 
 build/$(CONFIG)/bin/libmprssl.a: $(DEPS_26)
 	@echo '      [Link] build/$(CONFIG)/bin/libmprssl.a'
-	ar -cr build/$(CONFIG)/bin/libmprssl.a "build/$(CONFIG)/obj/mprSsl.o" >>build\nmake.log
+	ar -cr build/$(CONFIG)/bin/libmprssl.a "build/$(CONFIG)/obj/mprSsl.o"
 
 #
 #   sslModule.o
@@ -634,7 +634,7 @@ DEPS_28 += build/$(CONFIG)/obj/sslModule.o
 
 build/$(CONFIG)/bin/libmod_ssl.a: $(DEPS_28)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_ssl.a'
-	ar -cr build/$(CONFIG)/bin/libmod_ssl.a "build/$(CONFIG)/obj/sslModule.o" >>build\nmake.log
+	ar -cr build/$(CONFIG)/bin/libmod_ssl.a "build/$(CONFIG)/obj/sslModule.o"
 endif
 
 #
@@ -668,7 +668,7 @@ DEPS_31 += build/$(CONFIG)/obj/zlib.o
 
 build/$(CONFIG)/bin/libzlib.a: $(DEPS_31)
 	@echo '      [Link] build/$(CONFIG)/bin/libzlib.a'
-	ar -cr build/$(CONFIG)/bin/libzlib.a "build/$(CONFIG)/obj/zlib.o" >>build\nmake.log
+	ar -cr build/$(CONFIG)/bin/libzlib.a "build/$(CONFIG)/obj/zlib.o"
 endif
 
 #
@@ -749,7 +749,7 @@ DEPS_36 += build/$(CONFIG)/obj/ejsLib.o
 
 build/$(CONFIG)/bin/libejs.a: $(DEPS_36)
 	@echo '      [Link] build/$(CONFIG)/bin/libejs.a'
-	ar -cr build/$(CONFIG)/bin/libejs.a "build/$(CONFIG)/obj/ejsLib.o" >>build\nmake.log
+	ar -cr build/$(CONFIG)/bin/libejs.a "build/$(CONFIG)/obj/ejsLib.o"
 endif
 
 #
@@ -801,7 +801,7 @@ DEPS_38 += build/$(CONFIG)/obj/ejsHandler.o
 
 build/$(CONFIG)/bin/libmod_ejs.a: $(DEPS_38)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_ejs.a'
-	ar -cr build/$(CONFIG)/bin/libmod_ejs.a "build/$(CONFIG)/obj/ejsHandler.o" >>build\nmake.log
+	ar -cr build/$(CONFIG)/bin/libmod_ejs.a "build/$(CONFIG)/obj/ejsHandler.o"
 endif
 
 #
@@ -843,7 +843,7 @@ DEPS_40 += build/$(CONFIG)/obj/phpHandler.o
 
 build/$(CONFIG)/bin/libmod_php.a: $(DEPS_40)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_php.a'
-	ar -cr build/$(CONFIG)/bin/libmod_php.a "build/$(CONFIG)/obj/phpHandler.o" >>build\nmake.log
+	ar -cr build/$(CONFIG)/bin/libmod_php.a "build/$(CONFIG)/obj/phpHandler.o"
 endif
 
 #
@@ -885,7 +885,7 @@ DEPS_42 += build/$(CONFIG)/obj/cgiHandler.o
 
 build/$(CONFIG)/bin/libmod_cgi.a: $(DEPS_42)
 	@echo '      [Link] build/$(CONFIG)/bin/libmod_cgi.a'
-	ar -cr build/$(CONFIG)/bin/libmod_cgi.a "build/$(CONFIG)/obj/cgiHandler.o" >>build\nmake.log
+	ar -cr build/$(CONFIG)/bin/libmod_cgi.a "build/$(CONFIG)/obj/cgiHandler.o"
 endif
 
 #
@@ -1550,7 +1550,7 @@ DEPS_64 += build/$(CONFIG)/obj/sqlite3.o
 
 build/$(CONFIG)/bin/libsql.a: $(DEPS_64)
 	@echo '      [Link] build/$(CONFIG)/bin/libsql.a'
-	ar -cr build/$(CONFIG)/bin/libsql.a "build/$(CONFIG)/obj/sqlite3.o" >>build\nmake.log
+	ar -cr build/$(CONFIG)/bin/libsql.a "build/$(CONFIG)/obj/sqlite3.o"
 endif
 
 #
