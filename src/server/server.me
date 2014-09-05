@@ -48,7 +48,7 @@ Me.load({
             depends: [ 'compile' ],
             action: "
                 trace('Run', 'From directory src/server')
-                run('appweb -v', {noio: true})
+                run('appweb -v')
             ",
             generate: "sudo ${BIN}/appweb -v"
         },

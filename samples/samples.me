@@ -11,7 +11,7 @@ Me.load({
                         continue
                     }
                     trace('Sample', sample.dirname)
-                    run('me', {dir: sample.dirname, noio: true})
+                    run('me', {dir: sample.dirname})
                 }
             }
         },
@@ -22,7 +22,7 @@ Me.load({
                         continue
                     }
                     trace('Sample', sample.dirname)
-                    run('me clean', {dir: sample.dirname, noio: true})
+                    run('me clean', {dir: sample.dirname})
                 }
             }
         },

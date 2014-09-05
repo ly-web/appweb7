@@ -95,7 +95,7 @@ Me.load({
 
         test: {
             action: "
-                let ro = {noio: true}
+                let ro = {}
                 let depth = me.settings.depth
                 Path('cache').makeDir()
                 run('utest -v -i 1 --depth ' + depth, ro)
@@ -186,7 +186,7 @@ Me.load({
             depends: [ 'compile' ],
             action: "
                 trace('Run', 'From directory src/server')
-                run('appweb -v', {noio: true})
+                run('appweb -v')
             ",
             generate: "${BIN}/appweb -v"
         },

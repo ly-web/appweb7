@@ -110,7 +110,7 @@ Me.load({
                     }
                     if (utest) {
                         if (me.dir.src.join('src').exists) {
-                            run([utest, '-v', '-d', me.settings.depth], {noio: true, dir: me.dir.src.join('src')})
+                            run([utest, '-v', '-d', me.settings.depth], {dir: me.dir.src.join('src')})
                         }
                     } else {
                         trace('Test', 'The utest program cannot be located')
