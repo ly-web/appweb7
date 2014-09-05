@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{c4e6ab32-0eb8-4204-8a75-2d1d07d01226}</ProjectGuid>
+    <ProjectGuid>{c0cb6868-18ec-4752-b743-be086ed84090}</ProjectGuid>
     <RootNamespace />
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -93,13 +93,6 @@
     <AdditionalDependencies>;%(AdditionalDependencies)</AdditionalDependencies>
     <AdditionalLibraryDirectories>$(OutDir);;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
-
-  <CustomBuildStep>
-    <Command>cd ..\..\src\server
-if not exist slink.c copy slink.empty slink.c
-cd ..\..\projects\appweb-windows-default</Command>
-    <Outputs>\Users\mob\git\appweb\projects\appweb-windows-default\..\..\src\server\slink.c</Outputs>
-  </CustomBuildStep>
   </ItemDefinitionGroup>
 
   <Import Project="$(VCTargetsPath)Microsoft.Cpp.targets" />

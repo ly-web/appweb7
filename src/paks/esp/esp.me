@@ -53,7 +53,6 @@ Me.load({
             files: [ 'esp-*/**' ],
             platforms: [ 'local' ],
             ifdef: ['esp'],
-            'generate-capture': true,
             build: `
                 trace('Copy', me.dir.out.join('esp').relativeTo(me.dir.top))
                 for each (pak in Path('.').files('esp-*')) {

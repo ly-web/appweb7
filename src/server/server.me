@@ -21,12 +21,10 @@ Me.load({
 
         /*
             Static library for esp applications. Always built but only contains code if static linking.
-            The slink.c is generated to contain the static initializer calls for ESP apps. See 'me genslink'
-            to generate/update slink.c.
+            The slink.c is generated via 'me genslink' to contain the static initializer calls for ESP apps. 
          */
         libslink: {
             type: 'lib',
-            depends: [ 'slink.c' ],
             sources: [ 'slink.c' ],
             postblend: function (target) {
                 if (Path('slink.c').exists) {
@@ -42,22 +40,12 @@ Me.load({
             },
         },
 
-        'genslink': {
-            action: `run('esp --static --genlink slink.c compile')`,
-            generate: "esp --static --genlink slink.c compile",
-        },
-
-        'slink.c': {
-            path: 'slink.c',
-            precious: true,
-            build: "
-                if (!Path('slink.c').exists) {
-                    trace('Generate', 'slink.c')
-                    cp('slink.empty', 'slink.c')
-                }
-            ",
-            'generate-nmake': 'if not exist slink.c copy slink.empty slink.c',
-            'generate-sh': '[ ! -f slink.c ] && cp slink.empty slink.c ; true',
+        genslink: {
+            run: `esp --static --genlink slink.c compile`,
+            message: ['Create', 'slink.c'],
+            generate: true,
+            depends: [ 'esp' ],
+            ifdef: [ 'esp' ],
         },
 
         appwebMonitor: {
@@ -79,19 +67,14 @@ Me.load({
 
         'server-cache': {
             path: 'cache',
-            precious: true,
-            build: "Path('cache').makeDir()",
-            generate: "mkdir -p cache",
-            'generate-nmake': "md cache",
+            build: `makeDir('cache')`,
         },
 
         run: {
             depends: [ 'compile' ],
-            action: `
-                trace('Run', 'From directory src/server')
-                run('appweb -v')
-            `,
-            generate: "sudo ${BIN}/appweb -v"
+            action: `run('appweb -v')`,
+            message: ['Run', 'From directory src/server'],
+            'generate-sh': "sudo ${BIN}/appweb -v"
         },
 
         rom: {

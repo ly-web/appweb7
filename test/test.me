@@ -7,12 +7,13 @@ Me.load({
         'test-testScript': {
             path: 'cgi-bin/testScript',
             build: `
-                let path = Path('cgi-bin/testScript')
+                let path = TARGET.path.relative
                 path.write('#!' + me.dir.bin.join('cgiProgram${EXE}' + '\n'))
                 path.setAttributes({permissions: 0755})
+                trace('Create', path)
             `,
-            message: [ 'Create', '${target.path}' ],
             depends: [ 'cgiProgram' ],
+            generate: false,
             platforms: [ 'local' ],
             ifdef: [ 'cgi' ],
         },
@@ -20,13 +21,14 @@ Me.load({
         'test-cache.cgi': {
             path: 'web/caching/cache.cgi',
             build: `
-                let path = Path('web/caching/cache.cgi')
+                let path = TARGET.path.relative
                 path.write('#!' + Cmd.locate('ejs') + '\n' + 
                     'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n{number:\" + Date().now() + \"}\n\")')
                 path.setAttributes({permissions: 0755})
+                trace('Create', path)
             `,
-            message: [ 'Create', '${target.path}' ],
             depends: [ 'cgiProgram' ],
+            generate: false,
             platforms: [ 'local' ],
             ifdef: [ 'cgi' ],
         },
@@ -34,13 +36,14 @@ Me.load({
         'test-basic.cgi': {
             path: 'web/auth/basic/basic.cgi',
             build: `
-                let path = Path('web/auth/basic/basic.cgi')
+                let path = TARGET.path.relative
                 path.write('#!' + Cmd.locate('ejs') + '\n' + 
                     'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n\" + serialize(App.env, {pretty: true}) + \"\n\")')
                 path.setAttributes({permissions: 0755})
+                trace('Create', path)
             `,
-            message: [ 'Create', '${target.path}' ],
             depends: [ 'cgiProgram' ],
+            generate: false,
             platforms: [ 'local' ],
             ifdef: [ 'cgi' ],
         },
@@ -56,12 +59,14 @@ Me.load({
                 cp(cgiProgram, Path('web/cgiProgram.cgi'), perms)
             `,
             depends: [ 'cgiProgram' ],
+            generate: false,
             platforms: [ 'local' ],
             ifdef: [ 'cgi' ],
         },
 
         test: {
             action: `run('testme --depth ' + me.settings.depth)`,
+            generate: false,
             platforms: [ 'local' ],
         },
 

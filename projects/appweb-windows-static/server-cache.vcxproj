@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{6c4d0198-8480-45e2-968e-2e56998a1ab5}</ProjectGuid>
+    <ProjectGuid>{cdad931e-bb0c-4f7a-9e84-340f75e2c24d}</ProjectGuid>
     <RootNamespace />
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -96,7 +96,7 @@
 
   <CustomBuildStep>
     <Command>cd ..\..\src\server
-md cache
+if not exist "cache" md "cache"
 cd ..\..\projects\appweb-windows-static</Command>
     <Outputs>\Users\mob\git\appweb\projects\appweb-windows-static\..\..\src\server\cache</Outputs>
   </CustomBuildStep>

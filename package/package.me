@@ -22,7 +22,6 @@ Me.load({
 
         install: {
             home: '${TOP}',
-            generate: ' ',
             depends: [ 'all', 'stop', 'installBinary', 'start' ],
             action: ` 
                 trace('Info', me.settings.title + ' installed at ' + me.prefixes.vapp)
@@ -40,6 +39,7 @@ Me.load({
                 let address = ('http://localhost:' + port).replace(':80')
                 trace('Info', 'Browse to ' + address)
             `,
+            generate: ' ',
         },
 
         uninstall: {

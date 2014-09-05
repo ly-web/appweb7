@@ -2460,8 +2460,6 @@ module ejs {
             @options exception Boolean If true, throw exceptions if the command returns a non-zero status code. 
                 Defaults to false.
             @options timeout Number This is the default number of milliseconds for the command to complete.
-            @options noio Don't capture stdout from the command. If true, the command's standard output will go to the 
-                application's current standard output. Defaults to false.
          */
         native function Cmd(command: Object = null, options: Object = null)
 
@@ -2785,11 +2783,10 @@ module ejs {
             @options detach Boolean If true, run the command and return immediately. If detached, finalize() must be
                 called to signify the end of data being written to the command's stdin.
             @options dir Path or String. Directory to set as the current working directory for the command.
-            @options exception Boolean If true, throw exceptions if the command returns a non-zero status code. 
+            @options exceptions Boolean If true, throw exceptions if the command returns a non-zero status code. 
                 Defaults to true.
             @options timeout Number This is the default number of milliseconds for the command to complete.
-            @options noio Don't capture stdout from the command. If true, the command's standard output will go to the 
-                application's current standard output. Defaults to false.
+            @options stream Stream the stdout from the command to the current standard output. Defaults to false.
             @param data Optional data to write to the command on it's standard input.
             @returns The command output from the standard output.
             @throws IOError if the command exits with non-zero status. The exception object will contain the command's
@@ -2797,20 +2794,26 @@ module ejs {
          */
         static function run(command: Object, options: Object = {}, data: Object = null): String {
             options ||= {}
-            if (options.exception == null) {
-                options.exception = true
-            }
             let cmd = new Cmd
+            let results = new ByteArray
+            cmd.on('readable', function(event, cmd) {
+                let buf = new ByteArray
+                cmd.read(buf, -1)
+                if (options.stream) {
+                    prints(buf)
+                }
+                results.write(buf)
+            })
             cmd.start(command, blend({detach: true}, options))
             if (data) {
                 cmd.write(data)
             }
             cmd.finalize()
             cmd.wait()
-            if (cmd.status != 0 && options.exception) {
+            if (cmd.status != 0 && options.exceptions !== false) {
                 throw new IOError(cmd.error)
             }
-            return cmd.readString()
+            return results.toString()
         }
 
         /**
@@ -2822,11 +2825,10 @@ module ejs {
             @options detach Boolean If true, run the command and return immediately. If detached, finalize() must be
                 called to signify the end of data being written to the command's stdin.
             @options dir Path or String. Directory to set as the current working directory for the command.
-            @options exception Boolean If true, throw exceptions if the command returns a non-zero status code. 
+            @options exceptions Boolean If true, throw exceptions if the command returns a non-zero status code. 
                 Defaults to true.
             @options timeout Number This is the default number of milliseconds for the command to complete.
-            @options noio Don't capture stdout from the command. If true, the command's standard output will go to the 
-                application's current standard output. Defaults to false.
+            @options stream Stream the stdout from the command to the current standard output. Defaults to false.
             @param data Optional data to write to the command on it's standard input.
             @return The command output from the standard output.
             @throws IOError if the command exits with non-zero status. The exception object will contain the command's
@@ -5273,6 +5275,16 @@ module ejs {
         @spec ejs
      */
     native function print(...args): void
+
+    /* 
+        Print the arguments to the standard output without a new line appended. This call evaluates the arguments, 
+        converts the result to strings and prints the result to the standard output. Arguments are converted to 
+        strings by calling their toString method. 
+        @param args Variables to print
+        @spec ejs
+     */
+    function prints(...args): Void
+        App.outputStream.write(...args)
 
     /** 
         Print the arguments to the standard output using the supplied format template. This call evaluates the arguments, 
@@ -8851,6 +8863,7 @@ module ejs {
 
         /**
             File extension portion of the path. The file extension is the portion after (and not including) the last ".".
+            Returns empty string if there is no extension
          */
         native function get extension(): String 
 
@@ -16552,6 +16565,7 @@ module ejs.unix {
         @param options Processing and file attributes
         @options owner String representing the file owner                                                     
         @options group String representing the file group                                                     
+        @options exceptions Set to false to disable exceptions if cp finds no files to copy. Defaults to true.
         @options permissions Number File Posix permissions mask
         @options tree Copy the src subtree and preserve the directory structure under the destination.
         @return Number of files copied
@@ -16565,12 +16579,18 @@ module ejs.unix {
                 base = pattern
                 pattern = Path('**')
                 options = blend({tree: true, relative: true}, options)
+
+            } else if (options.tree) {
+                base = pattern.dirname
+                pattern = pattern.basename
+                options.relative = true
             }
             list = base.files(pattern, options)
 
             if (!list || list.length == 0) {
-                //  TODO - this has downside that you cannot copy an empty directory
-                throw 'cp: Cannot find files to copy "' + pattern + '" to ' + dest
+                if (options.exceptions !== false) {
+                    throw 'cp: Cannot find files to copy "' + pattern + '" to ' + dest
+                }
             }
             destIsDir = (dest.isDir || list.length > 1 || dest.name.endsWith('/'))
 
@@ -16594,6 +16614,7 @@ module ejs.unix {
         }
         return count
     }
+
     /**
         Get the directory name portion of a file. The dirname name portion is the leading portion including all 
         directory elements and excluding the base name. On some systems, it will include a drive specifier.
@@ -19482,6 +19503,7 @@ server.listen("127.0.0.1:7777")
         }
 
         //  TODO - should take an array of endpoints (like GoAhead) and allow https:///
+        //  TODO - Should not throw
 
         /** 
             Listen for client connections. This creates a HTTP server listening on a single socket endpoint. It can

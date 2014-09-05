@@ -3,15 +3,13 @@
  */
 
 Me.load({
-
     targets: {
-
         libappweb: {
             type: 'lib',
             headers: [ '*.h' ],
             sources: [ '*.c' ],
             exclude: /romFiles/,
             depends: [ 'libhttp', 'libmpr' ],
-        },
-	},
+        }
+	}
 })
