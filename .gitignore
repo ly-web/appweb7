@@ -19,3 +19,8 @@ test/cgi-bin/testScript
 test/regress/tcp
 .gitattributes
 test/cgi-bin/.prepared
+*.xcworkspace/
+xcuserdata/
+appweb-x86-default/
+*.suo
+*.sdf
