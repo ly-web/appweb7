@@ -4,6 +4,17 @@
 
 Me.load({
     targets: {
+        'prep-cgi': {
+            build: `
+                let path = me.dir.out.join('.cgi-prepared')
+                if (!path.exists) {
+                    Cmd.run('testme --clean')
+                    rm(['cgi-bin/cgi*', 'cgi-bin/nph*', 'web/caching/cache.cgi', 'web/auth/basic/basic.cgi'])
+                    path.write('')
+                }
+            `,
+            generate: false,
+        },
         'test-testScript': {
             path: 'cgi-bin/testScript',
             build: `

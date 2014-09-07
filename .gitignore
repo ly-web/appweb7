@@ -17,3 +17,5 @@ test/cgi-bin/*cgi*
 test/cgi-bin/testScript
 /test/esp/html-mvc/cache
 test/regress/tcp
+.gitattributes
+test/cgi-bin/.prepared
