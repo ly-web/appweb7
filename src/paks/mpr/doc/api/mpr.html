@@ -10124,7 +10124,7 @@ Return the directory separator characters used to separate directories on a give
   </div>
   <div class="apiDetail">
 <p>Get a relative path.</p>
-    <dl><dt><b>Description</b>:</dt><dd>Get a relative path path from an origin path to a destination.</dd></dl>
+    <dl><dt><b>Description</b>:</dt><dd>Get a relative path path from an origin path to a destination. If a relative path cannot be obtained, an absolute path to the destination will be returned. This happens if the paths cross drives.</dd></dl>
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">dest</td><td>Destination file.</td>
