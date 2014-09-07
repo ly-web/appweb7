@@ -7,8 +7,6 @@ VERSION               = 5.2.0
 
 OS                    = windows
 PA                    = $(PROCESSOR_ARCHITECTURE)
-LOG                   = >>build\nmake.log
-
 !IF "$(PROFILE)" == ""
 PROFILE               = default
 !ENDIF
@@ -205,9 +203,13 @@ prep:
 	@if not exist $(BUILD)\obj md $(BUILD)\obj
 	@if not exist $(BUILD)\inc\me.h copy projects\appweb-windows-default-me.h $(BUILD)\inc\me.h
 
-!IF "$(LOG)" != ""
-	@echo ..... [Info] See build\nmake.log for any build errors.
+!IF "$(SHOW)" != ""
+	@echo ..... [Info] Use "make SHOW=1" to trace executed commands and errors.
+LOG =
+!ELSE
+LOG = >nul
 !ENDIF
+
 clean:
 	if exist "build\$(CONFIG)\obj\appweb.obj" del /Q "build\$(CONFIG)\obj\appweb.obj"
 	if exist "build\$(CONFIG)\obj\appwebMonitor.obj" del /Q "build\$(CONFIG)\obj\appwebMonitor.obj"
@@ -358,7 +360,7 @@ DEPS_1 = $(DEPS_1) src\paks\mpr\mpr.h
 build\$(CONFIG)\inc\mpr.h: $(DEPS_1)
 	@echo ..... [Copy] build\$(CONFIG)\inc\mpr.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y src\paks\mpr\mpr.h+modified build\$(CONFIG)\inc\mpr.h $(LOG)
+	copy /Y /B src\paks\mpr\mpr.h+modified build\$(CONFIG)\inc\mpr.h $(LOG)
 
 #
 #   me.h
@@ -375,7 +377,7 @@ DEPS_3 = $(DEPS_3) build\$(CONFIG)\inc\me.h
 build\$(CONFIG)\inc\osdep.h: $(DEPS_3)
 	@echo ..... [Copy] build\$(CONFIG)\inc\osdep.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y src\paks\osdep\osdep.h+modified build\$(CONFIG)\inc\osdep.h $(LOG)
+	copy /Y /B src\paks\osdep\osdep.h+modified build\$(CONFIG)\inc\osdep.h $(LOG)
 
 #
 #   mprLib.obj
@@ -409,7 +411,7 @@ DEPS_6 = $(DEPS_6) src\paks\pcre\pcre.h
 build\$(CONFIG)\inc\pcre.h: $(DEPS_6)
 	@echo ..... [Copy] build\$(CONFIG)\inc\pcre.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y src\paks\pcre\pcre.h+modified build\$(CONFIG)\inc\pcre.h $(LOG)
+	copy /Y /B src\paks\pcre\pcre.h+modified build\$(CONFIG)\inc\pcre.h $(LOG)
 
 #
 #   pcre.obj
@@ -443,7 +445,7 @@ DEPS_9 = $(DEPS_9) src\paks\http\http.h
 build\$(CONFIG)\inc\http.h: $(DEPS_9)
 	@echo ..... [Copy] build\$(CONFIG)\inc\http.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y src\paks\http\http.h+modified build\$(CONFIG)\inc\http.h $(LOG)
+	copy /Y /B src\paks\http\http.h+modified build\$(CONFIG)\inc\http.h $(LOG)
 
 #
 #   httpLib.obj
@@ -492,7 +494,7 @@ DEPS_12 = $(DEPS_12) src\appweb.h
 build\$(CONFIG)\inc\appweb.h: $(DEPS_12)
 	@echo ..... [Copy] build\$(CONFIG)\inc\appweb.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y src\appweb.h+modified build\$(CONFIG)\inc\appweb.h $(LOG)
+	copy /Y /B src\appweb.h+modified build\$(CONFIG)\inc\appweb.h $(LOG)
 
 #
 #   customize.h
@@ -502,7 +504,7 @@ DEPS_13 = $(DEPS_13) src\customize.h
 build\$(CONFIG)\inc\customize.h: $(DEPS_13)
 	@echo ..... [Copy] build\$(CONFIG)\inc\customize.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y src\customize.h+modified build\$(CONFIG)\inc\customize.h $(LOG)
+	copy /Y /B src\customize.h+modified build\$(CONFIG)\inc\customize.h $(LOG)
 
 #
 #   config.obj
@@ -574,7 +576,7 @@ DEPS_17 = $(DEPS_17) src\paks\esp\esp.h
 build\$(CONFIG)\inc\esp.h: $(DEPS_17)
 	@echo ..... [Copy] build\$(CONFIG)\inc\esp.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y src\paks\esp\esp.h+modified build\$(CONFIG)\inc\esp.h $(LOG)
+	copy /Y /B src\paks\esp\esp.h+modified build\$(CONFIG)\inc\esp.h $(LOG)
 
 #
 #   slink.obj
@@ -661,7 +663,7 @@ DEPS_22 = $(DEPS_22) src\server\windows\appwebMonitor.h
 build\$(CONFIG)\inc\appwebMonitor.h: $(DEPS_22)
 	@echo ..... [Copy] build\$(CONFIG)\inc\appwebMonitor.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y src\server\windows\appwebMonitor.h+modified build\$(CONFIG)\inc\appwebMonitor.h $(LOG)
+	copy /Y /B src\server\windows\appwebMonitor.h+modified build\$(CONFIG)\inc\appwebMonitor.h $(LOG)
 
 #
 #   monitorResources.h
@@ -671,7 +673,7 @@ DEPS_23 = $(DEPS_23) src\server\windows\monitorResources.h
 build\$(CONFIG)\inc\monitorResources.h: $(DEPS_23)
 	@echo ..... [Copy] build\$(CONFIG)\inc\monitorResources.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y src\server\windows\monitorResources.h+modified build\$(CONFIG)\inc\monitorResources.h $(LOG)
+	copy /Y /B src\server\windows\monitorResources.h+modified build\$(CONFIG)\inc\monitorResources.h $(LOG)
 
 #
 #   appwebMonitor.res
@@ -741,7 +743,7 @@ DEPS_27 = $(DEPS_27) src\server\windows\appwebMonitor.ico
 build\$(CONFIG)\bin\appwebMonitor.ico: $(DEPS_27)
 	@echo ..... [Copy] build\$(CONFIG)\bin\appwebMonitor.ico
 	if not exist "build\$(CONFIG)\bin" md "build\$(CONFIG)\bin"
-	copy /Y src\server\windows\appwebMonitor.ico+modified build\$(CONFIG)\bin\appwebMonitor.ico $(LOG)
+	copy /Y /B src\server\windows\appwebMonitor.ico+modified build\$(CONFIG)\bin\appwebMonitor.ico $(LOG)
 
 #
 #   authpass.obj
@@ -822,7 +824,7 @@ DEPS_32 = $(DEPS_32) src\paks\zlib\zlib.h
 build\$(CONFIG)\inc\zlib.h: $(DEPS_32)
 	@echo ..... [Copy] build\$(CONFIG)\inc\zlib.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y src\paks\zlib\zlib.h+modified build\$(CONFIG)\inc\zlib.h $(LOG)
+	copy /Y /B src\paks\zlib\zlib.h+modified build\$(CONFIG)\inc\zlib.h $(LOG)
 
 #
 #   zlib.obj
@@ -856,7 +858,7 @@ DEPS_35 = $(DEPS_35) src\paks\ejs\ejs.h
 build\$(CONFIG)\inc\ejs.h: $(DEPS_35)
 	@echo ..... [Copy] build\$(CONFIG)\inc\ejs.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y src\paks\ejs\ejs.h+modified build\$(CONFIG)\inc\ejs.h $(LOG)
+	copy /Y /B src\paks\ejs\ejs.h+modified build\$(CONFIG)\inc\ejs.h $(LOG)
 
 #
 #   ejs.slots.h
@@ -866,7 +868,7 @@ DEPS_36 = $(DEPS_36) src\paks\ejs\ejs.slots.h
 build\$(CONFIG)\inc\ejs.slots.h: $(DEPS_36)
 	@echo ..... [Copy] build\$(CONFIG)\inc\ejs.slots.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y src\paks\ejs\ejs.slots.h+modified build\$(CONFIG)\inc\ejs.slots.h $(LOG)
+	copy /Y /B src\paks\ejs\ejs.slots.h+modified build\$(CONFIG)\inc\ejs.slots.h $(LOG)
 
 #
 #   ejsByteGoto.h
@@ -876,7 +878,7 @@ DEPS_37 = $(DEPS_37) src\paks\ejs\ejsByteGoto.h
 build\$(CONFIG)\inc\ejsByteGoto.h: $(DEPS_37)
 	@echo ..... [Copy] build\$(CONFIG)\inc\ejsByteGoto.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y src\paks\ejs\ejsByteGoto.h+modified build\$(CONFIG)\inc\ejsByteGoto.h $(LOG)
+	copy /Y /B src\paks\ejs\ejsByteGoto.h+modified build\$(CONFIG)\inc\ejsByteGoto.h $(LOG)
 
 #
 #   ejsLib.obj
@@ -1040,7 +1042,8 @@ DEPS_42 = $(DEPS_42) build\$(CONFIG)\bin\ejsc.exe
 
 build\$(CONFIG)\bin\ejs.mod: $(DEPS_42)
 	cd src\paks\ejs
-	..\..\..\build\$(CONFIG)\bin\ejsc --out ..\..\..\build\$(CONFIG)\bin\ejs.mod --optimize 9 --bind --require null ejs.es
+	@echo .. [Compile] ejs.mod
+	..\..\..\build\$(CONFIG)\bin\ejsc --out ../../../build/$(CONFIG)/bin/ejs.mod --optimize 9 --bind --require null ejs.es
 	cd ..\..\..
 !ENDIF
 
@@ -1154,41 +1157,41 @@ build\$(CONFIG)\esp: $(DEPS_45)
 	if not exist "..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0" md "..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0"
 	if not exist "..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\client" md "..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\client"
 	if not exist "..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\client\assets" md "..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\client\assets"
-	copy /Y esp-html-mvc\client\assets\favicon.ico+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\client\assets\favicon.ico $(LOG)
+	copy /Y /B esp-html-mvc\client\assets\favicon.ico+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\client\assets\favicon.ico $(LOG)
 	if not exist "..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\client\css" md "..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\client\css"
-	copy /Y esp-html-mvc\client\css\all.css+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\client\css\all.css $(LOG)
-	copy /Y esp-html-mvc\client\css\all.less+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\client\css\all.less $(LOG)
-	copy /Y esp-html-mvc\client\index.esp+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\client\index.esp $(LOG)
+	copy /Y /B esp-html-mvc\client\css\all.css+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\client\css\all.css $(LOG)
+	copy /Y /B esp-html-mvc\client\css\all.less+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\client\css\all.less $(LOG)
+	copy /Y /B esp-html-mvc\client\index.esp+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\client\index.esp $(LOG)
 	if not exist "..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\css" md "..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\css"
-	copy /Y esp-html-mvc\css\app.less+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\css\app.less $(LOG)
-	copy /Y esp-html-mvc\css\theme.less+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\css\theme.less $(LOG)
+	copy /Y /B esp-html-mvc\css\app.less+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\css\app.less $(LOG)
+	copy /Y /B esp-html-mvc\css\theme.less+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\css\theme.less $(LOG)
 	if not exist "..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\generate" md "..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\generate"
-	copy /Y esp-html-mvc\generate\appweb.conf+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\generate\appweb.conf $(LOG)
-	copy /Y esp-html-mvc\generate\controller.c+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\generate\controller.c $(LOG)
-	copy /Y esp-html-mvc\generate\controllerSingleton.c+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\generate\controllerSingleton.c $(LOG)
-	copy /Y esp-html-mvc\generate\edit.esp+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\generate\edit.esp $(LOG)
-	copy /Y esp-html-mvc\generate\list.esp+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\generate\list.esp $(LOG)
+	copy /Y /B esp-html-mvc\generate\appweb.conf+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\generate\appweb.conf $(LOG)
+	copy /Y /B esp-html-mvc\generate\controller.c+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\generate\controller.c $(LOG)
+	copy /Y /B esp-html-mvc\generate\controllerSingleton.c+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\generate\controllerSingleton.c $(LOG)
+	copy /Y /B esp-html-mvc\generate\edit.esp+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\generate\edit.esp $(LOG)
+	copy /Y /B esp-html-mvc\generate\list.esp+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\generate\list.esp $(LOG)
 	if not exist "..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\layouts" md "..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\layouts"
-	copy /Y esp-html-mvc\layouts\default.esp+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\layouts\default.esp $(LOG)
-	copy /Y esp-html-mvc\LICENSE.md+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\LICENSE.md $(LOG)
-	copy /Y esp-html-mvc\package.json+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\package.json $(LOG)
-	copy /Y esp-html-mvc\README.md+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\README.md $(LOG)
+	copy /Y /B esp-html-mvc\layouts\default.esp+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\layouts\default.esp $(LOG)
+	copy /Y /B esp-html-mvc\LICENSE.md+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\LICENSE.md $(LOG)
+	copy /Y /B esp-html-mvc\package.json+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\package.json $(LOG)
+	copy /Y /B esp-html-mvc\README.md+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.0\README.md $(LOG)
 	if not exist "..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0" md "..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0"
 	if not exist "..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0\generate" md "..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0\generate"
-	copy /Y esp-mvc\generate\appweb.conf+modified ..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0\generate\appweb.conf $(LOG)
-	copy /Y esp-mvc\generate\controller.c+modified ..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0\generate\controller.c $(LOG)
-	copy /Y esp-mvc\generate\migration.c+modified ..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0\generate\migration.c $(LOG)
+	copy /Y /B esp-mvc\generate\appweb.conf+modified ..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0\generate\appweb.conf $(LOG)
+	copy /Y /B esp-mvc\generate\controller.c+modified ..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0\generate\controller.c $(LOG)
+	copy /Y /B esp-mvc\generate\migration.c+modified ..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0\generate\migration.c $(LOG)
 	if not exist "..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0\generate\src" md "..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0\generate\src"
-	copy /Y esp-mvc\generate\src\app.c+modified ..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0\generate\src\app.c $(LOG)
-	copy /Y esp-mvc\LICENSE.md+modified ..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0\LICENSE.md $(LOG)
-	copy /Y esp-mvc\package.json+modified ..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0\package.json $(LOG)
-	copy /Y esp-mvc\README.md+modified ..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0\README.md $(LOG)
+	copy /Y /B esp-mvc\generate\src\app.c+modified ..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0\generate\src\app.c $(LOG)
+	copy /Y /B esp-mvc\LICENSE.md+modified ..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0\LICENSE.md $(LOG)
+	copy /Y /B esp-mvc\package.json+modified ..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0\package.json $(LOG)
+	copy /Y /B esp-mvc\README.md+modified ..\..\build\$(CONFIG)\esp\esp-mvc\5.2.0\README.md $(LOG)
 	if not exist "..\..\build\$(CONFIG)\esp\esp-server\5.2.0" md "..\..\build\$(CONFIG)\esp\esp-server\5.2.0"
 	if not exist "..\..\build\$(CONFIG)\esp\esp-server\5.2.0\generate" md "..\..\build\$(CONFIG)\esp\esp-server\5.2.0\generate"
-	copy /Y esp-server\generate\appweb.conf+modified ..\..\build\$(CONFIG)\esp\esp-server\5.2.0\generate\appweb.conf $(LOG)
-	copy /Y esp-server\LICENSE.md+modified ..\..\build\$(CONFIG)\esp\esp-server\5.2.0\LICENSE.md $(LOG)
-	copy /Y esp-server\package.json+modified ..\..\build\$(CONFIG)\esp\esp-server\5.2.0\package.json $(LOG)
-	copy /Y esp-server\README.md+modified ..\..\build\$(CONFIG)\esp\esp-server\5.2.0\README.md $(LOG)
+	copy /Y /B esp-server\generate\appweb.conf+modified ..\..\build\$(CONFIG)\esp\esp-server\5.2.0\generate\appweb.conf $(LOG)
+	copy /Y /B esp-server\LICENSE.md+modified ..\..\build\$(CONFIG)\esp\esp-server\5.2.0\LICENSE.md $(LOG)
+	copy /Y /B esp-server\package.json+modified ..\..\build\$(CONFIG)\esp\esp-server\5.2.0\package.json $(LOG)
+	copy /Y /B esp-server\README.md+modified ..\..\build\$(CONFIG)\esp\esp-server\5.2.0\README.md $(LOG)
 	cd ..\..
 !ENDIF
 
@@ -1201,7 +1204,7 @@ DEPS_46 = $(DEPS_46) src\paks\esp\esp.conf
 build\$(CONFIG)\bin\esp.conf: $(DEPS_46)
 	@echo ..... [Copy] build\$(CONFIG)\bin\esp.conf
 	if not exist "build\$(CONFIG)\bin" md "build\$(CONFIG)\bin"
-	copy /Y src\paks\esp\esp.conf+modified build\$(CONFIG)\bin\esp.conf $(LOG)
+	copy /Y /B src\paks\esp\esp.conf+modified build\$(CONFIG)\bin\esp.conf $(LOG)
 !ENDIF
 
 #
@@ -1365,7 +1368,7 @@ DEPS_52 = $(DEPS_52) src\paks\http\ca.crt
 build\$(CONFIG)\bin\ca.crt: $(DEPS_52)
 	@echo ..... [Copy] build\$(CONFIG)\bin\ca.crt
 	if not exist "build\$(CONFIG)\bin" md "build\$(CONFIG)\bin"
-	copy /Y src\paks\http\ca.crt+modified build\$(CONFIG)\bin\ca.crt $(LOG)
+	copy /Y /B src\paks\http\ca.crt+modified build\$(CONFIG)\bin\ca.crt $(LOG)
 
 #
 #   http.obj
@@ -1416,7 +1419,7 @@ DEPS_55 = $(DEPS_55) src\paks\est\est.h
 build\$(CONFIG)\inc\est.h: $(DEPS_55)
 	@echo ..... [Copy] build\$(CONFIG)\inc\est.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y src\paks\est\est.h+modified build\$(CONFIG)\inc\est.h $(LOG)
+	copy /Y /B src\paks\est\est.h+modified build\$(CONFIG)\inc\est.h $(LOG)
 
 #
 #   estLib.obj
@@ -1737,7 +1740,7 @@ DEPS_68 = $(DEPS_68) src\paks\sqlite\sqlite3.h
 build\$(CONFIG)\inc\sqlite3.h: $(DEPS_68)
 	@echo ..... [Copy] build\$(CONFIG)\inc\sqlite3.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y src\paks\sqlite\sqlite3.h+modified build\$(CONFIG)\inc\sqlite3.h $(LOG)
+	copy /Y /B src\paks\sqlite\sqlite3.h+modified build\$(CONFIG)\inc\sqlite3.h $(LOG)
 
 #
 #   sqlite3.obj
@@ -1865,172 +1868,172 @@ installBinary: $(DEPS_79)
 	if not exist "$(ME_VAPP_PREFIX)\log" md "$(ME_VAPP_PREFIX)\log"
 	if not exist "$(ME_VAPP_PREFIX)\cache" md "$(ME_VAPP_PREFIX)\cache"
 	if not exist "$(ME_VAPP_PREFIX)\bin" md "$(ME_VAPP_PREFIX)\bin"
-	copy /Y build\$(CONFIG)\bin\appweb.exe+modified "$(ME_VAPP_PREFIX)\bin\appweb.exe" $(LOG)
-	copy /Y build\$(CONFIG)\bin\appman.exe+modified "$(ME_VAPP_PREFIX)\bin\appman.exe" $(LOG)
-	copy /Y build\$(CONFIG)\bin\http.exe+modified "$(ME_VAPP_PREFIX)\bin\http.exe" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\appweb.exe+modified "$(ME_VAPP_PREFIX)\bin\appweb.exe" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\appman.exe+modified "$(ME_VAPP_PREFIX)\bin\appman.exe" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\http.exe+modified "$(ME_VAPP_PREFIX)\bin\http.exe" $(LOG)
 !IF "$(ME_COM_ESP)" == "1"
-	copy /Y build\$(CONFIG)\bin\esp.exe+modified "$(ME_VAPP_PREFIX)\bin\appesp.exe" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\esp.exe+modified "$(ME_VAPP_PREFIX)\bin\appesp.exe" $(LOG)
 !ENDIF
-	copy /Y build\$(CONFIG)\bin\appwebMonitor.exe+modified "$(ME_VAPP_PREFIX)\bin\appwebMonitor.exe" $(LOG)
-	copy /Y build\$(CONFIG)\bin\appwebMonitor.ico+modified "$(ME_VAPP_PREFIX)\bin\appwebMonitor.ico" $(LOG)
-	copy /Y build\$(CONFIG)\bin\libappweb.dll+modified "$(ME_VAPP_PREFIX)\bin\libappweb.dll" $(LOG)
-	copy /Y build\$(CONFIG)\bin\libhttp.dll+modified "$(ME_VAPP_PREFIX)\bin\libhttp.dll" $(LOG)
-	copy /Y build\$(CONFIG)\bin\libmpr.dll+modified "$(ME_VAPP_PREFIX)\bin\libmpr.dll" $(LOG)
-	copy /Y build\$(CONFIG)\bin\libpcre.dll+modified "$(ME_VAPP_PREFIX)\bin\libpcre.dll" $(LOG)
-	copy /Y build\$(CONFIG)\bin\libslink.dll+modified "$(ME_VAPP_PREFIX)\bin\libslink.dll" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\appwebMonitor.exe+modified "$(ME_VAPP_PREFIX)\bin\appwebMonitor.exe" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\appwebMonitor.ico+modified "$(ME_VAPP_PREFIX)\bin\appwebMonitor.ico" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libappweb.dll+modified "$(ME_VAPP_PREFIX)\bin\libappweb.dll" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libhttp.dll+modified "$(ME_VAPP_PREFIX)\bin\libhttp.dll" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libmpr.dll+modified "$(ME_VAPP_PREFIX)\bin\libmpr.dll" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libpcre.dll+modified "$(ME_VAPP_PREFIX)\bin\libpcre.dll" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libslink.dll+modified "$(ME_VAPP_PREFIX)\bin\libslink.dll" $(LOG)
 !IF "$(ME_COM_SSL)" == "1"
-	copy /Y build\$(CONFIG)\bin\libmprssl.dll+modified "$(ME_VAPP_PREFIX)\bin\libmprssl.dll" $(LOG)
-	copy /Y build\$(CONFIG)\bin\libmod_ssl.dll+modified "$(ME_VAPP_PREFIX)\bin\libmod_ssl.dll" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libmprssl.dll+modified "$(ME_VAPP_PREFIX)\bin\libmprssl.dll" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libmod_ssl.dll+modified "$(ME_VAPP_PREFIX)\bin\libmod_ssl.dll" $(LOG)
 !ENDIF
 !IF "$(ME_COM_SSL)" == "1"
-	copy /Y src\paks\est\ca.crt+modified "$(ME_VAPP_PREFIX)\bin\ca.crt" $(LOG)
+	copy /Y /B src\paks\est\ca.crt+modified "$(ME_VAPP_PREFIX)\bin\ca.crt" $(LOG)
 !ENDIF
 !IF "$(ME_COM_OPENSSL)" == "1"
-	copy /Y build\$(CONFIG)\bin\libeay32.dll+modified "$(ME_VAPP_PREFIX)\bin\libeay32.dll" $(LOG)
-	copy /Y build\$(CONFIG)\bin\ssleay32.dll+modified "$(ME_VAPP_PREFIX)\bin\ssleay32.dll" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libeay32.dll+modified "$(ME_VAPP_PREFIX)\bin\libeay32.dll" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\ssleay32.dll+modified "$(ME_VAPP_PREFIX)\bin\ssleay32.dll" $(LOG)
 !ENDIF
 !IF "$(ME_COM_EST)" == "1"
-	copy /Y build\$(CONFIG)\bin\libest.dll+modified "$(ME_VAPP_PREFIX)\bin\libest.dll" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libest.dll+modified "$(ME_VAPP_PREFIX)\bin\libest.dll" $(LOG)
 !ENDIF
 !IF "$(ME_COM_SQLITE)" == "1"
-	copy /Y build\$(CONFIG)\bin\libsql.dll+modified "$(ME_VAPP_PREFIX)\bin\libsql.dll" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libsql.dll+modified "$(ME_VAPP_PREFIX)\bin\libsql.dll" $(LOG)
 !ENDIF
 !IF "$(ME_COM_ESP)" == "1"
-	copy /Y build\$(CONFIG)\bin\libmod_esp.dll+modified "$(ME_VAPP_PREFIX)\bin\libmod_esp.dll" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libmod_esp.dll+modified "$(ME_VAPP_PREFIX)\bin\libmod_esp.dll" $(LOG)
 !ENDIF
 !IF "$(ME_COM_CGI)" == "1"
-	copy /Y build\$(CONFIG)\bin\libmod_cgi.dll+modified "$(ME_VAPP_PREFIX)\bin\libmod_cgi.dll" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libmod_cgi.dll+modified "$(ME_VAPP_PREFIX)\bin\libmod_cgi.dll" $(LOG)
 !ENDIF
 !IF "$(ME_COM_EJS)" == "1"
-	copy /Y build\$(CONFIG)\bin\libejs.dll+modified "$(ME_VAPP_PREFIX)\bin\libejs.dll" $(LOG)
-	copy /Y build\$(CONFIG)\bin\libmod_ejs.dll+modified "$(ME_VAPP_PREFIX)\bin\libmod_ejs.dll" $(LOG)
-	copy /Y build\$(CONFIG)\bin\libzlib.dll+modified "$(ME_VAPP_PREFIX)\bin\libzlib.dll" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libejs.dll+modified "$(ME_VAPP_PREFIX)\bin\libejs.dll" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libmod_ejs.dll+modified "$(ME_VAPP_PREFIX)\bin\libmod_ejs.dll" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libzlib.dll+modified "$(ME_VAPP_PREFIX)\bin\libzlib.dll" $(LOG)
 !ENDIF
 !IF "$(ME_COM_PHP)" == "1"
-	copy /Y build\$(CONFIG)\bin\libmod_php.dll+modified "$(ME_VAPP_PREFIX)\bin\libmod_php.dll" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libmod_php.dll+modified "$(ME_VAPP_PREFIX)\bin\libmod_php.dll" $(LOG)
 !ENDIF
 !IF "$(ME_COM_PHP)" == "1"
-	copy /Y build\$(CONFIG)\bin\php5ts.dll+modified "$(ME_VAPP_PREFIX)\bin\php5ts.dll" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\php5ts.dll+modified "$(ME_VAPP_PREFIX)\bin\php5ts.dll" $(LOG)
 !ENDIF
-	copy /Y build\$(CONFIG)\bin\libmod_esp.lib+modified "$(ME_VAPP_PREFIX)\bin\libmod_esp.lib" $(LOG)
-	copy /Y build\$(CONFIG)\bin\libappweb.lib+modified "$(ME_VAPP_PREFIX)\bin\libappweb.lib" $(LOG)
-	copy /Y build\$(CONFIG)\bin\libpcre.lib+modified "$(ME_VAPP_PREFIX)\bin\libpcre.lib" $(LOG)
-	copy /Y build\$(CONFIG)\bin\libhttp.lib+modified "$(ME_VAPP_PREFIX)\bin\libhttp.lib" $(LOG)
-	copy /Y build\$(CONFIG)\bin\libmpr.lib+modified "$(ME_VAPP_PREFIX)\bin\libmpr.lib" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libmod_esp.lib+modified "$(ME_VAPP_PREFIX)\bin\libmod_esp.lib" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libappweb.lib+modified "$(ME_VAPP_PREFIX)\bin\libappweb.lib" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libpcre.lib+modified "$(ME_VAPP_PREFIX)\bin\libpcre.lib" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libhttp.lib+modified "$(ME_VAPP_PREFIX)\bin\libhttp.lib" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libmpr.lib+modified "$(ME_VAPP_PREFIX)\bin\libmpr.lib" $(LOG)
 !IF "$(ME_COM_SSL)" == "1"
-	copy /Y build\$(CONFIG)\bin\libmprssl.lib+modified "$(ME_VAPP_PREFIX)\bin\libmprssl.lib" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\libmprssl.lib+modified "$(ME_VAPP_PREFIX)\bin\libmprssl.lib" $(LOG)
 !ENDIF
 !IF "$(ME_COM_ESP)" == "1"
 	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0"
 	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\client" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\client"
 	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\client\assets" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\client\assets"
-	copy /Y src\paks\esp-html-mvc\client\assets\favicon.ico+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\client\assets\favicon.ico" $(LOG)
+	copy /Y /B src\paks\esp-html-mvc\client\assets\favicon.ico+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\client\assets\favicon.ico" $(LOG)
 	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\client\css" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\client\css"
-	copy /Y src\paks\esp-html-mvc\client\css\all.css+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\client\css\all.css" $(LOG)
-	copy /Y src\paks\esp-html-mvc\client\css\all.less+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\client\css\all.less" $(LOG)
-	copy /Y src\paks\esp-html-mvc\client\index.esp+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\client\index.esp" $(LOG)
+	copy /Y /B src\paks\esp-html-mvc\client\css\all.css+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\client\css\all.css" $(LOG)
+	copy /Y /B src\paks\esp-html-mvc\client\css\all.less+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\client\css\all.less" $(LOG)
+	copy /Y /B src\paks\esp-html-mvc\client\index.esp+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\client\index.esp" $(LOG)
 	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\css" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\css"
-	copy /Y src\paks\esp-html-mvc\css\app.less+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\css\app.less" $(LOG)
-	copy /Y src\paks\esp-html-mvc\css\theme.less+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\css\theme.less" $(LOG)
+	copy /Y /B src\paks\esp-html-mvc\css\app.less+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\css\app.less" $(LOG)
+	copy /Y /B src\paks\esp-html-mvc\css\theme.less+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\css\theme.less" $(LOG)
 	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\generate" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\generate"
-	copy /Y src\paks\esp-html-mvc\generate\appweb.conf+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\generate\appweb.conf" $(LOG)
-	copy /Y src\paks\esp-html-mvc\generate\controller.c+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\generate\controller.c" $(LOG)
-	copy /Y src\paks\esp-html-mvc\generate\controllerSingleton.c+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\generate\controllerSingleton.c" $(LOG)
-	copy /Y src\paks\esp-html-mvc\generate\edit.esp+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\generate\edit.esp" $(LOG)
-	copy /Y src\paks\esp-html-mvc\generate\list.esp+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\generate\list.esp" $(LOG)
+	copy /Y /B src\paks\esp-html-mvc\generate\appweb.conf+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\generate\appweb.conf" $(LOG)
+	copy /Y /B src\paks\esp-html-mvc\generate\controller.c+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\generate\controller.c" $(LOG)
+	copy /Y /B src\paks\esp-html-mvc\generate\controllerSingleton.c+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\generate\controllerSingleton.c" $(LOG)
+	copy /Y /B src\paks\esp-html-mvc\generate\edit.esp+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\generate\edit.esp" $(LOG)
+	copy /Y /B src\paks\esp-html-mvc\generate\list.esp+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\generate\list.esp" $(LOG)
 	if not exist "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\layouts" md "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\layouts"
-	copy /Y src\paks\esp-html-mvc\layouts\default.esp+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\layouts\default.esp" $(LOG)
-	copy /Y src\paks\esp-html-mvc\LICENSE.md+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\LICENSE.md" $(LOG)
-	copy /Y src\paks\esp-html-mvc\package.json+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\package.json" $(LOG)
-	copy /Y src\paks\esp-html-mvc\README.md+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\README.md" $(LOG)
+	copy /Y /B src\paks\esp-html-mvc\layouts\default.esp+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\layouts\default.esp" $(LOG)
+	copy /Y /B src\paks\esp-html-mvc\LICENSE.md+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\LICENSE.md" $(LOG)
+	copy /Y /B src\paks\esp-html-mvc\package.json+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\package.json" $(LOG)
+	copy /Y /B src\paks\esp-html-mvc\README.md+modified "$(ME_VAPP_PREFIX)\esp\esp-html-mvc\5.2.0\README.md" $(LOG)
 	if not exist "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0" md "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0"
 	if not exist "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0\generate" md "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0\generate"
-	copy /Y src\paks\esp-mvc\generate\appweb.conf+modified "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0\generate\appweb.conf" $(LOG)
-	copy /Y src\paks\esp-mvc\generate\controller.c+modified "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0\generate\controller.c" $(LOG)
-	copy /Y src\paks\esp-mvc\generate\migration.c+modified "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0\generate\migration.c" $(LOG)
+	copy /Y /B src\paks\esp-mvc\generate\appweb.conf+modified "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0\generate\appweb.conf" $(LOG)
+	copy /Y /B src\paks\esp-mvc\generate\controller.c+modified "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0\generate\controller.c" $(LOG)
+	copy /Y /B src\paks\esp-mvc\generate\migration.c+modified "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0\generate\migration.c" $(LOG)
 	if not exist "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0\generate\src" md "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0\generate\src"
-	copy /Y src\paks\esp-mvc\generate\src\app.c+modified "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0\generate\src\app.c" $(LOG)
-	copy /Y src\paks\esp-mvc\LICENSE.md+modified "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0\LICENSE.md" $(LOG)
-	copy /Y src\paks\esp-mvc\package.json+modified "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0\package.json" $(LOG)
-	copy /Y src\paks\esp-mvc\README.md+modified "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0\README.md" $(LOG)
+	copy /Y /B src\paks\esp-mvc\generate\src\app.c+modified "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0\generate\src\app.c" $(LOG)
+	copy /Y /B src\paks\esp-mvc\LICENSE.md+modified "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0\LICENSE.md" $(LOG)
+	copy /Y /B src\paks\esp-mvc\package.json+modified "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0\package.json" $(LOG)
+	copy /Y /B src\paks\esp-mvc\README.md+modified "$(ME_VAPP_PREFIX)\esp\esp-mvc\5.2.0\README.md" $(LOG)
 	if not exist "$(ME_VAPP_PREFIX)\esp\esp-server\5.2.0" md "$(ME_VAPP_PREFIX)\esp\esp-server\5.2.0"
 	if not exist "$(ME_VAPP_PREFIX)\esp\esp-server\5.2.0\generate" md "$(ME_VAPP_PREFIX)\esp\esp-server\5.2.0\generate"
-	copy /Y src\paks\esp-server\generate\appweb.conf+modified "$(ME_VAPP_PREFIX)\esp\esp-server\5.2.0\generate\appweb.conf" $(LOG)
-	copy /Y src\paks\esp-server\LICENSE.md+modified "$(ME_VAPP_PREFIX)\esp\esp-server\5.2.0\LICENSE.md" $(LOG)
-	copy /Y src\paks\esp-server\package.json+modified "$(ME_VAPP_PREFIX)\esp\esp-server\5.2.0\package.json" $(LOG)
-	copy /Y src\paks\esp-server\README.md+modified "$(ME_VAPP_PREFIX)\esp\esp-server\5.2.0\README.md" $(LOG)
+	copy /Y /B src\paks\esp-server\generate\appweb.conf+modified "$(ME_VAPP_PREFIX)\esp\esp-server\5.2.0\generate\appweb.conf" $(LOG)
+	copy /Y /B src\paks\esp-server\LICENSE.md+modified "$(ME_VAPP_PREFIX)\esp\esp-server\5.2.0\LICENSE.md" $(LOG)
+	copy /Y /B src\paks\esp-server\package.json+modified "$(ME_VAPP_PREFIX)\esp\esp-server\5.2.0\package.json" $(LOG)
+	copy /Y /B src\paks\esp-server\README.md+modified "$(ME_VAPP_PREFIX)\esp\esp-server\5.2.0\README.md" $(LOG)
 !ENDIF
 !IF "$(ME_COM_ESP)" == "1"
-	copy /Y build\$(CONFIG)\bin\esp.conf+modified "$(ME_VAPP_PREFIX)\bin\esp.conf" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\esp.conf+modified "$(ME_VAPP_PREFIX)\bin\esp.conf" $(LOG)
 !ENDIF
 	if not exist "$(ME_VAPP_PREFIX)\web\bench" md "$(ME_VAPP_PREFIX)\web\bench"
-	copy /Y src\server\web\bench\1b.html+modified "$(ME_VAPP_PREFIX)\web\bench\1b.html" $(LOG)
-	copy /Y src\server\web\bench\4k.html+modified "$(ME_VAPP_PREFIX)\web\bench\4k.html" $(LOG)
-	copy /Y src\server\web\bench\64k.html+modified "$(ME_VAPP_PREFIX)\web\bench\64k.html" $(LOG)
+	copy /Y /B src\server\web\bench\1b.html+modified "$(ME_VAPP_PREFIX)\web\bench\1b.html" $(LOG)
+	copy /Y /B src\server\web\bench\4k.html+modified "$(ME_VAPP_PREFIX)\web\bench\4k.html" $(LOG)
+	copy /Y /B src\server\web\bench\64k.html+modified "$(ME_VAPP_PREFIX)\web\bench\64k.html" $(LOG)
 	if not exist "$(ME_VAPP_PREFIX)\web" md "$(ME_VAPP_PREFIX)\web"
-	copy /Y src\server\web\favicon.ico+modified "$(ME_VAPP_PREFIX)\web\favicon.ico" $(LOG)
+	copy /Y /B src\server\web\favicon.ico+modified "$(ME_VAPP_PREFIX)\web\favicon.ico" $(LOG)
 	if not exist "$(ME_VAPP_PREFIX)\web\icons" md "$(ME_VAPP_PREFIX)\web\icons"
-	copy /Y src\server\web\icons\back.gif+modified "$(ME_VAPP_PREFIX)\web\icons\back.gif" $(LOG)
-	copy /Y src\server\web\icons\blank.gif+modified "$(ME_VAPP_PREFIX)\web\icons\blank.gif" $(LOG)
-	copy /Y src\server\web\icons\compressed.gif+modified "$(ME_VAPP_PREFIX)\web\icons\compressed.gif" $(LOG)
-	copy /Y src\server\web\icons\folder.gif+modified "$(ME_VAPP_PREFIX)\web\icons\folder.gif" $(LOG)
-	copy /Y src\server\web\icons\parent.gif+modified "$(ME_VAPP_PREFIX)\web\icons\parent.gif" $(LOG)
-	copy /Y src\server\web\icons\space.gif+modified "$(ME_VAPP_PREFIX)\web\icons\space.gif" $(LOG)
-	copy /Y src\server\web\icons\text.gif+modified "$(ME_VAPP_PREFIX)\web\icons\text.gif" $(LOG)
-	copy /Y src\server\web\iehacks.css+modified "$(ME_VAPP_PREFIX)\web\iehacks.css" $(LOG)
+	copy /Y /B src\server\web\icons\back.gif+modified "$(ME_VAPP_PREFIX)\web\icons\back.gif" $(LOG)
+	copy /Y /B src\server\web\icons\blank.gif+modified "$(ME_VAPP_PREFIX)\web\icons\blank.gif" $(LOG)
+	copy /Y /B src\server\web\icons\compressed.gif+modified "$(ME_VAPP_PREFIX)\web\icons\compressed.gif" $(LOG)
+	copy /Y /B src\server\web\icons\folder.gif+modified "$(ME_VAPP_PREFIX)\web\icons\folder.gif" $(LOG)
+	copy /Y /B src\server\web\icons\parent.gif+modified "$(ME_VAPP_PREFIX)\web\icons\parent.gif" $(LOG)
+	copy /Y /B src\server\web\icons\space.gif+modified "$(ME_VAPP_PREFIX)\web\icons\space.gif" $(LOG)
+	copy /Y /B src\server\web\icons\text.gif+modified "$(ME_VAPP_PREFIX)\web\icons\text.gif" $(LOG)
+	copy /Y /B src\server\web\iehacks.css+modified "$(ME_VAPP_PREFIX)\web\iehacks.css" $(LOG)
 	if not exist "$(ME_VAPP_PREFIX)\web\images" md "$(ME_VAPP_PREFIX)\web\images"
-	copy /Y src\server\web\images\banner.jpg+modified "$(ME_VAPP_PREFIX)\web\images\banner.jpg" $(LOG)
-	copy /Y src\server\web\images\bottomShadow.jpg+modified "$(ME_VAPP_PREFIX)\web\images\bottomShadow.jpg" $(LOG)
-	copy /Y src\server\web\images\shadow.jpg+modified "$(ME_VAPP_PREFIX)\web\images\shadow.jpg" $(LOG)
-	copy /Y src\server\web\index.html+modified "$(ME_VAPP_PREFIX)\web\index.html" $(LOG)
-	copy /Y src\server\web\min-index.html+modified "$(ME_VAPP_PREFIX)\web\min-index.html" $(LOG)
-	copy /Y src\server\web\print.css+modified "$(ME_VAPP_PREFIX)\web\print.css" $(LOG)
-	copy /Y src\server\web\screen.css+modified "$(ME_VAPP_PREFIX)\web\screen.css" $(LOG)
+	copy /Y /B src\server\web\images\banner.jpg+modified "$(ME_VAPP_PREFIX)\web\images\banner.jpg" $(LOG)
+	copy /Y /B src\server\web\images\bottomShadow.jpg+modified "$(ME_VAPP_PREFIX)\web\images\bottomShadow.jpg" $(LOG)
+	copy /Y /B src\server\web\images\shadow.jpg+modified "$(ME_VAPP_PREFIX)\web\images\shadow.jpg" $(LOG)
+	copy /Y /B src\server\web\index.html+modified "$(ME_VAPP_PREFIX)\web\index.html" $(LOG)
+	copy /Y /B src\server\web\min-index.html+modified "$(ME_VAPP_PREFIX)\web\min-index.html" $(LOG)
+	copy /Y /B src\server\web\print.css+modified "$(ME_VAPP_PREFIX)\web\print.css" $(LOG)
+	copy /Y /B src\server\web\screen.css+modified "$(ME_VAPP_PREFIX)\web\screen.css" $(LOG)
 	if not exist "$(ME_VAPP_PREFIX)\web\test" md "$(ME_VAPP_PREFIX)\web\test"
-	copy /Y src\server\web\test\bench.html+modified "$(ME_VAPP_PREFIX)\web\test\bench.html" $(LOG)
-	copy /Y src\server\web\test\test.cgi+modified "$(ME_VAPP_PREFIX)\web\test\test.cgi" $(LOG)
-	copy /Y src\server\web\test\test.ejs+modified "$(ME_VAPP_PREFIX)\web\test\test.ejs" $(LOG)
-	copy /Y src\server\web\test\test.esp+modified "$(ME_VAPP_PREFIX)\web\test\test.esp" $(LOG)
-	copy /Y src\server\web\test\test.html+modified "$(ME_VAPP_PREFIX)\web\test\test.html" $(LOG)
-	copy /Y src\server\web\test\test.php+modified "$(ME_VAPP_PREFIX)\web\test\test.php" $(LOG)
-	copy /Y src\server\web\test\test.pl+modified "$(ME_VAPP_PREFIX)\web\test\test.pl" $(LOG)
-	copy /Y src\server\web\test\test.py+modified "$(ME_VAPP_PREFIX)\web\test\test.py" $(LOG)
+	copy /Y /B src\server\web\test\bench.html+modified "$(ME_VAPP_PREFIX)\web\test\bench.html" $(LOG)
+	copy /Y /B src\server\web\test\test.cgi+modified "$(ME_VAPP_PREFIX)\web\test\test.cgi" $(LOG)
+	copy /Y /B src\server\web\test\test.ejs+modified "$(ME_VAPP_PREFIX)\web\test\test.ejs" $(LOG)
+	copy /Y /B src\server\web\test\test.esp+modified "$(ME_VAPP_PREFIX)\web\test\test.esp" $(LOG)
+	copy /Y /B src\server\web\test\test.html+modified "$(ME_VAPP_PREFIX)\web\test\test.html" $(LOG)
+	copy /Y /B src\server\web\test\test.php+modified "$(ME_VAPP_PREFIX)\web\test\test.php" $(LOG)
+	copy /Y /B src\server\web\test\test.pl+modified "$(ME_VAPP_PREFIX)\web\test\test.pl" $(LOG)
+	copy /Y /B src\server\web\test\test.py+modified "$(ME_VAPP_PREFIX)\web\test\test.py" $(LOG)
 	if not exist "$(ME_VAPP_PREFIX)\web\test" md "$(ME_VAPP_PREFIX)\web\test"
-	copy /Y src\server\web\test\test.cgi+modified "$(ME_VAPP_PREFIX)\web\test\test.cgi" $(LOG)
-	copy /Y src\server\web\test\test.pl+modified "$(ME_VAPP_PREFIX)\web\test\test.pl" $(LOG)
-	copy /Y src\server\web\test\test.py+modified "$(ME_VAPP_PREFIX)\web\test\test.py" $(LOG)
+	copy /Y /B src\server\web\test\test.cgi+modified "$(ME_VAPP_PREFIX)\web\test\test.cgi" $(LOG)
+	copy /Y /B src\server\web\test\test.pl+modified "$(ME_VAPP_PREFIX)\web\test\test.pl" $(LOG)
+	copy /Y /B src\server\web\test\test.py+modified "$(ME_VAPP_PREFIX)\web\test\test.py" $(LOG)
 	if not exist "$(ME_VAPP_PREFIX)" md "$(ME_VAPP_PREFIX)"
-	copy /Y src\server\mime.types+modified "$(ME_VAPP_PREFIX)\mime.types" $(LOG)
-	copy /Y src\server\self.crt+modified "$(ME_VAPP_PREFIX)\self.crt" $(LOG)
-	copy /Y src\server\self.key+modified "$(ME_VAPP_PREFIX)\self.key" $(LOG)
+	copy /Y /B src\server\mime.types+modified "$(ME_VAPP_PREFIX)\mime.types" $(LOG)
+	copy /Y /B src\server\self.crt+modified "$(ME_VAPP_PREFIX)\self.crt" $(LOG)
+	copy /Y /B src\server\self.key+modified "$(ME_VAPP_PREFIX)\self.key" $(LOG)
 !IF "$(ME_COM_PHP)" == "1"
-	copy /Y src\server\php.ini+modified "$(ME_VAPP_PREFIX)\php.ini" $(LOG)
+	copy /Y /B src\server\php.ini+modified "$(ME_VAPP_PREFIX)\php.ini" $(LOG)
 !ENDIF
-	copy /Y src\server\appweb.conf+modified "$(ME_VAPP_PREFIX)\appweb.conf" $(LOG)
-	copy /Y src\server\sample.conf+modified "$(ME_VAPP_PREFIX)\sample.conf" $(LOG)
-	copy /Y src\server\self.crt+modified "$(ME_VAPP_PREFIX)\self.crt" $(LOG)
-	copy /Y src\server\self.key+modified "$(ME_VAPP_PREFIX)\self.key" $(LOG)
+	copy /Y /B src\server\appweb.conf+modified "$(ME_VAPP_PREFIX)\appweb.conf" $(LOG)
+	copy /Y /B src\server\sample.conf+modified "$(ME_VAPP_PREFIX)\sample.conf" $(LOG)
+	copy /Y /B src\server\self.crt+modified "$(ME_VAPP_PREFIX)\self.crt" $(LOG)
+	copy /Y /B src\server\self.key+modified "$(ME_VAPP_PREFIX)\self.key" $(LOG)
 	echo 'set LOG_DIR "$(ME_VAPP_PREFIX)/log"\nset CACHE_DIR "$(ME_VAPP_PREFIX)/cache"\nDocuments "$(ME_VAPP_PREFIX)/web\nListen 80\n<if SSL_MODULE>\nListenSecure 443\n</if>\n' >$(ME_VAPP_PREFIX)/install.conf
 	if not exist "$(ME_VAPP_PREFIX)\inc" md "$(ME_VAPP_PREFIX)\inc"
-	copy /Y build\$(CONFIG)\inc\me.h+modified "$(ME_VAPP_PREFIX)\inc\me.h" $(LOG)
-	copy /Y src\paks\osdep\osdep.h+modified "$(ME_VAPP_PREFIX)\inc\osdep.h" $(LOG)
-	copy /Y src\appweb.h+modified "$(ME_VAPP_PREFIX)\inc\appweb.h" $(LOG)
-	copy /Y src\customize.h+modified "$(ME_VAPP_PREFIX)\inc\customize.h" $(LOG)
-	copy /Y src\paks\est\est.h+modified "$(ME_VAPP_PREFIX)\inc\est.h" $(LOG)
-	copy /Y src\paks\http\http.h+modified "$(ME_VAPP_PREFIX)\inc\http.h" $(LOG)
-	copy /Y src\paks\mpr\mpr.h+modified "$(ME_VAPP_PREFIX)\inc\mpr.h" $(LOG)
-	copy /Y src\paks\pcre\pcre.h+modified "$(ME_VAPP_PREFIX)\inc\pcre.h" $(LOG)
-	copy /Y src\paks\sqlite\sqlite3.h+modified "$(ME_VAPP_PREFIX)\inc\sqlite3.h" $(LOG)
+	copy /Y /B build\$(CONFIG)\inc\me.h+modified "$(ME_VAPP_PREFIX)\inc\me.h" $(LOG)
+	copy /Y /B src\paks\osdep\osdep.h+modified "$(ME_VAPP_PREFIX)\inc\osdep.h" $(LOG)
+	copy /Y /B src\appweb.h+modified "$(ME_VAPP_PREFIX)\inc\appweb.h" $(LOG)
+	copy /Y /B src\customize.h+modified "$(ME_VAPP_PREFIX)\inc\customize.h" $(LOG)
+	copy /Y /B src\paks\est\est.h+modified "$(ME_VAPP_PREFIX)\inc\est.h" $(LOG)
+	copy /Y /B src\paks\http\http.h+modified "$(ME_VAPP_PREFIX)\inc\http.h" $(LOG)
+	copy /Y /B src\paks\mpr\mpr.h+modified "$(ME_VAPP_PREFIX)\inc\mpr.h" $(LOG)
+	copy /Y /B src\paks\pcre\pcre.h+modified "$(ME_VAPP_PREFIX)\inc\pcre.h" $(LOG)
+	copy /Y /B src\paks\sqlite\sqlite3.h+modified "$(ME_VAPP_PREFIX)\inc\sqlite3.h" $(LOG)
 !IF "$(ME_COM_ESP)" == "1"
-	copy /Y src\paks\esp\esp.h+modified "$(ME_VAPP_PREFIX)\inc\esp.h" $(LOG)
+	copy /Y /B src\paks\esp\esp.h+modified "$(ME_VAPP_PREFIX)\inc\esp.h" $(LOG)
 !ENDIF
 !IF "$(ME_COM_EJS)" == "1"
-	copy /Y src\paks\ejs\ejs.h+modified "$(ME_VAPP_PREFIX)\inc\ejs.h" $(LOG)
-	copy /Y src\paks\ejs\ejs.slots.h+modified "$(ME_VAPP_PREFIX)\inc\ejs.slots.h" $(LOG)
-	copy /Y src\paks\ejs\ejsByteGoto.h+modified "$(ME_VAPP_PREFIX)\inc\ejsByteGoto.h" $(LOG)
+	copy /Y /B src\paks\ejs\ejs.h+modified "$(ME_VAPP_PREFIX)\inc\ejs.h" $(LOG)
+	copy /Y /B src\paks\ejs\ejs.slots.h+modified "$(ME_VAPP_PREFIX)\inc\ejs.slots.h" $(LOG)
+	copy /Y /B src\paks\ejs\ejsByteGoto.h+modified "$(ME_VAPP_PREFIX)\inc\ejsByteGoto.h" $(LOG)
 !ENDIF
 !IF "$(ME_COM_EJS)" == "1"
-	copy /Y build\$(CONFIG)\bin\ejs.mod+modified "$(ME_VAPP_PREFIX)\bin\ejs.mod" $(LOG)
+	copy /Y /B build\$(CONFIG)\bin\ejs.mod+modified "$(ME_VAPP_PREFIX)\bin\ejs.mod" $(LOG)
 !ENDIF
 	cd .
 

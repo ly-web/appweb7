@@ -123,8 +123,8 @@
 
   <CustomBuildStep>
     <Command>cd ..\..\src\server
-copy /Y windows\appwebMonitor.h $(IncDir)
-copy /Y windows\monitorResources.h $(IncDir)
+copy /Y /B windows\appwebMonitor.h $(IncDir)
+copy /Y /B windows\monitorResources.h $(IncDir)
 cd ..\..\projects\appweb-windows-default</Command>
     <Outputs>$(BinDir)\appwebMonitor.exe</Outputs>
   </CustomBuildStep>

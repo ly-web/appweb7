@@ -6,10 +6,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmpr", "appweb-windows-de
 	ProjectSection(ProjectDependencies) = postProject
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
 	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{3ACD6101-A351-4C3A-81E4-DC8589FEA4EF} = {3ACD6101-A351-4C3A-81E4-DC8589FEA4EF}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libpcre", "appweb-windows-default\libpcre.vcxproj", "{7E5AB9EA-9391-4892-B11F-BE802BE622B2}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{7E5AB9EA-9391-4892-B11F-BE802BE622B2} = {7E5AB9EA-9391-4892-B11F-BE802BE622B2}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libhttp", "appweb-windows-default\libhttp.vcxproj", "{6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF}"
@@ -22,21 +28,33 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libhttp", "appweb-windows-d
 	ProjectSection(ProjectDependencies) = postProject
 		{7E5AB9EA-9391-4892-B11F-BE802BE622B2} = {7E5AB9EA-9391-4892-B11F-BE802BE622B2}
 	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF} = {6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libappweb", "appweb-windows-default\libappweb.vcxproj", "{F07C2D7C-361C-4AC5-B1DB-37850CDF52B8}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
+		{3ACD6101-A351-4C3A-81E4-DC8589FEA4EF} = {3ACD6101-A351-4C3A-81E4-DC8589FEA4EF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{7E5AB9EA-9391-4892-B11F-BE802BE622B2} = {7E5AB9EA-9391-4892-B11F-BE802BE622B2}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
 		{6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF} = {6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
-		{3ACD6101-A351-4C3A-81E4-DC8589FEA4EF} = {3ACD6101-A351-4C3A-81E4-DC8589FEA4EF}
+		{F07C2D7C-361C-4AC5-B1DB-37850CDF52B8} = {F07C2D7C-361C-4AC5-B1DB-37850CDF52B8}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libslink", "appweb-windows-default\libslink.vcxproj", "{4B533B3E-D2E9-4061-852E-839C51E50622}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{4B533B3E-D2E9-4061-852E-839C51E50622} = {4B533B3E-D2E9-4061-852E-839C51E50622}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "appweb", "appweb-windows-default\appweb.vcxproj", "{78136ED3-7819-4044-B93F-5CF61217E91B}"
@@ -44,10 +62,22 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "appweb", "appweb-windows-de
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
+		{3ACD6101-A351-4C3A-81E4-DC8589FEA4EF} = {3ACD6101-A351-4C3A-81E4-DC8589FEA4EF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{7E5AB9EA-9391-4892-B11F-BE802BE622B2} = {7E5AB9EA-9391-4892-B11F-BE802BE622B2}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF} = {6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
 		{F07C2D7C-361C-4AC5-B1DB-37850CDF52B8} = {F07C2D7C-361C-4AC5-B1DB-37850CDF52B8}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{4B533B3E-D2E9-4061-852E-839C51E50622} = {4B533B3E-D2E9-4061-852E-839C51E50622}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{78136ED3-7819-4044-B93F-5CF61217E91B} = {78136ED3-7819-4044-B93F-5CF61217E91B}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "appwebMonitor", "appweb-windows-default\appwebMonitor.vcxproj", "{C8231EE2-725A-4598-907E-533F35F194B1}"
@@ -55,12 +85,27 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "appwebMonitor", "appweb-win
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
+		{3ACD6101-A351-4C3A-81E4-DC8589FEA4EF} = {3ACD6101-A351-4C3A-81E4-DC8589FEA4EF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{7E5AB9EA-9391-4892-B11F-BE802BE622B2} = {7E5AB9EA-9391-4892-B11F-BE802BE622B2}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF} = {6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
 		{F07C2D7C-361C-4AC5-B1DB-37850CDF52B8} = {F07C2D7C-361C-4AC5-B1DB-37850CDF52B8}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{C8231EE2-725A-4598-907E-533F35F194B1} = {C8231EE2-725A-4598-907E-533F35F194B1}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "appwebMonitor.ico", "appweb-windows-default\appwebMonitor.ico.vcxproj", "{94725D87-2F09-48D5-870A-E6A6E43CC2A3}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{94725D87-2F09-48D5-870A-E6A6E43CC2A3} = {94725D87-2F09-48D5-870A-E6A6E43CC2A3}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "authpass", "appweb-windows-default\authpass.vcxproj", "{E4E5EF7E-E678-4F98-B85A-8B53073831CE}"
@@ -68,22 +113,43 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "authpass", "appweb-windows-
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
+		{3ACD6101-A351-4C3A-81E4-DC8589FEA4EF} = {3ACD6101-A351-4C3A-81E4-DC8589FEA4EF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{7E5AB9EA-9391-4892-B11F-BE802BE622B2} = {7E5AB9EA-9391-4892-B11F-BE802BE622B2}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF} = {6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
 		{F07C2D7C-361C-4AC5-B1DB-37850CDF52B8} = {F07C2D7C-361C-4AC5-B1DB-37850CDF52B8}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{E4E5EF7E-E678-4F98-B85A-8B53073831CE} = {E4E5EF7E-E678-4F98-B85A-8B53073831CE}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cgiProgram", "appweb-windows-default\cgiProgram.vcxproj", "{676EB903-E8F4-480E-9849-7FA1DFABCAE3}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
 	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{676EB903-E8F4-480E-9849-7FA1DFABCAE3} = {676EB903-E8F4-480E-9849-7FA1DFABCAE3}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "esp-paks", "appweb-windows-default\esp-paks.vcxproj", "{79D9B794-A901-419F-A38F-35B1886AD3B9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
 	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{79D9B794-A901-419F-A38F-35B1886AD3B9} = {79D9B794-A901-419F-A38F-35B1886AD3B9}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "esp.conf", "appweb-windows-default\esp.conf.vcxproj", "{32D314E3-16DA-47D5-B2A9-8963E24FAAB4}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{32D314E3-16DA-47D5-B2A9-8963E24FAAB4} = {32D314E3-16DA-47D5-B2A9-8963E24FAAB4}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmod_esp", "appweb-windows-default\libmod_esp.vcxproj", "{E16A2881-A4ED-4246-8E87-955716C49E67}"
@@ -91,7 +157,19 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmod_esp", "appweb-window
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
+		{3ACD6101-A351-4C3A-81E4-DC8589FEA4EF} = {3ACD6101-A351-4C3A-81E4-DC8589FEA4EF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{7E5AB9EA-9391-4892-B11F-BE802BE622B2} = {7E5AB9EA-9391-4892-B11F-BE802BE622B2}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF} = {6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
 		{F07C2D7C-361C-4AC5-B1DB-37850CDF52B8} = {F07C2D7C-361C-4AC5-B1DB-37850CDF52B8}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{E16A2881-A4ED-4246-8E87-955716C49E67} = {E16A2881-A4ED-4246-8E87-955716C49E67}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "espcmd", "appweb-windows-default\espcmd.vcxproj", "{C00CB326-7179-44A1-B50C-E9AD452A61CB}"
@@ -99,12 +177,30 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "espcmd", "appweb-windows-de
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
+		{3ACD6101-A351-4C3A-81E4-DC8589FEA4EF} = {3ACD6101-A351-4C3A-81E4-DC8589FEA4EF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{7E5AB9EA-9391-4892-B11F-BE802BE622B2} = {7E5AB9EA-9391-4892-B11F-BE802BE622B2}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF} = {6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{F07C2D7C-361C-4AC5-B1DB-37850CDF52B8} = {F07C2D7C-361C-4AC5-B1DB-37850CDF52B8}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
 		{E16A2881-A4ED-4246-8E87-955716C49E67} = {E16A2881-A4ED-4246-8E87-955716C49E67}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{C00CB326-7179-44A1-B50C-E9AD452A61CB} = {C00CB326-7179-44A1-B50C-E9AD452A61CB}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "http-ca-crt", "appweb-windows-default\http-ca-crt.vcxproj", "{9A08276B-D080-4846-9848-1F5131EF519E}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{9A08276B-D080-4846-9848-1F5131EF519E} = {9A08276B-D080-4846-9848-1F5131EF519E}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "httpcmd", "appweb-windows-default\httpcmd.vcxproj", "{CEB8D43E-2DB0-4E81-9A34-7FDD2F33E559}"
@@ -112,12 +208,24 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "httpcmd", "appweb-windows-d
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
+		{3ACD6101-A351-4C3A-81E4-DC8589FEA4EF} = {3ACD6101-A351-4C3A-81E4-DC8589FEA4EF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{7E5AB9EA-9391-4892-B11F-BE802BE622B2} = {7E5AB9EA-9391-4892-B11F-BE802BE622B2}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
 		{6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF} = {6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{CEB8D43E-2DB0-4E81-9A34-7FDD2F33E559} = {CEB8D43E-2DB0-4E81-9A34-7FDD2F33E559}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libest", "appweb-windows-default\libest.vcxproj", "{63B6365D-1041-4D1B-88B3-06E0B4DD1FAE}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{63B6365D-1041-4D1B-88B3-06E0B4DD1FAE} = {63B6365D-1041-4D1B-88B3-06E0B4DD1FAE}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmod_cgi", "appweb-windows-default\libmod_cgi.vcxproj", "{B4ADD9FE-5121-4BAE-A8F8-5F6E807424A5}"
@@ -125,7 +233,19 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmod_cgi", "appweb-window
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
+		{3ACD6101-A351-4C3A-81E4-DC8589FEA4EF} = {3ACD6101-A351-4C3A-81E4-DC8589FEA4EF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{7E5AB9EA-9391-4892-B11F-BE802BE622B2} = {7E5AB9EA-9391-4892-B11F-BE802BE622B2}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF} = {6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
 		{F07C2D7C-361C-4AC5-B1DB-37850CDF52B8} = {F07C2D7C-361C-4AC5-B1DB-37850CDF52B8}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{B4ADD9FE-5121-4BAE-A8F8-5F6E807424A5} = {B4ADD9FE-5121-4BAE-A8F8-5F6E807424A5}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmprssl", "appweb-windows-default\libmprssl.vcxproj", "{AB92305F-B126-4BFB-BB59-393E561AC6DF}"
@@ -135,16 +255,37 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmprssl", "appweb-windows
 	ProjectSection(ProjectDependencies) = postProject
 		{3ACD6101-A351-4C3A-81E4-DC8589FEA4EF} = {3ACD6101-A351-4C3A-81E4-DC8589FEA4EF}
 	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{63B6365D-1041-4D1B-88B3-06E0B4DD1FAE} = {63B6365D-1041-4D1B-88B3-06E0B4DD1FAE}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{AB92305F-B126-4BFB-BB59-393E561AC6DF} = {AB92305F-B126-4BFB-BB59-393E561AC6DF}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmod_ssl", "appweb-windows-default\libmod_ssl.vcxproj", "{99CFA626-4052-43D8-A957-329CA3995555}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
+		{3ACD6101-A351-4C3A-81E4-DC8589FEA4EF} = {3ACD6101-A351-4C3A-81E4-DC8589FEA4EF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{7E5AB9EA-9391-4892-B11F-BE802BE622B2} = {7E5AB9EA-9391-4892-B11F-BE802BE622B2}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF} = {6B63497F-C3A2-4D2F-A8B7-3EC2CD3722EF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
 		{F07C2D7C-361C-4AC5-B1DB-37850CDF52B8} = {F07C2D7C-361C-4AC5-B1DB-37850CDF52B8}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
+		{63B6365D-1041-4D1B-88B3-06E0B4DD1FAE} = {63B6365D-1041-4D1B-88B3-06E0B4DD1FAE}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
 		{AB92305F-B126-4BFB-BB59-393E561AC6DF} = {AB92305F-B126-4BFB-BB59-393E561AC6DF}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{99CFA626-4052-43D8-A957-329CA3995555} = {99CFA626-4052-43D8-A957-329CA3995555}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "manager", "appweb-windows-default\manager.vcxproj", "{B32AE836-A3D3-42B9-8CB8-1324C98680B8}"
@@ -154,15 +295,24 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "manager", "appweb-windows-d
 	ProjectSection(ProjectDependencies) = postProject
 		{3ACD6101-A351-4C3A-81E4-DC8589FEA4EF} = {3ACD6101-A351-4C3A-81E4-DC8589FEA4EF}
 	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{B32AE836-A3D3-42B9-8CB8-1324C98680B8} = {B32AE836-A3D3-42B9-8CB8-1324C98680B8}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "removeFiles", "appweb-windows-default\removeFiles.vcxproj", "{90E7773C-2E15-4F13-BDAE-CD971B8EFB2E}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
 	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{90E7773C-2E15-4F13-BDAE-CD971B8EFB2E} = {90E7773C-2E15-4F13-BDAE-CD971B8EFB2E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "server-cache", "appweb-windows-default\server-cache.vcxproj", "{CDAD931E-BB0C-4F7A-9E84-340F75E2C24D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1} = {D4C01DF0-67D1-4F09-9BF6-C0BB5D82A6F1}
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{CDAD931E-BB0C-4F7A-9E84-340F75E2C24D} = {CDAD931E-BB0C-4F7A-9E84-340F75E2C24D}
 	EndProjectSection
 EndProject
 

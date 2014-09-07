@@ -120,8 +120,8 @@
 
   <CustomBuildStep>
     <Command>cd ..\..\src
-copy /Y appweb.h $(IncDir)
-copy /Y customize.h $(IncDir)
+copy /Y /B appweb.h $(IncDir)
+copy /Y /B customize.h $(IncDir)
 cd ..\projects\appweb-windows-default</Command>
     <Outputs>$(BinDir)\libappweb.dll</Outputs>
   </CustomBuildStep>

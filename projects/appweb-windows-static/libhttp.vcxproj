@@ -115,7 +115,7 @@
 
   <CustomBuildStep>
     <Command>cd ..\..\src\paks\http
-copy /Y http.h $(IncDir)
+copy /Y /B http.h $(IncDir)
 cd ..\..\..\projects\appweb-windows-static</Command>
     <Outputs>$(BinDir)\libhttp.lib</Outputs>
   </CustomBuildStep>

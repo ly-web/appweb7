@@ -115,7 +115,7 @@
 
   <CustomBuildStep>
     <Command>cd ..\..\src\paks\esp
-copy /Y esp.h $(IncDir)
+copy /Y /B esp.h $(IncDir)
 cd ..\..\..\projects\appweb-windows-static</Command>
     <Outputs>$(BinDir)\libmod_esp.lib</Outputs>
   </CustomBuildStep>
