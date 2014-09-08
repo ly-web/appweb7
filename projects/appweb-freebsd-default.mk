@@ -3,7 +3,7 @@
 #
 
 NAME                  := appweb
-VERSION               := 4.6.3
+VERSION               := 4.6.4
 PROFILE               ?= default
 ARCH                  ?= $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
 CC_ARCH               ?= $(shell echo $(ARCH) | sed 's/x86/i686/;s/x64/x86_64/')
@@ -254,6 +254,8 @@ clobber: clean
 #
 #   mpr.h
 #
+DEPS_1 += src/paks/mpr/mpr.h
+
 build/$(CONFIG)/inc/mpr.h: $(DEPS_1)
 	@echo '      [Copy] build/$(CONFIG)/inc/mpr.h'
 	mkdir -p "build/$(CONFIG)/inc"
@@ -268,6 +270,8 @@ build/$(CONFIG)/inc/me.h: $(DEPS_2)
 #
 #   osdep.h
 #
+DEPS_3 += src/paks/osdep/osdep.h
+
 build/$(CONFIG)/inc/osdep.h: $(DEPS_3)
 	@echo '      [Copy] build/$(CONFIG)/inc/osdep.h'
 	mkdir -p "build/$(CONFIG)/inc"
@@ -300,6 +304,8 @@ build/$(CONFIG)/bin/libmpr.so: $(DEPS_5)
 #
 #   pcre.h
 #
+DEPS_6 += src/paks/pcre/pcre.h
+
 build/$(CONFIG)/inc/pcre.h: $(DEPS_6)
 	@echo '      [Copy] build/$(CONFIG)/inc/pcre.h'
 	mkdir -p "build/$(CONFIG)/inc"
@@ -332,6 +338,8 @@ endif
 #
 #   http.h
 #
+DEPS_9 += src/paks/http/http.h
+
 build/$(CONFIG)/inc/http.h: $(DEPS_9)
 	@echo '      [Copy] build/$(CONFIG)/inc/http.h'
 	mkdir -p "build/$(CONFIG)/inc"
@@ -379,6 +387,8 @@ endif
 #
 #   appweb.h
 #
+DEPS_12 += src/appweb.h
+
 build/$(CONFIG)/inc/appweb.h: $(DEPS_12)
 	@echo '      [Copy] build/$(CONFIG)/inc/appweb.h'
 	mkdir -p "build/$(CONFIG)/inc"
@@ -387,6 +397,8 @@ build/$(CONFIG)/inc/appweb.h: $(DEPS_12)
 #
 #   customize.h
 #
+DEPS_13 += src/customize.h
+
 build/$(CONFIG)/inc/customize.h: $(DEPS_13)
 	@echo '      [Copy] build/$(CONFIG)/inc/customize.h'
 	mkdir -p "build/$(CONFIG)/inc"
@@ -513,6 +525,8 @@ src/slink.c: $(DEPS_21)
 #
 #   esp.h
 #
+DEPS_22 += src/paks/esp/esp.h
+
 build/$(CONFIG)/inc/esp.h: $(DEPS_22)
 	@echo '      [Copy] build/$(CONFIG)/inc/esp.h'
 	mkdir -p "build/$(CONFIG)/inc"
@@ -679,6 +693,8 @@ endif
 #
 #   zlib.h
 #
+DEPS_31 += src/paks/zlib/zlib.h
+
 build/$(CONFIG)/inc/zlib.h: $(DEPS_31)
 	@echo '      [Copy] build/$(CONFIG)/inc/zlib.h'
 	mkdir -p "build/$(CONFIG)/inc"
@@ -711,6 +727,8 @@ endif
 #
 #   ejs.h
 #
+DEPS_34 += src/paks/ejs/ejs.h
+
 build/$(CONFIG)/inc/ejs.h: $(DEPS_34)
 	@echo '      [Copy] build/$(CONFIG)/inc/ejs.h'
 	mkdir -p "build/$(CONFIG)/inc"
@@ -719,6 +737,8 @@ build/$(CONFIG)/inc/ejs.h: $(DEPS_34)
 #
 #   ejs.slots.h
 #
+DEPS_35 += src/paks/ejs/ejs.slots.h
+
 build/$(CONFIG)/inc/ejs.slots.h: $(DEPS_35)
 	@echo '      [Copy] build/$(CONFIG)/inc/ejs.slots.h'
 	mkdir -p "build/$(CONFIG)/inc"
@@ -727,6 +747,8 @@ build/$(CONFIG)/inc/ejs.slots.h: $(DEPS_35)
 #
 #   ejsByteGoto.h
 #
+DEPS_36 += src/paks/ejs/ejsByteGoto.h
+
 build/$(CONFIG)/inc/ejsByteGoto.h: $(DEPS_36)
 	@echo '      [Copy] build/$(CONFIG)/inc/ejsByteGoto.h'
 	mkdir -p "build/$(CONFIG)/inc"
@@ -1008,15 +1030,15 @@ DEPS_44 += src/paks/esp-legacy-mvc/static/js
 DEPS_44 += src/paks/esp-legacy-mvc/static/js/jquery.esp.js
 DEPS_44 += src/paks/esp-legacy-mvc/static/js/jquery.js
 DEPS_44 += src/paks/esp-mvc
+DEPS_44 += src/paks/esp-mvc/LICENSE.md
+DEPS_44 += src/paks/esp-mvc/README.md
 DEPS_44 += src/paks/esp-mvc/generate
 DEPS_44 += src/paks/esp-mvc/generate/appweb.conf
 DEPS_44 += src/paks/esp-mvc/generate/controller.c
 DEPS_44 += src/paks/esp-mvc/generate/migration.c
 DEPS_44 += src/paks/esp-mvc/generate/src
 DEPS_44 += src/paks/esp-mvc/generate/src/app.c
-DEPS_44 += src/paks/esp-mvc/LICENSE.md
 DEPS_44 += src/paks/esp-mvc/package.json
-DEPS_44 += src/paks/esp-mvc/README.md
 DEPS_44 += src/paks/esp-server
 DEPS_44 += src/paks/esp-server/generate
 DEPS_44 += src/paks/esp-server/generate/appweb.conf
@@ -1025,63 +1047,63 @@ DEPS_44 += src/paks/esp-server/package.json
 build/$(CONFIG)/esp: $(DEPS_44)
 	( \
 	cd src/paks; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3" ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/client" ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/client/assets" ; \
-	cp esp-html-mvc/client/assets/favicon.ico ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/client/assets/favicon.ico ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/client/css" ; \
-	cp esp-html-mvc/client/css/all.css ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/client/css/all.css ; \
-	cp esp-html-mvc/client/css/all.less ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/client/css/all.less ; \
-	cp esp-html-mvc/client/index.esp ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/client/index.esp ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/css" ; \
-	cp esp-html-mvc/css/app.less ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/css/app.less ; \
-	cp esp-html-mvc/css/theme.less ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/css/theme.less ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/generate" ; \
-	cp esp-html-mvc/generate/appweb.conf ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/generate/appweb.conf ; \
-	cp esp-html-mvc/generate/controller.c ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/generate/controller.c ; \
-	cp esp-html-mvc/generate/controllerSingleton.c ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/generate/controllerSingleton.c ; \
-	cp esp-html-mvc/generate/edit.esp ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/generate/edit.esp ; \
-	cp esp-html-mvc/generate/list.esp ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/generate/list.esp ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/layouts" ; \
-	cp esp-html-mvc/layouts/default.esp ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/layouts/default.esp ; \
-	cp esp-html-mvc/package.json ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.3/package.json ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3" ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/generate" ; \
-	cp esp-legacy-mvc/generate/appweb.conf ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/generate/appweb.conf ; \
-	cp esp-legacy-mvc/generate/controller.c ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/generate/controller.c ; \
-	cp esp-legacy-mvc/generate/edit.esp ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/generate/edit.esp ; \
-	cp esp-legacy-mvc/generate/list.esp ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/generate/list.esp ; \
-	cp esp-legacy-mvc/generate/migration.c ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/generate/migration.c ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/generate/src" ; \
-	cp esp-legacy-mvc/generate/src/app.c ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/generate/src/app.c ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/layouts" ; \
-	cp esp-legacy-mvc/layouts/default.esp ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/layouts/default.esp ; \
-	cp esp-legacy-mvc/package.json ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/package.json ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/static" ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/static/css" ; \
-	cp esp-legacy-mvc/static/css/all.css ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/static/css/all.css ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/static/images" ; \
-	cp esp-legacy-mvc/static/images/banner.jpg ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/static/images/banner.jpg ; \
-	cp esp-legacy-mvc/static/images/favicon.ico ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/static/images/favicon.ico ; \
-	cp esp-legacy-mvc/static/images/splash.jpg ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/static/images/splash.jpg ; \
-	cp esp-legacy-mvc/static/index.esp ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/static/index.esp ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/static/js" ; \
-	cp esp-legacy-mvc/static/js/jquery.esp.js ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/static/js/jquery.esp.js ; \
-	cp esp-legacy-mvc/static/js/jquery.js ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.3/static/js/jquery.js ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-mvc/4.6.3" ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-mvc/4.6.3/generate" ; \
-	cp esp-mvc/generate/appweb.conf ../../build/$(CONFIG)/esp/esp-mvc/4.6.3/generate/appweb.conf ; \
-	cp esp-mvc/generate/controller.c ../../build/$(CONFIG)/esp/esp-mvc/4.6.3/generate/controller.c ; \
-	cp esp-mvc/generate/migration.c ../../build/$(CONFIG)/esp/esp-mvc/4.6.3/generate/migration.c ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-mvc/4.6.3/generate/src" ; \
-	cp esp-mvc/generate/src/app.c ../../build/$(CONFIG)/esp/esp-mvc/4.6.3/generate/src/app.c ; \
-	cp esp-mvc/LICENSE.md ../../build/$(CONFIG)/esp/esp-mvc/4.6.3/LICENSE.md ; \
-	cp esp-mvc/package.json ../../build/$(CONFIG)/esp/esp-mvc/4.6.3/package.json ; \
-	cp esp-mvc/README.md ../../build/$(CONFIG)/esp/esp-mvc/4.6.3/README.md ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-server/4.6.3" ; \
-	mkdir -p "../../build/$(CONFIG)/esp/esp-server/4.6.3/generate" ; \
-	cp esp-server/generate/appweb.conf ../../build/$(CONFIG)/esp/esp-server/4.6.3/generate/appweb.conf ; \
-	cp esp-server/package.json ../../build/$(CONFIG)/esp/esp-server/4.6.3/package.json ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4" ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/client" ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/client/assets" ; \
+	cp esp-html-mvc/client/assets/favicon.ico ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/client/assets/favicon.ico ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/client/css" ; \
+	cp esp-html-mvc/client/css/all.css ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/client/css/all.css ; \
+	cp esp-html-mvc/client/css/all.less ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/client/css/all.less ; \
+	cp esp-html-mvc/client/index.esp ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/client/index.esp ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/css" ; \
+	cp esp-html-mvc/css/app.less ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/css/app.less ; \
+	cp esp-html-mvc/css/theme.less ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/css/theme.less ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/generate" ; \
+	cp esp-html-mvc/generate/appweb.conf ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/generate/appweb.conf ; \
+	cp esp-html-mvc/generate/controller.c ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/generate/controller.c ; \
+	cp esp-html-mvc/generate/controllerSingleton.c ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/generate/controllerSingleton.c ; \
+	cp esp-html-mvc/generate/edit.esp ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/generate/edit.esp ; \
+	cp esp-html-mvc/generate/list.esp ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/generate/list.esp ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/layouts" ; \
+	cp esp-html-mvc/layouts/default.esp ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/layouts/default.esp ; \
+	cp esp-html-mvc/package.json ../../build/$(CONFIG)/esp/esp-html-mvc/4.6.4/package.json ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4" ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/generate" ; \
+	cp esp-legacy-mvc/generate/appweb.conf ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/generate/appweb.conf ; \
+	cp esp-legacy-mvc/generate/controller.c ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/generate/controller.c ; \
+	cp esp-legacy-mvc/generate/edit.esp ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/generate/edit.esp ; \
+	cp esp-legacy-mvc/generate/list.esp ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/generate/list.esp ; \
+	cp esp-legacy-mvc/generate/migration.c ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/generate/migration.c ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/generate/src" ; \
+	cp esp-legacy-mvc/generate/src/app.c ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/generate/src/app.c ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/layouts" ; \
+	cp esp-legacy-mvc/layouts/default.esp ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/layouts/default.esp ; \
+	cp esp-legacy-mvc/package.json ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/package.json ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/static" ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/static/css" ; \
+	cp esp-legacy-mvc/static/css/all.css ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/static/css/all.css ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/static/images" ; \
+	cp esp-legacy-mvc/static/images/banner.jpg ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/static/images/banner.jpg ; \
+	cp esp-legacy-mvc/static/images/favicon.ico ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/static/images/favicon.ico ; \
+	cp esp-legacy-mvc/static/images/splash.jpg ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/static/images/splash.jpg ; \
+	cp esp-legacy-mvc/static/index.esp ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/static/index.esp ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/static/js" ; \
+	cp esp-legacy-mvc/static/js/jquery.esp.js ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/static/js/jquery.esp.js ; \
+	cp esp-legacy-mvc/static/js/jquery.js ../../build/$(CONFIG)/esp/esp-legacy-mvc/4.6.4/static/js/jquery.js ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-mvc/4.6.4" ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-mvc/4.6.4/generate" ; \
+	cp esp-mvc/generate/appweb.conf ../../build/$(CONFIG)/esp/esp-mvc/4.6.4/generate/appweb.conf ; \
+	cp esp-mvc/generate/controller.c ../../build/$(CONFIG)/esp/esp-mvc/4.6.4/generate/controller.c ; \
+	cp esp-mvc/generate/migration.c ../../build/$(CONFIG)/esp/esp-mvc/4.6.4/generate/migration.c ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-mvc/4.6.4/generate/src" ; \
+	cp esp-mvc/generate/src/app.c ../../build/$(CONFIG)/esp/esp-mvc/4.6.4/generate/src/app.c ; \
+	cp esp-mvc/LICENSE.md ../../build/$(CONFIG)/esp/esp-mvc/4.6.4/LICENSE.md ; \
+	cp esp-mvc/package.json ../../build/$(CONFIG)/esp/esp-mvc/4.6.4/package.json ; \
+	cp esp-mvc/README.md ../../build/$(CONFIG)/esp/esp-mvc/4.6.4/README.md ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-server/4.6.4" ; \
+	mkdir -p "../../build/$(CONFIG)/esp/esp-server/4.6.4/generate" ; \
+	cp esp-server/generate/appweb.conf ../../build/$(CONFIG)/esp/esp-server/4.6.4/generate/appweb.conf ; \
+	cp esp-server/package.json ../../build/$(CONFIG)/esp/esp-server/4.6.4/package.json ; \
 	)
 endif
 
@@ -1285,6 +1307,8 @@ endif
 #
 #   est.h
 #
+DEPS_54 += src/paks/est/est.h
+
 build/$(CONFIG)/inc/est.h: $(DEPS_54)
 	@echo '      [Copy] build/$(CONFIG)/inc/est.h'
 	mkdir -p "build/$(CONFIG)/inc"
@@ -1637,6 +1661,8 @@ endif
 #
 #   sqlite3.h
 #
+DEPS_67 += src/paks/sqlite/sqlite3.h
+
 build/$(CONFIG)/inc/sqlite3.h: $(DEPS_67)
 	@echo '      [Copy] build/$(CONFIG)/inc/sqlite3.h'
 	mkdir -p "build/$(CONFIG)/inc"
@@ -1733,6 +1759,8 @@ endif
 #
 #   testAppweb.h
 #
+DEPS_75 += test/src/testAppweb.h
+
 build/$(CONFIG)/inc/testAppweb.h: $(DEPS_75)
 	@echo '      [Copy] build/$(CONFIG)/inc/testAppweb.h'
 	mkdir -p "build/$(CONFIG)/inc"
@@ -1969,7 +1997,7 @@ installBinary: $(DEPS_84)
 	cd .; \
 	mkdir -p "$(ME_APP_PREFIX)" ; \
 	rm -f "$(ME_APP_PREFIX)/latest" ; \
-	ln -s "4.6.3" "$(ME_APP_PREFIX)/latest" ; \
+	ln -s "4.6.4" "$(ME_APP_PREFIX)/latest" ; \
 	mkdir -p "$(ME_LOG_PREFIX)" ; \
 	chmod 755 "$(ME_LOG_PREFIX)" ; \
 	[ `id -u` = 0 ] && chown $(WEB_USER):$(WEB_GROUP) "$(ME_LOG_PREFIX)"; true ; \
@@ -2038,63 +2066,63 @@ installBinary: $(DEPS_84)
 	cp src/paks/angular/angular-route.js $(ME_VAPP_PREFIX)/esp/angular/1.2.6/angular-route.js ; \
 	cp src/paks/angular/angular.js $(ME_VAPP_PREFIX)/esp/angular/1.2.6/angular.js ; \
 	cp src/paks/angular/package.json $(ME_VAPP_PREFIX)/esp/angular/1.2.6/package.json ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3" ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/client" ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/client/assets" ; \
-	cp src/paks/esp-html-mvc/client/assets/favicon.ico $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/client/assets/favicon.ico ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/client/css" ; \
-	cp src/paks/esp-html-mvc/client/css/all.css $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/client/css/all.css ; \
-	cp src/paks/esp-html-mvc/client/css/all.less $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/client/css/all.less ; \
-	cp src/paks/esp-html-mvc/client/index.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/client/index.esp ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/css" ; \
-	cp src/paks/esp-html-mvc/css/app.less $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/css/app.less ; \
-	cp src/paks/esp-html-mvc/css/theme.less $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/css/theme.less ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/generate" ; \
-	cp src/paks/esp-html-mvc/generate/appweb.conf $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/generate/appweb.conf ; \
-	cp src/paks/esp-html-mvc/generate/controller.c $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/generate/controller.c ; \
-	cp src/paks/esp-html-mvc/generate/controllerSingleton.c $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/generate/controllerSingleton.c ; \
-	cp src/paks/esp-html-mvc/generate/edit.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/generate/edit.esp ; \
-	cp src/paks/esp-html-mvc/generate/list.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/generate/list.esp ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/layouts" ; \
-	cp src/paks/esp-html-mvc/layouts/default.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/layouts/default.esp ; \
-	cp src/paks/esp-html-mvc/package.json $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.3/package.json ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3" ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/generate" ; \
-	cp src/paks/esp-legacy-mvc/generate/appweb.conf $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/generate/appweb.conf ; \
-	cp src/paks/esp-legacy-mvc/generate/controller.c $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/generate/controller.c ; \
-	cp src/paks/esp-legacy-mvc/generate/edit.esp $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/generate/edit.esp ; \
-	cp src/paks/esp-legacy-mvc/generate/list.esp $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/generate/list.esp ; \
-	cp src/paks/esp-legacy-mvc/generate/migration.c $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/generate/migration.c ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/generate/src" ; \
-	cp src/paks/esp-legacy-mvc/generate/src/app.c $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/generate/src/app.c ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/layouts" ; \
-	cp src/paks/esp-legacy-mvc/layouts/default.esp $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/layouts/default.esp ; \
-	cp src/paks/esp-legacy-mvc/package.json $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/package.json ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/static" ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/static/css" ; \
-	cp src/paks/esp-legacy-mvc/static/css/all.css $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/static/css/all.css ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/static/images" ; \
-	cp src/paks/esp-legacy-mvc/static/images/banner.jpg $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/static/images/banner.jpg ; \
-	cp src/paks/esp-legacy-mvc/static/images/favicon.ico $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/static/images/favicon.ico ; \
-	cp src/paks/esp-legacy-mvc/static/images/splash.jpg $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/static/images/splash.jpg ; \
-	cp src/paks/esp-legacy-mvc/static/index.esp $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/static/index.esp ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/static/js" ; \
-	cp src/paks/esp-legacy-mvc/static/js/jquery.esp.js $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/static/js/jquery.esp.js ; \
-	cp src/paks/esp-legacy-mvc/static/js/jquery.js $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.3/static/js/jquery.js ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.3" ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.3/generate" ; \
-	cp src/paks/esp-mvc/generate/appweb.conf $(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.3/generate/appweb.conf ; \
-	cp src/paks/esp-mvc/generate/controller.c $(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.3/generate/controller.c ; \
-	cp src/paks/esp-mvc/generate/migration.c $(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.3/generate/migration.c ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.3/generate/src" ; \
-	cp src/paks/esp-mvc/generate/src/app.c $(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.3/generate/src/app.c ; \
-	cp src/paks/esp-mvc/LICENSE.md $(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.3/LICENSE.md ; \
-	cp src/paks/esp-mvc/package.json $(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.3/package.json ; \
-	cp src/paks/esp-mvc/README.md $(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.3/README.md ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-server/4.6.3" ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-server/4.6.3/generate" ; \
-	cp src/paks/esp-server/generate/appweb.conf $(ME_VAPP_PREFIX)/esp/esp-server/4.6.3/generate/appweb.conf ; \
-	cp src/paks/esp-server/package.json $(ME_VAPP_PREFIX)/esp/esp-server/4.6.3/package.json ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4" ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/client" ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/client/assets" ; \
+	cp src/paks/esp-html-mvc/client/assets/favicon.ico $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/client/assets/favicon.ico ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/client/css" ; \
+	cp src/paks/esp-html-mvc/client/css/all.css $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/client/css/all.css ; \
+	cp src/paks/esp-html-mvc/client/css/all.less $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/client/css/all.less ; \
+	cp src/paks/esp-html-mvc/client/index.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/client/index.esp ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/css" ; \
+	cp src/paks/esp-html-mvc/css/app.less $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/css/app.less ; \
+	cp src/paks/esp-html-mvc/css/theme.less $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/css/theme.less ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/generate" ; \
+	cp src/paks/esp-html-mvc/generate/appweb.conf $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/generate/appweb.conf ; \
+	cp src/paks/esp-html-mvc/generate/controller.c $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/generate/controller.c ; \
+	cp src/paks/esp-html-mvc/generate/controllerSingleton.c $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/generate/controllerSingleton.c ; \
+	cp src/paks/esp-html-mvc/generate/edit.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/generate/edit.esp ; \
+	cp src/paks/esp-html-mvc/generate/list.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/generate/list.esp ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/layouts" ; \
+	cp src/paks/esp-html-mvc/layouts/default.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/layouts/default.esp ; \
+	cp src/paks/esp-html-mvc/package.json $(ME_VAPP_PREFIX)/esp/esp-html-mvc/4.6.4/package.json ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4" ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/generate" ; \
+	cp src/paks/esp-legacy-mvc/generate/appweb.conf $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/generate/appweb.conf ; \
+	cp src/paks/esp-legacy-mvc/generate/controller.c $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/generate/controller.c ; \
+	cp src/paks/esp-legacy-mvc/generate/edit.esp $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/generate/edit.esp ; \
+	cp src/paks/esp-legacy-mvc/generate/list.esp $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/generate/list.esp ; \
+	cp src/paks/esp-legacy-mvc/generate/migration.c $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/generate/migration.c ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/generate/src" ; \
+	cp src/paks/esp-legacy-mvc/generate/src/app.c $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/generate/src/app.c ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/layouts" ; \
+	cp src/paks/esp-legacy-mvc/layouts/default.esp $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/layouts/default.esp ; \
+	cp src/paks/esp-legacy-mvc/package.json $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/package.json ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/static" ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/static/css" ; \
+	cp src/paks/esp-legacy-mvc/static/css/all.css $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/static/css/all.css ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/static/images" ; \
+	cp src/paks/esp-legacy-mvc/static/images/banner.jpg $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/static/images/banner.jpg ; \
+	cp src/paks/esp-legacy-mvc/static/images/favicon.ico $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/static/images/favicon.ico ; \
+	cp src/paks/esp-legacy-mvc/static/images/splash.jpg $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/static/images/splash.jpg ; \
+	cp src/paks/esp-legacy-mvc/static/index.esp $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/static/index.esp ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/static/js" ; \
+	cp src/paks/esp-legacy-mvc/static/js/jquery.esp.js $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/static/js/jquery.esp.js ; \
+	cp src/paks/esp-legacy-mvc/static/js/jquery.js $(ME_VAPP_PREFIX)/esp/esp-legacy-mvc/4.6.4/static/js/jquery.js ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.4" ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.4/generate" ; \
+	cp src/paks/esp-mvc/generate/appweb.conf $(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.4/generate/appweb.conf ; \
+	cp src/paks/esp-mvc/generate/controller.c $(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.4/generate/controller.c ; \
+	cp src/paks/esp-mvc/generate/migration.c $(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.4/generate/migration.c ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.4/generate/src" ; \
+	cp src/paks/esp-mvc/generate/src/app.c $(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.4/generate/src/app.c ; \
+	cp src/paks/esp-mvc/LICENSE.md $(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.4/LICENSE.md ; \
+	cp src/paks/esp-mvc/package.json $(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.4/package.json ; \
+	cp src/paks/esp-mvc/README.md $(ME_VAPP_PREFIX)/esp/esp-mvc/4.6.4/README.md ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-server/4.6.4" ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-server/4.6.4/generate" ; \
+	cp src/paks/esp-server/generate/appweb.conf $(ME_VAPP_PREFIX)/esp/esp-server/4.6.4/generate/appweb.conf ; \
+	cp src/paks/esp-server/package.json $(ME_VAPP_PREFIX)/esp/esp-server/4.6.4/package.json ; \
 	fi ; \
 	if [ "$(ME_COM_ESP)" = 1 ]; then true ; \
 	cp build/$(CONFIG)/bin/esp.conf $(ME_VAPP_PREFIX)/bin/esp.conf ; \
@@ -2293,5 +2321,5 @@ uninstall: $(DEPS_88)
 #   version
 #
 version: $(DEPS_89)
-	echo 4.6.3
+	echo 4.6.4
 
