@@ -16,7 +16,7 @@ div.navigation {
 }
 
 div.body {
-	#max-width: 80em;
+	max-width: 80em;
 	margin: 0 auto;
 	padding: 0;
 	font-family: Verdana, Arial, Helvetica, sans-serif; 
