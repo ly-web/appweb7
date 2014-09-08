@@ -5448,6 +5448,7 @@ PUBLIC int httpAddSecurityToken(HttpConn *conn, bool recreate);
     @stability Internal
  */
 typedef struct HttpUploadFile {
+    cchar           *name;                  /**< Form field name */
     cchar           *filename;              /**< Local (temp) name of the file */
     cchar           *clientFilename;        /**< Client side name of the file */
     cchar           *contentType;           /**< Content type */
@@ -5464,7 +5465,7 @@ typedef struct HttpUploadFile {
     @stability Internal
     @internal
  */
-PUBLIC void httpAddUploadFile(HttpConn *conn, cchar *id, HttpUploadFile *file);
+PUBLIC void httpAddUploadFile(HttpConn *conn, HttpUploadFile *file);
 
 /**
     Remove all uploaded files
@@ -5475,17 +5476,6 @@ PUBLIC void httpAddUploadFile(HttpConn *conn, cchar *id, HttpUploadFile *file);
     @internal
  */
 PUBLIC void httpRemoveAllUploadedFiles(HttpConn *conn);
-
-/**
-    Remove an uploaded file
-    @description Remove an uploaded file from the temporary file store
-    @param conn HttpConn connection object created via #httpCreateConn
-    @param id Identifier used with #httpAddUploadFile for the file
-    @ingroup HttpUploadFile
-    @stability Internal
-    @internal
- */
-PUBLIC void httpRemoveUploadFile(HttpConn *conn, cchar *id);
 
 /********************************** HttpRx *********************************/
 /* 
@@ -5605,7 +5595,7 @@ typedef struct HttpRx {
     /*  
         Upload details
      */
-    MprHash         *files;                 /**< Uploaded files. Managed by the upload filter */
+    MprList         *files;                 /**< Uploaded files. Managed by the upload filter */
     char            *uploadDir;             /**< Upload directory */
     int             autoDelete;             /**< Automatically delete uploaded files */
 
