@@ -20,8 +20,8 @@ See [LICENSE.md](LICENSE.md) for details.
   See https://embedthis.com/appweb/doc/index.html
 
 ### Building
-    You can build with make or with Bit. Bit is quicker and more flexible.
-    To install Bit, download Bit from https://embedthis.com/downloads/bit/download.ejs
+    You can build with make or with MakeMe. MakeMe is quicker and more flexible.
+    To install MakeMe, download MakeMe from https://embedthis.com/makeme/download.html
 
 ### To build with make:
 
@@ -31,10 +31,10 @@ See [LICENSE.md](LICENSE.md) for details.
 
 	make help
 
-### To build with Bit:
+### To build with MakeMe:
 
     ./configure
-    bit
+    me
 
 	For a list of configure options:
 
@@ -46,7 +46,7 @@ See [LICENSE.md](LICENSE.md) for details.
 
     or
 
-    bit run
+    me run
 
 ### To install:
 
@@ -54,7 +54,7 @@ See [LICENSE.md](LICENSE.md) for details.
 
 	or 
 
-    sudo bit install
+    sudo me install
 
 ### To uninstall
 
@@ -62,11 +62,11 @@ See [LICENSE.md](LICENSE.md) for details.
 
 	or 
 
-    sudo bit uninstall
+    sudo me uninstall
 
 ### To test:
 
-    bit test
+    me test
 
 Resources
 ---
