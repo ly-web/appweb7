@@ -1946,7 +1946,7 @@ PUBLIC cchar *getConfig(cchar *field)
 }
 
 
-PUBLIC MprHash *getUploads()
+PUBLIC MprList *getUploads()
 {
     return espGetUploads(getConn());
 }
@@ -3099,7 +3099,7 @@ PUBLIC char *espGetStatusMessage(HttpConn *conn)
 }
 
 
-PUBLIC MprHash *espGetUploads(HttpConn *conn)
+PUBLIC MprList *espGetUploads(HttpConn *conn)
 {
     return conn->rx->files;
 }
