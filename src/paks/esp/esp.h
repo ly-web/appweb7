@@ -2192,15 +2192,14 @@ PUBLIC char *espGetTop(HttpConn *conn);
 
 /**
     Get the uploaded files.
-    @description Get the hash table defining the uploaded files.
-        This hash is indexed by the file identifier supplied in the upload form. The hash entries are HttpUploadFile
-        objects.
+    @description Get the list of uploaded files.
+        This list entries are HttpUploadFile objects.
     @param conn HttpConn connection object
     @return A hash of HttpUploadFile objects.
     @ingroup EspReq
     @stability Evolving
  */
-PUBLIC MprHash *espGetUploads(HttpConn *conn);
+PUBLIC MprList *espGetUploads(HttpConn *conn);
 
 /**
     Get the request URI string.
@@ -3240,14 +3239,13 @@ PUBLIC cchar *getConfig(cchar *field);
 
 /**
     Get the uploaded files
-    @description Get the hash table defining the uploaded files.
-        This hash is indexed by the file identifier supplied in the upload form. The hash entries are HttpUploadFile
-        objects.
+    @description Get the list of uploaded files.
+        This list entries are HttpUploadFile objects.
     @return A hash of HttpUploadFile objects.
     @ingroup EspAbbrev
     @stability Evolving
  */
-PUBLIC MprHash *getUploads();
+PUBLIC MprList *getUploads();
 
 /**
     Get the request URI string

@@ -1954,7 +1954,7 @@ PUBLIC cchar *getTop()
 #endif
 
 
-PUBLIC MprHash *getUploads()
+PUBLIC MprList *getUploads()
 {
     return espGetUploads(getConn());
 }
@@ -4130,7 +4130,7 @@ PUBLIC char *espGetTop(HttpConn *conn)
 #endif
 
 
-PUBLIC MprHash *espGetUploads(HttpConn *conn)
+PUBLIC MprList *espGetUploads(HttpConn *conn)
 {
     return conn->rx->files;
 }
