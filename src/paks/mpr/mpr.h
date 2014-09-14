@@ -1564,6 +1564,7 @@ PUBLIC void mprCheckBlock(MprMem *bp);
 /*
     Internal APIs
  */
+PUBLIC void mprDestroyMemService();
 PUBLIC void mprStartGCService();
 PUBLIC void mprStopGCService();
 PUBLIC void *mprAllocFast(size_t usize);
@@ -6145,7 +6146,6 @@ PUBLIC int mprStopDispatcher(MprDispatcher *dispatcher);
 /* Internal API */
 PUBLIC MprEvent *mprCreateEventQueue();
 PUBLIC MprEventService *mprCreateEventService();
-PUBLIC void mprDestroyEventService();
 PUBLIC void mprDedicateWorkerToDispatcher(MprDispatcher *dispatcher, struct MprWorker *worker);
 PUBLIC void mprDequeueEvent(MprEvent *event);
 PUBLIC bool mprDispatcherHasEvents(MprDispatcher *dispatcher);
@@ -7107,8 +7107,7 @@ typedef struct MprWaitService {
  */
 PUBLIC MprWaitService *mprCreateWaitService();
 PUBLIC void mprTermOsWait(MprWaitService *ws);
-PUBLIC int  mprStartWaitService(MprWaitService *ws);
-PUBLIC int  mprStopWaitService(MprWaitService *ws);
+PUBLIC void mprStopWaitService();
 PUBLIC void mprSetWaitServiceThread(MprWaitService *ws, MprThread *thread);
 PUBLIC void mprWakeNotifier();
 #if MPR_EVENT_ASYNC
@@ -9701,8 +9700,8 @@ PUBLIC int mprDaemon();
     \n\n
     Applications that have a service events thread can call mprDestroy directly from their main program when ready to exit.
     Applications that call mprServiceEvents from their main program will typically have some other MPR thread call
-    #mprShutdown to initiate a shutdown sequence. This will stop accepting new requests or connections and when the application
-    is idle, the #mprServiceEvents routine will return and then the main program can call then call mprDestroy.
+    #mprShutdown to initiate a shutdown sequence. This will stop accepting new requests or connections and when the 
+    application is idle, the #mprServiceEvents routine will return and then the main program can call then call mprDestroy.
     \n\n
     Once the shutdown conditions are satisfied, a thread executing #mprServiceEvents will return from that API and then
     the application should call #mprDestroy and exit().
