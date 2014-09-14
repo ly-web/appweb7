@@ -24,3 +24,12 @@ xcuserdata/
 appweb-x86-default/
 *.suo
 *.sdf
+appweb-macosx-mine*
+*.exp
+*.lib
+*.obj
+*.pdb
+*.tmp
+*.opensdf
+*.user
+*.mdb
