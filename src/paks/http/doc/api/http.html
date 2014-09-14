@@ -108,7 +108,7 @@
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___http_route_1gac0a0680a1f833cde8a1ac651a812580a" class="nameRef">httpAddRouteSet</a>(<a href="#group___http_route" class="ref">HttpRoute</a> *route, <a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *set)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Add a route set.</td></tr>
 <tr class="apiDef"><td class="apiType">int</td><td><a href="#group___http_route_1ga54ef65d762f36ceb395b1a53defed1a5" class="nameRef">httpAddRouteUpdate</a>(<a href="#group___http_route" class="ref">HttpRoute</a> *route, <a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *name, <a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *details, int flags)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Add a route update rule.</td></tr>
 <tr class="apiDef"><td class="apiType">int</td><td><a href="#group___http_session_1ga6885fbd081fff504033038a476311023" class="nameRef">httpAddSecurityToken</a>(<a href="#group___http_conn" class="ref">HttpConn</a> *conn, <a href="osdep.html#osdep_8h_1ad5c9d4ba3dc37783a528b0925dc981a0" class="ref">bool</a> recreate)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Add the security token to the response.</td></tr>
-<tr class="apiDef"><td class="apiType">void</td><td><a href="#group___http_upload_file_1gae80cebe62ea47eaf3e45d9a09c14bec4" class="nameRef">httpAddUploadFile</a>(<a href="#group___http_conn" class="ref">HttpConn</a> *conn, <a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *id, <a href="#group___http_upload_file" class="ref">HttpUploadFile</a> *file)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Add an Uploaded file.</td></tr>
+<tr class="apiDef"><td class="apiType">void</td><td><a href="#group___http_upload_file_1ga2a146a8d8b856ac9bfc9aff458cb9bbd" class="nameRef">httpAddUploadFile</a>(<a href="#group___http_conn" class="ref">HttpConn</a> *conn, <a href="#group___http_upload_file" class="ref">HttpUploadFile</a> *file)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Add an Uploaded file.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="#struct_http_user" class="ref">HttpUser*</a></td><td><a href="#group___http_auth_1gacce2f8bdbad125558934d0496c3f4e86" class="nameRef">httpAddUser</a>(<a href="#group___http_auth" class="ref">HttpAuth</a> *auth, <a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *user, <a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *password, <a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *abilities)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Add a user.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="#group___http_route" class="ref">HttpRoute*</a></td><td><a href="#group___http_route_1ga544e638e474a034b9250798e5202621d" class="nameRef">httpAddWebSocketsRoute</a>(<a href="#group___http_route" class="ref">HttpRoute</a> *parent, <a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *prefix, <a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *name)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Add a route using the WebSockets filter.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___http_packet_1ga985c3c56f728ce5fa706bbd24021f190" class="nameRef">httpAdjustPacketEnd</a>(<a href="#group___http_packet" class="ref">HttpPacket</a> *packet, <a href="mpr.html#mpr_8h_1a87e9f435008723c7b1489af1944c6e20" class="ref">MprOff</a> size)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Adjust the packet end position.</td></tr>
@@ -360,7 +360,6 @@
 <tr class="apiDef"><td class="apiType">int</td><td><a href="#group___http_auth_1gac4f5313df3a2b59227b861b8be616319" class="nameRef">httpRemoveRole</a>(<a href="#group___http_auth" class="ref">HttpAuth</a> *auth, <a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *role)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Remove a role.</td></tr>
 <tr class="apiDef"><td class="apiType">void</td><td><a href="#group___http_route_1gaa9b37da3e62ba9f09b5634cd960de9c2" class="nameRef">httpRemoveRouteMethods</a>(<a href="#group___http_route" class="ref">HttpRoute</a> *route, <a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *methods)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Remove HTTP methods for the route.</td></tr>
 <tr class="apiDef"><td class="apiType">int</td><td><a href="#group___http_session_1ga6a57161d51de33ecfb2bf127ffcc1048" class="nameRef">httpRemoveSessionVar</a>(<a href="#group___http_conn" class="ref">HttpConn</a> *conn, <a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *name)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Remove a session state variable.</td></tr>
-<tr class="apiDef"><td class="apiType">void</td><td><a href="#group___http_upload_file_1ga4bb0929fd70a3247ea1f0d13a57cfc19" class="nameRef">httpRemoveUploadFile</a>(<a href="#group___http_conn" class="ref">HttpConn</a> *conn, <a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *id)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Remove an uploaded file.</td></tr>
 <tr class="apiDef"><td class="apiType">int</td><td><a href="#group___http_auth_1ga401567ded11d00adf55087b78ed45757" class="nameRef">httpRemoveUser</a>(<a href="#group___http_auth" class="ref">HttpAuth</a> *auth, <a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *user)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Remove a user.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="osdep.html#osdep_8h_1ad5c9d4ba3dc37783a528b0925dc981a0" class="ref">bool</a></td><td><a href="#group___http_conn_1ga76efb00eef9f66c28c2ada344ac0fb93" class="nameRef">httpRenderDirListing</a>(<a href="#group___http_conn" class="ref">HttpConn</a> *conn)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Test if a directory listing should be rendered for the request.</td></tr>
 <tr class="apiDef"><td class="apiType"><a href="#group___http_conn" class="ref">HttpConn*</a></td><td><a href="#group___http_tx_1gac6c78c033db6361711cd370ba96c12b9" class="nameRef">httpRequest</a>(<a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *method, <a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *uri, <a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *data, char **err)</td></tr><tr class="apiBrief"><td>&nbsp;</td><td>Issue a http request.</td></tr>
@@ -9085,7 +9084,7 @@ Document etag to uniquely identify the document version.
     <tr><td class="param">char *</td><td><td>extraPath</td><td>
 Extra path information (CGI|PHP).
 </td>
-    <tr><td class="param"><a class="ref" href="#struct_mpr_hash" external="mpr.dtags">MprHash</a> *</td><td><td>files</td><td>
+    <tr><td class="param">MprList *</td><td><td>files</td><td>
 Uploaded files. 
 Managed by the upload filter.
 </td>
@@ -12153,7 +12152,7 @@ When static content is used for the transmission body, defining the entity lengt
     <dl><dt><b>Description</b>:</dt><dd>Each uploaded file has an HttpUploadedFile entry. This is managed by the upload handler.</dd></dl>
     <dl><dt><b>API</b> Stability:</dt><dd>Evolving.</dd></dl>
     <dl><dt>See Also:</dt><dd>
-    <a href="#group___http_upload_file_1gae80cebe62ea47eaf3e45d9a09c14bec4" class="ref">httpAddUploadFile</a>, <a href="#group___http_upload_file_1gaf0783c034eabeefdde3e194e7f773711" class="ref">httpRemoveAllUploadedFiles</a>, <a href="#group___http_upload_file_1ga4bb0929fd70a3247ea1f0d13a57cfc19" class="ref">httpRemoveUploadFile</a></dd></dl>
+    <a href="#group___http_upload_file_1ga2a146a8d8b856ac9bfc9aff458cb9bbd" class="ref">httpAddUploadFile</a>, <a href="#group___http_upload_file_1gaf0783c034eabeefdde3e194e7f773711" class="ref">httpRemoveAllUploadedFiles</a></dd></dl>
     <dl><dt><b>API</b> Stability:</dt><dd>Internal.</dd></dl>
     <dl><dt>Fields:</dt><dd>
     <table class="parameters" title="Parameters">
@@ -12166,18 +12165,21 @@ Content type.
     <tr><td class="param">cchar *</td><td><td>filename</td><td>
 Local (temp) name of the file.
 </td>
+    <tr><td class="param">cchar *</td><td><td>name</td><td>
+Form field name.
+</td>
     <tr><td class="param">ssize</td><td><td>size</td><td>
 Uploaded file size.
 </td>
     </table></dd></dl>
   </div>
 </div>
-<a name="group___http_upload_file_1gae80cebe62ea47eaf3e45d9a09c14bec4"></a>
+<a name="group___http_upload_file_1ga2a146a8d8b856ac9bfc9aff458cb9bbd"></a>
 <div class="api">
   <div class="prototype">
     void
     httpAddUploadFile
-(<a href="#group___http_conn" class="ref">HttpConn</a> *conn, <a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *id, <a href="#group___http_upload_file" class="ref">HttpUploadFile</a> *file)
+(<a href="#group___http_conn" class="ref">HttpConn</a> *conn, <a href="#group___http_upload_file" class="ref">HttpUploadFile</a> *file)
   </div>
   <div class="apiDetail">
 <p>Add an Uploaded file.</p>
@@ -12185,12 +12187,11 @@ Uploaded file size.
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">conn</td><td>HttpConn connection object created via <a class="ref" href="#group___http_conn_1ga25308956e8946f7f26ee9adc396534d3">httpCreateConn</a></td>
-    <tr><td class="param">id</td><td>Unique identifier for the file.</td>
     <tr><td class="param">file</td><td>Instance of HttpUploadFile.</td>
     </table></dd></dl>
     <dl><dt><b>API</b> Stability:</dt><dd>Internal.</dd></dl>
     <dl><dt>See Also:</dt><dd>
-    <a href="#group___http_upload_file_1gaf0783c034eabeefdde3e194e7f773711" class="ref">httpRemoveAllUploadedFiles</a>, <a href="#group___http_upload_file_1ga4bb0929fd70a3247ea1f0d13a57cfc19" class="ref">httpRemoveUploadFile</a></dd></dl>
+    <a href="#group___http_upload_file_1gaf0783c034eabeefdde3e194e7f773711" class="ref">httpRemoveAllUploadedFiles</a></dd></dl>
   </div>
 </div>
 <a name="group___http_upload_file_1gaf0783c034eabeefdde3e194e7f773711"></a>
@@ -12209,27 +12210,7 @@ Uploaded file size.
     </table></dd></dl>
     <dl><dt><b>API</b> Stability:</dt><dd>Internal.</dd></dl>
     <dl><dt>See Also:</dt><dd>
-    <a href="#group___http_upload_file_1gae80cebe62ea47eaf3e45d9a09c14bec4" class="ref">httpAddUploadFile</a>, <a href="#group___http_upload_file_1ga4bb0929fd70a3247ea1f0d13a57cfc19" class="ref">httpRemoveUploadFile</a></dd></dl>
-  </div>
-</div>
-<a name="group___http_upload_file_1ga4bb0929fd70a3247ea1f0d13a57cfc19"></a>
-<div class="api">
-  <div class="prototype">
-    void
-    httpRemoveUploadFile
-(<a href="#group___http_conn" class="ref">HttpConn</a> *conn, <a href="osdep.html#osdep_8h_1a0f128c3e0c83721af0220c00554e9c4e" class="ref">cchar</a> *id)
-  </div>
-  <div class="apiDetail">
-<p>Remove an uploaded file.</p>
-    <dl><dt><b>Description</b>:</dt><dd>Remove an uploaded file from the temporary file store.</dd></dl>
-    <dl><dt>Parameters:</dt><dd>
-    <table class="parameters" title="Parameters">
-    <tr><td class="param">conn</td><td>HttpConn connection object created via <a class="ref" href="#group___http_conn_1ga25308956e8946f7f26ee9adc396534d3">httpCreateConn</a></td>
-    <tr><td class="param">id</td><td>Identifier used with <a class="ref" href="#group___http_upload_file_1gae80cebe62ea47eaf3e45d9a09c14bec4">httpAddUploadFile</a> for the file.</td>
-    </table></dd></dl>
-    <dl><dt><b>API</b> Stability:</dt><dd>Internal.</dd></dl>
-    <dl><dt>See Also:</dt><dd>
-    <a href="#group___http_upload_file_1gae80cebe62ea47eaf3e45d9a09c14bec4" class="ref">httpAddUploadFile</a>, <a href="#group___http_upload_file_1gaf0783c034eabeefdde3e194e7f773711" class="ref">httpRemoveAllUploadedFiles</a></dd></dl>
+    <a href="#group___http_upload_file_1ga2a146a8d8b856ac9bfc9aff458cb9bbd" class="ref">httpAddUploadFile</a></dd></dl>
   </div>
 </div>
 <h1>HttpUri</h1>

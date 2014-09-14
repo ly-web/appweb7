@@ -2653,8 +2653,8 @@
       <type>void</type>
       <name>httpAddUploadFile</name>
       <anchorfile>group___http_upload_file.html</anchorfile>
-      <anchor>gae80cebe62ea47eaf3e45d9a09c14bec4</anchor>
-      <arglist>(HttpConn *conn, cchar *id, HttpUploadFile *file)</arglist>
+      <anchor>ga2a146a8d8b856ac9bfc9aff458cb9bbd</anchor>
+      <arglist>(HttpConn *conn, HttpUploadFile *file)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -2662,13 +2662,6 @@
       <anchorfile>group___http_upload_file.html</anchorfile>
       <anchor>gaf0783c034eabeefdde3e194e7f773711</anchor>
       <arglist>(HttpConn *conn)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>httpRemoveUploadFile</name>
-      <anchorfile>group___http_upload_file.html</anchorfile>
-      <anchor>ga4bb0929fd70a3247ea1f0d13a57cfc19</anchor>
-      <arglist>(HttpConn *conn, cchar *id)</arglist>
     </member>
   </compound>
   <compound kind="group">
