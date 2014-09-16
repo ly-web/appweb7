@@ -1110,6 +1110,13 @@
     </member>
     <member kind="define">
       <type>#define</type>
+      <name>MPR_NOT_ALL</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>ace65c038d3a8380c6213fd2dccbc135b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
       <name>MPR_OBJ_HASH</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>aa3a00f803c06f8d85b8281dff1021acb</anchor>
