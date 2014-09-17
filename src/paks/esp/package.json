@@ -22,8 +22,8 @@
     },
     "pak": "~0.9",
     "dependencies": {
-        "http": "~5",
-        "mpr": "~5",
+        "http": "~6",
+        "mpr": "~6",
         "osdep": "~0.8",
         "pcre": "*"
     },
