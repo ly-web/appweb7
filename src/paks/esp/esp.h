@@ -1154,8 +1154,8 @@ typedef struct MdbTable {
     char            *name;              /* Table name */
     MdbSchema       *schema;            /* Table columns schema */
     MprHash         *index;             /* Table index */
-    MdbCol          *keyCol;            /* Reference to the key column */
-    MdbCol          *indexCol;          /* Reference to the index column */
+    MdbCol          *keyCol;            /* Reference to the key column (unmanaged) */
+    MdbCol          *indexCol;          /* Reference to the index column (unmanaged) */
     MprList         *rows;              /* Table row */
 } MdbTable;
 
@@ -1172,7 +1172,7 @@ typedef struct Mdb {
     MprList         *tables;            /**< List of tables */
 
     /*
-        When loading from file
+        When loading from file only (do not mark)
      */
     MdbTable        *loadTable;         /* Current table */
     MdbCol          *loadCol;           /* Current column */

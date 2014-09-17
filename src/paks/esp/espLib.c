@@ -8163,8 +8163,9 @@ static void manageTable(MdbTable *table, int flags)
         mprMark(table->schema);
         mprMark(table->index);
         mprMark(table->rows);
-        mprMark(table->keyCol);
-        mprMark(table->indexCol);
+        /*
+            Do not mark keyCol or indexCol - they are unmanaged
+         */
     }
 }
 
