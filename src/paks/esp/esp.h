@@ -99,8 +99,8 @@ typedef cchar *(*EdiValidationProc)(struct EdiValidation *vp, struct EdiRec *rec
 typedef struct EdiValidation {
     cchar               *name;          /**< Validation name */
     EdiValidationProc   vfn;            /**< Validation callback procedure */
-    cvoid               *mdata;         /**< Non-GC (malloc) data. Used for pcre. */
-    cvoid               *data;          /**< Allocated data that must be marked for GC */
+    cvoid               *data;          /**< Custom data (managed) */
+    cvoid               *mdata;         /**< Custom data (unmanaged) */
 } EdiValidation;
 
 /**
@@ -172,7 +172,6 @@ typedef struct EdiRec {
     int             index;              /**< Grid index for iteration */
     EdiField        fields[ARRAY_FLEX]; /**< Field records */
 } EdiRec;
-
 
 #define EDI_GRID_READ_ONLY  0x1         /**< Grid contains pure database records, must not be modified */
 
@@ -1764,8 +1763,8 @@ typedef struct EspReq {
     MprHash         *flash;                 /**< New flash messages */
     MprHash         *lastFlash;             /**< Flash messages from the last request */
     HttpNotifier    notifier;               /**< Connection Http state change notification callback */
-    void            *data;                  /**< Custom data for request - must be a managed reference */
-    void            *staticData;            /**< Custom data for request - must be an unmanaged reference */
+    void            *data;                  /**< Custom data for request (managed) */
+    void            *staticData;            /**< Custom data for request (unmanaged) */
     cchar           *commandLine;           /**< Command line for compile/link */
     int             autoFinalize;           /**< Request is or will be auto-finalized */
     int             sessionProbed;          /**< Already probed for session store */
