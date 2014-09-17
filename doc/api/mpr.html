@@ -15781,10 +15781,10 @@ Set a property value in an object.
 General flags word.
 </td>
     <tr><td class="param">void *</td><td><td>key</td><td>
-Key string.
+Key string (managed).
 </td>
     <tr><td class="param">void *</td><td><td>value</td><td>
-Associated value for the key.
+Associated value for the key (managed).
 </td>
     </table></dd></dl>
   </div>
@@ -15976,7 +15976,7 @@ Close a socket.
 <simplesect kind="par"><b>Description</b>:Close a socket. If the graceful option is true, the socket will first wait for written data to drain before doing a graceful close. </simplesect><parameterlist kind="param"><parameteritem><parameternamelist><parametername>socket</parametername></parameternamelist><parameterdescription>Socket object returned from <a class="ref" href="#group___mpr_socket_1ga0ef02d313ec268eae6038a5af0ee5cc4">mprCreateSocket</a></parameterdescription></parameteritem><parameteritem><parameternamelist><parametername>graceful</parametername></parameternamelist><parameterdescription>Set to true to do a graceful close. Otherwise, an abortive close will be performed. </parameterdescription></parameteritem></parameterlist><simplesect kind="par"><b>API</b> Stability:Stable </simplesect>
 </td>
     <tr><td class="param">void *</td><td><td>data</td><td>
-Socket provider private data.
+Socket provider private data (unmanaged).
 </td>
     <tr><td class="param">void(*</td><td><td>disconnectSocket)(struct MprSocket *socket)</td><td>
 Disconnect a socket by closing its underlying file descriptor. 
