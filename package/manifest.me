@@ -434,14 +434,14 @@ Me.load({
                 from:       'src/appweb.h',
                 to:         '${src}/appweb.h',
                 cat:        true,
-                filter:     /^#inc.*customize.*$/mg,
+                remove:     /^#inc.*customize.*$/mg,
                 set:        'pak',
 
             },{
                 from:       ['src/**.c'], 
                 to:         '${src}/appwebLib.c',
                 cat:        true,
-                filter:     /^#inc.*appweb.*$|^#inc.*esp.*$|^#inc.*customize.*$/mg,
+                remove:     /^#inc.*appweb.*$|^#inc.*esp.*$|^#inc.*customize.*$/mg,
                 exclude:    /\/server\/|\/esp\/|\/utils\/|\/paks\/|proxyHandler/,
                 header:     '#include \"appweb.h\"\n\n#if ME_COM_APPWEB',
                 footer:     '#endif /* ME_COM_APPWEB */',
