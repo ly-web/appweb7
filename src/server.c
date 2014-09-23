@@ -287,7 +287,7 @@ PUBLIC int maStartServer(MaServer *server)
     if (maApplyChangedGroup(appweb) < 0 || maApplyChangedUser(appweb) < 0) {
         return MPR_ERR_CANT_COMPLETE;
     }
-   if (appweb->userChanged || appweb->groupChanged) {
+    if (appweb->userChanged || appweb->groupChanged) {
         struct group    *gp;
         gid_t           glist[64], gid;
         MprBuf          *gbuf = mprCreateBuf(0, 0);
