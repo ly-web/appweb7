@@ -5869,6 +5869,7 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->srcDir);
         mprMark(eroute->viewsDir);
         mprMark(eroute->winsdk);
+        mprMark(eroute->top);
     }
 }
 
@@ -6007,6 +6008,7 @@ static void manageReq(EspReq *req, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(req->commandLine);
         mprMark(req->flash);
+        mprMark(req->lastFlash);
         mprMark(req->feedback);
         mprMark(req->route);
         mprMark(req->data);
