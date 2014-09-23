@@ -2780,7 +2780,7 @@ PUBLIC bool mprDestroy()
             break;
         }
     }
-    if (!mprIsIdle(0)) {
+    if (!mprIsIdle(0) || MPR->eventing) {
         if (MPR->exitStrategy & MPR_EXIT_SAFE) {
             /* Note: Pending outside events will pause GC which will make mprIsIdle return false */
             mprLog(2, "Cancel termination due to continuing requests, application resumed.");
@@ -5034,7 +5034,8 @@ PUBLIC void mprSetCacheLimits(MprCache *cache, int64 keys, MprTicks lifespan, in
 }
 
 
-PUBLIC ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTicks lifespan, int64 version, int options)
+PUBLIC ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTicks lifespan, 
+    int64 version, int options)
 {
     CacheItem   *item;
     MprKey      *kp;
@@ -9499,6 +9500,10 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
 
     if (MPR->eventing) {
         mprError("mprServiceEvents() called reentrantly");
+        return 0;
+    }
+    mprAtomicBarrier();
+    if (mprIsDestroying()) {
         return 0;
     }
     MPR->eventing = 1;
