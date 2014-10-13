@@ -2,7 +2,7 @@
     "name": "me-dev",
     "description": "Embedthis Development Lifecycle Support",
     "title": "Embedthis Development",
-    "version": "0.8.0",
+    "version": "0.8.2",
     "keywords": [
         "me",
     ],
@@ -13,7 +13,7 @@
     "author": {
         "name": "Embedthis Software",
         "email": "dev@embedthis.com",
-        "url": "http://embedthis.com"
+        "url": "https://embedthis.com"
     },
     "repository": {
         "type": "git",
@@ -29,7 +29,7 @@
         },
         {
             "type": "Commercial",
-            "url": "http://embedthis.com/licensing/"
+            "url": "https://embedthis.com/licensing/"
         }
     ]
 }

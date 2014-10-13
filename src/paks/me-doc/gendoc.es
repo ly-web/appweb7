@@ -1,6 +1,10 @@
 /*
     gendoc.es - Generate HTML doc from Doxygen XML files
 
+    usage: gendoc [--all] [--bare] [--tags tagfile] [--out outFile] [--title Title] files...
+
+    "--tags file" provide JSON tag files that were output by other gendoc passes
+
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
 
@@ -94,7 +98,7 @@ module embedthis.doc {
             return
         }
         emit('<div class="footnote">Generated on ' + new Date + '<br/>')
-        emit('  Copyright &copy; <a href="http://embedthis.com">Embedthis Software</a> ' + 
+        emit('  Copyright &copy; <a href="https://embedthis.com">Embedthis Software</a> ' + 
             new Date().year + '.')
         emit('</div></div></body></html>')
     }

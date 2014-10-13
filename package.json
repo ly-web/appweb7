@@ -74,5 +74,5 @@
             "noexport": true
         }
     },
-    import: true,
+    "import": true
 }

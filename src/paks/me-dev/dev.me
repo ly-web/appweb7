@@ -18,7 +18,7 @@ Me.load({
     targets: {
         publish: {
             home: '${TOP}',
-            action: `publishToGit()`,
+            action: `commitToPakRepo()`,
         },
 
         removeFiles: {
@@ -26,30 +26,7 @@ Me.load({
             type: 'exe',
             rule: 'gui'
             sources: [ 'package/windows/removeFiles.c' ],
-            platforms: [ 'local' ],
             enable: `me.platform.like == 'windows' && Path('package/windows/removeFiles.c').exists`,
-        },
-
-        projects: {
-            action: `genProjects()`,
-            home: '${TOP}',
-        },
-
-        /*
-            Target to build a personal project for the current configuration
-         */
-        mine: {
-            action: `
-                let cmd = Cmd.locate('me')
-                let runopt = {dir: me.dir.src, show: true}
-                /* Xcode and VS use separate profiles */
-                if (me.platform.name == 'macosx-x64-debug') {
-                    run(cmd + ' -q -d -platform macosx-x64-mine -configure . -gen xcode', runopt)
-                } else if (me.platform.name == 'windows-x86-debug') {
-                    run(cmd + ' -q -d -platform windows-x86-mine -configure . -gen vs', runopt)
-                }
-                run(cmd + ' -q -configure . ', runopt)
-            `,
         },
 
         'projects-clobber': {
@@ -104,19 +81,20 @@ Me.load({
             home: '${TOP}',
             action: `
                 if (!me.targets.test) {
-                    let utest = Cmd.locate('utest')
-                    if (!utest) {
-                        utest = Cmd.locate('utest', [me.dir.top.join(me.platform.name, 'bin/utest'), App.exeDir])
+                    let testme = Cmd.locate('testme')
+                    if (!testme) {
+                        testme = Cmd.locate('testme', [App.exeDir, me.dir.bin])
                     }
-                    if (utest) {
+                    if (testme) {
                         if (me.dir.src.join('src').exists) {
-                            run([utest, '-v', '-d', me.settings.depth], {dir: me.dir.src.join('src')})
+                            run([testme, '--depth', me.settings.depth])
                         }
                     } else {
-                        trace('Test', 'The utest program cannot be located')
+                        trace('Test', 'The testme program cannot be located')
                     }
                 }
             `,
+            platforms: [ 'local' ],
         }
 
         upgrade: {

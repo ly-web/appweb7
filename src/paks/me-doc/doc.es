@@ -14,13 +14,13 @@ public function apidoc(dox: Path, headers, title: String, tags) {
     let output
     if (headers is Array) {
         output = api.join(name + '.h')
-        copy(headers, output, { cat: true, })
+        copy(headers, output, { append: true, })
         headers = output
     }
     rmdir([api.join('html'), api.join('xml')])
     tags = Path('.').files(tags)
 
-    let doxtmp = Path('').temp().replaceExt('dox')
+    let doxtmp = Path('').temp()
     let data = api.join(name + '.dox').readString().replace(/^INPUT .*=.*$/m, 'INPUT = ' + headers)
     Path(doxtmp).write(data)
     trace('Generate', name.toPascal() + ' documentation')
@@ -37,21 +37,22 @@ public function apidoc(dox: Path, headers, title: String, tags) {
     let tstr = tags ? tags.map(function(i) '--tags ' + Path(i).absolute).join(' ') : ''
 
     run('ejs ' + me.dir.src.join('src/paks/me-doc/gendoc.es') + ' --bare ' + '--title \"' + 
-        me.settings.name.toUpper() + ' - ' + title + ' Native API\" --out ' + name + 
-        'Bare.html ' +  tstr + ' ' + files.join(' '), {dir: api})
+        me.settings.name.toUpper() + ' - ' + title + ' Native API\" --out ' + name + '.html ' +  
+        tstr + ' ' + files.join(' '), {dir: api})
     if (!me.options.keep) {
         rmdir([api.join('html'), api.join('xml')])
     }
 }
 
 
-public function apiwrap(patterns) {
-    for each (dfile in Path('.').files(patterns)) {
-        let name = dfile.name.replace('.html', '')
-        let data = Path(name + 'Bare.html').readString()
-        let contents = Path(name + 'Header.tem').readString() + data + Path(name).dirname.join('apiFooter.tem').readString() + '\n'
-        dfile.joinExt('html').write(contents)
-    }
+public function apiLayout(from: Path, to: Path)
+{
+    trace('Generate', to)
+    let contents = from.readString().replace(/\$/mg, '$$$$')
+    let data = to.readString()
+    to.write(data.
+        replace(/DOC_CONTENT/g, contents).
+        replace(/Bare.html/g, 'html'))
 }
 
 /*

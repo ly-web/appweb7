@@ -1,14 +1,14 @@
 {
     "name": "me-doc",
     "description": "Documentation Targets",
-    "version": "0.8.0",
+    "version": "0.8.3",
     "keywords": [
         "me",
     ],
     "author": {
         "name": "Embedthis Software",
         "email": "dev@embedthis.com",
-        "url": "http://embedthis.com"
+        "url": "https://embedthis.com"
     },
     "repository": {
         "type": "git",
@@ -24,7 +24,17 @@
         },
         {
             "type": "Commercial",
-            "url": "http://embedthis.com/licensing/"
+            "url": "https://embedthis.com/licensing/"
+        }
+    ],
+    "export": [ {
+            overwrite: true,
+            from: [ "css/*.less" ],
+            to: 'doc/documents',
+        }, {
+            overwrite: true,
+            from: [ "partials/**" ],
+            to: 'doc',
         }
     ]
 }
