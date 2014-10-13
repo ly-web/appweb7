@@ -1,12 +1,6 @@
 /*
-    esp.h -- Embedthis ESP Library Source
-
-    This file is a catenation of all the source code. Amalgamating into a
-    single file makes embedding simpler and the resulting application faster.
-
-    Prepared by: orion.local
+ * Embedthis ESP Library Source
  */
-
 #include "me.h"
 
 #if ME_COM_ESP
@@ -17,12 +11,6 @@
 #ifndef ESP_VERSION
     #define ESP_VERSION "5.2.0"
 #endif
-
-/************************************************************************/
-/*
-    Start of file "src/edi.h"
- */
-/************************************************************************/
 
 /*
     edi.h -- Embedded Database Interface (EDI).
@@ -1082,12 +1070,6 @@ PUBLIC void sdbInit();
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/mdb.h"
- */
-/************************************************************************/
-
 /*
     mdb.h -- Memory Database (MDB).
 
@@ -1212,12 +1194,6 @@ typedef struct Mdb {
 
     @end
  */
-
-/************************************************************************/
-/*
-    Start of file "src/esp.h"
- */
-/************************************************************************/
 
 /*
     esp.h -- Embedded Server Pages (ESP) Module handler.
@@ -4088,4 +4064,5 @@ PUBLIC cchar *uri(cchar *target, ...);
 
     @end
  */
+
 #endif /* ME_COM_ESP */

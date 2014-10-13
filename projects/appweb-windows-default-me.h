@@ -159,61 +159,67 @@
 #ifndef ME_VERSION
     #define ME_VERSION "5.2.0"
 #endif
+#ifndef ME_WEB_GROUP
+    #define ME_WEB_GROUP "Administrator"
+#endif
+#ifndef ME_WEB_USER
+    #define ME_WEB_USER "Administrator"
+#endif
 
 /* Prefixes */
 #ifndef ME_ROOT_PREFIX
     #define ME_ROOT_PREFIX "C:"
 #endif
 #ifndef ME_PROGRAMFILES_PREFIX
-    #define ME_PROGRAMFILES_PREFIX "C:/Program Files"
+    #define ME_PROGRAMFILES_PREFIX "${prefixes.root}Program Files"
 #endif
 #ifndef ME_PROGRAMFILES32_PREFIX
-    #define ME_PROGRAMFILES32_PREFIX "C:/Program Files"
+    #define ME_PROGRAMFILES32_PREFIX "${prefixes.root}Program Files"
 #endif
 #ifndef ME_BASE_PREFIX
-    #define ME_BASE_PREFIX "C:/Program Files"
+    #define ME_BASE_PREFIX "${prefixes.programFiles}"
 #endif
 #ifndef ME_APP_PREFIX
-    #define ME_APP_PREFIX "C:/Program Files/Embedthis Appweb"
+    #define ME_APP_PREFIX "${prefixes.base}/Embedthis Appweb"
 #endif
 #ifndef ME_VAPP_PREFIX
-    #define ME_VAPP_PREFIX "C:/Program Files/Embedthis Appweb"
+    #define ME_VAPP_PREFIX "${prefixes.app}"
 #endif
 #ifndef ME_DATA_PREFIX
-    #define ME_DATA_PREFIX "C:/Program Files/Embedthis Appweb"
+    #define ME_DATA_PREFIX "${prefixes.app}"
 #endif
 #ifndef ME_STATE_PREFIX
-    #define ME_STATE_PREFIX "C:/Program Files/Embedthis Appweb"
+    #define ME_STATE_PREFIX "${prefixes.app}"
 #endif
 #ifndef ME_BIN_PREFIX
-    #define ME_BIN_PREFIX "C:/Program Files/Embedthis Appweb/bin"
+    #define ME_BIN_PREFIX "${prefixes.app}/bin"
 #endif
 #ifndef ME_INC_PREFIX
-    #define ME_INC_PREFIX "C:/Program Files/Embedthis Appweb/inc"
+    #define ME_INC_PREFIX "${prefixes.app}/inc"
 #endif
 #ifndef ME_LIB_PREFIX
-    #define ME_LIB_PREFIX "C:/Program Files/Embedthis Appweb/lib"
+    #define ME_LIB_PREFIX "${prefixes.app}/lib"
 #endif
 #ifndef ME_MAN_PREFIX
-    #define ME_MAN_PREFIX "C:/Program Files/Embedthis Appweb/man"
+    #define ME_MAN_PREFIX "${prefixes.app}/man"
 #endif
 #ifndef ME_ETC_PREFIX
-    #define ME_ETC_PREFIX "C:/Program Files/Embedthis Appweb"
+    #define ME_ETC_PREFIX "${prefixes.app}"
 #endif
 #ifndef ME_WEB_PREFIX
-    #define ME_WEB_PREFIX "C:/Program Files/Embedthis Appweb/web"
+    #define ME_WEB_PREFIX "${prefixes.data}/web"
 #endif
 #ifndef ME_LOG_PREFIX
-    #define ME_LOG_PREFIX "C:/Program Files/Embedthis Appweb/log"
+    #define ME_LOG_PREFIX "${prefixes.state}/log"
 #endif
 #ifndef ME_SPOOL_PREFIX
-    #define ME_SPOOL_PREFIX "C:/Program Files/Embedthis Appweb/tmp"
+    #define ME_SPOOL_PREFIX "${prefixes.state}/tmp"
 #endif
 #ifndef ME_CACHE_PREFIX
-    #define ME_CACHE_PREFIX "C:/Program Files/Embedthis Appweb/cache"
+    #define ME_CACHE_PREFIX "${prefixes.state}/cache"
 #endif
 #ifndef ME_SRC_PREFIX
-    #define ME_SRC_PREFIX "C:/Program Files/Embedthis Appweb/src"
+    #define ME_SRC_PREFIX "${prefixes.data}/src"
 #endif
 
 /* Suffixes */
@@ -235,7 +241,7 @@
 
 /* Profile */
 #ifndef ME_CONFIG_CMD
-    #define ME_CONFIG_CMD "me -d -q -platform windows-x86-default -configure . -with est -gen vs"
+    #define ME_CONFIG_CMD "me -d -q -platform windows-x86-default -configure . --with est -gen nmake"
 #endif
 #ifndef ME_APPWEB_PRODUCT
     #define ME_APPWEB_PRODUCT 1

@@ -1,21 +1,9 @@
 /*
-    espLib.c -- Embedthis ESP Library Source
-
-    This file is a catenation of all the source code. Amalgamating into a
-    single file makes embedding simpler and the resulting application faster.
-
-    Prepared by: orion.local
+ * Embedthis ESP Library Source
  */
-
 #include "esp.h"
 
 #if ME_COM_ESP
-
-/************************************************************************/
-/*
-    Start of file "src/edi.c"
- */
-/************************************************************************/
 
 /*
     edi.c -- Embedded Database Interface (EDI)
@@ -1636,12 +1624,6 @@ static void addValidations()
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/espAbbrev.c"
- */
-/************************************************************************/
-
 /*
     espAbbrev.c -- ESP Abbreviated API
 
@@ -2583,12 +2565,6 @@ PUBLIC cchar *uri(cchar *target, ...)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/espConfig.c"
- */
-/************************************************************************/
-
 /*
     espConfig.c -- ESP Configuration
 
@@ -2683,12 +2659,6 @@ PUBLIC int espInitParser()
 
     @end
  */
-
-/************************************************************************/
-/*
-    Start of file "src/espFramework.c"
- */
-/************************************************************************/
 
 /*
     espFramework.c -- ESP Web Framework API
@@ -3821,12 +3791,6 @@ PUBLIC bool espIsCurrentSession(HttpConn *conn)
 
     @end
  */
-
-/************************************************************************/
-/*
-    Start of file "src/espHandler.c"
- */
-/************************************************************************/
 
 /*
     espHandler.c -- ESP Appweb handler
@@ -5432,12 +5396,6 @@ static int unloadEsp(MprModule *mp)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/espHtml.c"
- */
-/************************************************************************/
-
 /*
     espHtml.c -- ESP HTML controls 
 
@@ -5604,12 +5562,6 @@ static cchar *map(HttpConn *conn, MprHash *options)
 
     @end
  */
-
-/************************************************************************/
-/*
-    Start of file "src/espTemplate.c"
- */
-/************************************************************************/
 
 /*
     espTemplate.c -- ESP templated web pages with embedded C code.
@@ -6896,12 +6848,6 @@ static cchar *getCompilerPath(cchar *os, cchar *arch)
 
     @end
  */
-
-/************************************************************************/
-/*
-    Start of file "src/mdb.c"
- */
-/************************************************************************/
 
 /*
     mdb.c -- ESP In-Memory Embedded Database (MDB)
@@ -8467,12 +8413,6 @@ PUBLIC void mdbDummy() {}
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/sdb.c"
- */
-/************************************************************************/
-
 /*
     sdb.c -- ESP SQLite Database (SDB)
 
@@ -9528,4 +9468,5 @@ PUBLIC void sdbDummy() {}
 
     @end
  */
+
 #endif /* ME_COM_ESP */

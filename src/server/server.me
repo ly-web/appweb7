@@ -42,7 +42,7 @@ Me.load({
 
         genslink: {
             run: `esp --static --genlink slink.c compile`,
-            message: ['Create', 'slink.c'],
+            message: 'Create: slink.c',
             generate: true,
             depends: [ 'esp' ],
             ifdef: [ 'esp' ],
@@ -72,9 +72,8 @@ Me.load({
 
         run: {
             depends: [ 'compile' ],
-            action: `run('appweb -v')`,
-            message: ['Run', 'From directory src/server'],
-            'generate-sh': "sudo ${BIN}/appweb -v"
+            run: 'appweb --log stdout:2',
+            generate: 'appweb --log stdout:2',
         },
 
         rom: {

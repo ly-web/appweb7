@@ -174,6 +174,12 @@
 #ifndef ME_VERSION
     #define ME_VERSION "5.2.0"
 #endif
+#ifndef ME_WEB_GROUP
+    #define ME_WEB_GROUP "0"
+#endif
+#ifndef ME_WEB_USER
+    #define ME_WEB_USER "0"
+#endif
 
 /* Prefixes */
 #ifndef ME_ROOT_PREFIX

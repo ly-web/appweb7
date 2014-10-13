@@ -47,8 +47,7 @@ all compile:
 	fi
 	@echo '       [Run] $(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@'
 	@$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
-	@echo '      [Info] You can now install via "sudo make $(MAKEFLAGS) install" or run Appweb via: "sudo make run"'
-	@echo "      [Info] To run locally, put $(OS)-$(ARCH)-$(PROFILE)/bin in your path."
+	@echo '      [Info] Run via: "make run". Run manually with "$(OS)-$(ARCH)-$(PROFILE)/bin" in your path.'
 	@echo ""
 
 clean clobber install installBinary uninstall run:
