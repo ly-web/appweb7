@@ -3,6 +3,8 @@
  */
 
 Me.load({
+    plugins: [ 'dev', 'ssl' ],
+
     blend: [
         "src/paks/*/*.me",
         "src/libappweb.me",
@@ -16,9 +18,9 @@ Me.load({
         "?local.me",
     ],
 
-    modules: [
-        'package/service.es',
-    ],
+    xplugins: [ 'embedthis-dev', 'embedthis-doc', 'embedthis-package', 'php', 'ssl' ],
+
+    modules: [ 'package/service.es' ],
 
     configure: {
         requires:  [ 'osdep', 'http', 'mpr', 'pcre'],
@@ -35,7 +37,7 @@ Me.load({
     ],
 
     settings: {
-        me: '>=0.8.2',
+        me: '=0.8.4',
 
         /*
             Installation prefix set
