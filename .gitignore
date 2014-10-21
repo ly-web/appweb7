@@ -33,3 +33,4 @@ appweb-macosx-mine*
 *.opensdf
 *.user
 *.mdb
+.DS_Store
