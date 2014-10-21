@@ -3,10 +3,9 @@
  */
 
 Me.load({
-
     targets: {
         patch: {
-            action: "
+            action: `
                 trace('Patch', 'Patch version string ${settings.version}')
                 let path = Path('product/version.html')
                 let settings = me.settings
@@ -23,11 +22,12 @@ Me.load({
                     vtrace('Patch', path)
                     run(['dsi', '-I ', path])
                 }
-            "
+            `
         },
 
         api: {
             action: `
+                /* UNUSED - doc generation disabled 
                 apidoc('api/appweb.dox', '${SRC}/src/appweb.h', 'APPWEB', 'api/*.tags')
                 for each (let f: Path in ['api/appweb.html', 'api/http.html', 'api/mpr.html', 'api/esp.html', 'api/edi.html']) {
                     trace('Generate', f)
@@ -37,7 +37,7 @@ Me.load({
                                            replace(/httpBare.html/g, 'http.html').
                                            replace(/external=\"mpr.dtags\"/g, '').
                                            replace(/external=\"http.dtags\"/g, ''))
-                }
+                } */
             `,
         },
 

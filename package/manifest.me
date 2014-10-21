@@ -4,21 +4,23 @@
 
 Me.load({
     scripts: {
-        loaded: "
-            if (me.generating) {
-                me.settings.webUser = '$(WEB_USER)'
-                me.settings.webGroup = '$(WEB_GROUP)'
+        loaded: `
+            let s = me.settings
+            if (makeme.generating) {
+                s.webUser = '$(WEB_USER)'
+                s.webGroup = '$(WEB_GROUP)'
             } else {
-                me.settings.webUser = getWebUser()
-                me.settings.webGroup = getWebGroup()
+                let os = me.platform.os
+                s.webUser = {macosx: '_www', windows: 'Administrator', linux: 'nobody', freebsd: 'nobody'}[os]
+                s.webGroup = {macosx: '_www', windows: 'Administrator', linux: 'nogroup', freebsd: 'nogroup'}[os]
             }
-        ",
-        gencustom: "
+        `,
+        gencustom: `
             if (me.platform.os != 'windows') {
                 genWriteLine(\"WEB_USER    = $(shell egrep 'www-data|_www|nobody' /etc/passwd | sed 's/:.*$$//' |  tail -1)\")
                 genWriteLine(\"WEB_GROUP   = $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group | sed 's/:.*$$//' |  tail -1)\")
             }
-        ",
+        `,
     },
 
     manifest: {
