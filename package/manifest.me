@@ -175,9 +175,7 @@ Me.load({
                     ifdef:      'esp',
                 }, {
 
-                    //  MOB - but do we need to provide from/to?
-                    //  MOB - can you have a manifest item without from/to
-                    perform: function() {
+                    perform: function(from, to, options) {
                         for each (pak in Path(me.dir.paks).files(['angular', 'esp-*'])) {
                             let version = pak.join('package.json').readJSON().version || '0.0.0'
                             let dir = me.globals.abin.join('../esp', pak.basename, version)
@@ -189,6 +187,7 @@ Me.load({
                                 if (from.isDir) {
                                     makeDirectory(to)
                                 } else {
+                                    options.filelist.push(to)
                                     copyFile(from, to)
                                 }
                             }

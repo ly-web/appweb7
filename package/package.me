@@ -5,12 +5,14 @@
 Me.load({
     scripts: {
         loaded: `
+            let s = me.settings
             if (makeme.generating) {
-                me.settings.webUser = '$(WEB_USER)'
-                me.settings.webGroup = '$(WEB_GROUP)'
+                s.webUser = '$(WEB_USER)'
+                s.webGroup = '$(WEB_GROUP)'
             } else {
-                me.settings.webUser = getWebUser()
-                me.settings.webGroup = getWebGroup()
+                let os = me.platform.os
+                s.webUser = {macosx: '_www', windows: 'Administrator', linux: 'nobody', freebsd: 'nobody'}[os]
+                s.webGroup = {macosx: '_www', windows: 'Administrator', linux: 'nogroup', freebsd: 'nogroup'}[os]
             }
         `,
         gencustom: `
@@ -71,7 +73,6 @@ Me.load({
                 removeFile(me.prefixes.etc.join('mine.types'))
                 removeFile(me.prefixes.etc.join('install.conf'))
                 removeDir(me.prefixes.inc.join(me.settings.name))
-                uninstallBinary()
             `,
             generate: true,
         },

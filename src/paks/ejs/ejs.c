@@ -5,7 +5,7 @@
 
 
 
-/********* Start of file src/cmd/ejs.c ************/
+/********* Start of file ../../../src/cmd/ejs.c ************/
 
 
 /**

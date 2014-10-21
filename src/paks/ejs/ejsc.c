@@ -5,7 +5,7 @@
 
 
 
-/********* Start of file src/cmd/ejsc.c ************/
+/********* Start of file ../../../src/cmd/ejsc.c ************/
 
 
 /* 

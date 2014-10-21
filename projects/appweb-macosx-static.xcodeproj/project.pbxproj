@@ -1817,29 +1817,29 @@
     			files = (
     			);
     			inputPaths = (
-    ../src/paks/esp-html-mvc/client/assets/favicon.ico,
-../src/paks/esp-html-mvc/client/css/all.css,
-../src/paks/esp-html-mvc/client/css/all.less,
-../src/paks/esp-html-mvc/client/index.esp,
-../src/paks/esp-html-mvc/css/app.less,
-../src/paks/esp-html-mvc/css/theme.less,
-../src/paks/esp-html-mvc/generate/appweb.conf,
-../src/paks/esp-html-mvc/generate/controller.c,
-../src/paks/esp-html-mvc/generate/controllerSingleton.c,
-../src/paks/esp-html-mvc/generate/edit.esp,
-../src/paks/esp-html-mvc/generate/list.esp,
-../src/paks/esp-html-mvc/layouts/default.esp,
+    ../src/paks/esp-html-mvc/all.css,
+../src/paks/esp-html-mvc/all.less,
+../src/paks/esp-html-mvc/app.less,
+../src/paks/esp-html-mvc/appweb.conf,
+../src/paks/esp-html-mvc/controller.c,
+../src/paks/esp-html-mvc/controllerSingleton.c,
+../src/paks/esp-html-mvc/default.esp,
+../src/paks/esp-html-mvc/edit.esp,
+../src/paks/esp-html-mvc/favicon.ico,
+../src/paks/esp-html-mvc/index.esp,
 ../src/paks/esp-html-mvc/LICENSE.md,
+../src/paks/esp-html-mvc/list.esp,
 ../src/paks/esp-html-mvc/package.json,
 ../src/paks/esp-html-mvc/README.md,
-../src/paks/esp-mvc/generate/appweb.conf,
-../src/paks/esp-mvc/generate/controller.c,
-../src/paks/esp-mvc/generate/migration.c,
-../src/paks/esp-mvc/generate/src/app.c,
+../src/paks/esp-html-mvc/theme.less,
+../src/paks/esp-mvc/app.c,
+../src/paks/esp-mvc/appweb.conf,
+../src/paks/esp-mvc/controller.c,
 ../src/paks/esp-mvc/LICENSE.md,
+../src/paks/esp-mvc/migration.c,
 ../src/paks/esp-mvc/package.json,
 ../src/paks/esp-mvc/README.md,
-../src/paks/esp-server/generate/appweb.conf,
+../src/paks/esp-server/appweb.conf,
 ../src/paks/esp-server/LICENSE.md,
 ../src/paks/esp-server/package.json,
 ../src/paks/esp-server/README.md
@@ -1852,40 +1852,31 @@
     			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/paks
 	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.2.0\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.2.0/client\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.2.0/client/assets\"
-	cp esp-html-mvc/client/assets/favicon.ico ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/client/assets/favicon.ico
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.2.0/client/css\"
-	cp esp-html-mvc/client/css/all.css ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/client/css/all.css
-	cp esp-html-mvc/client/css/all.less ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/client/css/all.less
-	cp esp-html-mvc/client/index.esp ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/client/index.esp
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.2.0/css\"
-	cp esp-html-mvc/css/app.less ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/css/app.less
-	cp esp-html-mvc/css/theme.less ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/css/theme.less
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.2.0/generate\"
-	cp esp-html-mvc/generate/appweb.conf ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/generate/appweb.conf
-	cp esp-html-mvc/generate/controller.c ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/generate/controller.c
-	cp esp-html-mvc/generate/controllerSingleton.c ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/generate/controllerSingleton.c
-	cp esp-html-mvc/generate/edit.esp ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/generate/edit.esp
-	cp esp-html-mvc/generate/list.esp ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/generate/list.esp
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.2.0/layouts\"
-	cp esp-html-mvc/layouts/default.esp ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/layouts/default.esp
+	cp esp-html-mvc/all.css ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/all.css
+	cp esp-html-mvc/all.less ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/all.less
+	cp esp-html-mvc/app.less ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/app.less
+	cp esp-html-mvc/appweb.conf ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/appweb.conf
+	cp esp-html-mvc/controller.c ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/controller.c
+	cp esp-html-mvc/controllerSingleton.c ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/controllerSingleton.c
+	cp esp-html-mvc/default.esp ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/default.esp
+	cp esp-html-mvc/edit.esp ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/edit.esp
+	cp esp-html-mvc/favicon.ico ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/favicon.ico
+	cp esp-html-mvc/index.esp ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/index.esp
 	cp esp-html-mvc/LICENSE.md ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/LICENSE.md
+	cp esp-html-mvc/list.esp ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/list.esp
 	cp esp-html-mvc/package.json ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/package.json
 	cp esp-html-mvc/README.md ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/README.md
+	cp esp-html-mvc/theme.less ../${OUT_DIR}/esp/esp-html-mvc/5.2.0/theme.less
 	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/5.2.0\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/5.2.0/generate\"
-	cp esp-mvc/generate/appweb.conf ../${OUT_DIR}/esp/esp-mvc/5.2.0/generate/appweb.conf
-	cp esp-mvc/generate/controller.c ../${OUT_DIR}/esp/esp-mvc/5.2.0/generate/controller.c
-	cp esp-mvc/generate/migration.c ../${OUT_DIR}/esp/esp-mvc/5.2.0/generate/migration.c
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/5.2.0/generate/src\"
-	cp esp-mvc/generate/src/app.c ../${OUT_DIR}/esp/esp-mvc/5.2.0/generate/src/app.c
+	cp esp-mvc/app.c ../${OUT_DIR}/esp/esp-mvc/5.2.0/app.c
+	cp esp-mvc/appweb.conf ../${OUT_DIR}/esp/esp-mvc/5.2.0/appweb.conf
+	cp esp-mvc/controller.c ../${OUT_DIR}/esp/esp-mvc/5.2.0/controller.c
 	cp esp-mvc/LICENSE.md ../${OUT_DIR}/esp/esp-mvc/5.2.0/LICENSE.md
+	cp esp-mvc/migration.c ../${OUT_DIR}/esp/esp-mvc/5.2.0/migration.c
 	cp esp-mvc/package.json ../${OUT_DIR}/esp/esp-mvc/5.2.0/package.json
 	cp esp-mvc/README.md ../${OUT_DIR}/esp/esp-mvc/5.2.0/README.md
 	mkdir -p \"../${OUT_DIR}/esp/esp-server/5.2.0\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-server/5.2.0/generate\"
-	cp esp-server/generate/appweb.conf ../${OUT_DIR}/esp/esp-server/5.2.0/generate/appweb.conf
+	cp esp-server/appweb.conf ../${OUT_DIR}/esp/esp-server/5.2.0/appweb.conf
 	cp esp-server/LICENSE.md ../${OUT_DIR}/esp/esp-server/5.2.0/LICENSE.md
 	cp esp-server/package.json ../${OUT_DIR}/esp/esp-server/5.2.0/package.json
 	cp esp-server/README.md ../${OUT_DIR}/esp/esp-server/5.2.0/README.md
@@ -1906,9 +1897,9 @@ cd ../src/paks
     			runOnlyForDeploymentPostprocessing = 0;
     			shellPath = /bin/bash;
     			shellScript = "PATH=$PATH:/usr/local/bin
-cd ../src/paks/esp
-mkdir -p ../../${OUT_DIR}/bin
-cp -r esp.conf ../../${OUT_DIR}/bin/esp.conf
+cd ..
+	mkdir -p \"build/macosx-x64-static/bin\"
+	cp src/paks/esp/esp.conf build/macosx-x64-static/bin/esp.conf
 ";
     		};
 		2C8AF2682C8B11160000000F /* ShellScript for http-ca-crt */ = {
@@ -1925,9 +1916,26 @@ cp -r esp.conf ../../${OUT_DIR}/bin/esp.conf
     			runOnlyForDeploymentPostprocessing = 0;
     			shellPath = /bin/bash;
     			shellScript = "PATH=$PATH:/usr/local/bin
-cd ../src/paks/http
-mkdir -p ../../${OUT_DIR}/bin
-cp -r ca.crt ../../${OUT_DIR}/bin/ca.crt
+cd ..
+	mkdir -p \"build/macosx-x64-static/bin\"
+	cp src/paks/http/ca.crt build/macosx-x64-static/bin/ca.crt
+";
+    		};
+		2C8AF2682C8B111600000013 /* ShellScript for prep-cgi */ = {
+    			isa = PBXShellScriptBuildPhase;
+    			buildActionMask = 2147483647;
+    			files = (
+    			);
+    			inputPaths = (
+    
+    			);
+    			outputPaths = (
+    
+    			);
+    			runOnlyForDeploymentPostprocessing = 0;
+    			shellPath = /bin/bash;
+    			shellScript = "PATH=$PATH:/usr/local/bin
+cd ../test
 ";
     		};
 		2C8AF2682C8B111600000017 /* ShellScript for server-cache */ = {
@@ -1948,6 +1956,74 @@ cd ../src/server
 	mkdir -p \"cache\"
 ";
     		};
+		2C8AF2682C8B11160000001B /* ShellScript for test-basic.cgi */ = {
+    			isa = PBXShellScriptBuildPhase;
+    			buildActionMask = 2147483647;
+    			files = (
+    			);
+    			inputPaths = (
+    
+    			);
+    			outputPaths = (
+    ../test/web/auth/basic/basic.cgi
+    			);
+    			runOnlyForDeploymentPostprocessing = 0;
+    			shellPath = /bin/bash;
+    			shellScript = "PATH=$PATH:/usr/local/bin
+cd ../test
+";
+    		};
+		2C8AF2682C8B111600000020 /* ShellScript for test-cache.cgi */ = {
+    			isa = PBXShellScriptBuildPhase;
+    			buildActionMask = 2147483647;
+    			files = (
+    			);
+    			inputPaths = (
+    
+    			);
+    			outputPaths = (
+    ../test/web/caching/cache.cgi
+    			);
+    			runOnlyForDeploymentPostprocessing = 0;
+    			shellPath = /bin/bash;
+    			shellScript = "PATH=$PATH:/usr/local/bin
+cd ../test
+";
+    		};
+		2C8AF2682C8B111600000025 /* ShellScript for test-cgiProgram */ = {
+    			isa = PBXShellScriptBuildPhase;
+    			buildActionMask = 2147483647;
+    			files = (
+    			);
+    			inputPaths = (
+    
+    			);
+    			outputPaths = (
+    ../test/cgi-bin/cgiProgram
+    			);
+    			runOnlyForDeploymentPostprocessing = 0;
+    			shellPath = /bin/bash;
+    			shellScript = "PATH=$PATH:/usr/local/bin
+cd ../test
+";
+    		};
+		2C8AF2682C8B11160000002A /* ShellScript for test-testScript */ = {
+    			isa = PBXShellScriptBuildPhase;
+    			buildActionMask = 2147483647;
+    			files = (
+    			);
+    			inputPaths = (
+    
+    			);
+    			outputPaths = (
+    ../test/cgi-bin/testScript
+    			);
+    			runOnlyForDeploymentPostprocessing = 0;
+    			shellPath = /bin/bash;
+    			shellScript = "PATH=$PATH:/usr/local/bin
+cd ../test
+";
+    		};
 		2C8AF2682C8B11160000004D /* ShellScript for Prep */ = {
     			isa = PBXShellScriptBuildPhase;
     			buildActionMask = 2147483647;
@@ -1962,7 +2038,58 @@ cd ../src/server
     			runOnlyForDeploymentPostprocessing = 0;
     			shellPath = /bin/bash;
     			shellScript = "PATH=$PATH:/usr/local/bin
-";
+[ ! -x ${INC_DIR} ] && mkdir -p ${INC_DIR} ${OBJ_DIR} ${LIB_DIR} ${BIN_DIR}
+[ ! -f ${INC_DIR}/me.h -a -f cp appweb-macosx-static-me.h ] && cp appweb-macosx-static-me.h ${INC_DIR}/me.h
+if [ -f appweb-macosx-static-me.h ] ; then
+if ! diff ${INC_DIR}/me.h appweb-macosx-static-me.h >/dev/null 2>&1 ; then
+cp appweb-macosx-static-me.h ${INC_DIR}/me.h
+fi
+fi
+if [ ../src/appweb.h -nt ${OUT_DIR}/inc/appweb.h ] ; then
+cp ../src/appweb.h ${OUT_DIR}/inc/appweb.h
+fi
+if [ ../src/customize.h -nt ${OUT_DIR}/inc/customize.h ] ; then
+cp ../src/customize.h ${OUT_DIR}/inc/customize.h
+fi
+if [ ../src/paks/esp/esp.h -nt ${OUT_DIR}/inc/esp.h ] ; then
+cp ../src/paks/esp/esp.h ${OUT_DIR}/inc/esp.h
+fi
+if [ ../src/paks/est/est.h -nt ${OUT_DIR}/inc/est.h ] ; then
+cp ../src/paks/est/est.h ${OUT_DIR}/inc/est.h
+fi
+if [ ../src/paks/http/http.h -nt ${OUT_DIR}/inc/http.h ] ; then
+cp ../src/paks/http/http.h ${OUT_DIR}/inc/http.h
+fi
+if [ ../src/paks/mpr/mpr.h -nt ${OUT_DIR}/inc/mpr.h ] ; then
+cp ../src/paks/mpr/mpr.h ${OUT_DIR}/inc/mpr.h
+fi
+if [ ../src/paks/osdep/osdep.h -nt ${OUT_DIR}/inc/osdep.h ] ; then
+cp ../src/paks/osdep/osdep.h ${OUT_DIR}/inc/osdep.h
+fi
+if [ ../src/paks/pcre/pcre.h -nt ${OUT_DIR}/inc/pcre.h ] ; then
+cp ../src/paks/pcre/pcre.h ${OUT_DIR}/inc/pcre.h
+fi
+if [ ../src/appweb.h -nt ${OUT_DIR}/inc/appweb.h ] ; then
+cp ../src/appweb.h ${OUT_DIR}/inc/appweb.h
+fi
+if [ ../src/customize.h -nt ${OUT_DIR}/inc/customize.h ] ; then
+cp ../src/customize.h ${OUT_DIR}/inc/customize.h
+fi
+if [ ../src/paks/est/est.h -nt ${OUT_DIR}/inc/est.h ] ; then
+cp ../src/paks/est/est.h ${OUT_DIR}/inc/est.h
+fi
+if [ ../src/paks/http/http.h -nt ${OUT_DIR}/inc/http.h ] ; then
+cp ../src/paks/http/http.h ${OUT_DIR}/inc/http.h
+fi
+if [ ../src/paks/esp/esp.h -nt ${OUT_DIR}/inc/esp.h ] ; then
+cp ../src/paks/esp/esp.h ${OUT_DIR}/inc/esp.h
+fi
+if [ ../src/paks/mpr/mpr.h -nt ${OUT_DIR}/inc/mpr.h ] ; then
+cp ../src/paks/mpr/mpr.h ${OUT_DIR}/inc/mpr.h
+fi
+if [ ../src/paks/pcre/pcre.h -nt ${OUT_DIR}/inc/pcre.h ] ; then
+cp ../src/paks/pcre/pcre.h ${OUT_DIR}/inc/pcre.h
+fi";
     		};
 /* End PBXShellScriptBuildPhase section */
 

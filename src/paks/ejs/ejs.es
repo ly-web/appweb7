@@ -1109,6 +1109,7 @@ module ejs {
             splice(start, end - start + 1)
         }
 
+        //  MOB - should return array to permit chaining
         /**
             Remove specified elements from the array. The elements are removed and not just set 
             to undefined as the delete operator will do. Indicies are renumbered. 
@@ -9547,7 +9548,7 @@ module ejs {
             if (expand) {
                 if (!(expand is Function)) {
                     let obj = expand
-                    expand = function(str, obj) str.expand(obj, {fill: '${}'})
+                    expand = function(str, obj) str.expand(obj, {missing: true})
                 }
             } else {
                 expand = function(str, obj) str
@@ -9573,6 +9574,10 @@ module ejs {
                 if (options.remove) {
                     print('Warn: using legacy "remove" property for Path.operate, use "filter" instead.')
                     options.filter = options.remove
+                }
+                if (options.separator) {
+                    print('Warn: using legacy "separator" property for Path.operate, use "divider" instead.')
+                    options.divider = options.separator
                 }
                 //  LEGACY
                 if (options.title) {
@@ -9710,11 +9715,11 @@ module ejs {
                         src.rename(dest)
 
                     } else if (operation == 'append') {
-                        if (options.separator) {
-                            if (options.separator == true) {
+                        if (options.divider) {
+                            if (options.divider == true) {
                                 contents.push('\n\n/********* Start of file ' + src + ' ************/\n\n')
                             } else {
-                                contents.push(expand(options.separator, item))
+                                contents.push(expand(options.divider, item))
                             }
                         }
                         let data = src.readString()
@@ -9762,6 +9767,7 @@ module ejs {
                     for each (item in commands) {
                         let src = this.join(item.from)
                         let dest = item.to
+                        let att = dest.attributes
                         if (options.patch) {
                             dest.write(expand(dest.readString(), item))
                         }
@@ -9785,6 +9791,9 @@ module ejs {
                             }
                             dest.relativeTo(symlink.dirname).link(symlink)
                             item.to = symlink
+                        }
+                        if (att && att.permissions) {
+                            dest.setAttributes({permissions: att.permissions})
                         }
                         if (options.postPerform) {
                             options.postPerform.call(this, src, dest, options)
@@ -9889,6 +9898,7 @@ module ejs {
         function makeTemp(): Path
             temp()
 
+        //  MOB - much better if this had no arg and was a getter.
         /**
             Return a compact representation of the path
             This returns a relative path if the path is under the given home directory. Otherwise it returns an 
@@ -10755,9 +10765,10 @@ module ejs {
             To preserve an ${token} unmodified, preceed the token with an extra '$'. For example: $${token}.
             @param obj containing tokens to expand
             @param options Options hash
-            @option fill Set to a string to use for missing properties. Set to undefined or omit the fill option to 
-                throw an exception for missing properties. Set fill to '${}' to preserve undefined tokens as-is. 
-                This permits multi-pass expansions. Default is to throw an exception (undefined).
+            @option fill Set to a string to use for missing properties. Set to undefined, null or omit the fill option to 
+                throw an exception for missing properties. Set fill to true to preserve undefined tokens as-is. 
+                This permits multi-pass expansions. Set to false to remove the token. Otherwise set to any string
+                to replace the token with the string value. Default is to throw an exception (undefined).
             @option join Character to use to join array elements. Defaults to space.
             @return Expanded string
          */ 

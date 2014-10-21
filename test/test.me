@@ -98,10 +98,12 @@ Me.load({
         testPackage: {
             type: 'test',
             action: `
-                let package = packageName()
-                if (!package || !package.exists) {
+                require embedthis.me
+                let package = Package()
+                let pname = package.packageName()
+                if (!pname || !pname.exists) {
                     trace('Test', 'testPackage -- SKIPPED (Missing package to install)')
-                } else if (me.settings.depth < 2) {
+                } else if (makeme.options.depth < 2) {
                     trace('Test', 'testPackage -- SKIPPED (Runs at depth 2 on windows or macosx)')
                 } else {
                     if (Config.OS == 'macosx' && App.uid != 0) {
@@ -110,11 +112,11 @@ Me.load({
                         trace('Test', 'testPackage')
                         if (me.prefixes.bin.join('uninstall').exists) {
                             trace('Test', 'Cleanup prior to installation')
-                            uninstallPackage()
-                            checkUninstalled()
+                            package.uninstallPackage()
+                            package.checkUninstalled()
                         }
-                        installPackage()
-                        if (missing = checkInstalled()) {
+                        package.installPackage()
+                        if (missing = package.checkInstalled()) {
                             trace('Test', 'Install is missing files: ' + missing)
                         }
                         let s = me.settings
@@ -127,9 +129,9 @@ Me.load({
                         App.sleep(3000)
                         http.get('/index.html')
                         assert(http.response.contains('Embedthis Appweb'))
-                        uninstallPackage()
+                        package.uninstallPackage()
                         if (Config.OS == 'windows') App.sleep(1000)
-                        if (existing = checkUninstalled()) {
+                        if (existing = package.checkUninstalled()) {
                             trace('Warning', 'The uninstall for testPackage was not clean: ' + existing)
                         } else {
                             trace('Test', 'Uninstall is clean')

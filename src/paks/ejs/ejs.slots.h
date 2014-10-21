@@ -5,7 +5,7 @@
 
 
 
-/********* Start of file build/macosx-x64-debug/inc/ejs.cache.local.slots.h ************/
+/********* Start of file ../inc/ejs.cache.local.slots.h ************/
 
 
 /*
@@ -112,7 +112,7 @@
 
 
 
-/********* Start of file build/macosx-x64-debug/inc/ejs.db.sqlite.slots.h ************/
+/********* Start of file ../inc/ejs.db.sqlite.slots.h ************/
 
 
 /*
@@ -182,7 +182,7 @@
 
 
 
-/********* Start of file build/macosx-x64-debug/inc/ejs.slots.h ************/
+/********* Start of file ../inc/ejs.slots.h ************/
 
 
 /*
@@ -2613,13 +2613,13 @@
 #define ES_XMLList_NUM_INSTANCE_PROP                                   20
 #define ES_XMLList_NUM_INHERITED_PROP                                  0
 
-#define _ES_CHECKSUM_ejs   1547592
+#define _ES_CHECKSUM_ejs   1547921
 
 #endif
 
 
 
-/********* Start of file build/macosx-x64-debug/inc/ejs.web.slots.h ************/
+/********* Start of file ../inc/ejs.web.slots.h ************/
 
 
 /*
@@ -3249,7 +3249,7 @@
 
 
 
-/********* Start of file build/macosx-x64-debug/inc/ejs.zlib.slots.h ************/
+/********* Start of file ../inc/ejs.zlib.slots.h ************/
 
 
 /*

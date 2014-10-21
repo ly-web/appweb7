@@ -1,8 +1,8 @@
 {
-    "name": "me-php",
+    "name": "php",
     "description": "PHP MakeMe Probe",
     "title": "PHP Library",
-    "version": "5.5.10",
+    "version": "0.8.0",
     "keywords": [
         "php",
         "me",
@@ -14,15 +14,15 @@
     },
     "repository": {
         "type": "git",
-        "url": "git://github.com/embedthis/me-php.git"
+        "url": "git://github.com/embedthis/php.git"
     },
     "bugs": {
-        "url": "http://github.com/embedthis/me-php/issues"
+        "url": "http://github.com/embedthis/php/issues"
     },
     "licenses": [
         {
             "type": "PUBLIC",
-            "url": "https://github.com/embedthis/me-php/blob/master/LICENSE.md"
+            "url": "https://github.com/embedthis/php/blob/master/LICENSE.md"
         }
     ],
 }

@@ -205,10 +205,10 @@ clean:
 clobber: clean
 	rm -fr ./$(BUILD)
 
-
 #
 #   me.h
 #
+
 $(BUILD)/inc/me.h: $(DEPS_1)
 
 #
@@ -248,6 +248,7 @@ $(BUILD)/inc/http.h: $(DEPS_4)
 #
 #   customize.h
 #
+
 src/customize.h: $(DEPS_5)
 
 #
@@ -381,6 +382,7 @@ $(BUILD)/obj/cgiHandler.o: \
 #
 #   cgiProgram.o
 #
+
 $(BUILD)/obj/cgiProgram.o: \
     src/utils/cgiProgram.c $(DEPS_18)
 	@echo '   [Compile] $(BUILD)/obj/cgiProgram.o'
@@ -389,6 +391,7 @@ $(BUILD)/obj/cgiProgram.o: \
 #
 #   appweb.h
 #
+
 src/appweb.h: $(DEPS_19)
 
 #
@@ -415,6 +418,7 @@ $(BUILD)/obj/convenience.o: \
 #
 #   ejs.h
 #
+
 src/paks/ejs/ejs.h: $(DEPS_22)
 
 #
@@ -463,6 +467,7 @@ $(BUILD)/obj/ejsc.o: \
 #
 #   esp.h
 #
+
 src/paks/esp/esp.h: $(DEPS_27)
 
 #
@@ -480,6 +485,7 @@ $(BUILD)/obj/espLib.o: \
 #
 #   est.h
 #
+
 src/paks/est/est.h: $(DEPS_29)
 
 #
@@ -495,6 +501,7 @@ $(BUILD)/obj/estLib.o: \
 #
 #   http.h
 #
+
 src/paks/http/http.h: $(DEPS_31)
 
 #
@@ -520,6 +527,7 @@ $(BUILD)/obj/httpLib.o: \
 #
 #   mpr.h
 #
+
 src/paks/mpr/mpr.h: $(DEPS_34)
 
 #
@@ -556,6 +564,7 @@ $(BUILD)/obj/mprSsl.o: \
 #
 #   pcre.h
 #
+
 src/paks/pcre/pcre.h: $(DEPS_38)
 
 #
@@ -577,7 +586,7 @@ DEPS_40 += $(BUILD)/inc/appweb.h
 $(BUILD)/obj/phpHandler.o: \
     src/modules/phpHandler.c $(DEPS_40)
 	@echo '   [Compile] $(BUILD)/obj/phpHandler.o'
-	$(CC) -c -o $(BUILD)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)/main" "-I$(ME_COM_PHP_PATH)/Zend" "-I$(ME_COM_PHP_PATH)/TSRM" src/modules/phpHandler.c
+	$(CC) -c -o $(BUILD)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/modules/phpHandler.c
 
 #
 #   slink.o
@@ -593,6 +602,7 @@ $(BUILD)/obj/slink.o: \
 #
 #   sqlite3.h
 #
+
 src/paks/sqlite/sqlite3.h: $(DEPS_42)
 
 #
@@ -619,6 +629,7 @@ $(BUILD)/obj/sslModule.o: \
 #
 #   zlib.h
 #
+
 src/paks/zlib/zlib.h: $(DEPS_45)
 
 #
@@ -776,7 +787,7 @@ $(BUILD)/bin/ejs.mod: $(DEPS_57)
 	( \
 	cd src/paks/ejs; \
 	echo '   [Compile] ejs.mod' ; \
-	null/ejsc --out ../../../$(BUILD)/bin/ejs.mod --optimize 9 --bind --require null ejs.es ; \
+	../../../$(BUILD)/bin/ejsc --out ../../../$(BUILD)/bin/ejs.mod --optimize 9 --bind --require null ejs.es ; \
 	)
 endif
 
@@ -804,7 +815,6 @@ $(BUILD)/bin/esp.conf: $(DEPS_59)
 	cp src/paks/esp/esp.conf $(BUILD)/bin/esp.conf
 endif
 
-
 ifeq ($(ME_COM_ESP),1)
 #
 #   libmod_esp
@@ -822,6 +832,8 @@ ifeq ($(ME_COM_ESP),1)
 #
 #   genslink
 #
+DEPS_61 += $(BUILD)/bin/libmod_esp.out
+
 genslink: $(DEPS_61)
 	( \
 	cd src/server; \
@@ -896,18 +908,18 @@ ifeq ($(ME_COM_PHP),1)
 DEPS_67 += $(BUILD)/bin/libappweb.out
 DEPS_67 += $(BUILD)/obj/phpHandler.o
 
-LIBS_67 += -lphp5
-LIBPATHS_67 += -L$(ME_COM_PHP_PATH)/libs
-
 $(BUILD)/bin/libmod_php.out: $(DEPS_67)
 	@echo '      [Link] $(BUILD)/bin/libmod_php.out'
-	$(CC) -r -o $(BUILD)/bin/libmod_php.out $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/phpHandler.o" $(LIBPATHS_67) $(LIBS_67) $(LIBS_67) $(LIBS) 
+	$(CC) -r -o $(BUILD)/bin/libmod_php.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/phpHandler.o" $(LIBS) 
 endif
 
 #
 #   libmprssl
 #
 DEPS_68 += $(BUILD)/bin/libmpr.out
+ifeq ($(ME_COM_EST),1)
+    DEPS_68 += $(BUILD)/bin/libest.out
+endif
 DEPS_68 += $(BUILD)/obj/mprSsl.o
 
 ifeq ($(ME_COM_OPENSSL),1)
@@ -970,6 +982,7 @@ $(BUILD)/bin/appman.out: $(DEPS_71)
 #
 #   server-cache
 #
+
 src/server/cache: $(DEPS_72)
 	( \
 	cd src/server; \
@@ -979,6 +992,7 @@ src/server/cache: $(DEPS_72)
 #
 #   installBinary
 #
+
 installBinary: $(DEPS_73)
 
 #
@@ -992,19 +1006,17 @@ install: $(DEPS_74)
 #
 #   run
 #
-DEPS_75 += compile
 
 run: $(DEPS_75)
 	( \
 	cd src/server; \
-	sudo ../../$(BUILD)/bin/appweb -v ; \
+	appweb --log stdout:2 ; \
 	)
 
 
 #
 #   uninstall
 #
-DEPS_76 += build
 
 uninstall: $(DEPS_76)
 	( \
@@ -1019,6 +1031,7 @@ uninstall: $(DEPS_76)
 #
 #   version
 #
+
 version: $(DEPS_77)
 	echo 5.2.0
 

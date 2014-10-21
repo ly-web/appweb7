@@ -1,7 +1,7 @@
 /*
-    me-php.me - PHP MakeMe probe
+    php.me - PHP MakeMe Component
 
-    Use the "php" Pak to get the actual PHP source code.
+    Use the "phplib" Pak to get the actual PHP source code.
  */
 
 Me.load({

@@ -23,6 +23,7 @@
     "pak": "~0.9",
     "dependencies": {
         "http": "~6",
+        "me-docstyle": "~0.8",
         "mpr": "~6",
         "osdep": "~0.8",
         "pcre": "*"
