@@ -8755,7 +8755,7 @@ module ejs {
         native function get basename(): Path
 
         function childOf(parent: Path): Boolean
-            absolute.startsWith(parent)
+            absolute.startsWith(parent.absolute)
         
         /**
             Path components. The path is normalized and then broken into components for each directory level. 
@@ -8766,12 +8766,12 @@ module ejs {
         native function get components(): Array
   
         /**
-            Test if the path name contains a substring
+            Test if the path name contains a substring. The pattern must be in portable format.
             @param pattern String pattern to search for
             @return Boolean True if found.
          */
         function contains(pattern: String): Boolean
-            name.contains(pattern)
+            portable.name.contains(pattern)
 
         /**
             Copy a file to the destination
