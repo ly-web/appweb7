@@ -129,8 +129,12 @@ PUBLIC int maParseConfig(cchar *path, int flags)
     httpSetRouteHome(route, dir);
     httpSetRouteDocuments(route, dir);
     httpSetRouteVar(route, "LOG_DIR", ".");
+#ifdef ME_VAPP_PREFIX
     httpSetRouteVar(route, "INC_DIR", ME_VAPP_PREFIX "/inc");
+#endif
+#ifdef ME_SPOOL_PREFIX
     httpSetRouteVar(route, "SPL_DIR", ME_SPOOL_PREFIX);
+#endif
     httpSetRouteVar(route, "BIN_DIR", mprJoinPath(HTTP->platformDir, "bin"));
 
     if (maParseFile(state, path) < 0) {
@@ -1576,7 +1580,9 @@ static int loadModulePathDirective(MaState *state, cchar *key, cchar *value)
      */
     sep = MPR_SEARCH_SEP;
     value = stemplate(value, state->route->vars);
+#ifdef ME_VAPP_PREFIX
     path = sjoin(value, sep, mprGetAppDir(), sep, ME_VAPP_PREFIX "/bin", NULL);
+#endif
     mprSetModuleSearchPath(path);
     return 0;
 }
