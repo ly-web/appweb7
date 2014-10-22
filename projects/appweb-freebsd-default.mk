@@ -1306,6 +1306,38 @@ installBinary: $(DEPS_74)
 	mkdir -p "$(ME_INC_PREFIX)/appweb" ; \
 	rm -f "$(ME_INC_PREFIX)/appweb/me.h" ; \
 	ln -s "$(ME_VAPP_PREFIX)/inc/me.h" "$(ME_INC_PREFIX)/appweb/me.h" ; \
+	cp src/paks/osdep/osdep.h $(ME_VAPP_PREFIX)/inc/osdep.h ; \
+	mkdir -p "$(ME_INC_PREFIX)/appweb" ; \
+	rm -f "$(ME_INC_PREFIX)/appweb/osdep.h" ; \
+	ln -s "$(ME_VAPP_PREFIX)/inc/osdep.h" "$(ME_INC_PREFIX)/appweb/osdep.h" ; \
+	cp src/appweb.h $(ME_VAPP_PREFIX)/inc/appweb.h ; \
+	mkdir -p "$(ME_INC_PREFIX)/appweb" ; \
+	rm -f "$(ME_INC_PREFIX)/appweb/appweb.h" ; \
+	ln -s "$(ME_VAPP_PREFIX)/inc/appweb.h" "$(ME_INC_PREFIX)/appweb/appweb.h" ; \
+	cp src/customize.h $(ME_VAPP_PREFIX)/inc/customize.h ; \
+	mkdir -p "$(ME_INC_PREFIX)/appweb" ; \
+	rm -f "$(ME_INC_PREFIX)/appweb/customize.h" ; \
+	ln -s "$(ME_VAPP_PREFIX)/inc/customize.h" "$(ME_INC_PREFIX)/appweb/customize.h" ; \
+	cp src/paks/est/est.h $(ME_VAPP_PREFIX)/inc/est.h ; \
+	mkdir -p "$(ME_INC_PREFIX)/appweb" ; \
+	rm -f "$(ME_INC_PREFIX)/appweb/est.h" ; \
+	ln -s "$(ME_VAPP_PREFIX)/inc/est.h" "$(ME_INC_PREFIX)/appweb/est.h" ; \
+	cp src/paks/http/http.h $(ME_VAPP_PREFIX)/inc/http.h ; \
+	mkdir -p "$(ME_INC_PREFIX)/appweb" ; \
+	rm -f "$(ME_INC_PREFIX)/appweb/http.h" ; \
+	ln -s "$(ME_VAPP_PREFIX)/inc/http.h" "$(ME_INC_PREFIX)/appweb/http.h" ; \
+	cp src/paks/mpr/mpr.h $(ME_VAPP_PREFIX)/inc/mpr.h ; \
+	mkdir -p "$(ME_INC_PREFIX)/appweb" ; \
+	rm -f "$(ME_INC_PREFIX)/appweb/mpr.h" ; \
+	ln -s "$(ME_VAPP_PREFIX)/inc/mpr.h" "$(ME_INC_PREFIX)/appweb/mpr.h" ; \
+	cp src/paks/pcre/pcre.h $(ME_VAPP_PREFIX)/inc/pcre.h ; \
+	mkdir -p "$(ME_INC_PREFIX)/appweb" ; \
+	rm -f "$(ME_INC_PREFIX)/appweb/pcre.h" ; \
+	ln -s "$(ME_VAPP_PREFIX)/inc/pcre.h" "$(ME_INC_PREFIX)/appweb/pcre.h" ; \
+	cp src/paks/sqlite/sqlite3.h $(ME_VAPP_PREFIX)/inc/sqlite3.h ; \
+	mkdir -p "$(ME_INC_PREFIX)/appweb" ; \
+	rm -f "$(ME_INC_PREFIX)/appweb/sqlite3.h" ; \
+	ln -s "$(ME_VAPP_PREFIX)/inc/sqlite3.h" "$(ME_INC_PREFIX)/appweb/sqlite3.h" ; \
 	if [ "$(ME_COM_ESP)" = 1 ]; then true ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/inc" ; \
 	cp src/paks/esp/esp.h $(ME_VAPP_PREFIX)/inc/esp.h ; \
