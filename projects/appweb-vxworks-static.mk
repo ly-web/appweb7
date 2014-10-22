@@ -631,6 +631,7 @@ $(BUILD)/obj/zlib.o: \
 #
 #   libmpr
 #
+DEPS_47 += $(BUILD)/inc/osdep.h
 DEPS_47 += $(BUILD)/inc/mpr.h
 DEPS_47 += $(BUILD)/obj/mprLib.o
 
@@ -714,6 +715,7 @@ ifeq ($(ME_COM_EST),1)
 #
 #   libest
 #
+DEPS_53 += $(BUILD)/inc/osdep.h
 DEPS_53 += $(BUILD)/inc/est.h
 DEPS_53 += $(BUILD)/obj/estLib.o
 

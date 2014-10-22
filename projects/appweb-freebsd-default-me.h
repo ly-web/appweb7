@@ -186,49 +186,49 @@
     #define ME_ROOT_PREFIX "/"
 #endif
 #ifndef ME_BASE_PREFIX
-    #define ME_BASE_PREFIX "${prefixes.root}/usr/local"
+    #define ME_BASE_PREFIX "/usr/local"
 #endif
 #ifndef ME_DATA_PREFIX
-    #define ME_DATA_PREFIX "${prefixes.root}"
+    #define ME_DATA_PREFIX "/"
 #endif
 #ifndef ME_STATE_PREFIX
-    #define ME_STATE_PREFIX "${prefixes.root}/var"
+    #define ME_STATE_PREFIX "/var"
 #endif
 #ifndef ME_APP_PREFIX
-    #define ME_APP_PREFIX "${prefixes.base}/lib/appweb"
+    #define ME_APP_PREFIX "/usr/local/lib/appweb"
 #endif
 #ifndef ME_VAPP_PREFIX
-    #define ME_VAPP_PREFIX "${prefixes.app}/5.2.0"
+    #define ME_VAPP_PREFIX "/usr/local/lib/appweb/5.2.0"
 #endif
 #ifndef ME_BIN_PREFIX
-    #define ME_BIN_PREFIX "${prefixes.base}/bin"
+    #define ME_BIN_PREFIX "/usr/local/bin"
 #endif
 #ifndef ME_INC_PREFIX
-    #define ME_INC_PREFIX "${prefixes.base}/include"
+    #define ME_INC_PREFIX "/usr/local/include"
 #endif
 #ifndef ME_LIB_PREFIX
-    #define ME_LIB_PREFIX "${prefixes.base}/lib"
+    #define ME_LIB_PREFIX "/usr/local/lib"
 #endif
 #ifndef ME_MAN_PREFIX
-    #define ME_MAN_PREFIX "${prefixes.base}/share/man"
+    #define ME_MAN_PREFIX "/usr/local/share/man"
 #endif
 #ifndef ME_SBIN_PREFIX
-    #define ME_SBIN_PREFIX "${prefixes.base}/sbin"
+    #define ME_SBIN_PREFIX "/usr/local/sbin"
 #endif
 #ifndef ME_ETC_PREFIX
-    #define ME_ETC_PREFIX "${prefixes.data}/etc/appweb"
+    #define ME_ETC_PREFIX "/etc/appweb"
 #endif
 #ifndef ME_WEB_PREFIX
-    #define ME_WEB_PREFIX "${prefixes.state}/www/appweb"
+    #define ME_WEB_PREFIX "/var/www/appweb"
 #endif
 #ifndef ME_LOG_PREFIX
-    #define ME_LOG_PREFIX "${prefixes.state}/log/appweb"
+    #define ME_LOG_PREFIX "/var/log/appweb"
 #endif
 #ifndef ME_SPOOL_PREFIX
-    #define ME_SPOOL_PREFIX "${prefixes.state}/spool/appweb"
+    #define ME_SPOOL_PREFIX "/var/spool/appweb"
 #endif
 #ifndef ME_CACHE_PREFIX
-    #define ME_CACHE_PREFIX "${prefixes.state}/spool/appweb/cache"
+    #define ME_CACHE_PREFIX "/var/spool/appweb/cache"
 #endif
 #ifndef ME_SRC_PREFIX
     #define ME_SRC_PREFIX "appweb-5.2.0"

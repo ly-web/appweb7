@@ -345,6 +345,7 @@ build\$(CONFIG)\obj\mprLib.obj: \
 #
 #   libmpr
 #
+DEPS_6 = $(DEPS_6) build\$(CONFIG)\inc\osdep.h
 DEPS_6 = $(DEPS_6) build\$(CONFIG)\inc\mpr.h
 DEPS_6 = $(DEPS_6) build\$(CONFIG)\obj\mprLib.obj
 
@@ -608,6 +609,7 @@ build\$(CONFIG)\obj\estLib.obj: \
 #
 #   libest
 #
+DEPS_31 = $(DEPS_31) build\$(CONFIG)\inc\osdep.h
 DEPS_31 = $(DEPS_31) build\$(CONFIG)\inc\est.h
 DEPS_31 = $(DEPS_31) build\$(CONFIG)\obj\estLib.obj
 
