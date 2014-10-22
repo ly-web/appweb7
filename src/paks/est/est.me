@@ -10,12 +10,13 @@ Me.load({
             configurable: true,
             depends:      [ 'libest' ],
             ifdef:        [ 'ssl' ],
-            conflicts:    [ 'matrixssl', 'openssl', 'nanossl' ],
+            conflicts:    [ 'openssl' ],
         },
 
         libest: {
             type: 'lib',
             headers: [ '*.h' ],
+            depends: [ 'osdep' ],
             sources: [ 'estLib.c' ],
             '-compiler': [
                 '-Wall',
