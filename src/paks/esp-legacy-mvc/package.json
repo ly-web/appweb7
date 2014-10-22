@@ -34,5 +34,6 @@
                 "?module": "esp-legacy-mvc/generate/src/app.c"
             }
         }
-    }
+    },
+    "frozen": true,
 }

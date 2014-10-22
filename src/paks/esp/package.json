@@ -70,5 +70,6 @@
             "noblend": true,
             "noexport": true
         }
-    }
+    },
+    "frozen": true,
 }

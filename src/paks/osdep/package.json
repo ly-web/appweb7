@@ -1,7 +1,7 @@
 {
     "name": "osdep",
     "description": "Embedthis O/S Dependent Layer",
-    "version": "0.8.0",
+    "version": "0.8.3",
     "keywords": [
         "osdep",
         "me"
@@ -9,7 +9,7 @@
     "author": {
         "name": "Embedthis Software",
         "email": "dev@embedthis.com",
-        "url": "http://embedthis.com"
+        "url": "https://embedthis.com"
     },
     "repository": {
         "type": "git",
@@ -19,7 +19,8 @@
         "url": "http://github.com/embedthis/osdep/issues"
     },
     "export": [
-        "src/osdep.h"
+        "src/osdep.h",
+        "doc/**"
     ],
     "licenses": [
         {
@@ -28,10 +29,22 @@
         },
         {
             "type": "Commercial",
-            "url": "http://embedthis.com/licensing/"
+            "url": "https://embedthis.com/licensing/"
         }
     ],
     "directories": {
         "paks": "src/paks"
     },
+    "files": [
+        "osdep.h",
+        "osdep.me",
+        "doc/api/osdep.dtags",
+        "doc/api/osdep.tags",
+        "doc/api/osdep.html"
+    ],
+    "ignore": [
+        "start.me"
+    ],
+    "import": true,
+    "frozen": true,
 }

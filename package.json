@@ -39,22 +39,21 @@
     "dependencies": {
         "ejs": "~2.3",
         "esp": "~4.6",
+        "esp-html-mvc": "~4.6",
         "esp-legacy-mvc": "~4.6",
         "esp-mvc": "~4.6",
-        "esp-html-mvc": "~4.6",
         "esp-server": "~4.6",
         "est": "~0.6",
-        "http": "~6",
-        "php": "~5.5",
-        "ssl": "~0.8",
-        "mpr": "~4",
-        "osdep": "~0.8",
+        "http": "~4.6",
+        "mpr": "~4.6",
+        "osdep": "~0.8.3",
         "pcre": "~1.0",
         "sqlite": "~1.0",
+        "ssl": "~0.8",
         "zlib": "~1.0"
     },
     "optionalDependencies": {
-        "php": "~5"
+        "php": "~0.8"
     },
     "paks": {
         "esp": {
@@ -73,5 +72,5 @@
             "noexport": true
         }
     },
-    "import": true
+    "import": true,
 }

@@ -42,5 +42,6 @@
     },
     "directories": {
         "paks": "src/paks"
-    }
+    },
+    "frozen": true,
 }

@@ -54,5 +54,6 @@
             },
             "serverPrefix": "/do"
         }
-    }
+    },
+    "frozen": true,
 }

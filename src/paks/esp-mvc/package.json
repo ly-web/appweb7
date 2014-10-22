@@ -33,5 +33,6 @@
             "?database": "default",
             "?serverPrefix": "/do"
         }
-    }
+    },
+    "frozen": true,
 }

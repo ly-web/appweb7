@@ -24,5 +24,6 @@
                 "${LIB}/angular/angular-route.js",
             ],
         }
-    ]
+    ],
+    "frozen": true,
 }
