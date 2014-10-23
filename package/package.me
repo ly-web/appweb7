@@ -44,7 +44,7 @@ Me.load({
 
         uninstall: {
             depends: [ 'build', 'stop' ],
-            action: "
+            action: `
                 for each (f in me.prefixes.cache.files()) {
                     removeFile(f)
                 }
@@ -53,8 +53,7 @@ Me.load({
                 removeFile(me.prefixes.etc.join('mine.types'))
                 removeFile(me.prefixes.etc.join('install.conf'))
                 removeDir(me.prefixes.inc.join(me.settings.name))
-                uninstallBinary()
-            ",
+            `,
             'generate-action': true,
         },
     },

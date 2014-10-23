@@ -1,7 +1,7 @@
 {
     "name": "esp-html-mvc",
     "description": "ESP Server-Side HTML MVC",
-    "version": "4.6.4",
+    "version": "4.6.5",
     "licenses": [
         {
             "type": "GPL",
@@ -55,5 +55,5 @@
             "serverPrefix": "/do"
         }
     },
-    "frozen": true,
+    "frozen": true
 }
