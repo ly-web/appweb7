@@ -580,7 +580,7 @@ DEPS_40 += $(BUILD)/inc/appweb.h
 $(BUILD)/obj/phpHandler.o: \
     src/modules/phpHandler.c $(DEPS_40)
 	@echo '   [Compile] $(BUILD)/obj/phpHandler.o'
-	$(CC) -c -o $(BUILD)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/modules/phpHandler.c
+	$(CC) -c -o $(BUILD)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)/main" "-I$(ME_COM_PHP_PATH)/Zend" "-I$(ME_COM_PHP_PATH)/TSRM" src/modules/phpHandler.c
 
 #
 #   slink.o
@@ -1022,10 +1022,12 @@ LIBS_67 += -lmpr
 ifeq ($(ME_COM_PCRE),1)
     LIBS_67 += -lpcre
 endif
+LIBS_67 += -lphp5
+LIBPATHS_67 += -L$(ME_COM_PHP_PATH)/libs
 
 $(BUILD)/bin/libmod_php.so: $(DEPS_67)
 	@echo '      [Link] $(BUILD)/bin/libmod_php.so'
-	$(CC) -shared -o $(BUILD)/bin/libmod_php.so $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/phpHandler.o" $(LIBPATHS_67) $(LIBS_67) $(LIBS_67) $(LIBS) 
+	$(CC) -shared -o $(BUILD)/bin/libmod_php.so $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/phpHandler.o" $(LIBPATHS_67) $(LIBS_67) $(LIBS_67) $(LIBS) 
 endif
 
 #
@@ -1216,15 +1218,40 @@ installBinary: $(DEPS_74)
 	fi ; \
 	mkdir -p "$(ME_WEB_PREFIX)" ; \
 	cp src/server/web/bench $(ME_WEB_PREFIX)/bench ; \
+	mkdir -p "$(ME_WEB_PREFIX)/bench" ; \
+	cp src/server/web/bench/1b.html $(ME_WEB_PREFIX)/bench/1b.html ; \
+	cp src/server/web/bench/4k.html $(ME_WEB_PREFIX)/bench/4k.html ; \
+	cp src/server/web/bench/64k.html $(ME_WEB_PREFIX)/bench/64k.html ; \
 	cp src/server/web/favicon.ico $(ME_WEB_PREFIX)/favicon.ico ; \
 	cp src/server/web/icons $(ME_WEB_PREFIX)/icons ; \
+	mkdir -p "$(ME_WEB_PREFIX)/icons" ; \
+	cp src/server/web/icons/back.gif $(ME_WEB_PREFIX)/icons/back.gif ; \
+	cp src/server/web/icons/blank.gif $(ME_WEB_PREFIX)/icons/blank.gif ; \
+	cp src/server/web/icons/compressed.gif $(ME_WEB_PREFIX)/icons/compressed.gif ; \
+	cp src/server/web/icons/folder.gif $(ME_WEB_PREFIX)/icons/folder.gif ; \
+	cp src/server/web/icons/parent.gif $(ME_WEB_PREFIX)/icons/parent.gif ; \
+	cp src/server/web/icons/space.gif $(ME_WEB_PREFIX)/icons/space.gif ; \
+	cp src/server/web/icons/text.gif $(ME_WEB_PREFIX)/icons/text.gif ; \
 	cp src/server/web/iehacks.css $(ME_WEB_PREFIX)/iehacks.css ; \
 	cp src/server/web/images $(ME_WEB_PREFIX)/images ; \
+	mkdir -p "$(ME_WEB_PREFIX)/images" ; \
+	cp src/server/web/images/banner.jpg $(ME_WEB_PREFIX)/images/banner.jpg ; \
+	cp src/server/web/images/bottomShadow.jpg $(ME_WEB_PREFIX)/images/bottomShadow.jpg ; \
+	cp src/server/web/images/shadow.jpg $(ME_WEB_PREFIX)/images/shadow.jpg ; \
 	cp src/server/web/index.html $(ME_WEB_PREFIX)/index.html ; \
 	cp src/server/web/min-index.html $(ME_WEB_PREFIX)/min-index.html ; \
 	cp src/server/web/print.css $(ME_WEB_PREFIX)/print.css ; \
 	cp src/server/web/screen.css $(ME_WEB_PREFIX)/screen.css ; \
 	cp src/server/web/test $(ME_WEB_PREFIX)/test ; \
+	mkdir -p "$(ME_WEB_PREFIX)/test" ; \
+	cp src/server/web/test/bench.html $(ME_WEB_PREFIX)/test/bench.html ; \
+	cp src/server/web/test/test.cgi $(ME_WEB_PREFIX)/test/test.cgi ; \
+	cp src/server/web/test/test.ejs $(ME_WEB_PREFIX)/test/test.ejs ; \
+	cp src/server/web/test/test.esp $(ME_WEB_PREFIX)/test/test.esp ; \
+	cp src/server/web/test/test.html $(ME_WEB_PREFIX)/test/test.html ; \
+	cp src/server/web/test/test.php $(ME_WEB_PREFIX)/test/test.php ; \
+	cp src/server/web/test/test.pl $(ME_WEB_PREFIX)/test/test.pl ; \
+	cp src/server/web/test/test.py $(ME_WEB_PREFIX)/test/test.py ; \
 	mkdir -p "$(ME_WEB_PREFIX)/test" ; \
 	cp src/server/web/test/test.cgi $(ME_WEB_PREFIX)/test/test.cgi ; \
 	chmod 755 "$(ME_WEB_PREFIX)/test/test.cgi" ; \
@@ -1422,7 +1449,7 @@ install: $(DEPS_76)
 run: $(DEPS_77)
 	( \
 	cd src/server; \
-	appweb --log stdout:2 ; \
+	../../$(BUILD)/bin/appweb --log stdout:2 ; \
 	)
 
 

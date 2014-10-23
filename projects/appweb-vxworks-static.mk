@@ -352,7 +352,7 @@ DEPS_16 += $(BUILD)/inc/appweb.h
 $(BUILD)/obj/appweb.o: \
     src/server/appweb.c $(DEPS_16)
 	@echo '   [Compile] $(BUILD)/obj/appweb.o'
-	$(CC) -c -o $(BUILD)/obj/appweb.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_OPENSSL_PATH)/include" src/server/appweb.c
+	$(CC) -c -o $(BUILD)/obj/appweb.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_OPENSSL_PATH)/include" "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)/main" "-I$(ME_COM_PHP_PATH)/Zend" "-I$(ME_COM_PHP_PATH)/TSRM" src/server/appweb.c
 
 #
 #   cgiHandler.o
@@ -571,7 +571,7 @@ DEPS_40 += $(BUILD)/inc/appweb.h
 $(BUILD)/obj/phpHandler.o: \
     src/modules/phpHandler.c $(DEPS_40)
 	@echo '   [Compile] $(BUILD)/obj/phpHandler.o'
-	$(CC) -c -o $(BUILD)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/modules/phpHandler.c
+	$(CC) -c -o $(BUILD)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)/main" "-I$(ME_COM_PHP_PATH)/Zend" "-I$(ME_COM_PHP_PATH)/TSRM" src/modules/phpHandler.c
 
 #
 #   slink.o
@@ -887,13 +887,17 @@ endif
 ifeq ($(ME_COM_PHP),1)
     LIBS_61 += -lmod_php
 endif
+ifeq ($(ME_COM_PHP),1)
+    LIBS_61 += -lphp5
+    LIBPATHS_61 += -L$(ME_COM_PHP_PATH)/libs
+endif
 ifeq ($(ME_COM_CGI),1)
     LIBS_61 += -lmod_cgi
 endif
 
 $(BUILD)/bin/appweb.out: $(DEPS_61)
 	@echo '      [Link] $(BUILD)/bin/appweb.out'
-	$(CC) -o $(BUILD)/bin/appweb.out $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/appweb.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS) -Wl,-r 
+	$(CC) -o $(BUILD)/bin/appweb.out $(LDFLAGS) $(LIBPATHS)   "$(BUILD)/obj/appweb.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS) -Wl,-r 
 
 ifeq ($(ME_COM_CGI),1)
 #
@@ -1097,7 +1101,7 @@ install: $(DEPS_74)
 run: $(DEPS_75)
 	( \
 	cd src/server; \
-	appweb --log stdout:2 ; \
+	../../$(BUILD)/bin/appweb --log stdout:2 ; \
 	)
 
 

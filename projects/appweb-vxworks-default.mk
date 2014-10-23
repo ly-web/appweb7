@@ -586,7 +586,7 @@ DEPS_40 += $(BUILD)/inc/appweb.h
 $(BUILD)/obj/phpHandler.o: \
     src/modules/phpHandler.c $(DEPS_40)
 	@echo '   [Compile] $(BUILD)/obj/phpHandler.o'
-	$(CC) -c -o $(BUILD)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/modules/phpHandler.c
+	$(CC) -c -o $(BUILD)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)/main" "-I$(ME_COM_PHP_PATH)/Zend" "-I$(ME_COM_PHP_PATH)/TSRM" src/modules/phpHandler.c
 
 #
 #   slink.o
@@ -910,9 +910,12 @@ ifeq ($(ME_COM_PHP),1)
 DEPS_67 += $(BUILD)/bin/libappweb.out
 DEPS_67 += $(BUILD)/obj/phpHandler.o
 
+LIBS_67 += -lphp5
+LIBPATHS_67 += -L$(ME_COM_PHP_PATH)/libs
+
 $(BUILD)/bin/libmod_php.out: $(DEPS_67)
 	@echo '      [Link] $(BUILD)/bin/libmod_php.out'
-	$(CC) -r -o $(BUILD)/bin/libmod_php.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/phpHandler.o" $(LIBS) 
+	$(CC) -r -o $(BUILD)/bin/libmod_php.out $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/phpHandler.o" $(LIBPATHS_67) $(LIBS_67) $(LIBS_67) $(LIBS) 
 endif
 
 #
@@ -1012,7 +1015,7 @@ install: $(DEPS_74)
 run: $(DEPS_75)
 	( \
 	cd src/server; \
-	appweb --log stdout:2 ; \
+	../../$(BUILD)/bin/appweb --log stdout:2 ; \
 	)
 
 

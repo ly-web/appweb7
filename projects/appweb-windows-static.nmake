@@ -808,7 +808,7 @@ DEPS_48 = $(DEPS_48) build\$(CONFIG)\inc\appweb.h
 build\$(CONFIG)\obj\phpHandler.obj: \
     src\modules\phpHandler.c $(DEPS_48)
 	@echo .. [Compile] build\$(CONFIG)\obj\phpHandler.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\phpHandler.obj -Fd$(BUILD)\obj\phpHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\phpHandler.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\phpHandler.obj -Fd$(BUILD)\obj\phpHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)\main" "-I$(ME_COM_PHP_PATH)\Zend" "-I$(ME_COM_PHP_PATH)\TSRM" src\modules\phpHandler.c $(LOG)
 
 !IF "$(ME_COM_PHP)" == "1"
 #
@@ -852,7 +852,7 @@ DEPS_52 = $(DEPS_52) build\$(CONFIG)\inc\appweb.h
 build\$(CONFIG)\obj\appweb.obj: \
     src\server\appweb.c $(DEPS_52)
 	@echo .. [Compile] build\$(CONFIG)\obj\appweb.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\appweb.obj -Fd$(BUILD)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\server\appweb.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\appweb.obj -Fd$(BUILD)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)\main" "-I$(ME_COM_PHP_PATH)\Zend" "-I$(ME_COM_PHP_PATH)\TSRM" src\server\appweb.c $(LOG)
 
 #
 #   appweb
@@ -918,13 +918,17 @@ LIBS_53 = $(LIBS_53) libzlib.lib
 !IF "$(ME_COM_PHP)" == "1"
 LIBS_53 = $(LIBS_53) libmod_php.lib
 !ENDIF
+!IF "$(ME_COM_PHP)" == "1"
+LIBS_53 = $(LIBS_53) libphp5ts.lib
+LIBPATHS_53 = $(LIBPATHS_53) -libpath:$(ME_COM_PHP_PATH)/libs
+!ENDIF
 !IF "$(ME_COM_CGI)" == "1"
 LIBS_53 = $(LIBS_53) libmod_cgi.lib
 !ENDIF
 
 build\$(CONFIG)\bin\appweb.exe: $(DEPS_53)
 	@echo ..... [Link] build\$(CONFIG)\bin\appweb.exe
-	"$(LD)" -out:$(BUILD)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)  "$(BUILD)\obj\appweb.obj" $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS)  $(LOG)
+	"$(LD)" -out:$(BUILD)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)   "$(BUILD)\obj\appweb.obj" $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS)  $(LOG)
 
 #
 #   appwebMonitor.h

@@ -365,7 +365,7 @@ DEPS_16 += $(BUILD)/inc/appweb.h
 $(BUILD)/obj/appweb.o: \
     src/server/appweb.c $(DEPS_16)
 	@echo '   [Compile] $(BUILD)/obj/appweb.o'
-	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/appweb.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/server/appweb.c
+	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/appweb.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)/main" "-I$(ME_COM_PHP_PATH)/Zend" "-I$(ME_COM_PHP_PATH)/TSRM" src/server/appweb.c
 
 #
 #   authpass.o
@@ -614,7 +614,7 @@ DEPS_43 += $(BUILD)/inc/appweb.h
 $(BUILD)/obj/phpHandler.o: \
     src/modules/phpHandler.c $(DEPS_43)
 	@echo '   [Compile] $(BUILD)/obj/phpHandler.o'
-	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/phpHandler.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) src/modules/phpHandler.c
+	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/phpHandler.o -arch $(CC_ARCH) $(CFLAGS) $(IFLAGS) "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)/main" "-I$(ME_COM_PHP_PATH)/Zend" "-I$(ME_COM_PHP_PATH)/TSRM" src/modules/phpHandler.c
 
 #
 #   slink.o
@@ -941,13 +941,17 @@ endif
 ifeq ($(ME_COM_PHP),1)
     LIBS_65 += -lmod_php
 endif
+ifeq ($(ME_COM_PHP),1)
+    LIBS_65 += -lphp5
+    LIBPATHS_65 += -L$(ME_COM_PHP_PATH)/libs
+endif
 ifeq ($(ME_COM_CGI),1)
     LIBS_65 += -lmod_cgi
 endif
 
 $(BUILD)/bin/appweb: $(DEPS_65)
 	@echo '      [Link] $(BUILD)/bin/appweb'
-	$(CC) -o $(BUILD)/bin/appweb -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/appweb.o" $(LIBPATHS_65) $(LIBS_65) $(LIBS_65) $(LIBS) -lpam 
+	$(CC) -o $(BUILD)/bin/appweb -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)   "$(BUILD)/obj/appweb.o" $(LIBPATHS_65) $(LIBS_65) $(LIBS_65) $(LIBS) -lpam 
 
 #
 #   authpass
@@ -1333,15 +1337,40 @@ installBinary: $(DEPS_83)
 	echo 'set LOG_DIR "$(ME_LOG_PREFIX)"\nset CACHE_DIR "$(ME_CACHE_PREFIX)"\nDocuments "$(ME_WEB_PREFIX)\nListen 80\n<if SSL_MODULE>\nListenSecure 443\n</if>\n' >$(ME_ETC_PREFIX)/install.conf ; \
 	mkdir -p "$(ME_WEB_PREFIX)" ; \
 	cp src/server/web/bench $(ME_WEB_PREFIX)/bench ; \
+	mkdir -p "$(ME_WEB_PREFIX)/bench" ; \
+	cp src/server/web/bench/1b.html $(ME_WEB_PREFIX)/bench/1b.html ; \
+	cp src/server/web/bench/4k.html $(ME_WEB_PREFIX)/bench/4k.html ; \
+	cp src/server/web/bench/64k.html $(ME_WEB_PREFIX)/bench/64k.html ; \
 	cp src/server/web/favicon.ico $(ME_WEB_PREFIX)/favicon.ico ; \
 	cp src/server/web/icons $(ME_WEB_PREFIX)/icons ; \
+	mkdir -p "$(ME_WEB_PREFIX)/icons" ; \
+	cp src/server/web/icons/back.gif $(ME_WEB_PREFIX)/icons/back.gif ; \
+	cp src/server/web/icons/blank.gif $(ME_WEB_PREFIX)/icons/blank.gif ; \
+	cp src/server/web/icons/compressed.gif $(ME_WEB_PREFIX)/icons/compressed.gif ; \
+	cp src/server/web/icons/folder.gif $(ME_WEB_PREFIX)/icons/folder.gif ; \
+	cp src/server/web/icons/parent.gif $(ME_WEB_PREFIX)/icons/parent.gif ; \
+	cp src/server/web/icons/space.gif $(ME_WEB_PREFIX)/icons/space.gif ; \
+	cp src/server/web/icons/text.gif $(ME_WEB_PREFIX)/icons/text.gif ; \
 	cp src/server/web/iehacks.css $(ME_WEB_PREFIX)/iehacks.css ; \
 	cp src/server/web/images $(ME_WEB_PREFIX)/images ; \
+	mkdir -p "$(ME_WEB_PREFIX)/images" ; \
+	cp src/server/web/images/banner.jpg $(ME_WEB_PREFIX)/images/banner.jpg ; \
+	cp src/server/web/images/bottomShadow.jpg $(ME_WEB_PREFIX)/images/bottomShadow.jpg ; \
+	cp src/server/web/images/shadow.jpg $(ME_WEB_PREFIX)/images/shadow.jpg ; \
 	cp src/server/web/index.html $(ME_WEB_PREFIX)/index.html ; \
 	cp src/server/web/min-index.html $(ME_WEB_PREFIX)/min-index.html ; \
 	cp src/server/web/print.css $(ME_WEB_PREFIX)/print.css ; \
 	cp src/server/web/screen.css $(ME_WEB_PREFIX)/screen.css ; \
 	cp src/server/web/test $(ME_WEB_PREFIX)/test ; \
+	mkdir -p "$(ME_WEB_PREFIX)/test" ; \
+	cp src/server/web/test/bench.html $(ME_WEB_PREFIX)/test/bench.html ; \
+	cp src/server/web/test/test.cgi $(ME_WEB_PREFIX)/test/test.cgi ; \
+	cp src/server/web/test/test.ejs $(ME_WEB_PREFIX)/test/test.ejs ; \
+	cp src/server/web/test/test.esp $(ME_WEB_PREFIX)/test/test.esp ; \
+	cp src/server/web/test/test.html $(ME_WEB_PREFIX)/test/test.html ; \
+	cp src/server/web/test/test.php $(ME_WEB_PREFIX)/test/test.php ; \
+	cp src/server/web/test/test.pl $(ME_WEB_PREFIX)/test/test.pl ; \
+	cp src/server/web/test/test.py $(ME_WEB_PREFIX)/test/test.py ; \
 	mkdir -p "$(ME_WEB_PREFIX)/test" ; \
 	cp src/server/web/test/test.cgi $(ME_WEB_PREFIX)/test/test.cgi ; \
 	chmod 755 "$(ME_WEB_PREFIX)/test/test.cgi" ; \
@@ -1539,7 +1568,7 @@ install: $(DEPS_85)
 run: $(DEPS_86)
 	( \
 	cd src/server; \
-	appweb --log stdout:2 ; \
+	../../$(BUILD)/bin/appweb --log stdout:2 ; \
 	)
 
 

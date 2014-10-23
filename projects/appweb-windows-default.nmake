@@ -1116,7 +1116,7 @@ DEPS_65 = $(DEPS_65) build\$(CONFIG)\inc\appweb.h
 build\$(CONFIG)\obj\phpHandler.obj: \
     src\modules\phpHandler.c $(DEPS_65)
 	@echo .. [Compile] build\$(CONFIG)\obj\phpHandler.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\phpHandler.obj -Fd$(BUILD)\obj\phpHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\phpHandler.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\phpHandler.obj -Fd$(BUILD)\obj\phpHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)\main" "-I$(ME_COM_PHP_PATH)\Zend" "-I$(ME_COM_PHP_PATH)\TSRM" src\modules\phpHandler.c $(LOG)
 
 !IF "$(ME_COM_PHP)" == "1"
 #
@@ -1133,10 +1133,12 @@ LIBS_66 = $(LIBS_66) libmpr.lib
 !IF "$(ME_COM_PCRE)" == "1"
 LIBS_66 = $(LIBS_66) libpcre.lib
 !ENDIF
+LIBS_66 = $(LIBS_66) libphp5ts.lib
+LIBPATHS_66 = $(LIBPATHS_66) -libpath:$(ME_COM_PHP_PATH)/libs
 
 build\$(CONFIG)\bin\libmod_php.dll: $(DEPS_66)
 	@echo ..... [Link] build\$(CONFIG)\bin\libmod_php.dll
-	"$(LD)" -dll -out:$(BUILD)\bin\libmod_php.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\phpHandler.obj" $(LIBPATHS_66) $(LIBS_66) $(LIBS_66) $(LIBS)  $(LOG)
+	"$(LD)" -dll -out:$(BUILD)\bin\libmod_php.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS)  "$(BUILD)\obj\phpHandler.obj" $(LIBPATHS_66) $(LIBS_66) $(LIBS_66) $(LIBS)  $(LOG)
 !ENDIF
 
 #
