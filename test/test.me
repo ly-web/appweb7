@@ -139,9 +139,10 @@ Me.load({
 
         testPackage: {
             type: 'test',
-            action: "
-                let package = packageName()
-                if (!package || !package.exists) {
+            action: `
+                let package = Package()
+                let pname = package.packageName()
+                if (!pname || !package.exists) {
                     trace('Test', 'testPackage -- SKIPPED (Missing package to install)')
                 } else if (me.settings.depth < 2) {
                     trace('Test', 'testPackage -- SKIPPED (Runs at depth 2 on windows or macosx)')
@@ -178,7 +179,7 @@ Me.load({
                         }
                     }
                 }
-            ",
+            `,
         },
 
         'test-run': {
