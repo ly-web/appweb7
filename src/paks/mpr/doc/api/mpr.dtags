@@ -2,7 +2,7 @@
 <tagfile>
   <compound kind="file">
     <name>mpr.h</name>
-    <path>/Users/mob/git/mpr/src/</path>
+    <path>/Users/mob/dev/mpr/src/</path>
     <filename>mpr_8h</filename>
     <class kind="struct">MprCmdChild</class>
     <class kind="struct">MprCmdService</class>
@@ -11657,7 +11657,7 @@
   </compound>
   <compound kind="dir">
     <name>src</name>
-    <path>/Users/mob/git/mpr/src/</path>
+    <path>/Users/mob/dev/mpr/src/</path>
     <filename>dir_68267d1309a1af8e8297ef4c3efbcdba.html</filename>
     <file>mpr.h</file>
   </compound>
