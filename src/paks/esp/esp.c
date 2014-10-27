@@ -17,7 +17,7 @@ typedef struct App {
     Mpr         *mpr;
 
     cchar       *appName;               /* Application name */
-    cchar       *appwebConfig;          /* Arg to --config */
+    cchar       *appwebConfig;          /* Arg to --appweb */
     cchar       *cipher;                /* Cipher for passwords: "md5" or "blowfish" */
     cchar       *currentDir;            /* Initial starting current directory */
     cchar       *database;              /* Database provider "mdb" | "sdb" */

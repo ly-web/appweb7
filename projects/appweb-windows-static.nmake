@@ -928,7 +928,7 @@ LIBS_53 = $(LIBS_53) libmod_cgi.lib
 
 build\$(CONFIG)\bin\appweb.exe: $(DEPS_53)
 	@echo ..... [Link] build\$(CONFIG)\bin\appweb.exe
-	"$(LD)" -out:$(BUILD)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)   "$(BUILD)\obj\appweb.obj" $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)   "$(BUILD)\obj\appweb.obj" $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS)  $(LOG)
 
 #
 #   appwebMonitor.h
@@ -989,7 +989,7 @@ LIBS_58 = $(LIBS_58) libpcre.lib
 
 build\$(CONFIG)\bin\appwebMonitor.exe: $(DEPS_58)
 	@echo ..... [Link] build\$(CONFIG)\bin\appwebMonitor.exe
-	"$(LD)" -out:$(BUILD)\bin\appwebMonitor.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\appwebMonitor.res" "$(BUILD)\obj\appwebMonitor.obj" shell32.lib ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib  $(LIBPATHS_58) $(LIBS_58) $(LIBS_58) $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\appwebMonitor.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\appwebMonitor.res" "$(BUILD)\obj\appwebMonitor.obj" shell32.lib ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib  $(LIBPATHS_58) $(LIBS_58) $(LIBS_58) $(LOG)
 
 #
 #   appwebMonitor.ico
@@ -1018,7 +1018,7 @@ DEPS_61 = $(DEPS_61) build\$(CONFIG)\obj\cgiProgram.obj
 
 build\$(CONFIG)\bin\cgiProgram.exe: $(DEPS_61)
 	@echo ..... [Link] build\$(CONFIG)\bin\cgiProgram.exe
-	"$(LD)" -out:$(BUILD)\bin\cgiProgram.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\cgiProgram.obj" $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\cgiProgram.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\cgiProgram.obj" $(LIBS)  $(LOG)
 !ENDIF
 
 #
@@ -1055,7 +1055,7 @@ LIBS_63 = $(LIBS_63) libsql.lib
 
 build\$(CONFIG)\bin\ejsc.exe: $(DEPS_63)
 	@echo ..... [Link] build\$(CONFIG)\bin\ejsc.exe
-	"$(LD)" -out:$(BUILD)\bin\ejsc.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\ejsc.obj" $(LIBPATHS_63) $(LIBS_63) $(LIBS_63) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\ejsc.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\ejsc.obj" $(LIBPATHS_63) $(LIBS_63) $(LIBS_63) $(LIBS)  $(LOG)
 !ENDIF
 
 !IF "$(ME_COM_EJS)" == "1"
@@ -1106,7 +1106,7 @@ LIBS_66 = $(LIBS_66) libsql.lib
 
 build\$(CONFIG)\bin\ejs.exe: $(DEPS_66)
 	@echo ..... [Link] build\$(CONFIG)\bin\ejs.exe
-	"$(LD)" -out:$(BUILD)\bin\ejs.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\ejs.obj" $(LIBPATHS_66) $(LIBS_66) $(LIBS_66) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\ejs.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\ejs.obj" $(LIBPATHS_66) $(LIBS_66) $(LIBS_66) $(LIBS)  $(LOG)
 !ENDIF
 
 !IF "$(ME_COM_ESP)" == "1"
@@ -1169,7 +1169,7 @@ LIBS_70 = $(LIBS_70) libest.lib
 
 build\$(CONFIG)\bin\http.exe: $(DEPS_70)
 	@echo ..... [Link] build\$(CONFIG)\bin\http.exe
-	"$(LD)" -out:$(BUILD)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)  "$(BUILD)\obj\http.obj" $(LIBPATHS_70) $(LIBS_70) $(LIBS_70) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)  "$(BUILD)\obj\http.obj" $(LIBPATHS_70) $(LIBS_70) $(LIBS_70) $(LIBS)  $(LOG)
 !ENDIF
 
 #
@@ -1231,7 +1231,7 @@ LIBS_76 = $(LIBS_76) libmpr.lib
 
 build\$(CONFIG)\bin\appman.exe: $(DEPS_76)
 	@echo ..... [Link] build\$(CONFIG)\bin\appman.exe
-	"$(LD)" -out:$(BUILD)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\manager.obj" $(LIBPATHS_76) $(LIBS_76) $(LIBS_76) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\manager.obj" $(LIBPATHS_76) $(LIBS_76) $(LIBS_76) $(LIBS)  $(LOG)
 
 #
 #   removeFiles.obj
@@ -1250,7 +1250,7 @@ DEPS_78 = $(DEPS_78) build\$(CONFIG)\obj\removeFiles.obj
 
 build\$(CONFIG)\bin\removeFiles.exe: $(DEPS_78)
 	@echo ..... [Link] build\$(CONFIG)\bin\removeFiles.exe
-	"$(LD)" -out:$(BUILD)\bin\removeFiles.exe -entry:WinMainCRTStartup -subsystem:windows "$(BUILD)\obj\removeFiles.obj"   $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\removeFiles.exe -entry:WinMainCRTStartup -subsystem:windows "$(BUILD)\obj\removeFiles.obj"   $(LOG)
 
 #
 #   server-cache
