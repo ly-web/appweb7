@@ -169,7 +169,6 @@ Me.load({
                 }, {
 
                     perform: function(ignored, to, options) {
-print("AT", App.dir)
                         for each (pak in Path(me.dir.paks).files(['angular', 'esp-*'])) {
                             let version = pak.join('package.json').readJSON().version || '0.0.0'
                             let dir = me.globals.abin.join('../esp', pak.basename, version)
@@ -182,7 +181,6 @@ print("AT", App.dir)
                                     makeDirectory(to)
                                 } else {
                                     options.filelist.push(to)
-print("FROM", from.relative)
                                     copyFile(from.relative, to)
                                 }
                             }
