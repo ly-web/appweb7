@@ -923,44 +923,49 @@
 		3685EF943685FF2800000053 /* cgiProgram.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cgiProgram.c; path = src/utils/cgiProgram.c; sourceTree = "<group>"; };
 		3685EF943685FF2800000117 /* cgiProgram */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = cgiProgram; sourceTree = BUILT_PRODUCTS_DIR; };
 		3685EF943685FF2800000055 /* esp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = esp.c; path = src/paks/esp/esp.c; sourceTree = "<group>"; };
-		3685EF943685FF2800000118 /* esp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = esp.h; path = build/macosx-x64-default/inc/esp.h; sourceTree = "<group>"; };
+		3685EF943685FF2800000118 /* esp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = esp.h; path = src/paks/esp/esp.h; sourceTree = "<group>"; };
 		3685EF943685FF2800000119 /* espcmd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = esp; sourceTree = BUILT_PRODUCTS_DIR; };
 		3685EF943685FF2800000057 /* http.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = http.c; path = src/paks/http/http.c; sourceTree = "<group>"; };
-		3685EF943685FF280000011A /* http.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = http.h; path = build/macosx-x64-default/inc/http.h; sourceTree = "<group>"; };
+		3685EF943685FF280000011A /* http.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = http.h; path = src/paks/http/http.h; sourceTree = "<group>"; };
 		3685EF943685FF280000011B /* httpcmd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = http; sourceTree = BUILT_PRODUCTS_DIR; };
 		3685EF943685FF2800000059 /* config.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = config.c; path = src/config.c; sourceTree = "<group>"; };
-		3685EF943685FF280000011C /* pcre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pcre.h; path = build/macosx-x64-default/inc/pcre.h; sourceTree = "<group>"; };
+		3685EF943685FF280000011C /* appweb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = appweb.h; path = src/appweb.h; sourceTree = "<group>"; };
+		3685EF943685FF280000011D /* pcre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pcre.h; path = build/macosx-x64-default/inc/pcre.h; sourceTree = "<group>"; };
 		3685EF943685FF280000005B /* convenience.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = convenience.c; path = src/convenience.c; sourceTree = "<group>"; };
 		3685EF943685FF2800000073 /* libappweb */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libappweb.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		3685EF943685FF280000005D /* estLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = estLib.c; path = src/paks/est/estLib.c; sourceTree = "<group>"; };
-		3685EF943685FF280000011D /* est.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = est.h; path = build/macosx-x64-default/inc/est.h; sourceTree = "<group>"; };
+		3685EF943685FF280000011E /* est.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = est.h; path = src/paks/est/est.h; sourceTree = "<group>"; };
 		3685EF943685FF280000009D /* libest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libest.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		3685EF943685FF280000005F /* httpLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = httpLib.c; path = src/paks/http/httpLib.c; sourceTree = "<group>"; };
 		3685EF943685FF2800000075 /* libhttp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libhttp.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		3685EF943685FF2800000061 /* cgiHandler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cgiHandler.c; path = src/modules/cgiHandler.c; sourceTree = "<group>"; };
-		3685EF943685FF280000011E /* libmod_cgi */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmod_cgi.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		3685EF943685FF280000011F /* libmod_cgi */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmod_cgi.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		3685EF943685FF2800000063 /* espLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espLib.c; path = src/paks/esp/espLib.c; sourceTree = "<group>"; };
+		3685EF943685FF2800000120 /* http.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = http.h; path = build/macosx-x64-default/inc/http.h; sourceTree = "<group>"; };
 		3685EF943685FF2800000081 /* libmod_esp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmod_esp.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		3685EF943685FF2800000065 /* sslModule.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sslModule.c; path = src/modules/sslModule.c; sourceTree = "<group>"; };
-		3685EF943685FF280000011F /* libmod_ssl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmod_ssl.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		3685EF943685FF2800000121 /* libmod_ssl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmod_ssl.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		3685EF943685FF2800000067 /* mprLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mprLib.c; path = src/paks/mpr/mprLib.c; sourceTree = "<group>"; };
-		3685EF943685FF2800000120 /* mpr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mpr.h; path = build/macosx-x64-default/inc/mpr.h; sourceTree = "<group>"; };
+		3685EF943685FF2800000122 /* mpr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mpr.h; path = src/paks/mpr/mpr.h; sourceTree = "<group>"; };
 		3685EF943685FF2800000077 /* libmpr */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmpr.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		3685EF943685FF2800000069 /* mprSsl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mprSsl.c; path = src/paks/mpr/mprSsl.c; sourceTree = "<group>"; };
-		3685EF943685FF2800000121 /* me.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = me.h; path = build/macosx-x64-default/inc/me.h; sourceTree = "<group>"; };
+		3685EF943685FF2800000123 /* me.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = me.h; path = build/macosx-x64-default/inc/me.h; sourceTree = "<group>"; };
 		3685EF943685FF280000009B /* libmprssl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmprssl.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		3685EF943685FF280000006B /* pcre.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pcre.c; path = src/paks/pcre/pcre.c; sourceTree = "<group>"; };
+		3685EF943685FF2800000124 /* pcre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pcre.h; path = src/paks/pcre/pcre.h; sourceTree = "<group>"; };
 		3685EF943685FF2800000079 /* libpcre */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpcre.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		3685EF943685FF280000006D /* slink.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = slink.c; path = src/server/slink.c; sourceTree = "<group>"; };
+		3685EF943685FF2800000125 /* mpr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mpr.h; path = build/macosx-x64-default/inc/mpr.h; sourceTree = "<group>"; };
+		3685EF943685FF2800000126 /* esp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = esp.h; path = build/macosx-x64-default/inc/esp.h; sourceTree = "<group>"; };
 		3685EF943685FF280000007B /* libslink */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libslink.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		3685EF943685FF280000006F /* makerom.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = makerom.c; path = src/paks/mpr/makerom.c; sourceTree = "<group>"; };
-		3685EF943685FF2800000122 /* makerom */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = makerom; sourceTree = BUILT_PRODUCTS_DIR; };
+		3685EF943685FF2800000127 /* makerom */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = makerom; sourceTree = BUILT_PRODUCTS_DIR; };
 		3685EF943685FF2800000071 /* manager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = manager.c; path = src/paks/mpr/manager.c; sourceTree = "<group>"; };
-		3685EF943685FF2800000123 /* manager */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = appman; sourceTree = BUILT_PRODUCTS_DIR; };
+		3685EF943685FF2800000128 /* manager */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = appman; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		3685EF943685FF2800000124 /* Frameworks and Libraries for appweb */ = {
+		3685EF943685FF2800000129 /* Frameworks and Libraries for appweb */ = {
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
@@ -972,7 +977,7 @@
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
-		3685EF943685FF2800000125 /* Frameworks and Libraries for authpass */ = {
+		3685EF943685FF280000012A /* Frameworks and Libraries for authpass */ = {
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
@@ -983,7 +988,7 @@
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
-		3685EF943685FF2800000126 /* Frameworks and Libraries for cgiProgram */ = {
+		3685EF943685FF280000012B /* Frameworks and Libraries for cgiProgram */ = {
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
@@ -991,7 +996,7 @@
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
-		3685EF943685FF2800000127 /* Frameworks and Libraries for espcmd */ = {
+		3685EF943685FF280000012C /* Frameworks and Libraries for espcmd */ = {
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
@@ -1003,7 +1008,7 @@
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
-		3685EF943685FF2800000128 /* Frameworks and Libraries for httpcmd */ = {
+		3685EF943685FF280000012D /* Frameworks and Libraries for httpcmd */ = {
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
@@ -1013,7 +1018,7 @@
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
-		3685EF943685FF2800000129 /* Frameworks and Libraries for libappweb */ = {
+		3685EF943685FF280000012E /* Frameworks and Libraries for libappweb */ = {
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
@@ -1023,7 +1028,7 @@
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
-		3685EF943685FF280000012A /* Frameworks and Libraries for libest */ = {
+		3685EF943685FF280000012F /* Frameworks and Libraries for libest */ = {
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
@@ -1031,7 +1036,7 @@
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
-		3685EF943685FF280000012B /* Frameworks and Libraries for libhttp */ = {
+		3685EF943685FF2800000130 /* Frameworks and Libraries for libhttp */ = {
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
@@ -1040,7 +1045,7 @@
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
-		3685EF943685FF280000012C /* Frameworks and Libraries for libmod_cgi */ = {
+		3685EF943685FF2800000131 /* Frameworks and Libraries for libmod_cgi */ = {
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
@@ -1051,7 +1056,7 @@
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
-		3685EF943685FF280000012D /* Frameworks and Libraries for libmod_esp */ = {
+		3685EF943685FF2800000132 /* Frameworks and Libraries for libmod_esp */ = {
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
@@ -1062,7 +1067,7 @@
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
-		3685EF943685FF280000012E /* Frameworks and Libraries for libmod_ssl */ = {
+		3685EF943685FF2800000133 /* Frameworks and Libraries for libmod_ssl */ = {
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
@@ -1075,7 +1080,7 @@
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
-		3685EF943685FF280000012F /* Frameworks and Libraries for libmpr */ = {
+		3685EF943685FF2800000134 /* Frameworks and Libraries for libmpr */ = {
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
@@ -1083,7 +1088,7 @@
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
-		3685EF943685FF2800000130 /* Frameworks and Libraries for libmprssl */ = {
+		3685EF943685FF2800000135 /* Frameworks and Libraries for libmprssl */ = {
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
@@ -1092,7 +1097,7 @@
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
-		3685EF943685FF2800000131 /* Frameworks and Libraries for libpcre */ = {
+		3685EF943685FF2800000136 /* Frameworks and Libraries for libpcre */ = {
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
@@ -1100,7 +1105,7 @@
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
-		3685EF943685FF2800000132 /* Frameworks and Libraries for libslink */ = {
+		3685EF943685FF2800000137 /* Frameworks and Libraries for libslink */ = {
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
@@ -1108,7 +1113,7 @@
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
-		3685EF943685FF2800000133 /* Frameworks and Libraries for makerom */ = {
+		3685EF943685FF2800000138 /* Frameworks and Libraries for makerom */ = {
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
@@ -1116,7 +1121,7 @@
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
-		3685EF943685FF2800000134 /* Frameworks and Libraries for manager */ = {
+		3685EF943685FF2800000139 /* Frameworks and Libraries for manager */ = {
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
@@ -1127,31 +1132,31 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		3685EF943685FF2800000135 /* Top Group */ = {
+		3685EF943685FF280000013A /* Top Group */ = {
                 isa = PBXGroup;
                 children = (
-				3685EF943685FF2800000136 /* libappweb */,
-				3685EF943685FF2800000137 /* libest */,
-				3685EF943685FF2800000138 /* libhttp */,
-				3685EF943685FF2800000139 /* libmod_cgi */,
-				3685EF943685FF280000013A /* libmod_esp */,
-				3685EF943685FF280000013B /* libmod_ssl */,
-				3685EF943685FF280000013C /* libmpr */,
-				3685EF943685FF280000013D /* libmprssl */,
-				3685EF943685FF280000013E /* libpcre */,
-				3685EF943685FF280000013F /* libslink */,
-				3685EF943685FF2800000140 /* appweb */,
-				3685EF943685FF2800000141 /* authpass */,
-				3685EF943685FF2800000142 /* cgiProgram */,
-				3685EF943685FF2800000143 /* espcmd */,
-				3685EF943685FF2800000144 /* httpcmd */,
-				3685EF943685FF2800000145 /* makerom */,
-				3685EF943685FF2800000146 /* manager */,
-				3685EF943685FF2800000147 /* Products */,
+				3685EF943685FF280000013B /* libappweb */,
+				3685EF943685FF280000013C /* libest */,
+				3685EF943685FF280000013D /* libhttp */,
+				3685EF943685FF280000013E /* libmod_cgi */,
+				3685EF943685FF280000013F /* libmod_esp */,
+				3685EF943685FF2800000140 /* libmod_ssl */,
+				3685EF943685FF2800000141 /* libmpr */,
+				3685EF943685FF2800000142 /* libmprssl */,
+				3685EF943685FF2800000143 /* libpcre */,
+				3685EF943685FF2800000144 /* libslink */,
+				3685EF943685FF2800000145 /* appweb */,
+				3685EF943685FF2800000146 /* authpass */,
+				3685EF943685FF2800000147 /* cgiProgram */,
+				3685EF943685FF2800000148 /* espcmd */,
+				3685EF943685FF2800000149 /* httpcmd */,
+				3685EF943685FF280000014A /* makerom */,
+				3685EF943685FF280000014B /* manager */,
+				3685EF943685FF280000014C /* Products */,
 			);
                 sourceTree = "<group>";
             };
-		3685EF943685FF2800000140 /* appweb */ = {
+		3685EF943685FF2800000145 /* appweb */ = {
                 isa = PBXGroup;
                 children = (
 				3685EF943685FF2800000114 /* appweb.h */,
@@ -1161,7 +1166,7 @@
                 path = ..;
                 sourceTree = SOURCE_ROOT;
             };
-		3685EF943685FF2800000141 /* authpass */ = {
+		3685EF943685FF2800000146 /* authpass */ = {
                 isa = PBXGroup;
                 children = (
 				3685EF943685FF2800000114 /* appweb.h */,
@@ -1171,7 +1176,7 @@
                 path = ..;
                 sourceTree = SOURCE_ROOT;
             };
-		3685EF943685FF2800000142 /* cgiProgram */ = {
+		3685EF943685FF2800000147 /* cgiProgram */ = {
                 isa = PBXGroup;
                 children = (
 				3685EF943685FF2800000053 /* cgiProgram.c */,
@@ -1180,7 +1185,7 @@
                 path = ..;
                 sourceTree = SOURCE_ROOT;
             };
-		3685EF943685FF2800000143 /* espcmd */ = {
+		3685EF943685FF2800000148 /* espcmd */ = {
                 isa = PBXGroup;
                 children = (
 				3685EF943685FF2800000118 /* esp.h */,
@@ -1190,7 +1195,7 @@
                 path = ..;
                 sourceTree = SOURCE_ROOT;
             };
-		3685EF943685FF2800000144 /* httpcmd */ = {
+		3685EF943685FF2800000149 /* httpcmd */ = {
                 isa = PBXGroup;
                 children = (
 				3685EF943685FF280000011A /* http.h */,
@@ -1200,11 +1205,11 @@
                 path = ..;
                 sourceTree = SOURCE_ROOT;
             };
-		3685EF943685FF2800000136 /* libappweb */ = {
+		3685EF943685FF280000013B /* libappweb */ = {
                 isa = PBXGroup;
                 children = (
-				3685EF943685FF2800000114 /* appweb.h */,
-				3685EF943685FF280000011C /* pcre.h */,
+				3685EF943685FF280000011C /* appweb.h */,
+				3685EF943685FF280000011D /* pcre.h */,
 				3685EF943685FF2800000059 /* config.c */,
 				3685EF943685FF280000005B /* convenience.c */,
 			);
@@ -1212,17 +1217,17 @@
                 path = ..;
                 sourceTree = SOURCE_ROOT;
             };
-		3685EF943685FF2800000137 /* libest */ = {
+		3685EF943685FF280000013C /* libest */ = {
                 isa = PBXGroup;
                 children = (
-				3685EF943685FF280000011D /* est.h */,
+				3685EF943685FF280000011E /* est.h */,
 				3685EF943685FF280000005D /* estLib.c */,
 			);
                 name = "libest";
                 path = ..;
                 sourceTree = SOURCE_ROOT;
             };
-		3685EF943685FF2800000138 /* libhttp */ = {
+		3685EF943685FF280000013D /* libhttp */ = {
                 isa = PBXGroup;
                 children = (
 				3685EF943685FF280000011A /* http.h */,
@@ -1232,7 +1237,7 @@
                 path = ..;
                 sourceTree = SOURCE_ROOT;
             };
-		3685EF943685FF2800000139 /* libmod_cgi */ = {
+		3685EF943685FF280000013E /* libmod_cgi */ = {
                 isa = PBXGroup;
                 children = (
 				3685EF943685FF2800000114 /* appweb.h */,
@@ -1242,19 +1247,19 @@
                 path = ..;
                 sourceTree = SOURCE_ROOT;
             };
-		3685EF943685FF280000013A /* libmod_esp */ = {
+		3685EF943685FF280000013F /* libmod_esp */ = {
                 isa = PBXGroup;
                 children = (
 				3685EF943685FF2800000118 /* esp.h */,
-				3685EF943685FF280000011C /* pcre.h */,
-				3685EF943685FF280000011A /* http.h */,
+				3685EF943685FF280000011D /* pcre.h */,
+				3685EF943685FF2800000120 /* http.h */,
 				3685EF943685FF2800000063 /* espLib.c */,
 			);
                 name = "libmod_esp";
                 path = ..;
                 sourceTree = SOURCE_ROOT;
             };
-		3685EF943685FF280000013B /* libmod_ssl */ = {
+		3685EF943685FF2800000140 /* libmod_ssl */ = {
                 isa = PBXGroup;
                 children = (
 				3685EF943685FF2800000114 /* appweb.h */,
@@ -1264,70 +1269,70 @@
                 path = ..;
                 sourceTree = SOURCE_ROOT;
             };
-		3685EF943685FF280000013C /* libmpr */ = {
+		3685EF943685FF2800000141 /* libmpr */ = {
                 isa = PBXGroup;
                 children = (
-				3685EF943685FF2800000120 /* mpr.h */,
+				3685EF943685FF2800000122 /* mpr.h */,
 				3685EF943685FF2800000067 /* mprLib.c */,
 			);
                 name = "libmpr";
                 path = ..;
                 sourceTree = SOURCE_ROOT;
             };
-		3685EF943685FF280000013D /* libmprssl */ = {
+		3685EF943685FF2800000142 /* libmprssl */ = {
                 isa = PBXGroup;
                 children = (
-				3685EF943685FF2800000121 /* me.h */,
-				3685EF943685FF2800000120 /* mpr.h */,
+				3685EF943685FF2800000123 /* me.h */,
+				3685EF943685FF2800000122 /* mpr.h */,
 				3685EF943685FF2800000069 /* mprSsl.c */,
 			);
                 name = "libmprssl";
                 path = ..;
                 sourceTree = SOURCE_ROOT;
             };
-		3685EF943685FF280000013E /* libpcre */ = {
+		3685EF943685FF2800000143 /* libpcre */ = {
                 isa = PBXGroup;
                 children = (
-				3685EF943685FF2800000121 /* me.h */,
-				3685EF943685FF280000011C /* pcre.h */,
+				3685EF943685FF2800000123 /* me.h */,
+				3685EF943685FF2800000124 /* pcre.h */,
 				3685EF943685FF280000006B /* pcre.c */,
 			);
                 name = "libpcre";
                 path = ..;
                 sourceTree = SOURCE_ROOT;
             };
-		3685EF943685FF280000013F /* libslink */ = {
+		3685EF943685FF2800000144 /* libslink */ = {
                 isa = PBXGroup;
                 children = (
-				3685EF943685FF2800000120 /* mpr.h */,
-				3685EF943685FF2800000118 /* esp.h */,
+				3685EF943685FF2800000125 /* mpr.h */,
+				3685EF943685FF2800000126 /* esp.h */,
 				3685EF943685FF280000006D /* slink.c */,
 			);
                 name = "libslink";
                 path = ..;
                 sourceTree = SOURCE_ROOT;
             };
-		3685EF943685FF2800000145 /* makerom */ = {
+		3685EF943685FF280000014A /* makerom */ = {
                 isa = PBXGroup;
                 children = (
-				3685EF943685FF2800000120 /* mpr.h */,
+				3685EF943685FF2800000122 /* mpr.h */,
 				3685EF943685FF280000006F /* makerom.c */,
 			);
                 name = "makerom";
                 path = ..;
                 sourceTree = SOURCE_ROOT;
             };
-		3685EF943685FF2800000146 /* manager */ = {
+		3685EF943685FF280000014B /* manager */ = {
                 isa = PBXGroup;
                 children = (
-				3685EF943685FF2800000120 /* mpr.h */,
+				3685EF943685FF2800000122 /* mpr.h */,
 				3685EF943685FF2800000071 /* manager.c */,
 			);
                 name = "manager";
                 path = ..;
                 sourceTree = SOURCE_ROOT;
             };
-		3685EF943685FF2800000147 /* Products */ = {
+		3685EF943685FF280000014C /* Products */ = {
                 isa = PBXGroup;
                 children = (
 				3685EF943685FF2800000115 /* appweb */,
@@ -1338,15 +1343,15 @@
 				3685EF943685FF2800000073 /* libappweb */,
 				3685EF943685FF280000009D /* libest */,
 				3685EF943685FF2800000075 /* libhttp */,
-				3685EF943685FF280000011E /* libmod_cgi */,
+				3685EF943685FF280000011F /* libmod_cgi */,
 				3685EF943685FF2800000081 /* libmod_esp */,
-				3685EF943685FF280000011F /* libmod_ssl */,
+				3685EF943685FF2800000121 /* libmod_ssl */,
 				3685EF943685FF2800000077 /* libmpr */,
 				3685EF943685FF280000009B /* libmprssl */,
 				3685EF943685FF2800000079 /* libpcre */,
 				3685EF943685FF280000007B /* libslink */,
-				3685EF943685FF2800000122 /* makerom */,
-				3685EF943685FF2800000123 /* manager */,
+				3685EF943685FF2800000127 /* makerom */,
+				3685EF943685FF2800000128 /* manager */,
 			);
                 name = "Products";
                 path = ..;
@@ -1357,20 +1362,20 @@
 /* Begin PBXNativeTarget section */
 		3685EF943685FF28000000F8 /* appweb */ = {
     			isa = PBXNativeTarget;
-    			buildConfigurationList = 3685EF943685FF2800000149 /* Build configuration list for PBXNativeTarget "appweb" */;
+    			buildConfigurationList = 3685EF943685FF280000014E /* Build configuration list for PBXNativeTarget "appweb" */;
     			buildPhases = (
-    				3685EF943685FF2800000148 /* Sources */,
-    				3685EF943685FF2800000124 /* Frameworks */,
+    				3685EF943685FF280000014D /* Sources */,
+    				3685EF943685FF2800000129 /* Frameworks */,
     			);
     			buildRules = (
     			);
     			dependencies = (
-    				3685EF943685FF280000014A /* Prep */,
-				3685EF943685FF280000014B /* libmpr */,
-				3685EF943685FF280000014C /* libpcre */,
-				3685EF943685FF280000014D /* libhttp */,
-				3685EF943685FF280000014E /* libappweb */,
-				3685EF943685FF280000014F /* libslink */,				
+    				3685EF943685FF280000014F /* Prep */,
+				3685EF943685FF2800000150 /* libmpr */,
+				3685EF943685FF2800000151 /* libpcre */,
+				3685EF943685FF2800000152 /* libhttp */,
+				3685EF943685FF2800000153 /* libappweb */,
+				3685EF943685FF2800000154 /* libslink */,				
     			);
     			name = appweb;
     			productName = appweb;
@@ -1379,19 +1384,19 @@
     		};
 		3685EF943685FF28000000FA /* authpass */ = {
     			isa = PBXNativeTarget;
-    			buildConfigurationList = 3685EF943685FF2800000151 /* Build configuration list for PBXNativeTarget "authpass" */;
+    			buildConfigurationList = 3685EF943685FF2800000156 /* Build configuration list for PBXNativeTarget "authpass" */;
     			buildPhases = (
-    				3685EF943685FF2800000150 /* Sources */,
-    				3685EF943685FF2800000125 /* Frameworks */,
+    				3685EF943685FF2800000155 /* Sources */,
+    				3685EF943685FF280000012A /* Frameworks */,
     			);
     			buildRules = (
     			);
     			dependencies = (
-    				3685EF943685FF2800000152 /* Prep */,
-				3685EF943685FF2800000153 /* libmpr */,
-				3685EF943685FF2800000154 /* libpcre */,
-				3685EF943685FF2800000155 /* libhttp */,
-				3685EF943685FF2800000156 /* libappweb */,				
+    				3685EF943685FF2800000157 /* Prep */,
+				3685EF943685FF2800000158 /* libmpr */,
+				3685EF943685FF2800000159 /* libpcre */,
+				3685EF943685FF280000015A /* libhttp */,
+				3685EF943685FF280000015B /* libappweb */,				
     			);
     			name = authpass;
     			productName = appweb;
@@ -1400,15 +1405,15 @@
     		};
 		3685EF943685FF28000000EA /* cgiProgram */ = {
     			isa = PBXNativeTarget;
-    			buildConfigurationList = 3685EF943685FF2800000158 /* Build configuration list for PBXNativeTarget "cgiProgram" */;
+    			buildConfigurationList = 3685EF943685FF280000015D /* Build configuration list for PBXNativeTarget "cgiProgram" */;
     			buildPhases = (
-    				3685EF943685FF2800000157 /* Sources */,
-    				3685EF943685FF2800000126 /* Frameworks */,
+    				3685EF943685FF280000015C /* Sources */,
+    				3685EF943685FF280000012B /* Frameworks */,
     			);
     			buildRules = (
     			);
     			dependencies = (
-    				3685EF943685FF2800000159 /* Prep */,				
+    				3685EF943685FF280000015E /* Prep */,				
     			);
     			name = cgiProgram;
     			productName = appweb;
@@ -1417,20 +1422,20 @@
     		};
 		3685EF943685FF2800000100 /* espcmd */ = {
     			isa = PBXNativeTarget;
-    			buildConfigurationList = 3685EF943685FF280000015B /* Build configuration list for PBXNativeTarget "espcmd" */;
+    			buildConfigurationList = 3685EF943685FF2800000160 /* Build configuration list for PBXNativeTarget "espcmd" */;
     			buildPhases = (
-    				3685EF943685FF280000015A /* Sources */,
-    				3685EF943685FF2800000127 /* Frameworks */,
+    				3685EF943685FF280000015F /* Sources */,
+    				3685EF943685FF280000012C /* Frameworks */,
     			);
     			buildRules = (
     			);
     			dependencies = (
-    				3685EF943685FF280000015C /* Prep */,
-				3685EF943685FF280000015D /* libmpr */,
-				3685EF943685FF280000015E /* libpcre */,
-				3685EF943685FF280000015F /* libhttp */,
-				3685EF943685FF2800000160 /* libappweb */,
-				3685EF943685FF2800000161 /* libmod_esp */,				
+    				3685EF943685FF2800000161 /* Prep */,
+				3685EF943685FF2800000162 /* libmpr */,
+				3685EF943685FF2800000163 /* libpcre */,
+				3685EF943685FF2800000164 /* libhttp */,
+				3685EF943685FF2800000165 /* libappweb */,
+				3685EF943685FF2800000166 /* libmod_esp */,				
     			);
     			name = espcmd;
     			productName = appweb;
@@ -1439,18 +1444,18 @@
     		};
 		3685EF943685FF2800000103 /* httpcmd */ = {
     			isa = PBXNativeTarget;
-    			buildConfigurationList = 3685EF943685FF2800000163 /* Build configuration list for PBXNativeTarget "httpcmd" */;
+    			buildConfigurationList = 3685EF943685FF2800000168 /* Build configuration list for PBXNativeTarget "httpcmd" */;
     			buildPhases = (
-    				3685EF943685FF2800000162 /* Sources */,
-    				3685EF943685FF2800000128 /* Frameworks */,
+    				3685EF943685FF2800000167 /* Sources */,
+    				3685EF943685FF280000012D /* Frameworks */,
     			);
     			buildRules = (
     			);
     			dependencies = (
-    				3685EF943685FF2800000164 /* Prep */,
-				3685EF943685FF2800000165 /* libmpr */,
-				3685EF943685FF2800000166 /* libpcre */,
-				3685EF943685FF2800000167 /* libhttp */,				
+    				3685EF943685FF2800000169 /* Prep */,
+				3685EF943685FF280000016A /* libmpr */,
+				3685EF943685FF280000016B /* libpcre */,
+				3685EF943685FF280000016C /* libhttp */,				
     			);
     			name = httpcmd;
     			productName = appweb;
@@ -1459,18 +1464,18 @@
     		};
 		3685EF943685FF28000000AA /* libappweb */ = {
     			isa = PBXNativeTarget;
-    			buildConfigurationList = 3685EF943685FF2800000169 /* Build configuration list for PBXNativeTarget "libappweb" */;
+    			buildConfigurationList = 3685EF943685FF280000016E /* Build configuration list for PBXNativeTarget "libappweb" */;
     			buildPhases = (
-    				3685EF943685FF2800000168 /* Sources */,
-    				3685EF943685FF2800000129 /* Frameworks */,
+    				3685EF943685FF280000016D /* Sources */,
+    				3685EF943685FF280000012E /* Frameworks */,
     			);
     			buildRules = (
     			);
     			dependencies = (
-    				3685EF943685FF280000016A /* Prep */,
-				3685EF943685FF280000016B /* libmpr */,
-				3685EF943685FF280000016C /* libpcre */,
-				3685EF943685FF280000016D /* libhttp */,				
+    				3685EF943685FF280000016F /* Prep */,
+				3685EF943685FF2800000170 /* libmpr */,
+				3685EF943685FF2800000171 /* libpcre */,
+				3685EF943685FF2800000172 /* libhttp */,				
     			);
     			name = libappweb;
     			productName = appweb;
@@ -1479,15 +1484,15 @@
     		};
 		3685EF943685FF28000000D9 /* libest */ = {
     			isa = PBXNativeTarget;
-    			buildConfigurationList = 3685EF943685FF280000016F /* Build configuration list for PBXNativeTarget "libest" */;
+    			buildConfigurationList = 3685EF943685FF2800000174 /* Build configuration list for PBXNativeTarget "libest" */;
     			buildPhases = (
-    				3685EF943685FF280000016E /* Sources */,
-    				3685EF943685FF280000012A /* Frameworks */,
+    				3685EF943685FF2800000173 /* Sources */,
+    				3685EF943685FF280000012F /* Frameworks */,
     			);
     			buildRules = (
     			);
     			dependencies = (
-    				3685EF943685FF2800000170 /* Prep */,				
+    				3685EF943685FF2800000175 /* Prep */,				
     			);
     			name = libest;
     			productName = appweb;
@@ -1496,17 +1501,17 @@
     		};
 		3685EF943685FF28000000A8 /* libhttp */ = {
     			isa = PBXNativeTarget;
-    			buildConfigurationList = 3685EF943685FF2800000172 /* Build configuration list for PBXNativeTarget "libhttp" */;
+    			buildConfigurationList = 3685EF943685FF2800000177 /* Build configuration list for PBXNativeTarget "libhttp" */;
     			buildPhases = (
-    				3685EF943685FF2800000171 /* Sources */,
-    				3685EF943685FF280000012B /* Frameworks */,
+    				3685EF943685FF2800000176 /* Sources */,
+    				3685EF943685FF2800000130 /* Frameworks */,
     			);
     			buildRules = (
     			);
     			dependencies = (
-    				3685EF943685FF2800000173 /* Prep */,
-				3685EF943685FF2800000174 /* libmpr */,
-				3685EF943685FF2800000175 /* libpcre */,				
+    				3685EF943685FF2800000178 /* Prep */,
+				3685EF943685FF2800000179 /* libmpr */,
+				3685EF943685FF280000017A /* libpcre */,				
     			);
     			name = libhttp;
     			productName = appweb;
@@ -1515,40 +1520,40 @@
     		};
 		3685EF943685FF2800000106 /* libmod_cgi */ = {
     			isa = PBXNativeTarget;
-    			buildConfigurationList = 3685EF943685FF2800000177 /* Build configuration list for PBXNativeTarget "libmod_cgi" */;
+    			buildConfigurationList = 3685EF943685FF280000017C /* Build configuration list for PBXNativeTarget "libmod_cgi" */;
     			buildPhases = (
-    				3685EF943685FF2800000176 /* Sources */,
-    				3685EF943685FF280000012C /* Frameworks */,
+    				3685EF943685FF280000017B /* Sources */,
+    				3685EF943685FF2800000131 /* Frameworks */,
     			);
     			buildRules = (
     			);
     			dependencies = (
-    				3685EF943685FF2800000178 /* Prep */,
-				3685EF943685FF2800000179 /* libmpr */,
-				3685EF943685FF280000017A /* libpcre */,
-				3685EF943685FF280000017B /* libhttp */,
-				3685EF943685FF280000017C /* libappweb */,				
+    				3685EF943685FF280000017D /* Prep */,
+				3685EF943685FF280000017E /* libmpr */,
+				3685EF943685FF280000017F /* libpcre */,
+				3685EF943685FF2800000180 /* libhttp */,
+				3685EF943685FF2800000181 /* libappweb */,				
     			);
     			name = libmod_cgi;
     			productName = appweb;
-    			productReference = 3685EF943685FF280000011E /* libmod_cgi */;
+    			productReference = 3685EF943685FF280000011F /* libmod_cgi */;
     			productType = "com.apple.product-type.library.dynamic";
     		};
 		3685EF943685FF28000000BB /* libmod_esp */ = {
     			isa = PBXNativeTarget;
-    			buildConfigurationList = 3685EF943685FF280000017E /* Build configuration list for PBXNativeTarget "libmod_esp" */;
+    			buildConfigurationList = 3685EF943685FF2800000183 /* Build configuration list for PBXNativeTarget "libmod_esp" */;
     			buildPhases = (
-    				3685EF943685FF280000017D /* Sources */,
-    				3685EF943685FF280000012D /* Frameworks */,
+    				3685EF943685FF2800000182 /* Sources */,
+    				3685EF943685FF2800000132 /* Frameworks */,
     			);
     			buildRules = (
     			);
     			dependencies = (
-    				3685EF943685FF280000017F /* Prep */,
-				3685EF943685FF2800000180 /* libmpr */,
-				3685EF943685FF2800000181 /* libpcre */,
-				3685EF943685FF2800000182 /* libhttp */,
-				3685EF943685FF2800000183 /* libappweb */,				
+    				3685EF943685FF2800000184 /* Prep */,
+				3685EF943685FF2800000185 /* libmpr */,
+				3685EF943685FF2800000186 /* libpcre */,
+				3685EF943685FF2800000187 /* libhttp */,
+				3685EF943685FF2800000188 /* libappweb */,				
     			);
     			name = libmod_esp;
     			productName = appweb;
@@ -1557,38 +1562,38 @@
     		};
 		3685EF943685FF2800000109 /* libmod_ssl */ = {
     			isa = PBXNativeTarget;
-    			buildConfigurationList = 3685EF943685FF2800000185 /* Build configuration list for PBXNativeTarget "libmod_ssl" */;
+    			buildConfigurationList = 3685EF943685FF280000018A /* Build configuration list for PBXNativeTarget "libmod_ssl" */;
     			buildPhases = (
-    				3685EF943685FF2800000184 /* Sources */,
-    				3685EF943685FF280000012E /* Frameworks */,
+    				3685EF943685FF2800000189 /* Sources */,
+    				3685EF943685FF2800000133 /* Frameworks */,
     			);
     			buildRules = (
     			);
     			dependencies = (
-    				3685EF943685FF2800000186 /* Prep */,
-				3685EF943685FF2800000187 /* libmpr */,
-				3685EF943685FF2800000188 /* libpcre */,
-				3685EF943685FF2800000189 /* libhttp */,
-				3685EF943685FF280000018A /* libappweb */,
-				3685EF943685FF280000018B /* libest */,
-				3685EF943685FF280000018C /* libmprssl */,				
+    				3685EF943685FF280000018B /* Prep */,
+				3685EF943685FF280000018C /* libmpr */,
+				3685EF943685FF280000018D /* libpcre */,
+				3685EF943685FF280000018E /* libhttp */,
+				3685EF943685FF280000018F /* libappweb */,
+				3685EF943685FF2800000190 /* libest */,
+				3685EF943685FF2800000191 /* libmprssl */,				
     			);
     			name = libmod_ssl;
     			productName = appweb;
-    			productReference = 3685EF943685FF280000011F /* libmod_ssl */;
+    			productReference = 3685EF943685FF2800000121 /* libmod_ssl */;
     			productType = "com.apple.product-type.library.dynamic";
     		};
 		3685EF943685FF28000000A4 /* libmpr */ = {
     			isa = PBXNativeTarget;
-    			buildConfigurationList = 3685EF943685FF280000018E /* Build configuration list for PBXNativeTarget "libmpr" */;
+    			buildConfigurationList = 3685EF943685FF2800000193 /* Build configuration list for PBXNativeTarget "libmpr" */;
     			buildPhases = (
-    				3685EF943685FF280000018D /* Sources */,
-    				3685EF943685FF280000012F /* Frameworks */,
+    				3685EF943685FF2800000192 /* Sources */,
+    				3685EF943685FF2800000134 /* Frameworks */,
     			);
     			buildRules = (
     			);
     			dependencies = (
-    				3685EF943685FF280000018F /* Prep */,				
+    				3685EF943685FF2800000194 /* Prep */,				
     			);
     			name = libmpr;
     			productName = appweb;
@@ -1597,17 +1602,17 @@
     		};
 		3685EF943685FF28000000DB /* libmprssl */ = {
     			isa = PBXNativeTarget;
-    			buildConfigurationList = 3685EF943685FF2800000191 /* Build configuration list for PBXNativeTarget "libmprssl" */;
+    			buildConfigurationList = 3685EF943685FF2800000196 /* Build configuration list for PBXNativeTarget "libmprssl" */;
     			buildPhases = (
-    				3685EF943685FF2800000190 /* Sources */,
-    				3685EF943685FF2800000130 /* Frameworks */,
+    				3685EF943685FF2800000195 /* Sources */,
+    				3685EF943685FF2800000135 /* Frameworks */,
     			);
     			buildRules = (
     			);
     			dependencies = (
-    				3685EF943685FF2800000192 /* Prep */,
-				3685EF943685FF2800000193 /* libmpr */,
-				3685EF943685FF2800000194 /* libest */,				
+    				3685EF943685FF2800000197 /* Prep */,
+				3685EF943685FF2800000198 /* libmpr */,
+				3685EF943685FF2800000199 /* libest */,				
     			);
     			name = libmprssl;
     			productName = appweb;
@@ -1616,15 +1621,15 @@
     		};
 		3685EF943685FF28000000A6 /* libpcre */ = {
     			isa = PBXNativeTarget;
-    			buildConfigurationList = 3685EF943685FF2800000196 /* Build configuration list for PBXNativeTarget "libpcre" */;
+    			buildConfigurationList = 3685EF943685FF280000019B /* Build configuration list for PBXNativeTarget "libpcre" */;
     			buildPhases = (
-    				3685EF943685FF2800000195 /* Sources */,
-    				3685EF943685FF2800000131 /* Frameworks */,
+    				3685EF943685FF280000019A /* Sources */,
+    				3685EF943685FF2800000136 /* Frameworks */,
     			);
     			buildRules = (
     			);
     			dependencies = (
-    				3685EF943685FF2800000197 /* Prep */,				
+    				3685EF943685FF280000019C /* Prep */,				
     			);
     			name = libpcre;
     			productName = appweb;
@@ -1633,15 +1638,15 @@
     		};
 		3685EF943685FF28000000AC /* libslink */ = {
     			isa = PBXNativeTarget;
-    			buildConfigurationList = 3685EF943685FF2800000199 /* Build configuration list for PBXNativeTarget "libslink" */;
+    			buildConfigurationList = 3685EF943685FF280000019E /* Build configuration list for PBXNativeTarget "libslink" */;
     			buildPhases = (
-    				3685EF943685FF2800000198 /* Sources */,
-    				3685EF943685FF2800000132 /* Frameworks */,
+    				3685EF943685FF280000019D /* Sources */,
+    				3685EF943685FF2800000137 /* Frameworks */,
     			);
     			buildRules = (
     			);
     			dependencies = (
-    				3685EF943685FF280000019A /* Prep */,				
+    				3685EF943685FF280000019F /* Prep */,				
     			);
     			name = libslink;
     			productName = appweb;
@@ -1650,38 +1655,38 @@
     		};
 		3685EF943685FF280000010B /* makerom */ = {
     			isa = PBXNativeTarget;
-    			buildConfigurationList = 3685EF943685FF280000019C /* Build configuration list for PBXNativeTarget "makerom" */;
+    			buildConfigurationList = 3685EF943685FF28000001A1 /* Build configuration list for PBXNativeTarget "makerom" */;
     			buildPhases = (
-    				3685EF943685FF280000019B /* Sources */,
-    				3685EF943685FF2800000133 /* Frameworks */,
+    				3685EF943685FF28000001A0 /* Sources */,
+    				3685EF943685FF2800000138 /* Frameworks */,
     			);
     			buildRules = (
     			);
     			dependencies = (
-    				3685EF943685FF280000019D /* Prep */,
-				3685EF943685FF280000019E /* libmpr */,				
+    				3685EF943685FF28000001A2 /* Prep */,
+				3685EF943685FF28000001A3 /* libmpr */,				
     			);
     			name = makerom;
     			productName = appweb;
-    			productReference = 3685EF943685FF2800000122 /* makerom */;
+    			productReference = 3685EF943685FF2800000127 /* makerom */;
     			productType = "com.apple.product-type.tool";
     		};
 		3685EF943685FF280000010D /* manager */ = {
     			isa = PBXNativeTarget;
-    			buildConfigurationList = 3685EF943685FF28000001A0 /* Build configuration list for PBXNativeTarget "manager" */;
+    			buildConfigurationList = 3685EF943685FF28000001A5 /* Build configuration list for PBXNativeTarget "manager" */;
     			buildPhases = (
-    				3685EF943685FF280000019F /* Sources */,
-    				3685EF943685FF2800000134 /* Frameworks */,
+    				3685EF943685FF28000001A4 /* Sources */,
+    				3685EF943685FF2800000139 /* Frameworks */,
     			);
     			buildRules = (
     			);
     			dependencies = (
-    				3685EF943685FF28000001A1 /* Prep */,
-				3685EF943685FF28000001A2 /* libmpr */,				
+    				3685EF943685FF28000001A6 /* Prep */,
+				3685EF943685FF28000001A7 /* libmpr */,				
     			);
     			name = manager;
     			productName = appweb;
-    			productReference = 3685EF943685FF2800000123 /* manager */;
+    			productReference = 3685EF943685FF2800000128 /* manager */;
     			productType = "com.apple.product-type.tool";
     		};
 /* End PBXNativeTarget section */
@@ -1992,8 +1997,8 @@ fi";
     			knownRegions = (
     				en,
     			);
-    			mainGroup = 3685EF943685FF2800000135;
-    			productRefGroup = 3685EF943685FF2800000147 /* Products */;
+    			mainGroup = 3685EF943685FF280000013A;
+    			productRefGroup = 3685EF943685FF280000014C /* Products */;
     			projectDirPath = "";
     			projectRoot = "";
     			targets = (
@@ -2030,7 +2035,7 @@ fi";
     /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		3685EF943685FF2800000148 /* appweb Sources */ = {
+		3685EF943685FF280000014D /* appweb Sources */ = {
     			isa = PBXSourcesBuildPhase;
     			buildActionMask = 2147483647;
     			files = (
@@ -2038,7 +2043,7 @@ fi";
     			);
     			runOnlyForDeploymentPostprocessing = 0;
     		};
-		3685EF943685FF2800000150 /* authpass Sources */ = {
+		3685EF943685FF2800000155 /* authpass Sources */ = {
     			isa = PBXSourcesBuildPhase;
     			buildActionMask = 2147483647;
     			files = (
@@ -2046,7 +2051,7 @@ fi";
     			);
     			runOnlyForDeploymentPostprocessing = 0;
     		};
-		3685EF943685FF2800000157 /* cgiProgram Sources */ = {
+		3685EF943685FF280000015C /* cgiProgram Sources */ = {
     			isa = PBXSourcesBuildPhase;
     			buildActionMask = 2147483647;
     			files = (
@@ -2054,7 +2059,7 @@ fi";
     			);
     			runOnlyForDeploymentPostprocessing = 0;
     		};
-		3685EF943685FF280000015A /* espcmd Sources */ = {
+		3685EF943685FF280000015F /* espcmd Sources */ = {
     			isa = PBXSourcesBuildPhase;
     			buildActionMask = 2147483647;
     			files = (
@@ -2062,7 +2067,7 @@ fi";
     			);
     			runOnlyForDeploymentPostprocessing = 0;
     		};
-		3685EF943685FF2800000162 /* httpcmd Sources */ = {
+		3685EF943685FF2800000167 /* httpcmd Sources */ = {
     			isa = PBXSourcesBuildPhase;
     			buildActionMask = 2147483647;
     			files = (
@@ -2070,7 +2075,7 @@ fi";
     			);
     			runOnlyForDeploymentPostprocessing = 0;
     		};
-		3685EF943685FF2800000168 /* libappweb Sources */ = {
+		3685EF943685FF280000016D /* libappweb Sources */ = {
     			isa = PBXSourcesBuildPhase;
     			buildActionMask = 2147483647;
     			files = (
@@ -2079,7 +2084,7 @@ fi";
     			);
     			runOnlyForDeploymentPostprocessing = 0;
     		};
-		3685EF943685FF280000016E /* libest Sources */ = {
+		3685EF943685FF2800000173 /* libest Sources */ = {
     			isa = PBXSourcesBuildPhase;
     			buildActionMask = 2147483647;
     			files = (
@@ -2087,7 +2092,7 @@ fi";
     			);
     			runOnlyForDeploymentPostprocessing = 0;
     		};
-		3685EF943685FF2800000171 /* libhttp Sources */ = {
+		3685EF943685FF2800000176 /* libhttp Sources */ = {
     			isa = PBXSourcesBuildPhase;
     			buildActionMask = 2147483647;
     			files = (
@@ -2095,7 +2100,7 @@ fi";
     			);
     			runOnlyForDeploymentPostprocessing = 0;
     		};
-		3685EF943685FF2800000176 /* libmod_cgi Sources */ = {
+		3685EF943685FF280000017B /* libmod_cgi Sources */ = {
     			isa = PBXSourcesBuildPhase;
     			buildActionMask = 2147483647;
     			files = (
@@ -2103,7 +2108,7 @@ fi";
     			);
     			runOnlyForDeploymentPostprocessing = 0;
     		};
-		3685EF943685FF280000017D /* libmod_esp Sources */ = {
+		3685EF943685FF2800000182 /* libmod_esp Sources */ = {
     			isa = PBXSourcesBuildPhase;
     			buildActionMask = 2147483647;
     			files = (
@@ -2111,7 +2116,7 @@ fi";
     			);
     			runOnlyForDeploymentPostprocessing = 0;
     		};
-		3685EF943685FF2800000184 /* libmod_ssl Sources */ = {
+		3685EF943685FF2800000189 /* libmod_ssl Sources */ = {
     			isa = PBXSourcesBuildPhase;
     			buildActionMask = 2147483647;
     			files = (
@@ -2119,7 +2124,7 @@ fi";
     			);
     			runOnlyForDeploymentPostprocessing = 0;
     		};
-		3685EF943685FF280000018D /* libmpr Sources */ = {
+		3685EF943685FF2800000192 /* libmpr Sources */ = {
     			isa = PBXSourcesBuildPhase;
     			buildActionMask = 2147483647;
     			files = (
@@ -2127,7 +2132,7 @@ fi";
     			);
     			runOnlyForDeploymentPostprocessing = 0;
     		};
-		3685EF943685FF2800000190 /* libmprssl Sources */ = {
+		3685EF943685FF2800000195 /* libmprssl Sources */ = {
     			isa = PBXSourcesBuildPhase;
     			buildActionMask = 2147483647;
     			files = (
@@ -2135,7 +2140,7 @@ fi";
     			);
     			runOnlyForDeploymentPostprocessing = 0;
     		};
-		3685EF943685FF2800000195 /* libpcre Sources */ = {
+		3685EF943685FF280000019A /* libpcre Sources */ = {
     			isa = PBXSourcesBuildPhase;
     			buildActionMask = 2147483647;
     			files = (
@@ -2143,7 +2148,7 @@ fi";
     			);
     			runOnlyForDeploymentPostprocessing = 0;
     		};
-		3685EF943685FF2800000198 /* libslink Sources */ = {
+		3685EF943685FF280000019D /* libslink Sources */ = {
     			isa = PBXSourcesBuildPhase;
     			buildActionMask = 2147483647;
     			files = (
@@ -2151,7 +2156,7 @@ fi";
     			);
     			runOnlyForDeploymentPostprocessing = 0;
     		};
-		3685EF943685FF280000019B /* makerom Sources */ = {
+		3685EF943685FF28000001A0 /* makerom Sources */ = {
     			isa = PBXSourcesBuildPhase;
     			buildActionMask = 2147483647;
     			files = (
@@ -2159,7 +2164,7 @@ fi";
     			);
     			runOnlyForDeploymentPostprocessing = 0;
     		};
-		3685EF943685FF280000019F /* manager Sources */ = {
+		3685EF943685FF28000001A4 /* manager Sources */ = {
     			isa = PBXSourcesBuildPhase;
     			buildActionMask = 2147483647;
     			files = (
@@ -2170,62 +2175,62 @@ fi";
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		3685EF943685FF280000014A /* PBXTargetDependency appweb depends on Prep */ = {
+		3685EF943685FF280000014F /* PBXTargetDependency appweb depends on Prep */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000A2 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000014B /* PBXTargetDependency appweb depends on libmpr */ = {
+		3685EF943685FF2800000150 /* PBXTargetDependency appweb depends on libmpr */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A4 /* libmpr */;
     			targetProxy = 3685EF943685FF28000000A3 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000014C /* PBXTargetDependency appweb depends on libpcre */ = {
+		3685EF943685FF2800000151 /* PBXTargetDependency appweb depends on libpcre */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A6 /* libpcre */;
     			targetProxy = 3685EF943685FF28000000A5 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000014D /* PBXTargetDependency appweb depends on libhttp */ = {
+		3685EF943685FF2800000152 /* PBXTargetDependency appweb depends on libhttp */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A8 /* libhttp */;
     			targetProxy = 3685EF943685FF28000000A7 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000014E /* PBXTargetDependency appweb depends on libappweb */ = {
+		3685EF943685FF2800000153 /* PBXTargetDependency appweb depends on libappweb */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000AA /* libappweb */;
     			targetProxy = 3685EF943685FF28000000A9 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000014F /* PBXTargetDependency appweb depends on libslink */ = {
+		3685EF943685FF2800000154 /* PBXTargetDependency appweb depends on libslink */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000AC /* libslink */;
     			targetProxy = 3685EF943685FF28000000AB /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000152 /* PBXTargetDependency authpass depends on Prep */ = {
+		3685EF943685FF2800000157 /* PBXTargetDependency authpass depends on Prep */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000AD /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000153 /* PBXTargetDependency authpass depends on libmpr */ = {
+		3685EF943685FF2800000158 /* PBXTargetDependency authpass depends on libmpr */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A4 /* libmpr */;
     			targetProxy = 3685EF943685FF28000000AE /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000154 /* PBXTargetDependency authpass depends on libpcre */ = {
+		3685EF943685FF2800000159 /* PBXTargetDependency authpass depends on libpcre */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A6 /* libpcre */;
     			targetProxy = 3685EF943685FF28000000AF /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000155 /* PBXTargetDependency authpass depends on libhttp */ = {
+		3685EF943685FF280000015A /* PBXTargetDependency authpass depends on libhttp */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A8 /* libhttp */;
     			targetProxy = 3685EF943685FF28000000B0 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000156 /* PBXTargetDependency authpass depends on libappweb */ = {
+		3685EF943685FF280000015B /* PBXTargetDependency authpass depends on libappweb */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000AA /* libappweb */;
     			targetProxy = 3685EF943685FF28000000B1 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000159 /* PBXTargetDependency cgiProgram depends on Prep */ = {
+		3685EF943685FF280000015E /* PBXTargetDependency cgiProgram depends on Prep */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000B2 /* PBXContainerItemProxy */;
@@ -2240,32 +2245,32 @@ fi";
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000B4 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000015C /* PBXTargetDependency espcmd depends on Prep */ = {
+		3685EF943685FF2800000161 /* PBXTargetDependency espcmd depends on Prep */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000B5 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000015D /* PBXTargetDependency espcmd depends on libmpr */ = {
+		3685EF943685FF2800000162 /* PBXTargetDependency espcmd depends on libmpr */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A4 /* libmpr */;
     			targetProxy = 3685EF943685FF28000000B6 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000015E /* PBXTargetDependency espcmd depends on libpcre */ = {
+		3685EF943685FF2800000163 /* PBXTargetDependency espcmd depends on libpcre */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A6 /* libpcre */;
     			targetProxy = 3685EF943685FF28000000B7 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000015F /* PBXTargetDependency espcmd depends on libhttp */ = {
+		3685EF943685FF2800000164 /* PBXTargetDependency espcmd depends on libhttp */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A8 /* libhttp */;
     			targetProxy = 3685EF943685FF28000000B8 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000160 /* PBXTargetDependency espcmd depends on libappweb */ = {
+		3685EF943685FF2800000165 /* PBXTargetDependency espcmd depends on libappweb */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000AA /* libappweb */;
     			targetProxy = 3685EF943685FF28000000B9 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000161 /* PBXTargetDependency espcmd depends on libmod_esp */ = {
+		3685EF943685FF2800000166 /* PBXTargetDependency espcmd depends on libmod_esp */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000BB /* libmod_esp */;
     			targetProxy = 3685EF943685FF28000000BA /* PBXContainerItemProxy */;
@@ -2275,197 +2280,197 @@ fi";
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000BC /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000164 /* PBXTargetDependency httpcmd depends on Prep */ = {
+		3685EF943685FF2800000169 /* PBXTargetDependency httpcmd depends on Prep */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000BD /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000165 /* PBXTargetDependency httpcmd depends on libmpr */ = {
+		3685EF943685FF280000016A /* PBXTargetDependency httpcmd depends on libmpr */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A4 /* libmpr */;
     			targetProxy = 3685EF943685FF28000000BE /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000166 /* PBXTargetDependency httpcmd depends on libpcre */ = {
+		3685EF943685FF280000016B /* PBXTargetDependency httpcmd depends on libpcre */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A6 /* libpcre */;
     			targetProxy = 3685EF943685FF28000000BF /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000167 /* PBXTargetDependency httpcmd depends on libhttp */ = {
+		3685EF943685FF280000016C /* PBXTargetDependency httpcmd depends on libhttp */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A8 /* libhttp */;
     			targetProxy = 3685EF943685FF28000000C0 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000016A /* PBXTargetDependency libappweb depends on Prep */ = {
+		3685EF943685FF280000016F /* PBXTargetDependency libappweb depends on Prep */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000C1 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000016B /* PBXTargetDependency libappweb depends on libmpr */ = {
+		3685EF943685FF2800000170 /* PBXTargetDependency libappweb depends on libmpr */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A4 /* libmpr */;
     			targetProxy = 3685EF943685FF28000000C2 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000016C /* PBXTargetDependency libappweb depends on libpcre */ = {
+		3685EF943685FF2800000171 /* PBXTargetDependency libappweb depends on libpcre */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A6 /* libpcre */;
     			targetProxy = 3685EF943685FF28000000C3 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000016D /* PBXTargetDependency libappweb depends on libhttp */ = {
+		3685EF943685FF2800000172 /* PBXTargetDependency libappweb depends on libhttp */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A8 /* libhttp */;
     			targetProxy = 3685EF943685FF28000000C4 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000170 /* PBXTargetDependency libest depends on Prep */ = {
+		3685EF943685FF2800000175 /* PBXTargetDependency libest depends on Prep */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000C5 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000173 /* PBXTargetDependency libhttp depends on Prep */ = {
+		3685EF943685FF2800000178 /* PBXTargetDependency libhttp depends on Prep */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000C6 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000174 /* PBXTargetDependency libhttp depends on libmpr */ = {
+		3685EF943685FF2800000179 /* PBXTargetDependency libhttp depends on libmpr */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A4 /* libmpr */;
     			targetProxy = 3685EF943685FF28000000C7 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000175 /* PBXTargetDependency libhttp depends on libpcre */ = {
+		3685EF943685FF280000017A /* PBXTargetDependency libhttp depends on libpcre */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A6 /* libpcre */;
     			targetProxy = 3685EF943685FF28000000C8 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000178 /* PBXTargetDependency libmod_cgi depends on Prep */ = {
+		3685EF943685FF280000017D /* PBXTargetDependency libmod_cgi depends on Prep */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000C9 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000179 /* PBXTargetDependency libmod_cgi depends on libmpr */ = {
+		3685EF943685FF280000017E /* PBXTargetDependency libmod_cgi depends on libmpr */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A4 /* libmpr */;
     			targetProxy = 3685EF943685FF28000000CA /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000017A /* PBXTargetDependency libmod_cgi depends on libpcre */ = {
+		3685EF943685FF280000017F /* PBXTargetDependency libmod_cgi depends on libpcre */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A6 /* libpcre */;
     			targetProxy = 3685EF943685FF28000000CB /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000017B /* PBXTargetDependency libmod_cgi depends on libhttp */ = {
+		3685EF943685FF2800000180 /* PBXTargetDependency libmod_cgi depends on libhttp */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A8 /* libhttp */;
     			targetProxy = 3685EF943685FF28000000CC /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000017C /* PBXTargetDependency libmod_cgi depends on libappweb */ = {
+		3685EF943685FF2800000181 /* PBXTargetDependency libmod_cgi depends on libappweb */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000AA /* libappweb */;
     			targetProxy = 3685EF943685FF28000000CD /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000017F /* PBXTargetDependency libmod_esp depends on Prep */ = {
+		3685EF943685FF2800000184 /* PBXTargetDependency libmod_esp depends on Prep */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000CE /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000180 /* PBXTargetDependency libmod_esp depends on libmpr */ = {
+		3685EF943685FF2800000185 /* PBXTargetDependency libmod_esp depends on libmpr */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A4 /* libmpr */;
     			targetProxy = 3685EF943685FF28000000CF /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000181 /* PBXTargetDependency libmod_esp depends on libpcre */ = {
+		3685EF943685FF2800000186 /* PBXTargetDependency libmod_esp depends on libpcre */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A6 /* libpcre */;
     			targetProxy = 3685EF943685FF28000000D0 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000182 /* PBXTargetDependency libmod_esp depends on libhttp */ = {
+		3685EF943685FF2800000187 /* PBXTargetDependency libmod_esp depends on libhttp */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A8 /* libhttp */;
     			targetProxy = 3685EF943685FF28000000D1 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000183 /* PBXTargetDependency libmod_esp depends on libappweb */ = {
+		3685EF943685FF2800000188 /* PBXTargetDependency libmod_esp depends on libappweb */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000AA /* libappweb */;
     			targetProxy = 3685EF943685FF28000000D2 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000186 /* PBXTargetDependency libmod_ssl depends on Prep */ = {
+		3685EF943685FF280000018B /* PBXTargetDependency libmod_ssl depends on Prep */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000D3 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000187 /* PBXTargetDependency libmod_ssl depends on libmpr */ = {
+		3685EF943685FF280000018C /* PBXTargetDependency libmod_ssl depends on libmpr */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A4 /* libmpr */;
     			targetProxy = 3685EF943685FF28000000D4 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000188 /* PBXTargetDependency libmod_ssl depends on libpcre */ = {
+		3685EF943685FF280000018D /* PBXTargetDependency libmod_ssl depends on libpcre */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A6 /* libpcre */;
     			targetProxy = 3685EF943685FF28000000D5 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000189 /* PBXTargetDependency libmod_ssl depends on libhttp */ = {
+		3685EF943685FF280000018E /* PBXTargetDependency libmod_ssl depends on libhttp */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A8 /* libhttp */;
     			targetProxy = 3685EF943685FF28000000D6 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000018A /* PBXTargetDependency libmod_ssl depends on libappweb */ = {
+		3685EF943685FF280000018F /* PBXTargetDependency libmod_ssl depends on libappweb */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000AA /* libappweb */;
     			targetProxy = 3685EF943685FF28000000D7 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000018B /* PBXTargetDependency libmod_ssl depends on libest */ = {
+		3685EF943685FF2800000190 /* PBXTargetDependency libmod_ssl depends on libest */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000D9 /* libest */;
     			targetProxy = 3685EF943685FF28000000D8 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000018C /* PBXTargetDependency libmod_ssl depends on libmprssl */ = {
+		3685EF943685FF2800000191 /* PBXTargetDependency libmod_ssl depends on libmprssl */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000DB /* libmprssl */;
     			targetProxy = 3685EF943685FF28000000DA /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000018F /* PBXTargetDependency libmpr depends on Prep */ = {
+		3685EF943685FF2800000194 /* PBXTargetDependency libmpr depends on Prep */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000DC /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000192 /* PBXTargetDependency libmprssl depends on Prep */ = {
+		3685EF943685FF2800000197 /* PBXTargetDependency libmprssl depends on Prep */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000DD /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000193 /* PBXTargetDependency libmprssl depends on libmpr */ = {
+		3685EF943685FF2800000198 /* PBXTargetDependency libmprssl depends on libmpr */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A4 /* libmpr */;
     			targetProxy = 3685EF943685FF28000000DE /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000194 /* PBXTargetDependency libmprssl depends on libest */ = {
+		3685EF943685FF2800000199 /* PBXTargetDependency libmprssl depends on libest */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000D9 /* libest */;
     			targetProxy = 3685EF943685FF28000000DF /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000197 /* PBXTargetDependency libpcre depends on Prep */ = {
+		3685EF943685FF280000019C /* PBXTargetDependency libpcre depends on Prep */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000E0 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000019A /* PBXTargetDependency libslink depends on Prep */ = {
+		3685EF943685FF280000019F /* PBXTargetDependency libslink depends on Prep */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000E1 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000019D /* PBXTargetDependency makerom depends on Prep */ = {
+		3685EF943685FF28000001A2 /* PBXTargetDependency makerom depends on Prep */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000E2 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000019E /* PBXTargetDependency makerom depends on libmpr */ = {
+		3685EF943685FF28000001A3 /* PBXTargetDependency makerom depends on libmpr */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A4 /* libmpr */;
     			targetProxy = 3685EF943685FF28000000E3 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF28000001A1 /* PBXTargetDependency manager depends on Prep */ = {
+		3685EF943685FF28000001A6 /* PBXTargetDependency manager depends on Prep */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF280000004C /* Prep */;
     			targetProxy = 3685EF943685FF28000000E4 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF28000001A2 /* PBXTargetDependency manager depends on libmpr */ = {
+		3685EF943685FF28000001A7 /* PBXTargetDependency manager depends on libmpr */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF28000000A4 /* libmpr */;
     			targetProxy = 3685EF943685FF28000000E5 /* PBXContainerItemProxy */;
@@ -2794,7 +2799,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001A3 /* Debug */ = {
+		3685EF943685FF28000001A8 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = appweb;
@@ -2811,7 +2816,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001A4 /* Release */ = {
+    		3685EF943685FF28000001A9 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = appweb;
@@ -2824,7 +2829,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001A5 /* Debug */ = {
+		3685EF943685FF28000001AA /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = authpass;
@@ -2841,7 +2846,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001A6 /* Release */ = {
+    		3685EF943685FF28000001AB /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = authpass;
@@ -2854,7 +2859,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001A7 /* Debug */ = {
+		3685EF943685FF28000001AC /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = cgiProgram;
@@ -2866,7 +2871,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001A8 /* Release */ = {
+    		3685EF943685FF28000001AD /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = cgiProgram;
@@ -2875,7 +2880,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001A9 /* Debug */ = {
+		3685EF943685FF28000001AE /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = esp-paks;
@@ -2887,7 +2892,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001AA /* Release */ = {
+    		3685EF943685FF28000001AF /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = esp-paks;
@@ -2896,7 +2901,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001AB /* Debug */ = {
+		3685EF943685FF28000001B0 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = esp.conf;
@@ -2908,7 +2913,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001AC /* Release */ = {
+    		3685EF943685FF28000001B1 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = esp.conf;
@@ -2917,7 +2922,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001AD /* Debug */ = {
+		3685EF943685FF28000001B2 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = esp;
@@ -2934,7 +2939,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001AE /* Release */ = {
+    		3685EF943685FF28000001B3 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = esp;
@@ -2947,7 +2952,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001AF /* Debug */ = {
+		3685EF943685FF28000001B4 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = http-ca-crt;
@@ -2959,7 +2964,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001B0 /* Release */ = {
+    		3685EF943685FF28000001B5 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = http-ca-crt;
@@ -2968,7 +2973,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001B1 /* Debug */ = {
+		3685EF943685FF28000001B6 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = http;
@@ -2985,7 +2990,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001B2 /* Release */ = {
+    		3685EF943685FF28000001B7 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = http;
@@ -2998,7 +3003,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001B3 /* Debug */ = {
+		3685EF943685FF28000001B8 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libappweb;
@@ -3015,7 +3020,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001B4 /* Release */ = {
+    		3685EF943685FF28000001B9 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libappweb;
@@ -3028,7 +3033,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001B5 /* Debug */ = {
+		3685EF943685FF28000001BA /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libest;
@@ -3040,7 +3045,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001B6 /* Release */ = {
+    		3685EF943685FF28000001BB /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libest;
@@ -3049,7 +3054,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001B7 /* Debug */ = {
+		3685EF943685FF28000001BC /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libhttp;
@@ -3066,7 +3071,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001B8 /* Release */ = {
+    		3685EF943685FF28000001BD /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libhttp;
@@ -3079,7 +3084,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001B9 /* Debug */ = {
+		3685EF943685FF28000001BE /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libmod_cgi;
@@ -3096,7 +3101,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001BA /* Release */ = {
+    		3685EF943685FF28000001BF /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libmod_cgi;
@@ -3109,7 +3114,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001BB /* Debug */ = {
+		3685EF943685FF28000001C0 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libmod_esp;
@@ -3126,7 +3131,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001BC /* Release */ = {
+    		3685EF943685FF28000001C1 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libmod_esp;
@@ -3139,7 +3144,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001BD /* Debug */ = {
+		3685EF943685FF28000001C2 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libmod_ssl;
@@ -3156,7 +3161,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001BE /* Release */ = {
+    		3685EF943685FF28000001C3 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libmod_ssl;
@@ -3169,7 +3174,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001BF /* Debug */ = {
+		3685EF943685FF28000001C4 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libmpr;
@@ -3181,7 +3186,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001C0 /* Release */ = {
+    		3685EF943685FF28000001C5 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libmpr;
@@ -3190,7 +3195,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001C1 /* Debug */ = {
+		3685EF943685FF28000001C6 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libmprssl;
@@ -3202,7 +3207,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001C2 /* Release */ = {
+    		3685EF943685FF28000001C7 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libmprssl;
@@ -3211,7 +3216,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001C3 /* Debug */ = {
+		3685EF943685FF28000001C8 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libpcre;
@@ -3224,7 +3229,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001C4 /* Release */ = {
+    		3685EF943685FF28000001C9 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libpcre;
@@ -3236,7 +3241,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001C5 /* Debug */ = {
+		3685EF943685FF28000001CA /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libslink;
@@ -3248,7 +3253,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001C6 /* Release */ = {
+    		3685EF943685FF28000001CB /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = libslink;
@@ -3257,7 +3262,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001C7 /* Debug */ = {
+		3685EF943685FF28000001CC /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = makerom;
@@ -3269,7 +3274,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001C8 /* Release */ = {
+    		3685EF943685FF28000001CD /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = makerom;
@@ -3278,7 +3283,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001C9 /* Debug */ = {
+		3685EF943685FF28000001CE /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = manager;
@@ -3290,7 +3295,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001CA /* Release */ = {
+    		3685EF943685FF28000001CF /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = manager;
@@ -3299,7 +3304,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001CB /* Debug */ = {
+		3685EF943685FF28000001D0 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = prep-cgi;
@@ -3311,7 +3316,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001CC /* Release */ = {
+    		3685EF943685FF28000001D1 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = prep-cgi;
@@ -3320,7 +3325,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001CD /* Debug */ = {
+		3685EF943685FF28000001D2 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = server-cache;
@@ -3332,7 +3337,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001CE /* Release */ = {
+    		3685EF943685FF28000001D3 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = server-cache;
@@ -3341,7 +3346,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001CF /* Debug */ = {
+		3685EF943685FF28000001D4 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = test-basic.cgi;
@@ -3353,7 +3358,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001D0 /* Release */ = {
+    		3685EF943685FF28000001D5 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = test-basic.cgi;
@@ -3362,7 +3367,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001D1 /* Debug */ = {
+		3685EF943685FF28000001D6 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = test-cache.cgi;
@@ -3374,7 +3379,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001D2 /* Release */ = {
+    		3685EF943685FF28000001D7 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = test-cache.cgi;
@@ -3383,7 +3388,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001D3 /* Debug */ = {
+		3685EF943685FF28000001D8 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = test-cgiProgram;
@@ -3395,7 +3400,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001D4 /* Release */ = {
+    		3685EF943685FF28000001D9 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = test-cgiProgram;
@@ -3404,7 +3409,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001D5 /* Debug */ = {
+		3685EF943685FF28000001DA /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = test-testScript;
@@ -3416,7 +3421,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001D6 /* Release */ = {
+    		3685EF943685FF28000001DB /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = test-testScript;
@@ -3425,7 +3430,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001D7 /* Debug */ = {
+		3685EF943685FF28000001DC /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = All;
@@ -3437,7 +3442,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001D8 /* Release */ = {
+    		3685EF943685FF28000001DD /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = All;
@@ -3446,7 +3451,7 @@ fi";
     			};
     			name = Release;
     		};
-		3685EF943685FF28000001D9 /* Debug */ = {
+		3685EF943685FF28000001DE /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = Prep;
@@ -3458,7 +3463,7 @@ fi";
     			};
     			name = Debug;
     		};
-    		3685EF943685FF28000001DA /* Release */ = {
+    		3685EF943685FF28000001DF /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
     				PRODUCT_NAME = Prep;
@@ -3479,29 +3484,29 @@ fi";
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
     		};
-		3685EF943685FF2800000149 /* Build configuration list for PBXNativeTarget "appweb" */ = {
+		3685EF943685FF280000014E /* Build configuration list for PBXNativeTarget "appweb" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001A3 /* Debug */,
-    				3685EF943685FF28000001A4 /* Release */,
+    				3685EF943685FF28000001A8 /* Debug */,
+    				3685EF943685FF28000001A9 /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
     		};
-		3685EF943685FF2800000151 /* Build configuration list for PBXNativeTarget "authpass" */ = {
+		3685EF943685FF2800000156 /* Build configuration list for PBXNativeTarget "authpass" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001A5 /* Debug */,
-    				3685EF943685FF28000001A6 /* Release */,
+    				3685EF943685FF28000001AA /* Debug */,
+    				3685EF943685FF28000001AB /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
     		};
-		3685EF943685FF2800000158 /* Build configuration list for PBXNativeTarget "cgiProgram" */ = {
+		3685EF943685FF280000015D /* Build configuration list for PBXNativeTarget "cgiProgram" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001A7 /* Debug */,
-    				3685EF943685FF28000001A8 /* Release */,
+    				3685EF943685FF28000001AC /* Debug */,
+    				3685EF943685FF28000001AD /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
@@ -3509,8 +3514,8 @@ fi";
 		3685EF943685FF2800000005 /* Build configuration list for PBXNativeTarget "esp-paks" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001A9 /* Debug */,
-    				3685EF943685FF28000001AA /* Release */,
+    				3685EF943685FF28000001AE /* Debug */,
+    				3685EF943685FF28000001AF /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
@@ -3518,17 +3523,17 @@ fi";
 		3685EF943685FF2800000009 /* Build configuration list for PBXNativeTarget "esp.conf" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001AB /* Debug */,
-    				3685EF943685FF28000001AC /* Release */,
+    				3685EF943685FF28000001B0 /* Debug */,
+    				3685EF943685FF28000001B1 /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
     		};
-		3685EF943685FF280000015B /* Build configuration list for PBXNativeTarget "espcmd" */ = {
+		3685EF943685FF2800000160 /* Build configuration list for PBXNativeTarget "espcmd" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001AD /* Debug */,
-    				3685EF943685FF28000001AE /* Release */,
+    				3685EF943685FF28000001B2 /* Debug */,
+    				3685EF943685FF28000001B3 /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
@@ -3536,125 +3541,125 @@ fi";
 		3685EF943685FF280000000D /* Build configuration list for PBXNativeTarget "http-ca-crt" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001AF /* Debug */,
-    				3685EF943685FF28000001B0 /* Release */,
+    				3685EF943685FF28000001B4 /* Debug */,
+    				3685EF943685FF28000001B5 /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
     		};
-		3685EF943685FF2800000163 /* Build configuration list for PBXNativeTarget "httpcmd" */ = {
+		3685EF943685FF2800000168 /* Build configuration list for PBXNativeTarget "httpcmd" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001B1 /* Debug */,
-    				3685EF943685FF28000001B2 /* Release */,
+    				3685EF943685FF28000001B6 /* Debug */,
+    				3685EF943685FF28000001B7 /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
     		};
-		3685EF943685FF2800000169 /* Build configuration list for PBXNativeTarget "libappweb" */ = {
+		3685EF943685FF280000016E /* Build configuration list for PBXNativeTarget "libappweb" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001B3 /* Debug */,
-    				3685EF943685FF28000001B4 /* Release */,
+    				3685EF943685FF28000001B8 /* Debug */,
+    				3685EF943685FF28000001B9 /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
     		};
-		3685EF943685FF280000016F /* Build configuration list for PBXNativeTarget "libest" */ = {
+		3685EF943685FF2800000174 /* Build configuration list for PBXNativeTarget "libest" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001B5 /* Debug */,
-    				3685EF943685FF28000001B6 /* Release */,
+    				3685EF943685FF28000001BA /* Debug */,
+    				3685EF943685FF28000001BB /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
     		};
-		3685EF943685FF2800000172 /* Build configuration list for PBXNativeTarget "libhttp" */ = {
+		3685EF943685FF2800000177 /* Build configuration list for PBXNativeTarget "libhttp" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001B7 /* Debug */,
-    				3685EF943685FF28000001B8 /* Release */,
+    				3685EF943685FF28000001BC /* Debug */,
+    				3685EF943685FF28000001BD /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
     		};
-		3685EF943685FF2800000177 /* Build configuration list for PBXNativeTarget "libmod_cgi" */ = {
+		3685EF943685FF280000017C /* Build configuration list for PBXNativeTarget "libmod_cgi" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001B9 /* Debug */,
-    				3685EF943685FF28000001BA /* Release */,
+    				3685EF943685FF28000001BE /* Debug */,
+    				3685EF943685FF28000001BF /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
     		};
-		3685EF943685FF280000017E /* Build configuration list for PBXNativeTarget "libmod_esp" */ = {
+		3685EF943685FF2800000183 /* Build configuration list for PBXNativeTarget "libmod_esp" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001BB /* Debug */,
-    				3685EF943685FF28000001BC /* Release */,
+    				3685EF943685FF28000001C0 /* Debug */,
+    				3685EF943685FF28000001C1 /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
     		};
-		3685EF943685FF2800000185 /* Build configuration list for PBXNativeTarget "libmod_ssl" */ = {
+		3685EF943685FF280000018A /* Build configuration list for PBXNativeTarget "libmod_ssl" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001BD /* Debug */,
-    				3685EF943685FF28000001BE /* Release */,
+    				3685EF943685FF28000001C2 /* Debug */,
+    				3685EF943685FF28000001C3 /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
     		};
-		3685EF943685FF280000018E /* Build configuration list for PBXNativeTarget "libmpr" */ = {
+		3685EF943685FF2800000193 /* Build configuration list for PBXNativeTarget "libmpr" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001BF /* Debug */,
-    				3685EF943685FF28000001C0 /* Release */,
+    				3685EF943685FF28000001C4 /* Debug */,
+    				3685EF943685FF28000001C5 /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
     		};
-		3685EF943685FF2800000191 /* Build configuration list for PBXNativeTarget "libmprssl" */ = {
+		3685EF943685FF2800000196 /* Build configuration list for PBXNativeTarget "libmprssl" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001C1 /* Debug */,
-    				3685EF943685FF28000001C2 /* Release */,
+    				3685EF943685FF28000001C6 /* Debug */,
+    				3685EF943685FF28000001C7 /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
     		};
-		3685EF943685FF2800000196 /* Build configuration list for PBXNativeTarget "libpcre" */ = {
+		3685EF943685FF280000019B /* Build configuration list for PBXNativeTarget "libpcre" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001C3 /* Debug */,
-    				3685EF943685FF28000001C4 /* Release */,
+    				3685EF943685FF28000001C8 /* Debug */,
+    				3685EF943685FF28000001C9 /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
     		};
-		3685EF943685FF2800000199 /* Build configuration list for PBXNativeTarget "libslink" */ = {
+		3685EF943685FF280000019E /* Build configuration list for PBXNativeTarget "libslink" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001C5 /* Debug */,
-    				3685EF943685FF28000001C6 /* Release */,
+    				3685EF943685FF28000001CA /* Debug */,
+    				3685EF943685FF28000001CB /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
     		};
-		3685EF943685FF280000019C /* Build configuration list for PBXNativeTarget "makerom" */ = {
+		3685EF943685FF28000001A1 /* Build configuration list for PBXNativeTarget "makerom" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001C7 /* Debug */,
-    				3685EF943685FF28000001C8 /* Release */,
+    				3685EF943685FF28000001CC /* Debug */,
+    				3685EF943685FF28000001CD /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
     		};
-		3685EF943685FF28000001A0 /* Build configuration list for PBXNativeTarget "manager" */ = {
+		3685EF943685FF28000001A5 /* Build configuration list for PBXNativeTarget "manager" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001C9 /* Debug */,
-    				3685EF943685FF28000001CA /* Release */,
+    				3685EF943685FF28000001CE /* Debug */,
+    				3685EF943685FF28000001CF /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
@@ -3662,8 +3667,8 @@ fi";
 		3685EF943685FF2800000011 /* Build configuration list for PBXNativeTarget "prep-cgi" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001CB /* Debug */,
-    				3685EF943685FF28000001CC /* Release */,
+    				3685EF943685FF28000001D0 /* Debug */,
+    				3685EF943685FF28000001D1 /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
@@ -3671,8 +3676,8 @@ fi";
 		3685EF943685FF2800000015 /* Build configuration list for PBXNativeTarget "server-cache" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001CD /* Debug */,
-    				3685EF943685FF28000001CE /* Release */,
+    				3685EF943685FF28000001D2 /* Debug */,
+    				3685EF943685FF28000001D3 /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
@@ -3680,8 +3685,8 @@ fi";
 		3685EF943685FF2800000019 /* Build configuration list for PBXNativeTarget "test-basic.cgi" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001CF /* Debug */,
-    				3685EF943685FF28000001D0 /* Release */,
+    				3685EF943685FF28000001D4 /* Debug */,
+    				3685EF943685FF28000001D5 /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
@@ -3689,8 +3694,8 @@ fi";
 		3685EF943685FF280000001E /* Build configuration list for PBXNativeTarget "test-cache.cgi" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001D1 /* Debug */,
-    				3685EF943685FF28000001D2 /* Release */,
+    				3685EF943685FF28000001D6 /* Debug */,
+    				3685EF943685FF28000001D7 /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
@@ -3698,8 +3703,8 @@ fi";
 		3685EF943685FF2800000023 /* Build configuration list for PBXNativeTarget "test-cgiProgram" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001D3 /* Debug */,
-    				3685EF943685FF28000001D4 /* Release */,
+    				3685EF943685FF28000001D8 /* Debug */,
+    				3685EF943685FF28000001D9 /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
@@ -3707,8 +3712,8 @@ fi";
 		3685EF943685FF2800000028 /* Build configuration list for PBXNativeTarget "test-testScript" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001D5 /* Debug */,
-    				3685EF943685FF28000001D6 /* Release */,
+    				3685EF943685FF28000001DA /* Debug */,
+    				3685EF943685FF28000001DB /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
@@ -3716,8 +3721,8 @@ fi";
 		3685EF943685FF280000002D /* Build configuration list for PBXNativeTarget "All" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001D7 /* Debug */,
-    				3685EF943685FF28000001D8 /* Release */,
+    				3685EF943685FF28000001DC /* Debug */,
+    				3685EF943685FF28000001DD /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
@@ -3725,8 +3730,8 @@ fi";
 		3685EF943685FF280000004B /* Build configuration list for PBXNativeTarget "Prep" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
-    				3685EF943685FF28000001D9 /* Debug */,
-    				3685EF943685FF28000001DA /* Release */,
+    				3685EF943685FF28000001DE /* Debug */,
+    				3685EF943685FF28000001DF /* Release */,
     			);
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;

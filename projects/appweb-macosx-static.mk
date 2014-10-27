@@ -1334,13 +1334,11 @@ installBinary: $(DEPS_83)
 	cp src/server/self.key $(ME_ETC_PREFIX)/self.key ; \
 	echo 'set LOG_DIR "$(ME_LOG_PREFIX)"\nset CACHE_DIR "$(ME_CACHE_PREFIX)"\nDocuments "$(ME_WEB_PREFIX)\nListen 80\n<if SSL_MODULE>\nListenSecure 443\n</if>\n' >$(ME_ETC_PREFIX)/install.conf ; \
 	mkdir -p "$(ME_WEB_PREFIX)" ; \
-	cp src/server/web/bench $(ME_WEB_PREFIX)/bench ; \
 	mkdir -p "$(ME_WEB_PREFIX)/bench" ; \
 	cp src/server/web/bench/1b.html $(ME_WEB_PREFIX)/bench/1b.html ; \
 	cp src/server/web/bench/4k.html $(ME_WEB_PREFIX)/bench/4k.html ; \
 	cp src/server/web/bench/64k.html $(ME_WEB_PREFIX)/bench/64k.html ; \
 	cp src/server/web/favicon.ico $(ME_WEB_PREFIX)/favicon.ico ; \
-	cp src/server/web/icons $(ME_WEB_PREFIX)/icons ; \
 	mkdir -p "$(ME_WEB_PREFIX)/icons" ; \
 	cp src/server/web/icons/back.gif $(ME_WEB_PREFIX)/icons/back.gif ; \
 	cp src/server/web/icons/blank.gif $(ME_WEB_PREFIX)/icons/blank.gif ; \
@@ -1350,7 +1348,6 @@ installBinary: $(DEPS_83)
 	cp src/server/web/icons/space.gif $(ME_WEB_PREFIX)/icons/space.gif ; \
 	cp src/server/web/icons/text.gif $(ME_WEB_PREFIX)/icons/text.gif ; \
 	cp src/server/web/iehacks.css $(ME_WEB_PREFIX)/iehacks.css ; \
-	cp src/server/web/images $(ME_WEB_PREFIX)/images ; \
 	mkdir -p "$(ME_WEB_PREFIX)/images" ; \
 	cp src/server/web/images/banner.jpg $(ME_WEB_PREFIX)/images/banner.jpg ; \
 	cp src/server/web/images/bottomShadow.jpg $(ME_WEB_PREFIX)/images/bottomShadow.jpg ; \
@@ -1359,7 +1356,6 @@ installBinary: $(DEPS_83)
 	cp src/server/web/min-index.html $(ME_WEB_PREFIX)/min-index.html ; \
 	cp src/server/web/print.css $(ME_WEB_PREFIX)/print.css ; \
 	cp src/server/web/screen.css $(ME_WEB_PREFIX)/screen.css ; \
-	cp src/server/web/test $(ME_WEB_PREFIX)/test ; \
 	mkdir -p "$(ME_WEB_PREFIX)/test" ; \
 	cp src/server/web/test/bench.html $(ME_WEB_PREFIX)/test/bench.html ; \
 	cp src/server/web/test/test.cgi $(ME_WEB_PREFIX)/test/test.cgi ; \
