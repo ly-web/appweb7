@@ -1889,7 +1889,6 @@ cd ../src/paks
 	cp esp-server/LICENSE.md ../${OUT_DIR}/esp/esp-server/5.2.0/LICENSE.md
 	cp esp-server/package.json ../${OUT_DIR}/esp/esp-server/5.2.0/package.json
 	cp esp-server/README.md ../${OUT_DIR}/esp/esp-server/5.2.0/README.md
-	pak -f -q cache esp-html-mvc esp-mvc esp-server
 ";
     		};
 		2C8AF2682C8B11160000000B /* ShellScript for esp.conf */ = {

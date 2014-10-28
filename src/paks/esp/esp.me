@@ -69,7 +69,7 @@ Me.load({
                         }
                     }
                 }
-                if (Cmd.locate('pak') && !me.generating) {
+                if (Cmd.locate('pak') && !makeme.generating) {
                     run('pak -f -q cache ' + Path('.').files('esp-*').join(' '), {filter: true}) 
                 }
             `
