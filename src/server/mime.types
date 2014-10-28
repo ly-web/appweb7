@@ -105,7 +105,7 @@ text/vnd.rn-realtext rt
 text/vnd.wap.wml wml
 text/vnd.wap.wmlscript wmls
 text/x-setext etx
-text/xml xml xml xsl
+text/xml xml xsl
 video/mpeg mpeg mpg mpe
 video/quicktime qt mov
 video/mp4 mp4
