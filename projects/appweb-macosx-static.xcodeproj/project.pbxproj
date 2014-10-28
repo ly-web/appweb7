@@ -2257,10 +2257,10 @@ chmod +x web/caching/cache.cgi";
     			shellPath = /bin/bash;
     			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../test
-cp /Users/mob/git/appweb-lts/build/macosx-x64-static/bin/cgiProgram cgi-bin/cgiProgram
-cp /Users/mob/git/appweb-lts/build/macosx-x64-static/bin/cgiProgram cgi-bin/nph-cgiProgram
-cp /Users/mob/git/appweb-lts/build/macosx-x64-static/bin/cgiProgram 'cgi-bin/cgi Program'
-cp /Users/mob/git/appweb-lts/build/macosx-x64-static/bin/cgiProgram web/cgiProgram.cgi
+cp /Users/mob/dev/appweb-lts/build/macosx-x64-static/bin/cgiProgram cgi-bin/cgiProgram
+cp /Users/mob/dev/appweb-lts/build/macosx-x64-static/bin/cgiProgram cgi-bin/nph-cgiProgram
+cp /Users/mob/dev/appweb-lts/build/macosx-x64-static/bin/cgiProgram 'cgi-bin/cgi Program'
+cp /Users/mob/dev/appweb-lts/build/macosx-x64-static/bin/cgiProgram web/cgiProgram.cgi
 chmod +x cgi-bin/* web/cgiProgram.cgi";
     		};
 		469BA456469BB18A0000002A /* ShellScript for test-testScript */ = {
@@ -2278,7 +2278,7 @@ chmod +x cgi-bin/* web/cgiProgram.cgi";
     			shellPath = /bin/bash;
     			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../test
-echo '#!/Users/mob/git/appweb-lts/build/macosx-x64-static/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript";
+echo '#!/Users/mob/dev/appweb-lts/build/macosx-x64-static/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript";
     		};
 		469BA456469BB18A0000004E /* ShellScript for Prep */ = {
     			isa = PBXShellScriptBuildPhase;

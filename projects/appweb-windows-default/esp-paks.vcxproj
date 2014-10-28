@@ -1,161 +1,162 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <PropertyGroup Label="Globals">
-    <ProjectGuid>{e385f812-4cec-495c-88dd-1ce8b4f24d62}</ProjectGuid>
-    <RootNamespace />
-    <Keyword>Win32Proj</Keyword>
-  </PropertyGroup>
+      <PropertyGroup Label="Globals">
+        <ProjectGuid>{e385f812-4cec-495c-88dd-1ce8b4f24d62}</ProjectGuid>
+        <RootNamespace />
+        <Keyword>Win32Proj</Keyword>
+      </PropertyGroup>
 
-  <ItemGroup Label="ProjectConfigurations">
+      <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
+          <Configuration>Debug</Configuration>
+          <Platform>Win32</Platform>
+        </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
+          <Configuration>Release</Configuration>
+          <Platform>Win32</Platform>
+        </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
+          <Configuration>Debug</Configuration>
+          <Platform>x64</Platform>
+        </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
+          <Configuration>Release</Configuration>
+          <Platform>x64</Platform>
+        </ProjectConfiguration>
   </ItemGroup>
-
+    
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <CharacterSet>NotSet</CharacterSet>
-  </PropertyGroup>
+        <ConfigurationType></ConfigurationType>
+        <CharacterSet>NotSet</CharacterSet>
+      </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <CharacterSet>NotSet</CharacterSet>
-  </PropertyGroup>
+        <ConfigurationType></ConfigurationType>
+        <CharacterSet>NotSet</CharacterSet>
+      </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <CharacterSet>NotSet</CharacterSet>
-  </PropertyGroup>
+        <ConfigurationType></ConfigurationType>
+        <CharacterSet>NotSet</CharacterSet>
+      </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <CharacterSet>NotSet</CharacterSet>
+        <ConfigurationType></ConfigurationType>
+        <CharacterSet>NotSet</CharacterSet>
+      </PropertyGroup>
+
+      <Import Project="$(VCTargetsPath)Microsoft.Cpp.Default.props" />
+      <Import Project="$(VCTargetsPath)Microsoft.Cpp.props" />
+
+      <ImportGroup Label="PropertySheets" />
+      <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+        <Import Project="product.props" />
+        <Import Project="debug.props" />
+        <Import Project="x86.props" />
+      </ImportGroup>
+      <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+        <Import Project="product.props" />
+        <Import Project="release.props" />
+        <Import Project="x86.props" />
+      </ImportGroup>
+      <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+        <Import Project="product.props" />
+        <Import Project="debug.props" />
+        <Import Project="x64.props" />
+      </ImportGroup>
+      <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+        <Import Project="product.props" />
+        <Import Project="release.props" />
+        <Import Project="x64.props" />
+      </ImportGroup>
+
+      <PropertyGroup>
+        <_ProjectFileVersion>10</_ProjectFileVersion>
+
+        <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BinDir)\</OutDir>
+        <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ObjDir)\esp-paks\</IntDir>
+        <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PreBuildEvent</CustomBuildBeforeTargets>
+
+        <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BinDir)\</OutDir>
+        <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ObjDir)\esp-paks\</IntDir>
+        <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PreBuildEvent</CustomBuildBeforeTargets>
+
+        <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(BinDir)\</OutDir>
+        <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ObjDir)\esp-paks\</IntDir>
+        <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PreBuildEvent</CustomBuildBeforeTargets>
+
+        <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(BinDir)\</OutDir>
+        <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ObjDir)\esp-paks\</IntDir>
+        <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PreBuildEvent</CustomBuildBeforeTargets>
   </PropertyGroup>
 
-  <Import Project="$(VCTargetsPath)Microsoft.Cpp.Default.props" />
-  <Import Project="$(VCTargetsPath)Microsoft.Cpp.props" />
+      <ItemDefinitionGroup>
+      <Link>
+        <AdditionalDependencies>;%(AdditionalDependencies)</AdditionalDependencies>
+        <AdditionalLibraryDirectories>$(OutDir);;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      </Link>
 
-  <ImportGroup Label="PropertySheets" />
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
-    <Import Project="product.props" />
-    <Import Project="debug.props" />
-    <Import Project="x86.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
-    <Import Project="product.props" />
-    <Import Project="release.props" />
-    <Import Project="x86.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
-    <Import Project="product.props" />
-    <Import Project="debug.props" />
-    <Import Project="x64.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
-    <Import Project="product.props" />
-    <Import Project="release.props" />
-    <Import Project="x64.props" />
-  </ImportGroup>
-
-  <PropertyGroup>
-    <_ProjectFileVersion>10</_ProjectFileVersion>
-
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BinDir)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ObjDir)\esp-paks\</IntDir>
-    <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PreBuildEvent</CustomBuildBeforeTargets>
-
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BinDir)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ObjDir)\esp-paks\</IntDir>
-    <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PreBuildEvent</CustomBuildBeforeTargets>
-
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(BinDir)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ObjDir)\esp-paks\</IntDir>
-    <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PreBuildEvent</CustomBuildBeforeTargets>
-
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(BinDir)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ObjDir)\esp-paks\</IntDir>
-    <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PreBuildEvent</CustomBuildBeforeTargets>
-  </PropertyGroup>
-
-  <ItemDefinitionGroup>
-  <Link>
-    <AdditionalDependencies>;%(AdditionalDependencies)</AdditionalDependencies>
-    <AdditionalLibraryDirectories>$(OutDir);;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-  </Link>
-
-  <CustomBuildStep>
-    <Command>cd ..\..\src\paks
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3"
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\client" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\client"
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\client\assets" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\client\assets"
-copy /Y esp-html-mvc\client\assets\favicon.ico \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\client\assets\favicon.ico
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\client\css" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\client\css"
-copy /Y esp-html-mvc\client\css\all.css \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\client\css\all.css
-copy /Y esp-html-mvc\client\css\all.less \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\client\css\all.less
-copy /Y esp-html-mvc\client\index.esp \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\client\index.esp
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\css" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\css"
-copy /Y esp-html-mvc\css\app.less \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\css\app.less
-copy /Y esp-html-mvc\css\theme.less \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\css\theme.less
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\generate" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\generate"
-copy /Y esp-html-mvc\generate\appweb.conf \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\generate\appweb.conf
-copy /Y esp-html-mvc\generate\controller.c \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\generate\controller.c
-copy /Y esp-html-mvc\generate\controllerSingleton.c \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\generate\controllerSingleton.c
-copy /Y esp-html-mvc\generate\edit.esp \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\generate\edit.esp
-copy /Y esp-html-mvc\generate\list.esp \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\generate\list.esp
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\layouts" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\layouts"
-copy /Y esp-html-mvc\layouts\default.esp \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\layouts\default.esp
-copy /Y esp-html-mvc\package.json \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-html-mvc\4.6.3\package.json
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3"
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\generate" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\generate"
-copy /Y esp-legacy-mvc\generate\appweb.conf \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\generate\appweb.conf
-copy /Y esp-legacy-mvc\generate\controller.c \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\generate\controller.c
-copy /Y esp-legacy-mvc\generate\edit.esp \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\generate\edit.esp
-copy /Y esp-legacy-mvc\generate\list.esp \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\generate\list.esp
-copy /Y esp-legacy-mvc\generate\migration.c \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\generate\migration.c
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\generate\src" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\generate\src"
-copy /Y esp-legacy-mvc\generate\src\app.c \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\generate\src\app.c
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\layouts" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\layouts"
-copy /Y esp-legacy-mvc\layouts\default.esp \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\layouts\default.esp
-copy /Y esp-legacy-mvc\package.json \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\package.json
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\static" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\static"
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\static\css" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\static\css"
-copy /Y esp-legacy-mvc\static\css\all.css \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\static\css\all.css
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\static\images" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\static\images"
-copy /Y esp-legacy-mvc\static\images\banner.jpg \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\static\images\banner.jpg
-copy /Y esp-legacy-mvc\static\images\favicon.ico \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\static\images\favicon.ico
-copy /Y esp-legacy-mvc\static\images\splash.jpg \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\static\images\splash.jpg
-copy /Y esp-legacy-mvc\static\index.esp \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\static\index.esp
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\static\js" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\static\js"
-copy /Y esp-legacy-mvc\static\js\jquery.esp.js \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\static\js\jquery.esp.js
-copy /Y esp-legacy-mvc\static\js\jquery.js \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-legacy-mvc\4.6.3\static\js\jquery.js
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-mvc\4.6.3" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-mvc\4.6.3"
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-mvc\4.6.3\generate" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-mvc\4.6.3\generate"
-copy /Y esp-mvc\generate\appweb.conf \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-mvc\4.6.3\generate\appweb.conf
-copy /Y esp-mvc\generate\controller.c \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-mvc\4.6.3\generate\controller.c
-copy /Y esp-mvc\generate\migration.c \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-mvc\4.6.3\generate\migration.c
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-mvc\4.6.3\generate\src" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-mvc\4.6.3\generate\src"
-copy /Y esp-mvc\generate\src\app.c \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-mvc\4.6.3\generate\src\app.c
-copy /Y esp-mvc\LICENSE.md \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-mvc\4.6.3\LICENSE.md
-copy /Y esp-mvc\package.json \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-mvc\4.6.3\package.json
-copy /Y esp-mvc\README.md \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-mvc\4.6.3\README.md
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-server\4.6.3" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-server\4.6.3"
-if not exist "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-server\4.6.3\generate" md "\Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-server\4.6.3\generate"
-copy /Y esp-server\generate\appweb.conf \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-server\4.6.3\generate\appweb.conf
-copy /Y esp-server\package.json \Users\mob\git\appweb-lts\build\windows-x86-default\esp\esp-server\4.6.3\package.json
+      <CustomBuildStep>
+        <Command>cd ..\..\src\paks
+if not exist "..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5" md "..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5"
+if not exist "..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\client" md "..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\client"
+if not exist "..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\client\assets" md "..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\client\assets"
+copy /Y /B esp-html-mvc\client\assets\favicon.ico+modified ..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\client\assets\favicon.ico $(LOG)
+if not exist "..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\client\css" md "..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\client\css"
+copy /Y /B esp-html-mvc\client\css\all.css+modified ..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\client\css\all.css $(LOG)
+copy /Y /B esp-html-mvc\client\css\all.less+modified ..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\client\css\all.less $(LOG)
+copy /Y /B esp-html-mvc\client\index.esp+modified ..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\client\index.esp $(LOG)
+if not exist "..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\css" md "..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\css"
+copy /Y /B esp-html-mvc\css\app.less+modified ..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\css\app.less $(LOG)
+copy /Y /B esp-html-mvc\css\theme.less+modified ..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\css\theme.less $(LOG)
+if not exist "..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\generate" md "..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\generate"
+copy /Y /B esp-html-mvc\generate\appweb.conf+modified ..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\generate\appweb.conf $(LOG)
+copy /Y /B esp-html-mvc\generate\controller.c+modified ..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\generate\controller.c $(LOG)
+copy /Y /B esp-html-mvc\generate\controllerSingleton.c+modified ..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\generate\controllerSingleton.c $(LOG)
+copy /Y /B esp-html-mvc\generate\edit.esp+modified ..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\generate\edit.esp $(LOG)
+copy /Y /B esp-html-mvc\generate\list.esp+modified ..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\generate\list.esp $(LOG)
+if not exist "..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\layouts" md "..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\layouts"
+copy /Y /B esp-html-mvc\layouts\default.esp+modified ..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\layouts\default.esp $(LOG)
+copy /Y /B esp-html-mvc\package.json+modified ..\..\build\windows-x86-default\esp\esp-html-mvc\4.6.5\package.json $(LOG)
+if not exist "..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5" md "..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5"
+if not exist "..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\generate" md "..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\generate"
+copy /Y /B esp-legacy-mvc\generate\appweb.conf+modified ..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\generate\appweb.conf $(LOG)
+copy /Y /B esp-legacy-mvc\generate\controller.c+modified ..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\generate\controller.c $(LOG)
+copy /Y /B esp-legacy-mvc\generate\edit.esp+modified ..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\generate\edit.esp $(LOG)
+copy /Y /B esp-legacy-mvc\generate\list.esp+modified ..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\generate\list.esp $(LOG)
+copy /Y /B esp-legacy-mvc\generate\migration.c+modified ..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\generate\migration.c $(LOG)
+if not exist "..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\generate\src" md "..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\generate\src"
+copy /Y /B esp-legacy-mvc\generate\src\app.c+modified ..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\generate\src\app.c $(LOG)
+if not exist "..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\layouts" md "..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\layouts"
+copy /Y /B esp-legacy-mvc\layouts\default.esp+modified ..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\layouts\default.esp $(LOG)
+copy /Y /B esp-legacy-mvc\package.json+modified ..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\package.json $(LOG)
+if not exist "..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\static" md "..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\static"
+if not exist "..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\static\css" md "..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\static\css"
+copy /Y /B esp-legacy-mvc\static\css\all.css+modified ..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\static\css\all.css $(LOG)
+if not exist "..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\static\images" md "..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\static\images"
+copy /Y /B esp-legacy-mvc\static\images\banner.jpg+modified ..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\static\images\banner.jpg $(LOG)
+copy /Y /B esp-legacy-mvc\static\images\favicon.ico+modified ..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\static\images\favicon.ico $(LOG)
+copy /Y /B esp-legacy-mvc\static\images\splash.jpg+modified ..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\static\images\splash.jpg $(LOG)
+copy /Y /B esp-legacy-mvc\static\index.esp+modified ..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\static\index.esp $(LOG)
+if not exist "..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\static\js" md "..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\static\js"
+copy /Y /B esp-legacy-mvc\static\js\jquery.esp.js+modified ..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\static\js\jquery.esp.js $(LOG)
+copy /Y /B esp-legacy-mvc\static\js\jquery.js+modified ..\..\build\windows-x86-default\esp\esp-legacy-mvc\4.6.5\static\js\jquery.js $(LOG)
+if not exist "..\..\build\windows-x86-default\esp\esp-mvc\4.6.5" md "..\..\build\windows-x86-default\esp\esp-mvc\4.6.5"
+if not exist "..\..\build\windows-x86-default\esp\esp-mvc\4.6.5\generate" md "..\..\build\windows-x86-default\esp\esp-mvc\4.6.5\generate"
+copy /Y /B esp-mvc\generate\appweb.conf+modified ..\..\build\windows-x86-default\esp\esp-mvc\4.6.5\generate\appweb.conf $(LOG)
+copy /Y /B esp-mvc\generate\controller.c+modified ..\..\build\windows-x86-default\esp\esp-mvc\4.6.5\generate\controller.c $(LOG)
+copy /Y /B esp-mvc\generate\migration.c+modified ..\..\build\windows-x86-default\esp\esp-mvc\4.6.5\generate\migration.c $(LOG)
+if not exist "..\..\build\windows-x86-default\esp\esp-mvc\4.6.5\generate\src" md "..\..\build\windows-x86-default\esp\esp-mvc\4.6.5\generate\src"
+copy /Y /B esp-mvc\generate\src\app.c+modified ..\..\build\windows-x86-default\esp\esp-mvc\4.6.5\generate\src\app.c $(LOG)
+copy /Y /B esp-mvc\LICENSE.md+modified ..\..\build\windows-x86-default\esp\esp-mvc\4.6.5\LICENSE.md $(LOG)
+copy /Y /B esp-mvc\package.json+modified ..\..\build\windows-x86-default\esp\esp-mvc\4.6.5\package.json $(LOG)
+copy /Y /B esp-mvc\README.md+modified ..\..\build\windows-x86-default\esp\esp-mvc\4.6.5\README.md $(LOG)
+if not exist "..\..\build\windows-x86-default\esp\esp-server\4.6.5" md "..\..\build\windows-x86-default\esp\esp-server\4.6.5"
+if not exist "..\..\build\windows-x86-default\esp\esp-server\4.6.5\generate" md "..\..\build\windows-x86-default\esp\esp-server\4.6.5\generate"
+copy /Y /B esp-server\generate\appweb.conf+modified ..\..\build\windows-x86-default\esp\esp-server\4.6.5\generate\appweb.conf $(LOG)
+copy /Y /B esp-server\package.json+modified ..\..\build\windows-x86-default\esp\esp-server\4.6.5\package.json $(LOG)
+pak -f -q cache esp-html-mvc esp-legacy-mvc esp-mvc esp-server
 cd ..\..\projects\appweb-windows-default</Command>
-    <Outputs>\Users\mob\git\appweb-lts\projects\appweb-windows-default\..\..\build\$(Cfg)\esp</Outputs>
-  </CustomBuildStep>
+        <Outputs>..\..\build\$(Cfg)\esp</Outputs>
+      </CustomBuildStep>
   </ItemDefinitionGroup>
 
   <Import Project="$(VCTargetsPath)Microsoft.Cpp.targets" />

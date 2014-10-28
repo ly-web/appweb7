@@ -16,6 +16,7 @@ log() {
 
 if [ -x "${VS}" ] ; then
     log "[Test]" "Building ${PRODUCT} Visual Studio Project"
+    "${VS}" projects/${PRODUCT}-windows-${PROFILE}.sln /upgrade
     "${VS}" projects/${PRODUCT}-windows-${PROFILE}.sln /clean
     "${VS}" projects/${PRODUCT}-windows-${PROFILE}.sln /build
 fi
