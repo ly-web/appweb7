@@ -374,6 +374,9 @@ static void cgiCallback(MprCmd *cmd, int channel, void *data)
             
     default:
         /* Child death notification */
+        if (cmd->status != 0) {
+            httpError(cgi->conn, HTTP_CODE_BAD_GATEWAY, "Bad CGI process termination");
+        }
         break;
     }
     if (cgi->location) {
