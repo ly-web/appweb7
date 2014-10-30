@@ -4,7 +4,6 @@
     <name>mpr.h</name>
     <path>/Users/mob/dev/mpr/src/</path>
     <filename>mpr_8h</filename>
-    <class kind="struct">MprCmdChild</class>
     <class kind="struct">MprCmdService</class>
     <class kind="struct">MprCond</class>
     <class kind="struct">MprDirEntry</class>
@@ -10577,10 +10576,6 @@
       <anchor>gaa1a1ac21c52992cfcec70fe8d9320f85</anchor>
       <arglist>(cchar *uri, int map)</arglist>
     </member>
-  </compound>
-  <compound kind="struct">
-    <name>MprCmdChild</name>
-    <filename>struct_mpr_cmd_child.html</filename>
   </compound>
   <compound kind="struct">
     <name>MprCmdService</name>
