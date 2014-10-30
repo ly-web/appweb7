@@ -4905,6 +4905,46 @@ static void parseSslCiphers(HttpRoute *route, cchar *key, MprJson *prop)
 }
 
 
+static void parseSslProtocols(HttpRoute *route, cchar *key, MprJson *prop)
+{
+    MprJson     *child;
+    cchar       *value;
+    int         bit, clear, ji, mask;
+
+    mask = 0;
+    for (ITERATE_CONFIG(route, prop, child, ji)) {
+        value = child->value;
+        clear = 0;
+        if (sstarts(value, '+')) {
+            value++;
+        } else if (sstarts(value, '-')) {
+            clear = 1;
+            value++;
+        }
+        bit = 0;
+        if (scaselessmatch(value, "sslv2")) {
+            /* SSLv2 is insecure */
+            bit = MPR_PROTO_SSLV2;
+        } else if (scaselessmatch(value, "sslv3")) {
+            /* SSLv3 is insecure */
+            bit = MPR_PROTO_SSLV3;
+        } else if (scaselessmatch(value, "tlsv1") || scaselessmatch(value, "tls")) {
+            bit = MPR_PROTO_TLSV1;
+        } else if (scaselessmatch(value, "tlsv1.1")) {
+            bit = MPR_PROTO_TLSV1_1;
+        } else if (scaselessmatch(value, "tlsv1.2")) {
+            bit = MPR_PROTO_TLSV1_2;
+        }
+        if (clear) {
+            mask |= ~bit;
+        } else {
+            mask |= bit;
+        }
+    }
+    mprSetSslProtocols(route->ssl, mask);
+}
+
+
 static void parseSslKey(HttpRoute *route, cchar *key, MprJson *prop)
 {
     if (!mprPathExists(prop->value, R_OK)) {

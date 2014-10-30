@@ -8022,9 +8022,9 @@ typedef struct MprSsl {
  */
 #define MPR_PROTO_SSLV2    0x1              /**< SSL V2 protocol */
 #define MPR_PROTO_SSLV3    0x2              /**< SSL V3 protocol */
-#define MPR_PROTO_TLSV1    0x4              /**< TLS V1 protocol */
-#define MPR_PROTO_TLSV11   0x8              /**< TLS V1.1 protocol */
-#define MPR_PROTO_TLSV12   0x10             /**< TLS V1.2 protocol */
+#define MPR_PROTO_TLSV1    0x4              /**< TLS V1.X protocols */
+#define MPR_PROTO_TLSV1_1  0x8              /**< TLS V1.1 protocol */
+#define MPR_PROTO_TLSV1_2  0x10             /**< TLS V1.2 protocol */
 #define MPR_PROTO_ALL      0x1F             /**< All SSL protocols */
 
 /**

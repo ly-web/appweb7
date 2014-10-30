@@ -225,8 +225,17 @@ static int sslProtocolDirective(MaState *state, cchar *key, cchar *value)
             protoMask |= (MPR_PROTO_SSLV3 & mask);
 
         } else if (scaselesscmp(word, "TLSv1") == 0) {
+            /* Enable or disable all of TLS 1.X */
             protoMask &= ~(MPR_PROTO_TLSV1 & ~mask);
             protoMask |= (MPR_PROTO_TLSV1 & mask);
+
+        } else if (scaselesscmp(word, "TLSv1.1") == 0) {
+            protoMask &= ~(MPR_PROTO_TLSV1_1 & ~mask);
+            protoMask |= (MPR_PROTO_TLSV1_1 & mask);
+
+        } else if (scaselesscmp(word, "TLSv1.2") == 0) {
+            protoMask &= ~(MPR_PROTO_TLSV1_2 & ~mask);
+            protoMask |= (MPR_PROTO_TLSV1_2 & mask);
 
         } else if (scaselesscmp(word, "ALL") == 0) {
             protoMask &= ~(MPR_PROTO_ALL & ~mask);
