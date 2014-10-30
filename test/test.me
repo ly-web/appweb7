@@ -9,7 +9,8 @@ Me.load({
                 let path = me.dir.out.join('.cgi-prepared')
                 if (!path.exists) {
                     Cmd.run('testme --clean')
-                    rm(['cgi-bin/cgi*', 'cgi-bin/nph*', 'web/caching/cache.cgi', 'web/auth/basic/basic.cgi'])
+                    rm(['cgi-bin/cgi*', 'cgi-bin/nph*', 'cgi-bin/testScript', 
+                        'web/caching/cache.cgi', 'web/auth/basic/basic.cgi'])
                     path.write('')
                 }
             `,
