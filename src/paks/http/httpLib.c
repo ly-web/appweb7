@@ -3021,6 +3021,9 @@ static HttpConn *openConnection(HttpConn *conn, struct MprSsl *ssl)
     if (conn && conn->sock) {
         if (conn->keepAliveCount-- <= 0 || port != conn->port || strcmp(ip, conn->ip) != 0 ||
                 uri->secure != (conn->sock->ssl != 0) || conn->sock->ssl != ssl) {
+            /* 
+                Cannot reuse current socket. Close and open a new one below.
+             */
             mprCloseSocket(conn->sock, 0);
             conn->sock = 0;
         } else {
@@ -5618,8 +5621,8 @@ PUBLIC HttpConn *httpAcceptConn(HttpEndpoint *endpoint, MprEvent *event)
     }
     if (endpoint->ssl) {
         if (mprUpgradeSocket(sock, endpoint->ssl, 0) < 0) {
+            httpDisconnect(conn);
             httpTrace(conn, "connection.upgrade.error", "error", "msg:'Cannot upgrade socket. %s'", sock->errorMsg);
-            mprCloseSocket(sock, 0);
             httpMonitorEvent(conn, HTTP_COUNTER_SSL_ERRORS, 1);
             httpDestroyConn(conn);
             return 0;
@@ -7520,8 +7523,9 @@ PUBLIC void httpMatchHost(HttpConn *conn)
     listenSock = conn->sock->listenSock;
 
     if ((endpoint = httpLookupEndpoint(listenSock->ip, listenSock->port)) == 0) {
-        mprLog("error http", 0, "No listening endpoint for request from %s:%d", listenSock->ip, listenSock->port);
-        mprCloseSocket(conn->sock, 0);
+        conn->host = mprGetFirstItem(endpoint->hosts);
+        httpError(conn, HTTP_CODE_NOT_FOUND, "No listening endpoint for request from %s:%d", 
+            listenSock->ip, listenSock->port);
         return;
     }
     host = httpLookupHostOnEndpoint(endpoint, conn->rx->hostHeader);
