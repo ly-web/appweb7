@@ -16187,6 +16187,7 @@ static char *standardMimeTypes[] = {
     "wav",   "audio/x-wav",
     "woff",  "application/font-woff",
     "xls",   "application/vnd.ms-excel",
+    "xml",   "application/xml",
     "zip",   "application/zip",
     0,       0,
 };
