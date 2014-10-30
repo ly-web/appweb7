@@ -7526,9 +7526,8 @@ PUBLIC void httpMatchHost(HttpConn *conn)
     }
     host = httpLookupHostOnEndpoint(endpoint, conn->rx->hostHeader);
     if (host == 0) {
-        httpSetConnHost(conn, 0);
-        httpError(conn, HTTP_CODE_NOT_FOUND, "No host to serve request. Searching for %s", conn->rx->hostHeader);
         conn->host = mprGetFirstItem(endpoint->hosts);
+        httpError(conn, HTTP_CODE_NOT_FOUND, "No host to serve request. Searching for %s", conn->rx->hostHeader);
         return;
     }
     conn->host = host;
@@ -18597,7 +18596,6 @@ PUBLIC bool httpTraceProc(HttpConn *conn, cchar *event, cchar *type, cchar *valu
     HttpTrace   *trace;
     va_list     ap;
 
-    assert(conn);
     assert(event && *event);
     assert(type && *type);
 
@@ -18712,7 +18710,7 @@ PUBLIC void httpDetailTraceFormatter(HttpTrace *trace, HttpConn *conn, cchar *ev
 
     if (conn) {
         now = mprGetTime();
-        if (trace->lastMark < (now + TPS)) {
+        if (trace->lastMark < (now + TPS) || trace->lastTime == 0) {
             trace->lastTime = mprGetDate("%T");
             trace->lastMark = now;
         }
