@@ -1045,9 +1045,9 @@
 		2C8AF2682C8B11160000013A /* mpr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mpr.h; path = src/paks/mpr/mpr.h; sourceTree = "<group>"; };
 		2C8AF2682C8B111600000077 /* libmpr */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmpr.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C8AF2682C8B111600000069 /* mprSsl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mprSsl.c; path = src/paks/mpr/mprSsl.c; sourceTree = "<group>"; };
-		2C8AF2682C8B11160000013B /* me.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = me.h; path = build/macosx-x64-static/inc/me.h; sourceTree = "<group>"; };
 		2C8AF2682C8B111600000081 /* libmprssl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmprssl.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C8AF2682C8B11160000006B /* pcre.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pcre.c; path = src/paks/pcre/pcre.c; sourceTree = "<group>"; };
+		2C8AF2682C8B11160000013B /* me.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = me.h; path = build/macosx-x64-static/inc/me.h; sourceTree = "<group>"; };
 		2C8AF2682C8B11160000013C /* pcre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pcre.h; path = src/paks/pcre/pcre.h; sourceTree = "<group>"; };
 		2C8AF2682C8B111600000079 /* libpcre */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpcre.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C8AF2682C8B11160000006D /* slink.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = slink.c; path = src/server/slink.c; sourceTree = "<group>"; };
@@ -1389,7 +1389,6 @@
 		2C8AF2682C8B11160000015A /* libmprssl */ = {
                 isa = PBXGroup;
                 children = (
-				2C8AF2682C8B11160000013B /* me.h */,
 				2C8AF2682C8B11160000013A /* mpr.h */,
 				2C8AF2682C8B111600000069 /* mprSsl.c */,
 			);

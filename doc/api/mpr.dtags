@@ -1186,23 +1186,16 @@
     </member>
     <member kind="define">
       <type>#define</type>
-      <name>MPR_PROTO_TLSV1</name>
+      <name>MPR_PROTO_TLSV1_1</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>ab6be6a83c03fb2edc3d9b758cbeb0db0</anchor>
+      <anchor>aa66454bfc118af48a0d0df362211d9ad</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
       <type>#define</type>
-      <name>MPR_PROTO_TLSV11</name>
+      <name>MPR_PROTO_TLSV1_2</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a31b6416f6ed995314e98eb1c527f8e28</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MPR_PROTO_TLSV12</name>
-      <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a820a989c8a9ac253b75483c638514665</anchor>
+      <anchor>a7216cd86a972299f47f8f450371874c8</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">

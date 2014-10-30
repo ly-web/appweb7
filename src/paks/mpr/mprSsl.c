@@ -260,6 +260,8 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     ssl_set_scb(&est->ctx, getSession, setSession);
     ssl_set_ciphers(&est->ctx, cfg->ciphers);
 
+    /* FUTURE - set protocol versions */
+
     ssl_set_session(&est->ctx, 1, 0, &est->session);
     memset(&est->session, 0, sizeof(ssl_session));
 
@@ -944,15 +946,21 @@ static OpenConfig *createOpenSslConfig(MprSocket *sp)
      */
     SSL_CTX_set_options(context, SSL_OP_NO_SSLv2);
     SSL_CTX_set_options(context, SSL_OP_NO_SSLv3);
+#ifdef SSL_OP_NO_TLSv1
     if (!(ssl->protocols & MPR_PROTO_TLSV1)) {
         SSL_CTX_set_options(context, SSL_OP_NO_TLSv1);
     }
+#endif
+#ifdef SSL_OP_NO_TLSv1_1
     if (!(ssl->protocols & MPR_PROTO_TLSV1_1)) {
         SSL_CTX_set_options(context, SSL_OP_NO_TLSv1_1);
     }
+#endif
+#ifdef SSL_OP_NO_TLSv1_2
     if (!(ssl->protocols & MPR_PROTO_TLSV1_2)) {
         SSL_CTX_set_options(context, SSL_OP_NO_TLSv1_2);
     }
+#endif
     /*
         Ensure we generate a new private key for each connection
      */
