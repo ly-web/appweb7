@@ -6732,7 +6732,7 @@ static void parseQuery(HttpConn *conn)
 {
     HttpRx      *rx;
     HttpDir     *dir;
-    char        *value, *query, *next, *tok;
+    char        *value, *query, *next, *tok, *field;
 
     rx = conn->rx;
     dir = conn->reqData;
@@ -6746,14 +6746,17 @@ static void parseQuery(HttpConn *conn)
         if ((value = strchr(tok, '=')) != 0) {
             *value++ = '\0';
             if (*tok == 'C') {                  /* Sort column */
+                field = 0;
                 if (*value == 'N') {
-                    dir->sortField = "Name";
+                    field = "Name";
                 } else if (*value == 'M') {
-                    dir->sortField = "Date";
+                    field = "Date";
                 } else if (*value == 'S') {
-                    dir->sortField = "Size";
+                    field = "Size";
                 }
-                dir->sortField = sclone(dir->sortField);
+                if (field) {
+                    dir->sortField = sclone(field);
+                }
 
             } else if (*tok == 'O') {           /* Sort order */
                 if (*value == 'A') {
