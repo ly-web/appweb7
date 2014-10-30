@@ -1693,6 +1693,12 @@ static OpenConfig *createOpenSslConfig(MprSocket *sp)
     if (!(ssl->protocols & MPR_PROTO_TLSV1)) {
         SSL_CTX_set_options(context, SSL_OP_NO_TLSv1);
     }
+    if (!(ssl->protocols & MPR_PROTO_TLSV1_1)) {
+        SSL_CTX_set_options(context, SSL_OP_NO_TLSv1_1);
+    }
+    if (!(ssl->protocols & MPR_PROTO_TLSV1_2)) {
+        SSL_CTX_set_options(context, SSL_OP_NO_TLSv1_2);
+    }
     /* 
         Ensure we generate a new private key for each connection
      */
