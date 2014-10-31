@@ -8,6 +8,7 @@
  */
 
 #define EJS_DEFINE_OPTABLE 1
+
 #include "ejs.h"
 
 #if ME_COM_EJS
@@ -51631,8 +51632,8 @@ static void onWebSocketEvent(EjsWebSocket *ws, int event, EjsAny *data, HttpPack
     case HTTP_EVENT_APP_CLOSE:
         eventName = "complete";
         slot = ES_WebSocket_onclose;
-        status = (rx & rx->webSocket) ? rx->webSocket->closeStatus: WS_STATUS_COMMS_ERROR;
-        reason = (rx & rx->webSocket) ? rx->webSocket->closeReason: ws->conn->errorMsg;
+        status = (rx && rx->webSocket) ? rx->webSocket->closeStatus: WS_STATUS_COMMS_ERROR;
+        reason = (rx && rx->webSocket) ? rx->webSocket->closeReason: ws->conn->errorMsg;
         ejsSetPropertyByName(ejs, eobj, EN("code"), ejsCreateNumber(ejs, status));
         ejsSetPropertyByName(ejs, eobj, EN("reason"), ejsCreateStringFromAsc(ejs, reason));
         ejsSetPropertyByName(ejs, eobj, EN("wasClean"), ejsCreateBoolean(ejs, status != WS_STATUS_COMMS_ERROR));

@@ -7,8 +7,11 @@
     Prepared by: orion
  */
 
+#undef PRINTF_ATTRIBUTE
+#define PRINTF_ATTRIBUTE(x,y)
+
 #include "me.h"
-#
+
 #if ME_COM_EJS
 
 #include "osdep.h"
