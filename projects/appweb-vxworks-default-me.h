@@ -13,7 +13,7 @@
     #define ME_COMPANY "embedthis"
 #endif
 #ifndef ME_COMPATIBLE
-    #define ME_COMPATIBLE "5.1"
+    #define ME_COMPATIBLE "5.2"
 #endif
 #ifndef ME_COMPILER_HAS_ATOMIC
     #define ME_COMPILER_HAS_ATOMIC 0
@@ -139,7 +139,7 @@
     #define ME_MANIFEST "package/manifest.me"
 #endif
 #ifndef ME_ME
-    #define ME_ME ">=0.8.2"
+    #define ME_ME "=0.8.4"
 #endif
 #ifndef ME_MPR_LOGGING
     #define ME_MPR_LOGGING 1
@@ -172,7 +172,13 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "5.1.0"
+    #define ME_VERSION "5.2.0"
+#endif
+#ifndef ME_WEB_GROUP
+    #define ME_WEB_GROUP "undefined"
+#endif
+#ifndef ME_WEB_USER
+    #define ME_WEB_USER "undefined"
 #endif
 
 /* Prefixes */
@@ -225,7 +231,7 @@
     #define ME_VAPP_PREFIX "deploy"
 #endif
 #ifndef ME_SRC_PREFIX
-    #define ME_SRC_PREFIX "/usr/src/appweb-5.1.0"
+    #define ME_SRC_PREFIX "/usr/src/appweb-5.2.0"
 #endif
 
 /* Suffixes */
@@ -264,13 +270,13 @@
     #define ME_MAJOR_VERSION 5
 #endif
 #ifndef ME_MINOR_VERSION
-    #define ME_MINOR_VERSION 1
+    #define ME_MINOR_VERSION 2
 #endif
 #ifndef ME_PATCH_VERSION
     #define ME_PATCH_VERSION 0
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 500010000
+    #define ME_VNUM 500020000
 #endif
 
 /* Components */
@@ -301,17 +307,11 @@
 #ifndef ME_COM_LINK
     #define ME_COM_LINK 1
 #endif
-#ifndef ME_COM_MATRIXSSL
-    #define ME_COM_MATRIXSSL 0
-#endif
 #ifndef ME_COM_MDB
     #define ME_COM_MDB 1
 #endif
 #ifndef ME_COM_MPR
     #define ME_COM_MPR 1
-#endif
-#ifndef ME_COM_NANOSSL
-    #define ME_COM_NANOSSL 0
 #endif
 #ifndef ME_COM_OPENSSL
     #define ME_COM_OPENSSL 0

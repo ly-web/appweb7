@@ -2,9 +2,8 @@
 <tagfile>
   <compound kind="file">
     <name>mpr.h</name>
-    <path>/Users/mob/git/mpr/src/</path>
+    <path>/Users/mob/dev/mpr/src/</path>
     <filename>mpr_8h</filename>
-    <class kind="struct">MprCmdChild</class>
     <class kind="struct">MprCmdService</class>
     <class kind="struct">MprCond</class>
     <class kind="struct">MprDirEntry</class>
@@ -1110,6 +1109,13 @@
     </member>
     <member kind="define">
       <type>#define</type>
+      <name>MPR_NOT_ALL</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>ace65c038d3a8380c6213fd2dccbc135b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
       <name>MPR_OBJ_HASH</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>aa3a00f803c06f8d85b8281dff1021acb</anchor>
@@ -1180,23 +1186,16 @@
     </member>
     <member kind="define">
       <type>#define</type>
-      <name>MPR_PROTO_TLSV1</name>
+      <name>MPR_PROTO_TLSV1_1</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>ab6be6a83c03fb2edc3d9b758cbeb0db0</anchor>
+      <anchor>aa66454bfc118af48a0d0df362211d9ad</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
       <type>#define</type>
-      <name>MPR_PROTO_TLSV11</name>
+      <name>MPR_PROTO_TLSV1_2</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a31b6416f6ed995314e98eb1c527f8e28</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MPR_PROTO_TLSV12</name>
-      <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a820a989c8a9ac253b75483c638514665</anchor>
+      <anchor>a7216cd86a972299f47f8f450371874c8</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
@@ -10572,10 +10571,6 @@
     </member>
   </compound>
   <compound kind="struct">
-    <name>MprCmdChild</name>
-    <filename>struct_mpr_cmd_child.html</filename>
-  </compound>
-  <compound kind="struct">
     <name>MprCmdService</name>
     <filename>struct_mpr_cmd_service.html</filename>
   </compound>
@@ -11650,7 +11645,7 @@
   </compound>
   <compound kind="dir">
     <name>src</name>
-    <path>/Users/mob/git/mpr/src/</path>
+    <path>/Users/mob/dev/mpr/src/</path>
     <filename>dir_68267d1309a1af8e8297ef4c3efbcdba.html</filename>
     <file>mpr.h</file>
   </compound>

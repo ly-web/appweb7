@@ -1564,6 +1564,7 @@ PUBLIC void mprCheckBlock(MprMem *bp);
 /*
     Internal APIs
  */
+PUBLIC void mprDestroyMemService();
 PUBLIC void mprStartGCService();
 PUBLIC void mprStopGCService();
 PUBLIC void *mprAllocFast(size_t usize);
@@ -3111,9 +3112,7 @@ PUBLIC ssize mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...) PRINTF_ATTRIBUTE(2
 /**
     Date for use in log files (compact)
  */
-#define MPR_LOG_DATE     "%D %T"
-// #define MPR_LOG_DATE     "%T-%F"
-// #define MPR_LOG_DATE        "%b %e %T"
+#define MPR_LOG_DATE        "%D %T"
 
 /********************************** Defines ***********************************/
 /**
@@ -3856,8 +3855,8 @@ PUBLIC MprList *mprSortList(MprList *list, MprSortProc compare, void *ctx);
     @stability Stable
  */
 typedef struct MprKeyValue {
-    void        *key;               /**< Key string */
-    void        *value;             /**< Associated value for the key */
+    void        *key;               /**< Key string (managed) */
+    void        *value;             /**< Associated value for the key (managed) */
     int         flags;              /**< General flags word */
 } MprKeyValue;
 
@@ -4483,9 +4482,9 @@ typedef struct  MprRomInode {
 } MprRomInode;
 
 typedef struct MprRomFileSystem {
-    MprFileSystem   fileSystem;
+    MprFileSystem   fileSystem;         /**< Extends MprFileSystem */
     MprHash         *fileIndex;
-    MprRomInode     *romInodes;
+    MprRomInode     *romInodes;         /**< File inode data (unmanaged) */
     int             rootLen;
 } MprRomFileSystem;
 
@@ -4864,7 +4863,7 @@ PUBLIC ssize mprWriteFileString(MprFile *file, cchar *str);
     @see MprDirEntry MprFile MprPath mprCopyPath mprDeletePath mprGetAbsPath mprGetCurrentPath
         mprGetFirstPathSeparator mprGetLastPathSeparator mprGetNativePath mprGetPathBase
         mprGetPathDir mprGetPathExt mprGetPathFiles mprGetPathLink mprGetPathNewline mprGetPathParent
-        mprGetPathSeparators mprGetPortablePath mprGetRelPath mprGetTempPath mprGetWinPath mprIsAbsPath
+        mprGetPathSeparators mprGetPortablePath mprGetRelPath mprGetTempPath mprGetWinPath mprIsPathAbs
         mprIsRelPath mprJoinPath mprJoinPaths mprJoinPathExt mprMakeDir mprMakeLink mprMapSeparators mprNormalizePath
         mprPathExists mprReadPathContents mprReplacePathExt mprResolvePath mprSamePath mprSamePathCount mprSearchPath
         mprTransformPath mprTrimPathExt mprTruncatePath
@@ -5154,8 +5153,9 @@ PUBLIC char mprGetPathSeparator(cchar *path);
 PUBLIC char *mprGetPortablePath(cchar *path);
 
 /**
-    Get a relative path
-    @description Get a relative path path from an origin path to a destination.
+    Get a path relative to another path.
+    @description Get a relative path path from an origin path to a destination. If a relative path cannot be obtained,
+        an absolute path to the destination will be returned. This happens if the paths cross drives.
     @param dest Destination file
     @param origin Starting location from which to compute a relative path to the destination
         If the origin is null, use the application's current working directory as the origin.
@@ -5495,6 +5495,12 @@ PUBLIC char *mprTrimPathDrive(cchar *path);
  */
 PUBLIC ssize mprWritePathContents(cchar *path, cchar *buf, ssize len, int mode);
 
+/*
+    Internal - prototype
+ */
+PUBLIC bool mprMatchPath(cchar *path, cchar *pattern);
+PUBLIC int mprMatchPartPath(cchar *path, int isDir, cchar *pattern, cchar **nextPartPattern, int count, int flags);
+
 /********************************** O/S Dep ***********************************/
 /**
     Create and initialze the O/S dependent subsystem
@@ -5528,7 +5534,7 @@ PUBLIC void mprStopOsService();
 typedef struct MprModuleService {
     MprList     *modules;               /**< List of defined modules */
     char        *searchPath;            /**< Module search path to locate modules */
-    struct MprMutex *mutex;
+    MprMutex    *mutex;
 } MprModuleService;
 
 
@@ -6146,7 +6152,6 @@ PUBLIC int mprStopDispatcher(MprDispatcher *dispatcher);
 /* Internal API */
 PUBLIC MprEvent *mprCreateEventQueue();
 PUBLIC MprEventService *mprCreateEventService();
-PUBLIC void mprDestroyEventService();
 PUBLIC void mprDedicateWorkerToDispatcher(MprDispatcher *dispatcher, struct MprWorker *worker);
 PUBLIC void mprDequeueEvent(MprEvent *event);
 PUBLIC bool mprDispatcherHasEvents(MprDispatcher *dispatcher);
@@ -7017,8 +7022,8 @@ PUBLIC int mprStartThread(MprThread *thread);
     When calling a blocking routine, you should call mprYield(MPR_YIELD_STICK) to put the thread into a yielded state.
     When the blocking call returns, you should call mprResetYield()
     \n\n
-    While yielded, all transient memory must have references from "managed" objects (see mprAlloc) to ensure required memory is
-    retained. All other memory will be reclaimed.
+    While yielded, all transient memory must have references from "managed" objects (see mprAlloc) to ensure required 
+    memory is retained. All other memory will be reclaimed.
     \n\n
     If a thread blocks and does not yield, it will prevent garbage collection and the applications memory size will grow
     unnecessarily.
@@ -7108,8 +7113,7 @@ typedef struct MprWaitService {
  */
 PUBLIC MprWaitService *mprCreateWaitService();
 PUBLIC void mprTermOsWait(MprWaitService *ws);
-PUBLIC int  mprStartWaitService(MprWaitService *ws);
-PUBLIC int  mprStopWaitService(MprWaitService *ws);
+PUBLIC void mprStopWaitService();
 PUBLIC void mprSetWaitServiceThread(MprWaitService *ws, MprThread *thread);
 PUBLIC void mprWakeNotifier();
 #if MPR_EVENT_ASYNC
@@ -7302,7 +7306,7 @@ typedef int (*MprSocketProc)(void *data, int mask);
  */
 typedef struct MprSocketProvider {
     char    *name;                              /**< Socket provider name */
-    void    *data;                              /**< Socket provider private data */
+    void    *data;                              /**< Socket provider private data (unmanaged) */
 
     /**
         Close a socket
@@ -8018,10 +8022,10 @@ typedef struct MprSsl {
  */
 #define MPR_PROTO_SSLV2    0x1              /**< SSL V2 protocol */
 #define MPR_PROTO_SSLV3    0x2              /**< SSL V3 protocol */
-#define MPR_PROTO_TLSV1    0x4              /**< TLS V1 protocol */
-#define MPR_PROTO_TLSV11   0x8              /**< TLS V1.1 protocol */
-#define MPR_PROTO_TLSV12   0x10             /**< TLS V1.2 protocol */
-#define MPR_PROTO_ALL      0x1F             /**< All SSL protocols */
+#define MPR_PROTO_TLSV1_1  0x4              /**< TLS V1.1 protocol */
+#define MPR_PROTO_TLSV1_2  0x8              /**< TLS V1.2 protocol */
+#define MPR_PROTO_TLSV1    (MPR_PROTO_TLSV1_1 | MPR_PROTO_TLSV1_2)
+#define MPR_PROTO_ALL      0xF              /**< All protocols */
 
 /**
     Add the ciphers to use for SSL
@@ -8712,8 +8716,8 @@ typedef void (*MprForkCallback)(void *arg);
     @stability Internal
  */
 typedef struct MprCmdService {
-    MprList         *cmds;              /* List of all commands. This is a static list and elements are not retained for GC */
-    MprMutex        *mutex;             /* Multithread sync */
+    MprList         *cmds;          /* List of all commands. This is a static list and elements are not retained for GC */
+    MprMutex        *mutex;         /* Multithread sync */
 } MprCmdService;
 
 /*
@@ -8721,15 +8725,6 @@ typedef struct MprCmdService {
  */
 PUBLIC MprCmdService *mprCreateCmdService();
 PUBLIC void mprStopCmdService();
-
-/**
-    Child status structure. Designed to be async-thread safe.
-    @stability Internal
- */
-typedef struct MprCmdChild {
-    ulong           pid;                /*  Process ID */
-    int             exitStatus;         /*  Exit status */
-} MprCmdChild;
 
 #define MPR_CMD_EOF_COUNT       2
 #define MPR_CMD_VXWORKS_EOF     "_ _EOF_ _"     /**< Special string for VxWorks CGI to emit to signal EOF */
@@ -9444,7 +9439,6 @@ PUBLIC MprHash *mprCreateMimeTypes(cchar *path);
  */
 PUBLIC cchar *mprGetMimeProgram(MprHash *table, cchar *mimeType);
 
-//  FUTURE - rename mprGetMime
 /**
     Get the mime type for an extension.
     This call will return the mime type from a limited internal set of mime types for the given path or extension.
@@ -9486,6 +9480,7 @@ PUBLIC int mprSetMimeProgram(MprHash *table, cchar *mimeType, cchar *program);
 #define MPR_LOG_CONFIG      0x2         /**< Show the configuration at the start of the log */
 #define MPR_LOG_CMDLINE     0x4         /**< Command line log switch uses */
 #define MPR_LOG_DETAILED    0x8         /**< Use detailed log formatting with timestamps and tags */
+#define MPR_NOT_ALL         0x10        /**< Don't invoke all destructors when terminating */
 
 typedef bool (*MprIdleCallback)(bool traceRequests);
 
@@ -9702,8 +9697,8 @@ PUBLIC int mprDaemon();
     \n\n
     Applications that have a service events thread can call mprDestroy directly from their main program when ready to exit.
     Applications that call mprServiceEvents from their main program will typically have some other MPR thread call
-    #mprShutdown to initiate a shutdown sequence. This will stop accepting new requests or connections and when the application
-    is idle, the #mprServiceEvents routine will return and then the main program can call then call mprDestroy.
+    #mprShutdown to initiate a shutdown sequence. This will stop accepting new requests or connections and when the 
+    application is idle, the #mprServiceEvents routine will return and then the main program can call then call mprDestroy.
     \n\n
     Once the shutdown conditions are satisfied, a thread executing #mprServiceEvents will return from that API and then
     the application should call #mprDestroy and exit().
@@ -10358,6 +10353,7 @@ PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value);
 
 #if VXWORKS
 PUBLIC int mprFindVxSym(SYMTAB_ID sid, char *name, char **pvalue);
+PUBLIC pid_t mprGetPid();
 #endif
 
 /*

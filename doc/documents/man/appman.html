@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="eng">
+<head>
+<title>Appman Man Page</title>
+</head>
+<body><pre>
+appman(1)                        user commands                       appman(1)
+
+<b>name</b>
+       appman - appweb manager
+
+<b>synopsis</b>
+       <b>appman [options] [commands]</b>
+              [<i>--args arguments</i>] [<i>--console</i>] [<i>--daemon</i>] [<i>--heartbeat interval</i>]
+              [<i>--home directory</i>] [<i>--log logfile:level</i>]
+
+<b>description</b>
+       the appman program is used to configure the running of appweb as a sys-
+       tem  service  (daemon).  appman provides a generic way to install/unin-
+       stall, enable/disable, start/stop, and run the appweb service,  regard-
+       less of the operating system. when used to run appweb, it starts appweb
+       and then watches over appweb, to restart it should appweb fail.  appman
+       also  provides  general  management commands to enable, disable, start,
+       and stop appweb.
+
+<b>commands</b>
+       <b>disable</b>
+              disable appweb from automatically starting when  the  system  is
+              booted.
+
+       <b>enable </b>enable appweb to start automatically on system boot.
+
+       <b>install</b>
+              install appweb as a service.
+
+       <b>run    </b>run  appweb and monitor its execution. appman will automatically
+              restart appweb should it fail. appman will block  unless  it  is
+              invoked with --daemon.
+
+       <b>start  </b>start appweb manually.
+
+       <b>stop   </b>stop appweb.
+
+       <b>uninstall</b>
+              uninstall appweb as a service.
+
+<b>options</b>
+       <b>--args arguments</b>
+              arguments  to  use  for the service program command line when it
+              starts.
+
+       <b>--console</b>
+              windows specific option to allow the manager process to interact
+              with the users desktop.
+
+       <b>--daemon</b>
+              run  the manager as a daemon process. this causes the manager to
+              detach from the current shell and run in the background.
+
+       <b>--heartbeat interval</b>
+              windows specific option to set the frequency in seconds for  the
+              manager to check on service.  this period should be short enough
+              that the service will be quickly restarted should it  fail,  but
+              not  so  short that the manager process consumes significant cpu
+              resources.  if the service dies more than 30 times per hour, the
+              manager will suspend restarting the service.
+
+       <b>--home directory</b>
+              set the home directory in which to start the service.
+
+       <b>--log logfile:level</b>
+              specify  a  file  to  use  for  log messages. the level argument
+              defines the message verbosity. zero is the least and  9  is  the
+              most verbose.
+
+       <b>--retries count</b>
+              number of times to restart appweb per hour.
+
+       <b>-v     </b>output the product version number.
+
+<b>reporting bugs</b>
+       report bugs to dev@embedthis.com.
+
+<b>copyright</b>
+       copyright (c) 2003-2014 embedthis software.
+
+<b>see also</b>
+       appweb
+
+appman                           november 2014                       appman(1)
+</pre></body>
+</html>

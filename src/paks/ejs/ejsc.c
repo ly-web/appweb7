@@ -1,19 +1,12 @@
 /*
-    ejsc.c -- Embedthis Ejscript Compiler
-
-    This file is a catenation of all the source code. Amalgamating into a
-    single file makes embedding simpler and the resulting application faster.
-
-    Prepared by: orion.local
+ * Embedthis Ejscript Compiler
  */
-
 #include "ejs.h"
 
-/************************************************************************/
-/*
-    Start of file "src/cmd/ejsc.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/cmd/ejsc.c ************/
+
 
 /* 
     ejsc.c - Ejscript Compiler main program
@@ -208,7 +201,7 @@ MAIN(ejscMain, int argc, char **argv, char **envp)
             }
 
         } else if (strcmp(argp, "--version") == 0 || strcmp(argp, "-V") == 0) {
-            mprPrintf("%s\n", ME_TITLE, EJS_VERSION);
+            mprPrintf("%s\n", EJS_VERSION);
             return 0;
 
         } else if (strcmp(argp, "--warn") == 0) {
@@ -285,9 +278,6 @@ MAIN(ejscMain, int argc, char **argv, char **envp)
     if ((ejs = ejsCreateVM(0, 0, ejsFlags)) == 0) {
         return MPR_ERR_MEMORY;
     }
-#if UNUSED
-    mprRunDispatcher(ejs->dispatcher);
-#endif
     if (ejsLoadModules(ejs, searchPath, app->modules) < 0) {
         return MPR_ERR_CANT_READ;
     }
@@ -355,7 +345,7 @@ static MprList *expandWild(Ejs *ejs, int argc, char **argv)
             arg = mprNormalizePath(argv[i]);
             dir = ejsCreatePathFromAsc(ejs, mprGetPathDir(arg));
             path = ejsCreatePathFromAsc(ejs, mprGetPathBase(arg));
-            if ((files = ejsGetPathFiles(ejs, dir, 1, (EjsObj**) (void*) &path)) == 0) {
+            if ((files = ejsGetPathFiles(ejs, dir, 1, (EjsAny**) (void*) &path)) == 0) {
                 ejsClearException(ejs);
                 mprAddItem(list, sclone(argv[i]));
             } else {

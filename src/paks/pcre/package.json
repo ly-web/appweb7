@@ -10,7 +10,7 @@
     "author": {
         "name": "Embedthis Software",
         "email": "dev@embedthis.com",
-        "url": "http://embedthis.com"
+        "url": "https://embedthis.com"
     },
     "repository": {
         "type": "git",
@@ -25,10 +25,4 @@
             "url": "https://github.com/embedthis/zlib/blob/master/LICENSE.md"
         }
     ],
-    "directories": {
-        "paks": "src/paks"
-    },
-    "dependencies": {
-        "me-dev": "~0.8"
-    }
 }

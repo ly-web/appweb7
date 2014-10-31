@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Historical Roadmap</title>
+    <!-- Copyright Embedthis Software, LLC, 2003-2014. All Rights Reserved. -->
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="keywords" content="appweb, embedded web server, embedded, devices, http server, internet of things, esp, goahead" />
+    <meta name="description" content="The fastest little web server" />
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
+        rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Julius+Sans+One' rel='stylesheet' type='text/css'>
+    <link href="../lib/semantic/themes/packages/beach.css" rel="stylesheet" type="text/css" />
+    <link href="../css/all.css" rel="stylesheet" type="text/css" />
+    <link href="../images/favicon.ico" rel="shortcut icon" />
+
+</head>
+<body>
+        <div class="sidebar">
+        <div class="ui large left vertical inverted labeled menu">
+            <div class="item">
+                <a href="../index.html" class="logo">Appweb Docs</a>
+            </div>
+            <div class="item">
+                <div class="menu">
+                    <a class="header item" href="../index.html">Home</a>
+                    <a class="item" href="../users/features.html">Appweb Features</a>
+                    <a class="item" href="https://embedthis.com/appweb/download.html">Download</a> 
+                    <a class="item" href="../licensing/index.html">Licensing</a>
+                </div>
+            </div>
+            <div class="item">
+                <div class="menu">
+                    <a class="header item" href="../start/index.html">Getting Started</a>
+                    <a class="item" href="../start/quick.html">Quick Start</a>
+                    <a class="item" href="../start/installing.html">Installing Appweb</a>
+                    <a class="item" href="../start/starting.html">Starting and Stopping</a>
+                    <a class="item" href="../start/service.html">Running as a Service</a>
+                    <a class="item" href="../start/releaseNotes.html">Release Notes</a>
+                    <a class="item" href="../start/source.html">Building from Source</a>
+                </div>
+            </div>
+            <div class="item">
+                <div class="menu">
+                    <a class="header item" href="../users/index.html">User's Guide</a>
+                    <a class="item" href="../users/configuration.html">Configuring Appweb</a>
+                    <a class="item" href="../users/directives.html">Configuration Directives</a>
+                    <a class="item" href="../users/frameworks.html">Web Frameworks</a>
+                    <a class="item" href="../users/modules.html">Using Loadable Modules</a>
+                    <a class="item" href="../users/ports.html">Ports and Binding</a>
+                    <a class="item" href="../users/routing.html">Routing Requests</a>
+                    <a class="item" href="../users/stages.html">Request Pipeline</a>
+                    <a class="item" href="../users/lang.html">Multi-Language Content</a>
+                    <a class="item" href="../users/authentication.html">User Authorization</a>
+                    <a class="item" href="../users/logFiles.html">Logging</a>
+                    <a class="item" href="../users/caching.html">Caching</a>
+                    <a class="item" href="../users/vhosts.html">Virtual Hosts</a>
+                    <a class="item" href="../users/ssl.html">Secure Sockets (SSL)</a>
+                    <a class="item" href="../users/client.html">Http Client</a>
+                    <a class="item" href="../users/security.html">Security Considerations</a>
+                    <a class="item" href="../users/monitor.html">Monitoring and Defending</a>
+                    <a class="item" href="../users/uploading.html">File Upload</a>
+                    <a class="item" href="../users/webSockets.html">WebSockets</a>
+                    <a class="item" href="../users/man.html">Man Pages</a>
+                </div>
+            </div>
+            <div class="item">
+                <div class="menu">
+                    <a class="header item" href="../developers/index.html">Developer's Guide</a>
+                    <a class="item" href="../developers/embedding.html">Embedding Appweb</a>
+                    <a class="item" href="../developers/modules.html">Creating Appweb Modules</a>
+                    <a class="item" href="../developers/handlers.html">Creating Appweb Handlers</a>
+                    <a class="item" href="../developers/stages.html">Creating Pipeline Stages</a>
+                    <a class="item" href="../developers/migrating.html">Migrating to Appweb 5</a>
+                    <a class="item" href="../developers/rom.html">Serving Pages from ROM</a>
+                </div>
+            </div>
+            <div class="item">
+                <div class="menu">
+                    <a class="header item" href="../ref/index.html">Reference Guide</a>
+                    <a class="item" href="../ref/compatibility.html">Compatibility</a>
+                    <a class="item" href="../ref/native.html">Native APIs</a>
+                    <a class="item" href="../ref/architecture.html">Appweb Architecture</a>
+                    <a class="item" href="../ref/memory.html">Appweb Memory Allocation</a>
+                    <a class="item" href="../ref/multithread.html">Multithreaded Programming</a>
+                    <a class="item" href="../standards/http.html">HTTP References</a>
+                </div>
+            </div>
+            <div class="item">
+                <div class="menu">
+                    <a class="header item" href="../developers/project.html">Project Resources</a>
+                    <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
+                    <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
+                    <a class="item" href="https://github.com/embedthis/appweb">Source Code Repository</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/issues/389">Appweb Security Alerts</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/issues">Project Issue Database</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/releases">Change Log</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/milestones">Roadmap</a>
+                    <a class="item" href="https://embedthis.com/developers/contributors.html">Contributors Agreement</a>
+                </div>
+            </div>
+            <div class="item">
+                <div class="menu">
+                    <span class="header item">Links</span>
+                    <a class="item" href="https://embedthis.com/">Embedthis Web Site</a>
+                    <a class="item" href="https://embedthis.com/blog/">Embedthis Blog</a>
+                    <a class="item" href="http://twitter.com/mobstream">Twitter</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui sidebar-launch button">
+        <i class="icon list layout"></i>
+    </div>
+
+
+
+
+
+    <div class="masthead">
+         
+        <div class="ui inverted menu">
+            <div class="right menu">
+                  
+                    <a class="item" href="https://embedthis.com/">Embedthis</a>
+                    <a class="item" href="https://embedthis.com/appweb/">Appweb Site</a>
+                    <a class="item" href="http://goo.gl/dGRDl4">Appweb News</a>
+                    <a class="item" href="https://github.com/embedthis/appweb">Repository</a>
+                    <a class="item" href="https://embedthis.com/blog/">Blog</a>
+                    <a class="item" href="https://twitter.com/mobstream">Twitter</a>
+
+            </div>
+        </div>
+        
+        <div class="ui breadcrumb">
+            <a class="section" href="../">Home</a>
+            
+            
+            <div class="divider">/</div>
+            <a class="active section" href="roadmap.html">Historical Roadmap</a>
+            
+        </div>
+        
+        <div class="ui right floated basic segment version">
+            v5.2.0
+        </div>
+
+    </div>
+    <div class="content">
+
+            <h1>Historial Appweb Roadmap</h1>
+            <p>This roadmap is no longer maintained. Please consult 
+                <a href="https://github.com/embedthis/appweb/milestones">GitHub Appweb Milestones</a> for a current
+                roadmap.</p>
+            <p>The Appweb roadmap is created by listening to user input. As such, it is subject to change. This roadmap
+            is not a commitment to product, but reflects our current thinking about future directions.
+            Those who shout the loudest &mdash; often get what they ask for. To request a feature, please send email to:
+                <a href="mailto:dev@embedthis.com">dev@embedthis.com</a></p>
+            
+            <a id="schedule"></a>
+            <h2>Release Plan</h2>
+          
+            <h4>Appweb Development</h4>
+            <p>Appweb 5 is the ongoing development branch. It will be released in Q1 2014.</p>
+            <h4>Appweb LTS</h4>
+            <p>Appweb 4.X is provided with Long Term Support (LTS). The goal of LTS versions is 
+            stability and compatibility. Bugs and security issues will be fixed, but no feature 
+            updates will be issued for LTS versions. Appweb 4 will be maintained with security 
+            updates and fixes until the end of 2015.</p>
+            <h4>Appweb Legacy Versions</h4>
+            <p>Appweb 2 and Appweb 3 are now deprecated and regarded as legacy code. Special arrangements must be 
+            made to obtain commercial support for legacy versions.  Customers should therefore 
+            upgrade to Appweb 5 as soon as possible. </p>
+            <h2>Appweb Release Roadmap and History</h2>
+            <table title="schedule" class="width">
+                <thead>
+                    <tr>
+                        <th>Release</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 5.1.0</td>
+                        <td>August 2014 (est)</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 5.0.0</td>
+                        <td>July 2014</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.6.2</td>
+                        <td>July 2014 (est)</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.6.1</td>
+                        <td>June 2014</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.6.0</td>
+                        <td>May 2014</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.5.6</td>
+                        <td>May 2014</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.5.5</td>
+                        <td>April 2014</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.5.4</td>
+                        <td>March 2014</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.5.3</td>
+                        <td>March 2014</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.5.2</td>
+                        <td>March 2014</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.5.1</td>
+                        <td>March 2014</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.5.0</td>
+                        <td>February 2014</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.4.4</td>
+                        <td>December 2013</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.4.3</td>
+                        <td>November 2013</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.4.2</td>
+                        <td>October 2013</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.4.1</td>
+                        <td>September 2013</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.4.0</td>
+                        <td>September 2013</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.3.6</td>
+                        <td>September 2013</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.3.5</td>
+                        <td>August 2013</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.3.4</td>
+                        <td>June 2013</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.3.3</td>
+                        <td>May 2013</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.3.2</td>
+                        <td>April 2013</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.3.1</td>
+                        <td>April 2013</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.3.0</td>
+                        <td>March 2013</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.2.0</td>
+                        <td>December 2012</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.1.1</td>
+                        <td>December 2012</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 3.4.1</td>
+                        <td>December 2012</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.1.0</td>
+                        <td>November 2012</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 3.4.0</td>
+                        <td>November 2012</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 2.4.4</td>
+                        <td>November 2012</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.0.0</td>
+                        <td>June 2012</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 3.3.3</td>
+                        <td>June 2012</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 4.0.0 Beta</td>
+                        <td>November 2012</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 3.3.2</td>
+                        <td>November 2012</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 3.3.1</td>
+                        <td>April 2012</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 3.3.0</td>
+                        <td>February 2012</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 3.2.2</td>
+                        <td>June 2010</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 3.2.1</td>
+                        <td>April 2010</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 3.2.0</td>
+                        <td>March 2010</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 3.1.2</td>
+                        <td>December 2009</td>
+                    </tr>
+                    <tr>
+                        <td class="nowrap">Embedthis Appweb 3.1.1</td>
+                        <td>November 2009</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 3.0.1</td>
+                        <td>September 2009</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 3.0.0</td>
+                        <td>August 2009</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 2.4.2</td>
+                        <td>March 2008</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 2.4.1</td>
+                        <td>February 2008</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 2.4.0</td>
+                        <td>December 2007</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 2.3.0</td>
+                        <td>August 2007</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 2.2.2</td>
+                        <td>April 2007</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 2.2.1</td>
+                        <td>April 2007</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 2.2.0</td>
+                        <td>March 2007</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 2.1</td>
+                        <td>June 2006</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 2.0.5</td>
+                        <td>Dec 2005</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 2.0.4</td>
+                        <td>Sept 2005</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 2.0.3</td>
+                        <td>June 2005</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 2.0.2</td>
+                        <td>April 2005</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 2.0</td>
+                        <td>April 2005</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 1.3.5</td>
+                        <td>March 2005</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 1.3.4</td>
+                        <td>March 2005</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 1.3.3</td>
+                        <td>February 2005</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 1.3.2</td>
+                        <td>January 2005</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 1.3.1</td>
+                        <td>December 2004</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 1.3</td>
+                        <td>October 2004</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 1.2.3</td>
+                        <td>October 2004</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 1.2.2</td>
+                        <td>August 2004</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 1.2.1</td>
+                        <td>July 2004</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 1.2</td>
+                        <td>July 2004</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 1.1.2</td>
+                        <td>June 2004</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 1.1.1</td>
+                        <td>June 2004</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 1.1</td>
+                        <td>April 2004</td>
+                    </tr>
+                    <tr>
+                        <td>Embedthis Appweb 1.0<br /></td>
+                        <td>January 2004</td>
+                    </tr>
+                </tbody>
+            </table>
+
+    </div>
+    <div class="terms ui basic center aligned segment">
+        <p>&copy; Embedthis Software, 2003-2014. All rights reserved.</p>
+    </div>
+
+    <script src="../lib/jquery/jquery.js"></script>
+    <script src="../lib/semantic/js/semantic.js"></script>
+    <script>
+        var sl = $('.sidebar-launch');
+        $('.sidebar-launch').click(function() {
+            var body = $('body');
+            if (!body.hasClass('show-sidebar')) {
+                body.addClass('show-sidebar');
+                $('.sidebar').css('visibility', 'visible');
+            } else {
+                body.removeClass('show-sidebar');
+                $('.sidebar').css('visibility', 'hidden');
+            }
+        });
+        $('.sidebar-launch').trigger('click');
+        $('.sidebar a.item').click(function(e) {
+            sessionStorage.setItem('scroll-top', $('.sidebar').scrollTop());
+        });
+        $(function() {
+            var url = '../historical/roadmap.html';
+            var active = $('.sidebar a[href="' + url +'"]');
+            active.addClass('active');
+            $('.sidebar').scrollTop(sessionStorage.getItem('scroll-top'));
+        });
+    </script> 
+
+</body>
+</html>

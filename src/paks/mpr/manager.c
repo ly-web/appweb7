@@ -6,7 +6,7 @@
         uninstall   - Stop, disable then one time removal of configuration. 
         install     - Do one time installation configuration. Post-state: disabled.
         enable      - Enable service to run on reboot. Post-state: enabled. Does not start.
-        disable     - Stop, then disable service to run on reboot. Post-state: disabled.
+        disable     - Stop, then disable service from running on reboot. Post-state: disabled.
         stop        - Stop service. Post-state: stopped.
         start       - Start service. Post-state: running.
         run         - Run and watch over. Blocks.
@@ -273,9 +273,9 @@ PUBLIC int main(int argc, char *argv[])
 static void manageApp(void *ptr, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
+        mprMark(app->command);
         mprMark(app->error);
         mprMark(app->output);
-        mprMark(app->command);
         mprMark(app->logSpec);
         mprMark(app->pidDir);
         mprMark(app->pidPath);
@@ -286,8 +286,6 @@ static void manageApp(void *ptr, int flags)
         mprMark(app->serviceProgram);
     }
 }
-
-
 
 
 static void setAppDefaults()
@@ -444,13 +442,17 @@ static bool process(cchar *operation, bool quiet)
          */
         if (launch) {
             path = sfmt("/Library/LaunchDaemons/com.%s.%s.plist", app->company, name);
-            /* 
-                Unfortunately, there is no launchctl command to do an enable without starting. So must do a stop below.
-             */
             if (!run("/bin/launchctl load -w %s", path)) {
                 rc = 0;
             } else {
-                rc = process("stop", 1);
+                /* 
+                    May fail on legacy systems 
+                */
+                rc = run("/bin/launchctl enable system/com.%s.%s", app->company, name);
+                /* 
+                    Unfortunately, there is no launchctl command to do an enable without starting. So must do a stop below.
+                 */
+                process("stop", 1);
             }
 
         } else if (update) {
@@ -473,7 +475,11 @@ static bool process(cchar *operation, bool quiet)
     } else if (smatch(operation, "disable")) {
         process("stop", 1);
         if (launch) {
-            rc = run("/bin/launchctl unload -w /Library/LaunchDaemons/com.%s.%s.plist", app->company, name);
+            if (!run("/bin/launchctl unload -w /Library/LaunchDaemons/com.%s.%s.plist", app->company, name) ||
+                /* To be sticky across a reboot */
+                !run("/bin/launchctl disable system/com.%s.%s", app->company, name)) {
+                rc = 0;
+            }
 
         } else if (update) {
             /*
@@ -539,6 +545,9 @@ static bool process(cchar *operation, bool quiet)
 
     } else if (smatch(operation, "run")) {
         runService();
+
+    } else {
+        mprLog("error mpr manager", 0, "Unknown command: \"%s\"", operation);
     }
 
     if (!quiet) {
@@ -947,13 +956,13 @@ int APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *args, int junk2)
 static void manageApp(void *ptr, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
+        mprMark(app->logSpec);
         mprMark(app->company);
+        mprMark(app->serviceArgs);
         mprMark(app->serviceHome);
         mprMark(app->serviceName);
         mprMark(app->serviceProgram);
         mprMark(app->serviceTitle);
-        mprMark(app->serviceArgs);
-        mprMark(app->logSpec);
     }
 }
 
@@ -1106,7 +1115,8 @@ static void run()
         if (app->servicePid == 0 && !app->serviceStopped) {
             if (app->restartCount >= RESTART_MAX) {
                 if (! app->restartWarned) {
-                    mprLog("error mpr manager", 0, "Too many restarts for %s, %d in last hour", mprGetAppName(), app->restartCount);
+                    mprLog("error mpr manager", 0, "Too many restarts for %s, %d in last hour", 
+                        mprGetAppName(), app->restartCount);
                     app->restartWarned++;
                 }
                 /*

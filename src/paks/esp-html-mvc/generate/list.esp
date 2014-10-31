@@ -7,7 +7,7 @@
 <table class='list'>
     <thead>
         <tr><%
-            if (grid->nrecords) {
+            if (grid && grid->nrecords) {
                 rec = grid->records[0];
                 for (fp = 0; (fp = ediGetNextField(rec, fp, 1)) != 0; ) { 
                     render("<th>%s</th>\n", stitle(fp->name));

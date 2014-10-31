@@ -2,15 +2,14 @@
     "name": "mpr",
     "description": "Embedthis Multithreaded Portable Runtime",
     "title": "Embedthis MPR",
-    "version": "5.1.0",
+    "version": "6.0.0",
     "directories": {
         "paks": "src/paks"
     },
     "dependencies": {
         "est": "~0.6",
-        "me-dev": "~0.8",
-        "me-ssl": "~0.8",
-        "osdep": "~0.8"
+        "osdep": "~0.8",
+        "ssl": "~0.8"
     },
     "keywords": [
         "mpr",
@@ -19,7 +18,7 @@
     "author": {
         "name": "Embedthis Software",
         "email": "dev@embedthis.com",
-        "url": "http://embedthis.com"
+        "url": "https://embedthis.com"
     },
     "repository": {
         "type": "git",
@@ -31,6 +30,7 @@
     "export": [
         "doc/**"
     ],
+    "import": true,
     "licenses": [
         {
             "type": "GPL",
@@ -38,7 +38,9 @@
         },
         {
             "type": "Commercial",
-            "url": "http://embedthis.com/licensing/"
+            "url": "https://embedthis.com/licensing/"
         }
-    ]
+    ],
+    "optionalDependencies": {
+    }
 }

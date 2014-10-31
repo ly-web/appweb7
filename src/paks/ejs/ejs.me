@@ -3,6 +3,8 @@
  */
 
 Me.load({
+    blend: [ 'http', 'zlib' ],
+
     settings: {
         ejsOneModule: true,
     },
@@ -51,15 +53,12 @@ Me.load({
 		'ejs.mod': {
             files: [ 'ejs.es' ],
             path: "${BIN}/ejs.mod",
-            //  Add --debug for debug symbols
             build: `
-                trace('Compile', 'ejs.mod')
-                run('${LBIN}/ejsc --out ${BIN}/ejs.mod --optimize 9 --bind --require null ejs.es')
+                run('${LBIN}/ejsc --out ${BIN}/ejs.mod --optimize 9 --bind --require null ${FILES}')
             `,
-            'generate-nmake': '"${LBIN}\\ejsc" --out "${BIN}/ejs.mod" --optimize 9 --bind --require null ejs.es',
-            'generate-sh': '${LBIN}/ejsc --out ${BIN}/ejs.mod --optimize 9 --bind --require null ejs.es',
+            message: 'Compile: ejs.mod',
             depends: [ 'ejsc' ],
             ifdef:   [ 'ejs' ],
-		},
-    },
+		}
+    }
 })

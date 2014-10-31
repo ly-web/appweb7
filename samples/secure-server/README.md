@@ -19,8 +19,8 @@ The password database is kept in a flat file called auth.conf. The password was 
 
 Requirements
 ---
-* [Appweb](http://embedthis.com/downloads/appweb/download.esp)
-* [MakeMe Build Tool](http://embedthis.com/downloads/me/download.esp)
+* [Appweb](https://embedthis.com/appweb/download.html)
+* [MakeMe Build Tool](https://embedthis.com/me/download.html)
 
 To build:
 ---
@@ -52,13 +52,13 @@ Code:
 
 Documentation:
 ---
-* [Appweb Documentation](http://embedthis.com/products/appweb/doc/index.html)
-* [Chroot Directive](http://embedthis.com/products/appweb/doc/guide/appweb/users/dir/server.html#chroot)
-* [Configuration Directives](http://embedthis.com/products/appweb/doc/guide/appweb/users/configuration.html#directives)
-* [Sandbox Limits](http://embedthis.com/products/appweb/doc/guide/appweb/users/dir/sandbox.html)
-* [Security Considerations](http://embedthis.com/products/appweb/doc/guide/appweb/users/security.html)
-* [SSL in Appweb](http://embedthis.com/products/appweb/doc/guide/appweb/users/ssl.html)
-* [User Authentication](http://embedthis.com/products/appweb/doc/guide/appweb/users/authentication.html)
+* [Appweb Documentation](https://embedthis.com/appweb/doc/index.html)
+* [Chroot Directive](https://embedthis.com/appweb/doc/users/dir/server.html#chroot)
+* [Configuration Directives](https://embedthis.com/appweb/doc/users/configuration.html#directives)
+* [Sandbox Limits](https://embedthis.com/appweb/doc/users/dir/sandbox.html)
+* [Security Considerations](https://embedthis.com/appweb/doc/users/security.html)
+* [SSL in Appweb](https://embedthis.com/appweb/doc/users/ssl.html)
+* [User Authentication](https://embedthis.com/appweb/doc/users/authentication.html)
 
 See Also:
 ---

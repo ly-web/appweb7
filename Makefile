@@ -29,7 +29,7 @@ ifeq ($(ARCH),)
 endif
 
 ifeq ($(OS),windows)
-    MAKE	:= MAKEFLAGS= projects/windows.bat $(ARCH)
+    MAKE	:= MAKEFLAGS= projects/windows.bat $(ARCH) nmake
     EXT 	:= nmake
 else
 	MAKE    := $(shell if which gmake >/dev/null 2>&1; then echo gmake ; else echo make ; fi) --no-print-directory
@@ -47,13 +47,13 @@ all compile:
 	fi
 	@echo '       [Run] $(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@'
 	@$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
-	@echo '      [Info] You can now install via "sudo make $(MAKEFLAGS) install" or run Appweb via: "sudo make run"'
-	@echo "      [Info] To run locally, put $(OS)-$(ARCH)-$(PROFILE)/bin in your path."
+	@echo '      [Info] Run via: "make run". Run manually with "$(OS)-$(ARCH)-$(PROFILE)/bin" in your path.'
 	@echo ""
 
 clean clobber install installBinary uninstall run:
 	@echo '       [Run] $(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@'
 	@$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
+	@echo '      [Info] $@ complete'
 
 deploy:
 	@echo '       [Deploy] $(MAKE) ME_ROOT_PREFIX=$(OS)-$(ARCH)-$(PROFILE)/deploy -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) installBinary'
@@ -114,4 +114,3 @@ help:
 	@echo '' >&2
 	@echo 'Use "SHOW=1 make" to show executed commands.' >&2
 	@echo '' >&2
-

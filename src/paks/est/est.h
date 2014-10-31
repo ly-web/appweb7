@@ -1,10 +1,5 @@
 /*
-    est.h -- Embethis EST Library Header
-
-    This file is a catenation of all the source code. Amalgamating into a
-    single file makes embedding simpler and the resulting application faster.
-
-    Prepared by: orion.local
+ * Embethis EST Library Header
  */
 
 #include "me.h"
@@ -14,11 +9,10 @@
 #include "osdep.h"
 
 
-/************************************************************************/
-/*
-    Start of file "src/est.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/est.h ************/
+
 
 /**
     est.h - Embedded Security Transport
@@ -195,11 +189,10 @@
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/bignum.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/bignum.h ************/
+
 
 /*
     bignum.h -- Bit number support
@@ -209,7 +202,6 @@
 #ifndef EST_BIGNUM_H
 #define EST_BIGNUM_H
 
-//  TODO unify
 #define EST_ERR_MPI_FILE_IO_ERROR                     -0x0002
 #define EST_ERR_MPI_BAD_INPUT_DATA                    -0x0004
 #define EST_ERR_MPI_INVALID_CHARACTER                 -0x0006
@@ -223,9 +215,6 @@
 /*
    Define the base integer type, architecture-wise
  */
-//  TODO -remove wordsize 8
-//  TODO -remove t_int, t_dbl and use osdep types
-
 #if ME_WORDSIZE == 8
     typedef uchar t_int;
     typedef ushort t_dbl;
@@ -234,7 +223,6 @@
     typedef ulong t_dbl;
 #else
     typedef ulong t_int;
-    //  TODO #if WINDOWS && #if ME_CPU_ARCH == ME_CPU_X86
     #if defined(_MSC_VER) && defined(_M_IX86)
         typedef unsigned __int64 t_dbl;
     #else
@@ -243,7 +231,6 @@
             typedef uint t_dbl __attribute__ ((mode(TI)));
         #else
             typedef unsigned long long t_dbl;
-            //  TODO - should other cases use this too?
             #define ME_USE_LONG_LONG 1
         #endif
     #endif
@@ -553,11 +540,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/net.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/net.h ************/
+
 
 /*
     net.h -- Networking I/O
@@ -566,8 +552,6 @@ extern "C" {
  */
 #ifndef EST_NET_H
 #define EST_NET_H
-
-//  TODO - merge
 
 #define EST_ERR_NET_UNKNOWN_HOST                      -0x0F00
 #define EST_ERR_NET_SOCKET_FAILED                     -0x0F10
@@ -674,11 +658,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/dhm.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/dhm.h ************/
+
 
 /*
     dhm.h -- Diffie-Helman Support
@@ -688,7 +671,6 @@ extern "C" {
 #ifndef EST_DHM_H
 #define EST_DHM_H
 
-//  TODO - unify error codes
 #define EST_ERR_DHM_BAD_INPUT_DATA                    -0x0480
 #define EST_ERR_DHM_READ_PARAMS_FAILED                -0x0490
 #define EST_ERR_DHM_MAKE_PARAMS_FAILED                -0x04A0
@@ -802,11 +784,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/rsa.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/rsa.h ************/
+
 
 /*
     rsa.h -- RSA The RSA public-key cryptosystem
@@ -817,7 +798,6 @@ extern "C" {
 #ifndef EST_RSA_H
 #define EST_RSA_H
 
-//  TODO - merge
 #define EST_ERR_RSA_BAD_INPUT_DATA                    -0x0400
 #define EST_ERR_RSA_INVALID_PADDING                   -0x0410
 #define EST_ERR_RSA_KEY_GEN_FAILED                    -0x0420
@@ -1038,11 +1018,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/md5.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/md5.h ************/
+
 
 /*
     md5.h c -- RFC 1321 compliant MD5 implementation
@@ -1169,11 +1148,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/sha1.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/sha1.h ************/
+
 
 /*
     sha1.h -- 
@@ -1299,11 +1277,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/x509.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/x509.h ************/
+
 
 /*
     x509.h -- Header for the Multithreaded Portable Runtime (MPR).
@@ -1313,7 +1290,6 @@ extern "C" {
 #ifndef EST_X509_H
 #define EST_X509_H
 
-//  TODO - merge
 #define EST_ERR_ASN1_OUT_OF_DATA                      -0x0014
 #define EST_ERR_ASN1_UNEXPECTED_TAG                   -0x0016
 #define EST_ERR_ASN1_INVALID_LENGTH                   -0x0018
@@ -1386,7 +1362,7 @@ extern "C" {
 #define PKCS9_EMAIL                     1
 
 /*
-   TODO
+    FUTURE
    Street   9
    Surname  4
    Serial   5
@@ -1436,8 +1412,6 @@ typedef struct _x509_time {
     int year, mon, day;
     int hour, min, sec;
 } x509_time;
-
-//  TODO - doc for all this file
 
 typedef struct _x509_cert {
     x509_buf raw;
@@ -1566,7 +1540,7 @@ extern "C" {
                        in which case *flags will have one or more of
                        the following values set: BADCERT_EXPIRED BADCERT_REVOKED BADCERT_CN_MISMATCH BADCERT_NOT_TRUSTED 
                         BADCERT_SELF_SIGNED
-       @note           TODO: add two arguments, depth and crl
+       @note           add two arguments, depth and crl
      */
     PUBLIC int x509parse_verify(x509_cert * crt, x509_cert * trust_ca, char *cn, int *flags);
 
@@ -1606,11 +1580,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/ssl.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/ssl.h ************/
+
 
 /*
     ssl.h -- SSL/TLS function
@@ -1620,7 +1593,6 @@ extern "C" {
 #ifndef EST_SSL_H
 #define EST_SSL_H
 
-//  TODO - merge
 #define EST_ERR_SSL_FEATURE_UNAVAILABLE               -0x1000
 #define EST_ERR_SSL_BAD_INPUT_DATA                    -0x1800
 #define EST_ERR_SSL_INVALID_MAC                       -0x2000
@@ -1651,6 +1623,7 @@ extern "C" {
 
 /*
     Various constants
+    TODO - change to correspond to TLS version numbers
  */
 #define SSL_MAJOR_VERSION_3             3
 #define SSL_MINOR_VERSION_0             0   /**< SSL v3.0 */
@@ -1662,7 +1635,6 @@ extern "C" {
 #define SSL_COMPRESS_NULL               0
 
 #define SSL_VERIFY_NO_CHECK             0
-//  TODO - rename VERIFY_MANUAL. Reconsider all names
 #define SSL_VERIFY_OPTIONAL             1
 #define SSL_VERIFY_REQUIRED             2
 
@@ -1680,7 +1652,6 @@ typedef struct EstCipher {
 
 /*
    Supported ciphersuites
-   TODO - need shorts for two byte ciphers. http://www.iana.org/assignments/tls-parameters/tls-parameters.xml
  */
 #define TLS_RSA_WITH_RC4_128_MD5                0x4
 #define TLS_RSA_WITH_RC4_128_SHA                0x5
@@ -1959,7 +1930,7 @@ extern "C" {
        @param ssl      SSL context
        @param ca_chain trusted CA chain
        @param peer_cn  expected peer CommonName (or NULL)
-       @note           TODO TODO: add two more parameters: depth and crl
+       @note           add two more parameters: depth and crl
      */
     PUBLIC void ssl_set_ca_chain(ssl_context *ssl, x509_cert *ca_chain, char *peer_cn);
 
@@ -2100,11 +2071,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/aes.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/aes.h ************/
+
 
 /*
     aes.h -- 
@@ -2212,11 +2182,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/arc4.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/arc4.h ************/
+
 
 /*
     arc4.h -- ARCFOUR algorithm
@@ -2288,11 +2257,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/base64.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/base64.h ************/
+
 
 /*
     base64.h -- RFC 1521 base64 encoding/decoding
@@ -2302,7 +2270,6 @@ extern "C" {
 #ifndef EST_BASE64_H
 #define EST_BASE64_H
 
-//  TODO - need unified error handling
 #define EST_ERR_BASE64_BUFFER_TOO_SMALL   -0x0010
 #define EST_ERR_BASE64_INVALID_CHARACTER  -0x0012
 
@@ -2348,11 +2315,10 @@ extern "C" {
 #endif
 #endif              /* base64.h */
 
-/************************************************************************/
-/*
-    Start of file "src/bn_mul.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/bn_mul.h ************/
+
 
 /*
     bn_mul.h -- Header for the Multithreaded Portable Runtime (MPR).
@@ -2372,8 +2338,6 @@ extern "C" {
  */
 #ifndef EST_BN_MUL_H
 #define EST_BN_MUL_H
-
-//  TODO - convert to osdep.h
 
 #if defined(EST_HAVE_ASM)
 
@@ -3074,11 +3038,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/camellia.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/camellia.h ************/
+
 
 /*
     camellia.h -- Camellia Cipher
@@ -3186,11 +3149,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/certs.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/certs.h ************/
+
 
 /*
     certs.h -- Test certificates
@@ -3204,7 +3166,6 @@ extern "C" {
 extern "C" {
 #endif
 
-//  TODO
 #if UNUSED
     extern char test_ca_crt[];
     extern char test_ca_key[];
@@ -3221,11 +3182,10 @@ extern "C" {
 #endif
 #endif              /* certs.h */
 
-/************************************************************************/
-/*
-    Start of file "src/debug.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/debug.h ************/
+
 
 /*
     debug.h -- Debugging support
@@ -3267,8 +3227,6 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
-    //  TODO - move to an estDep.h
-    //  TODO - doc
     PUBLIC int snfmt(char *buf, ssize bufsize, cchar *fmt, ...);
     PUBLIC char *debug_fmt(const char *format, ...);
     PUBLIC void debug_print_msg(ssl_context *ssl, int level, char *text);
@@ -3302,11 +3260,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/des.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/des.h ************/
+
 
 /*
     des.h -- Des Cipher
@@ -3453,11 +3410,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/havege.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/havege.h ************/
+
 
 /*
     havege.h -- Havege Random Support
@@ -3520,11 +3476,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/md2.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/md2.h ************/
+
 
 /*
     md2.h -- RFC 1115/1319 compliant MD2 implementation
@@ -3652,11 +3607,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/md4.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/md4.h ************/
+
 
 /*
     md4.h -- RFC 1186/1320 compliant MD4 implementation
@@ -3782,11 +3736,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/padlock.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/padlock.h ************/
+
 
 /*
     padlock.h -- Via padlock support
@@ -3795,8 +3748,6 @@ extern "C" {
  */
 #ifndef EST_PADLOCK_H
 #define EST_PADLOCK_H
-
-//  TODO - use #if ME_CPU_ARCH == ME_CPU_X86
 
 #if (defined(__GNUC__) && defined(__i386__))
 #ifndef EST_HAVE_X86
@@ -3868,11 +3819,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/sha2.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/sha2.h ************/
+
 
 /*
     sha2.h -- FIPS-180-2 compliant SHA-256 implementation
@@ -4005,11 +3955,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/sha4.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/sha4.h ************/
+
 
 /*
     sha4.h -- FIPS-180-2 compliant SHA-384/512 implementation
@@ -4019,7 +3968,6 @@ extern "C" {
 #ifndef EST_SHA4_H
 #define EST_SHA4_H
 
-//  TODO - update to use bits equivalent
 #if defined(_MSC_VER) || defined(__WATCOMC__)
     #define UL64(x) x##ui64
     #define int64 __int64
@@ -4150,11 +4098,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/timing.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/timing.h ************/
+
 
 /*
     timing.h -- Portable interface to the CPU cycle counter
@@ -4175,7 +4122,6 @@ struct hr_time {
 extern "C" {
 #endif
 
-    //  TODO - PUBLIC_DATA
     extern int alarmed;
 
     /**
@@ -4228,11 +4174,10 @@ extern "C" {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/xtea.h"
- */
-/************************************************************************/
+
+
+/********* Start of file src/xtea.h ************/
+
 
 /*
     xtea.h -- An 32-bit implementation of the XTEA algorithm
@@ -4303,4 +4248,5 @@ extern "C" {
 
     @end
  */
+
 #endif /* ME_COM_EST */

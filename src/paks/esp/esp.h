@@ -1,12 +1,6 @@
 /*
-    esp.h -- Embedthis ESP Library Source
-
-    This file is a catenation of all the source code. Amalgamating into a
-    single file makes embedding simpler and the resulting application faster.
-
-    Prepared by: orion.local
+ * Embedthis ESP Library Source
  */
-
 #include "me.h"
 
 #if ME_COM_ESP
@@ -15,14 +9,8 @@
 #include "appweb.h"
 
 #ifndef ESP_VERSION
-    #define ESP_VERSION "5.1.0"
+    #define ESP_VERSION "5.2.0"
 #endif
-
-/************************************************************************/
-/*
-    Start of file "src/edi.h"
- */
-/************************************************************************/
 
 /*
     edi.h -- Embedded Database Interface (EDI).
@@ -99,8 +87,8 @@ typedef cchar *(*EdiValidationProc)(struct EdiValidation *vp, struct EdiRec *rec
 typedef struct EdiValidation {
     cchar               *name;          /**< Validation name */
     EdiValidationProc   vfn;            /**< Validation callback procedure */
-    cvoid               *mdata;         /**< Non-GC (malloc) data. Used for pcre. */
-    cvoid               *data;          /**< Allocated data that must be marked for GC */
+    cvoid               *data;          /**< Custom data (managed) */
+    cvoid               *mdata;         /**< Custom data (unmanaged) */
 } EdiValidation;
 
 /**
@@ -172,7 +160,6 @@ typedef struct EdiRec {
     int             index;              /**< Grid index for iteration */
     EdiField        fields[ARRAY_FLEX]; /**< Field records */
 } EdiRec;
-
 
 #define EDI_GRID_READ_ONLY  0x1         /**< Grid contains pure database records, must not be modified */
 
@@ -1083,12 +1070,6 @@ PUBLIC void sdbInit();
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/mdb.h"
- */
-/************************************************************************/
-
 /*
     mdb.h -- Memory Database (MDB).
 
@@ -1155,8 +1136,8 @@ typedef struct MdbTable {
     char            *name;              /* Table name */
     MdbSchema       *schema;            /* Table columns schema */
     MprHash         *index;             /* Table index */
-    MdbCol          *keyCol;            /* Reference to the key column */
-    MdbCol          *indexCol;          /* Reference to the index column */
+    MdbCol          *keyCol;            /* Reference to the key column (unmanaged) */
+    MdbCol          *indexCol;          /* Reference to the index column (unmanaged) */
     MprList         *rows;              /* Table row */
 } MdbTable;
 
@@ -1173,7 +1154,7 @@ typedef struct Mdb {
     MprList         *tables;            /**< List of tables */
 
     /*
-        When loading from file
+        When loading from file only (do not mark)
      */
     MdbTable        *loadTable;         /* Current table */
     MdbCol          *loadCol;           /* Current column */
@@ -1213,12 +1194,6 @@ typedef struct Mdb {
 
     @end
  */
-
-/************************************************************************/
-/*
-    Start of file "src/esp.h"
- */
-/************************************************************************/
 
 /*
     esp.h -- Embedded Server Pages (ESP) Module handler.
@@ -1764,8 +1739,8 @@ typedef struct EspReq {
     MprHash         *flash;                 /**< New flash messages */
     MprHash         *lastFlash;             /**< Flash messages from the last request */
     HttpNotifier    notifier;               /**< Connection Http state change notification callback */
-    void            *data;                  /**< Custom data for request - must be a managed reference */
-    void            *staticData;            /**< Custom data for request - must be an unmanaged reference */
+    void            *data;                  /**< Custom data for request (managed) */
+    void            *staticData;            /**< Custom data for request (unmanaged) */
     cchar           *commandLine;           /**< Command line for compile/link */
     int             autoFinalize;           /**< Request is or will be auto-finalized */
     int             sessionProbed;          /**< Already probed for session store */
@@ -2182,15 +2157,14 @@ PUBLIC char *espGetStatusMessage(HttpConn *conn);
 
 /**
     Get the uploaded files.
-    @description Get the hash table defining the uploaded files.
-        This hash is indexed by the file identifier supplied in the upload form. The hash entries are HttpUploadFile
-        objects.
+    @description Get the list of uploaded files.
+        This list entries are HttpUploadFile objects.
     @param conn HttpConn connection object
-    @return A hash of HttpUploadFile objects.
+    @return A list of HttpUploadFile objects.
     @ingroup EspReq
     @stability Evolving
  */
-PUBLIC MprHash *espGetUploads(HttpConn *conn);
+PUBLIC MprList *espGetUploads(HttpConn *conn);
 
 /**
     Get the request URI string.
@@ -3221,14 +3195,12 @@ PUBLIC cchar *getConfig(cchar *field);
 
 /**
     Get the uploaded files
-    @description Get the hash table defining the uploaded files.
-        This hash is indexed by the file identifier supplied in the upload form. The hash entries are HttpUploadFile
-        objects.
-    @return A hash of HttpUploadFile objects.
+    @description Get the list of uploaded files.
+    @return A list of HttpUploadFile objects.
     @ingroup EspAbbrev
     @stability Evolving
  */
-PUBLIC MprHash *getUploads();
+PUBLIC MprList *getUploads();
 
 /**
     Get the request URI string
@@ -4092,4 +4064,5 @@ PUBLIC cchar *uri(cchar *target, ...);
 
     @end
  */
+
 #endif /* ME_COM_ESP */

@@ -1,4 +1,4 @@
-Embedthis Multithreaded Portable Runtime (MPR) 4.X
+Embedthis Http
 ===
 
 Licensing
@@ -10,8 +10,7 @@ See LICENSE.md for details.
   See doc/index.html
 
 ### Prerequisites:
-    MakeMe (http://embedthis.com/downloads/makeme/download.esp) for MakeMe to configure and build.
-    Ejscript (http://ejscript.org/downloads/ejs/download.esp) for utest to test.
+    MakeMe (https://embedthis.com/me/download.html) for MakeMe to configure and build.
 
 ### To Build:
 
@@ -44,6 +43,6 @@ This will run appweb in the src/server directory using the src/server/appweb.con
 
 Resources
 ---
-  - [Embedthis web site](http://embedthis.com/)
-  - [MPR GitHub repository](http://github.com/embedthis/mpr-4)
+  - [Embedthis web site](https://embedthis.com/)
+  - [Http GitHub repository](http://github.com/embedthis/http)
   - [MakeMe GitHub repository](http://github.com/embedthis/makeme)

@@ -224,7 +224,7 @@ static long msgProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
             break;
 
         case MA_MENU_DOC:
-            runBrowser("http://embedthis.com/products/appweb/doc/index.html");
+            runBrowser("http://embedthis.com/appweb/doc/index.html");
             break;
 
 #if UNUSED

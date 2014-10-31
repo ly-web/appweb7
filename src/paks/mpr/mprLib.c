@@ -1,19 +1,13 @@
 /*
-    mprLib.c -- Embedthis MPR Library Source
-
-    This file is a catenation of all the source code. Amalgamating into a
-    single file makes embedding simpler and the resulting application faster.
-
-    Prepared by: orion.local
- */
+ * Embedthis MPR Library Source 
+*/
 
 #include "mpr.h"
 
-/************************************************************************/
-/*
-    Start of file "src/mem.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/mem.c ************/
+
 
 /**
     mem.c - Memory Allocator and Garbage Collector. 
@@ -151,6 +145,7 @@ static void dummyManager(void *ptr, int flags);
 static void freeBlock(MprMem *mp);
 static void getSystemInfo();
 static MprMem *growHeap(size_t size);
+static void invokeAllDestructors();
 static ME_INLINE size_t qtosize(int qindex);
 static ME_INLINE bool linkBlock(MprMem *mp); 
 static ME_INLINE void linkSpareBlock(char *ptr, size_t size);
@@ -272,6 +267,26 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
     heap->roots = mprCreateList(-1, MPR_LIST_STATIC_VALUES);
     mprAddRoot(MPR);
     return MPR;
+}
+
+
+/*
+    Destroy all allocated memory including the MPR itself
+ */
+PUBLIC void mprDestroyMemService()
+{
+    MprRegion   *region, *next;
+    ssize       size;
+
+    for (region = heap->regions; region; ) {
+        next = region->next;
+        mprVirtFree(region, region->size);
+        region = next;
+    }
+    size = MPR_PAGE_ALIGN(sizeof(MprHeap), memStats.pageSize);
+    mprVirtFree(heap, size);
+    MPR = 0;
+    heap = 0;
 }
 
 
@@ -908,6 +923,7 @@ PUBLIC void mprStopGCService()
     for (i = 0; heap->sweeper && i < MPR_TIMEOUT_STOP; i++) {
         mprNap(1);
     }
+    invokeAllDestructors();
 }
 
 
@@ -1274,6 +1290,34 @@ static void invokeDestructors()
             }
         }
     }
+}
+
+
+static void invokeAllDestructors()
+{
+#if FUTURE
+    MprRegion   *region;
+    MprMem      *mp;
+    MprManager  mgr;
+
+    if (MPR->flags & MPR_NOT_ALL) {
+        return;
+    }
+    for (region = heap->regions; region; region = region->next) {
+        for (mp = region->start; mp < region->end; mp = GET_NEXT(mp)) {
+            if (!mp->free && mp->hasManager) {
+                mgr = GET_MANAGER(mp);
+                if (mgr) {
+                    (mgr)(GET_PTR(mp), MPR_MANAGE_FREE);
+                    /* Retest incase the manager routine revied the object */
+                    if (mp->mark != heap->mark) {
+                        mp->hasManager = 0;
+                    }
+                }
+            }
+        }
+    }
+#endif
 }
 
 
@@ -2581,11 +2625,10 @@ static void monitorStack()
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/mpr.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/mpr.c ************/
+
 
 /*
     mpr.c - Multithreaded Portable Runtime (MPR). Initialization, start/stop and control of the MPR.
@@ -2694,10 +2737,21 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
 static void manageMpr(Mpr *mpr, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(mpr->logPath);
         mprMark(mpr->logFile);
         mprMark(mpr->mimeTypes);
         mprMark(mpr->timeTokens);
+        mprMark(mpr->keys);
+        mprMark(mpr->stdError);
+        mprMark(mpr->stdInput);
+        mprMark(mpr->stdOutput);
+        mprMark(mpr->appPath);
+        mprMark(mpr->appDir);
+        /* 
+            Argv will do a single allocation into argv == argBuf. May reallocate the program name in argv[0] 
+         */
+        mprMark(mpr->argv);
+        mprMark(mpr->argv[0]);
+        mprMark(mpr->logPath);
         mprMark(mpr->pathEnv);
         mprMark(mpr->name);
         mprMark(mpr->title);
@@ -2705,13 +2759,7 @@ static void manageMpr(Mpr *mpr, int flags)
         mprMark(mpr->domainName);
         mprMark(mpr->hostName);
         mprMark(mpr->ip);
-        mprMark(mpr->keys);
-        mprMark(mpr->stdError);
-        mprMark(mpr->stdInput);
-        mprMark(mpr->stdOutput);
         mprMark(mpr->serverName);
-        mprMark(mpr->appPath);
-        mprMark(mpr->appDir);
         mprMark(mpr->cmdService);
         mprMark(mpr->eventService);
         mprMark(mpr->fileSystem);
@@ -2736,8 +2784,6 @@ static void manageMpr(Mpr *mpr, int flags)
         mprMark(mpr->stopCond);
         mprMark(mpr->emptyString);
         mprMark(mpr->oneString);
-        mprMark(mpr->argv);
-        mprMark(mpr->argv[0]);
     }
 }
 
@@ -2866,12 +2912,12 @@ PUBLIC bool mprDestroy()
      */
     while (MPR->eventing) {
         mprWakeNotifier();
-        mprWaitForCond(MPR->cond, 1000);
+        mprWaitForCond(MPR->cond, 10);
         if (mprGetRemainingTicks(MPR->shutdownStarted, timeout) <= 0) {
             break;
         }
     }
-    if (!mprIsIdle(0)) {
+    if (!mprIsIdle(0) || MPR->eventing) {
         if (MPR->exitStrategy & MPR_EXIT_SAFE) {
             /* Note: Pending outside events will pause GC which will make mprIsIdle return false */
             mprLog("warn mpr", 2, "Cancel termination due to continuing requests, application resumed.");
@@ -2902,7 +2948,9 @@ PUBLIC bool mprDestroy()
     mprStopWorkers();
     mprStopCmdService();
     mprStopModuleService();
-    mprDestroyEventService();
+    mprStopEventService();
+    mprStopThreadService();
+    mprStopWaitService();
 
     /*
         Run GC to finalize all memory until we are not freeing any memory. This IS deterministic.
@@ -2918,12 +2966,12 @@ PUBLIC bool mprDestroy()
     mprStopModuleService();
     mprStopSignalService();
     mprStopGCService();
-    mprStopThreadService();
     mprStopOsService();
 
     if (MPR->exitStrategy & MPR_EXIT_RESTART) {
         mprRestart();
     }
+    mprDestroyMemService();
     return 1;
 }
 
@@ -3544,11 +3592,10 @@ PUBLIC void *mprGetKey(cchar *key)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/async.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/async.c ************/
+
 
 /**
     async.c - Wait for I/O on Windows.
@@ -3601,6 +3648,7 @@ PUBLIC void mprManageAsync(MprWaitService *ws, int flags)
     if (flags & MPR_MANAGE_FREE) {
         if (ws->wclass) {
             mprDestroyWindowClass(ws->wclass);
+            ws->wclass = 0;
         }
     }
 }
@@ -3917,11 +3965,10 @@ void asyncDummy() {}
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/atomic.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/atomic.c ************/
+
 
 /**
     atomic.c - Atomic operations
@@ -4167,11 +4214,10 @@ PUBLIC void mprAtomicListInsert(void **head, void **link, void *item)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/buf.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/buf.c ************/
+
 
 /**
     buf.c - Dynamic buffer module
@@ -4821,11 +4867,10 @@ PUBLIC ssize mprPutStringToWideBuf(MprBuf *bp, cchar *str)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/cache.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/cache.c ************/
+
 
 /**
     cache.c - In-process caching
@@ -5364,6 +5409,7 @@ static void manageCacheItem(CacheItem *item, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(item->key);
         mprMark(item->data);
+        mprMark(item->link);
     }
 }
 
@@ -5399,11 +5445,10 @@ PUBLIC void mprGetCacheStats(MprCache *cache, int *numKeys, ssize *mem)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/cmd.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/cmd.c ************/
+
 
 /*
     cmd.c - Run external commands
@@ -5529,8 +5574,8 @@ static void manageCmd(MprCmd *cmd, int flags)
         mprMark(cmd->program);
         mprMark(cmd->makeArgv);
         mprMark(cmd->defaultEnv);
-        mprMark(cmd->env);
         mprMark(cmd->dir);
+        mprMark(cmd->env);
         for (i = 0; i < MPR_CMD_MAX_PIPE; i++) {
             mprMark(cmd->files[i].name);
         }
@@ -5809,19 +5854,19 @@ static int addCmdHandlers(MprCmd *cmd)
 
     if (stdinFd >= 0 && cmd->handlers[MPR_CMD_STDIN] == 0) {
         if ((cmd->handlers[MPR_CMD_STDIN] = mprCreateWaitHandler(stdinFd, MPR_WRITABLE, cmd->dispatcher,
-                stdinCallback, cmd, 0)) == 0) {
+                stdinCallback, cmd, MPR_WAIT_NOT_SOCKET)) == 0) {
             return MPR_ERR_CANT_OPEN;
         }
     }
     if (stdoutFd >= 0 && cmd->handlers[MPR_CMD_STDOUT] == 0) {
         if ((cmd->handlers[MPR_CMD_STDOUT] = mprCreateWaitHandler(stdoutFd, MPR_READABLE, cmd->dispatcher,
-                stdoutCallback, cmd,0)) == 0) {
+                stdoutCallback, cmd, MPR_WAIT_NOT_SOCKET)) == 0) {
             return MPR_ERR_CANT_OPEN;
         }
     }
     if (stderrFd >= 0 && cmd->handlers[MPR_CMD_STDERR] == 0) {
         if ((cmd->handlers[MPR_CMD_STDERR] = mprCreateWaitHandler(stderrFd, MPR_READABLE, cmd->dispatcher,
-                stderrCallback, cmd,0)) == 0) {
+                stderrCallback, cmd, MPR_WAIT_NOT_SOCKET)) == 0) {
             return MPR_ERR_CANT_OPEN;
         }
     }
@@ -6834,7 +6879,7 @@ static void cmdChildDeath(MprCmd *cmd, MprSignal *sp)
 static int startProcess(MprCmd *cmd)
 {
     MprCmdFile      *files;
-    int             rc, i, err;
+    int             i;
 
     files = cmd->files;
     if (!cmd->signal) {
@@ -6889,13 +6934,10 @@ static int startProcess(MprCmd *cmd)
         }
         cmd->forkCallback(cmd->forkData);
         if (cmd->env) {
-            rc = execve(cmd->program, (char**) cmd->argv, (char**) &cmd->env->items[0]);
+            (void) execve(cmd->program, (char**) cmd->argv, (char**) &cmd->env->items[0]);
         } else {
-            rc = execv(cmd->program, (char**) cmd->argv);
+            (void) execv(cmd->program, (char**) cmd->argv);
         }
-        err = errno;
-        printf("Cannot exec %s, rc %d, err %d\n", cmd->program, rc, err);
-
         /*
             Use _exit to avoid flushing I/O any other I/O.
          */
@@ -7097,11 +7139,10 @@ static void closeFiles(MprCmd *cmd)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/cond.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/cond.c ************/
+
 
 /**
     cond.c - Thread Conditional variables
@@ -7417,11 +7458,10 @@ PUBLIC void mprSignalMultiCond(MprCond *cp)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/crypt.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/crypt.c ************/
+
 
 /*
     crypt.c - Base-64 encoding and decoding and MD5 support.
@@ -8749,11 +8789,10 @@ PUBLIC char *mprGetPassword(cchar *prompt)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/disk.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/disk.c ************/
+
 
 /**
     disk.c - File services for systems with a (disk) based file system.
@@ -9328,11 +9367,10 @@ PUBLIC MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/dispatcher.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/dispatcher.c ************/
+
 
 /*
     dispatcher.c - Event dispatch services
@@ -9436,7 +9474,7 @@ static void destroyDispatcherQueue(MprDispatcher *q)
 }
 
 
-PUBLIC void mprDestroyEventService()
+PUBLIC void mprStopEventService()
 {
     MprEventService     *es;
         
@@ -9447,13 +9485,6 @@ PUBLIC void mprDestroyEventService()
     destroyDispatcherQueue(es->idleQ);
     destroyDispatcherQueue(es->pendingQ);
     es->mutex = 0;
-}
-
-
-PUBLIC void mprStopEventService()
-{
-    mprWakeDispatchers();
-    mprWakeNotifier();
 }
 
 
@@ -9570,6 +9601,10 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
 
     if (MPR->eventing) {
         mprLog("warn mpr event", 0, "mprServiceEvents called reentrantly");
+        return 0;
+    }
+    mprAtomicBarrier();
+    if (mprIsDestroying()) {
         return 0;
     }
     MPR->eventing = 1;
@@ -10176,11 +10211,10 @@ PUBLIC bool mprDispatcherHasEvents(MprDispatcher *dispatcher)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/encode.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/encode.c ************/
+
 
 /*
     encode.c - URI encode and decode routines
@@ -10514,11 +10548,10 @@ PUBLIC char *mprEscapeSQL(cchar *cmd)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/epoll.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/epoll.c ************/
+
 
 /**
     epoll.c - Wait for I/O by using epoll on unix like systems.
@@ -10579,6 +10612,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 PUBLIC void mprManageEpoll(MprWaitService *ws, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
+        /* Handlers are not marked here so they will auto-remove from the list */
         mprMark(ws->handlerMap);
 
     } else if (flags & MPR_MANAGE_FREE) {
@@ -10845,11 +10879,10 @@ void epollDummy() {}
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/event.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/event.c ************/
+
 
 /*
     event.c - Event and dispatch services
@@ -11171,11 +11204,10 @@ PUBLIC void mprDequeueEvent(MprEvent *event)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/file.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/file.c ************/
+
 
 /**
     file.c - File services.
@@ -11220,7 +11252,9 @@ static void manageFile(MprFile *file, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(file->buf);
         mprMark(file->path);
-
+#if ME_ROM
+        mprMark(file->inode);
+#endif
     } else if (flags & MPR_MANAGE_FREE) {
         if (!file->attached) {
             /* Prevent flushing */
@@ -11797,11 +11831,10 @@ PUBLIC int mprGetFileFd(MprFile *file)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/fs.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/fs.c ************/
+
 
 /**
     fs.c - File system services.
@@ -11963,11 +11996,10 @@ PUBLIC void mprSetPathNewline(cchar *path, cchar *newline)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/hash.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/hash.c ************/
+
 
 /*
     hash.c - Fast hashing hash lookup module
@@ -12076,7 +12108,6 @@ static void manageHashTable(MprHash *hash, int flags)
 }
 
 
-//  FUTURE - rename mprSetKey
 /*
     Insert an entry into the hash hash. If the entry already exists, update its value.  Order of insertion is not preserved.
  */
@@ -12124,8 +12155,6 @@ PUBLIC MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
     return sp;
 }
 
-
-//  FUTURE - rename mprSetKeyWithType
 
 PUBLIC MprKey *mprAddKeyWithType(MprHash *hash, cvoid *key, cvoid *ptr, int type)
 {
@@ -12502,11 +12531,10 @@ PUBLIC char *mprHashKeysToString(MprHash *hash, cchar *join)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/json.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/json.c ************/
+
 
 /**
     json.c - A JSON parser, serializer and query language.
@@ -12558,10 +12586,10 @@ static void manageJson(MprJson *obj, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(obj->name);
+        mprMark(obj->value);
         mprMark(obj->prev);
         mprMark(obj->next);
         mprMark(obj->children);
-        mprMark(obj->value);
     }
 }
 
@@ -12608,8 +12636,8 @@ static void manageJsonParser(MprJsonParser *parser, int flags)
         mprMark(parser->token);
         mprMark(parser->putback);
         mprMark(parser->path);
-        mprMark(parser->buf);
         mprMark(parser->errorMsg);
+        mprMark(parser->buf);
     }
 }
 
@@ -14135,11 +14163,10 @@ PUBLIC MprHash *mprJsonToHash(MprJson *json)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/kqueue.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/kqueue.c ************/
+
 
 /**
     kevent.c - Wait for I/O by using kevent on MacOSX Unix systems.
@@ -14446,11 +14473,10 @@ void kqueueDummy() {}
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/list.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/list.c ************/
+
 
 /**
     list.c - Simple list type.
@@ -14513,6 +14539,7 @@ static void manageList(MprList *lp, int flags)
 
     if (flags & MPR_MANAGE_MARK) {
         mprMark(lp->mutex);
+        /* OPT - no need to lock as this is running solo */
         lock(lp);
         mprMark(lp->items);
         if (!(lp->flags & MPR_LIST_STATIC_VALUES)) {
@@ -15280,11 +15307,10 @@ PUBLIC char *mprListToString(MprList *list, cchar *join)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/lock.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/lock.c ************/
+
 
 /**
     lock.c - Thread Locking Support
@@ -15341,9 +15367,11 @@ PUBLIC MprMutex *mprInitLock(MprMutex *lock)
 
 #elif ME_WIN_LIKE && !ME_DEBUG && CRITICAL_SECTION_NO_DEBUG_INFO && ME_64 && _WIN32_WINNT >= 0x0600
     InitializeCriticalSectionEx(&lock->cs, ME_MPR_SPIN_COUNT, CRITICAL_SECTION_NO_DEBUG_INFO);
+    lock->freed = 0;
 
 #elif ME_WIN_LIKE
     InitializeCriticalSectionAndSpinCount(&lock->cs, ME_MPR_SPIN_COUNT);
+    lock->freed = 0;
 
 #elif VXWORKS
     lock->cs = semMCreate(SEM_Q_PRIORITY | SEM_DELETE_SAFE);
@@ -15429,9 +15457,11 @@ PUBLIC MprSpin *mprInitSpinLock(MprSpin *lock)
 
 #elif ME_WIN_LIKE && !ME_DEBUG && CRITICAL_SECTION_NO_DEBUG_INFO && ME_64 && _WIN32_WINNT >= 0x0600
     InitializeCriticalSectionEx(&lock->cs, ME_MPR_SPIN_COUNT, CRITICAL_SECTION_NO_DEBUG_INFO);
+    lock->freed = 0;
 
 #elif ME_WIN_LIKE
     InitializeCriticalSectionAndSpinCount(&lock->cs, ME_MPR_SPIN_COUNT);
+    lock->freed = 0;
 
 #elif VXWORKS
     lock->cs = semMCreate(SEM_Q_PRIORITY | SEM_DELETE_SAFE);
@@ -15623,11 +15653,10 @@ PUBLIC void mprSpinUnlock(MprSpin *lock)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/log.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/log.c ************/
+
 
 /**
     log.c - Multithreaded Portable Runtime (MPR) Logging and error reporting.
@@ -15740,7 +15769,6 @@ PUBLIC void mprLogConfig()
     mprLog(name, 2, "CPU:                %s", ME_CPU);
     mprLog(name, 2, "OS:                 %s", ME_OS);
     mprLog(name, 2, "Host:               %s", mprGetHostName());
-    mprLog(name, 2, "Directory:          %s", mprGetCurrentPath());
     mprLog(name, 2, "Configure:          %s", ME_CONFIG_CMD);
     mprLog(name, 2, "----------------------------------");
 }
@@ -15887,7 +15915,6 @@ PUBLIC void mprDefaultLogHandler(cchar *tags, int level, cchar *msg)
 {
     MprFile     *file;
     char        tbuf[128];
-    ssize       len, width;
     static int  check = 0;
 
     if ((file = MPR->logFile) == 0) {
@@ -15899,19 +15926,14 @@ PUBLIC void mprDefaultLogHandler(cchar *tags, int level, cchar *msg)
     if (MPR->flags & MPR_LOG_DETAILED && tags && *tags) {
         fmt(tbuf, sizeof(tbuf), "%s %d %s, ", mprGetDate(MPR_LOG_DATE), level, tags);
         mprWriteFileString(file, tbuf);
-        len = slen(tbuf);
-        width = 40;
-        if (len < width) {
-            mprWriteFile(file, "                                          ", width - len);
-        }
-    } else if (tags && level == 0) {
-        mprWriteFileString(file, "error: ");
     }
     mprWriteFileString(file, msg);
     mprWriteFileString(file, "\n");
+#if ME_MPR_OSLOG
     if (level == 0) {
         mprWriteToOsLog(sfmt("%s: %d %s: %s", MPR->name, level, tags, msg), level);
     }
+#endif
 }
 
 
@@ -16209,11 +16231,10 @@ PUBLIC int _cmp(char *s1, char *s2)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/mime.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/mime.c ************/
+
 
 /* 
     mime.c - Mime type handling
@@ -16289,6 +16310,7 @@ static char *standardMimeTypes[] = {
     "wav",   "audio/x-wav",
     "woff",  "application/font-woff",
     "xls",   "application/vnd.ms-excel",
+    "xml",   "application/xml",
     "zip",   "application/zip",
     0,       0,
 };
@@ -16460,11 +16482,10 @@ PUBLIC cchar *mprLookupMime(MprHash *table, cchar *ext)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/mixed.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/mixed.c ************/
+
 
 /**
     mixed.c - Mixed mode strings. Unicode results with ascii args.
@@ -16904,11 +16925,10 @@ PUBLIC void dummyWide() {}
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/module.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/module.c ************/
+
 
 /**
     module.c - Dynamic module loading support.
@@ -17024,9 +17044,9 @@ PUBLIC MprModule *mprCreateModule(cchar *name, cchar *path, cchar *entry, void *
 static void manageModule(MprModule *mp, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(mp->entry);
         mprMark(mp->name);
         mprMark(mp->path);
+        mprMark(mp->entry);
         mprMark(mp->moduleData);
     }
 }
@@ -17119,7 +17139,11 @@ PUBLIC void mprSetModuleSearchPath(char *searchPath)
 
     ms = MPR->moduleService;
     if (searchPath == 0) {
+#ifdef ME_VAPP_PREFIX
         ms->searchPath = sjoin(mprGetAppDir(), MPR_SEARCH_SEP, mprGetAppDir(), MPR_SEARCH_SEP, ME_VAPP_PREFIX "/bin", NULL);
+#else
+        ms->searchPath = sjoin(mprGetAppDir(), MPR_SEARCH_SEP, mprGetAppDir(), NULL);
+#endif
     } else {
         ms->searchPath = sclone(searchPath);
     }
@@ -17252,11 +17276,10 @@ PUBLIC char *mprSearchForModule(cchar *filename)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/path.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/path.c ************/
+
 
 /**
     path.c - Path (filename) services.
@@ -17281,6 +17304,11 @@ PUBLIC char *mprSearchForModule(cchar *filename)
 #endif
 
 #define defaultSep(fs)          (fs->separators[0])
+
+/************************************ Forwards ********************************/
+
+static MprList *globPathFiles(MprFileSystem *fs, MprList *results, cchar *path, cchar *base, cchar *pattern, 
+    cchar *exclude, int flags);
 
 /************************************* Code ***********************************/
 
@@ -17889,7 +17917,6 @@ static MprList *getDirFiles(cchar *dir)
     if (h == INVALID_HANDLE_VALUE) {
         return list;
     }
-
     do {
         if (findData.cFileName[0] == '.' && (findData.cFileName[1] == '\0' || findData.cFileName[1] == '.')) {
             continue;
@@ -18059,144 +18086,7 @@ PUBLIC MprList *mprGetPathFiles(cchar *dir, int flags)
 
 
 /*
-    Match a string against a pattern using glob style matching.
-    Pat may contain a fully path of patterns. Only the first portion up to a file separator is used. The remaining portion
-        is returned in nextPartPattern.
-    seps contains the file system separator characters
-
-    Wildcard Patterns:
-    "?"         Matches any single character
-    "*"         Matches zero or more characters of the file or directory
-    "**"/       Matches zero or more directories
-    "**"        Matches zero or more files or directories
-    trailing/   Trailing slash matches only directory
- */
-static int globMatch(MprFileSystem *fs, cchar *s, cchar *pat, int isDir, int flags, int count, cchar **nextPartPattern)
-{
-    int     match;
-
-    *nextPartPattern = 0;
-    while (*s && *pat && *pat != fs->separators[0] && *pat != fs->separators[1]) {
-        match = (!fs->caseSensitive) ? (*pat == *s) : (tolower((uchar) *pat) == tolower((uchar) *s));
-        if (match || *pat == '?') {
-            ++pat; ++s;
-        } else if (*pat == '*') {
-            if (*++pat == '\0') {
-                /* Terminal star matches files and directories */
-                return 1;
-            }
-            if (*pat == '*') {
-                /* Double star - matches zero or more directories */
-                if (isDir) {
-                    *nextPartPattern = pat - 1;
-                    return 1;
-                }
-                if (pat[1] && (pat[1] == fs->separators[0] || pat[1] == fs->separators[1])) {
-                    /* Double star/ */
-                    if (pat[2] == '\0') {
-                        /* Trailing slash and not a directory */
-                        return 0;
-                    }
-                    pat += 2;
-                } else {
-                    /* Plain double star matches all (alias for ** / *) */
-                    if (pat[1] == '\0') {
-                        *nextPartPattern = pat - 1;
-                        return 1;
-                    }
-                }
-            } else {
-                /* Single star */
-                if (count > 2000) {
-                    mprDebug("debug mpr", 0, "Glob file match is too recursive");
-                    return 0;
-                }
-                if (*pat == fs->separators[0] || *pat == fs->separators[1]) {
-                    s = "";
-                    break;
-                }
-                while (*s) {
-                    if (globMatch(fs, s++, pat, isDir, flags, count + 1, nextPartPattern)) {
-                        return 1;
-                    }
-                }
-                return 0;
-            }
-        } else {
-            return 0;
-        }
-    }
-    if (*pat == '*') {
-        ++pat;
-    }
-    if (*s) {
-        return 0;
-    }
-    if (*pat == '\0') {
-        return 1;
-    }
-    if (*pat && (*pat == fs->separators[0] || *pat == fs->separators[1])) {
-        if (*++pat == '\0') {
-            /* Terminal / matches only directories */
-            return isDir;
-        }
-        *nextPartPattern = pat;
-        return 1;
-    }
-    return 0;
-}
-
-
-/*
-    path    - Directory to search
-    pattern - Search pattern with optional wildcards
-    base    - Return filenames relative to this directory base. May be "".
-    exclude - Exclusion pattern for filename basenames.
- */
-static MprList *globPath(MprFileSystem *fs, MprList *results, cchar *path, cchar *base, cchar *pattern, cchar *exclude, int flags)
-{
-    MprDirEntry     *dp;
-    MprList         *list;
-    cchar           *filename, *nextPartPattern, *nextPath, *nextPartExclude;
-    int             next, add;
-
-    if ((list = mprGetPathFiles(path, flags | MPR_PATH_RELATIVE)) == 0) {
-        return results;
-    }
-    for (next = 0; (dp = mprGetNextItem(list, &next)) != 0; ) {
-        if (!globMatch(fs, dp->name, pattern, dp->isDir, flags, 0, &nextPartPattern)) {
-            continue;
-        }
-        add = 1;
-        if (nextPartPattern && strcmp(nextPartPattern, "**") != 0 && strcmp(nextPartPattern, "**/") != 0
-                   && strcmp(nextPartPattern, "**/*") != 0) {
-            /* Double star matches zero or more components */
-            add = 0;
-        }
-        filename = (flags & MPR_PATH_RELATIVE) ? mprJoinPath(base, dp->name) : mprJoinPath(path, dp->name);
-        if (add && exclude) {
-            if (globMatch(fs, dp->name, exclude, dp->isDir, flags, 0, &nextPartExclude)) {
-                continue;
-            }
-        }
-        if (!(flags & MPR_PATH_DEPTH_FIRST) && add) {
-            /* Exclude mid-pattern directories and terminal directories if only "files" */
-            mprAddItem(results, filename);
-        }
-        if (dp->isDir && nextPartPattern) {
-            nextPath = (flags & MPR_PATH_RELATIVE) ? mprJoinPath(path, dp->name) : filename;
-            globPath(fs, results, nextPath, filename, nextPartPattern, exclude, flags);
-        }
-        if ((flags & MPR_PATH_DEPTH_FIRST) && add) {
-            mprAddItem(results, filename);
-        }
-    }
-    return results;
-}
-
-
-/*
-    Get the files in a directory and subdirectories
+    Get the files in a directory and subdirectories using glob-style matching
  */
 PUBLIC MprList *mprGlobPathFiles(cchar *path, cchar *patterns, int flags)
 {
@@ -18238,11 +18128,216 @@ PUBLIC MprList *mprGlobPathFiles(cchar *path, cchar *patterns, int flags)
         if (*pattern == '!') {
             exclude = &pattern[1];
         }
-        if (!globPath(fs, result, path, base, pattern, exclude, flags)) {
+        if (!globPathFiles(fs, result, path, base, pattern, exclude, flags)) {
             return 0;
         }
     }
     return result;
+}
+
+
+/*
+    Test if a path matches a glob-style pattern
+ */
+PUBLIC bool mprMatchPath(cchar *path, cchar *pattern)
+{
+    MprFileSystem   *fs;
+    cchar           *nextPartPattern;
+    char            *cp, *name;
+
+    fs = mprLookupFileSystem(path);
+    if (!path || !pattern) {
+        return 1;
+    }
+    for (cp = name = sclone(path); *cp; cp++) {
+        if (*cp == fs->separators[0] || *cp == fs->separators[1]) {
+            *cp++ = '\0';
+            if (!mprMatchPartPath(name, 1, pattern, &nextPartPattern, 0, 0)) {
+                return 0;
+            }
+            if (!nextPartPattern) {
+                return 1;
+            }
+            pattern = nextPartPattern;
+            name = cp;
+        }
+    }
+    if (name < cp) {
+        if (!pattern) {
+            return 1;
+        }
+        if (!mprMatchPartPath(name, 0, pattern, &nextPartPattern, 0, 0)) {
+            return 0;
+        }
+        if (nextPartPattern && *nextPartPattern && !smatch(nextPartPattern, "**")) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+
+/*
+    Glob a full multi-segment path and return a list of matching files
+
+    path    - Directory to search
+    pattern - Search pattern with optional wildcards
+    base    - Return filenames relative to this directory base. May be "".
+    exclude - Exclusion pattern for filename basenames.
+ */
+static MprList *globPathFiles(MprFileSystem *fs, MprList *results, cchar *path, cchar *base, cchar *pattern, 
+    cchar *exclude, int flags)
+{
+    MprDirEntry     *dp;
+    MprList         *list;
+    cchar           *filename, *nextPartPattern, *nextPath, *nextPartExclude;
+    int             next, add;
+
+    if ((list = mprGetPathFiles(path, flags | MPR_PATH_RELATIVE)) == 0) {
+        return results;
+    }
+    for (next = 0; (dp = mprGetNextItem(list, &next)) != 0; ) {
+        if (!mprMatchPartPath(dp->name, dp->isDir, pattern, &nextPartPattern, 0, flags)) {
+            continue;
+        }
+        add = 1;
+        if (nextPartPattern && strcmp(nextPartPattern, "**") != 0 && strcmp(nextPartPattern, "**/") != 0
+                   && strcmp(nextPartPattern, "**/*") != 0) {
+            /* Double star matches zero or more components */
+            add = 0;
+        }
+        filename = (flags & MPR_PATH_RELATIVE) ? mprJoinPath(base, dp->name) : mprJoinPath(path, dp->name);
+        if (add && exclude) {
+            if (mprMatchPartPath(dp->name, dp->isDir, exclude, &nextPartExclude, 0, flags)) {
+                continue;
+            }
+        }
+        if (!(flags & MPR_PATH_DEPTH_FIRST) && add) {
+            /* Exclude mid-pattern directories and terminal directories if only "files" */
+            mprAddItem(results, filename);
+        }
+        if (dp->isDir && nextPartPattern) {
+            nextPath = (flags & MPR_PATH_RELATIVE) ? mprJoinPath(path, dp->name) : filename;
+            globPathFiles(fs, results, nextPath, filename, nextPartPattern, exclude, flags);
+        }
+        if ((flags & MPR_PATH_DEPTH_FIRST) && add) {
+            mprAddItem(results, filename);
+        }
+    }
+    return results;
+}
+
+
+/*
+    Partial glob matching.  Match a string against a pattern in parts using glob style matching.
+    This is not a full glob match. It matches only the next glob portion up to a file separator. 
+
+    Pat may contain a full path of patterns. Only the first portion up to a file separator is used. The remaining portion
+        is returned in nextPartPattern.
+    Thick arg interface to be as fast as possible.
+
+    Wildcard Patterns:
+    "?"         Matches any single character
+    "*"         Matches zero or more characters of the file or directory
+    "**"/       Matches zero or more directories
+    "**"        Matches zero or more files or directories
+    trailing/   Trailing slash matches only directory
+ */
+PUBLIC int mprMatchPartPath(cchar *path, int isDir, cchar *pattern, cchar **nextPartPattern, int count, int flags)
+{
+    MprFileSystem   *fs;
+    cchar           *pat, *pp;
+    int             match;
+
+    fs = mprLookupFileSystem(path);
+    *nextPartPattern = 0;
+    pat = pattern;
+    pp = path;
+
+    while (*pp && *pat && *pat != fs->separators[0] && *pat != fs->separators[1]) {
+        match = (!fs->caseSensitive) ? (*pat == *pp) : (tolower((uchar) *pat) == tolower((uchar) *pp));
+        if (match || *pat == '?') {
+            ++pat; ++pp;
+        } else if (*pat == '*') {
+            if (*++pat == '\0') {
+                /* Terminal star matches files and directories */
+                return 1;
+            }
+            if (*pat == '*') {
+                /* Double-star - matches zero or more directories */
+                if (isDir) {
+#if KEEP && EJS
+                    /*
+                        Check if next segment matches and match that
+                     */
+                    if (pat[1] == fs->separators[0] || pat[1] == fs->separators[1]) {
+                        if (mprMatchPartPath(pp, isDir, &pat[2], nextPartPattern, count, flags)) {
+                            return 1;
+                        }
+                    }
+#endif
+                    *nextPartPattern = pat - 1;
+                    return 1;
+
+                } else if (pat[1] && (pat[1] == fs->separators[0] || pat[1] == fs->separators[1])) {
+                    /* Double-star/ */
+                    if (pat[2] == '\0') {
+                        /* Trailing slash and not a directory */
+                        return 0;
+                    }
+                    pat += 2;
+
+                } else {
+                    /* Plain double.star matches all (alias for ** / *) */
+                    if (pat[1] == '\0') {
+                        *nextPartPattern = pat - 1;
+                        return 1;
+                    }
+                }
+            } else {
+                /* Single star */
+                if (count > 2000) {
+                    mprDebug("debug mpr", 0, "Glob file match is too recursive");
+                    return 0;
+                }
+                if (*pat == fs->separators[0] || *pat == fs->separators[1]) {
+                    pp = "";
+                    break;
+                }
+                while (*pp) {
+                    if (mprMatchPartPath(pp++, isDir, pat, nextPartPattern, count + 1, flags)) {
+                        return 1;
+                    }
+                }
+                return 0;
+            }
+        } else {
+            return 0;
+        }
+    }
+    /* 
+        Left overs
+     */
+    while (*pat == '*') {
+        ++pat;
+    }
+    if (*pp) {
+        /* Pattern too short - fail to match */
+        return 0;
+    }
+    if (*pat == '\0') {
+        return 1;
+    }
+    if (*pat && (*pat == fs->separators[0] || *pat == fs->separators[1])) {
+        if (*++pat == '\0') {
+            /* Terminal / matches only directories */
+            return isDir;
+        }
+        /* This portion of the pattern has matched this portion of the filename */
+        *nextPartPattern = pat;
+        return 1;
+    }
+    return 0;
 }
 
 
@@ -18328,7 +18423,9 @@ PUBLIC char *mprGetPortablePath(cchar *path)
 
 
 /*
-    This returns a path relative to the current working directory for the given path
+    Get a relative path path from an origin path to a destination. If a relative path cannot be obtained,
+    an absolute path to the destination will be returned. This happens if the paths cross drives.
+    Returns the supplied destArg modified to be relative to originArg.
  */
 PUBLIC char *mprGetRelPath(cchar *destArg, cchar *originArg)
 {
@@ -18391,7 +18488,10 @@ PUBLIC char *mprGetRelPath(cchar *destArg, cchar *originArg)
             break;
         }
     }
-    assert(commonSegments >= 0);
+    if (commonSegments < 0) {
+        /* Different drives - must return absolute path */
+        return dest;
+    }
 
     if ((*op && *dp) || (*op && *dp && !isSep(fs, *op) && !isSep(fs, *dp))) {
         /*
@@ -18464,7 +18564,7 @@ PUBLIC char *mprGetTempPath(cchar *tempDir)
     file = 0;
     path = 0;
     for (i = 0; i < 128; i++) {
-        path = sfmt("%s/MPR_%d_%d_%d.tmp", dir, getpid(), now, ++tempSeed);
+        path = sfmt("%s/MPR-%s-_%d_%d_%d.tmp", dir, mprGetPathBase(MPR->name), getpid(), now, ++tempSeed);
         file = mprOpenFile(path, O_CREAT | O_EXCL | O_BINARY, 0664);
         if (file) {
             mprCloseFile(file);
@@ -18688,8 +18788,10 @@ PUBLIC int mprMakeDir(cchar *path, int perms, int owner, int group, bool makeMis
     }
     if (makeMissing && !isRoot(fs, path)) {
         parent = mprGetPathParent(path);
-        if ((rc = mprMakeDir(parent, perms, owner, group, makeMissing)) < 0) {
-            return rc;
+        if (!mprPathExists(parent, X_OK)) {
+            if ((rc = mprMakeDir(parent, perms, owner, group, makeMissing)) < 0) {
+                return rc;
+            }
         }
         return fs->makeDir(fs, path, perms, owner, group);
     }
@@ -19018,7 +19120,6 @@ PUBLIC int mprSamePath(cchar *path1, cchar *path2)
 
     /*
         Convert to absolute (normalized) paths to compare. 
-        FUTURE - resolve symlinks.
      */
     if (!isFullPath(fs, path1)) {
         path1 = mprGetAbsPath(path1);
@@ -19059,7 +19160,6 @@ PUBLIC int mprSamePathCount(cchar *path1, cchar *path2, ssize len)
 
     /*
         Convert to absolute paths to compare. 
-        FUTURE - resolve symlinks.
      */
     if (!isFullPath(fs, path1)) {
         path1 = mprGetAbsPath(path1);
@@ -19296,11 +19396,10 @@ PUBLIC ssize mprWritePathContents(cchar *path, cchar *buf, ssize len, int mode)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/posix.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/posix.c ************/
+
 
 /**
     posix.c - Posix specific adaptions
@@ -19537,11 +19636,10 @@ PUBLIC void mprSetFilesLimit(int limit)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/printf.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/printf.c ************/
+
 
 /**
     printf.c - Printf routines safe for embedded programming
@@ -20509,11 +20607,10 @@ PUBLIC ssize print(cchar *fmt, ...)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/rom.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/rom.c ************/
+
 
 /*
     rom.c - ROM File system
@@ -20567,9 +20664,9 @@ static MprFile *openFile(MprFileSystem *fileSystem, cchar *path, int flags, int 
 static void manageRomFile(MprFile *file, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(file->fileSystem);
         mprMark(file->path);
         mprMark(file->buf);
+        mprMark(file->fileSystem);
         mprMark(file->inode);
     }
 }
@@ -20830,11 +20927,10 @@ void romDummy() {}
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/select.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/select.c ************/
+
 
 /**
     select.c - Wait for I/O by using select.
@@ -21172,11 +21268,10 @@ void selectDummy() {}
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/signal.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/signal.c ************/
+
 
 /**
     signal.c - Signal handling for Unix systems
@@ -21217,9 +21312,9 @@ PUBLIC MprSignalService *mprCreateSignalService()
 static void manageSignalService(MprSignalService *ssp, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(ssp->mutex);
-        mprMark(ssp->standard);
         mprMark(ssp->signals);
+        mprMark(ssp->standard);
+        mprMark(ssp->mutex);
         /* Don't mark signals elements as it will prevent signal handlers being reclaimed */
     }
 }
@@ -21298,14 +21393,17 @@ static void signalHandler(int signo, siginfo_t *info, void *arg)
     MprSignalInfo       *ip;
     int                 saveErrno;
 
-    if (signo <= 0 || signo >= MPR_MAX_SIGNALS || MPR == 0) {
-        return;
-    }
     if (signo == SIGINT) {
         /* Fixes command line recall to complete the line */
         printf("\n");
         exit(1);
     }
+    if (signo <= 0 || signo >= MPR_MAX_SIGNALS || MPR == 0 || mprIsStopped()) {
+        return;
+    }
+    /*
+        Cannot save siginfo, because there is no reliable and scalable way to save siginfo state for multiple threads.
+     */
     ssp = MPR->signalService;
     ip = &ssp->info[signo];
     ip->triggered = 1;
@@ -21315,9 +21413,8 @@ static void signalHandler(int signo, siginfo_t *info, void *arg)
     errno = saveErrno;
 }
 
-
 /*
-    Called by mprServiceEvents after a signal has been received. Create an event and queue on the appropriate dispatcher
+    Called by mprServiceEvents after a signal has been received. Create an event and queue on the appropriate dispatcher.
  */
 PUBLIC void mprServiceSignals()
 {
@@ -21328,56 +21425,53 @@ PUBLIC void mprServiceSignals()
 
     ssp = MPR->signalService;
     if (ssp->hasSignals) {
+        lock(ssp);
         ssp->hasSignals = 0;
         for (ip = ssp->info; ip < &ssp->info[MPR_MAX_SIGNALS]; ip++) {
             if (ip->triggered) {
                 ip->triggered = 0;
                 /*
-                    Create an event for the head of the signal handler chain for this signal
-                    Copy info from Thread.sigInfo to MprSignal structure.
+                    Create events for all registered handlers
                  */
                 signo = (int) (ip - ssp->info);
-                if ((sp = ssp->signals[signo]) != 0) {
+                for (sp = ssp->signals[signo]; sp; sp = sp->next) {
                     mprCreateEvent(sp->dispatcher, "signalEvent", 0, signalEvent, sp, 0);
                 }
             }
         }
+        unlock(ssp);
     }
 }
 
 
 /*
-    Invoke the next signal handler. Runs from the dispatcher so signal handlers don't have to be async-safe.
+    Process the signal event. Runs from the dispatcher so signal handlers don't have to be async-safe.
  */
 static void signalEvent(MprSignal *sp, MprEvent *event)
 {
-    MprSignal   *np;
-
     assert(sp);
     assert(event);
 
     mprDebug("mpr signal", 5, "Received signal %d, flags %x", sp->signo, sp->flags);
-    np = sp->next;
 
+    /*
+        Return if the handler has been removed since it the event was created
+     */
+    if (sp->signo == 0) {
+        return;
+    }
     if (sp->flags & MPR_SIGNAL_BEFORE) {
         (sp->handler)(sp->data, sp);
     } 
     if (sp->sigaction && (sp->sigaction != SIG_IGN && sp->sigaction != SIG_DFL)) {
         /*
             Call the original (foreign) action handler. Cannot pass on siginfo, because there is no reliable and scalable
-            way to save siginfo state when the signalHandler is reentrant for a given signal across multiple threads.
+            way to save siginfo state when the signalHandler is reentrant across multiple threads.
          */
         (sp->sigaction)(sp->signo, NULL, NULL);
     }
     if (sp->flags & MPR_SIGNAL_AFTER) {
         (sp->handler)(sp->data, sp);
-    }
-    if (np) {
-        /* 
-            Call all chained signal handlers. Create new event for each handler so we get the right dispatcher.
-            WARNING: sp may have been removed and so sp->next may be null. That is why we capture np = sp->next above.
-         */
-        mprCreateEvent(np->dispatcher, "signalEvent", 0, signalEvent, np, MPR_EVENT_QUICK);
     }
 }
 
@@ -21408,12 +21502,11 @@ static void unlinkSignalHandler(MprSignal *sp)
             } else {
                 ssp->signals[sp->signo] = sp->next;
             }
+            sp->signo = 0;
             break;
         }
         prev = np;
     }
-    assert(np);
-    sp->next = 0;
     unlock(ssp);
 }
 
@@ -21451,16 +21544,21 @@ PUBLIC MprSignal *mprAddSignalHandler(int signo, void *handler, void *data, MprD
 static void manageSignal(MprSignal *sp, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(sp->dispatcher);
-        mprMark(sp->data);
         /* Don't mark next as it will prevent other signal handlers being reclaimed */
+        mprMark(sp->data);
+        mprMark(sp->dispatcher);
+
+    } else if (flags & MPR_MANAGE_FREE) {
+        if (sp->signo) {
+            unlinkSignalHandler(sp);
+        }
     }
 }
 
 
 PUBLIC void mprRemoveSignalHandler(MprSignal *sp)
 {
-    if (sp) {
+    if (sp && sp->signo) {
         unlinkSignalHandler(sp);
     }
 }
@@ -21559,11 +21657,10 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/socket.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/socket.c ************/
+
 
 /**
     socket.c - Convenience class for the management of sockets
@@ -21666,8 +21763,8 @@ static void manageSocketService(MprSocketService *ss, int flags)
         mprMark(ss->standardProvider);
         mprMark(ss->providers);
         mprMark(ss->sslProvider);
-        mprMark(ss->mutex);
         mprMark(ss->secureSockets);
+        mprMark(ss->mutex);
     }
 }
 
@@ -21773,19 +21870,19 @@ PUBLIC MprSocket *mprCloneSocket(MprSocket *sp)
 static void manageSocket(MprSocket *sp, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(sp->acceptIp);
-        mprMark(sp->cipher);
-        mprMark(sp->errorMsg);
         mprMark(sp->handler);
+        mprMark(sp->acceptIp);
         mprMark(sp->ip);
+        mprMark(sp->errorMsg);
+        mprMark(sp->provider);
         mprMark(sp->listenSock);
+        mprMark(sp->sslSocket);
+        mprMark(sp->ssl);
+        mprMark(sp->cipher);
         mprMark(sp->peerName);
         mprMark(sp->peerCert);
         mprMark(sp->peerCertIssuer);
-        mprMark(sp->provider);
         mprMark(sp->service);
-        mprMark(sp->ssl);
-        mprMark(sp->sslSocket);
         mprMark(sp->mutex);
 
     } else if (flags & MPR_MANAGE_FREE) {
@@ -23250,16 +23347,16 @@ PUBLIC void mprSetSocketPrebindCallback(MprSocketPrebind callback)
 static void manageSsl(MprSsl *ssl, int flags) 
 {
     if (flags & MPR_MANAGE_MARK) {
+        mprMark(ssl->providerName);
+        mprMark(ssl->provider);
         mprMark(ssl->key);
         mprMark(ssl->keyFile);
         mprMark(ssl->certFile);
         mprMark(ssl->caFile);
         mprMark(ssl->caPath);
         mprMark(ssl->ciphers);
-        mprMark(ssl->mutex);
         mprMark(ssl->config);
-        mprMark(ssl->provider);
-        mprMark(ssl->providerName);
+        mprMark(ssl->mutex);
     }
 }
 
@@ -23275,7 +23372,7 @@ PUBLIC MprSsl *mprCreateSsl(int server)
     if ((ssl = mprAllocObj(MprSsl, manageSsl)) == 0) {
         return 0;
     }
-    ssl->protocols = MPR_PROTO_TLSV1 | MPR_PROTO_TLSV11 | MPR_PROTO_TLSV12;
+    ssl->protocols = MPR_PROTO_TLSV1_1 | MPR_PROTO_TLSV1_2;
 
     /*
         The default for servers is not to verify client certificates.
@@ -23524,11 +23621,10 @@ PUBLIC void mprVerifySslDepth(MprSsl *ssl, int depth)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/string.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/string.c ************/
+
 
 /**
     string.c - String routines safe for embedded programming
@@ -24625,11 +24721,10 @@ PUBLIC void serase(char *str)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/thread.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/thread.c ************/
+
 
 /**
     thread.c - Primitive multi-threading support for Windows
@@ -24688,6 +24783,20 @@ PUBLIC MprThreadService *mprCreateThreadService()
 
 PUBLIC void mprStopThreadService()
 {
+#if ME_WIN_LIKE
+    MprThreadService    *ts;
+    MprThread           *tp;
+    int                 i;
+
+    ts = MPR->threadService;
+    for (i = 0; i < ts->threads->length; i++) {
+        tp = (MprThread*) mprGetItem(ts->threads, i);
+        if (tp->hwnd) {
+            mprDestroyWindow(tp->hwnd);
+            tp->hwnd = 0;
+        }
+    }
+#endif
 }
 
 
@@ -24696,6 +24805,7 @@ static void manageThreadService(MprThreadService *ts, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ts->threads);
         mprMark(ts->mainThread);
+        mprMark(ts->eventsThread);
         mprMark(ts->pauseThreads);
     }
 }
@@ -24794,13 +24904,12 @@ PUBLIC MprThread *mprCreateThread(cchar *name, void *entry, void *data, ssize st
 static void manageThread(MprThread *tp, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(tp->name);
-        mprMark(tp->data);
-        mprMark(tp->cond);
         mprMark(tp->mutex);
+        mprMark(tp->cond);
+        mprMark(tp->data);
+        mprMark(tp->name);
 
     } else if (flags & MPR_MANAGE_FREE) {
-        assert(tp->pid == 0);
 #if ME_WIN_LIKE
         if (tp->threadHandle) {
             CloseHandle(tp->threadHandle);
@@ -25680,11 +25789,10 @@ PUBLIC ssize mprGetBusyWorkerCount()
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/time.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/time.c ************/
+
 
 /**
     time.c - Date and Time handling
@@ -27518,11 +27626,10 @@ PUBLIC int gettimeofday(struct timeval *tv, struct timezone *tz)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/vxworks.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/vxworks.c ************/
+
 
 /**
     vxworks.c - Vxworks specific adaptions
@@ -27702,8 +27809,9 @@ PUBLIC void mprWriteToOsLog(cchar *message, int level)
 }
 
 
-PUBLIC uint mprGetpid(void) {
-    return taskIdSelf();
+PUBLIC pid_t mprGetPid(void) 
+{
+    return (pid_t) taskIdSelf();
 }
 
 
@@ -27769,11 +27877,10 @@ void vxworksDummy() {}
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/wait.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/wait.c ************/
+
 
 /*
     wait.c - Wait for I/O service.
@@ -27837,6 +27944,21 @@ static void manageWaitService(MprWaitService *ws, int flags)
 #if ME_EVENT_NOTIFIER == MPR_EVENT_SELECT
     mprManageSelect(ws, flags);
 #endif
+}
+
+
+PUBLIC void mprStopWaitService()
+{
+#if ME_WIN_LIKE
+    MprWaitService  *ws;
+
+    ws = MPR->waitService;
+    if (ws) {
+        mprDestroyWindowClass(ws->wclass);
+        ws->wclass = 0;
+    }
+#endif
+    MPR->waitService = 0;
 }
 
 
@@ -27910,11 +28032,11 @@ static void manageWaitHandler(MprWaitHandler *wp, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(wp->handlerData);
+        mprMark(wp->event);
         mprMark(wp->dispatcher);
         mprMark(wp->requiredWorker);
         mprMark(wp->thread);
         mprMark(wp->callbackComplete);
-        mprMark(wp->event);
     }
 }
 
@@ -28083,11 +28205,10 @@ PUBLIC void mprDoWaitRecall(MprWaitService *ws)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/wide.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/wide.c ************/
+
 
 /**
     unicode.c - Unicode support
@@ -29208,11 +29329,10 @@ PUBLIC char *awtom(wchar *src, ssize *len)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/win.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/win.c ************/
+
 
 /**
     win.c - Windows specific adaptions
@@ -29418,7 +29538,8 @@ PUBLIC void mprWriteToOsLog(cchar *message, int level)
         if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, wide(logName), 0, NULL, 0, KEY_ALL_ACCESS, NULL, 
                 &hkey, &exists) == ERROR_SUCCESS) {
             value = "%SystemRoot%\\System32\\netmsg.dll";
-            if (RegSetValueEx(hkey, UT("EventMessageFile"), 0, REG_EXPAND_SZ, (uchar*) value, (int) slen(value) + 1) != ERROR_SUCCESS) {
+            if (RegSetValueEx(hkey, UT("EventMessageFile"), 0, REG_EXPAND_SZ, (uchar*) value, 
+                    (int) slen(value) + 1) != ERROR_SUCCESS) {
                 RegCloseKey(hkey);
                 return;
             }
@@ -29632,11 +29753,10 @@ void winDummy() {}
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/xml.c"
- */
-/************************************************************************/
+
+
+/********* Start of file src/xml.c ************/
+
 
 /**
     xml.c - A simple SAX style XML parser

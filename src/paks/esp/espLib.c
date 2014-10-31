@@ -1,21 +1,9 @@
 /*
-    espLib.c -- Embedthis ESP Library Source
-
-    This file is a catenation of all the source code. Amalgamating into a
-    single file makes embedding simpler and the resulting application faster.
-
-    Prepared by: orion.local
+ * Embedthis ESP Library Source
  */
-
 #include "esp.h"
 
 #if ME_COM_ESP
-
-/************************************************************************/
-/*
-    Start of file "src/edi.c"
- */
-/************************************************************************/
 
 /*
     edi.c -- Embedded Database Interface (EDI)
@@ -1636,12 +1624,6 @@ static void addValidations()
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/espAbbrev.c"
- */
-/************************************************************************/
-
 /*
     espAbbrev.c -- ESP Abbreviated API
 
@@ -1946,7 +1928,7 @@ PUBLIC cchar *getConfig(cchar *field)
 }
 
 
-PUBLIC MprHash *getUploads()
+PUBLIC MprList *getUploads()
 {
     return espGetUploads(getConn());
 }
@@ -2268,6 +2250,9 @@ PUBLIC void scripts(cchar *patterns)
         }
         return;
     }
+#if FUTURE
+    client => public
+#endif
     if ((files = mprGlobPathFiles(httpGetDir(route, "client"), patterns, MPR_PATH_RELATIVE)) == 0 || 
             mprGetListLength(files) == 0) {
         files = mprCreateList(0, 0);
@@ -2440,6 +2425,9 @@ PUBLIC void stylesheets(cchar *patterns)
     route = rx->route;
     eroute = route->eroute;
     patterns = httpExpandRouteVars(route, patterns);
+#if FUTURE
+    client => public
+#endif
     clientDir = httpGetDir(route, "client");
 
     if (!patterns || !*patterns) {
@@ -2577,12 +2565,6 @@ PUBLIC cchar *uri(cchar *target, ...)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/espConfig.c"
- */
-/************************************************************************/
-
 /*
     espConfig.c -- ESP Configuration
 
@@ -2677,12 +2659,6 @@ PUBLIC int espInitParser()
 
     @end
  */
-
-/************************************************************************/
-/*
-    Start of file "src/espFramework.c"
- */
-/************************************************************************/
 
 /*
     espFramework.c -- ESP Web Framework API
@@ -3093,7 +3069,7 @@ PUBLIC char *espGetStatusMessage(HttpConn *conn)
 }
 
 
-PUBLIC MprHash *espGetUploads(HttpConn *conn)
+PUBLIC MprList *espGetUploads(HttpConn *conn)
 {
     return conn->rx->files;
 }
@@ -3816,12 +3792,6 @@ PUBLIC bool espIsCurrentSession(HttpConn *conn)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/espHandler.c"
- */
-/************************************************************************/
-
 /*
     espHandler.c -- ESP Appweb handler
 
@@ -4524,6 +4494,7 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->env);
         mprMark(eroute->link);
         mprMark(eroute->searchPath);
+        mprMark(eroute->top);
         mprMark(eroute->winsdk);
     }
 }
@@ -4599,6 +4570,7 @@ static void manageReq(EspReq *req, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(req->commandLine);
         mprMark(req->flash);
+        mprMark(req->lastFlash);
         mprMark(req->feedback);
         mprMark(req->route);
         mprMark(req->data);
@@ -4617,6 +4589,7 @@ static void manageEsp(Esp *esp, int flags)
         mprMark(esp->databases);
         mprMark(esp->databasesTimer);
         mprMark(esp->ediService);
+        mprMark(esp->internalOptions);
         mprMark(esp->local);
         mprMark(esp->mutex);
         mprMark(esp->views);
@@ -4956,6 +4929,10 @@ static int espDbDirective(MaState *state, cchar *key, cchar *value)
 
 PUBLIC void espSetDefaultDirs(HttpRoute *route)
 {
+#if FUTURE
+    client => documents
+    Add public
+#endif
     httpSetDir(route, "app", "client/app");
     httpSetDir(route, "cache", 0);
     httpSetDir(route, "client", 0);
@@ -4963,7 +4940,7 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     httpSetDir(route, "db", 0);
     httpSetDir(route, "layouts", 0);
     httpSetDir(route, "lib", "client/lib");
-    httpSetDir(route, "paks", "paks");
+    httpSetDir(route, "paks", 0);
     httpSetDir(route, "src", 0);
     httpSetDir(route, "views", "client/app");
 
@@ -5419,12 +5396,6 @@ static int unloadEsp(MprModule *mp)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/espHtml.c"
- */
-/************************************************************************/
-
 /*
     espHtml.c -- ESP HTML controls 
 
@@ -5591,12 +5562,6 @@ static cchar *map(HttpConn *conn, MprHash *options)
 
     @end
  */
-
-/************************************************************************/
-/*
-    Start of file "src/espTemplate.c"
- */
-/************************************************************************/
 
 /*
     espTemplate.c -- ESP templated web pages with embedded C code.
@@ -6884,12 +6849,6 @@ static cchar *getCompilerPath(cchar *os, cchar *arch)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/mdb.c"
- */
-/************************************************************************/
-
 /*
     mdb.c -- ESP In-Memory Embedded Database (MDB)
 
@@ -8150,6 +8109,9 @@ static void manageTable(MdbTable *table, int flags)
         mprMark(table->schema);
         mprMark(table->index);
         mprMark(table->rows);
+        /*
+            Do not mark keyCol or indexCol - they are unmanaged
+         */
     }
 }
 
@@ -8289,6 +8251,7 @@ static void manageRow(MdbRow *row, int flags)
     int     fid;
 
     if (flags & MPR_MANAGE_MARK) {
+        mprMark(row->table);
         for (fid = 0; fid < row->nfields; fid++) {
             mprMark(row->fields[fid]);
         }
@@ -8449,12 +8412,6 @@ PUBLIC void mdbDummy() {}
 
     @end
  */
-
-/************************************************************************/
-/*
-    Start of file "src/sdb.c"
- */
-/************************************************************************/
 
 /*
     sdb.c -- ESP SQLite Database (SDB)
@@ -9511,4 +9468,5 @@ PUBLIC void sdbDummy() {}
 
     @end
  */
+
 #endif /* ME_COM_ESP */

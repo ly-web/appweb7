@@ -3,26 +3,28 @@
  */
 
 Me.load({
+    plugins: [ 'configuration', 'package' ],
+
     blend: [
-        "src/paks/*/*.me",
-        "src/libappweb.me",
-        "src/modules/modules.me",
-        "src/utils/utils.me",
-        "src/server/server.me",
-        "test/test.me",
-        "samples/samples.me",
-        "package/package.me",
-        "doc/doc.me",
-        "?local.me",
+        'ejs',
+        'esp',
+        'php',
+        'src/libappweb.me',
+        'src/modules/modules.me',
+        'src/utils/utils.me',
+        'src/server/server.me',
+        'test/test.me',
+        'samples/samples.me',
+        'package/package.me',
+        'doc/doc.me',
+        '?local.me',
     ],
 
-    modules: [
-        'package/service.es',
-    ],
+    modules: [ 'package/service.es' ],
 
     configure: {
         requires:  [ 'osdep', 'http', 'mpr', 'pcre'],
-        discovers: [ 'cgi', 'dir', 'esp', 'est', 'mdb', 'ssl', ],
+        discovers: [ 'cgi', 'dir', 'esp', 'mdb', 'ssl', ],
         extras:    [ 'ejs', 'php', 'sqlite', 'zlib', ],
     },
 
@@ -35,7 +37,7 @@ Me.load({
     ],
 
     settings: {
-        me: '>=0.8.2',
+        me: '=0.8.4',
 
         /*
             Installation prefix set
@@ -44,7 +46,7 @@ Me.load({
         manifest: 'package/manifest.me',
 
         /*
-            Name and path of the appweb config file. Defaults to "./appweb.conf" if empty.
+            Name and path of the appweb config file. Defaults to './appweb.conf' if empty.
          */
         configFile: 'appweb.conf',
 
@@ -143,7 +145,7 @@ Me.load({
         'http.webSockets': 'Enable WebSockets (true|false)',                
 
         'mpr.logging':     'Enable application logging (true|false)',
-        'mpr.debug':        'Enable debug logging (true|false)',
+        'mpr.debug':       'Enable debug logging (true|false)',
 
         'configFile':      'Path of the appweb.conf file',
         'serverRoot':      'Home directory for the server ',
@@ -160,7 +162,6 @@ Me.load({
         dir: {
             configurable: true,
             description: 'Directory Listing Module',
-            path: 'src/dirHandler.c',
         },
 
         /*
@@ -169,12 +170,11 @@ Me.load({
             See package/package.me for the install/package targets
          */
         projects: {
-            action: "genProjects('-with est')",
+            action: `genProjects('-with est')`,
         },
 
         mine: {
-            action: "genProjects('-with ejs -with sqlite', 'mine', Config.OS + '-' + Config.CPU)",
-        },
-    },
-
+            action: `genProjects('-with ejs -with sqlite', 'mine', Config.OS + '-' + Config.CPU)`,
+        }
+    }
 })

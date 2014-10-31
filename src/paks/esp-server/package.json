@@ -1,14 +1,14 @@
 {
     "name": "esp-server",
     "description": "ESP Server-Side Configuration",
-    "version": "5.1.0",
+    "version": "5.2.0",
     "licenses": [
         {
             "type": "GPL",
             "url": "http://www.gnu.org/licenses/gpl-2.0.html"
         }, {
             "type": "Commercial",
-            "url": "http://embedthis.com/licensing/"
+            "url": "https://embedthis.com/licensing/"
         }
     ],
     "keywords": [

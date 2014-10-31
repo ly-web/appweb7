@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="eng">
+<head>
+<title>Esp Man Page</title>
+</head>
+<body><pre>
+esp(1)                           user commands                          esp(1)
+
+<b>name</b>
+       esp - esp application generator for server-side web applications.
+
+<b>synopsis</b>
+       <b>esp</b>
+           <b>--apply</b>
+           <b>--appweb configfile</b>
+           <b>--cipher cipher db</b>
+           <b>--database db</b>
+           <b>--genlink slink.c</b>
+           <b>--home dir</b>
+           <b>--keep</b>
+           <b>--listen [ip:]port</b>
+           <b>--log logfile:level</b>
+           <b>--noupdate</b>
+           <b>--nodeps</b>
+           <b>--optimized</b>
+           <b>--overwrite</b>
+           <b>--quiet</b>
+           <b>--platform [path/]os-arch-profile</b>
+           <b>--rebuild</b>
+           <b>--routename name</b>
+           <b>--routeprefix prefix</b>
+           <b>--single</b>
+           <b>--static</b>
+           <b>--symbols</b>
+           <b>--table name</b>
+           <b>--trace tracefile:level</b>
+           <b>--verbose</b>
+           <b>--why</b>
+           <b>commands ...</b>
+
+       <b>commands:</b>
+           esp clean
+           esp compile [pathfilters...]
+           esp config
+           esp edit key[=value]
+           esp generate controller name [action [, action] ...]
+           esp generate migration description model [field:type ...]
+           esp generate scaffold model [field:type ...]
+           esp generate table name model [field:type ...]
+           esp init
+           esp install paks...
+           esp list
+           esp migrate [forward|backward|nnn]
+           esp mode [debug|release|othermode]
+           esp role [add|remove] rolename
+           esp [run] [ip]:[port]
+           esp uninstall paks...
+           esp upgrade paks..
+           esp user [add|compute] username password roles...
+           esp user [remove|show] username
+
+<b>description</b>
+       the  <b>esp  </b>command  generates, manages and runs esp web applications. it
+       includes a full http/1.1 web server to host your  application  but  can
+       also  help  to  generate  esp  web  applications, controllers, database
+       tables, and scaffolds.
+
+       the esp command will create directories and generate configuration  and
+       source code files that can then be manually edited as required.  esp is
+       intelligent and will not overwrite existing files, so  you  can  safely
+       edit and regenerate without losing your changes. you can overwrite your
+       changes if you wish to by using the <b>--overwrite </b>switch.
+
+<b>running esp</b>
+       to run esp to serve documents from the current directory, type:
+             <b>esp</b>
+             # or
+             <b>esp run</b>
+
+<b>generating applications</b>
+       to start a new web application, create a directory named for the appli-
+       cation.  then  from that directory run <b>esp </b>to install the required sup-
+       porting packs. for example:
+
+             <b>mkdir blog</b>
+             <b>cd blog</b>
+             <b>esp install esp-html-mvc</b>
+
+       this will will create a set of  directories  that  have  the  following
+       meaning:
+
+             client           - public client web content
+             client/assets    - images and assets
+             client/css       - client css and less style sheets
+             client/index.esp - home web page
+             client/paks      - extension packs
+             db               - databases and scripts
+             start.me         - makeme build file
+             templates        - template files used when generating
+
+       other directories will be created as needed:
+             cache            - cache directory for compiled content
+             db/migrations    - databases migration modules
+             controllers      - server side controllers
+             src              - server side main source code
+
+       most  of  these  directories  are initially empty, but may be used over
+       time. esp follows conventions where specific  files  are  stored.  this
+       greatly simplifies configuring a web application.
+
+       packs  are modules of functionality for esp applications that are pack-
+       aged using the pak utility (see https://embedthis.com/pak).  packs  may
+       depend  on  other packs so that installing a top level pack may install
+       other required packs. for  example:  generating  the  "esp-angular-mvc"
+       pack will also install: esp-angular, angular, less and more.
+
+       see https://embedthis.com/catalog/ for a list of packs.
+
+<b>generating migrations</b>
+       migrations are generated code modules that manage portions of the data-
+       base. migrations are used to create tables, initialize with  test  data
+       and  optionally  destroy tables. migrations are typically generated and
+       then hand-edited to  include  relevant  initialization  or  test  data.
+       migrations  are  useful  to  quickly  recreate  the  database  with the
+       required tables and data.
+
+             <b>esp generate migration description table [field:type ...]</b>
+
+       the description is used to name the migration which is created  in  the
+       <b>db/migrations </b>directory. a migration is given a unique ordered sequence
+       number and the description is appended to this number. the  description
+       is  mapped  where spaces are changed to "_" characters. when migrations
+       are run, they are run in sequence number order.
+
+       if field:type values are supplied, the database migration will  include
+       code to create a column for each specified field of the requested type.
+       the valid database types are:  blob,  boolean,  date,  float,  integer,
+       string, and text.
+
+<b>generating tables</b>
+       to generate a database table without creating a migration:
+
+             <b>esp generate table table [field:type ...]</b>
+
+<b>generating controllers</b>
+       controllers   are  the  primary  mechanism  for  responding  to  client
+       requests.  to generate a controller, run:
+
+             <b>esp generate controller name [actions...]</b>
+
+       this will create a controller of the requested name. it will  create  a
+       controller  source  file  in the <b>controllers </b>directory. if action names
+       are requested, the controller source will define an action  method  for
+       each  name.  you  can edit the controller source to meet your needs. it
+       will not be overwritten unless you specify the --overwrite switch.
+
+<b>generating scaffolds</b>
+       a scaffold is a generated controller, database  migration,  client-side
+       controller  and set of views that provides add, edit and list function-
+       ality for the database table.  scaffolds are useful to quickly generate
+       chunks  of the application and prototype web pages and actions for man-
+       aging a database table.  to generate a scaffold:
+
+             <b>esp generate scaffold model [field:type ...]</b>
+
+       this will create a scaffold for the specified database table  and  will
+       generate a controller of the same name.
+
+       if field:type values are supplied, a database migration will be created
+       with code to create a column for each specified field of the  requested
+       type.  the  valid database types are: blob, boolean, date, float, inte-
+       ger, string, and text. the migration will use  the  name  "create_scaf-
+       fold_model" and will be created under the <b>db/migrations </b>direcvtory.
+
+       the  scaffold  will  include an edit action and view page that provides
+       add and edit capability. the list action and view, provides the ability
+       to list the table rows and select an entry to edit.
+
+       if  the --singleton switch is ues, the controller will be generated for
+       a singleton resource and will not have a list action.
+
+<b>compiling</b>
+       esp compiles controllers and esp pages native  code  shared  libraries.
+       these  are  then  loaded  and run by esp in response to incoming client
+       requests. code is compiled only once but can be run many times to  ser-
+       vice incoming requests.
+
+       in  development  mode, esp will automatically compile the relevant por-
+       tions of the application if the source code is modified. it can  intel-
+       ligently  recompile  controllers  and  esp pages. however, you can also
+       explicilty recompile portions or the complete appliction  via  the  esp
+       command.
+
+       esp can recompile everything via:
+
+             <b>esp compile</b>.
+
+       this will re-compile all esp resources.
+
+       esp  also  provides options for you to individually compile controllers
+       and esp pages. to recompile named pages or controllers:
+
+             <b>esp compile path/*.esp...</b>.
+
+            the arguments after "compile"  are  pathname  filters.  these  are
+            resolved  relative  to  the current directory. only items matching
+            the filter pathnames are compiled.
+
+       to compile the entire application and produce a single combined  shared
+       library  file,  set  the  "http.content.combine"  property in the pack-
+       age.json file, to include "c" files. this is typically achieved by set-
+       ting  the  esp mode to release which selects the release profile in the
+       package.json.
+
+<b>authentication</b>
+       esp can use the system password database or it can define passwords  in
+       the package.json or in an application database.  to define passwords in
+       the package.json, use:
+
+        <b>esp user add username password roles...</b>
+
+       to define authentication roles, use:
+
+         <b>esp role add abilities...</b>
+
+<b>cross-compiling</b>
+       to compile for a target system of a different  architecture,  you  must
+       specify  the  target.   to do this, use the -platform switch to specify
+       the target architecture. specify the path to the platform directory  in
+       the appweb source code built for that platform.
+
+            <b>esp -platform /home/dev/linux-arm-debug compile</b>
+
+<b>mode</b>
+       the <b>esp mode </b>command will retrieve and display the "esp.mode" property.
+       the <b>esp mode debug </b>command will modify the "esp.mode" property and  set
+       it to the "debug" value.  the <b>esp release </b>command will set the esp.mode
+       to "release".
+
+<b>running</b>
+       to run your application:
+
+             <b>esp run</b>
+
+<b>cleaning</b>
+       to clean all generated module files:
+             <b>esp clean</b>
+
+<b>migrations</b>
+       migration files can be run via the <b>esp migrate </b>command. with  no  other
+       parameters,  the command will run all migrations that have not yet been
+       applied to the database. you can also use <b>esp migrate forward </b>to  apply
+       apply the next unapplied migration. similarly <b>esp migrate backward </b>will
+       reverse the last applied migration. you can also use <b>esp migrate nnn </b>to
+       migrate  forward  or backward to a specific migration, where nnn is the
+       migration sequence number at the start of the migration file name.
+
+<b>commands</b>
+       esp has the following command usage patterns:
+
+             esp clean
+             esp compile
+             esp compile controllers name
+             esp compile path/*.esp
+             esp generate app name
+             esp generate controllers name [action [, action] ...]
+             esp generate scaffold model [field:type [, field:type] ...]
+             esp generate table name model [field:type [, field:type] ...]
+             esp run
+             esp run 4000
+             esp mode debug
+
+<b>options</b>
+       <b>--appweb configfile</b>
+             use the specified appweb config file to define and host  the  esp
+             application.  by default the esp command looks for a package.json
+             and uses that to define the applicaiton.
+
+       <b>--database database provider</b>
+             use the specified database provider. set to "mdb"  or  "sdb"  for
+             sqlite.
+
+       <b>--genlink slink.c</b>
+             generate  a  static  link  initialization  file for esp pages and
+             applications.  this is used with --static to generate  a  appweb-
+             staticinitialize()  function  that will invoke all esp initializ-
+             ers.   by  default,  appweb   expects   this   to   be   in   the
+             src/server/slink.c file.
+
+       <b>--home dir</b>
+             change the current working directory before beginning processing.
+
+       <b>--keep</b>
+             keep intermediate source files in the cache directory. this over-
+             rides the espkeepsource setting in the appweb.conf file.
+
+       <b>--listen [ip:]port</b>
+             define  the  listening  endpoint  address. this will be used when
+             generating an application. the value will  be  patched  into  the
+             generated appweb.conf configuration file.
+
+       <b>--log logfile:level</b>
+             specify  a  file  to  log  messages.   the syntax is: <b>"--log log-</b>
+             <b>name[:loglevel]"</b>.  level 3 will trace the  request  and  response
+             headers.
+
+       <b>--nodeps</b>
+             do not install or upgrade dependencies.
+
+       <b>--noupdate</b>
+             do not update package.json.
+
+       <b>--optimize</b>
+             compile optimized without debug symbols.
+
+       <b>--overwrite</b>
+             overwrite  existing  files.  ejsweb  normally  will not overwrite
+             existing files. this is to preserve user  changes  to  previously
+             generated files.
+
+       <b>--quiet</b>
+             suppress diagnostic trace to the console.
+
+       <b>--platform [path/]os-arch-profile</b>
+             target platform configuration to build for and directory contain-
+             ing appweb objects and libraries for the target platform.   if  a
+             path is supplied, the specified platform directory is used.  oth-
+             erwise, esp searches from the current  directory  upwards  for  a
+             parent platform directory.
+
+       <b>--rebuild</b>
+             force  a  recompile  of all items when used with the compile com-
+             mand.  when used with migrate, this will  recreate  the  database
+             and apply all migrations.
+
+       <b>--routename name</b>
+             this  selects  the appweb route by name that will be used for the
+             esp configuration. routes can be given an explicit name  via  the
+             "name" appweb.conf directive. otherwise routes are named by their
+             route pattern.
+
+       <b>--routeprefix prefix</b>
+             this selects the appweb route by prefix that will be used for the
+             esp configuration. routes can be given an explicit prefix via the
+             "prefix" appweb.conf directive. if  the  route  prefix  does  not
+             match,  the  first portion of the route pattern is tested against
+             the requested prefix.
+
+       <b>--single</b>
+             generate a controller for a singleton resource instead of a group
+             of resources. a singleton controller omits a list action.
+
+       <b>--static</b>
+             use  static  linking  when building esp applications. this causes
+             esp to create archive libraries instead of shared libraries.
+
+       <b>--symbols</b>
+             compile for debug with symbols.
+
+       <b>--table name</b>
+             override the database table name when generating  tables,  migra-
+             tions or scaffolds. this is useful to request a plural version of
+             the model name. alternatively, specify the model name when gener-
+             ating  the  scaffold,  table or migration with the desired plural
+             suffix. for example: "-s" or "-ies".
+
+       <b>--trace tracefile:level</b>
+             specify a file for trace messages.  the syntax is: <b>"--trace  tra-</b>
+             <b>cename[:tracelevel]"</b>.    level  3  will  trace  the  request  and
+             response headers.
+
+       <b>--verbose </b>or <b>-v</b>
+             run in verbose mode and trace actions to the console.
+
+       <b>--why </b>or <b>-w</b>
+             explain why a resource was or was not compiled.
+
+<b>reporting bugs</b>
+       report bugs to dev@embedthis.com.
+
+<b>copyright</b>
+       copyright (c) 2004-2014 embedthis software. embedthis esp is  a  trade-
+       mark of embedthis software.
+
+<b>see also</b>
+       appweb
+
+esp                              november 2014                          esp(1)
+</pre></body>
+</html>

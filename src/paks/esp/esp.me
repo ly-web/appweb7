@@ -3,6 +3,7 @@
  */
 
 Me.load({
+    blend: [ 'http', '?sqlite' ],
 
     targets: {
         esp: {
@@ -53,24 +54,23 @@ Me.load({
             files: [ 'esp-*/**' ],
             platforms: [ 'local' ],
             ifdef: ['esp'],
-            'generate-capture': true,
             build: `
                 trace('Copy', me.dir.out.join('esp').relativeTo(me.dir.top))
                 for each (pak in Path('.').files('esp-*')) {
                     let version = pak.join('package.json').readJSON().version || '0.0.0'
-                    makeDir(OUT.join('esp', pak, version))
+                    makeDirectory(OUT.join('esp', pak, version))
                     for each (path in pak.files('**')) {
                         let stem = path.components.slice(1).join(path.separator)
                         let dest = OUT.join('esp', pak, version, stem)
                         if (path.isDir) {
-                            makeDir(dest)
+                            makeDirectory(dest)
                         } else {
                             copyFile(path, dest)
                         }
                     }
                 }
-                if (Cmd.locate('pak') && !me.generating) {
-                    run('pak -f -q cache ' + Path('.').files('esp-*').join(' '), {noshow: true}) 
+                if (Cmd.locate('pak') && !makeme.generating) {
+                    run('pak -f -q cache ' + Path('.').files('esp-*').join(' '), {filter: true}) 
                 }
             `
         },

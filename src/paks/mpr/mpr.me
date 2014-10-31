@@ -3,15 +3,18 @@
  */
 
 Me.load({
+    blend: [ 'osdep', 'ssl' ],
+
     targets: {
         mpr: {
             configurable: true,
-            depends:      [ 'libmpr' ],
-            uses:         [ 'ssl' ],
+            depends: [ 'libmpr' ],
+            uses:    [ 'ssl' ],
         },
 
         libmpr: {
             type: 'lib',
+            depends: [ 'osdep' ],
             sources: [ 'mprLib.c' ],
             headers: [ '*.h' ],
         },
@@ -39,6 +42,7 @@ Me.load({
             depends: [ 'libmpr', ],
             sources: ['makerom.c'],
             platforms: [ 'local' ],
+            generate: false,
         },
 	},
 })

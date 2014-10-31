@@ -11,7 +11,7 @@
     "author": {
         "name": "Embedthis Software",
         "email": "dev@embedthis.com",
-        "url": "http://embedthis.com"
+        "url": "https://embedthis.com"
     },
     "repository": {
         "type": "git",
@@ -28,16 +28,17 @@
         },
         {
             "type": "Commercial",
-            "url": "http://embedthis.com/licensing/"
+            "url": "https://embedthis.com/licensing/"
         }
     ],
     "pak": "~0.9",
     "dependencies": {
-        "me-dev": "~0.8",
-        "me-ssl": "~0.8",
-        "osdep": "~0.8"
+        "osdep": "~0.8",
+        "ssl": "~0.8"
     },
     "directories": {
         "paks": "src/paks"
+    },
+    "optionalDependencies": {
     }
 }

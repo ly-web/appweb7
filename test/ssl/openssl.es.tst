@@ -5,7 +5,7 @@
 if (!Config.SSL) {
     tskip("ssl not enabled in ejs")
 
-} else if (thas('ME_OPENSSL') !== 0) {
+} else if (thas('ME_OPENSSL')) {
     let http: Http = new Http
 
     http.retries = 0

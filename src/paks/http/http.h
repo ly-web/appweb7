@@ -959,6 +959,7 @@ typedef struct Http {
     int             groupChanged;           /**< Group name changed */
     int             staticLink;             /**< Target platform is using a static linking */
     int             traceLevel;             /**< Current request trace level */
+    int             startLevel;             /**< Start endpoint trace level */
 
     /*
         Callbacks
@@ -1240,6 +1241,7 @@ PUBLIC void httpRemoveEndpoint(struct HttpEndpoint *endpoint);
 PUBLIC void httpAddHost(struct HttpHost *host);
 PUBLIC void httpRemoveHost(struct HttpHost *host);
 PUBLIC void httpDefineRouteBuiltins();
+PUBLIC void httpSetInfoLevel(int level);
 
 /*********************************** HttpStats ********************************/
 /**
@@ -2874,14 +2876,14 @@ PUBLIC void httpSetIOCallback(struct HttpConn *conn, HttpIOCallback fn);
         <li>httpWriteUploadData</li>
         </ul>
         When these APIs block and yield, the garbage collector may reclaim allocated memory that does not have a
-        managed reference. Read Appweb memory allocation at http://embedthis.com/products/appweb/doc/ref/appweb/memory.html.
+        managed reference. Read Appweb memory allocation at https://embedthis.com/appweb/doc/ref/memory.html.
 
     @defgroup HttpConn HttpConn
     @see HttpConn HttpEnvCallback HttpGetPassword HttpListenCallback HttpNotifier HttpQueue HttpRedirectCallback
         HttpRx HttpStage HttpTx HtttpListenCallback httpCallEvent httpFinalizeConnector httpScheduleConnTimeout
         httpCreateConn httpCreateRxPipeline httpCreateTxPipeline httpDestroyConn httpClosePipeline httpDiscardData
-        httpDisconnect httpEnableUpload httpError httpIOEvent httpGetAsync httpGetChunkSize httpGetConnContext httpGetConnHost
-        httpGetError httpGetExt httpGetKeepAliveCount httpGetWriteQueueCount httpMatchHost httpMemoryError
+        httpDisconnect httpEnableUpload httpError httpIOEvent httpGetAsync httpGetChunkSize httpGetConnContext
+        httpGetConnHost httpGetError httpGetExt httpGetKeepAliveCount httpGetWriteQueueCount httpMatchHost httpMemoryError
         httpAfterEvent httpPrepClientConn httpResetCredentials httpRouteRequest httpRunHandlerReady httpService
         httpSetAsync httpSetChunkSize httpSetConnContext httpSetConnHost httpSetConnNotifier httpSetCredentials
         httpSetKeepAliveCount httpSetProtocol httpSetRetries httpSetSendConnector httpSetState httpSetTimeout
@@ -4501,7 +4503,7 @@ typedef struct HttpRouteOp {
     char            *details;               /**< General route operation details */
     char            *var;                   /**< Var to set */
     char            *value;                 /**< Value to assign to var */
-    void            *mdata;                 /**< pcre_ data managed by malloc() */
+    void            *mdata;                 /**< pcre_ data (unmanaged) */
     int             flags;                  /**< Route flags to control freeing mdata */
 } HttpRouteOp;
 
@@ -4583,7 +4585,7 @@ PUBLIC int httpLoadConfig(HttpRoute *route, cchar *path);
 
 /**
     Define the default directory route variables
-    @description This defines the default directories for the "cache", "client" and "pak" directories.
+    @description This defines the default directories for the "cache", "client", "pak" and "public" directories.
     @param route Route to modify
     @ingroup HttpRoute
     @stability Prototype
@@ -5904,6 +5906,7 @@ PUBLIC int httpAddSecurityToken(HttpConn *conn, bool recreate);
     @stability Internal
  */
 typedef struct HttpUploadFile {
+    cchar           *name;                  /**< Form field name */
     cchar           *filename;              /**< Local (temp) name of the file */
     cchar           *clientFilename;        /**< Client side name of the file */
     cchar           *contentType;           /**< Content type */
@@ -5914,13 +5917,12 @@ typedef struct HttpUploadFile {
     Add an Uploaded file
     @description Add an uploaded file to the Rx.files collection.
     @param conn HttpConn connection object created via #httpCreateConn
-    @param id Unique identifier for the file
     @param file Instance of HttpUploadFile
     @ingroup HttpUploadFile
     @stability Internal
     @internal
  */
-PUBLIC void httpAddUploadFile(HttpConn *conn, cchar *id, HttpUploadFile *file);
+PUBLIC void httpAddUploadFile(HttpConn *conn, HttpUploadFile *file);
 
 /**
     Remove all uploaded files
@@ -5931,17 +5933,6 @@ PUBLIC void httpAddUploadFile(HttpConn *conn, cchar *id, HttpUploadFile *file);
     @internal
  */
 PUBLIC void httpRemoveAllUploadedFiles(HttpConn *conn);
-
-/**
-    Remove an uploaded file
-    @description Remove an uploaded file from the temporary file store
-    @param conn HttpConn connection object created via #httpCreateConn
-    @param id Identifier used with #httpAddUploadFile for the file
-    @ingroup HttpUploadFile
-    @stability Internal
-    @internal
- */
-PUBLIC void httpRemoveUploadFile(HttpConn *conn, cchar *id);
 
 /********************************** HttpRx *********************************/
 /*
@@ -6000,6 +5991,7 @@ typedef struct HttpRx {
     int             seqno;                  /**< Unique request sequence number */
 
     MprList         *etags;                 /**< Document etag to uniquely identify the document version */
+    MprList         *files;                 /**< List of uploaded files (HttpUploadFile objects) */
     HttpPacket      *headerPacket;          /**< HTTP headers */
     MprHash         *headers;               /**< Header variables */
     MprList         *inputPipeline;         /**< Input processing */
@@ -6061,11 +6053,6 @@ typedef struct HttpRx {
     HttpRange       *inputRange;            /**< Specified range for rx (post) data */
     char            *passwordDigest;        /**< User password digest for authentication */
     char            *paramString;           /**< Cached param data as a string */
-
-    /*
-        Upload details
-     */
-    MprHash         *files;                 /**< Uploaded files. Managed by the upload filter */
 
     struct HttpWebSocket *webSocket;        /**< WebSocket state */
 
@@ -7294,10 +7281,11 @@ PUBLIC int httpSecureEndpointByName(cchar *name, struct MprSsl *ssl);
     @param endpoint HttpEndpoint object created via #httpCreateEndpoint
     @param ip IP address to use for the endpoint. Set to null to listen on all interfaces.
     @param port Listening port number to use for the endpoint
+    @returns "Zero" if successful, otherwise a negative MPR error code.
     @ingroup HttpEndpoint
     @stability Stable
  */
-PUBLIC void httpSetEndpointAddress(HttpEndpoint *endpoint, cchar *ip, int port);
+PUBLIC int httpSetEndpointAddress(HttpEndpoint *endpoint, cchar *ip, int port);
 
 /**
     Control if the endpoint is running in asynchronous mode

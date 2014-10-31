@@ -233,16 +233,15 @@ MAIN(appweb, int argc, char **argv, char **envp)
         return MPR_ERR_CANT_INITIALIZE;
     }
     appwebStaticInitialize();
-
+    httpSetInfoLevel(0);
     if (httpStartEndpoints() < 0) {
-        mprLog("error appweb", 0, "Cannot start HTTP service, exiting.");
+        mprLog("error appweb", 0, "Cannot listen on HTTP endpoints, exiting.");
         exit(9);
     }
     if (app->show) {
         httpLogRoutes(0, 0);
     }
     mprServiceEvents(-1, 0);
-
     mprLog("info appweb", 1, "Stopping Appweb ...");
     mprDestroy();
     return mprGetExitStatus();

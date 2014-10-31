@@ -7,8 +7,8 @@ If you only need to issue one HTTP request, consult the simple-client sample.
 
 Requirements
 ---
-* [Appweb](http://embedthis.com/downloads/appweb/download.esp)
-* [MakeMe Build Tool](http://embedthis.com/downloads/me/download.esp)
+* [Appweb](https://embedthis.com/appweb/download.html)
+* [MakeMe Build Tool](https://embedthis.com/me/download.html)
 
 To build:
 ---
@@ -29,11 +29,11 @@ Code:
 
 Documentation:
 ---
-* [Appweb Documentation](http://embedthis.com/products/appweb/doc/index.html)
-* [Configuration Directives](http://embedthis.com/products/appweb/doc/guide/appweb/users/configuration.html#directives)
-* [Http Client](http://embedthis.com/products/appweb/doc/guide/appweb/users/client.html)
-* [Http API](http://embedthis.com/products/appweb/doc/api/http.html)
-* [API Library](http://embedthis.com/products/appweb/doc/api/native.html)
+* [Appweb Documentation](https://embedthis.com/appweb/doc/index.html)
+* [Configuration Directives](https://embedthis.com/appweb/doc/users/configuration.html#directives)
+* [Http Client](https://embedthis.com/appweb/doc/users/client.html)
+* [Http API](https://embedthis.com/appweb/doc/api/http.html)
+* [API Library](https://embedthis.com/appweb/doc/api/native.html)
 
 See Also:
 ---

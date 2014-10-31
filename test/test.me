@@ -4,83 +4,87 @@
 
 Me.load({
     targets: {
+        'prep-cgi': {
+            build: `
+                let path = me.dir.out.join('.cgi-prepared')
+                if (!path.exists) {
+                    Cmd.run('testme --clean')
+                    rm(['cgi-bin/cgi*', 'cgi-bin/nph*', 'cgi-bin/testScript', 
+                        'web/caching/cache.cgi', 'web/auth/basic/basic.cgi'])
+                    path.write('')
+                    Path('web/tmp').makeDir()
+                }
+            `,
+            generate: false,
+        },
         'test-testScript': {
             path: 'cgi-bin/testScript',
-            build: "
-                let path = Path('cgi-bin/testScript')
+            build: `
+                let path = TARGET.path.relative
                 path.write('#!' + me.dir.bin.join('cgiProgram${EXE}' + '\n'))
                 path.setAttributes({permissions: 0755})
-            ",
-            'generate-sh': "echo '#!${BIN}/cgiProgram${EXE}' >cgi-bin/testScript ; chmod +x cgi-bin/testScript",
-            depends: ['cgiProgram'],
+                trace('Create', path)
+            `,
+            depends: [ 'cgiProgram' ],
+            generate: false,
             platforms: [ 'local' ],
             ifdef: [ 'cgi' ],
         },
 
         'test-cache.cgi': {
             path: 'web/caching/cache.cgi',
-            build: "
-                let path = Path('web/caching/cache.cgi')
+            build: `
+                let path = TARGET.path.relative
                 path.write('#!' + Cmd.locate('ejs') + '\n' + 
                     'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n{number:\" + Date().now() + \"}\n\")')
                 path.setAttributes({permissions: 0755})
-            ",
-            'generate-sh': "\
-                echo \"#!`type -p ejs`\" >web/caching/cache.cgi
-                echo 'print(\"HTTP/1.0 200 OK\\nContent-Type: text/plain\\n\\n{number:\" + Date().now() + \"}\\n\")' >>web/caching/cache.cgi
-                chmod +x web/caching/cache.cgi
-            ",
+                trace('Create', path)
+            `,
+            depends: [ 'cgiProgram' ],
+            generate: false,
             platforms: [ 'local' ],
             ifdef: [ 'cgi' ],
         },
 
         'test-basic.cgi': {
             path: 'web/auth/basic/basic.cgi',
-            build: "
-                let path = Path('web/auth/basic/basic.cgi')
+            build: `
+                let path = TARGET.path.relative
                 path.write('#!' + Cmd.locate('ejs') + '\n' + 
                     'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n\" + serialize(App.env, {pretty: true}) + \"\n\")')
                 path.setAttributes({permissions: 0755})
-                trace('Generate', path)
-            ",
-            'generate-sh': "\
-                echo \"#!`type -p ejs`\" >web/auth/basic/basic.cgi
-                echo 'print(\"HTTP/1.0 200 OK\\nContent-Type: text/plain\\n\\n\" + serialize(App.env, {pretty: true}) + \"\\n\")' >>web/auth/basic/basic.cgi
-                chmod +x web/auth/basic/basic.cgi
-            ",
+                trace('Create', path)
+            `,
+            depends: [ 'cgiProgram' ],
+            generate: false,
             platforms: [ 'local' ],
             ifdef: [ 'cgi' ],
         },
 
         'test-cgiProgram': {
             path: 'cgi-bin/cgiProgram${EXE}',
-            build: "
+            build: `
                 let perms = { permissions: 0755 }
                 let cgiProgram = me.dir.bin.join('cgiProgram${EXE}')
                 cp(cgiProgram, Path('cgi-bin/cgiProgram${EXE}'), perms)
                 cp(cgiProgram, Path('cgi-bin/nph-cgiProgram${EXE}'), perms)
                 cp(cgiProgram, Path('cgi-bin/cgi Program${EXE}'), perms)
                 cp(cgiProgram, Path('web/cgiProgram.cgi'), perms)
-            ",
-            'generate-sh': "\
-                cp ${BIN}/cgiProgram${EXE} cgi-bin/cgiProgram${EXE}
-                cp ${BIN}/cgiProgram${EXE} cgi-bin/nph-cgiProgram${EXE}
-                cp ${BIN}/cgiProgram${EXE} 'cgi-bin/cgi Program${EXE}'
-                cp ${BIN}/cgiProgram${EXE} web/cgiProgram.cgi
-                chmod +x cgi-bin/* web/cgiProgram.cgi
-            ",
-            depends: ['cgiProgram'],
+            `,
+            depends: [ 'cgiProgram' ],
+            generate: false,
             platforms: [ 'local' ],
             ifdef: [ 'cgi' ],
         },
 
         test: {
-            action: `run('testme --depth ' + me.settings.depth, {noio: true})`,
+            action: `run('testme --depth ' + me.settings.depth)`,
+            generate: false,
             platforms: [ 'local' ],
         },
 
         'auth.conf': {
-            action: "
+            action: `
                 let path = Path('auth.conf')
                 trace('Generate', 'Authorization file: ' + path)
                 path.write('#\n#   ' + path + ' - Authorization roles and users\n#\n\n')
@@ -90,16 +94,18 @@ Me.load({
                 run('authpass --cipher md5 --password pass2 ' + path + ' example.com mary user executive')
                 run('authpass --cipher md5 --password pass1 ' + path + ' example.com joshua user administrator purchase')
                 run('authpass --cipher blowfish --password pass5 ' + path + ' example.com ralph user administrator purchase')
-            ",
+            `,
         },
 
         testPackage: {
             type: 'test',
-            action: "
-                let package = packageName()
-                if (!package || !package.exists) {
+            action: `
+                require embedthis.me
+                let package = Package()
+                let pname = package.packageName()
+                if (!pname || !pname.exists) {
                     trace('Test', 'testPackage -- SKIPPED (Missing package to install)')
-                } else if (me.settings.depth < 2) {
+                } else if (makeme.options.depth < 2) {
                     trace('Test', 'testPackage -- SKIPPED (Runs at depth 2 on windows or macosx)')
                 } else {
                     if (Config.OS == 'macosx' && App.uid != 0) {
@@ -108,11 +114,11 @@ Me.load({
                         trace('Test', 'testPackage')
                         if (me.prefixes.bin.join('uninstall').exists) {
                             trace('Test', 'Cleanup prior to installation')
-                            uninstallPackage()
-                            checkUninstalled()
+                            package.uninstallPackage()
+                            package.checkUninstalled()
                         }
-                        installPackage()
-                        if (missing = checkInstalled()) {
+                        package.installPackage()
+                        if (missing = package.checkInstalled()) {
                             trace('Test', 'Install is missing files: ' + missing)
                         }
                         let s = me.settings
@@ -125,32 +131,31 @@ Me.load({
                         App.sleep(3000)
                         http.get('/index.html')
                         assert(http.response.contains('Embedthis Appweb'))
-                        uninstallPackage()
+                        package.uninstallPackage()
                         if (Config.OS == 'windows') App.sleep(1000)
-                        if (existing = checkUninstalled()) {
+                        if (existing = package.checkUninstalled()) {
                             trace('Warning', 'The uninstall for testPackage was not clean: ' + existing)
                         } else {
                             trace('Test', 'Uninstall is clean')
                         }
                     }
                 }
-            ",
+            `,
         },
 
         'test-run': {
             enable: "!me.platform.cross",
             depends: [ 'compile' ],
-            action: "
+            action: `
                 trace('Run', 'From directory src/server')
-                run('appweb -v', {noio: true})
-            ",
-            generate: "${BIN}/appweb -v"
+                run('appweb -v')
+            `,
         },
 
         'clean-test': {
             type: 'clean',                                                                                 
-            action: "                                                                                      
-                run('testme --clean')
+            action: `                                                                                      
+                Cmd.run('testme --clean')
                 rm('cache/*')
                 rm('app/cache/*')
                 rm('apps/*/cache/*')
@@ -162,7 +167,7 @@ Me.load({
                 Path('app/cache/.keep').write()
                 Path('web/caching/cache.cgi').remove()
                 Path('web/auth/basic/basic.cgi').remove()
-            ",
-        },  
-    },
+            `
+        }
+    }
 })

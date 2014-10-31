@@ -103,6 +103,7 @@ MAIN(httpMain, int argc, char **argv, char **envp)
 {
     MprTime     start;
     double      elapsed;
+    int         success;
 
     if (mprCreate(argc, argv, MPR_USER_EVENTS_THREAD) == 0) {
         return MPR_ERR_MEMORY;
@@ -151,33 +152,36 @@ MAIN(httpMain, int argc, char **argv, char **envp)
     if (!app->success && app->verbose) {
         mprLog("error http", 0, "Request failed");
     }
+    success = app->success;
     mprDestroy();
-    return (app->success) ? 0 : 255;
+    return success ? 0 : 255;
 }
 
 
 static void manageApp(App *app, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
+        mprMark(app->authType);
         mprMark(app->ca);
         mprMark(app->cert);
         mprMark(app->ciphers);
+        mprMark(app->inFile);
         mprMark(app->files);
         mprMark(app->formData);
-        mprMark(app->headers);
-        mprMark(app->host);
         mprMark(app->bodyData);
+        mprMark(app->headers);
         mprMark(app->http);
-        mprMark(app->inFile);
         mprMark(app->key);
-        mprMark(app->outFile);
+        mprMark(app->host);
         mprMark(app->outFilename);
-        mprMark(app->mutex);
+        mprMark(app->outFile);
         mprMark(app->password);
         mprMark(app->ranges);
         mprMark(app->requestFiles);
         mprMark(app->ssl);
+        mprMark(app->username);
         mprMark(app->threadData);
+        mprMark(app->mutex);
     }
 }
 
@@ -694,6 +698,7 @@ static void manageThreadData(ThreadData *data, int flags)
         mprMark(data->url);
         mprMark(data->files);
         mprMark(data->conn);
+        mprMark(data->dispatcher);
     }
 }
 

@@ -273,6 +273,7 @@
     #define     _CRT_SECURE_NO_DEPRECATE 1
     #undef      _CRT_SECURE_NO_WARNINGS
     #define     _CRT_SECURE_NO_WARNINGS 1
+    #define     _WINSOCK_DEPRECATED_NO_WARNINGS 1
     #ifndef     _WIN32_WINNT
         /* Target Windows 7 by default */
         #define _WIN32_WINNT 0x601
@@ -1024,11 +1025,11 @@ typedef int64 Ticks;
 #endif
 
 #if VXWORKS
+    #define getpid mprGetPid
     #ifndef SHUT_RDWR
         #define SHUT_RDWR 2
     #endif
     #define HAVE_SOCKLEN_T
-    #define getpid mprGetpid
     #if _DIAB_TOOL
         #define inline __inline__
         #define MPR_INLINE __inline__
@@ -1231,7 +1232,6 @@ extern "C" {
     #if _WRS_VXWORKS_MAJOR < 6 || (_WRS_VXWORKS_MAJOR == 6 && _WRS_VXWORKS_MINOR < 9)
         PUBLIC int gettimeofday(struct timeval *tv, struct timezone *tz);
     #endif
-    PUBLIC uint mprGetpid();
     PUBLIC char *strdup(const char *);
     PUBLIC int sysClkRateGet();
 
@@ -1291,7 +1291,7 @@ extern "C" {
     extern long _get_osfhandle(int handle);
     extern char *getcwd(char* buffer, int maxlen);
     extern char *getenv(cchar *charstuff);
-    extern uint getpid();
+    extern pid_t getpid();
     extern long lseek(int handle, long offset, int origin);
     extern int mkdir(cchar *dir, int mode);
     extern time_t mktime(struct tm *pt);

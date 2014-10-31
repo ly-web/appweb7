@@ -1,22 +1,15 @@
 /*
-    ejsLib.c -- Embedthis Ejscript Library Source
-
-    This file is a catenation of all the source code. Amalgamating into a
-    single file makes embedding simpler and the resulting application faster.
-
-    Prepared by: orion.local
+ * Embedthis Ejscript Library Source
  */
-
 #define EJS_DEFINE_OPTABLE 1
 #include "ejs.h"
 
 #if ME_COM_EJS
 
-/************************************************************************/
-/*
-    Start of file "src/cmd/romFiles.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/cmd/romFiles.c ************/
+
 
 /*
  *  romFiles -- Compiled Files
@@ -55,11 +48,10 @@ MprRomInode romFiles[] = {
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/compiler/ecAst.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/compiler/ecAst.c ************/
+
 
 /**
     ecAst.c - Process AST nodes and define all variables.
@@ -4042,11 +4034,10 @@ static void badAst(EcCompiler *cp, EcNode *np)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/compiler/ecCodeGen.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/compiler/ecCodeGen.c ************/
+
 
 /**
     ecCodeGen.c - Ejscript code generator
@@ -8467,11 +8458,10 @@ static void badNode(EcCompiler *cp, EcNode *np)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/compiler/ecCompiler.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/compiler/ecCompiler.c ************/
+
 
 /**
     ecCompile.c - Interface to the compiler
@@ -8977,11 +8967,10 @@ PUBLIC void ecSetRequire(EcCompiler *cp, MprList *modules)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/compiler/ecLex.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/compiler/ecLex.c ************/
+
 
 /**
     ecLex.c - Lexical analyzer
@@ -9916,8 +9905,11 @@ static int finalizeToken(EcToken *tp)
 
 static int addCharToToken(EcToken *tp, int c)
 {
+    ssize   boost;
+    
     if (tp->length >= (tp->size - 1)) {
-        tp->size += EC_TOKEN_INCR;
+        boost = max(tp->size, EC_TOKEN_INCR);
+        tp->size += (int) boost;
         if ((tp->text = mprRealloc(tp->text, tp->size * sizeof(wchar))) == 0) {
             return MPR_ERR_MEMORY;
         }
@@ -10161,11 +10153,10 @@ PUBLIC void ecCloseStream(EcCompiler *cp)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/compiler/ecModuleWrite.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/compiler/ecModuleWrite.c ************/
+
 
 /**
     ejsModuleWrite.c - Routines to encode and emit Ejscript byte code.
@@ -11310,11 +11301,10 @@ static int sumString(EjsString *name)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/compiler/ecParser.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/compiler/ecParser.c ************/
+
 
 /**
     ecParser. Parse ejscript source files.
@@ -15766,21 +15756,22 @@ static EcNode *parseNullableTypeExpression(EcCompiler *cp)
         break;
 
     default:
-        np = parseTypeExpression(cp);
-        if (peekToken(cp) == T_QUERY) {
-            /* Allow Nulls */
-            getToken(cp);
-        } else if (cp->peekToken->tokenId == T_LOGICAL_NOT) {
-            /* Don't allow nulls */
-            getToken(cp);
-            np->attributes |= EJS_TRAIT_THROW_NULLS;
-        } else if (cp->peekToken->tokenId == T_TILDE) {
-            /* Cast nulls to type */
-            getToken(cp);
-            np->attributes |= EJS_TRAIT_CAST_NULLS;
-        } else {
-            /* Default is same as Type! */
-            np->attributes |= EJS_TRAIT_THROW_NULLS;
+        if ((np = parseTypeExpression(cp)) != 0) {
+            if (peekToken(cp) == T_QUERY) {
+                /* Allow Nulls */
+                getToken(cp);
+            } else if (cp->peekToken->tokenId == T_LOGICAL_NOT) {
+                /* Don't allow nulls */
+                getToken(cp);
+                np->attributes |= EJS_TRAIT_THROW_NULLS;
+            } else if (cp->peekToken->tokenId == T_TILDE) {
+                /* Cast nulls to type */
+                getToken(cp);
+                np->attributes |= EJS_TRAIT_CAST_NULLS;
+            } else {
+                /* Default is same as Type! */
+                np->attributes |= EJS_TRAIT_THROW_NULLS;
+            }
         }
         break;
     }
@@ -21730,11 +21721,10 @@ static void dummy(int junk) { }
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/compiler/ecState.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/compiler/ecState.c ************/
+
 
 /**
     ecState.c - Manage state for the parser
@@ -21832,11 +21822,10 @@ PUBLIC EcNode *ecLeaveStateWithResult(EcCompiler *cp, EcNode *np)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/dtoa.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/dtoa.c ************/
+
 
 /* 
     Source from: http://www.netlib.org/fp/dtoa.c
@@ -26233,11 +26222,10 @@ dtoa
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsApp.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsApp.c ************/
+
 
 /*
     ejsApp.c -- App class
@@ -26623,11 +26611,10 @@ PUBLIC void ejsConfigureAppType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsArray.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsArray.c ************/
+
 
 /**
     ejsArray.c - Ejscript Array class
@@ -28543,11 +28530,10 @@ PUBLIC void ejsConfigureArrayType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsBlock.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsBlock.c ************/
+
 
 /**
     ejsBlock.c - Lexical block
@@ -28748,11 +28734,10 @@ PUBLIC void ejsConfigureBlockType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsBoolean.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsBoolean.c ************/
+
 
 /**
     ejsBoolean.c - Boolean native class
@@ -29026,11 +29011,10 @@ PUBLIC void ejsConfigureBooleanType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsByteArray.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsByteArray.c ************/
+
 
 /*
     ejsByteArray.c - Ejscript ByteArray class
@@ -30492,11 +30476,10 @@ PUBLIC void ejsConfigureByteArrayType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsCache.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsCache.c ************/
+
 
 /**
     ejsCache.c - API for the Cache class
@@ -30631,11 +30614,10 @@ PUBLIC EjsNumber *ejsCacheWriteObj(Ejs *ejs, EjsObj *cache, EjsString *key, EjsA
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsCmd.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsCmd.c ************/
+
 
 /*
     ejsCmd.c -- Cmd class
@@ -30991,11 +30973,13 @@ static int parseOptions(Ejs *ejs, EjsCmd *cmd)
     cmd->throw = 0;    
     flags = MPR_CMD_IN | MPR_CMD_OUT | MPR_CMD_ERR;
     if (cmd->options) {
+#if DEPRECATE || 1
         if ((value = ejsGetPropertyByName(ejs, cmd->options, EN("noio"))) != 0) {
             if (value == ESV(true)) {
                 flags &= ~(MPR_CMD_OUT | MPR_CMD_ERR);
             }
         }
+#endif
         if ((value = ejsGetPropertyByName(ejs, cmd->options, EN("detach"))) != 0) {
             if (value == ESV(true)) {
                 flags |= MPR_CMD_DETACH;
@@ -31007,7 +30991,7 @@ static int parseOptions(Ejs *ejs, EjsCmd *cmd)
                 mprSetCmdDir(cmd->mc, path->value);
             }
         }
-        if ((value = ejsGetPropertyByName(ejs, cmd->options, EN("exception"))) != 0) {
+        if ((value = ejsGetPropertyByName(ejs, cmd->options, EN("exceptions"))) != 0) {
             if (value == ESV(true)) {
                 cmd->throw = 1;
             }
@@ -31117,7 +31101,7 @@ static EjsObj *cmd_start(Ejs *ejs, EjsCmd *cmd, int argc, EjsObj **argv)
         if (cmd->throw) {
             status = mprGetCmdExitStatus(cmd->mc);
             if (status != 0) {
-                ejsThrowIOError(ejs, "Command failed status %d, %@", status, ejsToString(ejs, cmd->error));
+                ejsThrowIOError(ejs, "Command failed status %d\n%@", status, ejsToString(ejs, cmd->error));
             }
         }
     }
@@ -31355,11 +31339,10 @@ PUBLIC void ejsConfigureCmdType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsConfig.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsConfig.c ************/
+
 
 /*
     ejsConfig.c -- Config class
@@ -31437,10 +31420,13 @@ PUBLIC void ejsDefineConfigProperties(Ejs *ejs)
     ejsDefineProperty(ejs, type, -1, N("public", "TAR"), 0, att, ejsCreateBoolean(ejs, ME_EJS_TAR));
 #endif
 
+#ifdef ME_VAPP_PREFIX
     if (mprSamePath(mprGetAppDir(), ME_VAPP_PREFIX "/bin")) {
         ejsDefineProperty(ejs, type, -1, N("public", "Bin"), 0, att, ejsCreatePathFromAsc(ejs, ME_VAPP_PREFIX "/bin"));
         ejsDefineProperty(ejs, type, -1, N("public", "Inc"), 0, att, ejsCreatePathFromAsc(ejs, ME_VAPP_PREFIX "/inc"));
-    } else {
+    } else 
+#endif
+    {
         ejsDefineProperty(ejs, type, -1, N("public", "Bin"), 0, att, ejsCreatePathFromAsc(ejs, mprGetAppDir()));
         ejsDefineProperty(ejs, type, -1, N("public", "Inc"), 0, att, 
             ejsCreatePathFromAsc(ejs, mprNormalizePath(mprJoinPath(mprGetAppDir(), "../inc"))));
@@ -31468,11 +31454,10 @@ PUBLIC void ejsDefineConfigProperties(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsDate.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsDate.c ************/
+
 
 /**
     ejsDate.c - Date type class
@@ -32587,11 +32572,10 @@ PUBLIC void ejsConfigureDateType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsDebug.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsDebug.c ************/
+
 
 /*
     ejsDebug.c - Debug.Debug class
@@ -32675,11 +32659,10 @@ PUBLIC void ejsConfigureDebugType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsError.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsError.c ************/
+
 
 /**
     ejsError.c - Error Exception class
@@ -32857,11 +32840,10 @@ PUBLIC void ejsConfigureErrorType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsFile.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsFile.c ************/
+
 
 /**
     ejsFile.c - File class.
@@ -33816,11 +33798,10 @@ PUBLIC void ejsConfigureFileType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsFileSystem.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsFileSystem.c ************/
+
 
 /**
     ejsFileSystem.c - FileSystem class.
@@ -33871,13 +33852,8 @@ static EjsFileSystem *fileSystemConstructor(Ejs *ejs, EjsFileSystem *fp, int arg
 {
     cchar   *path;
 
-#if UNUSED
-    assert(argc == 1 && ejsIs(ejs, argv[0], String));
-    path = ejsToMulti(ejs, argv[0]);
-#else
     assert(argc == 1 && ejsIs(ejs, argv[0], Path));
     path = ((EjsPath*) argv[0])->value;
-#endif
     fp->path = mprNormalizePath(path);
     fp->fs = mprLookupFileSystem(path);
     return fp;
@@ -34093,11 +34069,10 @@ PUBLIC void ejsConfigureFileSystemType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsFrame.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsFrame.c ************/
+
 
 /**
     ejsFrame.c - Activation frame class
@@ -34282,11 +34257,10 @@ PUBLIC void ejsConfigureFrameType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsFunction.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsFunction.c ************/
+
 
 /**
     ejsFunction.c - Function class
@@ -34882,11 +34856,10 @@ PUBLIC void ejsConfigureFunctionType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsGC.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsGC.c ************/
+
 
 /**
     ejsGC.c - Garbage collector class for the EJS Object Model
@@ -35004,11 +34977,10 @@ PUBLIC void ejsConfigureGCType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsGlobal.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsGlobal.c ************/
+
 
 /**
     ejsGlobal.c - Global functions and variables
@@ -35066,12 +35038,13 @@ static EjsObj *g_blend(Ejs *ejs, EjsObj *unused, int argc, EjsObj **argv)
     options = (argc >= 3) ? argv[2] : 0;
     if (options) {
         flags = 0;
-        /* Default to true */
+        /* Default to false */
         flags |= ejsGetPropertyByName(ejs, options, EN("combine")) == ESV(true) ? EJS_BLEND_COMBINE : 0;
         flags |= ejsGetPropertyByName(ejs, options, EN("functions")) == ESV(true) ? EJS_BLEND_FUNCTIONS : 0;
         flags |= ejsGetPropertyByName(ejs, options, EN("trace")) == ESV(true) ? EJS_BLEND_TRACE : 0;
+        flags |= ejsGetPropertyByName(ejs, options, EN("public")) == ESV(true) ? EJS_BLEND_PUBLIC : 0;
 
-        /* Default to false */
+        /* Default to true */
         flags |= ejsGetPropertyByName(ejs, options, EN("overwrite")) == ESV(false) ? 0 : EJS_BLEND_OVERWRITE;
         flags |= ejsGetPropertyByName(ejs, options, EN("subclass")) == ESV(false) ? 0 : EJS_BLEND_SUBCLASSES;
         flags |= ejsGetPropertyByName(ejs, options, EN("deep")) == ESV(false) ? 0 : EJS_BLEND_DEEP;
@@ -35186,6 +35159,13 @@ static EjsString *g_md5(Ejs *ejs, EjsObj *unused, int argc, EjsObj **argv)
 }
 
 
+static void setBlendProperty(Ejs *ejs, EjsObj *obj, EjsName name, EjsAny *value)
+{
+    if (ejsSetPropertyByName(ejs, obj, name, value) < 0) {
+        ejsThrowArgError(ejs, "Cannot set property \"%@\"", name.name);
+    }
+}
+
 /*  
     Merge one object into another. This is useful for inheriting and optionally overwriting option hashes (among other
     things). The blending is done at the primitive property level. If overwrite is true, the property is replaced. If
@@ -35224,6 +35204,7 @@ PUBLIC int ejsBlendObject(Ejs *ejs, EjsObj *dest, EjsObj *src, int flags)
     trace = (flags & EJS_BLEND_TRACE) ? 1 : 0;
 
     for (i = start; i < count; i++) {
+        if (ejs->exception) break;
         if ((trait = ejsGetPropertyTraits(ejs, src, i)) != 0) {
             if (trait->attributes & (EJS_TRAIT_DELETED | EJS_FUN_INITIALIZER | EJS_FUN_MODULE_INITIALIZER)) {
                 continue;
@@ -35238,6 +35219,9 @@ PUBLIC int ejsBlendObject(Ejs *ejs, EjsObj *dest, EjsObj *src, int flags)
         qname = ejsGetPropertyName(ejs, src, i);
         if (!qname.name || !qname.space) {
             continue;
+        }
+        if (flags & EJS_BLEND_PUBLIC) {
+            qname.space = ejsCreateStringFromAsc(ejs, "public");
         }
         if (!privateProps && ejsContainsAsc(ejs, qname.space, ",private") >= 0) {
             continue;
@@ -35265,17 +35249,18 @@ PUBLIC int ejsBlendObject(Ejs *ejs, EjsObj *dest, EjsObj *src, int flags)
                 /* cflags |= EJS_BLEND_ASSIGN; */
                 trimmedName = qname;
             }
-            if ((dp = ejsGetPropertyByName(ejs, dest, trimmedName)) == 0) {
+            dp = ejsGetPropertyByName(ejs, dest, trimmedName);
+            if (!dp) {
                 /* Destination property missing */
                 if (cflags & EJS_BLEND_SUB) {
                     continue;
                 }
                 if (!ejsIsPot(ejs, vp) || ejsIsFunction(ejs, vp)) {
-                    ejsSetPropertyByName(ejs, dest, trimmedName, ejsClone(ejs, vp, 1));
+                    setBlendProperty(ejs, dest, trimmedName, ejsClone(ejs, vp, 1));
                     continue;
                 }
                 dp = ejsCreateObj(ejs, TYPE(vp), 0);
-                ejsSetPropertyByName(ejs, dest, trimmedName, dp);
+                setBlendProperty(ejs, dest, trimmedName, dp);
                 cflags &= ~EJS_BLEND_COND_ASSIGN;
                 cflags |= EJS_BLEND_ADD;
             }
@@ -35304,20 +35289,20 @@ PUBLIC int ejsBlendObject(Ejs *ejs, EjsObj *dest, EjsObj *src, int flags)
                     }
                 } else if (cflags & EJS_BLEND_COND_ASSIGN) {
                     if (ejsLookupProperty(ejs, dest, trimmedName) < 0) {
-                        ejsSetPropertyByName(ejs, dest, trimmedName, ejsClone(ejs, vp, deep));
+                        setBlendProperty(ejs, dest, trimmedName, ejsClone(ejs, vp, deep));
                     }
                 } else {
                     /* Default is a assign */
-                    ejsSetPropertyByName(ejs, dest, trimmedName, ejsClone(ejs, vp, deep));
+                    setBlendProperty(ejs, dest, trimmedName, ejsClone(ejs, vp, deep));
                 }
 
             } else if (ejsIsPot(ejs, dp)) {
                 if (cflags & EJS_BLEND_ASSIGN) {
-                    ejsSetPropertyByName(ejs, dest, trimmedName, ejsClone(ejs, vp, deep));
+                    setBlendProperty(ejs, dest, trimmedName, ejsClone(ejs, vp, deep));
 
                 } else if (cflags & EJS_BLEND_COND_ASSIGN) {
                     if (ejsLookupProperty(ejs, dest, trimmedName) < 0) {
-                        ejsSetPropertyByName(ejs, dest, trimmedName, ejsClone(ejs, vp, deep));
+                        setBlendProperty(ejs, dest, trimmedName, ejsClone(ejs, vp, deep));
                     }
                 } else {
                     /* Recurse and blend the elements */
@@ -35327,14 +35312,14 @@ PUBLIC int ejsBlendObject(Ejs *ejs, EjsObj *dest, EjsObj *src, int flags)
             } else if (ejsIs(ejs, dp, String)) {
                 if (cflags & EJS_BLEND_ADD) {
                     str = sjoin(((EjsString*) dp)->value, " ", ejsToMulti(ejs, vp), NULL);
-                    ejsSetPropertyByName(ejs, dest, trimmedName, ejsCreateString(ejs, str, -1));
+                    setBlendProperty(ejs, dest, trimmedName, ejsCreateString(ejs, str, -1));
                     
                 } else if (cflags & EJS_BLEND_SUB) {
                     str = sreplace(sclone(((EjsString*) dp)->value), ejsToMulti(ejs, vp), "");
                     if (sspace(str)) {
                         ejsDeletePropertyByName(ejs, dest, trimmedName);
                     } else {
-                        ejsSetPropertyByName(ejs, dest, trimmedName, ejsCreateString(ejs, str, -1));
+                        setBlendProperty(ejs, dest, trimmedName, ejsCreateString(ejs, str, -1));
                     }
                     
                 } else if (cflags & EJS_BLEND_COND_ASSIGN) {
@@ -35342,12 +35327,12 @@ PUBLIC int ejsBlendObject(Ejs *ejs, EjsObj *dest, EjsObj *src, int flags)
 
                 } else {
                     /* Default is assign */
-                    ejsSetPropertyByName(ejs, dest, trimmedName, ejsClone(ejs, vp, deep));
+                    setBlendProperty(ejs, dest, trimmedName, ejsClone(ejs, vp, deep));
                 }
             } else {
                 /* Assign */
                 if (!(cflags & EJS_BLEND_SUB)) {
-                    ejsSetPropertyByName(ejs, dest, trimmedName, vp);
+                    setBlendProperty(ejs, dest, trimmedName, vp);
                 }
             }
 
@@ -35357,16 +35342,16 @@ PUBLIC int ejsBlendObject(Ejs *ejs, EjsObj *dest, EjsObj *src, int flags)
              */
             if (deep && !ejsIs(ejs, vp, Array) && !ejsIsXML(ejs, vp) && ejsGetLength(ejs, vp) > 0) {
                 if ((dp = ejsGetPropertyByName(ejs, dest, qname)) == 0 || ejsGetLength(ejs, dp) == 0) {
-                    ejsSetPropertyByName(ejs, dest, qname, ejsClonePot(ejs, vp, deep));
+                    setBlendProperty(ejs, dest, qname, ejsClonePot(ejs, vp, deep));
                 } else {
                     ejsBlendObject(ejs, dp, vp, flags);
                 }
             } else {
                 /*  Primitive type (including arrays) */
                 if (overwrite) {
-                    ejsSetPropertyByName(ejs, dest, qname, vp);
+                    setBlendProperty(ejs, dest, qname, vp);
                 } else if (ejsLookupProperty(ejs, dest, qname) < 0) {
-                    ejsSetPropertyByName(ejs, dest, qname, vp);
+                    setBlendProperty(ejs, dest, qname, vp);
                 }
             }
         }
@@ -35565,11 +35550,10 @@ PUBLIC void ejsConfigureGlobalBlock(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsHttp.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsHttp.c ************/
+
 
 /**
     ejsHttp.c - Http client class
@@ -37279,11 +37263,10 @@ PUBLIC void ejsConfigureHttpType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsIterator.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsIterator.c ************/
+
 
 /**
     ejsIterator.c - Iterator class
@@ -37426,11 +37409,10 @@ PUBLIC void ejsConfigureIteratorType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsJSON.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsJSON.c ************/
+
 
 /**
     ejsJSON.c - JSON encoding and decoding
@@ -37462,6 +37444,7 @@ typedef struct Json {
     int         depth;
     int         hidden;
     int         namespaces;
+    int         nulls;
     int         regexp;             /* Emit native regular expression types */
     int         quotes;
     int         pretty;
@@ -37623,7 +37606,6 @@ Token getNextJsonToken(MprBuf *buf, wchar **token, JsonState *js)
     } else if (*cp == '}' || *cp == ']') {
         tid = *cp == '}' ? TOK_RBRACE: TOK_RBRACKET;
         while (*++cp && isspace((uchar) *cp)) ;
-#if NEW || 1
         /*
             Detect missing comma after closing brace/bracket
          */
@@ -37631,14 +37613,13 @@ Token getNextJsonToken(MprBuf *buf, wchar **token, JsonState *js)
             js->error = cp;
             return TOK_ERR;
         }
-#endif
         if (*cp == ',' || *cp == ':') {
             cp++;
         }
         next = cp;
 
     } else {
-        if (*cp == '"' || *cp == '\'') {
+        if (*cp == '"' || *cp == '\'' || *cp == '`') {
             tid = TOK_QID;
             quote = *cp++;
             for (start = cp; cp < end; cp++) {
@@ -37886,6 +37867,7 @@ PUBLIC EjsString *ejsSerializeWithOptions(Ejs *ejs, EjsAny *vp, EjsObj *options)
     memset(&json, 0, sizeof(Json));
     json.depth = 99;
     json.quotes = 1;
+    json.nulls = 1;
     json.indent = sclone("    ");
 
     if (options) {
@@ -37919,6 +37901,9 @@ PUBLIC EjsString *ejsSerializeWithOptions(Ejs *ejs, EjsAny *vp, EjsObj *options)
         if ((arg = ejsGetPropertyByName(ejs, options, EN("namespaces"))) != 0) {
             json.namespaces = (arg == ESV(true));
         }
+        if ((arg = ejsGetPropertyByName(ejs, options, EN("nulls"))) != 0) {
+            json.nulls = (arg == ESV(true));
+        }
         if ((arg = ejsGetPropertyByName(ejs, options, EN("regexp"))) != 0) {
             json.regexp = (arg == ESV(true));
         }
@@ -37951,6 +37936,7 @@ PUBLIC EjsString *ejsSerialize(Ejs *ejs, EjsAny *vp, int flags)
     json.commas = (flags & EJS_JSON_SHOW_COMMAS) ? 1 : 0;
     json.hidden = (flags & EJS_JSON_SHOW_HIDDEN) ? 1 : 0;
     json.namespaces = (flags & EJS_JSON_SHOW_NAMESPACES) ? 1 : 0;
+    json.nulls = (flags & EJS_JSON_SHOW_NULLS) ? 1 : 0;
     json.regexp = (flags & EJS_JSON_SHOW_REGEXP) ? 1 : 0;
     json.pretty = (flags & EJS_JSON_SHOW_PRETTY) ? 1 : 0;
     json.quotes = (flags & EJS_JSON_SHOW_NOQUOTES) ? 0 : 1;
@@ -37967,7 +37953,7 @@ static EjsString *serialize(Ejs *ejs, EjsAny *vp, Json *json)
     EjsObj      *pp, *obj, *replacerArgs[2];
     wchar       *cp;
     cchar       *key;
-    int         c, isArray, i, count, slotNum, quotes;
+    int         c, isArray, i, count, slotNum, quotes, sameline;
 
     /*
         The main code below can handle Arrays, Objects, objects derrived from Object and also native classes with properties.
@@ -37991,8 +37977,10 @@ static EjsString *serialize(Ejs *ejs, EjsAny *vp, Json *json)
         mprAddRoot(json->buf);
     }
     isArray = ejsIs(ejs, vp, Array);
+    sameline = isArray && ((EjsArray*) vp)->length == 0;
+
     mprPutCharToWideBuf(json->buf, isArray ? '[' : '{');
-    if (json->pretty) {
+    if (json->pretty && !sameline) {
         mprPutCharToWideBuf(json->buf, '\n');
     }
     if (++ejs->serializeDepth <= json->depth && !VISITED(obj)) {
@@ -38009,7 +37997,7 @@ static EjsString *serialize(Ejs *ejs, EjsAny *vp, Json *json)
                 json->nest--;
                 return 0;
             }
-            if (pp == 0) {
+            if (pp == 0 || (!json->nulls && !ejsIsDefined(ejs, pp))) {
                 continue;
             }
             if (isArray) {
@@ -38087,14 +38075,14 @@ static EjsString *serialize(Ejs *ejs, EjsAny *vp, Json *json)
             if ((slotNum + 1) < count || json->commas) {
                 mprPutCharToWideBuf(json->buf, ',');
             }
-            if (json->pretty) {
+            if (json->pretty && !sameline) {
                 mprPutCharToWideBuf(json->buf, '\n');
             }
         }
         SET_VISITED(obj, 0);
     }
     --ejs->serializeDepth; 
-    if (json->pretty) {
+    if (json->pretty && !sameline) {
         for (i = ejs->serializeDepth; i > 0; i--) {
             mprPutStringToWideBuf(json->buf, json->indent);
         }
@@ -38140,11 +38128,10 @@ PUBLIC void ejsConfigureJSONType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsLocalCache.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsLocalCache.c ************/
+
 
 /**
     ejsEjsLocalCache.c - Native code for the Local cache class.
@@ -38758,11 +38745,10 @@ PUBLIC void ejsConfigureLocalCacheType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsMath.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsMath.c ************/
+
 
 /**
     ejsMath.c - Math type class
@@ -39071,11 +39057,10 @@ PUBLIC void ejsConfigureMathType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsMemory.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsMemory.c ************/
+
 
 /*
     ejsMemory.c - Memory class
@@ -39253,11 +39238,10 @@ PUBLIC void ejsConfigureMemoryType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsMprLog.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsMprLog.c ************/
+
 
 /*
     ejsMprLog.c -- MprLog class
@@ -39421,11 +39405,10 @@ PUBLIC void ejsConfigureMprLogType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsNamespace.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsNamespace.c ************/
+
 
 /**
     ejsNamespace.c - Ejscript Namespace class
@@ -39617,11 +39600,10 @@ PUBLIC void ejsConfigureNamespaceType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsNull.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsNull.c ************/
+
 
 /**
     ejsNull.c - Ejscript Null class
@@ -39849,11 +39831,10 @@ PUBLIC void ejsConfigureNullType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsNumber.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsNumber.c ************/
+
 
 /**
     ejsNumber.c - Number type class
@@ -40555,11 +40536,10 @@ PUBLIC void ejsConfigureNumberType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsObject.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsObject.c ************/
+
 
 /**
     ejsObject.c - Object class
@@ -41539,11 +41519,10 @@ PUBLIC void ejsConfigureObjectType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsPath.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsPath.c ************/
+
 
 /*
     ejsPath.c - Path class.
@@ -41558,11 +41537,11 @@ PUBLIC void ejsConfigureObjectType(Ejs *ejs)
 
 /************************************ Forwards ********************************/
 
+static EjsArray *getFilesWithInstructions(Ejs *ejs, EjsPath *fp, EjsObj *instructions, EjsArray *results);
 static cchar *getPathString(Ejs *ejs, EjsObj *vp);
 static void getUserGroup(Ejs *ejs, EjsObj *attributes, int *uid, int *gid);
-static EjsArray *globPath(Ejs *ejs, EjsArray *results, cchar *path, cchar *base, cchar *pattern, int flags, 
-        EjsRegExp *exclude, EjsRegExp *include);
-static int globMatch(Ejs *ejs, cchar *s, cchar *pat, int isDir, int flags, cchar *seps, int count, cchar **nextPartPattern);
+static EjsArray *getFiles(Ejs *ejs, EjsArray *results, EjsPath *thisPath, cchar *base, cchar *path, cchar *pattern, 
+    EjsString *relative, MprList *negate, EjsRegExp *exclude, EjsRegExp *include, EjsObj *options, int flags);
 
 /************************************ Helpers *********************************/
 
@@ -41864,22 +41843,32 @@ PUBLIC int ejsSetPathAttributes(Ejs *ejs, cchar *path, EjsObj *attributes)
  */
 static EjsObj *copyPath(Ejs *ejs, EjsPath *fp, int argc, EjsObj **argv)
 {
-    MprFile     *from, *to;
-    MprPath     info;
-    EjsObj      *options;
-    cchar       *toPath;
-    ssize       bytes;
-    char        *buf;
+    MprFileSystem   *fs;
+    MprFile         *from, *to;
+    MprPath         info;
+    EjsObj          *options;
+    cchar           *fromPath, *toPath;
+    ssize           bytes, len;
+    char            *buf, lastc;
 
     assert(argc >= 1);
     options = (argc >= 2) ? argv[1] : 0;
+    fromPath = fp->value;
 
     from = to = 0;
     if ((toPath = getPathString(ejs, argv[0])) == 0) {
         return 0;
     }
-    if ((from = mprOpenFile(fp->value, O_RDONLY | O_BINARY, 0)) == 0) {
-        ejsThrowIOError(ejs, "Cannot open %s", fp->value);
+    if ((fs = mprLookupFileSystem(toPath)) == 0) {
+        return 0;
+    }
+    len = slen(toPath);
+    lastc = (len > 0) ? toPath[len - 1] : '\0';
+    if (mprIsPathDir(toPath) || (lastc == fs->separators[0] || lastc == fs->separators[1])) {
+        toPath = mprJoinPath(toPath, mprGetPathBase(fromPath));
+    }
+    if ((from = mprOpenFile(fromPath, O_RDONLY | O_BINARY, 0)) == 0) {
+        ejsThrowIOError(ejs, "Cannot open %s", fromPath);
         return 0;
     }
     if ((to = mprOpenFile(toPath, O_CREAT | O_WRONLY | O_TRUNC | O_BINARY, EJS_FILE_PERMS)) == 0) {
@@ -41888,7 +41877,7 @@ static EjsObj *copyPath(Ejs *ejs, EjsPath *fp, int argc, EjsObj **argv)
         return 0;
     }
     /* Keep perms of original file, don't inherit user/group (may not have permissions to create) */
-    if (mprGetPathInfo(fp->value, &info) >= 0 && info.valid) {
+    if (mprGetPathInfo(fromPath, &info) >= 0 && info.valid) {
         chmod(toPath, info.perms);
     }
     if (options) {
@@ -42032,270 +42021,376 @@ static EjsAny *getPathValues(Ejs *ejs, EjsPath *fp, int argc, EjsObj **argv)
 
 
 /*
-    Flags for path_files
- */
-#define FILES_DESCEND           MPR_PATH_DESCEND
-#define FILES_DEPTH_FIRST       MPR_PATH_DEPTH_FIRST
-#define FILES_HIDDEN            MPR_PATH_INC_HIDDEN
-#define FILES_NODIRS            MPR_PATH_NODIRS
-#define FILES_RELATIVE          MPR_PATH_RELATIVE
-#define FILES_NOMATCH_EXC       0x10000                 /* Throw an exception if no matching files */
-#define FILES_CASELESS          0x20000
-
-/*
     Get the files in a directory and subdirectories
     function files(patterns: Array|String|Path, options: Object = null): Array
  */
-PUBLIC EjsArray *ejsGetPathFiles(Ejs *ejs, EjsPath *fp, int argc, EjsObj **argv)
+PUBLIC EjsArray *ejsGetPathFiles(Ejs *ejs, EjsPath *fp, int argc, EjsAny **argv)
+{
+    EjsArray    *results, *list;
+    EjsObj      *instructions;
+    EjsAny      *item;
+    int         allPots, i;
+
+    results = ejsCreateArray(ejs, 0);
+    if (argc == 0) {
+        instructions = ejsCreateEmptyPot(ejs);
+        ejsSetPropertyByName(ejs, instructions, EN("files"), ejsCreateStringFromAsc(ejs, "*"));
+        getFilesWithInstructions(ejs, fp, instructions, results);
+    } else if (ejsIs(ejs, argv[0], Array)) {
+        list = argv[0];
+        allPots = 1;
+        for (i = 0; i < list->length; i++) {
+            item = ejsGetItem(ejs, list, i);
+            if (!ejsIsPot(ejs, item)) {
+                allPots = 0;
+                break;
+            }
+        }
+        if (allPots) {
+            for (i = 0; i < list->length; i++) {
+                item = ejsGetItem(ejs, list, i);
+                getFilesWithInstructions(ejs, fp, item, results);
+            }
+        } else {
+            instructions = ejsCreateEmptyPot(ejs);
+            ejsSetPropertyByName(ejs, instructions, EN("files"), list);
+            if (argc >= 2) {
+                ejsSetPropertyByName(ejs, instructions, EN("options"), argv[1]);
+            }
+            getFilesWithInstructions(ejs, fp, instructions, results);
+        }
+    } else if (ejsIsPot(ejs, argv[0])) {
+        getFilesWithInstructions(ejs, fp, argv[0], results);
+    } else {
+        instructions = ejsCreateEmptyPot(ejs);
+        ejsSetPropertyByName(ejs, instructions, EN("files"), argv[0]);
+        if (argc >= 2) {
+            ejsSetPropertyByName(ejs, instructions, EN("options"), argv[1]);
+        }
+        getFilesWithInstructions(ejs, fp, instructions, results);
+    }
+    return results;
+}
+
+
+/*
+    Expand filename tokens of the form '${token}' using an object of key/values or a callback function of the form:
+
+    function expand(filename: Path, options): Path
+ */
+static EjsString *expandPath(Ejs *ejs, EjsPath *thisPath, EjsString *path, EjsAny *expand, EjsAny *options)
+{
+    EjsAny  *argv[2];
+    int     paused;
+
+    if (ejsIs(ejs, expand, Function)) {
+        argv[0] = path;
+        argv[1] = options;
+        paused = ejsBlockGC(ejs);
+        path = ejsRunFunction(ejs, expand, thisPath, 2, argv);
+        path = ejsToString(ejs, path);
+        ejsUnblockGC(ejs, paused);
+    } else {
+        path = ejsExpandString(ejs, path, expand);
+    }
+    return path;
+}
+
+
+/*
+    Flags
+ */
+#define FILES_DESCEND           MPR_PATH_DESCEND
+#define FILES_DEPTH_FIRST       MPR_PATH_DEPTH_FIRST
+#define FILES_HIDDEN            MPR_PATH_INC_HIDDEN 
+#define FILES_RELATIVE          MPR_PATH_RELATIVE
+#define FILES_NOMATCH_EXC       0x10000                 /* Throw an exception if no matching files */
+#define FILES_CASELESS          0x20000
+#define FILES_NONEG             0x40000
+#define FILES_CONTENTS          0x80000
+#define FILES_NO_DIRECTORIES    0x100000
+
+static EjsArray *getFilesWithInstructions(Ejs *ejs, EjsPath *fp, EjsObj *instructions, EjsArray *results)
 {
     MprFileSystem   *fs;
-    EjsAny          *vp, *fill;
-    EjsObj          *options;
-    EjsArray        *result, *patterns;
+    EjsAny          *vp, *missing;
+    EjsObj          *options, *expand;
+    EjsArray        *patterns, *list;
     EjsRegExp       *exclude, *include;
-    char            *pattern, *start, *special;
+    EjsString       *pattern, *relative;
+    MprList         *negate;
     cchar           *path, *base;
-    int             flags, i;
+    char            *start, *special, *pat, *bp;
+    int             prior, flags, i, lastc;
 
-    options = (argc >= 2) ? argv[1]: 0;
-    include = exclude = 0;
-    result = ejsCreateArray(ejs, 0);
     fs = mprLookupFileSystem(fp->value);
+    include = exclude = 0;
+    expand = 0;
+    missing = 0;
+    relative = 0;
     flags = 0;
-    fill = 0;
+    pat = 0;
+    pattern = 0;
 
-    if (argc == 0) {
-        patterns = ejsCreateArray(ejs, 0);
-        ejsAddItem(ejs, patterns, ejsCreateString(ejs, "*", -1));
-    } else if (!ejsIs(ejs, argv[0], Array)) {
-        patterns = ejsCreateArray(ejs, 0);
-        ejsAddItem(ejs, patterns, ejsToString(ejs, argv[0]));
-    } else {
-        patterns = (EjsArray*) argv[0];
+    if ((patterns = ejsGetPropertyByName(ejs, instructions, EN("files"))) == 0) {
+        patterns = ejsGetPropertyByName(ejs, instructions, EN("from"));
     }
+    if (!patterns) {
+        patterns = (EjsAny*) ejsCreateStringFromAsc(ejs, "**");
+    }
+    if (!ejsIs(ejs, patterns, Array)) {
+        list = ejsCreateArray(ejs, 0);
+        ejsAddItem(ejs, list, patterns);
+        patterns = list;
+    }
+    options = ejsGetPropertyByName(ejs, instructions, EN("options"));
 
     if (options) {
         if (ejsGetPropertyByName(ejs, options, EN("depthFirst")) == ESV(true)) {
             flags |= FILES_DEPTH_FIRST;
         }
+        if (ejsGetPropertyByName(ejs, options, EN("directories")) == ESV(false)) {
+            flags |= FILES_NO_DIRECTORIES;
+        }
         if (ejsGetPropertyByName(ejs, options, EN("hidden")) == ESV(true)) {
             flags |= FILES_HIDDEN;
         }
         exclude = ejsGetPropertyByName(ejs, options, EN("exclude"));
-        if (exclude && !ejsIs(ejs, exclude, RegExp)) {
-            if (ejsIsDefined(ejs, exclude)) {
-                ejsThrowArgError(ejs, "Exclude option must be a regular expression");
-                return 0;
-            }
+        if (!ejsIsDefined(ejs, exclude)) {
             exclude = 0;
         }
+        expand = ejsGetPropertyByName(ejs, options, EN("expand"));
+        if (!ejsIsDefined(ejs, expand)) {
+            expand = 0;
+        }
         include = ejsGetPropertyByName(ejs, options, EN("include"));
-        if (include && !ejsIs(ejs, include, RegExp)) {
-            if (ejsIsDefined(ejs, include)) {
-                ejsThrowArgError(ejs, "Include option must be a regular expression");
-                return 0;
-            }
+        if (!ejsIsDefined(ejs, include)) {
             include = 0;
         }
         if ((vp = ejsGetPropertyByName(ejs, options, EN("missing"))) != 0) {
             if (vp == ESV(undefined)) {
                 flags |= FILES_NOMATCH_EXC;
-            } else if (vp == ESV(empty)) {
-                fill = ejsToPath(ejs, ejsToString(ejs, patterns));
-            } else if (vp != ESV(null)) {
-                fill = vp;
+            } else {
+                missing = vp;
             }
         }
-        if (ejsGetPropertyByName(ejs, options, EN("relative")) == ESV(true)) {
-            flags |= FILES_RELATIVE;
+        if (ejsGetPropertyByName(ejs, options, EN("noneg")) == ESV(true)) {
+            flags |= FILES_NONEG;
+        } 
+        if ((relative = ejsGetPropertyByName(ejs, options, EN("relative"))) == ESV(true)) {
+            if (ejsIsDefined(ejs, relative)) {
+                flags |= FILES_RELATIVE;
+            }
+        }
+        if (ejsGetPropertyByName(ejs, options, EN("contents")) == ESV(true)) {
+            flags |= FILES_CONTENTS;
         } 
     }
+    negate = 0;
     for (i = 0; i < patterns->length; i++) {
-        pattern = ejsToMulti(ejs, ejsGetItem(ejs, patterns, i));
+        pattern = ejsToString(ejs, ejsGetItem(ejs, patterns, i));
+        if (pattern->value[0] == '!' && !(flags & FILES_NONEG)) {
+            if (expand) {
+                pattern = expandPath(ejs, fp, pattern, expand, options);
+            }
+            if (!negate) {
+                negate = mprCreateList(0, 0);
+            }
+            pat = ejsToMulti(ejs, pattern);
+            mprAddItem(negate, &pat[1]);
+        }
+    }
+    for (i = 0; i < patterns->length; i++) {
+        pattern = ejsToString(ejs, ejsGetItem(ejs, patterns, i));
+        if (expand) {
+            pattern = expandPath(ejs, fp, pattern, expand, options);
+        }
+        pat = ejsToMulti(ejs, pattern);
+        if (*pat) {
+            lastc = pat[slen(pat) - 1];
+            if (lastc == fs->separators[0] || lastc == fs->separators[1]) {
+                pat = mprJoinPath(pat, "**");
+            } else if (flags & FILES_CONTENTS && mprIsPathDir(mprJoinPath(fp->value, pat))) {
+                pat = mprJoinPath(pat, "**");
+            }
+        }
+        start = pat;
         path = fp->value;
         base = "";
-
-#if UNUSED
-        if (mprIsPathAbs(pattern)) {
-#endif
-            start = pattern;
-            if ((special = strpbrk(start, "*?")) != 0) {
-                if (special > start) {
-                    for (pattern = special; pattern > start && !strchr(fs->separators, *pattern); pattern--) { }
-                    if (pattern > start) {
-                        *pattern++ = '\0';
-                        path = mprJoinPath(path, start);
-                        base = start;
-                    }
-                }
-            } else {
-                pattern = (char*) mprGetPathBaseRef(start);
-                if (pattern > start) {
-                    pattern[-1] = '\0';
+        /*
+            Optimization. Move static part of pattern into base directory.
+            Split the pattern into a [directory, pattern], the directory portion is joined to the path.
+         */
+        if ((special = strpbrk(start, "*?")) != 0) {
+            if (special > start) {
+                for (pat = special; pat > start && !strchr(fs->separators, *pat); pat--) { }
+                if (pat > start) {
+                    *pat++ = '\0';
                     path = mprJoinPath(path, start);
                     base = start;
                 }
             }
-#if UNUSED
+        } else {
+            bp = (char*) mprGetPathBaseRef(start);
+            if (bp > start) {
+                if (*bp) {
+                    bp[-1] = '\0';
+                    path = mprJoinPath(path, start);
+                    base = start;
+                    pat = bp;
+                } else if (*start) {
+                    /* Trim trailing separator */
+                    start[slen(start) - 1] = '\0';
+                    base = mprGetPathDir(start);
+                    path = mprJoinPath(path, base);
+                    pat = mprGetPathBase(start);
+                }
+            }
         }
-#endif
-        if (!globPath(ejs, result, path, base, pattern, flags, exclude, include)) {
-            return 0;
+        prior = results->length;
+        if (!getFiles(ejs, results, fp, base, path, pat, relative, negate, exclude, include, options, flags)
+                || prior == results->length) {
+            if (flags & FILES_NOMATCH_EXC) {
+                ejsThrowIOError(ejs, "Cannot find any matching files for pattern: %s", pat);
+                return 0;
+            }
+            if (missing) {
+                if (missing == ESV(empty)) {
+                    ejsSetProperty(ejs, results, -1, ejsCreatePathFromAsc(ejs, pat));
+                } else if (missing != ESV(null)) {
+                    ejsSetProperty(ejs, results, -1, missing);
+                }
+            }
         }
     }
-    if (ejsGetLength(ejs, result) == 0) {
+    if (ejsGetLength(ejs, results) == 0) {
         if (flags & FILES_NOMATCH_EXC) {
             ejsThrowIOError(ejs, "Cannot find any matching files for patterns: %@", ejsToString(ejs, patterns));
-        } else if (fill) {
-            ejsSetProperty(ejs, result, -1, fill);
-        }
+        } 
     }
-    return result;
+    return results;
 }
 
 
 /*
-    Match a string against a pattern using glob style matching.
-    Pat may contain a fully path of patterns. Only the first portion up to a file separator is used. The remaining portion
-        is returned in nextPartPattern.
-    seps contains the file system separator characters
-
-    Wildcard Patterns:
-    ?           Matches any single character
-    *           Matches zero or more characters of the file or directory
-    ** /        Matches zero or more directories (spaces introduced to avoid closing comment)
-    **          Matches zero or more files or directories. Equivlane to ** / *
-    trailing/   Trailing slash matches only directory
+    Test if a path matches. Used by Path.files() for the include|exclude options
+    The 'path' argument has "/" appended if it is a directory.
  */
-static int globMatch(Ejs *ejs, cchar *s, cchar *pat, int isDir, int flags, cchar *seps, int count, cchar **nextPartPattern)
+static bool matchPath(Ejs *ejs, EjsPath *thisPath, EjsAny *matcher, cchar *path, EjsAny *options)
 {
-    int     match;
-//  TODO - need recursion limits
-    *nextPartPattern = 0;
+    EjsRegExp   *re;
+    EjsAny      *argv[2];
+    cchar       *ex;
+    int         match, paused;
 
-    while (*s && *pat && *pat != seps[0] && *pat != seps[1]) {
-        match = (flags & FILES_CASELESS) ? (*pat == *s) : (tolower((uchar) *pat) == tolower((uchar) *s));
-        if (match || *pat == '?') {
-            ++pat; ++s;
-        } else if (*pat == '*') {
-            if (*++pat == '\0') {
-                /* Terminal star matches files and directories */
-                return 1;
-            }
-            if (*pat == '*') {
-                /* Double star - matches zero or more directories */
-                if (isDir) {
-                    *nextPartPattern = pat - 1;
-                    return 1;
-                }
-                if (pat[1] && (pat[1] == seps[0] || pat[1] == seps[1])) {
-                    /* Double star/ */
-                    if (pat[2] == '\0') {
-                        /* Trailing slash and not a directory */
-                        return 0;
-                    }
-                    pat += 2;
-                } else {
-                    /* Plain double star matches all (alias for ** / *) */
-                    if (pat[1] == '\0') {
-                        *nextPartPattern = pat - 1;
-                        return 1;
-                    }
-                }
+    match = 1;
+
+    if (ejsIs(ejs, matcher, Function)) {
+        argv[0] = ejsCreateStringFromAsc(ejs, path);
+        argv[1] = options;
+        paused = ejsBlockGC(ejs);
+        if (ejsRunFunction(ejs, matcher, thisPath, 2, argv) != ESV(true)) {
+            match = 0;
+        }
+        ejsUnblockGC(ejs, paused);
+    } else if (ejsIsDefined(ejs, matcher)) {
+        if (!ejsIs(ejs, matcher, RegExp)) {
+            ex = ejsToMulti(ejs, matcher);
+            if (smatch(ex, "directories")) {
+                matcher = ejsParseRegExp(ejs, ejsCreateStringFromAsc(ejs, "/\\/$/"));
             } else {
-                /* Single star */
-                if (count > 2000) {
-                    ejsThrowArgError(ejs, "Glob match is too recursive");
-                    return 0;
-                }
-                if (*pat == seps[0] || *pat == seps[1]) {
-                    s = "";
-                    break;
-                }
-                while (*s) {
-                    if (globMatch(ejs, s++, pat, isDir, flags, seps, count + 1, nextPartPattern)) {
-                        return 1;
-                    }
-                }
-                return 0;
+                matcher = ejsParseRegExp(ejs, ejsToString(ejs, matcher));
             }
-        } else {
-            return 0;
+        }
+        re = matcher;
+        assert(re->compiled);
+        if (pcre_exec(re->compiled, NULL, path, (int) slen(path), 0, 0, NULL, 0) < 0) {
+            match = 0;
         }
     }
-    if (*pat == '*') {
-        ++pat;
-    }
-    if (*s) {
-        return 0;
-    }
-    if (*pat == '\0') {
-        return 1;
-    }
-    if (*pat && (*pat == seps[0] || *pat == seps[1])) {
-        if (*++pat == '\0') {
-            /* Terminal / matches only directories */
-            return isDir;
-        }
-        *nextPartPattern = pat;
-        return 1;
-    }
-    return 0;
+    return match;
 }
 
 
-static EjsArray *globPath(Ejs *ejs, EjsArray *results, cchar *path, cchar *base, cchar *pattern, int flags, 
-        EjsRegExp *exclude, EjsRegExp *include)
+/*
+    Get the files matching a pattern. This recurses down the directory tree.
+
+    base        Base directory for the glob. Resultant files have this prepended unless relative.
+    dir         Directory to match.
+    pattern     Glob pattern.
+ */
+static EjsArray *getFiles(Ejs *ejs, EjsArray *results, EjsPath *thisPath, cchar *base, cchar *dir, cchar *pattern, 
+    EjsString *relative, MprList *negate, EjsRegExp *exclude, EjsRegExp *include, EjsObj *options, int flags)
 {
-    MprFileSystem   *fs;
     MprDirEntry     *dp;
     MprList         *list;
-    cchar           *filename, *nextPartPattern, *nextPath, *matchFile;
-    int             next, add;
+    cchar           *filename, *fullname, *name, *nextPartPattern, *matchFile, *npat;
+    int             add, next, i;
 
-    if ((list = mprGetPathFiles(path, flags | MPR_PATH_RELATIVE)) == 0) {
-        if (flags & FILES_NOMATCH_EXC) {
-            ejsThrowIOError(ejs, "Cannot read directory");
-            return 0;
-        }
-        return results;
-    }
-    fs = mprLookupFileSystem(path);
-
-    for (next = 0; (dp = mprGetNextItem(list, &next)) != 0; ) {
-        if (!globMatch(ejs, dp->name, pattern, dp->isDir, flags, fs->separators, 0, &nextPartPattern)) {
-            continue;
-        }
-        add = 1;
-        //  TODO - OPT
-        if (nextPartPattern && strcmp(nextPartPattern, "**") != 0 && strcmp(nextPartPattern, "**/") != 0
+    if ((list = mprGetPathFiles(dir, flags | MPR_PATH_RELATIVE)) != 0) {
+        for (next = 0; (dp = mprGetNextItem(list, &next)) != 0; ) {
+            if (!mprMatchPartPath(dp->name, dp->isDir, pattern, &nextPartPattern, 0, flags)) {
+                continue;
+            }
+            add = 1;
+            if (nextPartPattern && strcmp(nextPartPattern, "**") != 0 && strcmp(nextPartPattern, "**/") != 0
                    && strcmp(nextPartPattern, "**/*") != 0) {
-            /* Double star matches zero or more */
-            add = 0;
-        }
-        filename = (flags & MPR_PATH_RELATIVE) ? mprJoinPath(base, dp->name) : mprJoinPath(path, dp->name);
-        if (add && (include || exclude)) {
-            matchFile = (dp->isDir && !dp->isLink) ? sjoin(filename, "/", NULL) : filename;
-            if (include && pcre_exec(include->compiled, NULL, matchFile, (int) slen(matchFile), 0, 0, NULL, 0) < 0) {
+                /* Double star matches zero or more */
                 add = 0;
             }
-            if (exclude && pcre_exec(exclude->compiled, NULL, matchFile, (int) slen(matchFile), 0, 0, NULL, 0) >= 0) {
+            filename = mprJoinPath(base, dp->name);
+
+            if (add && (flags & FILES_NO_DIRECTORIES) && dp->isDir && !dp->isLink) {
                 add = 0;
+            } else if (add && (exclude || include || negate)) {
+                if (include) {
+                    matchFile = (dp->isDir && !dp->isLink) ? sjoin(filename, "/", NULL) : filename;
+                    add = matchPath(ejs, thisPath, include, matchFile, options);
+                }
+                if (add && exclude) {
+                    matchFile = (dp->isDir && !dp->isLink) ? sjoin(filename, "/", NULL) : filename;
+                    add = !matchPath(ejs, thisPath, exclude, matchFile, options);
+                }
+                if (add && negate) {
+                    for (ITERATE_ITEMS(negate, npat, i)) {
+                        if (mprMatchPath(filename, npat)) {
+                            add = 0;
+                            break;
+                        }
+                    }
+                }
             }
-        }
-        if (!(flags & FILES_DEPTH_FIRST) && add) {
-            /* Exclude mid-pattern directories and terminal directories if only "files" */
-            ejsSetProperty(ejs, results, -1, ejsCreatePathFromAsc(ejs, filename));
-        }
-        if (dp->isDir && nextPartPattern) {
-            nextPath = (flags & MPR_PATH_RELATIVE) ? mprJoinPath(path, dp->name) : filename;
-            globPath(ejs, results, nextPath, filename, nextPartPattern, flags, exclude, include);
-        }
-        if ((flags & FILES_DEPTH_FIRST) && add) {
-            ejsSetProperty(ejs, results, -1, ejsCreatePathFromAsc(ejs, filename));
+            fullname = mprJoinPath(dir, dp->name);
+            name = (flags & MPR_PATH_RELATIVE) ? filename : fullname;
+            if (relative) {
+                if (relative == ESV(true)) {
+                    name = mprGetRelPath(name, 0);
+                } else if (ejsIsDefined(ejs, relative)) {
+                    name = mprGetRelPath(name, ejsToString(ejs, relative)->value);
+                }
+            }
+            if (!(flags & FILES_DEPTH_FIRST) && add) {
+                ejsSetProperty(ejs, results, -1, ejsCreatePathFromAsc(ejs, name));
+            }
+            if (dp->isDir && nextPartPattern) {
+                getFiles(ejs, results, thisPath, filename, fullname, nextPartPattern, relative, negate, exclude, 
+                    include, options, flags);
+            }
+            if ((flags & FILES_DEPTH_FIRST) && add) {
+                ejsSetProperty(ejs, results, -1, ejsCreatePathFromAsc(ejs, name));
+            }
         }
     }
     return results;
+}
+
+
+/*
+    function glob(pattern: String): Boolean
+ */
+static EjsBoolean *pathGlob(Ejs *ejs, EjsPath *fp, int argc, EjsObj **argv)
+{
+    return mprMatchPath(fp->value, ejsToMulti(ejs, argv[0])) ? ESV(true) : ESV(false);
 }
 
 
@@ -42487,27 +42582,37 @@ static void getUserGroup(Ejs *ejs, EjsObj *attributes, int *uid, int *gid)
     struct passwd   *pp;
     struct group    *gp;
 
+    assert(uid);
+    assert(gid);
+
     *uid = *gid = -1;
     if ((vp = ejsGetPropertyByName(ejs, attributes, EN("group"))) != 0 && ejsIsDefined(ejs, vp)) {
         vp = ejsToString(ejs, vp);
-        //  TODO - these are thread-safe on mac, but not on all systems. use getgrnam_r
-        if ((gp = getgrnam(ejsToMulti(ejs, vp))) == 0) {
-            ejsThrowArgError(ejs, "Cannot find group %@", vp);
-            return;
+        if (ejsIs(ejs, vp, Number)) {
+            *gid = ejsGetInt(ejs, vp);
+        } else {
+            if ((gp = getgrnam(ejsToMulti(ejs, vp))) == 0) {
+                ejsThrowArgError(ejs, "Cannot find group %@", vp);
+                return;
+            }
+            *gid = gp->gr_gid;
         }
-        *gid = gp->gr_gid;
-
     } else if ((vp = ejsGetPropertyByName(ejs, attributes, EN("gid"))) != 0 && ejsIsDefined(ejs, vp)) {
         if (ejsIs(ejs, vp, Number)) {
             *gid = ejsGetInt(ejs, vp);
         }
     }
+
     if ((vp = ejsGetPropertyByName(ejs, attributes, EN("user"))) != 0 && ejsIsDefined(ejs, vp)) {
-        if ((pp = getpwnam(ejsToMulti(ejs, vp))) == 0) {
-            ejsThrowArgError(ejs, "Cannot find user %@", vp);
-            return;
+        if (ejsIs(ejs, vp, Number)) {
+            *uid = ejsGetInt(ejs, vp);
+        } else {
+            if ((pp = getpwnam(ejsToMulti(ejs, vp))) == 0) {
+                ejsThrowArgError(ejs, "Cannot find user %@", vp);
+                return;
+            }
+            *uid = pp->pw_uid;
         }
-        *uid = pp->pw_uid;
     } else if ((vp = ejsGetPropertyByName(ejs, attributes, EN("uid"))) != 0 && ejsIsDefined(ejs, vp)) {
         if (ejsIs(ejs, vp, Number)) {
             *uid = ejsGetInt(ejs, vp);
@@ -43298,6 +43403,7 @@ PUBLIC void ejsConfigurePathType(Ejs *ejs)
     ejsBindMethod(ejs, prototype, ES_Path_files, ejsGetPathFiles);
     ejsBindMethod(ejs, prototype, ES_Path_iterator_get, getPathIterator);
     ejsBindMethod(ejs, prototype, ES_Path_iterator_getValues, getPathValues);
+    ejsBindMethod(ejs, prototype, ES_Path_glob, pathGlob);
     ejsBindMethod(ejs, prototype, ES_Path_hasDrive, pathHasDrive);
     ejsBindMethod(ejs, prototype, ES_Path_isAbsolute, isPathAbsolute);
     ejsBindMethod(ejs, prototype, ES_Path_isDir, isPathDir);
@@ -43366,11 +43472,10 @@ PUBLIC void ejsConfigurePathType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsPot.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsPot.c ************/
+
 
 /**
     ejsPot.c - Property Object class (Objects with properties)
@@ -44457,11 +44562,10 @@ PUBLIC void ejsCreatePotHelpers(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsRegExp.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsRegExp.c ************/
+
 
 /**
     ejsRegExp.c - RegExp type class
@@ -44909,11 +45013,10 @@ PUBLIC void ejsConfigureRegExpType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsSocket.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsSocket.c ************/
+
 
 /**
     ejsSocket.c - Socket class. This implements TCP/IP v4 and v6 connectivity.
@@ -45371,11 +45474,10 @@ PUBLIC void ejsConfigureSocketType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsString.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsString.c ************/
+
 
 /**
     ejsString.c - Ejscript string class
@@ -45821,18 +45923,22 @@ static EjsBoolean *endsWith(Ejs *ejs, EjsString *sp, int argc, EjsObj **argv)
 /*
     Lookup a token value. This will be called recursively for each name portion of a token. i.e. ${part.part.part}
  */
-static int getTokenValue(Ejs *ejs, EjsObj *obj, cchar *fullToken, cchar *token, MprBuf *buf, cchar *fill, EjsString *join)
+static int getTokenValue(Ejs *ejs, EjsObj *obj, cchar *fullToken, cchar *token, MprBuf *buf, EjsAny *missing, 
+    EjsString *join)
 {
     EjsAny      *vp;
     EjsString   *svalue;
-    char        *rest, *first;
+    EjsName     qname;
+    char        *rest, *first, *str;
 
     rest = (char*) (schr(token, '.') ? sclone(token) : token);
     first = stok(rest, ".", &rest);
     
-    if ((vp = ejsGetPropertyByName(ejs, obj, EN(first))) != 0) {
+    qname.name = ejsCreateStringFromAsc(ejs, first);
+    qname.space = 0;
+    if ((vp = ejsGetPropertyByName(ejs, obj, qname)) != 0) {
         if (rest && ejsIsPot(ejs, vp)) {
-            return getTokenValue(ejs, vp, fullToken, rest, buf, fill, join);
+            return getTokenValue(ejs, vp, fullToken, rest, buf, missing, join);
         } else {
             if (ejsIs(ejs, vp, Array)) {
                 svalue = ejsJoinArray(ejs, vp, join); 
@@ -45841,18 +45947,24 @@ static int getTokenValue(Ejs *ejs, EjsObj *obj, cchar *fullToken, cchar *token, 
             }
             mprPutStringToBuf(buf, svalue->value);
         }
+    } else if (!missing || (vp == ESV(null) || vp == ESV(undefined))) {
+        ejsThrowReferenceError(ejs, "Missing property %s", fullToken);
+        return 0;
+    } else if (missing == ESV(true)) {
+        mprPutStringToBuf(buf, "${");
+        mprPutStringToBuf(buf, fullToken);
+        mprPutCharToBuf(buf, '}');
+    } else if (missing == ESV(false)) {
+        /* Omit */;
     } else {
-        if (fill) {
-            if (smatch(fill, "${}")) {
-                mprPutStringToBuf(buf, "${");
-                mprPutStringToBuf(buf, fullToken);
-                mprPutCharToBuf(buf, '}');
-            } else if (*fill) {
-                mprPutStringToBuf(buf, fill);
-            }
+        str = ejsToMulti(ejs, missing);
+        //  DEPRECATE LEGACY
+        if (smatch(str, "${}")) {
+            mprPutStringToBuf(buf, "${");
+            mprPutStringToBuf(buf, fullToken);
+            mprPutCharToBuf(buf, '}');
         } else {
-            ejsThrowReferenceError(ejs, "Missing property %s", fullToken);
-            return 0;
+            mprPutStringToBuf(buf, str);
         }
     }
     return 1;
@@ -45863,18 +45975,26 @@ static int getTokenValue(Ejs *ejs, EjsObj *obj, cchar *fullToken, cchar *token, 
     function expand(obj: Object, options: Object): String
 
     Options:
-        fill: String to use for missing properties. Set to null to throw.
+        missing: String to use for missing properties. 
+            undefined - throw exception 
+            true        Keep original token pattern ${token}
+            false       Delete original token pattern
+            string      Replace with string value
 
     Expand ${token} references. Tokens are be simple properties that may include "." references.
+
  */
 static EjsString *expandString(Ejs *ejs, EjsString *sp, int argc, EjsObj **argv)
 {
     MprBuf      *buf;
-    EjsAny      *obj, *options, *vp;
+    EjsAny      *missing, *obj, *options;
     EjsString   *join;
-    char        *src, *cp, *tok, *fill;
+    char        *src, *cp, *tok;
 
-    fill = 0;
+    if (!ejsIs(ejs, sp, String)) {
+        sp = ejsToString(ejs, sp);
+    }
+    missing = 0;
     join = ejsCreateStringFromAsc(ejs, " ");
     if (argc < 1) {
         ejsThrowArgError(ejs, "Missing object argument");
@@ -45883,15 +46003,10 @@ static EjsString *expandString(Ejs *ejs, EjsString *sp, int argc, EjsObj **argv)
     obj = argv[0];
     options = (argc >= 2) ? argv[1] : 0;
     if (options) {
-        if ((vp = ejsGetPropertyByName(ejs, options, EN("fill"))) != 0) {
-            if (vp != ESV(null) && vp != ESV(undefined)) {
-                fill = ejsToMulti(ejs, vp);
-            }
-        }
-        if ((vp = ejsGetPropertyByName(ejs, options, EN("join"))) != 0) {
-            if (vp != ESV(null) && vp != ESV(undefined)) {
-                join = ejsToString(ejs, vp);
-            }
+        missing = ejsGetPropertyByName(ejs, options, EN("missing"));
+        if (!missing) {
+            //  LEGACY DEPRECATED
+            missing = ejsGetPropertyByName(ejs, options, EN("fill"));
         }
     }
     if (sp->length == 0) {
@@ -45912,7 +46027,7 @@ static EjsString *expandString(Ejs *ejs, EjsString *sp, int argc, EjsObj **argv)
                 src += 2;
                 for (cp = src; *cp != '}' && cp < &sp->value[sp->length]; cp++) ;
                 tok = snclone(src, cp - src);
-                if (!getTokenValue(ejs, obj, tok, tok, buf, fill, join)) {
+                if (!getTokenValue(ejs, obj, tok, tok, buf, missing, join)) {
                     return 0;
                 }
                 src = cp + 1;
@@ -45923,6 +46038,12 @@ static EjsString *expandString(Ejs *ejs, EjsString *sp, int argc, EjsObj **argv)
     }
     mprAddNullToBuf(buf);
     return ejsCreateString(ejs, mprGetBufStart(buf), mprGetBufLength(buf));
+}
+
+
+PUBLIC EjsString *ejsExpandString(Ejs *ejs, EjsString *sp, EjsObj *tokens)
+{
+    return expandString(ejs, sp, 1, &tokens);
 }
 
 
@@ -48299,11 +48420,10 @@ PUBLIC void ejsConfigureStringType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsSystem.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsSystem.c ************/
+
 
 /*
     ejsSystem.c -- System class
@@ -48435,11 +48555,10 @@ PUBLIC void ejsConfigureSystemType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsTimer.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsTimer.c ************/
+
 
 /*
     ejsTimer.c -- Timer class
@@ -48693,11 +48812,10 @@ PUBLIC void ejsConfigureTimerType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsType.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsType.c ************/
+
 
 /**
     ejsType.c - Type class
@@ -49746,11 +49864,10 @@ PUBLIC void ejsInitTypeType(Ejs *ejs, EjsType *type)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsUri.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsUri.c ************/
+
 
 /*
     ejsUri.c - Uri class.
@@ -51004,11 +51121,10 @@ PUBLIC void ejsConfigureUriType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsVoid.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsVoid.c ************/
+
 
 /**
     ejsVoid.c - Ejscript Void class (aka undefined)
@@ -51239,11 +51355,10 @@ PUBLIC void ejsConfigureVoidType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsWebSocket.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsWebSocket.c ************/
+
 
 /**
     ejsWebSocket.c - WebSocket class
@@ -51639,8 +51754,8 @@ static void onWebSocketEvent(EjsWebSocket *ws, int event, EjsAny *data, HttpPack
     case HTTP_EVENT_APP_CLOSE:
         eventName = "complete";
         slot = ES_WebSocket_onclose;
-        status = rx ? rx->webSocket->closeStatus: WS_STATUS_COMMS_ERROR;
-        reason = rx ? rx->webSocket->closeReason: 0;
+        status = (rx && rx->webSocket) ? rx->webSocket->closeStatus: WS_STATUS_COMMS_ERROR;
+        reason = (rx && rx->webSocket) ? rx->webSocket->closeReason: ws->conn->errorMsg;
         ejsSetPropertyByName(ejs, eobj, EN("code"), ejsCreateNumber(ejs, status));
         ejsSetPropertyByName(ejs, eobj, EN("reason"), ejsCreateStringFromAsc(ejs, reason));
         ejsSetPropertyByName(ejs, eobj, EN("wasClean"), ejsCreateBoolean(ejs, status != WS_STATUS_COMMS_ERROR));
@@ -51936,11 +52051,10 @@ PUBLIC void ejsConfigureWebSocketType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsWorker.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsWorker.c ************/
+
 
 /*
     ejsWorker - VM Worker thread classes
@@ -52853,11 +52967,10 @@ PUBLIC void ejsConfigureWorkerType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsXML.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsXML.c ************/
+
 
 /**
     ejsXML.c - XML type.
@@ -53976,11 +54089,10 @@ PUBLIC void ejsConfigureXMLType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsXMLList.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsXMLList.c ************/
+
 
 /**
     ejsXMLList.c - XMLList type.
@@ -54843,11 +54955,10 @@ PUBLIC void ejsConfigureXMLListType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/core/src/ejsXMLLoader.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/core/src/ejsXMLLoader.c ************/
+
 
 /**
     ejsXMLLoader.c - Load and save XML data.
@@ -55156,11 +55267,10 @@ static void indent(MprBuf *bp, int level)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/ejs.db.sqlite/ejsSqlite.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/ejs.db.sqlite/ejsSqlite.c ************/
+
 
 /*
     ejsSqlite.c -- SQLite Database class
@@ -55619,11 +55729,10 @@ PUBLIC int ejs_db_sqlite_Init(Ejs *ejs, MprModule *mp)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/ejs.web/ejsHttpServer.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/ejs.web/ejsHttpServer.c ************/
+
 
 /*
     ejsHttpServer.c -- Ejscript Http Server.
@@ -55861,11 +55970,13 @@ static EjsVoid *hs_listen(Ejs *ejs, EjsHttpServer *sp, int argc, EjsObj **argv)
         host = httpCreateHost(NULL);
         httpSetHostName(host, sfmt("%s:%d", sp->ip, sp->port));
         route = httpCreateConfiguredRoute(host, 1);
+
         httpAddRouteMethods(route, "DELETE, HEAD, OPTIONS, PUT");
         httpSetRouteName(route, "default");
         httpAddRouteHandler(route, "ejsHandler", "");
         httpSetRouteTarget(route, "run", 0);
         httpFinalizeRoute(route);
+
         httpSetHostDefaultRoute(host, route);
         httpAddHostToEndpoint(endpoint, host);
 
@@ -56496,7 +56607,7 @@ static EjsHttpServer *createHttpServer(Ejs *ejs, EjsType *type, int size)
     sp->ejs = ejs;
     sp->hosted = ejs->hosted;
     sp->async = 1;
-    sp->trace = httpCreateTrace(0);
+    sp->trace = httpCreateTrace(HTTP->trace);
     return sp;
 }
 
@@ -56610,11 +56721,10 @@ void ejsConfigureHttpServerType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/ejs.web/ejsRequest.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/ejs.web/ejsRequest.c ************/
+
 
 /*
     ejsRequest.c -- Ejscript web framework.
@@ -56816,10 +56926,9 @@ static EjsObj *createEnv(Ejs *ejs, EjsRequest *req)
 
 static EjsObj *createFiles(Ejs *ejs, EjsRequest *req)
 {
-    HttpUploadFile  *up;
+    HttpUploadFile  *uf;
     HttpConn        *conn;
     EjsObj          *files, *file;
-    MprKey          *kp;
     int             index;
 
     if (req->files == 0) {
@@ -56831,15 +56940,14 @@ static EjsObj *createFiles(Ejs *ejs, EjsRequest *req)
             return ESV(null);
         }
         req->files = files = (EjsObj*) ejsCreateEmptyPot(ejs);
-        for (index = 0, kp = 0; (kp = mprGetNextKey(conn->rx->files, kp)) != 0; index++) {
-            up = (HttpUploadFile*) kp->data;
+        for (ITERATE_ITEMS(conn->rx->files, uf, index)) {
             file = (EjsObj*) ejsCreateEmptyPot(ejs);
-            ejsSetPropertyByName(ejs, file, EN("filename"), ejsCreatePathFromAsc(ejs, up->filename));
-            ejsSetPropertyByName(ejs, file, EN("clientFilename"), ejsCreateStringFromAsc(ejs, up->clientFilename));
-            ejsSetPropertyByName(ejs, file, EN("contentType"), ejsCreateStringFromAsc(ejs, up->contentType));
-            ejsSetPropertyByName(ejs, file, EN("name"), ejsCreateStringFromAsc(ejs, kp->key));
-            ejsSetPropertyByName(ejs, file, EN("size"), ejsCreateNumber(ejs, (MprNumber) up->size));
-            ejsSetPropertyByName(ejs, files, EN(kp->key), file);
+            ejsSetPropertyByName(ejs, file, EN("filename"), ejsCreatePathFromAsc(ejs, uf->filename));
+            ejsSetPropertyByName(ejs, file, EN("clientFilename"), ejsCreateStringFromAsc(ejs, uf->clientFilename));
+            ejsSetPropertyByName(ejs, file, EN("contentType"), ejsCreateStringFromAsc(ejs, uf->contentType));
+            ejsSetPropertyByName(ejs, file, EN("name"), ejsCreateStringFromAsc(ejs, uf->name));
+            ejsSetPropertyByName(ejs, file, EN("size"), ejsCreateNumber(ejs, (MprNumber) uf->size));
+            ejsSetPropertyByName(ejs, files, EN(uf->name), file);
         }
     }
     return (EjsObj*) req->files;
@@ -58229,11 +58337,10 @@ void ejsConfigureRequestType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/ejs.web/ejsSession.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/ejs.web/ejsSession.c ************/
+
 
 /**
     ejsSession.c - Native code for the Session class.
@@ -58504,11 +58611,10 @@ void ejsConfigureSessionType(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/ejs.web/ejsWeb.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/ejs.web/ejsWeb.c ************/
+
 
 /*
     ejsWeb.c -- Ejscript web framework.
@@ -58587,11 +58693,10 @@ int ejs_web_Init(Ejs *ejs, MprModule *mp)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/ejs.zlib/ejsZlib.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/ejs.zlib/ejsZlib.c ************/
+
 
 /*
     ejsZlib.c -- Zlib compression 
@@ -58961,11 +59066,10 @@ PUBLIC int ejs_zlib_Init(Ejs *ejs, MprModule *mp)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/vm/ejsByteCode.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/vm/ejsByteCode.c ************/
+
 
 /**
     ejsByteCode.c - Definition of the byte code table.
@@ -59007,11 +59111,10 @@ PUBLIC EjsOptable *ejsGetOptable()
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/vm/ejsException.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/vm/ejsException.c ************/
+
 
 /**
     ejsException.c - Error Exception class
@@ -59432,11 +59535,10 @@ EjsObj *ejsGetException(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/vm/ejsHelper.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/vm/ejsHelper.c ************/
+
 
 /**
     ejsHelper.c - Helper methods for types.
@@ -60497,11 +60599,10 @@ void ejsMarkName(EjsName *qname)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/vm/ejsInterp.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/vm/ejsInterp.c ************/
+
 
 /*
     ejsInterp.c - Virtual Machine Interpreter for Ejscript.
@@ -63159,9 +63260,11 @@ EjsAny *ejsRunFunction(Ejs *ejs, EjsFunction *fun, EjsAny *thisObj, int argc, vo
     assert(ejs);
     assert(fun);
     assert(ejsIsFunction(ejs, fun));
+#if KEEP
     if (ejs->exception) {
         mprDebug("ejs vm", 0, "STOP");
     }
+#endif
     assert(ejs->exception == 0);
 
     if (ejs->exception) {
@@ -63256,7 +63359,7 @@ static void badArgType(Ejs *ejs, EjsFunction *fun, EjsPot *activation, EjsTrait 
     EjsName     qname;
 
     qname = ejsGetPropertyName(ejs, activation, index);
-    ejsThrowTypeError(ejs, "Unacceptable null or undefined value for argument \"%@\" in function \"%@\"", qname.name, fun->name);
+    ejsThrowTypeError(ejs, "Bad type for argument \"%@\" in function \"%@\"", qname.name, fun->name);
 }
 
 
@@ -64340,11 +64443,10 @@ void ejsShowOpFrequency(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/vm/ejsLoader.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/vm/ejsLoader.c ************/
+
 
 /**
     ejsLoader.c - Ejscript module file file loader
@@ -64451,8 +64553,8 @@ static int initializeModule(Ejs *ejs, EjsModule *mp)
                 return MPR_ERR_CANT_INITIALIZE;
             }
             if (!(ejs->flags & EJS_FLAG_NO_INIT)) {
-                if (nativeModule->checksum != mp->checksum) {
-                    ejsThrowIOError(ejs, "Module \"%s\" XXX does not match native code (%d, %d)", mp->path, 
+                if (mp->checksum != 0 && nativeModule->checksum != mp->checksum) {
+                    ejsThrowIOError(ejs, "Module \"%s\" does not match native code (%d, %d)", mp->path,
                         nativeModule->checksum, mp->checksum);
                     return MPR_ERR_BAD_STATE;
                 }
@@ -65971,11 +66073,10 @@ static void popScope(EjsModule *mp, int keepScope)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/vm/ejsModule.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/vm/ejsModule.c ************/
+
 
 /**
     ejsModule.c - Ejscript module management
@@ -66897,11 +66998,10 @@ double ejsSwapDouble(Ejs *ejs, double a)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/vm/ejsScope.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/vm/ejsScope.c ************/
+
 
 /**
     ejsScope.c - Lookup variables in the scope chain.
@@ -67142,6 +67242,7 @@ int ejsLookupVarWithNamespaces(Ejs *ejs, EjsAny *obj, EjsName name, EjsLookup *l
                 for (next = -1; (nsp = (EjsNamespace*) mprGetPrevItem(&b->namespaces, &next)) != 0; ) {
                     qname.space = nsp->value;
                     if ((slotNum = ejsLookupProperty(ejs, obj, qname)) >= 0) {
+                        lookup->name = qname;
                         goto done;
                     }
                 }
@@ -67149,6 +67250,7 @@ int ejsLookupVarWithNamespaces(Ejs *ejs, EjsAny *obj, EjsName name, EjsLookup *l
             for (next = -1; (nsp = mprGetPrevItem(globalSpaces, &next)) != 0; ) {
                 qname.space = nsp->value;
                 if ((slotNum = ejsLookupProperty(ejs, obj, qname)) >= 0) {
+                    lookup->name = qname;
                     goto done;
                 }
             }
@@ -67263,11 +67365,10 @@ void ejsShowCurrentScope(Ejs *ejs)
     @end
  */
 
-/************************************************************************/
-/*
-    Start of file "src/vm/ejsService.c"
- */
-/************************************************************************/
+
+
+/********* Start of file ../../../src/vm/ejsService.c ************/
+
 
 /**
     ejsService.c - Ejscript interpreter factory
@@ -67375,8 +67476,13 @@ Ejs *ejsCreateVM(int argc, cchar **argv, int flags)
     ejs->dontExit = sp->dontExit;
     ejs->flags |= (flags & (EJS_FLAG_NO_INIT | EJS_FLAG_DOC | EJS_FLAG_HOSTED));
     ejs->hosted = (flags & EJS_FLAG_HOSTED) ? 1 : 0;
-
     ejs->global = ejsCreateBlock(ejs, 0);
+
+    /*
+        Use conservative GC shutdown
+     */
+    MPR->flags |= MPR_NOT_ALL;
+
     mprSetName(ejs->global, "global");
     ejsDefineGlobalNamespaces(ejs);
 
@@ -67990,7 +68096,7 @@ EjsArray *ejsCreateSearchPath(Ejs *ejs, cchar *search)
      */
     ejsSetProperty(ejs, ap, -1, ejsCreatePathFromAsc(ejs, "."));
     ejsSetProperty(ejs, ap, -1, ejsCreatePathFromAsc(ejs, mprGetAppDir()));
-#if !VXWORKS
+#if !VXWORKS && defined(ME_VAPP_PREFIX)
     if (!smatch(mprGetAppDir(), ME_VAPP_PREFIX "/bin")) {
         ejsSetProperty(ejs, ap, -1, ejsCreatePathFromAsc(ejs, ME_VAPP_PREFIX "/bin"));
     }
@@ -68453,4 +68559,5 @@ void ejsDisableExit(Ejs *ejs)
 
     @end
  */
+
 #endif /* ME_COM_EJS */

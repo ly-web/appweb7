@@ -2,18 +2,18 @@
     "name": "ejs",
     "description": "Embedthis Ejscript Javascript Language",
     "title": "Embedthis Ejscript",
-    "version": "2.4.1",
+    "version": "2.5.0",
     "keywords": [
         "ejs",
         "ejscript",
         "javascript",
         "ecmascript"
     ],
-    "homepage": "http://embedthis.com/products/ejs/",
+    "homepage": "https://embedthis.com/products/ejs/",
     "author": {
         "name": "Embedthis Software",
         "email": "dev@embedthis.com",
-        "url": "http://embedthis.com"
+        "url": "https://embedthis.com"
     },
     "repository": {
         "type": "git",
@@ -30,24 +30,25 @@
         },
         {
             "type": "Commercial",
-            "url": "http://embedthis.com/licensing/"
+            "url": "https://embedthis.com/licensing/"
         }
     ],
     "pak": "~0.9",
     "dependencies": {
-        "http": "~5",
-        "me-dev": "~0.8",
-        "mpr": "~5",
+        "http": "~6",
+        "me-docstyle": "~0.8",
+        "mpr": "~6",
         "osdep": "~0.8",
         "pcre": "~1.0",
         "zlib": "~1.0"
     },
     "optionalDependencies": {
         "est": "~0.6",
-        "me-ssl": "~0.8",
-        "sqlite": "~1.0"
+        "sqlite": "~1.0",
+        "ssl": "~0.8"
     },
     "directories": {
         "paks": "src/paks"
-    }
+    },
+    "import": true
 }
