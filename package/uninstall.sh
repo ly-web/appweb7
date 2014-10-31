@@ -195,7 +195,7 @@ postClean() {
     cleanDir "${APP_PREFIX}"
     cleanDir "${INC_PREFIX}/${PRODUCT}"
     if [ $OS = macosx ] ; then
-        pkgutil --forget com.${COMPANY}.${PRODUCT}.pkg 2>/dev/null
+        pkgutil --forget com.${COMPANY}.${PRODUCT}.pkg >/dev/null 2>&1
     fi
 }
 

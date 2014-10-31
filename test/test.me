@@ -12,6 +12,7 @@ Me.load({
                     rm(['cgi-bin/cgi*', 'cgi-bin/nph*', 'cgi-bin/testScript', 
                         'web/caching/cache.cgi', 'web/auth/basic/basic.cgi'])
                     path.write('')
+                    Path('web/tmp').makeDir()
                 }
             `,
             generate: false,

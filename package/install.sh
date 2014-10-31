@@ -254,7 +254,7 @@ removeOld() {
 installFiles() {
     local dir pkg doins NAME upper target
 
-    [ "$headless" != 1 ] && echo -e "\nExtracting files ...\n"
+    [ "$headless" != 1 ] && echo -e "Extracting files ...\n"
 
     for pkg in bin ; do
         doins=`eval echo \\$install${pkg}`
@@ -287,7 +287,7 @@ installFiles() {
             done
         fi
     fi
-    [ "$headless" != 1 ] && echo -e "\nSetting file permissions ..."
+    [ "$headless" != 1 ] && echo -e "Setting file permissions ..."
     if [ $OS = windows ] ; then
         # Cygwin bug. Chmod fails to stick if not in current directory for paths with spaces
         home=`pwd` >/dev/null
@@ -309,7 +309,8 @@ installFiles() {
         chgrp $groupname "$SPL_PREFIX" "$CACHE_PREFIX" "$LOG_PREFIX"
         chmod 755 "$SPL_PREFIX" "$CACHE_PREFIX" "$LOG_PREFIX"
         if [ $OS = macosx ] ; then
-            chown root.wheel /Library/LaunchDaemons/com.embedthis.appweb.plist
+            chown root /Library/LaunchDaemons/com.embedthis.appweb.plist
+            chgrp wheel /Library/LaunchDaemons/com.embedthis.appweb.plist
         fi
     fi
     [ "$headless" != 1 ] && echo
@@ -359,7 +360,7 @@ setup $*
 askUser
 
 if [ "$installbin" = "Y" ] ; then
-    [ "$headless" != 1 ] && echo "Disable existing service"
+    [ "$headless" != 1 ] && echo "Disable existing service\n"
     appman stop disable uninstall >/dev/null 2>&1
     if [ $OS = windows ] ; then
         "$ABIN/appwebMonitor" --stop >/dev/null 2>&1
