@@ -124,7 +124,7 @@
     #define ME_MANIFEST "package/manifest.me"
 #endif
 #ifndef ME_ME
-    #define ME_ME "=0.8.4"
+    #define ME_ME "=>0.8.4"
 #endif
 #ifndef ME_MPR_LOGGING
     #define ME_MPR_LOGGING 1
@@ -157,7 +157,7 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "4.6.5"
+    #define ME_VERSION "4.6.6"
 #endif
 
 /* Prefixes */
@@ -255,10 +255,10 @@
     #define ME_MINOR_VERSION 6
 #endif
 #ifndef ME_PATCH_VERSION
-    #define ME_PATCH_VERSION 5
+    #define ME_PATCH_VERSION 6
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 400060005
+    #define ME_VNUM 400060006
 #endif
 
 /* Components */
