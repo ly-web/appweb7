@@ -1,0 +1,44 @@
+{
+    "name": "me-docstyle",
+    "description": "Documentation Style",
+    "version": "0.8.4",
+    "keywords": [
+        "me",
+    ],
+    "author": {
+        "name": "Embedthis Software",
+        "email": "dev@embedthis.com",
+        "url": "https://embedthis.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/embedthis/me-docstyle.git"
+    },
+    "bugs": {
+        "url": "http://github.com/embedthis/me-docstyle/issues"
+    },
+    "licenses": [
+        {
+            "type": "GPL",
+            "url": "http://www.gnu.org/licenses/gpl-2.0.html"
+        },
+        {
+            "type": "Commercial",
+            "url": "https://embedthis.com/licensing/"
+        }
+    ],
+    "export": [ {
+            from: [ "css/" ],
+            to: 'documents/',
+            overwrite: true,
+        }, {
+            from: [ "partials/" ],
+            to: '.',
+            overwrite: true,
+        }, {
+            from: [ "lib/" ],
+            to: 'files/',
+            overwrite: true,
+        }
+    ]
+}

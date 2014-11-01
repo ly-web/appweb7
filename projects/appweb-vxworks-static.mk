@@ -3,7 +3,7 @@
 #
 
 NAME                  := appweb
-VERSION               := 5.2.0
+VERSION               := 5.2.1
 PROFILE               ?= static
 ARCH                  ?= $(shell echo $(WIND_HOST_TYPE) | sed 's/-.*$(ME_ROOT_PREFIX)/')
 CPU                   ?= $(subst X86,PENTIUM,$(shell echo $(ARCH) | tr a-z A-Z))
@@ -1281,5 +1281,5 @@ uninstall: $(DEPS_82)
 #
 
 version: $(DEPS_83)
-	echo 5.2.0
+	echo 5.2.1
 
