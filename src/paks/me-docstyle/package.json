@@ -29,15 +29,15 @@
     ],
     "export": [ {
             from: [ "css/" ],
-            to: 'documents/',
+            to: 'doc/documents/',
             overwrite: true,
         }, {
             from: [ "partials/" ],
-            to: '.',
+            to: 'doc/',
             overwrite: true,
         }, {
             from: [ "lib/" ],
-            to: 'files/',
+            to: 'doc/files/',
             overwrite: true,
         }
     ]
