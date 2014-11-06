@@ -614,7 +614,7 @@ static void initRuntime()
     if (app->error) {
         return;
     }
-    if (httpCreate(HTTP_SERVER_SIDE | HTTP_UTILITY) < 0) {
+    if (httpCreate(HTTP_CLIENT_SIDE | HTTP_SERVER_SIDE | HTTP_UTILITY) < 0) {
         fail("Cannot create HTTP service for %s", mprGetAppName());
         return;
     }
@@ -1043,7 +1043,7 @@ static void migrate(int argc, char **argv)
         mig = app->migrations->records[app->migrations->nrecords - 1];
         lastMigration = stoi(ediGetFieldValue(mig, "version"));
     }
-    app->files = mprGetPathFiles("db/migrations", MPR_PATH_NODIRS);
+    app->files = mprGetPathFiles("db/migrations", MPR_PATH_NO_DIRS);
     mprSortList(app->files, (MprSortProc) (backward ? reverseSortFiles : sortFiles), 0);
 
     if (argc > 0) {
@@ -2042,7 +2042,7 @@ static void compileItems(HttpRoute *route)
     Change client => documents
 #endif
     if ((dir = httpGetDir(route, "client")) != 0) {
-        app->files = mprGetPathFiles(dir, MPR_PATH_DESCEND | MPR_PATH_NODIRS);
+        app->files = mprGetPathFiles(dir, MPR_PATH_DESCEND | MPR_PATH_NO_DIRS);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
             if (sstarts(path, httpGetDir(route, "layouts"))) {
@@ -2845,7 +2845,7 @@ static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toD
     if ((base = mprGetJson(app->config, "directories.paks")) == 0) {
         base = app->paksDir;
     }
-    files = mprGetPathFiles(fromDir, MPR_PATH_DESCEND | MPR_PATH_RELATIVE | MPR_PATH_NODIRS);
+    files = mprGetPathFiles(fromDir, MPR_PATH_DESCEND | MPR_PATH_RELATIVE | MPR_PATH_NO_DIRS);
     for (next = 0; (dp = mprGetNextItem(files, &next)) != 0 && !app->error; ) {
         to = mprJoinPaths(toDir, base, name, dp->name, NULL);
         from = mprJoinPath(fromDir, dp->name);
@@ -3268,7 +3268,7 @@ static void logHandler(cchar *tags, int level, cchar *msg)
             mprWriteToOsLog(sfmt("%s: %d %s: %s", MPR->name, level, tags, msg), level);
         }
     } else {
-        if (level == 0) {
+        if (scontains(tags, "error")) {
             trace("Error", msg);
         } else {
             trace("Info", msg);
