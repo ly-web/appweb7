@@ -1151,9 +1151,9 @@
     </member>
     <member kind="define">
       <type>#define</type>
-      <name>MPR_PATH_NODIRS</name>
+      <name>MPR_PATH_NO_DIRS</name>
       <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a84562a2d6625c6121c9489d114c0a9ec</anchor>
+      <anchor>a905770af4f40076347a564e6ce9dcaa7</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">

@@ -1927,7 +1927,7 @@ cd ../test
     			shellPath = /bin/bash;
     			shellScript = "PATH=$PATH:/usr/local/bin
 [ ! -x ${INC_DIR} ] && mkdir -p ${INC_DIR} ${OBJ_DIR} ${LIB_DIR} ${BIN_DIR}
-[ ! -f ${INC_DIR}/me.h -a -f cp appweb-macosx-default-me.h ] && cp appweb-macosx-default-me.h ${INC_DIR}/me.h
+[ ! -f ${INC_DIR}/me.h -a -f appweb-macosx-default-me.h ] && cp appweb-macosx-default-me.h ${INC_DIR}/me.h
 if [ -f appweb-macosx-default-me.h ] ; then
 if ! diff ${INC_DIR}/me.h appweb-macosx-default-me.h >/dev/null 2>&1 ; then
 cp appweb-macosx-default-me.h ${INC_DIR}/me.h

@@ -2,7 +2,7 @@
     "name": "esp",
     "description": "Embedthis ESP, the amazingly fast C-Language web framework",
     "title": "Embedthis ESP",
-    "version": "5.2.0",
+    "version": "5.2.1",
     "keywords": [
         "esp",
         "package"
@@ -34,9 +34,6 @@
         "esp-mvc": "~5",
         "esp-server": "~5",
         "est": "~0.6",
-        "me-dev": "~0.8",
-        "me-doc": "~0.8",
-        "me-package": "~0.8",
         "me-ssl": "~0.8",
         "sqlite": "~1"
     },

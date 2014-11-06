@@ -1403,7 +1403,7 @@
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Flag for mprGetPathFiles to include hidden files.</td></tr>
 <tr class="apiDef">
-<td>#define</td><td><a href="#mpr_8h_1a84562a2d6625c6121c9489d114c0a9ec" class="nameRef">MPR_PATH_NODIRS</a>&nbsp;&nbsp;&nbsp;0x8</td>
+<td>#define</td><td><a href="#mpr_8h_1a905770af4f40076347a564e6ce9dcaa7" class="nameRef">MPR_PATH_NO_DIRS</a>&nbsp;&nbsp;&nbsp;0x8</td>
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Flag for mprGetPathFiles to exclude subdirectories.</td></tr>
 <tr class="apiDef">
@@ -9947,7 +9947,7 @@ objects
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">dir</td><td>Directory to list.</td>
-    <tr><td class="param">flags</td><td>The flags may be set to <a class="ref" href="#mpr_8h_1a38348b56856049b3ea9ec95744093fdd">MPR_PATH_DESCEND</a> to traverse subdirectories. Set <a class="ref" href="#mpr_8h_1a84562a2d6625c6121c9489d114c0a9ec">MPR_PATH_NODIRS</a> to exclude directories from the results. Set to MPR_PATH_HIDDEN to include hidden files that start with &quot;.&quot;. Set to MPR_PATH_DEPTH_FIRST to do a depth-first traversal, i.e. traverse subdirectories before considering adding the directory to the list.</td>
+    <tr><td class="param">flags</td><td>The flags may be set to <a class="ref" href="#mpr_8h_1a38348b56856049b3ea9ec95744093fdd">MPR_PATH_DESCEND</a> to traverse subdirectories. This effectively appends &apos;**&apos; to the path. Set <a class="ref" href="#mpr_8h_1a905770af4f40076347a564e6ce9dcaa7">MPR_PATH_NO_DIRS</a> to exclude directories from the results. Set to MPR_PATH_HIDDEN to include hidden files that start with &quot;.&quot;. Set to MPR_PATH_DEPTH_FIRST to do a depth-first traversal, i.e. traverse subdirectories before considering adding the directory to the list.</td>
     </table></dd></dl>
     <dl><dt>Returns:</dt><dd>A list (MprList) of <a class="ref" href="#struct_mpr_dir_entry">MprDirEntry</a> objects.</dd></dl>
     <dl><dt><b>API</b> Stability:</dt><dd>Stable.</dd></dl>
@@ -10190,7 +10190,7 @@ This call returns a list of filenames
     <table class="parameters" title="Parameters">
     <tr><td class="param">path</td><td>Directory to list.</td>
     <tr><td class="param">patterns</td><td>Wild card patterns to match.</td>
-    <tr><td class="param">flags</td><td>The flags may be set to <a class="ref" href="#mpr_8h_1a38348b56856049b3ea9ec95744093fdd">MPR_PATH_DESCEND</a> to traverse subdirectories. Set <a class="ref" href="#mpr_8h_1a84562a2d6625c6121c9489d114c0a9ec">MPR_PATH_NODIRS</a> to exclude directories from the results. Set to MPR_PATH_HIDDEN to include hidden files that start with &quot;.&quot;. Set to MPR_PATH_DEPTH_FIRST to do a depth-first traversal, i.e. traverse subdirectories before considering adding the directory to the list.</td>
+    <tr><td class="param">flags</td><td>Set to MPR_PATH_HIDDEN to include hidden files that start with &quot;.&quot;. Set to MPR_PATH_DEPTH_FIRST to do a depth-first traversal, i.e. traverse subdirectories before considering adding the directory to the list. Set MPR_PATH_RELATIVE to return files relative to the given path. Set MPR_PATH_NO_DIRS to omit directories.</td>
     </table></dd></dl>
     <dl><dt>Returns:</dt><dd>A list (MprList) of filenames.</dd></dl>
     <dl><dt><b>API</b> Stability:</dt><dd>Stable.</dd></dl>
