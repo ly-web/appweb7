@@ -1,7 +1,7 @@
 {
     "name": "esp-html-mvc",
     "description": "ESP Server-Side HTML MVC",
-    "version": "5.2.0",
+    "version": "5.2.1",
     "licenses": [
         {
             "type": "GPL",

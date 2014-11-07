@@ -1,7 +1,7 @@
 {
     "name": "esp-server",
     "description": "ESP Server-Side Configuration",
-    "version": "5.2.0",
+    "version": "5.2.1",
     "licenses": [
         {
             "type": "GPL",
