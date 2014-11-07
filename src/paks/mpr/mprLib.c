@@ -18238,9 +18238,11 @@ PUBLIC MprList *mprGlobPathFiles(cchar *path, cchar *pattern, int flags)
             if (pat > start) {
                 pat[-1] = '\0';
                 path = mprJoinPath(path, start);
+#if UNUSED
                 if (trimStart) {
                     trimStart += pat - start;
                 }
+#endif
             }
             pattern = pat;
         }
