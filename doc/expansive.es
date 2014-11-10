@@ -2,7 +2,6 @@ Expansive.load({
     meta: {
         title:       'Appweb Documentation',
         url:         'https://embedthis.com/appweb/doc',
-        description: 'The fastest little web server',
         keywords:    'appweb, embedded web server, embedded, devices, http server, internet of things, esp, goahead',
     },
     expansive: {
