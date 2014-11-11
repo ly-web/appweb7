@@ -463,7 +463,7 @@ static int parseArgs(int argc, char **argv)
             }
 
         } else if (smatch(argp, "version") || smatch(argp, "V")) {
-            mprPrintf("%s\n", ME_VERSION);
+            mprPrintf("%s\n", ESP_VERSION);
             exit(0);
 
         } else if (isdigit((uchar) *argp)) {
@@ -956,7 +956,7 @@ static void install(int argc, char **argv)
     for (i = 0; i < argc; i++) {
         name = argv[i];
         if (smatch(name, "esp-server") || smatch(name, "esp-mvc") || smatch(name, "esp-html-mvc")) {
-            criteria = ESP_VERSION;
+            criteria = sfmt("~%d.%d", ESP_MAJOR_VERSION, ESP_MINOR_VERSION);
         } else {
             criteria = 0;
         }

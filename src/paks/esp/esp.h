@@ -1245,6 +1245,12 @@ extern "C" {
 #ifndef ESP_VERSION
     #define ESP_VERSION ME_VERSION
 #endif
+#ifndef ESP_MAJOR_VERSION
+    #define ESP_MAJOR_VERSION ME_MAJOR_VERSION
+#ifndef ESP_MINOR_VERSION
+    #define ESP_MINOR_VERSION ME_MINOR_VERSION
+#endif
+#endif
 
 /********************************** Defines ***********************************/
 /**
