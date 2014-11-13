@@ -39,16 +39,16 @@
     "dependencies": {
         "http": "~6",
         "me-docstyle": "~0.8",
-        "mpr": "~6",
+        "mpr": "~6.0",
         "osdep": "~0.8",
         "pcre": "~1.0"
     },
     "optionalDependencies": {
         "ejs": "~2.5",
         "esp": "~5",
-        "esp-html-mvc": "~5",
-        "esp-mvc": "~5",
-        "esp-server": "~5",
+        "esp-html-mvc": "~5.2",
+        "esp-mvc": "~5.2",
+        "esp-server": "~5.2",
         "est": "~0.6",
         "php": "~0.8",
         "sqlite": "~1.0",
