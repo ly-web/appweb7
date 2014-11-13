@@ -33,6 +33,9 @@ LBIN                  = $(BUILD)\bin
 !IF "$(ME_COM_CGI)" == ""
 ME_COM_CGI            = 1
 !ENDIF
+!IF "$(ME_COM_COMPILER)" == ""
+ME_COM_COMPILER       = 1
+!ENDIF
 !IF "$(ME_COM_DIR)" == ""
 ME_COM_DIR            = 1
 !ENDIF
@@ -43,16 +46,25 @@ ME_COM_EJS            = 0
 ME_COM_ESP            = 1
 !ENDIF
 !IF "$(ME_COM_EST)" == ""
-ME_COM_EST            = 1
+ME_COM_EST            = 0
 !ENDIF
 !IF "$(ME_COM_HTTP)" == ""
 ME_COM_HTTP           = 1
 !ENDIF
+!IF "$(ME_COM_LIB)" == ""
+ME_COM_LIB            = 1
+!ENDIF
+!IF "$(ME_COM_LINK)" == ""
+ME_COM_LINK           = 1
+!ENDIF
 !IF "$(ME_COM_MDB)" == ""
 ME_COM_MDB            = 1
 !ENDIF
+!IF "$(ME_COM_MPR)" == ""
+ME_COM_MPR            = 1
+!ENDIF
 !IF "$(ME_COM_OPENSSL)" == ""
-ME_COM_OPENSSL        = 0
+ME_COM_OPENSSL        = 1
 !ENDIF
 !IF "$(ME_COM_OSDEP)" == ""
 ME_COM_OSDEP          = 1
@@ -63,6 +75,9 @@ ME_COM_PCRE           = 1
 !IF "$(ME_COM_PHP)" == ""
 ME_COM_PHP            = 0
 !ENDIF
+!IF "$(ME_COM_RC)" == ""
+ME_COM_RC             = 1
+!ENDIF
 !IF "$(ME_COM_SQLITE)" == ""
 ME_COM_SQLITE         = 0
 !ENDIF
@@ -72,16 +87,35 @@ ME_COM_SSL            = 1
 !IF "$(ME_COM_VXWORKS)" == ""
 ME_COM_VXWORKS        = 0
 !ENDIF
+!IF "$(ME_COM_WINSDK)" == ""
+ME_COM_WINSDK         = 1
+!ENDIF
 !IF "$(ME_COM_ZLIB)" == ""
 ME_COM_ZLIB           = 0
 !ENDIF
 
-!IF "$(ME_COM_SSL)" == ""
-ME_COM_SSL            = 1
+!IF "$(ME_COM_HTTP)" == ""
+ME_COM_OPENSSL_PATH   = "/usr"
 !ENDIF
 
 !IF "$(ME_COM_SSL)" == ""
 ME_COM_SSL            = 1
+!ENDIF
+
+!IF "$(ME_COM_COMPILER)" == ""
+ME_COM_COMPILER       = 1
+!ENDIF
+
+!IF "$(ME_COM_COMPILER)" == ""
+ME_COM_COMPILER       = 1
+!ENDIF
+
+!IF "$(ME_COM_SSL)" == ""
+ME_COM_SSL            = 1
+!ENDIF
+
+!IF "$(ME_COM_WINSDK)" == ""
+ME_COM_WINSDK         = 1
 !ENDIF
 
 !IF "$(ME_COM_ZLIB)" == ""
@@ -97,7 +131,7 @@ CC                    = cl
 LD                    = link
 RC                    = rc
 CFLAGS                = -nologo -GR- -W3 -Zi -Od -MDd
-DFLAGS                = -D_REENTRANT -D_MT -DME_COM_CGI=$(ME_COM_CGI) -DME_COM_DIR=$(ME_COM_DIR) -DME_COM_EJS=$(ME_COM_EJS) -DME_COM_ESP=$(ME_COM_ESP) -DME_COM_EST=$(ME_COM_EST) -DME_COM_HTTP=$(ME_COM_HTTP) -DME_COM_MDB=$(ME_COM_MDB) -DME_COM_OPENSSL=$(ME_COM_OPENSSL) -DME_COM_OSDEP=$(ME_COM_OSDEP) -DME_COM_PCRE=$(ME_COM_PCRE) -DME_COM_PHP=$(ME_COM_PHP) -DME_COM_SQLITE=$(ME_COM_SQLITE) -DME_COM_SSL=$(ME_COM_SSL) -DME_COM_VXWORKS=$(ME_COM_VXWORKS) -DME_COM_ZLIB=$(ME_COM_ZLIB) 
+DFLAGS                = -D_REENTRANT -D_MT -DME_COM_CGI=$(ME_COM_CGI) -DME_COM_COMPILER=$(ME_COM_COMPILER) -DME_COM_DIR=$(ME_COM_DIR) -DME_COM_EJS=$(ME_COM_EJS) -DME_COM_ESP=$(ME_COM_ESP) -DME_COM_EST=$(ME_COM_EST) -DME_COM_HTTP=$(ME_COM_HTTP) -DME_COM_LIB=$(ME_COM_LIB) -DME_COM_LINK=$(ME_COM_LINK) -DME_COM_MDB=$(ME_COM_MDB) -DME_COM_MPR=$(ME_COM_MPR) -DME_COM_OPENSSL=$(ME_COM_OPENSSL) -DME_COM_OSDEP=$(ME_COM_OSDEP) -DME_COM_PCRE=$(ME_COM_PCRE) -DME_COM_PHP=$(ME_COM_PHP) -DME_COM_RC=$(ME_COM_RC) -DME_COM_SQLITE=$(ME_COM_SQLITE) -DME_COM_SSL=$(ME_COM_SSL) -DME_COM_VXWORKS=$(ME_COM_VXWORKS) -DME_COM_WINSDK=$(ME_COM_WINSDK) -DME_COM_ZLIB=$(ME_COM_ZLIB) 
 IFLAGS                = -Ibuild\$(CONFIG)\inc
 LDFLAGS               = -nologo -nodefaultlib -incremental:no -debug -machine:$(ARCH)
 LIBPATHS              = "-libpath:$(BUILD)\bin"
@@ -193,7 +227,6 @@ clean:
 	if exist "build\$(CONFIG)\obj\ejsc.obj" del /Q "build\$(CONFIG)\obj\ejsc.obj"
 	if exist "build\$(CONFIG)\obj\esp.obj" del /Q "build\$(CONFIG)\obj\esp.obj"
 	if exist "build\$(CONFIG)\obj\espLib.obj" del /Q "build\$(CONFIG)\obj\espLib.obj"
-	if exist "build\$(CONFIG)\obj\estLib.obj" del /Q "build\$(CONFIG)\obj\estLib.obj"
 	if exist "build\$(CONFIG)\obj\http.obj" del /Q "build\$(CONFIG)\obj\http.obj"
 	if exist "build\$(CONFIG)\obj\httpLib.obj" del /Q "build\$(CONFIG)\obj\httpLib.obj"
 	if exist "build\$(CONFIG)\obj\makerom.obj" del /Q "build\$(CONFIG)\obj\makerom.obj"
@@ -247,10 +280,6 @@ clean:
 	if exist "build\$(CONFIG)\bin\libejs.lib" del /Q "build\$(CONFIG)\bin\libejs.lib"
 	if exist "build\$(CONFIG)\bin\libejs.pdb" del /Q "build\$(CONFIG)\bin\libejs.pdb"
 	if exist "build\$(CONFIG)\bin\libejs.exp" del /Q "build\$(CONFIG)\bin\libejs.exp"
-	if exist "build\$(CONFIG)\bin\libest.dll" del /Q "build\$(CONFIG)\bin\libest.dll"
-	if exist "build\$(CONFIG)\bin\libest.lib" del /Q "build\$(CONFIG)\bin\libest.lib"
-	if exist "build\$(CONFIG)\bin\libest.pdb" del /Q "build\$(CONFIG)\bin\libest.pdb"
-	if exist "build\$(CONFIG)\bin\libest.exp" del /Q "build\$(CONFIG)\bin\libest.exp"
 	if exist "build\$(CONFIG)\bin\libhttp.dll" del /Q "build\$(CONFIG)\bin\libhttp.dll"
 	if exist "build\$(CONFIG)\bin\libhttp.lib" del /Q "build\$(CONFIG)\bin\libhttp.lib"
 	if exist "build\$(CONFIG)\bin\libhttp.pdb" del /Q "build\$(CONFIG)\bin\libhttp.pdb"
@@ -587,86 +616,44 @@ build\$(CONFIG)\bin\libslink.dll: $(DEPS_27)
 	"lib.exe" -nologo -out:$(BUILD)\bin\libslink.dll "$(BUILD)\obj\slink.obj" $(LOG)
 
 #
-#   est.h
-#
-DEPS_28 = $(DEPS_28) src\paks\est\est.h
-
-build\$(CONFIG)\inc\est.h: $(DEPS_28)
-	@echo ..... [Copy] build\$(CONFIG)\inc\est.h
-	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y /B src\paks\est\est.h+modified build\$(CONFIG)\inc\est.h $(LOG)
-
-#
-#   est.h
-#
-
-src\paks\est\est.h: $(DEPS_29)
-
-#
-#   estLib.obj
-#
-DEPS_30 = $(DEPS_30) src\paks\est\est.h
-
-build\$(CONFIG)\obj\estLib.obj: \
-    src\paks\est\estLib.c $(DEPS_30)
-	@echo .. [Compile] build\$(CONFIG)\obj\estLib.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\estLib.obj -Fd$(BUILD)\obj\estLib.pdb -nologo -GR- -Zi -Od -MDd $(DFLAGS) $(IFLAGS) src\paks\est\estLib.c $(LOG)
-
-!IF "$(ME_COM_EST)" == "1"
-#
-#   libest
-#
-DEPS_31 = $(DEPS_31) build\$(CONFIG)\inc\osdep.h
-DEPS_31 = $(DEPS_31) build\$(CONFIG)\inc\est.h
-DEPS_31 = $(DEPS_31) build\$(CONFIG)\obj\estLib.obj
-
-build\$(CONFIG)\bin\libest.dll: $(DEPS_31)
-	@echo ..... [Link] build\$(CONFIG)\bin\libest.dll
-	"lib.exe" -nologo -out:$(BUILD)\bin\libest.dll "$(BUILD)\obj\estLib.obj" $(LOG)
-!ENDIF
-
-#
 #   mprSsl.obj
 #
-DEPS_32 = $(DEPS_32) src\paks\mpr\mpr.h
+DEPS_28 = $(DEPS_28) src\paks\mpr\mpr.h
 
 build\$(CONFIG)\obj\mprSsl.obj: \
-    src\paks\mpr\mprSsl.c $(DEPS_32)
+    src\paks\mpr\mprSsl.c $(DEPS_28)
 	@echo .. [Compile] build\$(CONFIG)\obj\mprSsl.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\mprSsl.obj -Fd$(BUILD)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\paks\mpr\mprSsl.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\mprSsl.obj -Fd$(BUILD)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\paks\mpr\mprSsl.c $(LOG)
 
 #
 #   libmprssl
 #
-DEPS_33 = $(DEPS_33) build\$(CONFIG)\bin\libmpr.dll
-!IF "$(ME_COM_EST)" == "1"
-DEPS_33 = $(DEPS_33) build\$(CONFIG)\bin\libest.dll
-!ENDIF
-DEPS_33 = $(DEPS_33) build\$(CONFIG)\obj\mprSsl.obj
+DEPS_29 = $(DEPS_29) build\$(CONFIG)\bin\libmpr.dll
+DEPS_29 = $(DEPS_29) build\$(CONFIG)\obj\mprSsl.obj
 
-build\$(CONFIG)\bin\libmprssl.dll: $(DEPS_33)
+build\$(CONFIG)\bin\libmprssl.dll: $(DEPS_29)
 	@echo ..... [Link] build\$(CONFIG)\bin\libmprssl.dll
 	"lib.exe" -nologo -out:$(BUILD)\bin\libmprssl.dll "$(BUILD)\obj\mprSsl.obj" $(LOG)
 
 #
 #   sslModule.obj
 #
-DEPS_34 = $(DEPS_34) build\$(CONFIG)\inc\appweb.h
+DEPS_30 = $(DEPS_30) build\$(CONFIG)\inc\appweb.h
 
 build\$(CONFIG)\obj\sslModule.obj: \
-    src\modules\sslModule.c $(DEPS_34)
+    src\modules\sslModule.c $(DEPS_30)
 	@echo .. [Compile] build\$(CONFIG)\obj\sslModule.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\sslModule.obj -Fd$(BUILD)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\modules\sslModule.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\sslModule.obj -Fd$(BUILD)\obj\sslModule.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\modules\sslModule.c $(LOG)
 
 !IF "$(ME_COM_SSL)" == "1"
 #
 #   libmod_ssl
 #
-DEPS_35 = $(DEPS_35) build\$(CONFIG)\bin\libappweb.dll
-DEPS_35 = $(DEPS_35) build\$(CONFIG)\bin\libmprssl.dll
-DEPS_35 = $(DEPS_35) build\$(CONFIG)\obj\sslModule.obj
+DEPS_31 = $(DEPS_31) build\$(CONFIG)\bin\libappweb.dll
+DEPS_31 = $(DEPS_31) build\$(CONFIG)\bin\libmprssl.dll
+DEPS_31 = $(DEPS_31) build\$(CONFIG)\obj\sslModule.obj
 
-build\$(CONFIG)\bin\libmod_ssl.dll: $(DEPS_35)
+build\$(CONFIG)\bin\libmod_ssl.dll: $(DEPS_31)
 	@echo ..... [Link] build\$(CONFIG)\bin\libmod_ssl.dll
 	"lib.exe" -nologo -out:$(BUILD)\bin\libmod_ssl.dll "$(BUILD)\obj\sslModule.obj" $(LOG)
 !ENDIF
@@ -674,9 +661,9 @@ build\$(CONFIG)\bin\libmod_ssl.dll: $(DEPS_35)
 #
 #   zlib.h
 #
-DEPS_36 = $(DEPS_36) src\paks\zlib\zlib.h
+DEPS_32 = $(DEPS_32) src\paks\zlib\zlib.h
 
-build\$(CONFIG)\inc\zlib.h: $(DEPS_36)
+build\$(CONFIG)\inc\zlib.h: $(DEPS_32)
 	@echo ..... [Copy] build\$(CONFIG)\inc\zlib.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
 	copy /Y /B src\paks\zlib\zlib.h+modified build\$(CONFIG)\inc\zlib.h $(LOG)
@@ -685,16 +672,16 @@ build\$(CONFIG)\inc\zlib.h: $(DEPS_36)
 #   zlib.h
 #
 
-src\paks\zlib\zlib.h: $(DEPS_37)
+src\paks\zlib\zlib.h: $(DEPS_33)
 
 #
 #   zlib.obj
 #
-DEPS_38 = $(DEPS_38) build\$(CONFIG)\inc\me.h
-DEPS_38 = $(DEPS_38) src\paks\zlib\zlib.h
+DEPS_34 = $(DEPS_34) build\$(CONFIG)\inc\me.h
+DEPS_34 = $(DEPS_34) src\paks\zlib\zlib.h
 
 build\$(CONFIG)\obj\zlib.obj: \
-    src\paks\zlib\zlib.c $(DEPS_38)
+    src\paks\zlib\zlib.c $(DEPS_34)
 	@echo .. [Compile] build\$(CONFIG)\obj\zlib.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\zlib.obj -Fd$(BUILD)\obj\zlib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\zlib\zlib.c $(LOG)
 
@@ -702,10 +689,10 @@ build\$(CONFIG)\obj\zlib.obj: \
 #
 #   libzlib
 #
-DEPS_39 = $(DEPS_39) build\$(CONFIG)\inc\zlib.h
-DEPS_39 = $(DEPS_39) build\$(CONFIG)\obj\zlib.obj
+DEPS_35 = $(DEPS_35) build\$(CONFIG)\inc\zlib.h
+DEPS_35 = $(DEPS_35) build\$(CONFIG)\obj\zlib.obj
 
-build\$(CONFIG)\bin\libzlib.dll: $(DEPS_39)
+build\$(CONFIG)\bin\libzlib.dll: $(DEPS_35)
 	@echo ..... [Link] build\$(CONFIG)\bin\libzlib.dll
 	"lib.exe" -nologo -out:$(BUILD)\bin\libzlib.dll "$(BUILD)\obj\zlib.obj" $(LOG)
 !ENDIF
@@ -713,9 +700,9 @@ build\$(CONFIG)\bin\libzlib.dll: $(DEPS_39)
 #
 #   ejs.h
 #
-DEPS_40 = $(DEPS_40) src\paks\ejs\ejs.h
+DEPS_36 = $(DEPS_36) src\paks\ejs\ejs.h
 
-build\$(CONFIG)\inc\ejs.h: $(DEPS_40)
+build\$(CONFIG)\inc\ejs.h: $(DEPS_36)
 	@echo ..... [Copy] build\$(CONFIG)\inc\ejs.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
 	copy /Y /B src\paks\ejs\ejs.h+modified build\$(CONFIG)\inc\ejs.h $(LOG)
@@ -723,9 +710,9 @@ build\$(CONFIG)\inc\ejs.h: $(DEPS_40)
 #
 #   ejs.slots.h
 #
-DEPS_41 = $(DEPS_41) src\paks\ejs\ejs.slots.h
+DEPS_37 = $(DEPS_37) src\paks\ejs\ejs.slots.h
 
-build\$(CONFIG)\inc\ejs.slots.h: $(DEPS_41)
+build\$(CONFIG)\inc\ejs.slots.h: $(DEPS_37)
 	@echo ..... [Copy] build\$(CONFIG)\inc\ejs.slots.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
 	copy /Y /B src\paks\ejs\ejs.slots.h+modified build\$(CONFIG)\inc\ejs.slots.h $(LOG)
@@ -733,9 +720,9 @@ build\$(CONFIG)\inc\ejs.slots.h: $(DEPS_41)
 #
 #   ejsByteGoto.h
 #
-DEPS_42 = $(DEPS_42) src\paks\ejs\ejsByteGoto.h
+DEPS_38 = $(DEPS_38) src\paks\ejs\ejsByteGoto.h
 
-build\$(CONFIG)\inc\ejsByteGoto.h: $(DEPS_42)
+build\$(CONFIG)\inc\ejsByteGoto.h: $(DEPS_38)
 	@echo ..... [Copy] build\$(CONFIG)\inc\ejsByteGoto.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
 	copy /Y /B src\paks\ejs\ejsByteGoto.h+modified build\$(CONFIG)\inc\ejsByteGoto.h $(LOG)
@@ -744,18 +731,18 @@ build\$(CONFIG)\inc\ejsByteGoto.h: $(DEPS_42)
 #   ejs.h
 #
 
-src\paks\ejs\ejs.h: $(DEPS_43)
+src\paks\ejs\ejs.h: $(DEPS_39)
 
 #
 #   ejsLib.obj
 #
-DEPS_44 = $(DEPS_44) src\paks\ejs\ejs.h
-DEPS_44 = $(DEPS_44) build\$(CONFIG)\inc\mpr.h
-DEPS_44 = $(DEPS_44) build\$(CONFIG)\inc\pcre.h
-DEPS_44 = $(DEPS_44) build\$(CONFIG)\inc\me.h
+DEPS_40 = $(DEPS_40) src\paks\ejs\ejs.h
+DEPS_40 = $(DEPS_40) build\$(CONFIG)\inc\mpr.h
+DEPS_40 = $(DEPS_40) build\$(CONFIG)\inc\pcre.h
+DEPS_40 = $(DEPS_40) build\$(CONFIG)\inc\me.h
 
 build\$(CONFIG)\obj\ejsLib.obj: \
-    src\paks\ejs\ejsLib.c $(DEPS_44)
+    src\paks\ejs\ejsLib.c $(DEPS_40)
 	@echo .. [Compile] build\$(CONFIG)\obj\ejsLib.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\ejsLib.obj -Fd$(BUILD)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejsLib.c $(LOG)
 
@@ -764,21 +751,21 @@ build\$(CONFIG)\obj\ejsLib.obj: \
 #   libejs
 #
 !IF "$(ME_COM_HTTP)" == "1"
-DEPS_45 = $(DEPS_45) build\$(CONFIG)\bin\libhttp.dll
+DEPS_41 = $(DEPS_41) build\$(CONFIG)\bin\libhttp.dll
 !ENDIF
 !IF "$(ME_COM_PCRE)" == "1"
-DEPS_45 = $(DEPS_45) build\$(CONFIG)\bin\libpcre.dll
+DEPS_41 = $(DEPS_41) build\$(CONFIG)\bin\libpcre.dll
 !ENDIF
-DEPS_45 = $(DEPS_45) build\$(CONFIG)\bin\libmpr.dll
+DEPS_41 = $(DEPS_41) build\$(CONFIG)\bin\libmpr.dll
 !IF "$(ME_COM_ZLIB)" == "1"
-DEPS_45 = $(DEPS_45) build\$(CONFIG)\bin\libzlib.dll
+DEPS_41 = $(DEPS_41) build\$(CONFIG)\bin\libzlib.dll
 !ENDIF
-DEPS_45 = $(DEPS_45) build\$(CONFIG)\inc\ejs.h
-DEPS_45 = $(DEPS_45) build\$(CONFIG)\inc\ejs.slots.h
-DEPS_45 = $(DEPS_45) build\$(CONFIG)\inc\ejsByteGoto.h
-DEPS_45 = $(DEPS_45) build\$(CONFIG)\obj\ejsLib.obj
+DEPS_41 = $(DEPS_41) build\$(CONFIG)\inc\ejs.h
+DEPS_41 = $(DEPS_41) build\$(CONFIG)\inc\ejs.slots.h
+DEPS_41 = $(DEPS_41) build\$(CONFIG)\inc\ejsByteGoto.h
+DEPS_41 = $(DEPS_41) build\$(CONFIG)\obj\ejsLib.obj
 
-build\$(CONFIG)\bin\libejs.dll: $(DEPS_45)
+build\$(CONFIG)\bin\libejs.dll: $(DEPS_41)
 	@echo ..... [Link] build\$(CONFIG)\bin\libejs.dll
 	"lib.exe" -nologo -out:$(BUILD)\bin\libejs.dll "$(BUILD)\obj\ejsLib.obj" $(LOG)
 !ENDIF
@@ -786,10 +773,10 @@ build\$(CONFIG)\bin\libejs.dll: $(DEPS_45)
 #
 #   ejsHandler.obj
 #
-DEPS_46 = $(DEPS_46) build\$(CONFIG)\inc\appweb.h
+DEPS_42 = $(DEPS_42) build\$(CONFIG)\inc\appweb.h
 
 build\$(CONFIG)\obj\ejsHandler.obj: \
-    src\modules\ejsHandler.c $(DEPS_46)
+    src\modules\ejsHandler.c $(DEPS_42)
 	@echo .. [Compile] build\$(CONFIG)\obj\ejsHandler.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\ejsHandler.obj -Fd$(BUILD)\obj\ejsHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\ejsHandler.c $(LOG)
 
@@ -797,11 +784,11 @@ build\$(CONFIG)\obj\ejsHandler.obj: \
 #
 #   libmod_ejs
 #
-DEPS_47 = $(DEPS_47) build\$(CONFIG)\bin\libappweb.dll
-DEPS_47 = $(DEPS_47) build\$(CONFIG)\bin\libejs.dll
-DEPS_47 = $(DEPS_47) build\$(CONFIG)\obj\ejsHandler.obj
+DEPS_43 = $(DEPS_43) build\$(CONFIG)\bin\libappweb.dll
+DEPS_43 = $(DEPS_43) build\$(CONFIG)\bin\libejs.dll
+DEPS_43 = $(DEPS_43) build\$(CONFIG)\obj\ejsHandler.obj
 
-build\$(CONFIG)\bin\libmod_ejs.dll: $(DEPS_47)
+build\$(CONFIG)\bin\libmod_ejs.dll: $(DEPS_43)
 	@echo ..... [Link] build\$(CONFIG)\bin\libmod_ejs.dll
 	"lib.exe" -nologo -out:$(BUILD)\bin\libmod_ejs.dll "$(BUILD)\obj\ejsHandler.obj" $(LOG)
 !ENDIF
@@ -809,10 +796,10 @@ build\$(CONFIG)\bin\libmod_ejs.dll: $(DEPS_47)
 #
 #   phpHandler.obj
 #
-DEPS_48 = $(DEPS_48) build\$(CONFIG)\inc\appweb.h
+DEPS_44 = $(DEPS_44) build\$(CONFIG)\inc\appweb.h
 
 build\$(CONFIG)\obj\phpHandler.obj: \
-    src\modules\phpHandler.c $(DEPS_48)
+    src\modules\phpHandler.c $(DEPS_44)
 	@echo .. [Compile] build\$(CONFIG)\obj\phpHandler.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\phpHandler.obj -Fd$(BUILD)\obj\phpHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)\main" "-I$(ME_COM_PHP_PATH)\Zend" "-I$(ME_COM_PHP_PATH)\TSRM" src\modules\phpHandler.c $(LOG)
 
@@ -820,10 +807,10 @@ build\$(CONFIG)\obj\phpHandler.obj: \
 #
 #   libmod_php
 #
-DEPS_49 = $(DEPS_49) build\$(CONFIG)\bin\libappweb.dll
-DEPS_49 = $(DEPS_49) build\$(CONFIG)\obj\phpHandler.obj
+DEPS_45 = $(DEPS_45) build\$(CONFIG)\bin\libappweb.dll
+DEPS_45 = $(DEPS_45) build\$(CONFIG)\obj\phpHandler.obj
 
-build\$(CONFIG)\bin\libmod_php.dll: $(DEPS_49)
+build\$(CONFIG)\bin\libmod_php.dll: $(DEPS_45)
 	@echo ..... [Link] build\$(CONFIG)\bin\libmod_php.dll
 	"lib.exe" -nologo -out:$(BUILD)\bin\libmod_php.dll "$(BUILD)\obj\phpHandler.obj" $(LOG)
 !ENDIF
@@ -831,10 +818,10 @@ build\$(CONFIG)\bin\libmod_php.dll: $(DEPS_49)
 #
 #   cgiHandler.obj
 #
-DEPS_50 = $(DEPS_50) build\$(CONFIG)\inc\appweb.h
+DEPS_46 = $(DEPS_46) build\$(CONFIG)\inc\appweb.h
 
 build\$(CONFIG)\obj\cgiHandler.obj: \
-    src\modules\cgiHandler.c $(DEPS_50)
+    src\modules\cgiHandler.c $(DEPS_46)
 	@echo .. [Compile] build\$(CONFIG)\obj\cgiHandler.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\cgiHandler.obj -Fd$(BUILD)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\modules\cgiHandler.c $(LOG)
 
@@ -842,10 +829,10 @@ build\$(CONFIG)\obj\cgiHandler.obj: \
 #
 #   libmod_cgi
 #
-DEPS_51 = $(DEPS_51) build\$(CONFIG)\bin\libappweb.dll
-DEPS_51 = $(DEPS_51) build\$(CONFIG)\obj\cgiHandler.obj
+DEPS_47 = $(DEPS_47) build\$(CONFIG)\bin\libappweb.dll
+DEPS_47 = $(DEPS_47) build\$(CONFIG)\obj\cgiHandler.obj
 
-build\$(CONFIG)\bin\libmod_cgi.dll: $(DEPS_51)
+build\$(CONFIG)\bin\libmod_cgi.dll: $(DEPS_47)
 	@echo ..... [Link] build\$(CONFIG)\bin\libmod_cgi.dll
 	"lib.exe" -nologo -out:$(BUILD)\bin\libmod_cgi.dll "$(BUILD)\obj\cgiHandler.obj" $(LOG)
 !ENDIF
@@ -853,95 +840,97 @@ build\$(CONFIG)\bin\libmod_cgi.dll: $(DEPS_51)
 #
 #   appweb.obj
 #
-DEPS_52 = $(DEPS_52) build\$(CONFIG)\inc\appweb.h
+DEPS_48 = $(DEPS_48) build\$(CONFIG)\inc\appweb.h
 
 build\$(CONFIG)\obj\appweb.obj: \
-    src\server\appweb.c $(DEPS_52)
+    src\server\appweb.c $(DEPS_48)
 	@echo .. [Compile] build\$(CONFIG)\obj\appweb.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\appweb.obj -Fd$(BUILD)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)\main" "-I$(ME_COM_PHP_PATH)\Zend" "-I$(ME_COM_PHP_PATH)\TSRM" src\server\appweb.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\appweb.obj -Fd$(BUILD)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)\main" "-I$(ME_COM_PHP_PATH)\Zend" "-I$(ME_COM_PHP_PATH)\TSRM" src\server\appweb.c $(LOG)
 
 #
 #   appweb
 #
-DEPS_53 = $(DEPS_53) build\$(CONFIG)\bin\libappweb.dll
-DEPS_53 = $(DEPS_53) build\$(CONFIG)\bin\libslink.dll
+DEPS_49 = $(DEPS_49) build\$(CONFIG)\bin\libappweb.dll
+DEPS_49 = $(DEPS_49) build\$(CONFIG)\bin\libslink.dll
 !IF "$(ME_COM_ESP)" == "1"
-DEPS_53 = $(DEPS_53) build\$(CONFIG)\bin\libmod_esp.dll
+DEPS_49 = $(DEPS_49) build\$(CONFIG)\bin\libmod_esp.dll
 !ENDIF
 !IF "$(ME_COM_SSL)" == "1"
-DEPS_53 = $(DEPS_53) build\$(CONFIG)\bin\libmod_ssl.dll
+DEPS_49 = $(DEPS_49) build\$(CONFIG)\bin\libmod_ssl.dll
 !ENDIF
 !IF "$(ME_COM_EJS)" == "1"
-DEPS_53 = $(DEPS_53) build\$(CONFIG)\bin\libmod_ejs.dll
+DEPS_49 = $(DEPS_49) build\$(CONFIG)\bin\libmod_ejs.dll
 !ENDIF
 !IF "$(ME_COM_PHP)" == "1"
-DEPS_53 = $(DEPS_53) build\$(CONFIG)\bin\libmod_php.dll
+DEPS_49 = $(DEPS_49) build\$(CONFIG)\bin\libmod_php.dll
 !ENDIF
 !IF "$(ME_COM_CGI)" == "1"
-DEPS_53 = $(DEPS_53) build\$(CONFIG)\bin\libmod_cgi.dll
+DEPS_49 = $(DEPS_49) build\$(CONFIG)\bin\libmod_cgi.dll
 !ENDIF
-DEPS_53 = $(DEPS_53) build\$(CONFIG)\obj\appweb.obj
+DEPS_49 = $(DEPS_49) build\$(CONFIG)\obj\appweb.obj
 
-LIBS_53 = $(LIBS_53) libappweb.lib
+LIBS_49 = $(LIBS_49) libappweb.lib
 !IF "$(ME_COM_HTTP)" == "1"
-LIBS_53 = $(LIBS_53) libhttp.lib
+LIBS_49 = $(LIBS_49) libhttp.lib
 !ENDIF
-LIBS_53 = $(LIBS_53) libmpr.lib
+LIBS_49 = $(LIBS_49) libmpr.lib
 !IF "$(ME_COM_PCRE)" == "1"
-LIBS_53 = $(LIBS_53) libpcre.lib
+LIBS_49 = $(LIBS_49) libpcre.lib
 !ENDIF
-LIBS_53 = $(LIBS_53) libslink.lib
+LIBS_49 = $(LIBS_49) libslink.lib
 !IF "$(ME_COM_ESP)" == "1"
-LIBS_53 = $(LIBS_53) libmod_esp.lib
+LIBS_49 = $(LIBS_49) libmod_esp.lib
 !ENDIF
 !IF "$(ME_COM_SQLITE)" == "1"
-LIBS_53 = $(LIBS_53) libsql.lib
+LIBS_49 = $(LIBS_49) libsql.lib
 !ENDIF
 !IF "$(ME_COM_SSL)" == "1"
-LIBS_53 = $(LIBS_53) libmod_ssl.lib
+LIBS_49 = $(LIBS_49) libmod_ssl.lib
 !ENDIF
-LIBS_53 = $(LIBS_53) libmprssl.lib
+LIBS_49 = $(LIBS_49) libmprssl.lib
 !IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_53 = $(LIBS_53) libeay32.lib
-LIBPATHS_53 = $(LIBPATHS_53) -libpath:$(ME_COM_OPENSSL_PATH)
+LIBS_49 = $(LIBS_49) libeay32.lib
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_OPENSSL_PATH)/lib
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 !IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_53 = $(LIBS_53) libssleay32.lib
-LIBPATHS_53 = $(LIBPATHS_53) -libpath:$(ME_COM_OPENSSL_PATH)
+LIBS_49 = $(LIBS_49) libssleay32.lib
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_OPENSSL_PATH)/lib
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 !IF "$(ME_COM_EST)" == "1"
-LIBS_53 = $(LIBS_53) libest.lib
+LIBS_49 = $(LIBS_49) libest.lib
 !ENDIF
 !IF "$(ME_COM_EJS)" == "1"
-LIBS_53 = $(LIBS_53) libmod_ejs.lib
+LIBS_49 = $(LIBS_49) libmod_ejs.lib
 !ENDIF
 !IF "$(ME_COM_EJS)" == "1"
-LIBS_53 = $(LIBS_53) libejs.lib
+LIBS_49 = $(LIBS_49) libejs.lib
 !ENDIF
 !IF "$(ME_COM_ZLIB)" == "1"
-LIBS_53 = $(LIBS_53) libzlib.lib
+LIBS_49 = $(LIBS_49) libzlib.lib
 !ENDIF
 !IF "$(ME_COM_PHP)" == "1"
-LIBS_53 = $(LIBS_53) libmod_php.lib
+LIBS_49 = $(LIBS_49) libmod_php.lib
 !ENDIF
 !IF "$(ME_COM_PHP)" == "1"
-LIBS_53 = $(LIBS_53) libphp5ts.lib
-LIBPATHS_53 = $(LIBPATHS_53) -libpath:$(ME_COM_PHP_PATH)/libs
+LIBS_49 = $(LIBS_49) libphp5ts.lib
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_PHP_PATH)/libs
 !ENDIF
 !IF "$(ME_COM_CGI)" == "1"
-LIBS_53 = $(LIBS_53) libmod_cgi.lib
+LIBS_49 = $(LIBS_49) libmod_cgi.lib
 !ENDIF
 
-build\$(CONFIG)\bin\appweb.exe: $(DEPS_53)
+build\$(CONFIG)\bin\appweb.exe: $(DEPS_49)
 	@echo ..... [Link] build\$(CONFIG)\bin\appweb.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)   "$(BUILD)\obj\appweb.obj" $(LIBPATHS_53) $(LIBS_53) $(LIBS_53) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)    "$(BUILD)\obj\appweb.obj" $(LIBPATHS_49) $(LIBS_49) $(LIBS_49) $(LIBS)  $(LOG)
 
 #
 #   appwebMonitor.h
 #
-DEPS_54 = $(DEPS_54) src\server\windows\appwebMonitor.h
+DEPS_50 = $(DEPS_50) src\server\windows\appwebMonitor.h
 
-build\$(CONFIG)\inc\appwebMonitor.h: $(DEPS_54)
+build\$(CONFIG)\inc\appwebMonitor.h: $(DEPS_50)
 	@echo ..... [Copy] build\$(CONFIG)\inc\appwebMonitor.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
 	copy /Y /B src\server\windows\appwebMonitor.h+modified build\$(CONFIG)\inc\appwebMonitor.h $(LOG)
@@ -949,9 +938,9 @@ build\$(CONFIG)\inc\appwebMonitor.h: $(DEPS_54)
 #
 #   monitorResources.h
 #
-DEPS_55 = $(DEPS_55) src\server\windows\monitorResources.h
+DEPS_51 = $(DEPS_51) src\server\windows\monitorResources.h
 
-build\$(CONFIG)\inc\monitorResources.h: $(DEPS_55)
+build\$(CONFIG)\inc\monitorResources.h: $(DEPS_51)
 	@echo ..... [Copy] build\$(CONFIG)\inc\monitorResources.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
 	copy /Y /B src\server\windows\monitorResources.h+modified build\$(CONFIG)\inc\monitorResources.h $(LOG)
@@ -961,48 +950,48 @@ build\$(CONFIG)\inc\monitorResources.h: $(DEPS_55)
 #
 
 build\$(CONFIG)\obj\appwebMonitor.res: \
-        src\server\windows\appwebMonitor.rc $(DEPS_56)
+        src\server\windows\appwebMonitor.rc $(DEPS_52)
 	@echo .. [Compile] build\$(CONFIG)\obj\appwebMonitor.res
 	"$(RC)" -nologo -Fo $(BUILD)\obj\appwebMonitor.res src\server\windows\appwebMonitor.rc
 
 #
 #   appwebMonitor.obj
 #
-DEPS_57 = $(DEPS_57) build\$(CONFIG)\inc\mpr.h
+DEPS_53 = $(DEPS_53) build\$(CONFIG)\inc\mpr.h
 
 build\$(CONFIG)\obj\appwebMonitor.obj: \
-    src\server\windows\appwebMonitor.c $(DEPS_57)
+    src\server\windows\appwebMonitor.c $(DEPS_53)
 	@echo .. [Compile] build\$(CONFIG)\obj\appwebMonitor.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\appwebMonitor.obj -Fd$(BUILD)\obj\appwebMonitor.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\server\windows\appwebMonitor.c $(LOG)
 
 #
 #   appwebMonitor
 #
-DEPS_58 = $(DEPS_58) build\$(CONFIG)\bin\libappweb.dll
-DEPS_58 = $(DEPS_58) build\$(CONFIG)\inc\appwebMonitor.h
-DEPS_58 = $(DEPS_58) build\$(CONFIG)\inc\monitorResources.h
-DEPS_58 = $(DEPS_58) build\$(CONFIG)\obj\appwebMonitor.res
-DEPS_58 = $(DEPS_58) build\$(CONFIG)\obj\appwebMonitor.obj
+DEPS_54 = $(DEPS_54) build\$(CONFIG)\bin\libappweb.dll
+DEPS_54 = $(DEPS_54) build\$(CONFIG)\inc\appwebMonitor.h
+DEPS_54 = $(DEPS_54) build\$(CONFIG)\inc\monitorResources.h
+DEPS_54 = $(DEPS_54) build\$(CONFIG)\obj\appwebMonitor.res
+DEPS_54 = $(DEPS_54) build\$(CONFIG)\obj\appwebMonitor.obj
 
-LIBS_58 = $(LIBS_58) libappweb.lib
+LIBS_54 = $(LIBS_54) libappweb.lib
 !IF "$(ME_COM_HTTP)" == "1"
-LIBS_58 = $(LIBS_58) libhttp.lib
+LIBS_54 = $(LIBS_54) libhttp.lib
 !ENDIF
-LIBS_58 = $(LIBS_58) libmpr.lib
+LIBS_54 = $(LIBS_54) libmpr.lib
 !IF "$(ME_COM_PCRE)" == "1"
-LIBS_58 = $(LIBS_58) libpcre.lib
+LIBS_54 = $(LIBS_54) libpcre.lib
 !ENDIF
 
-build\$(CONFIG)\bin\appwebMonitor.exe: $(DEPS_58)
+build\$(CONFIG)\bin\appwebMonitor.exe: $(DEPS_54)
 	@echo ..... [Link] build\$(CONFIG)\bin\appwebMonitor.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\appwebMonitor.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\appwebMonitor.res" "$(BUILD)\obj\appwebMonitor.obj" shell32.lib ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib  $(LIBPATHS_58) $(LIBS_58) $(LIBS_58) $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\appwebMonitor.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\appwebMonitor.res" "$(BUILD)\obj\appwebMonitor.obj" shell32.lib ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib  $(LIBPATHS_54) $(LIBS_54) $(LIBS_54) $(LOG)
 
 #
 #   appwebMonitor.ico
 #
-DEPS_59 = $(DEPS_59) src\server\windows\appwebMonitor.ico
+DEPS_55 = $(DEPS_55) src\server\windows\appwebMonitor.ico
 
-build\$(CONFIG)\bin\appwebMonitor.ico: $(DEPS_59)
+build\$(CONFIG)\bin\appwebMonitor.ico: $(DEPS_55)
 	@echo ..... [Copy] build\$(CONFIG)\bin\appwebMonitor.ico
 	if not exist "build\$(CONFIG)\bin" md "build\$(CONFIG)\bin"
 	copy /Y /B src\server\windows\appwebMonitor.ico+modified build\$(CONFIG)\bin\appwebMonitor.ico $(LOG)
@@ -1010,48 +999,48 @@ build\$(CONFIG)\bin\appwebMonitor.ico: $(DEPS_59)
 #
 #   authpass.obj
 #
-DEPS_60 = $(DEPS_60) build\$(CONFIG)\inc\appweb.h
+DEPS_56 = $(DEPS_56) build\$(CONFIG)\inc\appweb.h
 
 build\$(CONFIG)\obj\authpass.obj: \
-    src\utils\authpass.c $(DEPS_60)
+    src\utils\authpass.c $(DEPS_56)
 	@echo .. [Compile] build\$(CONFIG)\obj\authpass.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\authpass.obj -Fd$(BUILD)\obj\authpass.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\authpass.c $(LOG)
 
 #
 #   authpass
 #
-DEPS_61 = $(DEPS_61) build\$(CONFIG)\bin\libappweb.dll
-DEPS_61 = $(DEPS_61) build\$(CONFIG)\obj\authpass.obj
+DEPS_57 = $(DEPS_57) build\$(CONFIG)\bin\libappweb.dll
+DEPS_57 = $(DEPS_57) build\$(CONFIG)\obj\authpass.obj
 
-LIBS_61 = $(LIBS_61) libappweb.lib
+LIBS_57 = $(LIBS_57) libappweb.lib
 !IF "$(ME_COM_HTTP)" == "1"
-LIBS_61 = $(LIBS_61) libhttp.lib
+LIBS_57 = $(LIBS_57) libhttp.lib
 !ENDIF
-LIBS_61 = $(LIBS_61) libmpr.lib
+LIBS_57 = $(LIBS_57) libmpr.lib
 !IF "$(ME_COM_PCRE)" == "1"
-LIBS_61 = $(LIBS_61) libpcre.lib
+LIBS_57 = $(LIBS_57) libpcre.lib
 !ENDIF
 
-build\$(CONFIG)\bin\authpass.exe: $(DEPS_61)
+build\$(CONFIG)\bin\authpass.exe: $(DEPS_57)
 	@echo ..... [Link] build\$(CONFIG)\bin\authpass.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\authpass.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\authpass.obj" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\authpass.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\authpass.obj" $(LIBPATHS_57) $(LIBS_57) $(LIBS_57) $(LIBS)  $(LOG)
 
 #
 #   cgiProgram.obj
 #
 
 build\$(CONFIG)\obj\cgiProgram.obj: \
-    src\utils\cgiProgram.c $(DEPS_62)
+    src\utils\cgiProgram.c $(DEPS_58)
 	@echo .. [Compile] build\$(CONFIG)\obj\cgiProgram.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\cgiProgram.obj -Fd$(BUILD)\obj\cgiProgram.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\cgiProgram.c $(LOG)
 
 #
 #   ejsc.obj
 #
-DEPS_63 = $(DEPS_63) src\paks\ejs\ejs.h
+DEPS_59 = $(DEPS_59) src\paks\ejs\ejs.h
 
 build\$(CONFIG)\obj\ejsc.obj: \
-    src\paks\ejs\ejsc.c $(DEPS_63)
+    src\paks\ejs\ejsc.c $(DEPS_59)
 	@echo .. [Compile] build\$(CONFIG)\obj\ejsc.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\ejsc.obj -Fd$(BUILD)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejsc.c $(LOG)
 
@@ -1059,37 +1048,37 @@ build\$(CONFIG)\obj\ejsc.obj: \
 #
 #   ejsc
 #
-DEPS_64 = $(DEPS_64) build\$(CONFIG)\bin\libejs.dll
-DEPS_64 = $(DEPS_64) build\$(CONFIG)\obj\ejsc.obj
+DEPS_60 = $(DEPS_60) build\$(CONFIG)\bin\libejs.dll
+DEPS_60 = $(DEPS_60) build\$(CONFIG)\obj\ejsc.obj
 
-LIBS_64 = $(LIBS_64) libejs.lib
+LIBS_60 = $(LIBS_60) libejs.lib
 !IF "$(ME_COM_HTTP)" == "1"
-LIBS_64 = $(LIBS_64) libhttp.lib
+LIBS_60 = $(LIBS_60) libhttp.lib
 !ENDIF
-LIBS_64 = $(LIBS_64) libmpr.lib
+LIBS_60 = $(LIBS_60) libmpr.lib
 !IF "$(ME_COM_PCRE)" == "1"
-LIBS_64 = $(LIBS_64) libpcre.lib
+LIBS_60 = $(LIBS_60) libpcre.lib
 !ENDIF
 !IF "$(ME_COM_ZLIB)" == "1"
-LIBS_64 = $(LIBS_64) libzlib.lib
+LIBS_60 = $(LIBS_60) libzlib.lib
 !ENDIF
 !IF "$(ME_COM_SQLITE)" == "1"
-LIBS_64 = $(LIBS_64) libsql.lib
+LIBS_60 = $(LIBS_60) libsql.lib
 !ENDIF
 
-build\$(CONFIG)\bin\ejsc.exe: $(DEPS_64)
+build\$(CONFIG)\bin\ejsc.exe: $(DEPS_60)
 	@echo ..... [Link] build\$(CONFIG)\bin\ejsc.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\ejsc.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\ejsc.obj" $(LIBPATHS_64) $(LIBS_64) $(LIBS_64) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\ejsc.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\ejsc.obj" $(LIBPATHS_60) $(LIBS_60) $(LIBS_60) $(LIBS)  $(LOG)
 !ENDIF
 
 !IF "$(ME_COM_EJS)" == "1"
 #
 #   ejs.mod
 #
-DEPS_65 = $(DEPS_65) src\paks\ejs\ejs.es
-DEPS_65 = $(DEPS_65) build\$(CONFIG)\bin\ejsc.exe
+DEPS_61 = $(DEPS_61) src\paks\ejs\ejs.es
+DEPS_61 = $(DEPS_61) build\$(CONFIG)\bin\ejsc.exe
 
-build\$(CONFIG)\bin\ejs.mod: $(DEPS_65)
+build\$(CONFIG)\bin\ejs.mod: $(DEPS_61)
 	cd src\paks\ejs
 	@echo .. [Compile] ejs.mod
 	..\..\..\$(BUILD)\bin\ejsc --out ../../../$(BUILD)/bin/ejs.mod --optimize 9 --bind --require null ejs.es
@@ -1099,10 +1088,10 @@ build\$(CONFIG)\bin\ejs.mod: $(DEPS_65)
 #
 #   ejs.obj
 #
-DEPS_66 = $(DEPS_66) src\paks\ejs\ejs.h
+DEPS_62 = $(DEPS_62) src\paks\ejs\ejs.h
 
 build\$(CONFIG)\obj\ejs.obj: \
-    src\paks\ejs\ejs.c $(DEPS_66)
+    src\paks\ejs\ejs.c $(DEPS_62)
 	@echo .. [Compile] build\$(CONFIG)\obj\ejs.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\ejs.obj -Fd$(BUILD)\obj\ejs.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejs.c $(LOG)
 
@@ -1110,61 +1099,61 @@ build\$(CONFIG)\obj\ejs.obj: \
 #
 #   ejscmd
 #
-DEPS_67 = $(DEPS_67) build\$(CONFIG)\bin\libejs.dll
-DEPS_67 = $(DEPS_67) build\$(CONFIG)\obj\ejs.obj
+DEPS_63 = $(DEPS_63) build\$(CONFIG)\bin\libejs.dll
+DEPS_63 = $(DEPS_63) build\$(CONFIG)\obj\ejs.obj
 
-LIBS_67 = $(LIBS_67) libejs.lib
+LIBS_63 = $(LIBS_63) libejs.lib
 !IF "$(ME_COM_HTTP)" == "1"
-LIBS_67 = $(LIBS_67) libhttp.lib
+LIBS_63 = $(LIBS_63) libhttp.lib
 !ENDIF
-LIBS_67 = $(LIBS_67) libmpr.lib
+LIBS_63 = $(LIBS_63) libmpr.lib
 !IF "$(ME_COM_PCRE)" == "1"
-LIBS_67 = $(LIBS_67) libpcre.lib
+LIBS_63 = $(LIBS_63) libpcre.lib
 !ENDIF
 !IF "$(ME_COM_ZLIB)" == "1"
-LIBS_67 = $(LIBS_67) libzlib.lib
+LIBS_63 = $(LIBS_63) libzlib.lib
 !ENDIF
 !IF "$(ME_COM_SQLITE)" == "1"
-LIBS_67 = $(LIBS_67) libsql.lib
+LIBS_63 = $(LIBS_63) libsql.lib
 !ENDIF
 
-build\$(CONFIG)\bin\ejs.exe: $(DEPS_67)
+build\$(CONFIG)\bin\ejs.exe: $(DEPS_63)
 	@echo ..... [Link] build\$(CONFIG)\bin\ejs.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\ejs.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\ejs.obj" $(LIBPATHS_67) $(LIBS_67) $(LIBS_67) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\ejs.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\ejs.obj" $(LIBPATHS_63) $(LIBS_63) $(LIBS_63) $(LIBS)  $(LOG)
 !ENDIF
 
 !IF "$(ME_COM_ESP)" == "1"
 #
 #   esp-paks
 #
-DEPS_68 = $(DEPS_68) src\paks\esp-html-mvc\client\assets\favicon.ico
-DEPS_68 = $(DEPS_68) src\paks\esp-html-mvc\client\css\all.css
-DEPS_68 = $(DEPS_68) src\paks\esp-html-mvc\client\css\all.less
-DEPS_68 = $(DEPS_68) src\paks\esp-html-mvc\client\index.esp
-DEPS_68 = $(DEPS_68) src\paks\esp-html-mvc\css\app.less
-DEPS_68 = $(DEPS_68) src\paks\esp-html-mvc\css\theme.less
-DEPS_68 = $(DEPS_68) src\paks\esp-html-mvc\generate\appweb.conf
-DEPS_68 = $(DEPS_68) src\paks\esp-html-mvc\generate\controller.c
-DEPS_68 = $(DEPS_68) src\paks\esp-html-mvc\generate\controllerSingleton.c
-DEPS_68 = $(DEPS_68) src\paks\esp-html-mvc\generate\edit.esp
-DEPS_68 = $(DEPS_68) src\paks\esp-html-mvc\generate\list.esp
-DEPS_68 = $(DEPS_68) src\paks\esp-html-mvc\layouts\default.esp
-DEPS_68 = $(DEPS_68) src\paks\esp-html-mvc\LICENSE.md
-DEPS_68 = $(DEPS_68) src\paks\esp-html-mvc\package.json
-DEPS_68 = $(DEPS_68) src\paks\esp-html-mvc\README.md
-DEPS_68 = $(DEPS_68) src\paks\esp-mvc\generate\appweb.conf
-DEPS_68 = $(DEPS_68) src\paks\esp-mvc\generate\controller.c
-DEPS_68 = $(DEPS_68) src\paks\esp-mvc\generate\migration.c
-DEPS_68 = $(DEPS_68) src\paks\esp-mvc\generate\src\app.c
-DEPS_68 = $(DEPS_68) src\paks\esp-mvc\LICENSE.md
-DEPS_68 = $(DEPS_68) src\paks\esp-mvc\package.json
-DEPS_68 = $(DEPS_68) src\paks\esp-mvc\README.md
-DEPS_68 = $(DEPS_68) src\paks\esp-server\generate\appweb.conf
-DEPS_68 = $(DEPS_68) src\paks\esp-server\LICENSE.md
-DEPS_68 = $(DEPS_68) src\paks\esp-server\package.json
-DEPS_68 = $(DEPS_68) src\paks\esp-server\README.md
+DEPS_64 = $(DEPS_64) src\paks\esp-html-mvc\client\assets\favicon.ico
+DEPS_64 = $(DEPS_64) src\paks\esp-html-mvc\client\css\all.css
+DEPS_64 = $(DEPS_64) src\paks\esp-html-mvc\client\css\all.less
+DEPS_64 = $(DEPS_64) src\paks\esp-html-mvc\client\index.esp
+DEPS_64 = $(DEPS_64) src\paks\esp-html-mvc\css\app.less
+DEPS_64 = $(DEPS_64) src\paks\esp-html-mvc\css\theme.less
+DEPS_64 = $(DEPS_64) src\paks\esp-html-mvc\generate\appweb.conf
+DEPS_64 = $(DEPS_64) src\paks\esp-html-mvc\generate\controller.c
+DEPS_64 = $(DEPS_64) src\paks\esp-html-mvc\generate\controllerSingleton.c
+DEPS_64 = $(DEPS_64) src\paks\esp-html-mvc\generate\edit.esp
+DEPS_64 = $(DEPS_64) src\paks\esp-html-mvc\generate\list.esp
+DEPS_64 = $(DEPS_64) src\paks\esp-html-mvc\layouts\default.esp
+DEPS_64 = $(DEPS_64) src\paks\esp-html-mvc\LICENSE.md
+DEPS_64 = $(DEPS_64) src\paks\esp-html-mvc\package.json
+DEPS_64 = $(DEPS_64) src\paks\esp-html-mvc\README.md
+DEPS_64 = $(DEPS_64) src\paks\esp-mvc\generate\appweb.conf
+DEPS_64 = $(DEPS_64) src\paks\esp-mvc\generate\controller.c
+DEPS_64 = $(DEPS_64) src\paks\esp-mvc\generate\migration.c
+DEPS_64 = $(DEPS_64) src\paks\esp-mvc\generate\src\app.c
+DEPS_64 = $(DEPS_64) src\paks\esp-mvc\LICENSE.md
+DEPS_64 = $(DEPS_64) src\paks\esp-mvc\package.json
+DEPS_64 = $(DEPS_64) src\paks\esp-mvc\README.md
+DEPS_64 = $(DEPS_64) src\paks\esp-server\generate\appweb.conf
+DEPS_64 = $(DEPS_64) src\paks\esp-server\LICENSE.md
+DEPS_64 = $(DEPS_64) src\paks\esp-server\package.json
+DEPS_64 = $(DEPS_64) src\paks\esp-server\README.md
 
-build\$(CONFIG)\esp: $(DEPS_68)
+build\$(CONFIG)\esp: $(DEPS_64)
 	cd src\paks
 	if not exist "..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.1" md "..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.1"
 	if not exist "..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.1\client" md "..\..\build\$(CONFIG)\esp\esp-html-mvc\5.2.1\client"
@@ -1211,9 +1200,9 @@ build\$(CONFIG)\esp: $(DEPS_68)
 #
 #   esp.conf
 #
-DEPS_69 = $(DEPS_69) src\paks\esp\esp.conf
+DEPS_65 = $(DEPS_65) src\paks\esp\esp.conf
 
-build\$(CONFIG)\bin\esp.conf: $(DEPS_69)
+build\$(CONFIG)\bin\esp.conf: $(DEPS_65)
 	@echo ..... [Copy] build\$(CONFIG)\bin\esp.conf
 	if not exist "build\$(CONFIG)\bin" md "build\$(CONFIG)\bin"
 	copy /Y /B src\paks\esp\esp.conf+modified build\$(CONFIG)\bin\esp.conf $(LOG)
@@ -1222,10 +1211,10 @@ build\$(CONFIG)\bin\esp.conf: $(DEPS_69)
 #
 #   esp.obj
 #
-DEPS_70 = $(DEPS_70) src\paks\esp\esp.h
+DEPS_66 = $(DEPS_66) src\paks\esp\esp.h
 
 build\$(CONFIG)\obj\esp.obj: \
-    src\paks\esp\esp.c $(DEPS_70)
+    src\paks\esp\esp.c $(DEPS_66)
 	@echo .. [Compile] build\$(CONFIG)\obj\esp.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\esp.obj -Fd$(BUILD)\obj\esp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\esp\esp.c $(LOG)
 
@@ -1233,33 +1222,33 @@ build\$(CONFIG)\obj\esp.obj: \
 #
 #   espcmd
 #
-DEPS_71 = $(DEPS_71) build\$(CONFIG)\bin\libmod_esp.dll
-DEPS_71 = $(DEPS_71) build\$(CONFIG)\obj\esp.obj
+DEPS_67 = $(DEPS_67) build\$(CONFIG)\bin\libmod_esp.dll
+DEPS_67 = $(DEPS_67) build\$(CONFIG)\obj\esp.obj
 
-LIBS_71 = $(LIBS_71) libmod_esp.lib
-LIBS_71 = $(LIBS_71) libappweb.lib
+LIBS_67 = $(LIBS_67) libmod_esp.lib
+LIBS_67 = $(LIBS_67) libappweb.lib
 !IF "$(ME_COM_HTTP)" == "1"
-LIBS_71 = $(LIBS_71) libhttp.lib
+LIBS_67 = $(LIBS_67) libhttp.lib
 !ENDIF
-LIBS_71 = $(LIBS_71) libmpr.lib
+LIBS_67 = $(LIBS_67) libmpr.lib
 !IF "$(ME_COM_PCRE)" == "1"
-LIBS_71 = $(LIBS_71) libpcre.lib
+LIBS_67 = $(LIBS_67) libpcre.lib
 !ENDIF
 !IF "$(ME_COM_SQLITE)" == "1"
-LIBS_71 = $(LIBS_71) libsql.lib
+LIBS_67 = $(LIBS_67) libsql.lib
 !ENDIF
 
-build\$(CONFIG)\bin\esp.exe: $(DEPS_71)
+build\$(CONFIG)\bin\esp.exe: $(DEPS_67)
 	@echo ..... [Link] build\$(CONFIG)\bin\esp.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\esp.obj" $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\esp.obj" $(LIBPATHS_67) $(LIBS_67) $(LIBS_67) $(LIBS)  $(LOG)
 !ENDIF
 
 #
 #   http-ca-crt
 #
-DEPS_72 = $(DEPS_72) src\paks\http\ca.crt
+DEPS_68 = $(DEPS_68) src\paks\http\ca.crt
 
-build\$(CONFIG)\bin\ca.crt: $(DEPS_72)
+build\$(CONFIG)\bin\ca.crt: $(DEPS_68)
 	@echo ..... [Copy] build\$(CONFIG)\bin\ca.crt
 	if not exist "build\$(CONFIG)\bin" md "build\$(CONFIG)\bin"
 	copy /Y /B src\paks\http\ca.crt+modified build\$(CONFIG)\bin\ca.crt $(LOG)
@@ -1267,50 +1256,52 @@ build\$(CONFIG)\bin\ca.crt: $(DEPS_72)
 #
 #   http.obj
 #
-DEPS_73 = $(DEPS_73) src\paks\http\http.h
+DEPS_69 = $(DEPS_69) src\paks\http\http.h
 
 build\$(CONFIG)\obj\http.obj: \
-    src\paks\http\http.c $(DEPS_73)
+    src\paks\http\http.c $(DEPS_69)
 	@echo .. [Compile] build\$(CONFIG)\obj\http.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\http.obj -Fd$(BUILD)\obj\http.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\paks\http\http.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\http.obj -Fd$(BUILD)\obj\http.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\paks\http\http.c $(LOG)
 
 !IF "$(ME_COM_HTTP)" == "1"
 #
 #   httpcmd
 #
-DEPS_74 = $(DEPS_74) build\$(CONFIG)\bin\libhttp.dll
-DEPS_74 = $(DEPS_74) build\$(CONFIG)\bin\libmprssl.dll
-DEPS_74 = $(DEPS_74) build\$(CONFIG)\obj\http.obj
+DEPS_70 = $(DEPS_70) build\$(CONFIG)\bin\libhttp.dll
+DEPS_70 = $(DEPS_70) build\$(CONFIG)\bin\libmprssl.dll
+DEPS_70 = $(DEPS_70) build\$(CONFIG)\obj\http.obj
 
-LIBS_74 = $(LIBS_74) libhttp.lib
-LIBS_74 = $(LIBS_74) libmpr.lib
+LIBS_70 = $(LIBS_70) libhttp.lib
+LIBS_70 = $(LIBS_70) libmpr.lib
 !IF "$(ME_COM_PCRE)" == "1"
-LIBS_74 = $(LIBS_74) libpcre.lib
+LIBS_70 = $(LIBS_70) libpcre.lib
 !ENDIF
-LIBS_74 = $(LIBS_74) libmprssl.lib
+LIBS_70 = $(LIBS_70) libmprssl.lib
 !IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_74 = $(LIBS_74) libeay32.lib
-LIBPATHS_74 = $(LIBPATHS_74) -libpath:$(ME_COM_OPENSSL_PATH)
+LIBS_70 = $(LIBS_70) libeay32.lib
+LIBPATHS_70 = $(LIBPATHS_70) -libpath:$(ME_COM_OPENSSL_PATH)/lib
+LIBPATHS_70 = $(LIBPATHS_70) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 !IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_74 = $(LIBS_74) libssleay32.lib
-LIBPATHS_74 = $(LIBPATHS_74) -libpath:$(ME_COM_OPENSSL_PATH)
+LIBS_70 = $(LIBS_70) libssleay32.lib
+LIBPATHS_70 = $(LIBPATHS_70) -libpath:$(ME_COM_OPENSSL_PATH)/lib
+LIBPATHS_70 = $(LIBPATHS_70) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 !IF "$(ME_COM_EST)" == "1"
-LIBS_74 = $(LIBS_74) libest.lib
+LIBS_70 = $(LIBS_70) libest.lib
 !ENDIF
 
-build\$(CONFIG)\bin\http.exe: $(DEPS_74)
+build\$(CONFIG)\bin\http.exe: $(DEPS_70)
 	@echo ..... [Link] build\$(CONFIG)\bin\http.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)  "$(BUILD)\obj\http.obj" $(LIBPATHS_74) $(LIBS_74) $(LIBS_74) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)   "$(BUILD)\obj\http.obj" $(LIBPATHS_70) $(LIBS_70) $(LIBS_70) $(LIBS)  $(LOG)
 !ENDIF
 
 #
 #   sqlite3.h
 #
-DEPS_75 = $(DEPS_75) src\paks\sqlite\sqlite3.h
+DEPS_71 = $(DEPS_71) src\paks\sqlite\sqlite3.h
 
-build\$(CONFIG)\inc\sqlite3.h: $(DEPS_75)
+build\$(CONFIG)\inc\sqlite3.h: $(DEPS_71)
 	@echo ..... [Copy] build\$(CONFIG)\inc\sqlite3.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
 	copy /Y /B src\paks\sqlite\sqlite3.h+modified build\$(CONFIG)\inc\sqlite3.h $(LOG)
@@ -1319,16 +1310,16 @@ build\$(CONFIG)\inc\sqlite3.h: $(DEPS_75)
 #   sqlite3.h
 #
 
-src\paks\sqlite\sqlite3.h: $(DEPS_76)
+src\paks\sqlite\sqlite3.h: $(DEPS_72)
 
 #
 #   sqlite3.obj
 #
-DEPS_77 = $(DEPS_77) build\$(CONFIG)\inc\me.h
-DEPS_77 = $(DEPS_77) src\paks\sqlite\sqlite3.h
+DEPS_73 = $(DEPS_73) build\$(CONFIG)\inc\me.h
+DEPS_73 = $(DEPS_73) src\paks\sqlite\sqlite3.h
 
 build\$(CONFIG)\obj\sqlite3.obj: \
-    src\paks\sqlite\sqlite3.c $(DEPS_77)
+    src\paks\sqlite\sqlite3.c $(DEPS_73)
 	@echo .. [Compile] build\$(CONFIG)\obj\sqlite3.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\sqlite3.obj -Fd$(BUILD)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\sqlite\sqlite3.c $(LOG)
 
@@ -1336,10 +1327,10 @@ build\$(CONFIG)\obj\sqlite3.obj: \
 #
 #   libsql
 #
-DEPS_78 = $(DEPS_78) build\$(CONFIG)\inc\sqlite3.h
-DEPS_78 = $(DEPS_78) build\$(CONFIG)\obj\sqlite3.obj
+DEPS_74 = $(DEPS_74) build\$(CONFIG)\inc\sqlite3.h
+DEPS_74 = $(DEPS_74) build\$(CONFIG)\obj\sqlite3.obj
 
-build\$(CONFIG)\bin\libsql.dll: $(DEPS_78)
+build\$(CONFIG)\bin\libsql.dll: $(DEPS_74)
 	@echo ..... [Link] build\$(CONFIG)\bin\libsql.dll
 	"lib.exe" -nologo -out:$(BUILD)\bin\libsql.dll "$(BUILD)\obj\sqlite3.obj" $(LOG)
 !ENDIF
@@ -1347,42 +1338,42 @@ build\$(CONFIG)\bin\libsql.dll: $(DEPS_78)
 #
 #   makerom.obj
 #
-DEPS_79 = $(DEPS_79) src\paks\mpr\mpr.h
+DEPS_75 = $(DEPS_75) src\paks\mpr\mpr.h
 
 build\$(CONFIG)\obj\makerom.obj: \
-    src\paks\mpr\makerom.c $(DEPS_79)
+    src\paks\mpr\makerom.c $(DEPS_75)
 	@echo .. [Compile] build\$(CONFIG)\obj\makerom.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\makerom.obj -Fd$(BUILD)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\mpr\makerom.c $(LOG)
 
 #
 #   manager.obj
 #
-DEPS_80 = $(DEPS_80) src\paks\mpr\mpr.h
+DEPS_76 = $(DEPS_76) src\paks\mpr\mpr.h
 
 build\$(CONFIG)\obj\manager.obj: \
-    src\paks\mpr\manager.c $(DEPS_80)
+    src\paks\mpr\manager.c $(DEPS_76)
 	@echo .. [Compile] build\$(CONFIG)\obj\manager.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\manager.obj -Fd$(BUILD)\obj\manager.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\mpr\manager.c $(LOG)
 
 #
 #   manager
 #
-DEPS_81 = $(DEPS_81) build\$(CONFIG)\bin\libmpr.dll
-DEPS_81 = $(DEPS_81) build\$(CONFIG)\obj\manager.obj
+DEPS_77 = $(DEPS_77) build\$(CONFIG)\bin\libmpr.dll
+DEPS_77 = $(DEPS_77) build\$(CONFIG)\obj\manager.obj
 
-LIBS_81 = $(LIBS_81) libmpr.lib
+LIBS_77 = $(LIBS_77) libmpr.lib
 
-build\$(CONFIG)\bin\appman.exe: $(DEPS_81)
+build\$(CONFIG)\bin\appman.exe: $(DEPS_77)
 	@echo ..... [Link] build\$(CONFIG)\bin\appman.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\manager.obj" $(LIBPATHS_81) $(LIBS_81) $(LIBS_81) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\manager.obj" $(LIBPATHS_77) $(LIBS_77) $(LIBS_77) $(LIBS)  $(LOG)
 
 #
 #   removeFiles.obj
 #
-DEPS_82 = $(DEPS_82) build\$(CONFIG)\inc\me.h
+DEPS_78 = $(DEPS_78) build\$(CONFIG)\inc\me.h
 
 build\$(CONFIG)\obj\removeFiles.obj: \
-    package\windows\removeFiles.c $(DEPS_82)
+    package\windows\removeFiles.c $(DEPS_78)
 	@echo .. [Compile] build\$(CONFIG)\obj\removeFiles.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\removeFiles.obj -Fd$(BUILD)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) package\windows\removeFiles.c $(LOG)
 
@@ -1390,7 +1381,7 @@ build\$(CONFIG)\obj\removeFiles.obj: \
 #   server-cache
 #
 
-src\server\cache: $(DEPS_83)
+src\server\cache: $(DEPS_79)
 	cd src\server
 	if not exist "cache" md "cache"
 	cd ..\..
@@ -1398,11 +1389,11 @@ src\server\cache: $(DEPS_83)
 #
 #   sqlite.obj
 #
-DEPS_84 = $(DEPS_84) build\$(CONFIG)\inc\me.h
-DEPS_84 = $(DEPS_84) src\paks\sqlite\sqlite3.h
+DEPS_80 = $(DEPS_80) build\$(CONFIG)\inc\me.h
+DEPS_80 = $(DEPS_80) src\paks\sqlite\sqlite3.h
 
 build\$(CONFIG)\obj\sqlite.obj: \
-    src\paks\sqlite\sqlite.c $(DEPS_84)
+    src\paks\sqlite\sqlite.c $(DEPS_80)
 	@echo .. [Compile] build\$(CONFIG)\obj\sqlite.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\sqlite.obj -Fd$(BUILD)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\sqlite\sqlite.c $(LOG)
 
