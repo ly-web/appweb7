@@ -120,6 +120,9 @@
 #ifndef ME_HTTP_WEB_SOCKETS
     #define ME_HTTP_WEB_SOCKETS 1
 #endif
+#ifndef ME_INTEGRATE
+    #define ME_INTEGRATE 1
+#endif
 #ifndef ME_MANIFEST
     #define ME_MANIFEST "package/manifest.me"
 #endif
