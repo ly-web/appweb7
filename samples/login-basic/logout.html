@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Logout</title>
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">  
+    <script src="js/jquery.js"></script>
+</head>
+<body>
+    <h1>Logged Out</h1>
+</body>
+<script>
+    /*
+        Logout by sending an invalid authenticated request to prevent the browser 
+        re-authenticating with the old credentials. On response, redirect to the
+        login page (index.html).
+     */
+    $.ajax({
+        url: "/index.html",
+        type: "POST",
+        headers: { Authorization: "Basic incorrect-password" },
+        statusCode: { 
+            401: function() { 
+                setTimeout(function() { document.location = "/index.html";}, 1000);
+                return true;
+            } 
+        }
+    });
+</script>
+</html>

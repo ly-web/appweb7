@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">  
+    <script src="js/jquery.js"></script>
+    <script>
+        /*
+            Local session timer for inactive login sessions
+         */
+        setTimeout(function() {
+            alert("You will be logged out in 15 seconds");
+            setTimeout(logout, 15 * 1000);
+        }, 45 * 1000);
+    </script>
+</head>
+
+<body>
+    <h1>Welcome</h1>
+    <p>You will remain logged in for one minute of inactivity.</p>
+    <p>Click <a href="/">here</a> to restart the inactivity timer.</p>
+    <button onclick='logout()'>Logout</button>
+</body>
+
+<script>
+    function logout() {
+        document.location = "/logout.html";
+    }
+</script>
+</html>
