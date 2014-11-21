@@ -4,7 +4,14 @@ login-basic Sample
 This sample shows how to configure a simple, secure basic|digest browser-based login. This sample uses the 
 internal browser dialog for entering username and password credentials.
 
-Note: this does not implement typical UI elements of warning the user, other than a basic session timeout alert.
+WARNING: You should use Basic and Digest authentication only as a last resort. Basic and Digest authentication
+standards employ weak ciphers, repeatedly send credentials over the wire and and are not sufficiently secure.
+Basic authentication transmits passwords as clear-text in each and every request. Digest authentication uses the weak 
+MD5 cipher, and both require use of SSL on all requests to be minimally secure. Further, both Basic and Digest
+do not provide a reliable log out mechanism. Logout works on some browsers but not on other browsers or even
+different versions of the same browser. We therefore strongly recommend using "form" authentication, with 
+"blowfish" encryption for a more usable, secure and reliable solution. See the login-form example for the 
+recommended approach.
 
 This sample uses:
 
@@ -13,10 +20,15 @@ This sample uses:
 * Self-signed certificate. You should obtain a real certificate.
 * Login username and password entry via browser dialog
 * Username / password validation using the "config" file-based authentication store.
-* Blowfish encryption for secure password hashing
+* Blowfish or MD5 encryption for secure password hashing
 
 Notes:
-* This sample keeps the passwords in the auth.conf. The test password was created via:
+* This sample keeps the passwords in the auth.conf. So the sample works with Digest authentication which requires
+  MD5 encryption, the test password was created via:
+
+    authpass --cipher md5 --password pass1 auth.conf example.com joshua user
+
+  However, if using basic authentication, you should use the more secure blowfish encryption via:
 
     authpass --cipher blowfish --password pass1 auth.conf example.com joshua user
 
@@ -26,17 +38,14 @@ Notes:
 * The sample uses the "basic" auth type by default. 
     It can be configured to use the "digest" authentication protocol by setting the AuthType to "digest". 
 
-* Logout is problematic with basic/digest schemes. The standard does not define a mechanism for logout.
-    It is implemented in this sample via an invalid ajax request that forces the browser to forget the
-    cached username and password. See logout.html.
+* The entire site is secured including all URLs. There is no portion of the site that is "public". 
 
-* Session cookies are not created unless a logout service is defined via AuthType. This is required for logout
-    to work. If you require sessions, either define a logout service via AuthType or add the "SessionCookie enable" 
-    directive.
+* Logout is problematic with basic/digest schemes. The standard does not define a mechanism for logout.
+    It cannot be reliably implemented on all browsers over all versions.
 
 Requirements
 ---
-* [APPWEB](https://embedthis.com/appweb/download.html)
+* [Download Appweb](https://embedthis.com/appweb/download.html)
 
 To run:
 ---
@@ -54,12 +63,11 @@ Continue and you will be prompted to login. The test username/password is:
 Code:
 ---
 * [index.html](index.html) - Home page
-* [login.html](login.html) - Login page
-* [self.crt](self.crt) - Self-signed test certificate
-* [self.key](self.key) - Test private key
+* [appweb.conf](appweb.conf) - Appweb configuration
+* [auth.conf](auth.conf) - Password definitions
 
 Documentation:
 ---
 * [Appweb Documentation](https://embedthis.com/appweb/doc/index.html)
-
-* [Appweb Configuration](https://embedthis.com/appweb/doc/users/config.html)
+* [Appweb Configuration](https://embedthis.com/appweb/doc/users/configuration.html)
+* [Appweb User Authentication](https://embedthis.com/appweb/doc/users/authentication.html)
