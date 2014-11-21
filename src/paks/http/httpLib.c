@@ -8771,15 +8771,29 @@ PUBLIC HttpRoute *httpGetHostDefaultRoute(HttpHost *host)
 
 static void printRoute(HttpRoute *route, int next, bool full)
 {
+    HttpRoute   *rp;
     HttpRouteOp *condition;
     HttpStage   *handler;
     HttpAuth    *auth;
     MprKey      *kp;
     cchar       *methods, *pattern, *target, *index;
-    int         nextIndex;
+    int         authLen, methodsLen, nameLen, patternLen, nextIndex;
 
     if (route->flags & HTTP_ROUTE_HIDDEN) {
         return;
+    }
+    if (!full) {
+        if (next == 0) {
+            authLen = methodsLen = nameLen = patternLen = 0;
+            for (next = 0; (rp = mprGetNextItem(route->host->routes, &next)) != 0; ) {
+                authLen = (int) max(authLen, rp->auth->type ? slen(rp->auth->type->name) : 0);
+                nameLen = (int) max(nameLen, slen(rp->name));
+                patternLen = (int) max(patternLen, slen(rp->pattern));
+                methodsLen = (int) max(methodsLen, slen(httpGetRouteMethods(rp)));
+            }
+            printf("%-*s %-*s %-*s %-*s %-14s\n", nameLen, "Route Name", methodsLen, "Methods", 
+                authLen, "Auth", patternLen, "Pattern", "Target");
+        }
     }
     auth = route->auth;
     methods = httpGetRouteMethods(route);
@@ -8829,8 +8843,8 @@ static void printRoute(HttpRoute *route, int next, bool full)
             }
         }
     } else {
-        printf("%-18s %-12s %-8s %-46s %-14s\n", route->name, methods ? methods : "*", 
-            auth->type ? auth->type->name : "none", pattern, target);
+        printf("%-*s %-*s %-*s %-*s %-14s\n", nameLen, route->name, methodsLen, methods ? methods : "*", 
+            authLen, auth->type ? auth->type->name : "none", patternLen, pattern, target);
     }
 }
 
@@ -8844,9 +8858,6 @@ PUBLIC void httpLogRoutes(HttpHost *host, bool full)
         host = httpGetDefaultHost();
     }
     printf("\n");
-    if (!full) {
-        printf("%-18s %-12s %-8s %-46s %-14s\n", "Route Name", "Methods", "Auth", "Pattern", "Target");
-    }
     for (foundDefault = next = 0; (route = mprGetNextItem(host->routes, &next)) != 0; ) {
         printRoute(route, next - 1, full);
         if (route == host->defaultRoute) {
