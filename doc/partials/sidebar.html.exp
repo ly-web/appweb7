@@ -33,7 +33,7 @@
                     <a class="item" href="@~users/routing.html">Routing Requests</a>
                     <a class="item" href="@~users/stages.html">Request Pipeline</a>
                     <a class="item" href="@~users/lang.html">Multi-Language Content</a>
-                    <a class="item" href="@~users/authentication.html">User Authorization</a>
+                    <a class="item" href="@~users/authentication.html">User Authentication</a>
                     <a class="item" href="@~users/logFiles.html">Logging</a>
                     <a class="item" href="@~users/caching.html">Caching</a>
                     <a class="item" href="@~users/vhosts.html">Virtual Hosts</a>

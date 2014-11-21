@@ -1,137 +1,119 @@
 {
-    title:  'Authentication',
+    title:  'User Authentication',
     crumbs: [
         { "User's Guide": 'index.html' },
     ],
 }
-            <h1>Authentication</h1>
-            <p>Authentication is the process by which a client's identity and abilities are verified before granting
+            <h1>User Authentication</h1>
+            <p>Authentication is the process by which a client's identity and capabilities are verified before granting
             access to server resources. Authentication is essential when you have content that you wish to protect and
             provide only to specific, approved clients.</p>
-            <p>Appweb implements a powerful and flexible authentication mechanism that supports Basic, Digest and
-            Form authentication schemes. Appweb employs unified and flexible authentication front and back ends
-            that can be mixed and matched to meet most authentication needs.</p>
-            
-            <a id="basicAuthentication"></a>
+
+            <p>Appweb implements a powerful and flexible authentication mechanism that employs
+            front and back ends that can be mixed and matched to meet most authentication needs.</p>
+
+            <div class="ui icon message">
+                <i class="warning icon"></i>
+                <div class="content">
+                    <div class="header">SECURITY NOTE</div>
+                    <p>You should use Basic and Digest authentication only as a last resort. Basic and Digest authentication
+                    standards employ weak ciphers, repeatedly send credentials over the wire and and are not sufficiently
+                    secure. Basic authentication transmits passwords as clear-text in each and every request. Digest
+                    authentication uses the weak MD5 cipher, and both require use of SSL on all requests to be minimally
+                    secure. Further, both Basic and Digest do not provide a reliable log out mechanism. Logout works on some
+                    browsers but not on others or even different versions of the same browser. We stronly recommend
+                    using Form authentication, with "blowfish" encryption for a more usable, secure and reliable solution.</p>
+                </div>
+            </div>
+
             <h2>Authentication Schemes</h2>
-            <p>Appweb provides several authentication schemes.
+            <p>Appweb provides several authentication protocol schemes.</p>
             <ul>
-                <li>Basic Authentication</li>
-                <li>Digest Authentication</li>
-                <li>Form Authentication</li>
-                <li>Custom via API</li>
+                <li><a href="#form">Web Form Authentication</a></li>
+                <li><a href="#custom">Custom via API</a></li>
+                <li><a href="#basic">Basic Authentication</a></li>
+                <li><a href="#digest">Digest Authentication</a></li>
             </ul>
-            <p>Basic and Digest authentication are HTTP protocol mechanisms defined by the <a href=
+            <p>The Form authentication scheme uses a HTML web form for the user to enter their username and password
+                credentials and HTTP Post requests to submit to the server for verification. It may also be used
+                programmatically using just a HTTP Post request.</p>
+            <p>
+            <p>The Basic and Digest authentication are HTTP protocol mechanisms defined by the <a href=
             "http://www.w3.org/Protocols/rfc2616/rfc2616.html">HTTP/1.1 RFC2616</a> specification. Because they operate
-            at the protocol level, they offer a low level of capability and flexibility. When a client attempts to access
+            at the protocol level, they offer a lower level of capability and flexibility. When a client attempts to access
             secured content, the client's browser displays a generic pop-up dialog box to prompt for the user's
-            credentials. When submitted, the Appweb server consults the appropriate user password store to authenticate the
-            user. While this scheme works, applications increasingly need to utilize an application-level user login
-            mechanism that is more integrated into the overall look-and-feel of the application. Such login facilities
-            are defined using web forms and HTTP POST requests from standard web page forms. Appweb calls this scheme the
-            the Form-based authentication scheme.</p>
-            <h2>Basic Authentication</h2>
-            <p>Basic authentication was the original HTTP/1.0 authentication scheme. It transmits user names and
-            passwords using a trivial encoding that is no better than using plain text.</p>
-            <p><b>SECURITY WARNING</b>: You should not use Basic Authentication if at all possible. Use Digest
-            Authentication instead if it is supported by your clients. If you must use Basic Authentication, use it over
-            TLS/SSL which will encrypt the password over the wire.</p>
-            <h2>Basic Authentication Directives</h2>
-            <p>Appweb basic authentication is controlled by configuration file directives that may be used inside a
-            Route or VirtualHost block, or within the Default server configuration.</p>
+            credentials.</p>
+
+            <h2>Configuring Authentication</h2>
+            <p>The authentication scheme is selected and controlled by the <a href="dir/auth.html#authType">AuthType</a>
+                configuration directive. This directive may be used inside a Route, VirtualHost block, or default
+                server configuration.</p>
+
+            <p>The format of the AuthType directive is: </p>
+<pre class="ui code segment">AuthType auth-scheme realm [scheme-details ...]</pre>
+            <p>For example:</p>
             <pre class="ui code segment">
 &lt;Route /private/&gt;
-    <b>AuthType basic</b>
-    AuthRealm "example.com"
-    User julie 9d8873a123eb506e7f8e84d1f2a26916 view
+    <b>AuthType form example.com</b>
+    AuthStore config
+    User julie 9d8873a123eb506e7f8e84d1f2a26916 administrator administrator teacher
+    Role administrator manage
+    Role teacher supervise teach
     Require user julie
 &lt;/Route&gt;
 </pre>
-            <p>This example restricts access to URIs beginning with "/private". It permits access to the user
-            "julie" once authenticated.</p>
-            <p>The <a href="dir/auth.html#authType">AuthType</a> directive specifies that basic authentication is being
-            used. The <a href="dir/auth.html#authName">AuthRealm</a> directive specifies the realm of access to Appweb.
-            The realm is used in combination with the username and password to encrypt the password.
-            The <a href="dir/auth.html#User">AuthUserFile</a> directive specifies the location of the user
-            password file. You may use a single password file for all authentication, or you can use different files for
-            each authentication section.</p>
-            <p>The <a href="dir/auth.html#user">User</a> directive defines a user by name with an encrypted password and
-            zero or more roles for the user. Typically, User and Role directives are placed in a separate configuration 
-            file called <em>auth.conf</em> and are included via an <em>"include auth.conf"</em> directive.
-            To create passwords, see the section
-            below that describes the <a href="#authpass">authpass</a> utility.</p>
-            <h3>Require Directive</h3>
-            <p>The <a href="dir/auth.html#require">Require</a> directive controls access to the resources managed by
-            the route. There are three possibilities to control access: require specific named users, 
-            require a secure protocol such as TLS/SSL to be used, and require that the authenticated user possess 
-            a set of specified abilities. </p>
-            <ul>
-                <li>Require user username ...</li>
-                <li>Require ability name...</li>
-                <li>Require secure</li>
-            </ul>
-            <p>When using <em>Require ability</em>, the abilities may be roles defined via the 
-            <a href="dir/auth.html#role">Role</a> directive, or they may be simple words which represent a discrete
-            ability that is explicitly specified in the <a href="dir/auth.html#user">User</a> directive.
-            <p>The <em>require secure</em> directive specifies that the SSL/TLS protocol must be used for the
-            request to permit access.</p>
-            <p>Note: These three require directive alternatives may be used in combination. However, multiple
-            <em>Require user</em> or multiple <em>Require ability</em> directives are not supported. The last 
-            directive will take precedence.</p>
-            <p><b>SECURITY WARNING</b>: it is essential that the authentication file be stored outside
-            the Documents directory or any directory serving content.</p>
-            
-            <a id="digestAuthentication"></a>
-            <h2>Digest Authentication</h2>
-            <p>The Digest authentication scheme is a modern replacement for the Basic authentication scheme. It uses
-            cryptographic techniques to encode passwords and does not transmit sensitive information in clear-text.</p>
-            <h2>Digest Authentication Directives</h2>
-            <p>Appweb digest authentication is controlled by configuration file directives that may be used within any
-            Route, VirtualHost block or within the Default server configuration.</p>
-            <pre class="ui code segment">
-&lt;Route /private/&gt;
-    <b>AuthType Digest</b>
-    AuthRealm "example.com"
-    include auth.conf
-    Require user peter
-&lt;/Route&gt;
-</pre>
-            <p>This example restricts access to the "/private" directory and all sub-directories to users whose username
-            and password are validated against the designated user.db password file. The essential differences between
-            this example and the Basic Authentication example is the AuthType directive.</p><a id="auth"></a>
-            <a id="formAuthentication"></a>
+            <p>This example authenticates access to URLs beginning with "/private" using the Form authentication
+                scheme. It permits access by the user "julie" once authenticated, and uses the
+                "<em>config</em>" password store that specifies users and passwords via configuration directives.</p>
+
+                <p>The <a href="dir/auth.html#user">User</a>
+                directive defines a user with an encrypted password and the authorized roles.
+                <p>The <a href="dir/auth.html#role">Role</a> directive defines an authorization role with a set of
+                capabilities that role posesses. Typically, User and Role directives are placed in a separate
+                configuration file, often called <em>auth.conf</em>
+                that is included via an <em>"include auth.conf"</em> directive in the <em>appweb.conf</em> file.</p>
+
+
+            <a id="form"></a>
             <h2>Form Authentication</h2>
-            <p>The Form-based authentication scheme uses a standard web page form that prompts the user to enter their
-            name and password. These values are then submitted to Appweb via a standard Http POST request. Appweb
-            analyzes the user and password, and if authenticated, a login session is created and a cookie is returned 
+            <p>The Form authentication scheme uses a web page for the user to enter their
+            username and password. These values are then submitted to Appweb via a Http POST request. Appweb
+            analyzes the username and password, and if authenticated, a login session is created and a cookie is returned
             to the users's browser. Subsequent requests that include the cookie will be automatically authenticated and
             served.</p>
-            <p>The <a href="dir/auth.html#authType">AuthType form</a> directive controls how Form authentication
-            operates. The form variant of AuthType specifies the login web page, the login service URI, the logout 
-            service URI and the destination web page once authenticated. The format is:
-    <pre class="ui code segment">AuthType form Login-Page Login-Service Logout-Service Logged-In-Destination</pre>
-            <p>For example:</p>
+
+            <p>To configure Form authentication, the <a href="dir/auth.html#authType">AuthType</a> directive may take
+            additional arguments to manage the login sequence.
+            The Form variant of AuthType may specify a login web page, a
+            login service URL, a logout service URL, a destination web page once authenticated and a destination page
+            once logged out. The format is:
+<pre class="ui code segment">AuthType form realm Login-Page Login-Service Logout-Service Logged-In-Destination Logged-Out-Destination</pre>
+            <p>This defines the URLs that are invoked during the login sequence and creates special request routes for
+            these URLs. These routes will disalbe authentication for the login page and login service so they can be accessed
+            by unauthenticated users.
+            Each of these AuthType arguments is optional and may be specified as the empty string "" to omit. For example:</p>
             <pre class="ui code segment">
 &lt;Route ^/&gt;
-    <b>AuthType form /auth/login.html /auth/login /auth/logout /</b>
-&lt;/Route&gt; 
+    <b>AuthType form example.com /public/login.html /login /logout /index.html /public/login.html</b>
+&lt;/Route&gt;
 </pre>
-            <p>This directive enables Form authentication for all requests and will redirect the client browser to
-            <em>/auth/login.html</em> to prompt for the username and password. This example uses a plain HTML web page, but 
-            the web page can be created in ESP, PHP, CGI or any other web framework. The web page should submit the username
-            and password to the <em>/auth/login</em> login service. When logout is required, the client should submit
-            a HTTP POST request to the logout service URI <em>/auth/logout</em>. The last field in the AuthType
-            directive is the destination URI to which the client's browser will be redirected once logged in. </p>
+            <p>This example enables Form authentication for all requests and will redirect the client browser to
+            <em>/public/login.html</em> where the user can enter their username and password.
+            The login web page should submit the username and password to the login service bound to the <em>/login</em> URL.
+            When logout is required, the client should submit a HTTP POST request to the logout service bound to the
+            <em>/logout</em> URL. The last two fields in the AuthType directive are the destination URL to which the
+            client's browser will be redirected once logged in and when logged out.</p>
+
             <h3>Login Service</h3>
-            <p>The Login-Service is URI that is bound to an internal service to receive the <em>username</em> and 
-            <em>password</em> and authenticate the user. This service expects the username/password to be submitted 
-            via POST data using the form input fields "username" and "password". You can supply your own login and
+            <p>The Login-Service is URL that is bound to an internal service to receive the <em>username</em> and
+            <em>password</em> and authenticate the user. This service expects the username/password to be submitted
+            via POST data using the input fields "username" and "password". You can supply your own login and
             logout service by specifying the empty string <em>""</em> for the Login-Service in the AuthType directive.
             If using your own Login Service, you should call <em>httpLogin</em> to validate the user against the
-            configured password store.</p> 
-            
+            configured password store.</p>
+
             <h3>Web Form</h3>
-            <p>Here is a minimal example login form:</p>
+            <p>Here is a minimal example login page:</p>
             <pre class="ui code segment">
 &lt;html&gt;&lt;head&gt;&lt;title&gt;login.html&lt;/title&gt;&lt;/head&gt;
 &lt;body&gt;
@@ -144,90 +126,239 @@
 &lt;/body&gt;
 &lt;/html&gt;
 </pre>
-            <p>The two submitted fields must be named <em>username</em> and <em>password</em>. 
-            <p>If the login attempt succeeds, the client will receive a response including a session cookie and 
-            will be redirected to the Destination URI. If the destination URI includes a <em>referrer:</em> prefix and
-            the login form request contained a referrer URI in the HTTP header, then that referrer URI will be used
+            <p>The two submitted fields must be named <em>username</em> and <em>password</em>.
+            <p>If the login attempt succeeds, the client will receive a response including a session cookie and
+            will be redirected to the Destination URL. If the destination URL includes a <em>referrer:</em> prefix and
+            the login request contained a referrer URL in the HTTP header, then that referrer URL will be used
             as the destination instead of the hard-wired destination.</p>
-            <h3>Securing the Password</h3>
+
             <p><b>SECURITY WARNING:</b> The Form authentication mechanism submits the user password as plain text. To secure
-            communications, the Form authentication scheme should be used over a secure connection using TLS/SSL.
-            To achieve this, you should create a route which redirects the client to the secure login form.  For
-            example: </p>
-            <pre class="ui code segment">
-Listen 443
-&lt;VirtualHost *:443&gt;
-    SSLEngine on openssl
-    # More SSL directives if required
-    AuthType form /login.html /login /logout referrer:/index.html
-&lt;/VirtualHost&gt;
-&lt;Route ^/&gt;
-    AuthType form https://example.com/login.html
+            communications, the Form authentication scheme should be used over a secure connection using TLS/SSL.</p>
+
+            <h3>Web Frameworks</h3>
+            <p>If you are using ESP, Ejscript, PHP or other web framework, you should not use the extended AuthType
+            directive with URLs. This is because these web frameworks have integrated login facilities that are more
+            natural to use within the web framework. The extended AuthType form directive is ideal for web sites using
+            static web pages as it seamlessly manages the browser page transitions during login.</p>
+
+            <h2>Require Directive</h2>
+            <p>The <a href="dir/auth.html#require">Require</a> directive controls access to the resources managed by
+            the route. There are three possibilities to control access: require specific named users,
+            require a secure protocol such as TLS/SSL to be used, and require that the authenticated user possess
+            a set of specified abilities. </p>
+            <ul>
+                <li>Require user username ...</li>
+                <li>Require ability name...</li>
+                <li>Require secure</li>
+            </ul>
+            <p>When using <em>Require ability</em>, the abilities may be roles defined via the
+            <a href="dir/auth.html#role">Role</a> directive, abilities specified in Role defintions, or they may
+            be simple words which represent a discrete ability that is explicitly specified with roles in
+            the <a href="dir/auth.html#user">User</a> directive.</p>
+
+            <p>The <em>require secure</em> directive specifies that the SSL/TLS protocol must be used for the
+            request to permit access. The <em>redirect "secure"</em> directive may be used to seamlessly redirect
+            the user's browser to use SSL for the same URL.</p>
+
+            <p>Note: These three require directive alternatives may be used in combination. However, multiple
+            <em>Require user</em> or multiple <em>Require ability</em> directives are not supported. The last
+            directive will take precedence.</p>
+
+            <h2>Samples</h2>
+            <p>Appwb provides two samples for user login:</p>
+            <ul>
+                <li><a href="https://github.com/embedthis/appweb/tree/dev/samples/login-basic">login-basic</a>
+                    &mdash; Basic Authentication Sample</li>
+                <li><a href="https://github.com/embedthis/appweb/tree/dev/samples/login-form">login-form</a>
+                    &mdash; Form Authentication Sample</li>
+            </ul>
+            <p>If you are using ESP, please consult the ESP login samples at:</p>
+            <ul>
+                <li><a href="https://github.com/embedthis/esp/tree/dev/samples/login-form">login-form</a> &mdash;
+                    ESP Form Authentication Sample</li>
+                <li><a href="https://github.com/embedthis/esp/tree/dev/samples/login-custom">login-custom</a> &mdash;
+                    ESP Form Authentication with passwords in an application database</li>
+            </ul>
+
+            <h2>Security Concerns and Patterns</h2>
+            <p>While user login may seem like a simple operation, there are hidden complexities. An application
+            that requires secure login must consider:
+            <ul>
+                <li>The login web page and transmission of username and password credentials must be encrypted with SSL.</li>
+                <li>The login web page must contain load only resources over SSL. Mixing the use of HTTP and HTTPS in a
+                single page is flagged by modern browsers as a security risk. This means all required stylesheets, scripts
+                and images must be loaded over SSL.</li>
+                <li>The login page and all its required resources must be accessible without prior authentication
+                    &dash; after all, it is the login page!</li>
+                <li>There may be portions of the application that need to be accessible without authentication and
+                    portions that require authentication for access.</li>
+                <li>Once logged in, the application may wish to switch back to HTTP for performance if the server is
+                    running on a modest embedded CPU.</li>
+            </ul>
+
+            <p>These requirements may be addressed using a couple of design patterns.</p>
+
+            <h2>SSL Encryption</h2>
+            <p>There are two primary options when securing transmission of sensitive information to and from the application :</p>
+            <ul>
+                <li>Secure the entire application</li>
+                <li>Secure only sensitive information including the login page and login service.</li>
+            </ul>
+            <p>Appweb makes it easy to secure the entire application. Simply use the <em>Redirect secure</em> directive. This is suitable
+            for faster systems where the SSL encoding overhead is minimal (less than 5% on a PC class system). But for more
+            modest embedded CPUs, the SSL encryption overhead may be prohibitively large, especially if using large keys.</p>
+
+            <pre class="ui code segment">Redirect secure</pre>
+            <p>This will automatically redirect all requests over SSL and may be used for the entire server or for
+            a specific request route only.</p>
+
+            <p>The alternative is to secure just the login page, and login/logout services.
+            This can be easily achieved by using <em>https:///</em> prefix on the AuthType URLs. For example:</p>
+            <pre class="ui code segment">AuthType form example.com https:///public/login.html https:///login /logout http:///index.html</pre>
+            <p>This will create the required routes and automatically switch to SSL for the login.html page and when sending
+                credentials to /login. It will automatically switch back to HTTP once logged in.</p>
+
+            <p>To secure other portions of the application, define a route and redirect that route for security. For example:</p>
+<pre class="ui code segment">
+&lt;Route ^/sensitive/&gt;
+    Prefix /sensitive
+    Documents top-secret
+    <b>Redirect secure</b>
 &lt;/Route&gt;
 </pre>
-            <a id="authStores"></a>
-            <h2>Password Stores</h2>
-            <p>Appweb can retrieve passwords from the default system password database or from users configured
-            via the config file.
-            Selection of the password store is controlled by the <a href="dir/auth.html#authStore">AuthStore</a>
-            directive. For example:</p>
+            <p>Make sure that all absolute URLs referenced from the login page use https and not http. Mixing the loading of
+            resources from http and https will lead to warnings from client browsers</p>
+
+            <h2>What to Authenticate?</h2>
+            <p>A similar issue arisies with respect to authentication. The login page and login service must be exempt from
+            authentication. To do this, define a <em>public</em>route and disable authentication via an
+            <em>AuthType none</em> directive. For example:</p>
 <pre class="ui code segment">
-AuthStore system
+&lt;Route ^/public/&gt;
+    Prefix /public
+    Documents public
+    AuthType none
+&lt;/Route&gt;
 </pre>
-This selects the Unix system PAM password database.
-<pre class="ui code segment">
-AuthStore config
-User julie 9d8873a123eb506e7f8e84d1f2a26916 view
-</pre>
-            <p>The Unix system password database is managed via the <a href="http://kb.iu.edu/data/anpn.html">PAM</a> 
-            interface. The Windows ActiveDirectory password store is not currently supported.</p>
-            <p>The <em>AuthStore config</em> option specifies that passwords will be defined by the
-            <a href="dir/auth.html#user">User</a> directive and will be stored internally in Appweb.
-            The default password store for Appweb is "config". Typically, User directives are kept in a separate
-            passwords are stored in a separate configuration file that is included from the <em>appweb.conf</em>
-            master configuration file.</p>
-<pre class="ui code segment">
-include auth.conf
-</pre>
-            <a name="authpass"></a>
-            <h2>Password Program</h2>
-            <p>The <em>authpass</em> program supports the <em>internal</em> AuthStore and is used to create user
-            passwords in an authentication file. Appweb uses the same authentication file and format for Basic, Digest
-            and Form authentication types. This simplifies administration. The file simply contains User and Role
-            directives and may be edited by hand if desired.</p> 
-<pre class="ui code segment">
-#
-#   auth.conf - Authentication data
-#
-Role administrator view
-Role executive manage direct
-Role user view
-User julie 9d8873a123eb506e7f8e84d1f2a26916 user
-User peter 7cdba57892649fd95a540683fdf8fba6 user
-User joshua 2fd6e47ff9bb70c0465fd2f5c8e5305e user administrator purchase
-User mary 5b90553bea8ba3686f4239d62801f0f3 user executive
-</pre>
-            <p>The <em>authpass</em> program will create and modify User directives in the authentication file.</p>
-            <p>The command line syntax for authpass is:</p>
-            <pre class="ui code segment">
-authpass [--create] [--cipher blowfish|md5] [--password word] \
-    authFile realm username roles...
-</pre>
-            <p>The authFile parameter specifies the name of the authentication file. 
-            The --cipher option specifies the cipher used to hash/crypt the password. The default is MD5 which is required
-            for digest authentication. However blowfish is more secure. Blowfish is preferable for basic and
-            form-based authentication</p>
-            <p>If the --password option is not used, authpass will prompt for the password. The --create option will
-            cause authpass to create the authentication file if it does not already exist. Otherwise it will update the
-            nominated file.</p> 
-            <p>The Realm is the name specified via the AuthRealm directive and is typically set to a company or product
-            name.</p>
-            <p><b>SECURITY WARNING</b>: it is essential that the authentication file be stored outside
-            the Documents directory or any directory serving content.</p>
+                <p>This will create a route where all URLs prefixed with "/public" will be unauthenticated. Then if the
+                login page is stored under <em>public</em> it will be accessible before logging in.</p>
+
+                <p>An alternative approach is to authenticate only server-side URLs and to classify all web content as "public".</p>
+
+                <h2>Role base Authorization</p>
+
+                1. Authenticate just the server-side and have all web pages public
+                2. Authenticate everything except the login mechanism
+                - Granular authorization on a per-page / per URL basis by roles
+
+                URL space for server-side and client
+                - Server prefix
+
+                Considerations
+                - AuthType for use by static HTML, i.e. non-web frameworks
+
+
+                To achieve this, you should create a route which redirects the client to the secure login page. For
+                example: </p>
+                <pre class="ui code segment">
+                    Listen 443
+                    &lt;VirtualHost *:443&gt;
+                    SSLEngine on openssl
+                    # More SSL directives if required
+                    AuthType form /login.html /login /logout referrer:/index.html
+                    &lt;/VirtualHost&gt;
+                    &lt;Route ^/&gt;
+                    AuthType form https://example.com/login.html
+                    &lt;/Route&gt;
+                </pre>
+
+
             <a name="api"></a>
             <h2>Authentication APIs</h2>
-            <p>See the <a href="../ref/api/http.html#group___http_auth">HttpAuth API</a> for APIs to 
-            manage authentication and authorization under program control. See also the 
-            <a href="../ref/api/mpr.html#group___mpr_1gae8874a355db8bc6fa6d6bfa4dc8bbee6">mprMakePassword</a> and 
+            <p>See the <a href="../ref/api/http.html#group___http_auth">HttpAuth API</a> for APIs to
+            manage authentication and authorization under program control. See also the
+            <a href="../ref/api/mpr.html#group___mpr_1gae8874a355db8bc6fa6d6bfa4dc8bbee6">mprMakePassword</a> and
             <a href="../ref/api/mpr.html#group___mpr_1gaa7361e36abe129b975148d3f6faeff8c">mprCheckPassword</a> APIs to
             create and check Blowfish encrypted passwords.</p>
+
+
+            <a name="basic"></a>
+            <h2>Basic Authentication</h2>
+            <p>Basic authentication was the original HTTP/1.0 authentication scheme. It captures usernames and
+                passwords via a fixed browser-based popup dialog and then transmits credentials
+                using a trivial encoding that is no better than using plain text.</p>
+            <p><b>SECURITY WARNING</b>: You should not use Basic Authentication if at all possible. It transmits
+                user credentials with each request, has no encryption for the password and does not have a means
+                for users to reliably logout. If you must use Basic Authentication, use it over
+                TLS/SSL which will encrypt the password over the wire.</p>
+            <h3>Basic Authentication Directives</h3>
+            <p>Appweb Basic authentication is enabled by the <em>AuthType basic</em> configuration directive.</p>
+            <pre class="ui code segment">
+&lt;Route /private/&gt;
+    <b>AuthType basic example.com</b>
+    User julie 9d8873a123eb506e7f8e84d1f2a26916 view
+&lt;/Route&gt;
+</pre>
+
+            <a id="digest"></a>
+            <h2>Digest Authentication</h2>
+            <p>The Digest authentication scheme
+            cryptographic techniques is a minor improvement over the Basic scheme. It captures usernames and
+            passwords via a fixed browser-based popup dialog and then transmits credentials
+            using the weak MD5 encoding format.</p>
+
+            <p><b>SECURITY WARNING</b>: You should not use Digest Authentication if at all possible. It transmits
+                user credentials with each request, has weak encryption for the password and does not have a means
+                for users to reliably logout. If you must use Digest Authentication, use it over
+                TLS/SSL which will securely encrypt the credentials over the wire.</p>
+
+            <p>Digest authentication is enabled the <em>AuthType digest</em> directive.</p>
+            <pre class="ui code segment">
+&lt;Route /private/&gt;
+    <b>AuthType Digest example.com</b>
+    include auth.conf
+&lt;/Route&gt;
+</pre>
+            <a id="stores"></a>
+            <h2>Password Stores</h2>
+            <p>Appweb can access passwords from configuration file directives or from the system password database.
+            Selection of the password store is controlled by the
+            <a href="dir/auth.html#authStore">AuthStore</a> directive. For example:</p>
+            <pre class="ui code segment">
+AuthStore system
+</pre>
+            <p>This selects the Unix system password database. Note: the Windows ActiveDirectory password store is not
+            currently supported.</p>
+            <p>The supported Auth Stores are:</p>
+            <ul>
+                <li>app &mdash; Application (custom) Password Database</li>
+                <li>config &mdash; Configuration Directives</li>
+                <li>system &mdash; System Password Database</li>
+            </ul>
+
+            <a name="authpass"></a>
+            <h2>Creating Passwords</h2>
+            <p>The <a href="../man/authpass.html">authpass</a> program creates user passwords that may be
+            used for the <em>config</em> or <em>app</em> AuthStores. If using an application defined database store,
+            the AuthStore should be set to "app" and the passwords created by authpass should be stored in your
+            application database.</p>
+
+            <p>The <em>authpass</em> program will create passwords and may be used to modify User directives in an
+                authentication file.</p>
+            <p>The command line syntax for authpass is:</p>
+            <pre class="ui code segment">
+authpass [--cipher blowfish|md5] [--file auth.conf] [--password word] realm username roles...
+</pre>
+
+            <p>The --file filename option specifies the name of the authentication file, if unspecified, the password will
+            be printed on the standard output. The --cipher option specifies the cipher used to hash/crypt the password.
+            The default is MD5 which is required for digest authentication, however blowfish is more secure.
+            Blowfish is preferable for Basic and Form authentication schemes. If the --password option is not used,
+            authpass will prompt for the password. The <em>realm</em> defines a group of passwords and is set via the
+            AuthType directive. It is typically set to a company domain or product name.</p>
+
+            <p>The authpass program can modify password definitions in a configuration file.
+            Here is a sample autentication configuration file that contains User and Role directives.</p>
+
+            <p><b>SECURITY WARNING</b>: it is essential that the authentication file be stored outside
+                the Documents directory or any directory serving content.</p>
