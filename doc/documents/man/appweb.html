@@ -3,103 +3,103 @@
 <head>
 <title>Appweb Man Page</title>
 </head>
-<body><pre>
-appweb(1)                        user commands                       appweb(1)
+<BODY><PRE>
+APPWEB(1)                        User Commands                       APPWEB(1)
 
-<b>name</b>
-       appweb- embedded http web server
+<B>NAME</B>
+       appweb- Embedded HTTP Web Server
 
-<b>synopsis</b>
-       <b>appweb [options]</b>
-       <b>appweb [options] [ip][:port] [documentroot]</b>
+<B>SYNOPSIS</B>
+       <B>appweb [options]</B>
+       <B>appweb [options] [IP][:port] [documentRoot]</B>
 
-       <b>appweb  </b>[<i>--config  configfile</i>] [<i>--chroot directory</i>] [<i>--debugger</i>] [<i>--exe</i>
-       <i>path</i>] [<i>--home directory</i>] [<i>--log logspec</i>] [<i>--name uniquename</i>] [<i>--threads</i>
-       <i>threads</i>] [<i>--version</i>] [<i>--verbose</i>]
+       <B>appweb  </B>[<I>--config  configFile</I>] [<I>--chroot directory</I>] [<I>--debugger</I>] [<I>--exe</I>
+       <I>path</I>] [<I>--home directory</I>] [<I>--log logSpec</I>] [<I>--name uniqueName</I>] [<I>--threads</I>
+       <I>threads</I>] [<I>--version</I>] [<I>--verbose</I>]
 
-<b>description</b>
-       appweb  is  a  compact  embedded http web server.  it is a fast, small-
+<B>DESCRIPTION</B>
+       Appweb  is  a  compact  embedded HTTP web server.  It is a fast, small-
        footprint, multi-threaded, standards-based, portable  server  developed
-       for  use  by embedded devices and applications.  it can run as a stand-
-       alone web server or the appweb library can be embedded in applications.
+       for  use  by embedded devices and applications.  It can run as a stand-
+       alone web server or the Appweb library can be embedded in applications.
 
-       appweb supports http/1.1, ssl, digest and basic authentication, virtual
+       Appweb supports HTTP/1.1, SSL, digest and basic authentication, virtual
        hosting, ranged requests, chunked transfers, file upload  and  security
-       limits.  appweb has an apache style configuration file and supports the
-       php and ejscript web frameworks.
+       limits.  Appweb has an Apache style configuration file and supports the
+       PHP and Ejscript web frameworks.
 
-       appweb normally reads the <b>appweb.conf  </b>file  for  configuration  direc-
-       tives.  however, if appweb is invoked with an ip address or port number
-       on the command line, appweb  will  not  read  the  configuration  file.
-       rather it will listen for requests on the specified ip:port address. if
-       the port component is omitted, appweb will listen on port 80. if the ip
-       address  is  omitted  and a port is supplied, appweb will listen on all
+       Appweb normally reads the <B>appweb.conf  </B>file  for  configuration  direc-
+       tives.  However, if appweb is invoked with an IP address or port number
+       on the command line, Appweb  will  not  read  the  configuration  file.
+       Rather it will listen for requests on the specified IP:PORT address. If
+       the PORT component is omitted, Appweb will listen on port 80. If the IP
+       address  is  omitted  and a port is supplied, Appweb will listen on all
        network interfaces.
 
-       appweb responds to the sigusr2 signal and toggles the trace level  from
-       2 to 4 and vice-versa. appweb responds to the siginfo|sigpwr signal and
+       Appweb responds to the SIGUSR2 signal and toggles the trace level  from
+       2 to 4 and vice-versa. Appweb responds to the SIGINFO|SIGPWR signal and
        emits operational stats to the trace log.
 
-<b>options</b>
-       <b>--config filename</b>
-              define the name of the appweb configuration  file.  this  is  by
-              default <b>appweb</b>.
+<B>OPTIONS</B>
+       <B>--config filename</B>
+              Define the name of the Appweb configuration  file.  This  is  by
+              default <B>appweb</B>.
 
-       <b>--chroot directory</b>
-              change  the  system  root  directory  for appweb. this creates a
-              chroot jail so that the appweb process cannot access  any  files
+       <B>--chroot directory</B>
+              Change  the  system  root  directory  for Appweb. This creates a
+              chroot jail so that the Appweb process cannot access  any  files
               outside the given directory.
 
-       <b>--debugger</b>
-              run appweb in debug mode and disable all timeouts. this disables
-              request and session timeouts.  the <b>-d </b>option  is  an  alias  for
+       <B>--debugger</B>
+              Run Appweb in debug mode and disable all timeouts. This disables
+              request and session timeouts.  The <B>-d </B>option  is  an  alias  for
               --debug.
 
-       <b>--exe path</b>
-              set  the  path  to  the appweb.exe executable image. this may be
-              required on vxworks so that appweb can load  modules  which  are
-              located   at  "appweb.exe/../lib".  this  is  necessary  because
-              vxworks cannot determine the path to  the  executable  image  at
+       <B>--exe path</B>
+              Set  the  path  to  the appweb.exe executable image. This may be
+              required on VxWorks so that Appweb can load  modules  which  are
+              located   at  "appweb.exe/../lib".  This  is  necessary  because
+              VxWorks cannot determine the path to  the  executable  image  at
               runtime.
 
-       <b>--log logspec</b>
-              name the appweb log file. this will override the errorlog direc-
-              tive in the  configuration  file.   when  the  maximum  size  is
-              exceeded,  the log file will be rotated to logname.old and a new
-              log file will be started. the <b>-l </b>option is an alias  for  --log.
-              the syntax is:
+       <B>--log logSpec</B>
+              Name the Appweb log file. This will override the ErrorLog direc-
+              tive in the  configuration  file.   When  the  maximum  size  is
+              exceeded,  the log file will be rotated to logName.old and a new
+              log file will be started. The <B>-l </B>option is an alias  for  --log.
+              The syntax is:
 
-              --log logname[:loglevel][.maxsize]
+              --log logName[:logLevel][.maxSize]
 
-       <b>--home directory</b>
-              define the server home directory for appweb.
+       <B>--home directory</B>
+              Define the server home directory for Appweb.
 
-       <b>--name name</b>
-              define  a unique name for this instance of appweb. useful for ps
+       <B>--name NAME</B>
+              Define  a unique name for this instance of Appweb. Useful for ps
               -ef listings.
 
-       <b>--verbose</b>
-              shorthand for --log stdout:4. the <b>-v  </b>option  is  an  alias  for
+       <B>--verbose</B>
+              Shorthand for --log stdout:4. The <B>-v  </B>option  is  an  alias  for
               --verbose.
 
-       <b>--version</b>
-              output the product version number.
+       <B>--version</B>
+              Output the product version number.
 
-<b>files</b>
-       <b>/etc/appweb/appweb.conf</b>
-       <b>/var/www/appweb-default</b>
-       <b>/usr/lib/appweb</b>
-       <b>/var/log/appweb</b>
+<B>FILES</B>
+       <B>/etc/appweb/appweb.conf</B>
+       <B>/var/www/appweb-default</B>
+       <B>/usr/lib/appweb</B>
+       <B>/var/log/appweb</B>
 
-<b>reporting bugs</b>
-       report bugs to &lt;dev@embedthis.com&gt;.
+<B>REPORTING BUGS</B>
+       Report bugs to &lt;dev@embedthis.com&gt;.
 
-<b>copyright</b>
-       copyright (c) 2003-2014 embedthis software.
+<B>COPYRIGHT</B>
+       Copyright (C) 2003-2014 Embedthis Software.
 
-<b>see also</b>
+<B>SEE ALSO</B>
        appman authpass esp http
 
-appweb                            march 2014                         appweb(1)
-</pre></body>
+appweb                            March 2014                         APPWEB(1)
+</PRE></BODY>
 </html>

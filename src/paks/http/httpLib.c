@@ -617,8 +617,8 @@ PUBLIC void httpSetAuthForm(HttpRoute *parent, cchar *loginPage, cchar *loginSer
             logoutService = &logoutService[8];
             secure = 1;
         }
-        httpSetRouteMethods(route, "POST");
         route = httpCreateActionRoute(parent, logoutService, logoutServiceProc);
+        httpSetRouteMethods(route, "POST");
         route->auth->type = 0;
         if (secure) {
             httpAddRouteCondition(route, "secure", 0, 0);
