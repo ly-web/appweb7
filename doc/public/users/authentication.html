@@ -161,14 +161,32 @@
             access to server resources. Authentication is essential when you have content that you wish to protect and
             provide only to specific, approved clients.</p>
 
-            <p>Appweb implements a powerful and flexible authentication mechanism that employs
-            front and back ends that can be mixed and matched to meet most authentication needs.</p>
+            <p>Appweb implements a powerful and flexible authentication farmework that verifies username and password and
+            verifies client capabilitiies using a role based authorization mechanismm.</p>
+
+            <h2>Authentication Schemes</h2>
+            <p>Appweb provides several authentication protocol schemes.</p>
+            <ul>
+                <li><a href="#form">Web Form Authentication</a></li>
+                <li><a href="#basic">Basic Authentication</a></li>
+                <li><a href="#digest">Digest Authentication</a></li>
+            </ul>
+            <p>The Form authentication scheme uses a HTML web form for the user to enter their username and password
+                credentials and HTTP Post requests to submit to the server for verification. It may also be used
+                programmatically va HTTP POST requests.</p>
+            <p>
+
+            <p>The Basic and Digest authentication are HTTP protocol mechanisms defined by the <a href=
+            "http://www.w3.org/Protocols/rfc2616/rfc2616.html">HTTP/1.1 RFC2616</a> specification. Because they operate
+            at the protocol level, they offer a lower level of capability and flexibility. When a client attempts to access
+            secured content, the client's browser displays a generic pop-up dialog box to prompt for the user's
+            credentials.</p>
 
             <div class="ui icon message">
                 <i class="warning icon"></i>
                 <div class="content">
                     <div class="header">SECURITY NOTE</div>
-                    <p>You should use Basic and Digest authentication only as a last resort. Basic and Digest authentication
+                    <p>You should only use Basic and Digest authentication as a last resort. Basic and Digest authentication
                     standards employ weak ciphers, repeatedly send credentials over the wire and and are not sufficiently
                     secure. Basic authentication transmits passwords as clear-text in each and every request. Digest
                     authentication uses the weak MD5 cipher, and both require use of SSL on all requests to be minimally
@@ -178,27 +196,9 @@
                 </div>
             </div>
 
-            <h2>Authentication Schemes</h2>
-            <p>Appweb provides several authentication protocol schemes.</p>
-            <ul>
-                <li><a href="#form">Web Form Authentication</a></li>
-                <li><a href="#custom">Custom via API</a></li>
-                <li><a href="#basic">Basic Authentication</a></li>
-                <li><a href="#digest">Digest Authentication</a></li>
-            </ul>
-            <p>The Form authentication scheme uses a HTML web form for the user to enter their username and password
-                credentials and HTTP Post requests to submit to the server for verification. It may also be used
-                programmatically using just a HTTP Post request.</p>
-            <p>
-            <p>The Basic and Digest authentication are HTTP protocol mechanisms defined by the <a href=
-            "http://www.w3.org/Protocols/rfc2616/rfc2616.html">HTTP/1.1 RFC2616</a> specification. Because they operate
-            at the protocol level, they offer a lower level of capability and flexibility. When a client attempts to access
-            secured content, the client's browser displays a generic pop-up dialog box to prompt for the user's
-            credentials.</p>
-
             <h2>Configuring Authentication</h2>
             <p>The authentication scheme is selected and controlled by the <a href="dir/auth.html#authType">AuthType</a>
-                configuration directive. This directive may be used inside a Route, VirtualHost block, or default
+                appweb configuration directive. This directive may be used inside a Route, VirtualHost block, or default
                 server configuration.</p>
 
             <p>The format of the AuthType directive is: </p>
@@ -215,15 +215,16 @@
 &lt;/Route&gt;
 </pre>
             <p>This example authenticates access to URLs beginning with "/private" using the Form authentication
-                scheme. It permits access by the user "julie" once authenticated, and uses the
-                "<em>config</em>" password store that specifies users and passwords via configuration directives.</p>
+            scheme. It permits access by the user "julie" once authenticated, and uses the
+            "<em>config</em>" password store that defines users via <em>User</em> aconfiguration directives.</p>
 
-                <p>The <a href="dir/auth.html#user">User</a>
-                directive defines a user with an encrypted password and the authorized roles.
-                <p>The <a href="dir/auth.html#role">Role</a> directive defines an authorization role with a set of
-                capabilities that role posesses. Typically, User and Role directives are placed in a separate
-                configuration file, often called <em>auth.conf</em>
-                that is included via an <em>"include auth.conf"</em> directive in the <em>appweb.conf</em> file.</p>
+            <p>The <a href="dir/auth.html#user">User</a>
+            directive defines a user with an encrypted password and the authorized roles.
+            The <a href="dir/auth.html#role">Role</a> directive defines role for which users may posess. Roles
+            define a set of capabilities expressed as simple words. Typically, User and Role directives are placed 
+            in a separate configuration file, often called <em>auth.conf</em>
+            This file is then typically included from the appweb.conf file via an <em>"include auth.conf"</em> 
+            directive.</p>
 
 
             <a id="form"></a>
@@ -241,12 +242,18 @@
             once logged out. The format is:
 <pre class="ui code segment">AuthType form realm Login-Page Login-Service Logout-Service Logged-In-Destination Logged-Out-Destination</pre>
             <p>This defines the URLs that are invoked during the login sequence and creates special request routes for
-            these URLs. These routes will disalbe authentication for the login page and login service so they can be accessed
-            by unauthenticated users.
-            Each of these AuthType arguments is optional and may be specified as the empty string "" to omit. For example:</p>
+            these URLs. These routes will permit access to the login page and login service so they can be accessed 
+            by unauthenticated users. Each of these AuthType arguments is optional and may be specified as the 
+            empty string "" to omit. For example:</p>
             <pre class="ui code segment">
 &lt;Route ^/&gt;
     <b>AuthType form example.com /public/login.html /login /logout /index.html /public/login.html</b>
+&lt;/Route&gt;
+
+&lt;Route ^/public/&gt;
+    Prefix /public
+    Documents public
+    AuthType none
 &lt;/Route&gt;
 </pre>
             <p>This example enables Form authentication for all requests and will redirect the client browser to
@@ -254,7 +261,8 @@
             The login web page should submit the username and password to the login service bound to the <em>/login</em> URL.
             When logout is required, the client should submit a HTTP POST request to the logout service bound to the
             <em>/logout</em> URL. The last two fields in the AuthType directive are the destination URL to which the
-            client's browser will be redirected once logged in and when logged out.</p>
+            client's browser will be redirected once logged in and when logged out. The second /public route enables
+            access to documents under the "public" directory without authentication.</p> 
 
             <h3>Login Service</h3>
             <p>The Login-Service is URL that is bound to an internal service to receive the <em>username</em> and
@@ -370,7 +378,7 @@
             <p>This will create the required routes and automatically switch to SSL for the login.html page and when sending
                 credentials to /login. It will automatically switch back to HTTP once logged in.</p>
 
-            <p>To secure other portions of the application, define a route and redirect that route for security. For example:</p>
+            <p>To secure other portions of the application, define a route that redirects securely. For example:</p>
 <pre class="ui code segment">
 &lt;Route ^/sensitive/&gt;
     Prefix /sensitive
@@ -382,7 +390,8 @@
             resources from http and https will lead to warnings from client browsers</p>
 
             <h2>What to Authenticate?</h2>
-            <p>A similar issue arisies with respect to authentication. The login page and login service must be exempt from
+            <p>There are often portions of the application that may be accessed without authentication and other portions
+            that require authentication. For example: The login page and login service must be exempt from
             authentication. To do this, define a <em>public</em>route and disable authentication via an
             <em>AuthType none</em> directive. For example:</p>
 <pre class="ui code segment">
@@ -392,38 +401,11 @@
     AuthType none
 &lt;/Route&gt;
 </pre>
-                <p>This will create a route where all URLs prefixed with "/public" will be unauthenticated. Then if the
-                login page is stored under <em>public</em> it will be accessible before logging in.</p>
+            <p>This will create a route where all URLs prefixed with "/public" will be unauthenticated. Then if the
+            login page is stored under <em>public</em> it will be accessible before logging in.</p>
 
-                <p>An alternative approach is to authenticate only server-side URLs and to classify all web content as "public".</p>
-
-                <h2>Role base Authorization</p>
-
-                1. Authenticate just the server-side and have all web pages public
-                2. Authenticate everything except the login mechanism
-                - Granular authorization on a per-page / per URL basis by roles
-
-                URL space for server-side and client
-                - Server prefix
-
-                Considerations
-                - AuthType for use by static HTML, i.e. non-web frameworks
-
-
-                To achieve this, you should create a route which redirects the client to the secure login page. For
-                example: </p>
-                <pre class="ui code segment">
-                    Listen 443
-                    &lt;VirtualHost *:443&gt;
-                    SSLEngine on openssl
-                    # More SSL directives if required
-                    AuthType form /login.html /login /logout referrer:/index.html
-                    &lt;/VirtualHost&gt;
-                    &lt;Route ^/&gt;
-                    AuthType form https://example.com/login.html
-                    &lt;/Route&gt;
-                </pre>
-
+            <p>An alternative approach is to require authentication only for server-side URLs and to enable 
+            unauthenticated access to all static web content as "public".</p>
 
             <a name="api"></a>
             <h2>Authentication APIs</h2>
