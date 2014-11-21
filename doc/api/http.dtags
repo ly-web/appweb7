@@ -1776,10 +1776,17 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>httpSetAuthForm</name>
+      <name>httpSetAuthFormDetails</name>
       <anchorfile>group___http_auth.html</anchorfile>
-      <anchor>gaaf0ae0b82b673a187c18da4e864cc19a</anchor>
-      <arglist>(struct HttpRoute *parent, cchar *loginPage, cchar *loginService, cchar *logoutService, cchar *loggedIn)</arglist>
+      <anchor>gaf45a9833fbe0dd980c9a04f509a8f89e</anchor>
+      <arglist>(struct HttpRoute *route, cchar *loginPage, cchar *loginService, cchar *logoutService, cchar *loggedInPage, cchar *loggedOutPage)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>httpSetAuthLogin</name>
+      <anchorfile>group___http_auth.html</anchorfile>
+      <anchor>gad163ae3c82f8fce763dfbd1214dbd38d</anchor>
+      <arglist>(HttpAuth *auth, cchar *value)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -1815,6 +1822,13 @@
       <anchorfile>group___http_auth.html</anchorfile>
       <anchor>ga8d095857a74b8786bd83f9e3aa4fb6ab</anchor>
       <arglist>(HttpAuth *auth, cchar *abilities)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>httpSetAuthSession</name>
+      <anchorfile>group___http_auth.html</anchorfile>
+      <anchor>ga909fabed1271f6cd5ac7efa4603254fb</anchor>
+      <arglist>(HttpAuth *auth, bool noSession)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
