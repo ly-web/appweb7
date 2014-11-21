@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Virtual Hosts</title>
+    <title>Appweb Samples</title>
     <!-- Copyright Embedthis Software, LLC, 2003-2014. All Rights Reserved. -->
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <meta name="keywords" content="appweb, embedded web server, embedded, devices, http server, internet of things, esp, goahead" />
-    <meta name="description" content="Virtual Hosts" />
+    <meta name="description" content="Appweb Samples" />
     <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
         rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Julius+Sans+One' rel='stylesheet' type='text/css'>
@@ -174,7 +174,7 @@
             
             
             <div class="divider">/</div>
-            <a class="active section" href="vhosts.html">Virtual Hosts</a>
+            <a class="active section" href="samples.html">Appweb Samples</a>
             
         </div>
         
@@ -185,68 +185,112 @@
     </div>
     <div class="content">
 
-            <h1>Virtual Hosts</h1>
-            <p>Virtual hosting is the capability of a single system to serve multiple web domain addresses. For example, 
-            a single server could respond to requests for www.acme.com and www.coyote.com. This is clearly useful for
-            public web sites, but virtual hosting is also an excellent technique to manage separate content within a
-            single domain. For example, the administration interface and the user interfaces can be implemented as
-            separate virtual hosts.</p><a id="configurationDirectives"></a>
-            <h2>Configuration Directives</h2>
-            <p>Virtual hosts are created by grouping configuration directives within a VirtualHost directive block.
-            Directives within the block apply only to the virtual host.</p>
-            <pre class="ui code segment">
-&lt;VirtualHost&gt;
-    ServerName www.acme.com
-    Documents /var/www/acmeDocs
-      ...
-&lt;/VirtualHost&gt;
-</pre>
-            <p>The VirtualHost directive may optionally take a list of IP:PORT endpoints on which to attach. Only these
-            endpoints will be connected to the virtual host. For example:
-            <pre class="ui code segment">
-&lt;VirtualHost *:80, *:443&gt;
-    ServerName www.acme.com
-    Documents /var/www/acme
-    ...
-&lt;/VirtualHost&gt;
-</pre>
-            <p>The VirtualHost directive creates a new Host and routes for that host. The settings of outer directives
-            are inherited, but the routes are not inherited.</p> 
-            <h2>Name-Based Virtual Hosts</h2>
-            <p>Name-based virtual hosts allow multiple virtual hosts to share an IP address by using the HTTP Host
-            header to distinguish which virtual host should service the request.</p>
-            <h3>Example</h3>
-            <pre class="ui code segment">
-&lt;VirtualHost&gt;
-    ServerName www.acme.com
-    Documents /var/www/acme
-    ...
-&lt;/VirtualHost&gt;
-&lt;VirtualHost&gt;
-    ServerName www.coyote.com
-    Documents /var/www/coyote
-    ...
-&lt;/VirtualHost&gt;
-</pre>
-            <p>In this example www.acme.com and www.coyote.com share the IP address 206.148.97.56. 
-            You may specify port numbers with the IP addresses if you require a port other than port 80.</p>
-            <a id="ipBasedVirtualHosts"></a>
-            <h2>IP-based Virtual Hosts</h2>
-            <p>IP-based virtual hosts allow multiple virtual hosts to be supported on a single server. Each IP-based
-            virtual host consumes a separate IP address.</p>
-            <pre class="ui code segment">
-&lt;VirtualHost 206.148.97.56&gt;
-    ServerName www.acme.com
-    Documents /var/www/acme
-    ...
-&lt;/VirtualHost&gt;
-&lt;VirtualHost 206.148.97.57&gt;
-    ServerName www.coyote.com
-    Documents /var/www/coyote
-    ...
-&lt;/VirtualHost&gt;
-</pre>
-            <p>In this example, www.acme.com and www.coyote.com are separate virtual hosts.</p>
+            <h1>Appweb Samples</h1>
+            <p>Appweb provides an extensive suite of samples for common design patterns.</p>
+
+            <table class="ui table">
+                <thead>
+                    <tr><td>Name</td><td>Description</td></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><a href="chroot-server/README.md">chroot-server</a></td>
+                        <td>Configuring a secure chroot jail for the server.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="cpp-handler/README.md">cpp-handler</a></td>
+                        <td>C++ Handler</td>
+                    </tr>
+                    <tr>
+                        <td><a href="cpp-module/README.md">cpp-module</a></td>
+                        <td>C++ Module</td>
+                    </tr>
+                    <tr>
+                        <td><a href="deploy-server/README.md">deploy-server</a></td>
+                        <td>Deploy Appweb files for copying to a target.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="login-basic/README.md">login-basic</a></td>
+                        <td>Login using Basic or Digest authentication (not recommended).</td>
+                    </tr>
+                    <tr>
+                        <td><a href="login-form/README.md">login-form</a></td>
+                        <td>Login using Web Forms (recommended).</td>
+                    </tr>
+                    <tr>
+                        <td><a href="max-server/README.md">max-server</a></td>
+                        <td>Maximum configuration in appweb.conf.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="min-server/README.md">min-server</a></td>
+                        <td>Minimum configuration in appweb.conf.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="secure-server/README.md">secure-server</a></td>
+                        <td>Secure server using SSL, secure login, chroot and sandbox limits.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="simple-action/README.md">simple-action</a></td>
+                        <td>Action callback. Binding C function to URI.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="simple-client/README.md">simple-client</a></td>
+                        <td>Http client.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="simple-handler/README.md">simple-handler</a></td>
+                        <td>Simple Appweb URL handler.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="simple-module/README.md">simple-module</a></td>
+                        <td>Simple Appweb loadable module.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="simple-server/README.md">simple-server</a></td>
+                        <td>Simple Http server.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="spy-fliter/README.md">spy-fliter</a></td>
+                        <td>Simple HTTP pipeline filter.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="ssl-server/README.md">ssl-server</a></td>
+                        <td>SSL server.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="tiny-server/README.md">tiny-server</a></td>
+                        <td>Configure Appweb to be tiny.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="typical-client/README.md">typical-client</a></td>
+                        <td>Using the client HTTP API to retrieve a document.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="typical-server/README.md">typical-server</a></td>
+                        <td>A more fully featured server main program.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="websockets-echo/README.md">websockets-echo</a></td>
+                        <td>WebSockets echo server using an ESP controller.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="websockets-output/README.md">websockets-output</a></td>
+                        <td>Using WebSockets to send a large file.</td>
+                    </tr>
+                
+                </tbody>
+            </table>
+            
+            <h2>Requirements</h2>
+
+            <p>The Appweb samples are configured to use a locally built Appweb or Appweb installed to the 
+                default location (usually /usr/local/lib/apppweb). To build the samples, you will need to 
+                install Appweb and the MakeMe build tool from:</p>
+
+            <p>Appweb &mdash; <a href="https://embedthis.com/appweb/download.html">https://embedthis.com/appweb/download.html</a></p>
+
+            <p>MakeMe &mdash; <a href="https://embedthis.com/me/download.html">https://embedthis.com/me/download.html</a></p>
+            <p>Pak &mdash; <a href="https://embedthis.com/pak/download.html">https://embedthis.com/pak/download.html</a></p>
 
     </div>
     <div class="terms ui basic center aligned segment">
@@ -272,7 +316,7 @@
             sessionStorage.setItem('scroll-top', $('.sidebar').scrollTop());
         });
         $(function() {
-            var url = '../users/vhosts.html';
+            var url = '../users/samples.html';
             var active = $('.sidebar a[href="' + url +'"]');
             active.addClass('active');
             $('.sidebar').scrollTop(sessionStorage.getItem('scroll-top'));
