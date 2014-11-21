@@ -89,11 +89,11 @@ Me.load({
                 trace('Generate', 'Authorization file: ' + path)
                 path.write('#\n#   ' + path + ' - Authorization roles and users\n#\n\n')
                 path.write('Role user view\nRole administrator view\nRole executive manage direct\n\n')
-                run('authpass --cipher md5 --password pass4 ' + path + ' example.com julie user')
-                run('authpass --cipher md5 --password pass3 ' + path + ' example.com peter user')
-                run('authpass --cipher md5 --password pass2 ' + path + ' example.com mary user executive')
-                run('authpass --cipher md5 --password pass1 ' + path + ' example.com joshua user administrator purchase')
-                run('authpass --cipher blowfish --password pass5 ' + path + ' example.com ralph user administrator purchase')
+                run('authpass --file auth.conf --cipher md5 --password pass4 example.com julie user')
+                run('authpass --file auth.conf --cipher md5 --password pass3 example.com peter user')
+                run('authpass --file auth.conf --cipher md5 --password pass2 example.com mary user executive')
+                run('authpass --file auth.conf --cipher md5 --password pass1 example.com joshua user administrator purchase')
+                run('authpass --file auth.conf --cipher blowfish --password pass5 example.com ralph user administrator purchase')
             `,
         },
 

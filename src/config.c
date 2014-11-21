@@ -534,12 +534,12 @@ static int authRealmDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    AuthType basic|digest [realm]
-    AuthType form realm login-form [login-service logout-service logged-in]
+    AuthType basic|digest realm
+    AuthType form realm login-page [login-service logout-service logged-in-page logged-out-page]
  */
 static int authTypeDirective(MaState *state, cchar *key, cchar *value)
 {
-    char    *type, *details, *loginPage, *loginService, *logoutService, *loggedIn, *realm;
+    char    *type, *details, *loginPage, *loginService, *logoutService, *loggedInPage, *loggedOutPage, *realm;
 
     if (!maTokenize(state, value, "%S ?S ?*", &type, &realm, &details)) {
         return MPR_ERR_BAD_SYNTAX;
@@ -547,20 +547,38 @@ static int authTypeDirective(MaState *state, cchar *key, cchar *value)
     if (httpSetAuthType(state->auth, type, details) < 0) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (realm) {
-        httpSetAuthRealm(state->auth, strim(realm, "\"'", MPR_TRIM_BOTH));
-
-    } else if (!state->auth->realm) {
-        /* Try to detect users forgetting to define a realm */
-        mprLog("warn appweb config", 0, "Must define an AuthRealm before defining the AuthType");
-    }
-    if (smatch(type, "form")) {
-        if (!maTokenize(state, details, "%S ?S ?S ?S", &loginPage, &loginService, &logoutService, &loggedIn)) {
-            return MPR_ERR_BAD_SYNTAX;
+    if (!smatch(type, "none")) {
+        if (realm) {
+            httpSetAuthRealm(state->auth, strim(realm, "\"'", MPR_TRIM_BOTH));
+        } else if (!state->auth->realm) {
+            /* Try to detect users forgetting to define a realm */
+            mprLog("warn appweb config", 0, "Must define an AuthRealm before defining the AuthType");
         }
-        httpSetAuthForm(state->route, loginPage, loginService, logoutService, loggedIn);
+        if (details) {
+            if (!maTokenize(state, details, "%S ?S ?S ?S ?S", &loginPage, &loginService, &logoutService, 
+                    &loggedInPage, &loggedOutPage)) {
+                return MPR_ERR_BAD_SYNTAX;
+            }
+            if (loginPage && !*loginPage) {
+                loginPage = 0;
+            }
+            if (loginService && !*loginService) {
+                loginService = 0;
+            }
+            if (logoutService && !*logoutService) {
+                logoutService = 0;
+            }
+            if (loggedInPage && !*loggedInPage) {
+                loggedInPage = 0;
+            }
+            if (loggedOutPage && !*loggedOutPage) {
+                loggedOutPage = 0;
+            }
+            httpSetAuthFormDetails(state->route, loginPage, loginService, logoutService, loggedInPage, loggedOutPage);
+        }
+        return addCondition(state, "auth", 0, 0);
     }
-    return addCondition(state, "auth", 0, 0);
+    return 0;
 }
 
 
@@ -2016,17 +2034,19 @@ static int redirectDirective(MaState *state, cchar *key, cchar *value)
     if (status < 0 || uri == 0) {
         return configError(state, key);
     }
-    alias = httpCreateAliasRoute(state->route, uri, 0, status);
-    target = (path) ? sfmt("%d %s", status, path) : code;
-    httpSetRouteTarget(alias, "redirect", target);
+
     if (smatch(value, "secure")) {
-        /* 
-            Accept this route if !secure. That will then do a redirect.
-            Set details to null to avoid creating Strict-Transport-Security header 
+        /*
+            Redirect "secure" does not need an alias route, just a route condition. Ignores code.
          */
-        httpAddRouteCondition(alias, "secure", 0, HTTP_ROUTE_NOT);
+        httpAddRouteCondition(state->route, "secure", path, HTTP_ROUTE_REDIRECT);
+
+    } else {
+        alias = httpCreateAliasRoute(state->route, uri, 0, status);
+        target = (path) ? sfmt("%d %s", status, path) : code;
+        httpSetRouteTarget(alias, "redirect", target);
+        httpFinalizeRoute(alias);
     }
-    httpFinalizeRoute(alias);
     return 0;
 }
 
@@ -2091,7 +2111,7 @@ static int requireDirective(MaState *state, cchar *key, cchar *value)
                 age = sjoin("-1", age, NULL);
             }
         }
-        addCondition(state, "secure", age, 0);
+        addCondition(state, "secure", age, HTTP_ROUTE_STRICT_TLS);
 
     } else if (scaselesscmp(type, "user") == 0) {
         httpSetAuthPermittedUsers(state->auth, rest);
@@ -2250,6 +2270,7 @@ static int serverNameDirective(MaState *state, cchar *key, cchar *value)
 
 /*
     SessionCookie [name=NAME] [visible=true]
+    SessionCookie none
  */
 static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -2258,13 +2279,13 @@ static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%*", &options)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-#if DEPRECATED
-    if (scaselessmatch(value, "visible")) {
-        httpSetRouteSessionVisibility(state->route, 1);
-    } else if (scaselessmatch(value, "invisible")) {
-        httpSetRouteSessionVisibility(state->route, 0);
+    if (smatch(options, "disable")) {
+        httpSetAuthSession(state->route->auth, 0);
+        return 0;
+    } else if (smatch(options, "enable")) {
+        httpSetAuthSession(state->route->auth, 1);
+        return 0;
     }
-#endif
     for (option = maGetNextArg(options, &tok); option; option = maGetNextArg(tok, &tok)) {
         option = stok(option, " =\t,", &ovalue);
         ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
@@ -2273,6 +2294,7 @@ static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
             httpSetRouteSessionVisibility(state->route, scaselessmatch(ovalue, "visible"));
         } else if (smatch(option, "name")) {
             httpSetRouteCookie(state->route, ovalue);
+
         } else {
             mprLog("error appweb config", 0, "Unknown SessionCookie option %s", option);
             return MPR_ERR_BAD_SYNTAX;

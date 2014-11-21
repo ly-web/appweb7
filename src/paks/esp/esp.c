@@ -620,10 +620,8 @@ static void initRuntime()
     }
     http = MPR->httpService;
     
-    if (app->logSpec) {
-        mprSetLogHandler(logHandler);
-        mprStartLogging(app->logSpec, MPR_LOG_CMDLINE);
-    }
+    mprSetLogHandler(logHandler);
+    mprStartLogging(app->logSpec, MPR_LOG_CMDLINE);
     if (app->traceSpec) {
         httpStartTracing(app->traceSpec);
     }
@@ -689,7 +687,7 @@ static void initialize(int argc, char **argv)
         flags = (app->require & REQ_SERVE) ? 0 : MA_PARSE_NON_SERVER;
         /* 
             Appweb - hosted initialization.
-            This will call espApp when via the EspApp directive 
+            This will call espDefineApp via the EspApp directive 
          */
         if (maParseConfig(app->appwebConfig, flags) < 0) {
             fail("Cannot configure the server, exiting.");
@@ -698,8 +696,8 @@ static void initialize(int argc, char **argv)
     } else {
         httpAddRouteHandler(route, "fileHandler", "");
         if (mprPathExists("package.json", R_OK)) {
-            if (espApp(route, ".", app->appName, 0, 0) < 0) {
-                fail("Cannot create ESP app");
+            if (espDefineApp(route, ".", app->appName, 0, 0) < 0 || espConfigureApp(route) < 0 || espLoadApp(route) < 0) {
+                fail("Cannot define ESP app");
                 return;
             }
         } else {
@@ -1272,7 +1270,7 @@ static void run(int argc, char **argv)
     MPR->flags |= MPR_LOG_DETAILED;
 #endif
     if (app->show) {
-        httpLogRoutes(app->host, 0);
+        httpLogRoutes(app->host, mprGetLogLevel() > 4);
     }
     if (!app->appwebConfig) {
         if (argc == 0) {
@@ -1405,6 +1403,10 @@ static void user(int argc, char **argv)
         password = argv[2];
         if (smatch(password, "-")) {
             password = getPassword();
+        }
+        if (auth->realm == 0 || *auth->realm == '\0') {
+            fail("An authentication realm has not been defined. Define a \"app.http.auth.realm\" value.");
+            return;
         }
         if (smatch(app->cipher, "md5")) {
             encodedPassword = mprGetMD5(sfmt("%s:%s:%s", username, auth->realm, password));
@@ -3301,7 +3303,7 @@ static void savePackage()
     cchar       *path;
 
     if (!app->noupdate) {
-        path = mprJoinPath(app->route ? app->route->documents : ".", ME_ESP_PACKAGE);
+        path = mprJoinPath(app->route ? app->route->home : ".", ME_ESP_PACKAGE);
         if (mprSaveJson(app->config, path, MPR_JSON_PRETTY | MPR_JSON_QUOTES) < 0) {
             fail("Cannot save %s", path);
         }

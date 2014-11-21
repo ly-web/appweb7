@@ -1384,6 +1384,7 @@ typedef struct EspRoute {
     cchar           *winsdk;                /**< Windows SDK */
     cchar           *combineScript;         /**< Combine mode script filename */
     cchar           *combineSheet;          /**< Combine mode stylesheet filename */
+    cchar           *routeSet;              /**< Directive route set */
     int             compileMode;            /**< Compile the application debug or release mode */
     int             skipApps;               /**< Skip loading applications */
     Edi             *edi;                   /**< Default database for this route */
@@ -1438,7 +1439,9 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set);
     @ingroup EspRoute
     @stability Prototype
  */
-PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet);
+PUBLIC int espDefineApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet);
+PUBLIC int espConfigureApp(HttpRoute *route);
+PUBLIC int espLoadApp(HttpRoute *route);
 
 /**
     Add caching for response content.

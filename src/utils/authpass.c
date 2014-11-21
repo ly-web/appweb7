@@ -1,8 +1,9 @@
 /*
     authpass.c -- Authorization password management.
 
-    This file provides facilities for creating passwords in an auth.conf file. It uses basic encoding and decoding 
-    using the base64 encoding scheme and MD5 Message-Digest algorithms.
+    authpass [--cipher md5|blowfish] [--file filename] [--password password] realm user roles...
+
+    This file provides facilities for creating passwords. It supports the MD5 or Blowfish ciphers.
  */
 
 /********************************* Includes ***********************************/
@@ -33,13 +34,14 @@ PUBLIC int main(int argc, char *argv[])
     HttpRoute   *route;
     HttpAuth    *auth;
     char        *password, *authFile, *username, *encodedPassword, *realm, *cp, *roles, *cipher;
-    int         i, errflg, create, nextArg;
+    int         i, errflg, nextArg;
 
     mpr = mprCreate(argc, argv, 0);
     programName = mprGetAppName(mpr);
 
+    authFile = 0;
     username = 0;
-    create = errflg = 0;
+    errflg = 0;
     password = 0;
     cipher = "blowfish";
 
@@ -51,11 +53,7 @@ PUBLIC int main(int argc, char *argv[])
             if (*cp == '-') {
                 cp++;
             }
-            if (smatch(cp, "create") || smatch(cp, "c")) {
-                create++;
-                break;
-
-            } else if (smatch(cp, "cipher")) {
+            if (smatch(cp, "cipher")) {
                 if (++i == argc) {
                     errflg++;
                 } else {
@@ -66,6 +64,14 @@ PUBLIC int main(int argc, char *argv[])
                     break;
                 }
 
+            } else if (smatch(cp, "file") || smatch(cp, "f")) {
+                if (++i == argc) {
+                    errflg++;
+                } else {
+                    authFile = argv[i];
+                    break;
+                }
+                
             } else if (smatch(cp, "password") || smatch(cp, "p")) {
                 if (++i == argc) {
                     errflg++;
@@ -88,7 +94,6 @@ PUBLIC int main(int argc, char *argv[])
         printUsage(programName);
         exit(2);
     }   
-    authFile = argv[nextArg++];
     realm = argv[nextArg++];
     username = argv[nextArg++];
 
@@ -107,17 +112,10 @@ PUBLIC int main(int argc, char *argv[])
     route = httpGetDefaultRoute(NULL);
     auth = route->auth;
 
-    if (!create) {
+    if (authFile && mprPathExists(authFile, W_OK)) {
         if (maParseConfig(authFile, 0) < 0) {
             exit(4);
         }
-        if (!mprPathExists(authFile, W_OK)) {
-            mprLog("error authpass", 0, "Cannot write to %s", authFile);
-            exit(5);
-        }
-    } else if (mprPathExists(authFile, R_OK)) {
-        mprLog("error authpass", 0, "Cannot create %s, already exists", authFile);
-        exit(6);
     }
     if (!password && (password = getPassword()) == 0) {
         exit(7);
@@ -128,12 +126,16 @@ PUBLIC int main(int argc, char *argv[])
         /* This uses the more secure blowfish cipher */
         encodedPassword = mprMakePassword(sfmt("%s:%s:%s", username, realm, password), 16, 128);
     }
-    httpRemoveUser(auth, username);
-    if (httpAddUser(auth, username, encodedPassword, roles) == 0) {
-        exit(8);
-    }
-    if (maWriteAuthFile(auth, authFile) < 0) {
-        exit(9);
+    if (authFile) {
+        httpRemoveUser(auth, username);
+        if (httpAddUser(auth, username, encodedPassword, roles) == 0) {
+            exit(8);
+        }
+        if (maWriteAuthFile(auth, authFile) < 0) {
+            exit(9);
+        }
+    } else {
+        printf("%s\n", encodedPassword);
     }
     mprDestroy();
     return 0;
@@ -206,10 +208,10 @@ static char *getpass(char *prompt)
  
 static void printUsage(cchar *programName)
 {
-    mprEprintf("usage: %s [--create] [--password password] authFile realm user roles...\n"
+    mprEprintf("usage: %s [--cipher cipher] [--file path] [--password password] authFile realm user roles...\n"
         "Options:\n"
         "    --cipher md5|blowfish Select the encryption cipher. Defaults to md5\n"
-        "    --create              Create the password file\n"
+        "    --file filename       Modify the password file\n"
         "    --password password   Use the specified password\n"
         "\n", programName);
 }

@@ -34,3 +34,4 @@ appweb-macosx-mine*
 *.user
 *.mdb
 .DS_Store
+*.dmp
