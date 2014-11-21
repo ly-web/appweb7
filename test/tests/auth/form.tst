@@ -11,9 +11,8 @@ if (App.config.me_ssl) {
     //  Appweb uses a self-signed cert
     http.verify = false
 
-/*
     //  Will be denied
-    // http.setCredentials("anybody", "wrong password")
+    http.setCredentials("anybody", "wrong password")
     http.get(HTTP + "/auth/form/index.html")
     assert(http.status == 302)
     let location = http.header('location')
@@ -25,7 +24,6 @@ if (App.config.me_ssl) {
     assert(http.status == 200)
     assert(http.response.contains("<form"))
     assert(http.response.contains('action="/auth/form/login"'))
-*/
 
     //  Login. The response should redirct to /auth/form
     http.reset()
@@ -46,7 +44,7 @@ if (App.config.me_ssl) {
     //  Now log out. Will be redirected to the login page.
     http.reset()
     http.setCookie(cookie)
-    http.get(HTTPS + "/auth/form/logout")
+    http.post(HTTPS + "/auth/form/logout")
     assert(http.status == 302)
     let location = http.header('location')
     assert(location.contains('https'))
