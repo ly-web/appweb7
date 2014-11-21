@@ -14458,10 +14458,15 @@ PUBLIC void httpAddStage(Http *http, HttpStage *stage)
 
 PUBLIC HttpStage *httpLookupStage(Http *http, cchar *name)
 {
+    HttpStage   *stage;
+
     if (!http) {
         return 0;
     }
-    return mprLookupKey(http->stages, name);
+    if ((stage = mprLookupKey(http->stages, name)) == 0 || stage->flags & HTTP_STAGE_INTERNAL) {
+        return 0;
+    }
+    return stage;
 }
 
 

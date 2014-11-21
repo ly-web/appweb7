@@ -1970,6 +1970,7 @@ PUBLIC void httpAssignQueue(HttpQueue *q, struct HttpStage *stage, int dir);
 #define HTTP_STAGE_UNLOADED       0x20000           /**< Stage module library has been unloaded */
 #define HTTP_STAGE_RX             0x40000           /**< Stage to be used in the Rx direction */
 #define HTTP_STAGE_TX             0x80000           /**< Stage to be used in the Tx direction */
+#define HTTP_STAGE_INTERNAL       0x100000          /**< Internal stage - hidden */
 
 typedef int (*HttpParse)(Http *http, cchar *key, char *value, void *state);
 
