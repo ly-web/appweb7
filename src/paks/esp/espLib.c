@@ -11050,7 +11050,7 @@ static void sdbError(Edi *edi, cchar *fmt, ...)
     va_start(args, fmt);
     edi->errMsg = sfmtv(fmt, args);
     va_end(args);
-    mprError(edi->errMsg);
+    mprError("%s", edi->errMsg);
 }
 
 
@@ -11061,7 +11061,7 @@ static void sdbTrace(Edi *edi, int level, cchar *fmt, ...)
     va_start(args, fmt);
     edi->errMsg = sfmtv(fmt, args);
     va_end(args);
-    mprTrace(level, edi->errMsg);
+    mprTrace(level, "%s", edi->errMsg);
 }
 
 
