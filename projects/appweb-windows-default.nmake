@@ -155,6 +155,7 @@ ME_CACHE_PREFIX       = $(ME_VAPP_PREFIX)\cache
 ME_SRC_PREFIX         = $(ME_VAPP_PREFIX)\src
 
 
+TARGETS               = $(TARGETS) init
 TARGETS               = $(TARGETS) build\$(CONFIG)\bin\appweb.exe
 TARGETS               = $(TARGETS) build\$(CONFIG)\bin\appwebMonitor.exe
 TARGETS               = $(TARGETS) build\$(CONFIG)\bin\appwebMonitor.ico
