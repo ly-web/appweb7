@@ -17,8 +17,13 @@ http.close()
 http.get(HTTP + "/..%5Cappweb.conf")
 if (Config.OS == 'windows') {
     /* for windows, the "..\\" is an invalid filename */
-    ttrue(http.status == 400)
-} else {
     ttrue(http.status == 404)
+} else {
+    ttrue(http.status == 400)
 }
 http.close()
+
+http.get(HTTP + "/../../../../../.x/.x/.x/.x/.x/.x/etc/passwd")
+ttrue(http.status == 400)
+http.close()
+
