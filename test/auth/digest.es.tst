@@ -34,5 +34,5 @@ ttrue(http.status == 200)
 
 http.setCredentials("mary", "pass2")
 http.get(HTTP + "/auth/digest/joshua/user.html")
-ttrue(http.status == 401)
+ttrue(http.status == 403)
 http.close()

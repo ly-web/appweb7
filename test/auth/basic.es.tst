@@ -34,7 +34,7 @@ ttrue(http.status == 200)
 
 http.setCredentials("mary", "pass2")
 http.get(HTTP + "/auth/basic/joshua/user.html")
-ttrue(http.status == 401)
+ttrue(http.status == 403)
 http.close()
 
 if (thas('ME_CGI')) {
