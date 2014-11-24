@@ -627,6 +627,20 @@
       <anchor>ga9ea785faccf155c6bd3b2650d5245d11</anchor>
       <arglist>(HttpUri *uri, int flags)</arglist>
     </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>httpValidateUriPath</name>
+      <anchorfile>group___http_uri.html</anchorfile>
+      <anchor>gaedd850692dddad7cc112b34d844b4ac2</anchor>
+      <arglist>(cchar *uri)</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>httpValidUriChars</name>
+      <anchorfile>group___http_uri.html</anchorfile>
+      <anchor>gaeafb10159cd76d10d21bc590bc76db3a</anchor>
+      <arglist>(cchar *uri)</arglist>
+    </member>
   </compound>
   <compound kind="group">
     <name>HttpRange</name>
@@ -1785,8 +1799,8 @@
       <type>void</type>
       <name>httpSetAuthLogin</name>
       <anchorfile>group___http_auth.html</anchorfile>
-      <anchor>gad163ae3c82f8fce763dfbd1214dbd38d</anchor>
-      <arglist>(HttpAuth *auth, cchar *value)</arglist>
+      <anchor>ga81ed6fef8f24fa21ac1eff535cf29215</anchor>
+      <arglist>(HttpAuth *auth, cchar *uri)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
