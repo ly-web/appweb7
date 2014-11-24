@@ -370,11 +370,11 @@ static int findAppwebConf()
 {
     char    *base, *filename;
 
-    if (ME_CONFIG_FILE) {
-        base = sclone(ME_CONFIG_FILE);
-    } else {
-        base = mprJoinPathExt(mprGetAppName(), ".conf");
-    }
+#ifdef ME_CONFIG_FILE
+    base = sclone(ME_CONFIG_FILE);
+#else
+    base = mprJoinPathExt(mprGetAppName(), ".conf");
+#endif
 #if !ME_ROM
     filename = base;
     if (!mprPathExists(filename, R_OK)) {
