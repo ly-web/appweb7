@@ -2134,7 +2134,8 @@ PUBLIC bool httpNeedRetry(HttpConn *conn, char **url)
             }
             return 1;
         }
-    } else if (HTTP_CODE_MOVED_PERMANENTLY <= rx->status && rx->status <= HTTP_CODE_MOVED_TEMPORARILY && conn->followRedirects) {
+    } else if (HTTP_CODE_MOVED_PERMANENTLY <= rx->status && 
+            rx->status <= HTTP_CODE_MOVED_TEMPORARILY && conn->followRedirects) {
         if (rx->redirect) {
             *url = rx->redirect;
             return 1;
@@ -10403,7 +10404,7 @@ static int allowDenyCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
             deny++;
         }
         if (!allow || deny) {
-            httpError(conn, HTTP_CODE_UNAUTHORIZED, "Access denied for this server %s", conn->ip);
+            httpError(conn, HTTP_CODE_FORBIDDEN, "Access denied for this server %s", conn->ip);
             return HTTP_ROUTE_OK;
         }
     } else {
@@ -10417,7 +10418,7 @@ static int allowDenyCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
             allow++;
         }
         if (deny || !allow) {
-            httpError(conn, HTTP_CODE_UNAUTHORIZED, "Access denied for this server %s", conn->ip);
+            httpError(conn, HTTP_CODE_FORBIDDEN, "Access denied for this server %s", conn->ip);
             return HTTP_ROUTE_OK;
         }
     }
@@ -10458,12 +10459,7 @@ static int authCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
     if (!httpCanUser(conn, NULL)) {
         mprLog(2, "Access denied. User is not authorized for access.");
         if (!conn->tx->finalized) {
-            if (route->auth && route->auth->type) {
-                (route->auth->type->askLogin)(conn);
-                /* Request has been denied and a response generated. So OK to accept this route. */
-            } else {
-                httpError(conn, HTTP_CODE_UNAUTHORIZED, "Access denied. User is not authorized for access.");
-            }
+            httpError(conn, HTTP_CODE_FORBIDDEN, "Access denied. User is not authorized for access.");
         }
     }
     /* OK to accept route. This does not mean the request was authenticated - an error may have been already generated */
