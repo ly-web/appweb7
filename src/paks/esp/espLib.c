@@ -2624,10 +2624,6 @@ static void htmlRouteSet(HttpRoute *parent, cchar *set)
         sfmt("^%s%s/{controller}$", parent->prefix, parent->serverPrefix),
         "$1", 
         "${controller}.c");
-#if UNUSED
-    /* Delete is a POST method alternative to remove */
-    httpAddRestfulRoute(parent, 0, "delete", "POST", "/{id=[0-9]+}/delete$", "delete", "{controller}");
-#endif
     httpAddResourceGroup(parent, 0, "{controller}");
     httpAddClientRoute(parent, "", "/public");
     httpHideRoute(parent, 1);
