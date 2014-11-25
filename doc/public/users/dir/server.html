@@ -558,8 +558,11 @@
                             HTTP header that should be supplied with the request.</p>
                             <p>When using virtual hosting, the ServerName may begin with "*" in which case the 
                                 VirtualHost block will match a request with a Host header that "contains" the given
-                                name. For example: a ServerName directive of "*.embedthis.com" will match
-                                farm.embedthis.com and www.embedthis.com.</p>
+                                name. For example: a ServerName directive of "*.example.com" will match
+                                farm.example.com and www.example.com.</p>
+                            <p>Similarly, the ServerName may end with "*" in which case it will match Host headers that
+                            begin with the pattern. For example: "example.*" will match "example.com" and 
+                            "example.org".</p>
                         </td>
                     </tr>
                 </tbody>
