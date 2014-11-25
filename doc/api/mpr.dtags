@@ -1025,6 +1025,13 @@
     </member>
     <member kind="define">
       <type>#define</type>
+      <name>MPR_LOG_TAGGED</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>afee33573c71301f6cff682eb427c8ed4</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
       <name>MPR_MANAGE_FREE</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>a6f1f0ed71ed5a6ee0089d4b5c0cd301e</anchor>

@@ -161,7 +161,6 @@ static bool installPak(cchar *name, cchar *criteria);
 static bool installPakFiles(cchar *name, cchar *version);
 static void list(int argc, char **argv);
 static MprJson *loadPackage(cchar *path);
-static void logHandler(cchar *tags, int level, cchar *msg);
 static void makeEspDir(cchar *dir);
 static void makeEspFile(cchar *path, cchar *data, ssize len);
 static MprHash *makeTokens(cchar *path, MprHash *other);
@@ -620,7 +619,6 @@ static void initRuntime()
     }
     http = MPR->httpService;
     
-    mprSetLogHandler(logHandler);
     mprStartLogging(app->logSpec, MPR_LOG_CMDLINE);
     if (app->traceSpec) {
         httpStartTracing(app->traceSpec);
@@ -1266,9 +1264,6 @@ static void run(int argc, char **argv)
     if (app->error) {
         return;
     }
-#if KEEP
-    MPR->flags |= MPR_LOG_DETAILED;
-#endif
     if (app->show) {
         httpLogRoutes(app->host, mprGetLogLevel() > 4);
     }
@@ -3235,48 +3230,6 @@ static void why(cchar *path, cchar *fmt, ...)
     }
 }
 
-
-static void logHandler(cchar *tags, int level, cchar *msg)
-{
-    MprFile     *file;
-    char        tbuf[128];
-    ssize       len, width;
-
-    if ((file = MPR->logFile) == 0) {
-        return;
-    }
-#if TODO
-    static int  check = 0;
-    if (MPR->logBackup && MPR->logSize && (check++ % 1000) == 0) {
-        backupLog();
-    }
-#endif
-    if (MPR->flags & MPR_LOG_DETAILED) {
-        if (tags && *tags) {
-            fmt(tbuf, sizeof(tbuf), "%s %d %s, ", mprGetDate(MPR_LOG_DATE), level, tags);
-            mprWriteFileString(file, tbuf);
-            len = slen(tbuf);
-            width = 40;
-            if (len < width) {
-                mprWriteFile(file, "                                          ", width - len);
-            }
-        } else if (tags && level == 0) {
-            mprWriteFileString(file, "error: ");
-        } else {
-            mprWriteFileString(file, msg);
-            mprWriteFileString(file, "\n");
-        }
-        if (level == 0) {
-            mprWriteToOsLog(sfmt("%s: %d %s: %s", MPR->name, level, tags, msg), level);
-        }
-    } else {
-        if (scontains(tags, "error")) {
-            trace("Error", msg);
-        } else {
-            trace("Info", msg);
-        }
-    }
-}
 
 static MprJson *loadPackage(cchar *path)
 {

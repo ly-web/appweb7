@@ -1331,6 +1331,10 @@
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Use detailed log formatting with timestamps and tags.</td></tr>
 <tr class="apiDef">
+<td>#define</td><td><a href="#mpr_8h_1afee33573c71301f6cff682eb427c8ed4" class="nameRef">MPR_LOG_TAGGED</a>&nbsp;&nbsp;&nbsp;0x10</td>
+</tr>
+<tr class="apiBrief"><td>&nbsp;</td><td>Use tagged message formatting.</td></tr>
+<tr class="apiDef">
 <td>#define</td><td><a href="#mpr_8h_1a6f1f0ed71ed5a6ee0089d4b5c0cd301e" class="nameRef">MPR_MANAGE_FREE</a>&nbsp;&nbsp;&nbsp;0x1</td>
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Block being freed.</td></tr>
@@ -1379,7 +1383,7 @@
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Normal (default) priority.</td></tr>
 <tr class="apiDef">
-<td>#define</td><td><a href="#mpr_8h_1ace65c038d3a8380c6213fd2dccbc135b" class="nameRef">MPR_NOT_ALL</a>&nbsp;&nbsp;&nbsp;0x10</td>
+<td>#define</td><td><a href="#mpr_8h_1ace65c038d3a8380c6213fd2dccbc135b" class="nameRef">MPR_NOT_ALL</a>&nbsp;&nbsp;&nbsp;0x20</td>
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Don&apos;t invoke all destructors when terminating.</td></tr>
 <tr class="apiDef">
@@ -8327,7 +8331,7 @@ This uses the specified join string between the elements
     <tr><td class="param">fmt</td><td>Printf style format string. Variable number of arguments to.</td>
     <tr><td class="param">...</td><td>Variable number of arguments for printf data.</td>
     </table></dd></dl>
-    <dl><dt>Remarks:</dt><dd>MprLog is highly useful as a debugging aid when integrating or when developing new modules.</dd></dl>
+    <dl><dt>Remarks:</dt><dd>MprLog is highly useful as a debugging aid.</dd></dl>
     <dl><dt><b>API</b> Stability:</dt><dd>Evolving.</dd></dl>
     <dl><dt>See Also:</dt><dd>
     <a href="#group___mpr_log_1gab628dc7260ee2a08549a3a98b89e0881" class="ref">MprLogHandler</a>, <a href="#group___mpr_log_1ga912d39c3467b133438b984c79c02aee3" class="ref">mprAssert</a>, <a href="#group___mpr_log_1ga08742c4a5b8340886661acd20827b12c" class="ref">mprDebug</a>, <a href="#group___mpr_log_1ga33ca1cbd4c7573013253873dab76f209" class="ref">mprError</a>, <a href="#group___mpr_log_1ga485a83d46f63f5ce07b489b2e77a338c" class="ref">mprGetLogFile</a>, <a href="#group___mpr_log_1gafa26d272b51c301c2e5c3630d6a8493e" class="ref">mprGetLogHandler</a>, <a href="#mpr_8h_1a02941fa13af43f80adda4840d94f215b" class="ref">mprSetLogFile</a>, <a href="#mpr_8h_1a834e7ceec5efa68d0d73eb45c3c69780" class="ref">mprSetLogHandler</a>, <a href="#group___mpr_log_1ga5072dbfb7278b3247096146ead8b7162" class="ref">mprSetLogLevel</a>, <a href="#group___mpr_log_1ga3c9f9a0bcfdf44dc68118f97a82ed13f" class="ref">mprUsingDefaultLogHandler</a></dd></dl>
