@@ -40,8 +40,8 @@ Documentation:
 ---
 * [Apwpeb Documentation](https://embedthis.com/appweb/doc/index.html)
 * [ESP Documentation](https://embedthis.com/esp/doc/index.html)
-* [ESP Configuration in Appweb](https://embedthis.com/appweb/doc/guide/esp/users/configuration.html#directives)
-* [ESP Configuration](https://embedthis.com/esp/doc/guide/esp/users/config.html)
+* [ESP Configuration in Appweb](https://embedthis.com/appweb/doc/users/dir/esp.html)
+* [ESP Configuration](https://embedthis.com/esp/doc/users/config.html)
 * [Sandbox Limits](https://embedthis.com/appweb/doc/users/dir/sandbox.html)
 * [Security Considerations](https://embedthis.com/appweb/doc/users/security.html)
 * [User Authentication](https://embedthis.com/appweb/doc/users/authentication.html)
