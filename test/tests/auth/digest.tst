@@ -34,5 +34,5 @@ assert(http.status == 200)
 
 http.setCredentials("mary", "pass2")
 http.get(HTTP + "/auth/digest/joshua/user.html")
-assert(http.status == 401)
+assert(http.status == 403)
 http.close()
