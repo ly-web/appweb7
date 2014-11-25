@@ -21,7 +21,7 @@ See [LICENSE.md](LICENSE.md) for details.
 
 ### Building
     You can build with make or with MakeMe. MakeMe is quicker and more flexible.
-    To install MakeMe, download it from https://embedthis.com/me/download.html.
+    To install MakeMe, download it from https://embedthis.com/makeme/download.html.
 
 ### To build with make:
 
