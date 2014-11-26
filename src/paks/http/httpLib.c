@@ -13375,6 +13375,7 @@ static bool parseRange(HttpConn *conn, char *value)
     if (value == 0) {
         return 0;
     }
+
     /*
         Step over the "bytes="
      */
@@ -13387,7 +13388,9 @@ static bool parseRange(HttpConn *conn, char *value)
         /*
             A range "-7" will set the start to -1 and end to 8
          */
-        tok = stok(value, ",", &value);
+        if ((tok = stok(value, ",", &value)) == 0) {
+            return 0;
+        }
         if (*tok != '-') {
             range->start = (ssize) stoi(tok);
         } else {
