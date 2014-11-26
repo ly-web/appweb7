@@ -13322,6 +13322,8 @@ static char *splitExpression(char *property, int *operator, char **value)
     ssize   i;
 
     seps = JSON_EXPR_CHARS " \t";
+    *value = 0;
+
     if ((op = spbrk(property, seps)) == 0) {
         return 0;
     }
@@ -13385,7 +13387,9 @@ static bool matchExpression(MprJson *obj, int operator, char *value)
     if (!(obj->type & MPR_JSON_VALUE)) {
         return 0;
     }
-    value = stok(value, "'\"", NULL);
+    if ((value = stok(value, "'\"", NULL)) == 0) {
+        return 0;
+    }
     switch (operator) {
     case JSON_OP_EQ:
         return smatch(obj->value, value);
