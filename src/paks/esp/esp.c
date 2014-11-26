@@ -902,7 +902,7 @@ static void editPackageValue(int argc, char **argv)
         return;
     }
     for (i = 0; i < argc; i++) {
-        key = stok(sclone(argv[i]), "=", (char**) &value);
+        key = ssplit(sclone(argv[i]), "=", (char**) &value);
         if (value) {
             setPackageKey(key, value);
         } else {
@@ -1199,7 +1199,7 @@ static void role(int argc, char **argv)
             def = sfmt("[%s]", sjoinArgs(argc - 2, (cchar**) &argv[2], ","));
             abilities = mprParseJson(def);
             key = sfmt("app.http.auth.roles.%s", rolename);
-            if (mprSetJsonObj(app->config, key, abilities) < 0) {
+            if (mprWriteJsonObj(app->config, key, abilities) < 0) {
                 fail("Cannot update %s", key);
                 return;
             }
@@ -1414,7 +1414,7 @@ static void user(int argc, char **argv)
             def = sfmt("{password:'%s',roles:[%s]}", encodedPassword, sjoinArgs(argc - 3, (cchar**) &argv[3], ","));
             credentials = mprParseJson(def);
             key = sfmt("app.http.auth.users.%s", username);
-            if (mprSetJsonObj(app->config, key, credentials) < 0) {
+            if (mprWriteJsonObj(app->config, key, credentials) < 0) {
                 fail("Cannot update %s", key);
                 return;
             }
@@ -2284,7 +2284,7 @@ static void createMigration(cchar *name, cchar *table, cchar *comment, int field
     forward = sjoin(forward, def, NULL);
 
     for (i = 0; i < fieldCount; i++) {
-        field = stok(sclone(fields[i]), ":", &typeString);
+        field = ssplit(sclone(fields[i]), ":", &typeString);
         if ((type = ediParseTypeString(typeString)) < 0) {
             fail("Unknown type '%s' for field '%s'", typeString, field);
             return;
@@ -2382,7 +2382,7 @@ static void generateTable(int argc, char **argv)
         }
     }
     for (i = 1; i < argc && !app->error; i++) {
-        field = stok(sclone(argv[i]), ":", &typeString);
+        field = ssplit(sclone(argv[i]), ":", &typeString);
         if ((type = ediParseTypeString(typeString)) < 0) {
             fail("Unknown type '%s' for field '%s'", typeString, field);
             break;
@@ -2434,9 +2434,10 @@ static void generateScaffold(int argc, char **argv)
     }
     /*
         This feature is undocumented.
-        Having plural database table names greatly complicates things and ejsJoin is not able to follow foreign fields: NameId.
+        Having plural database table names greatly complicates things and ejsJoin is not able to follow 
+        foreign fields: NameId.
      */
-    stok(sclone(app->controller), "-", &plural);
+    ssplit(sclone(app->controller), "-", &plural);
     if (plural) {
         app->table = sjoin(app->controller, plural, NULL);
     } else {
@@ -2466,8 +2467,8 @@ static int reverseSortFiles(MprDirEntry **d1, MprDirEntry **d2)
     if (smatch(base1, base2)) {
         return 0;
     }
-    b1 = stok(base1, "-", &p1);
-    b2 = stok(base2, "-", &p2);
+    b1 = ssplit(base1, "-", &p1);
+    b2 = ssplit(base2, "-", &p2);
     rc = scmp(b1, b2);
     if (rc == 0) {
         if (!p1) {
@@ -2707,8 +2708,8 @@ static bool blendSpec(cchar *name, cchar *version, MprJson *spec)
         blendJson(app->config, "directories", spec, "directories");
     }
     if (mprLookupKey(app->topDeps, name)) {
-        major = stok(sclone(version), ".", &minor);
-        minor = stok(minor, ".", &patch);
+        major = ssplit(sclone(version), ".", &minor);
+        minor = ssplit(minor, ".", &patch);
         key = sfmt("dependencies.%s", name);
         if (!mprGetJson(app->config, key)) {
             mprSetJson(app->config, key, sfmt("~%s.%s", major, minor));
@@ -3273,8 +3274,8 @@ static cchar *getPakVersion(cchar *name, cchar *version)
     MprList         *files;
 
     if (!version || smatch(version, "*")) {
-        name = stok(sclone(name), "#", (char**) &version);
-        if (!version) {
+        name = ssplit(sclone(name), "#", (char**) &version);
+        if (*version == '\0') {
             files = mprGetPathFiles(mprJoinPath(app->paksCacheDir, name), MPR_PATH_RELATIVE);
             mprSortList(files, (MprSortProc) reverseSortFiles, 0);
             if ((dp = mprGetFirstItem(files)) != 0) {
@@ -3330,8 +3331,8 @@ static bool inRange(cchar *expr, cchar *version)
     if (smatch(expr, "*")) {
         expr = "x";
     }
-    version = stok(sclone(version), "-", &preVersion);
-    base = stok(sclone(expr), "-", &pre);
+    version = ssplit(sclone(version), "-", &preVersion);
+    base = ssplit(sclone(expr), "-", &pre);
     if (op && (*op == '~' || *op == '^')) {
         if (*op == '^' && schr(version, '-')) {
             return 0;
@@ -3377,9 +3378,9 @@ static int64 asNumber(cchar *version)
     char    *tok;
     int64   major, minor, patch;
 
-    major = stoi(stok(sclone(version), ".", &tok));
-    minor = stoi(stok(tok, ".", &tok));
-    patch = stoi(stok(tok, ".", &tok));
+    major = stoi(ssplit(sclone(version), ".", &tok));
+    minor = stoi(ssplit(tok, ".", &tok));
+    patch = stoi(ssplit(tok, ".", &tok));
     return (((major * VER_FACTOR) + minor) * VER_FACTOR) + patch;
 }
 
@@ -3396,7 +3397,7 @@ static cchar *findAcceptableVersion(cchar *name, cchar *originalCriteria)
         criteria = "x";
     }
     if (schr(name, '#')) {
-        name = stok(sclone(name), "#", (char**) &criteria);
+        name = ssplit(sclone(name), "#", (char**) &criteria);
     }
     files = mprGetPathFiles(mprJoinPath(app->paksCacheDir, name), MPR_PATH_RELATIVE);
     mprSortList(files, (MprSortProc) reverseSortFiles, 0);

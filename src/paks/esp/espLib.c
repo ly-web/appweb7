@@ -2503,7 +2503,7 @@ PUBLIC bool updateFields(cchar *tableName, MprJson *params)
     EdiRec  *rec;
     cchar   *key;
 
-    key = mprLookupJson(params, "id");
+    key = mprReadJson(params, "id");
     if ((rec = ediSetFields(ediReadRec(getDatabase(), tableName, key), params)) == 0) {
         return 0;
     }
@@ -2676,7 +2676,7 @@ PUBLIC void espAddPak(HttpRoute *route, cchar *name, cchar *version)
     if (!version || !*version || smatch(version, "0.0.0")) {
         version = "*";
     }
-    mprSetJson(route->config, sfmt("dependencies.%s", name), version);
+    mprWriteJson(route->config, sfmt("dependencies.%s", name), version);
 }
 
 
@@ -4125,7 +4125,7 @@ static int runAction(HttpConn *conn)
         }
     }
     if (action) {
-        httpSetParam(conn, "controller", stok(sclone(rx->target), "-", &actionName));
+        httpSetParam(conn, "controller", ssplit(sclone(rx->target), "-", &actionName));
         httpSetParam(conn, "action", actionName);
         if (eroute->commonController) {
             (eroute->commonController)(conn);
@@ -4729,8 +4729,10 @@ PUBLIC int espLoadApp(HttpRoute *route)
         }
         if (!route->combine && (preload = mprGetJsonObj(route->config, "esp.preload")) != 0) {
             for (ITERATE_JSON(preload, item, i)) {
-                source = stok(sclone(item->value), ":", &kind);
-                if (!kind) kind = "controller";
+                source = ssplit(sclone(item->value), ":", &kind);
+                if (*kind == '\0') {
+                    kind = "controller";
+                }
                 source = mprJoinPath(httpGetDir(route, "controllers"), source);
                 if (espLoadModule(route, NULL, kind, source, &errMsg) < 0) {
                     mprLog("error esp", 0, "Cannot preload esp module %s. %s", source, errMsg);
@@ -4772,7 +4774,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
 
     if (scontains(value, "=")) {
         for (option = maGetNextArg(sclone(value), &tok); option; option = maGetNextArg(tok, &tok)) {
-            option = stok(option, " =\t,", &ovalue);
+            option = ssplit(option, " =\t,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
             if (smatch(option, "auth")) {
                 auth = ovalue;
@@ -4926,8 +4928,8 @@ PUBLIC int espOpenDatabase(HttpRoute *route, cchar *spec)
         spec = sfmt("mdb://%s.mdb", eroute->appName);
 #endif
     }
-    provider = stok(sclone(spec), "://", &path);
-    if (provider == 0 || path == 0) {
+    provider = ssplit(sclone(spec), "://", &path);
+    if (*provider == '\0' || *path == '\0') {
         return MPR_ERR_BAD_ARGS;
     }
     path = mprJoinPath(httpGetDir(route, "db"), path);
@@ -5228,7 +5230,7 @@ static int espRouteDirective(MaState *state, cchar *key, cchar *value)
 
     if (scontains(value, "=")) {
         for (option = maGetNextArg(sclone(value), &tok); option; option = maGetNextArg(tok, &tok)) {
-            option = stok(option, "=,", &ovalue);
+            option = ssplit(option, "=,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
             if (smatch(option, "methods")) {
                 methods = ovalue;
@@ -6136,17 +6138,17 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         case ESP_TOK_CODE:
             if (*token == '^') {
                 for (token++; *token && isspace((uchar) *token); token++) ;
-                where = stok(token, " \t\r\n", &rest);
-                if (rest == 0) {
-                    ;
-                } else if (scmp(where, "global") == 0) {
-                    mprPutStringToBuf(state->global, rest);
+                where = ssplit(token, " \t\r\n", &rest);
+                if (*rest) {
+                    if (scmp(where, "global") == 0) {
+                        mprPutStringToBuf(state->global, rest);
 
-                } else if (scmp(where, "start") == 0) {
-                    mprPutToBuf(state->start, "%s  ", rest);
+                    } else if (scmp(where, "start") == 0) {
+                        mprPutToBuf(state->start, "%s  ", rest);
 
-                } else if (scmp(where, "end") == 0) {
-                    mprPutToBuf(state->end, "%s  ", rest);
+                    } else if (scmp(where, "end") == 0) {
+                        mprPutToBuf(state->end, "%s  ", rest);
+                    }
                 }
             } else {
                 mprPutStringToBuf(body, fixMultiStrings(token));
@@ -6154,14 +6156,11 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             break;
 
         case ESP_TOK_CONTROL:
-            control = stok(token, " \t\r\n", &token);
+            control = ssplit(token, " \t\r\n", &token);
             if (scmp(control, "content") == 0) {
                 mprPutStringToBuf(body, ESP_CONTENT_MARKER);
 
             } else if (scmp(control, "include") == 0) {
-                if (token == 0) {
-                    token = "";
-                }
                 token = strim(token, " \t\r\n\"", MPR_TRIM_BOTH);
                 token = mprNormalizePath(token);
                 if (token[0] == '/') {
@@ -6212,10 +6211,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         case ESP_TOK_EXPR:
             /* <%= expr %> */
             if (*token == '%') {
-                fmt = stok(token, ": \t\r\n", &token);
-                if (token == 0) { 
-                    token = "";
-                }
+                fmt = ssplit(token, ": \t\r\n", &token);
                 /* Default without format is safe. If users want a format and safe, use %S or renderSafe() */
                 token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
                 mprPutToBuf(body, "  espRender(conn, \"%s\", %s);\n", fmt, token);
@@ -6602,8 +6598,8 @@ static cchar *getVxCPU(cchar *arch)
 {
     char   *cpu, *family;
 
-    family = stok(sclone(arch), ":", &cpu);
-    if (!cpu || *cpu == '\0') {
+    family = ssplit(sclone(arch), ":", &cpu);
+    if (*cpu == '\0') {
         if (smatch(family, "i386")) {
             cpu = "I80386";
         } else if (smatch(family, "i486")) {

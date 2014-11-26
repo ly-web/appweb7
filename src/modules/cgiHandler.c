@@ -474,7 +474,7 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
 {
     HttpConn    *conn;
     MprBuf      *buf;
-    char        *endHeaders, *headers, *key, *value, *junk;
+    char        *endHeaders, *headers, *key, *value;
     ssize       blen;
     int         len;
 
@@ -549,7 +549,7 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
                 /*
                     Now pass all other headers back to the client
                  */
-                key = stok(key, ":\r\n\t ", &junk);
+                key = ssplit(key, ":\r\n\t ", NULL);
                 httpSetHeaderString(conn, key, value);
             }
         }
@@ -758,7 +758,7 @@ static void findExecutable(HttpConn *conn, char **program, char **script, char *
     MprKey      *kp;
     MprFile     *file;
     cchar       *actionProgram, *ext, *cmdShell, *cp, *start, *path;
-    char        *tok, buf[ME_MAX_FNAME + 1];
+    char        buf[ME_MAX_FNAME + 1];
 
     rx = conn->rx;
     tx = conn->tx;
@@ -823,7 +823,7 @@ static void findExecutable(HttpConn *conn, char **program, char **script, char *
             buf[ME_MAX_FNAME] = '\0';
             if (buf[0] == '#' && buf[1] == '!') {
                 cp = start = &buf[2];
-                cmdShell = stok(&buf[2], "\r\n", &tok);
+                cmdShell = ssplit(&buf[2], "\r\n", NULL);
                 if (!mprIsPathAbs(cmdShell)) {
                     /*
                         If we cannot access the command shell and the command is not an absolute path, 

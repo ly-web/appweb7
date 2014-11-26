@@ -194,7 +194,9 @@ static int parseFileInner(MaState *state, cchar *path)
             continue;
         }
         state->key = 0;
-        key = getDirective(line, &value);
+        if ((key = getDirective(line, &value)) == 0) {
+            continue;
+        }
         if (!state->enabled) {
             if (key[0] != '<') {
                 continue;
@@ -266,7 +268,7 @@ static int traceLogDirective(MaState *state, cchar *key, cchar *value)
         if (!path) {
             path = sclone(option);
         } else {
-            option = stok(option, " =\t,", &ovalue);
+            option = ssplit(option, " =\t,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
             if (smatch(option, "anew")) {
                 flags |= MPR_LOG_ANEW;
@@ -654,7 +656,7 @@ static int cacheDirective(MaState *state, cchar *key, cchar *value)
             }
             break;
         }
-        option = stok(option, " =\t,", &ovalue);
+        option = ssplit(option, " =\t,", &ovalue);
         ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
         if ((int) isdigit((uchar) *option)) {
             lifespan = httpGetTicks(option);
@@ -822,7 +824,7 @@ static int crossOriginDirective(MaState *state, cchar *key, cchar *value)
     route = state->route;
     tok = sclone(value);
     while ((option = maGetNextArg(tok, &tok)) != 0) {
-        option = stok(option, " =\t,", &ovalue);
+        option = ssplit(option, " =\t,", &ovalue);
         ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
         if (scaselessmatch(option, "origin")) {
             route->corsOrigin = sclone(ovalue);
@@ -1008,7 +1010,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
         if (!path) {
             path = mprJoinPath(httpGetRouteVar(state->route, "LOG_DIR"), httpExpandRouteVars(state->route, option));
         } else {
-            option = stok(option, " =\t,", &ovalue);
+            option = ssplit(option, " =\t,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
             if (smatch(option, "size")) {
                 size = (ssize) getnum(ovalue);
@@ -1697,7 +1699,7 @@ static int makeDirDirective(MaState *state, cchar *key, cchar *value)
     uid = gid = 0;
     mode = 0750;
     if (schr(auth, ':')) {
-        owner = stok(auth, ":", &tok);
+        owner = ssplit(auth, ":", &tok);
         if (owner && *owner) {
             if (snumber(owner)) {
                 uid = (int) stoi(owner);
@@ -1707,7 +1709,7 @@ static int makeDirDirective(MaState *state, cchar *key, cchar *value)
                 uid = userToID(owner);
             }
         }
-        group = stok(tok, ":", &perms);
+        group = ssplit(tok, ":", &perms);
         if (group && *group) {
             if (snumber(group)) {
                 gid = (int) stoi(group);
@@ -2097,7 +2099,7 @@ static int requireDirective(MaState *state, cchar *key, cchar *value)
         domains = 0;
         age = 0;
         for (option = stok(sclone(rest), " \t", &tok); option; option = stok(0, " \t", &tok)) {
-            option = stok(option, " =\t,", &ovalue);
+            option = ssplit(option, " =\t,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
             if (smatch(option, "age")) {
                 age = sfmt("%lld", (int64) httpGetTicks(ovalue));
@@ -2287,7 +2289,7 @@ static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
         return 0;
     }
     for (option = maGetNextArg(options, &tok); option; option = maGetNextArg(tok, &tok)) {
-        option = stok(option, " =\t,", &ovalue);
+        option = ssplit(option, " =\t,", &ovalue);
         ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
         if (!ovalue || *ovalue == '\0') continue;
         if (smatch(option, "visible")) {
@@ -2477,9 +2479,8 @@ static int traceDirective(MaState *state, cchar *key, cchar *value)
     route->trace = httpCreateTrace(route->trace);
     
     for (option = stok(sclone(value), " \t", &tok); option; option = stok(0, " \t", &tok)) {
-        option = stok(option, " =\t,", &ovalue);
+        option = ssplit(option, " =\t,", &ovalue);
         ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
-
         if (smatch(option, "content")) {
             httpSetTraceContentSize(route->trace, (ssize) getnum(ovalue));
         } else {
@@ -2646,7 +2647,7 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
 
         /* Set a default host and route name */
         if (value) {
-            httpSetHostName(state->host, stok(sclone(value), " \t,", NULL));
+            httpSetHostName(state->host, ssplit(sclone(value), " \t,", NULL));
             httpSetRouteName(state->route, sfmt("default-%s", state->host->name));
             /*
                 Save the endpoints until the close of the VirtualHost to closeVirtualHostDirective can
@@ -2670,9 +2671,7 @@ static int closeVirtualHostDirective(MaState *state, cchar *key, cchar *value)
 
     if (state->enabled) { 
         if (state->endpoints && *state->endpoints) {
-            addresses = state->endpoints;
-            while ((address = stok(addresses, " \t,", &tok)) != 0) {
-                addresses = 0;
+            for (addresses = sclone(state->endpoints); (address = stok(addresses, " \t,", &tok)) != 0 ; addresses = tok) {
                 mprParseSocketAddress(address, &ip, &port, NULL, -1);
                 if ((endpoint = httpLookupEndpoint(ip, port)) == 0) {
                     mprLog("error appweb config", 0, "Cannot find listen directive for virtual host %s", address);
@@ -2965,7 +2964,7 @@ static int64 getnum(cchar *value)
     char    *junk;
     int64   num;
 
-    value = stok(slower(value), " \t", &junk);
+    value = ssplit(slower(value), " \t", &junk);
     if (sends(value, "kb") || sends(value, "k")) {
         num = stoi(value) * 1024;
     } else if (sends(value, "mb") || sends(value, "m")) {
@@ -3008,7 +3007,12 @@ static char *getDirective(char *line, char **valuep)
     assert(valuep);
 
     *valuep = 0;
-    key = stok(line, " \t", &value);
+    /*
+        Use stok instead of ssplit to skip leading white space 
+     */
+    if ((key = stok(line, " \t", &value)) == 0) {
+        return 0;
+    }
     key = strim(key, " \t\r\n>", MPR_TRIM_END);
     if (value) {
         value = strim(value, " \t\r\n>", MPR_TRIM_END);

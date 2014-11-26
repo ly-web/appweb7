@@ -160,6 +160,9 @@ Me.load({
                 rm('app/cache/*')
                 rm('apps/*/cache/*')
                 rm('junk/**')
+                rm('cgi-bin/cgi*')
+                rm('cgi-bin/nph*')
+                rm('cgi-bin/testScript*')
                 rm('web/js')
                 Path('cache').makeDir()
                 Path('cache/.keep').write()
@@ -167,6 +170,7 @@ Me.load({
                 Path('app/cache/.keep').write()
                 Path('web/caching/cache.cgi').remove()
                 Path('web/auth/basic/basic.cgi').remove()
+                Path('web/cgiProgram.cgi').remove()
             `
         }
     }
