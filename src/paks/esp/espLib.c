@@ -1900,6 +1900,12 @@ PUBLIC HttpRoute *getRoute()
 }
 
 
+PUBLIC cchar *getSecurityToken()
+{
+    return httpGetSecurityToken(getConn(), 0);
+}
+
+
 /*
     Get a session and return the session ID. Creates a session if one does not already exist.
  */

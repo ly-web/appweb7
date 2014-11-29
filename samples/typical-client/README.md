@@ -8,7 +8,7 @@ If you only need to issue one HTTP request, consult the simple-client sample.
 Requirements
 ---
 * [Appweb](https://embedthis.com/appweb/download.html)
-* [MakeMe Build Tool](https://embedthis.com/me/download.html)
+* [MakeMe Build Tool](https://embedthis.com/makeme/download.html)
 
 To build:
 ---

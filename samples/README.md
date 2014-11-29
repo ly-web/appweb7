@@ -5,7 +5,7 @@ These samples are configured to use a locally built Appweb or Appweb installed t
 (usually /usr/local/lib/apppweb). To build the samples, you will need to install Appweb and the MakeMe build tool from:
 
 * Appweb - [https://embedthis.com/appweb/download.html](https://embedthis.com/appweb/download.html)
-* MakeMe - [https://embedthis.com/me/download.html](https://embedthis.com/me/download.html)
+* MakeMe - [https://embedthis.com/makeme/download.html](https://embedthis.com/makeme/download.html)
 * Pak - [https://embedthis.com/pak/download.html](https://embedthis.com/pak/download.html)
 
 The following samples are available:

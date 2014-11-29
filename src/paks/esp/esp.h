@@ -3159,6 +3159,17 @@ PUBLIC EspReq *getReq();
 PUBLIC HttpRoute *getRoute();
 
 /**
+    Get the security token.
+    @description To minimize form replay attacks, a security token may be required for POST requests on a route.
+    Client-side Javascript must then send this token as a request header in subsquent POST requests.
+    To configure a route to require security tokens, call #httpSetRouteXsrf.
+    @return the security token.
+    @ingroup EspAbbrev
+    @stability Prototype
+*/
+PUBLIC cchar *getSecurityToken();
+
+/**
     Get a session state variable
     @description The #session API is an alias for this routine.
     @param name Variable name to get
