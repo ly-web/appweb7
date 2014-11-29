@@ -2682,7 +2682,7 @@ PUBLIC void espAddPak(HttpRoute *route, cchar *name, cchar *version)
     if (!version || !*version || smatch(version, "0.0.0")) {
         version = "*";
     }
-    mprWriteJson(route->config, sfmt("dependencies.%s", name), version);
+    mprSetJson(route->config, sfmt("dependencies.%s", name), version);
 }
 
 

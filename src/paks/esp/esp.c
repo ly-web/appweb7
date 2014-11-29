@@ -903,7 +903,7 @@ static void editPackageValue(int argc, char **argv)
     }
     for (i = 0; i < argc; i++) {
         key = ssplit(sclone(argv[i]), "=", (char**) &value);
-        if (value) {
+        if (value && *value) {
             setPackageKey(key, value);
         } else {
             value = getConfigValue(key, 0);
@@ -1199,7 +1199,7 @@ static void role(int argc, char **argv)
             def = sfmt("[%s]", sjoinArgs(argc - 2, (cchar**) &argv[2], ","));
             abilities = mprParseJson(def);
             key = sfmt("app.http.auth.roles.%s", rolename);
-            if (mprWriteJsonObj(app->config, key, abilities) < 0) {
+            if (mprSetJsonObj(app->config, key, abilities) < 0) {
                 fail("Cannot update %s", key);
                 return;
             }
@@ -1414,7 +1414,7 @@ static void user(int argc, char **argv)
             def = sfmt("{password:'%s',roles:[%s]}", encodedPassword, sjoinArgs(argc - 3, (cchar**) &argv[3], ","));
             credentials = mprParseJson(def);
             key = sfmt("app.http.auth.users.%s", username);
-            if (mprWriteJsonObj(app->config, key, credentials) < 0) {
+            if (mprSetJsonObj(app->config, key, credentials) < 0) {
                 fail("Cannot update %s", key);
                 return;
             }
@@ -2438,7 +2438,7 @@ static void generateScaffold(int argc, char **argv)
         foreign fields: NameId.
      */
     ssplit(sclone(app->controller), "-", &plural);
-    if (plural) {
+    if (plural && *plural) {
         app->table = sjoin(app->controller, plural, NULL);
     } else {
         app->table = app->table ? app->table : app->controller;
@@ -3275,7 +3275,7 @@ static cchar *getPakVersion(cchar *name, cchar *version)
 
     if (!version || smatch(version, "*")) {
         name = ssplit(sclone(name), "#", (char**) &version);
-        if (*version == '\0') {
+        if (version && *version == '\0') {
             files = mprGetPathFiles(mprJoinPath(app->paksCacheDir, name), MPR_PATH_RELATIVE);
             mprSortList(files, (MprSortProc) reverseSortFiles, 0);
             if ((dp = mprGetFirstItem(files)) != 0) {
