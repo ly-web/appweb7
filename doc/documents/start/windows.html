@@ -30,25 +30,25 @@ appweb-VERSION-BUILD-MS-WIN-i686.exe.zip
             <h2>Silent Installation</h2>
             <p>If you need to do batch or unattended installations, you can install Appweb silently. Use the
             <b>/silent</b> switch to suppress questions and <b>/verysilent</b> to suppress all visual
-            output.</p><a id="running"></a>
+            output.</p>
+
+            <a id="running"></a>
             <h2>Running Appweb</h2>
             <p>Appweb will start when the installation procedure completes and will launch your browser directed at the
             Appweb local home page. Thereafter, Appweb will automatically start if the system is rebooted.</p>
             <p>If you wish to manually stop Appweb, right click on the Appweb Monitor icon in the system tray (lower
-            left corner of the task bar) and select the <b>Stop Appweb</b> option.</p>
-            <p>To restart Appweb, select the <b>Start Appweb</b> option.</p>
+            left corner of the task bar) and select the <b>Stop Appweb</b> option.
+            >To restart Appweb, select the <b>Start Appweb</b> option.</p>
+
             <p>Alternatively, you can run appweb manually in a command window.:</p>
             <pre class="ui code segment">
-cd /etc/appweb
-appweb
+cd \Program Files\Embedthis Appweb
+bin\appweb
 </pre>
             <p>Appweb is configured by default to listen on port 7777. To test that it is serving pages, point your
             browser at http://localhost:7777. To tailor the Embedthis Appweb configuration, including the default port,
             you may wish to edit the <b>appweb.conf</b> configuration file.</p>
-            <p>To get all the options for Appweb, read the man page via:</p>
+            <p>To get all the options for Appweb, run:</p>
             <pre class="ui code segment">
-man appweb
-</pre>or get the command help via:
-            <pre class="ui code segment">
-appweb --help
+bin\appweb --help
 </pre>
