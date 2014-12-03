@@ -9,7 +9,7 @@
 #include "appweb.h"
 
 #ifndef ESP_VERSION
-    #define ESP_VERSION "5.2.1"
+    #define ESP_VERSION "5.3.0"
 #endif
 
 /*

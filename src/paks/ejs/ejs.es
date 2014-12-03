@@ -21426,7 +21426,10 @@ r.link({product: "candy", quantity: "10", template: "/cart/{product}/{quantity}}
          */
         function setHeaders(headers: Object, overwrite: Boolean = true): Void {
             for (let [key,value] in headers) {
-                setHeader(key, value || '', overwrite)
+                if (value == null) {
+                    value = ''
+                }
+                setHeader(key, value, overwrite)
             }
         }
 
