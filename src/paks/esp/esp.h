@@ -9,7 +9,7 @@
 #include "appweb.h"
 
 #ifndef ESP_VERSION
-    #define ESP_VERSION "5.2.0"
+    #define ESP_VERSION "5.3.0"
 #endif
 
 /*
@@ -1245,6 +1245,12 @@ extern "C" {
 #ifndef ESP_VERSION
     #define ESP_VERSION ME_VERSION
 #endif
+#ifndef ESP_MAJOR_VERSION
+    #define ESP_MAJOR_VERSION ME_MAJOR_VERSION
+#ifndef ESP_MINOR_VERSION
+    #define ESP_MINOR_VERSION ME_MINOR_VERSION
+#endif
+#endif
 
 /********************************** Defines ***********************************/
 /**
@@ -1378,6 +1384,7 @@ typedef struct EspRoute {
     cchar           *winsdk;                /**< Windows SDK */
     cchar           *combineScript;         /**< Combine mode script filename */
     cchar           *combineSheet;          /**< Combine mode stylesheet filename */
+    cchar           *routeSet;              /**< Directive route set */
     int             compileMode;            /**< Compile the application debug or release mode */
     int             skipApps;               /**< Skip loading applications */
     Edi             *edi;                   /**< Default database for this route */
@@ -1432,7 +1439,9 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set);
     @ingroup EspRoute
     @stability Prototype
  */
-PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet);
+PUBLIC int espDefineApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet);
+PUBLIC int espConfigureApp(HttpRoute *route);
+PUBLIC int espLoadApp(HttpRoute *route);
 
 /**
     Add caching for response content.
@@ -3148,6 +3157,17 @@ PUBLIC EspReq *getReq();
     @stability Prototype
  */
 PUBLIC HttpRoute *getRoute();
+
+/**
+    Get the security token.
+    @description To minimize form replay attacks, a security token may be required for POST requests on a route.
+    Client-side Javascript must then send this token as a request header in subsquent POST requests.
+    To configure a route to require security tokens, call #httpSetRouteXsrf.
+    @return the security token.
+    @ingroup EspAbbrev
+    @stability Prototype
+*/
+PUBLIC cchar *getSecurityToken();
 
 /**
     Get a session state variable

@@ -37,7 +37,8 @@ Me.load({
     ],
 
     settings: {
-        me: '=0.8.4',
+        me: '=>0.8.4',
+        integrate: true,
 
         /*
             Installation prefix set
@@ -152,6 +153,18 @@ Me.load({
     },
 
     targets: {
+        init: {
+            first: true,
+            path: 'init',
+            'generate-make': `
+                if [ ! -d /usr/include/openssl ] ; then echo
+                    echo Install libssl-dev to get /usr/include/openssl
+                    exit 255
+                fi
+            `,
+            action: ' ',
+            enable: "me.platform.os == 'linux'",
+        },
         cgi: {
             configurable: true,
             description: 'Common Gateway Interface Module',
@@ -170,7 +183,7 @@ Me.load({
             See package/package.me for the install/package targets
          */
         projects: {
-            action: `genProjects('-with est')`,
+            action: `genProjects('-with openssl')`,
         },
 
         mine: {

@@ -1900,6 +1900,12 @@ PUBLIC HttpRoute *getRoute()
 }
 
 
+PUBLIC cchar *getSecurityToken()
+{
+    return httpGetSecurityToken(getConn(), 0);
+}
+
+
 /*
     Get a session and return the session ID. Creates a session if one does not already exist.
  */
@@ -2503,7 +2509,7 @@ PUBLIC bool updateFields(cchar *tableName, MprJson *params)
     EdiRec  *rec;
     cchar   *key;
 
-    key = mprLookupJson(params, "id");
+    key = mprReadJson(params, "id");
     if ((rec = ediSetFields(ediReadRec(getDatabase(), tableName, key), params)) == 0) {
         return 0;
     }
@@ -2598,6 +2604,7 @@ static void serverRouteSet(HttpRoute *parent, cchar *set)
     httpSetRouteXsrf(parent, 1);
     route = httpAddRestfulRoute(parent, parent->serverPrefix, "action", "GET,POST","/{action}(/)*$",
         "${action}", "{controller}");
+    httpAddClientRoute(parent, "", "/public");
     httpAddRouteHandler(route, "espHandler", "");
 }
 
@@ -2623,8 +2630,6 @@ static void htmlRouteSet(HttpRoute *parent, cchar *set)
         sfmt("^%s%s/{controller}$", parent->prefix, parent->serverPrefix),
         "$1", 
         "${controller}.c");
-
-    httpAddRestfulRoute(parent, 0, "delete", "POST", "/{id=[0-9]+}/delete$", "delete", "{controller}");
     httpAddResourceGroup(parent, 0, "{controller}");
     httpAddClientRoute(parent, "", "/public");
     httpHideRoute(parent, 1);
@@ -3878,11 +3883,13 @@ static int openEsp(HttpQueue *q)
     req->esp = esp;
     req->route = route;
     req->autoFinalize = 1;
+
     /*
-        If a cookie is not explicitly set, use the application name for the session cookie
+        If a cookie is not explicitly set, use the application name for the session cookie so that
+        cookies are unique per esp application.
      */
     if (!route->cookie && eroute->appName && *eroute->appName) {
-        route->cookie = eroute->appName;
+        httpSetRouteCookie(route, eroute->appName);
     }
     return 0;
 }
@@ -4124,7 +4131,7 @@ static int runAction(HttpConn *conn)
         }
     }
     if (action) {
-        httpSetParam(conn, "controller", stok(sclone(rx->target), "-", &actionName));
+        httpSetParam(conn, "controller", ssplit(sclone(rx->target), "-", &actionName));
         httpSetParam(conn, "action", actionName);
         if (eroute->commonController) {
             (eroute->commonController)(conn);
@@ -4493,6 +4500,7 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->edi);
         mprMark(eroute->env);
         mprMark(eroute->link);
+        mprMark(eroute->routeSet);
         mprMark(eroute->searchPath);
         mprMark(eroute->top);
         mprMark(eroute->winsdk);
@@ -4557,6 +4565,7 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
     eroute->appName = parent->appName;
     eroute->combineScript = parent->combineScript;
     eroute->combineSheet = parent->combineSheet;
+    eroute->routeSet = parent->routeSet;
     route->eroute = eroute;
     return eroute;
 }
@@ -4636,10 +4645,8 @@ PUBLIC void espAddHomeRoute(HttpRoute *parent)
 
 
 /*********************************** Directives *******************************/
-/*
-    Define an ESP Application
- */
-PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet)
+
+PUBLIC int espDefineApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet)
 {
     EspRoute    *eroute;
 
@@ -4653,6 +4660,9 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
     if (name) {
         eroute->appName = sclone(name);
     }
+    if (routeSet) {
+        eroute->routeSet = sclone(routeSet);
+    }
     espSetDefaultDirs(route);
     if (prefix) {
         if (*prefix != '/') {
@@ -4664,17 +4674,37 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
         httpSetRoutePrefix(route, prefix);
         httpSetRoutePattern(route, sfmt("^%s", prefix), 0);
     } else {
-        httpSetRouteName(route, sfmt("/%s", name));
+        httpSetRouteName(route, sfmt("app-%s", name));
     }
+    if (!route->cookie && eroute->appName && *eroute->appName) {
+        httpSetRouteCookie(route, eroute->appName);
+    }
+
     httpAddRouteHandler(route, "espHandler", "esp");
+    /*
+        Added so redirections get handled in esp-login for "/" after being logged in
+     */
+    httpAddRouteHandler(route, "fileHandler", "");
     httpAddRouteIndex(route, "index.esp");
     httpAddRouteIndex(route, "index.html");
 
     httpSetRouteVar(route, "APP", name);
     httpSetRouteVar(route, "UAPP", stitle(name));
+    return 0;
+}
+
+
+PUBLIC int espConfigureApp(HttpRoute *route) 
+{
+    EspRoute    *eroute;
+
+    eroute = route->eroute;
 
     if (httpLoadConfig(route, ME_ESP_PACKAGE) < 0) {
         return MPR_ERR_CANT_LOAD;
+    }
+    if (eroute->routeSet) {
+        httpAddRouteSet(route, eroute->routeSet);
     }
     if (route->database && !eroute->edi) {
         if (espOpenDatabase(route, route->database) < 0) {
@@ -4682,7 +4712,15 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
             return MPR_ERR_CANT_LOAD;
         }
     }
+    return 0;
+}
+
+
+PUBLIC int espLoadApp(HttpRoute *route)
+{
 #if !ME_STATIC
+    EspRoute    *eroute;
+    eroute = route->eroute;
     if (!eroute->skipApps) {
         MprJson     *preload, *item;
         cchar       *errMsg, *source;
@@ -4697,8 +4735,10 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
         }
         if (!route->combine && (preload = mprGetJsonObj(route->config, "esp.preload")) != 0) {
             for (ITERATE_JSON(preload, item, i)) {
-                source = stok(sclone(item->value), ":", &kind);
-                if (!kind) kind = "controller";
+                source = ssplit(sclone(item->value), ":", &kind);
+                if (*kind == '\0') {
+                    kind = "controller";
+                }
                 source = mprJoinPath(httpGetDir(route, "controllers"), source);
                 if (espLoadModule(route, NULL, kind, source, &errMsg) < 0) {
                     mprLog("error esp", 0, "Cannot preload esp module %s. %s", source, errMsg);
@@ -4708,9 +4748,6 @@ PUBLIC int espApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, ccha
         }
     }
 #endif
-    if (routeSet) {
-        httpAddRouteSet(route, routeSet);
-    }
     return 0;
 }
 
@@ -4743,7 +4780,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
 
     if (scontains(value, "=")) {
         for (option = maGetNextArg(sclone(value), &tok); option; option = maGetNextArg(tok, &tok)) {
-            option = stok(option, " =\t,", &ovalue);
+            option = ssplit(option, " =\t,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
             if (smatch(option, "auth")) {
                 auth = ovalue;
@@ -4791,7 +4828,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
             return MPR_ERR_BAD_STATE;
         }
     }
-    if (espApp(route, dir, name, prefix, routeSet) < 0) {
+    if (espDefineApp(route, dir, name, prefix, routeSet) < 0) {
         return MPR_ERR_CANT_CREATE;
     }
     if (prefix) {
@@ -4810,8 +4847,15 @@ static int finishEspAppDirective(MaState *state, cchar *key, cchar *value)
         to the enclosing host. This ensures that nested routes are defined BEFORE outer/enclosing routes.
      */
     route = state->route;
+
+    if (espConfigureApp(route) < 0) {
+        return MPR_ERR_CANT_LOAD;
+    }
     if (route != state->prev->route) {
         httpFinalizeRoute(route);
+    }
+    if (espLoadApp(route) < 0) {
+        return MPR_ERR_CANT_LOAD;
     }
     return 0;
 }
@@ -4890,8 +4934,8 @@ PUBLIC int espOpenDatabase(HttpRoute *route, cchar *spec)
         spec = sfmt("mdb://%s.mdb", eroute->appName);
 #endif
     }
-    provider = stok(sclone(spec), "://", &path);
-    if (provider == 0 || path == 0) {
+    provider = ssplit(sclone(spec), "://", &path);
+    if (*provider == '\0' || *path == '\0') {
         return MPR_ERR_BAD_ARGS;
     }
     path = mprJoinPath(httpGetDir(route, "db"), path);
@@ -5192,7 +5236,7 @@ static int espRouteDirective(MaState *state, cchar *key, cchar *value)
 
     if (scontains(value, "=")) {
         for (option = maGetNextArg(sclone(value), &tok); option; option = maGetNextArg(tok, &tok)) {
-            option = stok(option, "=,", &ovalue);
+            option = ssplit(option, "=,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
             if (smatch(option, "methods")) {
                 methods = ovalue;
@@ -6100,17 +6144,17 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         case ESP_TOK_CODE:
             if (*token == '^') {
                 for (token++; *token && isspace((uchar) *token); token++) ;
-                where = stok(token, " \t\r\n", &rest);
-                if (rest == 0) {
-                    ;
-                } else if (scmp(where, "global") == 0) {
-                    mprPutStringToBuf(state->global, rest);
+                where = ssplit(token, " \t\r\n", &rest);
+                if (*rest) {
+                    if (scmp(where, "global") == 0) {
+                        mprPutStringToBuf(state->global, rest);
 
-                } else if (scmp(where, "start") == 0) {
-                    mprPutToBuf(state->start, "%s  ", rest);
+                    } else if (scmp(where, "start") == 0) {
+                        mprPutToBuf(state->start, "%s  ", rest);
 
-                } else if (scmp(where, "end") == 0) {
-                    mprPutToBuf(state->end, "%s  ", rest);
+                    } else if (scmp(where, "end") == 0) {
+                        mprPutToBuf(state->end, "%s  ", rest);
+                    }
                 }
             } else {
                 mprPutStringToBuf(body, fixMultiStrings(token));
@@ -6118,14 +6162,11 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             break;
 
         case ESP_TOK_CONTROL:
-            control = stok(token, " \t\r\n", &token);
+            control = ssplit(token, " \t\r\n", &token);
             if (scmp(control, "content") == 0) {
                 mprPutStringToBuf(body, ESP_CONTENT_MARKER);
 
             } else if (scmp(control, "include") == 0) {
-                if (token == 0) {
-                    token = "";
-                }
                 token = strim(token, " \t\r\n\"", MPR_TRIM_BOTH);
                 token = mprNormalizePath(token);
                 if (token[0] == '/') {
@@ -6176,10 +6217,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         case ESP_TOK_EXPR:
             /* <%= expr %> */
             if (*token == '%') {
-                fmt = stok(token, ": \t\r\n", &token);
-                if (token == 0) { 
-                    token = "";
-                }
+                fmt = ssplit(token, ": \t\r\n", &token);
                 /* Default without format is safe. If users want a format and safe, use %S or renderSafe() */
                 token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
                 mprPutToBuf(body, "  espRender(conn, \"%s\", %s);\n", fmt, token);
@@ -6566,8 +6604,8 @@ static cchar *getVxCPU(cchar *arch)
 {
     char   *cpu, *family;
 
-    family = stok(sclone(arch), ":", &cpu);
-    if (!cpu || *cpu == '\0') {
+    family = ssplit(sclone(arch), ":", &cpu);
+    if (*cpu == '\0') {
         if (smatch(family, "i386")) {
             cpu = "I80386";
         } else if (smatch(family, "i486")) {

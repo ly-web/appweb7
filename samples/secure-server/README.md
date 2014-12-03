@@ -20,7 +20,7 @@ The password database is kept in a flat file called auth.conf. The password was 
 Requirements
 ---
 * [Appweb](https://embedthis.com/appweb/download.html)
-* [MakeMe Build Tool](https://embedthis.com/me/download.html)
+* [MakeMe Build Tool](https://embedthis.com/makeme/download.html)
 
 To build:
 ---

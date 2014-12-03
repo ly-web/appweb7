@@ -8,11 +8,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <meta name="keywords" content="appweb, embedded web server, embedded, devices, http server, internet of things, esp, goahead" />
-    <meta name="description" content="The fastest little web server" />
+    <meta name="description" content="Installing on Windows" />
     <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
         rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Julius+Sans+One' rel='stylesheet' type='text/css'>
-    <link href="../lib/semantic/themes/packages/beach.css" rel="stylesheet" type="text/css" />
+    <link href="../lib/semantic/css/semantic.css" rel="stylesheet" type="text/css" />
     <link href="../css/all.css" rel="stylesheet" type="text/css" />
     <link href="../images/favicon.ico" rel="shortcut icon" />
 
@@ -53,7 +53,7 @@
                     <a class="item" href="../users/routing.html">Routing Requests</a>
                     <a class="item" href="../users/stages.html">Request Pipeline</a>
                     <a class="item" href="../users/lang.html">Multi-Language Content</a>
-                    <a class="item" href="../users/authentication.html">User Authorization</a>
+                    <a class="item" href="../users/authentication.html">User Authentication</a>
                     <a class="item" href="../users/logFiles.html">Logging</a>
                     <a class="item" href="../users/caching.html">Caching</a>
                     <a class="item" href="../users/vhosts.html">Virtual Hosts</a>
@@ -86,6 +86,34 @@
                     <a class="item" href="../ref/memory.html">Appweb Memory Allocation</a>
                     <a class="item" href="../ref/multithread.html">Multithreaded Programming</a>
                     <a class="item" href="../standards/http.html">HTTP References</a>
+                </div>
+            </div>
+            <div class="item">
+                <div class="menu">
+                    <a class="header item" href="../users/samples.html">Samples</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/chroot-server">chroot-server</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/cpp-handler">cpp-handler</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/cpp-module">cpp-module</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/deploy-server">deploy-server</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/esp-hosted">esp-hosted</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/login-basic">login-basic</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/login-form">login-form</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/max-server">max-server</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/min-server">min-server</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/secure-server">secure-server</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/simple-action">simple-action</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/simple-client">simple-client</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/simple-handler">simple-handler</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/simple-module">simple-module</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/simple-server">simple-server</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/spy-filter">spy-filter</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/ssl-server">ssl-server</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/tiny-server">tiny-server</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/typical-client">typical-client</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/typical-server">typical-server</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/websockets-chat">websockets-chat</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/websockets-echo">websockets-echo</a>
+                    <a class="item" href="https://github.com/embedthis/appweb/tree/dev/samples/websockets-output">websockets-output</a>
                 </div>
             </div>
             <div class="item">
@@ -155,7 +183,7 @@
         </div>
         
         <div class="ui right floated basic segment version">
-            v5.2.0
+            v5.3.0
         </div>
 
     </div>
@@ -186,27 +214,27 @@ appweb-VERSION-BUILD-MS-WIN-i686.exe.zip
             <h2>Silent Installation</h2>
             <p>If you need to do batch or unattended installations, you can install Appweb silently. Use the
             <b>/silent</b> switch to suppress questions and <b>/verysilent</b> to suppress all visual
-            output.</p><a id="running"></a>
+            output.</p>
+
+            <a id="running"></a>
             <h2>Running Appweb</h2>
             <p>Appweb will start when the installation procedure completes and will launch your browser directed at the
             Appweb local home page. Thereafter, Appweb will automatically start if the system is rebooted.</p>
             <p>If you wish to manually stop Appweb, right click on the Appweb Monitor icon in the system tray (lower
-            left corner of the task bar) and select the <b>Stop Appweb</b> option.</p>
-            <p>To restart Appweb, select the <b>Start Appweb</b> option.</p>
+            left corner of the task bar) and select the <b>Stop Appweb</b> option.
+            >To restart Appweb, select the <b>Start Appweb</b> option.</p>
+
             <p>Alternatively, you can run appweb manually in a command window.:</p>
             <pre class="ui code segment">
-cd /etc/appweb
-appweb
+cd \Program Files\Embedthis Appweb
+bin\appweb
 </pre>
             <p>Appweb is configured by default to listen on port 7777. To test that it is serving pages, point your
             browser at http://localhost:7777. To tailor the Embedthis Appweb configuration, including the default port,
             you may wish to edit the <b>appweb.conf</b> configuration file.</p>
-            <p>To get all the options for Appweb, read the man page via:</p>
+            <p>To get all the options for Appweb, run:</p>
             <pre class="ui code segment">
-man appweb
-</pre>or get the command help via:
-            <pre class="ui code segment">
-appweb --help
+bin\appweb --help
 </pre>
 
     </div>

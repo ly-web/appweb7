@@ -8,7 +8,7 @@ actions.
 Requirements
 ---
 * [Appweb](https://embedthis.com/appweb/download.html)
-* [MakeMe Build Tool](https://embedthis.com/me/download.html)
+* [MakeMe Build Tool](https://embedthis.com/makeme/download.html)
 
 To build:
 ---

@@ -13,7 +13,7 @@
     #define ME_COMPANY "embedthis"
 #endif
 #ifndef ME_COMPATIBLE
-    #define ME_COMPATIBLE "5.2"
+    #define ME_COMPATIBLE "5.3"
 #endif
 #ifndef ME_COMPILER_HAS_ATOMIC
     #define ME_COMPILER_HAS_ATOMIC 0
@@ -120,11 +120,14 @@
 #ifndef ME_HTTP_WEB_SOCKETS
     #define ME_HTTP_WEB_SOCKETS 1
 #endif
+#ifndef ME_INTEGRATE
+    #define ME_INTEGRATE 1
+#endif
 #ifndef ME_MANIFEST
     #define ME_MANIFEST "package/manifest.me"
 #endif
 #ifndef ME_ME
-    #define ME_ME "=0.8.4"
+    #define ME_ME "=>0.8.4"
 #endif
 #ifndef ME_MPR_LOGGING
     #define ME_MPR_LOGGING 1
@@ -157,7 +160,7 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "5.2.0"
+    #define ME_VERSION "5.3.0"
 #endif
 #ifndef ME_WEB_GROUP
     #define ME_WEB_GROUP "Administrator"
@@ -258,13 +261,13 @@
     #define ME_MAJOR_VERSION 5
 #endif
 #ifndef ME_MINOR_VERSION
-    #define ME_MINOR_VERSION 2
+    #define ME_MINOR_VERSION 3
 #endif
 #ifndef ME_PATCH_VERSION
     #define ME_PATCH_VERSION 0
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 500020000
+    #define ME_VNUM 500030000
 #endif
 
 /* Components */

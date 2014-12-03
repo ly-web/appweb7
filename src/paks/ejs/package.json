@@ -2,7 +2,7 @@
     "name": "ejs",
     "description": "Embedthis Ejscript Javascript Language",
     "title": "Embedthis Ejscript",
-    "version": "2.5.0",
+    "version": "2.5.1",
     "keywords": [
         "ejs",
         "ejscript",
@@ -35,9 +35,9 @@
     ],
     "pak": "~0.9",
     "dependencies": {
-        "http": "~6",
+        "http": "~6.0",
         "me-docstyle": "~0.8",
-        "mpr": "~6",
+        "mpr": "~6.0",
         "osdep": "~0.8",
         "pcre": "~1.0",
         "zlib": "~1.0"

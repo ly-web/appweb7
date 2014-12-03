@@ -627,6 +627,20 @@
       <anchor>ga9ea785faccf155c6bd3b2650d5245d11</anchor>
       <arglist>(HttpUri *uri, int flags)</arglist>
     </member>
+    <member kind="function">
+      <type>char *</type>
+      <name>httpValidateUriPath</name>
+      <anchorfile>group___http_uri.html</anchorfile>
+      <anchor>gaedd850692dddad7cc112b34d844b4ac2</anchor>
+      <arglist>(cchar *uri)</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>httpValidUriChars</name>
+      <anchorfile>group___http_uri.html</anchorfile>
+      <anchor>gaeafb10159cd76d10d21bc590bc76db3a</anchor>
+      <arglist>(cchar *uri)</arglist>
+    </member>
   </compound>
   <compound kind="group">
     <name>HttpRange</name>
@@ -1776,10 +1790,17 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>httpSetAuthForm</name>
+      <name>httpSetAuthFormDetails</name>
       <anchorfile>group___http_auth.html</anchorfile>
-      <anchor>gaaf0ae0b82b673a187c18da4e864cc19a</anchor>
-      <arglist>(struct HttpRoute *parent, cchar *loginPage, cchar *loginService, cchar *logoutService, cchar *loggedIn)</arglist>
+      <anchor>gaf45a9833fbe0dd980c9a04f509a8f89e</anchor>
+      <arglist>(struct HttpRoute *route, cchar *loginPage, cchar *loginService, cchar *logoutService, cchar *loggedInPage, cchar *loggedOutPage)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>httpSetAuthLogin</name>
+      <anchorfile>group___http_auth.html</anchorfile>
+      <anchor>ga81ed6fef8f24fa21ac1eff535cf29215</anchor>
+      <arglist>(HttpAuth *auth, cchar *uri)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -1815,6 +1836,13 @@
       <anchorfile>group___http_auth.html</anchorfile>
       <anchor>ga8d095857a74b8786bd83f9e3aa4fb6ab</anchor>
       <arglist>(HttpAuth *auth, cchar *abilities)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>httpSetAuthSession</name>
+      <anchorfile>group___http_auth.html</anchorfile>
+      <anchor>ga909fabed1271f6cd5ac7efa4603254fb</anchor>
+      <arglist>(HttpAuth *auth, bool noSession)</arglist>
     </member>
     <member kind="function">
       <type>int</type>

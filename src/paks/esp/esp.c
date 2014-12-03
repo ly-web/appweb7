@@ -161,7 +161,6 @@ static bool installPak(cchar *name, cchar *criteria);
 static bool installPakFiles(cchar *name, cchar *version);
 static void list(int argc, char **argv);
 static MprJson *loadPackage(cchar *path);
-static void logHandler(cchar *tags, int level, cchar *msg);
 static void makeEspDir(cchar *dir);
 static void makeEspFile(cchar *path, cchar *data, ssize len);
 static MprHash *makeTokens(cchar *path, MprHash *other);
@@ -463,7 +462,7 @@ static int parseArgs(int argc, char **argv)
             }
 
         } else if (smatch(argp, "version") || smatch(argp, "V")) {
-            mprPrintf("%s\n", ME_VERSION);
+            mprPrintf("%s\n", ESP_VERSION);
             exit(0);
 
         } else if (isdigit((uchar) *argp)) {
@@ -614,16 +613,13 @@ static void initRuntime()
     if (app->error) {
         return;
     }
-    if (httpCreate(HTTP_SERVER_SIDE | HTTP_UTILITY) < 0) {
+    if (httpCreate(HTTP_CLIENT_SIDE | HTTP_SERVER_SIDE | HTTP_UTILITY) < 0) {
         fail("Cannot create HTTP service for %s", mprGetAppName());
         return;
     }
     http = MPR->httpService;
     
-    if (app->logSpec) {
-        mprSetLogHandler(logHandler);
-        mprStartLogging(app->logSpec, MPR_LOG_CMDLINE);
-    }
+    mprStartLogging(app->logSpec, MPR_LOG_CMDLINE);
     if (app->traceSpec) {
         httpStartTracing(app->traceSpec);
     }
@@ -689,7 +685,7 @@ static void initialize(int argc, char **argv)
         flags = (app->require & REQ_SERVE) ? 0 : MA_PARSE_NON_SERVER;
         /* 
             Appweb - hosted initialization.
-            This will call espApp when via the EspApp directive 
+            This will call espDefineApp via the EspApp directive 
          */
         if (maParseConfig(app->appwebConfig, flags) < 0) {
             fail("Cannot configure the server, exiting.");
@@ -698,8 +694,8 @@ static void initialize(int argc, char **argv)
     } else {
         httpAddRouteHandler(route, "fileHandler", "");
         if (mprPathExists("package.json", R_OK)) {
-            if (espApp(route, ".", app->appName, 0, 0) < 0) {
-                fail("Cannot create ESP app");
+            if (espDefineApp(route, ".", app->appName, 0, 0) < 0 || espConfigureApp(route) < 0 || espLoadApp(route) < 0) {
+                fail("Cannot define ESP app");
                 return;
             }
         } else {
@@ -906,8 +902,8 @@ static void editPackageValue(int argc, char **argv)
         return;
     }
     for (i = 0; i < argc; i++) {
-        key = stok(sclone(argv[i]), "=", (char**) &value);
-        if (value) {
+        key = ssplit(sclone(argv[i]), "=", (char**) &value);
+        if (value && *value) {
             setPackageKey(key, value);
         } else {
             value = getConfigValue(key, 0);
@@ -956,7 +952,7 @@ static void install(int argc, char **argv)
     for (i = 0; i < argc; i++) {
         name = argv[i];
         if (smatch(name, "esp-server") || smatch(name, "esp-mvc") || smatch(name, "esp-html-mvc")) {
-            criteria = ESP_VERSION;
+            criteria = sfmt("~%d.%d", ESP_MAJOR_VERSION, ESP_MINOR_VERSION);
         } else {
             criteria = 0;
         }
@@ -1043,7 +1039,7 @@ static void migrate(int argc, char **argv)
         mig = app->migrations->records[app->migrations->nrecords - 1];
         lastMigration = stoi(ediGetFieldValue(mig, "version"));
     }
-    app->files = mprGetPathFiles("db/migrations", MPR_PATH_NODIRS);
+    app->files = mprGetPathFiles("db/migrations", MPR_PATH_NO_DIRS);
     mprSortList(app->files, (MprSortProc) (backward ? reverseSortFiles : sortFiles), 0);
 
     if (argc > 0) {
@@ -1268,11 +1264,8 @@ static void run(int argc, char **argv)
     if (app->error) {
         return;
     }
-#if KEEP
-    MPR->flags |= MPR_LOG_DETAILED;
-#endif
     if (app->show) {
-        httpLogRoutes(app->host, 0);
+        httpLogRoutes(app->host, mprGetLogLevel() > 4);
     }
     if (!app->appwebConfig) {
         if (argc == 0) {
@@ -1405,6 +1398,10 @@ static void user(int argc, char **argv)
         password = argv[2];
         if (smatch(password, "-")) {
             password = getPassword();
+        }
+        if (auth->realm == 0 || *auth->realm == '\0') {
+            fail("An authentication realm has not been defined. Define a \"app.http.auth.realm\" value.");
+            return;
         }
         if (smatch(app->cipher, "md5")) {
             encodedPassword = mprGetMD5(sfmt("%s:%s:%s", username, auth->realm, password));
@@ -2042,7 +2039,7 @@ static void compileItems(HttpRoute *route)
     Change client => documents
 #endif
     if ((dir = httpGetDir(route, "client")) != 0) {
-        app->files = mprGetPathFiles(dir, MPR_PATH_DESCEND | MPR_PATH_NODIRS);
+        app->files = mprGetPathFiles(dir, MPR_PATH_DESCEND | MPR_PATH_NO_DIRS);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
             if (sstarts(path, httpGetDir(route, "layouts"))) {
@@ -2287,7 +2284,7 @@ static void createMigration(cchar *name, cchar *table, cchar *comment, int field
     forward = sjoin(forward, def, NULL);
 
     for (i = 0; i < fieldCount; i++) {
-        field = stok(sclone(fields[i]), ":", &typeString);
+        field = ssplit(sclone(fields[i]), ":", &typeString);
         if ((type = ediParseTypeString(typeString)) < 0) {
             fail("Unknown type '%s' for field '%s'", typeString, field);
             return;
@@ -2385,7 +2382,7 @@ static void generateTable(int argc, char **argv)
         }
     }
     for (i = 1; i < argc && !app->error; i++) {
-        field = stok(sclone(argv[i]), ":", &typeString);
+        field = ssplit(sclone(argv[i]), ":", &typeString);
         if ((type = ediParseTypeString(typeString)) < 0) {
             fail("Unknown type '%s' for field '%s'", typeString, field);
             break;
@@ -2437,10 +2434,11 @@ static void generateScaffold(int argc, char **argv)
     }
     /*
         This feature is undocumented.
-        Having plural database table names greatly complicates things and ejsJoin is not able to follow foreign fields: NameId.
+        Having plural database table names greatly complicates things and ejsJoin is not able to follow 
+        foreign fields: NameId.
      */
-    stok(sclone(app->controller), "-", &plural);
-    if (plural) {
+    ssplit(sclone(app->controller), "-", &plural);
+    if (plural && *plural) {
         app->table = sjoin(app->controller, plural, NULL);
     } else {
         app->table = app->table ? app->table : app->controller;
@@ -2469,8 +2467,8 @@ static int reverseSortFiles(MprDirEntry **d1, MprDirEntry **d2)
     if (smatch(base1, base2)) {
         return 0;
     }
-    b1 = stok(base1, "-", &p1);
-    b2 = stok(base2, "-", &p2);
+    b1 = ssplit(base1, "-", &p1);
+    b2 = ssplit(base2, "-", &p2);
     rc = scmp(b1, b2);
     if (rc == 0) {
         if (!p1) {
@@ -2710,8 +2708,8 @@ static bool blendSpec(cchar *name, cchar *version, MprJson *spec)
         blendJson(app->config, "directories", spec, "directories");
     }
     if (mprLookupKey(app->topDeps, name)) {
-        major = stok(sclone(version), ".", &minor);
-        minor = stok(minor, ".", &patch);
+        major = ssplit(sclone(version), ".", &minor);
+        minor = ssplit(minor, ".", &patch);
         key = sfmt("dependencies.%s", name);
         if (!mprGetJson(app->config, key)) {
             mprSetJson(app->config, key, sfmt("~%s.%s", major, minor));
@@ -2845,7 +2843,7 @@ static void copyEspFiles(cchar *name, cchar *version, cchar *fromDir, cchar *toD
     if ((base = mprGetJson(app->config, "directories.paks")) == 0) {
         base = app->paksDir;
     }
-    files = mprGetPathFiles(fromDir, MPR_PATH_DESCEND | MPR_PATH_RELATIVE | MPR_PATH_NODIRS);
+    files = mprGetPathFiles(fromDir, MPR_PATH_DESCEND | MPR_PATH_RELATIVE | MPR_PATH_NO_DIRS);
     for (next = 0; (dp = mprGetNextItem(files, &next)) != 0 && !app->error; ) {
         to = mprJoinPaths(toDir, base, name, dp->name, NULL);
         from = mprJoinPath(fromDir, dp->name);
@@ -3234,48 +3232,6 @@ static void why(cchar *path, cchar *fmt, ...)
 }
 
 
-static void logHandler(cchar *tags, int level, cchar *msg)
-{
-    MprFile     *file;
-    char        tbuf[128];
-    ssize       len, width;
-
-    if ((file = MPR->logFile) == 0) {
-        return;
-    }
-#if TODO
-    static int  check = 0;
-    if (MPR->logBackup && MPR->logSize && (check++ % 1000) == 0) {
-        backupLog();
-    }
-#endif
-    if (MPR->flags & MPR_LOG_DETAILED) {
-        if (tags && *tags) {
-            fmt(tbuf, sizeof(tbuf), "%s %d %s, ", mprGetDate(MPR_LOG_DATE), level, tags);
-            mprWriteFileString(file, tbuf);
-            len = slen(tbuf);
-            width = 40;
-            if (len < width) {
-                mprWriteFile(file, "                                          ", width - len);
-            }
-        } else if (tags && level == 0) {
-            mprWriteFileString(file, "error: ");
-        } else {
-            mprWriteFileString(file, msg);
-            mprWriteFileString(file, "\n");
-        }
-        if (level == 0) {
-            mprWriteToOsLog(sfmt("%s: %d %s: %s", MPR->name, level, tags, msg), level);
-        }
-    } else {
-        if (level == 0) {
-            trace("Error", msg);
-        } else {
-            trace("Info", msg);
-        }
-    }
-}
-
 static MprJson *loadPackage(cchar *path)
 {
     MprJson *obj;
@@ -3301,7 +3257,7 @@ static void savePackage()
     cchar       *path;
 
     if (!app->noupdate) {
-        path = mprJoinPath(app->route ? app->route->documents : ".", ME_ESP_PACKAGE);
+        path = mprJoinPath(app->route ? app->route->home : ".", ME_ESP_PACKAGE);
         if (mprSaveJson(app->config, path, MPR_JSON_PRETTY | MPR_JSON_QUOTES) < 0) {
             fail("Cannot save %s", path);
         }
@@ -3318,8 +3274,8 @@ static cchar *getPakVersion(cchar *name, cchar *version)
     MprList         *files;
 
     if (!version || smatch(version, "*")) {
-        name = stok(sclone(name), "#", (char**) &version);
-        if (!version) {
+        name = ssplit(sclone(name), "#", (char**) &version);
+        if (version && *version == '\0') {
             files = mprGetPathFiles(mprJoinPath(app->paksCacheDir, name), MPR_PATH_RELATIVE);
             mprSortList(files, (MprSortProc) reverseSortFiles, 0);
             if ((dp = mprGetFirstItem(files)) != 0) {
@@ -3375,8 +3331,8 @@ static bool inRange(cchar *expr, cchar *version)
     if (smatch(expr, "*")) {
         expr = "x";
     }
-    version = stok(sclone(version), "-", &preVersion);
-    base = stok(sclone(expr), "-", &pre);
+    version = ssplit(sclone(version), "-", &preVersion);
+    base = ssplit(sclone(expr), "-", &pre);
     if (op && (*op == '~' || *op == '^')) {
         if (*op == '^' && schr(version, '-')) {
             return 0;
@@ -3422,9 +3378,9 @@ static int64 asNumber(cchar *version)
     char    *tok;
     int64   major, minor, patch;
 
-    major = stoi(stok(sclone(version), ".", &tok));
-    minor = stoi(stok(tok, ".", &tok));
-    patch = stoi(stok(tok, ".", &tok));
+    major = stoi(ssplit(sclone(version), ".", &tok));
+    minor = stoi(ssplit(tok, ".", &tok));
+    patch = stoi(ssplit(tok, ".", &tok));
     return (((major * VER_FACTOR) + minor) * VER_FACTOR) + patch;
 }
 
@@ -3441,7 +3397,7 @@ static cchar *findAcceptableVersion(cchar *name, cchar *originalCriteria)
         criteria = "x";
     }
     if (schr(name, '#')) {
-        name = stok(sclone(name), "#", (char**) &criteria);
+        name = ssplit(sclone(name), "#", (char**) &criteria);
     }
     files = mprGetPathFiles(mprJoinPath(app->paksCacheDir, name), MPR_PATH_RELATIVE);
     mprSortList(files, (MprSortProc) reverseSortFiles, 0);

@@ -26,13 +26,13 @@ See [LICENSE.md](LICENSE.md) for details.
 
 ### Building
     You can build with make or with MakeMe. MakeMe is quicker and more flexible.
-    To install MakeMe, download it from https://embedthis.com/me/download.html.
+    To install MakeMe, download it from https://embedthis.com/makeme/download.html.
 
 ### To build with make:
 
     make
 
-    You can pass make variables to tailor the build. For a list of variables:
+You can pass make variables to tailor the build. For a list of variables:
 
 	make help
 
@@ -41,7 +41,7 @@ See [LICENSE.md](LICENSE.md) for details.
     ./configure
     me
 
-	For a list of configure options:
+For a list of configure options:
 
 	./configure --help
 
@@ -49,7 +49,7 @@ See [LICENSE.md](LICENSE.md) for details.
 
 	make run
 
-    or
+or
 
     me run
 
@@ -57,7 +57,7 @@ See [LICENSE.md](LICENSE.md) for details.
 
     sudo make install
 
-	or 
+or 
 
     sudo me install
 
@@ -65,7 +65,7 @@ See [LICENSE.md](LICENSE.md) for details.
 
     sudo make uninstall
 
-	or 
+or 
 
     sudo me uninstall
 

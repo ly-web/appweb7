@@ -4,9 +4,25 @@ authpass \- Create and manage passwords
 .SH SYNOPSIS
 .B authpass 
 [\fI--cipher blowfish|md5\fR]
-[\fI--create\fR]
+[\fI--file filename\fR]
 [\fI--password password\fR] 
-passwordFile realm userName
+realm username roles...
+
+.SH DESCRIPTION
+The authpass program creates authentication passwords for Appweb. It should be used to create passwords
+for the "config" or "app" authentication stores. If using the "config" authentication store, use the "--file" option
+to specify the name of the password file. 
+
+.RS 5
+authpass --file auth.conf --password pass1 example.com joshua administrator buyer
+.RE
+
+If using the "app" authentication store, omit the "--file" option and the password will be displayed to the standard output.
+
+.RS 5
+authpass --password pass1 example.com joshua administrator buyer
+.RE
+
 .SH OPTIONS
 .TP
 \fB\--cipher blowfish|md5\fR 
@@ -16,11 +32,11 @@ MD5 must be used for digest authentication.
 \fB\--password password\fR 
 Specifies a password to use to for the user.
 .TP
-\fB\--create\fR 
-Create the specified password file.
+\fB\--file filename\fR 
+Update the specified password configuration file.
 .PP
 .SH DESCRIPTION
-The authpass program is used to create user passwords in a nominated password configuration file.
+The authpass program is used to create and manage user passwords.
 Appweb uses the same authorization file and format for Basic, Digest and Post authentication stores. This simplifies administration.
 .SH "REPORTING BUGS"
 Report bugs to dev@embedthis.com.

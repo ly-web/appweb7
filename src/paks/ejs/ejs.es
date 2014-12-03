@@ -2774,6 +2774,7 @@ module ejs {
             @options dir Path or String. Directory to set as the current working directory for the command.
             @options exceptions Boolean If true, throw exceptions if the command returns a non-zero status code. 
                 Defaults to true.
+            @options noio Boolean If true, do not capture or redirect the commands stdin, stdout or stderr.
             @options timeout Number This is the default number of milliseconds for the command to complete.
             @options stream Stream the stdout from the command to the current standard output. Defaults to false.
             @param data Optional data to write to the command on it's standard input.
@@ -2804,6 +2805,10 @@ module ejs {
             cmd.wait()
             if (cmd.status != 0 && options.exceptions !== false) {
                 throw new IOError('Command failed, status ' + cmd.status + '\n' + cmd.error)
+            }
+            /* Currently undocumented */
+            if (options.error && cmd.error) {
+                options.error = cmd.error
             }
             return results.toString()
         }
@@ -4993,7 +4998,7 @@ module ejs {
 /********* Start of file src/core/Global.es ************/
 
 
-/*
+/**
     Global.es -- Global variables, namespaces and functions.
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
@@ -8840,8 +8845,8 @@ module ejs {
         }
 
         /**
-            Get a list of matching files. This does
-            Posix style glob file matching on supplied patterns and returns an array of matching files.
+            Get a list of matching files. This does Posix style glob file matching on supplied patterns and returns an 
+            array of matching files.
 
             This method supports several invocation forms:
             <ul>
@@ -8867,7 +8872,7 @@ module ejs {
                 <li>! Negates pattern. This removes matching patterns from the set. These are applied after all source
                       patterns have been processed. Use !! to escape or set noneg in options.
             </ul>
-            If a pattern ends with '/', then all the directory contents will match. 
+            If a pattern ends with '/', then the directory contents will also match and be returned. 
 
             @param options Optional properties to control the matching.
             @option contents Boolean If contents is set to true and the path pattern matches a directory, then return the
@@ -8961,6 +8966,15 @@ module ejs {
 
         /**
             Test if the path matches a 'glob' style pattern
+            @pattern Path pattern to match with. The following special sequences are supported:
+            <ul>
+                <li>The wildcard '?' matches any single character</li>
+                <li>* matches zero or more characters in a filename or directory</li>
+                <li>** matches zero or more files or directories and matches recursively in a directory tree</li>
+                <li>! Negates pattern. This removes matching patterns from the set. These are applied after all source
+                      patterns have been processed.
+            </ul>
+            If a pattern ends with '/', the path must exist and be a directory.
             @return True if the path matches the pattern.
             @hide
          */
@@ -21412,7 +21426,10 @@ r.link({product: "candy", quantity: "10", template: "/cart/{product}/{quantity}}
          */
         function setHeaders(headers: Object, overwrite: Boolean = true): Void {
             for (let [key,value] in headers) {
-                setHeader(key, value || '', overwrite)
+                if (value == null) {
+                    value = ''
+                }
+                setHeader(key, value, overwrite)
             }
         }
 

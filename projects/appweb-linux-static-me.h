@@ -13,7 +13,7 @@
     #define ME_COMPANY "embedthis"
 #endif
 #ifndef ME_COMPATIBLE
-    #define ME_COMPATIBLE "5.2"
+    #define ME_COMPATIBLE "5.3"
 #endif
 #ifndef ME_COMPILER_HAS_ATOMIC
     #define ME_COMPILER_HAS_ATOMIC 0
@@ -135,11 +135,14 @@
 #ifndef ME_HTTP_WEB_SOCKETS
     #define ME_HTTP_WEB_SOCKETS 1
 #endif
+#ifndef ME_INTEGRATE
+    #define ME_INTEGRATE 1
+#endif
 #ifndef ME_MANIFEST
     #define ME_MANIFEST "package/manifest.me"
 #endif
 #ifndef ME_ME
-    #define ME_ME "=0.8.4"
+    #define ME_ME "=>0.8.4"
 #endif
 #ifndef ME_MPR_LOGGING
     #define ME_MPR_LOGGING 1
@@ -172,7 +175,7 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "5.2.0"
+    #define ME_VERSION "5.3.0"
 #endif
 #ifndef ME_WEB_GROUP
     #define ME_WEB_GROUP "nogroup"
@@ -198,7 +201,7 @@
     #define ME_APP_PREFIX "/usr/local/lib/appweb"
 #endif
 #ifndef ME_VAPP_PREFIX
-    #define ME_VAPP_PREFIX "/usr/local/lib/appweb/5.2.0"
+    #define ME_VAPP_PREFIX "/usr/local/lib/appweb/5.3.0"
 #endif
 #ifndef ME_BIN_PREFIX
     #define ME_BIN_PREFIX "/usr/local/bin"
@@ -231,7 +234,7 @@
     #define ME_CACHE_PREFIX "/var/spool/appweb/cache"
 #endif
 #ifndef ME_SRC_PREFIX
-    #define ME_SRC_PREFIX "appweb-5.2.0"
+    #define ME_SRC_PREFIX "appweb-5.3.0"
 #endif
 
 /* Suffixes */
@@ -253,7 +256,7 @@
 
 /* Profile */
 #ifndef ME_CONFIG_CMD
-    #define ME_CONFIG_CMD "me -d -q -platform linux-x86-static -static -configure . -with est -gen make"
+    #define ME_CONFIG_CMD "me -d -q -platform linux-x86-static -static -configure . -with openssl -gen make"
 #endif
 #ifndef ME_APPWEB_PRODUCT
     #define ME_APPWEB_PRODUCT 1
@@ -270,13 +273,13 @@
     #define ME_MAJOR_VERSION 5
 #endif
 #ifndef ME_MINOR_VERSION
-    #define ME_MINOR_VERSION 2
+    #define ME_MINOR_VERSION 3
 #endif
 #ifndef ME_PATCH_VERSION
     #define ME_PATCH_VERSION 0
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 500020000
+    #define ME_VNUM 500030000
 #endif
 
 /* Components */
@@ -296,7 +299,7 @@
     #define ME_COM_ESP 1
 #endif
 #ifndef ME_COM_EST
-    #define ME_COM_EST 1
+    #define ME_COM_EST 0
 #endif
 #ifndef ME_COM_HTTP
     #define ME_COM_HTTP 1
@@ -311,7 +314,7 @@
     #define ME_COM_MPR 1
 #endif
 #ifndef ME_COM_OPENSSL
-    #define ME_COM_OPENSSL 0
+    #define ME_COM_OPENSSL 1
 #endif
 #ifndef ME_COM_OSDEP
     #define ME_COM_OSDEP 1

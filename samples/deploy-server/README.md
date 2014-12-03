@@ -6,7 +6,7 @@ This sample demonstrates the commands to use to deploy Appweb files to a staging
 Requirements
 ---
 * [Appweb](https://embedthis.com/appweb/download.html)
-* [MakeMe Build Tool](https://embedthis.com/me/download.html)
+* [MakeMe Build Tool](https://embedthis.com/makeme/download.html)
 
 Steps:
 ---

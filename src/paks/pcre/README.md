@@ -10,14 +10,14 @@ See LICENSE.md for details.
   See doc/index.html
 
 ### Prerequisites:
-    MakeMe (https://embedthis.com/me/download.html) for MakeMe to configure and build.
+    MakeMe (https://embedthis.com/makeme/download.html) for MakeMe to configure and build.
 
 ### To Build:
 
     ./configure
     me
 
-    Alternatively to build without Ejscript:
+Alternatively to build without Ejscript:
 
     make
 

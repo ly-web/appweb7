@@ -1351,7 +1351,8 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
                     </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>SessionCookie name=NAME visible=[true|false]</td>
+                        <td>SessionCookie name=NAME visible=[true|false]<br/>
+                        SessionCookie none</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
@@ -1364,12 +1365,14 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>
-                            <p>This directive can define a unique prefix to use for the session cookie used by the route.
-                            The default session cookie prefix is: "-http-session-".</p>
-                            <p>It is also possible to set if the cookie is readable by Javascript in the browser.
+                            <p>This directive controls the Session cookie. It can disable generation of a session cookie via
+                            <em>Session none</em>. If enabled, it can define a unique prefix to use for the session cookie 
+                            used by the route. The default session cookie prefix is: "-http-session-".</p>
+                            <p>It is also possible to set if the cookie is readable by Javascript in the browser via
+                                <em>visible=false|true</em>.
                             By default, the session cookie is not visible to Javascript. It is desirable to keep the session
-                            cookie invisible to minimize XSS security vulnerabilities.</p>
-                            <p>Appweb implements this by adding the <i>"httpOnly"</i> option on the "Set-Cookie" response header.</p>
+                            cookie invisible to minimize XSS security vulnerabilities. Appweb implements this by adding 
+                            the <i>"httpOnly"</i> option on the "Set-Cookie" response header.</p>
                         </td>
                     </tr>
                 </tbody>

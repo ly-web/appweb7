@@ -112,7 +112,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
         if (*argp != '-') {
             break;
         }
-        if (smatch(argp, "--config") || smatch(argp, "--conf")) {
+        if (smatch(argp, "--config") || smatch(argp, "--conf") || smatch(argp, "--file")) {
             if (argind >= argc) {
                 usageError();
             }
@@ -239,7 +239,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
         exit(9);
     }
     if (app->show) {
-        httpLogRoutes(0, 0);
+        httpLogRoutes(0, mprGetLogLevel() > 4);
     }
     mprServiceEvents(-1, 0);
     mprLog("info appweb", 1, "Stopping Appweb ...");
@@ -370,11 +370,11 @@ static int findAppwebConf()
 {
     char    *base, *filename;
 
-    if (ME_CONFIG_FILE) {
-        base = sclone(ME_CONFIG_FILE);
-    } else {
-        base = mprJoinPathExt(mprGetAppName(), ".conf");
-    }
+#ifdef ME_CONFIG_FILE
+    base = sclone(ME_CONFIG_FILE);
+#else
+    base = mprJoinPathExt(mprGetAppName(), ".conf");
+#endif
 #if !ME_ROM
     filename = base;
     if (!mprPathExists(filename, R_OK)) {

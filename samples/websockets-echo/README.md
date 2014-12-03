@@ -18,7 +18,7 @@ Requirements
 ---
 
 * [Appweb](https://embedthis.com/appweb/download.html)
-* [MakeMe Build Tool](https://embedthis.com/me/download.html)
+* [MakeMe Build Tool](https://embedthis.com/makeme/download.html)
 
 To build:
 ---
@@ -47,11 +47,11 @@ Documentation:
 ---
 * [Appweb Documentation](https://embedthis.com/appweb/doc/index.html)
 * [ESP Directives](https://embedthis.com/appweb/doc/users/dir/esp.html)
-* [ESP Tour](https://embedthis.com/appweb/doc/guide/esp/users/tour.html)
-* [ESP Controllers](https://embedthis.com/appweb/doc/guide/esp/users/controllers.html)
-* [ESP APIs](https://embedthis.com/appweb/doc/api/esp.html)
-* [ESP Guide](https://embedthis.com/appweb/doc/guide/esp/users/index.html)
-* [ESP Overview](https://embedthis.com/appweb/doc/guide/esp/users/using.html)
+* [ESP Tour](https://embedthis.com/esp/doc/start/tour.html)
+* [ESP Controllers](https://embedthis.com/esp/doc/users/controllers.html)
+* [ESP APIs](https://embedthis.com/esp/doc/ref/native.html)
+* [ESP Guide](https://embedthis.com/esp/doc/users/index.html)
+* [ESP Overview](https://embedthis.com/esp/doc/index.html)
 
 See Also:
 ---

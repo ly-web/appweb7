@@ -5,7 +5,7 @@ These samples are configured to use a locally built Appweb or Appweb installed t
 (usually /usr/local/lib/apppweb). To build the samples, you will need to install Appweb and the MakeMe build tool from:
 
 * Appweb - [https://embedthis.com/appweb/download.html](https://embedthis.com/appweb/download.html)
-* MakeMe - [https://embedthis.com/me/download.html](https://embedthis.com/me/download.html)
+* MakeMe - [https://embedthis.com/makeme/download.html](https://embedthis.com/makeme/download.html)
 * Pak - [https://embedthis.com/pak/download.html](https://embedthis.com/pak/download.html)
 
 The following samples are available:
@@ -14,6 +14,8 @@ The following samples are available:
 * [cpp-handler](cpp-handler/README.md)              C++ Handler
 * [cpp-module](cpp-module/README.md)                C++ Module
 * [deploy-server](deploy-server/README.md)          Deploy Appweb files for copying to a target.
+* [login-basic](login-basic/README.md)              Login using Basic or Digest authentication (not recommended).
+* [login-form](login-form/README.md)                Login using Web Forms (recommended).
 * [max-server](max-server/README.md)                Maximum configuration in appweb.conf.
 * [min-server](min-server/README.md)                Minimum configuration in appweb.conf.
 * [secure-server](secure-server/README.md)          Secure server using SSL, secure login, chroot and sandbox limits.
@@ -35,7 +37,7 @@ The following samples are available:
 To build the samples, see the per-sample README instructions.
 To build all, use:
 
-    me --file samples.me  samples
+    me --file samples.me samples
 
 ### Documentation
 
@@ -60,11 +62,11 @@ please contact Embedthis at:
 
 For non-commercial customers, you may ask questions in the form of well described issues at the:
 
-* [GitHub Ejscript Issue Database](http://github.com/embedthis/ejs/issues)
+* [GitHub Appweb Issue Database](http://github.com/embedthis/appweb/issues)
 
 
 Copyright
 ---
 
-Copyright (c) 2003-2014 Embedthis Software, LLC. All Rights Reserved.  Embedthis and Appweb are trademarks of 
+Copyright (c) 2003-2014 Embedthis Software, LLC. All Rights Reserved. Embedthis and Appweb are trademarks of 
 Embedthis Software, LLC. Other brands and their products are trademarks of their respective holders.

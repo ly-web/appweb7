@@ -534,10 +534,15 @@ PUBLIC void httpAddStage(HttpStage *stage)
 
 PUBLIC HttpStage *httpLookupStage(cchar *name)
 {
+    HttpStage   *stage;
+
     if (!HTTP) {
         return 0;
     }
-    return mprLookupKey(HTTP->stages, name);
+    if ((stage = mprLookupKey(HTTP->stages, name)) == 0 || stage->flags & HTTP_STAGE_INTERNAL) {
+        return 0;
+    }
+    return stage;
 }
 
 
@@ -1402,6 +1407,7 @@ PUBLIC void httpInitAuth()
 {
     /*
         Auth protocol types: basic, digest, form
+        These are typically not used for web frameworks like ESP or PHP 
      */
     httpCreateAuthType("basic", httpBasicLogin, httpBasicParse, httpBasicSetHeaders);
     httpCreateAuthType("digest", httpDigestLogin, httpDigestParse, httpDigestSetHeaders);
@@ -1446,6 +1452,7 @@ PUBLIC HttpAuth *httpCreateInheritedAuth(HttpAuth *parent)
     }
     if (parent) {
         //  OPT. Structure assignment
+        auth->flags = parent->flags;
         auth->allow = parent->allow;
         auth->cipher = parent->cipher;
         auth->deny = parent->deny;
@@ -1458,7 +1465,8 @@ PUBLIC HttpAuth *httpCreateInheritedAuth(HttpAuth *parent)
         auth->abilities = parent->abilities;
         auth->userCache = parent->userCache;
         auth->roles = parent->roles;
-        auth->loggedIn = parent->loggedIn;
+        auth->loggedOutPage = parent->loggedOutPage;
+        auth->loggedInPage = parent->loggedInPage;
         auth->loginPage = parent->loginPage;
         auth->username = parent->username;
         auth->verifyUser = parent->verifyUser;
@@ -1480,7 +1488,8 @@ static void manageAuth(HttpAuth *auth, int flags)
         mprMark(auth->abilities);
         mprMark(auth->permittedUsers);
         mprMark(auth->loginPage);
-        mprMark(auth->loggedIn);
+        mprMark(auth->loggedInPage);
+        mprMark(auth->loggedOutPage);
         mprMark(auth->username);
         mprMark(auth->qop);
         mprMark(auth->type);
@@ -1637,11 +1646,9 @@ PUBLIC bool httpGetCredentials(HttpConn *conn, cchar **username, cchar **passwor
     auth = conn->rx->route->auth;
     if (auth->type) {
         if (conn->authType && !smatch(conn->authType, auth->type->name)) {
-            /* Do not call httpError so that a 401 response will be sent with WWW-Authenticate header */
             return 0;
         }
         if (auth->type->parseAuth && (auth->type->parseAuth)(conn, username, password) < 0) {
-            httpError(conn, HTTP_CODE_BAD_REQUEST, "Access denied. Bad authentication data.");
             return 0;
         }
     } else {
@@ -1679,7 +1686,7 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
         return 0;
     }
     if ((verifyUser = auth->verifyUser) == 0) {
-        if (auth->parent && (verifyUser = auth->parent->verifyUser) == 0) {
+        if (!auth->parent || (verifyUser = auth->parent->verifyUser) == 0) {
             verifyUser = auth->store->verifyUser;
         }
     }
@@ -1695,7 +1702,7 @@ PUBLIC bool httpLogin(HttpConn *conn, cchar *username, cchar *password)
     if (!(verifyUser)(conn, username, password)) {
         return 0;
     }
-    if (!auth->store->noSession) {
+    if (!(auth->flags & HTTP_AUTH_NO_SESSION) && !auth->store->noSession) {
         if ((session = httpCreateSession(conn)) == 0) {
             /* Too many sessions */
             return 0;
@@ -1746,6 +1753,117 @@ PUBLIC void httpSetAuthAnyValidUser(HttpAuth *auth)
 }
 
 
+PUBLIC void httpSetAuthLogin(HttpAuth *auth, cchar *value)
+{
+    auth->loginPage = sclone(value);
+}
+
+
+/*
+    Web form login service routine. Called in response to a form-based login request when defined via httpSetAuthLogin.
+    It is expected that "authCondition" has already authenticated the request.
+ */
+static void loginServiceProc(HttpConn *conn)
+{
+    HttpAuth    *auth;
+    
+    auth = conn->rx->route->auth;
+    if (httpIsAuthenticated(conn)) {
+        httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, auth->loggedInPage ? auth->loggedInPage : "~");
+    } else {
+        httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, auth->loginPage);
+    }
+}
+
+
+/*
+    Logout service for use with httpSetAuthFormDetails.
+ */
+static void logoutServiceProc(HttpConn *conn)
+{
+    HttpRoute       *route;
+    HttpAuth        *auth;
+    cchar           *loggedOut;
+
+    route = conn->rx->route;
+    auth = route->auth;
+
+    httpLogout(conn);
+
+    loggedOut = (auth->loggedOutPage) ? auth->loggedOutPage : auth->loginPage;
+    if (!loggedOut) {
+        loggedOut = "/";
+    }
+    httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, loggedOut);
+}
+
+
+static HttpRoute *createLoginRoute(HttpRoute *route, cchar *pattern, HttpAction action)
+{
+    bool    secure;
+
+    secure = 0;
+    if (sstarts(pattern, "https:///")) {
+        pattern = &pattern[8];
+        secure = 1;
+    }
+    if ((route = httpCreateInheritedRoute(route)) != 0) {
+        httpSetRoutePattern(route, sjoin(pattern, "$", NULL), 0);
+        if (secure) {
+            httpAddRouteCondition(route, "secure", "https://", HTTP_ROUTE_REDIRECT);
+        }
+        if (action) {
+            route->handler = route->http->actionHandler;
+            httpDefineAction(pattern, action);
+        }
+        httpSetRouteName(route, strim(pattern, "^$", 0));
+        httpFinalizeRoute(route);
+    }
+    return route;
+}
+
+
+/*
+    Define login URLs by creating routes. Used by Appweb AuthType directive.
+    Web frameworks like ESP should NOT use this.
+ */
+PUBLIC void httpSetAuthFormDetails(HttpRoute *route, cchar *loginPage, cchar *loginService, cchar *logoutService, 
+    cchar *loggedInPage, cchar *loggedOutPage)
+{
+    HttpRoute   *loginRoute;
+    HttpAuth    *auth;
+
+    auth = route->auth;
+
+    if (loggedInPage) {
+        auth->loggedInPage = sclone(loggedInPage);
+        createLoginRoute(route, auth->loggedInPage, 0);
+    }
+    if (loginPage) {
+        auth->loginPage = sclone(loginPage);
+        createLoginRoute(route, auth->loginPage, 0);
+    }
+    if (loggedOutPage) {
+        if (smatch(loginPage, loggedOutPage)) {
+            auth->loggedOutPage = auth->loginPage;
+        } else {
+            auth->loggedOutPage = sclone(loggedOutPage);
+            createLoginRoute(route, auth->loggedOutPage, 0);
+        }
+    }
+    /*
+        Put services last so they inherit the auth settings above
+     */
+    if (loginService) {
+        loginRoute = createLoginRoute(route, loginService, loginServiceProc);
+        httpAddRouteCondition(loginRoute, "auth", 0, 0);
+    }
+    if (logoutService) {
+        createLoginRoute(route, logoutService, logoutServiceProc);
+    }
+}
+
+
 /*
     Can supply a roles or abilities in the "abilities" parameter
  */
@@ -1773,101 +1891,6 @@ PUBLIC void httpSetAuthOrder(HttpAuth *auth, int order)
     auth->flags |= (order & (HTTP_ALLOW_DENY | HTTP_DENY_ALLOW));
 }
 
-
-/*
-    Form login service routine. Called in response to a form-based login request. Only used when httpSetAuthForm is utilized.
-    The password is clear-text so this must be used over SSL to be secure.
- */
-static void loginServiceProc(HttpConn *conn)
-{
-    HttpAuth    *auth;
-    cchar       *username, *password, *referrer;
-
-    auth = conn->rx->route->auth;
-    username = httpGetParam(conn, "username", 0);
-    password = httpGetParam(conn, "password", 0);
-
-    if (httpLogin(conn, username, password)) {
-        if ((referrer = httpGetSessionVar(conn, "referrer", 0)) != 0) {
-            /*
-                Preserve protocol scheme from existing connection
-             */
-            HttpUri *where = httpCreateUri(referrer, 0);
-            httpCompleteUri(where, conn->rx->parsedUri);
-            referrer = httpUriToString(where, 0);
-            httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, referrer);
-        } else {
-            if (auth->loggedIn) {
-                httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, auth->loggedIn);
-            } else {
-                httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, "~");
-            }
-        }
-    } else {
-        httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, auth->loginPage);
-    }
-}
-
-
-static void logoutServiceProc(HttpConn *conn)
-{
-    httpLogout(conn);
-    httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, conn->rx->route->auth->loginPage);
-}
-
-
-PUBLIC void httpSetAuthForm(HttpRoute *parent, cchar *loginPage, cchar *loginService, cchar *logoutService, cchar *loggedIn)
-{
-    HttpAuth    *auth;
-    HttpRoute   *route;
-    bool        secure;
-
-    secure = 0;
-    auth = parent->auth;
-    auth->loginPage = sclone(loginPage);
-    if (loggedIn) {
-        auth->loggedIn = sclone(loggedIn);
-    }
-    /*
-        Create routes without auth for the loginPage, loginService and logoutService
-     */
-    if ((route = httpCreateInheritedRoute(parent)) != 0) {
-        if (sstarts(loginPage, "https:///")) {
-            loginPage = &loginPage[8];
-            secure = 1;
-        }
-        httpSetRoutePattern(route, loginPage, 0);
-        route->auth->type = 0;
-        if (secure) {
-            httpAddRouteCondition(route, "secure", 0, 0);
-        }
-        httpFinalizeRoute(route);
-    }
-    if (loginService && *loginService) {
-        if (sstarts(loginService, "https:///")) {
-            loginService = &loginService[8];
-            secure = 1;
-        }
-        route = httpCreateActionRoute(parent, loginService, loginServiceProc);
-        httpSetRouteMethods(route, "POST");
-        route->auth->type = 0;
-        if (secure) {
-            httpAddRouteCondition(route, "secure", 0, 0);
-        }
-    }
-    if (logoutService && *logoutService) {
-        if (sstarts(logoutService, "https:///")) {
-            logoutService = &logoutService[8];
-            secure = 1;
-        }
-        httpSetRouteMethods(route, "POST");
-        route = httpCreateActionRoute(parent, logoutService, logoutServiceProc);
-        route->auth->type = 0;
-        if (secure) {
-            httpAddRouteCondition(route, "secure", 0, 0);
-        }
-    }
-}
 
 
 /*
@@ -1908,6 +1931,15 @@ PUBLIC void httpSetAuthStoreSessions(HttpAuthStore *store, bool noSession)
 }
 
 
+PUBLIC void httpSetAuthSession(HttpAuth *auth, bool enable)
+{
+    auth->flags &= ~HTTP_AUTH_NO_SESSION;
+    if (!enable) {
+        auth->flags |= HTTP_AUTH_NO_SESSION;
+    }
+}
+
+
 PUBLIC int httpSetAuthStore(HttpAuth *auth, cchar *store)
 {
     if ((auth->store = mprLookupKey(HTTP->authStores, store)) == 0) {
@@ -1931,6 +1963,10 @@ PUBLIC int httpSetAuthStore(HttpAuth *auth, cchar *store)
 
 PUBLIC int httpSetAuthType(HttpAuth *auth, cchar *type, cchar *details)
 {
+    if (type == 0 || *type == '\0' || smatch(type, "none")) {
+        auth->type = 0;
+        return 0;
+    }
     if ((auth->type = mprLookupKey(HTTP->authTypes, type)) == 0) {
         mprLog("critical http auth", 0, "Cannot find auth type %s", type);
         return MPR_ERR_CANT_FIND;
@@ -1975,6 +2011,9 @@ static bool configVerifyUser(HttpConn *conn, cchar *username, cchar *password)
         return 0;
     }
     if (password) {
+        if (auth->realm == 0 || *auth->realm == '\0') {
+            mprLog("error http auth", 0, "No AuthRealm defined");
+        }
         requiredPassword = (rx->passwordDigest) ? rx->passwordDigest : conn->user->password;
         if (sncmp(requiredPassword, "BF", 2) == 0 && slen(requiredPassword) > 4 && isdigit(requiredPassword[2]) &&
                 requiredPassword[3] == ':') {
@@ -2096,15 +2135,20 @@ PUBLIC int httpBasicParse(HttpConn *conn, cchar **username, cchar **password)
 
 /*
     Respond to the request by asking for a client login
+    Only called if not logged in
  */
 PUBLIC void httpBasicLogin(HttpConn *conn)
 {
     HttpAuth    *auth;
 
     auth = conn->rx->route->auth;
-    httpSetHeader(conn, "WWW-Authenticate", "Basic realm=\"%s\"", auth->realm);
-    httpError(conn, HTTP_CODE_UNAUTHORIZED, "Access Denied. Login required");
-    httpTrace(conn, "auth.basic.error", "error", "msg:'Access denied, Login required'");
+    if (auth->loginPage && !sends(conn->rx->referrer, auth->loginPage)) {
+        httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, auth->loginPage);
+    } else {
+        httpSetHeader(conn, "WWW-Authenticate", "Basic realm=\"%s\"", auth->realm);
+        httpError(conn, HTTP_CODE_UNAUTHORIZED, "Access Denied. Login required");
+        httpTrace(conn, "auth.basic.error", "error", "msg:'Access denied, Login required'");
+    }
 }
 
 
@@ -2673,7 +2717,7 @@ static cchar *setHeadersFromCache(HttpConn *conn, cchar *content)
         headers = snclone(content, data - content);
         data += 2;
         for (header = stok(headers, "\n", &tok); header; header = stok(NULL, "\n", &tok)) {
-            key = stok(header, ": ", &value);
+            key = ssplit(header, ": ", &value);
             if (smatch(key, "X-Status")) {
                 conn->tx->status = (int) stoi(value);
             } else {
@@ -3327,18 +3371,22 @@ PUBLIC char *httpReadString(HttpConn *conn)
 
 
 /*
-    Issue a client http request.
+    Convenience method to issue a client http request.
     Assumes the Mpr and Http services are created and initialized.
  */
 PUBLIC HttpConn *httpRequest(cchar *method, cchar *uri, cchar *data, char **err)
 {
-    HttpConn    *conn;
-    ssize       len;
+    HttpConn        *conn;
+    MprDispatcher   *dispatcher;
+    ssize           len;
 
     if (err) {
         *err = 0;
     }
-    conn = httpCreateConn(NULL, NULL);
+    dispatcher = mprCreateDispatcher("httpRequest", MPR_DISPATCHER_AUTO);
+    mprStartDispatcher(dispatcher);
+
+    conn = httpCreateConn(NULL, dispatcher);
     mprAddRoot(conn);
 
     /*
@@ -3346,6 +3394,7 @@ PUBLIC HttpConn *httpRequest(cchar *method, cchar *uri, cchar *data, char **err)
      */
     if (httpConnect(conn, method, uri, NULL) < 0) {
         mprRemoveRoot(conn);
+        httpDestroyConn(conn);
         *err = sfmt("Cannot connect to %s", uri);
         return 0;
     }
@@ -3358,6 +3407,7 @@ PUBLIC HttpConn *httpRequest(cchar *method, cchar *uri, cchar *data, char **err)
     httpFinalizeOutput(conn);
     if (httpWait(conn, HTTP_STATE_CONTENT, MPR_MAX_TIMEOUT) < 0) {
         mprRemoveRoot(conn);
+        httpDestroyConn(conn);
         *err = sclone("No response");
         return 0;
     }
@@ -3411,7 +3461,7 @@ PUBLIC ssize httpWriteUploadData(HttpConn *conn, MprList *fileData, MprList *for
     rc = 0;
     if (formData) {
         for (rc = next = 0; rc >= 0 && (pair = mprGetNextItem(formData, &next)) != 0; ) {
-            key = stok(sclone(pair), "=", &value);
+            key = ssplit(sclone(pair), "=", &value);
             rc += httpWrite(conn->writeq, "%s\r\nContent-Disposition: form-data; name=\"%s\";\r\n", conn->boundary, key);
             rc += httpWrite(conn->writeq, "Content-Type: application/x-www-form-urlencoded\r\n\r\n%s\r\n", value);
         }
@@ -3663,7 +3713,7 @@ static void blendMode(HttpRoute *route, MprJson *config)
     }
     route->debug = smatch(mode, "debug");
     if ((currentMode = mprGetJsonObj(config, sfmt("app.modes.%s", mode))) != 0) {
-        app = mprLookupJsonObj(config, "app");
+        app = mprReadJsonObj(config, "app");
         mprBlendJson(app, currentMode, MPR_JSON_OVERWRITE);
         mprSetJson(app, "app.mode", mode);
     }
@@ -3738,7 +3788,7 @@ static void clientCopy(HttpRoute *route, MprJson *dest, MprJson *obj)
         } else {
             key = child->value;
             if (sends(key, "|time")) {
-                key = stok(sclone(key), " \t|", NULL);
+                key = ssplit(sclone(key), " \t|", NULL);
                 if ((value = mprGetJson(route->config, key)) != 0) {
                     mprSetJson(dest, child->name, itos(httpGetTicks(value)));
                 }
@@ -3772,7 +3822,7 @@ static void postParse(HttpRoute *route)
     if ((mappings = mprGetJsonObj(route->config, "app.client.mappings")) != 0) {
         client = mprCreateJson(MPR_JSON_OBJ);
         clientCopy(route, client, mappings);
-        mprSetJson(client, "prefix", route->prefix);
+        mprWriteJson(client, "prefix", route->prefix);
         route->client = mprJsonToString(client, MPR_JSON_QUOTES);
     }
     httpAddHostToEndpoints(route->host);
@@ -3784,8 +3834,10 @@ static void postParse(HttpRoute *route)
     for (nextHost = 0; (host = mprGetNextItem(http->hosts, &nextHost)) != 0; ) {
         for (nextRoute = 0; (rp = mprGetNextItem(host->routes, &nextRoute)) != 0; ) {
             if (!mprLookupKey(rp->extensions, "")) {
-                httpAddRouteHandler(rp, "fileHandler", "");
-                httpAddRouteIndex(rp, "index.html");
+                if (!rp->handler) {
+                    httpAddRouteHandler(rp, "fileHandler", "");
+                    httpAddRouteIndex(rp, "index.html");
+                }
             }
             if (rp->parent == route) {
                 rp->client = route->client;
@@ -3822,7 +3874,7 @@ static void parseAll(HttpRoute *route, cchar *key, MprJson *prop)
     /*
         Property order is not guaranteed, so must ensure routes are processed after all outer properties.
      */
-    if ((routes = mprGetJsonObj(prop, "routes")) != 0) {
+    if ((routes = mprReadJsonObj(prop, "routes")) != 0) {
         parseRoutes(route, key, routes);
     }
 }
@@ -3855,7 +3907,7 @@ static void parseAuth(HttpRoute *route, cchar *key, MprJson *prop)
 }
 
 
-static void parseAuthLoginName(HttpRoute *route, cchar *key, MprJson *prop)
+static void parseAuthAutoName(HttpRoute *route, cchar *key, MprJson *prop)
 {
     /* Automatic login as this user. Password not required */
     httpSetAuthUsername(route->auth, prop->value);
@@ -3865,7 +3917,7 @@ static void parseAuthLoginName(HttpRoute *route, cchar *key, MprJson *prop)
 /*
     Parse roles and compute abilities
  */
-static void parseAuthLoginRoles(HttpRoute *route, cchar *key, MprJson *prop)
+static void parseAuthAutoRoles(HttpRoute *route, cchar *key, MprJson *prop)
 {
     MprHash     *abilities;
     MprKey      *kp;
@@ -3884,8 +3936,14 @@ static void parseAuthLoginRoles(HttpRoute *route, cchar *key, MprJson *prop)
         for (ITERATE_KEYS(abilities, kp)) {
             mprSetJson(job, "$", kp->key);
         }
-        mprSetJsonObj(route->config, "app.http.auth.login.abilities", job);
+        mprSetJsonObj(route->config, "app.http.auth.auto.abilities", job);
     }
+}
+
+
+static void parseAuthLogin(HttpRoute *route, cchar *key, MprJson *prop)
+{
+    httpSetAuthLogin(route->auth, prop->value);
 }
 
 
@@ -3901,7 +3959,7 @@ static void parseAuthRequireRoles(HttpRoute *route, cchar *key, MprJson *prop)
     int         ji;
 
     for (ITERATE_CONFIG(route, prop, child, ji)) {
-        httpSetAuthRequiredAbilities(route->auth, prop->value);
+        httpSetAuthRequiredAbilities(route->auth, child->value);
     }
 }
 
@@ -3966,28 +4024,23 @@ static void parseAuthStore(HttpRoute *route, cchar *key, MprJson *prop)
 
 static void parseAuthType(HttpRoute *route, cchar *key, MprJson *prop)
 {
-    if (httpSetAuthType(route->auth, prop->value, 0) < 0) {
-        httpParseError(route, "The %s AuthType is not available on this platform", prop->value);
-    }
-    if (smatch(prop->value, "basic") || smatch(prop->value, "digest")) {
-        /*
-            These are implemented by the browser, so we can use a global auth-condition
-         */
-        httpAddRouteCondition(route, "auth", 0, 0);
+    HttpAuth    *auth;
+    cchar       *type;
 
-#if DEPRECATED || 1
-    } else if (smatch(prop->value, "form")) {
-        /* Undocumented */
-        MprJson *parent;
-        cchar *auth, *loginForm, *loginService, *logoutService, *loggedInPage;
-        auth = mprTrimPathExt(key);
-        parent = mprGetJsonObj(route->config, auth);
-        loginForm = mprGetJson(parent, "loginForm");
-        loginService = mprGetJson(parent, "loginService");
-        logoutService = mprGetJson(parent, "logoutService");
-        loggedInPage = mprGetJson(parent, "loggedInPage");
-        httpSetAuthForm(route, loginForm, loginService, logoutService, loggedInPage);
-#endif
+    auth = route->auth;
+    type = prop->value;
+
+    if (httpSetAuthType(auth, type, 0) < 0) {
+        httpParseError(route, "The %s AuthType is not available on this platform", type);
+    }
+    if (type && !smatch(type, "none")) {
+        httpAddRouteCondition(route, "auth", 0, 0);
+    }
+    if (smatch(type, "basic") || smatch(type, "digest")) {
+        /*
+            Must not use cookies by default, otherwise, the client cannot logoff.
+         */
+        httpSetAuthSession(auth, 0);
     }
 }
 
@@ -3999,11 +4052,14 @@ static void parseAuthUsers(HttpRoute *route, cchar *key, MprJson *prop)
     int         ji;
 
     for (ITERATE_CONFIG(route, prop, child, ji)) {
-        password = mprGetJson(child, "password");
-        roles = getList(mprGetJsonObj(child, "roles"));
+        password = mprReadJson(child, "password");
+        roles = getList(mprReadJsonObj(child, "roles"));
         if (httpAddUser(route->auth, child->name, password, roles) < 0) {
             httpParseError(route, "Cannot add user %s", child->name);
             break;
+        }
+        if (!route->auth->store) {
+            httpSetAuthStore(route->auth, "config");
         }
     }
 }
@@ -4019,24 +4075,24 @@ static void parseCache(HttpRoute *route, cchar *key, MprJson *prop)
     clientLifespan = serverLifespan = 0;
     for (ITERATE_CONFIG(route, prop, child, ji)) {
         flags = 0;
-        if ((client = mprGetJson(child, "client")) != 0) {
+        if ((client = mprReadJson(child, "client")) != 0) {
             flags |= HTTP_CACHE_CLIENT;
             clientLifespan = httpGetTicks(client);
         }
-        if ((server = mprGetJson(child, "server")) != 0) {
+        if ((server = mprReadJson(child, "server")) != 0) {
             flags |= HTTP_CACHE_SERVER;
             serverLifespan = httpGetTicks(server);
         }
-        methods = getList(mprGetJsonObj(child, "methods"));
-        extensions = getList(mprGetJsonObj(child, "extensions"));
-        uris = getList(mprGetJsonObj(child, "uris"));
-        mimeTypes = getList(mprGetJsonObj(child, "mime"));
+        methods = getList(mprReadJsonObj(child, "methods"));
+        extensions = getList(mprReadJsonObj(child, "extensions"));
+        uris = getList(mprReadJsonObj(child, "uris"));
+        mimeTypes = getList(mprReadJsonObj(child, "mime"));
 
-        if (smatch(mprGetJson(child, "unique"), "true")) {
+        if (smatch(mprReadJson(child, "unique"), "true")) {
             /* Uniquely cache requests with different params */
             flags |= HTTP_CACHE_UNIQUE;
         }
-        if (smatch(mprGetJson(child, "manual"), "true")) {
+        if (smatch(mprReadJson(child, "manual"), "true")) {
             /* User must manually call httpWriteCache */
             flags |= HTTP_CACHE_MANUAL;
         }
@@ -4145,6 +4201,13 @@ static void parseFormatsResponse(HttpRoute *route, cchar *key, MprJson *prop)
 }
 
 
+static void parseHandler(HttpRoute *route, cchar *key, MprJson *prop)
+{
+    if (httpSetRouteHandler(route, prop->value) < 0) {
+        httpParseError(route, "Cannot add handler %s", prop->value);
+    }
+}
+
 static void parseHeadersAdd(HttpRoute *route, cchar *key, MprJson *prop)
 {
     MprJson     *child;
@@ -4217,16 +4280,16 @@ static void parseLanguages(HttpRoute *route, cchar *key, MprJson *prop)
     int         ji;
 
     for (ITERATE_CONFIG(route, prop, child, ji)) {
-        if ((prefix = mprGetJson(child, "prefix")) != 0) {
+        if ((prefix = mprReadJson(child, "prefix")) != 0) {
             httpAddRouteLanguageSuffix(route, child->name, child->value, HTTP_LANG_BEFORE);
         }
-        if ((suffix = mprGetJson(child, "suffix")) != 0) {
+        if ((suffix = mprReadJson(child, "suffix")) != 0) {
             httpAddRouteLanguageSuffix(route, child->name, child->value, HTTP_LANG_AFTER);
         }
-        if ((path = mprGetJson(child, "path")) != 0) {
+        if ((path = mprReadJson(child, "path")) != 0) {
             httpAddRouteLanguageDir(route, child->name, mprGetAbsPath(path));
         }
-        if (smatch(mprGetJson(child, "default"), "default")) {
+        if (smatch(mprReadJson(child, "default"), "default")) {
             httpSetRouteDefaultLanguage(route, child->name);
         }
     }
@@ -4405,6 +4468,12 @@ static void parseMode(HttpRoute *route, cchar *key, MprJson *prop)
 }
 
 
+static void parseName(HttpRoute *route, cchar *key, MprJson *prop)
+{
+    httpSetRouteName(route, prop->value);
+}
+
+
 /*
     Match route only if param matches
  */
@@ -4415,9 +4484,9 @@ static void parseParams(HttpRoute *route, cchar *key, MprJson *prop)
     int         not, ji;
 
     for (ITERATE_CONFIG(route, prop, child, ji)) {
-        name = mprGetJson(child, "name");
-        value = mprGetJson(child, "value");
-        not = smatch(mprGetJson(child, "equals"), "true") ? 0 : HTTP_ROUTE_NOT;
+        name = mprReadJson(child, "name");
+        value = mprReadJson(child, "value");
+        not = smatch(mprReadJson(child, "equals"), "true") ? 0 : HTTP_ROUTE_NOT;
         httpAddRouteParam(route, name, value, not);
     }
 }
@@ -4441,10 +4510,10 @@ static void parsePipelineFilters(HttpRoute *route, cchar *key, MprJson *prop)
             extensions = 0;
             name = child->value;
         } else {
-            name = mprGetJson(child, "name");
-            extensions = getList(mprGetJsonObj(child, "extensions"));
+            name = mprReadJson(child, "name");
+            extensions = getList(mprReadJsonObj(child, "extensions"));
 #if KEEP
-            direction = mprGetJson(child, "direction");
+            direction = mprReadJson(child, "direction");
             flags |= smatch(direction, "input") ? HTTP_STAGE_RX : 0;
             flags |= smatch(direction, "output") ? HTTP_STAGE_TX : 0;
             flags |= smatch(direction, "both") ? HTTP_STAGE_RX | HTTP_STAGE_TX : 0;
@@ -4510,11 +4579,11 @@ static void createRedirectAlias(HttpRoute *route, int status, cchar *from, cchar
         pattern = sfmt("^%s%s(?:/)*(.*)$", route->prefix, from);
     }
     alias = httpCreateAliasRoute(route, pattern, 0, 0);
-    httpSetRouteName(alias, sfmt("redirect-%s", route->name));
+    httpSetRouteName(alias, "redirect");
     httpSetRouteMethods(alias, "*");
     httpSetRouteTarget(alias, "redirect", sfmt("%d %s/$1", status, to));
     if (sstarts(to, "https")) {
-        httpAddRouteCondition(alias, "secure", 0, HTTP_ROUTE_NOT);
+        httpAddRouteCondition(alias, "secure", to, HTTP_ROUTE_REDIRECT);
     }
     httpFinalizeRoute(alias);
 }
@@ -4527,7 +4596,11 @@ static void parseRedirect(HttpRoute *route, cchar *key, MprJson *prop)
     int         ji;
 
     if (prop->type & MPR_JSON_STRING) {
-        createRedirectAlias(route, 0, "/", prop->value);
+        if (smatch(prop->value, "secure") ||smatch(prop->value, "https://")) {
+            httpAddRouteCondition(route, "secure", "https://", HTTP_ROUTE_REDIRECT);
+        } else {
+            createRedirectAlias(route, 0, "/", prop->value);
+        }
 
     } else {
         for (ITERATE_CONFIG(route, prop, child, ji)) {
@@ -4536,19 +4609,43 @@ static void parseRedirect(HttpRoute *route, cchar *key, MprJson *prop)
                 to = child->value;
                 status = "302";
             } else {
-                from = mprGetJson(child, "from");
-                to = mprGetJson(child, "to");
-                status = mprGetJson(child, "status");
+                from = mprReadJson(child, "from");
+                to = mprReadJson(child, "to");
+                status = mprReadJson(child, "status");
             }
-            createRedirectAlias(route, (int) stoi(status), from, to);
+            if (smatch(child->value, "secure")) {
+                httpAddRouteCondition(route, "secure", "https://", HTTP_ROUTE_REDIRECT);
+            } else {
+                createRedirectAlias(route, (int) stoi(status), from, to);
+            }
         }
     }
 }
 
 
-static void parseRouteName(HttpRoute *route, cchar *key, MprJson *prop)
+/*
+    Create RESTful routes
+ */
+static void parseResources(HttpRoute *route, cchar *key, MprJson *prop)
 {
-    httpSetRouteName(route, prop->value);
+    MprJson     *child, *groups, *singletons, *sets;
+    int         ji;
+
+    if ((sets = mprReadJsonObj(prop, "sets")) != 0) {
+        for (ITERATE_CONFIG(route, sets, child, ji)) {
+            httpAddRouteSet(route, child->value);
+        }
+    }
+    if ((groups = mprReadJsonObj(prop, "groups")) != 0) {
+        for (ITERATE_CONFIG(route, groups, child, ji)) {
+            httpAddResourceGroup(route, route->serverPrefix, child->value);
+        }
+    }
+    if ((singletons = mprReadJsonObj(prop, "singletons")) != 0) {
+        for (ITERATE_CONFIG(route, singletons, child, ji)) {
+            httpAddResource(route, route->serverPrefix, child->value);
+        }
+    }
 }
 
 
@@ -4602,6 +4699,7 @@ static void parseRoutes(HttpRoute *route, cchar *key, MprJson *prop)
 {
     MprJson     *child;
     HttpRoute   *newRoute;
+    cchar       *pattern;
     int         ji;
 
     if (route->loaded) {
@@ -4618,16 +4716,24 @@ static void parseRoutes(HttpRoute *route, cchar *key, MprJson *prop)
                 httpAddRouteSet(route, child->value);
 
             } else if (child->type & MPR_JSON_OBJ) {
-                /*
-                    Create a new route
-                 */
-                newRoute = httpCreateInheritedRoute(route);
-                httpSetRouteHost(newRoute, route->host);
+                newRoute = 0;
+                pattern = mprReadJson(child, "pattern");
+                if (pattern) {
+                    newRoute = httpLookupRouteByPattern(route->host, pattern);
+                    if (!newRoute) {
+                        newRoute = httpCreateInheritedRoute(route);
+                        httpSetRouteHost(newRoute, route->host);
+                    }
+                } else {
+                    newRoute = route;
+                }
                 parseAll(newRoute, key, child);
                 if (newRoute->error) {
                     break;
                 }
-                httpFinalizeRoute(newRoute);
+                if (pattern) {
+                    httpFinalizeRoute(newRoute);
+                }
             }
         }
     }
@@ -4657,12 +4763,12 @@ static void parseServerAccount(HttpRoute *route, cchar *key, MprJson *prop)
 {
     cchar       *value;
 
-    if ((value = mprGetJson(prop, "user")) != 0) {
+    if ((value = mprReadJson(prop, "user")) != 0) {
         if (!smatch(value, "_unchanged_") && !mprGetDebugMode()) {
             httpSetGroupAccount(value);
         }
     }
-    if ((value = mprGetJson(prop, "user")) != 0) {
+    if ((value = mprReadJson(prop, "user")) != 0) {
         if (!smatch(value, "_unchanged_") && !mprGetDebugMode()) {
             httpSetUserAccount(value);
         }
@@ -4776,12 +4882,12 @@ static void parseServerLog(HttpRoute *route, cchar *key, MprJson *prop)
         mprLog("warn http config", 4, "Already logging. Ignoring log configuration");
         return;
     }
-    location = mprGetJson(prop, "location");
-    level = (int) stoi(mprGetJson(prop, "level"));
-    backup = (int) stoi(mprGetJson(prop, "backup"));
-    anew = smatch(mprGetJson(prop, "anew"), "true");
-    size = (ssize) httpGetNumber(mprGetJson(prop, "size"));
-    timestamp = httpGetNumber(mprGetJson(prop, "timestamp"));
+    location = mprReadJson(prop, "location");
+    level = (int) stoi(mprReadJson(prop, "level"));
+    backup = (int) stoi(mprReadJson(prop, "backup"));
+    anew = smatch(mprReadJson(prop, "anew"), "true");
+    size = (ssize) httpGetNumber(mprReadJson(prop, "size"));
+    timestamp = httpGetNumber(mprReadJson(prop, "timestamp"));
 
     if (size < HTTP_TRACE_MIN_LOG_SIZE) {
         size = HTTP_TRACE_MIN_LOG_SIZE;
@@ -4815,9 +4921,9 @@ static void parseServerMonitors(HttpRoute *route, cchar *key, MprJson *prop)
     int         ji;
 
     for (ITERATE_CONFIG(route, prop, child, ji)) {
-        defenses = mprGetJson(child, "defenses");
-        expression = mprGetJson(child, "expression");
-        period = httpGetTicks(mprGetJson(child, "period"));
+        defenses = mprReadJson(child, "defenses");
+        expression = mprReadJson(child, "expression");
+        period = httpGetTicks(mprReadJson(child, "period"));
 
         if (!httpTokenize(route, expression, "%S %S %S", &counter, &relation, &limit)) {
             httpParseError(route, "Cannot add monitor: %s", prop->name);
@@ -4996,8 +5102,8 @@ static void parseTarget(HttpRoute *route, cchar *key, MprJson *prop)
     cchar   *name, *args;
 
     if (prop->type & MPR_JSON_OBJ) {
-        name = mprGetJson(prop, "operation");
-        args = mprGetJson(prop, "args");
+        name = mprReadJson(prop, "operation");
+        args = mprReadJson(prop, "args");
     } else {
         name = "run";
         args = prop->value;
@@ -5064,14 +5170,14 @@ static void parseTrace(HttpRoute *route, cchar *key, MprJson *prop)
         mprLog("info http config", 4, "Already tracing. Ignoring trace configuration");
         return;
     }
-    size = (ssize) httpGetNumber(mprGetJson(prop, "size"));
-    format = mprGetJson(prop, "format");
-    formatter = mprGetJson(prop, "formatter");
-    location = mprGetJson(prop, "location");
-    level = (char) stoi(mprGetJson(prop, "level"));
-    backup = (int) stoi(mprGetJson(prop, "backup"));
-    anew = smatch(mprGetJson(prop, "anew"), "true");
-    maxContent = (ssize) httpGetNumber(mprGetJson(prop, "content"));
+    size = (ssize) httpGetNumber(mprReadJson(prop, "size"));
+    format = mprReadJson(prop, "format");
+    formatter = mprReadJson(prop, "formatter");
+    location = mprReadJson(prop, "location");
+    level = (char) stoi(mprReadJson(prop, "level"));
+    backup = (int) stoi(mprReadJson(prop, "backup"));
+    anew = smatch(mprReadJson(prop, "anew"), "true");
+    maxContent = (ssize) httpGetNumber(mprReadJson(prop, "content"));
 
     if (level < 0) {
         level = 0;
@@ -5089,7 +5195,7 @@ static void parseTrace(HttpRoute *route, cchar *key, MprJson *prop)
     if (!smatch(location, "stdout") && !smatch(location, "stderr")) {
         location = httpMakePath(route, 0, location);
     }
-    if ((levels = mprGetJsonObj(prop, "levels")) != 0) {
+    if ((levels = mprReadJsonObj(prop, "levels")) != 0) {
         for (ITERATE_CONFIG(route, prop, child, ji)) {
             httpSetTraceEventLevel(route->trace, child->name, (int) stoi(child->value));
         }
@@ -5133,9 +5239,10 @@ PUBLIC int httpInitParser()
     httpAddConfig("app", parseAll);
     httpAddConfig("app.http", parseHttp);
     httpAddConfig("app.http.auth", parseAuth);
-    httpAddConfig("app.http.auth.login", parseAll);
-    httpAddConfig("app.http.auth.login.name", parseAuthLoginName);
-    httpAddConfig("app.http.auth.login.roles", parseAuthLoginRoles);
+    httpAddConfig("app.http.auth.auto", parseAll);
+    httpAddConfig("app.http.auth.auto.name", parseAuthAutoName);
+    httpAddConfig("app.http.auth.auto.roles", parseAuthAutoRoles);
+    httpAddConfig("app.http.auth.login", parseAuthLogin);
     httpAddConfig("app.http.auth.realm", parseAuthRealm);
     httpAddConfig("app.http.auth.require", parseAll);
     httpAddConfig("app.http.auth.require.roles", parseAuthRequireRoles);
@@ -5162,6 +5269,7 @@ PUBLIC int httpInitParser()
     httpAddConfig("app.http.errors", parseErrors);
     httpAddConfig("app.http.formats", parseAll);
     httpAddConfig("app.http.formats.response", parseFormatsResponse);
+    httpAddConfig("app.http.handler", parseHandler);
     httpAddConfig("app.http.headers", parseAll);
     httpAddConfig("app.http.headers.add", parseHeadersAdd);
     httpAddConfig("app.http.headers.remove", parseHeadersRemove);
@@ -5196,6 +5304,7 @@ PUBLIC int httpInitParser()
     httpAddConfig("app.http.limits.workers", parseLimitsWorkers);
     httpAddConfig("app.http.methods", parseMethods);
     httpAddConfig("app.http.mode", parseMode);
+    httpAddConfig("app.http.name", parseName);
     httpAddConfig("app.http.params", parseParams);
     httpAddConfig("app.http.pattern", parsePattern);
     httpAddConfig("app.http.pipeline", parseAll);
@@ -5203,7 +5312,7 @@ PUBLIC int httpInitParser()
     httpAddConfig("app.http.pipeline.handlers", parsePipelineHandlers);
     httpAddConfig("app.http.prefix", parsePrefix);
     httpAddConfig("app.http.redirect", parseRedirect);
-    httpAddConfig("app.http.routeName", parseRouteName);
+    httpAddConfig("app.http.resources", parseResources);
     httpAddConfig("app.http.scheme", parseScheme);
 
     httpAddConfig("app.http.server", parseServer);
@@ -6043,7 +6152,7 @@ PUBLIC void httpSetCredentials(HttpConn *conn, cchar *username, cchar *password,
 
     httpResetCredentials(conn);
     if (password == NULL && strchr(username, ':') != 0) {
-        conn->username = stok(sclone(username), ":", &ptok);
+        conn->username = ssplit(sclone(username), ":", &ptok);
         conn->password = sclone(ptok);
     } else {
         conn->username = sclone(username);
@@ -6503,6 +6612,7 @@ static void manageDigestData(HttpDigest *dp, int flags)
 
 /*
     Respond to the request by asking for a client login
+    Only called if not logged in.
  */
 PUBLIC void httpDigestLogin(HttpConn *conn)
 {
@@ -6510,20 +6620,25 @@ PUBLIC void httpDigestLogin(HttpConn *conn)
     char        *nonce, *opaque;
 
     auth = conn->rx->route->auth;
-    nonce = createDigestNonce(conn, conn->http->secret, auth->realm);
-    /* Opaque is unused, set to anything */
-    opaque = "799d5";
 
-    if (smatch(auth->qop, "none")) {
-        httpSetHeader(conn, "WWW-Authenticate", "Digest realm=\"%s\", nonce=\"%s\"", auth->realm, nonce);
+    if (auth->loginPage && !sends(conn->rx->referrer, auth->loginPage)) {
+        httpRedirect(conn, HTTP_CODE_MOVED_TEMPORARILY, auth->loginPage);
     } else {
-        /* qop value of null defaults to "auth" */
-        httpSetHeader(conn, "WWW-Authenticate", "Digest realm=\"%s\", domain=\"%s\", "
-            "qop=\"auth\", nonce=\"%s\", opaque=\"%s\", algorithm=\"MD5\", stale=\"FALSE\"",
-            auth->realm, "/", nonce, opaque);
+        nonce = createDigestNonce(conn, conn->http->secret, auth->realm);
+        /* Opaque is unused, set to anything */
+        opaque = "799d5";
+
+        if (smatch(auth->qop, "none")) {
+            httpSetHeader(conn, "WWW-Authenticate", "Digest realm=\"%s\", nonce=\"%s\"", auth->realm, nonce);
+        } else {
+            /* qop value of null defaults to "auth" */
+            httpSetHeader(conn, "WWW-Authenticate", "Digest realm=\"%s\", domain=\"%s\", "
+                "qop=\"auth\", nonce=\"%s\", opaque=\"%s\", algorithm=\"MD5\", stale=\"FALSE\"",
+                auth->realm, "/", nonce, opaque);
+        }
+        httpSetContentType(conn, "text/plain");
+        httpError(conn, HTTP_CODE_UNAUTHORIZED, "Access Denied. Login required");
     }
-    httpSetContentType(conn, "text/plain");
-    httpError(conn, HTTP_CODE_UNAUTHORIZED, "Access Denied. Login required");
 }
 
 
@@ -6735,7 +6850,10 @@ static void startDir(HttpQueue *q)
     conn = q->conn;
     rx = conn->rx;
     tx = conn->tx;
-    dir = conn->reqData;
+    if ((dir = conn->reqData) == 0) {
+        httpError(conn, HTTP_CODE_INTERNAL_SERVER_ERROR, "Cannot get directory listing");
+        return;
+    }
     assert(tx->filename);
 
     if (!(rx->flags & (HTTP_GET | HTTP_HEAD))) {
@@ -7277,6 +7395,7 @@ PUBLIC int httpOpenDirHandler()
     if ((handler->stageData = dir = mprAllocObj(HttpDir, manageDir)) == 0) {
         return MPR_ERR_MEMORY;
     }
+    handler->flags |= HTTP_STAGE_INTERNAL;
     handler->start = startDir; 
     HTTP->dirHandler = handler;
     dir->sortOrder = 1;
@@ -7452,7 +7571,7 @@ static bool validateEndpoint(HttpEndpoint *endpoint)
             httpSetHostName(host, sfmt("%s:%d", endpoint->ip, endpoint->port));
         }
         for (nextRoute = 0; (route = mprGetNextItem(host->routes, &nextRoute)) != 0; ) {
-            if (!mprLookupKey(route->extensions, "")) {
+            if (!route->handler && !mprLookupKey(route->extensions, "")) {
                 httpAddRouteHandler(route, "fileHandler", "");
                 httpAddRouteIndex(route, "index.html");
             }
@@ -7708,12 +7827,16 @@ PUBLIC HttpHost *httpLookupHostOnEndpoint(HttpEndpoint *endpoint, cchar *hostHea
         if (smatch(host->name, hostHeader)) {
             return host;
         }
-        if (*host->name == '*') {
-            if (host->name[1] == '\0') {
-                /* Match all hosts */
+        if (*host->name == '\0') {
+            /* Match all hosts */
+            return host;
+        }
+        if (host->flags & HTTP_HOST_WILD_STARTS) {
+            if (sstarts(hostHeader, host->name)) {
                 return host;
             }
-            if (scontains(hostHeader, &host->name[1])) {
+        } else if (host->flags & HTTP_HOST_WILD_CONTAINS) {
+            if (scontains(hostHeader, host->name)) {
                 return host;
             }
         }
@@ -8656,56 +8779,80 @@ PUBLIC HttpRoute *httpGetHostDefaultRoute(HttpHost *host)
 
 static void printRoute(HttpRoute *route, int next, bool full)
 {
+    HttpRoute   *rp;
+    HttpRouteOp *condition;
     HttpStage   *handler;
+    HttpAuth    *auth;
     MprKey      *kp;
     cchar       *methods, *pattern, *target, *index;
-    int         nextIndex;
+    int         authLen, methodsLen, nameLen, patternLen, nextIndex;
 
     if (route->flags & HTTP_ROUTE_HIDDEN) {
         return;
     }
+    if (!full) {
+        if (next == 0) {
+            authLen = methodsLen = nameLen = patternLen = 0;
+            for (next = 0; (rp = mprGetNextItem(route->host->routes, &next)) != 0; ) {
+                authLen = (int) max(authLen, rp->auth->type ? slen(rp->auth->type->name) : 0);
+                nameLen = (int) max(nameLen, slen(rp->name));
+                patternLen = (int) max(patternLen, slen(rp->pattern));
+                methodsLen = (int) max(methodsLen, slen(httpGetRouteMethods(rp)));
+            }
+            printf("%-*s %-*s %-*s %-*s %-14s\n", nameLen, "Route Name", methodsLen, "Methods", 
+                authLen, "Auth", patternLen, "Pattern", "Target");
+        }
+    }
+    auth = route->auth;
     methods = httpGetRouteMethods(route);
     methods = methods ? methods : "*";
     pattern = (route->pattern && *route->pattern) ? route->pattern : "^/";
     target = (route->target && *route->target) ? route->target : "$&";
     if (full) {
-        mprLog(0, 0, "\n%d. %s\n", next, route->name);
-        mprLog(0, 0, "    Pattern:      %s\n", pattern);
-        mprLog(0, 0, "    StartSegment: %s\n", route->startSegment);
-        mprLog(0, 0, "    StartsWith:   %s\n", route->startWith);
-        mprLog(0, 0, "    RegExp:       %s\n", route->optimizedPattern);
-        mprLog(0, 0, "    Methods:      %s\n", methods);
-        mprLog(0, 0, "    Prefix:       %s\n", route->prefix);
-        mprLog(0, 0, "    Target:       %s\n", target);
-        mprLog(0, 0, "    Home:         %s\n", route->home);
-        mprLog(0, 0, "    Documents:    %s\n", route->documents);
-        mprLog(0, 0, "    Source:       %s\n", route->sourceName);
-        mprLog(0, 0, "    Template:     %s\n", route->tplate);
+        printf("\n Route [%d]. %s\n", next, route->name);
+        printf("    Pattern:      %s\n", pattern);
+        if (route->prefix && *route->prefix) {
+            printf("    RegExp:       %s\n", route->optimizedPattern);
+            printf("    Prefix:       %s\n", route->prefix);
+        }
+        printf("    Methods:      %s\n", methods);
+        printf("    Target:       %s\n", target);
+        printf("    Auth:         %s\n", auth->type ? auth->type->name : "-");
+        printf("    Home:         %s\n", route->home);
+        printf("    Documents:    %s\n", route->documents);
+        if (route->sourceName) {
+            printf("    Source:       %s\n", route->sourceName);
+        }
+        if (route->tplate) {
+            printf("    Template:     %s\n", route->tplate);
+        }
         if (route->indexes) {
-            mprLog(0, 0, "    Indexes       ");
             for (ITERATE_ITEMS(route->indexes, index, nextIndex)) {
-                mprLog(0, 0, "%s ", index);
+                printf("    Indexes:      %s \n", index);
             }
         }
-        mprLog(0, 0, "\n    Next Group    %d\n", route->nextGroup);
+        if (route->conditions) {
+            for (next = 0; (condition = mprGetNextItem(route->conditions, &next)) != 0; ) {
+                printf("    Condition:    %s %s\n", condition->name, condition->details ? condition->details : "");
+            }
+        }
         if (route->handler) {
-            mprLog(0, 0, "    Handler:      %s\n", route->handler->name);
+            printf("    Handler:      %s\n", route->handler->name);
         }
-        if (full) {
-            if (route->extensions) {
-                for (ITERATE_KEYS(route->extensions, kp)) {
-                    handler = (HttpStage*) kp->data;
-                    mprLog(0, 0, "    Extension:    %s => %s\n", kp->key, handler->name);
-                }
+        if (route->extensions) {
+            for (ITERATE_KEYS(route->extensions, kp)) {
+                handler = (HttpStage*) kp->data;
+                printf("    Extension:    \"%s\" => %s\n", kp->key, handler->name);
             }
-            if (route->handlers) {
-                for (ITERATE_ITEMS(route->handlers, handler, nextIndex)) {
-                    mprLog(0, 0, "    Handler:      %s\n", handler->name);
-                }
+        }
+        if (route->handlers) {
+            for (ITERATE_ITEMS(route->handlers, handler, nextIndex)) {
+                printf("    Handler:      %s\n", handler->name);
             }
         }
     } else {
-        mprLog(0, 0, "%-34s %-22s %-50s %-14s", route->name, methods ? methods : "*", pattern, target);
+        printf("%-*s %-*s %-*s %-*s %-14s\n", nameLen, route->name, methodsLen, methods ? methods : "*", 
+            authLen, auth->type ? auth->type->name : "none", patternLen, pattern, target);
     }
 }
 
@@ -8718,9 +8865,7 @@ PUBLIC void httpLogRoutes(HttpHost *host, bool full)
     if (!host) {
         host = httpGetDefaultHost();
     }
-    if (!full) {
-        mprLog(0, 0, "%-34s %-22s %-50s %-14s", "Name", "Methods", "Pattern", "Target");
-    }
+    printf("\n");
     for (foundDefault = next = 0; (route = mprGetNextItem(host->routes, &next)) != 0; ) {
         printRoute(route, next - 1, full);
         if (route == host->defaultRoute) {
@@ -8733,12 +8878,22 @@ PUBLIC void httpLogRoutes(HttpHost *host, bool full)
     if (!foundDefault && host->defaultRoute) {
         printRoute(host->defaultRoute, next - 1, full);
     }
+    printf("\n");
 }
 
 
 PUBLIC void httpSetHostName(HttpHost *host, cchar *name)
 {
-    host->name = sclone(name);
+    if (!name || *name == '\0') {
+        mprLog("error http", 0, "Host name is empty");
+    }
+    if (sends(name, "*")) {
+        host->flags |= HTTP_HOST_WILD_STARTS;
+
+    } else if (name && *name == '*') {
+        host->flags |= HTTP_HOST_WILD_CONTAINS;
+    }
+    host->name = strim(name, "*", 0);
 }
 
 
@@ -8878,7 +9033,7 @@ PUBLIC bool httpGetStreaming(HttpHost *host, cchar *mime, cchar *uri)
     assert(host->streams);
 
     if (schr(mime, ';')) {
-        mime = stok(sclone(mime), ";", 0);
+        mime = ssplit(sclone(mime), ";", 0);
     }
     if ((kp = mprLookupKeyEntry(host->streams, mime)) != 0) {
         if (kp->data == NULL || sstarts(uri, kp->data)) {
@@ -9357,7 +9512,7 @@ PUBLIC int httpAddDefense(cchar *name, cchar *remedy, cchar *remedyArgs)
     args = mprCreateHash(0, MPR_HASH_STABLE);
     list = stolist(remedyArgs);
     for (ITERATE_ITEMS(list, arg, next)) {
-        key = stok(arg, "=", &value);
+        key = ssplit(arg, "=", &value);
         mprAddKey(args, key, strim(value, "\"'", 0));
     }
     if (!remedy) {
@@ -9486,7 +9641,7 @@ static void cmdRemedy(MprHash *args)
     command = sclone(mprLookupKey(args, "CMD"));
     data = 0;
     if (scontains(command, "|")) {
-        data = stok(command, "|", &command);
+        data = ssplit(command, "|", &command);
         data = stemplate(data, args);
     }
     command = strim(command, " \t", MPR_TRIM_BOTH);
@@ -12376,6 +12531,7 @@ PUBLIC HttpRoute *httpCreateAliasRoute(HttpRoute *parent, cchar *pattern, cchar 
 PUBLIC HttpRoute *httpCreateActionRoute(HttpRoute *parent, cchar *pattern, HttpAction action)
 {
     HttpRoute   *route;
+    cchar       *name;
 
     if (!pattern || !action) {
         return 0;
@@ -12383,7 +12539,9 @@ PUBLIC HttpRoute *httpCreateActionRoute(HttpRoute *parent, cchar *pattern, HttpA
     if ((route = httpCreateInheritedRoute(parent)) != 0) {
         route->handler = route->http->actionHandler;
         httpSetRoutePattern(route, pattern, 0);
-        httpDefineAction(pattern, action);
+        name = strim(pattern, "^$", 0);
+        httpDefineAction(name, action);
+        httpSetRouteName(route, name);
         httpFinalizeRoute(route);
     }
     return route;
@@ -12687,6 +12845,9 @@ static int selectHandler(HttpConn *conn, HttpRoute *route)
          */
         tx->handler = conn->http->passHandler;
     }
+    if (tx->finalized) {
+        tx->handler = conn->http->passHandler;
+    }
     return tx->handler ? HTTP_ROUTE_OK : HTTP_ROUTE_REJECT;
 }
 
@@ -12805,6 +12966,9 @@ PUBLIC int httpAddRouteCondition(HttpRoute *route, cchar *name, cchar *details, 
         op->flags |= HTTP_ROUTE_FREE;
 
     } else if (scaselessmatch(name, "secure")) {
+        if (!details || *details == '\0') {
+            mprLog("error http config", 0, "Secure route condition is missing a redirect target in route \"%s\"", route->name);
+        }
         op->details = finalizeReplacement(route, details);
     }
     addUniqueItem(route->conditions, op);
@@ -13447,7 +13611,6 @@ PUBLIC void httpSetRoutePattern(HttpRoute *route, cchar *pattern, int flags)
 PUBLIC void httpSetRoutePrefix(HttpRoute *route, cchar *prefix)
 {
     assert(route);
-    assert(!smatch(prefix, "/"));
 
     if (prefix && *prefix) {
         if (smatch(prefix, "/")) {
@@ -13982,7 +14145,7 @@ PUBLIC char *httpTemplate(HttpConn *conn, cchar *template, MprHash *options)
                 if (options && (value = httpGetOption(options, key, 0)) != 0) {
                     mprPutStringToBuf(buf, value);
 
-                } else if ((value = mprLookupJson(rx->params, key)) != 0) {
+                } else if ((value = mprReadJson(rx->params, key)) != 0) {
                     mprPutStringToBuf(buf, value);
                 }
                 if (value == 0) {
@@ -14157,7 +14320,7 @@ static int allowDenyCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
             deny++;
         }
         if (!allow || deny) {
-            httpError(conn, HTTP_CODE_UNAUTHORIZED, "Access denied for this server %s", conn->ip);
+            httpError(conn, HTTP_CODE_FORBIDDEN, "Access denied for this server %s", conn->ip);
             return HTTP_ROUTE_OK;
         }
     } else {
@@ -14171,7 +14334,7 @@ static int allowDenyCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
             allow++;
         }
         if (deny || !allow) {
-            httpError(conn, HTTP_CODE_UNAUTHORIZED, "Access denied for this server %s", conn->ip);
+            httpError(conn, HTTP_CODE_FORBIDDEN, "Access denied for this server %s", conn->ip);
             return HTTP_ROUTE_OK;
         }
     }
@@ -14199,8 +14362,8 @@ static int authCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
         httpGetCredentials(conn, &username, &password);
         if (!httpLogin(conn, username, password)) {
             if (!conn->tx->finalized) {
-                if (route->auth && route->auth->type) {
-                    (route->auth->type->askLogin)(conn);
+                if (auth && auth->type) {
+                    (auth->type->askLogin)(conn);
                 } else {
                     httpError(conn, HTTP_CODE_UNAUTHORIZED, "Access Denied, login required");
                 }
@@ -14212,12 +14375,8 @@ static int authCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
     if (!httpCanUser(conn, NULL)) {
         httpTrace(conn, "auth.check", "error", "msg:'Access denied, user is not authorized for access'");
         if (!conn->tx->finalized) {
-            if (route->auth && route->auth->type) {
-                (route->auth->type->askLogin)(conn);
-                /* Request has been denied and a response generated. So OK to accept this route. */
-            } else {
-                httpError(conn, HTTP_CODE_UNAUTHORIZED, "Access denied. User is not authorized for access.");
-            }
+            httpError(conn, HTTP_CODE_FORBIDDEN, "Access denied. User is not authorized for access.");
+            /* Request has been denied and a response generated. So OK to accept this route. */
         }
     }
     /* OK to accept route. This does not mean the request was authenticated - an error may have been already generated */
@@ -14327,7 +14486,7 @@ static int secureCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
     int64       age;
 
     assert(conn);
-    if (op->details && op->details) {
+    if (op->flags & HTTP_ROUTE_STRICT_TLS) {
         /* Negative age means subDomains == true */
         age = stoi(op->details);
         if (age < 0) {
@@ -14335,6 +14494,13 @@ static int secureCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
         } else if (age > 0) {
             httpAddHeader(conn, "Strict-Transport-Security", "max-age=%lld", age / MPR_TICKS_PER_SEC);
         }
+    }
+    if (op->flags & HTTP_ROUTE_REDIRECT) {
+        if (!conn->secure) {
+            assert(op->details && *op->details);
+            httpRedirect(conn, HTTP_CODE_MOVED_PERMANENTLY, expandTokens(conn, op->details));
+        }
+        return HTTP_ROUTE_OK;
     }
     if (!conn->secure) {
         return HTTP_ROUTE_REJECT;
@@ -14543,6 +14709,8 @@ PUBLIC HttpRoute *httpAddRestfulRoute(HttpRoute *parent, cchar *uprefix, cchar *
 
 PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *uprefix, cchar *resource)
 {
+    /* Delete is a POST method alternative to remove */
+    httpAddRestfulRoute(parent, uprefix, "delete",    "POST",    "/{id=[0-9]+}/delete$",        "delete",          resource);
     httpAddRestfulRoute(parent, uprefix, "create",    "POST",    "(/)*$",                       "create",          resource);
     httpAddRestfulRoute(parent, uprefix, "edit",      "GET",     "/{id=[0-9]+}/edit$",          "edit",            resource);
     httpAddRestfulRoute(parent, uprefix, "get",       "GET",     "/{id=[0-9]+}$",               "get",             resource);
@@ -14557,6 +14725,8 @@ PUBLIC void httpAddResourceGroup(HttpRoute *parent, cchar *uprefix, cchar *resou
 
 PUBLIC void httpAddResource(HttpRoute *parent, cchar *uprefix, cchar *resource)
 {
+    /* Delete is a POST method alternative to remove */
+    httpAddRestfulRoute(parent, uprefix, "delete",    "POST",    "/delete$",       "delete",     resource);
     httpAddRestfulRoute(parent, uprefix, "create",    "POST",    "(/)*$",          "create",     resource);
     httpAddRestfulRoute(parent, uprefix, "edit",      "GET",     "/edit$",         "edit",       resource);
     httpAddRestfulRoute(parent, uprefix, "get",       "GET",     "(/)*$",          "get",        resource);
@@ -14591,7 +14761,7 @@ PUBLIC void httpAddClientRoute(HttpRoute *parent, cchar *uprefix, cchar *name)
         name = sjoin(parent->prefix, name, NULL);
     }
     pattern = sfmt("^%s(/.*)", uprefix);
-    path = mprGetRelPath(stemplate("${CLIENT_DIR}$1", parent->vars), parent->documents);
+    path = sjoin(mprGetRelPath(stemplate("${CLIENT_DIR}", parent->vars), parent->documents), "$1", NULL);
     route = httpDefineRoute(parent, name, "GET", pattern, path, parent->sourceName);
     httpAddRouteHandler(route, "fileHandler", "");
 }
@@ -14689,11 +14859,14 @@ static bool opPresent(MprList *list, HttpRouteOp *op)
 
 static void addUniqueItem(MprList *list, HttpRouteOp *op)
 {
+    int     index;
+
     assert(list);
     assert(op);
 
     if (!opPresent(list, op)) {
-        mprAddItem(list, op);
+        index = smatch(op->name, "secure") ? 0 : list->length;
+        mprInsertItemAtPos(list, index, op);
     }
 }
 
@@ -14795,8 +14968,9 @@ static char *expandRequestTokens(HttpConn *conn, char *str)
         if ((key = stok(&tok[2], ".:}", &value)) == 0) {
             continue;
         }
-        stok(value, "}", &cp);
-
+        if ((stok(value, "}", &cp)) == 0) {
+            continue;
+        }
         if (smatch(key, "header")) {
             header = stok(value, "=", &defaultValue);
             if ((value = (char*) httpGetHeader(conn, header)) == 0) {
@@ -16106,7 +16280,7 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
                  */
                 if (!conn->http10) {
                     if (strcasecmp(value, "100-continue") != 0) {
-                        httpBadRequestError(conn, HTTP_CODE_EXPECTATION_FAILED, "Expect header value \"%s\" is unsupported", value);
+                        httpBadRequestError(conn, HTTP_CODE_EXPECTATION_FAILED, "Expect header value is not supported");
                     } else {
                         rx->flags |= HTTP_EXPECT_CONTINUE;
                     }
@@ -16618,7 +16792,6 @@ static void createErrorRequest(HttpConn *conn)
 
     packet = httpCreateDataPacket(ME_MAX_BUFFER);
     mprPutToBuf(packet->content, "%s %s %s\r\n", rx->method, tx->errorDocument, conn->protocol);
-    buf = rx->headerPacket->content;
     /*
         Sever the old Rx and Tx for GC
      */
@@ -16633,6 +16806,7 @@ static void createErrorRequest(HttpConn *conn)
     /*
         Ensure buffer always has a trailing null (one past buf->end)
      */
+    buf = rx->headerPacket->content;
     mprAddNullToBuf(buf);
     for (cp = buf->data; cp < &buf->end[-1]; cp++) {
         if (*cp == '\0') {
@@ -16653,13 +16827,12 @@ static void createErrorRequest(HttpConn *conn)
             }
         }
     }
-    if (headers && headers < buf->end) {
-        mprPutStringToBuf(packet->content, headers);
-        conn->input = packet;
-        conn->state = HTTP_STATE_CONNECTED;
-    } else {
-        httpBadRequestError(conn, HTTP_ABORT | HTTP_CODE_BAD_REQUEST, "Cannot reconstruct headers");
+    if (!headers || headers >= buf->end) {
+        headers = "\r\n";
     }
+    mprPutStringToBuf(packet->content, headers);
+    conn->input = packet;
+    conn->state = HTTP_STATE_CONNECTED;
 }
 
 
@@ -17161,9 +17334,7 @@ static bool parseRange(HttpConn *conn, char *value)
 
     tx = conn->tx;
     value = sclone(value);
-    if (value == 0) {
-        return 0;
-    }
+
     /*
         Step over the "bytes="
      */
@@ -17176,7 +17347,9 @@ static bool parseRange(HttpConn *conn, char *value)
         /*
             A range "-7" will set the start to -1 and end to 8
          */
-        tok = stok(value, ",", &value);
+        if ((tok = stok(value, ",", &value)) == 0) {
+            return 0;
+        }
         if (*tok != '-') {
             range->start = (ssize) stoi(tok);
         } else {
@@ -18743,7 +18916,7 @@ PUBLIC void httpDetailTraceFormatter(HttpTrace *trace, HttpConn *conn, cchar *ev
     MprBuf      *buf;
     MprTime     now;
     char        *cp;
-    int         client, sessionSeqno;
+    int         client, sessionSeqno, gotColon;
 
     assert(trace);
     assert(event);
@@ -18770,11 +18943,14 @@ PUBLIC void httpDetailTraceFormatter(HttpTrace *trace, HttpConn *conn, cchar *ev
     }
     if (values) {
         mprPutCharToBuf(buf, ' ');
+        gotColon = 0;
         for (cp = (char*) values; *cp; cp++) {
-            if (cp[0] == ':') {
+            if (cp[0] == ':' && !gotColon) {
                 cp[0] = '=';
+                gotColon = 1;
             } else if (cp[0] == ',') {
                 cp[0] = ' ';
+                gotColon = 0;
             }
         }
         mprPutStringToBuf(buf, values);
@@ -18788,6 +18964,9 @@ PUBLIC void httpDetailTraceFormatter(HttpTrace *trace, HttpConn *conn, cchar *ev
             mprPutCharToBuf(buf, '\n');
         }
         mprPutToBuf(buf, "----\n");
+    }
+    if (!values && !data) {
+        mprPutCharToBuf(buf, '\n');
     }
     httpWriteTrace(trace, mprGetBufStart(buf), mprGetBufLength(buf));
     unlock(trace);
@@ -19520,6 +19699,7 @@ PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
 
     if (tx->finalized) {
         /* A response has already been formulated */
+        mprLog("error", 0, "Response already prepared, so redirect ignored: %s", targetUri); 
         return;
     }
     tx->status = status;
@@ -19843,7 +20023,7 @@ PUBLIC void httpSetFilename(HttpConn *conn, cchar *filename, int flags)
         if (!mprIsAbsPathContained(filename, conn->rx->route->documents)) {
             info->checked = 1;
             info->valid = 0;
-            httpError(conn, HTTP_CODE_BAD_REQUEST, "Bad filename");
+            httpError(conn, HTTP_CODE_BAD_REQUEST, "Filename outside published documents");
             return;
         }
     }
@@ -21204,8 +21384,9 @@ PUBLIC HttpUri *httpGetRelativeUri(HttpUri *base, HttpUri *target, int clone)
     if (getPort(base) != getPort(target)) {
         return (clone) ? httpCloneUri(target, 0) : target;
     }
-    basePath = httpNormalizeUriPath(base->path);
-
+    if ((basePath = httpNormalizeUriPath(base->path)) == 0) {
+        return 0;
+    }
     /* Count trailing "/" */
     for (baseSegments = 0, bp = basePath; *bp; bp++) {
         if (*bp == '/') {
@@ -21387,7 +21568,7 @@ PUBLIC char *httpNormalizeUriPath(cchar *pathArg)
                     nseg--;
                 }
             } else {
-                /* ..more-chars */
+                /* .more-chars */
                 segments[j] = segments[i];
             }
         } else {
@@ -21450,7 +21631,7 @@ PUBLIC HttpUri *httpResolveUri(HttpUri *base, int argc, HttpUri **others, bool l
         if (other->port) {
             current->port = other->port;
         }
-        if (other->path || 1) {
+        if (other->path) {
             trimPathToDirname(current);
             httpJoinUriPath(current, current, other);
         }
@@ -21606,8 +21787,10 @@ PUBLIC char *httpValidateUriPath(cchar *uri)
         return 0;
     }
     up = mprUriDecode(uri);
-    up = httpNormalizeUriPath(up);
-    if (*up != '/') {
+    if ((up = httpNormalizeUriPath(up)) == 0) {
+        return 0;
+    }
+    if (*up != '/' || strchr(up, '\\')) {
         return 0;
     }
     return up;
@@ -22066,11 +22249,11 @@ PUBLIC void httpCreateCGIParams(HttpConn *conn)
         params = httpGetParams(conn);
         assert(params);
         for (ITERATE_ITEMS(rx->files, file, index)) {
-            mprSetJson(params, sfmt("FILE_%d_FILENAME", index), file->filename);
-            mprSetJson(params, sfmt("FILE_%d_CLIENT_FILENAME", index), file->clientFilename);
-            mprSetJson(params, sfmt("FILE_%d_CONTENT_TYPE", index), file->contentType);
-            mprSetJson(params, sfmt("FILE_%d_NAME", index), file->name);
-            mprSetJson(params, sfmt("FILE_%d_SIZE", index), sfmt("%zd", file->size));
+            mprWriteJson(params, sfmt("FILE_%d_FILENAME", index), file->filename);
+            mprWriteJson(params, sfmt("FILE_%d_CLIENT_FILENAME", index), file->clientFilename);
+            mprWriteJson(params, sfmt("FILE_%d_CONTENT_TYPE", index), file->contentType);
+            mprWriteJson(params, sfmt("FILE_%d_NAME", index), file->name);
+            mprWriteJson(params, sfmt("FILE_%d_SIZE", index), sfmt("%zd", file->size));
         }
     }
     if (conn->http->envCallback) {
@@ -22108,7 +22291,11 @@ static void addParamsFromBuf(HttpConn *conn, cchar *buf, ssize len)
             /*
                 Append to existing keywords
              */
-            prior = mprLookupJsonObj(params, keyword);
+            prior = mprReadJsonObj(params, keyword);
+#if ME_EJS_PRODUCT
+            /*
+                Just for ejscript, we allow embedded ".[]" in the keys
+             */
             if (prior && prior->type == MPR_JSON_VALUE) {
                 if (*value) {
                     newValue = sjoin(prior->value, " ", value, NULL);
@@ -22117,6 +22304,16 @@ static void addParamsFromBuf(HttpConn *conn, cchar *buf, ssize len)
             } else {
                 mprSetJson(params, keyword, value);
             }
+#else
+            if (prior && prior->type == MPR_JSON_VALUE) {
+                if (*value) {
+                    newValue = sjoin(prior->value, " ", value, NULL);
+                    mprWriteJson(params, keyword, newValue);
+                }
+            } else {
+                mprWriteJson(params, keyword, value);
+            }
+#endif
         }
         keyword = stok(0, "&", &tok);
     }
@@ -22189,7 +22386,7 @@ PUBLIC MprJson *httpGetParams(HttpConn *conn)
 
 PUBLIC int httpTestParam(HttpConn *conn, cchar *var)
 {
-    return mprLookupJsonObj(httpGetParams(conn), var) != 0;
+    return mprReadJsonObj(httpGetParams(conn), var) != 0;
 }
 
 
@@ -22197,7 +22394,7 @@ PUBLIC cchar *httpGetParam(HttpConn *conn, cchar *var, cchar *defaultValue)
 {
     cchar       *value;
 
-    value = mprLookupJson(httpGetParams(conn), var);
+    value = mprReadJson(httpGetParams(conn), var);
     return (value) ? value : defaultValue;
 }
 
@@ -22206,7 +22403,7 @@ PUBLIC int httpGetIntParam(HttpConn *conn, cchar *var, int defaultValue)
 {
     cchar       *value;
 
-    value = mprLookupJson(httpGetParams(conn), var);
+    value = mprReadJson(httpGetParams(conn), var);
     return (value) ? (int) stoi(value) : defaultValue;
 }
 
@@ -22270,13 +22467,13 @@ PUBLIC void httpRemoveParam(HttpConn *conn, cchar *var)
 
 PUBLIC void httpSetParam(HttpConn *conn, cchar *var, cchar *value) 
 {
-    mprSetJson(httpGetParams(conn), var, value);
+    mprWriteJson(httpGetParams(conn), var, value);
 }
 
 
 PUBLIC void httpSetIntParam(HttpConn *conn, cchar *var, int value) 
 {
-    mprSetJson(httpGetParams(conn), var, sfmt("%d", value));
+    mprWriteJson(httpGetParams(conn), var, sfmt("%d", value));
 }
 
 
