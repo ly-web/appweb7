@@ -3,7 +3,7 @@
 #
 
 NAME                  := appweb
-VERSION               := 5.2.1
+VERSION               := 5.3.0
 PROFILE               ?= default
 ARCH                  ?= $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
 CC_ARCH               ?= $(shell echo $(ARCH) | sed 's/x86/i686/;s/x64/x86_64/')
@@ -672,7 +672,7 @@ DEPS_48 += $(BUILD)/obj/mprLib.o
 
 $(BUILD)/bin/libmpr.dylib: $(DEPS_48)
 	@echo '      [Link] $(BUILD)/bin/libmpr.dylib'
-	$(CC) -dynamiclib -o $(BUILD)/bin/libmpr.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmpr.dylib -compatibility_version 5.2 -current_version 5.2 "$(BUILD)/obj/mprLib.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(BUILD)/bin/libmpr.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmpr.dylib -compatibility_version 5.3 -current_version 5.3 "$(BUILD)/obj/mprLib.o" $(LIBS) 
 
 ifeq ($(ME_COM_PCRE),1)
 #
@@ -683,7 +683,7 @@ DEPS_49 += $(BUILD)/obj/pcre.o
 
 $(BUILD)/bin/libpcre.dylib: $(DEPS_49)
 	@echo '      [Link] $(BUILD)/bin/libpcre.dylib'
-	$(CC) -dynamiclib -o $(BUILD)/bin/libpcre.dylib -arch $(CC_ARCH) $(LDFLAGS) -compatibility_version 5.2 -current_version 5.2 $(LIBPATHS) -install_name @rpath/libpcre.dylib -compatibility_version 5.2 -current_version 5.2 "$(BUILD)/obj/pcre.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(BUILD)/bin/libpcre.dylib -arch $(CC_ARCH) $(LDFLAGS) -compatibility_version 5.3 -current_version 5.3 $(LIBPATHS) -install_name @rpath/libpcre.dylib -compatibility_version 5.3 -current_version 5.3 "$(BUILD)/obj/pcre.o" $(LIBS) 
 endif
 
 ifeq ($(ME_COM_HTTP),1)
@@ -704,7 +704,7 @@ endif
 
 $(BUILD)/bin/libhttp.dylib: $(DEPS_50)
 	@echo '      [Link] $(BUILD)/bin/libhttp.dylib'
-	$(CC) -dynamiclib -o $(BUILD)/bin/libhttp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libhttp.dylib -compatibility_version 5.2 -current_version 5.2 "$(BUILD)/obj/httpLib.o" $(LIBPATHS_50) $(LIBS_50) $(LIBS_50) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(BUILD)/bin/libhttp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libhttp.dylib -compatibility_version 5.3 -current_version 5.3 "$(BUILD)/obj/httpLib.o" $(LIBPATHS_50) $(LIBS_50) $(LIBS_50) $(LIBS) -lpam 
 endif
 
 #
@@ -729,7 +729,7 @@ endif
 
 $(BUILD)/bin/libappweb.dylib: $(DEPS_51)
 	@echo '      [Link] $(BUILD)/bin/libappweb.dylib'
-	$(CC) -dynamiclib -o $(BUILD)/bin/libappweb.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 5.2 -current_version 5.2 "$(BUILD)/obj/config.o" "$(BUILD)/obj/convenience.o" $(LIBPATHS_51) $(LIBS_51) $(LIBS_51) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(BUILD)/bin/libappweb.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 5.3 -current_version 5.3 "$(BUILD)/obj/config.o" "$(BUILD)/obj/convenience.o" $(LIBPATHS_51) $(LIBS_51) $(LIBS_51) $(LIBS) -lpam 
 
 #
 #   libslink
@@ -738,7 +738,7 @@ DEPS_52 += $(BUILD)/obj/slink.o
 
 $(BUILD)/bin/libslink.dylib: $(DEPS_52)
 	@echo '      [Link] $(BUILD)/bin/libslink.dylib'
-	$(CC) -dynamiclib -o $(BUILD)/bin/libslink.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 5.2 -current_version 5.2 "$(BUILD)/obj/slink.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(BUILD)/bin/libslink.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libslink.dylib -compatibility_version 5.3 -current_version 5.3 "$(BUILD)/obj/slink.o" $(LIBS) 
 
 #
 #   appweb
@@ -789,7 +789,7 @@ DEPS_55 += $(BUILD)/obj/zlib.o
 
 $(BUILD)/bin/libzlib.dylib: $(DEPS_55)
 	@echo '      [Link] $(BUILD)/bin/libzlib.dylib'
-	$(CC) -dynamiclib -o $(BUILD)/bin/libzlib.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libzlib.dylib -compatibility_version 5.2 -current_version 5.2 "$(BUILD)/obj/zlib.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(BUILD)/bin/libzlib.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libzlib.dylib -compatibility_version 5.3 -current_version 5.3 "$(BUILD)/obj/zlib.o" $(LIBS) 
 endif
 
 ifeq ($(ME_COM_EJS),1)
@@ -827,7 +827,7 @@ endif
 
 $(BUILD)/bin/libejs.dylib: $(DEPS_56)
 	@echo '      [Link] $(BUILD)/bin/libejs.dylib'
-	$(CC) -dynamiclib -o $(BUILD)/bin/libejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 5.2 -current_version 5.2 "$(BUILD)/obj/ejsLib.o" $(LIBPATHS_56) $(LIBS_56) $(LIBS_56) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(BUILD)/bin/libejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libejs.dylib -compatibility_version 5.3 -current_version 5.3 "$(BUILD)/obj/ejsLib.o" $(LIBPATHS_56) $(LIBS_56) $(LIBS_56) $(LIBS) -lpam 
 endif
 
 ifeq ($(ME_COM_EJS),1)
@@ -1008,7 +1008,7 @@ endif
 
 $(BUILD)/bin/libmod_esp.dylib: $(DEPS_62)
 	@echo '      [Link] $(BUILD)/bin/libmod_esp.dylib'
-	$(CC) -dynamiclib -o $(BUILD)/bin/libmod_esp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 5.2 -current_version 5.2 "$(BUILD)/obj/espLib.o" $(LIBPATHS_62) $(LIBS_62) $(LIBS_62) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(BUILD)/bin/libmod_esp.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_esp.dylib -compatibility_version 5.3 -current_version 5.3 "$(BUILD)/obj/espLib.o" $(LIBPATHS_62) $(LIBS_62) $(LIBS_62) $(LIBS) -lpam 
 endif
 
 ifeq ($(ME_COM_ESP),1)
@@ -1096,7 +1096,7 @@ endif
 
 $(BUILD)/bin/libmod_cgi.dylib: $(DEPS_67)
 	@echo '      [Link] $(BUILD)/bin/libmod_cgi.dylib'
-	$(CC) -dynamiclib -o $(BUILD)/bin/libmod_cgi.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 5.2 -current_version 5.2 "$(BUILD)/obj/cgiHandler.o" $(LIBPATHS_67) $(LIBS_67) $(LIBS_67) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(BUILD)/bin/libmod_cgi.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_cgi.dylib -compatibility_version 5.3 -current_version 5.3 "$(BUILD)/obj/cgiHandler.o" $(LIBPATHS_67) $(LIBS_67) $(LIBS_67) $(LIBS) -lpam 
 endif
 
 ifeq ($(ME_COM_EJS),1)
@@ -1125,7 +1125,7 @@ endif
 
 $(BUILD)/bin/libmod_ejs.dylib: $(DEPS_68)
 	@echo '      [Link] $(BUILD)/bin/libmod_ejs.dylib'
-	$(CC) -dynamiclib -o $(BUILD)/bin/libmod_ejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 5.2 -current_version 5.2 "$(BUILD)/obj/ejsHandler.o" $(LIBPATHS_68) $(LIBS_68) $(LIBS_68) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(BUILD)/bin/libmod_ejs.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmod_ejs.dylib -compatibility_version 5.3 -current_version 5.3 "$(BUILD)/obj/ejsHandler.o" $(LIBPATHS_68) $(LIBS_68) $(LIBS_68) $(LIBS) -lpam 
 endif
 
 ifeq ($(ME_COM_PHP),1)
@@ -1148,7 +1148,7 @@ LIBPATHS_69 += -L"$(ME_COM_PHP_PATH)/libs"
 
 $(BUILD)/bin/libmod_php.dylib: $(DEPS_69)
 	@echo '      [Link] $(BUILD)/bin/libmod_php.dylib'
-	$(CC) -dynamiclib -o $(BUILD)/bin/libmod_php.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmod_php.dylib -compatibility_version 5.2 -current_version 5.2 "$(BUILD)/obj/phpHandler.o" $(LIBPATHS_69) $(LIBS_69) $(LIBS_69) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(BUILD)/bin/libmod_php.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)  -install_name @rpath/libmod_php.dylib -compatibility_version 5.3 -current_version 5.3 "$(BUILD)/obj/phpHandler.o" $(LIBPATHS_69) $(LIBS_69) $(LIBS_69) $(LIBS) -lpam 
 endif
 
 #
@@ -1174,7 +1174,7 @@ endif
 
 $(BUILD)/bin/libmprssl.dylib: $(DEPS_70)
 	@echo '      [Link] $(BUILD)/bin/libmprssl.dylib'
-	$(CC) -dynamiclib -o $(BUILD)/bin/libmprssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)   -install_name @rpath/libmprssl.dylib -compatibility_version 5.2 -current_version 5.2 "$(BUILD)/obj/mprSsl.o" $(LIBPATHS_70) $(LIBS_70) $(LIBS_70) $(LIBS) 
+	$(CC) -dynamiclib -o $(BUILD)/bin/libmprssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)   -install_name @rpath/libmprssl.dylib -compatibility_version 5.3 -current_version 5.3 "$(BUILD)/obj/mprSsl.o" $(LIBPATHS_70) $(LIBS_70) $(LIBS_70) $(LIBS) 
 
 ifeq ($(ME_COM_SSL),1)
 #
@@ -1209,7 +1209,7 @@ endif
 
 $(BUILD)/bin/libmod_ssl.dylib: $(DEPS_71)
 	@echo '      [Link] $(BUILD)/bin/libmod_ssl.dylib'
-	$(CC) -dynamiclib -o $(BUILD)/bin/libmod_ssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)   -install_name @rpath/libmod_ssl.dylib -compatibility_version 5.2 -current_version 5.2 "$(BUILD)/obj/sslModule.o" $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(BUILD)/bin/libmod_ssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)   -install_name @rpath/libmod_ssl.dylib -compatibility_version 5.3 -current_version 5.3 "$(BUILD)/obj/sslModule.o" $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS) -lpam 
 endif
 
 ifeq ($(ME_COM_SQLITE),1)
@@ -1221,7 +1221,7 @@ DEPS_72 += $(BUILD)/obj/sqlite3.o
 
 $(BUILD)/bin/libsql.dylib: $(DEPS_72)
 	@echo '      [Link] $(BUILD)/bin/libsql.dylib'
-	$(CC) -dynamiclib -o $(BUILD)/bin/libsql.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libsql.dylib -compatibility_version 5.2 -current_version 5.2 "$(BUILD)/obj/sqlite3.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(BUILD)/bin/libsql.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libsql.dylib -compatibility_version 5.3 -current_version 5.3 "$(BUILD)/obj/sqlite3.o" $(LIBS) 
 endif
 
 #
@@ -1261,7 +1261,7 @@ stop: $(DEPS_75)
 installBinary: $(DEPS_76)
 	mkdir -p "$(ME_APP_PREFIX)" ; \
 	rm -f "$(ME_APP_PREFIX)/latest" ; \
-	ln -s "5.2.1" "$(ME_APP_PREFIX)/latest" ; \
+	ln -s "5.3.0" "$(ME_APP_PREFIX)/latest" ; \
 	mkdir -p "$(ME_LOG_PREFIX)" ; \
 	chmod 755 "$(ME_LOG_PREFIX)" ; \
 	[ `id -u` = 0 ] && chown _www:_www "$(ME_LOG_PREFIX)"; true ; \
@@ -1602,5 +1602,5 @@ uninstall: $(DEPS_81)
 #
 
 version: $(DEPS_82)
-	echo 5.2.1
+	echo 5.3.0
 

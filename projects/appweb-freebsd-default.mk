@@ -3,7 +3,7 @@
 #
 
 NAME                  := appweb
-VERSION               := 5.2.1
+VERSION               := 5.3.0
 PROFILE               ?= default
 ARCH                  ?= $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
 CC_ARCH               ?= $(shell echo $(ARCH) | sed 's/x86/i686/;s/x64/x86_64/')
@@ -1261,7 +1261,7 @@ stop: $(DEPS_75)
 installBinary: $(DEPS_76)
 	mkdir -p "$(ME_APP_PREFIX)" ; \
 	rm -f "$(ME_APP_PREFIX)/latest" ; \
-	ln -s "5.2.1" "$(ME_APP_PREFIX)/latest" ; \
+	ln -s "5.3.0" "$(ME_APP_PREFIX)/latest" ; \
 	mkdir -p "$(ME_LOG_PREFIX)" ; \
 	chmod 755 "$(ME_LOG_PREFIX)" ; \
 	[ `id -u` = 0 ] && chown nobody:nogroup "$(ME_LOG_PREFIX)"; true ; \
@@ -1599,5 +1599,5 @@ uninstall: $(DEPS_81)
 #
 
 version: $(DEPS_82)
-	echo 5.2.1
+	echo 5.3.0
 
