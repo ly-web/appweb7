@@ -3,7 +3,7 @@
 #
 
 NAME                  := appweb
-VERSION               := 5.3.0
+VERSION               := 5.4.0
 PROFILE               ?= default
 ARCH                  ?= $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
 CC_ARCH               ?= $(shell echo $(ARCH) | sed 's/x86/i686/;s/x64/x86_64/')
@@ -914,75 +914,9 @@ ifeq ($(ME_COM_ESP),1)
 #
 #   esp-paks
 #
-DEPS_61 += src/paks/esp-html-mvc/client/assets/favicon.ico
-DEPS_61 += src/paks/esp-html-mvc/client/css/all.css
-DEPS_61 += src/paks/esp-html-mvc/client/css/all.less
-DEPS_61 += src/paks/esp-html-mvc/client/index.esp
-DEPS_61 += src/paks/esp-html-mvc/css/app.less
-DEPS_61 += src/paks/esp-html-mvc/css/theme.less
-DEPS_61 += src/paks/esp-html-mvc/generate/appweb.conf
-DEPS_61 += src/paks/esp-html-mvc/generate/controller.c
-DEPS_61 += src/paks/esp-html-mvc/generate/controllerSingleton.c
-DEPS_61 += src/paks/esp-html-mvc/generate/edit.esp
-DEPS_61 += src/paks/esp-html-mvc/generate/list.esp
-DEPS_61 += src/paks/esp-html-mvc/layouts/default.esp
-DEPS_61 += src/paks/esp-html-mvc/LICENSE.md
-DEPS_61 += src/paks/esp-html-mvc/package.json
-DEPS_61 += src/paks/esp-html-mvc/README.md
-DEPS_61 += src/paks/esp-mvc/generate/appweb.conf
-DEPS_61 += src/paks/esp-mvc/generate/controller.c
-DEPS_61 += src/paks/esp-mvc/generate/migration.c
-DEPS_61 += src/paks/esp-mvc/generate/src/app.c
-DEPS_61 += src/paks/esp-mvc/LICENSE.md
-DEPS_61 += src/paks/esp-mvc/package.json
-DEPS_61 += src/paks/esp-mvc/README.md
-DEPS_61 += src/paks/esp-server/generate/appweb.conf
-DEPS_61 += src/paks/esp-server/LICENSE.md
-DEPS_61 += src/paks/esp-server/package.json
-DEPS_61 += src/paks/esp-server/README.md
+DEPS_61 += src/paks/esp-*/**
 
 $(BUILD)/esp: $(DEPS_61)
-	( \
-	cd src/paks; \
-	mkdir -p "../../$(BUILD)/esp/esp-html-mvc/5.2.1" ; \
-	mkdir -p "../../$(BUILD)/esp/esp-html-mvc/5.2.1/client" ; \
-	mkdir -p "../../$(BUILD)/esp/esp-html-mvc/5.2.1/client/assets" ; \
-	cp esp-html-mvc/client/assets/favicon.ico ../../$(BUILD)/esp/esp-html-mvc/5.2.1/client/assets/favicon.ico ; \
-	mkdir -p "../../$(BUILD)/esp/esp-html-mvc/5.2.1/client/css" ; \
-	cp esp-html-mvc/client/css/all.css ../../$(BUILD)/esp/esp-html-mvc/5.2.1/client/css/all.css ; \
-	cp esp-html-mvc/client/css/all.less ../../$(BUILD)/esp/esp-html-mvc/5.2.1/client/css/all.less ; \
-	cp esp-html-mvc/client/index.esp ../../$(BUILD)/esp/esp-html-mvc/5.2.1/client/index.esp ; \
-	mkdir -p "../../$(BUILD)/esp/esp-html-mvc/5.2.1/css" ; \
-	cp esp-html-mvc/css/app.less ../../$(BUILD)/esp/esp-html-mvc/5.2.1/css/app.less ; \
-	cp esp-html-mvc/css/theme.less ../../$(BUILD)/esp/esp-html-mvc/5.2.1/css/theme.less ; \
-	mkdir -p "../../$(BUILD)/esp/esp-html-mvc/5.2.1/generate" ; \
-	cp esp-html-mvc/generate/appweb.conf ../../$(BUILD)/esp/esp-html-mvc/5.2.1/generate/appweb.conf ; \
-	cp esp-html-mvc/generate/controller.c ../../$(BUILD)/esp/esp-html-mvc/5.2.1/generate/controller.c ; \
-	cp esp-html-mvc/generate/controllerSingleton.c ../../$(BUILD)/esp/esp-html-mvc/5.2.1/generate/controllerSingleton.c ; \
-	cp esp-html-mvc/generate/edit.esp ../../$(BUILD)/esp/esp-html-mvc/5.2.1/generate/edit.esp ; \
-	cp esp-html-mvc/generate/list.esp ../../$(BUILD)/esp/esp-html-mvc/5.2.1/generate/list.esp ; \
-	mkdir -p "../../$(BUILD)/esp/esp-html-mvc/5.2.1/layouts" ; \
-	cp esp-html-mvc/layouts/default.esp ../../$(BUILD)/esp/esp-html-mvc/5.2.1/layouts/default.esp ; \
-	cp esp-html-mvc/LICENSE.md ../../$(BUILD)/esp/esp-html-mvc/5.2.1/LICENSE.md ; \
-	cp esp-html-mvc/package.json ../../$(BUILD)/esp/esp-html-mvc/5.2.1/package.json ; \
-	cp esp-html-mvc/README.md ../../$(BUILD)/esp/esp-html-mvc/5.2.1/README.md ; \
-	mkdir -p "../../$(BUILD)/esp/esp-mvc/5.2.1" ; \
-	mkdir -p "../../$(BUILD)/esp/esp-mvc/5.2.1/generate" ; \
-	cp esp-mvc/generate/appweb.conf ../../$(BUILD)/esp/esp-mvc/5.2.1/generate/appweb.conf ; \
-	cp esp-mvc/generate/controller.c ../../$(BUILD)/esp/esp-mvc/5.2.1/generate/controller.c ; \
-	cp esp-mvc/generate/migration.c ../../$(BUILD)/esp/esp-mvc/5.2.1/generate/migration.c ; \
-	mkdir -p "../../$(BUILD)/esp/esp-mvc/5.2.1/generate/src" ; \
-	cp esp-mvc/generate/src/app.c ../../$(BUILD)/esp/esp-mvc/5.2.1/generate/src/app.c ; \
-	cp esp-mvc/LICENSE.md ../../$(BUILD)/esp/esp-mvc/5.2.1/LICENSE.md ; \
-	cp esp-mvc/package.json ../../$(BUILD)/esp/esp-mvc/5.2.1/package.json ; \
-	cp esp-mvc/README.md ../../$(BUILD)/esp/esp-mvc/5.2.1/README.md ; \
-	mkdir -p "../../$(BUILD)/esp/esp-server/5.2.1" ; \
-	mkdir -p "../../$(BUILD)/esp/esp-server/5.2.1/generate" ; \
-	cp esp-server/generate/appweb.conf ../../$(BUILD)/esp/esp-server/5.2.1/generate/appweb.conf ; \
-	cp esp-server/LICENSE.md ../../$(BUILD)/esp/esp-server/5.2.1/LICENSE.md ; \
-	cp esp-server/package.json ../../$(BUILD)/esp/esp-server/5.2.1/package.json ; \
-	cp esp-server/README.md ../../$(BUILD)/esp/esp-server/5.2.1/README.md ; \
-	)
 endif
 
 ifeq ($(ME_COM_ESP),1)
@@ -1272,7 +1206,7 @@ stop: $(DEPS_76)
 installBinary: $(DEPS_77)
 	mkdir -p "$(ME_APP_PREFIX)" ; \
 	rm -f "$(ME_APP_PREFIX)/latest" ; \
-	ln -s "5.3.0" "$(ME_APP_PREFIX)/latest" ; \
+	ln -s "5.4.0" "$(ME_APP_PREFIX)/latest" ; \
 	mkdir -p "$(ME_LOG_PREFIX)" ; \
 	chmod 755 "$(ME_LOG_PREFIX)" ; \
 	[ `id -u` = 0 ] && chown nobody:nogroup "$(ME_LOG_PREFIX)"; true ; \
@@ -1397,44 +1331,6 @@ installBinary: $(DEPS_77)
 	ln -s "$(ME_VAPP_PREFIX)/bin/appesp" "$(ME_BIN_PREFIX)/appesp" ; \
 	fi ; \
 	if [ "$(ME_COM_ESP)" = 1 ]; then true ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1" ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/client" ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/client/assets" ; \
-	cp src/paks/esp-html-mvc/client/assets/favicon.ico $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/client/assets/favicon.ico ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/client/css" ; \
-	cp src/paks/esp-html-mvc/client/css/all.css $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/client/css/all.css ; \
-	cp src/paks/esp-html-mvc/client/css/all.less $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/client/css/all.less ; \
-	cp src/paks/esp-html-mvc/client/index.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/client/index.esp ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/css" ; \
-	cp src/paks/esp-html-mvc/css/app.less $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/css/app.less ; \
-	cp src/paks/esp-html-mvc/css/theme.less $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/css/theme.less ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/generate" ; \
-	cp src/paks/esp-html-mvc/generate/appweb.conf $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/generate/appweb.conf ; \
-	cp src/paks/esp-html-mvc/generate/controller.c $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/generate/controller.c ; \
-	cp src/paks/esp-html-mvc/generate/controllerSingleton.c $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/generate/controllerSingleton.c ; \
-	cp src/paks/esp-html-mvc/generate/edit.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/generate/edit.esp ; \
-	cp src/paks/esp-html-mvc/generate/list.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/generate/list.esp ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/layouts" ; \
-	cp src/paks/esp-html-mvc/layouts/default.esp $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/layouts/default.esp ; \
-	cp src/paks/esp-html-mvc/LICENSE.md $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/LICENSE.md ; \
-	cp src/paks/esp-html-mvc/package.json $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/package.json ; \
-	cp src/paks/esp-html-mvc/README.md $(ME_VAPP_PREFIX)/esp/esp-html-mvc/5.2.1/README.md ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-mvc/5.2.1" ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-mvc/5.2.1/generate" ; \
-	cp src/paks/esp-mvc/generate/appweb.conf $(ME_VAPP_PREFIX)/esp/esp-mvc/5.2.1/generate/appweb.conf ; \
-	cp src/paks/esp-mvc/generate/controller.c $(ME_VAPP_PREFIX)/esp/esp-mvc/5.2.1/generate/controller.c ; \
-	cp src/paks/esp-mvc/generate/migration.c $(ME_VAPP_PREFIX)/esp/esp-mvc/5.2.1/generate/migration.c ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-mvc/5.2.1/generate/src" ; \
-	cp src/paks/esp-mvc/generate/src/app.c $(ME_VAPP_PREFIX)/esp/esp-mvc/5.2.1/generate/src/app.c ; \
-	cp src/paks/esp-mvc/LICENSE.md $(ME_VAPP_PREFIX)/esp/esp-mvc/5.2.1/LICENSE.md ; \
-	cp src/paks/esp-mvc/package.json $(ME_VAPP_PREFIX)/esp/esp-mvc/5.2.1/package.json ; \
-	cp src/paks/esp-mvc/README.md $(ME_VAPP_PREFIX)/esp/esp-mvc/5.2.1/README.md ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-server/5.2.1" ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/esp/esp-server/5.2.1/generate" ; \
-	cp src/paks/esp-server/generate/appweb.conf $(ME_VAPP_PREFIX)/esp/esp-server/5.2.1/generate/appweb.conf ; \
-	cp src/paks/esp-server/LICENSE.md $(ME_VAPP_PREFIX)/esp/esp-server/5.2.1/LICENSE.md ; \
-	cp src/paks/esp-server/package.json $(ME_VAPP_PREFIX)/esp/esp-server/5.2.1/package.json ; \
-	cp src/paks/esp-server/README.md $(ME_VAPP_PREFIX)/esp/esp-server/5.2.1/README.md ; \
 	fi ; \
 	if [ "$(ME_COM_ESP)" = 1 ]; then true ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
@@ -1613,5 +1509,5 @@ uninstall: $(DEPS_82)
 #
 
 version: $(DEPS_83)
-	echo 5.3.0
+	echo 5.4.0
 

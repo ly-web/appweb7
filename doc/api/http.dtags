@@ -1926,13 +1926,6 @@
       <arglist>)(HttpRoute *route, cchar *name)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
-      <name>httpAddClientRoute</name>
-      <anchorfile>group___http_route.html</anchorfile>
-      <anchor>gad03894d47dea385d9db736be22c375ea</anchor>
-      <arglist>(HttpRoute *parent, cchar *prefix, cchar *name)</arglist>
-    </member>
-    <member kind="function">
       <type>HttpParseCallback</type>
       <name>httpAddConfig</name>
       <anchorfile>group___http_route.html</anchorfile>
@@ -1945,6 +1938,13 @@
       <anchorfile>group___http_route.html</anchorfile>
       <anchor>ga78488ebd0c7faa23bc775a0a239d9210</anchor>
       <arglist>(HttpRoute *parent, cchar *prefix, cchar *resource)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>httpAddPublicRoute</name>
+      <anchorfile>group___http_route.html</anchorfile>
+      <anchor>gae9565e6a7a9e759ff7597b03f2cf7f2e</anchor>
+      <arglist>(HttpRoute *parent, cchar *prefix, cchar *name)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -2164,6 +2164,13 @@
       <arglist>(HttpRoute *route, cchar *str)</arglist>
     </member>
     <member kind="function">
+      <type>int</type>
+      <name>httpFinalizeConfig</name>
+      <anchorfile>group___http_route.html</anchorfile>
+      <anchor>ga442f6655529b86680ed7d08c125258c9</anchor>
+      <arglist>(HttpRoute *route)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>httpFinalizeRoute</name>
       <anchorfile>group___http_route.html</anchorfile>
@@ -2241,11 +2248,18 @@
       <arglist>(HttpRoute *route, HttpLimits *limits)</arglist>
     </member>
     <member kind="function">
+      <type>void</type>
+      <name>httpInitConfig</name>
+      <anchorfile>group___http_route.html</anchorfile>
+      <anchor>ga1f03df9c0f1e35cdbd278c775a49e8d9</anchor>
+      <arglist>(HttpRoute *route)</arglist>
+    </member>
+    <member kind="function">
       <type>int</type>
       <name>httpLoadConfig</name>
       <anchorfile>group___http_route.html</anchorfile>
-      <anchor>ga133abd3fc95e87bb89e120f01a514dce</anchor>
-      <arglist>(HttpRoute *route, cchar *path)</arglist>
+      <anchor>ga3792ea0af4f8ac61ada69c9826646800</anchor>
+      <arglist>(HttpRoute *route, cchar *rootKey, cchar *path)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -2288,6 +2302,13 @@
       <anchorfile>group___http_route.html</anchorfile>
       <anchor>gac84aebec89adc28156f0704a7600b846</anchor>
       <arglist>(HttpConn *conn)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>httpParseAll</name>
+      <anchorfile>group___http_route.html</anchorfile>
+      <anchor>ga13a77e71600ede18e0f8d3d69af553fc</anchor>
+      <arglist>(HttpRoute *route, cchar *key, MprJson *prop)</arglist>
     </member>
     <member kind="function">
       <type>void</type>

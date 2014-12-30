@@ -1720,32 +1720,7 @@
     			files = (
     			);
     			inputPaths = (
-    ../src/paks/esp-html-mvc/client/assets/favicon.ico,
-../src/paks/esp-html-mvc/client/css/all.css,
-../src/paks/esp-html-mvc/client/css/all.less,
-../src/paks/esp-html-mvc/client/index.esp,
-../src/paks/esp-html-mvc/css/app.less,
-../src/paks/esp-html-mvc/css/theme.less,
-../src/paks/esp-html-mvc/generate/appweb.conf,
-../src/paks/esp-html-mvc/generate/controller.c,
-../src/paks/esp-html-mvc/generate/controllerSingleton.c,
-../src/paks/esp-html-mvc/generate/edit.esp,
-../src/paks/esp-html-mvc/generate/list.esp,
-../src/paks/esp-html-mvc/layouts/default.esp,
-../src/paks/esp-html-mvc/LICENSE.md,
-../src/paks/esp-html-mvc/package.json,
-../src/paks/esp-html-mvc/README.md,
-../src/paks/esp-mvc/generate/appweb.conf,
-../src/paks/esp-mvc/generate/controller.c,
-../src/paks/esp-mvc/generate/migration.c,
-../src/paks/esp-mvc/generate/src/app.c,
-../src/paks/esp-mvc/LICENSE.md,
-../src/paks/esp-mvc/package.json,
-../src/paks/esp-mvc/README.md,
-../src/paks/esp-server/generate/appweb.conf,
-../src/paks/esp-server/LICENSE.md,
-../src/paks/esp-server/package.json,
-../src/paks/esp-server/README.md
+    ../src/paks/esp-*/**
     			);
     			outputPaths = (
     ../build/macosx-x64-static/esp
@@ -1754,44 +1729,6 @@
     			shellPath = /bin/bash;
     			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/paks
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.2.1\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.2.1/client\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.2.1/client/assets\"
-	cp esp-html-mvc/client/assets/favicon.ico ../${OUT_DIR}/esp/esp-html-mvc/5.2.1/client/assets/favicon.ico
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.2.1/client/css\"
-	cp esp-html-mvc/client/css/all.css ../${OUT_DIR}/esp/esp-html-mvc/5.2.1/client/css/all.css
-	cp esp-html-mvc/client/css/all.less ../${OUT_DIR}/esp/esp-html-mvc/5.2.1/client/css/all.less
-	cp esp-html-mvc/client/index.esp ../${OUT_DIR}/esp/esp-html-mvc/5.2.1/client/index.esp
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.2.1/css\"
-	cp esp-html-mvc/css/app.less ../${OUT_DIR}/esp/esp-html-mvc/5.2.1/css/app.less
-	cp esp-html-mvc/css/theme.less ../${OUT_DIR}/esp/esp-html-mvc/5.2.1/css/theme.less
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.2.1/generate\"
-	cp esp-html-mvc/generate/appweb.conf ../${OUT_DIR}/esp/esp-html-mvc/5.2.1/generate/appweb.conf
-	cp esp-html-mvc/generate/controller.c ../${OUT_DIR}/esp/esp-html-mvc/5.2.1/generate/controller.c
-	cp esp-html-mvc/generate/controllerSingleton.c ../${OUT_DIR}/esp/esp-html-mvc/5.2.1/generate/controllerSingleton.c
-	cp esp-html-mvc/generate/edit.esp ../${OUT_DIR}/esp/esp-html-mvc/5.2.1/generate/edit.esp
-	cp esp-html-mvc/generate/list.esp ../${OUT_DIR}/esp/esp-html-mvc/5.2.1/generate/list.esp
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/5.2.1/layouts\"
-	cp esp-html-mvc/layouts/default.esp ../${OUT_DIR}/esp/esp-html-mvc/5.2.1/layouts/default.esp
-	cp esp-html-mvc/LICENSE.md ../${OUT_DIR}/esp/esp-html-mvc/5.2.1/LICENSE.md
-	cp esp-html-mvc/package.json ../${OUT_DIR}/esp/esp-html-mvc/5.2.1/package.json
-	cp esp-html-mvc/README.md ../${OUT_DIR}/esp/esp-html-mvc/5.2.1/README.md
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/5.2.1\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/5.2.1/generate\"
-	cp esp-mvc/generate/appweb.conf ../${OUT_DIR}/esp/esp-mvc/5.2.1/generate/appweb.conf
-	cp esp-mvc/generate/controller.c ../${OUT_DIR}/esp/esp-mvc/5.2.1/generate/controller.c
-	cp esp-mvc/generate/migration.c ../${OUT_DIR}/esp/esp-mvc/5.2.1/generate/migration.c
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/5.2.1/generate/src\"
-	cp esp-mvc/generate/src/app.c ../${OUT_DIR}/esp/esp-mvc/5.2.1/generate/src/app.c
-	cp esp-mvc/LICENSE.md ../${OUT_DIR}/esp/esp-mvc/5.2.1/LICENSE.md
-	cp esp-mvc/package.json ../${OUT_DIR}/esp/esp-mvc/5.2.1/package.json
-	cp esp-mvc/README.md ../${OUT_DIR}/esp/esp-mvc/5.2.1/README.md
-	mkdir -p \"../${OUT_DIR}/esp/esp-server/5.2.1\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-server/5.2.1/generate\"
-	cp esp-server/generate/appweb.conf ../${OUT_DIR}/esp/esp-server/5.2.1/generate/appweb.conf
-	cp esp-server/LICENSE.md ../${OUT_DIR}/esp/esp-server/5.2.1/LICENSE.md
-	cp esp-server/package.json ../${OUT_DIR}/esp/esp-server/5.2.1/package.json
-	cp esp-server/README.md ../${OUT_DIR}/esp/esp-server/5.2.1/README.md
 ";
     		};
 		2C8AF2682C8B11160000000B /* ShellScript for esp.conf */ = {
@@ -2706,7 +2643,7 @@ fi";
                     /* Common Settings */
     				ALWAYS_SEARCH_USER_PATHS = NO;
                     ONLY_ACTIVE_ARCH = YES;
-                    CURRENT_PROJECT_VERSION = 5.3;
+                    CURRENT_PROJECT_VERSION = 5.4;
                     DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
                     DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
     				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -2775,7 +2712,7 @@ fi";
                     /* Common Settings */
     				ALWAYS_SEARCH_USER_PATHS = NO;
                     ONLY_ACTIVE_ARCH = YES;
-                    CURRENT_PROJECT_VERSION = 5.3;
+                    CURRENT_PROJECT_VERSION = 5.4;
                     DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
                     DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
     				GCC_C_LANGUAGE_STANDARD = gnu99;
