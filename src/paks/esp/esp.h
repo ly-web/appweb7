@@ -9,7 +9,7 @@
 #include "appweb.h"
 
 #ifndef ESP_VERSION
-    #define ESP_VERSION "5.3.0"
+    #define ESP_VERSION "5.4.0"
 #endif
 
 /*
@@ -1226,10 +1226,10 @@ extern "C" {
     #define ME_ESP_RELOAD_TIMEOUT (5 * 1000)           /**< Timeout for reloading esp modules */
 #endif
 #ifndef ME_ESP_PAKS
-    #define ME_ESP_PAKS    "esp"                       /**< Default Paks directory name */
+    #define ME_ESP_PAKS     "esp"                       /**< Default Paks directory name */
 #endif
-#ifndef ME_ESP_PACKAGE
-    #define ME_ESP_PACKAGE "package.json"              /**< Pak file name */
+#ifndef ME_ESP_CONFIG
+    #define ME_ESP_CONFIG   "esp.json"                  /**< ESP configuration file */
 #endif
 #define ESP_TOK_INCR        1024                        /**< Growth increment for ESP tokens */
 #define ESP_LISTEN          "4000"                      /**< Default listening endpoint for the esp program */
@@ -1374,6 +1374,7 @@ typedef struct EspRoute {
     struct EspRoute *top;                   /**< Top-level route for this application */
     HttpRoute       *route;                 /**< Back link to route */
     EspProc         commonController;       /**< Common code for all controllers */
+    MprTime         loaded;                 /**< When configuration was last loaded */
 
     MprHash         *env;                   /**< Environment variables for route */
     cchar           *currentSession;        /**< Current login session when enforcing a single login */
@@ -1382,9 +1383,12 @@ typedef struct EspRoute {
     cchar           *link;                  /**< Link template */
     cchar           *searchPath;            /**< Search path to use when locating compiler/linker */
     cchar           *winsdk;                /**< Windows SDK */
+#if KEEP
     cchar           *combineScript;         /**< Combine mode script filename */
     cchar           *combineSheet;          /**< Combine mode stylesheet filename */
+#endif
     cchar           *routeSet;              /**< Directive route set */
+    int             combine;                /**< Combine C source into a single file */
     int             compileMode;            /**< Compile the application debug or release mode */
     int             skipApps;               /**< Skip loading applications */
     Edi             *edi;                   /**< Default database for this route */
@@ -1440,8 +1444,11 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set);
     @stability Prototype
  */
 PUBLIC int espDefineApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet);
+
+//  MOB DOC
 PUBLIC int espConfigureApp(HttpRoute *route);
 PUBLIC int espLoadApp(HttpRoute *route);
+PUBLIC int espLoadConfig(HttpRoute *route);
 
 /**
     Add caching for response content.

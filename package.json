@@ -2,7 +2,8 @@
     "name": "appweb",
     "description": "Embedthis Appweb Embedded Web Server",
     "title": "Embedthis Appweb",
-    "version": "5.3.0",
+    "version": "5.4.0",
+    "pak": ">=0.10",
     "keywords": [
         "appweb",
         "http",
@@ -35,10 +36,8 @@
     "directories": {
         "paks": "src/paks"
     },
-    "pak": "~0.9",
     "dependencies": {
         "http": "~6",
-        "me-docstyle": "~0.8",
         "mpr": "~6.0",
         "osdep": "~0.8",
         "pcre": "~1.0"
@@ -46,17 +45,14 @@
     "optionalDependencies": {
         "ejs": "~2.5",
         "esp": "~5",
-        "esp-html-mvc": "~5.3",
-        "esp-mvc": "~5.3",
-        "esp-server": "~5.3",
         "est": "~0.6",
+        "me-docstyle": "~0.8",
         "php": "~0.8",
         "sqlite": "~1.0",
         "ssl": "~0.8",
         "zlib": "~1.0"
     },
-    "import": true,
-    "paks": {
+    "app": {
         "esp": {
             "noblend": true
         },
@@ -71,6 +67,9 @@
         "esp-server": {
             "noblend": true,
             "noexport": true
+        },
+        "*": {
+            "noblend": true
         }
     }
 }
