@@ -35,7 +35,7 @@
     "directories": {
         "paks": "src/paks"
     },
-    "pak": "~0.9",
+    "pak": "~0.10",
     "dependencies": {
         "ejs": "~2.3",
         "esp": "~4.6",
@@ -71,6 +71,5 @@
             "noblend": true,
             "noexport": true
         }
-    },
-    "import": true,
+    }
 }
