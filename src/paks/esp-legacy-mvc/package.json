@@ -1,7 +1,7 @@
 {
     "name": "esp-legacy-mvc",
     "description": "ESP Server Side Legacy MVC",
-    "version": "4.6.6",
+    "version": "4.6.7",
     "export": [
         {
             "from": [

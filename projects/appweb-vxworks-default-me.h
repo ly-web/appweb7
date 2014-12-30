@@ -172,7 +172,7 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "4.6.6"
+    #define ME_VERSION "4.6.7"
 #endif
 
 /* Prefixes */
@@ -225,7 +225,7 @@
     #define ME_VAPP_PREFIX "deploy"
 #endif
 #ifndef ME_SRC_PREFIX
-    #define ME_SRC_PREFIX "/usr/src/appweb-4.6.6"
+    #define ME_SRC_PREFIX "/usr/src/appweb-4.6.7"
 #endif
 
 /* Suffixes */
@@ -267,10 +267,10 @@
     #define ME_MINOR_VERSION 6
 #endif
 #ifndef ME_PATCH_VERSION
-    #define ME_PATCH_VERSION 6
+    #define ME_PATCH_VERSION 7
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 400060006
+    #define ME_VNUM 400060007
 #endif
 
 /* Components */

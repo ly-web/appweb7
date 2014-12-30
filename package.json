@@ -2,7 +2,8 @@
     "name": "appweb",
     "description": "Embedthis Appweb Embedded Web Server",
     "title": "Embedthis Appweb",
-    "version": "4.6.6",
+    "version": "4.6.7",
+    "pak": ">=0.10",
     "keywords": [
         "appweb",
         "http",
@@ -35,7 +36,6 @@
     "directories": {
         "paks": "src/paks"
     },
-    "pak": "~0.10",
     "dependencies": {
         "ejs": "~2.3",
         "esp": "~4.6",
@@ -55,7 +55,7 @@
     "optionalDependencies": {
         "php": "~0.8"
     },
-    "paks": {
+    "app": {
         "esp": {
             "noblend": true
         },
