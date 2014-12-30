@@ -2,7 +2,7 @@
     "name": "esp",
     "description": "Embedthis ESP, the amazingly fast C-Language web framework",
     "title": "Embedthis ESP",
-    "version": "5.3.0",
+    "version": "5.4.0",
     "keywords": [
         "esp",
         "package"
@@ -20,19 +20,15 @@
     "bugs": {
         "url": "http://github.com/embedthis/esp/issues"
     },
-    "pak": "~0.9",
+    "pak": "~0.10",
     "dependencies": {
         "http": "~6.0",
-        "me-docstyle": "~0.8",
         "mpr": "~6.0",
         "osdep": "~0.8",
         "pcre": "~1.0"
     },
     "optionalDependencies": {
         "appweb": "~5",
-        "esp-html-mvc": "~5",
-        "esp-mvc": "~5",
-        "esp-server": "~5",
         "est": "~0.6",
         "me-ssl": "~0.8",
         "sqlite": "~1"
@@ -45,7 +41,10 @@
         "client": "client"
     },
     "export": [
-        "doc/**"
+        {
+            "from": "doc/**",
+            "to": "${TOP}"
+        }
     ],
     "licenses": [
         {
@@ -57,24 +56,14 @@
             "url": "https://embedthis.com/licensing/"
         }
     ],
-    "import": true,
-    "paks": {
+    "app": {
         "appweb": {
             "noblend": true,
             "noexport": true,
             "nodeps": true
         },
-        "esp-server": {
-            "noblend": true,
-            "noexport": true
-        },
-        "esp-mvc": {
-            "noblend": true,
-            "noexport": true
-        },
-        "esp-html-mvc": {
-            "noblend": true,
-            "noexport": true
+        "*": {
+            "noblend": true
         }
     }
 }
