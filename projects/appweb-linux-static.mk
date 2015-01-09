@@ -101,9 +101,6 @@ ifeq ($(ME_COM_EJS),1)
     TARGETS           += $(BUILD)/bin/ejs
 endif
 ifeq ($(ME_COM_ESP),1)
-    TARGETS           += $(BUILD)/esp
-endif
-ifeq ($(ME_COM_ESP),1)
     TARGETS           += $(BUILD)/bin/esp.conf
 endif
 ifeq ($(ME_COM_ESP),1)
@@ -1009,20 +1006,11 @@ endif
 
 ifeq ($(ME_COM_ESP),1)
 #
-#   esp-paks
-#
-DEPS_67 += src/paks/esp-*/**
-
-$(BUILD)/esp: $(DEPS_67)
-endif
-
-ifeq ($(ME_COM_ESP),1)
-#
 #   esp.conf
 #
-DEPS_68 += src/paks/esp/esp.conf
+DEPS_67 += src/paks/esp/esp.conf
 
-$(BUILD)/bin/esp.conf: $(DEPS_68)
+$(BUILD)/bin/esp.conf: $(DEPS_67)
 	@echo '      [Copy] $(BUILD)/bin/esp.conf'
 	mkdir -p "$(BUILD)/bin"
 	cp src/paks/esp/esp.conf $(BUILD)/bin/esp.conf
@@ -1032,34 +1020,34 @@ ifeq ($(ME_COM_ESP),1)
 #
 #   espcmd
 #
-DEPS_69 += $(BUILD)/bin/libmod_esp.so
-DEPS_69 += $(BUILD)/obj/esp.o
+DEPS_68 += $(BUILD)/bin/libmod_esp.so
+DEPS_68 += $(BUILD)/obj/esp.o
 
-LIBS_69 += -lmod_esp
-LIBS_69 += -lappweb
+LIBS_68 += -lmod_esp
+LIBS_68 += -lappweb
 ifeq ($(ME_COM_HTTP),1)
-    LIBS_69 += -lhttp
+    LIBS_68 += -lhttp
 endif
-LIBS_69 += -lmpr
+LIBS_68 += -lmpr
 ifeq ($(ME_COM_PCRE),1)
-    LIBS_69 += -lpcre
+    LIBS_68 += -lpcre
 endif
 ifeq ($(ME_COM_SQLITE),1)
-    LIBS_69 += -lsql
+    LIBS_68 += -lsql
 endif
 
-$(BUILD)/bin/esp: $(DEPS_69)
+$(BUILD)/bin/esp: $(DEPS_68)
 	@echo '      [Link] $(BUILD)/bin/esp'
-	$(CC) -o $(BUILD)/bin/esp $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/esp.o" $(LIBPATHS_69) $(LIBS_69) $(LIBS_69) $(LIBS) $(LIBS) 
+	$(CC) -o $(BUILD)/bin/esp $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/esp.o" $(LIBPATHS_68) $(LIBS_68) $(LIBS_68) $(LIBS) $(LIBS) 
 endif
 
 ifeq ($(ME_COM_ESP),1)
 #
 #   genslink
 #
-DEPS_70 += $(BUILD)/bin/libmod_esp.so
+DEPS_69 += $(BUILD)/bin/libmod_esp.so
 
-genslink: $(DEPS_70)
+genslink: $(DEPS_69)
 	( \
 	cd src/server; \
 	echo '    [Create] slink.c' ; \
@@ -1070,9 +1058,9 @@ endif
 #
 #   http-ca-crt
 #
-DEPS_71 += src/paks/http/ca.crt
+DEPS_70 += src/paks/http/ca.crt
 
-$(BUILD)/bin/ca.crt: $(DEPS_71)
+$(BUILD)/bin/ca.crt: $(DEPS_70)
 	@echo '      [Copy] $(BUILD)/bin/ca.crt'
 	mkdir -p "$(BUILD)/bin"
 	cp src/paks/http/ca.crt $(BUILD)/bin/ca.crt
@@ -1081,43 +1069,43 @@ ifeq ($(ME_COM_HTTP),1)
 #
 #   httpcmd
 #
-DEPS_72 += $(BUILD)/bin/libhttp.so
-DEPS_72 += $(BUILD)/bin/libmprssl.so
-DEPS_72 += $(BUILD)/obj/http.o
+DEPS_71 += $(BUILD)/bin/libhttp.so
+DEPS_71 += $(BUILD)/bin/libmprssl.so
+DEPS_71 += $(BUILD)/obj/http.o
 
-LIBS_72 += -lhttp
-LIBS_72 += -lmpr
+LIBS_71 += -lhttp
+LIBS_71 += -lmpr
 ifeq ($(ME_COM_PCRE),1)
-    LIBS_72 += -lpcre
+    LIBS_71 += -lpcre
 endif
-LIBS_72 += -lmprssl
+LIBS_71 += -lmprssl
 ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_72 += -lssl
-    LIBPATHS_72 += -L"$(ME_COM_OPENSSL_PATH)/lib"
-    LIBPATHS_72 += -L"$(ME_COM_OPENSSL_PATH)"
+    LIBS_71 += -lssl
+    LIBPATHS_71 += -L"$(ME_COM_OPENSSL_PATH)/lib"
+    LIBPATHS_71 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
 ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_72 += -lcrypto
-    LIBPATHS_72 += -L"$(ME_COM_OPENSSL_PATH)/lib"
-    LIBPATHS_72 += -L"$(ME_COM_OPENSSL_PATH)"
+    LIBS_71 += -lcrypto
+    LIBPATHS_71 += -L"$(ME_COM_OPENSSL_PATH)/lib"
+    LIBPATHS_71 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
 ifeq ($(ME_COM_EST),1)
-    LIBS_72 += -lest
+    LIBS_71 += -lest
 endif
 
-$(BUILD)/bin/http: $(DEPS_72)
+$(BUILD)/bin/http: $(DEPS_71)
 	@echo '      [Link] $(BUILD)/bin/http'
-	$(CC) -o $(BUILD)/bin/http $(LDFLAGS) $(LIBPATHS)   "$(BUILD)/obj/http.o" $(LIBPATHS_72) $(LIBS_72) $(LIBS_72) $(LIBS) $(LIBS) 
+	$(CC) -o $(BUILD)/bin/http $(LDFLAGS) $(LIBPATHS)   "$(BUILD)/obj/http.o" $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS) $(LIBS) 
 endif
 
 ifeq ($(ME_COM_SQLITE),1)
 #
 #   libsql
 #
-DEPS_73 += $(BUILD)/inc/sqlite3.h
-DEPS_73 += $(BUILD)/obj/sqlite3.o
+DEPS_72 += $(BUILD)/inc/sqlite3.h
+DEPS_72 += $(BUILD)/obj/sqlite3.o
 
-$(BUILD)/bin/libsql.so: $(DEPS_73)
+$(BUILD)/bin/libsql.so: $(DEPS_72)
 	@echo '      [Link] $(BUILD)/bin/libsql.so'
 	ar -cr $(BUILD)/bin/libsql.so "$(BUILD)/obj/sqlite3.o"
 endif
@@ -1125,20 +1113,20 @@ endif
 #
 #   manager
 #
-DEPS_74 += $(BUILD)/bin/libmpr.so
-DEPS_74 += $(BUILD)/obj/manager.o
+DEPS_73 += $(BUILD)/bin/libmpr.so
+DEPS_73 += $(BUILD)/obj/manager.o
 
-LIBS_74 += -lmpr
+LIBS_73 += -lmpr
 
-$(BUILD)/bin/appman: $(DEPS_74)
+$(BUILD)/bin/appman: $(DEPS_73)
 	@echo '      [Link] $(BUILD)/bin/appman'
-	$(CC) -o $(BUILD)/bin/appman $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/manager.o" $(LIBPATHS_74) $(LIBS_74) $(LIBS_74) $(LIBS) $(LIBS) 
+	$(CC) -o $(BUILD)/bin/appman $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/manager.o" $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) $(LIBS) 
 
 #
 #   server-cache
 #
 
-src/server/cache: $(DEPS_75)
+src/server/cache: $(DEPS_74)
 	( \
 	cd src/server; \
 	mkdir -p "cache" ; \
@@ -1149,14 +1137,14 @@ src/server/cache: $(DEPS_75)
 #   stop
 #
 
-stop: $(DEPS_76)
+stop: $(DEPS_75)
 	@./$(BUILD)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
 
 #
 #   installBinary
 #
 
-installBinary: $(DEPS_77)
+installBinary: $(DEPS_76)
 	mkdir -p "$(ME_APP_PREFIX)" ; \
 	rm -f "$(ME_APP_PREFIX)/latest" ; \
 	ln -s "5.4.0" "$(ME_APP_PREFIX)/latest" ; \
@@ -1358,25 +1346,25 @@ installBinary: $(DEPS_77)
 #
 #   start
 #
-DEPS_78 += stop
+DEPS_77 += stop
 
-start: $(DEPS_78)
+start: $(DEPS_77)
 	./$(BUILD)/bin/appman install enable start
 
 #
 #   install
 #
-DEPS_79 += stop
-DEPS_79 += installBinary
-DEPS_79 += start
+DEPS_78 += stop
+DEPS_78 += installBinary
+DEPS_78 += start
 
-install: $(DEPS_79)
+install: $(DEPS_78)
 
 #
 #   installPrep
 #
 
-installPrep: $(DEPS_80)
+installPrep: $(DEPS_79)
 	if [ "`id -u`" != 0 ] ; \
 	then echo "Must run as root. Rerun with "sudo"" ; \
 	exit 255 ; \
@@ -1386,7 +1374,7 @@ installPrep: $(DEPS_80)
 #   run
 #
 
-run: $(DEPS_81)
+run: $(DEPS_80)
 	( \
 	cd src/server; \
 	../../$(BUILD)/bin/appweb --log stdout:2 ; \
@@ -1396,9 +1384,9 @@ run: $(DEPS_81)
 #
 #   uninstall
 #
-DEPS_82 += stop
+DEPS_81 += stop
 
-uninstall: $(DEPS_82)
+uninstall: $(DEPS_81)
 	( \
 	cd package; \
 	rm -fr "$(ME_WEB_PREFIX)" ; \
@@ -1424,6 +1412,6 @@ uninstall: $(DEPS_82)
 #   version
 #
 
-version: $(DEPS_83)
+version: $(DEPS_82)
 	echo 5.4.0
 

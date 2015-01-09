@@ -100,9 +100,6 @@ ifeq ($(ME_COM_EJS),1)
     TARGETS           += $(BUILD)/bin/ejs
 endif
 ifeq ($(ME_COM_ESP),1)
-    TARGETS           += $(BUILD)/esp
-endif
-ifeq ($(ME_COM_ESP),1)
     TARGETS           += $(BUILD)/bin/esp.conf
 endif
 ifeq ($(ME_COM_ESP),1)
@@ -998,20 +995,11 @@ endif
 
 ifeq ($(ME_COM_ESP),1)
 #
-#   esp-paks
-#
-DEPS_66 += src/paks/esp-*/**
-
-$(BUILD)/esp: $(DEPS_66)
-endif
-
-ifeq ($(ME_COM_ESP),1)
-#
 #   esp.conf
 #
-DEPS_67 += src/paks/esp/esp.conf
+DEPS_66 += src/paks/esp/esp.conf
 
-$(BUILD)/bin/esp.conf: $(DEPS_67)
+$(BUILD)/bin/esp.conf: $(DEPS_66)
 	@echo '      [Copy] $(BUILD)/bin/esp.conf'
 	mkdir -p "$(BUILD)/bin"
 	cp src/paks/esp/esp.conf $(BUILD)/bin/esp.conf
@@ -1021,34 +1009,34 @@ ifeq ($(ME_COM_ESP),1)
 #
 #   espcmd
 #
-DEPS_68 += $(BUILD)/bin/libmod_esp.dylib
-DEPS_68 += $(BUILD)/obj/esp.o
+DEPS_67 += $(BUILD)/bin/libmod_esp.dylib
+DEPS_67 += $(BUILD)/obj/esp.o
 
-LIBS_68 += -lmod_esp
-LIBS_68 += -lappweb
+LIBS_67 += -lmod_esp
+LIBS_67 += -lappweb
 ifeq ($(ME_COM_HTTP),1)
-    LIBS_68 += -lhttp
+    LIBS_67 += -lhttp
 endif
-LIBS_68 += -lmpr
+LIBS_67 += -lmpr
 ifeq ($(ME_COM_PCRE),1)
-    LIBS_68 += -lpcre
+    LIBS_67 += -lpcre
 endif
 ifeq ($(ME_COM_SQLITE),1)
-    LIBS_68 += -lsql
+    LIBS_67 += -lsql
 endif
 
-$(BUILD)/bin/esp: $(DEPS_68)
+$(BUILD)/bin/esp: $(DEPS_67)
 	@echo '      [Link] $(BUILD)/bin/esp'
-	$(CC) -o $(BUILD)/bin/esp -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/esp.o" $(LIBPATHS_68) $(LIBS_68) $(LIBS_68) $(LIBS) -lpam 
+	$(CC) -o $(BUILD)/bin/esp -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/esp.o" $(LIBPATHS_67) $(LIBS_67) $(LIBS_67) $(LIBS) -lpam 
 endif
 
 ifeq ($(ME_COM_ESP),1)
 #
 #   genslink
 #
-DEPS_69 += $(BUILD)/bin/libmod_esp.dylib
+DEPS_68 += $(BUILD)/bin/libmod_esp.dylib
 
-genslink: $(DEPS_69)
+genslink: $(DEPS_68)
 	( \
 	cd src/server; \
 	echo '    [Create] slink.c' ; \
@@ -1059,9 +1047,9 @@ endif
 #
 #   http-ca-crt
 #
-DEPS_70 += src/paks/http/ca.crt
+DEPS_69 += src/paks/http/ca.crt
 
-$(BUILD)/bin/ca.crt: $(DEPS_70)
+$(BUILD)/bin/ca.crt: $(DEPS_69)
 	@echo '      [Copy] $(BUILD)/bin/ca.crt'
 	mkdir -p "$(BUILD)/bin"
 	cp src/paks/http/ca.crt $(BUILD)/bin/ca.crt
@@ -1070,43 +1058,43 @@ ifeq ($(ME_COM_HTTP),1)
 #
 #   httpcmd
 #
-DEPS_71 += $(BUILD)/bin/libhttp.dylib
-DEPS_71 += $(BUILD)/bin/libmprssl.dylib
-DEPS_71 += $(BUILD)/obj/http.o
+DEPS_70 += $(BUILD)/bin/libhttp.dylib
+DEPS_70 += $(BUILD)/bin/libmprssl.dylib
+DEPS_70 += $(BUILD)/obj/http.o
 
-LIBS_71 += -lhttp
-LIBS_71 += -lmpr
+LIBS_70 += -lhttp
+LIBS_70 += -lmpr
 ifeq ($(ME_COM_PCRE),1)
-    LIBS_71 += -lpcre
+    LIBS_70 += -lpcre
 endif
-LIBS_71 += -lmprssl
+LIBS_70 += -lmprssl
 ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_71 += -lssl
-    LIBPATHS_71 += -L"$(ME_COM_OPENSSL_PATH)/lib"
-    LIBPATHS_71 += -L"$(ME_COM_OPENSSL_PATH)"
+    LIBS_70 += -lssl
+    LIBPATHS_70 += -L"$(ME_COM_OPENSSL_PATH)/lib"
+    LIBPATHS_70 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
 ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_71 += -lcrypto
-    LIBPATHS_71 += -L"$(ME_COM_OPENSSL_PATH)/lib"
-    LIBPATHS_71 += -L"$(ME_COM_OPENSSL_PATH)"
+    LIBS_70 += -lcrypto
+    LIBPATHS_70 += -L"$(ME_COM_OPENSSL_PATH)/lib"
+    LIBPATHS_70 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
 ifeq ($(ME_COM_EST),1)
-    LIBS_71 += -lest
+    LIBS_70 += -lest
 endif
 
-$(BUILD)/bin/http: $(DEPS_71)
+$(BUILD)/bin/http: $(DEPS_70)
 	@echo '      [Link] $(BUILD)/bin/http'
-	$(CC) -o $(BUILD)/bin/http -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)   "$(BUILD)/obj/http.o" $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS) -lpam 
+	$(CC) -o $(BUILD)/bin/http -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)   "$(BUILD)/obj/http.o" $(LIBPATHS_70) $(LIBS_70) $(LIBS_70) $(LIBS) -lpam 
 endif
 
 ifeq ($(ME_COM_SQLITE),1)
 #
 #   libsql
 #
-DEPS_72 += $(BUILD)/inc/sqlite3.h
-DEPS_72 += $(BUILD)/obj/sqlite3.o
+DEPS_71 += $(BUILD)/inc/sqlite3.h
+DEPS_71 += $(BUILD)/obj/sqlite3.o
 
-$(BUILD)/bin/libsql.dylib: $(DEPS_72)
+$(BUILD)/bin/libsql.dylib: $(DEPS_71)
 	@echo '      [Link] $(BUILD)/bin/libsql.dylib'
 	ar -cr $(BUILD)/bin/libsql.dylib "$(BUILD)/obj/sqlite3.o"
 endif
@@ -1114,20 +1102,20 @@ endif
 #
 #   manager
 #
-DEPS_73 += $(BUILD)/bin/libmpr.dylib
-DEPS_73 += $(BUILD)/obj/manager.o
+DEPS_72 += $(BUILD)/bin/libmpr.dylib
+DEPS_72 += $(BUILD)/obj/manager.o
 
-LIBS_73 += -lmpr
+LIBS_72 += -lmpr
 
-$(BUILD)/bin/appman: $(DEPS_73)
+$(BUILD)/bin/appman: $(DEPS_72)
 	@echo '      [Link] $(BUILD)/bin/appman'
-	$(CC) -o $(BUILD)/bin/appman -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/manager.o" $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) 
+	$(CC) -o $(BUILD)/bin/appman -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/manager.o" $(LIBPATHS_72) $(LIBS_72) $(LIBS_72) $(LIBS) 
 
 #
 #   server-cache
 #
 
-src/server/cache: $(DEPS_74)
+src/server/cache: $(DEPS_73)
 	( \
 	cd src/server; \
 	mkdir -p "cache" ; \
@@ -1138,14 +1126,14 @@ src/server/cache: $(DEPS_74)
 #   stop
 #
 
-stop: $(DEPS_75)
+stop: $(DEPS_74)
 	@./$(BUILD)/bin/appman stop disable uninstall >/dev/null 2>&1 ; true
 
 #
 #   installBinary
 #
 
-installBinary: $(DEPS_76)
+installBinary: $(DEPS_75)
 	mkdir -p "$(ME_APP_PREFIX)" ; \
 	rm -f "$(ME_APP_PREFIX)/latest" ; \
 	ln -s "5.4.0" "$(ME_APP_PREFIX)/latest" ; \
@@ -1347,25 +1335,25 @@ installBinary: $(DEPS_76)
 #
 #   start
 #
-DEPS_77 += stop
+DEPS_76 += stop
 
-start: $(DEPS_77)
+start: $(DEPS_76)
 	./$(BUILD)/bin/appman install enable start
 
 #
 #   install
 #
-DEPS_78 += stop
-DEPS_78 += installBinary
-DEPS_78 += start
+DEPS_77 += stop
+DEPS_77 += installBinary
+DEPS_77 += start
 
-install: $(DEPS_78)
+install: $(DEPS_77)
 
 #
 #   installPrep
 #
 
-installPrep: $(DEPS_79)
+installPrep: $(DEPS_78)
 	if [ "`id -u`" != 0 ] ; \
 	then echo "Must run as root. Rerun with "sudo"" ; \
 	exit 255 ; \
@@ -1375,7 +1363,7 @@ installPrep: $(DEPS_79)
 #   run
 #
 
-run: $(DEPS_80)
+run: $(DEPS_79)
 	( \
 	cd src/server; \
 	../../$(BUILD)/bin/appweb --log stdout:2 ; \
@@ -1385,9 +1373,9 @@ run: $(DEPS_80)
 #
 #   uninstall
 #
-DEPS_81 += stop
+DEPS_80 += stop
 
-uninstall: $(DEPS_81)
+uninstall: $(DEPS_80)
 	( \
 	cd package; \
 	rm -fr "$(ME_WEB_PREFIX)" ; \
@@ -1413,6 +1401,6 @@ uninstall: $(DEPS_81)
 #   version
 #
 
-version: $(DEPS_82)
+version: $(DEPS_81)
 	echo 5.4.0
 

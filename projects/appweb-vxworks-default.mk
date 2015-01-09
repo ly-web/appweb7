@@ -108,9 +108,6 @@ ifeq ($(ME_COM_EJS),1)
     TARGETS           += $(BUILD)/bin/ejs.out
 endif
 ifeq ($(ME_COM_ESP),1)
-    TARGETS           += $(BUILD)/esp
-endif
-ifeq ($(ME_COM_ESP),1)
     TARGETS           += $(BUILD)/bin/esp.conf
 endif
 ifeq ($(ME_COM_ESP),1)
@@ -836,20 +833,11 @@ endif
 
 ifeq ($(ME_COM_ESP),1)
 #
-#   esp-paks
-#
-DEPS_60 += src/paks/esp-*/**
-
-$(BUILD)/esp: $(DEPS_60)
-endif
-
-ifeq ($(ME_COM_ESP),1)
-#
 #   esp.conf
 #
-DEPS_61 += src/paks/esp/esp.conf
+DEPS_60 += src/paks/esp/esp.conf
 
-$(BUILD)/bin/esp.conf: $(DEPS_61)
+$(BUILD)/bin/esp.conf: $(DEPS_60)
 	@echo '      [Copy] $(BUILD)/bin/esp.conf'
 	mkdir -p "$(BUILD)/bin"
 	cp src/paks/esp/esp.conf $(BUILD)/bin/esp.conf
@@ -859,11 +847,11 @@ ifeq ($(ME_COM_ESP),1)
 #
 #   libmod_esp
 #
-DEPS_62 += $(BUILD)/bin/libappweb.out
-DEPS_62 += $(BUILD)/inc/esp.h
-DEPS_62 += $(BUILD)/obj/espLib.o
+DEPS_61 += $(BUILD)/bin/libappweb.out
+DEPS_61 += $(BUILD)/inc/esp.h
+DEPS_61 += $(BUILD)/obj/espLib.o
 
-$(BUILD)/bin/libmod_esp.out: $(DEPS_62)
+$(BUILD)/bin/libmod_esp.out: $(DEPS_61)
 	@echo '      [Link] $(BUILD)/bin/libmod_esp.out'
 	$(CC) -r -o $(BUILD)/bin/libmod_esp.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/espLib.o" $(LIBS) 
 endif
@@ -872,10 +860,10 @@ ifeq ($(ME_COM_ESP),1)
 #
 #   espcmd
 #
-DEPS_63 += $(BUILD)/bin/libmod_esp.out
-DEPS_63 += $(BUILD)/obj/esp.o
+DEPS_62 += $(BUILD)/bin/libmod_esp.out
+DEPS_62 += $(BUILD)/obj/esp.o
 
-$(BUILD)/bin/esp.out: $(DEPS_63)
+$(BUILD)/bin/esp.out: $(DEPS_62)
 	@echo '      [Link] $(BUILD)/bin/esp.out'
 	$(CC) -o $(BUILD)/bin/esp.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/esp.o" $(LIBS) -Wl,-r 
 endif
@@ -884,9 +872,9 @@ ifeq ($(ME_COM_ESP),1)
 #
 #   genslink
 #
-DEPS_64 += $(BUILD)/bin/libmod_esp.out
+DEPS_63 += $(BUILD)/bin/libmod_esp.out
 
-genslink: $(DEPS_64)
+genslink: $(DEPS_63)
 	( \
 	cd src/server; \
 	echo '    [Create] slink.c' ; \
@@ -897,9 +885,9 @@ endif
 #
 #   http-ca-crt
 #
-DEPS_65 += src/paks/http/ca.crt
+DEPS_64 += src/paks/http/ca.crt
 
-$(BUILD)/bin/ca.crt: $(DEPS_65)
+$(BUILD)/bin/ca.crt: $(DEPS_64)
 	@echo '      [Copy] $(BUILD)/bin/ca.crt'
 	mkdir -p "$(BUILD)/bin"
 	cp src/paks/http/ca.crt $(BUILD)/bin/ca.crt
@@ -908,10 +896,10 @@ ifeq ($(ME_COM_HTTP),1)
 #
 #   httpcmd
 #
-DEPS_66 += $(BUILD)/bin/libhttp.out
-DEPS_66 += $(BUILD)/obj/http.o
+DEPS_65 += $(BUILD)/bin/libhttp.out
+DEPS_65 += $(BUILD)/obj/http.o
 
-$(BUILD)/bin/http.out: $(DEPS_66)
+$(BUILD)/bin/http.out: $(DEPS_65)
 	@echo '      [Link] $(BUILD)/bin/http.out'
 	$(CC) -o $(BUILD)/bin/http.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/http.o" $(LIBS) -Wl,-r 
 endif
@@ -920,10 +908,10 @@ ifeq ($(ME_COM_CGI),1)
 #
 #   libmod_cgi
 #
-DEPS_67 += $(BUILD)/bin/libappweb.out
-DEPS_67 += $(BUILD)/obj/cgiHandler.o
+DEPS_66 += $(BUILD)/bin/libappweb.out
+DEPS_66 += $(BUILD)/obj/cgiHandler.o
 
-$(BUILD)/bin/libmod_cgi.out: $(DEPS_67)
+$(BUILD)/bin/libmod_cgi.out: $(DEPS_66)
 	@echo '      [Link] $(BUILD)/bin/libmod_cgi.out'
 	$(CC) -r -o $(BUILD)/bin/libmod_cgi.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/cgiHandler.o" $(LIBS) 
 endif
@@ -932,11 +920,11 @@ ifeq ($(ME_COM_EJS),1)
 #
 #   libmod_ejs
 #
-DEPS_68 += $(BUILD)/bin/libappweb.out
-DEPS_68 += $(BUILD)/bin/libejs.out
-DEPS_68 += $(BUILD)/obj/ejsHandler.o
+DEPS_67 += $(BUILD)/bin/libappweb.out
+DEPS_67 += $(BUILD)/bin/libejs.out
+DEPS_67 += $(BUILD)/obj/ejsHandler.o
 
-$(BUILD)/bin/libmod_ejs.out: $(DEPS_68)
+$(BUILD)/bin/libmod_ejs.out: $(DEPS_67)
 	@echo '      [Link] $(BUILD)/bin/libmod_ejs.out'
 	$(CC) -r -o $(BUILD)/bin/libmod_ejs.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/ejsHandler.o" $(LIBS) 
 endif
@@ -945,22 +933,45 @@ ifeq ($(ME_COM_PHP),1)
 #
 #   libmod_php
 #
-DEPS_69 += $(BUILD)/bin/libappweb.out
-DEPS_69 += $(BUILD)/obj/phpHandler.o
+DEPS_68 += $(BUILD)/bin/libappweb.out
+DEPS_68 += $(BUILD)/obj/phpHandler.o
 
-LIBS_69 += -lphp5
-LIBPATHS_69 += -L"$(ME_COM_PHP_PATH)/libs"
+LIBS_68 += -lphp5
+LIBPATHS_68 += -L"$(ME_COM_PHP_PATH)/libs"
 
-$(BUILD)/bin/libmod_php.out: $(DEPS_69)
+$(BUILD)/bin/libmod_php.out: $(DEPS_68)
 	@echo '      [Link] $(BUILD)/bin/libmod_php.out'
-	$(CC) -r -o $(BUILD)/bin/libmod_php.out $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/phpHandler.o" $(LIBPATHS_69) $(LIBS_69) $(LIBS_69) $(LIBS) 
+	$(CC) -r -o $(BUILD)/bin/libmod_php.out $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/phpHandler.o" $(LIBPATHS_68) $(LIBS_68) $(LIBS_68) $(LIBS) 
 endif
 
 #
 #   libmprssl
 #
-DEPS_70 += $(BUILD)/bin/libmpr.out
-DEPS_70 += $(BUILD)/obj/mprSsl.o
+DEPS_69 += $(BUILD)/bin/libmpr.out
+DEPS_69 += $(BUILD)/obj/mprSsl.o
+
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_69 += -lssl
+    LIBPATHS_69 += -L"$(ME_COM_OPENSSL_PATH)/lib"
+    LIBPATHS_69 += -L"$(ME_COM_OPENSSL_PATH)"
+endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_69 += -lcrypto
+    LIBPATHS_69 += -L"$(ME_COM_OPENSSL_PATH)/lib"
+    LIBPATHS_69 += -L"$(ME_COM_OPENSSL_PATH)"
+endif
+
+$(BUILD)/bin/libmprssl.out: $(DEPS_69)
+	@echo '      [Link] $(BUILD)/bin/libmprssl.out'
+	$(CC) -r -o $(BUILD)/bin/libmprssl.out $(LDFLAGS) $(LIBPATHS)   "$(BUILD)/obj/mprSsl.o" $(LIBPATHS_69) $(LIBS_69) $(LIBS_69) $(LIBS) 
+
+ifeq ($(ME_COM_SSL),1)
+#
+#   libmod_ssl
+#
+DEPS_70 += $(BUILD)/bin/libappweb.out
+DEPS_70 += $(BUILD)/bin/libmprssl.out
+DEPS_70 += $(BUILD)/obj/sslModule.o
 
 ifeq ($(ME_COM_OPENSSL),1)
     LIBS_70 += -lssl
@@ -973,42 +984,19 @@ ifeq ($(ME_COM_OPENSSL),1)
     LIBPATHS_70 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
 
-$(BUILD)/bin/libmprssl.out: $(DEPS_70)
-	@echo '      [Link] $(BUILD)/bin/libmprssl.out'
-	$(CC) -r -o $(BUILD)/bin/libmprssl.out $(LDFLAGS) $(LIBPATHS)   "$(BUILD)/obj/mprSsl.o" $(LIBPATHS_70) $(LIBS_70) $(LIBS_70) $(LIBS) 
-
-ifeq ($(ME_COM_SSL),1)
-#
-#   libmod_ssl
-#
-DEPS_71 += $(BUILD)/bin/libappweb.out
-DEPS_71 += $(BUILD)/bin/libmprssl.out
-DEPS_71 += $(BUILD)/obj/sslModule.o
-
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_71 += -lssl
-    LIBPATHS_71 += -L"$(ME_COM_OPENSSL_PATH)/lib"
-    LIBPATHS_71 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_71 += -lcrypto
-    LIBPATHS_71 += -L"$(ME_COM_OPENSSL_PATH)/lib"
-    LIBPATHS_71 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
-
-$(BUILD)/bin/libmod_ssl.out: $(DEPS_71)
+$(BUILD)/bin/libmod_ssl.out: $(DEPS_70)
 	@echo '      [Link] $(BUILD)/bin/libmod_ssl.out'
-	$(CC) -r -o $(BUILD)/bin/libmod_ssl.out $(LDFLAGS) $(LIBPATHS)   "$(BUILD)/obj/sslModule.o" $(LIBPATHS_71) $(LIBS_71) $(LIBS_71) $(LIBS) 
+	$(CC) -r -o $(BUILD)/bin/libmod_ssl.out $(LDFLAGS) $(LIBPATHS)   "$(BUILD)/obj/sslModule.o" $(LIBPATHS_70) $(LIBS_70) $(LIBS_70) $(LIBS) 
 endif
 
 ifeq ($(ME_COM_SQLITE),1)
 #
 #   libsql
 #
-DEPS_72 += $(BUILD)/inc/sqlite3.h
-DEPS_72 += $(BUILD)/obj/sqlite3.o
+DEPS_71 += $(BUILD)/inc/sqlite3.h
+DEPS_71 += $(BUILD)/obj/sqlite3.o
 
-$(BUILD)/bin/libsql.out: $(DEPS_72)
+$(BUILD)/bin/libsql.out: $(DEPS_71)
 	@echo '      [Link] $(BUILD)/bin/libsql.out'
 	$(CC) -r -o $(BUILD)/bin/libsql.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/sqlite3.o" $(LIBS) 
 endif
@@ -1016,10 +1004,10 @@ endif
 #
 #   manager
 #
-DEPS_73 += $(BUILD)/bin/libmpr.out
-DEPS_73 += $(BUILD)/obj/manager.o
+DEPS_72 += $(BUILD)/bin/libmpr.out
+DEPS_72 += $(BUILD)/obj/manager.o
 
-$(BUILD)/bin/appman.out: $(DEPS_73)
+$(BUILD)/bin/appman.out: $(DEPS_72)
 	@echo '      [Link] $(BUILD)/bin/appman.out'
 	$(CC) -o $(BUILD)/bin/appman.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/manager.o" $(LIBS) -Wl,-r 
 
@@ -1027,7 +1015,7 @@ $(BUILD)/bin/appman.out: $(DEPS_73)
 #   server-cache
 #
 
-src/server/cache: $(DEPS_74)
+src/server/cache: $(DEPS_73)
 	( \
 	cd src/server; \
 	mkdir -p "cache" ; \
@@ -1037,20 +1025,20 @@ src/server/cache: $(DEPS_74)
 #   installBinary
 #
 
-installBinary: $(DEPS_75)
+installBinary: $(DEPS_74)
 
 #
 #   install
 #
-DEPS_76 += installBinary
+DEPS_75 += installBinary
 
-install: $(DEPS_76)
+install: $(DEPS_75)
 
 #
 #   installPrep
 #
 
-installPrep: $(DEPS_77)
+installPrep: $(DEPS_76)
 	if [ "`id -u`" != 0 ] ; \
 	then echo "Must run as root. Rerun with "sudo"" ; \
 	exit 255 ; \
@@ -1061,7 +1049,7 @@ installPrep: $(DEPS_77)
 #   run
 #
 
-run: $(DEPS_78)
+run: $(DEPS_77)
 	( \
 	cd src/server; \
 	../../$(BUILD)/bin/appweb --log stdout:2 ; \
@@ -1072,7 +1060,7 @@ run: $(DEPS_78)
 #   uninstall
 #
 
-uninstall: $(DEPS_79)
+uninstall: $(DEPS_78)
 	( \
 	cd package; \
 	rm -f "$(ME_VAPP_PREFIX)/appweb.conf" ; \
@@ -1086,6 +1074,6 @@ uninstall: $(DEPS_79)
 #   version
 #
 
-version: $(DEPS_80)
+version: $(DEPS_79)
 	echo 5.4.0
 
