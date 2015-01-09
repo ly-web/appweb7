@@ -608,7 +608,6 @@ PUBLIC EdiGrid *ediQuery(Edi *edi, cchar *cmd, int argc, cchar **argv, va_list v
 }
 
 
-//  TODO - fmt is unused
 PUBLIC cchar *ediReadFieldValue(Edi *edi, cchar *fmt, cchar *tableName, cchar *key, cchar *columnName, cchar *defaultValue)
 {
     EdiField    field;
@@ -2214,70 +2213,6 @@ PUBLIC int runCmd(cchar *command, char *input, char **output, char **error, MprT
 }
 
 
-#if KEEP
-/*
-    <% scripts(patterns); %>
-
-    Where patterns may contain *, ** and !pattern for exclusion
- */
-PUBLIC void scripts(cchar *patterns)
-{
-    HttpConn    *conn;
-    HttpRx      *rx;
-    HttpRoute   *route;
-    EspRoute    *eroute;
-    MprList     *files;
-    MprJson     *app, *pak, *js, *script;
-    cchar       *uri, *path, *version;
-    int         next, pi, si;
-
-    conn = getConn();
-    rx = conn->rx;
-    route = rx->route;
-    eroute = route->eroute;
-    patterns = httpExpandRouteVars(route, patterns);
-
-    if (!patterns || !*patterns) {
-        version = espGetConfig(route, "version", "1.0.0");
-        if (eroute->combineScript) {
-            scripts(eroute->combineScript);
-        } else if (espGetConfig(route, "app.http.content.combine[@=js]", 0)) {
-            if (espGetConfig(route, "app.http.content.minify[@=js]", 0)) {
-                eroute->combineScript = sfmt("all-%s.min.js", version);
-            } else {
-                eroute->combineScript = sfmt("all-%s.js", version);
-            }
-            scripts(eroute->combineScript);
-        } else {
-            if ((app = mprGetJsonObj(route->config, "app")) != 0) {
-                for (ITERATE_JSON(app, pak, pi)) {
-                    if ((js = mprGetJsonObj(app, "js")) != 0) {
-                        for (ITERATE_JSON(app, script, si)) {
-                            scripts(script->value);
-                        }
-                    }
-                }
-            }
-        }
-        return;
-    }
-    if ((files = mprGlobPathFiles(httpGetDir(route, "PUBLIC"), patterns, MPR_PATH_RELATIVE)) == 0 || 
-            mprGetListLength(files) == 0) {
-        files = mprCreateList(0, 0);
-        mprAddItem(files, patterns);
-    }
-    for (ITERATE_ITEMS(files, path, next)) {
-        if (schr(path, '$')) {
-            path = stemplateJson(path, route->config);
-        }
-        path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
-        uri = httpUriToString(httpGetRelativeUri(rx->parsedUri, httpLinkUri(conn, path, 0), 0), 0);
-        espRender(conn, "<script src='%s' type='text/javascript'></script>\n", uri);
-    }
-}
-#endif
-
-
 /*
     Add a security token to the response. The token is generated as a HTTP header and session cookie.
  */
@@ -2414,86 +2349,6 @@ PUBLIC void showRequest()
 }
 
 
-#if KEEP
-/*
-    <% stylesheets(patterns); %>
-
-    Where patterns may contain *, ** and !pattern for exclusion
- */
-PUBLIC void stylesheets(cchar *patterns)
-{
-    HttpConn    *conn;
-    HttpRx      *rx;
-    HttpRoute   *route;
-    EspRoute    *eroute;
-    MprList     *files;
-    cchar       *filename, *ext, *uri, *path, *kind, *version, *public;
-    int         next;
-
-    conn = getConn();
-    rx = conn->rx;
-    route = rx->route;
-    eroute = route->eroute;
-    patterns = httpExpandRouteVars(route, patterns);
-    public = httpGetDir(route, "PUBLIC");
-
-    if (!patterns || !*patterns) {
-        version = espGetConfig(route, "version", "1.0.0");
-        if (eroute->combineSheet) {
-            /* Previously computed combined stylesheet filename */
-            stylesheets(eroute->combineSheet);
-
-        } else if (espGetConfig(route, "app.http.content.combine[@=css]", 0)) {
-            if (espGetConfig(route, "app.http.content.minify[@=css]", 0)) {
-                eroute->combineSheet = sfmt("css/all-%s.min.css", version);
-            } else {
-                eroute->combineSheet = sfmt("css/all-%s.css", version);
-            }
-            stylesheets(eroute->combineSheet);
-
-        } else {
-            /*
-                Not combining into a single stylesheet, so give priority to all.less over all.css if present
-                Load a pure CSS incase some styles need to be applied before the lesssheet is parsed
-             */
-            ext = espGetConfig(route, "app.http.content.stylesheets", "css");
-            filename = mprJoinPathExt("css/all", ext);
-            path = mprJoinPath(public, filename);
-            if (mprPathExists(path, R_OK)) {
-                stylesheets(filename);
-            } else if (!smatch(ext, "less")) {
-                path = mprJoinPath(public, "css/all.less");
-                if (mprPathExists(path, R_OK)) {
-                    stylesheets("css/all.less");
-                }
-            }
-        }
-    } else {
-        if (sends(patterns, "all.less")) {
-            path = mprJoinPath(public, "css/fix.css");
-            if (mprPathExists(path, R_OK)) {
-                stylesheets("css/fix.css");
-            }
-        }
-        if ((files = mprGlobPathFiles(public, patterns, MPR_PATH_RELATIVE)) == 0 || mprGetListLength(files) == 0) {
-            files = mprCreateList(0, 0);
-            mprAddItem(files, patterns);
-        }
-        for (ITERATE_ITEMS(files, path, next)) {
-            path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
-            uri = httpUriToString(httpGetRelativeUri(rx->parsedUri, httpLinkUri(conn, path, 0), 0), 0);
-            kind = mprGetPathExt(path);
-            if (smatch(kind, "css")) {
-                espRender(conn, "<link rel='stylesheet' type='text/css' href='%s' />\n", uri);
-            } else {
-                espRender(conn, "<link rel='stylesheet/%s' type='text/css' href='%s' />\n", kind, uri);
-            }
-        }
-    }
-}
-#endif
-
-
 PUBLIC void updateCache(cchar *uri, cchar *data, int lifesecs)
 {
     espUpdateCache(getConn(), uri, data, lifesecs);
@@ -2552,7 +2407,150 @@ PUBLIC cchar *uri(cchar *target, ...)
     return httpLink(getConn(), uri);
 }
 
+#if DEPRECATED || 1
+/*
+    <% stylesheets(patterns); %>
 
+    Where patterns may contain *, ** and !pattern for exclusion
+ */
+PUBLIC void stylesheets(cchar *patterns)
+{
+    HttpConn    *conn;
+    HttpRx      *rx;
+    HttpRoute   *route;
+    EspRoute    *eroute;
+    MprList     *files;
+    cchar       *filename, *ext, *uri, *path, *kind, *version, *clientDir;
+    int         next;
+
+    conn = getConn();
+    rx = conn->rx;
+    route = rx->route;
+    eroute = route->eroute;
+    patterns = httpExpandRouteVars(route, patterns);
+#if FUTURE
+    client => public
+#endif
+    clientDir = httpGetDir(route, "client");
+
+    if (!patterns || !*patterns) {
+        version = espGetConfig(route, "version", "1.0.0");
+        if (eroute->combineSheet) {
+            /* Previously computed combined stylesheet filename */
+            stylesheets(eroute->combineSheet);
+
+        } else if (espGetConfig(route, "http.content.combine[@=css]", 0)) {
+            if (espGetConfig(route, "http.content.minify[@=css]", 0)) {
+                eroute->combineSheet = sfmt("css/all-%s.min.css", version);
+            } else {
+                eroute->combineSheet = sfmt("css/all-%s.css", version);
+            }
+            stylesheets(eroute->combineSheet);
+
+        } else {
+            /*
+                Not combining into a single stylesheet, so give priority to all.less over all.css if present
+                Load a pure CSS incase some styles need to be applied before the lesssheet is parsed
+             */
+            ext = espGetConfig(route, "http.content.stylesheets", "css");
+            filename = mprJoinPathExt("css/all", ext);
+            path = mprJoinPath(clientDir, filename);
+            if (mprPathExists(path, R_OK)) {
+                stylesheets(filename);
+            } else if (!smatch(ext, "less")) {
+                path = mprJoinPath(clientDir, "css/all.less");
+                if (mprPathExists(path, R_OK)) {
+                    stylesheets("css/all.less");
+                }
+            }
+        }
+    } else {
+        if (sends(patterns, "all.less")) {
+            path = mprJoinPath(clientDir, "css/fix.css");
+            if (mprPathExists(path, R_OK)) {
+                stylesheets("css/fix.css");
+            }
+        }
+        if ((files = mprGlobPathFiles(clientDir, patterns, MPR_PATH_RELATIVE)) == 0 || mprGetListLength(files) == 0) {
+            files = mprCreateList(0, 0);
+            mprAddItem(files, patterns);
+        }
+        for (ITERATE_ITEMS(files, path, next)) {
+            path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
+            uri = httpUriToString(httpGetRelativeUri(rx->parsedUri, httpLinkUri(conn, path, 0), 0), 0);
+            kind = mprGetPathExt(path);
+            if (smatch(kind, "css")) {
+                espRender(conn, "<link rel='stylesheet' type='text/css' href='%s' />\n", uri);
+            } else {
+                espRender(conn, "<link rel='stylesheet/%s' type='text/css' href='%s' />\n", kind, uri);
+            }
+        }
+    }
+}
+
+
+/*
+    <% scripts(patterns); %>
+
+    Where patterns may contain *, ** and !pattern for exclusion
+ */
+PUBLIC void scripts(cchar *patterns)
+{
+    HttpConn    *conn;
+    HttpRx      *rx;
+    HttpRoute   *route;
+    EspRoute    *eroute;
+    MprList     *files;
+    MprJson     *cscripts, *script;
+    cchar       *uri, *path, *version;
+    int         next, ci;
+
+    conn = getConn();
+    rx = conn->rx;
+    route = rx->route;
+    eroute = route->eroute;
+    patterns = httpExpandRouteVars(route, patterns);
+
+    if (!patterns || !*patterns) {
+        version = espGetConfig(route, "version", "1.0.0");
+        if (eroute->combineScript) {
+            scripts(eroute->combineScript);
+        } else if (espGetConfig(route, "http.content.combine[@=js]", 0)) {
+            if (espGetConfig(route, "http.content.minify[@=js]", 0)) {
+                eroute->combineScript = sfmt("all-%s.min.js", version);
+            } else {
+                eroute->combineScript = sfmt("all-%s.js", version);
+            }
+            scripts(eroute->combineScript);
+        } else {
+            if ((cscripts = mprGetJsonObj(route->config, "client.scripts")) != 0) {
+                for (ITERATE_JSON(cscripts, script, ci)) {
+                    scripts(script->value);
+                }
+            }
+        }
+        return;
+    }
+#if FUTURE
+    client => public
+#endif
+    if ((files = mprGlobPathFiles(httpGetDir(route, "client"), patterns, MPR_PATH_RELATIVE)) == 0 || 
+            mprGetListLength(files) == 0) {
+        files = mprCreateList(0, 0);
+        mprAddItem(files, patterns);
+    }
+    for (ITERATE_ITEMS(files, path, next)) {
+        if (schr(path, '$')) {
+            path = stemplateJson(path, route->config);
+        }
+        path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
+        uri = httpUriToString(httpGetRelativeUri(rx->parsedUri, httpLinkUri(conn, path, 0), 0), 0);
+        espRender(conn, "<script src='%s' type='text/javascript'></script>\n", uri);
+    }
+}
+
+
+#endif
 /*
     @copy   default
 
@@ -2616,52 +2614,48 @@ static void parseCompile(HttpRoute *route, cchar *key, MprJson *prop)
     }
 }
 
-static void serverRouteSet(HttpRoute *parent, cchar *set)
+static void serverRouteSet(HttpRoute *route, cchar *set)
 {
-    HttpRoute   *route;
+    EspRoute    *eroute;
 
-    /* Simple controller/action route */
-    httpSetRouteXsrf(parent, 1);
-    route = httpAddRestfulRoute(parent, parent->serverPrefix, "action", "GET,POST","/{action}(/)*$",
-        "${action}", "{controller}");
-    httpAddPublicRoute(parent, "", "/public");
-    httpAddRouteHandler(route, "espHandler", "");
+    eroute = route->eroute;
+    eroute->routeSet = sclone(set);
+    httpAddRestfulRoute(route, "GET,POST","/{action}(/)*$", "${action}", "{controller}");
 }
 
 
-static void angularRouteSet(HttpRoute *parent, cchar *set)
+static void restfulRouteSet(HttpRoute *route, cchar *set)
 {
-    httpSetRouteXsrf(parent, 1);
-    httpAddRouteHandler(parent, "espHandler", "");
-    httpAddWebSocketsRoute(parent, 0, "/*/stream");
-    httpAddResourceGroup(parent, 0, "{controller}");
-    httpAddPublicRoute(parent, "", "/public");
-    httpHideRoute(parent, 1);
+#if DEPRECATE || 1
+    if (route->flags & HTTP_ROUTE_SET_DEFINED) {
+        return;
+    }
+    route->flags |= HTTP_ROUTE_SET_DEFINED;
+#endif
+    httpAddResourceGroup(route, "{controller}");
 }
 
-
-static void htmlRouteSet(HttpRoute *parent, cchar *set)
+static void legacyRouteSet(HttpRoute *route, cchar *set)
 {
-    httpSetRouteXsrf(parent, 1);
-    httpAddRouteHandler(parent, "espHandler", "");
-    httpDefineRoute(parent,
-        sfmt("%s%s/*", parent->prefix, parent->serverPrefix), 
-        "GET", 
-        sfmt("^%s%s/{controller}$", parent->prefix, parent->serverPrefix),
-        "$1", 
-        "${controller}.c");
-    httpAddResourceGroup(parent, 0, "{controller}");
-    httpAddPublicRoute(parent, "", "/public");
-    httpHideRoute(parent, 1);
+#if DEPRECATE || 1
+    if (route->flags & HTTP_ROUTE_SET_DEFINED) {
+        return;
+    }
+#endif
+    restfulRouteSet(route, "restful");
+    // addClientRoute(route);
 }
 
 
 PUBLIC int espInitParser() 
 {
     httpDefineRouteSet("esp-server", serverRouteSet);
-    httpDefineRouteSet("esp-angular-mvc", angularRouteSet);
-    httpDefineRouteSet("esp-html-mvc", htmlRouteSet);
-
+    httpDefineRouteSet("esp-restful", restfulRouteSet);
+#if DEPRECATED || 1
+    httpDefineRouteSet("esp-angular-mvc", legacyRouteSet);
+    httpDefineRouteSet("esp-html-mvc", legacyRouteSet);
+#endif
+    
     httpAddConfig("esp", parseEsp);
     httpAddConfig("esp.combine", parseCombine);
     httpAddConfig("esp.compile", parseCompile);
@@ -2700,6 +2694,7 @@ PUBLIC int espInitParser()
 
 /************************************* Code ***********************************/
 
+#if DEPRECATED || 1
 PUBLIC void espAddPak(HttpRoute *route, cchar *name, cchar *version)
 {
     if (!version || !*version || smatch(version, "0.0.0")) {
@@ -2707,6 +2702,7 @@ PUBLIC void espAddPak(HttpRoute *route, cchar *name, cchar *version)
     }
     mprSetJson(route->config, sfmt("dependencies.%s", name), version);
 }
+#endif
 
 
 /*
@@ -2798,17 +2794,32 @@ PUBLIC cchar *espCreateSession(HttpConn *conn)
 }
 
 
-PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *action)
+PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *callback)
 {
-    Esp     *esp;
+    EspRoute    *eroute;
+    char        *action, *controller;
 
     assert(route);
     assert(target && *target);
-    assert(action);
+    assert(callback);
 
-    esp = MPR->espService;
+    eroute = ((EspRoute*) route->eroute)->top;
     if (target) {
-        mprAddKey(esp->actions, mprJoinPath(httpGetDir(route, "CONTROLLERS"), target), action);
+#if DEPRECATE || 1 
+        /* 
+            Keep till version 6
+         */
+        if (scontains(target, "-cmd-")) {
+            target = sreplace(target, "-cmd-", "/");
+        } else if (schr(target, '-')) {
+            controller = ssplit(sclone(target), "-", (char**) &action);
+            target = sjoin(controller, "/", action, NULL);
+        }
+#endif
+        if (!eroute->actions) {
+            eroute->actions = mprCreateHash(-1, MPR_HASH_STATIC_VALUES);
+        }
+        mprAddKey(eroute->actions, target, callback);
     }
 }
 
@@ -2819,13 +2830,13 @@ PUBLIC void espDefineAction(HttpRoute *route, cchar *target, void *action)
 PUBLIC void espDefineBase(HttpRoute *route, EspProc baseProc)
 {
     HttpRoute   *rp;
-    EspRoute    *er;
+    EspRoute    *eroute;
     int         next;
 
     for (ITERATE_ITEMS(route->host->routes, rp, next)) {
-        if ((er = route->eroute) != 0) {
+        if ((eroute = route->eroute) != 0) {
             if (smatch(httpGetDir(rp, "CONTROLLERS"), httpGetDir(route, "CONTROLLERS"))) {
-                er->commonController = baseProc;
+                eroute->commonController = baseProc;
             }
         }
     }
@@ -2837,16 +2848,19 @@ PUBLIC void espDefineBase(HttpRoute *route, EspProc baseProc)
  */
 PUBLIC void espDefineView(HttpRoute *route, cchar *path, void *view)
 {
-    Esp         *esp;
+    EspRoute    *eroute;
 
     assert(path && *path);
     assert(view);
 
-    esp = MPR->espService;
+    eroute = ((EspRoute*) route->eroute)->top;
     if (route) {
         path = mprGetPortablePath(mprJoinPath(route->documents, path));
     }
-    mprAddKey(esp->views, path, view);
+    if (!eroute->views) {
+        eroute->views = mprCreateHash(-1, MPR_HASH_STATIC_VALUES);
+    }
+    mprAddKey(eroute->views, path, view);
 }
 
 
@@ -2878,6 +2892,9 @@ PUBLIC cchar *espGetConfig(HttpRoute *route, cchar *key, cchar *defaultValue)
 {
     cchar       *value;
 
+    if (sstarts(key, "app.")) {
+        mprLog("warn esp", 0, "Using legacy \"app\" configuration property");
+    }
     if ((value = mprGetJson(route->config, key)) != 0) {
         return value;
     }
@@ -3109,10 +3126,13 @@ PUBLIC cchar *espGetUri(HttpConn *conn)
 }
 
 
+#if DEPRECATED || 1
+
 PUBLIC bool espHasPak(HttpRoute *route, cchar *name)
 {
     return mprGetJsonObj(route->config, sfmt("dependencies.%s", name)) != 0;
 }
+#endif
 
 
 PUBLIC bool espHasGrid(HttpConn *conn)
@@ -3227,7 +3247,7 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
                 "    <p>To prevent errors being displayed in the browser, " \
                 "       set <b>ShowErrors off</b> in the appweb.conf file.</p>\r\n" \
                 "</body>\r\n</html>\r\n", title, title, msg);
-            httpSetHeader(conn, "Content-Type", "text/html");
+            httpSetContentType(conn, "text/html");
             written += espRenderString(conn, text);
             espFinalize(conn);
             httpTrace(conn, "esp.error", "error", "msg=\"%s\", status=%d, uri=\"%s\"", msg, status, rx->pathInfo);
@@ -3367,23 +3387,26 @@ PUBLIC void espRemoveSessionVar(HttpConn *conn, cchar *var)
 }
 
 
+#if DEPRECATED || 1
 PUBLIC int espSaveConfig(HttpRoute *route)
 {
     cchar       *path;
 
-    path = mprJoinPath(route->documents, ME_ESP_CONFIG);
+    path = mprJoinPath(route->home, ME_ESP_CONFIG);
 #if KEEP
     mprBackupLog(path, 3);
 #endif
     return mprSaveJson(route->config, path, MPR_JSON_PRETTY | MPR_JSON_QUOTES);
 }
+#endif
 
 
 PUBLIC ssize espSendGrid(HttpConn *conn, EdiGrid *grid, int flags)
 {
-    httpAddHeaderString(conn, "Content-Type", "application/json");
+    httpSetContentType(conn, "application/json");
     if (grid) {
-        return espRender(conn, "{\n  \"data\": %s, \"schema\": %s}\n", ediGridAsJson(grid, flags), ediGetGridSchemaAsJson(grid));
+        return espRender(conn, "{\n  \"data\": %s, \"schema\": %s}\n", ediGridAsJson(grid, flags), 
+            ediGetGridSchemaAsJson(grid));
     }
     return espRender(conn, "{}");
 }
@@ -3391,7 +3414,7 @@ PUBLIC ssize espSendGrid(HttpConn *conn, EdiGrid *grid, int flags)
 
 PUBLIC ssize espSendRec(HttpConn *conn, EdiRec *rec, int flags)
 {
-    httpAddHeaderString(conn, "Content-Type", "application/json");
+    httpSetContentType(conn, "application/json");
     if (rec) {
         return espRender(conn, "{\n  \"data\": %s, \"schema\": %s}\n", ediRecAsJson(rec, flags), ediGetRecSchemaAsJson(rec));
     }
@@ -3752,7 +3775,6 @@ PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprT
 }
 
 
-//  TODO - rename espSingularClear (and trace)
 PUBLIC void espClearCurrentSession(HttpConn *conn)
 {
     EspRoute    *eroute;
@@ -3840,7 +3862,7 @@ static Esp *esp;
 
 static int cloneDatabase(HttpConn *conn);
 static void closeEsp(HttpQueue *q);
-static EspRoute *initRoute(HttpRoute *route);
+static EspRoute *createEspRoute(HttpRoute *route);
 static int espDbDirective(MaState *state, cchar *key, cchar *value);
 static int espEnvDirective(MaState *state, cchar *key, cchar *value);
 static EspRoute *getEroute(HttpRoute *route);
@@ -3848,7 +3870,6 @@ static void manageEsp(Esp *esp, int flags);
 static void manageReq(EspReq *req, int flags);
 static int runAction(HttpConn *conn);
 static int unloadEsp(MprModule *mp);
-static bool pageExists(HttpConn *conn);
 
 #if !ME_STATIC
 static char *getModuleEntry(EspRoute *eroute, cchar *kind, cchar *source, cchar *cacheName);
@@ -3895,7 +3916,7 @@ static int openEsp(HttpQueue *q)
     }
     if (!route) {
         route = rx->route;
-        eroute = initRoute(route);
+        eroute = createEspRoute(route);
     }
     if (!eroute) {
         httpError(conn, 0, "Cannot find a suitable ESP route");
@@ -4023,20 +4044,21 @@ static void finalizeFlash(HttpConn *conn)
 
 /*
     Start the request. At this stage, body data may not have been fully received unless
-    the request is a form (POST method and Content-Type is application/x-www-form-urlencoded).
+    the request is a form (POST method and content type is application/x-www-form-urlencoded).
     Forms are a special case and delay invoking the start callback until all body data is received.
     WARNING: GC yield
  */
 static void startEsp(HttpQueue *q)
 {
     HttpConn    *conn;
+    HttpRx      *rx;
     HttpRoute   *route;
     EspRoute    *eroute;
     EspReq      *req;
-    cchar       *view;
 
     conn = q->conn;
-    route = conn->rx->route;
+    rx = conn->rx;
+    route = rx->route;
     eroute = route->eroute;
     req = conn->reqData;
 
@@ -4064,9 +4086,8 @@ static void startEsp(HttpQueue *q)
         } else {
             if (req->autoFinalize) {
                 if (!conn->tx->responded) {
-                    view = (route->sourceName && route->sourceName) ? conn->rx->target : NULL;
                     /* WARNING: GC yield */
-                    espRenderView(conn, view);
+                    espRenderDocument(conn, rx->target);
                 }
                 if (req->autoFinalize) {
                     espFinalize(conn);
@@ -4087,13 +4108,14 @@ static int runAction(HttpConn *conn)
     EspRoute    *eroute;
     EspReq      *req;
     EspAction   action;
-    cchar       *controllersDir;
-    char        *actionName, *key, *filename, *source;
+    cchar       *controllers;
+    char        *controller;
 
     rx = conn->rx;
     req = conn->reqData;
     route = rx->route;
     eroute = route->eroute;
+    controller = 0;
     assert(eroute);
 
     if (eroute->edi && eroute->edi->flags & EDI_PRIVATE) {
@@ -4107,38 +4129,46 @@ static int runAction(HttpConn *conn)
         }
         return 1;
     }
-    /*
-        Expand any form var $tokens. This permits ${controller} and user form data to be used in the controller name
-     */
-    filename = schr(route->sourceName, '$') ? stemplateJson(route->sourceName, rx->params) : route->sourceName;
-    controllersDir = httpGetDir(route, "CONTROLLERS");
-    source = controllersDir ? mprJoinPath(controllersDir, filename) : mprJoinPath(route->home, filename);
+    if ((controllers = httpGetDir(route, "CONTROLLERS")) == 0) {
+        controllers = ".";
+    }
+    controllers = mprJoinPath(route->home, controllers);
 
 #if !ME_STATIC
-    key = mprJoinPath(controllersDir, rx->target);
-    if (!eroute->combine && (route->update || !mprLookupKey(esp->actions, key))) {
+    if (!eroute->combine && (route->update || !mprLookupKey(eroute->actions, rx->target))) {
         cchar *errMsg;
-        if (espLoadModule(route, conn->dispatcher, "controller", source, &errMsg) < 0) {
-            httpError(conn, HTTP_CODE_NOT_FOUND, "%s", errMsg);
-            return 0;
+        controller = schr(route->sourceName, '$') ? stemplateJson(route->sourceName, rx->params) : route->sourceName;
+        controller = controllers ? mprJoinPath(controllers, controller) : mprJoinPath(route->home, controller);
+        if (mprPathExists(controller, R_OK)) {
+            if (espLoadModule(route, conn->dispatcher, "controller", controller, &errMsg) < 0) {
+                httpError(conn, HTTP_CODE_NOT_FOUND, "%s", errMsg);
+                return 0;
+            }
+            controllers = mprGetPathDir(controller);
         }
     }
 #endif /* !ME_STATIC */
-    key = mprJoinPath(controllersDir, rx->target);
-    if ((action = mprLookupKey(esp->actions, key)) == 0) {
-        if (!pageExists(conn)) {
+    
+    assert(eroute->top);
+    action = mprLookupKey(eroute->top->actions, rx->target);
+
+    /// MOB - missing must be moved somewhere else
+#if UNUSED
+    if ((action = mprLookupKey(eroute->actions, rx->target)) == 0) {
+        if (!mprPathExists(pagePath(conn), R_OK)) {
             /*
                 Actions are registered as: source/TARGET where TARGET is typically CONTROLLER-ACTION
              */
-            key = sfmt("%s/missing", mprGetPathDir(source));
-            if ((action = mprLookupKey(esp->actions, key)) == 0) {
-                if ((action = mprLookupKey(esp->actions, "missing")) == 0) {
+            if ((action = mprLookupKey(eroute->actions, sfmt("%s/missing", controllers))) == 0) {
+                if ((action = mprLookupKey(eroute->actions, "missing")) == 0) {
                     httpError(conn, HTTP_CODE_NOT_FOUND, "Missing action for \"%s\"", rx->target);
                     return 0;
                 }
             }
         }
     }
+#endif
+
     if (route->flags & HTTP_ROUTE_XSRF && !(rx->flags & HTTP_GET)) {
         if (!httpCheckSecurityToken(conn)) {
             httpSetStatus(conn, HTTP_CODE_UNAUTHORIZED);
@@ -4154,8 +4184,6 @@ static int runAction(HttpConn *conn)
         }
     }
     if (action) {
-        httpSetParam(conn, "controller", ssplit(sclone(rx->target), "-", &actionName));
-        httpSetParam(conn, "action", actionName);
         if (eroute->commonController) {
             (eroute->commonController)(conn);
         }
@@ -4167,46 +4195,78 @@ static int runAction(HttpConn *conn)
 }
 
 
-PUBLIC void espRenderView(HttpConn *conn, cchar *name)
+PUBLIC void espRenderDocument(HttpConn *conn, cchar *path)
+{
+    HttpTx      *tx;
+
+    tx = conn->tx;
+
+    path = mprJoinPath(conn->rx->route->documents, path);
+    path = httpMapContent(conn, path);
+    httpSetFilename(conn, path, 0);
+    if (!tx->fileInfo.valid) {
+        path = mprJoinPathExt(path, ".esp");
+        httpSetFilename(conn, path, 0);
+    }
+    if (tx->fileInfo.isDir) {
+        httpHandleDirectory(conn);
+        //  MOB _ refactor
+        if (tx->finalized) {
+            tx->handler = conn->http->passHandler;
+            return;
+        }
+        path = tx->filename;
+    }
+    if (smatch(tx->ext, "esp")) {
+        espRenderView(conn, path);
+        return;
+    }
+    httpSetFileHandler(conn, NULL);
+}
+
+
+PUBLIC void espRenderView(HttpConn *conn, cchar *view)
 {
     HttpRx      *rx;
     HttpRoute   *route;
     EspRoute    *eroute;
     EspViewProc viewProc;
-    cchar       *source;
+    cchar       *path;
 
     rx = conn->rx;
     route = rx->route;
-    eroute = conn->rx->route->eroute;
+    eroute = route->eroute;
 
-    if (name) {
-        source = mprJoinPathExt(mprJoinPath(httpGetDir(route, "VIEWS"), name), ".esp");
-    } else {
-        httpMapFile(conn);
-        source = conn->tx->filename;
+    path = mprJoinPathExt(mprJoinPath(route->documents, view), ".esp");
+    
+#if DEPRECATE || 1
+    if (!mprPathExists(path, R_OK)) {
+        path = mprJoinPathExt(mprJoinPaths(route->documents, "app", view, NULL), ".esp");
     }
+#endif
+    path = mprGetPortablePath(path);
+
 #if !ME_STATIC
-    if (!eroute->combine && (route->update || !mprLookupKey(esp->views, mprGetPortablePath(source)))) {
+    assert(eroute->top);
+    if (!eroute->combine && (route->update || !mprLookupKey(eroute->top->views, path))) {
         cchar *errMsg;
         /* WARNING: GC yield */
-        mprHold(source);
-        if (espLoadModule(route, conn->dispatcher, "view", source, &errMsg) < 0) {
-            mprRelease(source);
+        if (espLoadModule(route, conn->dispatcher, "view", path, &errMsg) < 0) {
             httpError(conn, HTTP_CODE_NOT_FOUND, "%s", errMsg);
             return;
         }
-        mprRelease(source);
     }
 #endif
-    if ((viewProc = mprLookupKey(esp->views, mprGetPortablePath(source))) == 0) {
+    if ((viewProc = mprLookupKey(eroute->views, path)) == 0) {
         httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot find view");
         return;
     }
-    httpAddHeaderString(conn, "Content-Type", "text/html");
     if (rx->route->flags & HTTP_ROUTE_XSRF) {
         /* Add a new unique security token */
         httpAddSecurityToken(conn, 1);
     }
+    httpSetContentType(conn, "text/html");
+    
     /* WARNING: GC yield */
     (viewProc)(conn);
 }
@@ -4310,7 +4370,7 @@ PUBLIC int espLoadModule(HttpRoute *route, MprDispatcher *dispatcher, cchar *kin
 {
     EspRoute    *eroute;
     MprModule   *mp;
-    cchar       *appName, *cacheName, *canonical, *entry, *module;
+    cchar       *appName, *cache, *cacheName, *canonical, *entry, *module;
     int         isView, recompile;
 
     eroute = route->eroute;
@@ -4329,7 +4389,10 @@ PUBLIC int espLoadModule(HttpRoute *route, MprDispatcher *dispatcher, cchar *kin
     } else {
         cacheName = mprGetMD5WithPrefix(sfmt("%s:%s", appName, canonical), -1, sjoin(kind, "_", NULL));
     }
-    module = mprNormalizePath(sfmt("%s/%s%s", httpGetDir(route, "CACHE"), cacheName, ME_SHOBJ));
+    if ((cache = httpGetDir(route, "CACHE")) == 0) {
+        cache = "cache";
+    }
+    module = mprNormalizePath(sfmt("%s/%s%s", mprJoinPath(route->home, cache), cacheName, ME_SHOBJ));
     isView = smatch(kind, "view");
 
     lock(esp);
@@ -4496,23 +4559,6 @@ PUBLIC bool espModuleIsStale(cchar *source, cchar *module, int *recompile)
 #endif /* ME_STATIC */
 
 
-/*
-    Test if the the required ESP page exists
- */
-static bool pageExists(HttpConn *conn)
-{
-    HttpRx      *rx;
-    cchar       *source, *dir;
-
-    rx = conn->rx;
-    if ((dir = httpGetDir(rx->route, "VIEWS")) == 0) {
-        dir = rx->route->documents;
-    }
-    source = mprJoinPathExt(mprJoinPath(dir, rx->target), ".esp");
-    return mprPathExists(source, R_OK);
-}
-
-
 /************************************ Esp Route *******************************/
 /*
     Public so that esp.c can also call
@@ -4520,12 +4566,9 @@ static bool pageExists(HttpConn *conn)
 PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
+        mprMark(eroute->actions);
         mprMark(eroute->appName);
         mprMark(eroute->compile);
-#if KEEP
-        mprMark(eroute->combineScript);
-        mprMark(eroute->combineSheet);
-#endif
         mprMark(eroute->currentSession);
         mprMark(eroute->edi);
         mprMark(eroute->env);
@@ -4533,7 +4576,12 @@ PUBLIC void espManageEspRoute(EspRoute *eroute, int flags)
         mprMark(eroute->routeSet);
         mprMark(eroute->searchPath);
         mprMark(eroute->top);
+        mprMark(eroute->views);
         mprMark(eroute->winsdk);
+#if DEPRECATED || 1
+        mprMark(eroute->combineScript);
+        mprMark(eroute->combineSheet);
+#endif
     }
 }
 
@@ -4552,11 +4600,16 @@ PUBLIC EspRoute *espCreateRoute(HttpRoute *route)
 #else
     eroute->compileMode = ESP_COMPILE_OPTIMIZED;
 #endif
+    if (route->parent) {
+        eroute->top = ((EspRoute*)route->parent->eroute)->top;
+    } else {
+        eroute->top = eroute;
+    }
     return eroute;
 }
 
 
-static EspRoute *initRoute(HttpRoute *route)
+static EspRoute *createEspRoute(HttpRoute *route)
 {
     EspRoute    *eroute;
 
@@ -4593,11 +4646,11 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
         eroute->env = mprCloneHash(parent->env);
     }
     eroute->appName = parent->appName;
-#if KEEP
+    eroute->combine = parent->combine;
+#if DEPRECATED || 1
     eroute->combineScript = parent->combineScript;
     eroute->combineSheet = parent->combineSheet;
 #endif
-    eroute->combine = parent->combine;
     eroute->routeSet = parent->routeSet;
     route->eroute = eroute;
     return eroute;
@@ -4627,30 +4680,26 @@ static void manageReq(EspReq *req, int flags)
 static void manageEsp(Esp *esp, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(esp->actions);
         mprMark(esp->databases);
         mprMark(esp->databasesTimer);
         mprMark(esp->ediService);
         mprMark(esp->internalOptions);
         mprMark(esp->local);
         mprMark(esp->mutex);
-        mprMark(esp->views);
     }
 }
 
 
 /*
-    Get a dedicated EspRoute for an HttpRoute. Allocate if required.
+    Get an EspRoute. Allocate if required.
     It is expected that the caller will modify the EspRoute.
  */
 static EspRoute *getEroute(HttpRoute *route)
 {
     HttpRoute   *rp;
 
-    if (route->eroute) {
-        if (!route->parent || route->parent->eroute != route->eroute) {
-            return route->eroute;
-        }
+    if (route->eroute && (!route->parent || route->parent->eroute != route->eroute)) {
+        return route->eroute;
     }
     /*
         Lookup up the route chain for any configured EspRoutes
@@ -4660,35 +4709,25 @@ static EspRoute *getEroute(HttpRoute *route)
             return cloneEspRoute(route, rp->eroute);
         }
     }
-    return initRoute(route);
-}
-
-
-PUBLIC void espAddHomeRoute(HttpRoute *parent)
-{
-    cchar   *source, *name, *path, *pattern, *prefix;
-
-    prefix = parent->prefix ? parent->prefix : "";
-    source = parent->sourceName;
-    name = sjoin(prefix, "/home", NULL);
-    path = stemplate("${PUBLIC_DIR}/index.esp", parent->vars);
-    pattern = sfmt("^%s(/)$", prefix);
-    httpDefineRoute(parent, name, "GET,POST", pattern, path, source);
+    return createEspRoute(route);
 }
 
 
 /*********************************** Directives *******************************/
 
-PUBLIC int espDefineApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix, cchar *routeSet)
+PUBLIC int espDefineApp(HttpRoute *route, cchar *name, cchar *prefix, cchar *home, cchar *documents, cchar *routeSet)
 {
     EspRoute    *eroute;
 
     if ((eroute = getEroute(route)) == 0) {
         return MPR_ERR_MEMORY;
     }
-    if (dir) {
-        httpSetRouteDocuments(route, dir);
-        httpSetRouteHome(route, dir);
+    espSetDefaultDirs(route);
+    if (home) {
+        httpSetRouteHome(route, home);
+    }
+    if (documents) {
+        httpSetRouteDocuments(route, documents);
     }
     eroute->top = eroute;
     if (name) {
@@ -4697,32 +4736,28 @@ PUBLIC int espDefineApp(HttpRoute *route, cchar *dir, cchar *name, cchar *prefix
     if (routeSet) {
         eroute->routeSet = sclone(routeSet);
     }
-    espSetDefaultDirs(route);
     if (prefix) {
         if (*prefix != '/') {
             mprLog("warn esp", 0, "Prefix name should start with a \"/\"");
             prefix = sjoin("/", prefix, NULL);
         }
         prefix = stemplate(prefix, route->vars);
-        httpSetRouteName(route, prefix);
         httpSetRoutePrefix(route, prefix);
-        httpSetRoutePattern(route, sfmt("^%s", prefix), 0);
+        httpSetRoutePattern(route, sfmt("^%s.*$", prefix), 0);
     } else {
-        httpSetRouteName(route, sfmt("app-%s", name));
+        httpSetRoutePattern(route, "^.*$", 0);
     }
     if (!route->cookie && eroute->appName && *eroute->appName) {
         httpSetRouteCookie(route, eroute->appName);
     }
-    httpAddRouteHandler(route, "espHandler", "esp");
-    /*
-        Added so redirections get handled in esp-login for "/" after being logged in
-     */
-    httpAddRouteHandler(route, "fileHandler", "");
+    httpSetRouteXsrf(route, 1);
+    httpAddRouteHandler(route, "espHandler", "");
+
     httpAddRouteIndex(route, "index.esp");
     httpAddRouteIndex(route, "index.html");
 
-    httpSetRouteVar(route, "APP", name);
-    httpSetRouteVar(route, "UAPP", stitle(name));
+    httpSetRouteVar(route, "NAME", name);
+    httpSetRouteVar(route, "TITLE", stitle(name));
     return 0;
 }
 
@@ -4742,25 +4777,9 @@ static void ifConfigModified(HttpRoute *route, cchar *path, bool *modified)
 }
 
 
-static void hoistConfig(HttpRoute *route, cchar *from, cchar *to)
-{
-    MprJson     *src, *dest;
-
-    if ((src = mprGetJsonObj(route->config, from)) != 0) {
-        if ((dest = mprGetJsonObj(route->config, to)) != 0) {
-            mprBlendJson(dest, src, MPR_JSON_COMBINE);
-        } else {
-            mprSetJsonObj(route->config, to, src);
-        }
-        mprRemoveJson(route->config, from);
-    }
-}
-
-
 PUBLIC int espLoadConfig(HttpRoute *route)
 {
     cchar       *files[] = { "package.json", "esp.json", "expansive.json", 0 };
-    cchar       *roots[] = { 0,              "app",      "app.expansive",  0 };
     EspRoute    *eroute;
     cchar       **file, *path;
     bool        modified;
@@ -4776,19 +4795,13 @@ PUBLIC int espLoadConfig(HttpRoute *route)
         for (file = files; *file; file++) {
             path = mprJoinPath(route->home, *file);
             if (mprPathExists(path, R_OK)) {
-                if (httpLoadConfig(route, roots[file - files], path) < 0) {
+                if (httpLoadConfig(route, path) < 0) {
                     unlock(esp);
                     return MPR_ERR_CANT_LOAD;
                 }
             }
         }
         httpFinalizeConfig(route);
-
-        hoistConfig(route, "app.directories", "directories");
-        hoistConfig(route, "app.name", "name");
-        hoistConfig(route, "app.title", "title");
-        hoistConfig(route, "app.description", "description");
-        hoistConfig(route, "app.version", "version");
         unlock(esp);
     }
     return 0;
@@ -4804,6 +4817,7 @@ PUBLIC int espConfigureApp(HttpRoute *route)
     if (espLoadConfig(route) < 0) {
         return MPR_ERR_CANT_LOAD;
     }
+    eroute->appName = espGetConfig(route, "name", eroute->appName);
     if (eroute->routeSet) {
         httpAddRouteSet(route, eroute->routeSet);
     }
@@ -4860,7 +4874,8 @@ PUBLIC int espLoadApp(HttpRoute *route)
     <EspApp
         auth=STORE
         database=DATABASE
-        dir=DIR
+        home=DIR
+        documents=DIR
         combine=true|false
         name=NAME
         prefix=PREFIX
@@ -4870,10 +4885,11 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpRoute   *route;
     EspRoute    *eroute;
-    cchar       *auth, *database, *name, *prefix, *dir, *routeSet, *combine;
+    cchar       *auth, *database, *name, *prefix, *home, *documents, *routeSet, *combine;
     char        *option, *ovalue, *tok;
 
-    dir = ".";
+    home = state->route->home;
+    documents = 0;
     routeSet = 0;
     combine = 0;
     prefix = 0;
@@ -4887,16 +4903,22 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
             if (smatch(option, "auth")) {
                 auth = ovalue;
-            } else if (smatch(option, "database")) {
-                database = ovalue;
-            } else if (smatch(option, "dir")) {
-                dir = ovalue;
             } else if (smatch(option, "combine")) {
                 combine = ovalue;
 #if DEPRECATED || 1
             } else if (smatch(option, "combined")) {
                 combine = ovalue;
 #endif
+            } else if (smatch(option, "database")) {
+                database = ovalue;
+#if DEPRECATED || 1
+            } else if (smatch(option, "dir")) {
+                documents = home = ovalue;
+#endif
+            } else if (smatch(option, "documents")) {
+                documents = ovalue;
+            } else if (smatch(option, "home")) {
+                home = ovalue;
             } else if (smatch(option, "name")) {
                 name = ovalue;
             } else if (smatch(option, "prefix")) {
@@ -4908,15 +4930,23 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
             }
         }
     }
-    if (mprSamePath(state->route->documents, dir)) {
-        /*
-            Can use existing route as it has the same prefix and documents directory.
-         */
-        route = state->route;
-    } else {
-        route = httpCreateInheritedRoute(state->route);
+
+#if DEPRECATE || 1
+    if (!documents) {
+        documents = mprJoinPath(home, "documents");
+        if (!mprPathExists(documents, X_OK)) {
+            documents = mprJoinPath(home, "client");
+            if (!mprPathExists(documents, X_OK)) {
+                documents = mprJoinPath(home, "public");
+                if (!mprPathExists(documents, X_OK)) {
+                    documents = home;
+                }
+            }
+        }
     }
-    state->route = route;
+#endif
+
+    state->route = route = httpCreateInheritedRoute(state->route);
     if (auth) {
         if (httpSetAuthStore(route->auth, auth) < 0) {
             mprLog("error esp", 0, "The %s AuthStore is not available on this platform", auth);
@@ -4934,7 +4964,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
             return MPR_ERR_BAD_STATE;
         }
     }
-    if (espDefineApp(route, dir, name, prefix, routeSet) < 0) {
+    if (espDefineApp(route, name, prefix, home, documents, routeSet) < 0) {
         return MPR_ERR_CANT_CREATE;
     }
     if (prefix) {
@@ -5044,7 +5074,7 @@ PUBLIC int espOpenDatabase(HttpRoute *route, cchar *spec)
     if (*provider == '\0' || *path == '\0') {
         return MPR_ERR_BAD_ARGS;
     }
-    path = mprJoinPath(httpGetDir(route, "DB"), path);
+    path = mprJoinPaths(route->home, httpGetDir(route, "DB"), path, NULL);
     dir = mprGetPathDir(path);
     if (!mprPathExists(dir, X_OK)) {
         mprMakeDir(dir, 0755, -1, -1, 1);
@@ -5079,26 +5109,19 @@ static int espDbDirective(MaState *state, cchar *key, cchar *value)
 
 PUBLIC void espSetDefaultDirs(HttpRoute *route)
 {
-    //  MOB - why are these not uppercase?
-    httpSetDir(route, "APP", "app");
     httpSetDir(route, "CACHE", 0);
     httpSetDir(route, "CONTROLLERS", 0);
     httpSetDir(route, "DB", 0);
+    httpSetDir(route, "DOCUMENTS", route->documents);
+    httpSetDir(route, "HOME", route->home);
     httpSetDir(route, "LAYOUTS", 0);
     httpSetDir(route, "LIB", "lib");
     httpSetDir(route, "PAKS", 0);
-    httpSetDir(route, "PUBLIC", 0);
+    httpSetDir(route, "PARTIALS", 0);
+    httpSetDir(route, "SOURCE", 0);
     httpSetDir(route, "SRC", 0);
     httpSetDir(route, "TOP", mprGetCurrentPath());
-
-#if UNUSED
-    //  MOB - is this used?
-    httpSetDir(route, "views", "app");
-    /*  Public relative LIB */
-    httpSetRouteVar(route, "LIB", "lib");
-    //  missing upload
-    httpSetRouteUploadDir(route, httpMakePath(route, 0, value));
-#endif
+    httpSetDir(route, "UPLOAD", "/tmp");
 }
 
 
@@ -5266,11 +5289,11 @@ static int espPermResourceDirective(MaState *state, cchar *key, cchar *value)
     char        *name, *next;
 
     if (value == 0 || *value == '\0') {
-        httpAddPermResource(state->route, state->route->serverPrefix, "{controller}");
+        httpAddPermResource(state->route, "{controller}");
     } else {
         name = stok(sclone(value), ", \t\r\n", &next);
         while (name) {
-            httpAddPermResource(state->route, state->route->serverPrefix, name);
+            httpAddPermResource(state->route, name);
             name = stok(NULL, ", \t\r\n", &next);
         }
     }
@@ -5285,11 +5308,11 @@ static int espResourceDirective(MaState *state, cchar *key, cchar *value)
     char        *name, *next;
 
     if (value == 0 || *value == '\0') {
-        httpAddResource(state->route, state->route->serverPrefix, "{controller}");
+        httpAddResource(state->route, "{controller}");
     } else {
         name = stok(sclone(value), ", \t\r\n", &next);
         while (name) {
-            httpAddResource(state->route, state->route->serverPrefix, name);
+            httpAddResource(state->route, name);
             name = stok(NULL, ", \t\r\n", &next);
         }
     }
@@ -5305,11 +5328,11 @@ static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
     char        *name, *next;
 
     if (value == 0 || *value == '\0') {
-        httpAddResourceGroup(state->route, state->route->serverPrefix, "{controller}");
+        httpAddResourceGroup(state->route, "{controller}");
     } else {
         name = stok(sclone(value), ", \t\r\n", &next);
         while (name) {
-            httpAddResourceGroup(state->route, state->route->serverPrefix, name);
+            httpAddResourceGroup(state->route, name);
             name = stok(NULL, ", \t\r\n", &next);
         }
     }
@@ -5320,7 +5343,6 @@ static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
 /*
     EspRoute
         methods=METHODS
-        name=NAME
         pattern=PATTERN
         source=SOURCE
         target=TARGET
@@ -5365,7 +5387,7 @@ static int espRouteDirective(MaState *state, cchar *key, cchar *value)
         target = "$&";
     }
     target = stemplate(target, state->route->vars);
-    if ((route = httpDefineRoute(state->route, name, methods, pattern, target, source)) == 0) {
+    if ((route = httpDefineRoute(state->route, methods, pattern, target, source)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     httpSetRouteHandler(route, "espHandler");
@@ -5383,7 +5405,7 @@ PUBLIC int espBindProc(HttpRoute *parent, cchar *pattern, void *proc)
 {
     HttpRoute   *route;
 
-    if ((route = httpDefineRoute(parent, pattern, "ALL", pattern, "$&", "unused")) == 0) {
+    if ((route = httpDefineRoute(parent, "ALL", pattern, "$&", "unused")) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
     httpSetRouteHandler(route, "espHandler");
@@ -5452,13 +5474,6 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     esp->local = mprCreateThreadLocal();
     if (module) {
         mprSetModuleFinalizer(module, unloadEsp);
-    }
-    /* Thread-safe */
-    if ((esp->views = mprCreateHash(-1, MPR_HASH_STATIC_VALUES)) == 0) {
-        return 0;
-    }
-    if ((esp->actions = mprCreateHash(-1, MPR_HASH_STATIC_VALUES)) == 0) {
-        return 0;
     }
     if (espInitParser() < 0) {
         return 0;
@@ -5732,7 +5747,7 @@ static cchar *map(HttpConn *conn, MprHash *options)
 #define ESP_TOK_FIELD           3            /* @#field */
 #define ESP_TOK_VAR             4            /* @!var */
 #define ESP_TOK_HOME            5            /* @~ Home ULR */
-#define ESP_TOK_SERVER          6            /* @^ Server URL  */
+#define ESP_TOK_SERVER          6            /* @| Server URL  */
 #define ESP_TOK_LITERAL         7            /* literal HTML */
 #define ESP_TOK_EXPR            8            /* <%= expression %> */
 #define ESP_TOK_CONTROL         9            /* <%@ control */
@@ -6355,10 +6370,13 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             mprPutToBuf(body, "  espRenderString(conn, conn->rx->route->prefix);");
             break;
 
+#if DEPRECATED || 1
+        //  DEPRECATE serverPrefix in version 6
         case ESP_TOK_SERVER:
-            /* @^ Server URL */
+            /* @| Server URL */
             mprPutToBuf(body, "  espRenderString(conn, sjoin(conn->rx->route->prefix ? conn->rx->route->prefix : \"\", conn->rx->route->serverPrefix, NULL));");
             break;
+#endif
 
         case ESP_TOK_LITERAL:
             line = joinLine(token, &len);
@@ -6806,7 +6824,6 @@ static cchar *getMappedArch(cchar *arch)
 
 
 #if WINDOWS
-//  TODO - move to mpr
 static int reverseSortVersions(char **s1, char **s2)
 {
     return -scmp(*s1, *s2);
@@ -7148,6 +7165,7 @@ static EdiRec *mdbCreateRec(Edi *edi, cchar *tableName)
 
     mdb = (Mdb*) edi;
     if ((table = lookupTable(mdb, tableName)) == 0) {
+        mprLog("error esp mdb", 0, "Cannot find table %s", tableName);
         return 0;
     }
     nfields = max(table->schema->ncols, 1);
@@ -9048,6 +9066,9 @@ static EdiRec *sdbReadRec(Edi *edi, cchar *tableName, cchar *key)
         return 0;
     }
     if ((grid = query(edi, sfmt("SELECT * FROM %s WHERE id = ?;", tableName), key, NULL)) == 0) {
+        return 0;
+    }
+    if (grid->nrecords == 0) {
         return 0;
     }
     return grid->records[0];

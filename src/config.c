@@ -1860,16 +1860,6 @@ static int monitorDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    Name routeName
- */
-static int nameDirective(MaState *state, cchar *key, cchar *value)
-{
-    httpSetRouteName(state->route, value);
-    return 0;
-}
-
-
-/*
     NameVirtualHost ip[:port]
  */
 static int nameVirtualHostDirective(MaState *state, cchar *key, cchar *value)
@@ -2147,7 +2137,7 @@ static int rerouteDirective(MaState *state, cchar *key, cchar *value)
             pattern = sreplace(pattern, "${inherit}", state->route->pattern);
         }
         pattern = httpExpandRouteVars(state->route, pattern);
-        if ((route = httpLookupRouteByPattern(state->host, pattern)) != 0) {
+        if ((route = httpLookupRoute(state->host, pattern)) != 0) {
             state->route = route;
         } else {
             mprLog("error appweb config", 0, "Cannot open route %s", pattern);
@@ -2648,7 +2638,9 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
         /* Set a default host and route name */
         if (value) {
             httpSetHostName(state->host, ssplit(sclone(value), " \t,", NULL));
+#if UNUSED
             httpSetRouteName(state->route, sfmt("default-%s", state->host->name));
+#endif
             /*
                 Save the endpoints until the close of the VirtualHost to closeVirtualHostDirective can
                 add the virtual host to the specified endpoints.
@@ -3204,7 +3196,6 @@ static int parseInit()
     maAddDirective("Methods", methodsDirective);
     maAddDirective("MinWorkers", minWorkersDirective);
     maAddDirective("Monitor", monitorDirective);
-    maAddDirective("Name", nameDirective);
     maAddDirective("Options", optionsDirective);
     maAddDirective("Order", orderDirective);
     maAddDirective("Param", paramDirective);

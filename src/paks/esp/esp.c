@@ -16,7 +16,7 @@
 typedef struct App {
     Mpr         *mpr;
 
-    cchar       *appName;               /* Application name */
+    cchar       *name;                  /* Application name */
     cchar       *appwebConfig;          /* Arg to --appweb */
     cchar       *cipher;                /* Cipher for passwords: "md5" or "blowfish" */
     cchar       *currentDir;            /* Initial starting current directory */
@@ -95,7 +95,7 @@ static int       nextMigration;         /* Sequence number for next migration */
 #define REQ_CONFIG      0x8             /* Require esp.json, otherwise load only if present */
 #define REQ_NO_CONFIG   0x10            /* Never load appweb.conf */
 #define REQ_SERVE       0x20            /* Will be running as a server */
-#define REQ_NAME        0x40            /* Set appName */
+#define REQ_NAME        0x40            /* Set "name" */
 
 /*
     CompileFile flags
@@ -116,7 +116,6 @@ static int       nextMigration;         /* Sequence number for next migration */
 #define ESP_MIGRATIONS  "_EspMigrations"
 
 #define ESP_PAKS_DIR    "paks"          /* Default paks dir */
-#define ESP_LIB_DIR     "public/lib"    /* Default public/lib dir */
 
 /***************************** Forward Declarations ***************************/
 
@@ -228,7 +227,6 @@ static App *createApp(Mpr *mpr)
 static void manageApp(App *app, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(app->appName);
         mprMark(app->appwebConfig);
         mprMark(app->base);
         mprMark(app->binDir);
@@ -258,6 +256,7 @@ static void manageApp(App *app, int flags)
         mprMark(app->mode);
         mprMark(app->module);
         mprMark(app->mpr);
+        mprMark(app->name);
         mprMark(app->package);
         mprMark(app->paksCacheDir);
         mprMark(app->paksDir);
@@ -362,8 +361,8 @@ static int parseArgs(int argc, char **argv)
                 if (!identifier(argv[++argind])) {
                     fail("Application name must be a valid C identifier");
                 } else {
-                    app->appName = sclone(argv[argind]);
-                    app->title = stitle(app->appName);
+                    app->name = sclone(argv[argind]);
+                    app->title = stitle(app->name);
                 }
             }
 
@@ -500,8 +499,8 @@ static void parseCommand(int argc, char **argv)
         app->require = REQ_CONFIG;
 
     } else if (smatch(cmd, "init")) {
-        if (!app->appName) {
-            app->appName = (argc >= 1) ? argv[0] : mprGetPathBase(mprGetCurrentPath());
+        if (!app->name) {
+            app->name = (argc >= 1) ? argv[0] : mprGetPathBase(mprGetCurrentPath());
         }
         app->require = REQ_NAME;
 
@@ -591,7 +590,7 @@ static void initialize(int argc, char **argv)
 {
     HttpStage   *stage;
     HttpRoute   *route;
-    cchar       *path;
+    cchar       *documents, *path;
     int         flags;
 
     if (app->error) {
@@ -601,8 +600,8 @@ static void initialize(int argc, char **argv)
     if (app->error) {
         return;
     }
-    if (!app->appName) {
-        app->appName = mprGetPathBase(mprGetCurrentPath());
+    if (!app->name) {
+        app->name = mprGetPathBase(mprGetCurrentPath());
     }
     route = app->route;
     path = mprJoinPath(route->home, ME_ESP_CONFIG);
@@ -619,16 +618,16 @@ static void initialize(int argc, char **argv)
             return;
         }
         app->paksDir = getConfigValue(app->package, "directories.paks", app->paksDir);
-        app->appName = getConfigValue(app->package, "name", app->appName);
+        app->name = getConfigValue(app->package, "name", app->name);
     } else {
         app->package = mprParseJson(sfmt("{ name: '%s', title: '%s', description: '%s', version: '1.0.0', \
             dependencies: {}, app: { http: {}, esp: {}}}",
-            app->appName, app->appName, app->appName));
+            app->name, app->name, app->name));
     }
-    app->title = stitle(app->appName);
+    app->title = stitle(app->name);
 
     if (app->require & REQ_NAME) {
-        if (!identifier(app->appName)) {
+        if (!identifier(app->name)) {
             if (argc >= 1) {
                 fail("Application name must be a valid C identifier");
             } else {
@@ -658,29 +657,50 @@ static void initialize(int argc, char **argv)
             return;
         }
     } else {
-        //  TODO - Is this needed for a Configured app?
-        httpAddRouteHandler(route, "fileHandler", "");
+#if DEPRECATE || 1
+        if (mprPathExists("documents", X_OK)) {
+            documents = "documents";
+        } else if (mprPathExists("client", X_OK)) {
+            documents = "client";
+        } else if (mprPathExists("public", X_OK)) {
+            documents = "public";
+        } else {
+            documents = ".";
+        }
+#endif
         if (mprPathExists(ME_ESP_CONFIG, R_OK)) {
-            if (espDefineApp(route, ".", app->appName, 0, 0) < 0 || espConfigureApp(route) < 0 || espLoadApp(route) < 0) {
+            if (espDefineApp(route, app->name, 0, ".", documents, 0) < 0 || 
+                    espConfigureApp(route) < 0 || espLoadApp(route) < 0) {
                 fail("Cannot define and load ESP app");
                 return;
             }
         } else {
-            /*
-                No esp.json - not an ESP app
-             */
-            route->update = 1;
-            httpSetRouteShowErrors(route, 1);
-            espSetDefaultDirs(route);
-            httpSetDir(route, "public", ".");
-            httpAddRouteHandler(route, "espHandler", "esp");
-            httpAddRouteIndex(route, "index.esp");
-            httpAddRouteIndex(route, "index.html");
+            if (mprPathExists("package.json", R_OK)) {
+#if DEPRECATE || 1
+                trace("Warn", "ESP configuration should be in %s instead of package.json", ME_ESP_CONFIG);
+                if (espDefineApp(route, app->name, 0, ".", documents, 0) < 0 || 
+                        espConfigureApp(route) < 0 || espLoadApp(route) < 0) {
+                    fail("Cannot define and load ESP app");
+                    return;
+                }
+#endif
+            } else {
+                /*
+                    No esp.json - not an ESP app
+                 */
+                route->update = 1;
+                httpSetRouteShowErrors(route, 1);
+                espSetDefaultDirs(route);
+                httpAddRouteHandler(route, "espHandler", "esp");
+                httpAddRouteHandler(route, "fileHandler", "");
+                httpAddRouteIndex(route, "index.esp");
+                httpAddRouteIndex(route, "index.html");
+            }
         }
-        //  TODO - is this route already finalized for a configured app?
+        //  MOB - is this route already finalized for a configured app?
         httpFinalizeRoute(route);
     }
-    //  TODO - should only be needed if espConfigureApp not called
+    //  MOB - should only be needed if espConfigureApp not called
     if (route->database && !app->eroute->edi) {
         if (espOpenDatabase(route, route->database) < 0) {
             fail("Cannot open database %s", route->database);
@@ -778,7 +798,7 @@ static void clean(int argc, char **argv)
     for (ITERATE_ITEMS(app->routes, route, next)) {
         cacheDir = httpGetDir(route, "CACHE");
         if (cacheDir) {
-            trace("Clean", "Route \"%s\" at %s", route->name, mprGetRelPath(route->documents, 0));
+            trace("Clean", "%s", mprGetRelPath(cacheDir, 0));
             files = mprGetPathFiles(cacheDir, MPR_PATH_RELATIVE);
             for (nextFile = 0; (dp = mprGetNextItem(files, &nextFile)) != 0; ) {
                 path = mprJoinPath(cacheDir, dp->name);
@@ -1075,7 +1095,7 @@ static void role(int argc, char **argv)
     rolename = argv[1];
 
     if (smatch(cmd, "remove")) {
-        key = sfmt("app.http.auth.roles.%s", rolename);
+        key = sfmt("http.auth.roles.%s", rolename);
         if (mprRemoveJson(app->config, key) < 0) {
             fail("Cannot remove %s", key);
             return;
@@ -1090,7 +1110,7 @@ static void role(int argc, char **argv)
         if (smatch(cmd, "add")) {
             def = sfmt("[%s]", sjoinArgs(argc - 2, (cchar**) &argv[2], ","));
             abilities = mprParseJson(def);
-            key = sfmt("app.http.auth.roles.%s", rolename);
+            key = sfmt("http.auth.roles.%s", rolename);
             if (mprSetJsonObj(app->config, key, abilities) < 0) {
                 fail("Cannot update %s", key);
                 return;
@@ -1225,7 +1245,7 @@ static void user(int argc, char **argv)
             fail("Cannot remove user %s", username);
             return;
         }
-        key = sfmt("app.http.auth.users.%s", username);
+        key = sfmt("http.auth.users.%s", username);
         if (mprRemoveJson(app->config, key) < 0) {
             fail("Cannot remove %s", key);
             return;
@@ -1246,7 +1266,7 @@ static void user(int argc, char **argv)
             password = getPassword();
         }
         if (auth->realm == 0 || *auth->realm == '\0') {
-            fail("An authentication realm has not been defined. Define a \"app.http.auth.realm\" value.");
+            fail("An authentication realm has not been defined. Define a \"http.auth.realm\" value.");
             return;
         }
         if (smatch(app->cipher, "md5")) {
@@ -1259,7 +1279,7 @@ static void user(int argc, char **argv)
         if (smatch(cmd, "add")) {
             def = sfmt("{password:'%s',roles:[%s]}", encodedPassword, sjoinArgs(argc - 3, (cchar**) &argv[3], ","));
             credentials = mprParseJson(def);
-            key = sfmt("app.http.auth.users.%s", username);
+            key = sfmt("http.auth.users.%s", username);
             if (mprSetJsonObj(app->config, key, credentials) < 0) {
                 fail("Cannot update %s", key);
                 return;
@@ -1345,21 +1365,21 @@ static MprList *getRoutes()
     for (prev = -1; (route = mprGetPrevItem(app->host->routes, &prev)) != 0; ) {
         if ((eroute = route->eroute) == 0 || !eroute->compile) {
             /* No ESP configuration for compiling */
-            mprLog("", 6, "Skip route name %s - no esp configuration", route->name);
+            mprLog("", 6, "Skip route name %s - no esp configuration", route->pattern);
             continue;
         }
         if (filterRouteName) {
-            mprLog("", 6, "Check route name %s, prefix %s with %s", route->name, route->startWith, filterRouteName);
-            if (!smatch(filterRouteName, route->name)) {
+            mprLog("", 6, "Check route name %s, prefix %s with %s", route->pattern, route->startWith, filterRouteName);
+            if (!smatch(filterRouteName, route->pattern)) {
                 continue;
             }
         } else if (filterRoutePrefix) {
-            mprLog("", 6, "Check route name %s, prefix %s with %s", route->name, route->startWith, filterRoutePrefix);
+            mprLog("", 6, "Check route name %s, prefix %s with %s", route->pattern, route->startWith, filterRoutePrefix);
             if (!smatch(filterRoutePrefix, route->prefix) && !smatch(filterRoutePrefix, route->startWith)) {
                 continue;
             }
         } else {
-            mprLog("", 6, "Check route name %s, prefix %s", route->name, route->startWith);
+            mprLog("", 6, "Check route name %s, prefix %s", route->pattern, route->startWith);
         }
         parent = route->parent;
         if (parent && parent->eroute &&
@@ -1371,7 +1391,7 @@ static MprList *getRoutes()
             continue;
         }
         if (!requiredRoute(route)) {
-            mprLog("", 6, "Skip route %s not required for selected targets", route->name);
+            mprLog("", 6, "Skip route %s not required for selected targets", route->pattern);
             continue;
         }
         /*
@@ -1380,13 +1400,13 @@ static MprList *getRoutes()
         rp = 0;
         for (ITERATE_ITEMS(routes, rp, nextRoute)) {
             if (similarRoute(route, rp)) {
-                mprLog("", 6, "Skip route %s because of prior similar route: %s", route->name, rp->name);
+                mprLog("", 6, "Skip route %s because of prior similar route", route->pattern);
                 route = 0;
                 break;
             }
         }
         if (route && mprLookupItem(routes, route) < 0) {
-            mprLog("", 6, "Using route name: %s documents:%s prefix: %s", route->name, route->documents, 
+            mprLog("", 6, "Using route name: %s documents:%s prefix: %s", route->pattern, route->documents, 
                 route->startWith);
             mprAddItem(routes, route);
         }
@@ -1683,15 +1703,16 @@ static void compile(int argc, char **argv)
         mprWriteFileFmt(file, "#include \"mpr.h\"\n\n");
         mprWriteFileFmt(file, "#include \"esp.h\"\n\n");
         for (ITERATE_ITEMS(app->slink, route, next)) {
-            name = app->appName ? app->appName : mprGetPathBase(route->documents);
+            name = app->name ? app->name : mprGetPathBase(route->documents);
             mprWriteFileFmt(file, "extern int esp_app_%s_combine(HttpRoute *route, MprModule *module);", name);
             mprWriteFileFmt(file, "    /* SOURCE %s */\n",
                 mprGetRelPath(mprJoinPath(httpGetDir(route, "CACHE"), sjoin(name, ".c", NULL)), NULL));
         }
         mprWriteFileFmt(file, "\nPUBLIC void appwebStaticInitialize()\n{\n");
         for (ITERATE_ITEMS(app->slink, route, next)) {
-            name = app->appName ? app->appName : mprGetPathBase(route->documents);
-            mprWriteFileFmt(file, "    espStaticInitialize(esp_app_%s_combine, \"%s\", \"%s\");\n", name, name, route->name);
+            name = app->name ? app->name : mprGetPathBase(route->documents);
+            mprWriteFileFmt(file, "    espStaticInitialize(esp_app_%s_combine, \"%s\", \"%s\");\n", name, name, 
+                route->pattern);
         }
         mprWriteFileFmt(file, "}\n");
         mprCloseFile(file);
@@ -1763,7 +1784,7 @@ static void compileItems(HttpRoute *route)
     int         found, next;
 
     found = 0;
-    vtrace("Info", "Compile items for route \"%s\"", route->name);
+    vtrace("Info", "Compile items for route \"%s\"", route->pattern);
 
     if ((dir = httpGetDir(route, "CONTROLLERS")) != 0) {
         app->files = mprGetPathFiles(dir, MPR_PATH_DESCEND);
@@ -1775,6 +1796,7 @@ static void compileItems(HttpRoute *route)
             found++;
         }
     }
+#if DEPRECATED || 1
     if ((dir = httpGetDir(route, "VIEWS")) != 0) {
         app->files = mprGetPathFiles(dir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
@@ -1788,46 +1810,32 @@ static void compileItems(HttpRoute *route)
             found++;
         }
     }
-
+#endif
     dir = mprJoinPath(httpGetDir(route, "SRC"), "app.c");
     if (mprPathExists(dir, R_OK) && selectResource(dir, "c")) {
         compileFile(route, dir, ESP_SRC);
         found++;
     }
-
-    if ((dir = httpGetDir(route, "PUBLIC")) != 0) {
-        app->files = mprGetPathFiles(dir, MPR_PATH_DESCEND | MPR_PATH_NO_DIRS);
-        for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
-            path = dp->name;
-            if (selectResource(path, "esp")) {
-                compileFile(route, path, ESP_PAGE);
-                found++;
-            }
+    app->files = mprGetPathFiles(route->documents, MPR_PATH_DESCEND);
+    for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
+        path = dp->name;
+        if (selectResource(path, "esp")) {
+            compileFile(route, path, ESP_PAGE);
         }
-
-    } else {
-        /* Non-MVC */
-        app->files = mprGetPathFiles(route->documents, MPR_PATH_DESCEND);
-        for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
-            path = dp->name;
-            if (selectResource(path, "esp")) {
-                compileFile(route, path, ESP_PAGE);
-            }
+        found++;
+    }
+    /*
+        Stand-alone controllers
+     */
+    if (route->sourceName) {
+        path = mprJoinPath(route->home, route->sourceName);
+        if (mprPathExists(path, R_OK)) {
+            compileFile(route, path, ESP_CONTROlLER);
             found++;
-        }
-        /*
-            Stand-alone controllers
-         */
-        if (route->sourceName) {
-            path = mprJoinPath(route->home, route->sourceName);
-            if (mprPathExists(path, R_OK)) {
-                compileFile(route, path, ESP_CONTROlLER);
-                found++;
-            }
         }
     }
     if (!found) {
-        trace("Info", "No files to compile for route \"%s\"", route->name);
+        trace("Info", "No files to compile for route \"%s\"", route->pattern);
     }
 }
 
@@ -1845,7 +1853,7 @@ static void compileCombined(HttpRoute *route)
     int             next, kind;
 
     eroute = route->eroute;
-    name = app->appName ? app->appName : mprGetPathBase(route->documents);
+    name = app->name ? app->name : mprGetPathBase(route->documents);
 
     /*
         Combined ... Catenate all source
@@ -1865,30 +1873,7 @@ static void compileCombined(HttpRoute *route)
             mprAddItem(app->build, mprCreateKeyPair(path, "controller", 0));
         }
     }
-
-    app->files = mprGetPathFiles(httpGetDir(route, "PUBLIC"), MPR_PATH_DESCEND);
-    for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
-        path = dp->name;
-        if (sstarts(path, httpGetDir(route, "LAYOUTS"))) {
-            continue;
-        }
-        if (sstarts(path, httpGetDir(route, "VIEWS"))) {
-            continue;
-        }
-        if (smatch(mprGetPathExt(path), "esp")) {
-            mprAddItem(app->build, mprCreateKeyPair(path, "page", 0));
-        }
-    }
-#if UNUSED && KEEP
-    app->files = mprGetPathFiles(httpGetDir(route, "VIEWS"), MPR_PATH_DESCEND);
-    for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
-        path = dp->name;
-        if (smatch(mprGetPathExt(path), "esp")) {
-            mprAddItem(app->build, mprCreateKeyPair(path, "view", 0));
-        }
-    }
-#endif
-    if (!httpGetDir(route, "CONTROLLERS") && !httpGetDir(route, "PUBLIC")) {
+    if (!httpGetDir(route, "CONTROLLERS")) {
         app->files = mprGetPathFiles(route->documents, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
@@ -1982,7 +1967,7 @@ static void generateController(int argc, char **argv)
     actions = sclone("");
     for (i = 1; i < argc; i++) {
         action = argv[i];
-        defines = sjoin(defines, sfmt("    espDefineAction(route, \"%s-cmd-%s\", %s);\n", app->controller, 
+        defines = sjoin(defines, sfmt("    espDefineAction(route, \"%s/%s\", %s);\n", app->controller, 
             action, action), NULL);
         actions = sjoin(actions, sfmt("static void %s() {\n}\n\n", action), NULL);
     }
@@ -2076,14 +2061,15 @@ static void generateScaffoldController(int argc, char **argv)
 
 static void generateClientController(int argc, char **argv)
 {
-    genKey("clientController", sfmt("%s/%s/%sControl.js", httpGetDir(app->route, "APP"), 
+    genKey("clientController", sfmt("%s/%s/%sControl.js", httpGetDir(app->route, "SOURCE"), 
         app->controller, stitle(app->controller)), 0);
 }
 
 
 static void generateClientModel(int argc, char **argv)
 {
-    genKey("clientModel", sfmt("%s/%s/%s.js", httpGetDir(app->route, "APP"), app->controller, stitle(app->controller)), 0);
+    genKey("clientModel", sfmt("%s/%s/%s.js", httpGetDir(app->route, "SOURCE"), app->controller, 
+        stitle(app->controller)), 0);
 }
 
 
@@ -2153,8 +2139,8 @@ static void generateTable(int argc, char **argv)
  */
 static void generateScaffoldViews(int argc, char **argv)
 {
-    genKey("clientList", "${APPDIR}/${CONTROLLER}/${CONTROLLER}-${FILENAME}", 0);
-    genKey("clientEdit", "${APPDIR}/${CONTROLLER}/${CONTROLLER}-${FILENAME}", 0);
+    genKey("clientList", "${SOURCE}/${CONTROLLER}/${FILENAME}", 0);
+    genKey("clientEdit", "${SOURCE}/${CONTROLLER}/${FILENAME}", 0);
 }
 
 
@@ -2378,13 +2364,14 @@ static MprHash *makeTokens(cchar *path, MprHash *other)
     route = app->route;
     filename = mprGetPathBase(path);
     list = smatch(app->controller, app->table) ? sfmt("%ss", app->controller) : app->table; 
+
     tokens = mprDeserialize(sfmt(
-        "{ APP: '%s', APPDIR: '%s', BINDIR: '%s', DATABASE: '%s', DOCUMENTS: '%s', FILENAME: '%s', HOME: '%s', "
-        "LIST: '%s', LISTEN: '%s', CONTROLLER: '%s', UCONTROLLER: '%s', MODEL: '%s', UMODEL: '%s', ROUTES: '%s', "
-        "SERVER: '%s', TABLE: '%s', UAPP: '%s', ACTIONS: '', DEFINE_ACTIONS: '', VIEWSDIR: '%s' }",
-        app->appName, httpGetDir(route, "APP"), app->binDir, app->database, route->documents, filename, route->home, 
-        list, app->listen, app->controller, stitle(app->controller), app->controller, stitle(app->controller), 
-        app->routeSet, route->serverPrefix, app->table, app->title, httpGetDir(route, "VIEWS")));
+        "{ NAME: '%s', TITLE: '%s', HOME: '%s', DOCUMENTS: '%s', SOURCE: '%s', BINDIR: '%s', DATABASE: '%s', FILENAME: '%s',"
+        "LIST: '%s', LISTEN: '%s', CONTROLLER: '%s', UCONTROLLER: '%s', MODEL: '%s', UMODEL: '%s', ROUTES: '%s',"
+        "TABLE: '%s', ACTIONS: '', DEFINE_ACTIONS: '' }",
+        app->name, app->title, route->home, route->documents, httpGetDir(route, "SOURCE"), app->binDir, app->database,
+        filename, list, app->listen, app->controller, stitle(app->controller), app->controller, stitle(app->controller), 
+        app->routeSet, app->table));
     if (other) {
         mprBlendHash(tokens, other);
     }
