@@ -2,16 +2,5 @@
     "name": "doc",
     "dependencies": {
         "jquery": "~1.11",
-    },
-    "directories": {
-        "lib": "files/lib"
-    },
-    "import": true,
-    "optionalDependencies": {
-    },
-    "app": {
-        "client": {
-            "scripts": []
-        }
     }
 }

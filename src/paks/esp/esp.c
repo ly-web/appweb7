@@ -16,11 +16,13 @@
 typedef struct App {
     Mpr         *mpr;
 
+    cchar       *description;           /* Application description */
     cchar       *name;                  /* Application name */
     cchar       *appwebConfig;          /* Arg to --appweb */
     cchar       *cipher;                /* Cipher for passwords: "md5" or "blowfish" */
     cchar       *currentDir;            /* Initial starting current directory */
     cchar       *database;              /* Database provider "mdb" | "sdb" */
+    cchar       *version;               /* Application version */
 
     cchar       *binDir;                /* Bin directory */
     cchar       *home;                  /* Home directory */
@@ -51,8 +53,8 @@ typedef struct App {
     cchar       *cacheName;             /* Cached MD5 name */
     cchar       *csource;               /* Name of "C" source for page or controller */
     cchar       *genlink;               /* Static link resolution file */
-    cchar       *filterRouteName;       /* Name of route to use for ESP configuration */
-    cchar       *filterRoutePrefix;     /* Prefix of route to use for ESP configuration */
+    cchar       *filterRoutePattern;    /* Poute pattern to use for filtering */
+    cchar       *filterRoutePrefix;     /* Prefix of route to use for filtering */
     cchar       *logSpec;               /* Arg for --log */
     cchar       *traceSpec;             /* Arg for --trace */
     cchar       *routeSet;              /* Desired route set package */
@@ -242,10 +244,11 @@ static void manageApp(App *app, int flags)
         mprMark(app->csource);
         mprMark(app->currentDir);
         mprMark(app->database);
+        mprMark(app->description);
         mprMark(app->entry);
         mprMark(app->eroute);
         mprMark(app->files);
-        mprMark(app->filterRouteName);
+        mprMark(app->filterRoutePattern);
         mprMark(app->filterRoutePrefix);
         mprMark(app->genlink);
         mprMark(app->home);
@@ -271,6 +274,7 @@ static void manageApp(App *app, int flags)
         mprMark(app->title);
         mprMark(app->topDeps);
         mprMark(app->traceSpec);
+        mprMark(app->version);
     }
 }
 
@@ -390,11 +394,12 @@ static int parseArgs(int argc, char **argv)
         } else if (smatch(argp, "rebuild") || smatch(argp, "r")) {
             app->rebuild = 1;
 
-        } else if (smatch(argp, "routeName")) {
+        //  DEPRECATE routeName
+        } else if (smatch(argp, "route") || smatch(argp, "routeName")) {
             if (argind >= argc) {
                 usageError();
             } else {
-                app->filterRouteName = sclone(argv[++argind]);
+                app->filterRoutePattern = sclone(argv[++argind]);
             }
 
         } else if (smatch(argp, "routePrefix")) {
@@ -500,7 +505,10 @@ static void parseCommand(int argc, char **argv)
 
     } else if (smatch(cmd, "init")) {
         if (!app->name) {
-            app->name = (argc >= 1) ? argv[0] : mprGetPathBase(mprGetCurrentPath());
+            app->name = (argc >= 2) ? sclone(argv[1]) : mprGetPathBase(mprGetCurrentPath());
+        }
+        if (argc >= 3) {
+            app->version = sclone(argv[2]);
         }
         app->require = REQ_NAME;
 
@@ -603,28 +611,53 @@ static void initialize(int argc, char **argv)
     if (!app->name) {
         app->name = mprGetPathBase(mprGetCurrentPath());
     }
-    route = app->route;
-    path = mprJoinPath(route->home, ME_ESP_CONFIG);
-    if (mprPathExists(path, R_OK)) {
-        if ((app->config = readConfig(path)) == 0) {
-            return;
-        }
-    } else {
-        app->config = mprParseJson("{ http: {}, esp: {}}");
+    if (!app->title) {
+        app->title = stitle(app->name);
     }
+    if (!app->description) {
+        app->description = sfmt("%s Application", app->title);
+    }
+    if (!app->version) {
+        app->version = sclone("0.0.1");
+    }
+    route = app->route;
+
+    /*
+        Read package.json first so esp.json can override
+     */
     path = mprJoinPath(route->home, "package.json");
     if (mprPathExists(path, R_OK)) {
         if ((app->package = readConfig(path)) == 0) {
             return;
         }
         app->paksDir = getConfigValue(app->package, "directories.paks", app->paksDir);
-        app->name = getConfigValue(app->package, "name", app->name);
-    } else {
-        app->package = mprParseJson(sfmt("{ name: '%s', title: '%s', description: '%s', version: '1.0.0', \
-            dependencies: {}, app: { http: {}, esp: {}}}",
-            app->name, app->name, app->name));
     }
-    app->title = stitle(app->name);
+    app->description = getConfigValue(app->package, "description", app->description);
+    app->name = getConfigValue(app->package, "name", app->name);
+    app->title = getConfigValue(app->package, "title", app->name);
+    app->version = getConfigValue(app->package, "version", app->version);
+
+    path = mprJoinPath(route->home, ME_ESP_CONFIG);
+    if (mprPathExists(path, R_OK)) {
+        if ((app->config = readConfig(path)) == 0) {
+            return;
+        }
+    }
+    app->description = getConfigValue(app->config, "description", app->description);
+    app->name = getConfigValue(app->config, "name", app->name);
+    app->title = getConfigValue(app->config, "title", app->name);
+    app->version = getConfigValue(app->config, "version", app->version);
+
+    if (!app->config) {
+        app->config = mprParseJson(sfmt("{ name: '%s', title: '%s', description: '%s', version: '%s', \
+            http: {}, esp: {}}",
+            app->name, app->title, app->description, app->version));
+    }
+    if (!app->package) {
+        app->package = mprParseJson(sfmt("{ name: '%s', title: '%s', description: '%s', version: '%s', \
+            dependencies: {}}",
+            app->name, app->title, app->description, app->version));
+    }
 
     if (app->require & REQ_NAME) {
         if (!identifier(app->name)) {
@@ -857,6 +890,9 @@ static cchar *getConfigValue(MprJson *config, cchar *key, cchar *defaultValue)
 {
     cchar       *value;
 
+    if (!config) {
+        return defaultValue;
+    }
     if ((value = mprGetJson(config, key)) != 0) {
         return value;
     }
@@ -892,9 +928,49 @@ static void editValue(int argc, char **argv)
 
 static void init(int argc, char **argv)
 {
+    MprJson     *config;
+    cchar       *data, *identity, *path;
+
     if (!mprPathExists(ME_ESP_CONFIG, R_OK)) {
         trace("Create", ME_ESP_CONFIG);
-        saveConfig(app->config, ME_ESP_CONFIG, 0);
+        if (!mprPathExists("package.json", R_OK)) {
+            identity = sfmt("name: '%s', title: '%s', description: '%s', version: '%s'",
+                app->name, app->title, app->description, app->version);
+        } else {
+            identity = "";
+        }
+        config = mprParseJson(sfmt("{" \
+            "%s," \
+            "http: {" \
+                "server: {" \
+                    "listen: [" \
+                        "'http://127.0.0.1:4000'" \
+                    "]," \
+                "}," \
+                "ssl: {" \
+                    "certificate: ''," \
+                    "key: ''" \
+                "}" \
+            "}," \
+            "esp: {" \
+                "compile: 'symbols'" \
+            "}" \
+        "}", identity));
+        if (config == 0) {
+            fail("Cannot parse config");
+            return;
+        }
+        path = mprJoinPath(app->route ? app->route->home : ".", "esp.json");
+        if ((data = mprJsonToString(config, MPR_JSON_PRETTY)) == 0) {
+            fail("Cannot save %s", path);
+        }
+        data = sjoin("/*\n" \
+            "   esp.json - ESP Application configuration file\n\n" \
+            "   See https://github.com/embedthis/esp/tree/dev/samples/config for a commented sample.\n" \
+            " */\n", data, NULL);
+        if (mprWritePathContents(path, data, -1, 0644) < 0) {
+            fail("Cannot save %s", path);
+        }
     }
 }
 
@@ -1156,7 +1232,7 @@ static void setMode(cchar *mode)
 static void setConfigValue(MprJson *config, cchar *key, cchar *value)
 {
     qtrace("Set", sfmt("Key \"%s\" to \"%s\"", key, value));
-    if (mprSetJson(config, key, value) < 0) {
+    if (mprSetJson(config, key, value, 0) < 0) {
         fail("Cannot update %s with %s", key, value);
         return;
     }
@@ -1345,7 +1421,7 @@ static MprList *getRoutes()
     EspRoute    *eroute;
     MprList     *routes;
     MprKey      *kp;
-    cchar       *filterRouteName, *filterRoutePrefix;
+    cchar       *filterRoutePattern, *filterRoutePrefix;
     int         prev, nextRoute;
 
     if (app->error) {
@@ -1355,7 +1431,7 @@ static MprList *getRoutes()
         fail("Cannot find default host");
         return 0;
     }
-    filterRouteName = app->filterRouteName;
+    filterRoutePattern = app->filterRoutePattern;
     filterRoutePrefix = app->filterRoutePrefix ? app->filterRoutePrefix : 0;
     routes = mprCreateList(0, MPR_LIST_STABLE);
 
@@ -1368,9 +1444,9 @@ static MprList *getRoutes()
             mprLog("", 6, "Skip route name %s - no esp configuration", route->pattern);
             continue;
         }
-        if (filterRouteName) {
-            mprLog("", 6, "Check route name %s, prefix %s with %s", route->pattern, route->startWith, filterRouteName);
-            if (!smatch(filterRouteName, route->pattern)) {
+        if (filterRoutePattern) {
+            mprLog("", 6, "Check route name %s, prefix %s with %s", route->pattern, route->startWith, filterRoutePattern);
+            if (!smatch(filterRoutePattern, route->pattern)) {
                 continue;
             }
         } else if (filterRoutePrefix) {
@@ -1412,8 +1488,8 @@ static MprList *getRoutes()
         }
     }
     if (mprGetListLength(routes) == 0) {
-        if (filterRouteName) {
-            fail("Cannot find usable ESP configuration for route %s", filterRouteName);
+        if (filterRoutePattern) {
+            fail("Cannot find usable ESP configuration for route %s", filterRoutePattern);
         } else if (filterRoutePrefix) {
             fail("Cannot find usable ESP configuration for route prefix %s", filterRoutePrefix);
         } else {
@@ -2413,8 +2489,8 @@ static void usageError()
     "    --appweb appweb.config     # Use file for appweb.conf\n"
     "    --cipher cipher            # Password cipher 'md5' or 'blowfish'\n"
     "    --database name            # Database provider 'mdb|sdb'\n"
-    "    --genlink filename         # Generate a static link module for combine compilations\n"
     "    --force                    # Force requested action\n"
+    "    --genlink filename         # Generate a static link module for combine compilations\n"
     "    --home directory           # Change to directory first\n"
     "    --keep                     # Keep intermediate source\n"
     "    --listen [ip:]port         # Generate app to listen at address\n"
@@ -2425,14 +2501,14 @@ static void usageError()
     "    --quiet                    # Don't emit trace\n"
     "    --platform os-arch-profile # Target platform\n"
     "    --rebuild                  # Force a rebuild\n"
-    "    --routeName name           # Name of route to select\n"
+    "    --route pattern            # Route pattern to select\n"
     "    --routePrefix prefix       # Prefix of route to select\n"
     "    --single                   # Generate a singleton controller\n"
     "    --show                     # Show routes and compile commands\n"
     "    --static                   # Use static linking\n"
     "    --symbols                  # Compile for debug with symbols\n"
     "    --table name               # Override table name if plural required\n"
-    "    --trrace traceFile:level   # Trace to file at verbosity level (0-5)\n"
+    "    --trace traceFile:level    # Trace to file at verbosity level (0-5)\n"
     "    --verbose                  # Emit more verbose trace\n"
     "    --why                      # Why compile or skip building\n"
     "\n"
@@ -2445,7 +2521,7 @@ static void usageError()
     "    esp generate migration description model [field:type [, field:type] ...]\n"
     "    esp generate scaffold model [field:type [, field:type] ...]\n"
     "    esp generate table name [field:type [, field:type] ...]\n"
-    "    esp init\n"
+    "    esp init [name [version]]\n"
     "    esp migrate [forward|backward|NNN]\n"
     "    esp mode [debug|release|...]\n"
     "    esp role [add|remove] rolename abilities...\n"

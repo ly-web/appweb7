@@ -2616,34 +2616,18 @@ static void parseCompile(HttpRoute *route, cchar *key, MprJson *prop)
 
 static void serverRouteSet(HttpRoute *route, cchar *set)
 {
-    EspRoute    *eroute;
-
-    eroute = route->eroute;
-    eroute->routeSet = sclone(set);
-    httpAddRestfulRoute(route, "GET,POST","/{action}(/)*$", "${action}", "{controller}");
+    httpAddRestfulRoute(route, "GET,POST,OPTIONS", "/{action}(/)*$", "${action}", "{controller}");
 }
 
 
 static void restfulRouteSet(HttpRoute *route, cchar *set)
 {
-#if DEPRECATE || 1
-    if (route->flags & HTTP_ROUTE_SET_DEFINED) {
-        return;
-    }
-    route->flags |= HTTP_ROUTE_SET_DEFINED;
-#endif
     httpAddResourceGroup(route, "{controller}");
 }
 
 static void legacyRouteSet(HttpRoute *route, cchar *set)
 {
-#if DEPRECATE || 1
-    if (route->flags & HTTP_ROUTE_SET_DEFINED) {
-        return;
-    }
-#endif
     restfulRouteSet(route, "restful");
-    // addClientRoute(route);
 }
 
 
@@ -2700,7 +2684,7 @@ PUBLIC void espAddPak(HttpRoute *route, cchar *name, cchar *version)
     if (!version || !*version || smatch(version, "0.0.0")) {
         version = "*";
     }
-    mprSetJson(route->config, sfmt("dependencies.%s", name), version);
+    mprSetJson(route->config, sfmt("dependencies.%s", name), version, MPR_JSON_STRING);
 }
 #endif
 
@@ -3455,7 +3439,7 @@ PUBLIC bool espSetAutoFinalizing(HttpConn *conn, bool on)
 
 PUBLIC int espSetConfig(HttpRoute *route, cchar *key, cchar *value)
 {
-    return mprSetJson(route->config, key, value);
+    return mprSetJson(route->config, key, value, 0);
 }
 
 
@@ -4151,23 +4135,6 @@ static int runAction(HttpConn *conn)
     
     assert(eroute->top);
     action = mprLookupKey(eroute->top->actions, rx->target);
-
-    /// MOB - missing must be moved somewhere else
-#if UNUSED
-    if ((action = mprLookupKey(eroute->actions, rx->target)) == 0) {
-        if (!mprPathExists(pagePath(conn), R_OK)) {
-            /*
-                Actions are registered as: source/TARGET where TARGET is typically CONTROLLER-ACTION
-             */
-            if ((action = mprLookupKey(eroute->actions, sfmt("%s/missing", controllers))) == 0) {
-                if ((action = mprLookupKey(eroute->actions, "missing")) == 0) {
-                    httpError(conn, HTTP_CODE_NOT_FOUND, "Missing action for \"%s\"", rx->target);
-                    return 0;
-                }
-            }
-        }
-    }
-#endif
 
     if (route->flags & HTTP_ROUTE_XSRF && !(rx->flags & HTTP_GET)) {
         if (!httpCheckSecurityToken(conn)) {
@@ -5743,14 +5710,16 @@ static cchar *map(HttpConn *conn, MprHash *options)
 #define ESP_TOK_ERR            -1            /* Any input error */
 #define ESP_TOK_EOF             0            /* End of file */
 #define ESP_TOK_CODE            1            /* <% text %> */
-#define ESP_TOK_PARAM           2            /* @@param */
-#define ESP_TOK_FIELD           3            /* @#field */
-#define ESP_TOK_VAR             4            /* @!var */
-#define ESP_TOK_HOME            5            /* @~ Home ULR */
-#define ESP_TOK_SERVER          6            /* @| Server URL  */
-#define ESP_TOK_LITERAL         7            /* literal HTML */
-#define ESP_TOK_EXPR            8            /* <%= expression %> */
-#define ESP_TOK_CONTROL         9            /* <%@ control */
+#define ESP_TOK_EXPR            2            /* <%= expression %> */
+#define ESP_TOK_CONTROL         3            /* <%^ control */
+#define ESP_TOK_PARAM           4            /* %$param */
+#define ESP_TOK_FIELD           5            /* %#field */
+#define ESP_TOK_VAR             6            /* %!var */
+#define ESP_TOK_HOME            7            /* %~ Home URL */
+#define ESP_TOK_LITERAL         8            /* literal HTML */
+#if DEPRECATE || 1
+#define ESP_TOK_SERVER          9            /* %| Server URL  */
+#endif
 
 /*
     ESP page parser structure
@@ -6036,9 +6005,11 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
             *errMsg = sfmt("Cannot read %s", source);
             return 0;
         }
+#if DEPRECATE || 1
         if ((layoutsDir = httpGetDir(route, "LAYOUTS")) != 0) {
             layout = mprJoinPath(layoutsDir, "default.esp");
         }
+#endif
         if ((script = espBuildScript(route, page, source, cacheName, layout, NULL, &err)) == 0) {
             *errMsg = sfmt("Cannot build: %s, error: %s", source, err);
             return 0;
@@ -6201,28 +6172,29 @@ static char *joinLine(cchar *str, ssize *lenp)
 /*
     Convert an ESP web page into C code
     Directives:
-        <%@ include "file"  Include an esp file
-        <%@ layout "file"   Specify a layout page to use. Use layout "" to disable layout management
-        <%@ content         Mark the location to substitute content in a layout page
-
         <%                  Begin esp section containing C code
-        <%^ global          Put esp code at the global level
-        <%^ start           Put esp code at the start of the function
-        <%^ end             Put esp code at the end of the function
-
         <%=                 Begin esp section containing an expression to evaluate and substitute
         <%= [%fmt]          Begin a formatted expression to evaluate and substitute. Format is normal printf format.
                             Use %S for safe HTML escaped output.
         %>                  End esp section
         -%>                 End esp section and trim trailing newline
 
-        @@var               Substitue the value of a parameter. 
-        @!var               Substitue the value of a variable. Var can also be simple expressions (without spaces)
-        @#field             Lookup the current record for the value of the field.
-        @~                  Home URL for the application
-        @|                  Top level server side URL
+        <%^ content         Mark the location to substitute content in a layout page
+        <%^ global          Put esp code at the global level
+        <%^ start           Put esp code at the start of the function
+        <%^ end             Put esp code at the end of the function
 
+        %!var               Substitue the value of a parameter. 
+        %$param             Substitue the value of a request parameter.
+        %#field             Lookup the current record for the value of the field.
+        %~                  Home URL for the application
+
+    Deprecated:
+        <%^ layout "file"   Specify a layout page to use. Use layout "" to disable layout management
+        <%^ include "file"  Include an esp file
  */
+
+//  DEPRECATE layout
 PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
         EspState *state, char **err)
 {
@@ -6262,31 +6234,33 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
 #endif
         switch (tid) {
         case ESP_TOK_CODE:
+#if DEPRECATE || 1
             if (*token == '^') {
                 for (token++; *token && isspace((uchar) *token); token++) ;
                 where = ssplit(token, " \t\r\n", &rest);
                 if (*rest) {
-                    if (scmp(where, "global") == 0) {
+                    if (smatch(where, "global")) {
                         mprPutStringToBuf(state->global, rest);
 
-                    } else if (scmp(where, "start") == 0) {
+                    } else if (smatch(where, "start")) {
                         mprPutToBuf(state->start, "%s  ", rest);
 
-                    } else if (scmp(where, "end") == 0) {
+                    } else if (smatch(where, "end")) {
                         mprPutToBuf(state->end, "%s  ", rest);
                     }
                 }
-            } else {
-                mprPutStringToBuf(body, fixMultiStrings(token));
-            }
+            } else
+#endif
+            mprPutStringToBuf(body, fixMultiStrings(token));
             break;
 
         case ESP_TOK_CONTROL:
             control = ssplit(token, " \t\r\n", &token);
-            if (scmp(control, "content") == 0) {
+            if (smatch(control, "content")) {
                 mprPutStringToBuf(body, ESP_CONTENT_MARKER);
 
-            } else if (scmp(control, "include") == 0) {
+#if DEPRECATE || 1
+            } else if (smatch(control, "include")) {
                 token = strim(token, " \t\r\n\"", MPR_TRIM_BOTH);
                 token = mprNormalizePath(token);
                 if (token[0] == '/') {
@@ -6303,8 +6277,11 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                     return 0;
                 }
                 mprPutStringToBuf(body, incCode);
+#endif
 
-            } else if (scmp(control, "layout") == 0) {
+#if DEPRECATE || 1
+            } else if (smatch(control, "layout")) {
+                mprLog("esp warn", 0, "Using deprecated \"layout\" control directive in esp page");
                 token = strim(token, " \t\r\n\"", MPR_TRIM_BOTH);
                 if (*token == '\0') {
                     layout = 0;
@@ -6324,6 +6301,16 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
                         return 0;
                     }
                 }
+#endif
+
+            } else if (smatch(control, "global")) {
+                mprPutStringToBuf(state->global, token);
+
+            } else if (smatch(control, "start")) {
+                mprPutToBuf(state->start, "%s  ", token);
+
+            } else if (smatch(control, "end")) {
+                mprPutToBuf(state->end, "%s  ", token);
 
             } else {
                 *err = sfmt("Unknown control %s at line %d", control, state->lineNumber);
@@ -6347,26 +6334,26 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
             }
             break;
 
+        case ESP_TOK_VAR:
+            /* %!var -- string variable */
+            token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
+            mprPutToBuf(body, "  espRenderString(conn, %s);\n", token);
+            break;
+
         case ESP_TOK_FIELD:
-            /* @#field -- field in the current record */
+            /* %#field -- field in the current record */
             token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
             mprPutToBuf(body, "  espRenderSafeString(conn, getField(getRec(), \"%s\"));\n", token);
             break;
 
         case ESP_TOK_PARAM:
-            /* @@var -- variable in (param || session) - Safe render */
+            /* %$param -- variable in (param || session) - Safe render */
             token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
             mprPutToBuf(body, "  espRenderVar(conn, \"%s\");\n", token);
             break;
 
-        case ESP_TOK_VAR:
-            /* @!var -- string variable */
-            token = strim(token, " \t\r\n;", MPR_TRIM_BOTH);
-            mprPutToBuf(body, "  espRenderString(conn, %s);\n", token);
-            break;
-
         case ESP_TOK_HOME:
-            /* @~ Home URL */
+            /* %~ Home URL */
             mprPutToBuf(body, "  espRenderString(conn, conn->rx->route->prefix);");
             break;
 
@@ -6374,6 +6361,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         //  DEPRECATE serverPrefix in version 6
         case ESP_TOK_SERVER:
             /* @| Server URL */
+            mprLog("esp warn", 0, "Using deprecated \"|\" server URL directive in esp page");
             mprPutToBuf(body, "  espRenderString(conn, sjoin(conn->rx->route->prefix ? conn->rx->route->prefix : \"\", conn->rx->route->serverPrefix, NULL));");
             break;
 #endif
@@ -6390,6 +6378,7 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
     }
     mprAddNullToBuf(body);
 
+#if DEPRECATE || 1
     if (layout && mprPathExists(layout, R_OK)) {
         if ((layoutPage = mprReadPathContents(layout, &len)) == 0) {
             *err = sfmt("Cannot read layout page: %s", layout);
@@ -6405,9 +6394,11 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
         }
 #endif
         bodyCode = sreplace(layoutCode, ESP_CONTENT_MARKER, mprGetBufStart(body));
-    } else {
-        bodyCode = mprGetBufStart(body);
-    }
+        mprLog("esp warn", 0, "Using deprecated layouts in esp page, use Expansive instead");
+    } else
+#endif
+    bodyCode = mprGetBufStart(body);
+
     if (state == &top) {
         path = mprGetRelPath(path, route->documents);
         if (mprGetBufLength(state->start) > 0) {
@@ -6490,7 +6481,7 @@ static int getEspToken(EspParse *parse)
         c = *next;
         switch (c) {
         case '<':
-            if (next[1] == '%' && ((next == start) || next[-1] != '\\')) {
+            if (next[1] == '%' && ((next == start) || next[-1] != '\\') && next[2] != '%') {
                 next += 2;
                 if (mprGetBufLength(parse->token) > 0) {
                     next -= 3;
@@ -6502,17 +6493,24 @@ static int getEspToken(EspParse *parse)
                          */
                         tid = ESP_TOK_EXPR;
                         next = eatSpace(parse, ++next);
-                        while (next < end && !(*next == '%' && next[1] == '>' && next[-1] != '\\')) {
+                        while (next < end && !(*next == '%' && next[1] == '>' && (next[-1] != '\\' && next[-1] != '%'))) {
                             if (*next == '\n') parse->lineNumber++;
                             if (!addChar(parse, *next++)) {
                                 return ESP_TOK_ERR;
                             }
                         }
 
-                    } else if (*next == '@') {
+                    //  DEPRECATE '@'
+                    } else if (*next == '@' || *next == '^') {
+                        /*
+                            <%^ control
+                         */
+                        if (*next == '@') {
+                            mprLog("esp warn", 0, "AA Using deprecated \"@%c\" control directive in esp page", *next);
+                        }
                         tid = ESP_TOK_CONTROL;
                         next = eatSpace(parse, ++next);
-                        while (next < end && !(*next == '%' && next[1] == '>' && next[-1] != '\\')) {
+                        while (next < end && !(*next == '%' && next[1] == '>' && (next[-1] != '\\' && next[-1] != '%'))) {
                             if (*next == '\n') parse->lineNumber++;
                             if (!addChar(parse, *next++)) {
                                 return ESP_TOK_ERR;
@@ -6521,7 +6519,7 @@ static int getEspToken(EspParse *parse)
                         
                     } else {
                         tid = ESP_TOK_CODE;
-                        while (next < end && !(*next == '%' && next[1] == '>' && next[-1] != '\\')) {
+                        while (next < end && !(*next == '%' && next[1] == '>' && (next[-1] != '\\' && next[-1] != '%'))) {
                             if (*next == '\n') parse->lineNumber++;
                             if (!addChar(parse, *next++)) {
                                 return ESP_TOK_ERR;
@@ -6545,7 +6543,16 @@ static int getEspToken(EspParse *parse)
             }
             break;
 
+        case '%':
+            if (next > start && (next[-1] == '\\' || next[-1] == '%')) {
+                break;
+            }
+#if DEPRECATE || 1
         case '@':
+            if (c == '@') {
+                mprLog("esp warn", 0, "BB Using deprecated \"@\" control directive in esp page");
+            }
+#endif
             if ((next == start) || next[-1] != '\\') {
                 t = next[1];
                 if (t == '~') {
@@ -6561,7 +6568,9 @@ static int getEspToken(EspParse *parse)
                     }
                     done++;
 
-                } else if (t == ME_SERVER_PREFIX_CHAR) {
+#if DEPRECATE || 1
+                } else if (t == '|') {
+                    mprLog("esp warn", 0, "CC Using deprecated \"|\" control directive in esp page");
                     next += 2;
                     if (mprGetBufLength(parse->token) > 0) {
                         next -= 3;
@@ -6573,14 +6582,20 @@ static int getEspToken(EspParse *parse)
                         next--;
                     }
                     done++;
+#endif
 
-                } else if (t == '@' || t == '#' || t == '!') {
+                //  DEPRECATE '@'
+                } else if (t == '!' || t == '@' || t == '#' || t == '$') {
                     next += 2;
                     if (mprGetBufLength(parse->token) > 0) {
                         next -= 3;
                     } else {
                         if (t == '!') {
                            tid = ESP_TOK_VAR;
+#if DEPRECATE || 1
+                        } else if (t == '@') {
+                            tid = ESP_TOK_PARAM;
+#endif
                         } else if (t == '#') {
                             tid = ESP_TOK_FIELD;
                         } else {

@@ -63,7 +63,10 @@
             "nodeps": true
         },
         "*": {
-            "noblend": true
+            "noblend": true,
+            "ignore": [
+                "doc**"
+            ]
         }
     }
 }
