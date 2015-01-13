@@ -1,8 +1,3 @@
-<!DOCTYPE html>
-<html lang="eng">
-<head>
-<title>Makerom Man Page</title>
-</head>
 <BODY><PRE>
 MAKEROM(1)                       User Commands                      MAKEROM(1)
 
@@ -10,7 +5,7 @@ MAKEROM(1)                       User Commands                      MAKEROM(1)
        makerom - Compile files into C source code
 
 <B>SYNOPSIS</B>
-       <B>makerom [options] files ... &gt;output.c</B>
+       <B>makerom [options] files ... &gtoutput.c</B>
 
        [<I>--files fileList</I>] [<I>--name structName</I>] [<I>--prefix prefix</I>]
 
@@ -43,14 +38,14 @@ MAKEROM(1)                       User Commands                      MAKEROM(1)
        This  example  will  create  a list of web files and then convert these
        files into C structures in the file romFiles.c.
 
-           find web -type f -print &gt;fileList
+           find web -type f -print &gtfileList
 
-           makerom --files filelist &gt;romFiles.c
+           makerom --files filelist &gtromFiles.c
 
            cc -o romFiles.o romFiles.c
 
 <B>REPORTING BUGS</B>
-       Report bugs to &lt;dev@embedthis.com&gt;.
+       Report bugs to &ltdev@embedthis.com&gt.
 
 <B>COPYRIGHT</B>
        Copyright (C) 2003-2014 Embedthis Software.
@@ -58,4 +53,3 @@ MAKEROM(1)                       User Commands                      MAKEROM(1)
 <B>SEE ALSO</B>
 makerom                           March 2014                        MAKEROM(1)
 </PRE></BODY>
-</html>

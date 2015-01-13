@@ -1,3 +1,8 @@
+<!DOCTYPE html>
+<html lang="eng">
+<head>
+<title>Regexp Man Page</title>
+</head>
 <BODY><PRE>
 PCREPATTERN(3)                                                  PCREPATTERN(3)
 
@@ -269,7 +274,7 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        name or a number enclosed either in angle brackets or single quotes, is
        an  alternative  syntax for referencing a subpattern as a "subroutine".
        Details are discussed later.   Note  that  \g{...}  (Perl  syntax)  and
-       \g&lt...&gt  (Oniguruma  syntax)  are  <I>not </I>synonymous. The former is a back
+       \g&lt;...&gt;  (Oniguruma  syntax)  are  <I>not </I>synonymous. The former is a back
        reference; the latter is a subroutine call.
 
    <B>Generic character types</B>
@@ -358,7 +363,7 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        any Unicode newline sequence. This is a Perl 5.10 feature. In non-UTF-8
        mode \R is equivalent to the following:
 
-         (?&gt\r\n|\n|\x0b|\f|\r|\x85)
+         (?&gt;\r\n|\n|\x0b|\f|\r|\x85)
 
        This  is  an  example  of an "atomic group", details of which are given
        below.  This particular group matches either the two-character sequence
@@ -493,7 +498,7 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
          Zp    Paragraph separator
          Zs    Space separator
 
-       The  special property L&amp is also supported: it matches a character that
+       The  special property L&amp; is also supported: it matches a character that
        has the Lu, Ll, or Lt property, in other words, a letter  that  is  not
        classified as a modifier or "other".
 
@@ -517,7 +522,7 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        The \X escape matches any number of Unicode  characters  that  form  an
        extended Unicode sequence. \X is equivalent to
 
-         (?&gt\PM\pM*)
+         (?&gt;\PM\pM*)
 
        That  is,  it matches a character without the "mark" property, followed
        by zero or more characters with the "mark"  property,  and  treats  the
@@ -988,8 +993,8 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        the Python syntax. PCRE now supports both the Perl and the Python  syn-
        tax.
 
-       In  PCRE,  a subpattern can be named in one of three ways: (?&ltname&gt...)
-       or (?'name'...) as in Perl, or (?P&ltname&gt...) as in  Python.  References
+       In  PCRE,  a subpattern can be named in one of three ways: (?&lt;name&gt;...)
+       or (?'name'...) as in Perl, or (?P&lt;name&gt;...) as in  Python.  References
        to capturing parentheses from other parts of the pattern, such as back-
        references, recursion, and conditions, can be made by name as  well  as
        by number.
@@ -1009,11 +1014,11 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        both cases you want to extract the abbreviation. This pattern (ignoring
        the line breaks) does the job:
 
-         (?&ltDN&gtMon|Fri|Sun)(?:day)?|
-         (?&ltDN&gtTue)(?:sday)?|
-         (?&ltDN&gtWed)(?:nesday)?|
-         (?&ltDN&gtThu)(?:rsday)?|
-         (?&ltDN&gtSat)(?:urday)?
+         (?&lt;DN&gt;Mon|Fri|Sun)(?:day)?|
+         (?&lt;DN&gt;Tue)(?:sday)?|
+         (?&lt;DN&gt;Wed)(?:nesday)?|
+         (?&lt;DN&gt;Thu)(?:rsday)?|
+         (?&lt;DN&gt;Sat)(?:urday)?
 
        There are five capturing substrings, but only one is ever set  after  a
        match.  (An alternative way of solving this problem is to use a "branch
@@ -1202,9 +1207,9 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
 
        If we use atomic grouping for the previous example, the  matcher  gives
        up  immediately  on failing to match "foo" the first time. The notation
-       is a kind of special parenthesis, starting with (?&gt as in this example:
+       is a kind of special parenthesis, starting with (?&gt; as in this example:
 
-         (?&gt\d+)foo
+         (?&gt;\d+)foo
 
        This  kind  of  parenthesis "locks up" the  part of the pattern it con-
        tains once it has matched, and a failure further into  the  pattern  is
@@ -1219,7 +1224,7 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        such as the above example can be thought of as a maximizing repeat that
        must swallow everything it can. So, while both \d+ and  \d+?  are  pre-
        pared  to  adjust  the number of digits they match in order to make the
-       rest of the pattern match, (?&gt\d+) can only match an entire sequence of
+       rest of the pattern match, (?&gt;\d+) can only match an entire sequence of
        digits.
 
        Atomic  groups in general can of course contain arbitrarily complicated
@@ -1259,10 +1264,10 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        atomic  group  is  the  only way to avoid some failing matches taking a
        very long time indeed. The pattern
 
-         (\D+|&lt\d+&gt)*[!?]
+         (\D+|&lt;\d+&gt;)*[!?]
 
        matches an unlimited number of substrings that either consist  of  non-
-       digits,  or  digits  enclosed in &lt&gt, followed by either ! or ?. When it
+       digits,  or  digits  enclosed in &lt;&gt;, followed by either ! or ?. When it
        matches, it runs quickly. However, if it is applied to
 
          aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
@@ -1277,7 +1282,7 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        in  the  string.)  If  the pattern is changed so that it uses an atomic
        group, like this:
 
-         ((?&gt\D+)|&lt\d+&gt)*[!?]
+         ((?&gt;\D+)|&lt;\d+&gt;)*[!?]
 
        sequences of non-digits cannot be broken, and failure happens  quickly.
 
@@ -1346,16 +1351,16 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        original capturing subpattern is matched caselessly.
 
        There  are  several  different ways of writing back references to named
-       subpatterns. The .NET syntax \k{name} and the Perl syntax  \k&ltname&gt  or
+       subpatterns. The .NET syntax \k{name} and the Perl syntax  \k&lt;name&gt;  or
        \k'name'  are supported, as is the Python syntax (?P=name). Perl 5.10's
        unified back reference syntax, in which \g can be used for both numeric
        and  named  references,  is  also supported. We could rewrite the above
        example in any of the following ways:
 
-         (?&ltp1&gt(?i)rah)\s+\k&ltp1&gt
+         (?&lt;p1&gt;(?i)rah)\s+\k&lt;p1&gt;
          (?'p1'(?i)rah)\s+\k{p1}
-         (?P&ltp1&gt(?i)rah)\s+(?P=p1)
-         (?&ltp1&gt(?i)rah)\s+\g{p1}
+         (?P&lt;p1&gt;(?i)rah)\s+(?P=p1)
+         (?&lt;p1&gt;(?i)rah)\s+\g{p1}
 
        A subpattern that is referenced by  name  may  appear  in  the  pattern
        before or after the reference.
@@ -1438,10 +1443,10 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
 
    <B>Lookbehind assertions</B>
 
-       Lookbehind  assertions start with (?&lt= for positive assertions and (?&lt!
+       Lookbehind  assertions start with (?&lt;= for positive assertions and (?&lt;!
        for negative assertions. For example,
 
-         (?&lt!foo)bar
+         (?&lt;!foo)bar
 
        does find an occurrence of "bar" that is not  preceded  by  "foo".  The
        contents  of  a  lookbehind  assertion are restricted such that all the
@@ -1449,11 +1454,11 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        eral  top-level  alternatives,  they  do  not all have to have the same
        fixed length. Thus
 
-         (?&lt=bullock|donkey)
+         (?&lt;=bullock|donkey)
 
        is permitted, but
 
-         (?&lt!dogs?|cats?)
+         (?&lt;!dogs?|cats?)
 
        causes an error at compile time. Branches that match  different  length
        strings  are permitted only at the top level of a lookbehind assertion.
@@ -1461,13 +1466,13 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        requires  all branches to match the same length of string. An assertion
        such as
 
-         (?&lt=ab(c|de))
+         (?&lt;=ab(c|de))
 
        is not permitted, because its single top-level  branch  can  match  two
        different  lengths,  but  it is acceptable if rewritten to use two top-
        level branches:
 
-         (?&lt=abc|abde)
+         (?&lt;=abc|abde)
 
        In some cases, the Perl 5.10 escape sequence \K (see above) can be used
        instead  of  a lookbehind assertion; this is not restricted to a fixed-
@@ -1502,7 +1507,7 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        again the search for "a" covers the entire string, from right to  left,
        so we are no better off. However, if the pattern is written as
 
-         ^.*+(?&lt=abcd)
+         ^.*+(?&lt;=abcd)
 
        there  can  be  no backtracking for the .*+ item; it can match only the
        entire string. The subsequent lookbehind assertion does a  single  test
@@ -1514,7 +1519,7 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
 
        Several assertions (of any sort) may occur in succession. For example,
 
-         (?&lt=\d{3})(?&lt!999)foo
+         (?&lt;=\d{3})(?&lt;!999)foo
 
        matches  "foo" preceded by three digits that are not "999". Notice that
        each of the assertions is applied independently at the  same  point  in
@@ -1525,7 +1530,7 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        three  of  which  are not "999". For example, it doesn't match "123abc-
        foo". A pattern to do that is
 
-         (?&lt=\d{3}...)(?&lt!999)foo
+         (?&lt;=\d{3}...)(?&lt;!999)foo
 
        This time the first assertion looks at the  preceding  six  characters,
        checking that the first three are digits, and then the second assertion
@@ -1533,12 +1538,12 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
 
        Assertions can be nested in any combination. For example,
 
-         (?&lt=(?&lt!foo)bar)baz
+         (?&lt;=(?&lt;!foo)bar)baz
 
        matches an occurrence of "baz" that is preceded by "bar" which in  turn
        is not preceded by "foo", while
 
-         (?&lt=\d{3}(?!999)...)foo
+         (?&lt;=\d{3}(?!999)...)foo
 
        is  another pattern that matches "foo" preceded by three digits and any
        three characters that are not "999".
@@ -1599,7 +1604,7 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
 
    <B>Checking for a used subpattern by name</B>
 
-       Perl  uses  the  syntax  (?(&ltname&gt)...) or (?('name')...) to test for a
+       Perl  uses  the  syntax  (?(&lt;name&gt;)...) or (?('name')...) to test for a
        used subpattern by name. For compatibility  with  earlier  versions  of
        PCRE,  which  had this facility before Perl, the syntax (?(name)...) is
        also recognized. However, there is a possible ambiguity with this  syn-
@@ -1611,7 +1616,7 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
 
        Rewriting the above example to use a named subpattern gives this:
 
-         (?&ltOPEN&gt \( )?    [^()]+    (?(&ltOPEN&gt) \) )
+         (?&lt;OPEN&gt; \( )?    [^()]+    (?(&lt;OPEN&gt;) \) )
 
    <B>Checking for pattern recursion</B>
 
@@ -1620,7 +1625,7 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        or any subpattern has been made. If digits or a name preceded by amper-
        sand follow the letter R, for example:
 
-         (?(R3)...) or (?(R&ampname)...)
+         (?(R3)...) or (?(R&amp;name)...)
 
        the condition is true if the most recent recursion is into the  subpat-
        tern  whose  number or name is given. This condition does not check the
@@ -1640,8 +1645,8 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        For  example,  a pattern to match an IPv4 address could be written like
        this (ignore whitespace and line breaks):
 
-         (?(DEFINE) (?&ltbyte&gt 2[0-4]\d | 25[0-5] | 1\d\d | [1-9]?\d) )
-         \b (?&ampbyte) (\.(?&ampbyte)){3} \b
+         (?(DEFINE) (?&lt;byte&gt; 2[0-4]\d | 25[0-5] | 1\d\d | [1-9]?\d) )
+         \b (?&amp;byte) (\.(?&amp;byte)){3} \b
 
        The first part of the pattern is a DEFINE group inside which a  another
        group  named "byte" is defined. This matches an individual component of
@@ -1696,7 +1701,7 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        expression itself. A Perl pattern using code interpolation to solve the
        parentheses problem can be created like this:
 
-         $re = qr{\( (?: (?&gt[^()]+) | (?p{$re}) )* \)}x;
+         $re = qr{\( (?: (?&gt;[^()]+) | (?p{$re}) )* \)}x;
 
        The (?p{...}) item interpolates Perl code at run time, and in this case
        refers recursively to the pattern in which it appears.
@@ -1722,7 +1727,7 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        This  PCRE  pattern  solves  the nested parentheses problem (assume the
        PCRE_EXTENDED option is set so that white space is ignored):
 
-         \( ( (?&gt[^()]+) | (?R) )* \)
+         \( ( (?&gt;[^()]+) | (?R) )* \)
 
        First it matches an opening parenthesis. Then it matches any number  of
        substrings  which  can  either  be  a sequence of non-parentheses, or a
@@ -1732,7 +1737,7 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        If  this  were  part of a larger pattern, you would not want to recurse
        the entire pattern, so instead you could use this:
 
-         ( \( ( (?&gt[^()]+) | (?1) )* \) )
+         ( \( ( (?&gt;[^()]+) | (?1) )* \) )
 
        We have put the pattern into parentheses, and caused the  recursion  to
        refer to them instead of the whole pattern.
@@ -1751,10 +1756,10 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        section.
 
        An alternative approach is to use named parentheses instead.  The  Perl
-       syntax  for  this  is (?&ampname); PCRE's earlier syntax (?P&gtname) is also
+       syntax  for  this  is (?&amp;name); PCRE's earlier syntax (?P&gt;name) is also
        supported. We could rewrite the above example as follows:
 
-         (?&ltpn&gt \( ( (?&gt[^()]+) | (?&amppn) )* \) )
+         (?&lt;pn&gt; \( ( (?&gt;[^()]+) | (?&amp;pn) )* \) )
 
        If there is more than one subpattern with the same name,  the  earliest
        one is used.
@@ -1784,7 +1789,7 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        value  taken  on at the top level. If additional parentheses are added,
        giving
 
-         \( ( ( (?&gt[^()]+) | (?R) )* ) \)
+         \( ( ( (?&gt;[^()]+) | (?R) )* ) \)
             ^                        ^
             ^                        ^
 
@@ -1801,7 +1806,7 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        brackets (that is, when recursing), whereas any characters are  permit-
        ted at the outer level.
 
-         &lt (?: (?(R) \d++  | [^&lt&gt]*+) | (?R)) * &gt
+         &lt; (?: (?(R) \d++  | [^&lt;&gt;]*+) | (?R)) * &gt;
 
        In  this  pattern, (?(R) is the start of a conditional subpattern, with
        two different alternatives for the recursive and  non-recursive  cases.
@@ -1854,15 +1859,15 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
        possibly  recursively. Here are two of the examples used above, rewrit-
        ten using this syntax:
 
-         (?&ltpn&gt \( ( (?&gt[^()]+) | \g&ltpn&gt )* \) )
+         (?&lt;pn&gt; \( ( (?&gt;[^()]+) | \g&lt;pn&gt; )* \) )
          (sens|respons)e and \g'1'ibility
 
        PCRE supports an extension to Oniguruma: if a number is preceded  by  a
        plus or a minus sign it is taken as a relative reference. For example:
 
-         (abc)(?i:\g&lt-1&gt)
+         (abc)(?i:\g&lt;-1&gt;)
 
-       Note  that \g{...} (Perl syntax) and \g&lt...&gt (Oniguruma syntax) are <I>not</I>
+       Note  that \g{...} (Perl syntax) and \g&lt;...&gt; (Oniguruma syntax) are <I>not</I>
        synonymous. The former is a back reference; the latter is a  subroutine
        call.
 
@@ -2034,3 +2039,4 @@ PCREPATTERN(3)                                                  PCREPATTERN(3)
 
                                                                 PCREPATTERN(3)
 </PRE></BODY>
+</html>
