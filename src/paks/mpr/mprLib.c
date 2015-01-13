@@ -21831,6 +21831,8 @@ PUBLIC Socket mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
         setsockopt(sp->fd, SOL_SOCKET, SO_REUSEADDR, (char*) &rc, sizeof(rc));
 #elif ME_WIN_LIKE && defined(SO_EXCLUSIVEADDRUSE)
         setsockopt(sp->fd, SOL_SOCKET, SO_REUSEADDR | SO_EXCLUSIVEADDRUSE, (char*) &rc, sizeof(rc));
+#elif ME_WIN_LIKE && defined(SO_EXCLUSIVEADDRUSE)
+        setsockopt(sp->fd, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, (char*) &rc, sizeof(rc);
 #endif
     }
     /*
