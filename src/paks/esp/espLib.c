@@ -2428,10 +2428,7 @@ PUBLIC void stylesheets(cchar *patterns)
     route = rx->route;
     eroute = route->eroute;
     patterns = httpExpandRouteVars(route, patterns);
-#if FUTURE
-    client => public
-#endif
-    clientDir = httpGetDir(route, "client");
+    clientDir = httpGetDir(route, "documents");
 
     if (!patterns || !*patterns) {
         version = espGetConfig(route, "version", "1.0.0");
@@ -2616,7 +2613,7 @@ static void parseCompile(HttpRoute *route, cchar *key, MprJson *prop)
 
 static void serverRouteSet(HttpRoute *route, cchar *set)
 {
-    httpAddRestfulRoute(route, "GET,POST,OPTIONS", "/{action}(/)*$", "${action}", "{controller}");
+    httpAddRestfulRoute(route, "GET,POST", "/{action}(/)*$", "${action}", "{controller}");
 }
 
 
@@ -4162,33 +4159,36 @@ static int runAction(HttpConn *conn)
 }
 
 
-PUBLIC void espRenderDocument(HttpConn *conn, cchar *path)
+PUBLIC void espRenderDocument(HttpConn *conn, cchar *document)
 {
     HttpTx      *tx;
+    cchar       *path;
 
     tx = conn->tx;
-
-    path = mprJoinPath(conn->rx->route->documents, path);
-    path = httpMapContent(conn, path);
-    httpSetFilename(conn, path, 0);
-    if (!tx->fileInfo.valid) {
-        path = mprJoinPathExt(path, ".esp");
-        httpSetFilename(conn, path, 0);
+    path = httpMapContent(conn, mprJoinPath(conn->rx->route->documents, document));
+    if (!httpSetFilename(conn, path, 0)) {
+        if (conn->rx->flags & (HTTP_GET | HTTP_HEAD)) {
+            if (!httpSetFilename(conn, mprJoinPathExt(path, ".esp"), 0)) {
+#if DEPRECATE || 1
+                path = httpMapContent(conn, mprJoinPaths(conn->rx->route->documents, "app", document, NULL));
+                if (!httpSetFilename(conn, path, 0)) {
+                    httpSetFilename(conn, mprJoinPathExt(path, ".esp"), 0);
+                }
+#endif
+            }
+        }
     }
     if (tx->fileInfo.isDir) {
         httpHandleDirectory(conn);
-        //  MOB _ refactor
         if (tx->finalized) {
-            tx->handler = conn->http->passHandler;
             return;
         }
-        path = tx->filename;
     }
     if (smatch(tx->ext, "esp")) {
-        espRenderView(conn, path);
-        return;
+        espRenderView(conn, tx->filename);
+    } else {
+        httpSetFileHandler(conn, NULL);
     }
-    httpSetFileHandler(conn, NULL);
 }
 
 
@@ -5087,8 +5087,10 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     httpSetDir(route, "PARTIALS", 0);
     httpSetDir(route, "SOURCE", 0);
     httpSetDir(route, "SRC", 0);
-    httpSetDir(route, "TOP", mprGetCurrentPath());
     httpSetDir(route, "UPLOAD", "/tmp");
+#if UNUSED
+    httpSetDir(route, "TOP", mprGetCurrentPath());
+#endif
 }
 
 

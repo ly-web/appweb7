@@ -3727,6 +3727,19 @@ PUBLIC int parseFile(HttpRoute *route, cchar *path)
         mprLog("error http config", 0, "Cannot parse %s: error %s", path, errorMsg);
         return MPR_ERR_CANT_READ;
     }
+#if DEPRECATE || 1
+{
+    MprJson *obj;
+    if ((obj = mprGetJsonObj(config, "app.http")) != 0) {
+        mprRemoveJson(config, "app.http");
+        mprSetJsonObj(config, "http", obj);
+    }
+    if ((obj = mprGetJsonObj(config, "app.esp")) != 0) {
+        mprRemoveJson(config, "app.esp");
+        mprSetJsonObj(config, "esp", obj);
+    }
+}
+#endif
     blendMode(route, config);
     if (route->config) {
         mprBlendJson(route->config, config, MPR_JSON_COMBINE);

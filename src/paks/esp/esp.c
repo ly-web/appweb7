@@ -831,13 +831,15 @@ static void clean(int argc, char **argv)
     for (ITERATE_ITEMS(app->routes, route, next)) {
         cacheDir = httpGetDir(route, "CACHE");
         if (cacheDir) {
-            trace("Clean", "%s", mprGetRelPath(cacheDir, 0));
-            files = mprGetPathFiles(cacheDir, MPR_PATH_RELATIVE);
-            for (nextFile = 0; (dp = mprGetNextItem(files, &nextFile)) != 0; ) {
-                path = mprJoinPath(cacheDir, dp->name);
-                if (mprPathExists(path, R_OK)) {
-                    trace("Clean", "%s", mprGetRelPath(path, 0));
-                    mprDeletePath(path);
+            if (mprPathExists(cacheDir, X_OK)) {
+                trace("Clean", "%s", mprGetRelPath(cacheDir, 0));
+                files = mprGetPathFiles(cacheDir, MPR_PATH_RELATIVE);
+                for (nextFile = 0; (dp = mprGetNextItem(files, &nextFile)) != 0; ) {
+                    path = mprJoinPath(cacheDir, dp->name);
+                    if (mprPathExists(path, R_OK)) {
+                        trace("Clean", "%s", mprGetRelPath(path, 0));
+                        mprDeletePath(path);
+                    }
                 }
             }
         }

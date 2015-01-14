@@ -30,8 +30,7 @@
     "optionalDependencies": {
         "appweb": "~5",
         "est": "~0.6",
-        "ssl": "~0.8",
-        "sqlite": "~1"
+        "ssl": "~0.8"
     },
     "devDependencies": {
         "me": ">0.8.0"
