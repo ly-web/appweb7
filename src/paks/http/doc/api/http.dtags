@@ -3178,10 +3178,10 @@
       <arglist>(HttpConn *conn, MprOff len)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
+      <type>bool</type>
       <name>httpSetFilename</name>
       <anchorfile>group___http_tx.html</anchorfile>
-      <anchor>ga35ad71ee060b80ac5803a4e0fc6f37d5</anchor>
+      <anchor>ga8dfb768b5e6b1fc6b084ca3b71a2c573</anchor>
       <arglist>(HttpConn *conn, cchar *filename, int flags)</arglist>
     </member>
     <member kind="function">

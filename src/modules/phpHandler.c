@@ -1,4 +1,5 @@
 /*
+
     phpHandler.c - Appweb PHP handler
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
@@ -473,9 +474,9 @@ static int initializePhp(Http *http)
     tsrm_ls = (void***) ts_resource(0);
 
 #if defined(ME_COM_PHP_INI)
-    phpSapiBlock.php_ini_path_override = ME_COM_PHP_INI;
+    phpSapiBlock.php_ini_path_override = (char*) ME_COM_PHP_INI;
 #else
-    phpSapiBlock.php_ini_path_override = httpGetDefaultRoute(NULL)->home;
+    phpSapiBlock.php_ini_path_override = (char*) httpGetDefaultRoute(NULL)->home;
 #endif
     if (phpSapiBlock.php_ini_path_override) {
         mprLog("info php", 2, "Look for php.ini at %s", phpSapiBlock.php_ini_path_override);
