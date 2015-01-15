@@ -3,7 +3,6 @@
 esp \- ESP Application Generator for Server-Side Web Applications.
 .SH SYNOPSIS
 .B esp
-    \fB--appweb configFile\fR
     \fB--cipher cipher\fR
     \fB--database DB\fR
     \fB--force\fR
@@ -268,10 +267,6 @@ esp has the following command usage patterns:
 .SH OPTIONS
 .PP
 .TP 6
-\fB\--appweb configFile\fR
-Use the specified appweb config file to define and host the ESP application.
-By default the esp command looks for a esp.json and uses that to define the applicaiton. 
-.TP 6
 \fB\--cipher cipher\fR
 Password cipher to use. Set to "md5" or "blowfish".
 .TP 6
@@ -282,21 +277,16 @@ Use the specified database provider. Set to "mdb" or "sdb" for SQLite.
 Overwrite existing files. ESP normally will not overwrite existing files. This is to preserve user changes to 
 previously generated files.
 .TP 6
-\fB\--genlink slink.c\fR
-Generate a static link initialization file for ESP pages and applications. 
-This is used with --static to generate a appwebStaticInitialize() function that will invoke all ESP initializers.
-By default, appweb expects this to be in the src/server/slink.c file.
-.TP 6
 \fB\--home dir\fR
 Change the current working directory before beginning processing.
 .TP 6
 \fB\--keep\fR
 Keep intermediate source files in the cache directory. This overrides the 
-EspKeepSource setting in the appweb.conf file.
+ejs.json "keep" setting.
 .TP 6
 \fB\--listen [ip:]port\fR
 Define the listening endpoint address. This will be used when generating an application. The value
-will be patched into the generated appweb.conf configuration file.
+will be patched into the generated esp.json configuration file.
 .TP 6
 \fB\--log logFile:level\fR
 Specify a file to log messages.  The syntax is: \fB"--log logName[:logLevel]"\fR.             
@@ -315,7 +305,7 @@ Compile optimized without debug symbols.
 Suppress diagnostic trace to the console.
 .TP 6
 \fB\--platform [path/]os-arch-profile\fR
-Target platform configuration to build for and directory containing appweb objects and libraries for the target platform. 
+Target platform configuration to build for and directory containing esp objects and libraries for the target platform. 
 If a path is supplied, the specified platform directory is used.  Otherwise, esp searches from the current directory 
 upwards for a parent platform directory.
 .TP 6
@@ -365,5 +355,3 @@ Report bugs to dev@embedthis.com.
 Copyright \(co Embedthis Software. Embedthis ESP is a trademark of Embedthis Software.
 
 .br
-.SH "SEE ALSO"
-appweb

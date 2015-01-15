@@ -108,14 +108,14 @@
 
       <ItemDefinitionGroup>
       <Link>
-        <AdditionalDependencies>libmod_esp.lib;libappweb.lib;libhttp.lib;libmpr.lib;libpcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
+        <AdditionalDependencies>libesp.lib;libhttp.lib;libmpr.lib;libpcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
         <AdditionalLibraryDirectories>$(OutDir);build\$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       </Link>
   </ItemDefinitionGroup>
 
     <ItemGroup>
-      <ProjectReference Include="libmod_esp.vcxproj">
-      <Project>e16a2881-a4ed-4246-8e87-955716c49e67</Project>
+      <ProjectReference Include="libesp.vcxproj">
+      <Project>b2b14d0e-03d2-4c9f-a6f1-dbbbbf562041</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       </ProjectReference>
     </ItemGroup>

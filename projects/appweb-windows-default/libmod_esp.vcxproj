@@ -100,30 +100,26 @@
   </PropertyGroup>
   
       <ItemGroup>
-    <ClCompile Include="..\..\src\paks\esp\espLib.c" />
-  </ItemGroup>
-
-      <ItemGroup>
-    <ClInclude Include="$(IncDir)\esp.h" />
+    <ClCompile Include="..\..\src\modules\espHandler.c" />
   </ItemGroup>
 
       <ItemDefinitionGroup>
       <Link>
-        <AdditionalDependencies>libappweb.lib;libhttp.lib;libmpr.lib;libpcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
+        <AdditionalDependencies>libappweb.lib;libhttp.lib;libmpr.lib;libpcre.lib;libesp.lib;%(AdditionalDependencies)</AdditionalDependencies>
         <AdditionalLibraryDirectories>$(OutDir);build\$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       </Link>
-
-      <CustomBuildStep>
-        <Command>cd ..\..\src\paks\esp
-copy /Y /B esp.h $(IncDir)
-cd ..\..\..\projects\appweb-windows-default</Command>
-        <Outputs>$(BinDir)\libmod_esp.dll</Outputs>
-      </CustomBuildStep>
   </ItemDefinitionGroup>
 
     <ItemGroup>
       <ProjectReference Include="libappweb.vcxproj">
       <Project>f07c2d7c-361c-4ac5-b1db-37850cdf52b8</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      </ProjectReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="libesp.vcxproj">
+      <Project>b2b14d0e-03d2-4c9f-a6f1-dbbbbf562041</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       </ProjectReference>
     </ItemGroup>

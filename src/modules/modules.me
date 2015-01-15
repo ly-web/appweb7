@@ -18,6 +18,13 @@ Me.load({
             ifdef: [ 'ejs' ],
         },
 
+        libmod_esp: {
+            type:   'lib',
+            sources: [ 'espHandler.c' ],
+            depends: [ 'libappweb', 'libesp' ],
+            ifdef: [ 'esp' ],
+        },
+
         libmod_php: {
             type: 'lib',
             sources: [ 'phpHandler.c' ],

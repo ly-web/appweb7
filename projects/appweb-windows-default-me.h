@@ -90,6 +90,9 @@
 #ifndef ME_ESP_LEGACY
     #define ME_ESP_LEGACY 0
 #endif
+#ifndef ME_ESP_MODULE
+    #define ME_ESP_MODULE 0
+#endif
 #ifndef ME_EST_CAMELLIA
     #define ME_EST_CAMELLIA 0
 #endif

@@ -4573,6 +4573,9 @@ typedef struct HttpRouteOp {
   */
 typedef void (*HttpParseCallback)(struct HttpRoute *route, cchar *key, MprJson *child);
 
+//  MOB
+PUBLIC void httpParseError(HttpRoute *route, cchar *fmt, ...);
+
 /**
     General route procedure. Used by targets, conditions and updates.
     @return Zero for success. Otherwise a negative MPR error code.

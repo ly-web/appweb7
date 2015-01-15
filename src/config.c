@@ -3322,7 +3322,7 @@ PUBLIC int maLoadModule(cchar *name, cchar *libname)
     entryPoint[2] = toupper((uchar) entryPoint[2]);
 
     if ((module = mprCreateModule(name, path, entryPoint, HTTP)) == 0) {
-        return 0;
+        return MPR_ERR_CANT_CREATE;
     }
     if (mprLoadModule(module) < 0) {
         return MPR_ERR_CANT_CREATE;

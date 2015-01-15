@@ -2578,6 +2578,10 @@ PUBLIC void scripts(cchar *patterns)
 
 
 
+/************************************* Locals *********************************/
+#define ITERATE_CONFIG(route, obj, child, index) \
+    index = 0, child = obj ? obj->children: 0; obj && index < obj->length && !route->error; child = child->next, index++
+
 /************************************** Code **********************************/
 
 
@@ -2599,16 +2603,145 @@ static void parseCombine(HttpRoute *route, cchar *key, MprJson *prop)
     }
 }
 
-static void parseCompile(HttpRoute *route, cchar *key, MprJson *prop)
+
+#if UNUSED
+/*
+    Define Visual Studio environment if not already present
+ */
+static void defineVisualStudioEnv(HttpRoute *route)
+{
+    Http    *http;
+    int     is64BitSystem;
+
+    http = MPR->httpService;
+    if (scontains(getenv("LIB"), "Visual Studio") &&
+        scontains(getenv("INCLUDE"), "Visual Studio") &&
+        scontains(getenv("PATH"), "Visual Studio")) {
+        return;
+    }
+    if (scontains(http->platform, "-x64-")) {
+        is64BitSystem = smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432");
+        defineEnv(route, "LIB", "${WINSDK}\\LIB\\${WINVER}\\um\\x64;${WINSDK}\\LIB\\x64;${VS}\\VC\\lib\\amd64");
+        if (is64BitSystem) {
+            defineEnv(route, "PATH",
+                "${VS}\\Common7\\IDE;${VS}\\VC\\bin\\amd64;${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;"
+                "${VS}\\VC\\VCPackages;${WINSDK}\\bin\\x64");
+
+        } else {
+            /* Cross building on x86 for 64-bit */
+            defineEnv(route, "PATH",
+                "${VS}\\Common7\\IDE;${VS}\\VC\\bin\\x86_amd64;"
+                "${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\\x86");
+        }
+
+    } else if (scontains(http->platform, "-arm-")) {
+        /* Cross building on x86 for arm. No winsdk 7 support for arm */
+        defineEnv(route, "LIB", "${WINSDK}\\LIB\\${WINVER}\\um\\arm;${VS}\\VC\\lib\\arm");
+        defineEnv(route, "PATH", "${VS}\\Common7\\IDE;${VS}\\VC\\bin\\x86_arm;${VS}\\Common7\\Tools;"
+            "${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\\arm");
+
+    } else {
+        /* Building for X86 */
+        defineEnv(route, "LIB", "${WINSDK}\\LIB\\${WINVER}\\um\\x86;${WINSDK}\\LIB\\x86;"
+            "${WINSDK}\\LIB;${VS}\\VC\\lib");
+        defineEnv(route, "PATH", "${VS}\\Common7\\IDE;${VS}\\VC\\bin;${VS}\\Common7\\Tools;"
+            "${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin");
+    }
+    defineEnv(route, "INCLUDE", "${VS}\\VC\\INCLUDE;${WINSDK}\\include;${WINSDK}\\include\\um;"
+        "${WINSDK}\\include\\shared");
+}
+#endif
+
+
+static void defineEnv(HttpRoute *route, cchar *key, cchar *value)
+{
+    EspRoute    *eroute;
+    MprJson     *child, *set;
+    cchar       *arch;
+    int         ji;
+
+    eroute = route->eroute;
+    if (smatch(key, "set")) {
+        httpParsePlatform(HTTP->platform, NULL, &arch, NULL);
+#if ME_WIN_LIKE
+        if (smatch(value, "VisualStudio")) {
+            if (scontains(getenv("LIB"), "Visual Studio") &&
+                scontains(getenv("INCLUDE"), "Visual Studio") &&
+                scontains(getenv("PATH"), "Visual Studio")) {
+                return;
+            }
+        }
+        if (scontains(HTTP->platform, "-x64-") &&
+            !(smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432"))) {
+            /* Cross 64 */
+            arch = sjoin(arch, "-cross", NULL);
+        }
+#endif
+        if ((set = mprGetJsonObj(route->config, sfmt("esp.build.env.%s.default", value))) != 0) {
+            for (ITERATE_CONFIG(route, set, child, ji)) {
+                defineEnv(route, child->name, child->value);
+            }
+        }
+        if ((set = mprGetJsonObj(route->config, sfmt("esp.build.env.%s.%s", value, arch))) == 0) {
+            httpParseError(route, "Cannnot find environment set %s.%s", value, arch);
+            return;
+        } else {
+            for (ITERATE_CONFIG(route, set, child, ji)) {
+                defineEnv(route, child->name, child->value);
+            }
+        }
+
+    } else {
+        value = espExpandCommand(route, value, "", "");
+        mprAddKey(eroute->env, key, value);
+        if (scaselessmatch(key, "PATH")) {
+            if (eroute->searchPath) {
+                eroute->searchPath = sclone(value);
+            } else {
+                eroute->searchPath = sjoin(eroute->searchPath, MPR_SEARCH_SEP, value, NULL);
+            }
+        }
+    }
+}
+
+
+static void parseBuild(HttpRoute *route, cchar *key, MprJson *prop)
+{
+    EspRoute    *eroute;
+    MprJson     *child, *env, *rules;
+    cchar       *buildType, *os, *rule, *stem;
+    int         ji;
+
+    eroute = route->eroute;
+    buildType = HTTP->staticLink ? "static" : "dynamic";
+    httpParsePlatform(HTTP->platform, &os, NULL, NULL);
+
+    stem = sfmt("esp.build.rules.%s.%s", buildType, os);
+    if ((rules = mprGetJsonObj(route->config, stem)) != 0) {
+        if ((rule = mprGetJson(route->config, sfmt("%s.%s", stem, "compile"))) != 0) {
+            eroute->compile = rule;
+        }
+        if ((rule = mprGetJson(route->config, sfmt("%s.%s", stem, "link"))) != 0) {
+            eroute->link = rule;
+        }
+        if ((env = mprGetJsonObj(route->config, sfmt("%s.%s", stem, "env"))) != 0) {
+            if (eroute->env == 0) {
+                eroute->env = mprCreateHash(-1, MPR_HASH_STABLE);
+            }
+            for (ITERATE_CONFIG(route, env, child, ji)) {
+                defineEnv(route, child->name, child->value);
+            }
+        }
+    }
+}
+
+
+static void parseOptimize(HttpRoute *route, cchar *key, MprJson *prop)
 {
     EspRoute    *eroute;
 
     eroute = route->eroute;
-    if (smatch(prop->value, "debug") || smatch(prop->value, "symbols")) {
-        eroute->compileMode = ESP_COMPILE_SYMBOLS;
-    } else if (smatch(prop->value, "release") || smatch(prop->value, "optimized")) {
-        eroute->compileMode = ESP_COMPILE_OPTIMIZED;
-    }
+    eroute->compileMode = smatch(prop->value, "true") ? ESP_COMPILE_OPTIMIZED : ESP_COMPILE_SYMBOLS;
 }
 
 static void serverRouteSet(HttpRoute *route, cchar *set)
@@ -2638,8 +2771,9 @@ PUBLIC int espInitParser()
 #endif
     
     httpAddConfig("esp", parseEsp);
+    httpAddConfig("esp.build", parseBuild);
     httpAddConfig("esp.combine", parseCombine);
-    httpAddConfig("esp.compile", parseCompile);
+    httpAddConfig("esp.optimize", parseOptimize);
     return 0;
 } 
 
@@ -3824,7 +3958,174 @@ PUBLIC bool espIsCurrentSession(HttpConn *conn)
  */
 
 /*
-    espHandler.c -- ESP Appweb handler
+    espHtml.c -- ESP HTML controls 
+
+    Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
+ */
+
+/********************************** Includes **********************************/
+
+
+
+
+/************************************* Local **********************************/
+
+static cchar *getValue(HttpConn *conn, cchar *fieldName, MprHash *options);
+static cchar *map(HttpConn *conn, MprHash *options);
+
+/************************************* Code ***********************************/
+
+PUBLIC void input(cchar *field, cchar *optionString)
+{
+    HttpConn    *conn;
+    MprHash     *choices, *options;
+    MprKey      *kp;
+    EdiRec      *rec;
+    cchar       *rows, *cols, *etype, *value, *checked, *style, *error, *errorMsg;
+    int         type, flags;
+
+    conn = getConn();
+    rec = conn->record;
+    if (ediGetColumnSchema(rec->edi, rec->tableName, field, &type, &flags, NULL) < 0) {
+        type = -1;
+    }
+    options = httpGetOptions(optionString);
+    style = httpGetOption(options, "class", "");
+    errorMsg = rec->errors ? mprLookupKey(rec->errors, field) : 0;
+    error = errorMsg ? sfmt("<span class=\"field-error\">%s</span>", errorMsg) : ""; 
+
+    switch (type) {
+    case EDI_TYPE_BOOL:
+        choices = httpGetOptions("{off: 0, on: 1}");
+        value = getValue(conn, field, options);
+        for (kp = 0; (kp = mprGetNextKey(choices, kp)) != 0; ) {
+            checked = (smatch(kp->data, value)) ? " checked" : "";
+            espRender(conn, "%s <input type='radio' name='%s' value='%s'%s%s class='%s'/>\r\n",
+                stitle(kp->key), field, kp->data, checked, map(conn, options), style);
+        }
+        break;
+        /* Fall through */
+    case EDI_TYPE_BINARY:
+    default:
+        httpError(conn, 0, "espInput: unknown field type %d", type);
+        /* Fall through */
+    case EDI_TYPE_FLOAT:
+    case EDI_TYPE_TEXT:
+
+    case EDI_TYPE_INT:
+    case EDI_TYPE_DATE:
+    case EDI_TYPE_STRING:        
+        if (type == EDI_TYPE_TEXT && !httpGetOption(options, "rows", 0)) {
+            httpSetOption(options, "rows", "10");
+        }
+        etype = "text";
+        value = getValue(conn, field, options);
+        if (value == 0 || *value == '\0') {
+            value = espGetParam(conn, field, "");
+        }
+        if (httpGetOption(options, "password", 0)) {
+            etype = "password";
+        } else if (httpGetOption(options, "hidden", 0)) {
+            etype = "hidden";
+        }
+        if ((rows = httpGetOption(options, "rows", 0)) != 0) {
+            cols = httpGetOption(options, "cols", "60");
+            espRender(conn, "<textarea name='%s' type='%s' cols='%s' rows='%s'%s class='%s'>%s</textarea>", 
+                field, etype, cols, rows, map(conn, options), style, value);
+        } else {
+            espRender(conn, "<input name='%s' type='%s' value='%s'%s class='%s'/>", field, etype, value, 
+                map(conn, options), style);
+        }
+        if (error) {
+            espRenderString(conn, error);
+        }
+        break;
+    }
+}
+
+
+/*
+    Render an input field with a hidden security token
+    Used by esp-html-mvc to add XSRF tokens to a form
+ */
+PUBLIC void inputSecurityToken()
+{
+    HttpConn    *conn;
+
+    conn = getConn();
+    espRender(conn, "    <input name='%s' type='hidden' value='%s' />\r\n", ME_XSRF_PARAM, httpGetSecurityToken(conn, 0));
+}
+
+
+/**************************************** Support *************************************/ 
+
+static cchar *getValue(HttpConn *conn, cchar *fieldName, MprHash *options)
+{
+    EdiRec      *record;
+    cchar       *value;
+
+    record = conn->record;
+    value = 0;
+    if (record) {
+        value = ediGetFieldValue(record, fieldName);
+    }
+    if (value == 0) {
+        value = httpGetOption(options, "value", 0);
+    }
+    if (!httpGetOption(options, "noescape", 0)) {
+        value = mprEscapeHtml(value);
+    }
+    return value;
+}
+
+
+/*
+    Map options to an attribute string.
+ */
+static cchar *map(HttpConn *conn, MprHash *options)
+{
+    MprKey      *kp;
+    MprBuf      *buf;
+
+    if (options == 0 || mprGetHashLength(options) == 0) {
+        return MPR->emptyString;
+    }
+    buf = mprCreateBuf(-1, -1);
+    for (kp = 0; (kp = mprGetNextKey(options, kp)) != 0; ) {
+        if (kp->type != MPR_JSON_OBJ && kp->type != MPR_JSON_ARRAY) {
+            mprPutCharToBuf(buf, ' ');
+            mprPutStringToBuf(buf, kp->key);
+            mprPutStringToBuf(buf, "='");
+            mprPutStringToBuf(buf, kp->data);
+            mprPutCharToBuf(buf, '\'');
+        }
+    }
+    mprAddNullToBuf(buf);
+    return mprGetBufStart(buf);
+}
+
+/*
+    @copy   default
+
+    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
+    Local variables:
+    tab-width: 4
+    c-basic-offset: 4
+    End:
+    vim: sw=4 ts=4 expandtab
+
+    @end
+ */
+
+/*
+    espRequest.c -- ESP Request handler
 
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
  */
@@ -3844,9 +4145,6 @@ static Esp *esp;
 static int cloneDatabase(HttpConn *conn);
 static void closeEsp(HttpQueue *q);
 static EspRoute *createEspRoute(HttpRoute *route);
-static int espDbDirective(MaState *state, cchar *key, cchar *value);
-static int espEnvDirective(MaState *state, cchar *key, cchar *value);
-static EspRoute *getEroute(HttpRoute *route);
 static void manageEsp(Esp *esp, int flags);
 static void manageReq(EspReq *req, int flags);
 static int runAction(HttpConn *conn);
@@ -4625,6 +4923,29 @@ static EspRoute *cloneEspRoute(HttpRoute *route, EspRoute *parent)
 
 
 /*
+    Get an EspRoute. Allocate if required.
+    It is expected that the caller will modify the EspRoute.
+ */
+PUBLIC EspRoute *espRoute(HttpRoute *route)
+{
+    HttpRoute   *rp;
+
+    if (route->eroute && (!route->parent || route->parent->eroute != route->eroute)) {
+        return route->eroute;
+    }
+    /*
+        Lookup up the route chain for any configured EspRoutes
+     */
+    for (rp = route; rp; rp = rp->parent) {
+        if (rp->eroute) {
+            return cloneEspRoute(route, rp->eroute);
+        }
+    }
+    return createEspRoute(route);
+}
+
+
+/*
     Manage all links for EspReq for the garbage collector
  */
 static void manageReq(EspReq *req, int flags)
@@ -4657,36 +4978,13 @@ static void manageEsp(Esp *esp, int flags)
 }
 
 
-/*
-    Get an EspRoute. Allocate if required.
-    It is expected that the caller will modify the EspRoute.
- */
-static EspRoute *getEroute(HttpRoute *route)
-{
-    HttpRoute   *rp;
-
-    if (route->eroute && (!route->parent || route->parent->eroute != route->eroute)) {
-        return route->eroute;
-    }
-    /*
-        Lookup up the route chain for any configured EspRoutes
-     */
-    for (rp = route; rp; rp = rp->parent) {
-        if (rp->eroute) {
-            return cloneEspRoute(route, rp->eroute);
-        }
-    }
-    return createEspRoute(route);
-}
-
-
 /*********************************** Directives *******************************/
 
 PUBLIC int espDefineApp(HttpRoute *route, cchar *name, cchar *prefix, cchar *home, cchar *documents, cchar *routeSet)
 {
     EspRoute    *eroute;
 
-    if ((eroute = getEroute(route)) == 0) {
+    if ((eroute = espRoute(route)) == 0) {
         return MPR_ERR_MEMORY;
     }
     espSetDefaultDirs(route);
@@ -4768,6 +5066,11 @@ PUBLIC int espLoadConfig(HttpRoute *route)
                 }
             }
         }
+        path = mprJoinPath(mprGetAppDir(), "esp-compile.json");
+        if (httpLoadConfig(route, path) < 0) {
+            unlock(esp);
+            return MPR_ERR_CANT_LOAD;
+        }
         httpFinalizeConfig(route);
         unlock(esp);
     }
@@ -4835,190 +5138,6 @@ PUBLIC int espLoadApp(HttpRoute *route)
 }
 
 
-/*
-    <EspApp
-  or
-    <EspApp
-        auth=STORE
-        database=DATABASE
-        home=DIR
-        documents=DIR
-        combine=true|false
-        name=NAME
-        prefix=PREFIX
-        routes=ROUTES
- */
-static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
-{
-    HttpRoute   *route;
-    EspRoute    *eroute;
-    cchar       *auth, *database, *name, *prefix, *home, *documents, *routeSet, *combine;
-    char        *option, *ovalue, *tok;
-
-    home = state->route->home;
-    documents = 0;
-    routeSet = 0;
-    combine = 0;
-    prefix = 0;
-    database = 0;
-    auth = 0;
-    name = 0;
-
-    if (scontains(value, "=")) {
-        for (option = maGetNextArg(sclone(value), &tok); option; option = maGetNextArg(tok, &tok)) {
-            option = ssplit(option, " =\t,", &ovalue);
-            ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
-            if (smatch(option, "auth")) {
-                auth = ovalue;
-            } else if (smatch(option, "combine")) {
-                combine = ovalue;
-#if DEPRECATED || 1
-            } else if (smatch(option, "combined")) {
-                combine = ovalue;
-#endif
-            } else if (smatch(option, "database")) {
-                database = ovalue;
-#if DEPRECATED || 1
-            } else if (smatch(option, "dir")) {
-                documents = home = ovalue;
-#endif
-            } else if (smatch(option, "documents")) {
-                documents = ovalue;
-            } else if (smatch(option, "home")) {
-                home = ovalue;
-            } else if (smatch(option, "name")) {
-                name = ovalue;
-            } else if (smatch(option, "prefix")) {
-                prefix = ovalue;
-            } else if (smatch(option, "routes")) {
-                routeSet = ovalue;
-            } else {
-                mprLog("error esp", 0, "Unknown EspApp option \"%s\"", option);
-            }
-        }
-    }
-
-#if DEPRECATE || 1
-    if (!documents) {
-        documents = mprJoinPath(home, "documents");
-        if (!mprPathExists(documents, X_OK)) {
-            documents = mprJoinPath(home, "client");
-            if (!mprPathExists(documents, X_OK)) {
-                documents = mprJoinPath(home, "public");
-                if (!mprPathExists(documents, X_OK)) {
-                    documents = home;
-                }
-            }
-        }
-    }
-#endif
-
-    state->route = route = httpCreateInheritedRoute(state->route);
-    if (auth) {
-        if (httpSetAuthStore(route->auth, auth) < 0) {
-            mprLog("error esp", 0, "The %s AuthStore is not available on this platform", auth);
-            return MPR_ERR_BAD_STATE;
-        }
-    }
-    if (combine) {
-        if ((eroute = getEroute(state->route)) == 0) {
-            return MPR_ERR_MEMORY;
-        }
-        eroute->combine = scaselessmatch(combine, "true") || smatch(combine, "1");
-    }
-    if (database) {
-        if (espDbDirective(state, key, database) < 0) {
-            return MPR_ERR_BAD_STATE;
-        }
-    }
-    if (espDefineApp(route, name, prefix, home, documents, routeSet) < 0) {
-        return MPR_ERR_CANT_CREATE;
-    }
-    if (prefix) {
-        espSetConfig(route, "esp.appPrefix", prefix);
-    }
-    return 0;
-}
-
-
-static int finishEspAppDirective(MaState *state, cchar *key, cchar *value)
-{
-    HttpRoute   *route;
-
-    /*
-        The order of route finalization will be from the inside. Route finalization causes the route to be added
-        to the enclosing host. This ensures that nested routes are defined BEFORE outer/enclosing routes.
-     */
-    route = state->route;
-
-    if (espConfigureApp(route) < 0) {
-        return MPR_ERR_CANT_LOAD;
-    }
-    if (route != state->prev->route) {
-        httpFinalizeRoute(route);
-    }
-    if (espLoadApp(route) < 0) {
-        return MPR_ERR_CANT_LOAD;
-    }
-    return 0;
-}
-
-
-/*
-    <EspApp>
- */
-static int openEspAppDirective(MaState *state, cchar *key, cchar *value)
-{
-    state = maPushState(state);
-    return startEspAppDirective(state, key, value);
-}
-
-
-/*
-    </EspApp>
- */
-static int closeEspAppDirective(MaState *state, cchar *key, cchar *value)
-{
-    if (finishEspAppDirective(state, key, value) < 0) {
-        return MPR_ERR_BAD_STATE;
-    }
-    maPopState(state);
-    return 0;
-}
-
-
-/*
-    see openEspAppDirective
- */
-static int espAppDirective(MaState *state, cchar *key, cchar *value)
-{
-    state = maPushState(state);
-    if (startEspAppDirective(state, key, value) < 0) {
-        return MPR_ERR_BAD_STATE;
-    }
-    if (finishEspAppDirective(state, key, value) < 0) {
-        return MPR_ERR_BAD_STATE;
-    }
-    maPopState(state);
-    return 0;
-}
-
-
-/*
-    EspCompile template
- */
-static int espCompileDirective(MaState *state, cchar *key, cchar *value)
-{
-    EspRoute    *eroute;
-
-    if ((eroute = getEroute(state->route)) == 0) {
-        return MPR_ERR_MEMORY;
-    }
-    eroute->compile = sclone(value);
-    return 0;
-}
-
-
 PUBLIC int espOpenDatabase(HttpRoute *route, cchar *spec)
 {
     EspRoute    *eroute;
@@ -5054,26 +5173,6 @@ PUBLIC int espOpenDatabase(HttpRoute *route, cchar *spec)
 }
 
 
-/*
-    EspDb provider://database
- */
-static int espDbDirective(MaState *state, cchar *key, cchar *value)
-{
-    EspRoute    *eroute;
-
-    if ((eroute = getEroute(state->route)) == 0) {
-        return MPR_ERR_MEMORY;
-    }
-    if (espOpenDatabase(state->route, value) < 0) {
-        if (!(state->flags & MA_PARSE_NON_SERVER)) {
-            mprLog("error esp", 0, "Cannot open database '%s'. Use: provider://database", value);
-            return MPR_ERR_CANT_OPEN;
-        }
-    }
-    return 0;
-}
-
-
 PUBLIC void espSetDefaultDirs(HttpRoute *route)
 {
     httpSetDir(route, "CACHE", 0);
@@ -5095,147 +5194,6 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
 
 
 /*
-    EspDir key path
- */
-static int espDirDirective(MaState *state, cchar *key, cchar *value)
-{
-    EspRoute    *eroute;
-    char        *name, *path;
-
-    if ((eroute = getEroute(state->route)) == 0) {
-        return MPR_ERR_MEMORY;
-    }
-    if (!maTokenize(state, value, "%S ?S", &name, &path)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-#if DEPRECATED || 1
-    if (smatch(name, "mvc")) {
-        espSetDefaultDirs(state->route);
-    } else
-#endif
-    {
-        path = stemplate(path, state->route->vars);
-        path = stemplate(mprJoinPath(state->route->home, path), state->route->vars);
-        httpSetDir(state->route, name, path);
-    }
-    return 0;
-}
-
-
-/*
-    Define Visual Studio environment if not already present
- */
-static void defineVisualStudioEnv(MaState *state)
-{
-    Http    *http;
-    int     is64BitSystem;
-
-    http = MPR->httpService;
-    if (scontains(getenv("LIB"), "Visual Studio") &&
-        scontains(getenv("INCLUDE"), "Visual Studio") &&
-        scontains(getenv("PATH"), "Visual Studio")) {
-        return;
-    }
-    if (scontains(http->platform, "-x64-")) {
-        is64BitSystem = smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432");
-        espEnvDirective(state, "EspEnv",
-            "LIB \"${WINSDK}\\LIB\\${WINVER}\\um\\x64;${WINSDK}\\LIB\\x64;${VS}\\VC\\lib\\amd64\"");
-        if (is64BitSystem) {
-            espEnvDirective(state, "EspEnv",
-                "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin\\amd64;${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;"
-                "${VS}\\VC\\VCPackages;${WINSDK}\\bin\\x64\"");
-
-        } else {
-            /* Cross building on x86 for 64-bit */
-            espEnvDirective(state, "EspEnv",
-                "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin\\x86_amd64;"
-                "${VS}\\Common7\\Tools;${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\\x86\"");
-        }
-
-    } else if (scontains(http->platform, "-arm-")) {
-        /* Cross building on x86 for arm. No winsdk 7 support for arm */
-        espEnvDirective(state, "EspEnv", "LIB \"${WINSDK}\\LIB\\${WINVER}\\um\\arm;${VS}\\VC\\lib\\arm\"");
-        espEnvDirective(state, "EspEnv", "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin\\x86_arm;${VS}\\Common7\\Tools;"
-            "${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\\arm\"");
-
-    } else {
-        /* Building for X86 */
-        espEnvDirective(state, "EspEnv", "LIB \"${WINSDK}\\LIB\\${WINVER}\\um\\x86;${WINSDK}\\LIB\\x86;"
-            "${WINSDK}\\LIB;${VS}\\VC\\lib\"");
-        espEnvDirective(state, "EspEnv", "PATH \"${VS}\\Common7\\IDE;${VS}\\VC\\bin;${VS}\\Common7\\Tools;"
-            "${VS}\\SDK\\v3.5\\bin;${VS}\\VC\\VCPackages;${WINSDK}\\bin\"");
-    }
-    espEnvDirective(state, "EspEnv", "INCLUDE \"${VS}\\VC\\INCLUDE;${WINSDK}\\include;${WINSDK}\\include\\um;"
-        "${WINSDK}\\include\\shared\"");
-}
-
-
-/*
-    EspEnv var string
-    This defines an environment variable setting. It is defined only when commands for this route are executed.
- */
-static int espEnvDirective(MaState *state, cchar *key, cchar *value)
-{
-    EspRoute    *eroute;
-    char        *ekey, *evalue;
-
-    if ((eroute = getEroute(state->route)) == 0) {
-        return MPR_ERR_MEMORY;
-    }
-    if (!maTokenize(state, value, "%S ?S", &ekey, &evalue)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-    if (eroute->env == 0) {
-        eroute->env = mprCreateHash(-1, MPR_HASH_STABLE);
-    }
-    evalue = espExpandCommand(state->route, evalue, "", "");
-    if (scaselessmatch(ekey, "VisualStudio")) {
-        defineVisualStudioEnv(state);
-    } else {
-        mprAddKey(eroute->env, ekey, evalue);
-    }
-    if (scaselessmatch(ekey, "PATH")) {
-        if (eroute->searchPath) {
-            eroute->searchPath = sclone(evalue);
-        } else {
-            eroute->searchPath = sjoin(eroute->searchPath, MPR_SEARCH_SEP, evalue, NULL);
-        }
-    }
-    return 0;
-}
-
-
-/*
-    EspKeepSource on|off
- */
-static int espKeepSourceDirective(MaState *state, cchar *key, cchar *value)
-{
-    bool        on;
-
-    if (!maTokenize(state, value, "%B", &on)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-    state->route->keepSource = on;
-    return 0;
-}
-
-
-/*
-    EspLink template
- */
-static int espLinkDirective(MaState *state, cchar *key, cchar *value)
-{
-    EspRoute    *eroute;
-
-    if ((eroute = getEroute(state->route)) == 0) {
-        return MPR_ERR_MEMORY;
-    }
-    eroute->link = sclone(value);
-    return 0;
-}
-
-
-/*
     Initialize and load a statically linked ESP module
  */
 PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *routeName)
@@ -5247,126 +5205,6 @@ PUBLIC int espStaticInitialize(EspModuleEntry entry, cchar *appName, cchar *rout
         return MPR_ERR_CANT_ACCESS;
     }
     return (entry)(route, NULL);
-}
-
-
-/*
-    EspPermResource [resource ...]
- */
-static int espPermResourceDirective(MaState *state, cchar *key, cchar *value)
-{
-    char        *name, *next;
-
-    if (value == 0 || *value == '\0') {
-        httpAddPermResource(state->route, "{controller}");
-    } else {
-        name = stok(sclone(value), ", \t\r\n", &next);
-        while (name) {
-            httpAddPermResource(state->route, name);
-            name = stok(NULL, ", \t\r\n", &next);
-        }
-    }
-    return 0;
-}
-
-/*
-    EspResource [resource ...]
- */
-static int espResourceDirective(MaState *state, cchar *key, cchar *value)
-{
-    char        *name, *next;
-
-    if (value == 0 || *value == '\0') {
-        httpAddResource(state->route, "{controller}");
-    } else {
-        name = stok(sclone(value), ", \t\r\n", &next);
-        while (name) {
-            httpAddResource(state->route, name);
-            name = stok(NULL, ", \t\r\n", &next);
-        }
-    }
-    return 0;
-}
-
-
-/*
-    EspResourceGroup [resource ...]
- */
-static int espResourceGroupDirective(MaState *state, cchar *key, cchar *value)
-{
-    char        *name, *next;
-
-    if (value == 0 || *value == '\0') {
-        httpAddResourceGroup(state->route, "{controller}");
-    } else {
-        name = stok(sclone(value), ", \t\r\n", &next);
-        while (name) {
-            httpAddResourceGroup(state->route, name);
-            name = stok(NULL, ", \t\r\n", &next);
-        }
-    }
-    return 0;
-}
-
-
-/*
-    EspRoute
-        methods=METHODS
-        pattern=PATTERN
-        source=SOURCE
-        target=TARGET
- */
-static int espRouteDirective(MaState *state, cchar *key, cchar *value)
-{
-    EspRoute    *eroute;
-    HttpRoute   *route;
-    cchar       *methods, *name, *pattern, *source, *target;
-    char        *option, *ovalue, *tok;
-
-    pattern = 0;
-    name = 0;
-    source = 0;
-    target = 0;
-    methods = "GET";
-
-    if (scontains(value, "=")) {
-        for (option = maGetNextArg(sclone(value), &tok); option; option = maGetNextArg(tok, &tok)) {
-            option = ssplit(option, "=,", &ovalue);
-            ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
-            if (smatch(option, "methods")) {
-                methods = ovalue;
-            } else if (smatch(option, "name")) {
-                name = ovalue;
-            } else if (smatch(option, "pattern") || smatch(option, "prefix")) {
-                /* DEPRECATED prefix */
-                pattern = ovalue;
-            } else if (smatch(option, "source")) {
-                source = ovalue;
-            } else if (smatch(option, "target")) {
-                target = ovalue;
-            } else {
-                mprLog("error esp", 0, "Unknown EspRoute option \"%s\"", option);
-            }
-        }
-    }
-    if (!pattern || !target) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-    if (target == 0 || *target == 0) {
-        target = "$&";
-    }
-    target = stemplate(target, state->route->vars);
-    if ((route = httpDefineRoute(state->route, methods, pattern, target, source)) == 0) {
-        return MPR_ERR_CANT_CREATE;
-    }
-    httpSetRouteHandler(route, "espHandler");
-    if ((eroute = getEroute(route)) == 0) {
-        return MPR_ERR_MEMORY;
-    }
-    if (name) {
-        eroute->appName = sclone(name);
-    }
-    return 0;
 }
 
 
@@ -5385,52 +5223,18 @@ PUBLIC int espBindProc(HttpRoute *parent, cchar *pattern, void *proc)
 }
 
 
-/*
-    EspRouteSet kind
- */
-static int espRouteSetDirective(MaState *state, cchar *key, cchar *value)
-{
-    EspRoute    *eroute;
-    char        *kind;
-
-    if ((eroute = getEroute(state->route)) == 0) {
-        return MPR_ERR_MEMORY;
-    }
-    if (!maTokenize(state, value, "%S", &kind)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-    httpAddRouteSet(state->route, kind);
-    return 0;
-}
-
-
-/*
-    EspUpdate on|off
- */
-static int espUpdateDirective(MaState *state, cchar *key, cchar *value)
-{
-    bool        on;
-
-    if (!maTokenize(state, value, "%B", &on)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-    state->route->update = on;
-    return 0;
-}
-
 /************************************ Init ************************************/
 /*
-    Loadable module configuration
+    ESP module
  */
-PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
+PUBLIC int espOpen(MprModule *module)
 {
     HttpStage   *handler;
-    cchar       *path;
 
     if ((handler = httpCreateHandler("espHandler", module)) == 0) {
         return MPR_ERR_CANT_CREATE;
     }
-    http->espHandler = handler;
+    HTTP->espHandler = handler;
     handler->open = openEsp;
     handler->close = closeEsp;
     handler->start = startEsp;
@@ -5447,25 +5251,6 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
     if (espInitParser() < 0) {
         return 0;
     }
-    /*
-        Add appweb configuration file directives
-     */
-    maAddDirective("EspApp", espAppDirective);
-    maAddDirective("<EspApp", openEspAppDirective);
-    maAddDirective("</EspApp", closeEspAppDirective);
-    maAddDirective("EspCompile", espCompileDirective);
-    maAddDirective("EspDb", espDbDirective);
-    maAddDirective("EspDir", espDirDirective);
-    maAddDirective("EspEnv", espEnvDirective);
-    maAddDirective("EspKeepSource", espKeepSourceDirective);
-    maAddDirective("EspLink", espLinkDirective);
-    maAddDirective("EspPermResource", espPermResourceDirective);
-    maAddDirective("EspResource", espResourceDirective);
-    maAddDirective("EspResourceGroup", espResourceGroupDirective);
-    maAddDirective("EspRoute", espRouteDirective);
-    maAddDirective("EspRouteSet", espRouteSetDirective);
-    maAddDirective("EspUpdate", espUpdateDirective);
-
     if ((esp->ediService = ediCreateService()) == 0) {
         return 0;
     }
@@ -5476,17 +5261,6 @@ PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
 #if ME_COM_SQLITE
     sdbInit();
 #endif
-    /*
-        Load the esp.conf directives to compile esp
-     */
-    path = mprJoinPath(mprGetAppDir(), "esp.conf");
-    if (mprPathExists(path, R_OK) && (http->platformDir || httpSetPlatformDir(0) == 0)) {
-        if (maParseFile(NULL, mprJoinPath(mprGetAppDir(), "esp.conf")) < 0) {
-            mprLog("error esp", 0, "Cannot parse %s", path);
-            return MPR_ERR_CANT_OPEN;
-        }
-        esp->canCompile = 1;
-    }
     return 0;
 }
 
@@ -5515,173 +5289,6 @@ static int unloadEsp(MprModule *mp)
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
-    commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.md distributed with
-    this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
- */
-
-/*
-    espHtml.c -- ESP HTML controls 
-
-    Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
- */
-
-/********************************** Includes **********************************/
-
-
-
-
-/************************************* Local **********************************/
-
-static cchar *getValue(HttpConn *conn, cchar *fieldName, MprHash *options);
-static cchar *map(HttpConn *conn, MprHash *options);
-
-/************************************* Code ***********************************/
-
-PUBLIC void input(cchar *field, cchar *optionString)
-{
-    HttpConn    *conn;
-    MprHash     *choices, *options;
-    MprKey      *kp;
-    EdiRec      *rec;
-    cchar       *rows, *cols, *etype, *value, *checked, *style, *error, *errorMsg;
-    int         type, flags;
-
-    conn = getConn();
-    rec = conn->record;
-    if (ediGetColumnSchema(rec->edi, rec->tableName, field, &type, &flags, NULL) < 0) {
-        type = -1;
-    }
-    options = httpGetOptions(optionString);
-    style = httpGetOption(options, "class", "");
-    errorMsg = rec->errors ? mprLookupKey(rec->errors, field) : 0;
-    error = errorMsg ? sfmt("<span class=\"field-error\">%s</span>", errorMsg) : ""; 
-
-    switch (type) {
-    case EDI_TYPE_BOOL:
-        choices = httpGetOptions("{off: 0, on: 1}");
-        value = getValue(conn, field, options);
-        for (kp = 0; (kp = mprGetNextKey(choices, kp)) != 0; ) {
-            checked = (smatch(kp->data, value)) ? " checked" : "";
-            espRender(conn, "%s <input type='radio' name='%s' value='%s'%s%s class='%s'/>\r\n",
-                stitle(kp->key), field, kp->data, checked, map(conn, options), style);
-        }
-        break;
-        /* Fall through */
-    case EDI_TYPE_BINARY:
-    default:
-        httpError(conn, 0, "espInput: unknown field type %d", type);
-        /* Fall through */
-    case EDI_TYPE_FLOAT:
-    case EDI_TYPE_TEXT:
-
-    case EDI_TYPE_INT:
-    case EDI_TYPE_DATE:
-    case EDI_TYPE_STRING:        
-        if (type == EDI_TYPE_TEXT && !httpGetOption(options, "rows", 0)) {
-            httpSetOption(options, "rows", "10");
-        }
-        etype = "text";
-        value = getValue(conn, field, options);
-        if (value == 0 || *value == '\0') {
-            value = espGetParam(conn, field, "");
-        }
-        if (httpGetOption(options, "password", 0)) {
-            etype = "password";
-        } else if (httpGetOption(options, "hidden", 0)) {
-            etype = "hidden";
-        }
-        if ((rows = httpGetOption(options, "rows", 0)) != 0) {
-            cols = httpGetOption(options, "cols", "60");
-            espRender(conn, "<textarea name='%s' type='%s' cols='%s' rows='%s'%s class='%s'>%s</textarea>", 
-                field, etype, cols, rows, map(conn, options), style, value);
-        } else {
-            espRender(conn, "<input name='%s' type='%s' value='%s'%s class='%s'/>", field, etype, value, 
-                map(conn, options), style);
-        }
-        if (error) {
-            espRenderString(conn, error);
-        }
-        break;
-    }
-}
-
-
-/*
-    Render an input field with a hidden security token
-    Used by esp-html-mvc to add XSRF tokens to a form
- */
-PUBLIC void inputSecurityToken()
-{
-    HttpConn    *conn;
-
-    conn = getConn();
-    espRender(conn, "    <input name='%s' type='hidden' value='%s' />\r\n", ME_XSRF_PARAM, httpGetSecurityToken(conn, 0));
-}
-
-
-/**************************************** Support *************************************/ 
-
-static cchar *getValue(HttpConn *conn, cchar *fieldName, MprHash *options)
-{
-    EdiRec      *record;
-    cchar       *value;
-
-    record = conn->record;
-    value = 0;
-    if (record) {
-        value = ediGetFieldValue(record, fieldName);
-    }
-    if (value == 0) {
-        value = httpGetOption(options, "value", 0);
-    }
-    if (!httpGetOption(options, "noescape", 0)) {
-        value = mprEscapeHtml(value);
-    }
-    return value;
-}
-
-
-/*
-    Map options to an attribute string.
- */
-static cchar *map(HttpConn *conn, MprHash *options)
-{
-    MprKey      *kp;
-    MprBuf      *buf;
-
-    if (options == 0 || mprGetHashLength(options) == 0) {
-        return MPR->emptyString;
-    }
-    buf = mprCreateBuf(-1, -1);
-    for (kp = 0; (kp = mprGetNextKey(options, kp)) != 0; ) {
-        if (kp->type != MPR_JSON_OBJ && kp->type != MPR_JSON_ARRAY) {
-            mprPutCharToBuf(buf, ' ');
-            mprPutStringToBuf(buf, kp->key);
-            mprPutStringToBuf(buf, "='");
-            mprPutStringToBuf(buf, kp->data);
-            mprPutCharToBuf(buf, '\'');
-        }
-    }
-    mprAddNullToBuf(buf);
-    return mprGetBufStart(buf);
-}
-
-/*
-    @copy   default
-
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
-
-    This software is distributed under commercial and open source licenses.
-    You may use the Embedthis Open Source license or you may acquire a 
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
@@ -6799,17 +6406,17 @@ static cchar *getLibs(cchar *os)
     cchar       *libs;
 
     if (smatch(os, "windows")) {
-        libs = "\"${LIBPATH}\\libmod_esp${SHLIB}\" \"${LIBPATH}\\libappweb.lib\" \"${LIBPATH}\\libhttp.lib\" \"${LIBPATH}\\libmpr.lib\"";
+        libs = "\"${LIBPATH}\\libesp${SHLIB}\" \"${LIBPATH}\\libhttp.lib\" \"${LIBPATH}\\libmpr.lib\"";
     } else {
 #if LINUX
         /* 
             Fedora interprets $ORIGN relative to the shared library and not the application executable
-            So loading compiled apps fails to locate libmod_esp.so. 
+            So loading compiled apps fails to locate libesp.so. 
             Since building a shared library, can omit libs and resolve at load time.
          */
         libs = "";
 #else
-        libs = "-lmod_esp -lappweb -lpcre -lhttp -lmpr -lpthread -lm";
+        libs = "-lesp -lpcre -lhttp -lmpr -lpthread -lm";
 #endif
     }
     return libs;

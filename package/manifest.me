@@ -190,7 +190,7 @@ Me.load({
                     ifdef:      'esp',
 
                 }, {
-                    from:       'esp.conf',
+                    from:       'esp-compile.json',
                     to:         '${abin}/',
                     ifdef:      'esp',
 
@@ -204,6 +204,7 @@ Me.load({
                 {
                     from: [
                                 'libappweb${SHOBJ}',
+                                'libesp${SHOBJ}',
                                 'libhttp${SHOBJ}',
                                 'libmpr${SHOBJ}',
                                 'libpcre${SHOBJ}',
@@ -264,6 +265,7 @@ Me.load({
                                 /* Windows needs the libs to be able to compile esp programs */
                                 'libmod_esp${SHLIB}',
                                 'libappweb${SHLIB}',
+                                'libesp${SHLIB}',
                                 'libpcre${SHLIB}',
                                 'libhttp${SHLIB}',
                                 'libmpr${SHLIB}',

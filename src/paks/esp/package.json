@@ -28,7 +28,6 @@
         "pcre": "~1.0"
     },
     "optionalDependencies": {
-        "appweb": "~5",
         "est": "~0.6",
         "ssl": "~0.8"
     },

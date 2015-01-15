@@ -18,7 +18,6 @@ typedef struct App {
 
     cchar       *description;           /* Application description */
     cchar       *name;                  /* Application name */
-    cchar       *appwebConfig;          /* Arg to --appweb */
     cchar       *cipher;                /* Cipher for passwords: "md5" or "blowfish" */
     cchar       *currentDir;            /* Initial starting current directory */
     cchar       *database;              /* Database provider "mdb" | "sdb" */
@@ -95,7 +94,7 @@ static int       nextMigration;         /* Sequence number for next migration */
 #define REQ_TARGETS     0x2             /* Require targets list */
 #define REQ_ROUTES      0x4             /* Require esp routes */
 #define REQ_CONFIG      0x8             /* Require esp.json, otherwise load only if present */
-#define REQ_NO_CONFIG   0x10            /* Never load appweb.conf */
+#define REQ_NO_CONFIG   0x10            /* Never load esp.json */
 #define REQ_SERVE       0x20            /* Will be running as a server */
 #define REQ_NAME        0x40            /* Set "name" */
 
@@ -229,7 +228,6 @@ static App *createApp(Mpr *mpr)
 static void manageApp(App *app, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(app->appwebConfig);
         mprMark(app->base);
         mprMark(app->binDir);
         mprMark(app->build);
@@ -301,13 +299,6 @@ static int parseArgs(int argc, char **argv)
                     fail("Cannot change directory to %s", argp);
                 }
                 app->home = sclone(argv[++argind]);
-            }
-
-        } else if (smatch(argp, "appweb")) {
-            if (argind >= argc) {
-                usageError();
-            } else {
-                app->appwebConfig = sclone(argv[++argind]);
             }
 
         } else if (smatch(argp, "cipher")) {
@@ -590,8 +581,46 @@ static void initRuntime()
     if (app->error) {
         return;
     }
-    maLoadModule("espHandler", "libmod_esp");
+#if UNUSED
+    loadModule();
+#else
+    if (espOpen(NULL) < 0) {
+        app->error = 1;
+    }
+#endif
 }
+
+
+#if UNUSED
+static int loadModule()
+{
+    MprModule   *module;
+    char        entryPoint[ME_MAX_FNAME];
+    char        *libname, *name, *path;
+
+    name = "espHandler";
+    libname = "libesp";
+    if ((module = mprLookupModule(name)) != 0) {
+#if ME_STATIC
+        mprLog("info esp config", 2, "Activating module (Builtin) %s", name);
+#endif
+        return 0;
+    }
+    path = libname ? sclone(libname) : sjoin("mod_", name, ME_SHOBJ, NULL);
+    fmt(entryPoint, sizeof(entryPoint), "ma%sInit", stitle(name));
+    entryPoint[2] = toupper((uchar) entryPoint[2]);
+
+    if ((module = mprCreateModule(name, path, entryPoint, HTTP)) == 0) {
+        app->error = 1;
+        return MPR_ERR_CANT_CREATE;
+    }
+    if (mprLoadModule(module) < 0) {
+        app->error = 1;
+        return MPR_ERR_CANT_CREATE;
+    }
+    return 0;
+}
+#endif
 
 
 static void initialize(int argc, char **argv)
@@ -599,7 +628,6 @@ static void initialize(int argc, char **argv)
     HttpStage   *stage;
     HttpRoute   *route;
     cchar       *documents, *path;
-    int         flags;
 
     if (app->error) {
         return;
@@ -679,60 +707,49 @@ static void initialize(int argc, char **argv)
     app->eroute = route->eroute;
     app->eroute->skipApps = !(app->require & REQ_SERVE);
     
-    if (app->appwebConfig) {
-        /* 
-            Appweb - hosted initialization.
-            This will call espDefineApp and espConfigureApp via the EspApp directive 
-         */
-        flags = (app->require & REQ_SERVE) ? 0 : MA_PARSE_NON_SERVER;
-        if (maParseConfig(app->appwebConfig, flags) < 0) {
-            fail("Cannot configure the server, exiting.");
+#if DEPRECATE || 1
+    if (mprPathExists("documents", X_OK)) {
+        documents = "documents";
+    } else if (mprPathExists("client", X_OK)) {
+        documents = "client";
+    } else if (mprPathExists("public", X_OK)) {
+        documents = "public";
+    } else {
+        documents = ".";
+    }
+#endif
+    if (mprPathExists(ME_ESP_CONFIG, R_OK)) {
+        if (espDefineApp(route, app->name, 0, ".", documents, 0) < 0 || 
+                espConfigureApp(route) < 0 || espLoadApp(route) < 0) {
+            fail("Cannot define and load ESP app");
             return;
         }
     } else {
+        if (mprPathExists("package.json", R_OK)) {
 #if DEPRECATE || 1
-        if (mprPathExists("documents", X_OK)) {
-            documents = "documents";
-        } else if (mprPathExists("client", X_OK)) {
-            documents = "client";
-        } else if (mprPathExists("public", X_OK)) {
-            documents = "public";
-        } else {
-            documents = ".";
-        }
-#endif
-        if (mprPathExists(ME_ESP_CONFIG, R_OK)) {
+            trace("Warn", "ESP configuration should be in %s instead of package.json", ME_ESP_CONFIG);
             if (espDefineApp(route, app->name, 0, ".", documents, 0) < 0 || 
                     espConfigureApp(route) < 0 || espLoadApp(route) < 0) {
                 fail("Cannot define and load ESP app");
                 return;
             }
-        } else {
-            if (mprPathExists("package.json", R_OK)) {
-#if DEPRECATE || 1
-                trace("Warn", "ESP configuration should be in %s instead of package.json", ME_ESP_CONFIG);
-                if (espDefineApp(route, app->name, 0, ".", documents, 0) < 0 || 
-                        espConfigureApp(route) < 0 || espLoadApp(route) < 0) {
-                    fail("Cannot define and load ESP app");
-                    return;
-                }
 #endif
-            } else {
-                /*
-                    No esp.json - not an ESP app
-                 */
-                route->update = 1;
-                httpSetRouteShowErrors(route, 1);
-                espSetDefaultDirs(route);
-                httpAddRouteHandler(route, "espHandler", "esp");
-                httpAddRouteHandler(route, "fileHandler", "");
-                httpAddRouteIndex(route, "index.esp");
-                httpAddRouteIndex(route, "index.html");
-            }
+        } else {
+            /*
+                No esp.json - not an ESP app
+             */
+            route->update = 1;
+            httpSetRouteShowErrors(route, 1);
+            espSetDefaultDirs(route);
+            httpAddRouteHandler(route, "espHandler", "esp");
+            httpAddRouteHandler(route, "fileHandler", "");
+            httpAddRouteIndex(route, "index.esp");
+            httpAddRouteIndex(route, "index.html");
         }
-        //  MOB - is this route already finalized for a configured app?
-        httpFinalizeRoute(route);
     }
+    //  MOB - is this route already finalized for a configured app?
+    httpFinalizeRoute(route);
+
     //  MOB - should only be needed if espConfigureApp not called
     if (route->database && !app->eroute->edi) {
         if (espOpenDatabase(route, route->database) < 0) {
@@ -1257,24 +1274,22 @@ static void run(int argc, char **argv)
     if (app->show) {
         httpLogRoutes(app->host, mprGetLogLevel() > 4);
     }
-    if (!app->appwebConfig) {
-        if (argc == 0) {
-            if (http->endpoints->length == 0) {
-                if ((endpoint = httpCreateEndpoint("127.0.0.1", 4000, NULL)) == 0) {
-                    fail("Cannot create endpoint for 127.0.0.1:%d", 4000);
-                    return;
-                }
-                httpAddHostToEndpoints(app->host);
-            }
-        } else for (i = 0; i < argc; i++) {
-            address = argv[i++];
-            mprParseSocketAddress(address, &ip, &port, NULL, 80);
-            if ((endpoint = httpCreateEndpoint(ip, port, NULL)) == 0) {
-                fail("Cannot create endpoint for %s:%d", ip, port);
+    if (argc == 0) {
+        if (http->endpoints->length == 0) {
+            if ((endpoint = httpCreateEndpoint("127.0.0.1", 4000, NULL)) == 0) {
+                fail("Cannot create endpoint for 127.0.0.1:%d", 4000);
                 return;
             }
             httpAddHostToEndpoints(app->host);
         }
+    } else for (i = 0; i < argc; i++) {
+        address = argv[i++];
+        mprParseSocketAddress(address, &ip, &port, NULL, 80);
+        if ((endpoint = httpCreateEndpoint(ip, port, NULL)) == 0) {
+            fail("Cannot create endpoint for %s:%d", ip, port);
+            return;
+        }
+        httpAddHostToEndpoints(app->host);
     }
     httpSetInfoLevel(0);
     if (httpStartEndpoints() < 0) {
@@ -1789,7 +1804,7 @@ static void compile(int argc, char **argv)
         mprWriteFileFmt(file, "\nPUBLIC void appwebStaticInitialize()\n{\n");
         for (ITERATE_ITEMS(app->slink, route, next)) {
             name = app->name ? app->name : mprGetPathBase(route->documents);
-            mprWriteFileFmt(file, "    espStaticInitialize(esp_app_%s_combine, \"%s\", \"%s\");\n", name, name, 
+            mprWriteFileFmt(file, "    appwebStaticInitialize(esp_app_%s_combine, \"%s\", \"%s\");\n", name, name, 
                 route->pattern);
         }
         mprWriteFileFmt(file, "}\n");
@@ -2488,7 +2503,6 @@ static void usageError()
     mprEprintf("\nESP Usage:\n\n"
     "  %s [options] [commands]\n\n"
     "  Options:\n"
-    "    --appweb appweb.config     # Use file for appweb.conf\n"
     "    --cipher cipher            # Password cipher 'md5' or 'blowfish'\n"
     "    --database name            # Database provider 'mdb|sdb'\n"
     "    --force                    # Force requested action\n"
