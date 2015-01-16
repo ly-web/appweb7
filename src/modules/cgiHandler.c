@@ -1014,7 +1014,7 @@ static int scriptAliasDirective(MaState *state, cchar *key, cchar *value)
 /*  
     Loadable module initialization
  */
-PUBLIC int maCgiHandlerInit(Http *http, MprModule *module)
+PUBLIC int httpCgiInit(Http *http, MprModule *module)
 {
     HttpStage   *handler, *connector;
 

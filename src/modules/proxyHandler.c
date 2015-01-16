@@ -246,7 +246,7 @@ static int proxyDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-PUBLIC int maProxyHandlerInit(Http *http, MprModule *module)
+PUBLIC int httpProxyInit(Http *http, MprModule *module)
 {
     HttpStage   *handler;
 
@@ -266,7 +266,7 @@ PUBLIC int maProxyHandlerInit(Http *http, MprModule *module)
 }
 #else
 
-PUBLIC int maProxyHandlerInit(Http *http, MprModule *mp)
+PUBLIC int httpProxyInit(Http *http, MprModule *mp)
 {
     return 0;
 }

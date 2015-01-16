@@ -113,7 +113,7 @@ PUBLIC int main(int argc, char *argv[])
     auth = route->auth;
 
     if (authFile && mprPathExists(authFile, W_OK)) {
-        if (maParseConfig(authFile, 0) < 0) {
+        if (maParseConfig(authFile) < 0) {
             exit(4);
         }
     }

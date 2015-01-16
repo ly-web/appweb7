@@ -63,7 +63,6 @@ extern "C" {
     State flags
  */
 #define MA_PARSE_NON_SERVER     0x1     /**< Command file being parsed by a utility program */
-#define MA_NO_MODULES           0x2     /**< Configure server but do not load modules */
 
 /**
     Current configuration parse state
@@ -122,12 +121,11 @@ PUBLIC void maAddDirective(cchar *directive, MaDirective proc);
     @param documents Default directory for web documents to serve. This overrides the value in the config file.
     @param ip IP address to listen on. This overrides the value specified in the config file.
     @param port Port address to listen on. This overrides the value specified in the config file.
-    @param flags Set to MA_NO_MODULES to suppress loading modules. Otherwise set to zero.
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
     @ingroup MaState
     @stability Evolving
  */
-PUBLIC int maConfigureServer(cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port, int flags);
+PUBLIC int maConfigureServer(cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port);
 
 /**
     Get the argument in a directive
@@ -157,12 +155,11 @@ PUBLIC int maLoadModule(cchar *name, cchar *libname);
     @description Parse the configuration file and configure the server. This creates a default host and route
         and then configures the server based on config file directives.
     @param path Configuration file pathname.
-    @param flags Parse control flags. Reserved. Set to zero.
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
     @ingroup MaState
     @stability Evolving
  */
-PUBLIC int maParseConfig(cchar *path, int flags);
+PUBLIC int maParseConfig(cchar *path);
 
 /**
     Parse a configuration file

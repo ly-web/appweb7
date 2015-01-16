@@ -7,7 +7,6 @@ NAME
 
 SYNOPSIS
        esp
-           --appweb configFile
            --cipher cipher
            --database DB
            --force
@@ -280,11 +279,6 @@ COMMANDS
 
 
 OPTIONS
-       --appweb configFile
-             Use  the  specified appweb config file to define and host the ESP
-             application.  By default the esp command looks for a esp.json and
-             uses that to define the applicaiton.
-
        --cipher cipher
              Password cipher to use. Set to "md5" or "blowfish".
 
@@ -297,24 +291,17 @@ OPTIONS
              ing  files. This is to preserve user changes to previously gener-
              ated files.
 
-       --genlink slink.c
-             Generate a static link initialization  file  for  ESP  pages  and
-             applications.   This  is used with --static to generate a appweb-
-             StaticInitialize() function that will invoke all  ESP  initializ-
-             ers.    By   default,   appweb   expects   this   to  be  in  the
-             src/server/slink.c file.
-
        --home dir
              Change the current working directory before beginning processing.
 
        --keep
              Keep intermediate source files in the cache directory. This over-
-             rides the EspKeepSource setting in the appweb.conf file.
+             rides the ejs.json "keep" setting.
 
        --listen [ip:]port
              Define the listening endpoint address. This  will  be  used  when
              generating  an  application.  The  value will be patched into the
-             generated appweb.conf configuration file.
+             generated esp.json configuration file.
 
        --log logFile:level
              Specify a file to log  messages.   The  syntax  is:  "--log  log-
@@ -336,10 +323,10 @@ OPTIONS
 
        --platform [path/]os-arch-profile
              Target platform configuration to build for and directory contain-
-             ing appweb objects and libraries for the target platform.   If  a
-             path is supplied, the specified platform directory is used.  Oth-
-             erwise, esp searches from the current  directory  upwards  for  a
-             parent platform directory.
+             ing esp objects and libraries for the target platform.  If a path
+             is  supplied,  the  specified platform directory is used.  Other-
+             wise, esp searches from the current directory upwards for a  par-
+             ent platform directory.
 
        --rebuild
              Force  a  recompile  of all items when used with the compile com-
@@ -397,9 +384,6 @@ COPYRIGHT
        Copyright  (C)  Embedthis  Software.  Embedthis  ESP  is a trademark of
        Embedthis Software.
 
-
-SEE ALSO
-       appweb
 
 
 

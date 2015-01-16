@@ -7,17 +7,17 @@
         objects = {
 
 /* Begin PBXAggregateTarget section */
-		3685EF943685FF2800000006 /* esp.conf */ = {
+		3685EF943685FF2800000006 /* esp-compile.json */ = {
     			isa = PBXAggregateTarget;
-    			buildConfigurationList = 3685EF943685FF2800000005 /* Build configuration list for PBXAggregateTarget "esp.conf" */;
+    			buildConfigurationList = 3685EF943685FF2800000005 /* Build configuration list for PBXAggregateTarget "esp-compile.json" */;
     			buildPhases = (
     				3685EF943685FF2800000007,
     			);
     			dependencies = (
 				3685EF943685FF2800000008 /* PBXTargetDependency Prep */,
 			);
-    			name = esp.conf;
-    			productName = esp.conf;
+    			name = esp-compile.json;
+    			productName = esp-compile.json;
     		};
 		3685EF943685FF280000000A /* http-ca-crt */ = {
     			isa = PBXAggregateTarget;
@@ -117,7 +117,7 @@
 				3685EF943685FF280000002B /* PBXTargetDependency appweb */,
 				3685EF943685FF280000002C /* PBXTargetDependency authpass */,
 				3685EF943685FF280000002D /* PBXTargetDependency cgiProgram */,
-				3685EF943685FF280000002E /* PBXTargetDependency esp.conf */,
+				3685EF943685FF280000002E /* PBXTargetDependency esp-compile.json */,
 				3685EF943685FF280000002F /* PBXTargetDependency espcmd */,
 				3685EF943685FF2800000030 /* PBXTargetDependency http-ca-crt */,
 				3685EF943685FF2800000031 /* PBXTargetDependency httpcmd */,
@@ -305,7 +305,7 @@
     			remoteGlobalIDString = 3685EF943685FF2800000047;
     			remoteInfo = Prep;
     		};
-		3685EF943685FF28000000AE /* PBXContainerItemProxy Prep from esp.conf */ = {
+		3685EF943685FF28000000AE /* PBXContainerItemProxy Prep from esp-compile.json */ = {
     			isa = PBXContainerItemProxy;
     			containerPortal = 3685EF943685FF2800000001 /* Project object */;
     			proxyType = 1;
@@ -774,12 +774,12 @@
     			remoteGlobalIDString = 3685EF943685FF28000000E4;
     			remoteInfo = cgiProgram;
     		};
-		3685EF943685FF28000000F6 /* PBXContainerItemProxy esp.conf from All */ = {
+		3685EF943685FF28000000F6 /* PBXContainerItemProxy esp-compile.json from All */ = {
     			isa = PBXContainerItemProxy;
     			containerPortal = 3685EF943685FF2800000001 /* Project object */;
     			proxyType = 1;
     			remoteGlobalIDString = 3685EF943685FF2800000006;
-    			remoteInfo = esp.conf;
+    			remoteInfo = esp-compile.json;
     		};
 		3685EF943685FF28000000F7 /* PBXContainerItemProxy libesp from All */ = {
     			isa = PBXContainerItemProxy;
@@ -1673,23 +1673,23 @@
 /* End PBXNativeTarget section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		3685EF943685FF2800000007 /* ShellScript for esp.conf */ = {
+		3685EF943685FF2800000007 /* ShellScript for esp-compile.json */ = {
     			isa = PBXShellScriptBuildPhase;
     			buildActionMask = 2147483647;
     			files = (
     			);
     			inputPaths = (
-    ../src/paks/esp/esp.conf
+    ../src/paks/esp/esp-compile.json
     			);
     			outputPaths = (
-    ../build/macosx-x64-default/bin/esp.conf
+    ../build/macosx-x64-default/bin/esp-compile.json
     			);
     			runOnlyForDeploymentPostprocessing = 0;
     			shellPath = /bin/bash;
     			shellScript = "PATH=$PATH:/usr/local/bin
 cd ..
 	mkdir -p \"build/macosx-x64-default/bin\"
-	cp src/paks/esp/esp.conf build/macosx-x64-default/bin/esp.conf
+	cp src/paks/esp/esp-compile.json build/macosx-x64-default/bin/esp-compile.json
 ";
     		};
 		3685EF943685FF280000000B /* ShellScript for http-ca-crt */ = {
@@ -1915,7 +1915,7 @@ fi";
 				3685EF943685FF28000000FC /* httpcmd */,
 				3685EF943685FF2800000105 /* makerom */,
 				3685EF943685FF2800000107 /* manager */,
-				3685EF943685FF2800000006 /* esp.conf */,
+				3685EF943685FF2800000006 /* esp-compile.json */,
 				3685EF943685FF280000000A /* http-ca-crt */,
 				3685EF943685FF280000000E /* prep-cgi */,
 				3685EF943685FF2800000012 /* server-cache */,
@@ -2128,7 +2128,7 @@ fi";
     			target = 3685EF943685FF2800000047 /* Prep */;
     			targetProxy = 3685EF943685FF28000000AD /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF2800000008 /* PBXTargetDependency esp.conf depends on Prep */ = {
+		3685EF943685FF2800000008 /* PBXTargetDependency esp-compile.json depends on Prep */ = {
     			isa = PBXTargetDependency;
     			target = 3685EF943685FF2800000047 /* Prep */;
     			targetProxy = 3685EF943685FF28000000AE /* PBXContainerItemProxy */;
@@ -2463,9 +2463,9 @@ fi";
     			target = 3685EF943685FF28000000E4 /* cgiProgram */;
     			targetProxy = 3685EF943685FF28000000F5 /* PBXContainerItemProxy */;
     		};
-		3685EF943685FF280000002E /* PBXTargetDependency All depends on esp.conf */ = {
+		3685EF943685FF280000002E /* PBXTargetDependency All depends on esp-compile.json */ = {
     			isa = PBXTargetDependency;
-    			target = 3685EF943685FF2800000006 /* esp.conf */;
+    			target = 3685EF943685FF2800000006 /* esp-compile.json */;
     			targetProxy = 3685EF943685FF28000000F6 /* PBXContainerItemProxy */;
     		};
 		3685EF943685FF2800000033 /* PBXTargetDependency All depends on libesp */ = {
@@ -2771,7 +2771,7 @@ fi";
 		3685EF943685FF28000001A9 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
-    				PRODUCT_NAME = esp.conf;
+    				PRODUCT_NAME = esp-compile.json;
     
     				GCC_PREPROCESSOR_DEFINITIONS = (
 					"ME_DEBUG",
@@ -2783,7 +2783,7 @@ fi";
     		3685EF943685FF28000001AA /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
-    				PRODUCT_NAME = esp.conf;
+    				PRODUCT_NAME = esp-compile.json;
     
     
     			};
@@ -3448,7 +3448,7 @@ fi";
     			defaultConfigurationIsVisible = 0;
     			defaultConfigurationName = Release;
     		};
-		3685EF943685FF2800000005 /* Build configuration list for PBXNativeTarget "esp.conf" */ = {
+		3685EF943685FF2800000005 /* Build configuration list for PBXNativeTarget "esp-compile.json" */ = {
     			isa = XCConfigurationList;
     			buildConfigurations = (
     				3685EF943685FF28000001A9 /* Debug */,

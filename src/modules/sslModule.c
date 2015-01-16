@@ -251,7 +251,7 @@ static int sslProtocolDirective(MaState *state, cchar *key, cchar *value)
 /*
     Loadable module initialization. 
  */
-PUBLIC int maSslModuleInit(Http *http, MprModule *module)
+PUBLIC int httpSslInit(Http *http, MprModule *module)
 {
     HttpStage   *stage;
 
@@ -280,7 +280,7 @@ PUBLIC int maSslModuleInit(Http *http, MprModule *module)
 }
 #else
 
-PUBLIC int maSslModuleInit(Http *http, MprModule *mp)
+PUBLIC int httpSslInit(Http *http, MprModule *mp)
 {
     return 0;
 }

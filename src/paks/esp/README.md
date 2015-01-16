@@ -77,5 +77,4 @@ Resources
 ---
   - [ESP web site](http://esp.embedthis.org/)
   - [ESP GitHub repository](http://github.com/embedthis/esp)
-  - [ESP Mailing list](http://groups.google.com/groups/esp)
   - [Embedthis web site](https://embedthis.com/)

@@ -5088,6 +5088,9 @@ PUBLIC int espConfigureApp(HttpRoute *route)
         return MPR_ERR_CANT_LOAD;
     }
     eroute->appName = espGetConfig(route, "name", eroute->appName);
+    /*
+        Only used by appweb
+     */
     if (eroute->routeSet) {
         httpAddRouteSet(route, eroute->routeSet);
     }

@@ -105,7 +105,7 @@ static int       nextMigration;         /* Sequence number for next migration */
 #define ESP_VIEW        0x2             /* Compile a view */
 #define ESP_PAGE        0x4             /* Compile a stand-alone ESP page */
 #define ESP_MIGRATION   0x8             /* Compile a database migration */
-#define ESP_SRC         0x10            /* Files in src */
+#define ESP_SRC         0x10            /* Files in src/ */
 
 #define ESP_FOUND_TARGET 1
 
@@ -538,7 +538,7 @@ static void initRuntime()
     if (app->error) {
         return;
     }
-    if (httpCreate(HTTP_CLIENT_SIDE | HTTP_SERVER_SIDE | HTTP_UTILITY) < 0) {
+    if (httpCreate(HTTP_CLIENT_SIDE | HTTP_SERVER_SIDE) < 0) {
         fail("Cannot create HTTP service for %s", mprGetAppName());
         return;
     }
@@ -581,46 +581,10 @@ static void initRuntime()
     if (app->error) {
         return;
     }
-#if UNUSED
-    loadModule();
-#else
     if (espOpen(NULL) < 0) {
         app->error = 1;
     }
-#endif
 }
-
-
-#if UNUSED
-static int loadModule()
-{
-    MprModule   *module;
-    char        entryPoint[ME_MAX_FNAME];
-    char        *libname, *name, *path;
-
-    name = "espHandler";
-    libname = "libesp";
-    if ((module = mprLookupModule(name)) != 0) {
-#if ME_STATIC
-        mprLog("info esp config", 2, "Activating module (Builtin) %s", name);
-#endif
-        return 0;
-    }
-    path = libname ? sclone(libname) : sjoin("mod_", name, ME_SHOBJ, NULL);
-    fmt(entryPoint, sizeof(entryPoint), "ma%sInit", stitle(name));
-    entryPoint[2] = toupper((uchar) entryPoint[2]);
-
-    if ((module = mprCreateModule(name, path, entryPoint, HTTP)) == 0) {
-        app->error = 1;
-        return MPR_ERR_CANT_CREATE;
-    }
-    if (mprLoadModule(module) < 0) {
-        app->error = 1;
-        return MPR_ERR_CANT_CREATE;
-    }
-    return 0;
-}
-#endif
 
 
 static void initialize(int argc, char **argv)
@@ -649,7 +613,9 @@ static void initialize(int argc, char **argv)
         app->version = sclone("0.0.1");
     }
     route = app->route;
-
+    if (argc > 0 || smatch(argv[1], "run")) {
+        route->flags |= HTTP_ROUTE_UTILITY;
+    }
     /*
         Read package.json first so esp.json can override
      */
@@ -683,8 +649,7 @@ static void initialize(int argc, char **argv)
     }
     if (!app->package) {
         app->package = mprParseJson(sfmt("{ name: '%s', title: '%s', description: '%s', version: '%s', \
-            dependencies: {}}",
-            app->name, app->title, app->description, app->version));
+            dependencies: {}}", app->name, app->title, app->description, app->version));
     }
 
     if (app->require & REQ_NAME) {
@@ -700,7 +665,6 @@ static void initialize(int argc, char **argv)
     if (app->require & REQ_TARGETS) {
         app->targets = getTargets(argc - 1, &argv[1]);
     }
-    route = app->route;
     if (!route->eroute) {
         espCreateRoute(route);
     }
@@ -719,33 +683,32 @@ static void initialize(int argc, char **argv)
     }
 #endif
     if (mprPathExists(ME_ESP_CONFIG, R_OK)) {
-        if (espDefineApp(route, app->name, 0, ".", documents, 0) < 0 || 
-                espConfigureApp(route) < 0 || espLoadApp(route) < 0) {
+//  MOB - refactor Define, Configure Load
+        if (espDefineApp(route, app->name, 0, 0, documents, 0) < 0 || espConfigureApp(route) < 0 || 
+                espLoadApp(route) < 0) {
             fail("Cannot define and load ESP app");
             return;
         }
-    } else {
-        if (mprPathExists("package.json", R_OK)) {
 #if DEPRECATE || 1
-            trace("Warn", "ESP configuration should be in %s instead of package.json", ME_ESP_CONFIG);
-            if (espDefineApp(route, app->name, 0, ".", documents, 0) < 0 || 
-                    espConfigureApp(route) < 0 || espLoadApp(route) < 0) {
-                fail("Cannot define and load ESP app");
-                return;
-            }
-#endif
-        } else {
-            /*
-                No esp.json - not an ESP app
-             */
-            route->update = 1;
-            httpSetRouteShowErrors(route, 1);
-            espSetDefaultDirs(route);
-            httpAddRouteHandler(route, "espHandler", "esp");
-            httpAddRouteHandler(route, "fileHandler", "");
-            httpAddRouteIndex(route, "index.esp");
-            httpAddRouteIndex(route, "index.html");
+    } else if (mprPathExists("package.json", R_OK)) {
+        trace("Warn", "ESP configuration should be in %s instead of package.json", ME_ESP_CONFIG);
+        if (espDefineApp(route, app->name, 0, 0, documents, 0) < 0 || espConfigureApp(route) < 0 || 
+                espLoadApp(route) < 0) {
+            fail("Cannot define and load ESP app");
+            return;
         }
+#endif
+    } else {
+        /*
+            No esp.json - not an ESP app
+         */
+        route->update = 1;
+        httpSetRouteShowErrors(route, 1);
+        espSetDefaultDirs(route);
+        httpAddRouteHandler(route, "espHandler", "esp");
+        httpAddRouteHandler(route, "fileHandler", "");
+        httpAddRouteIndex(route, "index.esp");
+        httpAddRouteIndex(route, "index.html");
     }
     //  MOB - is this route already finalized for a configured app?
     httpFinalizeRoute(route);

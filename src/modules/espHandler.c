@@ -75,7 +75,6 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
             }
         }
     }
-
 #if DEPRECATE || 1
     if (!documents) {
         documents = mprJoinPath(home, "documents");
@@ -90,8 +89,9 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
         }
     }
 #endif
-
     state->route = route = httpCreateInheritedRoute(state->route);
+    route->flags |= HTTP_ROUTE_HOSTED;
+
     if (auth) {
         if (httpSetAuthStore(route->auth, auth) < 0) {
             mprLog("error esp", 0, "The %s AuthStore is not available on this platform", auth);
@@ -109,6 +109,7 @@ static int startEspAppDirective(MaState *state, cchar *key, cchar *value)
             return MPR_ERR_BAD_STATE;
         }
     }
+    route->flags |= HTTP_ROUTE_HOSTED;
     if (espDefineApp(route, name, prefix, home, documents, routeSet) < 0) {
         return MPR_ERR_CANT_CREATE;
     }
@@ -518,7 +519,7 @@ static int espUpdateDirective(MaState *state, cchar *key, cchar *value)
 /*
     Loadable module configuration
  */
-PUBLIC int maEspHandlerInit(Http *http, MprModule *module)
+PUBLIC int httpEspInit(Http *http, MprModule *module)
 {
     if (espOpen(module) < 0) {
         return MPR_ERR_CANT_CREATE;

@@ -166,7 +166,7 @@ TARGETS               = $(TARGETS) build\$(CONFIG)\bin\ejs.mod
 TARGETS               = $(TARGETS) build\$(CONFIG)\bin\ejs.exe
 !ENDIF
 !IF "$(ME_COM_ESP)" == "1"
-TARGETS               = $(TARGETS) build\$(CONFIG)\bin\esp.conf
+TARGETS               = $(TARGETS) build\$(CONFIG)\bin\esp-compile.json
 !ENDIF
 !IF "$(ME_COM_ESP)" == "1"
 TARGETS               = $(TARGETS) build\$(CONFIG)\bin\esp.exe
@@ -261,7 +261,7 @@ clean:
 	if exist "build\$(CONFIG)\bin\ejs.lib" del /Q "build\$(CONFIG)\bin\ejs.lib"
 	if exist "build\$(CONFIG)\bin\ejs.pdb" del /Q "build\$(CONFIG)\bin\ejs.pdb"
 	if exist "build\$(CONFIG)\bin\ejs.exp" del /Q "build\$(CONFIG)\bin\ejs.exp"
-	if exist "build\$(CONFIG)\bin\esp.conf" del /Q "build\$(CONFIG)\bin\esp.conf"
+	if exist "build\$(CONFIG)\bin\esp-compile.json" del /Q "build\$(CONFIG)\bin\esp-compile.json"
 	if exist "build\$(CONFIG)\bin\esp.exe" del /Q "build\$(CONFIG)\bin\esp.exe"
 	if exist "build\$(CONFIG)\bin\esp.lib" del /Q "build\$(CONFIG)\bin\esp.lib"
 	if exist "build\$(CONFIG)\bin\esp.pdb" del /Q "build\$(CONFIG)\bin\esp.pdb"
@@ -557,7 +557,6 @@ build\$(CONFIG)\bin\libappweb.dll: $(DEPS_21)
 DEPS_22 = $(DEPS_22) src\paks\esp\esp.h
 DEPS_22 = $(DEPS_22) build\$(CONFIG)\inc\me.h
 DEPS_22 = $(DEPS_22) build\$(CONFIG)\inc\osdep.h
-DEPS_22 = $(DEPS_22) build\$(CONFIG)\inc\appweb.h
 DEPS_22 = $(DEPS_22) build\$(CONFIG)\inc\http.h
 
 build\$(CONFIG)\inc\esp.h: $(DEPS_22)
@@ -1202,14 +1201,14 @@ build\$(CONFIG)\bin\ejs.exe: $(DEPS_69)
 
 !IF "$(ME_COM_ESP)" == "1"
 #
-#   esp.conf
+#   esp-compile.json
 #
-DEPS_70 = $(DEPS_70) src\paks\esp\esp.conf
+DEPS_70 = $(DEPS_70) src\paks\esp\esp-compile.json
 
-build\$(CONFIG)\bin\esp.conf: $(DEPS_70)
-	@echo ..... [Copy] build\$(CONFIG)\bin\esp.conf
+build\$(CONFIG)\bin\esp-compile.json: $(DEPS_70)
+	@echo ..... [Copy] build\$(CONFIG)\bin\esp-compile.json
 	if not exist "build\$(CONFIG)\bin" md "build\$(CONFIG)\bin"
-	copy /Y /B src\paks\esp\src\paks\esp\esp.conf+modified build\$(CONFIG)\bin\esp.conf $(LOG)
+	copy /Y /B src\paks\esp\esp-compile.json+modified build\$(CONFIG)\bin\esp-compile.json $(LOG)
 !ENDIF
 
 #

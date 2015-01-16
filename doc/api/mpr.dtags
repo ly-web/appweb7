@@ -4674,8 +4674,8 @@
       <type>char *</type>
       <name>mprReplacePathExt</name>
       <anchorfile>group___mpr_path.html</anchorfile>
-      <anchor>gab3e429338388ed1516ac47d14c0cf1ac</anchor>
-      <arglist>(cchar *dir, cchar *ext)</arglist>
+      <anchor>gaabfac199669f637a92261d30c219fd9d</anchor>
+      <arglist>(cchar *path, cchar *ext)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -8369,8 +8369,8 @@
       <type>char *</type>
       <name>mprReplacePathExt</name>
       <anchorfile>group___mpr_path.html</anchorfile>
-      <anchor>gab3e429338388ed1516ac47d14c0cf1ac</anchor>
-      <arglist>(cchar *dir, cchar *ext)</arglist>
+      <anchor>gaabfac199669f637a92261d30c219fd9d</anchor>
+      <arglist>(cchar *path, cchar *ext)</arglist>
     </member>
     <member kind="function">
       <type>char *</type>

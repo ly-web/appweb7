@@ -30,9 +30,9 @@ typedef struct AppwebApp {
     Mpr         *mpr;
     MprSignal   *traceToggle;
     MprSignal   *statusCheck;
-    char        *documents;
-    char        *home;
-    char        *configFile;
+    cchar       *documents;
+    cchar       *home;
+    cchar       *configFile;
     char        *pathVar;
     int         show;
     int         workers;
@@ -44,8 +44,7 @@ static AppwebApp *app;
 
 static int changeRoot(cchar *jail);
 static int checkEnvironment(cchar *program);
-static int findAppwebConf();
-static void loadStaticModules();
+static int findConfigFile();
 static void manageApp(AppwebApp *app, int flags);
 static int createEndpoints(int argc, char **argv);
 static void usageError();
@@ -164,6 +163,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
                 usageError();
             }
             app->workers = atoi(argv[++argind]);
+            mprSetMaxWorkers(app->workers);
 
         } else if (smatch(argp, "--show") || smatch(argp, "-s")) {
             app->show = 1;
@@ -219,13 +219,9 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if (checkEnvironment(argv[0]) < 0) {
         exit(6);
     }
-    if (argc == argind && !app->configFile) {
-        if (findAppwebConf() < 0) {
-            exit(7);
-        }
+    if (argc == argind && findConfigFile() < 0) {
+        exit(7);
     }
-    loadStaticModules();
-
     if (jail && changeRoot(jail) < 0) {
         exit(8);
     }
@@ -286,67 +282,26 @@ static int changeRoot(cchar *jail)
 }
 
 
-static void loadStaticModules()
-{
-#if ME_STATIC
-    /*
-        If doing a static build, must now reference required modules to force the linker to include them.
-        On linux we cannot lookup symbols with dlsym(), so we must invoke explicitly here.
-
-        Add your modules here if you are doing a static link.
-     */
-    Http *http = HTTP;
-#if ME_COM_CGI
-    maCgiHandlerInit(http, mprCreateModule("cgiHandler", 0, 0, http));
-#endif
-#if ME_COM_ESP
-    maEspHandlerInit(http, mprCreateModule("espHandler", 0, 0, http));
-#endif
-#if ME_COM_EJS
-    maEspHandlerInit(http, mprCreateModule("ejsHandler", 0, 0, http));
-#endif
-#if ME_COM_PHP
-    maPhpHandlerInit(http, mprCreateModule("phpHandler", 0, 0, http));
-#endif
-#if ME_COM_SSL
-    maSslModuleInit(http, mprCreateModule("sslModule", 0, 0, http));
-#endif
-#endif /* ME_STATIC */
-}
-
-
 static int createEndpoints(int argc, char **argv)
 {
     char    *ip;
     int     argind, port, secure;
 
     ip = 0;
-    port = -1;
+    port = ME_HTTP_PORT;
     argind = 0;
 
     mprGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
 
-    if (argc == 0) {
-        if (maParseConfig(app->configFile, 0) < 0) {
-            return MPR_ERR_CANT_CREATE;
-        }
-    } else {
+    if (argc > argind) {
         app->documents = sclone(argv[argind++]);
-        if (argind == argc) {
-            if (maConfigureServer(NULL, app->home, app->documents, NULL, ME_HTTP_PORT, 0) < 0) {
-                return MPR_ERR_CANT_CREATE;
-            }
-        } else while (argind < argc) {
-            mprParseSocketAddress(argv[argind++], &ip, &port, &secure, 80);
-            if (maConfigureServer(NULL, app->home, app->documents, ip, port, 0) < 0) {
-                return MPR_ERR_CANT_CREATE;
-            }
-        }
     }
-    if (app->workers >= 0) {
-        mprSetMaxWorkers(app->workers);
+    if (argc > argind) {
+        mprParseSocketAddress(argv[argind++], &ip, &port, &secure, port);
     }
-    
+    if (maConfigureServer(app->configFile, app->home, app->documents, ip, port) < 0) {
+        return MPR_ERR_CANT_CREATE;
+    }
 #if ME_WIN_LIKE
     writePort();
 #elif ME_UNIX_LIKE
@@ -366,32 +321,50 @@ static int createEndpoints(int argc, char **argv)
         EXE/../BASE
         EXE/../appweb.conf
  */
-static int findAppwebConf()
+static int findConfigFile()
 {
-    char    *base, *filename;
+    cchar   *extensions[] = { "json", "conf", 0 };
+    cchar   *base, **ext, *name, *path;
 
+    if (app->configFile) {
+        return 0;
+    }
 #ifdef ME_CONFIG_FILE
-    base = sclone(ME_CONFIG_FILE);
+    name = sclone(ME_CONFIG_FILE);
 #else
-    base = mprJoinPathExt(mprGetAppName(), ".conf");
+    name = mprGetAppName();
 #endif
-#if !ME_ROM
-    filename = base;
-    if (!mprPathExists(filename, R_OK)) {
-        filename = mprJoinPath(app->home, base);
-        if (!mprPathExists(filename, R_OK)) {
-            filename = mprJoinPath(mprGetPathParent(mprGetAppDir()), base);
-            if (!mprPathExists(filename, R_OK)) {
-                filename = mprJoinPath(mprGetPathParent(mprGetAppDir()), "appweb.conf");
-                if (!mprPathExists(filename, R_OK)) {
-                    mprError("Cannot find config file %s", base);
-                    return MPR_ERR_CANT_OPEN;
-                }
-            }
+#if ME_ROM
+    app->configFile = name;
+#else
+    for (ext = extensions; *ext; ext++) {
+        base = mprReplacePathExt(name, *ext);
+        path = base;
+        if (mprPathExists(path, R_OK)) {
+            app->configFile = path;
+            break;
+        }
+        path = mprJoinPath(app->home, base);
+        if (mprPathExists(path, R_OK)) {
+            app->configFile = path;
+            break;
+        }
+        path = mprJoinPath(mprGetPathParent(mprGetAppDir()), base);
+        if (mprPathExists(path, R_OK)) {
+            app->configFile = path;
+            break;
+        }
+        path = mprJoinPath(mprGetPathParent(mprGetAppDir()), base);
+        if (mprPathExists(path, R_OK)) {
+            app->configFile = path;
+            break;
         }
     }
+    if (!app->configFile) {
+        mprError("Cannot find config file %s", base);
+        return MPR_ERR_CANT_OPEN;
+    }
 #endif
-    app->configFile = filename;
     return 0;
 }
 

@@ -101,7 +101,7 @@ ifeq ($(ME_COM_EJS),1)
     TARGETS           += $(BUILD)/bin/ejs
 endif
 ifeq ($(ME_COM_ESP),1)
-    TARGETS           += $(BUILD)/bin/esp.conf
+    TARGETS           += $(BUILD)/bin/esp-compile.json
 endif
 ifeq ($(ME_COM_ESP),1)
     TARGETS           += $(BUILD)/bin/esp
@@ -190,7 +190,7 @@ clean:
 	rm -f "$(BUILD)/bin/authpass"
 	rm -f "$(BUILD)/bin/ejsc"
 	rm -f "$(BUILD)/bin/ejs"
-	rm -f "$(BUILD)/bin/esp.conf"
+	rm -f "$(BUILD)/bin/esp-compile.json"
 	rm -f "$(BUILD)/bin/esp"
 	rm -f "$(BUILD)/bin/ca.crt"
 	rm -f "$(BUILD)/bin/http"
@@ -330,7 +330,6 @@ $(BUILD)/inc/ejsByteGoto.h: $(DEPS_11)
 DEPS_12 += src/paks/esp/esp.h
 DEPS_12 += $(BUILD)/inc/me.h
 DEPS_12 += $(BUILD)/inc/osdep.h
-DEPS_12 += $(BUILD)/inc/appweb.h
 DEPS_12 += $(BUILD)/inc/http.h
 
 $(BUILD)/inc/esp.h: $(DEPS_12)
@@ -925,14 +924,14 @@ endif
 
 ifeq ($(ME_COM_ESP),1)
 #
-#   esp.conf
+#   esp-compile.json
 #
-DEPS_62 += src/paks/esp/esp.conf
+DEPS_62 += src/paks/esp/esp-compile.json
 
-$(BUILD)/bin/esp.conf: $(DEPS_62)
-	@echo '      [Copy] $(BUILD)/bin/esp.conf'
+$(BUILD)/bin/esp-compile.json: $(DEPS_62)
+	@echo '      [Copy] $(BUILD)/bin/esp-compile.json'
 	mkdir -p "$(BUILD)/bin"
-	cp src/paks/esp/src/paks/esp/esp.conf $(BUILD)/bin/esp.conf
+	cp src/paks/esp/esp-compile.json $(BUILD)/bin/esp-compile.json
 endif
 
 ifeq ($(ME_COM_ESP),1)
@@ -1271,6 +1270,7 @@ installBinary: $(DEPS_78)
 	echo 'set LOG_DIR "$(ME_LOG_PREFIX)"\nset CACHE_DIR "$(ME_CACHE_PREFIX)"\nDocuments "$(ME_WEB_PREFIX)\nListen 80\n<if SSL_MODULE>\nListenSecure 443\n</if>\n' >$(ME_ETC_PREFIX)/install.conf ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
 	cp $(BUILD)/bin/libappweb.so $(ME_VAPP_PREFIX)/bin/libappweb.so ; \
+	cp $(BUILD)/bin/libesp.so $(ME_VAPP_PREFIX)/bin/libesp.so ; \
 	cp $(BUILD)/bin/libhttp.so $(ME_VAPP_PREFIX)/bin/libhttp.so ; \
 	cp $(BUILD)/bin/libmpr.so $(ME_VAPP_PREFIX)/bin/libmpr.so ; \
 	cp $(BUILD)/bin/libpcre.so $(ME_VAPP_PREFIX)/bin/libpcre.so ; \
@@ -1364,7 +1364,7 @@ installBinary: $(DEPS_78)
 	fi ; \
 	if [ "$(ME_COM_ESP)" = 1 ]; then true ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
-	cp $(BUILD)/bin/esp.conf $(ME_VAPP_PREFIX)/bin/esp.conf ; \
+	cp $(BUILD)/bin/esp-compile.json $(ME_VAPP_PREFIX)/bin/esp-compile.json ; \
 	fi ; \
 	if [ "$(ME_COM_EJS)" = 1 ]; then true ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \

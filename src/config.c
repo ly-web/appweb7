@@ -18,7 +18,7 @@ static int addCondition(MaState *state, cchar *name, cchar *condition, int flags
 static int addUpdate(MaState *state, cchar *name, cchar *details, int flags);
 static bool conditionalDefinition(MaState *state, cchar *key);
 static int configError(MaState *state, cchar *key);
-static MaState *createState(int flags);
+static MaState *createState();
 static char *getDirective(char *line, char **valuep);
 static int getint(cchar *value);
 static int64 getnum(cchar *value);
@@ -29,10 +29,55 @@ static int setTarget(MaState *state, cchar *name, cchar *details);
 
 /******************************************************************************/
 
-static int configureHandlers(HttpRoute *route)
+PUBLIC int maLoadModules(HttpRoute *route)
+{
+    Http    *http;
+    int     rc;
+
+    http = HTTP;
+    rc = 0;
+
+#if ME_COM_CGI
+    rc += maLoadModule("cgi", "libmod_cgi");
+#endif
+#if ME_COM_ESP
+    rc += maLoadModule("esp", "libmod_esp");
+#endif
+#if ME_COM_EJS
+    rc += maLoadModule("ejs", "libmod_ejs");
+#endif
+#if ME_COM_PHP
+    rc += maLoadModule("php", "libmod_php");
+#endif
+
+/*
+    If doing a static build, must now reference required modules to force the linker to include them.
+    On linux we cannot lookup symbols with dlsym(), so we must invoke explicitly here.
+ */
+#if ME_STATIC
+#if ME_COM_CGI
+    rc += httpCgiInit(http, 0);
+#endif
+#if ME_COM_ESP
+    rc += httpEspInit(http, 0);
+#endif
+#if ME_COM_EJS
+    rc += httpEspInit(http, 0);
+#endif
+#if ME_COM_PHP
+    rc += httpPhpInit(http, 0);
+#endif
+#if ME_COM_SSL
+    rc += httpSslInit(http, 0);
+#endif
+#endif /* ME_STATIC */
+    return rc;
+}
+
+
+PUBLIC int configureHandlers(HttpRoute *route)
 {
 #if ME_COM_CGI
-    maLoadModule("cgiHandler", "libmod_cgi");
     if (httpLookupStage("cgiHandler")) {
         char    *path;
         httpAddRouteHandler(route, "cgiHandler", "cgi cgi-nph bat cmd pl py");
@@ -49,19 +94,16 @@ static int configureHandlers(HttpRoute *route)
     }
 #endif
 #if ME_COM_ESP || ME_ESP_PRODUCT
-    maLoadModule("espHandler", "libmod_esp");
     if (httpLookupStage("espHandler")) {
         httpAddRouteHandler(route, "espHandler", "esp");
     }
 #endif
 #if ME_COM_EJS || ME_EJS_PRODUCT
-    maLoadModule("ejsHandler", "libmod_ejs");
     if (httpLookupStage("ejsHandler")) {
         httpAddRouteHandler(route, "ejsHandler", "ejs");
     }
 #endif
 #if ME_COM_PHP
-    maLoadModule("phpHandler", "libmod_php");
     if (httpLookupStage("phpHandler")) {
         httpAddRouteHandler(route, "phpHandler", "php");
     }
@@ -71,24 +113,24 @@ static int configureHandlers(HttpRoute *route)
 }
 
 
-PUBLIC int maConfigureServer(cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port, int flags)
+PUBLIC int maConfigureServer(cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port)
 {
     HttpEndpoint    *endpoint;
-    HttpHost        *host;
+    HttpRoute       *route;
 
+    route = httpGetDefaultRoute(0);
+    if (maLoadModules(route) < 0) {
+        return MPR_ERR_CANT_INITIALIZE;
+    }
     if (configFile) {
-        if (maParseConfig(mprGetAbsPath(configFile), flags) < 0) {
+        if (maParseConfig(mprGetAbsPath(configFile)) < 0) {
             return MPR_ERR_CANT_INITIALIZE;
         }
     } else {
-        if ((endpoint = httpCreateConfiguredEndpoint(NULL, home, documents, ip, port)) == 0) {
+        if ((endpoint = httpCreateConfiguredEndpoint(0, home, documents, ip, port)) == 0) {
             return MPR_ERR_CANT_OPEN;
         }
-        if (!(flags & MA_NO_MODULES)) {
-            if ((host = httpLookupHostOnEndpoint(endpoint, 0)) != 0) {
-                configureHandlers(host->defaultRoute);
-            }
-        }
+        configureHandlers(route);
     }
     return 0;
 }
@@ -111,23 +153,23 @@ static int openConfig(MaState *state, cchar *path)
 }
 
 
-PUBLIC int maParseConfig(cchar *path, int flags)
+PUBLIC int maParseConfig(cchar *path)
 {
-    MaState     *state;
     HttpRoute   *route;
+    MaState     *state;
     cchar       *dir;
-
-    assert(path && *path);
+    int         rc;
 
     mprLog("info appweb", 2, "Using config file: \"%s\"", mprGetRelPath(path, 0));
 
-    state = createState(flags);
-    mprAddRoot(state);
-    route = state->route;
+    route = httpGetDefaultRoute(0);
     dir = mprGetAbsPath(mprGetPathDir(path));
-
+#if UNUSED
     httpSetRouteHome(route, dir);
     httpSetRouteDocuments(route, dir);
+#endif
+
+#if UNUSED
     httpSetRouteVar(route, "LOG_DIR", ".");
 #ifdef ME_VAPP_PREFIX
     httpSetRouteVar(route, "INC_DIR", ME_VAPP_PREFIX "/inc");
@@ -136,13 +178,21 @@ PUBLIC int maParseConfig(cchar *path, int flags)
     httpSetRouteVar(route, "SPL_DIR", ME_SPOOL_PREFIX);
 #endif
     httpSetRouteVar(route, "BIN_DIR", mprJoinPath(HTTP->platformDir, "bin"));
+#endif
 
-    if (maParseFile(state, path) < 0) {
+    if (smatch(mprGetPathExt(path), "json")) {
+        rc = httpLoadConfig(route, path);
+        httpFinalizeConfig(route);
+    } else {
+        state = createState();
+        mprAddRoot(state);
+        rc = maParseFile(state, path);
         mprRemoveRoot(state);
-        return MPR_ERR_BAD_SYNTAX;
     }
-    mprRemoveRoot(state);
-    httpFinalizeRoute(state->route);
+    if (rc < 0) {
+        return rc;
+    }
+    httpFinalizeRoute(route);
     if (mprHasMemError()) {
         mprLog("error appweb memory", 0, "Memory allocation error when initializing");
         return MPR_ERR_MEMORY;
@@ -159,7 +209,7 @@ PUBLIC int maParseFile(MaState *state, cchar *path)
     assert(path && *path);
     if (!state) {
         lineNumber = 0;
-        topState = state = createState(0);
+        topState = state = createState();
         mprAddRoot(state);
     } else {
         topState = 0;
@@ -717,7 +767,7 @@ static int chrootDirective(MaState *state, cchar *key, cchar *value)
         mprLog("error appweb config", 0, "Cannot change working directory to %s", home);
         return MPR_ERR_CANT_OPEN;
     }
-    if (HTTP->flags & HTTP_UTILITY) {
+    if (state->route->flags & HTTP_ROUTE_UTILITY) {
         /* Not running a web server but rather a utility like the "esp" generator program */
         mprLog("info appweb config", 2, "Change directory to: \"%s\"", home);
     } else {
@@ -1779,7 +1829,7 @@ static int memoryPolicyDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S", &policy)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (scmp(value, "restart") == 0) {
+    if (scmp(policy, "restart") == 0) {
 #if VXWORKS
         flags = MPR_ALLOC_POLICY_RESTART;
 #else
@@ -1787,14 +1837,14 @@ static int memoryPolicyDirective(MaState *state, cchar *key, cchar *value)
         flags = MPR_ALLOC_POLICY_EXIT;
 #endif
         
-    } else if (scmp(value, "continue") == 0) {
+    } else if (scmp(policy, "continue") == 0) {
         flags = MPR_ALLOC_POLICY_PRUNE;
 
 #if DEPRECATED
-    } else if (scmp(value, "exit") == 0) {
+    } else if (scmp(policy, "exit") == 0) {
         flags = MPR_ALLOC_POLICY_EXIT;
 
-    } else if (scmp(value, "prune") == 0) {
+    } else if (scmp(policy, "prune") == 0) {
         flags = MPR_ALLOC_POLICY_PRUNE;
 #endif
 
@@ -2867,7 +2917,7 @@ static int setTarget(MaState *state, cchar *name, cchar *details)
 /*
     This is used to create the outermost state only
  */
-static MaState *createState(int flags)
+static MaState *createState()
 {
     MaState     *state;
     HttpHost    *host;
@@ -2886,7 +2936,6 @@ static MaState *createState(int flags)
     state->enabled = 1;
     state->lineNumber = 0;
     state->auth = state->route->auth;
-    state->flags = flags;
     return state;
 }
 
@@ -3308,8 +3357,7 @@ static int parseInit()
 PUBLIC int maLoadModule(cchar *name, cchar *libname)
 {
     MprModule   *module;
-    char        entryPoint[ME_MAX_FNAME];
-    char        *path;
+    cchar       *entry, *path;
 
     if ((module = mprLookupModule(name)) != 0) {
 #if ME_STATIC
@@ -3317,15 +3365,16 @@ PUBLIC int maLoadModule(cchar *name, cchar *libname)
 #endif
         return 0;
     }
-    path = libname ? sclone(libname) : sjoin("mod_", name, ME_SHOBJ, NULL);
-    fmt(entryPoint, sizeof(entryPoint), "ma%sInit", stitle(name));
-    entryPoint[2] = toupper((uchar) entryPoint[2]);
-
-    if ((module = mprCreateModule(name, path, entryPoint, HTTP)) == 0) {
-        return MPR_ERR_CANT_CREATE;
-    }
+    path = libname ? libname : sjoin("libmod_", name, ME_SHOBJ, NULL);
+    entry = sfmt("http%sInit", stitle(name));
+    module = mprCreateModule(name, path, entry, HTTP);
     if (mprLoadModule(module) < 0) {
-        return MPR_ERR_CANT_CREATE;
+#if DEPRECATED || 1
+        module->entry = sfmt("ma%sInit", stitle(name));
+        if (mprLoadModule(module) < 0) {
+            return MPR_ERR_CANT_CREATE;
+        }
+#endif
     }
     return 0;
 }
