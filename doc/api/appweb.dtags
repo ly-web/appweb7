@@ -22,8 +22,8 @@
       <type>int</type>
       <name>maConfigureServer</name>
       <anchorfile>group___ma_state.html</anchorfile>
-      <anchor>ga3129bab17a961b0500d389ef11241e80</anchor>
-      <arglist>(cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port, int flags)</arglist>
+      <anchor>ga3a076271dc5d0227cf3e4c79dcb3f026</anchor>
+      <arglist>(cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port)</arglist>
     </member>
     <member kind="function">
       <type>char *</type>
@@ -43,8 +43,8 @@
       <type>int</type>
       <name>maParseConfig</name>
       <anchorfile>group___ma_state.html</anchorfile>
-      <anchor>ga07480611094080396b345ecffeea4853</anchor>
-      <arglist>(cchar *path, int flags)</arglist>
+      <anchor>gae9c5d28320c9ebe7f2a6e810215be37c</anchor>
+      <arglist>(cchar *path)</arglist>
     </member>
     <member kind="function">
       <type>int</type>

@@ -5,7 +5,7 @@
     "version": "0.8.0",
     "keywords": [
         "php",
-        "me",
+        "me"
     ],
     "author": {
         "name": "Embedthis Software",
@@ -24,5 +24,5 @@
             "type": "PUBLIC",
             "url": "https://github.com/embedthis/php/blob/master/LICENSE.md"
         }
-    ],
+    ]
 }

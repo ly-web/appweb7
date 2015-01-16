@@ -11,7 +11,6 @@ ESP(1)                           User Commands                          ESP(1)
 
 <B>SYNOPSIS</B>
        <B>esp</B>
-           <B>--appweb configFile</B>
            <B>--cipher cipher</B>
            <B>--database DB</B>
            <B>--force</B>
@@ -265,11 +264,6 @@ ESP(1)                           User Commands                          ESP(1)
              esp init appName version
 
 <B>OPTIONS</B>
-       <B>--appweb configFile</B>
-             Use  the  specified appweb config file to define and host the ESP
-             application.  By default the esp command looks for a esp.json and
-             uses that to define the applicaiton.
-
        <B>--cipher cipher</B>
              Password cipher to use. Set to "md5" or "blowfish".
 
@@ -282,24 +276,17 @@ ESP(1)                           User Commands                          ESP(1)
              ing  files. This is to preserve user changes to previously gener-
              ated files.
 
-       <B>--genlink slink.c</B>
-             Generate a static link initialization  file  for  ESP  pages  and
-             applications.   This  is used with --static to generate a appweb-
-             StaticInitialize() function that will invoke all  ESP  initializ-
-             ers.    By   default,   appweb   expects   this   to  be  in  the
-             src/server/slink.c file.
-
        <B>--home dir</B>
              Change the current working directory before beginning processing.
 
        <B>--keep</B>
              Keep intermediate source files in the cache directory. This over-
-             rides the EspKeepSource setting in the appweb.conf file.
+             rides the ejs.json "keep" setting.
 
        <B>--listen [ip:]port</B>
              Define the listening endpoint address. This  will  be  used  when
              generating  an  application.  The  value will be patched into the
-             generated appweb.conf configuration file.
+             generated esp.json configuration file.
 
        <B>--log logFile:level</B>
              Specify a file to log  messages.   The  syntax  is:  <B>"--log  log-</B>
@@ -321,10 +308,10 @@ ESP(1)                           User Commands                          ESP(1)
 
        <B>--platform [path/]os-arch-profile</B>
              Target platform configuration to build for and directory contain-
-             ing appweb objects and libraries for the target platform.   If  a
-             path is supplied, the specified platform directory is used.  Oth-
-             erwise, esp searches from the current  directory  upwards  for  a
-             parent platform directory.
+             ing esp objects and libraries for the target platform.  If a path
+             is  supplied,  the  specified platform directory is used.  Other-
+             wise, esp searches from the current directory upwards for a  par-
+             ent platform directory.
 
        <B>--rebuild</B>
              Force  a  recompile  of all items when used with the compile com-
@@ -379,9 +366,6 @@ ESP(1)                           User Commands                          ESP(1)
 <B>COPYRIGHT</B>
        Copyright  (C)  Embedthis  Software.  Embedthis  ESP  is a trademark of
        Embedthis Software.
-
-<B>SEE ALSO</B>
-       appweb
 
 esp                              November 2014                          ESP(1)
 </PRE></BODY>

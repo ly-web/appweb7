@@ -1606,7 +1606,7 @@ static void addValidations()
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+    Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -2551,7 +2551,7 @@ PUBLIC void scripts(cchar *patterns)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+    Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -2579,16 +2579,41 @@ PUBLIC void scripts(cchar *patterns)
 
 
 /************************************* Locals *********************************/
+
 #define ITERATE_CONFIG(route, obj, child, index) \
     index = 0, child = obj ? obj->children: 0; obj && index < obj->length && !route->error; child = child->next, index++
 
 /************************************** Code **********************************/
 
-
-static void parseEsp(HttpRoute *route, cchar *key, MprJson *prop)
+#if FUTURE
+static void parseApplications(HttpRoute *parent, cchar *key, MprJson *prop)
 {
-    httpParseAll(route, key, prop);
+    HttpRoute   *route;
+    MprJson     *child, *inc;
+    MprList     *files;
+    cchar       *path;
+    int         ji, next;
+
+    for (ITERATE_CONFIG(parent, inc, child, ji)) {
+        files = mprGlobPathFiles(".", child->value, MPR_PATH_NO_DIRS | MPR_PATH_RELATIVE);
+        for (ITERATE_ITEMS(files, path, next)) {
+            parent = httpCreateInheritedRoute(route);
+            route->flags |= HTTP_ROUTE_HOSTED;
+#if UNUSED
+            if (espDefineApp(route, name, prefix, home, documents, routeSet) < 0) {
+                return MPR_ERR_CANT_CREATE;
+            }
+            if (prefix) {
+                espSetConfig(route, "esp.appPrefix", prefix);
+            }
+#endif
+            espConfigureApp(route);
+            httpFinalizeRoute(route);
+            espLoadApp(route);
+        }
+    }
 }
+#endif
 
 
 static void parseCombine(HttpRoute *route, cchar *key, MprJson *prop)
@@ -2770,7 +2795,7 @@ PUBLIC int espInitParser()
     httpDefineRouteSet("esp-html-mvc", legacyRouteSet);
 #endif
     
-    httpAddConfig("esp", parseEsp);
+    httpAddConfig("esp", httpParseAll);
     httpAddConfig("esp.build", parseBuild);
     httpAddConfig("esp.combine", parseCombine);
     httpAddConfig("esp.optimize", parseOptimize);
@@ -2780,7 +2805,7 @@ PUBLIC int espInitParser()
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+    Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -3940,7 +3965,7 @@ PUBLIC bool espIsCurrentSession(HttpConn *conn)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+    Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
@@ -4107,7 +4132,7 @@ static cchar *map(HttpConn *conn, MprHash *options)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+    Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -5288,7 +5313,7 @@ static int unloadEsp(MprModule *mp)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+    Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
@@ -6619,7 +6644,7 @@ static cchar *getCompilerPath(cchar *os, cchar *arch)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+    Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -8184,7 +8209,7 @@ PUBLIC void mdbDummy() {}
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+    Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
@@ -9243,7 +9268,7 @@ PUBLIC void sdbDummy() {}
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+    Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
