@@ -521,6 +521,8 @@ static int espUpdateDirective(MaState *state, cchar *key, cchar *value)
  */
 PUBLIC int httpEspInit(Http *http, MprModule *module)
 {
+    HttpRoute   *route;
+    
     if (espOpen(module) < 0) {
         return MPR_ERR_CANT_CREATE;
     }
@@ -552,10 +554,22 @@ PUBLIC int httpEspInit(Http *http, MprModule *module)
         Load the esp.conf directives to compile esp
      */
     path = mprJoinPath(mprGetAppDir(), "esp.conf");
-    if (mprPathExists(path, R_OK) && (http->platformDir || httpSetPlatformDir(0) == 0)) {
-        if (maParseFile(NULL, mprJoinPath(mprGetAppDir(), "esp.conf")) < 0) {
-            mprLog("error esp", 0, "Cannot parse %s", path);
-            return MPR_ERR_CANT_OPEN;
+    if (http->platformDir || httpSetPlatformDir(0) == 0) {
+        if (mprPathExists(path, R_OK)) {
+            if (maParseFile(NULL, path) < 0) {
+                mprLog("error esp", 0, "Cannot parse %s", path);
+                return MPR_ERR_CANT_OPEN;
+            }
+        } else {
+            path = mprJoinPath(mprGetAppDir(), "esp-compile.json");
+            if (mprPathExists(path, R_OK)) {
+                route = httpGetDefaultRoute(0);
+                espRoute(route);
+                if (httpLoadConfig(route, path) < 0) {
+                    mprLog("error esp", 0, "Cannot parse %s", path);
+                    return MPR_ERR_CANT_OPEN;
+                }
+            }
         }
     }
 }

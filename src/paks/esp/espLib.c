@@ -4890,7 +4890,7 @@ PUBLIC EspRoute *espCreateRoute(HttpRoute *route)
 #else
     eroute->compileMode = ESP_COMPILE_OPTIMIZED;
 #endif
-    if (route->parent) {
+    if (route->parent && route->parent->eroute) {
         eroute->top = ((EspRoute*)route->parent->eroute)->top;
     } else {
         eroute->top = eroute;

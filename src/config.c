@@ -1668,6 +1668,19 @@ static int loadModuleDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S %S", &name, &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
+#if DEPRECATE || 1
+    if (smatch(name, "cgiHandler")) {
+        name = "cgi";
+    } else if (smatch(name, "ejsHandler")) {
+        name = "ejs";
+    } else if (smatch(name, "espHandler")) {
+        name = "esp";
+    } else if (smatch(name, "phpHandler")) {
+        name = "php";
+    } else if (smatch(name, "sslModule")) {
+        name = "ssl";
+    }
+#endif
     if (maLoadModule(name, path) < 0) {
         /*  Error messages already done */
         return MPR_ERR_CANT_CREATE;
@@ -3360,9 +3373,6 @@ PUBLIC int maLoadModule(cchar *name, cchar *libname)
     cchar       *entry, *path;
 
     if ((module = mprLookupModule(name)) != 0) {
-#if ME_STATIC
-        mprLog("info appweb config", 2, "Activating module (Builtin) %s", name);
-#endif
         return 0;
     }
     path = libname ? libname : sjoin("libmod_", name, ME_SHOBJ, NULL);
