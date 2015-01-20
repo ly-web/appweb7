@@ -14,6 +14,7 @@ The following samples are available:
 * [cpp-handler](cpp-handler/README.md)              C++ Handler
 * [cpp-module](cpp-module/README.md)                C++ Module
 * [deploy-server](deploy-server/README.md)          Deploy Appweb files for copying to a target.
+* [espapp](espapp/README.md)                        Host an ESP application.
 * [login-basic](login-basic/README.md)              Login using Basic or Digest authentication (not recommended).
 * [login-form](login-form/README.md)                Login using Web Forms (recommended).
 * [max-server](max-server/README.md)                Maximum configuration in appweb.conf.
