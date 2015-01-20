@@ -4204,7 +4204,7 @@ static void parseCache(HttpRoute *route, cchar *key, MprJson *prop)
 
 static void parseCgiEscape(HttpRoute *route, cchar *key, MprJson *prop)
 {
-    httpSetRouteEnvEscape(route, prop->type & MPR_JSON_TRUE);
+    httpSetRouteEnvEscape(route, (prop->type & MPR_JSON_TRUE) ? 1 : 0);
 }
 
 
@@ -14793,9 +14793,8 @@ PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *methods, cchar *patt
 
 PUBLIC HttpRoute *httpAddRestfulRoute(HttpRoute *parent, cchar *methods, cchar *pattern, cchar *target, cchar *resource)
 {
-    cchar   *nameResource, *source;
+    cchar   *source;
 
-    nameResource = smatch(resource, "{controller}") ? "*" : resource;
 #if DEPRECATE || 1
     if (*resource == '{') {
         pattern = sfmt("^%s%s/%s%s", parent->prefix, parent->serverPrefix, resource, pattern);
