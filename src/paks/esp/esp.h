@@ -1224,9 +1224,6 @@ extern "C" {
 #ifndef ME_ESP_PAKS
     #define ME_ESP_PAKS     "esp"                       /**< Default Paks directory name */
 #endif
-#ifndef ME_ESP_CONFIG
-    #define ME_ESP_CONFIG   "esp.json"                  /**< ESP configuration file */
-#endif
 #define ESP_TOK_INCR        1024                        /**< Growth increment for ESP tokens */
 #define ESP_LISTEN          "4000"                      /**< Default listening endpoint for the esp program */
 #define ESP_UNLOAD_TIMEOUT  (10)                        /**< Very short timeout for reloading */
@@ -1311,7 +1308,7 @@ typedef struct EspState {
  */
 typedef struct Esp {
     MprHash         *databases;             /**< Cloned databases */
-    MprEvent        *databasesTimer;        /**< Database prune timer */ 
+    MprEvent        *databasesTimer;        /**< Database prune timer */
     MprHash         *internalOptions;       /**< Table of internal HTML control options  */
     MprThreadLocal  *local;                 /**< Thread local data */
     MprMutex        *mutex;                 /**< Multithread lock */
@@ -1319,9 +1316,6 @@ typedef struct Esp {
     int             compileMode;            /**< Force a debug compile */
     int             inUse;                  /**< Active ESP request counter */
     int             reloading;              /**< Reloading ESP and modules */
-#if UNUSED
-    int             canCompile;             /**< Configured for compilation */
-#endif
 } Esp;
 
 /**
@@ -1334,7 +1328,13 @@ typedef struct Esp {
   */
 typedef int (*EspModuleEntry)(struct HttpRoute *route, MprModule *module);
 
-//  MOB
+/**
+    ESP initialization entry point
+    @param module Module object if loaded as an MPR module.
+    @return Zero if successful, otherwise a negative MPR error code.
+    @ingroup Esp
+    @stability Prototype
+ */
 PUBLIC int espOpen(MprModule *module);
 
 /**
@@ -1343,7 +1343,7 @@ PUBLIC int espOpen(MprModule *module);
     @param entry ESP initialization function.
     @param appName Name of the ESP application
     @param routeName Name of the route in the appweb.conf file for this ESP application or page
-    @return Zero if successful, otherwise a negative MPR error code. 
+    @return Zero if successful, otherwise a negative MPR error code.
     @ingroup Esp
     @stability Evolving
   */
@@ -1379,19 +1379,18 @@ typedef struct EspRoute {
     MprHash         *env;                   /**< Environment variables for route */
     MprHash         *views;                 /**< Table of views */
     cchar           *currentSession;        /**< Current login session when enforcing a single login */
+    cchar           *configFile;            /**< Path to config file */
 
     cchar           *compile;               /**< Compile template */
     cchar           *link;                  /**< Link template */
     cchar           *searchPath;            /**< Search path to use when locating compiler/linker */
     cchar           *winsdk;                /**< Windows SDK */
-    cchar           *routeSet;              /**< Directive route set */
     int             combine;                /**< Combine C source into a single file */
     int             compileMode;            /**< Compile the application debug or release mode */
 #if DEPRECATED || 1
     cchar           *combineScript;         /**< Combine mode script filename */
     cchar           *combineSheet;          /**< Combine mode stylesheet filename */
 #endif
-    int             skipApps;               /**< Skip loading applications */
     Edi             *edi;                   /**< Default database for this route */
 } EspRoute;
 
@@ -1429,51 +1428,62 @@ PUBLIC void espAddHomeRoute(HttpRoute *route);
         <tr><td>home</td><td>GET,POST,PUT</td><td>^/$</td><td>index.esp</td></tr>
     </table>
     @param route Parent route from which to inherit configuration.
-    @param set Route set to select. Use "angular-mvc", or "html-mvc".  
+    @param set Route set to select. Use "angular-mvc", or "html-mvc".
     @ingroup EspRoute
     @stability Evolving
  */
 PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set);
 
 /**
-    Define an ESP application
+    Load an ESP application
     @param route Parent route from which to inherit configuration.
-    @param name Name of the application
-    @param prefix URI prefix for the application
-    @param home Directory containing the application
-    @param documents Directory containing the client visible web pages
-    @param routeSet Pre-defined route set
+    @param path Pathname to the esp.json file.
     @returns Zero if successful, otherwise a negative MPR error code.
     @ingroup EspRoute
     @stability Prototype
  */
-PUBLIC int espDefineApp(HttpRoute *route, cchar *name, cchar *prefix, cchar *home, cchar *documents, cchar *routeSet);
+PUBLIC int espLoadApp(HttpRoute *route, cchar *path);
 
-//  MOB DOC
-PUBLIC int espConfigureApp(HttpRoute *route);
-PUBLIC int espLoadApp(HttpRoute *route);
+/**
+    Configure an ESP application
+    @description Load the esp.json and package.json configuration files.
+    @param route Parent route from which to inherit configuration.
+    @returns Zero if successful, otherwise a negative MPR error code.
+    @ingroup EspRoute
+    @stability Prototype
+ */
 PUBLIC int espLoadConfig(HttpRoute *route);
+
+/**
+    Return the corresponding EspRoute for the given Route.
+    @description Returns the defined EspRoute for the given Route. Creates a new EspRoute if required.
+    @param route Parent route from which to inherit configuration.
+    @returns The EspRoute object.
+    @ingroup EspRoute
+    @stability Prototype
+    @param route 
+ */
 PUBLIC EspRoute *espRoute(HttpRoute *route);
 
 /**
     Add caching for response content.
-    @description This call configures caching for request responses. Caching may be used for any HTTP method, 
-    though typically it is most useful for state-less GET requests. Output data may be uniquely cached for requests 
+    @description This call configures caching for request responses. Caching may be used for any HTTP method,
+    though typically it is most useful for state-less GET requests. Output data may be uniquely cached for requests
     with different request parameters (query, post and route parameters).
     \n\n
-    When server-side caching is requested and manual-mode is not enabled, the request response will be automatically 
-    cached. Subsequent client requests will revalidate the cached content with the server. If the server-side cached 
-    content has not expired, a HTTP Not-Modified (304) response will be sent and the client will use its client-side 
+    When server-side caching is requested and manual-mode is not enabled, the request response will be automatically
+    cached. Subsequent client requests will revalidate the cached content with the server. If the server-side cached
+    content has not expired, a HTTP Not-Modified (304) response will be sent and the client will use its client-side
     cached content.  This results in a very fast transaction with the client as no response data is sent.
     Server-side caching will cache both the response headers and content.
     \n\n
     If manual server-side caching is requested, the response will be automatically cached, but subsequent requests will
     require the handler to explicitly send cached content by calling #httpWriteCached.
     \n\n
-    If client-side caching is requested, a "Cache-Control" Http header will be sent to the client with the caching 
-    "max-age" set to the lifesecs argument value. This causes the client to serve client-cached 
-    content and to not contact the server at all until the max-age expires. 
-    Alternatively, you can use #httpSetHeader to explicitly set a "Cache-Control header. For your reference, here are 
+    If client-side caching is requested, a "Cache-Control" Http header will be sent to the client with the caching
+    "max-age" set to the lifesecs argument value. This causes the client to serve client-cached
+    content and to not contact the server at all until the max-age expires.
+    Alternatively, you can use #httpSetHeader to explicitly set a "Cache-Control header. For your reference, here are
     some keywords that can be used in the Cache-Control Http header.
     \n\n
         "max-age" Max time in seconds the resource is considered fresh.
@@ -1485,20 +1495,20 @@ PUBLIC EspRoute *espRoute(HttpRoute *route);
         "must-revalidate" forces clients to revalidate the request with the server.
         "proxy-revalidate" similar to must-revalidate except only for proxy caches.
     \n\n
-    Use client-side caching for static content that will rarely change or for content for which using "reload" in 
+    Use client-side caching for static content that will rarely change or for content for which using "reload" in
     the browser is an adequate solution to force a refresh. Use manual server-side caching for situations where you need to
     explicitly control when and how cached data is returned to the client. For most other situations, use server-side
     caching.
     @param route HttpRoute object
-    @param uri URI to cache. 
-        If the URI is set to "*" all URIs for that action are uniquely cached. If the request has POST data, 
+    @param uri URI to cache.
+        If the URI is set to "*" all URIs for that action are uniquely cached. If the request has POST data,
         the URI may include such post data in a sorted query format. E.g. {uri: /buy?item=scarf&quantity=1}.
     @param lifesecs Lifespan of cache items in seconds. If not set to positive integer, the lifesecs will
         default to the route lifespan.
     @param flags Cache control flags. Select ESP_CACHE_MANUAL to enable manual mode. In manual mode, cached content
         will not be automatically sent. Use #httpWriteCached in the request handler to write previously cached content.
         \n\n
-        Select ESP_CACHE_CLIENT to enable client-side caching. In this mode a "Cache-Control" Http header will be 
+        Select ESP_CACHE_CLIENT to enable client-side caching. In this mode a "Cache-Control" Http header will be
         sent to the client with the caching "max-age". WARNING: the client will not send any request for this URI
         until the max-age timeout has expired.
         \n\n
@@ -1510,10 +1520,10 @@ PUBLIC EspRoute *espRoute(HttpRoute *route);
         If the HTTP_CACHE_COMBINED flag is set, the request params (query, post data and route parameters) will be
         ignored and all request for a given URI path will cache to the same cache record.
         \n\n
-        Select HTTP_CACHE_UNIQUE to uniquely cache requests with different request parameters. The URIs specified in 
+        Select HTTP_CACHE_UNIQUE to uniquely cache requests with different request parameters. The URIs specified in
         uris should not contain any request parameters.
         \n\n
-        Select HTTP_CACHE_ONLY to cache only the exact URI with parameters specified in uris. The parameters must be 
+        Select HTTP_CACHE_ONLY to cache only the exact URI with parameters specified in uris. The parameters must be
         in sorted www-urlencoded format. For example: /example.esp?hobby=sailing&name=john.
     @return A count of the bytes actually written
     @ingroup EspRoute
@@ -1537,7 +1547,7 @@ PUBLIC int espCache(HttpRoute *route, cchar *uri, int lifesecs, int flags);
     @stability Evolving
     @internal
  */
-PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *source, cchar *module, cchar *cacheName, 
+PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *source, cchar *module, cchar *cacheName,
     int isView, char **errMsg);
 
 /**
@@ -1556,7 +1566,7 @@ PUBLIC bool espCompile(HttpRoute *route, MprDispatcher *dispatcher, cchar *sourc
     @stability Evolving
     @internal
  */
-PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout, 
+PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *cacheName, cchar *layout,
     EspState *state, char **err);
 
 /**
@@ -1683,7 +1693,7 @@ PUBLIC int espLoadModule(HttpRoute *route, MprDispatcher *dispatcher, cchar *kin
 #if DEPRECATED || 1
 /**
     Save the in-memory ESP package.json configuration to the default location for the ESP application
-    defined by the specified route. 
+    defined by the specified route.
     @param route HttpRoute defining the ESP application
     @returns Zero if successful, otherwise a negative MPR error code.
     @ingroup EspRoute
@@ -1693,7 +1703,7 @@ PUBLIC int espSaveConfig(HttpRoute *route);
 #endif
 
 /**
-    Set a configuration value to the ESP package.json. 
+    Set a configuration value to the ESP package.json.
     @description This updates the in-memory copy of the package.json only.
     @param route HttpRoute defining the ESP application
     @param key Configuration property path. May contain dots.
@@ -1846,10 +1856,10 @@ PUBLIC void espAppendHeaderString(HttpConn *conn, cchar *key, cchar *value);
 PUBLIC void espAutoFinalize(HttpConn *conn);
 
 /**
-    Create a session state object. 
+    Create a session state object.
     @description The session state object can be used to share state between requests.
     If a session has not already been created, this call will create a new session.
-    It will create a response cookie containing a session ID that will be sent to the client 
+    It will create a response cookie containing a session ID that will be sent to the client
     with the response. Note: Objects are stored in the session state using JSON serialization.
     @param conn HttpConn connection object
     @return Session ID string
@@ -1859,8 +1869,8 @@ PUBLIC void espAutoFinalize(HttpConn *conn);
 PUBLIC cchar *espCreateSession(HttpConn *conn);
 
 /**
-    Destroy a session state object. 
-    @description This will destroy the server-side session state and 
+    Destroy a session state object.
+    @description This will destroy the server-side session state and
         emit an expired cookie to the client to force it to erase the session cookie.
     @param conn HttpConn connection object
     @ingroup EspReq
@@ -1881,7 +1891,7 @@ PUBLIC void espDestroySession(HttpConn *conn);
     @return Zero if the email is successfully sent.
     @stability Prototype
  */
-PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprTime date, cchar *mime, 
+PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprTime date, cchar *mime,
     cchar *message, MprList *files);
 
 /**
@@ -1896,7 +1906,7 @@ PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprT
 PUBLIC void espFinalize(HttpConn *conn);
 
 /**
-    Flush transmit data. 
+    Flush transmit data.
     @description This writes any buffered data.
     @param conn HttpConn connection object
     @ingroup EspReq
@@ -1943,7 +1953,7 @@ PUBLIC cchar *espGetContentType(HttpConn *conn);
 
 /**
     Get a request cookie.
-    @description Get the cookie for the given name. 
+    @description Get the cookie for the given name.
     @param conn HttpConn connection object
     @param name Cookie name to retrieve
     @return Return the cookie value
@@ -1975,8 +1985,8 @@ PUBLIC void *espGetData(HttpConn *conn);
 
 /**
     Get the current database instance.
-    @description A route may have a default database configured via the EspDb Appweb.conf configuration directive. 
-    The database will be opened when the web server initializes and will be shared between all requests using the route. 
+    @description A route may have a default database configured via the EspDb Appweb.conf configuration directive.
+    The database will be opened when the web server initializes and will be shared between all requests using the route.
     @return Edi EDI database handle
     @ingroup EspReq
     @stability Evolving
@@ -1994,7 +2004,7 @@ PUBLIC EspRoute *espGetEspRoute(HttpConn *conn);
 /**
     Get the default documents directory for the request route.
     @param conn HttpConn connection object
-    @return A directory path name 
+    @return A directory path name
     @ingroup EspReq
     @stability Evolving
  */
@@ -2003,11 +2013,11 @@ PUBLIC cchar *espGetDocuments(HttpConn *conn);
 /**
     Get a flash message.
     @description This retrieves a flash message of a specified type.
-        Flash messages are messages kept in session storage messages that are passed to the next request (only). 
+        Flash messages are messages kept in session storage messages that are passed to the next request (only).
         The message is cleared after the controller action completes.
     @param conn HttpConn connection object
     @param type type of flash message to retrieve. This may be set to any word, but the following flash types
-        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical". 
+        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical".
     @ingroup EspReq
     @stability Evolving
  */
@@ -2017,7 +2027,7 @@ PUBLIC cchar *espGetFlash(HttpConn *conn, cchar *type);
     Get a feedback message defined via #feedback
     @param conn HttpConn object
     @param type type of feedback message to retrieve. This may be set to any word, but the following feedback types
-        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical". 
+        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical".
     @return Reference to the feedback message
     @ingroup EspReq
     @stability Evolving
@@ -2081,7 +2091,7 @@ PUBLIC int espGetIntParam(HttpConn *conn, cchar *var, int defaultValue);
 
 /**
     Get the HTTP method.
-    @description This is a convenience API to return the Http method 
+    @description This is a convenience API to return the Http method
     @return The HttpConn.rx.method property
     @ingroup EspReq
     @stability Evolving
@@ -2153,9 +2163,9 @@ PUBLIC HttpRoute *espGetRoute();
 PUBLIC Edi *espGetRouteDatabase(HttpRoute *route);
 
 /**
-    Get the session state ID. 
+    Get the session state ID.
     @description This will get the session and return the session ID. This will create a new session state storage area if
-        create is true and one does not already exist. This can be used to test if the session state exists for this 
+        create is true and one does not already exist. This can be used to test if the session state exists for this
         connection.
     @param conn HttpConn connection object
     @param create Set to true to create a new session if one does not already exist.
@@ -2175,7 +2185,7 @@ PUBLIC cchar *espGetSessionID(HttpConn *conn, int create);
 PUBLIC int espGetStatus(HttpConn *conn);
 
 /**
-    Get the Http response status message. 
+    Get the Http response status message.
     @description The HTTP status message is supplied on the first line of the HTTP response.
     @param conn HttpConn connection object
     @returns A Http status message.
@@ -2215,7 +2225,7 @@ PUBLIC bool espHasGrid(HttpConn *conn);
 
 /**
     Test if a current record has been defined and save to the database.
-    @description This call returns "true" if a current record is defined and has been saved to the database with a 
+    @description This call returns "true" if a current record is defined and has been saved to the database with a
         valid "id" field.
     @return "True" if a current record with a valid "id" is defined.
     @ingroup EspReq
@@ -2227,7 +2237,7 @@ PUBLIC bool espHasRec(HttpConn *conn);
 /**
     Test if the connection is being made on behalf of the current, single authenticated user.
     @description Set esp.login.single to true to enable current session tracking.
-    @return true if the 
+    @return true if the
     @stability Evolving
     @ingroup EspReq
  */
@@ -2306,7 +2316,7 @@ PUBLIC void espRedirect(HttpConn *conn, int status, cchar *target);
  */
 PUBLIC void espRedirectBack(HttpConn *conn);
 
-/** 
+/**
     Remove a cookie
     @param conn HttpConn connection object
     @param name Cookie name
@@ -2347,6 +2357,15 @@ PUBLIC void espRemoveSessionVar(HttpConn *conn, cchar *name);
     @stability Evolving
  */
 PUBLIC ssize espRender(HttpConn *conn, cchar *fmt, ...);
+
+/**
+    Render the client configuration string in JSON
+    @param conn HttpConn connection object
+    @return A count of the bytes actually written
+    @ingroup EspReq
+    @stability PRototype
+ */
+PUBLIC ssize espRenderConfig(HttpConn *conn);
 
 /**
     Render a block of data to the client.
@@ -2396,7 +2415,7 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path);
     Render flash messages.
     @description Flash messages are one-time messages that are displayed to the client on the next request (only).
     Flash messages use the session state store but persist for only one request.
-        See #espSetFlash for how to define flash messages. 
+        See #espSetFlash for how to define flash messages.
     @param conn Http connection object
     @param types Types of feedback message to render. This may be set to a space separated list of flash message types.
         If the types list contains a flash message type, it will be rendered.
@@ -2466,10 +2485,8 @@ PUBLIC ssize espRenderString(HttpConn *conn, cchar *s);
  */
 PUBLIC ssize espRenderVar(HttpConn *conn, cchar *name);
 
-//  MOB - doc
 /**
-    Render a view template to the client
-    @description Actions are C procedures that are invoked when specific URIs are routed to the controller/action pair.
+    Render an ESP view page to the client
     @param conn Http connection object
     @param view View name. The view name is interpreted relative to the matching route documents directory and may omit
         an ESP extension.
@@ -2478,7 +2495,15 @@ PUBLIC ssize espRenderVar(HttpConn *conn, cchar *name);
  */
 PUBLIC void espRenderView(HttpConn *conn, cchar *view);
 
-//  MOB
+/**
+    Render an ESP document
+    @description If the document is an ESP page, it will be rendered as a view via #espRenderView. Otherwise, it will 
+        be rendered using the fileHandler as a static document.
+    @param conn Http connection object
+    @param path Pathname to the document to render
+    @ingroup EspReq
+    @stability Evolving
+ */
 PUBLIC void espRenderDocument(HttpConn *conn, cchar *path);
 
 /**
@@ -2507,7 +2532,7 @@ PUBLIC ssize espSendRec(HttpConn *conn, EdiRec *rec, int flags);
 
 /**
     Send a JSON response result
-    @description This renders a JSON response including the request success status, feedback message and field errors. 
+    @description This renders a JSON response including the request success status, feedback message and field errors.
     The field errors apply to the current EDI record.
     The format of the response is:
         "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
@@ -2538,7 +2563,7 @@ PUBLIC bool espSetAutoFinalizing(HttpConn *conn, bool on);
 PUBLIC void espSetConn(HttpConn *conn);
 
 /**
-    Define a content length header in the transmission. 
+    Define a content length header in the transmission.
     @description This will define a "Content-Length: NNN" request header.
     @param conn HttpConn connection object
     @param length Numeric value for the content length header.
@@ -2554,7 +2579,7 @@ PUBLIC void espSetContentLength(HttpConn *conn, MprOff length);
     @param name Cookie name
     @param value Cookie value
     @param path URI path to which the cookie applies
-    @param domain String Domain in which the cookie applies. Must have 2-3 "." and begin with a leading ".". 
+    @param domain String Domain in which the cookie applies. Must have 2-3 "." and begin with a leading ".".
         For example: domain: .example.com. Set to NULL to use the current connection's client domain.
     Some browsers will accept cookies without the initial ".", but the spec: (RFC 2109) requires it.
     @param lifespan Duration for the cookie to persist in msec. Set to a negative number to delete a cookie. Set to
@@ -2578,13 +2603,17 @@ PUBLIC void espSetContentType(HttpConn *conn, cchar *mimeType);
 /**
     Set this authenticated session as the current session.
     @description Set esp.login.single to true to enable current session tracking.
-    @return true if the 
+    @return true if the
     @stability Prototype
     @ingroup EspReq
  */
 PUBLIC void espSetCurrentSession(HttpConn *conn);
 
-//  MOB DOC
+/**
+    Clear the current authenticated session
+    @stability Prototype
+    @ingroup EspReq
+ */
 PUBLIC void espClearCurrentSession(HttpConn *conn);
 
 /**
@@ -2594,7 +2623,7 @@ PUBLIC void espClearCurrentSession(HttpConn *conn);
         Feedback messages are removed at the completion of the request.
     @param conn Http connection object
     @param type type of feedback message. This may be set to any word, but the following feedback types
-        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical". 
+        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical".
     @param fmt Printf style formatted string to use as the message
     @ingroup EspReq
     @stability Evolving
@@ -2605,7 +2634,7 @@ PUBLIC void espSetFeedback(HttpConn *conn, cchar *type, cchar *fmt, ...);
     Send a feedback message
     @param conn Http connection object
     @param type type of feedback message. This may be set to any word, but the following feedback types
-        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical". 
+        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical".
     @param fmt Printf style formatted string to use as the message
     @param args Varargs style list
     @ingroup EspReq
@@ -2616,13 +2645,13 @@ PUBLIC void espSetFeedbackv(HttpConn *conn, cchar *type, cchar *fmt, va_list arg
 
 /**
     Set a flash message
-    @description Flash messages persist for only one request and are a convenient way to pass state information or 
+    @description Flash messages persist for only one request and are a convenient way to pass state information or
         feedback messages to the next request. Flash messages use the session state store, but persist only for one request.
         The flash message is removed after running the next controller and before rendering any server-side view.
         If you need to set a message to include in the request response, consider using #espSetFeedback.
     @param conn Http connection object
     @param type type of flash message. This may be set to any word, but the following flash types
-        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical". 
+        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical".
     @param fmt Printf style formatted string to use as the message
     @ingroup EspReq
     @stability Evolving
@@ -2633,7 +2662,7 @@ PUBLIC void espSetFlash(HttpConn *conn, cchar *type, cchar *fmt, ...);
     Send a flash message
     @param conn Http connection object
     @param type type of flash message. This may be set to any word, but the following flash types
-        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical". 
+        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical".
     @param fmt Printf style formatted string to use as the message
     @param args Varargs style list
     @ingroup EspReq
@@ -2685,7 +2714,7 @@ PUBLIC void espSetHeaderString(HttpConn *conn, cchar *key, cchar *value);
  */
 PUBLIC void espSetIntParam(HttpConn *conn, cchar *var, int value);
 
-/** 
+/**
     Define a notifier callback for this connection.
     @description The notifier callback will be invoked for state changes and I/O events as requests are processed.
     The supported events are:
@@ -2705,7 +2734,7 @@ PUBLIC void espSetIntParam(HttpConn *conn, cchar *var, int value);
     Before the notifier is invoked, espSetConn is called to set the connection object in the thread local storage.
     This enables the ESP Abbreviated API.
     @param conn HttpConn connection object created via #httpCreateConn
-    @param notifier Notifier function. 
+    @param notifier Notifier function.
     @ingroup EspReq
     @stability Evolving
  */
@@ -2713,7 +2742,7 @@ PUBLIC void espSetNotifier(HttpConn *conn, HttpNotifier notifier);
 
 /**
     Set the current database record
-    @description The current record is used to supply data to various abbreviated controls, such as: text(), input(), 
+    @description The current record is used to supply data to various abbreviated controls, such as: text(), input(),
         checkbox and dropdown()
     @param conn HttpConn connection object
     @param rec Record object to define as the current record.
@@ -2769,7 +2798,7 @@ PUBLIC void espShowRequest(HttpConn *conn);
 
 /**
     Update the cached content for a request
-    @description Save the given content for future requests. This is useful if the caching mode has been set to "manual". 
+    @description Save the given content for future requests. This is useful if the caching mode has been set to "manual".
     @param conn HttpConn connection object
     @param uri Request URI to cache for
     @param data Data to cache
@@ -2794,34 +2823,34 @@ PUBLIC void espUpdateCache(HttpConn *conn, cchar *uri, cchar *data, int lifesecs
 PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
 
 /**
-    Create a URI. 
+    Create a URI.
     @description Create a URI link by expansions tokens based on the current request and route state.
-    The target parameter may contain partial or complete URI information. The missing parts 
-    are supplied using the current request and route tables. The resulting URI is a normalized, server-local 
-    URI (that begins with "/"). The URI will include any defined route prefix, but will not include scheme, host or 
+    The target parameter may contain partial or complete URI information. The missing parts
+    are supplied using the current request and route tables. The resulting URI is a normalized, server-local
+    URI (that begins with "/"). The URI will include any defined route prefix, but will not include scheme, host or
     port components.
     @param conn HttpConn connection object
-    @param target The URI target. The target parameter can be a URI string or JSON style set of options. 
+    @param target The URI target. The target parameter can be a URI string or JSON style set of options.
         The target will have any embedded "{tokens}" expanded by using token values from the request parameters.
         If the target has an absolute URI path, that path is used directly after tokenization. If the target begins with
-        "~", that character will be replaced with the route prefix. This is a very convenient way to create application 
+        "~", that character will be replaced with the route prefix. This is a very convenient way to create application
         top-level relative links.
         \n\n
-        If the target is a string that begins with "{AT}" it will be interpreted as a controller/action pair of the 
-        form "{AT}controller/action". If the "controller/" portion is absent, the current controller is used. If 
-        the action component is missing, the "list" action is used. A bare "{AT}" refers to the "list" action 
+        If the target is a string that begins with "{AT}" it will be interpreted as a controller/action pair of the
+        form "{AT}controller/action". If the "controller/" portion is absent, the current controller is used. If
+        the action component is missing, the "list" action is used. A bare "{AT}" refers to the "list" action
         of the current controller.
         \n\n
         If the target starts with "{" it is interpreted as being a JSON style set of options that describe the link.
-        If the target is a relative URI path, it is appended to the current request URI path.  
+        If the target is a relative URI path, it is appended to the current request URI path.
         \n\n
         If the target is a JSON style of options, it can specify the URI components: scheme, host, port, path, reference and
         query. If these component properties are supplied, these will be combined to create a URI.
         \n\n
-        If the target specifies either a controller/action or a JSON set of options, The URI will be created according 
+        If the target specifies either a controller/action or a JSON set of options, The URI will be created according
         to the route URI template. The template may be explicitly specified
         via a "route" target property. Otherwise, if an "action" property is specified, the route of the same
-        name will be used. If these don't result in a usable route, the "default" route will be used. 
+        name will be used. If these don't result in a usable route, the "default" route will be used.
         \n\n
         These are the properties supported in a JSON style "{ ... }" target:
         <ul>
@@ -2853,7 +2882,7 @@ PUBLIC bool espUpdateRec(HttpConn *conn, EdiRec *rec);
     espUri(conn, "{ action: 'admin/logout'", 0); \n
     espUri(conn, "{ product: 'candy', quantity: '10', template: '/cart/${product}/${quantity}' }", 0); \n
     espUri(conn, "{ route: '~/STAR/edit', action: 'checkout', id: '99' }", 0); \n
-    espUri(conn, "{ template: '~/client/images/${theme}/background.jpg', theme: 'blue' }", 0); 
+    espUri(conn, "{ template: '~/client/images/${theme}/background.jpg', theme: 'blue' }", 0);
     @ingroup EspReq
     @stability Evolving
  */
@@ -2906,7 +2935,7 @@ PUBLIC void addParam(cchar *name, cchar *value);
 PUBLIC bool canUser(cchar *abilities, bool warn);
 
 /**
-    Create a record and initialize field values 
+    Create a record and initialize field values
     @description This will call #ediCreateRec to create a record based on the given table's schema. It will then
         call #ediSetFields to update the record with the given data.
     The record is remembered for this request as the "current" record and can be retrieved via: getRec().
@@ -2926,14 +2955,14 @@ PUBLIC EdiRec *createRec(cchar *tableName, MprJson *data);
     @return True if the update is successful.
     @ingroup EspAbbrev
     @stability Prototype
-*/ 
+*/
 PUBLIC bool createRecFromParams(cchar *table);
 
 /**
-    Create a session state object. 
+    Create a session state object.
     @description The session state object can be used to share state between requests.
     If a session has not already been created, this call will create a new session.
-    It will create a response cookie containing a session ID that will be sent to the client 
+    It will create a response cookie containing a session ID that will be sent to the client
     with the response. Note: Objects are stored in the session state using JSON serialization.
     @return Session ID string
     @ingroup EspAbbrev
@@ -2942,7 +2971,7 @@ PUBLIC bool createRecFromParams(cchar *table);
 PUBLIC cchar *createSession();
 
 /**
-    Destroy a session state object. 
+    Destroy a session state object.
     @description This will emit an expired cookie to the client to force it to erase the session cookie.
     @ingroup EspAbbrev
     @stability Evolving
@@ -2958,7 +2987,7 @@ PUBLIC void dontAutoFinalize();
 
 /**
     Finalize the response.
-    @description Signals the end of any and all response data and flushes any buffered write data to the client. 
+    @description Signals the end of any and all response data and flushes any buffered write data to the client.
     If the request has already been finalized, this call has no additional effect.
     This routine calls #espFinalize.
     @ingroup EspAbbrev
@@ -2968,11 +2997,11 @@ PUBLIC void finalize();
 
 /**
     Set a flash notification message.
-    @description Flash messages persist for only one request and are a convenient way to pass state information or 
+    @description Flash messages persist for only one request and are a convenient way to pass state information or
         feedback messages to the next request. Flash messages use the session state store, but persist only for one request.
         This routine calls #espSetFlash.
     @param type type of flash message. This may be set to any word, but the following flash types
-        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical". 
+        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical".
     @param fmt Printf style message format
     @ingroup EspAbbrev
     @stability Evolving
@@ -2985,9 +3014,9 @@ PUBLIC void flash(cchar *type, cchar *fmt, ...);
         The #getFeedback API can be used to retrieve feedback messages.
         Feedback messages are removed at the completion of the request.
     @param type type of feedback message. This may be set to any word, but the following feedback types
-        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical". 
+        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical".
     @param fmt Printf style formatted string to use as the message
-    @return True if the request has been successful so far, i.e. there is not an error feedback message defined. 
+    @return True if the request has been successful so far, i.e. there is not an error feedback message defined.
         Return false if there is an error feedback defined.
         This permits feedback to be chained as: renderResult(feedback("error", ...));
     @ingroup EspAbbrev
@@ -2996,7 +3025,7 @@ PUBLIC void flash(cchar *type, cchar *fmt, ...);
 PUBLIC bool feedback(cchar *type, cchar *fmt, ...);
 
 /**
-    Flush transmit data. 
+    Flush transmit data.
     @description This writes any buffered data.
     @ingroup EspAbbrev
     @stability Evolving
@@ -3012,7 +3041,7 @@ PUBLIC HttpAuth *getAuth();
 
 /**
     Get a list of column names.
-    @param rec Database record. 
+    @param rec Database record.
     @return An MprList of column names in the given table. If there is no record defined, an empty list is returned.
     @ingroup EspAbbrev
     @stability Evolving
@@ -3076,7 +3105,7 @@ PUBLIC MprDispatcher *getDispatcher();
 /**
     Get a flash message defined via #flash
     @param type type of flash message to retrieve. This may be set to any word, but the following flash types
-        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical". 
+        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical".
     @return Reference to private data
     @ingroup EspAbbrev
     @stability Evolving
@@ -3086,7 +3115,7 @@ PUBLIC cchar *getFlash(cchar *type);
 /**
     Get a feedback message defined via #feedback
     @param type type of feedback message to retrieve. This may be set to any word, but the following feedback types
-        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical". 
+        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical".
     @return Reference to private data
     @ingroup EspAbbrev
     @stability Evolving
@@ -3095,8 +3124,8 @@ PUBLIC cchar *getFeedback(cchar *type);
 
 /**
     Get the current database instance
-    @description A route may have a default database configured via the EspDb Appweb.conf configuration directive. 
-    The database will be opened when the web server initializes and will be shared between all requests using the route. 
+    @description A route may have a default database configured via the EspDb Appweb.conf configuration directive.
+    The database will be opened when the web server initializes and will be shared between all requests using the route.
     @return Edi EDI database handle
     @ingroup EspAbbrev
     @stability Evolving
@@ -3113,7 +3142,7 @@ PUBLIC EspRoute *getEspRoute();
 
 /**
     Get the default document root directory for the request route.
-    @return A directory path name 
+    @return A directory path name
     @ingroup EspAbbrev
     @stability Evolving
  */
@@ -3121,7 +3150,7 @@ PUBLIC cchar *getDocuments();
 
 /**
     Get a field from the current database record
-    @param rec Database record. 
+    @param rec Database record.
     @param field Field name to return
     @return String value for "field" in the current record.
     @ingroup EspAbbrev
@@ -3150,7 +3179,7 @@ PUBLIC cchar *getHeader(cchar *key);
 
 /**
     Get the HTTP method
-    @description This is a convenience API to return the Http method 
+    @description This is a convenience API to return the Http method
     @return The HttpConn.rx.method property
     @ingroup EspReq
     @stability Evolving
@@ -3214,7 +3243,7 @@ PUBLIC cchar *getSecurityToken();
 PUBLIC cchar *getSessionVar(cchar *name);
 
 /**
-    Get the session state ID. 
+    Get the session state ID.
     @description This will get a session and return the session ID. This will create a new session state storage area if
         one does not already exist.
     @return The session state identifier string.
@@ -3239,7 +3268,7 @@ PUBLIC cchar *getFieldError(cchar *field);
 PUBLIC EdiRec *getRec();
 
 /**
-    Get a field from the application package.json configuration 
+    Get a field from the application package.json configuration
     @param field Property field name in package.json. May contain dots.
     @return The field value. Returns "" if the field is not found.
     @ingroup EspAbbrev
@@ -3275,7 +3304,7 @@ PUBLIC bool hasGrid();
 
 /**
     Test if a current record has been defined and save to the database
-    @description This call returns "true" if a current record is defined and has been saved to the database with a 
+    @description This call returns "true" if a current record is defined and has been saved to the database with a
         valid "id" field.
     @return "true" if a current record with a valid "id" is defined.
     @ingroup EspAbbrev
@@ -3285,14 +3314,14 @@ PUBLIC bool hasRec();
 
 /**
     Render an input field as part of a form. This is a smart input control that will call the appropriate
-        input control based on the database record field data type. This control should not be used 
+        input control based on the database record field data type. This control should not be used
         if using the esp-angular-mvc or other similar client-side Javascript framework.
-    @param field Name for the input field. This defines the HTML element name and provides the source 
-        of the initial value to display. The field should be a property of the form current record. 
-        If this call is used without a form control record, the actual data value should be supplied via the 
+    @param field Name for the input field. This defines the HTML element name and provides the source
+        of the initial value to display. The field should be a property of the form current record.
+        If this call is used without a form control record, the actual data value should be supplied via the
         options.value property.
     @param options These are in JSON string form and are converted to attributes to pass to the input element
-    @arg noescape Boolean Do not HTML escape the text before rendering. 
+    @arg noescape Boolean Do not HTML escape the text before rendering.
     @arg ... Other options are converted and rendered as HTML attributes.
     @ingroup EspAbbrev
     @stability Evolving
@@ -3326,7 +3355,7 @@ PUBLIC bool isSecure();
 
 /**
     Make a hash table container of property values
-    @description This routine formats the given arguments, parses the result as a JSON string and returns an 
+    @description This routine formats the given arguments, parses the result as a JSON string and returns an
         equivalent hash of property values. The result after formatting should be of the form:
         hash("{ key: 'value', key2: 'value', key3: 'value' }");
     @param fmt Printf style format string
@@ -3361,33 +3390,33 @@ PUBLIC MprJson *makeJson(cchar *fmt, ...);
 PUBLIC EdiRec *makeRec(cchar *content);
 
 /**
-    Create a URI. 
+    Create a URI.
     @description Create a URI link by expansions tokens based on the current request and route state.
-    The target parameter may contain partial or complete URI information. The missing parts 
-    are supplied using the current request and route tables. The resulting URI is a normalized, server-local 
-    URI (that begins with "/"). The URI will include any defined route prefix, but will not include scheme, host or 
+    The target parameter may contain partial or complete URI information. The missing parts
+    are supplied using the current request and route tables. The resulting URI is a normalized, server-local
+    URI (that begins with "/"). The URI will include any defined route prefix, but will not include scheme, host or
     port components.
-    @param target The URI target. The target parameter can be a URI string or JSON style set of options. 
+    @param target The URI target. The target parameter can be a URI string or JSON style set of options.
         The target will have any embedded "{tokens}" expanded by using token values from the request parameters.
         If the target has an absolute URI path, that path is used directly after tokenization. If the target begins with
-        "~", that character will be replaced with the route prefix. This is a very convenient way to create application 
+        "~", that character will be replaced with the route prefix. This is a very convenient way to create application
         top-level relative links.
         \n\n
-        If the target is a string that begins with "{AT}" it will be interpreted as a controller/action pair of the 
-        form "{AT}controller/action". If the "controller/" portion is absent, the current controller is used. If 
-        the action component is missing, the "list" action is used. A bare "{AT}" refers to the "list" action 
+        If the target is a string that begins with "{AT}" it will be interpreted as a controller/action pair of the
+        form "{AT}controller/action". If the "controller/" portion is absent, the current controller is used. If
+        the action component is missing, the "list" action is used. A bare "{AT}" refers to the "list" action
         of the current controller.
         \n\n
         If the target starts with "{" it is interpreted as being a JSON style set of options that describe the link.
-        If the target is a relative URI path, it is appended to the current request URI path.  
+        If the target is a relative URI path, it is appended to the current request URI path.
         \n\n
         If the target is a JSON style of options, it can specify the URI components: scheme, host, port, path, reference and
         query. If these component properties are supplied, these will be combined to create a URI.
         \n\n
-        If the target specifies either a controller/action or a JSON set of options, The URI will be created according 
+        If the target specifies either a controller/action or a JSON set of options, The URI will be created according
         to the route URI template. The template may be explicitly specified
         via a "route" target property. Otherwise, if an "action" property is specified, the route of the same
-        name will be used. If these don't result in a usable route, the "default" route will be used. 
+        name will be used. If these don't result in a usable route, the "default" route will be used.
         \n\n
         These are the properties supported in a JSON style "{ ... }" target:
         <ul>
@@ -3419,7 +3448,7 @@ PUBLIC EdiRec *makeRec(cchar *content);
     makeUri("{ action: 'admin/logout'", 0); \n
     makeUri("{ product: 'candy', quantity: '10', template: '/cart/${product}/${quantity}' }", 0); \n
     makeUri("{ route: '~/STAR/edit', action: 'checkout', id: '99' }", 0); \n
-    makeUri("{ template: '~/client/images/${theme}/background.jpg', theme: 'blue' }", 0); 
+    makeUri("{ template: '~/client/images/${theme}/background.jpg', theme: 'blue' }", 0);
     @ingroup EspReq
     @stability Evolving
  */
@@ -3460,11 +3489,11 @@ PUBLIC cchar *param(cchar *name);
 PUBLIC MprJson *params();
 
 /**
-    Read the identified record 
+    Read the identified record
     @description Read the record identified by the request param("id") from the nominated table.
     The record is remembered for this request as the "current" record and can be retrieved via: getRec().
     @param tableName Database table name
-    @param key Key value of the record to read 
+    @param key Key value of the record to read
     @return The identified record. Returns NULL if the table or record cannot be found.
     @ingroup EspAbbrev
     @stability Evolving
@@ -3506,7 +3535,7 @@ PUBLIC EdiRec *readRecWhere(cchar *tableName, cchar *fieldName, cchar *operation
     @description Read a record from the given table as identified by the key value.
     The record is remembered for this request as the "current" record and can be retrieved via: getRec().
     @param tableName Database table name
-    @param key Key value of the record to read 
+    @param key Key value of the record to read
     @return Record instance of EdiRec.
     @ingroup EspAbbrev
     @stability Evolving
@@ -3554,7 +3583,7 @@ PUBLIC void redirect(cchar *target);
  */
 PUBLIC void redirectBack();
 
-/** 
+/**
     Remove a cookie
     @param name Cookie name
     @ingroup EspAbbrev
@@ -3568,7 +3597,7 @@ PUBLIC void removeCookie(cchar *name);
         If the removal succeeds, the feedback message {inform: "Deleted Record"} will be created. If the removal fails,
         a feedback message {error: "Cannot delete Record"} will be created.
     @param tableName Database table name
-    @param key Key value of the record to remove 
+    @param key Key value of the record to remove
     @return Record instance of EdiRec.
     @ingroup EspAbbrev
     @stability Evolving
@@ -3626,9 +3655,9 @@ PUBLIC void renderError(int status, cchar *fmt, ...);
 /**
     Render flash messages.
     @description Flash notices are one-time messages that are passed to the newt request (only).
-        See #espSetFlash and #flash for how to define flash messages. 
+        See #espSetFlash and #flash for how to define flash messages.
     @param types Types of flash message to retrieve. This may be set to any word, but the following flash types
-        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical". 
+        are typically supported as per RFC 5424: "debug", "info", "notice", "warn", "error", "critical".
     @ingroup EspAbbrev
     @stability Evolving
  */
@@ -3702,7 +3731,7 @@ PUBLIC void renderView(cchar *view);
 
 /**
     Run a command
-    @description Run a command and return output. 
+    @description Run a command and return output.
     @param command Command line and arguments to run.
     @param input Input data to pass to the command. Set to null if not required.
     @param output Pointer to accept command standard output response. Set to null if not required.
@@ -3749,7 +3778,7 @@ PUBLIC ssize sendRec(EdiRec *rec);
 
 /**
     Send a JSON response result
-    @description This sends a JSON response including the request success status, feedback message and field errors. 
+    @description This sends a JSON response including the request success status, feedback message and field errors.
     The field errors apply to the current EDI record.
     The format of the response is:
         "{ success: STATUS, feedback: {messages}, fieldErrors: {messages}}" wrapper.
@@ -3762,7 +3791,7 @@ PUBLIC void sendResult(bool status);
 
 #if DEPRECATED || 1
 /**
-    Render stylesheets 
+    Render stylesheets
     @description This renders stylesheet elements for all matching filenames on the server.
     @param patterns An enhanced glob-style expression pattern. The format is is a comma separated string of filename
     expressions. Each expression may contain the wildcard tokens: "*" which matches any filename portion, "**" which matches
@@ -3794,13 +3823,13 @@ PUBLIC void securityToken();
  */
 PUBLIC cchar *session(cchar *name);
 
-/** 
-    Define a cookie header to send with the response. The Path, Domain, and Expires properties can be set to null for 
+/**
+    Define a cookie header to send with the response. The Path, Domain, and Expires properties can be set to null for
     default values.
     @param name Cookie name
     @param value Cookie value
     @param path Uri path to which the cookie applies
-    @param domain String Domain in which the cookie applies. Must have 2-3 "." and begin with a leading ".". 
+    @param domain String Domain in which the cookie applies. Must have 2-3 "." and begin with a leading ".".
         For example: domain: .example.com
         Some browsers will accept cookies without the initial ".", but the spec: (RFC 2109) requires it.
     @param lifespan Lifespan of the cookie in seconds.
@@ -3850,7 +3879,7 @@ PUBLIC EdiRec *setField(EdiRec *rec, cchar *fieldName, cchar *value);
 
 /**
     Update record fields without writing to the database
-    @description This routine updates the record object with the given values. The "data' argument supplies 
+    @description This routine updates the record object with the given values. The "data' argument supplies
         a hash of fieldNames and values. The data hash may come from the request #params or it can be manually
         created via #ediMakeHash to convert a JSON string into an options hash.
         For example: updateFields(rec, hash("{ name: '%s', address: '%s' }", name, address))
@@ -3895,9 +3924,9 @@ PUBLIC void setIntParam(cchar *name, int value);
 
 /**
     Set a notifier callback for the connection.
-    This wraps httpSetConnNotifier and calls espSetConn before invoking the notifier for 
+    This wraps httpSetConnNotifier and calls espSetConn before invoking the notifier for
     connection events.
-    @param notifier Callback function 
+    @param notifier Callback function
     @ingroup EspAbbrev
     @stability Evolving
  */
@@ -3917,7 +3946,7 @@ PUBLIC void setParam(cchar *name, cchar *value);
 
 /**
     Set the current database record
-    @description The current record is used to supply data to various abbreviated controls, such as: text(), input(), 
+    @description The current record is used to supply data to various abbreviated controls, such as: text(), input(),
         checkbox and dropdown()
     @return The grid instance. This permits chaining.
     @ingroup EspAbbrev
@@ -3944,7 +3973,7 @@ PUBLIC void setSessionVar(cchar *name, cchar *value);
 PUBLIC void setStatus(int status);
 
 /**
-    Create a timeout event 
+    Create a timeout event
     @description invoke the given procedure after the timeout
     @param proc Function to invoke
     @param timeout Time in milliseconds to elapse before invoking the timeout
@@ -3964,7 +3993,7 @@ PUBLIC void showRequest();
 
 /**
     Update the cached content for a request
-    @description Save the given content for future requests. This is useful if the caching mode has been set to "manual". 
+    @description Save the given content for future requests. This is useful if the caching mode has been set to "manual".
     @param uri Request URI to cache for
     @param data Data to cache
     @param lifesecs Time in seconds to cache the data
@@ -3989,7 +4018,7 @@ PUBLIC bool updateField(cchar *tableName, cchar *key, cchar *fieldName, cchar *v
 /**
     Write field values to a database row
     @description This routine updates the current record with the given data and then saves the record to
-        the database. The "data' argument supplies 
+        the database. The "data' argument supplies
         a hash of fieldNames and values. The data hash may come from the request #params or it can be manually
         created via #ediMakeHash to convert a JSON string into an options hash.
         For example: ediWriteFields(rec, params());
@@ -4024,41 +4053,41 @@ PUBLIC bool updateRec(EdiRec *rec);
     @return True if the update is successful.
     @ingroup EspAbbrev
     @stability Prototype
-*/ 
+*/
 PUBLIC bool updateRecFromParams(cchar *table);
 
 /*
     NOTE: this has inconsistent naming with httpLink() vs uri()
     But we tolerate this because link() is taken and httpUri() it confusing vs httpCreateUri
  */
-/** 
-    Create a URI. 
-    @description Create a URI link based on a given target an expanding embedded tokens based on the current request and 
-        route state. The target URI parameter may contain partial or complete URI information. The missing parts 
-    are supplied using the current request and route tables. The resulting URI is a normalized, server-local 
-    URI (that begins with "/"). The URI will include a required application route prefix, but will not include scheme, host or 
+/**
+    Create a URI.
+    @description Create a URI link based on a given target an expanding embedded tokens based on the current request and
+        route state. The target URI parameter may contain partial or complete URI information. The missing parts
+    are supplied using the current request and route tables. The resulting URI is a normalized, server-local
+    URI (that begins with "/"). The URI will include a required application route prefix, but will not include scheme, host or
     port components.
-    @param target The URI target. The target parameter can be a URI string or JSON style set of options. 
+    @param target The URI target. The target parameter can be a URI string or JSON style set of options.
         The target will have any embedded "{tokens}" expanded by using token values from the request parameters.
         If the target has an absolute URI path, that path is used directly after tokenization. If the target begins with
-        "~", that character will be replaced with the route prefix. This is a very convenient way to create application 
+        "~", that character will be replaced with the route prefix. This is a very convenient way to create application
         top-level relative links.
         \n\n
-        If the target is a string that begins with "{AT}" it will be interpreted as a service/action pair of the 
-        form "{AT}Service/action". If the "service/" portion is absent, the current service is used. If 
-        the action component is missing, the "list" action is used. A bare "{AT}" refers to the "list" action 
+        If the target is a string that begins with "{AT}" it will be interpreted as a service/action pair of the
+        form "{AT}Service/action". If the "service/" portion is absent, the current service is used. If
+        the action component is missing, the "list" action is used. A bare "{AT}" refers to the "list" action
         of the current service.
         \n\n
         If the target starts with "{" it is interpreted as being a JSON style set of options that describe the link.
-        If the target is a relative URI path, it is appended to the current request URI path.  
+        If the target is a relative URI path, it is appended to the current request URI path.
         \n\n
         If the is a JSON style of options, it can specify the URI components: scheme, host, port, path, reference and
         query. If these component properties are supplied, these will be combined to create a URI.
         \n\n
-        If the target specifies either a service/action or a JSON set of options, The URI will be created according 
+        If the target specifies either a service/action or a JSON set of options, The URI will be created according
         to the route URI template. The template may be explicitly specified
         via a "route" target property. Otherwise, if an "action" property is specified, the route of the same
-        name will be used. If these don't result in a usable route, the "default" route will be used. 
+        name will be used. If these don't result in a usable route, the "default" route will be used.
         \n\n
         These are the properties supported in a JSON style "{ ... }" target:
         <ul>
@@ -4110,7 +4139,7 @@ PUBLIC cchar *uri(cchar *target, ...);
     Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the Embedthis Open Source license or you may acquire a 
+    You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.

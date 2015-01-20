@@ -39,8 +39,6 @@
         },
     },
     esp: {
-        applications: [
-            'apps/*/*.json',
-        ],
+        apps: 'apps/*/esp.json',
     }
 }

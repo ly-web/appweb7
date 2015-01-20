@@ -80,6 +80,7 @@ typedef struct MaState {
     char        *configDir;             /**< Directory containing config file */
     char        *filename;              /**< Config file name */
     char        *endpoints;             /**< Virtual host endpoints */
+    char        *data;                  /**< Config data (managed) */
     int         lineNumber;             /**< Current line number */
     int         enabled;                /**< True if the current block is enabled */
     int         flags;                  /**< Parsing flags */

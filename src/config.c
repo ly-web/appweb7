@@ -28,15 +28,15 @@ static int parseInit();
 static int setTarget(MaState *state, cchar *name, cchar *details);
 
 /******************************************************************************/
-
+/*
+    Load modules builtin modules by default. Subsequent calls to the LoadModule directive will have no effect.
+ */
 PUBLIC int maLoadModules(HttpRoute *route)
 {
-    Http    *http;
     int     rc;
 
-    http = HTTP;
     rc = 0;
-
+#if !ME_STATIC
 #if ME_COM_CGI
     rc += maLoadModule("cgi", "libmod_cgi");
 #endif
@@ -49,26 +49,29 @@ PUBLIC int maLoadModules(HttpRoute *route)
 #if ME_COM_PHP
     rc += maLoadModule("php", "libmod_php");
 #endif
+/*
+    Demand load SSL as an optimization
+ */
 
+#else /* ME_STATIC */
 /*
     If doing a static build, must now reference required modules to force the linker to include them.
     On linux we cannot lookup symbols with dlsym(), so we must invoke explicitly here.
  */
-#if ME_STATIC
 #if ME_COM_CGI
-    rc += httpCgiInit(http, 0);
+    rc += httpCgiInit(HTTP, 0);
 #endif
 #if ME_COM_ESP
-    rc += httpEspInit(http, 0);
+    rc += httpEspInit(HTTP, 0);
 #endif
 #if ME_COM_EJS
-    rc += httpEspInit(http, 0);
+    rc += httpEspInit(HTTP, 0);
 #endif
 #if ME_COM_PHP
-    rc += httpPhpInit(http, 0);
+    rc += httpPhpInit(HTTP, 0);
 #endif
 #if ME_COM_SSL
-    rc += httpSslInit(http, 0);
+    rc += httpSslInit(HTTP, 0);
 #endif
 #endif /* ME_STATIC */
     return rc;
@@ -93,12 +96,12 @@ PUBLIC int configureHandlers(HttpRoute *route)
         }
     }
 #endif
-#if ME_COM_ESP || ME_ESP_PRODUCT
+#if ME_COM_ESP
     if (httpLookupStage("espHandler")) {
         httpAddRouteHandler(route, "espHandler", "esp");
     }
 #endif
-#if ME_COM_EJS || ME_EJS_PRODUCT
+#if ME_COM_EJS
     if (httpLookupStage("ejsHandler")) {
         httpAddRouteHandler(route, "ejsHandler", "ejs");
     }
@@ -164,12 +167,10 @@ PUBLIC int maParseConfig(cchar *path)
 
     route = httpGetDefaultRoute(0);
     dir = mprGetAbsPath(mprGetPathDir(path));
+
 #if UNUSED
     httpSetRouteHome(route, dir);
     httpSetRouteDocuments(route, dir);
-#endif
-
-#if UNUSED
     httpSetRouteVar(route, "LOG_DIR", ".");
 #ifdef ME_VAPP_PREFIX
     httpSetRouteVar(route, "INC_DIR", ME_VAPP_PREFIX "/inc");
@@ -182,7 +183,6 @@ PUBLIC int maParseConfig(cchar *path)
 
     if (smatch(mprGetPathExt(path), "json")) {
         rc = httpLoadConfig(route, path);
-        httpFinalizeConfig(route);
     } else {
         state = createState();
         mprAddRoot(state);
@@ -193,6 +193,8 @@ PUBLIC int maParseConfig(cchar *path)
         return rc;
     }
     httpFinalizeRoute(route);
+    httpAddHostToEndpoints(route->host);
+
     if (mprHasMemError()) {
         mprLog("error appweb memory", 0, "Memory allocation error when initializing");
         return MPR_ERR_MEMORY;
@@ -2701,9 +2703,6 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
         /* Set a default host and route name */
         if (value) {
             httpSetHostName(state->host, ssplit(sclone(value), " \t,", NULL));
-#if UNUSED
-            httpSetRouteName(state->route, sfmt("default-%s", state->host->name));
-#endif
             /*
                 Save the endpoints until the close of the VirtualHost to closeVirtualHostDirective can
                 add the virtual host to the specified endpoints.
@@ -2970,6 +2969,7 @@ PUBLIC MaState *maPushState(MaState *prev)
     state->filename = prev->filename;
     state->configDir = prev->configDir;
     state->file = prev->file;
+    state->data = prev->data;
     state->auth = state->route->auth;
     state->top->current = state;
     return state;
@@ -3002,6 +3002,7 @@ static void manageState(MaState *state, int flags)
         mprMark(state->prev);
         mprMark(state->top);
         mprMark(state->current);
+        mprMark(state->data);
     }
 }
 

@@ -56,7 +56,6 @@ typedef struct App {
     cchar       *filterRoutePrefix;     /* Prefix of route to use for filtering */
     cchar       *logSpec;               /* Arg for --log */
     cchar       *traceSpec;             /* Arg for --trace */
-    cchar       *routeSet;              /* Desired route set package */
     cchar       *mode;                  /* New "mode" to use */
     cchar       *module;                /* Compiled module name */
     cchar       *base;                  /* Base filename */
@@ -264,7 +263,6 @@ static void manageApp(App *app, int flags)
         mprMark(app->password);
         mprMark(app->platform);
         mprMark(app->route);
-        mprMark(app->routeSet);
         mprMark(app->routes);
         mprMark(app->slink);
         mprMark(app->table);
@@ -591,7 +589,7 @@ static void initialize(int argc, char **argv)
 {
     HttpStage   *stage;
     HttpRoute   *route;
-    cchar       *documents, *path;
+    cchar       *path;
 
     if (app->error) {
         return;
@@ -630,8 +628,8 @@ static void initialize(int argc, char **argv)
     app->name = getConfigValue(app->package, "name", app->name);
     app->title = getConfigValue(app->package, "title", app->name);
     app->version = getConfigValue(app->package, "version", app->version);
-
-    path = mprJoinPath(route->home, ME_ESP_CONFIG);
+    
+    path = mprJoinPath(route->home, "esp.json");
     if (mprPathExists(path, R_OK)) {
         if ((app->config = readConfig(path)) == 0) {
             return;
@@ -669,57 +667,39 @@ static void initialize(int argc, char **argv)
         espCreateRoute(route);
     }
     app->eroute = route->eroute;
-    app->eroute->skipApps = !(app->require & REQ_SERVE);
-    
-#if DEPRECATE || 1
-    if (mprPathExists("documents", X_OK)) {
-        documents = "documents";
-    } else if (mprPathExists("client", X_OK)) {
-        documents = "client";
-    } else if (mprPathExists("public", X_OK)) {
-        documents = "public";
-    } else {
-        documents = ".";
+
+#if UNUSED
+    if (!(app->require & REQ_SERVE)) {
+        app->route->loaded = 1;
+        app->route->update = 0;
     }
 #endif
-    if (mprPathExists(ME_ESP_CONFIG, R_OK)) {
-//  MOB - refactor Define, Configure Load
-        if (espDefineApp(route, app->name, 0, 0, documents, 0) < 0 || espConfigureApp(route) < 0 || 
-                espLoadApp(route) < 0) {
+    if (mprPathExists("esp.json", R_OK)) {
+        if (espLoadApp(route, "esp.json")) {
             fail("Cannot define and load ESP app");
             return;
         }
 #if DEPRECATE || 1
     } else if (mprPathExists("package.json", R_OK)) {
-        trace("Warn", "ESP configuration should be in %s instead of package.json", ME_ESP_CONFIG);
-        if (espDefineApp(route, app->name, 0, 0, documents, 0) < 0 || espConfigureApp(route) < 0 || 
-                espLoadApp(route) < 0) {
+        trace("Warn", "ESP configuration should be in %s instead of package.json", "esp.json");
+        if (espLoadApp(route, "package.json")) {
             fail("Cannot define and load ESP app");
             return;
         }
 #endif
     } else {
         /*
-            No esp.json - not an ESP app
+            No esp.json - not an ESP app.
          */
-        route->update = 1;
-        httpSetRouteShowErrors(route, 1);
         espSetDefaultDirs(route);
         httpAddRouteHandler(route, "espHandler", "esp");
         httpAddRouteHandler(route, "fileHandler", "");
         httpAddRouteIndex(route, "index.esp");
         httpAddRouteIndex(route, "index.html");
+        httpSetRouteShowErrors(route, 1);
+        route->update = 1;
     }
-    //  MOB - is this route already finalized for a configured app?
     httpFinalizeRoute(route);
-
-    //  MOB - should only be needed if espConfigureApp not called
-    if (route->database && !app->eroute->edi) {
-        if (espOpenDatabase(route, route->database) < 0) {
-            fail("Cannot open database %s", route->database);
-            return;
-        }
-    }
     app->routes = getRoutes();
     if ((stage = httpLookupStage("espHandler")) == 0) {
         fail("Cannot find ESP handler");
@@ -895,7 +875,7 @@ static void editValue(int argc, char **argv)
         key = ssplit(sclone(argv[i]), "=", (char**) &value);
         if (value && *value) {
             setConfigValue(app->config, key, value);
-            saveConfig(app->config, ME_ESP_CONFIG, MPR_JSON_QUOTES);
+            saveConfig(app->config, "esp.json", MPR_JSON_QUOTES);
         } else {
             value = getConfigValue(app->config, key, 0);
             if (value) { 
@@ -913,8 +893,8 @@ static void init(int argc, char **argv)
     MprJson     *config;
     cchar       *data, *identity, *path;
 
-    if (!mprPathExists(ME_ESP_CONFIG, R_OK)) {
-        trace("Create", ME_ESP_CONFIG);
+    if (!mprPathExists("esp.json", R_OK)) {
+        trace("Create", "esp.json");
         if (!mprPathExists("package.json", R_OK)) {
             identity = sfmt("name: '%s', title: '%s', description: '%s', version: '%s'",
                 app->name, app->title, app->description, app->version);
@@ -1142,7 +1122,7 @@ static void role(int argc, char **argv)
     cchar       *cmd, *def, *key, *rolename;
 
     if ((auth = app->route->auth) == 0) {
-        fail("Authentication not configured in %s", ME_ESP_CONFIG);
+        fail("Authentication not configured in %s", "esp.json");
         return;
     }
     if (argc < 2) {
@@ -1159,7 +1139,7 @@ static void role(int argc, char **argv)
             return;
         }
         if (!app->noupdate) {
-            saveConfig(app->config, ME_ESP_CONFIG, 0);
+            saveConfig(app->config, "esp.json", 0);
             trace("Remove", "Role %s", rolename);
         }
         return;
@@ -1173,7 +1153,7 @@ static void role(int argc, char **argv)
                 fail("Cannot update %s", key);
                 return;
             }
-            saveConfig(app->config, ME_ESP_CONFIG, 0);
+            saveConfig(app->config, "esp.json", 0);
             if (!app->noupdate) {
                 trace("Update", "Role %s", rolename);
             }
@@ -1286,7 +1266,7 @@ static void user(int argc, char **argv)
     cchar       *cmd, *def, *key, *username, *encodedPassword, *roles;
 
     if ((auth = app->route->auth) == 0) {
-        fail("Authentication not configured in %s", ME_ESP_CONFIG);
+        fail("Authentication not configured in %s", "esp.json");
         return;
     }
     if (argc < 2) {
@@ -1307,7 +1287,7 @@ static void user(int argc, char **argv)
             return;
         }
         if (!app->noupdate) {
-            saveConfig(app->config, ME_ESP_CONFIG, 0);
+            saveConfig(app->config, "esp.json", 0);
             trace("Remove", "User %s", username);
         }
         return;
@@ -1340,7 +1320,7 @@ static void user(int argc, char **argv)
                 fail("Cannot update %s", key);
                 return;
             }
-            saveConfig(app->config, ME_ESP_CONFIG, 0);
+            saveConfig(app->config, "esp.json", 0);
             if (!app->noupdate) {
                 trace("Update", "User %s", username);
             }
@@ -2423,11 +2403,11 @@ static MprHash *makeTokens(cchar *path, MprHash *other)
 
     tokens = mprDeserialize(sfmt(
         "{ NAME: '%s', TITLE: '%s', HOME: '%s', DOCUMENTS: '%s', SOURCE: '%s', BINDIR: '%s', DATABASE: '%s', FILENAME: '%s',"
-        "LIST: '%s', LISTEN: '%s', CONTROLLER: '%s', UCONTROLLER: '%s', MODEL: '%s', UMODEL: '%s', ROUTES: '%s',"
+        "LIST: '%s', LISTEN: '%s', CONTROLLER: '%s', UCONTROLLER: '%s', MODEL: '%s', UMODEL: '%s',"
         "TABLE: '%s', ACTIONS: '', DEFINE_ACTIONS: '' }",
         app->name, app->title, route->home, route->documents, httpGetDir(route, "SOURCE"), app->binDir, app->database,
         filename, list, app->listen, app->controller, stitle(app->controller), app->controller, stitle(app->controller), 
-        app->routeSet, app->table));
+        app->table));
     if (other) {
         mprBlendHash(tokens, other);
     }

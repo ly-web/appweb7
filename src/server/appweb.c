@@ -323,8 +323,7 @@ static int createEndpoints(int argc, char **argv)
  */
 static int findConfigFile()
 {
-    //  DEPRECATE - reverse order in version 6
-    cchar   *extensions[] = { "conf", "json", 0 };
+    cchar   *extensions[] = { "json", "conf", 0 };
     cchar   *base, **ext, *name, *path;
 
     if (app->configFile) {
