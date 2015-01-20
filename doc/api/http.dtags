@@ -2164,13 +2164,6 @@
       <arglist>(HttpRoute *route, cchar *str)</arglist>
     </member>
     <member kind="function">
-      <type>int</type>
-      <name>httpFinalizeConfig</name>
-      <anchorfile>group___http_route.html</anchorfile>
-      <anchor>ga442f6655529b86680ed7d08c125258c9</anchor>
-      <arglist>(HttpRoute *route)</arglist>
-    </member>
-    <member kind="function">
       <type>void</type>
       <name>httpFinalizeRoute</name>
       <anchorfile>group___http_route.html</anchorfile>
