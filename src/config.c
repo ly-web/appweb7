@@ -160,15 +160,15 @@ PUBLIC int maParseConfig(cchar *path)
 {
     HttpRoute   *route;
     MaState     *state;
-    cchar       *dir;
     int         rc;
 
     mprLog("info appweb", 2, "Using config file: \"%s\"", mprGetRelPath(path, 0));
 
     route = httpGetDefaultRoute(0);
-    dir = mprGetAbsPath(mprGetPathDir(path));
 
 #if UNUSED
+    cchar       *dir;
+    dir = mprGetAbsPath(mprGetPathDir(path));
     httpSetRouteHome(route, dir);
     httpSetRouteDocuments(route, dir);
     httpSetRouteVar(route, "LOG_DIR", ".");
