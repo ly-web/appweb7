@@ -1437,12 +1437,13 @@ PUBLIC void espAddRouteSet(HttpRoute *route, cchar *set);
 /**
     Load an ESP application
     @param route Parent route from which to inherit configuration.
+    @param prefix Optional URI prefix for all application URIs.
     @param path Pathname to the esp.json file.
     @returns Zero if successful, otherwise a negative MPR error code.
     @ingroup EspRoute
     @stability Prototype
  */
-PUBLIC int espLoadApp(HttpRoute *route, cchar *path);
+PUBLIC int espLoadApp(HttpRoute *route, cchar *prefix, cchar *path);
 
 /**
     Configure an ESP application

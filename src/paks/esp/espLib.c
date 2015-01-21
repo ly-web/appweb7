@@ -2577,17 +2577,33 @@ PUBLIC void scripts(cchar *patterns)
 
 /************************************** Code **********************************/
 
-static void loadApp(HttpRoute *route, cchar *pattern)
+static void loadApp(HttpRoute *parent, MprJson *prop)
 {
+    HttpRoute   *route;
     MprList     *files;
-    cchar       *path;
+    cchar       *config, *prefix;
     int         next;
 
-    files = mprGlobPathFiles(".", pattern, MPR_PATH_RELATIVE);
-    for (ITERATE_ITEMS(files, path, next)) {
-        if (espLoadApp(route, path) < 0) {
-            httpParseError(route, "Cannot define ESP application at: %s", path);
+    if (prop->type & MPR_JSON_OBJ) {
+        prefix = mprGetJson(prop, "prefix"); 
+        config = mprGetJson(prop, "config");
+        route = httpCreateInheritedRoute(parent);
+        if (espLoadApp(route, prefix, config) < 0) {
+            httpParseError(route, "Cannot define ESP application at: %s", config);
             return;
+        }
+        httpFinalizeRoute(route);
+
+    } else if (prop->type & MPR_JSON_STRING) {
+        files = mprGlobPathFiles(".", prop->value, MPR_PATH_RELATIVE);
+        for (ITERATE_ITEMS(files, config, next)) {
+            route = httpCreateInheritedRoute(parent);
+            prefix = mprGetPathBase(mprGetPathDir(mprGetAbsPath(config)));
+            if (espLoadApp(route, prefix, config) < 0) {
+                httpParseError(route, "Cannot define ESP application at: %s", config);
+                return;
+            }
+            httpFinalizeRoute(route);
         }
     }
 }       
@@ -2599,11 +2615,14 @@ static void parseApps(HttpRoute *route, cchar *key, MprJson *prop)
     int         ji;
 
     if (prop->type & MPR_JSON_STRING) {
-        loadApp(route, prop->value);
+        loadApp(route, prop);
 
-    } else {
+    } else if (prop->type & MPR_JSON_OBJ) {
+        loadApp(route, prop);
+        
+    } else if (prop->type & MPR_JSON_ARRAY) {
         for (ITERATE_CONFIG(route, prop, child, ji)) {
-            loadApp(route, child->value);
+            loadApp(route, child);
         }
     }
 }
@@ -5110,21 +5129,12 @@ static void manageEsp(Esp *esp, int flags)
 
 
 /*********************************** Directives *******************************/
-
-static cchar *testDir(HttpRoute *route, cchar *path)
-{
-    if (mprPathExists(mprJoinPath(route->home, path), X_OK)) {
-        return path;
-    }
-    return 0;
-}
-
+/*
+    Path is the path to the esp.json
+ */
 static int defineApp(HttpRoute *route, cchar *path)
 {
     EspRoute    *eroute;
-#if DEPRECATE || 1
-    cchar       *documents;
-#endif
 
     if ((eroute = espRoute(route)) == 0) {
         return MPR_ERR_MEMORY;
@@ -5135,29 +5145,15 @@ static int defineApp(HttpRoute *route, cchar *path)
             return MPR_ERR_CANT_FIND;
         }
         eroute->configFile = sclone(path);
-        httpSetRouteHome(route, mprGetPathBase(mprGetPathDir(path)));
+        httpSetRouteHome(route, mprGetPathDir(path));
     }
     espSetDefaultDirs(route);
 
-#if DEPRECATE || 1
-    if (testDir(route, "documents")) {
-        documents = "documents";
-    } else if (testDir(route, "client")) {
-        documents = "client";
-    } else if (testDir(route, "public")) {
-        documents = "public";
-    } else {
-        documents = 0;
-    }
-    if (documents) {
-        httpSetRouteDocuments(route, documents);
-    }
-#endif
     httpAddRouteHandler(route, "espHandler", "");
     httpAddRouteIndex(route, "index.esp");
     httpAddRouteIndex(route, "index.html");
     httpSetRouteXsrf(route, 1);
-    mprLog("info esp", 2, "Define ESP app at %s", path);
+    mprLog("info esp", 2, "Define ESP app from: %s", path);
     return 0;
 }
 
@@ -5176,9 +5172,13 @@ PUBLIC int espLoadConfig(HttpRoute *route)
     }
     eroute = route->eroute;
     package = mprJoinPath(mprGetPathDir(eroute->configFile), "package.json");
-    modified = 0;
-    ifConfigModified(route, eroute->configFile, &modified);
-    ifConfigModified(route, package, &modified);
+    if (route->loaded) {
+        modified = 0;
+        ifConfigModified(route, eroute->configFile, &modified);
+        ifConfigModified(route, package, &modified);
+    } else {
+        modified = 1;
+    }
     if (modified) {
         lock(esp);
         httpInitConfig(route);
@@ -5214,7 +5214,7 @@ PUBLIC int espLoadConfig(HttpRoute *route)
         }
     }
 #if !ME_STATIC
-    if (!(route->flags & HTTP_ROUTE_UTILITY)) {
+    if (!(route->flags & HTTP_ROUTE_NO_LISTEN)) {
         MprJson     *preload, *item;
         cchar       *errMsg, *source;
         char        *kind;
@@ -5258,8 +5258,23 @@ PUBLIC int espLoadConfig(HttpRoute *route)
 }
 
 
-PUBLIC int espLoadApp(HttpRoute *route, cchar *path)
+/*
+    Prefix is the URI prefix for the application
+    Path is the path to the esp.json
+ */
+PUBLIC int espLoadApp(HttpRoute *route, cchar *prefix, cchar *path)
 {
+    if (!route) {
+        return MPR_ERR_BAD_ARGS;
+    }
+    if (prefix) {
+        if (*prefix != '/') {
+            prefix = sjoin("/", prefix, NULL);
+        }
+        prefix = stemplate(prefix, route->vars);
+        httpSetRoutePrefix(route, prefix);
+        httpSetRoutePattern(route, sfmt("^%s.*$", prefix), 0);
+    }
     if (defineApp(route, path) < 0) {
         return MPR_ERR_CANT_LOAD;
     }
@@ -5307,10 +5322,10 @@ PUBLIC int espOpenDatabase(HttpRoute *route, cchar *spec)
 
 PUBLIC void espSetDefaultDirs(HttpRoute *route)
 {
-#if DEPRECATE || 1
     cchar   *documents;
 
     documents = mprJoinPath(route->home, "documents");
+#if DEPRECATE || 1
     if (!mprPathExists(documents, X_OK)) {
         documents = mprJoinPath(route->home, "client");
         if (!mprPathExists(documents, X_OK)) {
@@ -5319,6 +5334,10 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
                 documents = route->home;
             }
         }
+    }
+#else
+    } else {
+        documents = route->home;
     }
 #endif
     httpSetDir(route, "CACHE", 0);

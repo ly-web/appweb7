@@ -611,8 +611,8 @@ static void initialize(int argc, char **argv)
         app->version = sclone("0.0.1");
     }
     route = app->route;
-    if (argc > 0 && smatch(argv[1], "run")) {
-        route->flags |= HTTP_ROUTE_UTILITY;
+    if (argc <= 0 || !smatch(argv[1], "run")) {
+        route->flags |= HTTP_ROUTE_NO_LISTEN;
     }
     /*
         Read package.json first so esp.json can override
@@ -668,21 +668,15 @@ static void initialize(int argc, char **argv)
     }
     app->eroute = route->eroute;
 
-#if UNUSED
-    if (!(app->require & REQ_SERVE)) {
-        app->route->loaded = 1;
-        app->route->update = 0;
-    }
-#endif
     if (mprPathExists("esp.json", R_OK)) {
-        if (espLoadApp(route, "esp.json")) {
+        if (espLoadApp(route, 0, "esp.json")) {
             fail("Cannot define and load ESP app");
             return;
         }
 #if DEPRECATE || 1
     } else if (mprPathExists("package.json", R_OK)) {
         trace("Warn", "ESP configuration should be in %s instead of package.json", "esp.json");
-        if (espLoadApp(route, "package.json")) {
+        if (espLoadApp(route, 0, "package.json")) {
             fail("Cannot define and load ESP app");
             return;
         }

@@ -49,6 +49,9 @@ PUBLIC int maLoadModules(HttpRoute *route)
 #if ME_COM_PHP
     rc += maLoadModule("php", "libmod_php");
 #endif
+#if ME_COM_SSL
+    rc += maLoadModule("ssl", "libmod_ssl");
+#endif
 /*
     Demand load SSL as an optimization
  */
@@ -769,8 +772,8 @@ static int chrootDirective(MaState *state, cchar *key, cchar *value)
         mprLog("error appweb config", 0, "Cannot change working directory to %s", home);
         return MPR_ERR_CANT_OPEN;
     }
-    if (state->route->flags & HTTP_ROUTE_UTILITY) {
-        /* Not running a web server but rather a utility like the "esp" generator program */
+    if (state->route->flags & HTTP_ROUTE_NO_LISTEN) {
+        /* Not running a web server */
         mprLog("info appweb config", 2, "Change directory to: \"%s\"", home);
     } else {
         if (chroot(home) < 0) {
