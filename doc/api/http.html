@@ -1104,6 +1104,10 @@
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Route being hosted (appweb).</td></tr>
 <tr class="apiDef">
+<td>#define</td><td><a href="#http_8h_1a76d5118b6e04e39f1ad9d36c5dd76db9" class="nameRef">HTTP_ROUTE_NO_LISTEN</a>&nbsp;&nbsp;&nbsp;0x20000</td>
+</tr>
+<tr class="apiBrief"><td>&nbsp;</td><td>Not listening on endpoints.</td></tr>
+<tr class="apiDef">
 <td>#define</td><td><a href="#http_8h_1a30075653213e46ab54ed8a2c0ce6ccda" class="nameRef">HTTP_ROUTE_NOT</a>&nbsp;&nbsp;&nbsp;0x1</td>
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Negate the route pattern test result.</td></tr>
@@ -1155,10 +1159,6 @@
 <td>#define</td><td><a href="#http_8h_1a09a6b3f97218812081db0195d4d55c92" class="nameRef">HTTP_ROUTE_STRICT_TLS</a>&nbsp;&nbsp;&nbsp;0x8000</td>
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Emit Strict-Transport-Security header.</td></tr>
-<tr class="apiDef">
-<td>#define</td><td><a href="#http_8h_1a015fa4c2f5bb4572821b58e6fc588bfa" class="nameRef">HTTP_ROUTE_UTILITY</a>&nbsp;&nbsp;&nbsp;0x20000</td>
-</tr>
-<tr class="apiBrief"><td>&nbsp;</td><td>Not listening on endpoints.</td></tr>
 <tr class="apiDef">
 <td>#define</td><td><a href="#http_8h_1a0e4c1cb492859cb298d94c650853afb7" class="nameRef">HTTP_ROUTE_VISIBLE_SESSION</a>&nbsp;&nbsp;&nbsp;0x200</td>
 </tr>
@@ -7534,7 +7534,7 @@ Number of workers to use for this route.
     <dl><dt>Parameters:</dt><dd>
     <table class="parameters" title="Parameters">
     <tr><td class="param">route</td><td>Route to modify.</td>
-    <tr><td class="param">methods</td><td>Set to a comma or space separated list of methods. Can also set to &quot;All&quot; or &quot;*&quot; for all possible methods. Typical methods include: &quot;DELETE, GET, OPTIONS, POST, PUT, TRACE&quot;.</td>
+    <tr><td class="param">methods</td><td>Set to a comma or space separated list of methods. Can also set to &quot;All&quot; or &quot;*&quot; for all possible methods. Typical methods include: &quot;DELETE, GET, OPTIONS, POST, PUT, TRACE&quot;. Must be upper case.</td>
     </table></dd></dl>
     <dl><dt><b>API</b> Stability:</dt><dd>Evolving.</dd></dl>
     <dl><dt>See Also:</dt><dd>
