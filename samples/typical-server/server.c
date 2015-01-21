@@ -297,18 +297,18 @@ static int createEndpoints(int argc, char **argv)
     argind = 0;
 
     if (argc == 0) {
-        if (maParseConfig(app->configFile, 0) < 0) {
+        if (maParseConfig(app->configFile) < 0) {
             return MPR_ERR_CANT_CREATE;
         }
     } else {
         app->documents = sclone(argv[argind++]);
         if (argind == argc) {
-            if (maConfigureServer(NULL, app->home, app->documents, NULL, ME_HTTP_PORT, 0) < 0) {
+            if (maConfigureServer(NULL, app->home, app->documents, NULL, ME_HTTP_PORT) < 0) {
                 return MPR_ERR_CANT_CREATE;
             }
         } else while (argind < argc) {
             mprParseSocketAddress(argv[argind++], &ip, &port, &secure, 80);
-            if (maConfigureServer(NULL, app->home, app->documents, ip, port, 0) < 0) {
+            if (maConfigureServer(NULL, app->home, app->documents, ip, port) < 0) {
                 return MPR_ERR_CANT_CREATE;
             }
         }

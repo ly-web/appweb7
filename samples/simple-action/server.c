@@ -69,7 +69,7 @@ int main(int argc, char **argv, char **envp)
     }
     mprStart();
 
-    if (maParseConfig("appweb.conf", 0) < 0) {
+    if (maParseConfig("appweb.conf") < 0) {
         mprError("Cannot parse the config file %s", "appweb.conf");
         return -1;
     }
