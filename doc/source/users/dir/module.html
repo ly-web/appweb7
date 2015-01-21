@@ -29,8 +29,8 @@
                         <td class="pivot">Notes</td>
                         <td>
                             <p>The LoadModule directive causes the specified module to be loaded and its functionality
-                            made available to the default server and all virtual hosts.</p>
-                            <p>LoadModule directive will locate and dynamically load the module shared library and
+                            made available to the default server and all virtual hosts.
+                            LoadModule directive will locate and dynamically load the module shared library and
                             then activate it for processing.</p>
                             <p>The modulePath argument is the filename for the module without the extension. Appweb omits the
                             extension so that loading modules will work regardless of the platform specific module
@@ -51,6 +51,8 @@
                             <p>Handlers are modules that respond to HTTP requests and serve the response content
                             themselves. Pure modules are units of functionality that augment Appweb without directly
                             handling HTTP responses themselves.</p>
+                            <p>Appweb will automatically load the modules for built-in modules and handlers including:
+                                ESP, Ejscript, PHP, CGI and SSL if Appweb is built with support for those modules.</p>
                             <h3>Appweb supplied modules</h3>
                             <table title="cgi">
                                 <tbody>

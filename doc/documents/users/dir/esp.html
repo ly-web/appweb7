@@ -202,76 +202,30 @@
                     <tr>
                         <td class="pivot">Synopsis</td>
                         <td>EspApp <br/>
-                            &nbsp; &rarr; name=NAME <br/>
-                            &nbsp; &rarr; prefix=URI <br/>
-                            &nbsp; &rarr; [dir=PATH] <br/>
-                            &nbsp; &rarr; [routes=ROUTES] <br/>
-                            &nbsp; &rarr; [database=DATABASE]</td>
+                        or<br/>
+                        EspApp prefix=URI config=PATH</td>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
                         <td>Default server, Virtual host, Route</td>
                     </tr>
                     <tr>
-                        <td class="pivot">Example</td>
-                        <td>EspApp prefix="/myapp"" dir="/var/www/myapp" routes="restful" <br/>
-                        &nbsp; &rarr; database="mdb://myapp.mdb"</td>
+                        <td class="pivot">Examples</td>
+                        <td>EspApp /Users/guest/*/esp.json<br/>
+                            EspApp prefix="/demo"" dir="/var/www/demo/esp.json"<td/>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>
-                            <p>The EspApp directive defines an ESP application at the given directory that
-                            will receive all requests that begin with specified URI prefix. 
+                            <p>The EspApp directive defines an ESP application at the given directory.
                             This one-line directive is often all you need to do to define an ESP application.</p>
-                            <p>The EspApp directive can be used as a one liner or as an opening tag. For example:</p>
-                            <pre class="dir">EspApp name="blog" dir="./blog"</pre>
-                            <p>or</p>
-                            <pre class="dir">&lt;EspApp name="blog" dir="./blog"&gt;
-    # Other directives
-&lt;/EspApp&gt;</pre>
-                            <p>It is loosely equivalent to the following directive sequence:</p>
-                            <pre class="dir">
-&lt;Route UriPrefix&gt;
-    <a href="route.html#name">Name</a> UriPrefix
-    <a href="route.html#prefix">Prefix</a> UriPrefix
-    <a href="route.html#documentRoot">DocumentRoot</a> Directory
-    <a href="route.html#addHandler">AddHandler</a> espHandler
-    <a href="#espRouteSet">EspRouteSet</a> Routes
-    <a href="#espDb">EspDb</a> Database
-&lt;/Route&gt;
-</pre>
-                            <p>If the URI prefix for the EspApp directive is the same as the the prefix for the outer
-                            route, EspApp will use the existing route. Otherwise, it will create a new route for 
-                            the URI prefix. Sub-routes are created for the Routes argument.</p>
-                            <p>The Prefix argument is mandatory, all others are optional and will take default values
-                            if omitted.
-                            The Directory argument is used to define the Documents directory for the application. It 
-                            defaults to ".".</p>
-                            <p>The Routes argument specifies a set of routes to add for the applications. Permissable
-                                values for the Routes are: 
-                                <ul>
-                                    <li>esp-html-mvc &mdash; Adds a route set suitable for server-side MVC apps.</li>
-                                    <li>esp-angular-mvc &mdash; Adds a route set suitable for AngularJS MVC apps.
-                                    See <a href="#espResourceGroup">EspResourceGroup</a> for details on adding routes.</li>
-                                </ul>
-                            <p>It is convenient to define applications using this directive in a separate configuration
-                            file for each application. If the application config file is stored under the Appweb
-                            "conf/apps" directory, then Appweb will read it automatically when it starts. This makes it
-                            very easy to install or remove applications by simply adding or removing an application
-                            configuration file to or from this directory.</p>
-                            <p>The EspApp directive does the following actions:</p>
-                            <ul>
-                                <li>Creates a new Route block for the URI prefix if required.</li>
-                                <li>Adds the <b>esp</b> handler as the handler for the URI prefix. Note that
-                                    previously defined handlers such as the fileHandler will still match by extensions
-                                    such as <em>.html</em>.</li>
-                                <li>Defines the directories to use for the applications via 
-                                    <a href="#espDir">espDir</a>.</li>
-                                <li>Optionally creates a route set</li>
-                                <li>Optionally opens a database</li>
-                            </ul>
-                            <p>Note: use a trailing "/" on the prefix to prevent matching URIs that have the prefix
-                            as part of the first (non-directory) portion of their URI.</p>
+
+                            <p>If a prefix is defined, all requests that begin with that URI prefix will be routed to 
+                            the ESP application. If no prefix is given, the basename of the dirctory containing the 
+                            ESP application will be used as the prefix (with a leading "/"). </p>
+    
+                            <p>When the simple form is used (without prefix or dir arguments), the path may contain 
+                                wild cards to define multiple ESP applications.</p>
                         </td>
                     </tr>
                 </tbody>
