@@ -4512,12 +4512,10 @@ static void startEsp(HttpQueue *q)
 {
     HttpConn    *conn;
     HttpRx      *rx;
-    HttpRoute   *route;
     EspReq      *req;
 
     conn = q->conn;
     rx = conn->rx;
-    route = rx->route;
     req = conn->reqData;
 
     if (req) {
