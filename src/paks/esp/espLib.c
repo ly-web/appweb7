@@ -4513,19 +4513,18 @@ static void startEsp(HttpQueue *q)
     HttpConn    *conn;
     HttpRx      *rx;
     HttpRoute   *route;
-    EspRoute    *eroute;
     EspReq      *req;
 
     conn = q->conn;
     rx = conn->rx;
     route = rx->route;
-    eroute = route->eroute;
     req = conn->reqData;
 
     if (req) {
         mprSetThreadData(req->esp->local, conn);
         httpAuthenticate(conn);
         setupFlash(conn);
+#if UNUSED
         /*
             See if the esp configuration or app needs to be reloaded. (WARNING: GC yield)
          */
@@ -4533,6 +4532,7 @@ static void startEsp(HttpQueue *q)
             httpError(conn, HTTP_CODE_NOT_FOUND, "Cannot load esp config for %s", eroute->appName);
             return;
         }
+#endif
         /* WARNING: GC yield */
         if (!runAction(conn)) {
             pruneFlash(conn);
@@ -5167,18 +5167,15 @@ PUBLIC int espLoadConfig(HttpRoute *route)
     cchar       *package;
     bool        modified;
 
-    if (route->loaded && !route->update) {
+    eroute = route->eroute;
+    if (!route->update) {
         return 0;
     }
-    eroute = route->eroute;
     package = mprJoinPath(mprGetPathDir(eroute->configFile), "package.json");
-    if (route->loaded) {
-        modified = 0;
-        ifConfigModified(route, eroute->configFile, &modified);
-        ifConfigModified(route, package, &modified);
-    } else {
-        modified = 1;
-    }
+    modified = 0;
+    ifConfigModified(route, eroute->configFile, &modified);
+    ifConfigModified(route, package, &modified);
+
     if (modified) {
         lock(esp);
         httpInitConfig(route);
@@ -5253,7 +5250,6 @@ PUBLIC int espLoadConfig(HttpRoute *route)
         unlock(esp);
     }
 #endif
-    route->loaded = 1;
     return 0;
 }
 

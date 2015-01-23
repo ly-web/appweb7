@@ -1,5 +1,6 @@
 {
-    "name": "doc",
+    "name": "appwebdoc",
+    "title": "Appweb Documenation",
     "dependencies": {
         "exp-css": "~0.2",
         "exp-js": "~0.2",
