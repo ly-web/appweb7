@@ -5,7 +5,7 @@
 Me.load({
     targets: {
         api: {
-            depends: [ 'manpages' ],
+            depends: [ ],
             build: `
                 for each (file in Path('source/man').files('**')) {
                     file.copy('documents/man/' + file.basename)
