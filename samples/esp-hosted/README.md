@@ -1,4 +1,4 @@
-espapp Sample
+esp-hosted Sample
 ===
 
 This sample shows how to host an ESP application in Appweb.
@@ -12,9 +12,9 @@ This sample uses:
 Notes:
 * This application was generated via:
 
-    mkdir espapp
-    cd esppp
-    pak init
+    mkdir esp-hosted
+    cd esp-hosted
+    pak init espapp
     pak install esp-html-skeleton
     esp generate scaffold post title:string body:text
     expansive render
