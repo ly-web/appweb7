@@ -1046,7 +1046,8 @@ static int errorDocumentDirective(MaState *state, cchar *key, cchar *value)
 static int errorLogDirective(MaState *state, cchar *key, cchar *value)
 {
     MprTicks    stamp;
-    char        *option, *ovalue, *tok, *path;
+    cchar       *path;
+    char        *option, *ovalue, *tok;
     ssize       size;
     int         level, flags, backup;
 
@@ -1063,7 +1064,10 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
 
     for (option = maGetNextArg(sclone(value), &tok); option; option = maGetNextArg(tok, &tok)) {
         if (!path) {
-            path = mprJoinPath(httpGetRouteVar(state->route, "LOG_DIR"), httpExpandRouteVars(state->route, option));
+            if ((path = httpGetRouteVar(state->route, "LOG_DIR")) == 0) {
+                path = ".";
+            }
+            path = mprJoinPath(path, httpExpandRouteVars(state->route, option));
         } else {
             option = ssplit(option, " =\t,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);

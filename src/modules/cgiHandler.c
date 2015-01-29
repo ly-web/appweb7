@@ -638,6 +638,7 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
         indexQuery = 0;
     }
 
+#if UNUSED
 #if ME_WIN_LIKE || VXWORKS
 {
     char    *bangScript, *cmdBuf, *program, *cmdScript;
@@ -676,7 +677,6 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
         argv[argind++] = cmdBuf;
 
         mprSetCmdDir(cmd, cmdScript);
-        /*  program will get freed when argv[] gets freed */
         
     } else if (bangScript) {
         /*
@@ -688,8 +688,8 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
         argv = (char**) mprAlloc(len);
         memset(argv, 0, len);
 
-        argv[argind++] = program;       /* Will get freed when argv[] is freed */
-        argv[argind++] = bangScript;    /* Will get freed when argv[] is freed */
+        argv[argind++] = program;
+        argv[argind++] = bangScript;
         mprSetCmdDir(cmd, bangScript);
 
     } else {
@@ -705,7 +705,8 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
         argv[argind++] = program;
     }
 }
-#else
+#endif
+#endif
     len = (argc + 1) * sizeof(char*);
     argv = mprAlloc(len);
     memset(argv, 0, len);
@@ -713,9 +714,7 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
     if (actionProgram) {
         argv[argind++] = sclone(actionProgram);
     }
-    //  OPT - why clone all these string?
     argv[argind++] = sclone(fileName);
-#endif
     /*
         ISINDEX queries. Only valid if there is not a "=" in the query. If this is so, then we must not
         have these args in the query env also?
@@ -729,7 +728,6 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
             cp = stok(NULL, "+", &tok);
         }
     }
-    
     assert(argind <= argc);
     argv[argind] = 0;
     *argcp = argc;
@@ -742,6 +740,7 @@ static void buildArgs(HttpConn *conn, MprCmd *cmd, int *argcp, cchar ***argvp)
 }
 
 
+#if UNUSED
 #if ME_WIN_LIKE || VXWORKS
 /*
     If the program has a UNIX style "#!/program" string at the start of the file that program will be selected 
@@ -850,6 +849,7 @@ static void findExecutable(HttpConn *conn, char **program, char **script, char *
     }
     return;
 }
+#endif
 #endif
  
 

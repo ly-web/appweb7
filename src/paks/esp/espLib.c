@@ -2609,6 +2609,17 @@ static void loadApp(HttpRoute *parent, MprJson *prop)
 }       
 
 
+/*
+    esp: {
+        apps: 'myapp/esp.json',
+        apps: [
+            'apps/STAR/esp.json'
+        ],
+        apps: [
+            { prefix: '/blog', config: 'blog/esp.json' }
+        ],
+    }
+ */
 static void parseApps(HttpRoute *route, cchar *key, MprJson *prop)
 {
     MprJson     *child;
