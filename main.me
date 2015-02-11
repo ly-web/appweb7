@@ -3,7 +3,7 @@
  */
 
 Me.load({
-    plugins: [ 'configuration', 'package' ],
+    plugins: [ 'configuration', 'installs' ],
 
     blend: [
         'ejs',
@@ -15,12 +15,12 @@ Me.load({
         'src/server/server.me',
         'test/test.me',
         'samples/samples.me',
-        'package/package.me',
+        'installs/installs.me',
         'doc/doc.me',
         '?local.me',
     ],
 
-    modules: [ 'package/service.es' ],
+    modules: [ 'installs/service.es' ],
 
     configure: {
         requires:  [ 'osdep', 'http', 'mpr', 'pcre'],
@@ -43,8 +43,8 @@ Me.load({
         /*
             Installation prefix set
          */
-        prefixes: 'package-prefixes',
-        manifest: 'package/manifest.me',
+        prefixes: 'install-prefixes',
+        manifest: 'installs/manifest.me',
 
         /*
             Name and path of the appweb config file. Defaults to './appweb.conf' if empty.
@@ -111,6 +111,7 @@ Me.load({
             },
             ssl: {
                 renegotiate: true,          /* Enable/Disable SSL renegotiation (defaults to true) */
+                curve: "prime256v1",        /* OpenSSL elliptic curve name */
             },
         },
 
@@ -181,7 +182,7 @@ Me.load({
         /*
             See src/server/server.me for the appweb targets
             See src/libappweb.me for the appweb library target
-            See package/package.me for the install/package targets
+            See installs/installs.me for the install targets
          */
         projects: {
             action: `genProjects('-with openssl')`,
