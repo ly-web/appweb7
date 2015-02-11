@@ -9,7 +9,7 @@
         "http",
         "webserver"
     ],
-    "homepage": "http://embedthis.com/products/appweb/embedded-web-server.html",
+    "homepage": "https://embedthis.com/appweb/",
     "author": {
         "name": "Embedthis Software",
         "email": "dev@embedthis.com",
@@ -33,9 +33,6 @@
             "url": "http://embedthis.com/licensing/"
         }
     ],
-    "directories": {
-        "paks": "src/paks"
-    },
     "dependencies": {
         "ejs": "~2.3",
         "esp": "~4.6",
@@ -55,21 +52,12 @@
     "optionalDependencies": {
         "php": "~0.8"
     },
-    "app": {
-        "esp": {
-            "noblend": true
-        },
-        "esp-html-mvc": {
-            "noblend": true,
-            "noexport": true
-        },
-        "esp-mvc": {
-            "noblend": true,
-            "noexport": true
-        },
-        "esp-server": {
-            "noblend": true,
-            "noexport": true
-        }
+    "files": [
+        "dist/",
+        "doc/api/"
+    ],
+    "pak": {
+        "import": true,
+        "version": ">=0.10"
     }
 }
