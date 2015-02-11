@@ -103,13 +103,13 @@ if not exist "$(IncDir)\me.h" copy "..\appweb-windows-static-me.h" "$(IncDir)\me
 copy /Y /B ..\..\src\appweb.h $(IncDir)
 copy /Y /B ..\..\src\server\windows\appwebMonitor.h $(IncDir)
 copy /Y /B ..\..\src\customize.h $(IncDir)
-copy /Y /B ..\..\src\paks\esp\esp.h $(IncDir)
-copy /Y /B ..\..\src\paks\est\est.h $(IncDir)
-copy /Y /B ..\..\src\paks\http\http.h $(IncDir)
+copy /Y /B ..\..\paks\esp\dist\esp.h $(IncDir)
+copy /Y /B ..\..\paks\est\dist\est.h $(IncDir)
+copy /Y /B ..\..\paks\http\dist\http.h $(IncDir)
 copy /Y /B ..\..\src\server\windows\monitorResources.h $(IncDir)
-copy /Y /B ..\..\src\paks\mpr\mpr.h $(IncDir)
-copy /Y /B ..\..\src\paks\osdep\osdep.h $(IncDir)
-copy /Y /B ..\..\src\paks\pcre\pcre.h $(IncDir)
+copy /Y /B ..\..\paks\mpr\dist\mpr.h $(IncDir)
+copy /Y /B ..\..\paks\osdep\dist\osdep.h $(IncDir)
+copy /Y /B ..\..\paks\pcre\dist\pcre.h $(IncDir)
 cd .</Command>
         <Outputs>always</Outputs>
       </CustomBuildStep>

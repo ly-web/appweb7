@@ -233,36 +233,36 @@ $(BUILD)/inc/me.h: $(DEPS_1)
 #
 #   osdep.h
 #
-DEPS_2 += src/paks/osdep/osdep.h
+DEPS_2 += paks/osdep/dist/osdep.h
 DEPS_2 += $(BUILD)/inc/me.h
 
 $(BUILD)/inc/osdep.h: $(DEPS_2)
 	@echo '      [Copy] $(BUILD)/inc/osdep.h'
 	mkdir -p "$(BUILD)/inc"
-	cp src/paks/osdep/osdep.h $(BUILD)/inc/osdep.h
+	cp paks/osdep/dist/osdep.h $(BUILD)/inc/osdep.h
 
 #
 #   mpr.h
 #
-DEPS_3 += src/paks/mpr/mpr.h
+DEPS_3 += paks/mpr/dist/mpr.h
 DEPS_3 += $(BUILD)/inc/me.h
 DEPS_3 += $(BUILD)/inc/osdep.h
 
 $(BUILD)/inc/mpr.h: $(DEPS_3)
 	@echo '      [Copy] $(BUILD)/inc/mpr.h'
 	mkdir -p "$(BUILD)/inc"
-	cp src/paks/mpr/mpr.h $(BUILD)/inc/mpr.h
+	cp paks/mpr/dist/mpr.h $(BUILD)/inc/mpr.h
 
 #
 #   http.h
 #
-DEPS_4 += src/paks/http/http.h
+DEPS_4 += paks/http/dist/http.h
 DEPS_4 += $(BUILD)/inc/mpr.h
 
 $(BUILD)/inc/http.h: $(DEPS_4)
 	@echo '      [Copy] $(BUILD)/inc/http.h'
 	mkdir -p "$(BUILD)/inc"
-	cp src/paks/http/http.h $(BUILD)/inc/http.h
+	cp paks/http/dist/http.h $(BUILD)/inc/http.h
 
 #
 #   customize.h
@@ -297,37 +297,37 @@ $(BUILD)/inc/customize.h: $(DEPS_7)
 #
 #   ejs.h
 #
-DEPS_8 += src/paks/ejs/ejs.h
+DEPS_8 += paks/ejs/dist/ejs.h
 
 $(BUILD)/inc/ejs.h: $(DEPS_8)
 	@echo '      [Copy] $(BUILD)/inc/ejs.h'
 	mkdir -p "$(BUILD)/inc"
-	cp src/paks/ejs/ejs.h $(BUILD)/inc/ejs.h
+	cp paks/ejs/dist/ejs.h $(BUILD)/inc/ejs.h
 
 #
 #   ejs.slots.h
 #
-DEPS_9 += src/paks/ejs/ejs.slots.h
+DEPS_9 += paks/ejs/dist/ejs.slots.h
 
 $(BUILD)/inc/ejs.slots.h: $(DEPS_9)
 	@echo '      [Copy] $(BUILD)/inc/ejs.slots.h'
 	mkdir -p "$(BUILD)/inc"
-	cp src/paks/ejs/ejs.slots.h $(BUILD)/inc/ejs.slots.h
+	cp paks/ejs/dist/ejs.slots.h $(BUILD)/inc/ejs.slots.h
 
 #
 #   ejsByteGoto.h
 #
-DEPS_10 += src/paks/ejs/ejsByteGoto.h
+DEPS_10 += paks/ejs/dist/ejsByteGoto.h
 
 $(BUILD)/inc/ejsByteGoto.h: $(DEPS_10)
 	@echo '      [Copy] $(BUILD)/inc/ejsByteGoto.h'
 	mkdir -p "$(BUILD)/inc"
-	cp src/paks/ejs/ejsByteGoto.h $(BUILD)/inc/ejsByteGoto.h
+	cp paks/ejs/dist/ejsByteGoto.h $(BUILD)/inc/ejsByteGoto.h
 
 #
 #   esp.h
 #
-DEPS_11 += src/paks/esp/esp.h
+DEPS_11 += paks/esp/dist/esp.h
 DEPS_11 += $(BUILD)/inc/me.h
 DEPS_11 += $(BUILD)/inc/osdep.h
 DEPS_11 += $(BUILD)/inc/http.h
@@ -335,37 +335,37 @@ DEPS_11 += $(BUILD)/inc/http.h
 $(BUILD)/inc/esp.h: $(DEPS_11)
 	@echo '      [Copy] $(BUILD)/inc/esp.h'
 	mkdir -p "$(BUILD)/inc"
-	cp src/paks/esp/esp.h $(BUILD)/inc/esp.h
+	cp paks/esp/dist/esp.h $(BUILD)/inc/esp.h
 
 #
 #   pcre.h
 #
-DEPS_12 += src/paks/pcre/pcre.h
+DEPS_12 += paks/pcre/dist/pcre.h
 
 $(BUILD)/inc/pcre.h: $(DEPS_12)
 	@echo '      [Copy] $(BUILD)/inc/pcre.h'
 	mkdir -p "$(BUILD)/inc"
-	cp src/paks/pcre/pcre.h $(BUILD)/inc/pcre.h
+	cp paks/pcre/dist/pcre.h $(BUILD)/inc/pcre.h
 
 #
 #   sqlite3.h
 #
-DEPS_13 += src/paks/sqlite/sqlite3.h
+DEPS_13 += paks/sqlite/dist/sqlite3.h
 
 $(BUILD)/inc/sqlite3.h: $(DEPS_13)
 	@echo '      [Copy] $(BUILD)/inc/sqlite3.h'
 	mkdir -p "$(BUILD)/inc"
-	cp src/paks/sqlite/sqlite3.h $(BUILD)/inc/sqlite3.h
+	cp paks/sqlite/dist/sqlite3.h $(BUILD)/inc/sqlite3.h
 
 #
 #   zlib.h
 #
-DEPS_14 += src/paks/zlib/zlib.h
+DEPS_14 += paks/zlib/dist/zlib.h
 
 $(BUILD)/inc/zlib.h: $(DEPS_14)
 	@echo '      [Copy] $(BUILD)/inc/zlib.h'
 	mkdir -p "$(BUILD)/inc"
-	cp src/paks/zlib/zlib.h $(BUILD)/inc/zlib.h
+	cp paks/zlib/dist/zlib.h $(BUILD)/inc/zlib.h
 
 #
 #   appweb.o
@@ -437,17 +437,17 @@ $(BUILD)/obj/convenience.o: \
 #   ejs.h
 #
 
-src/paks/ejs/ejs.h: $(DEPS_22)
+paks/ejs/dist/ejs.h: $(DEPS_22)
 
 #
 #   ejs.o
 #
-DEPS_23 += src/paks/ejs/ejs.h
+DEPS_23 += paks/ejs/dist/ejs.h
 
 $(BUILD)/obj/ejs.o: \
-    src/paks/ejs/ejs.c $(DEPS_23)
+    paks/ejs/dist/ejs.c $(DEPS_23)
 	@echo '   [Compile] $(BUILD)/obj/ejs.o'
-	$(CC) -c -o $(BUILD)/obj/ejs.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/paks/ejs/ejs.c
+	$(CC) -c -o $(BUILD)/obj/ejs.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" paks/ejs/dist/ejs.c
 
 #
 #   ejsHandler.o
@@ -462,41 +462,41 @@ $(BUILD)/obj/ejsHandler.o: \
 #
 #   ejsLib.o
 #
-DEPS_25 += src/paks/ejs/ejs.h
+DEPS_25 += paks/ejs/dist/ejs.h
 DEPS_25 += $(BUILD)/inc/mpr.h
 DEPS_25 += $(BUILD)/inc/pcre.h
 DEPS_25 += $(BUILD)/inc/me.h
 
 $(BUILD)/obj/ejsLib.o: \
-    src/paks/ejs/ejsLib.c $(DEPS_25)
+    paks/ejs/dist/ejsLib.c $(DEPS_25)
 	@echo '   [Compile] $(BUILD)/obj/ejsLib.o'
-	$(CC) -c -o $(BUILD)/obj/ejsLib.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/paks/ejs/ejsLib.c
+	$(CC) -c -o $(BUILD)/obj/ejsLib.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" paks/ejs/dist/ejsLib.c
 
 #
 #   ejsc.o
 #
-DEPS_26 += src/paks/ejs/ejs.h
+DEPS_26 += paks/ejs/dist/ejs.h
 
 $(BUILD)/obj/ejsc.o: \
-    src/paks/ejs/ejsc.c $(DEPS_26)
+    paks/ejs/dist/ejsc.c $(DEPS_26)
 	@echo '   [Compile] $(BUILD)/obj/ejsc.o'
-	$(CC) -c -o $(BUILD)/obj/ejsc.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/paks/ejs/ejsc.c
+	$(CC) -c -o $(BUILD)/obj/ejsc.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" paks/ejs/dist/ejsc.c
 
 #
 #   esp.h
 #
 
-src/paks/esp/esp.h: $(DEPS_27)
+paks/esp/dist/esp.h: $(DEPS_27)
 
 #
 #   esp.o
 #
-DEPS_28 += src/paks/esp/esp.h
+DEPS_28 += paks/esp/dist/esp.h
 
 $(BUILD)/obj/esp.o: \
-    src/paks/esp/esp.c $(DEPS_28)
+    paks/esp/dist/esp.c $(DEPS_28)
 	@echo '   [Compile] $(BUILD)/obj/esp.o'
-	$(CC) -c -o $(BUILD)/obj/esp.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/paks/esp/esp.c
+	$(CC) -c -o $(BUILD)/obj/esp.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" paks/esp/dist/esp.c
 
 #
 #   espHandler.o
@@ -512,103 +512,103 @@ $(BUILD)/obj/espHandler.o: \
 #
 #   espLib.o
 #
-DEPS_30 += src/paks/esp/esp.h
+DEPS_30 += paks/esp/dist/esp.h
 DEPS_30 += $(BUILD)/inc/pcre.h
 DEPS_30 += $(BUILD)/inc/http.h
 
 $(BUILD)/obj/espLib.o: \
-    src/paks/esp/espLib.c $(DEPS_30)
+    paks/esp/dist/espLib.c $(DEPS_30)
 	@echo '   [Compile] $(BUILD)/obj/espLib.o'
-	$(CC) -c -o $(BUILD)/obj/espLib.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/paks/esp/espLib.c
+	$(CC) -c -o $(BUILD)/obj/espLib.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" paks/esp/dist/espLib.c
 
 #
 #   http.h
 #
 
-src/paks/http/http.h: $(DEPS_31)
+paks/http/dist/http.h: $(DEPS_31)
 
 #
 #   http.o
 #
-DEPS_32 += src/paks/http/http.h
+DEPS_32 += paks/http/dist/http.h
 
 $(BUILD)/obj/http.o: \
-    src/paks/http/http.c $(DEPS_32)
+    paks/http/dist/http.c $(DEPS_32)
 	@echo '   [Compile] $(BUILD)/obj/http.o'
-	$(CC) -c -o $(BUILD)/obj/http.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/paks/http/http.c
+	$(CC) -c -o $(BUILD)/obj/http.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" paks/http/dist/http.c
 
 #
 #   httpLib.o
 #
-DEPS_33 += src/paks/http/http.h
+DEPS_33 += paks/http/dist/http.h
 
 $(BUILD)/obj/httpLib.o: \
-    src/paks/http/httpLib.c $(DEPS_33)
+    paks/http/dist/httpLib.c $(DEPS_33)
 	@echo '   [Compile] $(BUILD)/obj/httpLib.o'
-	$(CC) -c -o $(BUILD)/obj/httpLib.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/paks/http/httpLib.c
+	$(CC) -c -o $(BUILD)/obj/httpLib.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" paks/http/dist/httpLib.c
 
 #
 #   mpr.h
 #
 
-src/paks/mpr/mpr.h: $(DEPS_34)
+paks/mpr/dist/mpr.h: $(DEPS_34)
 
 #
 #   makerom.o
 #
-DEPS_35 += src/paks/mpr/mpr.h
+DEPS_35 += paks/mpr/dist/mpr.h
 
 $(BUILD)/obj/makerom.o: \
-    src/paks/mpr/makerom.c $(DEPS_35)
+    paks/mpr/dist/makerom.c $(DEPS_35)
 	@echo '   [Compile] $(BUILD)/obj/makerom.o'
-	$(CC) -c -o $(BUILD)/obj/makerom.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/paks/mpr/makerom.c
+	$(CC) -c -o $(BUILD)/obj/makerom.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" paks/mpr/dist/makerom.c
 
 #
 #   manager.o
 #
-DEPS_36 += src/paks/mpr/mpr.h
+DEPS_36 += paks/mpr/dist/mpr.h
 
 $(BUILD)/obj/manager.o: \
-    src/paks/mpr/manager.c $(DEPS_36)
+    paks/mpr/dist/manager.c $(DEPS_36)
 	@echo '   [Compile] $(BUILD)/obj/manager.o'
-	$(CC) -c -o $(BUILD)/obj/manager.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/paks/mpr/manager.c
+	$(CC) -c -o $(BUILD)/obj/manager.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" paks/mpr/dist/manager.c
 
 #
 #   mprLib.o
 #
-DEPS_37 += src/paks/mpr/mpr.h
+DEPS_37 += paks/mpr/dist/mpr.h
 
 $(BUILD)/obj/mprLib.o: \
-    src/paks/mpr/mprLib.c $(DEPS_37)
+    paks/mpr/dist/mprLib.c $(DEPS_37)
 	@echo '   [Compile] $(BUILD)/obj/mprLib.o'
-	$(CC) -c -o $(BUILD)/obj/mprLib.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/paks/mpr/mprLib.c
+	$(CC) -c -o $(BUILD)/obj/mprLib.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" paks/mpr/dist/mprLib.c
 
 #
 #   mprSsl.o
 #
-DEPS_38 += src/paks/mpr/mpr.h
+DEPS_38 += paks/mpr/dist/mpr.h
 
 $(BUILD)/obj/mprSsl.o: \
-    src/paks/mpr/mprSsl.c $(DEPS_38)
+    paks/mpr/dist/mprSsl.c $(DEPS_38)
 	@echo '   [Compile] $(BUILD)/obj/mprSsl.o'
-	$(CC) -c -o $(BUILD)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_OPENSSL_PATH)/include" src/paks/mpr/mprSsl.c
+	$(CC) -c -o $(BUILD)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_OPENSSL_PATH)/include" paks/mpr/dist/mprSsl.c
 
 #
 #   pcre.h
 #
 
-src/paks/pcre/pcre.h: $(DEPS_39)
+paks/pcre/dist/pcre.h: $(DEPS_39)
 
 #
 #   pcre.o
 #
 DEPS_40 += $(BUILD)/inc/me.h
-DEPS_40 += src/paks/pcre/pcre.h
+DEPS_40 += paks/pcre/dist/pcre.h
 
 $(BUILD)/obj/pcre.o: \
-    src/paks/pcre/pcre.c $(DEPS_40)
+    paks/pcre/dist/pcre.c $(DEPS_40)
 	@echo '   [Compile] $(BUILD)/obj/pcre.o'
-	$(CC) -c -o $(BUILD)/obj/pcre.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/paks/pcre/pcre.c
+	$(CC) -c -o $(BUILD)/obj/pcre.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" paks/pcre/dist/pcre.c
 
 #
 #   phpHandler.o
@@ -635,29 +635,29 @@ $(BUILD)/obj/slink.o: \
 #   sqlite3.h
 #
 
-src/paks/sqlite/sqlite3.h: $(DEPS_43)
+paks/sqlite/dist/sqlite3.h: $(DEPS_43)
 
 #
 #   sqlite.o
 #
 DEPS_44 += $(BUILD)/inc/me.h
-DEPS_44 += src/paks/sqlite/sqlite3.h
+DEPS_44 += paks/sqlite/dist/sqlite3.h
 
 $(BUILD)/obj/sqlite.o: \
-    src/paks/sqlite/sqlite.c $(DEPS_44)
+    paks/sqlite/dist/sqlite.c $(DEPS_44)
 	@echo '   [Compile] $(BUILD)/obj/sqlite.o'
-	$(CC) -c -o $(BUILD)/obj/sqlite.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/paks/sqlite/sqlite.c
+	$(CC) -c -o $(BUILD)/obj/sqlite.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" paks/sqlite/dist/sqlite.c
 
 #
 #   sqlite3.o
 #
 DEPS_45 += $(BUILD)/inc/me.h
-DEPS_45 += src/paks/sqlite/sqlite3.h
+DEPS_45 += paks/sqlite/dist/sqlite3.h
 
 $(BUILD)/obj/sqlite3.o: \
-    src/paks/sqlite/sqlite3.c $(DEPS_45)
+    paks/sqlite/dist/sqlite3.c $(DEPS_45)
 	@echo '   [Compile] $(BUILD)/obj/sqlite3.o'
-	$(CC) -c -o $(BUILD)/obj/sqlite3.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/paks/sqlite/sqlite3.c
+	$(CC) -c -o $(BUILD)/obj/sqlite3.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" paks/sqlite/dist/sqlite3.c
 
 #
 #   sslModule.o
@@ -673,18 +673,18 @@ $(BUILD)/obj/sslModule.o: \
 #   zlib.h
 #
 
-src/paks/zlib/zlib.h: $(DEPS_47)
+paks/zlib/dist/zlib.h: $(DEPS_47)
 
 #
 #   zlib.o
 #
 DEPS_48 += $(BUILD)/inc/me.h
-DEPS_48 += src/paks/zlib/zlib.h
+DEPS_48 += paks/zlib/dist/zlib.h
 
 $(BUILD)/obj/zlib.o: \
-    src/paks/zlib/zlib.c $(DEPS_48)
+    paks/zlib/dist/zlib.c $(DEPS_48)
 	@echo '   [Compile] $(BUILD)/obj/zlib.o'
-	$(CC) -c -o $(BUILD)/obj/zlib.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/paks/zlib/zlib.c
+	$(CC) -c -o $(BUILD)/obj/zlib.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" paks/zlib/dist/zlib.c
 
 #
 #   libmpr
@@ -823,12 +823,12 @@ ifeq ($(ME_COM_EJS),1)
 #
 #   ejs.mod
 #
-DEPS_59 += src/paks/ejs/ejs.es
+DEPS_59 += paks/ejs/dist/ejs.es
 DEPS_59 += $(BUILD)/bin/ejsc.out
 
 $(BUILD)/bin/ejs.mod: $(DEPS_59)
 	( \
-	cd src/paks/ejs; \
+	cd paks/ejs/dist; \
 	echo '   [Compile] ejs.mod' ; \
 	../../../$(BUILD)/bin/ejsc --out ../../../$(BUILD)/bin/ejs.mod --optimize 9 --bind --require null ejs.es ; \
 	)
@@ -850,12 +850,12 @@ ifeq ($(ME_COM_ESP),1)
 #
 #   esp-compile.json
 #
-DEPS_61 += src/paks/esp/esp-compile.json
+DEPS_61 += paks/esp/dist/esp-compile.json
 
 $(BUILD)/bin/esp-compile.json: $(DEPS_61)
 	@echo '      [Copy] $(BUILD)/bin/esp-compile.json'
 	mkdir -p "$(BUILD)/bin"
-	cp src/paks/esp/esp-compile.json $(BUILD)/bin/esp-compile.json
+	cp paks/esp/dist/esp-compile.json $(BUILD)/bin/esp-compile.json
 endif
 
 ifeq ($(ME_COM_ESP),1)
@@ -902,12 +902,12 @@ endif
 #
 #   http-ca-crt
 #
-DEPS_65 += src/paks/http/ca.crt
+DEPS_65 += paks/http/dist/ca.crt
 
 $(BUILD)/bin/ca.crt: $(DEPS_65)
 	@echo '      [Copy] $(BUILD)/bin/ca.crt'
 	mkdir -p "$(BUILD)/bin"
-	cp src/paks/http/ca.crt $(BUILD)/bin/ca.crt
+	cp paks/http/dist/ca.crt $(BUILD)/bin/ca.crt
 
 ifeq ($(ME_COM_HTTP),1)
 #
@@ -1092,7 +1092,7 @@ run: $(DEPS_79)
 
 uninstall: $(DEPS_80)
 	( \
-	cd package; \
+	cd installs; \
 	rm -f "$(ME_VAPP_PREFIX)/appweb.conf" ; \
 	rm -f "$(ME_VAPP_PREFIX)/esp.conf" ; \
 	rm -f "$(ME_VAPP_PREFIX)/mine.types" ; \

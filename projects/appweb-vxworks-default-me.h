@@ -142,7 +142,7 @@
     #define ME_INTEGRATE 1
 #endif
 #ifndef ME_MANIFEST
-    #define ME_MANIFEST "package/manifest.me"
+    #define ME_MANIFEST "installs/manifest.me"
 #endif
 #ifndef ME_ME
     #define ME_ME "=>0.8.4"
@@ -152,6 +152,9 @@
 #endif
 #ifndef ME_MPR_MANAGER
     #define ME_MPR_MANAGER "appman"
+#endif
+#ifndef ME_MPR_SSL_CURVE
+    #define ME_MPR_SSL_CURVE "prime256v1"
 #endif
 #ifndef ME_MPR_SSL_RENEGOTIATE
     #define ME_MPR_SSL_RENEGOTIATE 1
@@ -163,7 +166,7 @@
     #define ME_PLATFORMS "local"
 #endif
 #ifndef ME_PREFIXES
-    #define ME_PREFIXES "package-prefixes"
+    #define ME_PREFIXES "install-prefixes"
 #endif
 #ifndef ME_SERVER_ROOT
     #define ME_SERVER_ROOT "."

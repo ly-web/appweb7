@@ -95,7 +95,7 @@
       </Link>
 
       <CustomBuildStep>
-        <Command>cd ..\..\src\paks\esp
+        <Command>cd ..\..\paks\esp\dist
 if exist $(BinDir)\esp-compile.json del /Q $(BinDir)\esp-compile.json
 copy /Y esp-compile.json $(BinDir)\esp-compile.json
 cd ..\..\..\projects\appweb-windows-static</Command>
