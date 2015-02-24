@@ -3,11 +3,6 @@
         url:   'https://embedthis.com/appweb/doc',
     },
     control: {
-        copy: [ 'images' ],
-        collections: {
-            styles: [
-                'css/all.css',
-            ]
-        }
+        copy: 'images'
     }
 }
