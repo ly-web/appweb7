@@ -101,7 +101,7 @@ Me.load({
             type: 'test',
             action: `
                 require embedthis.me
-                let package = Package()
+                let package = Installs()
                 let pname = package.packageName()
                 if (!pname || !pname.exists) {
                     trace('Test', 'testPackage -- SKIPPED (Missing package to install)')

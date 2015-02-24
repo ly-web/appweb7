@@ -12,10 +12,10 @@ ttrue(http.response.contains("Please Login"))
 let securityToken = http.header("X-XSRF-TOKEN")
 let cookie = http.header("Set-Cookie")
 if (cookie) {
-    cookie = cookie.match(/(-http-session-=.*);/)[1]
+    cookie = cookie.match(/(esp-app=.*);/)[1]
 }
 
-ttrue(cookie && cookie.contains("-http-session-="))
+ttrue(cookie && cookie.contains("esp-app="))
 http.reset()
 
 //  POST /session/login
@@ -30,7 +30,7 @@ ttrue(http.status == 200)
 ttrue(http.response.contains("Valid Login"))
 if (http.header("Set-Cookie")) {
     cookie = http.header("Set-Cookie");
-    cookie = cookie.match(/(-http-session-=.*);/)[1]
+    cookie = cookie.match(/(esp-app=.*);/)[1]
 }
 http.reset()
 
