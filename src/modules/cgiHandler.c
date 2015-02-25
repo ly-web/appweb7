@@ -266,7 +266,6 @@ static void browserToCgiService(HttpQueue *q)
     }
     assert(q == cgi->writeq);
     cmd = cgi->cmd;
-    assert(cmd);
     conn = cgi->conn;
 
     for (packet = httpGetPacket(q); packet; packet = httpGetPacket(q)) {
@@ -274,35 +273,39 @@ static void browserToCgiService(HttpQueue *q)
             /* End packet */
             continue;
         }
-        len = mprGetBufLength(buf);
-        rc = mprWriteCmd(cmd, MPR_CMD_STDIN, mprGetBufStart(buf), len);
-        if (rc < 0) {
-            err = mprGetError();
-            if (err == EINTR) {
-                continue;
-            } else if (err == EAGAIN || err == EWOULDBLOCK) {
+        if (cmd) {
+            len = mprGetBufLength(buf);
+            rc = mprWriteCmd(cmd, MPR_CMD_STDIN, mprGetBufStart(buf), len);
+            if (rc < 0) {
+                err = mprGetError();
+                if (err == EINTR) {
+                    continue;
+                } else if (err == EAGAIN || err == EWOULDBLOCK) {
+                    httpPutBackPacket(q, packet);
+                    break;
+                }
+                httpTrace(conn, "cgi.error", "error", "msg=\"Cannot write to CGI gateway\", errno=%d", mprGetOsError());
+                mprCloseCmdFd(cmd, MPR_CMD_STDIN);
+                httpDiscardQueueData(q, 1);
+                httpError(conn, HTTP_CODE_BAD_GATEWAY, "Cannot write body data to CGI gateway");
+                break;
+            }
+            mprAdjustBufStart(buf, rc);
+            if (mprGetBufLength(buf) > 0) {
                 httpPutBackPacket(q, packet);
                 break;
             }
-            httpTrace(conn, "cgi.error", "error", "msg=\"Cannot write to CGI gateway\", errno=%d", mprGetOsError());
-            mprCloseCmdFd(cmd, MPR_CMD_STDIN);
-            httpDiscardQueueData(q, 1);
-            httpError(conn, HTTP_CODE_BAD_GATEWAY, "Cannot write body data to CGI gateway");
-            break;
-        }
-        mprAdjustBufStart(buf, rc);
-        if (mprGetBufLength(buf) > 0) {
-            httpPutBackPacket(q, packet);
-            break;
         }
     }
-    if (q->count > 0) {
-        /* Wait for writable event so cgiCallback can recall this routine */
-        mprEnableCmdEvents(cmd, MPR_CMD_STDIN);
-    } else if (conn->rx->eof) {
-        mprCloseCmdFd(cmd, MPR_CMD_STDIN);
-    } else {
-        mprDisableCmdEvents(cmd, MPR_CMD_STDIN);
+    if (cmd) {
+        if (q->count > 0) {
+            /* Wait for writable event so cgiCallback can recall this routine */
+            mprEnableCmdEvents(cmd, MPR_CMD_STDIN);
+        } else if (conn->rx->eof) {
+            mprCloseCmdFd(cmd, MPR_CMD_STDIN);
+        } else {
+            mprDisableCmdEvents(cmd, MPR_CMD_STDIN);
+        }
     }
 }
 
