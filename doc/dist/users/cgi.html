@@ -7,13 +7,13 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <meta name="keywords" content="undefined" />
     <meta name="description" content="CGI" />
     <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
         rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Julius+Sans+One' rel='stylesheet' type='text/css'>
     <link href="../images/favicon.ico" rel="shortcut icon" />
-    <link href="../semantic-ui/semantic.min.css" rel="stylesheet" type="text/css" />
+    <link href="../semantic-ui/semantic.css" rel="stylesheet" type="text/css" />
+    <link href="../semantic-ui/semantic.css" rel="stylesheet" type="text/css" />
     <link href="../css/all.css" rel="stylesheet" type="text/css" />
     
 
@@ -212,26 +212,26 @@
             <h3>Invoking by URI Prefix</h3>
             <p>Appweb nominates a directory as a CGI directory via the <a href=
             "dir/server.html#scriptAlias">ScriptAlias</a> configuration file directive. For example:</p>
-<pre>
+<pre class="ui code segment">
 ScriptAlias /cgi-bin/ $ROUTE_HOME/cgi-bin/ 
 </pre>
             <p>The ScriptAlias directive above is short hand for:
-<pre>
-&lt;Route /cgi-bin/&gt;
+<pre class="ui code segment">
+&lt;Route ^/cgi-bin/(.*)$&gt;
     Documents $ROUTE_HOME/cgi-bin/
     SetHandler cgiHandler
-    Target run
+    Target run $1
 &lt;/Route&gt;
 </pre>
             <p>When a URI is requested by a browser that includes the "<em>/cgi-bin/</em>" prefix, the 
             script name immediately after "/cgi-bin/" will be run. For example:</p>
-<pre>
+<pre class="ui code segment">
 http://www.embedthis.com/cgi-bin/testCgi
 </pre>
             <h3>Invoking by URI Extension</h3>
             <p>To configure Appweb to run CGI programs based on the URI extension use the <a href=
             "dir/route.html#addHandler">AddHandler</a> configuration file directive. For example:</p>
-            <pre>
+            <pre class="ui code segment">
 AddHandler cgiHandler .myExt
 </pre>
             <p>This configures Appweb to pass URIs that contain the ".myExt extension to the CGI handler.</p>
@@ -239,12 +239,12 @@ AddHandler cgiHandler .myExt
             <p>To determine which program the CGI handler should run, the CGI handler looks up the mime type associated
             with the ".myExt" extension. Mime types are read by Appweb from the "mime.types" file at startup. This file
             maps extensions to mime types. This is an example line from the "mime.types" file:</p>
-            <pre>
+            <pre class="ui code segment">
 application/x-appweb-perl myExt
 </pre>
             <p>This maps the ".myExt" extension to the perl mime type. This mime type must then be mapped to a program
             via the the <a href="dir/server.html#action">Action</a> directive. For example:</p>
-            <pre>
+            <pre class="ui code segment">
 Action application/x-appweb-perl /usr/bin/perl
 </pre>
             <p>This will cause /usr/bin/perl to be run to process the request. Output from perl is captured by the CGI
@@ -264,7 +264,7 @@ Action application/x-appweb-perl /usr/bin/perl
             <p>The command line arguments for the CGI program will be set differently in each case. See the tables
             below for the specifications as to how the command line arguments are defined:</p>
             <h4>Programs Invoked Directly via the Request URI</h4>
-            <table title="args">
+            <table class="ui table" title="args">
                 <thead>
                     <tr>
                         <th>Arg</th>
@@ -287,7 +287,7 @@ Action application/x-appweb-perl /usr/bin/perl
             <p>If the CGI program/script specified in the URI contains a "#!/pathToProgram" directive on the first
             line, it is interpreted to be the path to the real CGI program to run. The script name is then passed in
             the command line.</p>
-            <table title="args">
+            <table class="ui table" title="args">
                 <thead>
                     <tr>
                         <th>Arg</th>
@@ -311,7 +311,7 @@ Action application/x-appweb-perl /usr/bin/perl
                 </tbody>
             </table>
             <h4>Programs Specified via an ActionProgram Directive</h4>
-            <table title="args">
+            <table class="ui table" title="args">
                 <thead>
                     <tr>
                         <th>Arg</th>
@@ -336,7 +336,7 @@ Action application/x-appweb-perl /usr/bin/perl
                 </tbody>
             </table>
             <h4>Windows Batch Commands</h4>
-            <table title="args">
+            <table class="ui table" title="args">
                 <thead>
                     <tr>
                         <th>Arg</th>
@@ -368,7 +368,7 @@ Action application/x-appweb-perl /usr/bin/perl
             <h2>CGI Environment Variables</h2>
             <p>CGI uses environment variables to send your program additional parameters. The following environment
             variables are defined:</p>
-            <table title="args">
+            <table class="ui table" title="args">
                 <thead>
                     <tr>
                         <th>Variable</th>
@@ -481,11 +481,11 @@ Action application/x-appweb-perl /usr/bin/perl
             <h4>Example</h4>
             <p>Consider the following URI which will run the Perl interpreter to execute the "pricelists.pl"
             script.</p>
-            <pre>
+            <pre class="ui code segment">
 http://hostname/cgi-bin/myScript/products/pricelists.pl?id=23&amp;payment=creditCard
 </pre>
             <p>This URI will cause the following environment settings:</p>
-            <table title="evn">
+            <table class="ui table" title="evn">
                 <thead>
                     <tr>
                         <th>Variable</th>
@@ -531,11 +531,11 @@ http://hostname/cgi-bin/myScript/products/pricelists.pl?id=23&amp;payment=credit
             that command line arguments are delimited by "+". The hex encoding %20, is the encoding for the space
             character. Once passed to the CGI program, the convention is for CGI variables to be delimited by
             "&amp;".</p>
-            <pre>
+            <pre class="ui code segment">
 http://hostname/cgi-bin/cgiProgram/extra/Path?var1=a+a&amp;var2=b%20b&amp;var3=c
 </pre>
             <p>This URI will cause the following environment settings:</p>
-            <table title="env">
+            <table class="ui table" title="env">
                 <thead>
                     <tr>
                         <th>Variable</th>
@@ -589,7 +589,7 @@ http://hostname/cgi-bin/cgiProgram/extra/Path?var1=a+a&amp;var2=b%20b&amp;var3=c
             on to the client.</p>
             <p>Appweb understands the following CGI headers that can be output by the CGI program. They are
             case-insensitive.</p>
-            <table title="headers">
+            <table class="ui table" title="headers">
                 <thead>
                     <tr>
                         <th>Header</th>
@@ -617,7 +617,7 @@ http://hostname/cgi-bin/cgiProgram/extra/Path?var1=a+a&amp;var2=b%20b&amp;var3=c
                 </tbody>
             </table>
             <p>For example:</p>
-            <pre>
+            <pre class="ui code segment">
 Content-type: text/html
 &lt;HTML&gt;&lt;HEAD&gt;&lt;TITLE&gt;Sample CGI Output&lt;/TITLE&gt;&lt;/HEAD&gt;
 &lt;BODY&gt;
@@ -625,10 +625,10 @@ Content-type: text/html
 &lt;/BODY&gt;&lt;/HTML&gt;
 </pre>
             <p>To redirect the browser to a new location:</p>
-            <pre>
+            <pre class="ui code segment">
 Location: /newUrl.html
 </pre>To signify an error in the server:
-            <pre>
+            <pre class="ui code segment">
 Status: 500
 </pre><a id="hints"></a>
             <h2>Hints and Tips</h2>
