@@ -402,7 +402,10 @@ Me.load({
                     filter:     /^#inc.*customize.*$/mg,
 
                 }, {
-                    from:       '${TOP}/src/**.c', 
+                    from:       [
+                        '${TOP}/src/*.c', 
+                        '${TOP}/src/modules/**.c', 
+                    ],
                     exclude:    /\/server\/|\/utils\//,
                     to:         '${src}/dist/appwebLib.c',
                     append:     true,
