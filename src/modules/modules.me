@@ -11,37 +11,11 @@ Me.load({
             ifdef: [ 'cgi' ],
         },
 
-        libmod_ejs: {
-            type:   'lib',
-            sources: [ 'ejsHandler.c' ],
-            depends: [ 'libappweb', 'libejs' ],
-            ifdef: [ 'ejs' ],
-        },
-
         libmod_esp: {
             type:   'lib',
             sources: [ 'espHandler.c' ],
             depends: [ 'libappweb', 'libesp' ],
             ifdef: [ 'esp' ],
-        },
-
-        libmod_php: {
-            type: 'lib',
-            sources: [ 'phpHandler.c' ],
-            '-compiler': [
-                '-Wall',
-                '-Wshorten-64-to-32',
-                '-Wunreachable-code',
-            ],
-            depends: [ 'libappweb', 'php' ],
-            ifdef: [ 'php' ],
-        },
-
-        libmod_proxy: {
-            enable: false,
-            type: 'lib',
-            sources: [ 'proxyHandler.c' ],
-            depends: [ 'libappweb' ],
         },
 
         libmod_ssl: {
@@ -50,5 +24,5 @@ Me.load({
             depends: [ 'libappweb', 'libmprssl' ],
             ifdef: [ 'ssl' ],
         },
-	},
+	}
 })
