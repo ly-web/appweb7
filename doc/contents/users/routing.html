@@ -413,16 +413,6 @@ Target write 200 "Running controller ${controller} action ${action}\n\n"
     Require valid-user
 &lt;/Route&gt;
 </pre>
-            <h3>Hiding PHP extensions</h3>
-            <p>To hide the PHP extension in all URIs. This will automatically add the ".php" extension to the 
-                request document filename.</p>
-<pre class="ui code segment">
-&lt;Route ^/store/ &gt;
-    Documents /store-app
-    SetHandler phpHandler
-    Target run $&amp;.php
-&lt;/Route&gt;
-</pre>
             <h3>Serving Compressed Content</h3>
             <p>This example enables the serving of compressed content where an equivalent compressed document exists. i.e.
                A request for <em>/manual/overview.html</em> may return <em>/manual/overview.html.gz</em> if it exists. If

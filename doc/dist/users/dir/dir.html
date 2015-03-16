@@ -74,7 +74,6 @@
                     <a class="item" href="../../developers/handlers.html">Creating Appweb Handlers</a>
                     <a class="item" href="../../developers/stages.html">Creating Pipeline Stages</a>
                     <a class="item" href="../../developers/migrating.html">Migrating to Appweb 5</a>
-                    <a class="item" href="../../developers/rom.html">Serving Pages from ROM</a>
                 </div>
             </div>
             <div class="item">
@@ -209,7 +208,7 @@
                     </tr>
                     <tr>
                         <td class="pivot">Example</td>
-                        <td>DirectoryIndex index.php</td>
+                        <td>DirectoryIndex index.html</td>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
@@ -221,8 +220,8 @@
                             <p>If a client requests a directory, but without a trailing "/" in the URI, the 
                             client will be redirected to the URI with a trailing "/". When the client then uses that URI,
                             the directory index file will be used for the response.</p>
-                            <p>For example: if a DirectoryIndex of "index.php" is specified and a user requests
-                            http://www.acme.com/products/. Then the document /products/index.php will be returned to
+                            <p>For example: if a DirectoryIndex of "index.html" is specified and a user requests
+                            http://www.acme.com/products/. Then the document /products/index.html will be returned to
                             the user.</p>
                         </td>
                     </tr>

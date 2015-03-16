@@ -31,20 +31,14 @@ Operating System Support
     * Linux 2.6 (x86,x64,arm,ppc,mips)
     * VxWorks (x86,arm,ppc,mips)
 
-To install Appweb, your development system will need at least the following:
-
-    * 50 MB Disk
-    * 1 GB RAM
-
 To deploy Appweb in an embedded environment, you will need at least the following:
 
-    * 2 MB Disk / ROM space
+    * 4 MB Disk / ROM space
     * 2 MB RAM
 
 To rebuild Appweb from source code on your development system, you will need at least:
 
     * 80 MB disk space
-
 
 Installation Package Formats
 

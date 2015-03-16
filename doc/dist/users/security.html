@@ -74,7 +74,6 @@
                     <a class="item" href="../developers/handlers.html">Creating Appweb Handlers</a>
                     <a class="item" href="../developers/stages.html">Creating Pipeline Stages</a>
                     <a class="item" href="../developers/migrating.html">Migrating to Appweb 5</a>
-                    <a class="item" href="../developers/rom.html">Serving Pages from ROM</a>
                 </div>
             </div>
             <div class="item">
@@ -600,71 +599,6 @@ href="https://github.com/embedthis/appweb/search?q=CVE-&amp;type=Issues">https:/
             <p>Appweb supports several Web Frameworks for creating dynamic content. These frameworks sometimes require
             special security considerations because they are executing code or scripts to render the content.</p>
 
-<!-- KEEP
-            <h3>Ejscript Web Framework</h3>
-            <p>Appweb supports the Ejscript web framework for dynamic web applications. Ejscript will execute HTML
-            pages with embedded script code and process the pages before returning the result to the client. Properly
-            configured, your scripts will not be readable by users and they will only see the generated content.</p>
-            <p>To keep server-side scripts private, you must have the Ejscript handler configured to process the
-            required script extensions or URL prefixes. If a script extension is not configured, the <b>file</b>
-            handler may process the page and return the raw script back to the user. As installed, Appweb defines the
-            ".ejs" extension for Ejscript pages. Using the <a href="dir/ejs.html#ejsAppAlias">EjsAppAlias</a> directive
-            will correctly configure an Ejscript application to prevent access to raw script code.</p>
--->
-            <h3>PHP</h3>
-            <p>The php.ini file controls the setup and execution of the PHP web framework. The following table lists
-            several parameters that should be set for enhanced security:</p>
-            <table title="parameters" class="ui table segment">
-                <thead>
-                    <tr>
-                        <th class="five wide">Parameter</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>safe_mode = on</td>
-                        <td>When safe mode is enabled, PHP scripts can only access a file if it is the owner of the
-                        file. This prevents access to system files.</td>
-                    </tr>
-                    <tr>
-                        <td>safe_mode = on</td>
-                        <td>When safe mode is enabled, PHP scripts can only access a file if it is the same group as
-                        the file. This prevents access to system files.</td>
-                    </tr>
-                    <tr>
-                        <td>open_basedir = directory[:...]</td>
-                        <td>Define a set of directories that will be the only directories for files that PHP can
-                        access.</td>
-                    </tr>
-                    <tr>
-                        <td class="nowrap">safe_mode_exec_dir = directory[:...]</td>
-                        <td>Define a set of directories that will be the only directories from which PHP can execute
-                        programs.</td>
-                    </tr>
-                    <tr>
-                        <td>expose_php = off</td>
-                        <td>This causes PHP to run in silent mode and not disclose information about itself.</td>
-                    </tr>
-                    <tr>
-                        <td>display_errors = off</td>
-                        <td>This causes PHP to write errors to the log rather than sending them to the client's
-                        browser.</td>
-                    </tr>
-                    <tr>
-                        <td>register_globals = off</td>
-                        <td>When enabled, register_globals will also define many request variables as global variables.
-                        This can be a serious security threat.</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h3>Changing the extension</h3>
-            <p>To obscure the fact that PHP is being run on the server-side, you can change the extension for pages
-            from <b>.php</b> to say ".web". You then need to add the following directive to the appweb.conf file.</p>
-            <pre class="ui code segment">
-AddType application/x-httpd-php .web
-</pre>
             <h2>Embedded Server Pages</h2>
             <p>ESP applications are not immune to security flaws. It is highly recommended that
             you use the <a href="../ref/api/mpr.html">MPR</a> services for all your ESP code. This portable runtime

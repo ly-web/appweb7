@@ -74,7 +74,6 @@
                     <a class="item" href="../developers/handlers.html">Creating Appweb Handlers</a>
                     <a class="item" href="../developers/stages.html">Creating Pipeline Stages</a>
                     <a class="item" href="../developers/migrating.html">Migrating to Appweb 5</a>
-                    <a class="item" href="../developers/rom.html">Serving Pages from ROM</a>
                 </div>
             </div>
             <div class="item">
@@ -592,16 +591,6 @@ Target write 200 "Running controller ${controller} action ${action}\n\n"
     AuthType digest
     AuthName "Top-Secret"
     Require valid-user
-&lt;/Route&gt;
-</pre>
-            <h3>Hiding PHP extensions</h3>
-            <p>To hide the PHP extension in all URIs. This will automatically add the ".php" extension to the 
-                request document filename.</p>
-<pre class="ui code segment">
-&lt;Route ^/store/ &gt;
-    Documents /store-app
-    SetHandler phpHandler
-    Target run $&amp;.php
 &lt;/Route&gt;
 </pre>
             <h3>Serving Compressed Content</h3>
