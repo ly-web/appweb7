@@ -99,9 +99,6 @@
 #ifndef ME_EJS_ZLIB
     #define ME_EJS_ZLIB 1
 #endif
-#ifndef ME_EJS_ONE_MODULE
-    #define ME_EJS_ONE_MODULE 1
-#endif
 #ifndef ME_ESP_LEGACY
     #define ME_ESP_LEGACY 0
 #endif

@@ -100,7 +100,7 @@
   </PropertyGroup>
   
       <ItemGroup>
-    <ClCompile Include="..\..\src\http\httpLib.c" />
+    <ClCompile Include="..\..\paks\http\dist\httpLib.c" />
   </ItemGroup>
 
       <ItemGroup>
@@ -114,9 +114,9 @@
       </Link>
 
       <CustomBuildStep>
-        <Command>cd ..\..\src\http
+        <Command>cd ..\..\paks\http\dist
 copy /Y /B http.h $(IncDir)
-cd ..\..\projects\appweb-windows-static</Command>
+cd ..\..\..\projects\appweb-windows-static</Command>
         <Outputs>$(BinDir)\libhttp.dll</Outputs>
       </CustomBuildStep>
   </ItemDefinitionGroup>
