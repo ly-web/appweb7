@@ -152,6 +152,14 @@ PUBLIC char *maGetNextArg(char *s, char **tok);
 PUBLIC int maLoadModule(cchar *name, cchar *libname);
 
 /**
+    Load default modules
+    @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
+    @ingroup MaState
+    @stability Prototype
+ */
+PUBLIC int maLoadModules();
+
+/**
     Parse an Appweb configuration file
     @description Parse the configuration file and configure the server. This creates a default host and route
         and then configures the server based on config file directives.
