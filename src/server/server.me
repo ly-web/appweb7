@@ -14,7 +14,7 @@ Me.load({
                     sources.push(target.home.join('romFiles.c'))
                 }
                 if (target.static) {
-                    target.depends += ['libmod_esp', 'libmod_ssl', 'libmod_ejs', 'libmod_php', 'libmod_cgi']
+                    target.depends += ['libmod_esp', 'libmod_ssl', 'libmod_cgi']
                 }
             },
         },
