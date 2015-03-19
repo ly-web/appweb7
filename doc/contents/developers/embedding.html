@@ -45,19 +45,20 @@
             <p>You can extend the Appweb program by creating a loadable module for your application code.</p>
             <p>To initialize your module and register with Appweb, you must create an initialization function that is
             called when Appweb loads your module. This must be named according to the form:</p>
-            <pre class="ui code segment">
-ma<b>Name</b>ModuleInit(MaHttp *http)
-</pre>
+            <code>
+http<b>Name</b>Init(MaHttp *http, MprModule *module)
+</code>
             <p>Where <b>Name</b> is the name of your module.</p>
-            <p>This initialization function must call the <b>mprCreateModule</b> API to register with Appweb.</p>
-            <pre class="ui code segment">
-int mprSimpleModuleInit(Http *http, MprModule *module)
+            <code>
+int httpSimpleInit(Http *http, MprModule *module)
 {
     /* Put custom code here */
     return 0;
 }
-</pre>
-            <p>See <a href="modules.html">Creating Appweb Modules</a> for more details.</p><a id="library"></a>
+</code>
+            <p>See <a href="modules.html">Creating Appweb Modules</a> for more details.</p>
+
+            <a id="library"></a>
             <h2>Embed the Appweb Library</h2>
             <p>You can link the Appweb HTTP library with your main program to enable it to function as a HTTP
             server itself. This is ideal if your application is large and/or has a complex I/O, eventing or threading
@@ -73,62 +74,63 @@ int mprSimpleModuleInit(Http *http, MprModule *module)
             <h3>One Line Embedding</h3>
             <p>The following code demonstrates the one-line Appweb embedding API. This will create and configure a web
             server based on the "server.conf" configuration file.</p>
-            <pre class="ui code segment">
+            <code>
 #include "appweb/appweb.h"
 int main(int argc, char** argv)
 {
     return maRunWebServer("server.conf");
 }
-</pre>
+</code>
             <p>To build this sample and link with the Appweb library:</p>
-            <pre class="ui code segment">
+            <code>
 cc -o server server.c -lappweb
-</pre>
+</code>
             <h3>Full Control API</h3>
             <p>The Appweb library also provides a lower level embedding interface where you can precisely control how
             the web server is created and configured. This API also exposes the inner event and threading
             mechanisms.</p>
             <p>This example creates a web server using the "server.conf" configuration file and will service events
-            until terminated.</p>
-            <pre class="ui code segment">
+            until terminated. </p>
+            <code>
 #include "appweb/appweb.h"
 int main(int argc, char **argv)
 {
-    Mpr         *mpr;
-    MaServer    *server;
-    MaAppweb    *appweb;
+    Mpr     *mpr;
+
     /*
-     *  Initialize and start the portable runtime services.
+        Initialize and start the portable runtime services.
      */
-    if ((mpr = mprCreate(0, NULL, 0)) == 0) {
-        mprError("Can't create the web server runtime");
-        return 0;
+    if ((mpr = mprCreate(argc, argv, MPR_USER_EVENTS_THREAD)) == 0) {
+        mprError("Cannot create the web server runtime");
+        return -1;
     }
-    if (mprStart() &lt; 0) {
-        mprError("Can't start the web server runtime");
-        return 0;
+    if (mprStart() < 0) {
+        mprError("Cannot start the web server runtime");
+        return -1;
     }
-    appweb = maCreateAppweb(mpr);
-    mprAddRoot(appweb);
-    if ((server = maCreateServer(appweb, 0)) == 0) {
-        mprError("Can't create the web server");
-        return 0;
+    if (httpCreate(HTTP_CLIENT_SIDE | HTTP_SERVER_SIDE) == 0) {
+        mprError("Cannot create the Http server");
+        return -1;
     }
-    if (maParseConfig(server, "server.conf") &lt; 0) {
-        mprError("Can't parse the config file %s", "server.conf");
-        return 0;
+    if (maLoadModules() < 0) {
+        mprError("Cannot load modules");
+        return -1;
     }
-    if (maStartServer(server) &lt; 0) {
-        mprError("Can't start the web server");
-        return MPR_ERR_CANT_CREATE;
+    if (maParseConfig("server.conf") < 0) {
+        mprError("Cannot parse the config file %s", "server.conf");
+        return -1;
+    }
+    if (httpStartEndpoints() < 0) {
+        mprError("Cannot start the web server");
+        return -1;
     }
     mprServiceEvents(-1, 0);
-    maStopServer(server);
-    mprRemoveRoot(appweb);
-    mprDestroy(MPR_EXIT_DEFAULT);
+    mprDestroy();
     return 0;
 }
-</pre>
+</code>
+            <p>The Appweb <a href="https://github.com/embedthis/appweb/tree/dev/samples/typical-server">Typical 
+            Server</a> sample demonstrates this technique more fully.</p>
             <h3>More Details</h3>
             <p>For more details about the embedding API, please consult the <a href="../ref/api/appweb.html">Appweb
             API</a> and the <a href="../ref/native.html">Native APIs</a>.</p>
