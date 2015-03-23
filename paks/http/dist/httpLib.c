@@ -3704,17 +3704,32 @@ static void blendMode(HttpRoute *route, MprJson *config)
     MprJson     *modeObj;
     cchar       *mode;
 
-    mode = mprGetJson(route->config, "mode");
+    /*
+        Use existing mode from route->config. Blending of config should already have taken place, 
+        so pak.mode should be defined.
+     */
+    mode = mprGetJson(route->config, "pak.mode");
     if (!mode) {
-        mode = sclone("debug");
+        mode = mprGetJson(config, "pak.mode");
+        if (!mode) {
+            mode = sclone("debug");
+        }
     }
     route->mode = mode;
     if ((route->debug = smatch(mode, "debug")) != 0) {
         httpSetRouteShowErrors(route, 1);
         route->keepSource = 1;
     }
-    if ((modeObj = mprGetJsonObj(config, sfmt("modes.%s", mode))) != 0) {
-        mprBlendJson(config, modeObj, MPR_JSON_OVERWRITE);
+    /*
+        Http uses top level modes
+        Pak uses top level pak.modes
+     */
+    if ((modeObj = mprGetJsonObj(config, sfmt("modes.%s", mode))) == 0) {
+        modeObj = mprGetJsonObj(config, sfmt("pak.modes.%s", mode));
+    }
+    if (modeObj) {
+        mprBlendJson(route->config, modeObj, MPR_JSON_OVERWRITE);
+        httpParseAll(route, 0, modeObj);
     }
 }
 
