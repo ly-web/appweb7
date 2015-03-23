@@ -21,16 +21,6 @@ function testCache(uri) {
     http.close()
 }
 
-if (thas('ME_PHP')) {
-    testCache("/combined/cache.php")
-}
 if (thas('ME_ESP')) {
     testCache("/combined/cache.esp")
 }
-if (thas('ME_EJS')) {
-    testCache("/combined/cache.ejs")
-}
-if (thas('ME_CGI') && Config.OS != 'windows') {
-    testCache("/combined/cache.cgi")
-}
-

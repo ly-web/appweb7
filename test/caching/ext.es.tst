@@ -30,7 +30,3 @@ function cached(uri, expected): Boolean {
 if (thas('ME_ESP')) {
     ttrue(cached("/ext/cache.esp", true))
 }
-if (thas('ME_PHP')) {
-    ttrue(!cached("/ext/cache.php", false))
-}
-

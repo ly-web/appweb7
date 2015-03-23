@@ -21,11 +21,6 @@ function cached(uri): Boolean {
     return (resp.number == first)
 }
 
-//  The php request should be cached and the esp should not
-//  The route is configured to cache: Cache server types="application/x-php"
-if (thas('ME_PHP')) {
-    ttrue(cached("/types/cache.php"))
-}
 if (thas('ME_ESP')) {
     ttrue(!cached("/types/cache.esp"))
 }

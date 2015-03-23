@@ -9,8 +9,7 @@ Me.load({
                 let path = me.dir.out.join('.cgi-prepared')
                 if (!path.exists) {
                     Cmd.run('testme --clean')
-                    rm(['cgi-bin/cgi*', 'cgi-bin/nph*', 'cgi-bin/testScript', 
-                        'web/caching/cache.cgi', 'web/auth/basic/basic.cgi'])
+                    rm(['cgi-bin/cgi*', 'cgi-bin/nph*', 'cgi-bin/testScript' ])
                     path.write('')
                     Path('web/tmp').makeDir()
                 }
@@ -22,36 +21,6 @@ Me.load({
             build: `
                 let path = TARGET.path.relative
                 path.write('#!' + me.dir.bin.join('cgiProgram${EXE}' + '\n'))
-                path.setAttributes({permissions: 0755})
-                trace('Create', path)
-            `,
-            depends: [ 'cgiProgram' ],
-            generate: false,
-            platforms: [ 'local' ],
-            ifdef: [ 'cgi' ],
-        },
-
-        'test-cache.cgi': {
-            path: 'web/caching/cache.cgi',
-            build: `
-                let path = TARGET.path.relative
-                path.write('#!' + Cmd.locate('ejs') + '\n' + 
-                    'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n{number:\" + Date().now() + \"}\n\")')
-                path.setAttributes({permissions: 0755})
-                trace('Create', path)
-            `,
-            depends: [ 'cgiProgram' ],
-            generate: false,
-            platforms: [ 'local' ],
-            ifdef: [ 'cgi' ],
-        },
-
-        'test-basic.cgi': {
-            path: 'web/auth/basic/basic.cgi',
-            build: `
-                let path = TARGET.path.relative
-                path.write('#!' + Cmd.locate('ejs') + '\n' + 
-                    'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n\" + serialize(App.env, {pretty: true}) + \"\n\")')
                 path.setAttributes({permissions: 0755})
                 trace('Create', path)
             `,
@@ -168,8 +137,6 @@ Me.load({
                 Path('cache/.keep').write()
                 Path('app/cache').makeDir()
                 Path('app/cache/.keep').write()
-                Path('web/caching/cache.cgi').remove()
-                Path('web/auth/basic/basic.cgi').remove()
                 Path('web/cgiProgram.cgi').remove()
             `
         }
