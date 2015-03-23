@@ -44,7 +44,7 @@ static int setTarget(MaState *state, cchar *name, cchar *details);
 /*
     Load modules builtin modules by default. Subsequent calls to the LoadModule directive will have no effect.
  */
-PUBLIC int maLoadModules(HttpRoute *route)
+PUBLIC int maLoadModules()
 {
     int     rc;
 
@@ -138,7 +138,7 @@ PUBLIC int maConfigureServer(cchar *configFile, cchar *home, cchar *documents, c
     HttpRoute       *route;
 
     route = httpGetDefaultRoute(0);
-    if (maLoadModules(route) < 0) {
+    if (maLoadModules() < 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
     if (configFile) {
