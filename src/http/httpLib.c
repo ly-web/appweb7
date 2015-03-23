@@ -12649,8 +12649,10 @@ static ssize filterPacket(HttpConn *conn, HttpPacket *packet, int *more)
      */
     size = rx->bytesRead - rx->bytesUploaded;
     if (size >= conn->limits->receiveBodySize) {
-        httpLimitError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
-            "Receive body of %'lld bytes (sofar) is too big. Limit %'lld", size, conn->limits->receiveBodySize);
+        if (!rx->webSocket) {
+            httpLimitError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
+                "Receive body of %'lld bytes (sofar) is too big. Limit %'lld", size, conn->limits->receiveBodySize);
+        }
 
     } else if (rx->form && size >= conn->limits->receiveFormSize) {
         httpLimitError(conn, HTTP_CLOSE | HTTP_CODE_REQUEST_TOO_LARGE, 
