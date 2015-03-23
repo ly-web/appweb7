@@ -17817,7 +17817,7 @@ PUBLIC void httpSendOutgoingService(HttpQueue *q)
     if (tx->flags & HTTP_TX_NO_BODY) {
         httpDiscardQueueData(q, 1);
     }
-    if ((tx->bytesWritten + q->ioCount) > conn->limits->transmissionBodySize) {
+    if ((tx->bytesWritten + q->ioCount) > conn->limits->transmissionBodySize && !conn->rx->webSocket) {
         httpLimitError(conn, HTTP_ABORT | HTTP_CODE_REQUEST_TOO_LARGE | ((tx->bytesWritten) ? HTTP_ABORT : 0),
             "Http transmission aborted. Exceeded max body of %'lld bytes", conn->limits->transmissionBodySize);
         if (tx->bytesWritten) {
