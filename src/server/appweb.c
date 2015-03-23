@@ -14,8 +14,8 @@
             --show                  # Show route table
             --trace traceFile:level # Log to file file at verbosity level
             --version               # Output version information
-            -v                      # Same as --log stderr:2
-            -DIGIT                  # Same as --log stderr:DIGIT
+            -v                      # Same as --log stdout:2
+            -DIGIT                  # Same as --log stdout:DIGIT
  */
 
 /********************************* Includes ***********************************/
@@ -176,10 +176,10 @@ MAIN(appweb, int argc, char **argv, char **envp)
 
         } else if (smatch(argp, "--verbose") || smatch(argp, "-v")) {
             if (!logSpec) {
-                logSpec = sfmt("stderr:2");
+                logSpec = sfmt("stdout:2");
             }
             if (!traceSpec) {
-                traceSpec = sfmt("stderr:2");
+                traceSpec = sfmt("stdout:2");
             }
 
         } else if (smatch(argp, "--version") || smatch(argp, "-V")) {
@@ -188,10 +188,10 @@ MAIN(appweb, int argc, char **argv, char **envp)
 
         } else if (*argp == '-' && isdigit((uchar) argp[1])) {
             if (!logSpec) {
-                logSpec = sfmt("stderr:%d", (int) stoi(&argp[1]));
+                logSpec = sfmt("stdout:%d", (int) stoi(&argp[1]));
             }
             if (!traceSpec) {
-                traceSpec = sfmt("stderr:%d", (int) stoi(&argp[1]));
+                traceSpec = sfmt("stdout:%d", (int) stoi(&argp[1]));
             }
 
         } else if (smatch(argp, "-?") || scontains(argp, "-help")) {
@@ -389,9 +389,9 @@ static void usageError(Mpr *mpr)
         "    --name uniqueName       # Unique name for this instance\n"
         "    --show                  # Show route table\n"
         "    --trace traceFile:level # Trace to file at verbosity level (0-5)\n"
-        "    --verbose               # Same as --log stderr:2\n"
+        "    --verbose               # Same as --log stdout:2\n"
         "    --version               # Output version information\n"
-        "    --DIGIT                 # Same as --log stderr:DIGIT\n\n",
+        "    --DIGIT                 # Same as --log stdout:DIGIT\n\n",
         mprGetAppTitle(), name, name, name);
     exit(10);
 }

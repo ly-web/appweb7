@@ -40,7 +40,8 @@
         "osdep": "^0.8",
         "pcre": "^1.0",
         "sqlite": "^1.0",
-        "ssl": "^0.8"
+        "ssl": "^0.8",
+        "zlib": "^1.0"
     },
     "optionalDependencies": {
         "esp": "^5",

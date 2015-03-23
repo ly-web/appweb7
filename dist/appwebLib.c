@@ -33,8 +33,6 @@ static bool conditionalDefinition(MaState *state, cchar *key);
 static int configError(MaState *state, cchar *key);
 static MaState *createState();
 static char *getDirective(char *line, char **valuep);
-static int getint(cchar *value);
-static int64 getnum(cchar *value);
 static void manageState(MaState *state, int flags);
 static int parseFileInner(MaState *state, cchar *path);
 static int parseInit();
@@ -351,7 +349,7 @@ static int traceLogDirective(MaState *state, cchar *key, cchar *value)
                 level = (int) stoi(ovalue);
 
             } else if (smatch(option, "size")) {
-                size = (ssize) getnum(ovalue);
+                size = (ssize) httpGetNumber(ovalue);
 
             } else if (smatch(option, "formatter")) {
                 formatter = ovalue;
@@ -1085,7 +1083,7 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
             option = ssplit(option, " =\t,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
             if (smatch(option, "size")) {
-                size = (ssize) getnum(ovalue);
+                size = (ssize) httpGetNumber(ovalue);
 
             } else if (smatch(option, "level")) {
                 level = atoi(ovalue);
@@ -1336,7 +1334,7 @@ static int limitBufferDirective(MaState *state, cchar *key, cchar *value)
     int     size;
 
     httpGraduateLimits(state->route, 0);
-    size = getint(value);
+    size = httpGetInt(value);
     if (size > (1024 * 1024)) {
         size = (1024 * 1024);
     }
@@ -1350,7 +1348,7 @@ static int limitBufferDirective(MaState *state, cchar *key, cchar *value)
  */
 static int limitCacheDirective(MaState *state, cchar *key, cchar *value)
 {
-    mprSetCacheLimits(state->host->responseCache, 0, 0, getnum(value), 0);
+    mprSetCacheLimits(state->host->responseCache, 0, 0, httpGetNumber(value), 0);
     return 0;
 }
 
@@ -1361,7 +1359,7 @@ static int limitCacheDirective(MaState *state, cchar *key, cchar *value)
 static int limitCacheItemDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->cacheItemSize = getint(value);
+    state->route->limits->cacheItemSize = httpGetInt(value);
     return 0;
 }
 
@@ -1372,7 +1370,7 @@ static int limitCacheItemDirective(MaState *state, cchar *key, cchar *value)
 static int limitChunkDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->chunkSize = getint(value);
+    state->route->limits->chunkSize = httpGetInt(value);
     return 0;
 }
 
@@ -1383,7 +1381,7 @@ static int limitChunkDirective(MaState *state, cchar *key, cchar *value)
 static int limitClientsDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->clientMax = getint(value);
+    state->route->limits->clientMax = httpGetInt(value);
     return 0;
 }
 
@@ -1394,7 +1392,7 @@ static int limitClientsDirective(MaState *state, cchar *key, cchar *value)
 static int limitConnectionsDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->connectionsMax = getint(value);
+    state->route->limits->connectionsMax = httpGetInt(value);
     return 0;
 }
 
@@ -1405,7 +1403,7 @@ static int limitConnectionsDirective(MaState *state, cchar *key, cchar *value)
 static int limitFilesDirective(MaState *state, cchar *key, cchar *value)
 {
 #if ME_UNIX_LIKE
-    mprSetFilesLimit(getint(value));
+    mprSetFilesLimit(httpGetInt(value));
 #endif
     return 0;
 }
@@ -1420,7 +1418,7 @@ static int limitMemoryDirective(MaState *state, cchar *key, cchar *value)
 {
     ssize   maxMem;
 
-    maxMem = (ssize) getnum(value);
+    maxMem = (ssize) httpGetNumber(value);
     mprSetMemLimits(maxMem / 100 * 85, maxMem, -1);
     return 0;
 }
@@ -1432,7 +1430,7 @@ static int limitMemoryDirective(MaState *state, cchar *key, cchar *value)
 static int limitProcessesDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->processMax = getint(value);
+    state->route->limits->processMax = httpGetInt(value);
     return 0;
 }
 
@@ -1456,7 +1454,7 @@ static int limitRequestsDirective(MaState *state, cchar *key, cchar *value)
 static int limitRequestsPerClientDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->requestsPerClientMax = getint(value);
+    state->route->limits->requestsPerClientMax = httpGetInt(value);
     return 0;
 }
 
@@ -1467,7 +1465,7 @@ static int limitRequestsPerClientDirective(MaState *state, cchar *key, cchar *va
 static int limitRequestBodyDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->receiveBodySize = getnum(value);
+    state->route->limits->receiveBodySize = httpGetNumber(value);
     return 0;
 }
 
@@ -1478,7 +1476,7 @@ static int limitRequestBodyDirective(MaState *state, cchar *key, cchar *value)
 static int limitRequestFormDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->receiveFormSize = getnum(value);
+    state->route->limits->receiveFormSize = httpGetNumber(value);
     return 0;
 }
 
@@ -1489,7 +1487,7 @@ static int limitRequestFormDirective(MaState *state, cchar *key, cchar *value)
 static int limitRequestHeaderLinesDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->headerMax = getint(value);
+    state->route->limits->headerMax = httpGetInt(value);
     return 0;
 }
 
@@ -1500,7 +1498,7 @@ static int limitRequestHeaderLinesDirective(MaState *state, cchar *key, cchar *v
 static int limitRequestHeaderDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->headerSize = getint(value);
+    state->route->limits->headerSize = httpGetInt(value);
     return 0;
 }
 
@@ -1511,7 +1509,7 @@ static int limitRequestHeaderDirective(MaState *state, cchar *key, cchar *value)
 static int limitResponseBodyDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->transmissionBodySize = getnum(value);
+    state->route->limits->transmissionBodySize = httpGetNumber(value);
     return 0;
 }
 
@@ -1522,7 +1520,7 @@ static int limitResponseBodyDirective(MaState *state, cchar *key, cchar *value)
 static int limitSessionDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->sessionMax = getint(value);
+    state->route->limits->sessionMax = httpGetInt(value);
     return 0;
 }
 
@@ -1533,7 +1531,7 @@ static int limitSessionDirective(MaState *state, cchar *key, cchar *value)
 static int limitUriDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->uriSize = getint(value);
+    state->route->limits->uriSize = httpGetInt(value);
     return 0;
 }
 
@@ -1544,7 +1542,7 @@ static int limitUriDirective(MaState *state, cchar *key, cchar *value)
 static int limitUploadDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->uploadSize = getnum(value);
+    state->route->limits->uploadSize = httpGetNumber(value);
     return 0;
 }
 
@@ -1717,7 +1715,7 @@ static int loadModuleDirective(MaState *state, cchar *key, cchar *value)
 static int limitKeepAliveDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->keepAliveMax = getint(value);
+    state->route->limits->keepAliveMax = httpGetInt(value);
     return 0;
 }
 
@@ -1937,7 +1935,7 @@ static int monitorDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, expr, "%S %S %S", &counter, &relation, &limit)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (httpAddMonitor(counter, relation, getnum(limit), httpGetTicks(period), defenses) < 0) {
+    if (httpAddMonitor(counter, relation, httpGetNumber(limit), httpGetTicks(period), defenses) < 0) {
         return MPR_ERR_BAD_SYNTAX;
     }
     return 0;
@@ -2527,7 +2525,7 @@ static int templateDirective(MaState *state, cchar *key, cchar *value)
  */
 static int threadStackDirective(MaState *state, cchar *key, cchar *value)
 {
-    mprSetThreadStackSize(getint(value));
+    mprSetThreadStackSize(httpGetInt(value));
     return 0;
 }
 
@@ -2557,7 +2555,7 @@ static int traceDirective(MaState *state, cchar *key, cchar *value)
         option = ssplit(option, " =\t,", &ovalue);
         ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
         if (smatch(option, "content")) {
-            httpSetTraceContentSize(route->trace, (ssize) getnum(ovalue));
+            httpSetTraceContentSize(route->trace, (ssize) httpGetNumber(ovalue));
         } else {
             httpSetTraceEventLevel(route->trace, option, atoi(ovalue));
         }
@@ -2781,7 +2779,7 @@ static int preserveFramesDirective(MaState *state, cchar *key, cchar *value)
 static int limitWebSocketsDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->webSocketsMax = getint(value);
+    state->route->limits->webSocketsMax = httpGetInt(value);
     return 0;
 }
 
@@ -2789,7 +2787,7 @@ static int limitWebSocketsDirective(MaState *state, cchar *key, cchar *value)
 static int limitWebSocketsMessageDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->webSocketsMessageSize = getint(value);
+    state->route->limits->webSocketsMessageSize = httpGetInt(value);
     return 0;
 }
 
@@ -2797,7 +2795,7 @@ static int limitWebSocketsMessageDirective(MaState *state, cchar *key, cchar *va
 static int limitWebSocketsFrameDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->webSocketsFrameSize = getint(value);
+    state->route->limits->webSocketsFrameSize = httpGetInt(value);
     return 0;
 }
 
@@ -2805,7 +2803,7 @@ static int limitWebSocketsFrameDirective(MaState *state, cchar *key, cchar *valu
 static int limitWebSocketsPacketDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->webSocketsPacketSize = getint(value);
+    state->route->limits->webSocketsPacketSize = httpGetInt(value);
     return 0;
 }
 
@@ -3031,42 +3029,6 @@ static int configError(MaState *state, cchar *key)
 {
     mprLog("error appweb config", 0, "Error in directive \"%s\", at line %d in %s", key, state->lineNumber, state->filename);
     return MPR_ERR_BAD_SYNTAX;
-}
-
-
-static int64 getnum(cchar *value)
-{
-    char    *junk;
-    int64   num;
-
-    value = ssplit(slower(value), " \t", &junk);
-    if (sends(value, "kb") || sends(value, "k")) {
-        num = stoi(value) * 1024;
-    } else if (sends(value, "mb") || sends(value, "m")) {
-        num = stoi(value) * 1024 * 1024;
-    } else if (sends(value, "gb") || sends(value, "g")) {
-        num = stoi(value) * 1024 * 1024 * 1024;
-    } else if (sends(value, "byte") || sends(value, "bytes")) {
-        num = stoi(value);
-    } else {
-        num = stoi(value);
-    }
-    if (num == 0) {
-        num = MAXINT;
-    }
-    return num;
-}
-
-
-static int getint(cchar *value)
-{
-    int64   num;
-
-    num = getnum(value);
-    if (num >= MAXINT) {
-        num = MAXINT;
-    }
-    return (int) num;
 }
 
 
