@@ -41,6 +41,13 @@
     </member>
     <member kind="function">
       <type>int</type>
+      <name>maLoadModules</name>
+      <anchorfile>group___ma_state.html</anchorfile>
+      <anchor>gac80272b7427e26d90bcc32570ca2aff5</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
       <name>maParseConfig</name>
       <anchorfile>group___ma_state.html</anchorfile>
       <anchor>gae9c5d28320c9ebe7f2a6e810215be37c</anchor>
