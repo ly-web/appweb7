@@ -361,7 +361,7 @@ static int findConfigFile()
         }
     }
     if (!app->configFile) {
-        mprError("Cannot find config file %s", base);
+        mprError("Cannot find config file %s", name);
         return MPR_ERR_CANT_OPEN;
     }
 #endif
