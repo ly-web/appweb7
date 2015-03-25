@@ -75,10 +75,10 @@ static void usageError();
 
 MAIN(appweb, int argc, char **argv, char **envp)
 {
-    Mpr     *mpr;
-    cchar   *argp, *jail;
-    char    *logSpec, *traceSpec;
-    int     argind;
+    Mpr         *mpr;
+    cchar       *argp, *jail;
+    char        *logSpec, *traceSpec;
+    int         argind;
 
     jail = 0;
     logSpec = 0;
@@ -145,6 +145,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
                 mprLog("error appweb", 0, "Cannot change directory to %s", app->home);
                 exit(4);
             }
+            httpSetRouteHome(httpGetDefaultRoute(0), app->home);
 
         } else if (smatch(argp, "--log") || smatch(argp, "-l")) {
             if (argind >= argc) {
