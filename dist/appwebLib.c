@@ -19794,6 +19794,7 @@ static void checkSsl(MaState *state)
 static int sslCaCertificatePathDirective(MaState *state, cchar *key, cchar *value)
 {
     char *path;
+    
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -19810,6 +19811,7 @@ static int sslCaCertificatePathDirective(MaState *state, cchar *key, cchar *valu
 static int sslCaCertificateFileDirective(MaState *state, cchar *key, cchar *value)
 {
     char *path;
+    
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -19826,6 +19828,7 @@ static int sslCaCertificateFileDirective(MaState *state, cchar *key, cchar *valu
 static int sslCertificateFileDirective(MaState *state, cchar *key, cchar *value)
 {
     char *path;
+    
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -19842,6 +19845,7 @@ static int sslCertificateFileDirective(MaState *state, cchar *key, cchar *value)
 static int sslCertificateKeyFileDirective(MaState *state, cchar *key, cchar *value)
 {
     char *path;
+    
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
