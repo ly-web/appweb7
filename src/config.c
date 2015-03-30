@@ -2331,8 +2331,7 @@ static int serverNameDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    SessionCookie [name=NAME] [visible=true]
-    SessionCookie none
+    SessionCookie [name=NAME] [visible=true] [persist=true]
  */
 static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -2341,7 +2340,7 @@ static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%*", &options)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (smatch(options, "disable")) {
+    if (smatch(options, "disable") || smatch(options, "none")) {
         httpSetAuthSession(state->route->auth, 0);
         return 0;
     } else if (smatch(options, "enable")) {
@@ -2352,10 +2351,15 @@ static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
         option = ssplit(option, " =\t,", &ovalue);
         ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
         if (!ovalue || *ovalue == '\0') continue;
+
         if (smatch(option, "visible")) {
             httpSetRouteSessionVisibility(state->route, scaselessmatch(ovalue, "visible"));
+
         } else if (smatch(option, "name")) {
             httpSetRouteCookie(state->route, ovalue);
+
+        } else if (smatch(option, "persist")) {
+            httpSetRouteCookiePersist(state->route, smatch(ovalue, "true"));
 
         } else {
             mprLog("error appweb config", 0, "Unknown SessionCookie option %s", option);

@@ -9,10 +9,9 @@
 #include    "appweb.h"
 #include    "esp.h"
 
+#if ME_COM_ESP
 /************************************* Code ***********************************/
 /*
-    EspApp pattern...*.esp
-
     EspApp /path/to/some*dir/esp.json
     EspApp prefix="/uri/prefix" config="/path/to/esp.json"
  */
@@ -69,9 +68,9 @@ PUBLIC int httpEspInit(Http *http, MprModule *module)
         return MPR_ERR_CANT_CREATE;
     }
     maAddDirective("EspApp", espAppDirective);
-
     return 0;
 }
+#endif /* ME_COM_ESP */
 
 /*
     @copy   default
