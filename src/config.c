@@ -66,7 +66,7 @@ PUBLIC int maLoadModules()
     rc += httpEspInit(HTTP, 0);
 #endif
 #if ME_COM_EJS
-    rc += httpEspInit(HTTP, 0);
+    rc += httpEjsInit(HTTP, 0);
 #endif
 #if ME_COM_PHP
     rc += httpPhpInit(HTTP, 0);

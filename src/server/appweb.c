@@ -229,7 +229,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if (createEndpoints(argc - argind, &argv[argind]) < 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
-    appwebStaticInitialize();
     httpSetInfoLevel(0);
     if (httpStartEndpoints() < 0) {
         mprLog("error appweb", 0, "Cannot listen on HTTP endpoints, exiting.");

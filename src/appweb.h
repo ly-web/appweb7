@@ -283,17 +283,9 @@ PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path);
 /*
     Internal
  */
-PUBLIC int maCgiHandlerInit(Http *http, MprModule *mp);
-PUBLIC int maDirHandlerInit(Http *http, MprModule *mp);
-PUBLIC int maEjsHandlerInit(Http *http, MprModule *mp);
-PUBLIC int maEspHandlerInit(Http *http, MprModule *mp);
-PUBLIC int maPhpHandlerInit(Http *http, MprModule *mp);
-PUBLIC int maSslModuleInit(Http *http, MprModule *mp);
-
-/*
-    This is exported from slink.c which is either manually created or generated locally
- */
-PUBLIC void appwebStaticInitialize();
+PUBLIC int httpCgiInit(Http *http, MprModule *mp);
+PUBLIC int httpEspInit(Http *http, MprModule *mp);
+PUBLIC int httpSslInit(Http *http, MprModule *mp);
 
 #ifdef __cplusplus
 } /* extern C */
