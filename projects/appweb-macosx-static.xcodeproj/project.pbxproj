@@ -2022,7 +2022,7 @@ fi";
 
                     OUT_DIR = "../build/macosx-x64-static";
                     BIN_DIR = "../build/macosx-x64-static/bin";
-                    LIB_DIR = "../lib";
+                    LIB_DIR = "../src";
                     INC_DIR = "../build/macosx-x64-static/inc";
                     OBJ_DIR = "../build/macosx-x64-static/obj";
                     SRC_DIR = "../src";
@@ -2091,7 +2091,7 @@ fi";
 
                     OUT_DIR = "../build/macosx-x64-static";
                     BIN_DIR = "../build/macosx-x64-static/bin";
-                    LIB_DIR = "../lib";
+                    LIB_DIR = "../src";
                     INC_DIR = "../build/macosx-x64-static/inc";
                     OBJ_DIR = "../build/macosx-x64-static/obj";
                     SRC_DIR = "../src";
@@ -2474,6 +2474,7 @@ fi";
 				);
 				OTHER_LDFLAGS = (
 					"-lpam",
+					"-lpam",
 					"$(inherited)"
 				);
 
@@ -2486,6 +2487,7 @@ fi";
     				PRODUCT_NAME = libhttp;
     
     				OTHER_LDFLAGS = (
+					"-lpam",
 					"-lpam",
 					"$(inherited)"
 				);
