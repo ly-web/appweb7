@@ -26,7 +26,7 @@ function cached(uri, expected): Boolean {
     return (resp.number == first)
 }
 
-//  The esp request should be cached and the php should not
+//  The esp request should be cached
 if (thas('ME_ESP')) {
     ttrue(cached("/ext/cache.esp", true))
 }

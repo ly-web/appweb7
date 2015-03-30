@@ -1,0 +1,22 @@
+{
+    http: {
+        routes: {
+            pattern: '/{controller}/{action}$',
+            target:  '$1/$2',
+            pipeline: {
+                filters: "webSocketFilter"
+            },
+            source:  'websockets.c'
+        },
+        limits: {
+            webSockets:         '25',
+            webSocketsMessage:  '10MB',
+            webSocketsPacket:   '8K',
+            webSocketsFrame:    '4K'
+        },
+        timeouts: {
+            request:    'never',
+            inactivity: '2mins'
+        }
+    }
+}

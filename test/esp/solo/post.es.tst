@@ -30,12 +30,13 @@ function postTest(url: String) {
         // print('WROTE', n)
     }
     http.wait(120 * 1000)
+    ttrue(http.status == 200)
+    ttrue(http.response)
+
     if (http.status != 200) {
         print("STATUS " + http.status)
         print(http.response)
     }
-    ttrue(http.status == 200)
-    ttrue(http.response)
     http.close()
 }
 
