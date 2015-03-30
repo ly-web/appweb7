@@ -2193,7 +2193,7 @@ static int serverNameDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    SessionCookie [name=NAME] [visible=true]
+    SessionCookie [name=NAME] [visible=true] [persist=true]
     DEPRECATED:
         SessionCookie visible|invisible
  */
@@ -2219,6 +2219,8 @@ static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
             httpSetRouteSessionVisibility(state->route, scaselessmatch(ovalue, "visible"));
         } else if (smatch(option, "name")) {
             httpSetRouteCookie(state->route, ovalue);
+        } else if (smatch(option, "persist")) {
+            httpSetRouteCookiePersist(state->route, smatch(ovalue, "true"));
         } else {
             mprError("Unknown SessionCookie option %s", option);
             return MPR_ERR_BAD_SYNTAX;

@@ -4940,6 +4940,7 @@ PUBLIC char *mprReadCache(MprCache *cache, cchar *key, MprTime *modified, int64 
         return 0;
     }
     if (item->expires && item->expires <= mprGetTicks()) {
+        removeItem(cache, item);
         unlock(cache);
         return 0;
     }

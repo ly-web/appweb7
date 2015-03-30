@@ -581,6 +581,10 @@ PUBLIC void httpSetAuthForm(HttpRoute *parent, cchar *loginPage, cchar *loginSer
 
     secure = 0;
     auth = parent->auth;
+
+    if (!parent->cookie) {
+        httpSetRouteCookie(parent, HTTP_SESSION_COOKIE);
+    }
     auth->loginPage = sclone(loginPage);
     if (loggedIn) {
         auth->loggedIn = sclone(loggedIn);
@@ -9667,7 +9671,16 @@ PUBLIC void httpSetRouteCookie(HttpRoute *route, cchar *cookie)
 {
     assert(route);
     assert(cookie && *cookie);
-    route->cookie = cookie;
+    route->cookie = sclone(cookie);
+}
+
+
+PUBLIC void httpSetRouteCookiePersist(HttpRoute *route, int enable)
+{
+    route->flags &= ~HTTP_ROUTE_PERSIST_COOKIE;
+    if (enable) {
+        route->flags |= HTTP_ROUTE_PERSIST_COOKIE;
+    }
 }
 
 
@@ -15033,6 +15046,7 @@ PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create)
 {
     Http        *http;
     HttpRx      *rx;
+    MprTicks    lifespan;
     cchar       *cookie, *data, *id;
     static int  nextSession = 0;
     int         flags;
@@ -15068,7 +15082,8 @@ PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create)
             rx->session = allocSessionObj(conn, id, NULL);
             flags = (rx->route->flags & HTTP_ROUTE_VISIBLE_SESSION) ? 0 : HTTP_COOKIE_HTTP;
             cookie = rx->route->cookie ? rx->route->cookie : HTTP_SESSION_COOKIE;
-            httpSetCookie(conn, cookie, rx->session->id, "/", NULL, rx->session->lifespan, flags);
+            lifespan = (rx->route->flags & HTTP_ROUTE_PERSIST_COOKIE) ? rx->session->lifespan : 0;
+            httpSetCookie(conn, cookie, rx->session->id, "/", NULL, lifespan, flags);
             mprLog(3, "session: create new cookie %s=%s", cookie, rx->session->id);
 
             if ((rx->route->flags & HTTP_ROUTE_XSRF) && rx->securityToken) {
@@ -16279,12 +16294,16 @@ PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path
         }
     }
     domainAtt = domain ? "; domain=" : "";
-    if (domain && !strchr(domain, '.')) {
-        if (smatch(domain, "localhost")) {
-            domainAtt = domain = "";
-        } else {
-            domain = sjoin(".", domain, NULL);
-        }
+    if (domain) {
+        if (!strchr(domain, '.')) {
+            if (smatch(domain, "localhost")) {
+                domainAtt = domain = "";
+            } else {
+                domain = sjoin(".", domain, NULL);
+            }
+        } 
+    } else {
+        domain = "";
     }
     if (lifespan) {
         expiresAtt = "; expires=";

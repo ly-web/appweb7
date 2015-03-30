@@ -3947,6 +3947,7 @@ PUBLIC void httpSetStreaming(struct HttpHost *host, cchar *mime, cchar *uri, boo
 #define HTTP_ROUTE_PRESERVE_FRAMES      0x400       /**< Preserve WebSocket frame boundaries */
 #define HTTP_ROUTE_HIDDEN               0x800       /**< Hide this route in route tables. */
 #define HTTP_ROUTE_ENV_ESCAPE           0x1000      /**< Escape env vars */
+#define HTTP_ROUTE_PERSIST_COOKIE       0x40000     /**< Persist session cookie to disk */
 
 #if (DEPRECATED || 1) && !DOXYGEN
 #define HTTP_ROUTE_GZIP                 0x1000      /**< Support gzipped content on this route */
@@ -4883,6 +4884,17 @@ PUBLIC void httpSetRouteMethods(HttpRoute *route, cchar *methods);
     @stability Prototype
  */
 PUBLIC void httpSetRouteCookie(HttpRoute *route, cchar *cookie);
+
+/**
+    Persist the cookie to disk
+    @description By default, browser session cookies are created so they are discarded when the browser exits.
+    If persistent cookies are created, they live despite browser restarts
+    @param route Route to modify
+    @param enable Set to true to enable
+    @ingroup HttpRoute
+    @stability Prototype
+ */
+PUBLIC void httpSetRouteCookiePersist(HttpRoute *route, int enable);
 
 /**
     Set the route name
