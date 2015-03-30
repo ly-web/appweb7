@@ -282,12 +282,6 @@ PUBLIC int httpSslInit(Http *http, MprModule *module)
 #endif
     return 0;
 }
-#else
-
-PUBLIC int httpSslInit(Http *http, MprModule *mp)
-{
-    return 0;
-}
 #endif /* ME_COM_SSL */
 
 /*

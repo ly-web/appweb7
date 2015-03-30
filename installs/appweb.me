@@ -14,7 +14,7 @@ Me.load({
             type: 'lib',
             sources: [ 'appwebLib.c' ],
             headers: [ '*.h' ],
-            depends: [ 'libhttp', 'libpcre', 'libmpr' ],
+            depends: [ 'libesp', 'libhttp', 'libpcre', 'libmpr' ],
             ifdef: [ 'appweb' ],
         },
         authpass: {
@@ -24,10 +24,10 @@ Me.load({
             platforms: [ 'local' ],
             postblend: function (target) {
                 if (target.static && me.targets.ssl.enable) {
-                    target.depends += ['libmprssl']
+                    target.depends += [ 'libmprssl' ]
                 }
             },
             enable: 'me.settings.appweb && me.settings.appweb.authpass',
-        },
-    },
+        }
+    }
 })

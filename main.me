@@ -8,7 +8,6 @@ Me.load({
     blend: [
         'esp',
         'src/libappweb.me',
-        'src/modules/modules.me',
         'src/utils/utils.me',
         'src/server/server.me',
         'test/test.me',
@@ -53,11 +52,6 @@ Me.load({
 
         /* Must build locally to build tools */
         platforms: [ 'local' ],
-
-        /*
-            Set to true for a static (non-shared library) build
-         */
-        static: false,
 
         http: {
             /* Use PAM (Plugable Authentication Module) to store passwords */
