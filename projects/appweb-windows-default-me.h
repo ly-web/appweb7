@@ -153,9 +153,6 @@
 #ifndef ME_SERVER_ROOT
     #define ME_SERVER_ROOT "."
 #endif
-#ifndef ME_STATIC
-    #define ME_STATIC 0
-#endif
 #ifndef ME_TITLE
     #define ME_TITLE "Embedthis Appweb"
 #endif
