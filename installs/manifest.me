@@ -184,8 +184,7 @@ Me.load({
                     enable:     "!me.settings.static",
                 }, { 
                     from: [
-                                'libmprssl${SHOBJ}',
-                                'libmod_ssl${SHOBJ}',
+                                'libmprssl${SHOBJ}'
                     ],
                     to:         '${abin}/',
                     ifdef:      'ssl',
@@ -204,21 +203,8 @@ Me.load({
                     enable:     "!me.settings.static",
 
                 }, { 
-                    from:       'libmod_esp${SHOBJ}',
-                    to:         '${abin}/',
-                    ifdef:      'esp',
-                    enable:     "!me.settings.static",
-
-                }, { 
-                    from:       'libmod_cgi${SHOBJ}',
-                    to:         '${abin}/',
-                    ifdef:      'cgi',
-                    enable:     "!me.settings.static",
-
-                }, { 
                     from: [
                                 /* Windows needs the libs to be able to compile esp programs */
-                                'libmod_esp${SHLIB}',
                                 'libappweb${SHLIB}',
                                 'libesp${SHLIB}',
                                 'libpcre${SHLIB}',
