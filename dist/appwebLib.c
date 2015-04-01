@@ -47,34 +47,21 @@ PUBLIC int maLoadModules()
     int     rc;
 
     rc = 0;
-#if !ME_STATIC
 #if ME_COM_CGI
-    rc += maLoadModule("cgi", "libmod_cgi");
+    rc += maLoadModule("cgi", 0);
 #endif
 #if ME_COM_ESP
-    rc += maLoadModule("esp", "libmod_esp");
-#endif
-#if ME_COM_EJS
-    rc += maLoadModule("ejs", "libmod_ejs");
-#endif
-#if ME_COM_PHP
-    rc += maLoadModule("php", "libmod_php");
+    rc += maLoadModule("esp", 0);
 #endif
 #if ME_COM_SSL
-    rc += maLoadModule("ssl", "libmod_ssl");
+    rc += maLoadModule("ssl", 0);
 #endif
-/*
-    Demand load SSL as an optimization
- */
 
-#else /* ME_STATIC */
+#if ME_STATIC
 /*
     If doing a static build, must now reference required modules to force the linker to include them.
     On linux we cannot lookup symbols with dlsym(), so we must invoke explicitly here.
  */
-#if ME_COM_CGI
-    rc += httpCgiInit(HTTP, 0);
-#endif
 #if ME_COM_ESP
     rc += httpEspInit(HTTP, 0);
 #endif
@@ -83,9 +70,6 @@ PUBLIC int maLoadModules()
 #endif
 #if ME_COM_PHP
     rc += httpPhpInit(HTTP, 0);
-#endif
-#if ME_COM_SSL
-    rc += httpSslInit(HTTP, 0);
 #endif
 #endif /* ME_STATIC */
     return rc;
