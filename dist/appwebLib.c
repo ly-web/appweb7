@@ -160,7 +160,7 @@ PUBLIC int maParseConfig(cchar *path)
     MaState     *state;
     int         rc;
 
-    mprLog("info appweb", 2, "Using config file: \"%s\"", mprGetRelPath(path, 0));
+    mprLog("info appweb", 2, "Using config file %s", mprGetRelPath(path, 0));
 
     route = httpGetDefaultRoute(0);
 
