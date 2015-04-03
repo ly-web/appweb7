@@ -12099,7 +12099,7 @@ static void outgoingRangeService(HttpQueue *q)
     conn = q->conn;
     tx = conn->tx;
 
-    if (!(q->flags & HTTP_QUEUE_SERVICED)) {
+    if (!(q->flags & HTTP_QUEUE_SERVICED || q->servicing)) {
         /*
             The httpContentNotModified routine can set outputRanges to zero if returning not-modified.
          */
