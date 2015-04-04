@@ -9,8 +9,8 @@
             access to server resources. Authentication is essential when you have content that you wish to protect and
             provide only to specific, approved clients.</p>
 
-            <p>Appweb implements a powerful and flexible authentication farmework that verifies username and password and
-            verifies client capabilitiies using a role based authorization mechanismm.</p>
+            <p>Appweb implements a powerful and flexible authentication framework that verifies username and password and
+            verifies client capabilities using a role based authorization mechanism.</p>
 
             <h2>Authentication Schemes</h2>
             <p>Appweb provides several authentication protocol schemes.</p>
@@ -39,7 +39,7 @@
                     secure. Basic authentication transmits passwords as clear-text in each and every request. Digest
                     authentication uses the weak MD5 cipher, and both require use of SSL on all requests to be minimally
                     secure. Further, both Basic and Digest do not provide a reliable log out mechanism. Logout works on some
-                    browsers but not on others or even different versions of the same browser. We stronly recommend
+                    browsers but not on others or even different versions of the same browser. We strongly recommend
                     using Form authentication, with "blowfish" encryption for a more usable, secure and reliable solution.</p>
                 </div>
             </div>
@@ -64,11 +64,11 @@
 </pre>
             <p>This example authenticates access to URLs beginning with "/private" using the Form authentication
             scheme. It permits access by the user "julie" once authenticated, and uses the
-            "<em>config</em>" password store that defines users via <em>User</em> aconfiguration directives.</p>
+            "<em>config</em>" password store that defines users via <em>User</em> configuration directives.</p>
 
             <p>The <a href="dir/auth.html#user">User</a>
             directive defines a user with an encrypted password and the authorized roles.
-            The <a href="dir/auth.html#role">Role</a> directive defines role for which users may posess. Roles
+            The <a href="dir/auth.html#role">Role</a> directive defines role for which users may possess. Roles
             define a set of capabilities expressed as simple words. Typically, User and Role directives are placed 
             in a separate configuration file, often called <em>auth.conf</em>
             This file is then typically included from the appweb.conf file via an <em>"include auth.conf"</em> 
@@ -160,7 +160,7 @@
                 <li>Require secure</li>
             </ul>
             <p>When using <em>Require ability</em>, the abilities may be roles defined via the
-            <a href="dir/auth.html#role">Role</a> directive, abilities specified in Role defintions, or they may
+            <a href="dir/auth.html#role">Role</a> directive, abilities specified in Role definitions, or they may
             be simple words which represent a discrete ability that is explicitly specified with roles in
             the <a href="dir/auth.html#user">User</a> directive.</p>
 
@@ -173,7 +173,7 @@
             directive will take precedence.</p>
 
             <h2>Samples</h2>
-            <p>Appwb provides two samples for user login:</p>
+            <p>Appweb provides two samples for user login:</p>
             <ul>
                 <li><a href="https://github.com/embedthis/appweb/tree/dev/samples/login-basic">login-basic</a>
                     &mdash; Basic Authentication Sample</li>
@@ -341,7 +341,7 @@ authpass [--cipher blowfish|md5] [--file auth.conf] [--password word] realm user
             AuthType directive. It is typically set to a company domain or product name.</p>
 
             <p>The authpass program can modify password definitions in a configuration file.
-            Here is a sample autentication configuration file that contains User and Role directives.</p>
+            Here is a sample authentication configuration file that contains User and Role directives.</p>
 
             <p><b>SECURITY WARNING</b>: it is essential that the authentication file be stored outside
                 the Documents directory or any directory serving content.</p>
