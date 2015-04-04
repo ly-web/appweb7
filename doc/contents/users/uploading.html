@@ -10,6 +10,7 @@
             uploaded file to the request handler for processing.</p>
             <p>File upload uses multi-part mime encoding to transport files over HTTP POST requests. This is specified in
             the IETF standard <a href="http://www.ietf.org/rfc/rfc2388.txt">RFC 2388</a>. </p>
+
             <a id="overview"></a>
             <h2>Overview</h2>
             <p>Because uploaded files can be very large, Appweb uses specialized handling for the receipt, storage and
@@ -19,6 +20,7 @@
             file.
             Appweb expects that the handler will process, copy or move the temporary file before completing the request.
             Once the handler has completed, Appweb will remove any remaining upload temporary files.</p>
+
             <a id="enabling"></a>
             <h2>Enabling File Upload</h2>
             <p>To enable the upload filter, you need to add it to the request pipeline via the
@@ -32,6 +34,7 @@
 </pre>
             <p>It is good practice to define the uploadFilter within a qualifying route. This minimizes the
             security attack surface.</p>
+
             <a id="directives"></a>
             <h2>Appweb Upload Directives</h2>
             <p>There are three other appweb.conf directives that relate specifically to upload filter.</p>
@@ -44,6 +47,7 @@
                     uploaded files should be automatically deleted from the upload directory after the handler has
                     completed processing the request.</li>
             </ul>
+
             <a id="details"></a>
             <h2>Upload File Details</h2>
             <p>Once a file is uploaded, the Appweb handler responsible for processing the request will receive details about
@@ -77,16 +81,19 @@ for (ITERATE_KEY_DATA(conn-&gt;rx-&gt;files, kp, file)) {
     render("SIZE %d\n", file-&gt;size);
 }
 </pre>
+
             <h3>Ejscript Uploads</h3>
             <p>Ejscript stores uploaded files in the <em><a
-                    href="https://embedthis.com/ejs/doc/api/ejscript/ejs.web-Request.html">request.files</a></em> property. Files is an object hash
+                    href="https://embedthis.com/ejscript/doc/ref/api/ejscript/ejs.web-Request.html">request.files</a></em> property. Files is an object hash
             of files indexed by the HTML ID. Each file is represented by an instance of the 
-            <a href="https://embedthis.com/ejs/doc/api/ejscript/ejs.web-UploadFile.html">UploadFile</a> class.
+            <a href="https://embedthis.com/ejscript/doc/ref/api/ejscript/ejs.web-UploadFile.html">UploadFile</a> class.
+
             <a id="post"></a>
             <h2>Alternative Upload Technique</h2>
             <p>File upload using POST requests is one way to upload files. Another is to use the HTTP PUT method.
             This uploads a file without encoding and can offer higher performance. The HTTP DELETE method can then
             be used to delete files from the server.</p>
+
             <h3>CGI Upload</h3>
             <p>CGI provides them to applications via environment variables that start with <em>FILE_</em>. The variables
             end with an <em>ID</em> which is a sequential index for the file beginning at <em>0</em> for the first file.</p>
@@ -96,10 +103,12 @@ for (ITERATE_KEY_DATA(conn-&gt;rx-&gt;files, kp, file)) {
                 <li>FILE_FILENAME_ID &mdash; the local temporary filename containing the data</li>
                 <li>FILE_SIZE_ID &mdash; the size of the uploaded file</li>
             </ul>
+
             <h3>PHP Uploads</h3>
             <p>PHP has its own file upload handler and should not be confused with the higher performing Appweb 
             upload filter. If you wish to use the PHP upload mechanism, you must disable the upload filter for 
             your PHP requests. Do this by removing the <em>AddInputFilter uploadFilter</em> in the appweb.conf
             configuration file.</p>
+
             <p>If you wish to use the Appweb upload filter with PHP, you will see environment variables in the
             _POST collection. The naming is the same as that for the CGI handler described above.</p>

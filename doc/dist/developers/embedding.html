@@ -190,17 +190,21 @@
                 <li>Use the existing Appweb main program and extend Appweb via a loadable module.</li>
                 <li>Use the existing Appweb main program and extend Appweb via the ESP web framework.</li>
                 <li>Link the Appweb HTTP library with your application main program.</li>
-            </ol><a id="loadable"></a>
+            </ol>
+
+            <a id="loadable"></a>
             <h2>Extending via a Loadable Module</h2>
             <p>You can extend the Appweb server program by creating an Appweb loadable module. You do this by creating
             a shared library that contains your application and some Appweb module interface code. This module is then
             specified in the Appweb configuration file so that the Appweb program will load it. It requires about 10
             lines of code to create an Appweb module.</p>
+
             <h2>Extending via ESP</h2>
             <p>The Embedded Server Pages (ESP) web framework allows the direct embedding of "C" language code in
             HTML web pages. This is the easiest way to invoke "C" APIs in your program. ESP also supports the loading
             of Model/View/Controller (MVC-based) applications. ESP will compile and load controller source code. Controllers
             provide an easy and efficient way to invoke "C" code when requests are made to certain URIs.</p>
+
             <h2>Embed the Appweb Library</h2>
             <p>You can link the Appweb library with your application to enable it to listen for HTTP requests and thus
             become a HTTP server itself. Embedding the Appweb library is easy and can be done with as little as one
@@ -284,7 +288,7 @@ int main(int argc, char **argv)
         mprError("Cannot create the web server runtime");
         return -1;
     }
-    if (mprStart() < 0) {
+    if (mprStart() &lt; 0) {
         mprError("Cannot start the web server runtime");
         return -1;
     }
@@ -292,15 +296,15 @@ int main(int argc, char **argv)
         mprError("Cannot create the Http server");
         return -1;
     }
-    if (maLoadModules() < 0) {
+    if (maLoadModules() &lt; 0) {
         mprError("Cannot load modules");
         return -1;
     }
-    if (maParseConfig("server.conf") < 0) {
+    if (maParseConfig("server.conf") &lt; 0) {
         mprError("Cannot parse the config file %s", "server.conf");
         return -1;
     }
-    if (httpStartEndpoints() < 0) {
+    if (httpStartEndpoints() &lt; 0) {
         mprError("Cannot start the web server");
         return -1;
     }

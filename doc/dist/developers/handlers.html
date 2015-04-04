@@ -206,6 +206,7 @@
 </pre>
             <p>The LoadModule directive causes Appweb to load a shared library containing your handler. The SetHandler
             directive then defines the handler to serve all requests that begin with <em>/my/</em>.</p>
+
             <a id="pipeline"></a>
             <h2>Request Pipeline</h2>
             <p>When configured for a route, a handler sits at one end of the request pipeline. The pipeline is a full-duplex
@@ -229,6 +230,7 @@
             stage's service queue.</p>
             <p> The stage queues are processed by the pipeline invoking the stage's <em>incomingService</em> or 
             <em>outgoingService</em> callbacks.</p>
+
             <h3>Stage Callbacks</h3>
             <p>The full set of stage callbacks is:</p>
             <table title="callbacks" class="ui table segment">
@@ -253,6 +255,7 @@
                 <tr><td>close</td><td>Close the stage for the current request. Corresponds to the queue close callback.</td></tr>
                 </tbody>
             </table>
+
             <a id="packets"></a>
             <h3>Packets</h3>
             <p>Packets are an instance of the 
@@ -260,6 +263,7 @@
             store data and can be passed through the pipeline without copying. Appweb network connectors are optimized
             to write packets to network connections using scatter/gather techniques so that multiple packets can be written
             in one O/S system call.</p>
+
             <a id="callbacks"></a>
             <a id="flow"></a>
             <h3>Handler Data Flow</h3>
@@ -289,34 +293,43 @@
                 <p>Handlers can also use the lower-level 
                 <a href="../ref/api/http.html#group___http_queue_1gab3aa1e003e80d683e11c1641826da076">httpWriteBlock</a>
                 API which provides options for non-blocking writing.</p>
+
             <a id="pipelineLifecycle"></a>
             <h2>Pipeline Life Cycle</h2>
             <p>When a request is received from the client, the Appweb Http engine parses the Http request headers and
             then determines the best Appweb <a href="../users/routing.html">route</a> for the request. A route contains
             the full details for how to process a request including the required handler and pipeline configuration.</p>
+
             <h3>Matching a Handler &mdash; <em>match</em></h3>
             <p>Once parsed, the router tests each of the eligible handlers for the route by calling the handler 
             <em>match</em> callback. The first handler to claim the request will be used.</p>
+
             <h3>Rewriting a Request &mdash; <em>rewrite</em></h3>
             <p>Once the handler is selected, it is given the opportunity to rewrite the request and the routing process
             is restarted with the rewritten request.</p>
+
             <h3>Initializing a Handler &mdash; <em>open</em></h3>
             <p>The Http engine then creates the pipeline and invokes the handler <em>open</em> callback to perform
             required initialization for the handler.</p>
+
             <h3>Starting a Handler &mdash; <em>start</em></h3>
             <p>Once the request headers are fully parsed, the Http engine invokes the handler <em>start</em> callback.
             At this point, request body data may not have been received. Depending on the request, generating a response
             may or may not be appropriate until all body data has been received. If there is no body data, the handler
             can process and maybe generate the entire response for the request during this callback.</p>
+
             <h3>Receiving Input &mdash; <em>incoming</em></h3>
             <p>If the request has body data (POST|PUT), the input data will be passed in packets to the handlers incoming 
             callback. The handler should process as required.</p>
+
             <h3>Ready to Respond &mdash; <em>ready</em></h3>
             <p>Once all body data has been received, the handler <em>ready</em> callback is invoked. At this stage, 
             the handler has all the request information and can fully process the request. The handler may start or
             fully generate the response to the request.</p>
+
             <h3>Sending Responses &mdash; <em>outgingService</em></h3>
             <p>A handler can write a response directly via httpWrite. Alternatively, it can create packets and queue them on its own outgoingService queue. Thereafter, the outgoingService callback is invoked to process these packets. This pattern is useful for handlers that need to accumulate response data before flushing to the client.</p>
+
             <h3>Pipeline Writable &mdash; <em>writable</em></h3>
             <p>Some handlers may generate more response data than can be efficiently buffered without consuming too much 
                 memory. If the output TCP/IP socket to the client is full, a handler may not be able to continue processing until this data
@@ -328,7 +341,8 @@
             <h2>Generating Responses</h2>
             <p>An HTTP response consists of a status code, a set of HTTP headers and optionally a response body. If a
             status is not set, the successful status of 200 will be used. If not custom headers are defined, then a
-          minimal standard set will be generated.</p>
+            minimal standard set will be generated.</p>
+
             <h3>Setting Status and Headers</h3>
             <p>The response status may be set via:
                 <a href="../ref/api/http.html#group___http_tx_1gab965a17de1c0a823eec176bdf95b2bee">httpSetStatus</a>. 
@@ -370,6 +384,7 @@ httpError(conn, 504, HTTP_ABOR, "Can't continue with the request");
             Use the <a href="../ref/api/http.html#group___http_tx_1ga616290c9e8fe95419d3a31f6fbb870b5">httpRedirect</a> call 
             to redirect the client. For example:
             <pre class="ui code segment">httpRedirect(conn, HTTP_CODE_MOVED_PERMANENTLY, uri);</pre>
+
             <h3>Generating Response Body</h3>
             <p>The simplest way to generate a response is to use 
             <a href="../ref/api/http.html#group___http_queue_1ga5599a178a2bab73929795952231d6e6a">httpWrite</a>. 
@@ -385,6 +400,7 @@ httpFinalizeOutput(conn);
 </pre>
             <p>You can call httpFinalize if you have generated all the response output and completed all processing.
             This implies httpFinalizeOutput and may then discard any remaining input.</p>
+
             <a id="nonblocking"></a>
             <h3>Generating Responses without Blocking</h3>
             <p>If a handler must generate a lot of response data, it should take care not to 
@@ -421,14 +437,17 @@ static void writable(HttpQueue *q)
 </pre>
             <p>This (trivial) example writes data in chunks each time the <em>writable</em> callback is invoked.
             When output is complete and the request has been processed, the example calls httpFinalize.</p>
+
             <h3>Flushing Data</h3>
             <p>Calling httpWrite will not automatically send the data to the client. Appweb buffers such output data to aggregate data into more efficient larger packets. If you wish to send buffered data to the client immediately, call 
             <a href="../ref/api/http.html#group___http_tx_1ga23c2dd9ef6d1b76a146bb93731fa7b7d">httpFlush</a>.
             To ensure output data has been fully written to the network, use 
             <a href="../ref/api/http.html#group___http_queue_1gac9d6922973cb9cbb0debd5c20e14577b">httpFlushQueue</a>(conn-&gt;writeq, HTTP_BLOCK).</p>
+
         <a id="paradigms"></a>
         <h2>Response Paradigms</h2>
         <p>A handler may use one of several paradigms to implement how it responds to requests.</p>
+
         <h3>Blocking</h3>
         <p>A handler may generate its entire response in its start(), or ready() callbacks and may block if required while
         output drains to the client. In this paradigm, httpWrite is typically used and Appweb will automatically buffer
@@ -440,12 +459,14 @@ static void writable(HttpQueue *q)
         completes, and so is more costly in terms of Appweb resources. Use care when using this paradigm for larger
         responses. Ensure you have provided sufficient worker threads and/or this kind of request is infrequent.
         Otherwise this can lead to a denial-of-service vulnerability.</p>
+
         <h3>Non-Blocking</h3>
         <p>A more advanced technique is to write data in portions from the writable() callback. The callback will be
         invoked whenever the pipeline can absorb more data. The handler should test the <em>q-&gt;max, q-&gt;count</em> and
         <em>q-&gt;packetSize</em> values to determine how much to write before returning from writable(). The 
         <a href="../ref/api/http.html#group___http_tx_1ga49edf0602dd2143b518c247f9cee8720">httpFinalizeOutput</a>
         routine should be called when the output is fully generated.</p>
+
         <h3>Async Generation</h3>
         <p>A handler can asynchronously generate response data outside of the typical handler callbacks. This may be in
         response to an application or device vent. Consequently, care must be taken to ensure thread safety. Appweb
@@ -497,10 +518,12 @@ void myEvent(HttpConn *conn, MprEvent *event) {
             href="../ref/api/http.html#group___http_conn_1ga2dabae1fcd13e8f482399d43133f4a69">httpStealSocketHandle</a>. 
             This terminates the request and connection, but preserves the open socket handle. This is useful for 
             upgrading from HTTP to a custom protocols after an initial HTTP connection is established.</p>
+
         <a id="coding"></a>
         <h2>Coding Issues</h2>
         <p>There are a few coding issues to keep in mind when creating handlers. Appweb is a multithreaded event loop
         server. As such, handlers must cooperate and take care when using resources.</p>
+
         <h3>Handler and Queue State</h3>
         <p>Sometimes a handler needs to store state information that can be retained and preserved during a garbage
         collection cycle. 
@@ -514,6 +537,7 @@ void myEvent(HttpConn *conn, MprEvent *event) {
             HttpQueue.staticData. Use these to store references to memory allocated by malloc.</p>
         <p>See:
             <a href="../ref/memory.html">Appweb Memory</a> for details about memory allocation. </p>
+
         <a id="defining"></a>
         <h2>Defining a Handler</h2>
         <p>To define an Appweb handler, you must do three things:
@@ -539,6 +563,7 @@ int maMyModuleInit(Http *http, MprModule *mp)
     return 0;
 }
 </pre>
+
         <h2>Connection State</h2>
         <p>As a handler progresses in its service of a request, it is often necessary to examine the state of the
             request or underlying connection. Appweb provides a set of object fields that can be examined.
@@ -566,6 +591,7 @@ int maMyModuleInit(Http *http, MprModule *mp)
                         response has been initiated httpWrite, httpSetStatus etc.</td></tr>
                 </tbody>
             </table>
+
             <h3>Blocking</h3>
             <p>Handlers may only block in their <em>open</em>, <em>close</em>, <em>ready</em>, <em>start</em> and
             <em>writable</em> callbacks. Handlers may never block in any other callback.
@@ -610,6 +636,7 @@ int maMyModuleInit(Http *http, MprModule *mp)
             <p>See the <a
                 href="https://github.com/embedthis/appweb/tree/master/samples/simple-handler">simple-handler</a> for a
                 working handler example.</p>
+
             <p>Here are links to some of the Appweb supplied handlers: </p>
             <ul>
                 <li><a href="https://github.com/embedthis/http/blob/master/src/dirHandler.c">Dir Handler</a></li>
@@ -617,12 +644,14 @@ int maMyModuleInit(Http *http, MprModule *mp)
                 <li><a href="https://github.com/embedthis/http/blob/master/src/passHandler.c">Pass through Handler</a></li>
                 <li><a href="https://github.com/embedthis/appweb/blob/master/src/modules/cgiHandler.c">CGI Handler</a></li>
             </ul>
+
             <p>Here are links to some of the Appweb supplied handlers: </p>
             <ul>
                 <li><a href="https://github.com/embedthis/http/blob/master/src/chunkFilter.c">Chunk Encoding Filter</a></li>
                 <li><a href="https://github.com/embedthis/http/blob/master/src/rangeFilter.c">Ranged Requests Filter</a></li>
                 <li><a href="https://github.com/embedthis/http/blob/master/src/uploadFilter.c">File UploadFilter</a></li>
             </ul>
+
             <p>Here are links to some of the Appweb supplied connectors: </p>
             <ul>
                 <li><a href="https://github.com/embedthis/http/blob/master/src/netConnector.c">Network Connector</a></li>
@@ -633,7 +662,7 @@ int maMyModuleInit(Http *http, MprModule *mp)
             <p>Here are links to some third party Appweb extensions</p>
             <ul>
                 <li><a href="https://github.com/embedthis/appweb-php/blob/master/phpHandler.c">PHP Handler</a></li>
-            </ul
+            </ul>
 
     </div>
     <div class="terms ui basic center aligned segment">
