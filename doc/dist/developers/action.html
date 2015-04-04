@@ -171,11 +171,6 @@
                 Developer's Guide
             </a>
             
-            <div class="divider">/</div>
-            <a class="section" href="frameworks.html">
-                Web Frameworks
-            </a>
-            
             
             <div class="divider">/</div>
             <a class="active section" href="action.html">Action Handler</a>
@@ -195,19 +190,22 @@
             C code. The action handler employs a direct mapping from URIs to C functions with no further parsing or 
             analysis of the URI than that provided by the Appweb router.</p>
             <a name="registering"></a>
+
             <h2>Registering Actions</h2>
             <p>Actions are registered by calling 
             <a href="../ref/api/http.html#http_8h_1a97b87c9cd5010bbd1188abfa67296768">httpDefineAction</a> and providing
             the function to run and the corresponding URI.
-<pre class="ui code segment">
+<pre class="code code segment">
 static void hello(HttpConn *conn)
 {
     httpWrite(conn, "Hello World\n");
     httpFinalize(conn);
 }
 httpDefineAction("/action/hello", hello);</pre>
+
             <p>The httpDefineAction call registers the hello C function to be invoked whenever the
             /action/hello URI is requested.</p>
+
             <a name="actions"></a>
             <h2>Actions</h2>
             <p>An action routine is responsible for rendering a complete response to the client. A response is
@@ -219,6 +217,7 @@ httpDefineAction("/action/hello", hello);</pre>
             Note: that the Appweb RequestTimeout and InactivityTimeout in appweb.conf may terminate a long running
             request. If you need to extend these timeouts for a request, call
             <a href="../ref/api/http.html#group___http_conn_1gaa4b4def5658e51af56d186e0b35ace55">httpSetTimeout</a>.</p>
+
             <a name="api"></a>
             <h2>Appweb API</h2>
             <p>The Appweb Native APIs consist of C language headers, function prototypes, structure definitions and
