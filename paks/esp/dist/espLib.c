@@ -4726,7 +4726,9 @@ PUBLIC void espRenderDocument(HttpConn *conn, cchar *target)
         WARNING: espRenderView may yield 
      */
     if (sends(dest, ".esp")) {
+        mprHold(dest);
         espRenderView(conn, dest, 0);
+        mprRelease(dest);
     } else {
         /*
             Last chance, forward to the file handler ... not an ESP request. 
