@@ -30238,7 +30238,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
         mprLog(2, "Activating native module %s", mp->name);
     }
     if (mp->entry) {
-        if ((fn = (MprModuleEntry) GetProcAddress((HINSTANCE) handle, mp->entry)) == 0) {
+        if ((fn = (MprModuleEntry) GetProcAddress(handle, mp->entry)) == 0) {
             mprError("Cannot load module %s\nReason: can't find function \"%s\"\n", mp->name, mp->entry);
             FreeLibrary((HINSTANCE) handle);
             return MPR_ERR_CANT_ACCESS;
