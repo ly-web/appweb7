@@ -889,8 +889,6 @@ typedef struct MprMem {
     uchar       mark: 1;                /**< GC mark indicator. Toggled for each GC pass by mark() when thread yielded. */
     uchar       fullRegion: 1;          /**< Block is an entire region - never on free queues . */
 
-uchar zeroed: 1;
-
 #if ME_MPR_ALLOC_DEBUG
     /* This increases the size of MprMem from 8 bytes to 16 bytes on 32-bit systems and 24 bytes on 64 bit systems */
     cchar       *name;                  /**< Debug name */

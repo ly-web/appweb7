@@ -328,7 +328,6 @@ PUBLIC void *mprAllocMem(size_t usize, int flags)
     if (flags & MPR_ALLOC_ZERO && !mp->fullRegion) {
         /* Regions are zeroed by vmalloc */
         memset(ptr, 0, GET_USIZE(mp));
-        mp->zeroed = 1;
     }
     CHECK(mp);
     monitorStack();
@@ -373,12 +372,6 @@ PUBLIC void *mprReallocMem(void *ptr, size_t usize)
 
     oldUsize = GET_USIZE(mp);
     if (usize <= oldUsize) {
-#if DEPRECATED || 1
-        /* Remove mp->zered in version 6 */
-        if (!mp->zeroed) {
-            assert(mp->zeroed);
-        }
-#endif
         return ptr;
     }
     if ((newptr = mprAllocMem(usize, mp->hasManager ? MPR_ALLOC_MANAGER : 0)) == NULL) {
@@ -390,15 +383,6 @@ PUBLIC void *mprReallocMem(void *ptr, size_t usize)
     }
     oldSize = mp->size;
     memcpy(newptr, ptr, oldSize - sizeof(MprMem));
-
-#if DEPRECATED || 1
-    /*
-        Zero new memory just for safety. But note, this routine does not guarantee that
-        new memory will be zeroed. If the block is already of sufficient size, the block
-        will be reused, but the original block may not have been zeroed when first allocated.
-     */
-    memset(&((char*) newptr)[oldUsize], 0, GET_USIZE(newb) - oldUsize);
-#endif
     return newptr;
 }
 
