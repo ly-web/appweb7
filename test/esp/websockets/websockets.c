@@ -242,7 +242,6 @@ static void chat_action()
 ESP_EXPORT int esp_controller_app_websockets(HttpRoute *route) {
     clients = mprCreateList(0, 0);
     mprAddRoot(clients);
-print("EEE");
     espDefineAction(route, "basic/construct", dummy_action);
     espDefineAction(route, "basic/open", dummy_action);
     espDefineAction(route, "basic/send", dummy_action);

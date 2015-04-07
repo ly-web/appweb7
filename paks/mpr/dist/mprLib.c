@@ -328,6 +328,7 @@ PUBLIC void *mprAllocMem(size_t usize, int flags)
     if (flags & MPR_ALLOC_ZERO && !mp->fullRegion) {
         /* Regions are zeroed by vmalloc */
         memset(ptr, 0, GET_USIZE(mp));
+        mp->zeroed = 1;
     }
     CHECK(mp);
     monitorStack();
@@ -353,6 +354,10 @@ PUBLIC void *mprAllocFast(size_t usize)
 }
 
 
+/*
+    This routine is defined to not zero. However, we zero for some legacy applications.
+    This is not guaranteed by the API definition.
+ */
 PUBLIC void *mprReallocMem(void *ptr, size_t usize)
 {
     MprMem      *mp, *newb;
@@ -368,6 +373,12 @@ PUBLIC void *mprReallocMem(void *ptr, size_t usize)
 
     oldUsize = GET_USIZE(mp);
     if (usize <= oldUsize) {
+#if DEPRECATED || 1
+        /* Remove mp->zered in version 6 */
+        if (!mp->zeroed) {
+            assert(mp->zeroed);
+        }
+#endif
         return ptr;
     }
     if ((newptr = mprAllocMem(usize, mp->hasManager ? MPR_ALLOC_MANAGER : 0)) == NULL) {
@@ -379,10 +390,15 @@ PUBLIC void *mprReallocMem(void *ptr, size_t usize)
     }
     oldSize = mp->size;
     memcpy(newptr, ptr, oldSize - sizeof(MprMem));
+
+#if DEPRECATED || 1
     /*
-        New memory is zeroed
+        Zero new memory just for safety. But note, this routine does not guarantee that
+        new memory will be zeroed. If the block is already of sufficient size, the block
+        will be reused, but the original block may not have been zeroed when first allocated.
      */
     memset(&((char*) newptr)[oldUsize], 0, GET_USIZE(newb) - oldUsize);
+#endif
     return newptr;
 }
 
@@ -6697,6 +6713,7 @@ static void prepWinProgram(MprCmd *cmd)
                 cmd->argv[0] = sclone(shell);
                 cmd->argv[1] = path;
                 cmd->argc += 1;
+                assert(cmd->argv[cmd->argc] == 0);
             }
         } else {
             mprCloseFile(file);
@@ -6731,7 +6748,10 @@ static void prepWinCommand(MprCmd *cmd)
      */
     argc = 0;
     for (len = 0, ap = cmd->argv; *ap; ap++) {
-        len += (slen(*ap) * 2) + 1 + 2;         /* Space and possible quotes and worst case backquoting */
+        /* 
+            Space and possible quotes and worst case backquoting 
+         */
+        len += (slen(*ap) * 2) + 2 + 1;
         argc++;
     }
     cmd->command = mprAlloc(len + 1);
@@ -15309,6 +15329,7 @@ static int growList(MprList *lp, int incr)
         assert(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
+    memset(&lp->items[lp->size], 0, (len - lp->size) * sizeof(void*));
     lp->size = len;
     return 0;
 }

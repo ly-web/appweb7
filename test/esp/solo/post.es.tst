@@ -22,12 +22,9 @@ for (i in 64) {
 count = sizes[tdepth()] * 1024
 
 function postTest(url: String) {
-    // print("@@@@ Writing " + count * buf.length + " to " + url)
     http.post(HTTP + url)
-    // print("Count " + count + " buf " + buf.length + " total " + count * buf.length)
     for (i in count) {
-        let n = http.write(buf)
-        // print('WROTE', n)
+        http.write(buf)
     }
     http.wait(120 * 1000)
     ttrue(http.status == 200)

@@ -50,6 +50,7 @@ Me.load({
             action: `run('testme --depth ' + me.settings.depth)`,
             generate: false,
             platforms: [ 'local' ],
+            depends: [ 'clean-test', 'build' ],
         },
 
         'auth.conf': {
