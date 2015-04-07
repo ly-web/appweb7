@@ -17159,7 +17159,9 @@ PUBLIC MprModule *mprCreateModule(cchar *name, cchar *path, cchar *entry, void *
         return 0;
     }
     mp->name = sclone(name);
-    mp->path = sclone(path);
+    if (path && *path) {
+        mp->path = sclone(path);
+    }
     if (entry && *entry) {
         mp->entry = sclone(entry);
     }
