@@ -6683,7 +6683,16 @@ static void prepWinProgram(MprCmd *cmd)
                         shell = mprJoinPath(mprGetPathDir(path), shell);
                     }
                 }
+                /*
+                    Get length of argv with NULL and add one
+                 */
+                assert(cmd->argv[cmd->argc] == 0);
                 cmd->argv = mprRealloc((void*) cmd->argv, (cmd->argc + 2) * sizeof(char*));
+                cmd->argv[cmd->argc + 1] = 0;
+
+                /*
+                    Copy up to make room to insert the shell argument. This copies the original NULL
+                 */
                 memmove((void*) &cmd->argv[1], (void*) cmd->argv, sizeof(char*) * cmd->argc);
                 cmd->argv[0] = sclone(shell);
                 cmd->argv[1] = path;
