@@ -120,7 +120,7 @@ static void big_response()
      */
     buf = mprCreateBuf(51000, 0);
     mprAddRoot(buf);
-    count = 1000;    
+    count = 1000;
     for (i = 0; i < count; i++) {
         mprPutToBuf(buf, "%8d:01234567890123456789012345678901234567890\n", i);
         mprYield(0);

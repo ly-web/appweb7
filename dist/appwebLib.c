@@ -1477,7 +1477,7 @@ static int limitRequestHeaderDirective(MaState *state, cchar *key, cchar *value)
 static int limitResponseBodyDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->transmissionBodySize = httpGetNumber(value);
+    state->route->limits->txBodySize = httpGetNumber(value);
     return 0;
 }
 
