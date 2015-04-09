@@ -1433,7 +1433,7 @@ static int limitRequestsPerClientDirective(MaState *state, cchar *key, cchar *va
 static int limitRequestBodyDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->receiveBodySize = httpGetNumber(value);
+    state->route->limits->rxBodySize = httpGetNumber(value);
     return 0;
 }
 
@@ -1444,7 +1444,7 @@ static int limitRequestBodyDirective(MaState *state, cchar *key, cchar *value)
 static int limitRequestFormDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->receiveFormSize = httpGetNumber(value);
+    state->route->limits->rxFormSize = httpGetNumber(value);
     return 0;
 }
 
