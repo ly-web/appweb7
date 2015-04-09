@@ -132,23 +132,7 @@ PUBLIC int maParseConfig(cchar *path)
     int         rc;
 
     mprLog("info appweb", 2, "Using config file %s", mprGetRelPath(path, 0));
-
     route = httpGetDefaultRoute(0);
-
-#if UNUSED
-    cchar       *dir;
-    dir = mprGetAbsPath(mprGetPathDir(path));
-    httpSetRouteHome(route, dir);
-    httpSetRouteDocuments(route, dir);
-    httpSetRouteVar(route, "LOG_DIR", ".");
-#ifdef ME_VAPP_PREFIX
-    httpSetRouteVar(route, "INC_DIR", ME_VAPP_PREFIX "/inc");
-#endif
-#ifdef ME_SPOOL_PREFIX
-    httpSetRouteVar(route, "SPL_DIR", ME_SPOOL_PREFIX);
-#endif
-    httpSetRouteVar(route, "BIN_DIR", mprJoinPath(HTTP->platformDir, "bin"));
-#endif
 
     if (smatch(mprGetPathExt(path), "json")) {
         rc = httpLoadConfig(route, path);
