@@ -20286,7 +20286,7 @@ static void outNum(Format *fmt, cchar *prefix, uint64 value)
 #if ME_FLOAT
 static void outFloat(Format *fmt, char specChar, double value)
 {
-    char    result[256], *cp;
+    char    result[2048], *cp;
     int     c, fill, i, len, index;
 
     result[0] = '\0';
