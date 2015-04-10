@@ -49,7 +49,7 @@ Me.load({
         },
 
         'esp-paks': {
-            home: '${TOP}/src/paks',
+            home: '${TOP}/paks',
             path: '${OUT}/esp/',
             files: [ 'esp-*/**' ],
             platforms: [ 'local' ],
@@ -58,7 +58,7 @@ Me.load({
             build: `
                 trace('Copy', me.dir.out.join('esp'))
                 /* Force all esp paks to be the same version as appweb */
-                let version = me.dir.src.join('package.json').readJSON().version || '0.0.0'
+                let version = me.dir.top.join('package.json').readJSON().version || '0.0.0'
                 for each (pak in Path('.').files('esp-*')) {
                     let package = pak.join('package.json');
                     let json = package.readJSON();
@@ -75,9 +75,10 @@ Me.load({
                         }
                     }
                 }
+                /* UNUSED with new pak
                 if (Cmd.locate('pak') && !me.generating) {
                     run('pak -f -q cache ' + Path('.').files('esp-*').join(' '), {noshow: true}) 
-                }
+                } */
             `
         },
     },
