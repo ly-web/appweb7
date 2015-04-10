@@ -36,7 +36,7 @@
         "http": "^6",
         "mpr": "^6.0",
         "osdep": "^0.8",
-        "pcre": "^1.0",
+        "pcre": "^1.0"
     },
     "optionalDependencies": {
         "esp": "^5",
