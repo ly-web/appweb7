@@ -222,7 +222,7 @@ Filename: "{app}/bin/appman.exe"; Parameters: "start"; WorkingDir: "{app}"; Stat
 
 Filename: "{app}/bin/${settings.name}Monitor.exe"; Parameters: ""; WorkingDir: "{app}/bin"; StatusMsg: "Starting the Appweb Monitor"; Flags: waituntilidle;
 
-Filename: "http://appwebserver.org/products/appweb/doc/index.html"; Description: "View the Documentation"; Flags: skipifsilent waituntilidle shellexec postinstall;
+Filename: "http://embedthis.com/appweb/doc/index.html"; Description: "View the Documentation"; Flags: skipifsilent waituntilidle shellexec postinstall;
 
 [UninstallRun]
 Filename: "{app}/bin/${settings.name}Monitor.exe"; Parameters: "--stop"; WorkingDir: "{app}"; StatusMsg: "Stopping the Appweb Monitor"; Flags: waituntilterminated;
