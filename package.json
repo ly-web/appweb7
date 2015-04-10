@@ -33,15 +33,10 @@
         }
     ],
     "dependencies": {
-        "esp": "^5.4",
-        "est": "^0.6",
         "http": "^6",
         "mpr": "^6.0",
         "osdep": "^0.8",
         "pcre": "^1.0",
-        "sqlite": "^1.0",
-        "ssl": "^0.8",
-        "zlib": "^1.0"
     },
     "optionalDependencies": {
         "esp": "^5",
