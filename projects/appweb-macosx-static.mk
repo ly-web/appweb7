@@ -976,8 +976,10 @@ installBinary: $(DEPS_57)
 	mkdir -p "$(ME_WEB_PREFIX)/test" ; \
 	cp src/server/web/test/bench.html $(ME_WEB_PREFIX)/test/bench.html ; \
 	cp src/server/web/test/test.cgi $(ME_WEB_PREFIX)/test/test.cgi ; \
+	cp src/server/web/test/test.ejs $(ME_WEB_PREFIX)/test/test.ejs ; \
 	cp src/server/web/test/test.esp $(ME_WEB_PREFIX)/test/test.esp ; \
 	cp src/server/web/test/test.html $(ME_WEB_PREFIX)/test/test.html ; \
+	cp src/server/web/test/test.php $(ME_WEB_PREFIX)/test/test.php ; \
 	cp src/server/web/test/test.pl $(ME_WEB_PREFIX)/test/test.pl ; \
 	cp src/server/web/test/test.py $(ME_WEB_PREFIX)/test/test.py ; \
 	mkdir -p "$(ME_WEB_PREFIX)/test" ; \
