@@ -36,3 +36,4 @@ appweb-macosx-mine*
 .DS_Store
 *.dmp
 cache/
+.cdrc
