@@ -35,3 +35,4 @@ appweb-macosx-mine*
 *.mdb
 .DS_Store
 *.dmp
+cache/

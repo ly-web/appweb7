@@ -11,7 +11,7 @@ application/sdp sdp
 application/smil smi smil
 application/vnd.mif mif
 application/vnd.ms-excel xls
-application/vnd.ms-fontobject eof
+application/vnd.ms-fontobject eof eot
 application/vnd.ms-powerpoint ppt
 application/vnd.rn-realmedia rm
 application/vnd.wap.wbxml wbxml

@@ -14,6 +14,7 @@ The following samples are available:
 * [cpp-handler](cpp-handler/README.md)              C++ Handler
 * [cpp-module](cpp-module/README.md)                C++ Module
 * [deploy-server](deploy-server/README.md)          Deploy Appweb files for copying to a target.
+* [esp-hosted](esp-hosted/README.md)                Host an ESP application.
 * [login-basic](login-basic/README.md)              Login using Basic or Digest authentication (not recommended).
 * [login-form](login-form/README.md)                Login using Web Forms (recommended).
 * [max-server](max-server/README.md)                Maximum configuration in appweb.conf.
@@ -68,5 +69,5 @@ For non-commercial customers, you may ask questions in the form of well describe
 Copyright
 ---
 
-Copyright (c) 2003-2014 Embedthis Software, LLC. All Rights Reserved. Embedthis and Appweb are trademarks of 
+Copyright (c) Embedthis Software. All Rights Reserved. Embedthis and Appweb are trademarks of 
 Embedthis Software, LLC. Other brands and their products are trademarks of their respective holders.

@@ -1,5 +1,8 @@
  
-        <div class="ui inverted menu">
+        <div class="ui fixed inverted menu">
+            <div class="ui sidebar-launch button">
+                <i class="icon list layout"></i>
+            </div>
             <div class="right menu">
                 <@ partial('menu') @>
             </div>
@@ -16,10 +19,10 @@
             <@ } } @>
             <@ if (meta.url.path != 'index.html') { @>
             <div class="divider">/</div>
-            <a class="active section" href="<@= meta.basename @>"><@= meta.cookie || meta.title @></a>
+            <a class="active section" href="<@= meta.path.basename @>"><@= meta.cookie || meta.title @></a>
             <@ } @>
         </div>
         <@ } @>
-        <div class="ui right floated basic segment version">
+        <div class="version desktop-only">
             v<@= Path('../package.json').readJSON().version @>
         </div>

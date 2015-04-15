@@ -5,11 +5,12 @@
 Me.load({
     targets: {
         api: {
+            depends: ['render-doc'], 
             action: `
-                apidoc('api/appweb.dox', '${SRC}/src/appweb.h', 'APPWEB', 'api/*.tags')
-                for each (let src: Path in ['api/appweb.html', 'api/http.html', 'api/mpr.html', 'api/osdep.html', 
-                        'api/esp.html', 'api/edi.html']) {
-                    apiLayout(src, Path('public/ref').join(src))
+                apidoc('api/appweb.dox', '${TOP}/src/appweb.h', 'APPWEB')
+                let files = Path().files(['api/appweb.html', me.dir.paks.join('*/doc/api/*.html')])
+                for each (src in files) {
+                    apiLayout(src, Path('dist/ref').join(src))
                 }
             `
         },

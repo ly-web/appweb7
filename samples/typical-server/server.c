@@ -40,7 +40,6 @@ static int changeRoot(cchar *jail);
 static int checkEnvironment(cchar *program);
 static int createEndpoints(int argc, char **argv);
 static int findAppwebConf();
-static void loadStaticModules();
 static void manageApp(AppwebApp *app, int flags);
 static void usageError();
 
@@ -200,8 +199,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if (jail && changeRoot(jail) < 0) {
         exit(8);
     }
-    loadStaticModules();
-
     /*
         Open the sockets to listen on
      */
@@ -256,35 +253,6 @@ static int changeRoot(cchar *jail)
 
 
 /*
-    If doing a static build, must now reference required modules to force the linker to include them.
-    On linux we cannot lookup symbols using dlsym(), so we must invoke explicitly here.
-
-    Add your modules here if you are doing a static link.
- */
-static void loadStaticModules()
-{
-#if ME_STATIC
-    Http    *http = MPR->httpService;
-#if ME_COM_CGI
-    maCgiHandlerInit(http, mprCreateModule("cgiHandler", 0, 0, http));
-#endif
-#if ME_COM_ESP
-    maEspHandlerInit(http, mprCreateModule("espHandler", 0, 0, http));
-#endif
-#if ME_COM_EJS
-    maEspHandlerInit(http, mprCreateModule("ejsHandler", 0, 0, http));
-#endif
-#if ME_COM_PHP
-    maPhpHandlerInit(http, mprCreateModule("phpHandler", 0, 0, http));
-#endif
-#if ME_COM_SSL
-    maSslModuleInit(http, mprCreateModule("sslModule", 0, 0, http));
-#endif
-#endif /* ME_STATIC */
-}
-
-
-/*
     Create the listening endoints
  */
 static int createEndpoints(int argc, char **argv)
@@ -296,22 +264,11 @@ static int createEndpoints(int argc, char **argv)
     port = -1;
     argind = 0;
 
-    if (argc == 0) {
-        if (maParseConfig(app->configFile, 0) < 0) {
-            return MPR_ERR_CANT_CREATE;
-        }
-    } else {
-        app->documents = sclone(argv[argind++]);
-        if (argind == argc) {
-            if (maConfigureServer(NULL, app->home, app->documents, NULL, ME_HTTP_PORT, 0) < 0) {
-                return MPR_ERR_CANT_CREATE;
-            }
-        } else while (argind < argc) {
-            mprParseSocketAddress(argv[argind++], &ip, &port, &secure, 80);
-            if (maConfigureServer(NULL, app->home, app->documents, ip, port, 0) < 0) {
-                return MPR_ERR_CANT_CREATE;
-            }
-        }
+    if (argc > argind) {
+        mprParseSocketAddress(argv[argind++], &ip, &port, &secure, port);
+    }
+    if (maConfigureServer(app->configFile, app->home, app->documents, ip, port) < 0) {
+        return MPR_ERR_CANT_CREATE;
     }
     return 0;
 }
@@ -385,7 +342,7 @@ static int checkEnvironment(cchar *program)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+    Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

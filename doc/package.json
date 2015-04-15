@@ -1,17 +1,14 @@
 {
-    "name": "doc",
+    "name": "appweb-doc",
+    "title": "Appweb Documentation",
     "dependencies": {
-        "jquery": "~1.11",
+        "exp-css": "~0.2",
+        "exp-js": "~0.2",
+        "exp-less": "~0.2",
+        "me-docstyle": "~0.8"
     },
-    "directories": {
-        "lib": "files/lib"
-    },
-    "import": true,
-    "optionalDependencies": {
-    },
-    "app": {
-        "client": {
-            "scripts": []
-        }
+    "pak": {
+        "mode": "debug",
+        "import": true
     }
 }

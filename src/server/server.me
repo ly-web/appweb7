@@ -6,46 +6,8 @@ Me.load({
     targets: {
         appweb: {
             type: 'exe',
-            depends: [ 'libappweb', 'libslink' ],
+            depends: [ 'libappweb' ],
             sources: [ 'appweb.c' ],
-            postblend: function (target) {
-                let sources = target.sources
-                if (me.settings.rom) {
-                    sources.push(target.home.join('romFiles.c'))
-                }
-                if (target.static) {
-                    target.depends += ['libmod_esp', 'libmod_ssl', 'libmod_ejs', 'libmod_php', 'libmod_cgi']
-                }
-            },
-        },
-
-        /*
-            Static library for esp applications. Always built but only contains code if static linking.
-            The slink.c is generated via 'me genslink' to contain the static initializer calls for ESP apps. 
-         */
-        libslink: {
-            type: 'lib',
-            sources: [ 'slink.c' ],
-            postblend: function (target) {
-                if (Path('slink.c').exists) {
-                    /* Dynamically compute the required sources for static linking */
-                    let sources = me.targets.libslink.sources
-                    for each (file in Path('slink.c').readString().match(/SOURCE [^ ]*/g)) {
-                        sources.push(TARGET.home.join(file.replace(/SOURCE /mg, '')))
-                    }
-                }
-                if (target.static) {
-                    target.depends += ['esp', 'libmod_esp']
-                }
-            },
-        },
-
-        genslink: {
-            run: `esp --static --genlink slink.c compile`,
-            message: 'Create: slink.c',
-            generate: true,
-            depends: [ 'esp' ],
-            ifdef: [ 'esp' ],
         },
 
         appwebMonitor: {

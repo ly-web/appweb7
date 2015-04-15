@@ -7,9 +7,8 @@ Me.load({
         libappweb: {
             type: 'lib',
             headers: [ '*.h' ],
-            sources: [ '*.c' ],
-            exclude: /romFiles/,
-            depends: [ 'libhttp', 'libmpr' ],
+            sources: [ '*.c', 'modules/*.c' ],
+            depends: [ 'libesp', 'libhttp', 'libmpr', 'libmprssl' ],
         }
 	}
 })

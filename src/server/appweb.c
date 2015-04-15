@@ -14,8 +14,8 @@
             --show                  # Show route table
             --trace traceFile:level # Log to file file at verbosity level
             --version               # Output version information
-            -v                      # Same as --log stderr:2
-            -DIGIT                  # Same as --log stderr:DIGIT
+            -v                      # Same as --log stdout:2
+            -DIGIT                  # Same as --log stdout:DIGIT
  */
 
 /********************************* Includes ***********************************/
@@ -30,9 +30,9 @@ typedef struct AppwebApp {
     Mpr         *mpr;
     MprSignal   *traceToggle;
     MprSignal   *statusCheck;
-    char        *documents;
-    char        *home;
-    char        *configFile;
+    cchar       *documents;
+    cchar       *home;
+    cchar       *configFile;
     char        *pathVar;
     int         show;
     int         workers;
@@ -44,8 +44,7 @@ static AppwebApp *app;
 
 static int changeRoot(cchar *jail);
 static int checkEnvironment(cchar *program);
-static int findAppwebConf();
-static void loadStaticModules();
+static int findConfigFile();
 static void manageApp(AppwebApp *app, int flags);
 static int createEndpoints(int argc, char **argv);
 static void usageError();
@@ -76,10 +75,10 @@ static void usageError();
 
 MAIN(appweb, int argc, char **argv, char **envp)
 {
-    Mpr     *mpr;
-    cchar   *argp, *jail;
-    char    *logSpec, *traceSpec;
-    int     argind;
+    Mpr         *mpr;
+    cchar       *argp, *jail;
+    char        *logSpec, *traceSpec;
+    int         argind;
 
     jail = 0;
     logSpec = 0;
@@ -146,6 +145,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
                 mprLog("error appweb", 0, "Cannot change directory to %s", app->home);
                 exit(4);
             }
+            httpSetRouteHome(httpGetDefaultRoute(0), app->home);
 
         } else if (smatch(argp, "--log") || smatch(argp, "-l")) {
             if (argind >= argc) {
@@ -164,6 +164,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
                 usageError();
             }
             app->workers = atoi(argv[++argind]);
+            mprSetMaxWorkers(app->workers);
 
         } else if (smatch(argp, "--show") || smatch(argp, "-s")) {
             app->show = 1;
@@ -176,10 +177,10 @@ MAIN(appweb, int argc, char **argv, char **envp)
 
         } else if (smatch(argp, "--verbose") || smatch(argp, "-v")) {
             if (!logSpec) {
-                logSpec = sfmt("stderr:2");
+                logSpec = sfmt("stdout:2");
             }
             if (!traceSpec) {
-                traceSpec = sfmt("stderr:2");
+                traceSpec = sfmt("stdout:2");
             }
 
         } else if (smatch(argp, "--version") || smatch(argp, "-V")) {
@@ -188,10 +189,10 @@ MAIN(appweb, int argc, char **argv, char **envp)
 
         } else if (*argp == '-' && isdigit((uchar) argp[1])) {
             if (!logSpec) {
-                logSpec = sfmt("stderr:%d", (int) stoi(&argp[1]));
+                logSpec = sfmt("stdout:%d", (int) stoi(&argp[1]));
             }
             if (!traceSpec) {
-                traceSpec = sfmt("stderr:%d", (int) stoi(&argp[1]));
+                traceSpec = sfmt("stdout:%d", (int) stoi(&argp[1]));
             }
 
         } else if (smatch(argp, "-?") || scontains(argp, "-help")) {
@@ -219,20 +220,15 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if (checkEnvironment(argv[0]) < 0) {
         exit(6);
     }
-    if (argc == argind && !app->configFile) {
-        if (findAppwebConf() < 0) {
-            exit(7);
-        }
+    if (argc == argind && findConfigFile() < 0) {
+        exit(7);
     }
-    loadStaticModules();
-
     if (jail && changeRoot(jail) < 0) {
         exit(8);
     }
     if (createEndpoints(argc - argind, &argv[argind]) < 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
-    appwebStaticInitialize();
     httpSetInfoLevel(0);
     if (httpStartEndpoints() < 0) {
         mprLog("error appweb", 0, "Cannot listen on HTTP endpoints, exiting.");
@@ -286,67 +282,26 @@ static int changeRoot(cchar *jail)
 }
 
 
-static void loadStaticModules()
-{
-#if ME_STATIC
-    /*
-        If doing a static build, must now reference required modules to force the linker to include them.
-        On linux we cannot lookup symbols with dlsym(), so we must invoke explicitly here.
-
-        Add your modules here if you are doing a static link.
-     */
-    Http *http = HTTP;
-#if ME_COM_CGI
-    maCgiHandlerInit(http, mprCreateModule("cgiHandler", 0, 0, http));
-#endif
-#if ME_COM_ESP
-    maEspHandlerInit(http, mprCreateModule("espHandler", 0, 0, http));
-#endif
-#if ME_COM_EJS
-    maEspHandlerInit(http, mprCreateModule("ejsHandler", 0, 0, http));
-#endif
-#if ME_COM_PHP
-    maPhpHandlerInit(http, mprCreateModule("phpHandler", 0, 0, http));
-#endif
-#if ME_COM_SSL
-    maSslModuleInit(http, mprCreateModule("sslModule", 0, 0, http));
-#endif
-#endif /* ME_STATIC */
-}
-
-
 static int createEndpoints(int argc, char **argv)
 {
     char    *ip;
     int     argind, port, secure;
 
     ip = 0;
-    port = -1;
+    port = ME_HTTP_PORT;
     argind = 0;
 
     mprGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
 
-    if (argc == 0) {
-        if (maParseConfig(app->configFile, 0) < 0) {
-            return MPR_ERR_CANT_CREATE;
-        }
-    } else {
+    if (argc > argind) {
         app->documents = sclone(argv[argind++]);
-        if (argind == argc) {
-            if (maConfigureServer(NULL, app->home, app->documents, NULL, ME_HTTP_PORT, 0) < 0) {
-                return MPR_ERR_CANT_CREATE;
-            }
-        } else while (argind < argc) {
-            mprParseSocketAddress(argv[argind++], &ip, &port, &secure, 80);
-            if (maConfigureServer(NULL, app->home, app->documents, ip, port, 0) < 0) {
-                return MPR_ERR_CANT_CREATE;
-            }
-        }
     }
-    if (app->workers >= 0) {
-        mprSetMaxWorkers(app->workers);
+    if (argc > argind) {
+        mprParseSocketAddress(argv[argind++], &ip, &port, &secure, port);
     }
-    
+    if (maConfigureServer(app->configFile, app->home, app->documents, ip, port) < 0) {
+        return MPR_ERR_CANT_CREATE;
+    }
 #if ME_WIN_LIKE
     writePort();
 #elif ME_UNIX_LIKE
@@ -366,32 +321,50 @@ static int createEndpoints(int argc, char **argv)
         EXE/../BASE
         EXE/../appweb.conf
  */
-static int findAppwebConf()
+static int findConfigFile()
 {
-    char    *base, *filename;
+    cchar   *extensions[] = { "json", "conf", 0 };
+    cchar   *base, **ext, *name, *path;
 
+    if (app->configFile) {
+        return 0;
+    }
 #ifdef ME_CONFIG_FILE
-    base = sclone(ME_CONFIG_FILE);
+    name = sclone(ME_CONFIG_FILE);
 #else
-    base = mprJoinPathExt(mprGetAppName(), ".conf");
+    name = mprGetAppName();
 #endif
-#if !ME_ROM
-    filename = base;
-    if (!mprPathExists(filename, R_OK)) {
-        filename = mprJoinPath(app->home, base);
-        if (!mprPathExists(filename, R_OK)) {
-            filename = mprJoinPath(mprGetPathParent(mprGetAppDir()), base);
-            if (!mprPathExists(filename, R_OK)) {
-                filename = mprJoinPath(mprGetPathParent(mprGetAppDir()), "appweb.conf");
-                if (!mprPathExists(filename, R_OK)) {
-                    mprError("Cannot find config file %s", base);
-                    return MPR_ERR_CANT_OPEN;
-                }
-            }
+#if ME_ROM
+    app->configFile = name;
+#else
+    for (ext = extensions; *ext; ext++) {
+        base = mprReplacePathExt(name, *ext);
+        path = base;
+        if (mprPathExists(path, R_OK)) {
+            app->configFile = path;
+            break;
+        }
+        path = mprJoinPath(app->home, base);
+        if (mprPathExists(path, R_OK)) {
+            app->configFile = path;
+            break;
+        }
+        path = mprJoinPath(mprGetPathParent(mprGetAppDir()), base);
+        if (mprPathExists(path, R_OK)) {
+            app->configFile = path;
+            break;
+        }
+        path = mprJoinPath(mprGetPathParent(mprGetAppDir()), base);
+        if (mprPathExists(path, R_OK)) {
+            app->configFile = path;
+            break;
         }
     }
+    if (!app->configFile) {
+        mprError("Cannot find config file %s", name);
+        return MPR_ERR_CANT_OPEN;
+    }
 #endif
-    app->configFile = filename;
     return 0;
 }
 
@@ -416,9 +389,9 @@ static void usageError(Mpr *mpr)
         "    --name uniqueName       # Unique name for this instance\n"
         "    --show                  # Show route table\n"
         "    --trace traceFile:level # Trace to file at verbosity level (0-5)\n"
-        "    --verbose               # Same as --log stderr:2\n"
+        "    --verbose               # Same as --log stdout:2\n"
         "    --version               # Output version information\n"
-        "    --DIGIT                 # Same as --log stderr:DIGIT\n\n",
+        "    --DIGIT                 # Same as --log stdout:DIGIT\n\n",
         mprGetAppTitle(), name, name, name);
     exit(10);
 }
@@ -598,7 +571,7 @@ double  __dummy_appweb_floating_point_resolution(double a, double b, int64 c, in
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+    Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

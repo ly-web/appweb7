@@ -34,6 +34,7 @@ static void checkSsl(MaState *state)
 static int sslCaCertificatePathDirective(MaState *state, cchar *key, cchar *value)
 {
     char *path;
+    
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -50,6 +51,7 @@ static int sslCaCertificatePathDirective(MaState *state, cchar *key, cchar *valu
 static int sslCaCertificateFileDirective(MaState *state, cchar *key, cchar *value)
 {
     char *path;
+    
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -66,6 +68,7 @@ static int sslCaCertificateFileDirective(MaState *state, cchar *key, cchar *valu
 static int sslCertificateFileDirective(MaState *state, cchar *key, cchar *value)
 {
     char *path;
+    
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -82,6 +85,7 @@ static int sslCertificateFileDirective(MaState *state, cchar *key, cchar *value)
 static int sslCertificateKeyFileDirective(MaState *state, cchar *key, cchar *value)
 {
     char *path;
+    
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -251,7 +255,7 @@ static int sslProtocolDirective(MaState *state, cchar *key, cchar *value)
 /*
     Loadable module initialization. 
  */
-PUBLIC int maSslModuleInit(Http *http, MprModule *module)
+PUBLIC int httpSslInit(Http *http, MprModule *module)
 {
     HttpStage   *stage;
 
@@ -278,18 +282,12 @@ PUBLIC int maSslModuleInit(Http *http, MprModule *module)
 #endif
     return 0;
 }
-#else
-
-PUBLIC int maSslModuleInit(Http *http, MprModule *mp)
-{
-    return 0;
-}
 #endif /* ME_COM_SSL */
 
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+    Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

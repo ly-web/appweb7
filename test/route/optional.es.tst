@@ -10,15 +10,15 @@ let http: Http = new Http
 //  Test just a controller
 http.get(HTTP + "/route/optional/user")
 ttrue(http.status == 200)
-ttrue(http.response == "user-")
+ttrue(http.response == "user/")
 
 //  With trailing "/"
 http.get(HTTP + "/route/optional/user/")
 ttrue(http.status == 200)
-ttrue(http.response == "user-")
+ttrue(http.response == "user/")
 
 //  Test controller/action
 http.get(HTTP + "/route/optional/user/login")
 ttrue(http.status == 200)
-ttrue(http.response == "user-login")
+ttrue(http.response == "user/login")
 http.close()

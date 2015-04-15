@@ -21,7 +21,7 @@ Steps:
 
 This will copy the required Appweb files to deploy into the nominated directory.
 
-Other sets include: 'web', 'service', 'php', 'utils', 'test', 'dev', 'doc', 'package'
+Other sets include: 'web', 'service', 'utils', 'test', 'dev', 'doc', 'package'
 
 Documentation:
 ---

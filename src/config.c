@@ -18,21 +18,38 @@ static int addCondition(MaState *state, cchar *name, cchar *condition, int flags
 static int addUpdate(MaState *state, cchar *name, cchar *details, int flags);
 static bool conditionalDefinition(MaState *state, cchar *key);
 static int configError(MaState *state, cchar *key);
-static MaState *createState(int flags);
+static MaState *createState();
 static char *getDirective(char *line, char **valuep);
-static int getint(cchar *value);
-static int64 getnum(cchar *value);
 static void manageState(MaState *state, int flags);
 static int parseFileInner(MaState *state, cchar *path);
 static int parseInit();
 static int setTarget(MaState *state, cchar *name, cchar *details);
 
 /******************************************************************************/
+/*
+    Load modules builtin modules by default. Subsequent calls to the LoadModule directive will have no effect.
+ */
+PUBLIC int maLoadModules()
+{
+    int     rc;
 
-static int configureHandlers(HttpRoute *route)
+    rc = 0;
+#if ME_COM_CGI
+    rc += httpCgiInit(HTTP, mprCreateModule("cgi", NULL, NULL, HTTP));
+#endif
+#if ME_COM_ESP
+    rc += httpEspInit(HTTP, mprCreateModule("esp", NULL, NULL, HTTP));
+#endif
+#if ME_COM_SSL
+    rc += httpSslInit(HTTP, mprCreateModule("ssl", NULL, NULL, HTTP));
+#endif
+    return rc;
+}
+
+
+PUBLIC int configureHandlers(HttpRoute *route)
 {
 #if ME_COM_CGI
-    maLoadModule("cgiHandler", "libmod_cgi");
     if (httpLookupStage("cgiHandler")) {
         char    *path;
         httpAddRouteHandler(route, "cgiHandler", "cgi cgi-nph bat cmd pl py");
@@ -48,20 +65,17 @@ static int configureHandlers(HttpRoute *route)
         }
     }
 #endif
-#if ME_COM_ESP || ME_ESP_PRODUCT
-    maLoadModule("espHandler", "libmod_esp");
+#if ME_COM_ESP
     if (httpLookupStage("espHandler")) {
         httpAddRouteHandler(route, "espHandler", "esp");
     }
 #endif
-#if ME_COM_EJS || ME_EJS_PRODUCT
-    maLoadModule("ejsHandler", "libmod_ejs");
+#if ME_COM_EJS
     if (httpLookupStage("ejsHandler")) {
         httpAddRouteHandler(route, "ejsHandler", "ejs");
     }
 #endif
 #if ME_COM_PHP
-    maLoadModule("phpHandler", "libmod_php");
     if (httpLookupStage("phpHandler")) {
         httpAddRouteHandler(route, "phpHandler", "php");
     }
@@ -71,24 +85,24 @@ static int configureHandlers(HttpRoute *route)
 }
 
 
-PUBLIC int maConfigureServer(cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port, int flags)
+PUBLIC int maConfigureServer(cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port)
 {
     HttpEndpoint    *endpoint;
-    HttpHost        *host;
+    HttpRoute       *route;
 
+    route = httpGetDefaultRoute(0);
+    if (maLoadModules() < 0) {
+        return MPR_ERR_CANT_INITIALIZE;
+    }
     if (configFile) {
-        if (maParseConfig(mprGetAbsPath(configFile), flags) < 0) {
+        if (maParseConfig(mprGetAbsPath(configFile)) < 0) {
             return MPR_ERR_CANT_INITIALIZE;
         }
     } else {
-        if ((endpoint = httpCreateConfiguredEndpoint(NULL, home, documents, ip, port)) == 0) {
+        if ((endpoint = httpCreateConfiguredEndpoint(0, home, documents, ip, port)) == 0) {
             return MPR_ERR_CANT_OPEN;
         }
-        if (!(flags & MA_NO_MODULES)) {
-            if ((host = httpLookupHostOnEndpoint(endpoint, 0)) != 0) {
-                configureHandlers(host->defaultRoute);
-            }
-        }
+        configureHandlers(route);
     }
     return 0;
 }
@@ -111,38 +125,29 @@ static int openConfig(MaState *state, cchar *path)
 }
 
 
-PUBLIC int maParseConfig(cchar *path, int flags)
+PUBLIC int maParseConfig(cchar *path)
 {
-    MaState     *state;
     HttpRoute   *route;
-    cchar       *dir;
+    MaState     *state;
+    int         rc;
 
-    assert(path && *path);
+    mprLog("info appweb", 2, "Using config file %s", mprGetRelPath(path, 0));
+    route = httpGetDefaultRoute(0);
 
-    mprLog("info appweb", 2, "Using config file: \"%s\"", mprGetRelPath(path, 0));
-
-    state = createState(flags);
-    mprAddRoot(state);
-    route = state->route;
-    dir = mprGetAbsPath(mprGetPathDir(path));
-
-    httpSetRouteHome(route, dir);
-    httpSetRouteDocuments(route, dir);
-    httpSetRouteVar(route, "LOG_DIR", ".");
-#ifdef ME_VAPP_PREFIX
-    httpSetRouteVar(route, "INC_DIR", ME_VAPP_PREFIX "/inc");
-#endif
-#ifdef ME_SPOOL_PREFIX
-    httpSetRouteVar(route, "SPL_DIR", ME_SPOOL_PREFIX);
-#endif
-    httpSetRouteVar(route, "BIN_DIR", mprJoinPath(HTTP->platformDir, "bin"));
-
-    if (maParseFile(state, path) < 0) {
+    if (smatch(mprGetPathExt(path), "json")) {
+        rc = httpLoadConfig(route, path);
+    } else {
+        state = createState();
+        mprAddRoot(state);
+        rc = maParseFile(state, path);
         mprRemoveRoot(state);
-        return MPR_ERR_BAD_SYNTAX;
     }
-    mprRemoveRoot(state);
-    httpFinalizeRoute(state->route);
+    if (rc < 0) {
+        return rc;
+    }
+    httpFinalizeRoute(route);
+    httpAddHostToEndpoints(route->host);
+
     if (mprHasMemError()) {
         mprLog("error appweb memory", 0, "Memory allocation error when initializing");
         return MPR_ERR_MEMORY;
@@ -159,7 +164,7 @@ PUBLIC int maParseFile(MaState *state, cchar *path)
     assert(path && *path);
     if (!state) {
         lineNumber = 0;
-        topState = state = createState(0);
+        topState = state = createState();
         mprAddRoot(state);
     } else {
         topState = 0;
@@ -283,7 +288,7 @@ static int traceLogDirective(MaState *state, cchar *key, cchar *value)
                 level = (int) stoi(ovalue);
 
             } else if (smatch(option, "size")) {
-                size = (ssize) getnum(ovalue);
+                size = (ssize) httpGetNumber(ovalue);
 
             } else if (smatch(option, "formatter")) {
                 formatter = ovalue;
@@ -717,8 +722,8 @@ static int chrootDirective(MaState *state, cchar *key, cchar *value)
         mprLog("error appweb config", 0, "Cannot change working directory to %s", home);
         return MPR_ERR_CANT_OPEN;
     }
-    if (HTTP->flags & HTTP_UTILITY) {
-        /* Not running a web server but rather a utility like the "esp" generator program */
+    if (state->route->flags & HTTP_ROUTE_NO_LISTEN) {
+        /* Not running a web server */
         mprLog("info appweb config", 2, "Change directory to: \"%s\"", home);
     } else {
         if (chroot(home) < 0) {
@@ -991,7 +996,8 @@ static int errorDocumentDirective(MaState *state, cchar *key, cchar *value)
 static int errorLogDirective(MaState *state, cchar *key, cchar *value)
 {
     MprTicks    stamp;
-    char        *option, *ovalue, *tok, *path;
+    cchar       *path;
+    char        *option, *ovalue, *tok;
     ssize       size;
     int         level, flags, backup;
 
@@ -1008,12 +1014,15 @@ static int errorLogDirective(MaState *state, cchar *key, cchar *value)
 
     for (option = maGetNextArg(sclone(value), &tok); option; option = maGetNextArg(tok, &tok)) {
         if (!path) {
-            path = mprJoinPath(httpGetRouteVar(state->route, "LOG_DIR"), httpExpandRouteVars(state->route, option));
+            if ((path = httpGetRouteVar(state->route, "LOG_DIR")) == 0) {
+                path = ".";
+            }
+            path = mprJoinPath(path, httpExpandRouteVars(state->route, option));
         } else {
             option = ssplit(option, " =\t,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
             if (smatch(option, "size")) {
-                size = (ssize) getnum(ovalue);
+                size = (ssize) httpGetNumber(ovalue);
 
             } else if (smatch(option, "level")) {
                 level = atoi(ovalue);
@@ -1264,7 +1273,7 @@ static int limitBufferDirective(MaState *state, cchar *key, cchar *value)
     int     size;
 
     httpGraduateLimits(state->route, 0);
-    size = getint(value);
+    size = httpGetInt(value);
     if (size > (1024 * 1024)) {
         size = (1024 * 1024);
     }
@@ -1278,7 +1287,7 @@ static int limitBufferDirective(MaState *state, cchar *key, cchar *value)
  */
 static int limitCacheDirective(MaState *state, cchar *key, cchar *value)
 {
-    mprSetCacheLimits(state->host->responseCache, 0, 0, getnum(value), 0);
+    mprSetCacheLimits(state->host->responseCache, 0, 0, httpGetNumber(value), 0);
     return 0;
 }
 
@@ -1289,7 +1298,7 @@ static int limitCacheDirective(MaState *state, cchar *key, cchar *value)
 static int limitCacheItemDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->cacheItemSize = getint(value);
+    state->route->limits->cacheItemSize = httpGetInt(value);
     return 0;
 }
 
@@ -1300,7 +1309,7 @@ static int limitCacheItemDirective(MaState *state, cchar *key, cchar *value)
 static int limitChunkDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->chunkSize = getint(value);
+    state->route->limits->chunkSize = httpGetInt(value);
     return 0;
 }
 
@@ -1311,7 +1320,7 @@ static int limitChunkDirective(MaState *state, cchar *key, cchar *value)
 static int limitClientsDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->clientMax = getint(value);
+    state->route->limits->clientMax = httpGetInt(value);
     return 0;
 }
 
@@ -1322,7 +1331,7 @@ static int limitClientsDirective(MaState *state, cchar *key, cchar *value)
 static int limitConnectionsDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->connectionsMax = getint(value);
+    state->route->limits->connectionsMax = httpGetInt(value);
     return 0;
 }
 
@@ -1333,7 +1342,7 @@ static int limitConnectionsDirective(MaState *state, cchar *key, cchar *value)
 static int limitFilesDirective(MaState *state, cchar *key, cchar *value)
 {
 #if ME_UNIX_LIKE
-    mprSetFilesLimit(getint(value));
+    mprSetFilesLimit(httpGetInt(value));
 #endif
     return 0;
 }
@@ -1348,7 +1357,7 @@ static int limitMemoryDirective(MaState *state, cchar *key, cchar *value)
 {
     ssize   maxMem;
 
-    maxMem = (ssize) getnum(value);
+    maxMem = (ssize) httpGetNumber(value);
     mprSetMemLimits(maxMem / 100 * 85, maxMem, -1);
     return 0;
 }
@@ -1360,7 +1369,7 @@ static int limitMemoryDirective(MaState *state, cchar *key, cchar *value)
 static int limitProcessesDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->processMax = getint(value);
+    state->route->limits->processMax = httpGetInt(value);
     return 0;
 }
 
@@ -1384,7 +1393,7 @@ static int limitRequestsDirective(MaState *state, cchar *key, cchar *value)
 static int limitRequestsPerClientDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->requestsPerClientMax = getint(value);
+    state->route->limits->requestsPerClientMax = httpGetInt(value);
     return 0;
 }
 
@@ -1395,7 +1404,7 @@ static int limitRequestsPerClientDirective(MaState *state, cchar *key, cchar *va
 static int limitRequestBodyDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->receiveBodySize = getnum(value);
+    state->route->limits->rxBodySize = httpGetNumber(value);
     return 0;
 }
 
@@ -1406,7 +1415,7 @@ static int limitRequestBodyDirective(MaState *state, cchar *key, cchar *value)
 static int limitRequestFormDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->receiveFormSize = getnum(value);
+    state->route->limits->rxFormSize = httpGetNumber(value);
     return 0;
 }
 
@@ -1417,7 +1426,7 @@ static int limitRequestFormDirective(MaState *state, cchar *key, cchar *value)
 static int limitRequestHeaderLinesDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->headerMax = getint(value);
+    state->route->limits->headerMax = httpGetInt(value);
     return 0;
 }
 
@@ -1428,7 +1437,7 @@ static int limitRequestHeaderLinesDirective(MaState *state, cchar *key, cchar *v
 static int limitRequestHeaderDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->headerSize = getint(value);
+    state->route->limits->headerSize = httpGetInt(value);
     return 0;
 }
 
@@ -1439,7 +1448,7 @@ static int limitRequestHeaderDirective(MaState *state, cchar *key, cchar *value)
 static int limitResponseBodyDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->transmissionBodySize = getnum(value);
+    state->route->limits->txBodySize = httpGetNumber(value);
     return 0;
 }
 
@@ -1450,7 +1459,7 @@ static int limitResponseBodyDirective(MaState *state, cchar *key, cchar *value)
 static int limitSessionDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->sessionMax = getint(value);
+    state->route->limits->sessionMax = httpGetInt(value);
     return 0;
 }
 
@@ -1461,7 +1470,7 @@ static int limitSessionDirective(MaState *state, cchar *key, cchar *value)
 static int limitUriDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->uriSize = getint(value);
+    state->route->limits->uriSize = httpGetInt(value);
     return 0;
 }
 
@@ -1472,7 +1481,7 @@ static int limitUriDirective(MaState *state, cchar *key, cchar *value)
 static int limitUploadDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->uploadSize = getnum(value);
+    state->route->limits->uploadSize = httpGetNumber(value);
     return 0;
 }
 
@@ -1618,6 +1627,19 @@ static int loadModuleDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S %S", &name, &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
+#if DEPRECATE || 1
+    if (smatch(name, "cgiHandler")) {
+        name = "cgi";
+    } else if (smatch(name, "ejsHandler")) {
+        name = "ejs";
+    } else if (smatch(name, "espHandler")) {
+        name = "esp";
+    } else if (smatch(name, "phpHandler")) {
+        name = "php";
+    } else if (smatch(name, "sslModule")) {
+        name = "ssl";
+    }
+#endif
     if (maLoadModule(name, path) < 0) {
         /*  Error messages already done */
         return MPR_ERR_CANT_CREATE;
@@ -1632,7 +1654,7 @@ static int loadModuleDirective(MaState *state, cchar *key, cchar *value)
 static int limitKeepAliveDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->keepAliveMax = getint(value);
+    state->route->limits->keepAliveMax = httpGetInt(value);
     return 0;
 }
 
@@ -1779,7 +1801,7 @@ static int memoryPolicyDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S", &policy)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (scmp(value, "restart") == 0) {
+    if (scmp(policy, "restart") == 0) {
 #if VXWORKS
         flags = MPR_ALLOC_POLICY_RESTART;
 #else
@@ -1787,14 +1809,14 @@ static int memoryPolicyDirective(MaState *state, cchar *key, cchar *value)
         flags = MPR_ALLOC_POLICY_EXIT;
 #endif
         
-    } else if (scmp(value, "continue") == 0) {
+    } else if (scmp(policy, "continue") == 0) {
         flags = MPR_ALLOC_POLICY_PRUNE;
 
 #if DEPRECATED
-    } else if (scmp(value, "exit") == 0) {
+    } else if (scmp(policy, "exit") == 0) {
         flags = MPR_ALLOC_POLICY_EXIT;
 
-    } else if (scmp(value, "prune") == 0) {
+    } else if (scmp(policy, "prune") == 0) {
         flags = MPR_ALLOC_POLICY_PRUNE;
 #endif
 
@@ -1852,19 +1874,9 @@ static int monitorDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, expr, "%S %S %S", &counter, &relation, &limit)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (httpAddMonitor(counter, relation, getnum(limit), httpGetTicks(period), defenses) < 0) {
+    if (httpAddMonitor(counter, relation, httpGetNumber(limit), httpGetTicks(period), defenses) < 0) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    return 0;
-}
-
-
-/*
-    Name routeName
- */
-static int nameDirective(MaState *state, cchar *key, cchar *value)
-{
-    httpSetRouteName(state->route, value);
     return 0;
 }
 
@@ -2147,7 +2159,7 @@ static int rerouteDirective(MaState *state, cchar *key, cchar *value)
             pattern = sreplace(pattern, "${inherit}", state->route->pattern);
         }
         pattern = httpExpandRouteVars(state->route, pattern);
-        if ((route = httpLookupRouteByPattern(state->host, pattern)) != 0) {
+        if ((route = httpLookupRoute(state->host, pattern)) != 0) {
             state->route = route;
         } else {
             mprLog("error appweb config", 0, "Cannot open route %s", pattern);
@@ -2271,8 +2283,7 @@ static int serverNameDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    SessionCookie [name=NAME] [visible=true]
-    SessionCookie none
+    SessionCookie [name=NAME] [visible=true] [persist=true]
  */
 static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -2281,7 +2292,7 @@ static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%*", &options)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (smatch(options, "disable")) {
+    if (smatch(options, "disable") || smatch(options, "none")) {
         httpSetAuthSession(state->route->auth, 0);
         return 0;
     } else if (smatch(options, "enable")) {
@@ -2292,10 +2303,15 @@ static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
         option = ssplit(option, " =\t,", &ovalue);
         ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
         if (!ovalue || *ovalue == '\0') continue;
+
         if (smatch(option, "visible")) {
             httpSetRouteSessionVisibility(state->route, scaselessmatch(ovalue, "visible"));
+
         } else if (smatch(option, "name")) {
             httpSetRouteCookie(state->route, ovalue);
+
+        } else if (smatch(option, "persist")) {
+            httpSetRouteCookiePersist(state->route, smatch(ovalue, "true"));
 
         } else {
             mprLog("error appweb config", 0, "Unknown SessionCookie option %s", option);
@@ -2452,7 +2468,7 @@ static int templateDirective(MaState *state, cchar *key, cchar *value)
  */
 static int threadStackDirective(MaState *state, cchar *key, cchar *value)
 {
-    mprSetThreadStackSize(getint(value));
+    mprSetThreadStackSize(httpGetInt(value));
     return 0;
 }
 
@@ -2482,7 +2498,7 @@ static int traceDirective(MaState *state, cchar *key, cchar *value)
         option = ssplit(option, " =\t,", &ovalue);
         ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
         if (smatch(option, "content")) {
-            httpSetTraceContentSize(route->trace, (ssize) getnum(ovalue));
+            httpSetTraceContentSize(route->trace, (ssize) httpGetNumber(ovalue));
         } else {
             httpSetTraceEventLevel(route->trace, option, atoi(ovalue));
         }
@@ -2648,7 +2664,6 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
         /* Set a default host and route name */
         if (value) {
             httpSetHostName(state->host, ssplit(sclone(value), " \t,", NULL));
-            httpSetRouteName(state->route, sfmt("default-%s", state->host->name));
             /*
                 Save the endpoints until the close of the VirtualHost to closeVirtualHostDirective can
                 add the virtual host to the specified endpoints.
@@ -2707,7 +2722,7 @@ static int preserveFramesDirective(MaState *state, cchar *key, cchar *value)
 static int limitWebSocketsDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->webSocketsMax = getint(value);
+    state->route->limits->webSocketsMax = httpGetInt(value);
     return 0;
 }
 
@@ -2715,7 +2730,7 @@ static int limitWebSocketsDirective(MaState *state, cchar *key, cchar *value)
 static int limitWebSocketsMessageDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->webSocketsMessageSize = getint(value);
+    state->route->limits->webSocketsMessageSize = httpGetInt(value);
     return 0;
 }
 
@@ -2723,7 +2738,7 @@ static int limitWebSocketsMessageDirective(MaState *state, cchar *key, cchar *va
 static int limitWebSocketsFrameDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->webSocketsFrameSize = getint(value);
+    state->route->limits->webSocketsFrameSize = httpGetInt(value);
     return 0;
 }
 
@@ -2731,7 +2746,7 @@ static int limitWebSocketsFrameDirective(MaState *state, cchar *key, cchar *valu
 static int limitWebSocketsPacketDirective(MaState *state, cchar *key, cchar *value)
 {
     httpGraduateLimits(state->route, 0);
-    state->route->limits->webSocketsPacketSize = getint(value);
+    state->route->limits->webSocketsPacketSize = httpGetInt(value);
     return 0;
 }
 
@@ -2875,7 +2890,7 @@ static int setTarget(MaState *state, cchar *name, cchar *details)
 /*
     This is used to create the outermost state only
  */
-static MaState *createState(int flags)
+static MaState *createState()
 {
     MaState     *state;
     HttpHost    *host;
@@ -2894,7 +2909,6 @@ static MaState *createState(int flags)
     state->enabled = 1;
     state->lineNumber = 0;
     state->auth = state->route->auth;
-    state->flags = flags;
     return state;
 }
 
@@ -2916,6 +2930,7 @@ PUBLIC MaState *maPushState(MaState *prev)
     state->filename = prev->filename;
     state->configDir = prev->configDir;
     state->file = prev->file;
+    state->data = prev->data;
     state->auth = state->route->auth;
     state->top->current = state;
     return state;
@@ -2948,6 +2963,7 @@ static void manageState(MaState *state, int flags)
         mprMark(state->prev);
         mprMark(state->top);
         mprMark(state->current);
+        mprMark(state->data);
     }
 }
 
@@ -2956,42 +2972,6 @@ static int configError(MaState *state, cchar *key)
 {
     mprLog("error appweb config", 0, "Error in directive \"%s\", at line %d in %s", key, state->lineNumber, state->filename);
     return MPR_ERR_BAD_SYNTAX;
-}
-
-
-static int64 getnum(cchar *value)
-{
-    char    *junk;
-    int64   num;
-
-    value = ssplit(slower(value), " \t", &junk);
-    if (sends(value, "kb") || sends(value, "k")) {
-        num = stoi(value) * 1024;
-    } else if (sends(value, "mb") || sends(value, "m")) {
-        num = stoi(value) * 1024 * 1024;
-    } else if (sends(value, "gb") || sends(value, "g")) {
-        num = stoi(value) * 1024 * 1024 * 1024;
-    } else if (sends(value, "byte") || sends(value, "bytes")) {
-        num = stoi(value);
-    } else {
-        num = stoi(value);
-    }
-    if (num == 0) {
-        num = MAXINT;
-    }
-    return num;
-}
-
-
-static int getint(cchar *value)
-{
-    int64   num;
-
-    num = getnum(value);
-    if (num >= MAXINT) {
-        num = MAXINT;
-    }
-    return (int) num;
 }
 
 
@@ -3204,7 +3184,6 @@ static int parseInit()
     maAddDirective("Methods", methodsDirective);
     maAddDirective("MinWorkers", minWorkersDirective);
     maAddDirective("Monitor", monitorDirective);
-    maAddDirective("Name", nameDirective);
     maAddDirective("Options", optionsDirective);
     maAddDirective("Order", orderDirective);
     maAddDirective("Param", paramDirective);
@@ -3317,24 +3296,21 @@ static int parseInit()
 PUBLIC int maLoadModule(cchar *name, cchar *libname)
 {
     MprModule   *module;
-    char        entryPoint[ME_MAX_FNAME];
-    char        *path;
+    cchar       *entry, *path;
 
     if ((module = mprLookupModule(name)) != 0) {
-#if ME_STATIC
-        mprLog("info appweb config", 2, "Activating module (Builtin) %s", name);
-#endif
         return 0;
     }
-    path = libname ? sclone(libname) : sjoin("mod_", name, ME_SHOBJ, NULL);
-    fmt(entryPoint, sizeof(entryPoint), "ma%sInit", stitle(name));
-    entryPoint[2] = toupper((uchar) entryPoint[2]);
-
-    if ((module = mprCreateModule(name, path, entryPoint, HTTP)) == 0) {
-        return 0;
-    }
+    path = libname ? libname : sjoin("libmod_", name, ME_SHOBJ, NULL);
+    entry = sfmt("http%sInit", stitle(name));
+    module = mprCreateModule(name, path, entry, HTTP);
     if (mprLoadModule(module) < 0) {
-        return MPR_ERR_CANT_CREATE;
+#if DEPRECATED || 1
+        module->entry = sfmt("ma%sInit", stitle(name));
+        if (mprLoadModule(module) < 0) {
+            return MPR_ERR_CANT_CREATE;
+        }
+#endif
     }
     return 0;
 }
@@ -3342,7 +3318,7 @@ PUBLIC int maLoadModule(cchar *name, cchar *libname)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+    Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

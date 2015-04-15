@@ -4,7 +4,7 @@
 
 const PORT = tget('TM_HTTP_PORT') || "4100"
 const WS = "ws://127.0.0.1:" + PORT + "/websockets/basic/open"
-const TIMEOUT = 5000
+const TIMEOUT = 35000
 
 ttrue(WebSocket)
 let ws = new WebSocket(WS)

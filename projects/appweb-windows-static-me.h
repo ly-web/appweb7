@@ -13,7 +13,7 @@
     #define ME_COMPANY "embedthis"
 #endif
 #ifndef ME_COMPATIBLE
-    #define ME_COMPATIBLE "5.3"
+    #define ME_COMPATIBLE "5.4"
 #endif
 #ifndef ME_COMPILER_HAS_ATOMIC
     #define ME_COMPILER_HAS_ATOMIC 0
@@ -84,11 +84,11 @@
 #ifndef ME_EJS_ZLIB
     #define ME_EJS_ZLIB 1
 #endif
-#ifndef ME_EJS_ONE_MODULE
-    #define ME_EJS_ONE_MODULE 1
-#endif
 #ifndef ME_ESP_LEGACY
     #define ME_ESP_LEGACY 0
+#endif
+#ifndef ME_ESP_MODULE
+    #define ME_ESP_MODULE 0
 #endif
 #ifndef ME_EST_CAMELLIA
     #define ME_EST_CAMELLIA 0
@@ -124,7 +124,7 @@
     #define ME_INTEGRATE 1
 #endif
 #ifndef ME_MANIFEST
-    #define ME_MANIFEST "package/manifest.me"
+    #define ME_MANIFEST "installs/manifest.me"
 #endif
 #ifndef ME_ME
     #define ME_ME "=>0.8.4"
@@ -134,6 +134,9 @@
 #endif
 #ifndef ME_MPR_MANAGER
     #define ME_MPR_MANAGER "appman"
+#endif
+#ifndef ME_MPR_SSL_CURVE
+    #define ME_MPR_SSL_CURVE "prime256v1"
 #endif
 #ifndef ME_MPR_SSL_RENEGOTIATE
     #define ME_MPR_SSL_RENEGOTIATE 1
@@ -145,13 +148,10 @@
     #define ME_PLATFORMS "local"
 #endif
 #ifndef ME_PREFIXES
-    #define ME_PREFIXES "package-prefixes"
+    #define ME_PREFIXES "install-prefixes"
 #endif
 #ifndef ME_SERVER_ROOT
     #define ME_SERVER_ROOT "."
-#endif
-#ifndef ME_STATIC
-    #define ME_STATIC 1
 #endif
 #ifndef ME_TITLE
     #define ME_TITLE "Embedthis Appweb"
@@ -160,7 +160,7 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "5.3.0"
+    #define ME_VERSION "5.4.0"
 #endif
 #ifndef ME_WEB_GROUP
     #define ME_WEB_GROUP "Administrator"
@@ -261,13 +261,13 @@
     #define ME_MAJOR_VERSION 5
 #endif
 #ifndef ME_MINOR_VERSION
-    #define ME_MINOR_VERSION 3
+    #define ME_MINOR_VERSION 4
 #endif
 #ifndef ME_PATCH_VERSION
     #define ME_PATCH_VERSION 0
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 500030000
+    #define ME_VNUM 500040000
 #endif
 
 /* Components */

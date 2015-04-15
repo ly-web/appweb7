@@ -2,7 +2,7 @@ Minimum Config Server Sample
 ===
 
 This sample shows a minimal set of configuration directives. This server supports the file and ESP handlers.
-CGI, PHP, Ejscript and SSL are not configured.
+CGI and SSL are not configured.
 
 You are encouraged to read the [typical-server - Typical server](../typical-server/README.md) sample to see what
 other appweb.conf directives are available.

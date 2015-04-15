@@ -3,24 +3,23 @@
  */
 
 Me.load({
-    plugins: [ 'configuration', 'package' ],
+    plugins: [ 'configuration', 'installs' ],
 
     blend: [
-        'ejs',
         'esp',
-        'php',
         'src/libappweb.me',
-        'src/modules/modules.me',
         'src/utils/utils.me',
         'src/server/server.me',
         'test/test.me',
         'samples/samples.me',
-        'package/package.me',
+        'installs/installs.me',
         'doc/doc.me',
+        '?src/*/*.me',
+        '?paks/ssl/*.me',
         '?local.me',
     ],
 
-    modules: [ 'package/service.es' ],
+    modules: [ 'installs/service.es' ],
 
     configure: {
         requires:  [ 'osdep', 'http', 'mpr', 'pcre'],
@@ -43,8 +42,8 @@ Me.load({
         /*
             Installation prefix set
          */
-        prefixes: 'package-prefixes',
-        manifest: 'package/manifest.me',
+        prefixes: 'install-prefixes',
+        manifest: 'installs/manifest.me',
 
         /*
             Name and path of the appweb config file. Defaults to './appweb.conf' if empty.
@@ -53,11 +52,6 @@ Me.load({
 
         /* Must build locally to build tools */
         platforms: [ 'local' ],
-
-        /*
-            Set to true for a static (non-shared library) build
-         */
-        static: false,
 
         http: {
             /* Use PAM (Plugable Authentication Module) to store passwords */
@@ -78,6 +72,7 @@ Me.load({
 
         esp: {
             legacy: false,
+            module: false,
         },
 
         /*
@@ -110,6 +105,7 @@ Me.load({
             },
             ssl: {
                 renegotiate: true,          /* Enable/Disable SSL renegotiation (defaults to true) */
+                curve: "prime256v1",        /* OpenSSL elliptic curve name */
             },
         },
 
@@ -180,14 +176,14 @@ Me.load({
         /*
             See src/server/server.me for the appweb targets
             See src/libappweb.me for the appweb library target
-            See package/package.me for the install/package targets
+            See installs/installs.me for the install targets
          */
         projects: {
             action: `genProjects('-with openssl')`,
         },
 
         mine: {
-            action: `genProjects('-with ejs -with sqlite', 'mine', Config.OS + '-' + Config.CPU)`,
+            action: `genProjects('-with sqlite', 'mine', Config.OS + '-' + Config.CPU)`,
         }
     }
 })
