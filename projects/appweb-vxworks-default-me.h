@@ -141,9 +141,6 @@
 #ifndef ME_MANIFEST
     #define ME_MANIFEST "installs/manifest.me"
 #endif
-#ifndef ME_ME
-    #define ME_ME "=>0.8.4"
-#endif
 #ifndef ME_MPR_LOGGING
     #define ME_MPR_LOGGING 1
 #endif
@@ -175,7 +172,7 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "5.4.0"
+    #define ME_VERSION "5.4.1"
 #endif
 #ifndef ME_WEB_GROUP
     #define ME_WEB_GROUP "undefined"
@@ -234,7 +231,7 @@
     #define ME_VAPP_PREFIX "deploy"
 #endif
 #ifndef ME_SRC_PREFIX
-    #define ME_SRC_PREFIX "/usr/src/appweb-5.4.0"
+    #define ME_SRC_PREFIX "/usr/src/appweb-5.4.1"
 #endif
 
 /* Suffixes */
@@ -276,10 +273,10 @@
     #define ME_MINOR_VERSION 4
 #endif
 #ifndef ME_PATCH_VERSION
-    #define ME_PATCH_VERSION 0
+    #define ME_PATCH_VERSION 1
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 500040000
+    #define ME_VNUM 500040001
 #endif
 
 /* Components */
