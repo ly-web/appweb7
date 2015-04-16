@@ -602,6 +602,7 @@ static void list(int argc, char **argv)
     MprList         *files;
     MprJson         *spec;
     cchar           *path;
+    char            *name, *stem;
     int             next;
 
     files = mprGetPathFiles(app->paksDir, MPR_PATH_RELATIVE);
@@ -609,7 +610,8 @@ static void list(int argc, char **argv)
         if (app->quiet) {
             printf("%s\n", dp->name);
         } else {
-            path = mprJoinPaths(app->route->documents, app->paksDir, dp->name, ME_ESP_PACKAGE, NULL);
+            name = stok(mprGetPortablePath(dp->name), "/", &stem);
+            path = mprJoinPaths(app->route->documents, app->paksDir, name, ME_ESP_PACKAGE, NULL);
             if ((spec = loadPackage(path)) == 0) {
                 fail("Cannot load package.json \"%s\"", path);
             }
@@ -928,7 +930,8 @@ static void seedPakCache()
     MprDirEntry *dp;
     MprList     *paks;
     MprPath     info;
-    cchar       *espPaks, *src, *dest, *dpath, *path;
+    cchar       *espPaks, *src, *dest, *path;
+    char        *name, *stem;
     int         i;
 
     if (!mprPathExists(app->paksCacheDir, R_OK)) {
@@ -936,19 +939,18 @@ static void seedPakCache()
             fail("Cannot make directory %s", app->paksCacheDir);
         }
     }
-    espPaks = mprJoinPath(mprGetAppDir(), "../" ME_ESP_PAKS);
+    espPaks = mprJoinPaths(mprGetAppDir(), "../" ME_ESP_PAKS, "paks", NULL);
 
     /*
-        Check the existence of esp-server/VERSION
+        Check the existence of esp-server
      */
     paks = mprGetPathFiles(mprJoinPath(espPaks, "esp-server"), MPR_PATH_RELATIVE);
     if ((dp = mprGetFirstItem(paks)) == 0) {
         fail("Cannot locate esp-server in esp paks directory: %s", app->paksCacheDir);
         return;
     }
-    path = mprJoinPath("esp-server", dp->name);
-    dpath = mprJoinPath(app->paksCacheDir, path);
-    if (mprPathExists(dpath, X_OK)) {
+    path = mprJoinPaths(app->paksCacheDir, "esp-server", "embedthis", dp->name, NULL);
+    if (mprPathExists(path, X_OK)) {
         return;
     }
     trace("Export", "ESP paks from %s to %s", espPaks, app->paksCacheDir);
@@ -956,7 +958,8 @@ static void seedPakCache()
     paks = mprGetPathFiles(espPaks, MPR_PATH_DESCEND | MPR_PATH_RELATIVE);
     for (ITERATE_ITEMS(paks, dp, i)) {
         src = mprJoinPath(espPaks, dp->name);
-        dest = mprJoinPath(app->paksCacheDir, dp->name);
+        name = stok(mprGetPortablePath(dp->name), "/", &stem);
+        dest = mprJoinPaths(app->paksCacheDir, name, "embedthis", stem, NULL);
         if (dp->isDir) {
             if (mprMakeDir(dest, 0775, -1, -1, 1) < 0) {
                 fail("Cannot make directory %s", src);
@@ -2241,7 +2244,7 @@ static bool blendPak(cchar *name, cchar *version, bool topLevel)
         /* Already installed */
         return 1;
     }
-    path = mprJoinPaths(app->paksCacheDir, name, version, ME_ESP_PACKAGE, NULL);
+    path = mprJoinPaths(app->paksCacheDir, name, "embedthis", version, ME_ESP_PACKAGE, NULL);
     if ((spec = loadPackage(path)) == 0) {
         fail("Cannot load package.json \"%s\"", path);
         return 0;
@@ -2346,7 +2349,7 @@ static bool installPakFiles(cchar *name, cchar *criteria, bool topLevel)
         return 0;
     }
     qtrace(app->upgrade ? "Upgrade" : "Install", "%s %s", name, version);
-    path = mprJoinPaths(app->paksCacheDir, name, version, NULL);
+    path = mprJoinPaths(app->paksCacheDir, name, "embedthis", version, NULL);
     package = mprJoinPath(path, ME_ESP_PACKAGE);
     if ((spec = loadPackage(package)) == 0) {
         fail("Cannot load package.json \"%s\"", package);
@@ -2624,8 +2627,8 @@ static MprHash *makeTokens(cchar *path, MprHash *other)
         "LIST: '%s', LISTEN: '%s', CONTROLLER: '%s', UCONTROLLER: '%s', MODEL: '%s', UMODEL: '%s', ROUTES: '%s', "
         "SERVER: '%s', TABLE: '%s', UAPP: '%s', DEFINE_ACTIONS: '', VIEWSDIR: '%s' }",
         app->appName, app->eroute->appDir, app->binDir, app->database, app->route->documents, filename, app->route->home,
-        list, app->listen, app->controller, stitle(app->controller), app->controller, stitle(app->controller), app->routeSet, 
-        app->route->serverPrefix, app->table, app->title, app->eroute->viewsDir));
+        list, app->listen, app->controller, stitle(app->controller), app->controller, stitle(app->controller), 
+        app->routeSet, app->route->serverPrefix, app->table, app->title, app->eroute->viewsDir));
     if (other) {
         mprBlendHash(tokens, other);
     }
@@ -2949,7 +2952,7 @@ static cchar *findAcceptableVersion(cchar *name, cchar *criteria)
     if (schr(name, '#')) {
         name = stok(sclone(name), "#", (char**) &criteria);
     }
-    files = mprGetPathFiles(mprJoinPath(app->paksCacheDir, name), MPR_PATH_RELATIVE);
+    files = mprGetPathFiles(mprJoinPaths(app->paksCacheDir, name, "embedthis", NULL), MPR_PATH_RELATIVE);
     mprSortList(files, (MprSortProc) reverseSortFiles, 0);
     for (ITERATE_ITEMS(files, dp, next)) {
         if (acceptableVersion(criteria, dp->name)) {
