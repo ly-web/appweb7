@@ -13,7 +13,7 @@
     #define ME_COMPANY "embedthis"
 #endif
 #ifndef ME_COMPATIBLE
-    #define ME_COMPATIBLE "4.6"
+    #define ME_COMPATIBLE "4.7"
 #endif
 #ifndef ME_COMPILER_HAS_ATOMIC
     #define ME_COMPILER_HAS_ATOMIC 1
@@ -136,7 +136,7 @@
     #define ME_HTTP_WEB_SOCKETS 1
 #endif
 #ifndef ME_MANIFEST
-    #define ME_MANIFEST "package/manifest.me"
+    #define ME_MANIFEST "installs/manifest.me"
 #endif
 #ifndef ME_ME
     #define ME_ME "=>0.8.4"
@@ -157,7 +157,7 @@
     #define ME_PLATFORMS "local"
 #endif
 #ifndef ME_PREFIXES
-    #define ME_PREFIXES "package-prefixes"
+    #define ME_PREFIXES "install-prefixes"
 #endif
 #ifndef ME_SERVER_ROOT
     #define ME_SERVER_ROOT "."
@@ -172,7 +172,7 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "4.6.7"
+    #define ME_VERSION "4.7.1"
 #endif
 
 /* Prefixes */
@@ -192,7 +192,7 @@
     #define ME_APP_PREFIX "/usr/local/lib/appweb"
 #endif
 #ifndef ME_VAPP_PREFIX
-    #define ME_VAPP_PREFIX "/usr/local/lib/appweb/4.6.7"
+    #define ME_VAPP_PREFIX "/usr/local/lib/appweb/4.7.1"
 #endif
 #ifndef ME_BIN_PREFIX
     #define ME_BIN_PREFIX "/usr/local/bin"
@@ -225,7 +225,7 @@
     #define ME_CACHE_PREFIX "/var/spool/appweb/cache"
 #endif
 #ifndef ME_SRC_PREFIX
-    #define ME_SRC_PREFIX "appweb-4.6.7"
+    #define ME_SRC_PREFIX "appweb-4.7.1"
 #endif
 
 /* Suffixes */
@@ -264,13 +264,13 @@
     #define ME_MAJOR_VERSION 4
 #endif
 #ifndef ME_MINOR_VERSION
-    #define ME_MINOR_VERSION 6
+    #define ME_MINOR_VERSION 7
 #endif
 #ifndef ME_PATCH_VERSION
-    #define ME_PATCH_VERSION 7
+    #define ME_PATCH_VERSION 1
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 400060007
+    #define ME_VNUM 400070001
 #endif
 
 /* Components */

@@ -1041,11 +1041,11 @@
 		3AEBA2683AEBB14000000131 /* authpass */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = authpass; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AEBA2683AEBB14000000053 /* cgiProgram.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cgiProgram.c; path = src/utils/cgiProgram.c; sourceTree = "<group>"; };
 		3AEBA2683AEBB14000000132 /* cgiProgram */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = cgiProgram; sourceTree = BUILT_PRODUCTS_DIR; };
-		3AEBA2683AEBB14000000055 /* esp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = esp.c; path = src/paks/esp/esp.c; sourceTree = "<group>"; };
-		3AEBA2683AEBB14000000133 /* esp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = esp.h; path = src/paks/esp/esp.h; sourceTree = "<group>"; };
+		3AEBA2683AEBB14000000055 /* esp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = esp.c; path = src/esp/esp.c; sourceTree = "<group>"; };
+		3AEBA2683AEBB14000000133 /* esp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = esp.h; path = src/esp/esp.h; sourceTree = "<group>"; };
 		3AEBA2683AEBB14000000134 /* espcmd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = esp; sourceTree = BUILT_PRODUCTS_DIR; };
-		3AEBA2683AEBB14000000057 /* http.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = http.c; path = src/paks/http/http.c; sourceTree = "<group>"; };
-		3AEBA2683AEBB14000000135 /* http.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = http.h; path = src/paks/http/http.h; sourceTree = "<group>"; };
+		3AEBA2683AEBB14000000057 /* http.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = http.c; path = src/http/http.c; sourceTree = "<group>"; };
+		3AEBA2683AEBB14000000135 /* http.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = http.h; path = src/http/http.h; sourceTree = "<group>"; };
 		3AEBA2683AEBB14000000136 /* httpcmd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = http; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AEBA2683AEBB14000000059 /* config.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = config.c; path = src/config.c; sourceTree = "<group>"; };
 		3AEBA2683AEBB14000000137 /* appweb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = appweb.h; path = src/appweb.h; sourceTree = "<group>"; };
@@ -1056,31 +1056,31 @@
 		3AEBA2683AEBB14000000061 /* log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = log.c; path = src/log.c; sourceTree = "<group>"; };
 		3AEBA2683AEBB14000000063 /* server.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = server.c; path = src/server.c; sourceTree = "<group>"; };
 		3AEBA2683AEBB1400000007D /* libappweb */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libappweb.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		3AEBA2683AEBB14000000065 /* httpLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = httpLib.c; path = src/paks/http/httpLib.c; sourceTree = "<group>"; };
+		3AEBA2683AEBB14000000065 /* httpLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = httpLib.c; path = src/http/httpLib.c; sourceTree = "<group>"; };
 		3AEBA2683AEBB1400000007F /* libhttp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libhttp.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AEBA2683AEBB14000000067 /* cgiHandler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cgiHandler.c; path = src/modules/cgiHandler.c; sourceTree = "<group>"; };
 		3AEBA2683AEBB14000000139 /* libmod_cgi */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmod_cgi.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		3AEBA2683AEBB14000000069 /* espLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espLib.c; path = src/paks/esp/espLib.c; sourceTree = "<group>"; };
+		3AEBA2683AEBB14000000069 /* espLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = espLib.c; path = src/esp/espLib.c; sourceTree = "<group>"; };
 		3AEBA2683AEBB1400000008B /* libmod_esp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmod_esp.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AEBA2683AEBB1400000006B /* sslModule.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sslModule.c; path = src/modules/sslModule.c; sourceTree = "<group>"; };
 		3AEBA2683AEBB1400000013A /* libmod_ssl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmod_ssl.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		3AEBA2683AEBB1400000006D /* mprLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mprLib.c; path = src/paks/mpr/mprLib.c; sourceTree = "<group>"; };
-		3AEBA2683AEBB1400000013B /* mpr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mpr.h; path = src/paks/mpr/mpr.h; sourceTree = "<group>"; };
+		3AEBA2683AEBB1400000006D /* mprLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mprLib.c; path = src/mpr/mprLib.c; sourceTree = "<group>"; };
+		3AEBA2683AEBB1400000013B /* mpr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mpr.h; path = src/mpr/mpr.h; sourceTree = "<group>"; };
 		3AEBA2683AEBB14000000081 /* libmpr */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmpr.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		3AEBA2683AEBB1400000006F /* mprSsl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mprSsl.c; path = src/paks/mpr/mprSsl.c; sourceTree = "<group>"; };
+		3AEBA2683AEBB1400000006F /* mprSsl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mprSsl.c; path = src/mpr/mprSsl.c; sourceTree = "<group>"; };
 		3AEBA2683AEBB1400000013C /* me.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = me.h; path = build/macosx-x64-default/inc/me.h; sourceTree = "<group>"; };
 		3AEBA2683AEBB1400000013D /* est.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = est.h; path = build/macosx-x64-default/inc/est.h; sourceTree = "<group>"; };
 		3AEBA2683AEBB140000000A5 /* libmprssl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmprssl.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		3AEBA2683AEBB14000000071 /* pcre.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pcre.c; path = src/paks/pcre/pcre.c; sourceTree = "<group>"; };
-		3AEBA2683AEBB1400000013E /* pcre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pcre.h; path = src/paks/pcre/pcre.h; sourceTree = "<group>"; };
+		3AEBA2683AEBB14000000071 /* pcre.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pcre.c; path = src/pcre/pcre.c; sourceTree = "<group>"; };
+		3AEBA2683AEBB1400000013E /* pcre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pcre.h; path = src/pcre/pcre.h; sourceTree = "<group>"; };
 		3AEBA2683AEBB14000000083 /* libpcre */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpcre.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AEBA2683AEBB14000000073 /* slink.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = slink.c; path = src/slink.c; sourceTree = "<group>"; };
 		3AEBA2683AEBB1400000013F /* mpr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mpr.h; path = build/macosx-x64-default/inc/mpr.h; sourceTree = "<group>"; };
 		3AEBA2683AEBB14000000140 /* esp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = esp.h; path = build/macosx-x64-default/inc/esp.h; sourceTree = "<group>"; };
 		3AEBA2683AEBB14000000085 /* libslink */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libslink.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		3AEBA2683AEBB14000000075 /* makerom.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = makerom.c; path = src/paks/mpr/makerom.c; sourceTree = "<group>"; };
+		3AEBA2683AEBB14000000075 /* makerom.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = makerom.c; path = src/mpr/makerom.c; sourceTree = "<group>"; };
 		3AEBA2683AEBB14000000141 /* makerom */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = makerom; sourceTree = BUILT_PRODUCTS_DIR; };
-		3AEBA2683AEBB14000000077 /* manager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = manager.c; path = src/paks/mpr/manager.c; sourceTree = "<group>"; };
+		3AEBA2683AEBB14000000077 /* manager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = manager.c; path = src/mpr/manager.c; sourceTree = "<group>"; };
 		3AEBA2683AEBB14000000142 /* manager */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = appman; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AEBA2683AEBB14000000079 /* testAppweb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testAppweb.c; path = test/src/testAppweb.c; sourceTree = "<group>"; };
 		3AEBA2683AEBB14000000143 /* testAppweb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = testAppweb.h; path = build/macosx-x64-default/inc/testAppweb.h; sourceTree = "<group>"; };
@@ -1832,43 +1832,43 @@
     			files = (
     			);
     			inputPaths = (
-    ../src/paks/esp-html-mvc/client/assets/favicon.ico,
-../src/paks/esp-html-mvc/client/css/all.css,
-../src/paks/esp-html-mvc/client/css/all.less,
-../src/paks/esp-html-mvc/client/index.esp,
-../src/paks/esp-html-mvc/css/app.less,
-../src/paks/esp-html-mvc/css/theme.less,
-../src/paks/esp-html-mvc/generate/appweb.conf,
-../src/paks/esp-html-mvc/generate/controller.c,
-../src/paks/esp-html-mvc/generate/controllerSingleton.c,
-../src/paks/esp-html-mvc/generate/edit.esp,
-../src/paks/esp-html-mvc/generate/list.esp,
-../src/paks/esp-html-mvc/layouts/default.esp,
-../src/paks/esp-html-mvc/package.json,
-../src/paks/esp-legacy-mvc/generate/appweb.conf,
-../src/paks/esp-legacy-mvc/generate/controller.c,
-../src/paks/esp-legacy-mvc/generate/edit.esp,
-../src/paks/esp-legacy-mvc/generate/list.esp,
-../src/paks/esp-legacy-mvc/generate/migration.c,
-../src/paks/esp-legacy-mvc/generate/src/app.c,
-../src/paks/esp-legacy-mvc/layouts/default.esp,
-../src/paks/esp-legacy-mvc/package.json,
-../src/paks/esp-legacy-mvc/static/css/all.css,
-../src/paks/esp-legacy-mvc/static/images/banner.jpg,
-../src/paks/esp-legacy-mvc/static/images/favicon.ico,
-../src/paks/esp-legacy-mvc/static/images/splash.jpg,
-../src/paks/esp-legacy-mvc/static/index.esp,
-../src/paks/esp-legacy-mvc/static/js/jquery.esp.js,
-../src/paks/esp-legacy-mvc/static/js/jquery.js,
-../src/paks/esp-mvc/generate/appweb.conf,
-../src/paks/esp-mvc/generate/controller.c,
-../src/paks/esp-mvc/generate/migration.c,
-../src/paks/esp-mvc/generate/src/app.c,
-../src/paks/esp-mvc/LICENSE.md,
-../src/paks/esp-mvc/package.json,
-../src/paks/esp-mvc/README.md,
-../src/paks/esp-server/generate/appweb.conf,
-../src/paks/esp-server/package.json
+    ../src/esp-html-mvc/client/assets/favicon.ico,
+../src/esp-html-mvc/client/css/all.css,
+../src/esp-html-mvc/client/css/all.less,
+../src/esp-html-mvc/client/index.esp,
+../src/esp-html-mvc/css/app.less,
+../src/esp-html-mvc/css/theme.less,
+../src/esp-html-mvc/generate/appweb.conf,
+../src/esp-html-mvc/generate/controller.c,
+../src/esp-html-mvc/generate/controllerSingleton.c,
+../src/esp-html-mvc/generate/edit.esp,
+../src/esp-html-mvc/generate/list.esp,
+../src/esp-html-mvc/layouts/default.esp,
+../src/esp-html-mvc/package.json,
+../src/esp-legacy-mvc/generate/appweb.conf,
+../src/esp-legacy-mvc/generate/controller.c,
+../src/esp-legacy-mvc/generate/edit.esp,
+../src/esp-legacy-mvc/generate/list.esp,
+../src/esp-legacy-mvc/generate/migration.c,
+../src/esp-legacy-mvc/generate/src/app.c,
+../src/esp-legacy-mvc/layouts/default.esp,
+../src/esp-legacy-mvc/package.json,
+../src/esp-legacy-mvc/static/css/all.css,
+../src/esp-legacy-mvc/static/images/banner.jpg,
+../src/esp-legacy-mvc/static/images/favicon.ico,
+../src/esp-legacy-mvc/static/images/splash.jpg,
+../src/esp-legacy-mvc/static/index.esp,
+../src/esp-legacy-mvc/static/js/jquery.esp.js,
+../src/esp-legacy-mvc/static/js/jquery.js,
+../src/esp-mvc/generate/appweb.conf,
+../src/esp-mvc/generate/controller.c,
+../src/esp-mvc/generate/migration.c,
+../src/esp-mvc/generate/src/app.c,
+../src/esp-mvc/LICENSE.md,
+../src/esp-mvc/package.json,
+../src/esp-mvc/README.md,
+../src/esp-server/generate/appweb.conf,
+../src/esp-server/package.json
     			);
     			outputPaths = (
     ../build/macosx-x64-default/esp
@@ -1876,65 +1876,64 @@
     			runOnlyForDeploymentPostprocessing = 0;
     			shellPath = /bin/bash;
     			shellScript = "PATH=$PATH:/usr/local/bin
-cd ../src/paks
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/4.6.7\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/4.6.7/client\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/4.6.7/client/assets\"
-	cp esp-html-mvc/client/assets/favicon.ico ../${OUT_DIR}/esp/esp-html-mvc/4.6.7/client/assets/favicon.ico
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/4.6.7/client/css\"
-	cp esp-html-mvc/client/css/all.css ../${OUT_DIR}/esp/esp-html-mvc/4.6.7/client/css/all.css
-	cp esp-html-mvc/client/css/all.less ../${OUT_DIR}/esp/esp-html-mvc/4.6.7/client/css/all.less
-	cp esp-html-mvc/client/index.esp ../${OUT_DIR}/esp/esp-html-mvc/4.6.7/client/index.esp
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/4.6.7/css\"
-	cp esp-html-mvc/css/app.less ../${OUT_DIR}/esp/esp-html-mvc/4.6.7/css/app.less
-	cp esp-html-mvc/css/theme.less ../${OUT_DIR}/esp/esp-html-mvc/4.6.7/css/theme.less
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/4.6.7/generate\"
-	cp esp-html-mvc/generate/appweb.conf ../${OUT_DIR}/esp/esp-html-mvc/4.6.7/generate/appweb.conf
-	cp esp-html-mvc/generate/controller.c ../${OUT_DIR}/esp/esp-html-mvc/4.6.7/generate/controller.c
-	cp esp-html-mvc/generate/controllerSingleton.c ../${OUT_DIR}/esp/esp-html-mvc/4.6.7/generate/controllerSingleton.c
-	cp esp-html-mvc/generate/edit.esp ../${OUT_DIR}/esp/esp-html-mvc/4.6.7/generate/edit.esp
-	cp esp-html-mvc/generate/list.esp ../${OUT_DIR}/esp/esp-html-mvc/4.6.7/generate/list.esp
-	mkdir -p \"../${OUT_DIR}/esp/esp-html-mvc/4.6.7/layouts\"
-	cp esp-html-mvc/layouts/default.esp ../${OUT_DIR}/esp/esp-html-mvc/4.6.7/layouts/default.esp
-	cp esp-html-mvc/package.json ../${OUT_DIR}/esp/esp-html-mvc/4.6.7/package.json
-	mkdir -p \"../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/generate\"
-	cp esp-legacy-mvc/generate/appweb.conf ../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/generate/appweb.conf
-	cp esp-legacy-mvc/generate/controller.c ../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/generate/controller.c
-	cp esp-legacy-mvc/generate/edit.esp ../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/generate/edit.esp
-	cp esp-legacy-mvc/generate/list.esp ../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/generate/list.esp
-	cp esp-legacy-mvc/generate/migration.c ../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/generate/migration.c
-	mkdir -p \"../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/generate/src\"
-	cp esp-legacy-mvc/generate/src/app.c ../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/generate/src/app.c
-	mkdir -p \"../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/layouts\"
-	cp esp-legacy-mvc/layouts/default.esp ../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/layouts/default.esp
-	cp esp-legacy-mvc/package.json ../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/package.json
-	mkdir -p \"../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/static\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/static/css\"
-	cp esp-legacy-mvc/static/css/all.css ../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/static/css/all.css
-	mkdir -p \"../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/static/images\"
-	cp esp-legacy-mvc/static/images/banner.jpg ../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/static/images/banner.jpg
-	cp esp-legacy-mvc/static/images/favicon.ico ../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/static/images/favicon.ico
-	cp esp-legacy-mvc/static/images/splash.jpg ../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/static/images/splash.jpg
-	cp esp-legacy-mvc/static/index.esp ../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/static/index.esp
-	mkdir -p \"../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/static/js\"
-	cp esp-legacy-mvc/static/js/jquery.esp.js ../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/static/js/jquery.esp.js
-	cp esp-legacy-mvc/static/js/jquery.js ../${OUT_DIR}/esp/esp-legacy-mvc/4.6.7/static/js/jquery.js
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/4.6.7\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/4.6.7/generate\"
-	cp esp-mvc/generate/appweb.conf ../${OUT_DIR}/esp/esp-mvc/4.6.7/generate/appweb.conf
-	cp esp-mvc/generate/controller.c ../${OUT_DIR}/esp/esp-mvc/4.6.7/generate/controller.c
-	cp esp-mvc/generate/migration.c ../${OUT_DIR}/esp/esp-mvc/4.6.7/generate/migration.c
-	mkdir -p \"../${OUT_DIR}/esp/esp-mvc/4.6.7/generate/src\"
-	cp esp-mvc/generate/src/app.c ../${OUT_DIR}/esp/esp-mvc/4.6.7/generate/src/app.c
-	cp esp-mvc/LICENSE.md ../${OUT_DIR}/esp/esp-mvc/4.6.7/LICENSE.md
-	cp esp-mvc/package.json ../${OUT_DIR}/esp/esp-mvc/4.6.7/package.json
-	cp esp-mvc/README.md ../${OUT_DIR}/esp/esp-mvc/4.6.7/README.md
-	mkdir -p \"../${OUT_DIR}/esp/esp-server/4.6.7\"
-	mkdir -p \"../${OUT_DIR}/esp/esp-server/4.6.7/generate\"
-	cp esp-server/generate/appweb.conf ../${OUT_DIR}/esp/esp-server/4.6.7/generate/appweb.conf
-	cp esp-server/package.json ../${OUT_DIR}/esp/esp-server/4.6.7/package.json
-	pak -f -q cache esp-html-mvc esp-legacy-mvc esp-mvc esp-server
+cd ..
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1\"
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/client\"
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/client/assets\"
+	cp paks/esp-html-mvc/client/assets/favicon.ico build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/client/assets/favicon.ico
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/client/css\"
+	cp paks/esp-html-mvc/client/css/all.css build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/client/css/all.css
+	cp paks/esp-html-mvc/client/css/all.less build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/client/css/all.less
+	cp paks/esp-html-mvc/client/index.esp build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/client/index.esp
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/css\"
+	cp paks/esp-html-mvc/css/app.less build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/css/app.less
+	cp paks/esp-html-mvc/css/theme.less build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/css/theme.less
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/generate\"
+	cp paks/esp-html-mvc/generate/appweb.conf build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/generate/appweb.conf
+	cp paks/esp-html-mvc/generate/controller.c build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/generate/controller.c
+	cp paks/esp-html-mvc/generate/controllerSingleton.c build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/generate/controllerSingleton.c
+	cp paks/esp-html-mvc/generate/edit.esp build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/generate/edit.esp
+	cp paks/esp-html-mvc/generate/list.esp build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/generate/list.esp
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/layouts\"
+	cp paks/esp-html-mvc/layouts/default.esp build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/layouts/default.esp
+	cp paks/esp-html-mvc/package.json build/macosx-x64-default/esp/paks/esp-html-mvc/4.7.1/package.json
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1\"
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/generate\"
+	cp paks/esp-legacy-mvc/generate/appweb.conf build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/generate/appweb.conf
+	cp paks/esp-legacy-mvc/generate/controller.c build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/generate/controller.c
+	cp paks/esp-legacy-mvc/generate/edit.esp build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/generate/edit.esp
+	cp paks/esp-legacy-mvc/generate/list.esp build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/generate/list.esp
+	cp paks/esp-legacy-mvc/generate/migration.c build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/generate/migration.c
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/generate/src\"
+	cp paks/esp-legacy-mvc/generate/src/app.c build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/generate/src/app.c
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/layouts\"
+	cp paks/esp-legacy-mvc/layouts/default.esp build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/layouts/default.esp
+	cp paks/esp-legacy-mvc/package.json build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/package.json
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/static\"
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/static/css\"
+	cp paks/esp-legacy-mvc/static/css/all.css build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/static/css/all.css
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/static/images\"
+	cp paks/esp-legacy-mvc/static/images/banner.jpg build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/static/images/banner.jpg
+	cp paks/esp-legacy-mvc/static/images/favicon.ico build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/static/images/favicon.ico
+	cp paks/esp-legacy-mvc/static/images/splash.jpg build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/static/images/splash.jpg
+	cp paks/esp-legacy-mvc/static/index.esp build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/static/index.esp
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/static/js\"
+	cp paks/esp-legacy-mvc/static/js/jquery.esp.js build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/static/js/jquery.esp.js
+	cp paks/esp-legacy-mvc/static/js/jquery.js build/macosx-x64-default/esp/paks/esp-legacy-mvc/4.7.1/static/js/jquery.js
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-mvc/4.7.1\"
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-mvc/4.7.1/generate\"
+	cp paks/esp-mvc/generate/appweb.conf build/macosx-x64-default/esp/paks/esp-mvc/4.7.1/generate/appweb.conf
+	cp paks/esp-mvc/generate/controller.c build/macosx-x64-default/esp/paks/esp-mvc/4.7.1/generate/controller.c
+	cp paks/esp-mvc/generate/migration.c build/macosx-x64-default/esp/paks/esp-mvc/4.7.1/generate/migration.c
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-mvc/4.7.1/generate/src\"
+	cp paks/esp-mvc/generate/src/app.c build/macosx-x64-default/esp/paks/esp-mvc/4.7.1/generate/src/app.c
+	cp paks/esp-mvc/LICENSE.md build/macosx-x64-default/esp/paks/esp-mvc/4.7.1/LICENSE.md
+	cp paks/esp-mvc/package.json build/macosx-x64-default/esp/paks/esp-mvc/4.7.1/package.json
+	cp paks/esp-mvc/README.md build/macosx-x64-default/esp/paks/esp-mvc/4.7.1/README.md
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-server/4.7.1\"
+	mkdir -p \"build/macosx-x64-default/esp/paks/esp-server/4.7.1/generate\"
+	cp paks/esp-server/generate/appweb.conf build/macosx-x64-default/esp/paks/esp-server/4.7.1/generate/appweb.conf
+	cp paks/esp-server/package.json build/macosx-x64-default/esp/paks/esp-server/4.7.1/package.json
 ";
     		};
 		3AEBA2683AEBB1400000000B /* ShellScript for esp.conf */ = {
@@ -1943,7 +1942,7 @@ cd ../src/paks
     			files = (
     			);
     			inputPaths = (
-    ../src/paks/esp/esp.conf
+    ../src/esp/esp.conf
     			);
     			outputPaths = (
     ../build/macosx-x64-default/bin/esp.conf
@@ -1953,7 +1952,7 @@ cd ../src/paks
     			shellScript = "PATH=$PATH:/usr/local/bin
 cd ..
 	mkdir -p \"build/macosx-x64-default/bin\"
-	cp src/paks/esp/esp.conf build/macosx-x64-default/bin/esp.conf
+	cp src/esp/esp.conf build/macosx-x64-default/bin/esp.conf
 ";
     		};
 		3AEBA2683AEBB1400000000F /* ShellScript for http-ca-crt */ = {
@@ -1962,7 +1961,7 @@ cd ..
     			files = (
     			);
     			inputPaths = (
-    ../src/paks/http/ca.crt
+    ../src/http/ca.crt
     			);
     			outputPaths = (
     ../build/macosx-x64-default/bin/ca.crt
@@ -1972,7 +1971,7 @@ cd ..
     			shellScript = "PATH=$PATH:/usr/local/bin
 cd ..
 	mkdir -p \"build/macosx-x64-default/bin\"
-	cp src/paks/http/ca.crt build/macosx-x64-default/bin/ca.crt
+	cp src/http/ca.crt build/macosx-x64-default/bin/ca.crt
 ";
     		};
 		3AEBA2683AEBB14000000013 /* ShellScript for server-cache */ = {
@@ -2112,20 +2111,20 @@ fi
 if [ ../src/customize.h -nt ${OUT_DIR}/inc/customize.h ] ; then
 cp ../src/customize.h ${OUT_DIR}/inc/customize.h
 fi
-if [ ../src/paks/esp/esp.h -nt ${OUT_DIR}/inc/esp.h ] ; then
-cp ../src/paks/esp/esp.h ${OUT_DIR}/inc/esp.h
+if [ ../src/esp/esp.h -nt ${OUT_DIR}/inc/esp.h ] ; then
+cp ../src/esp/esp.h ${OUT_DIR}/inc/esp.h
 fi
-if [ ../src/paks/http/http.h -nt ${OUT_DIR}/inc/http.h ] ; then
-cp ../src/paks/http/http.h ${OUT_DIR}/inc/http.h
+if [ ../src/http/http.h -nt ${OUT_DIR}/inc/http.h ] ; then
+cp ../src/http/http.h ${OUT_DIR}/inc/http.h
 fi
-if [ ../src/paks/mpr/mpr.h -nt ${OUT_DIR}/inc/mpr.h ] ; then
-cp ../src/paks/mpr/mpr.h ${OUT_DIR}/inc/mpr.h
+if [ ../src/mpr/mpr.h -nt ${OUT_DIR}/inc/mpr.h ] ; then
+cp ../src/mpr/mpr.h ${OUT_DIR}/inc/mpr.h
 fi
-if [ ../src/paks/osdep/osdep.h -nt ${OUT_DIR}/inc/osdep.h ] ; then
-cp ../src/paks/osdep/osdep.h ${OUT_DIR}/inc/osdep.h
+if [ ../src/osdep/osdep.h -nt ${OUT_DIR}/inc/osdep.h ] ; then
+cp ../src/osdep/osdep.h ${OUT_DIR}/inc/osdep.h
 fi
-if [ ../src/paks/pcre/pcre.h -nt ${OUT_DIR}/inc/pcre.h ] ; then
-cp ../src/paks/pcre/pcre.h ${OUT_DIR}/inc/pcre.h
+if [ ../src/pcre/pcre.h -nt ${OUT_DIR}/inc/pcre.h ] ; then
+cp ../src/pcre/pcre.h ${OUT_DIR}/inc/pcre.h
 fi
 if [ ../test/src/testAppweb.h -nt ${OUT_DIR}/inc/testAppweb.h ] ; then
 cp ../test/src/testAppweb.h ${OUT_DIR}/inc/testAppweb.h
@@ -2136,17 +2135,17 @@ fi
 if [ ../src/customize.h -nt ${OUT_DIR}/inc/customize.h ] ; then
 cp ../src/customize.h ${OUT_DIR}/inc/customize.h
 fi
-if [ ../src/paks/http/http.h -nt ${OUT_DIR}/inc/http.h ] ; then
-cp ../src/paks/http/http.h ${OUT_DIR}/inc/http.h
+if [ ../src/http/http.h -nt ${OUT_DIR}/inc/http.h ] ; then
+cp ../src/http/http.h ${OUT_DIR}/inc/http.h
 fi
-if [ ../src/paks/esp/esp.h -nt ${OUT_DIR}/inc/esp.h ] ; then
-cp ../src/paks/esp/esp.h ${OUT_DIR}/inc/esp.h
+if [ ../src/esp/esp.h -nt ${OUT_DIR}/inc/esp.h ] ; then
+cp ../src/esp/esp.h ${OUT_DIR}/inc/esp.h
 fi
-if [ ../src/paks/mpr/mpr.h -nt ${OUT_DIR}/inc/mpr.h ] ; then
-cp ../src/paks/mpr/mpr.h ${OUT_DIR}/inc/mpr.h
+if [ ../src/mpr/mpr.h -nt ${OUT_DIR}/inc/mpr.h ] ; then
+cp ../src/mpr/mpr.h ${OUT_DIR}/inc/mpr.h
 fi
-if [ ../src/paks/pcre/pcre.h -nt ${OUT_DIR}/inc/pcre.h ] ; then
-cp ../src/paks/pcre/pcre.h ${OUT_DIR}/inc/pcre.h
+if [ ../src/pcre/pcre.h -nt ${OUT_DIR}/inc/pcre.h ] ; then
+cp ../src/pcre/pcre.h ${OUT_DIR}/inc/pcre.h
 fi
 if [ ../test/src/testAppweb.h -nt ${OUT_DIR}/inc/testAppweb.h ] ; then
 cp ../test/src/testAppweb.h ${OUT_DIR}/inc/testAppweb.h
@@ -2926,7 +2925,7 @@ fi";
                     /* Common Settings */
     				ALWAYS_SEARCH_USER_PATHS = NO;
                     ONLY_ACTIVE_ARCH = YES;
-                    CURRENT_PROJECT_VERSION = 4.6;
+                    CURRENT_PROJECT_VERSION = 4.7;
                     DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
                     DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
     				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -2938,10 +2937,10 @@ fi";
 
                     OUT_DIR = "../build/macosx-x64-default";
                     BIN_DIR = "../build/macosx-x64-default/bin";
-                    LIB_DIR = "../build/macosx-x64-default/bin";
+                    LIB_DIR = "../src";
                     INC_DIR = "../build/macosx-x64-default/inc";
                     OBJ_DIR = "../build/macosx-x64-default/obj";
-                    SRC_DIR = "..";
+                    SRC_DIR = "../src";
 
                     CONFIGURATION_TEMP_DIR = "$(OBJ_DIR)/appweb-xcode/$(CONFIGURATION)";
                     CONFIGURATION_BUILD_DIR = "$(BIN_DIR)";
@@ -2995,7 +2994,7 @@ fi";
                     /* Common Settings */
     				ALWAYS_SEARCH_USER_PATHS = NO;
                     ONLY_ACTIVE_ARCH = YES;
-                    CURRENT_PROJECT_VERSION = 4.6;
+                    CURRENT_PROJECT_VERSION = 4.7;
                     DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
                     DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
     				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -3007,10 +3006,10 @@ fi";
 
                     OUT_DIR = "../build/macosx-x64-default";
                     BIN_DIR = "../build/macosx-x64-default/bin";
-                    LIB_DIR = "../build/macosx-x64-default/bin";
+                    LIB_DIR = "../src";
                     INC_DIR = "../build/macosx-x64-default/inc";
                     OBJ_DIR = "../build/macosx-x64-default/obj";
-                    SRC_DIR = "..";
+                    SRC_DIR = "../src";
 
                     CONFIGURATION_TEMP_DIR = "$(OBJ_DIR)/appweb-xcode/$(CONFIGURATION)";
                     CONFIGURATION_BUILD_DIR = "$(BIN_DIR)";

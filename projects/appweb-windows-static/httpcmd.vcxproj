@@ -103,12 +103,12 @@
     </PropertyGroup>
   
       <ItemGroup>
-    <ClCompile Include="..\..\src\paks\http\http.c" />
+    <ClCompile Include="..\..\src\http\http.c" />
   </ItemGroup>
 
       <ItemDefinitionGroup>
       <Link>
-        <AdditionalDependencies>libhttp.lib;libmpr.lib;libpcre.lib;libmprssl.lib;libest.lib;%(AdditionalDependencies)</AdditionalDependencies>
+        <AdditionalDependencies>libhttp.lib;libmpr.lib;libpcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
         <AdditionalLibraryDirectories>$(OutDir);build\$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       </Link>
   </ItemDefinitionGroup>
@@ -116,13 +116,6 @@
     <ItemGroup>
       <ProjectReference Include="libhttp.vcxproj">
       <Project>c069fe8d-fb74-4411-94f1-3216b922ddc9</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      </ProjectReference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="libmprssl.vcxproj">
-      <Project>5617e61f-ea35-41ca-ae8a-8aef6ed6fb7b</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       </ProjectReference>
     </ItemGroup>

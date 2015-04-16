@@ -100,7 +100,7 @@
   </PropertyGroup>
   
       <ItemGroup>
-    <ClCompile Include="..\..\src\paks\esp\espLib.c" />
+    <ClCompile Include="..\..\src\esp\espLib.c" />
   </ItemGroup>
 
       <ItemGroup>
@@ -114,9 +114,9 @@
       </Link>
 
       <CustomBuildStep>
-        <Command>cd ..\..\src\paks\esp
+        <Command>cd ..\..\src\esp
 copy /Y /B esp.h $(IncDir)
-cd ..\..\..\projects\appweb-windows-default</Command>
+cd ..\..\projects\appweb-windows-default</Command>
         <Outputs>$(BinDir)\libmod_esp.dll</Outputs>
       </CustomBuildStep>
   </ItemDefinitionGroup>

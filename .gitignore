@@ -225,3 +225,4 @@ test/apps.conf
 /start.me
 /macosx-*.me
 /build/
+.cdrc

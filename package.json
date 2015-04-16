@@ -2,8 +2,8 @@
     "name": "appweb",
     "description": "Embedthis Appweb Embedded Web Server",
     "title": "Embedthis Appweb",
-    "version": "4.7.0",
-    "pak": ">=0.10",
+    "version": "4.7.1",
+    "pak": ">=0.10.1",
     "keywords": [
         "appweb",
         "http",
@@ -58,6 +58,6 @@
     ],
     "pak": {
         "import": true,
-        "version": ">=0.10"
+        "pak": ">=0.10"
     }
 }

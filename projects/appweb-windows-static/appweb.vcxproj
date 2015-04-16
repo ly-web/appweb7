@@ -105,7 +105,7 @@
 
       <ItemDefinitionGroup>
       <Link>
-        <AdditionalDependencies>libappweb.lib;libhttp.lib;libmpr.lib;libpcre.lib;libslink.lib;libmod_esp.lib;libmod_ssl.lib;libmprssl.lib;libest.lib;libmod_cgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+        <AdditionalDependencies>libappweb.lib;libhttp.lib;libmpr.lib;libpcre.lib;libslink.lib;%(AdditionalDependencies)</AdditionalDependencies>
         <AdditionalLibraryDirectories>$(OutDir);build\$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       </Link>
   </ItemDefinitionGroup>
@@ -120,27 +120,6 @@
     <ItemGroup>
       <ProjectReference Include="libslink.vcxproj">
       <Project>ae0edfab-5c28-4086-9e25-df5a7de53ee0</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      </ProjectReference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="libmod_esp.vcxproj">
-      <Project>b682d63d-c097-498a-a46f-c4d1d0aabef0</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      </ProjectReference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="libmod_ssl.vcxproj">
-      <Project>257f4431-dda4-4871-9a39-72f05ffd6da3</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      </ProjectReference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="libmod_cgi.vcxproj">
-      <Project>e059177b-302f-4a84-91ca-be8587520d7f</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       </ProjectReference>
     </ItemGroup>

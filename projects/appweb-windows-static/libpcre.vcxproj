@@ -100,7 +100,7 @@
   </PropertyGroup>
   
       <ItemGroup>
-    <ClCompile Include="..\..\src\paks\pcre\pcre.c" />
+    <ClCompile Include="..\..\src\pcre\pcre.c" />
   </ItemGroup>
 
       <ItemGroup>
@@ -114,9 +114,9 @@
       </Link>
 
       <CustomBuildStep>
-        <Command>cd ..\..\src\paks\pcre
+        <Command>cd ..\..\src\pcre
 copy /Y /B pcre.h $(IncDir)
-cd ..\..\..\projects\appweb-windows-static</Command>
+cd ..\..\projects\appweb-windows-static</Command>
         <Outputs>$(BinDir)\libpcre.dll</Outputs>
       </CustomBuildStep>
   </ItemDefinitionGroup>

@@ -3,7 +3,7 @@
 #
 
 NAME                  = appweb
-VERSION               = 4.6.7
+VERSION               = 4.7.1
 
 OS                    = windows
 PA                    = $(PROCESSOR_ARCHITECTURE)
@@ -270,7 +270,6 @@ clean:
 	if exist "build\$(CONFIG)\obj\mprSsl.obj" del /Q "build\$(CONFIG)\obj\mprSsl.obj"
 	if exist "build\$(CONFIG)\obj\pcre.obj" del /Q "build\$(CONFIG)\obj\pcre.obj"
 	if exist "build\$(CONFIG)\obj\phpHandler.obj" del /Q "build\$(CONFIG)\obj\phpHandler.obj"
-	if exist "build\$(CONFIG)\obj\removeFiles.obj" del /Q "build\$(CONFIG)\obj\removeFiles.obj"
 	if exist "build\$(CONFIG)\obj\server.obj" del /Q "build\$(CONFIG)\obj\server.obj"
 	if exist "build\$(CONFIG)\obj\slink.obj" del /Q "build\$(CONFIG)\obj\slink.obj"
 	if exist "build\$(CONFIG)\obj\sqlite.obj" del /Q "build\$(CONFIG)\obj\sqlite.obj"
@@ -400,41 +399,41 @@ build\$(CONFIG)\inc\me.h: $(DEPS_1)
 #
 #   osdep.h
 #
-DEPS_2 = $(DEPS_2) src\paks\osdep\osdep.h
+DEPS_2 = $(DEPS_2) src\osdep\osdep.h
 DEPS_2 = $(DEPS_2) build\$(CONFIG)\inc\me.h
 
 build\$(CONFIG)\inc\osdep.h: $(DEPS_2)
 	@echo ..... [Copy] build\$(CONFIG)\inc\osdep.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y /B src\paks\osdep\osdep.h+modified build\$(CONFIG)\inc\osdep.h $(LOG)
+	copy /Y /B src\osdep\osdep.h+modified build\$(CONFIG)\inc\osdep.h $(LOG)
 
 #
 #   mpr.h
 #
-DEPS_3 = $(DEPS_3) src\paks\mpr\mpr.h
+DEPS_3 = $(DEPS_3) src\mpr\mpr.h
 DEPS_3 = $(DEPS_3) build\$(CONFIG)\inc\me.h
 DEPS_3 = $(DEPS_3) build\$(CONFIG)\inc\osdep.h
 
 build\$(CONFIG)\inc\mpr.h: $(DEPS_3)
 	@echo ..... [Copy] build\$(CONFIG)\inc\mpr.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y /B src\paks\mpr\mpr.h+modified build\$(CONFIG)\inc\mpr.h $(LOG)
+	copy /Y /B src\mpr\mpr.h+modified build\$(CONFIG)\inc\mpr.h $(LOG)
 
 #
 #   mpr.h
 #
 
-src\paks\mpr\mpr.h: $(DEPS_4)
+src\mpr\mpr.h: $(DEPS_4)
 
 #
 #   mprLib.obj
 #
-DEPS_5 = $(DEPS_5) src\paks\mpr\mpr.h
+DEPS_5 = $(DEPS_5) src\mpr\mpr.h
 
 build\$(CONFIG)\obj\mprLib.obj: \
-    src\paks\mpr\mprLib.c $(DEPS_5)
+    src\mpr\mprLib.c $(DEPS_5)
 	@echo .. [Compile] build\$(CONFIG)\obj\mprLib.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\mprLib.obj -Fd$(BUILD)\obj\mprLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\mpr\mprLib.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\mprLib.obj -Fd$(BUILD)\obj\mprLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\mpr\mprLib.c $(LOG)
 
 #
 #   libmpr
@@ -449,29 +448,29 @@ build\$(CONFIG)\bin\libmpr.dll: $(DEPS_6)
 #
 #   pcre.h
 #
-DEPS_7 = $(DEPS_7) src\paks\pcre\pcre.h
+DEPS_7 = $(DEPS_7) src\pcre\pcre.h
 
 build\$(CONFIG)\inc\pcre.h: $(DEPS_7)
 	@echo ..... [Copy] build\$(CONFIG)\inc\pcre.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y /B src\paks\pcre\pcre.h+modified build\$(CONFIG)\inc\pcre.h $(LOG)
+	copy /Y /B src\pcre\pcre.h+modified build\$(CONFIG)\inc\pcre.h $(LOG)
 
 #
 #   pcre.h
 #
 
-src\paks\pcre\pcre.h: $(DEPS_8)
+src\pcre\pcre.h: $(DEPS_8)
 
 #
 #   pcre.obj
 #
 DEPS_9 = $(DEPS_9) build\$(CONFIG)\inc\me.h
-DEPS_9 = $(DEPS_9) src\paks\pcre\pcre.h
+DEPS_9 = $(DEPS_9) src\pcre\pcre.h
 
 build\$(CONFIG)\obj\pcre.obj: \
-    src\paks\pcre\pcre.c $(DEPS_9)
+    src\pcre\pcre.c $(DEPS_9)
 	@echo .. [Compile] build\$(CONFIG)\obj\pcre.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\pcre.obj -Fd$(BUILD)\obj\pcre.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\pcre\pcre.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\pcre.obj -Fd$(BUILD)\obj\pcre.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\pcre\pcre.c $(LOG)
 
 !IF "$(ME_COM_PCRE)" == "1"
 #
@@ -488,29 +487,29 @@ build\$(CONFIG)\bin\libpcre.dll: $(DEPS_10)
 #
 #   http.h
 #
-DEPS_11 = $(DEPS_11) src\paks\http\http.h
+DEPS_11 = $(DEPS_11) src\http\http.h
 DEPS_11 = $(DEPS_11) build\$(CONFIG)\inc\mpr.h
 
 build\$(CONFIG)\inc\http.h: $(DEPS_11)
 	@echo ..... [Copy] build\$(CONFIG)\inc\http.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y /B src\paks\http\http.h+modified build\$(CONFIG)\inc\http.h $(LOG)
+	copy /Y /B src\http\http.h+modified build\$(CONFIG)\inc\http.h $(LOG)
 
 #
 #   http.h
 #
 
-src\paks\http\http.h: $(DEPS_12)
+src\http\http.h: $(DEPS_12)
 
 #
 #   httpLib.obj
 #
-DEPS_13 = $(DEPS_13) src\paks\http\http.h
+DEPS_13 = $(DEPS_13) src\http\http.h
 
 build\$(CONFIG)\obj\httpLib.obj: \
-    src\paks\http\httpLib.c $(DEPS_13)
+    src\http\httpLib.c $(DEPS_13)
 	@echo .. [Compile] build\$(CONFIG)\obj\httpLib.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\httpLib.obj -Fd$(BUILD)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\http\httpLib.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\httpLib.obj -Fd$(BUILD)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\http\httpLib.c $(LOG)
 
 !IF "$(ME_COM_HTTP)" == "1"
 #
@@ -669,7 +668,7 @@ src\slink.c: $(DEPS_26)
 #
 #   esp.h
 #
-DEPS_27 = $(DEPS_27) src\paks\esp\esp.h
+DEPS_27 = $(DEPS_27) src\esp\esp.h
 DEPS_27 = $(DEPS_27) build\$(CONFIG)\inc\me.h
 DEPS_27 = $(DEPS_27) build\$(CONFIG)\inc\osdep.h
 DEPS_27 = $(DEPS_27) build\$(CONFIG)\inc\appweb.h
@@ -677,7 +676,7 @@ DEPS_27 = $(DEPS_27) build\$(CONFIG)\inc\appweb.h
 build\$(CONFIG)\inc\esp.h: $(DEPS_27)
 	@echo ..... [Copy] build\$(CONFIG)\inc\esp.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y /B src\paks\esp\esp.h+modified build\$(CONFIG)\inc\esp.h $(LOG)
+	copy /Y /B src\esp\esp.h+modified build\$(CONFIG)\inc\esp.h $(LOG)
 
 #
 #   slink.obj
@@ -854,29 +853,29 @@ build\$(CONFIG)\bin\cgiProgram.exe: $(DEPS_41)
 #
 #   zlib.h
 #
-DEPS_42 = $(DEPS_42) src\paks\zlib\zlib.h
+DEPS_42 = $(DEPS_42) src\zlib\zlib.h
 
 build\$(CONFIG)\inc\zlib.h: $(DEPS_42)
 	@echo ..... [Copy] build\$(CONFIG)\inc\zlib.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y /B src\paks\zlib\zlib.h+modified build\$(CONFIG)\inc\zlib.h $(LOG)
+	copy /Y /B src\zlib\zlib.h+modified build\$(CONFIG)\inc\zlib.h $(LOG)
 
 #
 #   zlib.h
 #
 
-src\paks\zlib\zlib.h: $(DEPS_43)
+src\zlib\zlib.h: $(DEPS_43)
 
 #
 #   zlib.obj
 #
 DEPS_44 = $(DEPS_44) build\$(CONFIG)\inc\me.h
-DEPS_44 = $(DEPS_44) src\paks\zlib\zlib.h
+DEPS_44 = $(DEPS_44) src\zlib\zlib.h
 
 build\$(CONFIG)\obj\zlib.obj: \
-    src\paks\zlib\zlib.c $(DEPS_44)
+    src\zlib\zlib.c $(DEPS_44)
 	@echo .. [Compile] build\$(CONFIG)\obj\zlib.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\zlib.obj -Fd$(BUILD)\obj\zlib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\zlib\zlib.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\zlib.obj -Fd$(BUILD)\obj\zlib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\zlib\zlib.c $(LOG)
 
 !IF "$(ME_COM_ZLIB)" == "1"
 #
@@ -893,51 +892,51 @@ build\$(CONFIG)\bin\libzlib.dll: $(DEPS_45)
 #
 #   ejs.h
 #
-DEPS_46 = $(DEPS_46) src\paks\ejs\ejs.h
+DEPS_46 = $(DEPS_46) src\ejs\ejs.h
 
 build\$(CONFIG)\inc\ejs.h: $(DEPS_46)
 	@echo ..... [Copy] build\$(CONFIG)\inc\ejs.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y /B src\paks\ejs\ejs.h+modified build\$(CONFIG)\inc\ejs.h $(LOG)
+	copy /Y /B src\ejs\ejs.h+modified build\$(CONFIG)\inc\ejs.h $(LOG)
 
 #
 #   ejs.slots.h
 #
-DEPS_47 = $(DEPS_47) src\paks\ejs\ejs.slots.h
+DEPS_47 = $(DEPS_47) src\ejs\ejs.slots.h
 
 build\$(CONFIG)\inc\ejs.slots.h: $(DEPS_47)
 	@echo ..... [Copy] build\$(CONFIG)\inc\ejs.slots.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y /B src\paks\ejs\ejs.slots.h+modified build\$(CONFIG)\inc\ejs.slots.h $(LOG)
+	copy /Y /B src\ejs\ejs.slots.h+modified build\$(CONFIG)\inc\ejs.slots.h $(LOG)
 
 #
 #   ejsByteGoto.h
 #
-DEPS_48 = $(DEPS_48) src\paks\ejs\ejsByteGoto.h
+DEPS_48 = $(DEPS_48) src\ejs\ejsByteGoto.h
 
 build\$(CONFIG)\inc\ejsByteGoto.h: $(DEPS_48)
 	@echo ..... [Copy] build\$(CONFIG)\inc\ejsByteGoto.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y /B src\paks\ejs\ejsByteGoto.h+modified build\$(CONFIG)\inc\ejsByteGoto.h $(LOG)
+	copy /Y /B src\ejs\ejsByteGoto.h+modified build\$(CONFIG)\inc\ejsByteGoto.h $(LOG)
 
 #
 #   ejs.h
 #
 
-src\paks\ejs\ejs.h: $(DEPS_49)
+src\ejs\ejs.h: $(DEPS_49)
 
 #
 #   ejsLib.obj
 #
-DEPS_50 = $(DEPS_50) src\paks\ejs\ejs.h
+DEPS_50 = $(DEPS_50) src\ejs\ejs.h
 DEPS_50 = $(DEPS_50) build\$(CONFIG)\inc\mpr.h
 DEPS_50 = $(DEPS_50) build\$(CONFIG)\inc\pcre.h
 DEPS_50 = $(DEPS_50) build\$(CONFIG)\inc\me.h
 
 build\$(CONFIG)\obj\ejsLib.obj: \
-    src\paks\ejs\ejsLib.c $(DEPS_50)
+    src\ejs\ejsLib.c $(DEPS_50)
 	@echo .. [Compile] build\$(CONFIG)\obj\ejsLib.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\ejsLib.obj -Fd$(BUILD)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejsLib.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\ejsLib.obj -Fd$(BUILD)\obj\ejsLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\ejs\ejsLib.c $(LOG)
 
 !IF "$(ME_COM_EJS)" == "1"
 #
@@ -980,12 +979,12 @@ build\$(CONFIG)\bin\libejs.dll: $(DEPS_51)
 #
 #   ejsc.obj
 #
-DEPS_52 = $(DEPS_52) src\paks\ejs\ejs.h
+DEPS_52 = $(DEPS_52) src\ejs\ejs.h
 
 build\$(CONFIG)\obj\ejsc.obj: \
-    src\paks\ejs\ejsc.c $(DEPS_52)
+    src\ejs\ejsc.c $(DEPS_52)
 	@echo .. [Compile] build\$(CONFIG)\obj\ejsc.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\ejsc.obj -Fd$(BUILD)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejsc.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\ejsc.obj -Fd$(BUILD)\obj\ejsc.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\ejs\ejsc.c $(LOG)
 
 !IF "$(ME_COM_EJS)" == "1"
 #
@@ -1018,24 +1017,24 @@ build\$(CONFIG)\bin\ejsc.exe: $(DEPS_53)
 #
 #   ejs.mod
 #
-DEPS_54 = $(DEPS_54) src\paks\ejs\ejs.es
+DEPS_54 = $(DEPS_54) src\ejs\ejs.es
 DEPS_54 = $(DEPS_54) build\$(CONFIG)\bin\ejsc.exe
 
 build\$(CONFIG)\bin\ejs.mod: $(DEPS_54)
-	cd src\paks\ejs
-	"../../../$(BUILD)/bin\ejsc" --out "../../../$(BUILD)/bin/ejs.mod" --optimize 9 --bind --require null ejs.es
-	cd ..\..\..
+	cd src\ejs
+	"../../$(BUILD)/bin\ejsc" --out "../../$(BUILD)/bin/ejs.mod" --optimize 9 --bind --require null ejs.es
+	cd ..\..
 !ENDIF
 
 #
 #   ejs.obj
 #
-DEPS_55 = $(DEPS_55) src\paks\ejs\ejs.h
+DEPS_55 = $(DEPS_55) src\ejs\ejs.h
 
 build\$(CONFIG)\obj\ejs.obj: \
-    src\paks\ejs\ejs.c $(DEPS_55)
+    src\ejs\ejs.c $(DEPS_55)
 	@echo .. [Compile] build\$(CONFIG)\obj\ejs.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\ejs.obj -Fd$(BUILD)\obj\ejs.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\ejs\ejs.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\ejs.obj -Fd$(BUILD)\obj\ejs.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\ejs\ejs.c $(LOG)
 
 !IF "$(ME_COM_EJS)" == "1"
 #
@@ -1068,135 +1067,132 @@ build\$(CONFIG)\bin\ejs.exe: $(DEPS_56)
 #
 #   esp-paks
 #
-DEPS_57 = $(DEPS_57) src\paks\esp-html-mvc\client\assets\favicon.ico
-DEPS_57 = $(DEPS_57) src\paks\esp-html-mvc\client\css\all.css
-DEPS_57 = $(DEPS_57) src\paks\esp-html-mvc\client\css\all.less
-DEPS_57 = $(DEPS_57) src\paks\esp-html-mvc\client\index.esp
-DEPS_57 = $(DEPS_57) src\paks\esp-html-mvc\css\app.less
-DEPS_57 = $(DEPS_57) src\paks\esp-html-mvc\css\theme.less
-DEPS_57 = $(DEPS_57) src\paks\esp-html-mvc\generate\appweb.conf
-DEPS_57 = $(DEPS_57) src\paks\esp-html-mvc\generate\controller.c
-DEPS_57 = $(DEPS_57) src\paks\esp-html-mvc\generate\controllerSingleton.c
-DEPS_57 = $(DEPS_57) src\paks\esp-html-mvc\generate\edit.esp
-DEPS_57 = $(DEPS_57) src\paks\esp-html-mvc\generate\list.esp
-DEPS_57 = $(DEPS_57) src\paks\esp-html-mvc\layouts\default.esp
-DEPS_57 = $(DEPS_57) src\paks\esp-html-mvc\package.json
-DEPS_57 = $(DEPS_57) src\paks\esp-legacy-mvc\generate\appweb.conf
-DEPS_57 = $(DEPS_57) src\paks\esp-legacy-mvc\generate\controller.c
-DEPS_57 = $(DEPS_57) src\paks\esp-legacy-mvc\generate\edit.esp
-DEPS_57 = $(DEPS_57) src\paks\esp-legacy-mvc\generate\list.esp
-DEPS_57 = $(DEPS_57) src\paks\esp-legacy-mvc\generate\migration.c
-DEPS_57 = $(DEPS_57) src\paks\esp-legacy-mvc\generate\src\app.c
-DEPS_57 = $(DEPS_57) src\paks\esp-legacy-mvc\layouts\default.esp
-DEPS_57 = $(DEPS_57) src\paks\esp-legacy-mvc\package.json
-DEPS_57 = $(DEPS_57) src\paks\esp-legacy-mvc\static\css\all.css
-DEPS_57 = $(DEPS_57) src\paks\esp-legacy-mvc\static\images\banner.jpg
-DEPS_57 = $(DEPS_57) src\paks\esp-legacy-mvc\static\images\favicon.ico
-DEPS_57 = $(DEPS_57) src\paks\esp-legacy-mvc\static\images\splash.jpg
-DEPS_57 = $(DEPS_57) src\paks\esp-legacy-mvc\static\index.esp
-DEPS_57 = $(DEPS_57) src\paks\esp-legacy-mvc\static\js\jquery.esp.js
-DEPS_57 = $(DEPS_57) src\paks\esp-legacy-mvc\static\js\jquery.js
-DEPS_57 = $(DEPS_57) src\paks\esp-mvc\generate\appweb.conf
-DEPS_57 = $(DEPS_57) src\paks\esp-mvc\generate\controller.c
-DEPS_57 = $(DEPS_57) src\paks\esp-mvc\generate\migration.c
-DEPS_57 = $(DEPS_57) src\paks\esp-mvc\generate\src\app.c
-DEPS_57 = $(DEPS_57) src\paks\esp-mvc\LICENSE.md
-DEPS_57 = $(DEPS_57) src\paks\esp-mvc\package.json
-DEPS_57 = $(DEPS_57) src\paks\esp-mvc\README.md
-DEPS_57 = $(DEPS_57) src\paks\esp-server\generate\appweb.conf
-DEPS_57 = $(DEPS_57) src\paks\esp-server\package.json
+DEPS_57 = $(DEPS_57) src\esp-html-mvc\client\assets\favicon.ico
+DEPS_57 = $(DEPS_57) src\esp-html-mvc\client\css\all.css
+DEPS_57 = $(DEPS_57) src\esp-html-mvc\client\css\all.less
+DEPS_57 = $(DEPS_57) src\esp-html-mvc\client\index.esp
+DEPS_57 = $(DEPS_57) src\esp-html-mvc\css\app.less
+DEPS_57 = $(DEPS_57) src\esp-html-mvc\css\theme.less
+DEPS_57 = $(DEPS_57) src\esp-html-mvc\generate\appweb.conf
+DEPS_57 = $(DEPS_57) src\esp-html-mvc\generate\controller.c
+DEPS_57 = $(DEPS_57) src\esp-html-mvc\generate\controllerSingleton.c
+DEPS_57 = $(DEPS_57) src\esp-html-mvc\generate\edit.esp
+DEPS_57 = $(DEPS_57) src\esp-html-mvc\generate\list.esp
+DEPS_57 = $(DEPS_57) src\esp-html-mvc\layouts\default.esp
+DEPS_57 = $(DEPS_57) src\esp-html-mvc\package.json
+DEPS_57 = $(DEPS_57) src\esp-legacy-mvc\generate\appweb.conf
+DEPS_57 = $(DEPS_57) src\esp-legacy-mvc\generate\controller.c
+DEPS_57 = $(DEPS_57) src\esp-legacy-mvc\generate\edit.esp
+DEPS_57 = $(DEPS_57) src\esp-legacy-mvc\generate\list.esp
+DEPS_57 = $(DEPS_57) src\esp-legacy-mvc\generate\migration.c
+DEPS_57 = $(DEPS_57) src\esp-legacy-mvc\generate\src\app.c
+DEPS_57 = $(DEPS_57) src\esp-legacy-mvc\layouts\default.esp
+DEPS_57 = $(DEPS_57) src\esp-legacy-mvc\package.json
+DEPS_57 = $(DEPS_57) src\esp-legacy-mvc\static\css\all.css
+DEPS_57 = $(DEPS_57) src\esp-legacy-mvc\static\images\banner.jpg
+DEPS_57 = $(DEPS_57) src\esp-legacy-mvc\static\images\favicon.ico
+DEPS_57 = $(DEPS_57) src\esp-legacy-mvc\static\images\splash.jpg
+DEPS_57 = $(DEPS_57) src\esp-legacy-mvc\static\index.esp
+DEPS_57 = $(DEPS_57) src\esp-legacy-mvc\static\js\jquery.esp.js
+DEPS_57 = $(DEPS_57) src\esp-legacy-mvc\static\js\jquery.js
+DEPS_57 = $(DEPS_57) src\esp-mvc\generate\appweb.conf
+DEPS_57 = $(DEPS_57) src\esp-mvc\generate\controller.c
+DEPS_57 = $(DEPS_57) src\esp-mvc\generate\migration.c
+DEPS_57 = $(DEPS_57) src\esp-mvc\generate\src\app.c
+DEPS_57 = $(DEPS_57) src\esp-mvc\LICENSE.md
+DEPS_57 = $(DEPS_57) src\esp-mvc\package.json
+DEPS_57 = $(DEPS_57) src\esp-mvc\README.md
+DEPS_57 = $(DEPS_57) src\esp-server\generate\appweb.conf
+DEPS_57 = $(DEPS_57) src\esp-server\package.json
 
 build\$(CONFIG)\esp: $(DEPS_57)
-	cd src\paks
-	if not exist "..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7" md "..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7"
-	if not exist "..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\client" md "..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\client"
-	if not exist "..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\client\assets" md "..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\client\assets"
-	copy /Y /B esp-html-mvc\client\assets\favicon.ico+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\client\assets\favicon.ico $(LOG)
-	if not exist "..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\client\css" md "..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\client\css"
-	copy /Y /B esp-html-mvc\client\css\all.css+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\client\css\all.css $(LOG)
-	copy /Y /B esp-html-mvc\client\css\all.less+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\client\css\all.less $(LOG)
-	copy /Y /B esp-html-mvc\client\index.esp+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\client\index.esp $(LOG)
-	if not exist "..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\css" md "..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\css"
-	copy /Y /B esp-html-mvc\css\app.less+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\css\app.less $(LOG)
-	copy /Y /B esp-html-mvc\css\theme.less+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\css\theme.less $(LOG)
-	if not exist "..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\generate" md "..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\generate"
-	copy /Y /B esp-html-mvc\generate\appweb.conf+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\generate\appweb.conf $(LOG)
-	copy /Y /B esp-html-mvc\generate\controller.c+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\generate\controller.c $(LOG)
-	copy /Y /B esp-html-mvc\generate\controllerSingleton.c+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\generate\controllerSingleton.c $(LOG)
-	copy /Y /B esp-html-mvc\generate\edit.esp+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\generate\edit.esp $(LOG)
-	copy /Y /B esp-html-mvc\generate\list.esp+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\generate\list.esp $(LOG)
-	if not exist "..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\layouts" md "..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\layouts"
-	copy /Y /B esp-html-mvc\layouts\default.esp+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\layouts\default.esp $(LOG)
-	copy /Y /B esp-html-mvc\package.json+modified ..\..\build\$(CONFIG)\esp\esp-html-mvc\4.6.7\package.json $(LOG)
-	if not exist "..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7" md "..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7"
-	if not exist "..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\generate" md "..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\generate"
-	copy /Y /B esp-legacy-mvc\generate\appweb.conf+modified ..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\generate\appweb.conf $(LOG)
-	copy /Y /B esp-legacy-mvc\generate\controller.c+modified ..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\generate\controller.c $(LOG)
-	copy /Y /B esp-legacy-mvc\generate\edit.esp+modified ..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\generate\edit.esp $(LOG)
-	copy /Y /B esp-legacy-mvc\generate\list.esp+modified ..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\generate\list.esp $(LOG)
-	copy /Y /B esp-legacy-mvc\generate\migration.c+modified ..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\generate\migration.c $(LOG)
-	if not exist "..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\generate\src" md "..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\generate\src"
-	copy /Y /B esp-legacy-mvc\generate\src\app.c+modified ..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\generate\src\app.c $(LOG)
-	if not exist "..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\layouts" md "..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\layouts"
-	copy /Y /B esp-legacy-mvc\layouts\default.esp+modified ..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\layouts\default.esp $(LOG)
-	copy /Y /B esp-legacy-mvc\package.json+modified ..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\package.json $(LOG)
-	if not exist "..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\static" md "..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\static"
-	if not exist "..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\static\css" md "..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\static\css"
-	copy /Y /B esp-legacy-mvc\static\css\all.css+modified ..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\static\css\all.css $(LOG)
-	if not exist "..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\static\images" md "..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\static\images"
-	copy /Y /B esp-legacy-mvc\static\images\banner.jpg+modified ..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\static\images\banner.jpg $(LOG)
-	copy /Y /B esp-legacy-mvc\static\images\favicon.ico+modified ..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\static\images\favicon.ico $(LOG)
-	copy /Y /B esp-legacy-mvc\static\images\splash.jpg+modified ..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\static\images\splash.jpg $(LOG)
-	copy /Y /B esp-legacy-mvc\static\index.esp+modified ..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\static\index.esp $(LOG)
-	if not exist "..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\static\js" md "..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\static\js"
-	copy /Y /B esp-legacy-mvc\static\js\jquery.esp.js+modified ..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\static\js\jquery.esp.js $(LOG)
-	copy /Y /B esp-legacy-mvc\static\js\jquery.js+modified ..\..\build\$(CONFIG)\esp\esp-legacy-mvc\4.6.7\static\js\jquery.js $(LOG)
-	if not exist "..\..\build\$(CONFIG)\esp\esp-mvc\4.6.7" md "..\..\build\$(CONFIG)\esp\esp-mvc\4.6.7"
-	if not exist "..\..\build\$(CONFIG)\esp\esp-mvc\4.6.7\generate" md "..\..\build\$(CONFIG)\esp\esp-mvc\4.6.7\generate"
-	copy /Y /B esp-mvc\generate\appweb.conf+modified ..\..\build\$(CONFIG)\esp\esp-mvc\4.6.7\generate\appweb.conf $(LOG)
-	copy /Y /B esp-mvc\generate\controller.c+modified ..\..\build\$(CONFIG)\esp\esp-mvc\4.6.7\generate\controller.c $(LOG)
-	copy /Y /B esp-mvc\generate\migration.c+modified ..\..\build\$(CONFIG)\esp\esp-mvc\4.6.7\generate\migration.c $(LOG)
-	if not exist "..\..\build\$(CONFIG)\esp\esp-mvc\4.6.7\generate\src" md "..\..\build\$(CONFIG)\esp\esp-mvc\4.6.7\generate\src"
-	copy /Y /B esp-mvc\generate\src\app.c+modified ..\..\build\$(CONFIG)\esp\esp-mvc\4.6.7\generate\src\app.c $(LOG)
-	copy /Y /B esp-mvc\LICENSE.md+modified ..\..\build\$(CONFIG)\esp\esp-mvc\4.6.7\LICENSE.md $(LOG)
-	copy /Y /B esp-mvc\package.json+modified ..\..\build\$(CONFIG)\esp\esp-mvc\4.6.7\package.json $(LOG)
-	copy /Y /B esp-mvc\README.md+modified ..\..\build\$(CONFIG)\esp\esp-mvc\4.6.7\README.md $(LOG)
-	if not exist "..\..\build\$(CONFIG)\esp\esp-server\4.6.7" md "..\..\build\$(CONFIG)\esp\esp-server\4.6.7"
-	if not exist "..\..\build\$(CONFIG)\esp\esp-server\4.6.7\generate" md "..\..\build\$(CONFIG)\esp\esp-server\4.6.7\generate"
-	copy /Y /B esp-server\generate\appweb.conf+modified ..\..\build\$(CONFIG)\esp\esp-server\4.6.7\generate\appweb.conf $(LOG)
-	copy /Y /B esp-server\package.json+modified ..\..\build\$(CONFIG)\esp\esp-server\4.6.7\package.json $(LOG)
-	pak -f -q cache esp-html-mvc esp-legacy-mvc esp-mvc esp-server
-	cd ..\..
+	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1"
+	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\client" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\client"
+	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\client\assets" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\client\assets"
+	copy /Y /B paks\esp-html-mvc\client\assets\favicon.ico+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\client\assets\favicon.ico $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\client\css" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\client\css"
+	copy /Y /B paks\esp-html-mvc\client\css\all.css+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\client\css\all.css $(LOG)
+	copy /Y /B paks\esp-html-mvc\client\css\all.less+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\client\css\all.less $(LOG)
+	copy /Y /B paks\esp-html-mvc\client\index.esp+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\client\index.esp $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\css" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\css"
+	copy /Y /B paks\esp-html-mvc\css\app.less+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\css\app.less $(LOG)
+	copy /Y /B paks\esp-html-mvc\css\theme.less+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\css\theme.less $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\generate" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\generate"
+	copy /Y /B paks\esp-html-mvc\generate\appweb.conf+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\generate\appweb.conf $(LOG)
+	copy /Y /B paks\esp-html-mvc\generate\controller.c+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\generate\controller.c $(LOG)
+	copy /Y /B paks\esp-html-mvc\generate\controllerSingleton.c+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\generate\controllerSingleton.c $(LOG)
+	copy /Y /B paks\esp-html-mvc\generate\edit.esp+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\generate\edit.esp $(LOG)
+	copy /Y /B paks\esp-html-mvc\generate\list.esp+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\generate\list.esp $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\layouts" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\layouts"
+	copy /Y /B paks\esp-html-mvc\layouts\default.esp+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\layouts\default.esp $(LOG)
+	copy /Y /B paks\esp-html-mvc\package.json+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.1\package.json $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1"
+	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\generate" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\generate"
+	copy /Y /B paks\esp-legacy-mvc\generate\appweb.conf+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\generate\appweb.conf $(LOG)
+	copy /Y /B paks\esp-legacy-mvc\generate\controller.c+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\generate\controller.c $(LOG)
+	copy /Y /B paks\esp-legacy-mvc\generate\edit.esp+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\generate\edit.esp $(LOG)
+	copy /Y /B paks\esp-legacy-mvc\generate\list.esp+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\generate\list.esp $(LOG)
+	copy /Y /B paks\esp-legacy-mvc\generate\migration.c+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\generate\migration.c $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\generate\src" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\generate\src"
+	copy /Y /B paks\esp-legacy-mvc\generate\src\app.c+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\generate\src\app.c $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\layouts" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\layouts"
+	copy /Y /B paks\esp-legacy-mvc\layouts\default.esp+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\layouts\default.esp $(LOG)
+	copy /Y /B paks\esp-legacy-mvc\package.json+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\package.json $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\static" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\static"
+	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\static\css" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\static\css"
+	copy /Y /B paks\esp-legacy-mvc\static\css\all.css+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\static\css\all.css $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\static\images" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\static\images"
+	copy /Y /B paks\esp-legacy-mvc\static\images\banner.jpg+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\static\images\banner.jpg $(LOG)
+	copy /Y /B paks\esp-legacy-mvc\static\images\favicon.ico+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\static\images\favicon.ico $(LOG)
+	copy /Y /B paks\esp-legacy-mvc\static\images\splash.jpg+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\static\images\splash.jpg $(LOG)
+	copy /Y /B paks\esp-legacy-mvc\static\index.esp+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\static\index.esp $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\static\js" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\static\js"
+	copy /Y /B paks\esp-legacy-mvc\static\js\jquery.esp.js+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\static\js\jquery.esp.js $(LOG)
+	copy /Y /B paks\esp-legacy-mvc\static\js\jquery.js+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.1\static\js\jquery.js $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-mvc\4.7.1" md "build\$(CONFIG)\esp\paks\esp-mvc\4.7.1"
+	if not exist "build\$(CONFIG)\esp\paks\esp-mvc\4.7.1\generate" md "build\$(CONFIG)\esp\paks\esp-mvc\4.7.1\generate"
+	copy /Y /B paks\esp-mvc\generate\appweb.conf+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.1\generate\appweb.conf $(LOG)
+	copy /Y /B paks\esp-mvc\generate\controller.c+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.1\generate\controller.c $(LOG)
+	copy /Y /B paks\esp-mvc\generate\migration.c+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.1\generate\migration.c $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-mvc\4.7.1\generate\src" md "build\$(CONFIG)\esp\paks\esp-mvc\4.7.1\generate\src"
+	copy /Y /B paks\esp-mvc\generate\src\app.c+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.1\generate\src\app.c $(LOG)
+	copy /Y /B paks\esp-mvc\LICENSE.md+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.1\LICENSE.md $(LOG)
+	copy /Y /B paks\esp-mvc\package.json+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.1\package.json $(LOG)
+	copy /Y /B paks\esp-mvc\README.md+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.1\README.md $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-server\4.7.1" md "build\$(CONFIG)\esp\paks\esp-server\4.7.1"
+	if not exist "build\$(CONFIG)\esp\paks\esp-server\4.7.1\generate" md "build\$(CONFIG)\esp\paks\esp-server\4.7.1\generate"
+	copy /Y /B paks\esp-server\generate\appweb.conf+modified build\$(CONFIG)\esp\paks\esp-server\4.7.1\generate\appweb.conf $(LOG)
+	copy /Y /B paks\esp-server\package.json+modified build\$(CONFIG)\esp\paks\esp-server\4.7.1\package.json $(LOG)
 !ENDIF
 
 !IF "$(ME_COM_ESP)" == "1"
 #
 #   esp.conf
 #
-DEPS_58 = $(DEPS_58) src\paks\esp\esp.conf
+DEPS_58 = $(DEPS_58) src\esp\esp.conf
 
 build\$(CONFIG)\bin\esp.conf: $(DEPS_58)
 	@echo ..... [Copy] build\$(CONFIG)\bin\esp.conf
 	if not exist "build\$(CONFIG)\bin" md "build\$(CONFIG)\bin"
-	copy /Y /B src\paks\esp\esp.conf+modified build\$(CONFIG)\bin\esp.conf $(LOG)
+	copy /Y /B src\esp\esp.conf+modified build\$(CONFIG)\bin\esp.conf $(LOG)
 !ENDIF
 
 #
 #   esp.h
 #
 
-src\paks\esp\esp.h: $(DEPS_59)
+src\esp\esp.h: $(DEPS_59)
 
 #
 #   espLib.obj
 #
-DEPS_60 = $(DEPS_60) src\paks\esp\esp.h
+DEPS_60 = $(DEPS_60) src\esp\esp.h
 DEPS_60 = $(DEPS_60) build\$(CONFIG)\inc\pcre.h
 
 build\$(CONFIG)\obj\espLib.obj: \
-    src\paks\esp\espLib.c $(DEPS_60)
+    src\esp\espLib.c $(DEPS_60)
 	@echo .. [Compile] build\$(CONFIG)\obj\espLib.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\espLib.obj -Fd$(BUILD)\obj\espLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\esp\espLib.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\espLib.obj -Fd$(BUILD)\obj\espLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\espLib.c $(LOG)
 
 !IF "$(ME_COM_ESP)" == "1"
 #
@@ -1226,12 +1222,12 @@ build\$(CONFIG)\bin\libmod_esp.dll: $(DEPS_61)
 #
 #   esp.obj
 #
-DEPS_62 = $(DEPS_62) src\paks\esp\esp.h
+DEPS_62 = $(DEPS_62) src\esp\esp.h
 
 build\$(CONFIG)\obj\esp.obj: \
-    src\paks\esp\esp.c $(DEPS_62)
+    src\esp\esp.c $(DEPS_62)
 	@echo .. [Compile] build\$(CONFIG)\obj\esp.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\esp.obj -Fd$(BUILD)\obj\esp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\esp\esp.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\esp.obj -Fd$(BUILD)\obj\esp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\esp\esp.c $(LOG)
 
 !IF "$(ME_COM_ESP)" == "1"
 #
@@ -1261,22 +1257,22 @@ build\$(CONFIG)\bin\esp.exe: $(DEPS_63)
 #
 #   http-ca-crt
 #
-DEPS_64 = $(DEPS_64) src\paks\http\ca.crt
+DEPS_64 = $(DEPS_64) src\http\ca.crt
 
 build\$(CONFIG)\bin\ca.crt: $(DEPS_64)
 	@echo ..... [Copy] build\$(CONFIG)\bin\ca.crt
 	if not exist "build\$(CONFIG)\bin" md "build\$(CONFIG)\bin"
-	copy /Y /B src\paks\http\ca.crt+modified build\$(CONFIG)\bin\ca.crt $(LOG)
+	copy /Y /B src\http\ca.crt+modified build\$(CONFIG)\bin\ca.crt $(LOG)
 
 #
 #   http.obj
 #
-DEPS_65 = $(DEPS_65) src\paks\http\http.h
+DEPS_65 = $(DEPS_65) src\http\http.h
 
 build\$(CONFIG)\obj\http.obj: \
-    src\paks\http\http.c $(DEPS_65)
+    src\http\http.c $(DEPS_65)
 	@echo .. [Compile] build\$(CONFIG)\obj\http.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\http.obj -Fd$(BUILD)\obj\http.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\http\http.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\http.obj -Fd$(BUILD)\obj\http.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\http\http.c $(LOG)
 
 !IF "$(ME_COM_HTTP)" == "1"
 #
@@ -1299,30 +1295,30 @@ build\$(CONFIG)\bin\http.exe: $(DEPS_66)
 #
 #   est.h
 #
-DEPS_67 = $(DEPS_67) src\paks\est\est.h
+DEPS_67 = $(DEPS_67) src\est\est.h
 DEPS_67 = $(DEPS_67) build\$(CONFIG)\inc\me.h
 DEPS_67 = $(DEPS_67) build\$(CONFIG)\inc\osdep.h
 
 build\$(CONFIG)\inc\est.h: $(DEPS_67)
 	@echo ..... [Copy] build\$(CONFIG)\inc\est.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y /B src\paks\est\est.h+modified build\$(CONFIG)\inc\est.h $(LOG)
+	copy /Y /B src\est\est.h+modified build\$(CONFIG)\inc\est.h $(LOG)
 
 #
 #   est.h
 #
 
-src\paks\est\est.h: $(DEPS_68)
+src\est\est.h: $(DEPS_68)
 
 #
 #   estLib.obj
 #
-DEPS_69 = $(DEPS_69) src\paks\est\est.h
+DEPS_69 = $(DEPS_69) src\est\est.h
 
 build\$(CONFIG)\obj\estLib.obj: \
-    src\paks\est\estLib.c $(DEPS_69)
+    src\est\estLib.c $(DEPS_69)
 	@echo .. [Compile] build\$(CONFIG)\obj\estLib.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\estLib.obj -Fd$(BUILD)\obj\estLib.pdb -nologo -GR- -Zi -Od -MDd $(DFLAGS) $(IFLAGS) src\paks\est\estLib.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\estLib.obj -Fd$(BUILD)\obj\estLib.pdb -nologo -GR- -Zi -Od -MDd $(DFLAGS) $(IFLAGS) src\est\estLib.c $(LOG)
 
 !IF "$(ME_COM_EST)" == "1"
 #
@@ -1444,13 +1440,13 @@ build\$(CONFIG)\bin\libmod_php.dll: $(DEPS_76)
 #   mprSsl.obj
 #
 DEPS_77 = $(DEPS_77) build\$(CONFIG)\inc\me.h
-DEPS_77 = $(DEPS_77) src\paks\mpr\mpr.h
+DEPS_77 = $(DEPS_77) src\mpr\mpr.h
 DEPS_77 = $(DEPS_77) build\$(CONFIG)\inc\est.h
 
 build\$(CONFIG)\obj\mprSsl.obj: \
-    src\paks\mpr\mprSsl.c $(DEPS_77)
+    src\mpr\mprSsl.c $(DEPS_77)
 	@echo .. [Compile] build\$(CONFIG)\obj\mprSsl.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\mprSsl.obj -Fd$(BUILD)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\paks\mpr\mprSsl.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\mprSsl.obj -Fd$(BUILD)\obj\mprSsl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\mpr\mprSsl.c $(LOG)
 
 #
 #   libmprssl
@@ -1525,29 +1521,29 @@ build\$(CONFIG)\bin\libmod_ssl.dll: $(DEPS_80)
 #
 #   sqlite3.h
 #
-DEPS_81 = $(DEPS_81) src\paks\sqlite\sqlite3.h
+DEPS_81 = $(DEPS_81) src\sqlite\sqlite3.h
 
 build\$(CONFIG)\inc\sqlite3.h: $(DEPS_81)
 	@echo ..... [Copy] build\$(CONFIG)\inc\sqlite3.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y /B src\paks\sqlite\sqlite3.h+modified build\$(CONFIG)\inc\sqlite3.h $(LOG)
+	copy /Y /B src\sqlite\sqlite3.h+modified build\$(CONFIG)\inc\sqlite3.h $(LOG)
 
 #
 #   sqlite3.h
 #
 
-src\paks\sqlite\sqlite3.h: $(DEPS_82)
+src\sqlite\sqlite3.h: $(DEPS_82)
 
 #
 #   sqlite3.obj
 #
 DEPS_83 = $(DEPS_83) build\$(CONFIG)\inc\me.h
-DEPS_83 = $(DEPS_83) src\paks\sqlite\sqlite3.h
+DEPS_83 = $(DEPS_83) src\sqlite\sqlite3.h
 
 build\$(CONFIG)\obj\sqlite3.obj: \
-    src\paks\sqlite\sqlite3.c $(DEPS_83)
+    src\sqlite\sqlite3.c $(DEPS_83)
 	@echo .. [Compile] build\$(CONFIG)\obj\sqlite3.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\sqlite3.obj -Fd$(BUILD)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\sqlite\sqlite3.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\sqlite3.obj -Fd$(BUILD)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\sqlite\sqlite3.c $(LOG)
 
 !IF "$(ME_COM_SQLITE)" == "1"
 #
@@ -1564,12 +1560,12 @@ build\$(CONFIG)\bin\libsql.dll: $(DEPS_84)
 #
 #   makerom.obj
 #
-DEPS_85 = $(DEPS_85) src\paks\mpr\mpr.h
+DEPS_85 = $(DEPS_85) src\mpr\mpr.h
 
 build\$(CONFIG)\obj\makerom.obj: \
-    src\paks\mpr\makerom.c $(DEPS_85)
+    src\mpr\makerom.c $(DEPS_85)
 	@echo .. [Compile] build\$(CONFIG)\obj\makerom.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\makerom.obj -Fd$(BUILD)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\mpr\makerom.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\makerom.obj -Fd$(BUILD)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\mpr\makerom.c $(LOG)
 
 #
 #   makerom
@@ -1586,12 +1582,12 @@ build\$(CONFIG)\bin\makerom.exe: $(DEPS_86)
 #
 #   manager.obj
 #
-DEPS_87 = $(DEPS_87) src\paks\mpr\mpr.h
+DEPS_87 = $(DEPS_87) src\mpr\mpr.h
 
 build\$(CONFIG)\obj\manager.obj: \
-    src\paks\mpr\manager.c $(DEPS_87)
+    src\mpr\manager.c $(DEPS_87)
 	@echo .. [Compile] build\$(CONFIG)\obj\manager.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\manager.obj -Fd$(BUILD)\obj\manager.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\mpr\manager.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\manager.obj -Fd$(BUILD)\obj\manager.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\mpr\manager.c $(LOG)
 
 #
 #   manager
@@ -1606,20 +1602,10 @@ build\$(CONFIG)\bin\appman.exe: $(DEPS_88)
 	"$(LD)" -nologo -out:$(BUILD)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\manager.obj" $(LIBPATHS_88) $(LIBS_88) $(LIBS_88) $(LIBS)  $(LOG)
 
 #
-#   removeFiles.obj
-#
-DEPS_89 = $(DEPS_89) build\$(CONFIG)\inc\me.h
-
-build\$(CONFIG)\obj\removeFiles.obj: \
-    package\windows\removeFiles.c $(DEPS_89)
-	@echo .. [Compile] build\$(CONFIG)\obj\removeFiles.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\removeFiles.obj -Fd$(BUILD)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) package\windows\removeFiles.c $(LOG)
-
-#
 #   server-cache
 #
 
-src\server\cache: $(DEPS_90)
+src\server\cache: $(DEPS_89)
 	cd src\server
 	md cache
 	cd ..\..
@@ -1627,36 +1613,36 @@ src\server\cache: $(DEPS_90)
 #
 #   sqlite.obj
 #
-DEPS_91 = $(DEPS_91) build\$(CONFIG)\inc\me.h
-DEPS_91 = $(DEPS_91) src\paks\sqlite\sqlite3.h
+DEPS_90 = $(DEPS_90) build\$(CONFIG)\inc\me.h
+DEPS_90 = $(DEPS_90) src\sqlite\sqlite3.h
 
 build\$(CONFIG)\obj\sqlite.obj: \
-    src\paks\sqlite\sqlite.c $(DEPS_91)
+    src\sqlite\sqlite.c $(DEPS_90)
 	@echo .. [Compile] build\$(CONFIG)\obj\sqlite.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\sqlite.obj -Fd$(BUILD)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\paks\sqlite\sqlite.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\sqlite.obj -Fd$(BUILD)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\sqlite\sqlite.c $(LOG)
 
 !IF "$(ME_COM_SQLITE)" == "1"
 #
 #   sqliteshell
 #
-DEPS_92 = $(DEPS_92) build\$(CONFIG)\bin\libsql.dll
-DEPS_92 = $(DEPS_92) build\$(CONFIG)\obj\sqlite.obj
+DEPS_91 = $(DEPS_91) build\$(CONFIG)\bin\libsql.dll
+DEPS_91 = $(DEPS_91) build\$(CONFIG)\obj\sqlite.obj
 
-LIBS_92 = $(LIBS_92) libsql.lib
+LIBS_91 = $(LIBS_91) libsql.lib
 
-build\$(CONFIG)\bin\sqlite.exe: $(DEPS_92)
+build\$(CONFIG)\bin\sqlite.exe: $(DEPS_91)
 	@echo ..... [Link] build\$(CONFIG)\bin\sqlite.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\sqlite.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\sqlite.obj" $(LIBPATHS_92) $(LIBS_92) $(LIBS_92) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\sqlite.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\sqlite.obj" $(LIBPATHS_91) $(LIBS_91) $(LIBS_91) $(LIBS)  $(LOG)
 !ENDIF
 
 #
 #   testAppweb.h
 #
-DEPS_93 = $(DEPS_93) test\src\testAppweb.h
-DEPS_93 = $(DEPS_93) build\$(CONFIG)\inc\mpr.h
-DEPS_93 = $(DEPS_93) build\$(CONFIG)\inc\http.h
+DEPS_92 = $(DEPS_92) test\src\testAppweb.h
+DEPS_92 = $(DEPS_92) build\$(CONFIG)\inc\mpr.h
+DEPS_92 = $(DEPS_92) build\$(CONFIG)\inc\http.h
 
-build\$(CONFIG)\inc\testAppweb.h: $(DEPS_93)
+build\$(CONFIG)\inc\testAppweb.h: $(DEPS_92)
 	@echo ..... [Copy] build\$(CONFIG)\inc\testAppweb.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
 	copy /Y /B test\src\testAppweb.h+modified build\$(CONFIG)\inc\testAppweb.h $(LOG)
@@ -1664,51 +1650,51 @@ build\$(CONFIG)\inc\testAppweb.h: $(DEPS_93)
 #
 #   testAppweb.obj
 #
-DEPS_94 = $(DEPS_94) build\$(CONFIG)\inc\testAppweb.h
+DEPS_93 = $(DEPS_93) build\$(CONFIG)\inc\testAppweb.h
 
 build\$(CONFIG)\obj\testAppweb.obj: \
-    test\src\testAppweb.c $(DEPS_94)
+    test\src\testAppweb.c $(DEPS_93)
 	@echo .. [Compile] build\$(CONFIG)\obj\testAppweb.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\testAppweb.obj -Fd$(BUILD)\obj\testAppweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\src\testAppweb.c $(LOG)
 
 #
 #   testHttp.obj
 #
-DEPS_95 = $(DEPS_95) build\$(CONFIG)\inc\testAppweb.h
+DEPS_94 = $(DEPS_94) build\$(CONFIG)\inc\testAppweb.h
 
 build\$(CONFIG)\obj\testHttp.obj: \
-    test\src\testHttp.c $(DEPS_95)
+    test\src\testHttp.c $(DEPS_94)
 	@echo .. [Compile] build\$(CONFIG)\obj\testHttp.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\testHttp.obj -Fd$(BUILD)\obj\testHttp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\src\testHttp.c $(LOG)
 
 #
 #   testAppweb
 #
-DEPS_96 = $(DEPS_96) build\$(CONFIG)\bin\libappweb.dll
-DEPS_96 = $(DEPS_96) build\$(CONFIG)\inc\testAppweb.h
-DEPS_96 = $(DEPS_96) build\$(CONFIG)\obj\testAppweb.obj
-DEPS_96 = $(DEPS_96) build\$(CONFIG)\obj\testHttp.obj
+DEPS_95 = $(DEPS_95) build\$(CONFIG)\bin\libappweb.dll
+DEPS_95 = $(DEPS_95) build\$(CONFIG)\inc\testAppweb.h
+DEPS_95 = $(DEPS_95) build\$(CONFIG)\obj\testAppweb.obj
+DEPS_95 = $(DEPS_95) build\$(CONFIG)\obj\testHttp.obj
 
-LIBS_96 = $(LIBS_96) libappweb.lib
+LIBS_95 = $(LIBS_95) libappweb.lib
 !IF "$(ME_COM_HTTP)" == "1"
-LIBS_96 = $(LIBS_96) libhttp.lib
+LIBS_95 = $(LIBS_95) libhttp.lib
 !ENDIF
-LIBS_96 = $(LIBS_96) libmpr.lib
+LIBS_95 = $(LIBS_95) libmpr.lib
 !IF "$(ME_COM_PCRE)" == "1"
-LIBS_96 = $(LIBS_96) libpcre.lib
+LIBS_95 = $(LIBS_95) libpcre.lib
 !ENDIF
 
-build\$(CONFIG)\bin\testAppweb.exe: $(DEPS_96)
+build\$(CONFIG)\bin\testAppweb.exe: $(DEPS_95)
 	@echo ..... [Link] build\$(CONFIG)\bin\testAppweb.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\testAppweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\testAppweb.obj" "$(BUILD)\obj\testHttp.obj" $(LIBPATHS_96) $(LIBS_96) $(LIBS_96) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\testAppweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\testAppweb.obj" "$(BUILD)\obj\testHttp.obj" $(LIBPATHS_95) $(LIBS_95) $(LIBS_95) $(LIBS)  $(LOG)
 
 !IF "$(ME_COM_CGI)" == "1"
 #
 #   test-basic.cgi
 #
-DEPS_97 = $(DEPS_97) build\$(CONFIG)\bin\testAppweb.exe
+DEPS_96 = $(DEPS_96) build\$(CONFIG)\bin\testAppweb.exe
 
-test\web\auth\basic\basic.cgi: $(DEPS_97)
+test\web\auth\basic\basic.cgi: $(DEPS_96)
 #  Omit build script test-basic.cgi
 !ENDIF
 
@@ -1716,9 +1702,9 @@ test\web\auth\basic\basic.cgi: $(DEPS_97)
 #
 #   test-cache.cgi
 #
-DEPS_98 = $(DEPS_98) build\$(CONFIG)\bin\testAppweb.exe
+DEPS_97 = $(DEPS_97) build\$(CONFIG)\bin\testAppweb.exe
 
-test\web\caching\cache.cgi: $(DEPS_98)
+test\web\caching\cache.cgi: $(DEPS_97)
 #  Omit build script test-cache.cgi
 !ENDIF
 
@@ -1726,9 +1712,9 @@ test\web\caching\cache.cgi: $(DEPS_98)
 #
 #   test-cgiProgram
 #
-DEPS_99 = $(DEPS_99) build\$(CONFIG)\bin\cgiProgram.exe
+DEPS_98 = $(DEPS_98) build\$(CONFIG)\bin\cgiProgram.exe
 
-test\cgi-bin\cgiProgram.exe: $(DEPS_99)
+test\cgi-bin\cgiProgram.exe: $(DEPS_98)
 #  Omit build script test-cgiProgram
 !ENDIF
 
@@ -1736,9 +1722,9 @@ test\cgi-bin\cgiProgram.exe: $(DEPS_99)
 #
 #   test-testScript
 #
-DEPS_100 = $(DEPS_100) build\$(CONFIG)\bin\testAppweb.exe
+DEPS_99 = $(DEPS_99) build\$(CONFIG)\bin\testAppweb.exe
 
-test\cgi-bin\testScript: $(DEPS_100)
+test\cgi-bin\testScript: $(DEPS_99)
 #  Omit build script test-testScript
 !ENDIF
 
