@@ -120,12 +120,12 @@ AddHandler cgiHandler .myExt
             with the ".myExt" extension. Mime types are read by Appweb from the "mime.types" file at startup. This file
             maps extensions to mime types. This is an example line from the "mime.types" file:</p>
             <pre>
-application/x-appweb-perl myExt
+application/x-perl myExt
 </pre>
             <p>This maps the ".myExt" extension to the perl mime type. This mime type must then be mapped to a program
             via the the <a href="dir/server.html#action">Action</a> directive. For example:</p>
             <pre>
-Action application/x-appweb-perl /usr/bin/perl
+Action application/x-perl /usr/bin/perl
 </pre>
             <p>This will cause /usr/bin/perl to be run to process the request. Output from perl is captured by the CGI
             handler and then returned to the user's browser.</p><a id="invoking"></a>
