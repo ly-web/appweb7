@@ -167,7 +167,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
             mprSetMaxWorkers(app->workers);
 
         } else if (smatch(argp, "--show") || smatch(argp, "-s")) {
-            app->show = 1;
+            app->show++;
 
         } else if (smatch(argp, "--trace") || smatch(argp, "-t")) {
             if (argind >= argc) {
@@ -235,7 +235,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
         exit(9);
     }
     if (app->show) {
-        httpLogRoutes(0, mprGetLogLevel() > 4);
+        httpLogRoutes(0, app->show > 1);
     }
     mprServiceEvents(-1, 0);
     mprLog("info appweb", 1, "Stopping Appweb ...");
