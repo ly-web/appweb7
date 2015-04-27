@@ -37,3 +37,4 @@ appweb-macosx-mine*
 *.dmp
 cache/
 .cdrc
+doc/.expansive-lastgen
