@@ -2,7 +2,7 @@
     "name": "ssl",
     "description": "Embedthis SSL Interface",
     "title": "Embedthis Development",
-    "version": "0.8.1",
+    "version": "0.9.0",
     "keywords": [
         "me",
         "ssl"

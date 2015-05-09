@@ -8,16 +8,12 @@ Me.load({
     plugins: [ 'configuration', 'installs' ],
 
     blend: [
-        'esp',
-        'src/libappweb.me',
-        'src/utils/utils.me',
-        'src/server/server.me',
+        'src/*.me',
+        'src/*/*.me',
+        'doc/doc.me',
         'test/test.me',
         'samples/samples.me',
         'installs/installs.me',
-        'doc/doc.me',
-        '?src/*/*.me',
-        '?paks/ssl/*.me',
         '?local.me',
     ],
 
@@ -97,8 +93,6 @@ Me.load({
              */
             logging: true,
 
-            manager: 'appman',
-
             alloc: {
                 // quota: 204800,           /* Amount of memory to allocate before a GC */
                 // cache: 0,                /* Amount of memory to buffer for fast allocations */
@@ -108,6 +102,10 @@ Me.load({
                 renegotiate: true,          /* Enable/Disable SSL renegotiation (defaults to true) */
                 curve: "prime256v1",        /* OpenSSL elliptic curve name */
             },
+        },
+
+        watchdog: {
+            name: 'appman',
         },
 
         /*

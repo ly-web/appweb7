@@ -3796,7 +3796,7 @@ PUBLIC int httpLoadConfig(HttpRoute *route, cchar *path)
     if ((obj = mprGetJsonObj(config, "include")) != 0) {
         parseInclude(route, config, obj);
     }
-#if DEPRECATE || 1
+#if DEPRECATED || 1
 {
     MprJson *obj;
     if ((obj = mprGetJsonObj(config, "app.http")) != 0) {
@@ -4112,7 +4112,7 @@ static void parseCache(HttpRoute *route, cchar *key, MprJson *prop)
             }
             methods = getList(mprReadJsonObj(child, "methods"));
             urls = getList(mprReadJsonObj(child, "urls"));
-#if DEPRECATE || 1
+#if DEPRECATED || 1
             if (urls == 0) {
                 if ((urls = getList(mprReadJsonObj(child, "urls"))) != 0) {
                     mprLog("error http config", 0, "Using deprecated property \"uris\", use \"urls\" instead");
@@ -4806,7 +4806,10 @@ static void parseServerListen(HttpRoute *route, cchar *key, MprJson *prop)
     }
     host = route->host;
     for (ITERATE_CONFIG(route, prop, child, ji)) {
-        mprParseSocketAddress(child->value, &ip, &port, &secure, 80);
+        if (mprParseSocketAddress(child->value, &ip, &port, &secure, 80) < 0) {
+            httpParseError(route, "Bad listen address: %s", child->value);
+            return;
+        }
         if (port == 0) {
             httpParseError(route, "Bad or missing port %d in Listen directive", port);
             return;
@@ -5936,7 +5939,7 @@ PUBLIC void httpIO(HttpConn *conn, int eventMask)
     assert(conn->tx);
     assert(conn->rx);
 
-#if DEPRECATE || 1
+#if DEPRECATED || 1
     /* Just IO state asserting */
     if (conn->io) {
         assert(!conn->io);
@@ -7894,7 +7897,10 @@ PUBLIC int httpSecureEndpointByName(cchar *name, struct MprSsl *ssl)
     char            *ip;
     int             port, next, count;
 
-    mprParseSocketAddress(name, &ip, &port, NULL, -1);
+    if (mprParseSocketAddress(name, &ip, &port, NULL, -1) < 0) {
+        mprLog("error http", 0, "Bad endpoint address: %s", name);
+        return MPR_ERR_BAD_ARGS;
+    }
     if (ip == 0) {
         ip = "";
     }
@@ -7927,7 +7933,7 @@ PUBLIC HttpHost *httpLookupHostOnEndpoint(HttpEndpoint *endpoint, cchar *hostHea
     HttpHost    *host;
     int         next;
 
-    if (hostHeader == 0 || *hostHeader == '\0' || mprGetListLength(endpoint->hosts) <= 1) {
+    if (hostHeader == 0 || *hostHeader == '\0') {
         return mprGetFirstItem(endpoint->hosts);
     }
     for (next = 0; (host = mprGetNextItem(endpoint->hosts, &next)) != 0; ) {
@@ -12406,7 +12412,7 @@ PUBLIC HttpRoute *httpCreateRoute(HttpHost *host)
     route->workers = -1;
     route->prefix = MPR->emptyString;
     route->trace = http->trace;
-#if DEPRECATE || 1
+#if DEPRECATED || 1
     route->serverPrefix = MPR->emptyString;
 #endif
 
@@ -12519,7 +12525,7 @@ PUBLIC HttpRoute *httpCreateInheritedRoute(HttpRoute *parent)
     route->updates = parent->updates;
     route->vars = parent->vars;
     route->workers = parent->workers;
-#if DEPRECATE || 1
+#if DEPRECATED || 1
     route->serverPrefix = parent->serverPrefix;
 #endif
     return route;
@@ -12584,7 +12590,7 @@ static void manageRoute(HttpRoute *route, int flags)
         mprMark(route->updates);
         mprMark(route->vars);
         mprMark(route->webSocketsProtocol);
-#if DEPRECATE || 1
+#if DEPRECATED || 1
         mprMark(route->serverPrefix);
 #endif
 
@@ -13778,7 +13784,7 @@ PUBLIC void httpSetRoutePreserveFrames(HttpRoute *route, bool on)
 }
 
 
-#if DEPRECATE || 1
+#if DEPRECATED || 1
 PUBLIC void httpSetRouteServerPrefix(HttpRoute *route, cchar *prefix)
 {
     assert(route);
@@ -14276,10 +14282,10 @@ PUBLIC char *httpTemplate(HttpConn *conn, cchar *template, MprHash *options)
         if (cp == template && *cp == '~') {
             mprPutStringToBuf(buf, route->prefix);
 
-#if DEPRECATE || 1
+#if DEPRECATED || 1
         } else if (cp == template && *cp == '|') {
             mprPutStringToBuf(buf, route->prefix);
-            //  DEPRECATE in version 6
+            //  DEPRECATED in version 6
             mprPutStringToBuf(buf, route->serverPrefix);
 #endif
 
@@ -14813,7 +14819,7 @@ PUBLIC HttpRoute *httpDefineRoute(HttpRoute *parent, cchar *methods, cchar *patt
     if ((route = httpCreateInheritedRoute(parent)) == 0) {
         return 0;
     }
-#if DEPRECATE || 1
+#if DEPRECATED || 1
     /* Keep till version 6 */
         /*
             Keep till version 6
@@ -14841,7 +14847,7 @@ PUBLIC HttpRoute *httpAddRestfulRoute(HttpRoute *parent, cchar *methods, cchar *
 {
     cchar   *source;
 
-#if DEPRECATE || 1
+#if DEPRECATED || 1
     if (*resource == '{') {
         pattern = sfmt("^%s%s/%s%s", parent->prefix, parent->serverPrefix, resource, pattern);
     } else {
@@ -14924,7 +14930,7 @@ PUBLIC HttpRoute *httpAddWebSocketsRoute(HttpRoute *parent, cchar *action)
     HttpLimits  *limits;
     cchar       *path, *pattern;
 
-#if DEPRECATE || 1
+#if DEPRECATED || 1
     pattern = sfmt("^%s%s/{controller}/%s", parent->prefix, parent->serverPrefix, action);
 #else
     pattern = sfmt("^%s/{controller}/%s", parent->prefix, action);
@@ -15764,7 +15770,7 @@ static void parseMethod(HttpConn *conn);
 static bool processParsed(HttpConn *conn);
 static bool processReady(HttpConn *conn);
 static bool processRunning(HttpConn *conn);
-static int setParsedUri(HttpConn *conn);
+static void setParsedUri(HttpConn *conn);
 static int sendContinue(HttpConn *conn);
 
 /*********************************** Code *************************************/
@@ -15992,9 +15998,8 @@ static bool parseIncoming(HttpConn *conn)
     }
     if (httpServerConn(conn)) {
         httpMatchHost(conn);
-        if (setParsedUri(conn) < 0) {
-            return 0;
-        }
+        setParsedUri(conn);
+
     } else if (rx->status != HTTP_CODE_CONTINUE) {
         /*
             Ignore Expect status responses. NOTE: Clients have already created their Tx pipeline.
@@ -17230,53 +17235,61 @@ PUBLIC void httpSetMethod(HttpConn *conn, cchar *method)
 }
 
 
-static int setParsedUri(HttpConn *conn)
+static void setParsedUri(HttpConn *conn)
 {
     HttpRx      *rx;
     HttpUri     *up;
     cchar       *hostname;
 
     rx = conn->rx;
-    if (httpSetUri(conn, rx->uri) < 0 || rx->pathInfo[0] != '/') {
+    if (httpSetUri(conn, rx->uri) < 0) {
         httpBadRequestError(conn, HTTP_CODE_BAD_REQUEST, "Bad URL");
         rx->parsedUri = httpCreateUri("", 0);
-        /* Continue to render a response */
+
+    } else {
+        /*
+            Complete the URI based on the connection state.
+            Must have a complete scheme, host, port and path.
+         */
+        up = rx->parsedUri;
+        up->scheme = sclone(conn->secure ? "https" : "http");
+        hostname = rx->hostHeader ? rx->hostHeader : conn->host->name;
+        if (!hostname) {
+            hostname = conn->sock->acceptIp;
+        }
+        if (mprParseSocketAddress(hostname, &up->host, NULL, NULL, 0) < 0) {
+            if (!conn->error) {
+                httpBadRequestError(conn, HTTP_CODE_BAD_REQUEST, "Bad host");
+            }
+        } else {
+            up->port = conn->sock->listenSock->port;
+        }
     }
-    /*
-        Complete the URI based on the connection state.
-        Must have a complete scheme, host, port and path.
-     */
-    up = rx->parsedUri;
-    up->scheme = sclone(conn->secure ? "https" : "http");
-    hostname = rx->hostHeader ? rx->hostHeader : conn->host->name;
-    if (!hostname) {
-        hostname = conn->sock->acceptIp;
-    }
-    mprParseSocketAddress(hostname, &up->host, NULL, NULL, 0);
-    up->port = conn->sock->listenSock->port;
-    return 0;
 }
 
 
 PUBLIC int httpSetUri(HttpConn *conn, cchar *uri)
 {
     HttpRx      *rx;
+    HttpUri     *parsedUri;
     char        *pathInfo;
 
     rx = conn->rx;
-    if ((rx->parsedUri = httpCreateUri(uri, 0)) == 0) {
+    if ((parsedUri = httpCreateUri(uri, 0)) == 0) {
         return MPR_ERR_BAD_ARGS;
     }
-    if ((pathInfo = httpValidateUriPath(rx->parsedUri->path)) == 0) {
+    if ((pathInfo = httpValidateUriPath(parsedUri->path)) == 0) {
         return MPR_ERR_BAD_ARGS;
     }
     rx->pathInfo = pathInfo;
-    rx->uri = rx->parsedUri->path;
+    rx->uri = parsedUri->path;
     conn->tx->ext = httpGetExt(conn);
+
     /*
         Start out with no scriptName and the entire URI in the pathInfo. Stages may rewrite.
      */
     rx->scriptName = mprEmptyString();
+    rx->parsedUri = parsedUri;
     return 0;
 }
 
@@ -19906,7 +19919,10 @@ PUBLIC void httpSetCookie(HttpConn *conn, cchar *name, cchar *value, cchar *path
             /* Omit domain if set to empty string */
         }
     } else if (rx->hostHeader) {
-        mprParseSocketAddress(rx->hostHeader, &domain, &port, NULL, 0);
+        if (mprParseSocketAddress(rx->hostHeader, &domain, &port, NULL, 0) < 0) {
+            mprLog("error http", 4, "Bad host header for cookie: %s", rx->hostHeader);
+            return;
+        }
         if (domain && port) {
             domain = 0;
         }
@@ -22023,8 +22039,8 @@ static cchar *expandRouteName(HttpConn *conn, cchar *routeName)
     if (sstarts(routeName, "${app}")) {
         return sjoin(route->prefix, &routeName[6], NULL);
     }
-#if DEPRECATE || 1
-    //  DEPRECATE in version 6
+#if DEPRECATED || 1
+    //  DEPRECATED in version 6
     if (routeName[0] == '|') {
         assert(routeName[0] != '|');
         return sjoin(route->prefix, &routeName[1], NULL);

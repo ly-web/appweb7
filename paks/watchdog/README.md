@@ -1,4 +1,4 @@
-Embedthis Multithreaded Portable Runtime (MPR)
+Embedthis WatchDog
 ===
 
 Licensing
@@ -10,7 +10,6 @@ See LICENSE.md for details.
   See doc/index.html
 
 ### Prerequisites:
-
     MakeMe (https://embedthis.com/makeme/download.html) for MakeMe to configure and build.
 
 ### To Build:
@@ -45,5 +44,5 @@ This will run appweb in the src/server directory using the src/server/appweb.con
 Resources
 ---
   - [Embedthis web site](https://embedthis.com/)
-  - [MPR GitHub repository](http://github.com/embedthis/mpr-4)
+  - [MPR GitHub repository](http://github.com/embedthis/watchdog)
   - [MakeMe GitHub repository](http://github.com/embedthis/makeme)

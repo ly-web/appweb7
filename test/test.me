@@ -4,8 +4,23 @@
 
 Me.load({
     targets: {
+        test: {
+            action: `run('testme --depth ' + me.settings.depth)`,
+            platforms: [ 'local' ],
+            depends: [ 'clean-test', 'build', 'cgiProgram', 'prep-cgi', 'test-testScript', 'test-cgiProgram' ],
+            generate: false,
+        },
+
+        cgiProgram: {
+            type:   'exe',
+            sources: [ 'cgiProgram.c' ],
+            ifdef: [ 'cgi' ],
+            action: true,
+            generate: false,
+        },
+
         'prep-cgi': {
-            build: `
+            action: `
                 let path = me.dir.out.join('.cgi-prepared')
                 if (!path.exists) {
                     Cmd.run('testme --clean')
@@ -16,9 +31,10 @@ Me.load({
             `,
             generate: false,
         },
+
         'test-testScript': {
             path: 'cgi-bin/testScript',
-            build: `
+            action: `
                 let path = TARGET.path.relative
                 path.write('#!' + me.dir.bin.join('cgiProgram${EXE}' + '\n'))
                 path.setAttributes({permissions: 0755})
@@ -32,7 +48,7 @@ Me.load({
 
         'test-cgiProgram': {
             path: 'cgi-bin/cgiProgram${EXE}',
-            build: `
+            action: `
                 let perms = { permissions: 0755 }
                 let cgiProgram = me.dir.bin.join('cgiProgram${EXE}')
                 cp(cgiProgram, Path('cgi-bin/cgiProgram${EXE}'), perms)
@@ -44,13 +60,6 @@ Me.load({
             generate: false,
             platforms: [ 'local' ],
             ifdef: [ 'cgi' ],
-        },
-
-        test: {
-            action: `run('testme --depth ' + me.settings.depth)`,
-            generate: false,
-            platforms: [ 'local' ],
-            depends: [ 'clean-test', 'build' ],
         },
 
         'auth.conf': {

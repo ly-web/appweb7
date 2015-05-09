@@ -7,15 +7,8 @@ Me.load({
         authpass: {
             type: 'exe',
             sources: [ 'authpass.c' ],
-            depends: [ 'libappweb', 'libesp' ],
+            depends: [ 'libappweb' ],
             platforms: [ 'local' ],
-        },
-
-        cgiProgram: {
-            type:   'exe',
-            sources: [ 'cgiProgram.c' ],
-            ifdef: [ 'cgi' ],
-            generate: false,
         },
 	},
 })

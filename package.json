@@ -36,13 +36,16 @@
         "http": "^6",
         "mpr": "^6.0",
         "osdep": "^0.8",
-        "pcre": "^1.0"
+        "pcre": "^1.0",
+        "ssl": "^0.9",
+        "watchdog": "^0.1"
     },
     "optionalDependencies": {
         "esp": "^5",
         "est": "^0.6",
+        "mpr-est": "^0.1",
+        "mpr-openssl": "^0.1",
         "sqlite": "^1.0",
-        "ssl": "^0.8",
         "zlib": "^1.0"
     },
     "files": [

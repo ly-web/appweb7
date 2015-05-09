@@ -285,7 +285,6 @@ PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path);
  */
 PUBLIC int httpCgiInit(Http *http, MprModule *mp);
 PUBLIC int httpEspInit(Http *http, MprModule *mp);
-PUBLIC int httpSslInit(Http *http, MprModule *mp);
 
 #ifdef __cplusplus
 } /* extern C */
