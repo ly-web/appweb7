@@ -23078,7 +23078,16 @@ static int ipv6(cchar *ip)
 PUBLIC int mprParseSocketAddress(cchar *address, char **pip, int *pport, int *psecure, int defaultPort)
 {
     char    *ip, *cp;
+    ssize   pos;
     int     port;
+
+    if (!address || *address == 0) {
+        return MPR_ERR_BAD_ARGS;
+    }
+    pos = strspn(address, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%");
+    if (pos < slen(address)) {
+        return MPR_ERR_BAD_ARGS;
+    }
 
     ip = 0;
     if (defaultPort < 0) {
