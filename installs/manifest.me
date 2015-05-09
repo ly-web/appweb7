@@ -182,13 +182,6 @@ Me.load({
                     ],
                     to:         '${abin}/',
                     enable:     "!me.settings.static",
-                }, { 
-                    from: [
-                                'libmprssl${SHOBJ}'
-                    ],
-                    to:         '${abin}/',
-                    ifdef:      'ssl',
-                    enable:     "!me.settings.static",
 
                 }, { 
                     from:       'libest${SHOBJ}',
@@ -212,12 +205,6 @@ Me.load({
                                 'libmpr${SHLIB}',
                     ],
                     to:         '${abin}/',
-                    enable:     "me.platform.os == 'windows' && !me.settings.static",
-
-                }, { 
-                    from:       'libmprssl${SHLIB}',
-                    to:         '${abin}/',
-                    ifdef:      'ssl',
                     enable:     "me.platform.os == 'windows' && !me.settings.static",
                 },
             ],
