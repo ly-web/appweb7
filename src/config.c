@@ -705,6 +705,15 @@ static int cacheDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
+    CanonicalName URI
+ */
+static int canonicalNameDirective(MaState *state, cchar *key, cchar *value)
+{
+    return httpSetHostCanonicalName(state->host, value);
+}
+
+
+/*
     Chroot path
  */
 static int chrootDirective(MaState *state, cchar *key, cchar *value)
@@ -1500,7 +1509,10 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S", &address)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    mprParseSocketAddress(address, &ip, &port, NULL, 80);
+    if (mprParseSocketAddress(address, &ip, &port, NULL, 80) < 0) {
+        mprLog("error appweb config", 0, "Bad Listen directive: %s", address);
+        return -1;
+    }
     if (port == 0) {
         mprLog("error appweb config", 0, "Bad or missing port %d in Listen directive", port);
         return -1;
@@ -1537,7 +1549,10 @@ static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S", &address)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    mprParseSocketAddress(address, &ip, &port, NULL, 443);
+    if (mprParseSocketAddress(address, &ip, &port, NULL, 443) < 0) {
+        mprLog("error appweb config", 0, "Bad ListenSecure directive: %s", address);
+        return -1;
+    }
     if (port == 0) {
         mprLog("error appweb config", 0, "Bad or missing port %d in ListenSecure directive", port);
         return -1;
@@ -1891,7 +1906,9 @@ static int nameVirtualHostDirective(MaState *state, cchar *key, cchar *value)
     char    *ip;
     int     port;
 
-    mprParseSocketAddress(value, &ip, &port, NULL, -1);
+    if (mprParseSocketAddress(value, &ip, &port, NULL, -1) < 0) {
+        mprLog("error appweb config", 0, "Bad NameVirtualHost directive %s", value);
+    }
     httpConfigureNamedVirtualEndpoints(ip, port);
 #else
     mprLog("warn appweb config", 0, "The NameVirtualHost directive is no longer needed");
@@ -2275,11 +2292,13 @@ static int requestHeaderDirective(MaState *state, cchar *key, cchar *value)
 
 /*
     ServerName URI
+    ServerName *URI
+    ServerName URI*
+    ServerName /Regular Expression/
  */
 static int serverNameDirective(MaState *state, cchar *key, cchar *value)
 {
-    httpSetHostName(state->host, strim(value, "http://", MPR_TRIM_START));
-    return 0;
+    return httpSetHostName(state->host, value);
 }
 
 
@@ -2903,15 +2922,13 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
         state->route->ssl = 0;
         state->auth = state->route->auth;
         state->host = httpCloneHost(state->host);
-        httpResetRoutes(state->host);
         httpSetRouteHost(state->route, state->host);
         httpSetHostDefaultRoute(state->host, state->route);
 
-        /* Set a default host and route name */
         if (value) {
             httpSetHostName(state->host, ssplit(sclone(value), " \t,", NULL));
             /*
-                Save the endpoints until the close of the VirtualHost to closeVirtualHostDirective can
+                Save the endpoints until the close of the VirtualHost so closeVirtualHostDirective can
                 add the virtual host to the specified endpoints.
              */
             state->endpoints = sclone(value);
@@ -2933,7 +2950,10 @@ static int closeVirtualHostDirective(MaState *state, cchar *key, cchar *value)
     if (state->enabled) { 
         if (state->endpoints && *state->endpoints) {
             for (addresses = sclone(state->endpoints); (address = stok(addresses, " \t,", &tok)) != 0 ; addresses = tok) {
-                mprParseSocketAddress(address, &ip, &port, NULL, -1);
+                if (mprParseSocketAddress(address, &ip, &port, NULL, -1) < 0) {
+                    mprLog("error appweb config", 0, "Bad virtual host endpoint %s", address);
+                    return MPR_ERR_BAD_SYNTAX;
+                }
                 if ((endpoint = httpLookupEndpoint(ip, port)) == 0) {
                     mprLog("error appweb config", 0, "Cannot find listen directive for virtual host %s", address);
                     return MPR_ERR_BAD_SYNTAX;
@@ -3371,6 +3391,7 @@ static int parseInit()
     maAddDirective("AuthRealm", authRealmDirective);
     maAddDirective("AuthStore", authStoreDirective);
     maAddDirective("Cache", cacheDirective);
+    maAddDirective("CanonicalName", canonicalNameDirective);
     maAddDirective("Chroot", chrootDirective);
     maAddDirective("Condition", conditionDirective);
     maAddDirective("CrossOrigin", crossOriginDirective);
