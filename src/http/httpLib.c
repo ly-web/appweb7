@@ -12359,8 +12359,8 @@ static bool parseHeaders(HttpConn *conn, HttpPacket *packet)
                         < (int) slen(value)) {
                     httpBadRequestError(conn, HTTP_CODE_BAD_REQUEST, "Bad host header");
                 } else {
-                rx->hostHeader = sclone(value);
-            }
+                    rx->hostHeader = sclone(value);
+                }
             }
             break;
 
@@ -13194,22 +13194,22 @@ static void setParsedUri(HttpConn *conn)
         rx->parsedUri = httpCreateUri("", 0);
         
     } else {
-    /*
-        Complete the URI based on the connection state.
-        Must have a complete scheme, host, port and path.
-     */
-    up = rx->parsedUri;
-    up->scheme = sclone(conn->secure ? "https" : "http");
-    hostname = rx->hostHeader ? rx->hostHeader : conn->host->name;
-    if (!hostname) {
-        hostname = conn->sock->acceptIp;
-    }
+        /*
+            Complete the URI based on the connection state.
+            Must have a complete scheme, host, port and path.
+         */
+        up = rx->parsedUri;
+        up->scheme = sclone(conn->secure ? "https" : "http");
+        hostname = rx->hostHeader ? rx->hostHeader : conn->host->name;
+        if (!hostname) {
+            hostname = conn->sock->acceptIp;
+        }
         if (mprParseSocketAddress(hostname, &up->host, NULL, NULL, 0) < 0) {
             if (!conn->error) {
                 httpBadRequestError(conn, HTTP_CODE_BAD_REQUEST, "Bad host");
             }
         } else {
-    up->port = conn->sock->listenSock->port;
+            up->port = conn->sock->listenSock->port;
         }
     }
 }
