@@ -76,9 +76,10 @@ static void usageError();
 MAIN(appweb, int argc, char **argv, char **envp)
 {
     Mpr         *mpr;
+    HttpHost    *host;
     cchar       *argp, *jail;
     char        *logSpec, *traceSpec;
-    int         argind;
+    int         argind, next;
 
     jail = 0;
     logSpec = 0;
@@ -235,7 +236,9 @@ MAIN(appweb, int argc, char **argv, char **envp)
         exit(9);
     }
     if (app->show) {
-        httpLogRoutes(0, app->show > 1);
+        for (ITERATE_ITEMS(HTTP->hosts, host, next)) {
+            httpLogRoutes(host, app->show > 1);
+        }
     }
     mprServiceEvents(-1, 0);
     mprLog("info appweb", 1, "Stopping Appweb ...");
