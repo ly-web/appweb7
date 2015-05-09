@@ -105,7 +105,7 @@
 
       <ItemDefinitionGroup>
       <Link>
-        <AdditionalDependencies>libappweb.lib;libesp.lib;libhttp.lib;libmpr.lib;libpcre.lib;libmprssl.lib;libest.lib;%(AdditionalDependencies)</AdditionalDependencies>
+        <AdditionalDependencies>libappweb.lib;libesp.lib;libhttp.lib;libmpr.lib;estssl;libest.lib;libpcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
         <AdditionalLibraryDirectories>$(OutDir);build\$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       </Link>
   </ItemDefinitionGroup>
@@ -113,13 +113,6 @@
     <ItemGroup>
       <ProjectReference Include="libappweb.vcxproj">
       <Project>f07c2d7c-361c-4ac5-b1db-37850cdf52b8</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      </ProjectReference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="libesp.vcxproj">
-      <Project>b2b14d0e-03d2-4c9f-a6f1-dbbbbf562041</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       </ProjectReference>
     </ItemGroup>

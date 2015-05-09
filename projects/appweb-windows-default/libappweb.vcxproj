@@ -105,7 +105,6 @@
     <ClCompile Include="..\..\src\romFiles.c" />
     <ClCompile Include="..\..\src\modules\cgiHandler.c" />
     <ClCompile Include="..\..\src\modules\espHandler.c" />
-    <ClCompile Include="..\..\src\modules\sslModule.c" />
   </ItemGroup>
 
       <ItemGroup>
@@ -118,7 +117,7 @@
 
       <ItemDefinitionGroup>
       <Link>
-        <AdditionalDependencies>libesp.lib;libhttp.lib;libmpr.lib;libpcre.lib;libmprssl.lib;libest.lib;%(AdditionalDependencies)</AdditionalDependencies>
+        <AdditionalDependencies>libesp.lib;libhttp.lib;libmpr.lib;estssl;libest.lib;libpcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
         <AdditionalLibraryDirectories>$(OutDir);build\$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       </Link>
 
@@ -148,13 +147,6 @@ cd ..\projects\appweb-windows-default</Command>
     <ItemGroup>
       <ProjectReference Include="libmpr.vcxproj">
       <Project>3acd6101-a351-4c3a-81e4-dc8589fea4ef</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      </ProjectReference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="libmprssl.vcxproj">
-      <Project>ab92305f-b126-4bfb-bb59-393e561ac6df</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       </ProjectReference>
     </ItemGroup>

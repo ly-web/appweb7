@@ -83,6 +83,42 @@
                     </tr>
                 </tbody>
             </table>
+
+            <a id="canonicalName"></a>
+            <h2>CanonicalName</h2>
+            <table class="directive" title="directive">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Define the public hostname by which the server is known.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>CanonicalName hostName</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, Virtual Host</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>CanonicalName www.acme.com</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The CanonicalName directive specifies the preferred, public, fully qualified hostname 
+                            for the server. This address will be used when construction URLs and redirections.
+                            The given hostName should be a fully qualified domain name with port number if using 
+                            a port other than the default port.</p>
+                            <p>If a CanonicalName is not defined, the value provided by the client in the HTTP Host header
+                            will be used.</p> 
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+
             <a id="cgiEscape"></a>
             <h2>CgiEscape</h2>
             <table class="directive" title="directive">
@@ -350,35 +386,45 @@
                 <tbody>
                     <tr>
                         <td class="pivot">Description</td>
-                        <td>Define the fully qualified hostname and port number for the server to use.</td>
+                        <td>Define the hostnames that should be served for this host or virtual host.</td>
                     </tr>
                     <tr>
                         <td class="pivot">Synopsis</td>
-                        <td>ServerName hostName</td>
+                        <td>ServerName hostName<br/>
+                            ServerName *hostName<br/>
+                            ServerName *hostName<br/>
+                            ServerName hostName*<br/>
+                            ServerName /hostName|hostname/<br/>
                     </tr>
                     <tr>
                         <td class="pivot">Context</td>
                         <td>Default server, Virtual Host</td>
                     </tr>
                     <tr>
-                        <td class="pivot">Example</td>
-                        <td>ServerName www.acme.com</td>
+                        <td class="pivot">Examples</td>
+                        <td>ServerName www.acme.com:4100<br/>
+                            ServerName *.acme.com<br/>
+                            ServerName www.acme.*<br/>
+                            ServerName /acme.com|^www.roadrunner.org$/<br/>
                     </tr>
                     <tr>
                         <td class="pivot">Notes</td>
                         <td>
-                            <p>The ServerName directive specifies the base HTTP address that will be used 
-                            for identification and for redirection responses. The given hostName should be a fully 
-                            qualified domain name with port number if using a port other than port 80.</p>
-                            <p>When used inside Name based VirtualHost blocks, this directive specifies the Host
-                            HTTP header that should be supplied with the request.</p>
-                            <p>When using virtual hosting, the ServerName may begin with "*" in which case the 
-                                VirtualHost block will match a request with a Host header that "contains" the given
-                                name. For example: a ServerName directive of "*.example.com" will match
-                                farm.example.com and www.example.com.</p>
-                            <p>Similarly, the ServerName may end with "*" in which case it will match Host headers that
+                            <p>The ServerName defines the set of hostnames that should be served by this host or virtual
+                            host. The host name may be a fully qualified hostname with port number, a partial hostname
+                            with a "*" wild card character or a regular expression.
+
+                            <p>If the ServerName begins with "*", it will match requests with a client HTTP Host header 
+                                that "contains" the given name. For example: a ServerName directive of "*.example.com" 
+                                will match farm.example.com and www.example.com.</p>
+                            <p>Similarly, if the ServerName ends with "*", it will match client HTTP Host headers that
                             begin with the pattern. For example: "example.*" will match "example.com" and 
                             "example.org".</p>
+                            <p>If the ServerName begins and ends with "/", the pattern is interpreted as a regular expression.</p>
+
+                            <p>Unlike Apache, the ServerName directive is not used for redirections. See the
+                            <a href="#canonicalName">CanonicalName</a> directive to define the public hostname by which
+                            the server prefers to be known.</p>
                         </td>
                     </tr>
                 </tbody>

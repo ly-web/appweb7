@@ -144,9 +144,6 @@
 #ifndef ME_MPR_LOGGING
     #define ME_MPR_LOGGING 1
 #endif
-#ifndef ME_MPR_MANAGER
-    #define ME_MPR_MANAGER "appman"
-#endif
 #ifndef ME_MPR_SSL_CURVE
     #define ME_MPR_SSL_CURVE "prime256v1"
 #endif
@@ -173,6 +170,9 @@
 #endif
 #ifndef ME_VERSION
     #define ME_VERSION "5.4.1"
+#endif
+#ifndef ME_WATCHDOG_NAME
+    #define ME_WATCHDOG_NAME "appman"
 #endif
 #ifndef ME_WEB_GROUP
     #define ME_WEB_GROUP "undefined"
@@ -307,11 +307,17 @@
 #ifndef ME_COM_LINK
     #define ME_COM_LINK 1
 #endif
+#ifndef ME_COM_MATRIXSSL
+    #define ME_COM_MATRIXSSL 0
+#endif
 #ifndef ME_COM_MDB
     #define ME_COM_MDB 1
 #endif
 #ifndef ME_COM_MPR
     #define ME_COM_MPR 1
+#endif
+#ifndef ME_COM_NANOSSL
+    #define ME_COM_NANOSSL 0
 #endif
 #ifndef ME_COM_OPENSSL
     #define ME_COM_OPENSSL 1
