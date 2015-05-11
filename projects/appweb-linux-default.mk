@@ -564,6 +564,9 @@ DEPS_40 += $(BUILD)/inc/mpr.h
 DEPS_40 += $(BUILD)/obj/mprLib.o
 
 ifeq ($(ME_COM_EST),1)
+    LIBS_40 += -lestssl
+endif
+ifeq ($(ME_COM_EST),1)
     LIBS_40 += -lest
 endif
 ifeq ($(ME_COM_OPENSSL),1)
@@ -577,9 +580,6 @@ endif
 ifeq ($(ME_COM_OPENSSL),1)
     LIBS_40 += -lcrypto
     LIBPATHS_40 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
-ifeq ($(ME_COM_EST),1)
-    LIBS_40 += -lestssl
 endif
 
 $(BUILD)/bin/libmpr.so: $(DEPS_40)
@@ -614,6 +614,9 @@ ifeq ($(ME_COM_PCRE),1)
 endif
 LIBS_42 += -lmpr
 ifeq ($(ME_COM_EST),1)
+    LIBS_42 += -lestssl
+endif
+ifeq ($(ME_COM_EST),1)
     LIBS_42 += -lest
 endif
 ifeq ($(ME_COM_OPENSSL),1)
@@ -627,9 +630,6 @@ endif
 ifeq ($(ME_COM_OPENSSL),1)
     LIBS_42 += -lcrypto
     LIBPATHS_42 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
-ifeq ($(ME_COM_EST),1)
-    LIBS_42 += -lestssl
 endif
 
 $(BUILD)/bin/libhttp.so: $(DEPS_42)
@@ -658,6 +658,9 @@ ifeq ($(ME_COM_PCRE),1)
 endif
 LIBS_43 += -lmpr
 ifeq ($(ME_COM_EST),1)
+    LIBS_43 += -lestssl
+endif
+ifeq ($(ME_COM_EST),1)
     LIBS_43 += -lest
 endif
 ifeq ($(ME_COM_OPENSSL),1)
@@ -671,9 +674,6 @@ endif
 ifeq ($(ME_COM_OPENSSL),1)
     LIBS_43 += -lcrypto
     LIBPATHS_43 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
-ifeq ($(ME_COM_EST),1)
-    LIBS_43 += -lestssl
 endif
 
 $(BUILD)/bin/libesp.so: $(DEPS_43)
@@ -713,6 +713,9 @@ ifeq ($(ME_COM_PCRE),1)
 endif
 LIBS_44 += -lmpr
 ifeq ($(ME_COM_EST),1)
+    LIBS_44 += -lestssl
+endif
+ifeq ($(ME_COM_EST),1)
     LIBS_44 += -lest
 endif
 ifeq ($(ME_COM_OPENSSL),1)
@@ -726,9 +729,6 @@ endif
 ifeq ($(ME_COM_OPENSSL),1)
     LIBS_44 += -lcrypto
     LIBPATHS_44 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
-ifeq ($(ME_COM_EST),1)
-    LIBS_44 += -lestssl
 endif
 
 $(BUILD)/bin/libappweb.so: $(DEPS_44)
@@ -756,6 +756,9 @@ ifeq ($(ME_COM_PCRE),1)
 endif
 LIBS_45 += -lmpr
 ifeq ($(ME_COM_EST),1)
+    LIBS_45 += -lestssl
+endif
+ifeq ($(ME_COM_EST),1)
     LIBS_45 += -lest
 endif
 ifeq ($(ME_COM_OPENSSL),1)
@@ -769,9 +772,6 @@ endif
 ifeq ($(ME_COM_OPENSSL),1)
     LIBS_45 += -lcrypto
     LIBPATHS_45 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
-ifeq ($(ME_COM_EST),1)
-    LIBS_45 += -lestssl
 endif
 
 $(BUILD)/bin/appweb: $(DEPS_45)
@@ -799,6 +799,9 @@ ifeq ($(ME_COM_PCRE),1)
 endif
 LIBS_46 += -lmpr
 ifeq ($(ME_COM_EST),1)
+    LIBS_46 += -lestssl
+endif
+ifeq ($(ME_COM_EST),1)
     LIBS_46 += -lest
 endif
 ifeq ($(ME_COM_OPENSSL),1)
@@ -812,9 +815,6 @@ endif
 ifeq ($(ME_COM_OPENSSL),1)
     LIBS_46 += -lcrypto
     LIBPATHS_46 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
-ifeq ($(ME_COM_EST),1)
-    LIBS_46 += -lestssl
 endif
 
 $(BUILD)/bin/authpass: $(DEPS_46)
@@ -852,6 +852,9 @@ ifeq ($(ME_COM_PCRE),1)
 endif
 LIBS_48 += -lmpr
 ifeq ($(ME_COM_EST),1)
+    LIBS_48 += -lestssl
+endif
+ifeq ($(ME_COM_EST),1)
     LIBS_48 += -lest
 endif
 ifeq ($(ME_COM_OPENSSL),1)
@@ -865,9 +868,6 @@ endif
 ifeq ($(ME_COM_OPENSSL),1)
     LIBS_48 += -lcrypto
     LIBPATHS_48 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
-ifeq ($(ME_COM_EST),1)
-    LIBS_48 += -lestssl
 endif
 
 $(BUILD)/bin/esp: $(DEPS_48)
@@ -898,6 +898,9 @@ ifeq ($(ME_COM_PCRE),1)
 endif
 LIBS_50 += -lmpr
 ifeq ($(ME_COM_EST),1)
+    LIBS_50 += -lestssl
+endif
+ifeq ($(ME_COM_EST),1)
     LIBS_50 += -lest
 endif
 ifeq ($(ME_COM_OPENSSL),1)
@@ -911,9 +914,6 @@ endif
 ifeq ($(ME_COM_OPENSSL),1)
     LIBS_50 += -lcrypto
     LIBPATHS_50 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
-ifeq ($(ME_COM_EST),1)
-    LIBS_50 += -lestssl
 endif
 
 $(BUILD)/bin/http: $(DEPS_50)
@@ -963,6 +963,9 @@ DEPS_54 += $(BUILD)/obj/watchdog.o
 
 LIBS_54 += -lmpr
 ifeq ($(ME_COM_EST),1)
+    LIBS_54 += -lestssl
+endif
+ifeq ($(ME_COM_EST),1)
     LIBS_54 += -lest
 endif
 ifeq ($(ME_COM_OPENSSL),1)
@@ -976,9 +979,6 @@ endif
 ifeq ($(ME_COM_OPENSSL),1)
     LIBS_54 += -lcrypto
     LIBPATHS_54 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
-ifeq ($(ME_COM_EST),1)
-    LIBS_54 += -lestssl
 endif
 
 $(BUILD)/bin/appman: $(DEPS_54)
