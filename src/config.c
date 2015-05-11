@@ -1361,10 +1361,13 @@ static int limitUploadDirective(MaState *state, cchar *key, cchar *value)
 static int listenDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpEndpoint    *endpoint;
-    char            *ip;
+    char            *address, *ip;
     int             port;
 
-    mprParseSocketAddress(value, &ip, &port, NULL, 80);
+    if (!maTokenize(state, value, "%S", &address)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    mprParseSocketAddress(address, &ip, &port, NULL, 80);
     if (port == 0) {
         mprError("Bad or missing port %d in Listen directive", port);
         return -1;
@@ -1378,7 +1381,7 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
         Single stack networks cannot support IPv4 and IPv6 with one socket. So create a specific IPv6 endpoint.
         This is currently used by VxWorks and Windows versions prior to Vista (i.e. XP)
      */
-    if (!schr(value, ':') && mprHasIPv6() && !mprHasDualNetworkStack()) {
+    if (!schr(address, ':') && mprHasIPv6() && !mprHasDualNetworkStack()) {
         mprAddItem(state->server->endpoints, httpCreateEndpoint("::", port, NULL));
     }
     return 0;
@@ -1396,11 +1399,13 @@ static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
 {
 #if ME_COM_SSL
     HttpEndpoint    *endpoint;
-    char            *ip;
+    char            *address, *ip;
     int             port;
 
-
-    mprParseSocketAddress(value, &ip, &port, NULL, 443);
+    if (!maTokenize(state, value, "%S", &address)) {
+        return MPR_ERR_BAD_SYNTAX;
+    }
+    mprParseSocketAddress(address, &ip, &port, NULL, 443);
     if (port == 0) {
         mprError("Bad or missing port %d in ListenSecure directive", port);
         return -1;
@@ -1422,7 +1427,7 @@ static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
         Single stack networks cannot support IPv4 and IPv6 with one socket. So create a specific IPv6 endpoint.
         This is currently used by VxWorks and Windows versions prior to Vista (i.e. XP)
      */
-    if (!schr(value, ':') && mprHasIPv6() && !mprHasDualNetworkStack()) {
+    if (!schr(address, ':') && mprHasIPv6() && !mprHasDualNetworkStack()) {
         endpoint = httpCreateEndpoint("::", port, NULL);
         mprAddItem(state->server->endpoints, endpoint);
         httpSecureEndpoint(endpoint, state->route->ssl);
