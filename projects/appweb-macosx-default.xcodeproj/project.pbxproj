@@ -102,30 +102,30 @@
 		66DC500C66DC8F1000000044 /* libappweb.dylib for appweb */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F1000000045; };
 		66DC500C66DC8F1000000046 /* libesp.dylib for appweb */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F1000000047; };
 		66DC500C66DC8F1000000048 /* libhttp.dylib for appweb */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F1000000049; };
-		66DC500C66DC8F100000004A /* libmpr.dylib for appweb */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004B; };
-		66DC500C66DC8F100000004C /* libpcre.dylib for appweb */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004D; };
+		66DC500C66DC8F100000004A /* libpcre.dylib for appweb */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004B; };
+		66DC500C66DC8F100000004C /* libmpr.dylib for appweb */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004D; };
 		66DC500C66DC8F100000004E /* libappweb.dylib for authpass */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F1000000045; };
 		66DC500C66DC8F100000004F /* libesp.dylib for authpass */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F1000000047; };
 		66DC500C66DC8F1000000050 /* libhttp.dylib for authpass */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F1000000049; };
-		66DC500C66DC8F1000000051 /* libmpr.dylib for authpass */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004B; };
-		66DC500C66DC8F1000000052 /* libpcre.dylib for authpass */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004D; };
+		66DC500C66DC8F1000000051 /* libpcre.dylib for authpass */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004B; };
+		66DC500C66DC8F1000000052 /* libmpr.dylib for authpass */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004D; };
 		66DC500C66DC8F1000000053 /* libesp.dylib for espcmd */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F1000000047; };
 		66DC500C66DC8F1000000054 /* libhttp.dylib for espcmd */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F1000000049; };
-		66DC500C66DC8F1000000055 /* libmpr.dylib for espcmd */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004B; };
-		66DC500C66DC8F1000000056 /* libpcre.dylib for espcmd */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004D; };
+		66DC500C66DC8F1000000055 /* libpcre.dylib for espcmd */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004B; };
+		66DC500C66DC8F1000000056 /* libmpr.dylib for espcmd */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004D; };
 		66DC500C66DC8F1000000057 /* libhttp.dylib for httpcmd */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F1000000049; };
-		66DC500C66DC8F1000000058 /* libmpr.dylib for httpcmd */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004B; };
-		66DC500C66DC8F1000000059 /* libpcre.dylib for httpcmd */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004D; };
+		66DC500C66DC8F1000000058 /* libpcre.dylib for httpcmd */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004B; };
+		66DC500C66DC8F1000000059 /* libmpr.dylib for httpcmd */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004D; };
 		66DC500C66DC8F100000005A /* libesp.dylib for libappweb */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F1000000047; };
 		66DC500C66DC8F100000005B /* libhttp.dylib for libappweb */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F1000000049; };
-		66DC500C66DC8F100000005C /* libmpr.dylib for libappweb */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004B; };
-		66DC500C66DC8F100000005D /* libpcre.dylib for libappweb */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004D; };
+		66DC500C66DC8F100000005C /* libpcre.dylib for libappweb */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004B; };
+		66DC500C66DC8F100000005D /* libmpr.dylib for libappweb */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004D; };
 		66DC500C66DC8F100000005E /* libhttp.dylib for libesp */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F1000000049; };
-		66DC500C66DC8F100000005F /* libmpr.dylib for libesp */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004B; };
-		66DC500C66DC8F1000000060 /* libpcre.dylib for libesp */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004D; };
-		66DC500C66DC8F1000000061 /* libmpr.dylib for libhttp */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004B; };
-		66DC500C66DC8F1000000062 /* libpcre.dylib for libhttp */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004D; };
-		66DC500C66DC8F1000000063 /* libmpr.dylib for watchdog */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004B; };
+		66DC500C66DC8F100000005F /* libpcre.dylib for libesp */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004B; };
+		66DC500C66DC8F1000000060 /* libmpr.dylib for libesp */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004D; };
+		66DC500C66DC8F1000000061 /* libpcre.dylib for libhttp */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004B; };
+		66DC500C66DC8F1000000062 /* libmpr.dylib for libhttp */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004D; };
+		66DC500C66DC8F1000000063 /* libmpr.dylib for watchdog */ = {isa = PBXBuildFile; fileRef = 66DC500C66DC8F100000004D; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -615,11 +615,11 @@
 		66DC500C66DC8F1000000049 /* libhttp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libhttp.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		66DC500C66DC8F100000003D /* mprLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mprLib.c; path = src/mpr/mprLib.c; sourceTree = "<group>"; };
 		66DC500C66DC8F10000000BC /* mpr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mpr.h; path = src/mpr/mpr.h; sourceTree = "<group>"; };
-		66DC500C66DC8F100000004B /* libmpr */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmpr.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		66DC500C66DC8F100000004D /* libmpr */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmpr.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		66DC500C66DC8F100000003F /* pcre.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pcre.c; path = src/pcre/pcre.c; sourceTree = "<group>"; };
 		66DC500C66DC8F10000000BD /* me.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = me.h; path = build/macosx-x64-default/inc/me.h; sourceTree = "<group>"; };
 		66DC500C66DC8F10000000BE /* pcre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pcre.h; path = src/pcre/pcre.h; sourceTree = "<group>"; };
-		66DC500C66DC8F100000004D /* libpcre */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpcre.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		66DC500C66DC8F100000004B /* libpcre */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpcre.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		66DC500C66DC8F1000000041 /* openssl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = openssl.c; path = src/mpr-openssl/openssl.c; sourceTree = "<group>"; };
 		66DC500C66DC8F10000000BF /* openssl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libopenssl.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		66DC500C66DC8F1000000043 /* watchdog.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = watchdog.c; path = src/watchdog/watchdog.c; sourceTree = "<group>"; };
@@ -634,8 +634,8 @@
     				66DC500C66DC8F1000000044 /* libappweb */,
 				66DC500C66DC8F1000000046 /* libesp */,
 				66DC500C66DC8F1000000048 /* libhttp */,
-				66DC500C66DC8F100000004A /* libmpr */,
-				66DC500C66DC8F100000004C /* libpcre */,				
+				66DC500C66DC8F100000004A /* libpcre */,
+				66DC500C66DC8F100000004C /* libmpr */,				
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
@@ -646,8 +646,8 @@
     				66DC500C66DC8F100000004E /* libappweb */,
 				66DC500C66DC8F100000004F /* libesp */,
 				66DC500C66DC8F1000000050 /* libhttp */,
-				66DC500C66DC8F1000000051 /* libmpr */,
-				66DC500C66DC8F1000000052 /* libpcre */,				
+				66DC500C66DC8F1000000051 /* libpcre */,
+				66DC500C66DC8F1000000052 /* libmpr */,				
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
@@ -657,8 +657,8 @@
                 files = (
     				66DC500C66DC8F1000000053 /* libesp */,
 				66DC500C66DC8F1000000054 /* libhttp */,
-				66DC500C66DC8F1000000055 /* libmpr */,
-				66DC500C66DC8F1000000056 /* libpcre */,				
+				66DC500C66DC8F1000000055 /* libpcre */,
+				66DC500C66DC8F1000000056 /* libmpr */,				
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
@@ -667,8 +667,8 @@
                 buildActionMask = 2147483647;
                 files = (
     				66DC500C66DC8F1000000057 /* libhttp */,
-				66DC500C66DC8F1000000058 /* libmpr */,
-				66DC500C66DC8F1000000059 /* libpcre */,				
+				66DC500C66DC8F1000000058 /* libpcre */,
+				66DC500C66DC8F1000000059 /* libmpr */,				
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
@@ -678,8 +678,8 @@
                 files = (
     				66DC500C66DC8F100000005A /* libesp */,
 				66DC500C66DC8F100000005B /* libhttp */,
-				66DC500C66DC8F100000005C /* libmpr */,
-				66DC500C66DC8F100000005D /* libpcre */,				
+				66DC500C66DC8F100000005C /* libpcre */,
+				66DC500C66DC8F100000005D /* libmpr */,				
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
@@ -688,8 +688,8 @@
                 buildActionMask = 2147483647;
                 files = (
     				66DC500C66DC8F100000005E /* libhttp */,
-				66DC500C66DC8F100000005F /* libmpr */,
-				66DC500C66DC8F1000000060 /* libpcre */,				
+				66DC500C66DC8F100000005F /* libpcre */,
+				66DC500C66DC8F1000000060 /* libmpr */,				
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
@@ -697,8 +697,8 @@
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
-    				66DC500C66DC8F1000000061 /* libmpr */,
-				66DC500C66DC8F1000000062 /* libpcre */,				
+    				66DC500C66DC8F1000000061 /* libpcre */,
+				66DC500C66DC8F1000000062 /* libmpr */,				
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
@@ -886,8 +886,8 @@
 				66DC500C66DC8F1000000045 /* libappweb */,
 				66DC500C66DC8F1000000047 /* libesp */,
 				66DC500C66DC8F1000000049 /* libhttp */,
-				66DC500C66DC8F100000004B /* libmpr */,
-				66DC500C66DC8F100000004D /* libpcre */,
+				66DC500C66DC8F100000004D /* libmpr */,
+				66DC500C66DC8F100000004B /* libpcre */,
 				66DC500C66DC8F10000000BF /* openssl */,
 				66DC500C66DC8F10000000C0 /* watchdog */,
 			);
@@ -1065,7 +1065,7 @@
     			);
     			name = libmpr;
     			productName = appweb;
-    			productReference = 66DC500C66DC8F100000004B /* libmpr */;
+    			productReference = 66DC500C66DC8F100000004D /* libmpr */;
     			productType = "com.apple.product-type.library.dynamic";
     		};
 		66DC500C66DC8F100000006A /* libpcre */ = {
@@ -1082,7 +1082,7 @@
     			);
     			name = libpcre;
     			productName = appweb;
-    			productReference = 66DC500C66DC8F100000004D /* libpcre */;
+    			productReference = 66DC500C66DC8F100000004B /* libpcre */;
     			productType = "com.apple.product-type.library.dynamic";
     		};
 		66DC500C66DC8F1000000066 /* openssl */ = {
@@ -1853,9 +1853,9 @@ fi";
 				);
 				OTHER_LDFLAGS = (
 					"-lpam",
+					"-lopenssl",
 					"-lssl",
 					"-lcrypto",
-					"-lopenssl",
 					"$(inherited)"
 				);
 
@@ -1869,9 +1869,9 @@ fi";
     
     				OTHER_LDFLAGS = (
 					"-lpam",
+					"-lopenssl",
 					"-lssl",
 					"-lcrypto",
-					"-lopenssl",
 					"$(inherited)"
 				);
 
@@ -1889,9 +1889,9 @@ fi";
 				);
 				OTHER_LDFLAGS = (
 					"-lpam",
+					"-lopenssl",
 					"-lssl",
 					"-lcrypto",
-					"-lopenssl",
 					"$(inherited)"
 				);
 
@@ -1905,9 +1905,9 @@ fi";
     
     				OTHER_LDFLAGS = (
 					"-lpam",
+					"-lopenssl",
 					"-lssl",
 					"-lcrypto",
-					"-lopenssl",
 					"$(inherited)"
 				);
 
@@ -1946,9 +1946,9 @@ fi";
 				);
 				OTHER_LDFLAGS = (
 					"-lpam",
+					"-lopenssl",
 					"-lssl",
 					"-lcrypto",
-					"-lopenssl",
 					"$(inherited)"
 				);
 
@@ -1962,9 +1962,9 @@ fi";
     
     				OTHER_LDFLAGS = (
 					"-lpam",
+					"-lopenssl",
 					"-lssl",
 					"-lcrypto",
-					"-lopenssl",
 					"$(inherited)"
 				);
 
@@ -2003,9 +2003,9 @@ fi";
 				);
 				OTHER_LDFLAGS = (
 					"-lpam",
+					"-lopenssl",
 					"-lssl",
 					"-lcrypto",
-					"-lopenssl",
 					"$(inherited)"
 				);
 
@@ -2019,9 +2019,9 @@ fi";
     
     				OTHER_LDFLAGS = (
 					"-lpam",
+					"-lopenssl",
 					"-lssl",
 					"-lcrypto",
-					"-lopenssl",
 					"$(inherited)"
 				);
 
@@ -2039,9 +2039,9 @@ fi";
 				);
 				OTHER_LDFLAGS = (
 					"-lpam",
+					"-lopenssl",
 					"-lssl",
 					"-lcrypto",
-					"-lopenssl",
 					"$(inherited)"
 				);
 
@@ -2055,9 +2055,9 @@ fi";
     
     				OTHER_LDFLAGS = (
 					"-lpam",
+					"-lopenssl",
 					"-lssl",
 					"-lcrypto",
-					"-lopenssl",
 					"$(inherited)"
 				);
 
@@ -2075,9 +2075,9 @@ fi";
 				);
 				OTHER_LDFLAGS = (
 					"-lpam",
+					"-lopenssl",
 					"-lssl",
 					"-lcrypto",
-					"-lopenssl",
 					"$(inherited)"
 				);
 
@@ -2091,9 +2091,9 @@ fi";
     
     				OTHER_LDFLAGS = (
 					"-lpam",
+					"-lopenssl",
 					"-lssl",
 					"-lcrypto",
-					"-lopenssl",
 					"$(inherited)"
 				);
 
@@ -2111,9 +2111,9 @@ fi";
 				);
 				OTHER_LDFLAGS = (
 					"-lpam",
+					"-lopenssl",
 					"-lssl",
 					"-lcrypto",
-					"-lopenssl",
 					"$(inherited)"
 				);
 
@@ -2127,9 +2127,9 @@ fi";
     
     				OTHER_LDFLAGS = (
 					"-lpam",
+					"-lopenssl",
 					"-lssl",
 					"-lcrypto",
-					"-lopenssl",
 					"$(inherited)"
 				);
 
@@ -2146,9 +2146,9 @@ fi";
 					"$(inherited)"
 				);
 				OTHER_LDFLAGS = (
+					"-lopenssl",
 					"-lssl",
 					"-lcrypto",
-					"-lopenssl",
 					"$(inherited)"
 				);
 
@@ -2161,9 +2161,9 @@ fi";
     				PRODUCT_NAME = libmpr;
     
     				OTHER_LDFLAGS = (
+					"-lopenssl",
 					"-lssl",
 					"-lcrypto",
-					"-lopenssl",
 					"$(inherited)"
 				);
 
@@ -2262,9 +2262,9 @@ fi";
 					"$(inherited)"
 				);
 				OTHER_LDFLAGS = (
+					"-lopenssl",
 					"-lssl",
 					"-lcrypto",
-					"-lopenssl",
 					"$(inherited)"
 				);
 
@@ -2277,9 +2277,9 @@ fi";
     				PRODUCT_NAME = appman;
     
     				OTHER_LDFLAGS = (
+					"-lopenssl",
 					"-lssl",
 					"-lcrypto",
-					"-lopenssl",
 					"$(inherited)"
 				);
 
