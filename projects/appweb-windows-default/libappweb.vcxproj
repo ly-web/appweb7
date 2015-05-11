@@ -13,7 +13,7 @@
       </ItemDefinitionGroup>
 
       <PropertyGroup Label="Globals">
-        <ProjectGuid>{f07c2d7c-361c-4ac5-b1db-37850cdf52b8}</ProjectGuid>
+        <ProjectGuid>{abf4ce1f-b89b-48a0-b5b6-5eebbf7284f4}</ProjectGuid>
         <RootNamespace />
         <Keyword>Win32Proj</Keyword>
       </PropertyGroup>
@@ -136,21 +136,21 @@ cd ..\projects\appweb-windows-default</Command>
 
     <ItemGroup>
       <ProjectReference Include="libesp.vcxproj">
-      <Project>b2b14d0e-03d2-4c9f-a6f1-dbbbbf562041</Project>
+      <Project>6bd51657-83c1-4664-a52e-23e8bdcdb7cd</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       </ProjectReference>
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="libhttp.vcxproj">
-      <Project>6b63497f-c3a2-4d2f-a8b7-3ec2cd3722ef</Project>
+      <Project>60dbc3cb-aeb5-468b-a847-f62167a7914f</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       </ProjectReference>
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="libmpr.vcxproj">
-      <Project>3acd6101-a351-4c3a-81e4-dc8589fea4ef</Project>
+      <Project>2ed02c7a-9d07-4dad-929f-5bd1da80cb12</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       </ProjectReference>
     </ItemGroup>

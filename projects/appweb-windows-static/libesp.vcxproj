@@ -13,7 +13,7 @@
       </ItemDefinitionGroup>
 
       <PropertyGroup Label="Globals">
-        <ProjectGuid>{b2b14d0e-03d2-4c9f-a6f1-dbbbbf562041}</ProjectGuid>
+        <ProjectGuid>{6bd51657-83c1-4664-a52e-23e8bdcdb7cd}</ProjectGuid>
         <RootNamespace />
         <Keyword>Win32Proj</Keyword>
       </PropertyGroup>
@@ -127,7 +127,7 @@ cd ..\..\projects\appweb-windows-static</Command>
 
     <ItemGroup>
       <ProjectReference Include="libhttp.vcxproj">
-      <Project>6b63497f-c3a2-4d2f-a8b7-3ec2cd3722ef</Project>
+      <Project>60dbc3cb-aeb5-468b-a847-f62167a7914f</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       </ProjectReference>
     </ItemGroup>
