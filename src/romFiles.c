@@ -9,4 +9,7 @@ PUBLIC MprRomInode romFiles[] = {
     { "", 0, 0, 0 },
     { 0, 0, 0, 0 },
 };
+
+#else
+PUBLIC int romDummy;
 #endif /* ME_ROM */
