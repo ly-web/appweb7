@@ -12,7 +12,7 @@ try {
 } catch {
     caught = true
 }
-ttrue(caught)
+assert(caught)
 http.close()
 
 //  Bypass http to send the request to the server
@@ -23,5 +23,5 @@ s.write("GET /index\x01.html HTTP/1.0\r\n\r\n")
 let response = new ByteArray
 while ((n = s.read(response, -1)) != null) {}
 let r = response.toString()
-ttrue(r.contains('400 Bad Request'))
+assert(r.contains('400 Bad Request'))
 s.close()
