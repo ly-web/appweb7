@@ -44,8 +44,6 @@ Code:
 ---
 * [server.c](server.c) - Main program
 * [appweb.conf](appweb.conf) - Appweb server configuration file
-* [self.crt](self.crt) - Self-signed test certificate
-* [self.key](self.key) - Test private key
 * [web](web) - Web content to serve
 * [start.me](start.me) - MakeMe build instructions
 * [cache](cache) - Directory for cached ESP pages
