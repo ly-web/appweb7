@@ -1696,7 +1696,8 @@ fi";
     		456F1B20456F561800000003 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
-    
+    ME_COM_MATRIXSSL_PATH = "";
+
                     /* Common Settings */
     				ALWAYS_SEARCH_USER_PATHS = NO;
                     ONLY_ACTIVE_ARCH = YES;
@@ -1765,7 +1766,8 @@ fi";
     		456F1B20456F561800000004 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
-    
+    ME_COM_MATRIXSSL_PATH = "";
+
                     /* Common Settings */
     				ALWAYS_SEARCH_USER_PATHS = NO;
                     ONLY_ACTIVE_ARCH = YES;

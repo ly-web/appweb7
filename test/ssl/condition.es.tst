@@ -8,6 +8,9 @@ if (!Config.SSL) {
 } else if (thas('ME_SSL')) {
     let http: Http
 
+    /*
+        Note: these providers are client-side. i.e. those supported in testme, not in appweb.
+     */
     for each (let provider in Http.providers) {
         if (provider == 'matrixssl') {
             //  MatrixSSL doesn't support certificate state yet
@@ -15,14 +18,14 @@ if (!Config.SSL) {
         }
         http = new Http
         http.provider = provider;
-        // http.ca = '../crt/ca.crt'
+        // http.ca = '../../src/certs/ca.crt'
         http.verify = false
 
         //  Should fail if no cert is provided
         endpoint = tget('TM_CLIENTCERT') || "https://127.0.0.1:6443"
         let caught
         try {
-            /* Should throw */
+            // Server should deny and handshake should fail
             http.get(endpoint + '/ssl-match/index.html')
             ttrue(http.status == 200) 
         } catch {
@@ -33,8 +36,8 @@ if (!Config.SSL) {
 
         //  Should pass with a cert
         endpoint = tget('TM_CLIENTCERT') || "https://127.0.0.1:6443"
-        http.key = '../crt/test.key'
-        http.certificate = '../crt/test.crt'
+        http.key = '../../src/certs/test.key'
+        http.certificate = '../../src/certs/test.crt'
         http.get(endpoint + '/ssl-match/index.html')
         ttrue(http.status == 200) 
         http.close()

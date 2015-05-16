@@ -15,7 +15,7 @@ if (!Config.SSL) {
         }
         http = new Http
         http.provider = provider;
-        http.ca = '../crt/ca.crt'
+        http.ca = '../../src/certs/ca.crt'
         http.verify = true
         http.key = null
         http.certificate = null
@@ -60,8 +60,8 @@ if (!Config.SSL) {
 
         //  Test SSL with a client cert 
         endpoint = tget('TM_CLIENTCERT') || "https://127.0.0.1:6443"
-        http.key = '../crt/test.key'
-        http.certificate = '../crt/test.crt'
+        http.key = '../../src/certs/test.key'
+        http.certificate = '../../src/certs/test.crt'
         // http.verify = false
         http.get(endpoint + '/index.html')
         ttrue(http.status == 200) 
