@@ -41,6 +41,7 @@
         "watchdog": "^0.1"
     },
     "optionalDependencies": {
+        "certs": "^0.1",
         "esp": "^5",
         "est": "^0.6",
         "mpr-est": "^0.1",

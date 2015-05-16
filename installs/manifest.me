@@ -49,7 +49,7 @@ Me.load({
                     symlink:    '${bin}/',
 
                 }, { 
-                    from:       '${TOP}/src/http/ca.crt',
+                    from:       '${TOP}/src/certs/roots.crt',
                     to:         '${abin}/',
                     ifdef:      'ssl',
 
@@ -76,7 +76,7 @@ Me.load({
                     to:         '${etc}/',
 
                 }, {
-                    home:       '${TOP}/src/server',
+                    home:       '${TOP}/src/certs',
                     from:       [ 'self.crt', 'self.key' ], 
                     to:         '${etc}/',
 
@@ -95,7 +95,7 @@ Me.load({
                     to:         '${etc}/sample.conf',
 
                 }, {
-                    home:       '${TOP}/src/server', 
+                    home:       '${TOP}/src/certs', 
                     from:       [ 'self.crt', 'self.key' ], 
                     to:         '${etc}/',
 
