@@ -38,6 +38,7 @@ appweb-macosx-mine*
 cache/
 .cdrc
 doc/.expansive-lastgen
-
 test/future.json
 test/test.dat
+*.key
+*.crt

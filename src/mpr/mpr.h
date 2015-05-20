@@ -7568,11 +7568,11 @@ typedef struct MprSocket {
     struct MprSocket *listenSock;       /**< Listening socket */
     void            *sslSocket;         /**< Extended SSL socket state */
     struct MprSsl   *ssl;               /**< SSL configuration */
-    char            *cipher;            /**< Selected SSL cipher */
-    char            *session;           /**< SSL session ID (dependent on SSL provider) */
-    char            *peerName;          /**< Peer common SSL name */
-    char            *peerCert;          /**< Peer SSL certificate */
-    char            *peerCertIssuer;    /**< Issuer of peer certificate */
+    cchar           *cipher;            /**< Selected SSL cipher */
+    cchar           *session;           /**< SSL session ID (dependent on SSL provider) */
+    cchar           *peerName;          /**< Peer common SSL name */
+    cchar           *peerCert;          /**< Peer SSL certificate */
+    cchar           *peerCertIssuer;    /**< Issuer of peer certificate */
     bool            secured;            /**< SSL Peer verified */
     MprMutex        *mutex;             /**< Multi-thread sync */
 } MprSocket;

@@ -32,14 +32,16 @@
     ],
     "pak": {
         "export": [
-            "*.key",
-            "*.crt",
-            "*.ca",
+            "certs.me",
+            "ossl",
             "*.ans",
-            "*.srl",
-            "*.me",
             "*.conf"
         ],
         "origin": "embedthis/certs"
+    },
+    "scripts": {
+        "install": {
+            "script": "if (!pak.directories.export.join('certs/ca.crt').exists) { print(run('me generate-certs')) }"
+        }
     }
 }

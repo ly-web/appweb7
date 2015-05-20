@@ -133,6 +133,7 @@ PUBLIC int mprSslInit(void *unused, MprModule *module)
     if ((defaultOpenConfig = mprAllocObj(OpenConfig, manageOpenConfig)) == 0) {
         return MPR_ERR_MEMORY;
     }
+//NOGO
     defaultOpenConfig->rsaKey512 = RSA_generate_key(512, RSA_F4, 0, 0);
     defaultOpenConfig->rsaKey1024 = RSA_generate_key(1024, RSA_F4, 0, 0);
     defaultOpenConfig->dhKey512 = get_dh512();
@@ -311,45 +312,51 @@ static OpenConfig *createOpenSslConfig(MprSocket *sp)
             SSL_CTX_set_verify_depth(context, ssl->verifyDepth);
         }
     }
-    SSL_CTX_set_verify(context, verifyMode, verifyX509Certificate);
 
     /*
         Define callbacks
      */
+    SSL_CTX_set_verify(context, verifyMode, verifyX509Certificate);
     SSL_CTX_set_tmp_rsa_callback(context, rsaCallback);
     SSL_CTX_set_tmp_dh_callback(context, dhCallback);
+
+    SSL_CTX_set_options(context, SSL_OP_ALL);
+
+    /*
+        Ensure we generate a new private key for each connection
+     */
+    SSL_CTX_set_options(context, SSL_OP_SINGLE_DH_USE);
 
     /*
         Elliptic Curve initialization
      */
 #if SSL_OP_SINGLE_ECDH_USE
-{
-    EC_KEY  *ecdh;
-    cchar   *name;
-    int      nid;
+    #ifdef SSL_CTX_set_ecdh_auto
+        SSL_CTX_set_ecdh_auto(context, 1);
+    #else
+        {
+            EC_KEY  *ecdh;
+            cchar   *name;
+            int      nid;
 
-    name = ME_MPR_SSL_CURVE;
-    if ((nid = OBJ_sn2nid(name)) == 0) {
-        sp->errorMsg = sfmt("Unknown curve name \"%s\"", name);
-        SSL_CTX_free(context);
-        return 0;
-    }
-    if ((ecdh = EC_KEY_new_by_curve_name(nid)) == 0) {
-        sp->errorMsg = sfmt("Unable to create curve \"%s\"", name);
-        SSL_CTX_free(context);
-        return 0;
-    }
-    SSL_CTX_set_options(context, SSL_OP_SINGLE_ECDH_USE);
-    SSL_CTX_set_tmp_ecdh(context, ecdh);
-    EC_KEY_free(ecdh);
-}
+            name = ME_MPR_SSL_CURVE;
+            if ((nid = OBJ_sn2nid(name)) == 0) {
+                sp->errorMsg = sfmt("Unknown curve name \"%s\"", name);
+                SSL_CTX_free(context);
+                return 0;
+            }
+            if ((ecdh = EC_KEY_new_by_curve_name(nid)) == 0) {
+                sp->errorMsg = sfmt("Unable to create curve \"%s\"", name);
+                SSL_CTX_free(context);
+                return 0;
+            }
+            SSL_CTX_set_options(context, SSL_OP_SINGLE_ECDH_USE);
+            SSL_CTX_set_tmp_ecdh(context, ecdh);
+            EC_KEY_free(ecdh);
+        }
+    #endif
 #endif
 
-    SSL_CTX_set_options(context, SSL_OP_ALL);
-#ifdef SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS
-    /* SSL_OP_ALL enables this. Only needed for ancient browsers like IE-6 */
-    SSL_CTX_clear_options(context, SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS);
-#endif
     SSL_CTX_set_mode(context, SSL_MODE_ENABLE_PARTIAL_WRITE | SSL_MODE_AUTO_RETRY | SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
 #ifdef SSL_OP_MSIE_SSLV2_RSA_PADDING
     SSL_CTX_set_options(context, SSL_OP_MSIE_SSLV2_RSA_PADDING);
@@ -360,43 +367,6 @@ static OpenConfig *createOpenSslConfig(MprSocket *sp)
 #ifdef SSL_OP_CIPHER_SERVER_PREFERENCE
     SSL_CTX_set_mode(context, SSL_OP_CIPHER_SERVER_PREFERENCE);
 #endif
-#if KEEP
-    SSL_CTX_set_read_ahead(context, 1);
-    SSL_CTX_set_info_callback(context, info_callback);
-#endif
-
-    /*
-        Options set via main.me mpr.ssl.*
-     */
-#if defined(ME_MPR_SSL_TICKET) && defined(SSL_OP_NO_TICKET)
-    if (ME_MPR_SSL_TICKET) {
-        SSL_CTX_clear_options(context, SSL_OP_NO_TICKET);
-    } else {
-        SSL_CTX_set_options(context, SSL_OP_NO_TICKET);
-    }
-#endif
-#if defined(ME_MPR_SSL_COMPRESSION) && defined(SSL_OP_NO_COMPRESSION)
-    if (ME_MPR_SSL_COMPRESSION) {
-        SSL_CTX_clear_options(context, SSL_OP_NO_COMPRESSION);
-    } else {
-        SSL_CTX_set_options(context, SSL_OP_NO_COMPRESSION);
-    }
-#endif
-#if defined(ME_MPR_SSL_RENEGOTIATE)
-    RAND_bytes(resume, sizeof(resume));
-    SSL_CTX_set_session_id_context(context, resume, sizeof(resume));
-    #if defined(SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION)
-        if (ME_MPR_SSL_RENEGOTIATE) {
-            SSL_CTX_clear_options(context, SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
-        } else {
-            SSL_CTX_set_options(context, SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
-        }
-    #endif
-#endif
-#if defined(ME_MPR_SSL_CACHE)
-    SSL_CTX_sess_set_cache_size(context, ME_MPR_SSL_CACHE);
-#endif
-
     /*
         Select the required protocols
         Disable SSLv2 and SSLv3 by default -- they are insecure.
@@ -418,10 +388,66 @@ static OpenConfig *createOpenSslConfig(MprSocket *sp)
         SSL_CTX_set_options(context, SSL_OP_NO_TLSv1_2);
     }
 #endif
+
     /*
-        Ensure we generate a new private key for each connection
+        Options set via main.me mpr.ssl.*
      */
-    SSL_CTX_set_options(context, SSL_OP_SINGLE_DH_USE);
+#if defined(SSL_OP_NO_TICKET)
+    #if defined(ME_MPR_SSL_TICKET)
+        if (ME_MPR_SSL_TICKET) {
+            SSL_CTX_clear_options(context, SSL_OP_NO_TICKET);
+        } else {
+            SSL_CTX_set_options(context, SSL_OP_NO_TICKET);
+        }
+    #else
+        SSL_CTX_clear_options(context, SSL_OP_NO_TICKET);
+    #endif
+#endif
+
+#if defined(SSL_OP_NO_COMPRESSION)
+    #if defined(ME_MPR_SSL_COMPRESSION)
+        if (ME_MPR_SSL_COMPRESSION) {
+            SSL_CTX_clear_options(context, SSL_OP_NO_COMPRESSION);
+        } else {
+            SSL_CTX_set_options(context, SSL_OP_NO_COMPRESSION);
+        }
+    #else
+        /*
+            CRIME attack targets compression
+         */
+        SSL_CTX_clear_options(context, SSL_OP_NO_COMPRESSION);
+    #endif
+#endif
+
+#if defined(ME_MPR_SSL_RENEGOTIATE)
+    RAND_bytes(resume, sizeof(resume));
+    SSL_CTX_set_session_id_context(context, resume, sizeof(resume));
+    #if defined(SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION)
+        if (ME_MPR_SSL_RENEGOTIATE) {
+            SSL_CTX_clear_options(context, SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
+        } else {
+            SSL_CTX_set_options(context, SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION);
+        }
+    #endif
+#endif
+
+#if defined(SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS)
+    #if defined(ME_MPR_SSL_EMPTY_FRAGMENTS)
+        if (ME_MPR_SSL_EMPTY_FRAGMENTS) {
+            /* SSL_OP_ALL disables empty fragments. Only needed for ancient browsers like IE-6 on SSL-3.0/TLS-1.0 */
+            SSL_CTX_clear_options(context, SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS);
+        } else {
+            SSL_CTX_set_options(context, SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS);
+        }
+    #else
+        SSL_CTX_set_options(context, SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS);
+    #endif
+#endif
+
+#if defined(ME_MPR_SSL_CACHE)
+    SSL_CTX_sess_set_cache_size(context, ME_MPR_SSL_CACHE);
+#endif
+
     cfg->context = context;
     return cfg;
 }
@@ -1089,7 +1115,7 @@ static DH *dhCallback(SSL *handle, int isExport, int keyLength)
 
 /*
     openSslDh.c - OpenSSL DH get routines. Generated by openssl.
-    Use bit gendh to generate new content.
+    Use 'me gendh' to generate new content.
  */
 static DH *get_dh512()
 {
