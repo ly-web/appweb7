@@ -14962,8 +14962,7 @@ PUBLIC int mprRemoveItem(MprList *lp, cvoid *item)
         return -1;
     }
     lock(lp);
-    index = mprLookupItem(lp, item);
-    if (index < 0) {
+    if ((index = mprLookupItem(lp, item)) < 0) {
         unlock(lp);
         return index;
     }
@@ -21204,7 +21203,8 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
     for (rc = retries = 0; retries < maxTries; retries++) {
         breakSock = socket(AF_INET, SOCK_DGRAM, 0);
         if (breakSock < 0) {
-            mprLog("critical mpr select", 0, "Cannot open port %d to use for select. Retrying.");
+            mprLog("critical mpr select", 0, "Cannot create socket to use for select");
+            return MPR_ERR_CANT_OPEN;
         }
 #if ME_UNIX_LIKE
         fcntl(breakSock, F_SETFD, FD_CLOEXEC);
@@ -23679,6 +23679,7 @@ static void manageSsl(MprSsl *ssl, int flags)
         mprMark(ssl->caPath);
         mprMark(ssl->ciphers);
         mprMark(ssl->config);
+        mprMark(ssl->dhFile);
         mprMark(ssl->mutex);
     }
 }
@@ -23849,6 +23850,14 @@ PUBLIC void mprSetSslCiphers(MprSsl *ssl, cchar *ciphers)
 {
     assert(ssl);
     ssl->ciphers = sclone(ciphers);
+    ssl->changed = 1;
+}
+
+
+PUBLIC void mprSetSslDhFile(MprSsl *ssl, cchar *dhFile)
+{
+    assert(ssl);
+    ssl->dhFile = (dhFile && *dhFile) ? sclone(dhFile) : 0;
     ssl->changed = 1;
 }
 
