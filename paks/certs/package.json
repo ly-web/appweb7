@@ -40,8 +40,8 @@
         "origin": "embedthis/certs"
     },
     "scripts": {
-        "install": {
-            "script": "if (!pak.directories.export.join('certs/ca.crt').exists) { print(run('me generate-certs')) }"
+        "UNUSEDinstall": {
+            "script": "Cmd.run('me generate-certs') }"
         }
     }
 }
