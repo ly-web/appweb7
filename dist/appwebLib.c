@@ -2468,6 +2468,7 @@ static int sslCaCertificatePathDirective(MaState *state, cchar *key, cchar *valu
         return MPR_ERR_BAD_SYNTAX;
     }
     checkSsl(state);
+    path = mprJoinPath(state->configDir, httpExpandRouteVars(state->route, path));
     if (!mprPathExists(path, R_OK)) {
         mprLog("error ssl", 0, "Cannot locate %s", path);
         return MPR_ERR_CANT_FIND;
@@ -2485,6 +2486,7 @@ static int sslCaCertificateFileDirective(MaState *state, cchar *key, cchar *valu
         return MPR_ERR_BAD_SYNTAX;
     }
     checkSsl(state);
+    path = mprJoinPath(state->configDir, httpExpandRouteVars(state->route, path));
     if (!mprPathExists(path, R_OK)) {
         mprLog("error ssl", 0, "Cannot locate %s", path);
         return MPR_ERR_CANT_FIND;
@@ -2502,6 +2504,7 @@ static int sslCertificateFileDirective(MaState *state, cchar *key, cchar *value)
         return MPR_ERR_BAD_SYNTAX;
     }
     checkSsl(state);
+    path = mprJoinPath(state->configDir, httpExpandRouteVars(state->route, path));
     if (!mprPathExists(path, R_OK)) {
         mprLog("error ssl", 0, "Cannot locate %s", path);
         return MPR_ERR_CANT_FIND;
@@ -2519,6 +2522,7 @@ static int sslCertificateKeyFileDirective(MaState *state, cchar *key, cchar *val
         return MPR_ERR_BAD_SYNTAX;
     }
     checkSsl(state);
+    path = mprJoinPath(state->configDir, httpExpandRouteVars(state->route, path));
     if (!mprPathExists(path, R_OK)) {
         mprLog("error ssl", 0, "Cannot locate %s", path);
         return MPR_ERR_CANT_FIND;
