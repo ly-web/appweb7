@@ -7,15 +7,16 @@ if (!Config.SSL) {
 
 } else if (thas('ME_MATRIXSSL')) {
     let http: Http = new Http
+    let bin = Path(App.getenv('TM_BIN'))
 
     http.retries = 0
-    http.ca = '../../src/certs/ca.crt'
+    http.ca = bin.join('ca.crt')
     ttrue(http.verify == true)
  
     //  Verify the server cert and send a client cert 
     endpoint = tget('TM_MATRIXSSL') || "https://127.0.0.1:8443"
-    http.key = '../../src/certs/test.key'
-    http.certificate = '../../src/certs/test.crt'
+    http.key = bin.join('test.key')
+    http.certificate = bin.join('test.crt')
     http.get(endpoint + '/index.html')
     ttrue(http.status == 200) 
     ttrue(http.info.CLIENT_S_CN == 'localhost')
