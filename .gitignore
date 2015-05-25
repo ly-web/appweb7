@@ -11,3 +11,4 @@ test/regress/tcp
 test/cgi-bin/.prepared
 test/future.json
 test/test.dat
+samples/certs
