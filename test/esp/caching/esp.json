@@ -1,4 +1,7 @@
 {
+    directories: {
+        controllers: '.'
+    },
     http: {
         routes: {
             pattern: '/{action}$',
