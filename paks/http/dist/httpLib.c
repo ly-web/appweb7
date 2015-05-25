@@ -696,8 +696,8 @@ PUBLIC void httpSetTimestamp(MprTicks period)
     Http    *http;
 
     http = HTTP;
-    if (period < (10 * MPR_TICKS_PER_SEC)) {
-        period = (10 * MPR_TICKS_PER_SEC);
+    if (period < (10 * TPS)) {
+        period = (10 * TPS);
     }
     if (http->timestamp) {
         mprRemoveEvent(http->timestamp);
@@ -748,7 +748,7 @@ PUBLIC char *httpGetDateString(MprPath *sbuf)
     if (sbuf == 0) {
         when = mprGetTime();
     } else {
-        when = (MprTicks) sbuf->mtime * MPR_TICKS_PER_SEC;
+        when = (MprTicks) sbuf->mtime * TPS;
     }
     return mprFormatUniversalTime(HTTP_DATE_FORMAT, when);
 }
@@ -811,7 +811,7 @@ static void updateCurrentDate()
     http = HTTP;
     http->now = mprGetTicks();
     diff = http->now - http->currentTime;
-    if (diff <= MPR_TICKS_PER_SEC || diff >= MPR_TICKS_PER_SEC) {
+    if (diff <= TPS || diff >= TPS) {
         /*
             Optimize and only update the string date representation once per second
          */
@@ -2465,10 +2465,10 @@ static void cacheAtClient(HttpConn *conn)
     if (!mprLookupKey(tx->headers, "Cache-Control")) {
         if ((value = mprLookupKey(conn->tx->headers, "Cache-Control")) != 0) {
             if (strstr(value, "max-age") == 0) {
-                httpAppendHeader(conn, "Cache-Control", "public, max-age=%lld", cache->clientLifespan / MPR_TICKS_PER_SEC);
+                httpAppendHeader(conn, "Cache-Control", "public, max-age=%lld", cache->clientLifespan / TPS);
             }
         } else {
-            httpAddHeader(conn, "Cache-Control", "public, max-age=%lld", cache->clientLifespan / MPR_TICKS_PER_SEC);
+            httpAddHeader(conn, "Cache-Control", "public, max-age=%lld", cache->clientLifespan / TPS);
             /*
                 Old HTTP/1.0 clients don't understand Cache-Control
              */
@@ -2550,7 +2550,7 @@ static void saveCachedResponse(HttpConn *conn)
     /*
         Truncate modified time to get a 1 sec resolution. This is the resolution for If-Modified headers.
      */
-    modified = mprGetTime() / MPR_TICKS_PER_SEC * MPR_TICKS_PER_SEC;
+    modified = mprGetTime() / TPS * TPS;
     mprWriteCache(conn->host->responseCache, makeCacheKey(conn), mprGetBufStart(buf), modified,
         tx->cache->serverLifespan, 0, 0);
 }
@@ -7424,7 +7424,7 @@ static void outputLine(HttpQueue *q, MprDirEntry *ep, cchar *path, int nameSize)
         isDir = 0;
     } else {
         isDir = info.isDir ? 1 : 0;
-        when = (MprTime) info.mtime * MPR_TICKS_PER_SEC;
+        when = (MprTime) info.mtime * TPS;
     }
     if (isDir) {
         icon = "folder";
@@ -14870,9 +14870,9 @@ static int secureCondition(HttpConn *conn, HttpRoute *route, HttpRouteOp *op)
         /* Negative age means subDomains == true */
         age = stoi(op->details);
         if (age < 0) {
-            httpAddHeader(conn, "Strict-Transport-Security", "max-age=%lld; includeSubDomains", -age / MPR_TICKS_PER_SEC);
+            httpAddHeader(conn, "Strict-Transport-Security", "max-age=%lld; includeSubDomains", -age / TPS);
         } else if (age > 0) {
-            httpAddHeader(conn, "Strict-Transport-Security", "max-age=%lld", age / MPR_TICKS_PER_SEC);
+            httpAddHeader(conn, "Strict-Transport-Security", "max-age=%lld", age / TPS);
         }
     }
     if (op->flags & HTTP_ROUTE_REDIRECT) {
@@ -17288,7 +17288,7 @@ PUBLIC bool httpContentNotModified(HttpConn *conn)
             performed, skip the transfer.
          */
         assert(tx->fileInfo.valid);
-        modified = (MprTime) tx->fileInfo.mtime * MPR_TICKS_PER_SEC;
+        modified = (MprTime) tx->fileInfo.mtime * TPS;
         same = httpMatchModified(conn, modified) && httpMatchEtag(conn, tx->etag);
         if (tx->outputRanges && !same) {
             tx->outputRanges = 0;
@@ -23215,8 +23215,8 @@ static int matchWebSock(HttpConn *conn, HttpRoute *route, int dir)
             httpSetHeaderString(conn, "Sec-WebSocket-Protocol", ws->subProtocol);
         }
 #if !ME_HTTP_WEB_SOCKETS_STEALTH
-        httpSetHeader(conn, "X-Request-Timeout", "%lld", conn->limits->requestTimeout / MPR_TICKS_PER_SEC);
-        httpSetHeader(conn, "X-Inactivity-Timeout", "%lld", conn->limits->inactivityTimeout / MPR_TICKS_PER_SEC);
+        httpSetHeader(conn, "X-Request-Timeout", "%lld", conn->limits->requestTimeout / TPS);
+        httpSetHeader(conn, "X-Inactivity-Timeout", "%lld", conn->limits->inactivityTimeout / TPS);
 #endif
         if (route->webSocketsPingPeriod) {
             ws->pingEvent = mprCreateEvent(conn->dispatcher, "webSocket", route->webSocketsPingPeriod,
@@ -24135,8 +24135,8 @@ PUBLIC int httpUpgradeWebSocket(HttpConn *conn)
     httpSetHeaderString(conn, "Sec-WebSocket-Key", tx->webSockKey);
     httpSetHeaderString(conn, "Sec-WebSocket-Protocol", conn->protocols ? conn->protocols : "chat");
     httpSetHeaderString(conn, "Sec-WebSocket-Version", "13");
-    httpSetHeader(conn, "X-Request-Timeout", "%lld", conn->limits->requestTimeout / MPR_TICKS_PER_SEC);
-    httpSetHeader(conn, "X-Inactivity-Timeout", "%lld", conn->limits->inactivityTimeout / MPR_TICKS_PER_SEC);
+    httpSetHeader(conn, "X-Request-Timeout", "%lld", conn->limits->requestTimeout / TPS);
+    httpSetHeader(conn, "X-Inactivity-Timeout", "%lld", conn->limits->inactivityTimeout / TPS);
 
     conn->upgraded = 1;
     conn->keepAliveCount = 0;

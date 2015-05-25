@@ -157,7 +157,8 @@ struct  MprXml;
 #define MPR_TIMEOUT_NAP         20          /**< Short pause */
 
 #define MPR_MAX_TIMEOUT         MAXINT64
-#if DEPRECATED || 1
+
+#if DEPRECATED
 #define MPR_TICKS_PER_SEC       TPS        /**< Time ticks per second */
 #endif
 

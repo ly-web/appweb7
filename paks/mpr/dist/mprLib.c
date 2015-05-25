@@ -2320,7 +2320,7 @@ PUBLIC uint64 mprGetCPU()
             ulong utime, stime;
             buf[nbytes] = '\0';
             sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu %lu", &utime, &stime);
-            ticks = (utime + stime) * MPR_TICKS_PER_SEC / sysconf(_SC_CLK_TCK);
+            ticks = (utime + stime) * TPS / sysconf(_SC_CLK_TCK);
         }
     }
 #elif MACOSX
@@ -2328,8 +2328,8 @@ PUBLIC uint64 mprGetCPU()
     mach_msg_type_number_t count = TASK_BASIC_INFO_COUNT;
     if (task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t) &info, &count) == KERN_SUCCESS) {
         uint64 utime, stime;
-        utime = info.user_time.seconds * MPR_TICKS_PER_SEC + info.user_time.microseconds / 1000;
-        stime = info.system_time.seconds * MPR_TICKS_PER_SEC + info.system_time.microseconds / 1000;
+        utime = info.user_time.seconds * TPS + info.user_time.microseconds / 1000;
+        stime = info.system_time.seconds * TPS + info.system_time.microseconds / 1000;
         ticks = utime + stime;
     }
 #endif
@@ -2808,7 +2808,7 @@ static void shutdownMonitor(void *data, MprEvent *event)
             }
         }
     } else {
-        mprLog("info mpr", 2, "Waiting for requests to complete, %lld secs remaining ...", remaining / MPR_TICKS_PER_SEC);
+        mprLog("info mpr", 2, "Waiting for requests to complete, %lld secs remaining ...", remaining / TPS);
         mprRescheduleEvent(event, 1000);
     }
 }
@@ -4886,8 +4886,8 @@ typedef struct CacheItem
     int64           version;
 } CacheItem;
 
-#define CACHE_TIMER_PERIOD      (60 * MPR_TICKS_PER_SEC)
-#define CACHE_LIFESPAN          (86400 * MPR_TICKS_PER_SEC)
+#define CACHE_TIMER_PERIOD      (60 * TPS)
+#define CACHE_LIFESPAN          (86400 * TPS)
 #define CACHE_HASH_SIZE         257
 
 /*********************************** Forwards *********************************/
@@ -5344,7 +5344,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
             if (excessKeys < 0) {
                 excessKeys = 0;
             }
-            factor = 5 * 60 * MPR_TICKS_PER_SEC; 
+            factor = 5 * 60 * TPS; 
             when += factor;
             while (excessKeys > 0 || cache->usedMem > cache->maxMem) {
                 for (kp = 0; (kp = mprGetNextKey(cache->store, kp)) != 0; ) {
@@ -26214,10 +26214,10 @@ PUBLIC ssize mprGetBusyWorkerCount()
 
 /********************************** Defines ***********************************/
 
-#define MS_PER_SEC  (MPR_TICKS_PER_SEC)
-#define MS_PER_HOUR (60 * 60 * MPR_TICKS_PER_SEC)
-#define MS_PER_MIN  (60 * MPR_TICKS_PER_SEC)
-#define MS_PER_DAY  (86400 * MPR_TICKS_PER_SEC)
+#define MS_PER_SEC  (TPS)
+#define MS_PER_HOUR (60 * 60 * TPS)
+#define MS_PER_MIN  (60 * TPS)
+#define MS_PER_DAY  (86400 * TPS)
 #define MS_PER_YEAR (INT64(31556952000))
 
 /*
