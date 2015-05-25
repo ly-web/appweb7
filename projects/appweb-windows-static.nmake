@@ -171,15 +171,11 @@ TARGETS               = $(TARGETS) build\$(CONFIG)\bin\esp-compile.json
 !IF "$(ME_COM_ESP)" == "1"
 TARGETS               = $(TARGETS) build\$(CONFIG)\bin\esp.exe
 !ENDIF
-TARGETS               = $(TARGETS) build\$(CONFIG)\bin\ca.crt
 !IF "$(ME_COM_HTTP)" == "1"
 TARGETS               = $(TARGETS) build\$(CONFIG)\bin\http.exe
 !ENDIF
 !IF "$(ME_COM_SQLITE)" == "1"
 TARGETS               = $(TARGETS) build\$(CONFIG)\bin\libsql.lib
-!ENDIF
-!IF "$(ME_COM_ZLIB)" == "1"
-TARGETS               = $(TARGETS) build\$(CONFIG)\bin\libzlib.lib
 !ENDIF
 TARGETS               = $(TARGETS) src\server\cache
 TARGETS               = $(TARGETS) build\$(CONFIG)\bin\appman.exe
@@ -234,7 +230,6 @@ clean:
 	if exist "build\$(CONFIG)\obj\sqlite.obj" del /Q "build\$(CONFIG)\obj\sqlite.obj"
 	if exist "build\$(CONFIG)\obj\sqlite3.obj" del /Q "build\$(CONFIG)\obj\sqlite3.obj"
 	if exist "build\$(CONFIG)\obj\watchdog.obj" del /Q "build\$(CONFIG)\obj\watchdog.obj"
-	if exist "build\$(CONFIG)\obj\zlib.obj" del /Q "build\$(CONFIG)\obj\zlib.obj"
 	if exist "build\$(CONFIG)\bin\appweb.exe" del /Q "build\$(CONFIG)\bin\appweb.exe"
 	if exist "build\$(CONFIG)\bin\appweb.lib" del /Q "build\$(CONFIG)\bin\appweb.lib"
 	if exist "build\$(CONFIG)\bin\appweb.pdb" del /Q "build\$(CONFIG)\bin\appweb.pdb"
@@ -253,7 +248,6 @@ clean:
 	if exist "build\$(CONFIG)\bin\esp.lib" del /Q "build\$(CONFIG)\bin\esp.lib"
 	if exist "build\$(CONFIG)\bin\esp.pdb" del /Q "build\$(CONFIG)\bin\esp.pdb"
 	if exist "build\$(CONFIG)\bin\esp.exp" del /Q "build\$(CONFIG)\bin\esp.exp"
-	if exist "build\$(CONFIG)\bin\ca.crt" del /Q "build\$(CONFIG)\bin\ca.crt"
 	if exist "build\$(CONFIG)\bin\http.exe" del /Q "build\$(CONFIG)\bin\http.exe"
 	if exist "build\$(CONFIG)\bin\http.lib" del /Q "build\$(CONFIG)\bin\http.lib"
 	if exist "build\$(CONFIG)\bin\http.pdb" del /Q "build\$(CONFIG)\bin\http.pdb"
@@ -266,7 +260,6 @@ clean:
 	if exist "build\$(CONFIG)\bin\libmpr.lib" del /Q "build\$(CONFIG)\bin\libmpr.lib"
 	if exist "build\$(CONFIG)\bin\libpcre.lib" del /Q "build\$(CONFIG)\bin\libpcre.lib"
 	if exist "build\$(CONFIG)\bin\libsql.lib" del /Q "build\$(CONFIG)\bin\libsql.lib"
-	if exist "build\$(CONFIG)\bin\libzlib.lib" del /Q "build\$(CONFIG)\bin\libzlib.lib"
 	if exist "build\$(CONFIG)\bin\appman.exe" del /Q "build\$(CONFIG)\bin\appman.exe"
 	if exist "build\$(CONFIG)\bin\appman.lib" del /Q "build\$(CONFIG)\bin\appman.lib"
 	if exist "build\$(CONFIG)\bin\appman.pdb" del /Q "build\$(CONFIG)\bin\appman.pdb"
@@ -1009,22 +1002,12 @@ build\$(CONFIG)\bin\esp.exe: $(DEPS_47)
 !ENDIF
 
 #
-#   http-ca-crt
-#
-DEPS_48 = $(DEPS_48) src\http\ca.crt
-
-build\$(CONFIG)\bin\ca.crt: $(DEPS_48)
-	@echo ..... [Copy] build\$(CONFIG)\bin\ca.crt
-	if not exist "build\$(CONFIG)\bin" md "build\$(CONFIG)\bin"
-	copy /Y /B src\http\src\http\ca.crt+modified build\$(CONFIG)\bin\ca.crt $(LOG)
-
-#
 #   http.obj
 #
-DEPS_49 = $(DEPS_49) src\http\http.h
+DEPS_48 = $(DEPS_48) src\http\http.h
 
 build\$(CONFIG)\obj\http.obj: \
-    src\http\http.c $(DEPS_49)
+    src\http\http.c $(DEPS_48)
 	@echo .. [Compile] build\$(CONFIG)\obj\http.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\http.obj -Fd$(BUILD)\obj\http.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" src\http\http.c $(LOG)
 
@@ -1032,72 +1015,72 @@ build\$(CONFIG)\obj\http.obj: \
 #
 #   httpcmd
 #
-DEPS_50 = $(DEPS_50) build\$(CONFIG)\bin\libhttp.lib
-DEPS_50 = $(DEPS_50) build\$(CONFIG)\obj\http.obj
+DEPS_49 = $(DEPS_49) build\$(CONFIG)\bin\libhttp.lib
+DEPS_49 = $(DEPS_49) build\$(CONFIG)\obj\http.obj
 
-LIBS_50 = $(LIBS_50) libhttp.lib
+LIBS_49 = $(LIBS_49) libhttp.lib
 !IF "$(ME_COM_PCRE)" == "1"
-LIBS_50 = $(LIBS_50) libpcre.lib
+LIBS_49 = $(LIBS_49) libpcre.lib
 !ENDIF
-LIBS_50 = $(LIBS_50) libmpr.lib
+LIBS_49 = $(LIBS_49) libmpr.lib
 !IF "$(ME_COM_MATRIXSSL)" == "1"
-LIBS_50 = $(LIBS_50) libmatrixssl.lib
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_MATRIXSSL_PATH)
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
+LIBS_49 = $(LIBS_49) libmatrixssl.lib
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
 !IF "$(ME_COM_EST)" == "1"
-LIBS_50 = $(LIBS_50) libestssl.lib
+LIBS_49 = $(LIBS_49) libestssl.lib
 !ENDIF
 !IF "$(ME_COM_EST)" == "1"
-LIBS_50 = $(LIBS_50) libest.lib
+LIBS_49 = $(LIBS_49) libest.lib
 !ENDIF
 !IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_50 = $(LIBS_50) libopenssl.lib
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_OPENSSL_PATH)
+LIBS_49 = $(LIBS_49) libopenssl.lib
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 !IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_50 = $(LIBS_50) libeay32.lib
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_OPENSSL_PATH)
+LIBS_49 = $(LIBS_49) libeay32.lib
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 !IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_50 = $(LIBS_50) libssleay32.lib
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_OPENSSL_PATH)
+LIBS_49 = $(LIBS_49) libssleay32.lib
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
-LIBS_50 = $(LIBS_50) libcore_s.lib
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_MATRIXSSL_PATH)
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
+LIBS_49 = $(LIBS_49) libcore_s.lib
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
-LIBS_50 = $(LIBS_50) libcrypt.lib
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_MATRIXSSL_PATH)
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
+LIBS_49 = $(LIBS_49) libcrypt.lib
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
-LIBS_50 = $(LIBS_50) libssl_s.lib
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_MATRIXSSL_PATH)
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
-LIBPATHS_50 = $(LIBPATHS_50) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
+LIBS_49 = $(LIBS_49) libssl_s.lib
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
 
-build\$(CONFIG)\bin\http.exe: $(DEPS_50)
+build\$(CONFIG)\bin\http.exe: $(DEPS_49)
 	@echo ..... [Link] build\$(CONFIG)\bin\http.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)      "$(BUILD)\obj\http.obj" $(LIBPATHS_50) $(LIBS_50) $(LIBS_50) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)      "$(BUILD)\obj\http.obj" $(LIBPATHS_49) $(LIBS_49) $(LIBS_49) $(LIBS)  $(LOG)
 !ENDIF
 
 #
 #   sqlite3.h
 #
-DEPS_51 = $(DEPS_51) src\sqlite\sqlite3.h
+DEPS_50 = $(DEPS_50) src\sqlite\sqlite3.h
 
-build\$(CONFIG)\inc\sqlite3.h: $(DEPS_51)
+build\$(CONFIG)\inc\sqlite3.h: $(DEPS_50)
 	@echo ..... [Copy] build\$(CONFIG)\inc\sqlite3.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
 	copy /Y /B src\sqlite\sqlite3.h+modified build\$(CONFIG)\inc\sqlite3.h $(LOG)
@@ -1106,16 +1089,16 @@ build\$(CONFIG)\inc\sqlite3.h: $(DEPS_51)
 #   sqlite3.h
 #
 
-src\sqlite\sqlite3.h: $(DEPS_52)
+src\sqlite\sqlite3.h: $(DEPS_51)
 
 #
 #   sqlite3.obj
 #
-DEPS_53 = $(DEPS_53) build\$(CONFIG)\inc\me.h
-DEPS_53 = $(DEPS_53) src\sqlite\sqlite3.h
+DEPS_52 = $(DEPS_52) build\$(CONFIG)\inc\me.h
+DEPS_52 = $(DEPS_52) src\sqlite\sqlite3.h
 
 build\$(CONFIG)\obj\sqlite3.obj: \
-    src\sqlite\sqlite3.c $(DEPS_53)
+    src\sqlite\sqlite3.c $(DEPS_52)
 	@echo .. [Compile] build\$(CONFIG)\obj\sqlite3.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\sqlite3.obj -Fd$(BUILD)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\sqlite\sqlite3.c $(LOG)
 
@@ -1123,58 +1106,19 @@ build\$(CONFIG)\obj\sqlite3.obj: \
 #
 #   libsql
 #
-DEPS_54 = $(DEPS_54) build\$(CONFIG)\inc\sqlite3.h
-DEPS_54 = $(DEPS_54) build\$(CONFIG)\obj\sqlite3.obj
+DEPS_53 = $(DEPS_53) build\$(CONFIG)\inc\sqlite3.h
+DEPS_53 = $(DEPS_53) build\$(CONFIG)\obj\sqlite3.obj
 
-build\$(CONFIG)\bin\libsql.lib: $(DEPS_54)
+build\$(CONFIG)\bin\libsql.lib: $(DEPS_53)
 	@echo ..... [Link] build\$(CONFIG)\bin\libsql.lib
 	"lib.exe" -nologo -out:$(BUILD)\bin\libsql.lib "$(BUILD)\obj\sqlite3.obj" $(LOG)
-!ENDIF
-
-#
-#   zlib.h
-#
-DEPS_55 = $(DEPS_55) src\zlib\zlib.h
-
-build\$(CONFIG)\inc\zlib.h: $(DEPS_55)
-	@echo ..... [Copy] build\$(CONFIG)\inc\zlib.h
-	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
-	copy /Y /B src\zlib\zlib.h+modified build\$(CONFIG)\inc\zlib.h $(LOG)
-
-#
-#   zlib.h
-#
-
-src\zlib\zlib.h: $(DEPS_56)
-
-#
-#   zlib.obj
-#
-DEPS_57 = $(DEPS_57) build\$(CONFIG)\inc\me.h
-DEPS_57 = $(DEPS_57) src\zlib\zlib.h
-
-build\$(CONFIG)\obj\zlib.obj: \
-    src\zlib\zlib.c $(DEPS_57)
-	@echo .. [Compile] build\$(CONFIG)\obj\zlib.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\zlib.obj -Fd$(BUILD)\obj\zlib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\zlib\zlib.c $(LOG)
-
-!IF "$(ME_COM_ZLIB)" == "1"
-#
-#   libzlib
-#
-DEPS_58 = $(DEPS_58) build\$(CONFIG)\inc\zlib.h
-DEPS_58 = $(DEPS_58) build\$(CONFIG)\obj\zlib.obj
-
-build\$(CONFIG)\bin\libzlib.lib: $(DEPS_58)
-	@echo ..... [Link] build\$(CONFIG)\bin\libzlib.lib
-	"lib.exe" -nologo -out:$(BUILD)\bin\libzlib.lib "$(BUILD)\obj\zlib.obj" $(LOG)
 !ENDIF
 
 #
 #   server-cache
 #
 
-src\server\cache: $(DEPS_59)
+src\server\cache: $(DEPS_54)
 	cd src\server
 	if not exist "cache" md "cache"
 	cd ..\..
@@ -1182,79 +1126,79 @@ src\server\cache: $(DEPS_59)
 #
 #   sqlite.obj
 #
-DEPS_60 = $(DEPS_60) build\$(CONFIG)\inc\me.h
-DEPS_60 = $(DEPS_60) src\sqlite\sqlite3.h
+DEPS_55 = $(DEPS_55) build\$(CONFIG)\inc\me.h
+DEPS_55 = $(DEPS_55) src\sqlite\sqlite3.h
 
 build\$(CONFIG)\obj\sqlite.obj: \
-    src\sqlite\sqlite.c $(DEPS_60)
+    src\sqlite\sqlite.c $(DEPS_55)
 	@echo .. [Compile] build\$(CONFIG)\obj\sqlite.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\sqlite.obj -Fd$(BUILD)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\sqlite\sqlite.c $(LOG)
 
 #
 #   watchdog.obj
 #
-DEPS_61 = $(DEPS_61) build\$(CONFIG)\inc\mpr.h
+DEPS_56 = $(DEPS_56) build\$(CONFIG)\inc\mpr.h
 
 build\$(CONFIG)\obj\watchdog.obj: \
-    src\watchdog\watchdog.c $(DEPS_61)
+    src\watchdog\watchdog.c $(DEPS_56)
 	@echo .. [Compile] build\$(CONFIG)\obj\watchdog.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\watchdog.obj -Fd$(BUILD)\obj\watchdog.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" src\watchdog\watchdog.c $(LOG)
 
 #
 #   watchdog
 #
-DEPS_62 = $(DEPS_62) build\$(CONFIG)\bin\libmpr.lib
-DEPS_62 = $(DEPS_62) build\$(CONFIG)\obj\watchdog.obj
+DEPS_57 = $(DEPS_57) build\$(CONFIG)\bin\libmpr.lib
+DEPS_57 = $(DEPS_57) build\$(CONFIG)\obj\watchdog.obj
 
-LIBS_62 = $(LIBS_62) libmpr.lib
+LIBS_57 = $(LIBS_57) libmpr.lib
 !IF "$(ME_COM_MATRIXSSL)" == "1"
-LIBS_62 = $(LIBS_62) libmatrixssl.lib
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_MATRIXSSL_PATH)
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
+LIBS_57 = $(LIBS_57) libmatrixssl.lib
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
 !IF "$(ME_COM_EST)" == "1"
-LIBS_62 = $(LIBS_62) libestssl.lib
+LIBS_57 = $(LIBS_57) libestssl.lib
 !ENDIF
 !IF "$(ME_COM_EST)" == "1"
-LIBS_62 = $(LIBS_62) libest.lib
+LIBS_57 = $(LIBS_57) libest.lib
 !ENDIF
 !IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_62 = $(LIBS_62) libopenssl.lib
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_OPENSSL_PATH)
+LIBS_57 = $(LIBS_57) libopenssl.lib
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 !IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_62 = $(LIBS_62) libeay32.lib
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_OPENSSL_PATH)
+LIBS_57 = $(LIBS_57) libeay32.lib
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 !IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_62 = $(LIBS_62) libssleay32.lib
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_OPENSSL_PATH)
+LIBS_57 = $(LIBS_57) libssleay32.lib
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
-LIBS_62 = $(LIBS_62) libcore_s.lib
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_MATRIXSSL_PATH)
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
+LIBS_57 = $(LIBS_57) libcore_s.lib
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
-LIBS_62 = $(LIBS_62) libcrypt.lib
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_MATRIXSSL_PATH)
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
+LIBS_57 = $(LIBS_57) libcrypt.lib
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
-LIBS_62 = $(LIBS_62) libssl_s.lib
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_MATRIXSSL_PATH)
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
-LIBPATHS_62 = $(LIBPATHS_62) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
+LIBS_57 = $(LIBS_57) libssl_s.lib
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
+LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
 
-build\$(CONFIG)\bin\appman.exe: $(DEPS_62)
+build\$(CONFIG)\bin\appman.exe: $(DEPS_57)
 	@echo ..... [Link] build\$(CONFIG)\bin\appman.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS)      "$(BUILD)\obj\watchdog.obj" $(LIBPATHS_62) $(LIBS_62) $(LIBS_62) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS)      "$(BUILD)\obj\watchdog.obj" $(LIBPATHS_57) $(LIBS_57) $(LIBS_57) $(LIBS)  $(LOG)
 

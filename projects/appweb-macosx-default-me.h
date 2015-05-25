@@ -9,6 +9,15 @@
 #ifndef ME_AUTHOR
     #define ME_AUTHOR "Embedthis Software"
 #endif
+#ifndef ME_CERTS_BITS
+    #define ME_CERTS_BITS 2048
+#endif
+#ifndef ME_CERTS_DAYS
+    #define ME_CERTS_DAYS 3650
+#endif
+#ifndef ME_CERTS_GENDH
+    #define ME_CERTS_GENDH 1
+#endif
 #ifndef ME_COMPANY
     #define ME_COMPANY "embedthis"
 #endif
@@ -143,12 +152,6 @@
 #endif
 #ifndef ME_MPR_LOGGING
     #define ME_MPR_LOGGING 1
-#endif
-#ifndef ME_MPR_SSL_CURVE
-    #define ME_MPR_SSL_CURVE "prime256v1"
-#endif
-#ifndef ME_MPR_SSL_RENEGOTIATE
-    #define ME_MPR_SSL_RENEGOTIATE 1
 #endif
 #ifndef ME_NAME
     #define ME_NAME "appweb"
