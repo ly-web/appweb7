@@ -33,10 +33,21 @@ The following samples are available:
 * [websockets-echo](websockets-echo/README.md)      WebSockets echo server using an ESP controller.
 * [websockets-output](websockets-output/README.md)  Using WebSockets to send a large file.
 
+### SSL Certificates
+
+Some samples require SSL certificates and keys. These can be generated in the Appweb source tree via:
+
+    me generate-certs
+
+Then in the samples directory, run
+
+    me samples-certs
+
+This will copy the generated certificates into the 'certs' directory.
+
 ### Building
 
-To build the samples, see the per-sample README instructions.
-To build all, use:
+To build the samples, see the per-sample README instructions. To build all, use:
 
     me --file samples.me samples
 
