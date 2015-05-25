@@ -50,6 +50,10 @@ Me.load({
         /* Must build locally to build tools */
         platforms: [ 'local' ],
 
+        certs: {
+            gendh: true
+        },
+
         http: {
             /* Use PAM (Plugable Authentication Module) to store passwords */
             pam: true,

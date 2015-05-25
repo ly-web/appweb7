@@ -7,9 +7,7 @@ Me.load({
         test: {
             action: `run('testme --depth ' + me.settings.depth)`,
             platforms: [ 'local' ],
-            depends: [ 'clean-test', 'build', 'generate-certs', 'cgiProgram', 'prep-cgi', 
-                       'test-testScript', 'test-cgiProgram' 
-            ],
+            depends: [ 'clean-test', 'build', 'cgiProgram', 'prep-cgi', 'test-testScript', 'test-cgiProgram' ],
             generate: false,
         },
 

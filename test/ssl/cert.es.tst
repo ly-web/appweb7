@@ -7,6 +7,7 @@ if (!Config.SSL) {
 
 } else if (thas('ME_SSL')) {
     let http: Http
+    let bin = Path(App.getenv('TM_BIN'))
 
     for each (let provider in Http.providers) {
         if (provider == 'matrixssl') {
@@ -14,8 +15,8 @@ if (!Config.SSL) {
             continue
         }
         http = new Http
-        http.provider = provider;
-        http.ca = '../../src/certs/ca.crt'
+        http.provider = provider
+        http.ca = bin.join('ca.crt')
         http.verify = true
         http.key = null
         http.certificate = null
@@ -60,8 +61,8 @@ if (!Config.SSL) {
 
         //  Test SSL with a client cert 
         endpoint = tget('TM_CLIENTCERT') || "https://127.0.0.1:6443"
-        http.key = '../../src/certs/test.key'
-        http.certificate = '../../src/certs/test.crt'
+        http.key = bin.join('test.key')
+        http.certificate = bin.join('test.crt')
         // http.verify = false
         http.get(endpoint + '/index.html')
         ttrue(http.status == 200) 

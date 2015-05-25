@@ -49,17 +49,12 @@ Me.load({
                     symlink:    '${bin}/',
 
                 }, { 
-                    from:       '${TOP}/src/certs/roots.crt',
+                    from:       '${BIN}/roots.crt',
                     to:         '${abin}/',
                     ifdef:      'ssl',
 
                 }, {
                     from:       '${TOP}/src/server/mime.types',
-                    to:         '${etc}/',
-
-                }, {
-                    home:       '${TOP}/src/certs',
-                    from:       [ 'self.crt', 'self.key' ], 
                     to:         '${etc}/',
 
                 }, {
@@ -75,11 +70,6 @@ Me.load({
                 }, {
                     from:       '${TOP}/src/server/sample.conf', 
                     to:         '${etc}/sample.conf',
-
-                }, {
-                    home:       '${TOP}/src/certs', 
-                    from:       [ 'self.crt', 'self.key' ], 
-                    to:         '${etc}/',
 
                 }, {
                     write:      'set LOG_DIR "${prefixes.log}"\nset CACHE_DIR "${prefixes.cache}"\nDocuments "${prefixes.web}\nListen 80\n<if SSL_MODULE>\nListenSecure 443\n</if>\n'
@@ -268,7 +258,6 @@ Me.load({
                                 'samples'
                     ],
                     to:         '${src}/',
-                    exclude:    /\.crt$|\.key$/,
                     flatten:    false,
                 }
             ],

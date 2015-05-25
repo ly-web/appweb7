@@ -7,6 +7,7 @@ if (!Config.SSL) {
 
 } else if (thas('ME_SSL')) {
     let http: Http
+    let bin = Path(App.getenv('TM_BIN'))
 
     /*
         Note: these providers are client-side. i.e. those supported in testme, not in appweb.
@@ -18,7 +19,7 @@ if (!Config.SSL) {
         }
         http = new Http
         http.provider = provider;
-        // http.ca = '../../src/certs/ca.crt'
+        // http.ca = bin.join('ca.crt')
         http.verify = false
 
         //  Should fail if no cert is provided
@@ -36,8 +37,8 @@ if (!Config.SSL) {
 
         //  Should pass with a cert
         endpoint = tget('TM_CLIENTCERT') || "https://127.0.0.1:6443"
-        http.key = '../../src/certs/test.key'
-        http.certificate = '../../src/certs/test.crt'
+        http.key = bin.join('test.key')
+        http.certificate = bin.join('test.crt')
         http.get(endpoint + '/ssl-match/index.html')
         ttrue(http.status == 200) 
         http.close()
