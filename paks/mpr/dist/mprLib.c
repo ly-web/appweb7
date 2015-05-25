@@ -7303,8 +7303,14 @@ PUBLIC int mprWaitForCond(MprCond *cp, MprTicks timeout)
      */
     rc = 0;
     if (timeout >= 0) {
+        if (timeout > MAXINT) {
+            timeout = MAXINT;
+        }
         now = mprGetTicks();
         expire = now + timeout;
+        if (expire < 0) {
+            expire = MPR_MAX_TIMEOUT;
+        }
 #if ME_UNIX_LIKE
         gettimeofday(&current, NULL);
         usec = current.tv_usec + ((int) (timeout % 1000)) * 1000;
@@ -9794,6 +9800,9 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout, int64 ma
     es = MPR->eventService;
     es->now = mprGetTicks();
     expires = timeout < 0 ? MPR_MAX_TIMEOUT : (es->now + timeout);
+    if (expires < 0) {
+        expires = MPR_MAX_TIMEOUT;
+    }
     delay = expires - es->now;
 
     lock(es);
@@ -14428,7 +14437,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     struct kevent   interest[2], events[1];
     int             kq, interestCount, rc, result;
 
-    if (timeout < 0) {
+    if (timeout < 0 || timeout > MAXINT) {
         timeout = MAXINT;
     }
     interestCount = 0; 
@@ -19771,6 +19780,9 @@ PUBLIC void mprNap(MprTicks timeout)
     assert(timeout >= 0);
 
     mark = mprGetTicks();
+    if (timeout < 0 || timeout > MAXINT) {
+        timeout = MAXINT;
+    }
     remaining = timeout;
     do {
         /* MAC OS X corrupts the timeout if using the 2nd paramater, so recalc each time */
@@ -28190,7 +28202,9 @@ PUBLIC void mprNap(MprTicks milliseconds)
     struct timespec timeout;
     int             rc;
 
-    assert(milliseconds >= 0);
+    if (milliseconds < 0 || milliseconds > MAXINT) {
+        milliseconds = MAXINT;
+    }
     timeout.tv_sec = milliseconds / 1000;
     timeout.tv_nsec = (milliseconds % 1000) * 1000000;
     do {
@@ -28241,6 +28255,9 @@ PUBLIC int usleep(uint msec)
     struct timespec     timeout;
     int                 rc;
 
+    if (msec < 0 || msec > MAXINT) {
+        msec = MAXINT;
+    }
     timeout.tv_sec = msec / (1000 * 1000);
     timeout.tv_nsec = msec % (1000 * 1000) * 1000;
     do {

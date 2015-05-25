@@ -5444,10 +5444,10 @@ PUBLIC MprTicks httpGetTicks(cchar *value)
     uint64  num;
 
     num = httpGetNumber(value);
-    if (num >= (MAXINT64 / MPR_TICKS_PER_SEC)) {
-        num = MAXINT64 / MPR_TICKS_PER_SEC;
+    if (num >= (MAXINT64 / TPS)) {
+        num = MAXINT64 / TPS;
     }
-    return num * MPR_TICKS_PER_SEC;
+    return num * TPS;
 }
 
 
