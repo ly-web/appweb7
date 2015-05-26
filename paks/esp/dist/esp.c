@@ -797,12 +797,14 @@ static void clean(int argc, char **argv)
         cacheDir = httpGetDir(route, "CACHE");
         if (cacheDir) {
             if (mprPathExists(cacheDir, X_OK)) {
-                trace("Clean", "%s", mprGetRelPath(cacheDir, 0));
                 files = mprGetPathFiles(cacheDir, MPR_PATH_RELATIVE);
+                if (mprGetListLength(files) > 0) {
+                    qtrace("Clean", "%s", mprGetRelPath(cacheDir, 0));
+                }
                 for (nextFile = 0; (dp = mprGetNextItem(files, &nextFile)) != 0; ) {
                     path = mprJoinPath(cacheDir, dp->name);
                     if (mprPathExists(path, R_OK)) {
-                        trace("Clean", "%s", mprGetRelPath(path, 0));
+                        qtrace("Clean", "%s", mprGetRelPath(path, 0));
                         mprDeletePath(path);
                     }
                 }
@@ -1756,13 +1758,10 @@ static void compile(int argc, char **argv)
     app->built = mprCreateHash(0, MPR_HASH_STABLE | MPR_HASH_STATIC_VALUES);
     for (ITERATE_ITEMS(app->routes, route, next)) {
         eroute = route->eroute;
-        if (!eroute->compiled) {
-            eroute->compiled = 1;
-            if (app->combine) {
-                compileCombined(route);
-            } else {
-                compileItems(route);
-            }
+        if (app->combine) {
+            compileCombined(route);
+        } else {
+            compileItems(route);
         }
     }
     app->built = 0;
@@ -1870,7 +1869,7 @@ static void compileItems(HttpRoute *route)
     found = 0;
     vtrace("Info", "Compile items for route \"%s\"", route->pattern);
 
-    if ((dir = httpGetDir(route, "CONTROLLERS")) != 0) {
+    if ((dir = httpGetDir(route, "CONTROLLERS")) != 0 && !smatch(dir, ".")) {
         app->files = mprGetPathFiles(dir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
@@ -1881,7 +1880,7 @@ static void compileItems(HttpRoute *route)
         }
     }
 #if DEPRECATED || 1
-    if ((dir = httpGetDir(route, "VIEWS")) != 0) {
+    if ((dir = httpGetDir(route, "VIEWS")) != 0 && !smatch(dir, ".")) {
         app->files = mprGetPathFiles(dir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
             path = dp->name;
@@ -1895,10 +1894,11 @@ static void compileItems(HttpRoute *route)
         }
     }
 #endif
-    dir = mprJoinPath(httpGetDir(route, "SRC"), "app.c");
-    if (mprPathExists(dir, R_OK) && selectResource(dir, "c")) {
-        compileFile(route, dir, ESP_SRC);
-        found++;
+    if ((dir = mprJoinPath(httpGetDir(route, "SRC"), "app.c")) != 0 && !smatch(dir, ".")) {
+        if (mprPathExists(dir, R_OK) && selectResource(dir, "c")) {
+            compileFile(route, dir, ESP_SRC);
+            found++;
+        }
     }
     app->files = mprGetPathFiles(route->documents, MPR_PATH_DESCEND);
     for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
@@ -2610,12 +2610,8 @@ static void trace(cchar *tag, cchar *fmt, ...)
     if (!app->quiet) {
         va_start(args, fmt);
         msg = sfmtv(fmt, args);
-        if (mprGetLogLevel() > 0) {
-            mprPrintf("%s: %s\n", tag, msg);
-        } else {
-            tag = sfmt("[%s]", tag);
-            mprPrintf("%12s %s\n", tag, msg);
-        }
+        tag = sfmt("[%s]", tag);
+        mprPrintf("%12s %s\n", tag, msg);
         va_end(args);
     }
 }
@@ -2632,12 +2628,8 @@ static void vtrace(cchar *tag, cchar *fmt, ...)
     if (app->verbose && !app->quiet) {
         va_start(args, fmt);
         msg = sfmtv(fmt, args);
-        if (mprGetLogLevel() > 0) {
-            mprPrintf("%s: %s\n", tag, msg);
-        } else {
-            tag = sfmt("[%s]", tag);
-            mprPrintf("%12s %s\n", tag, msg);
-        }
+        tag = sfmt("[%s]", tag);
+        mprPrintf("%12s %s\n", tag, msg);
         va_end(args);
     }
 }
