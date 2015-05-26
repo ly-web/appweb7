@@ -48,15 +48,6 @@ Me.load({
                     lib = probe('libcrypto.' + me.ext.lib, blend({nothrow: true}, opt)).absolute ||
                           probe('libcrypto.' + me.ext.shobj, opt).absolute
                     path = lib.dirname
-print("PATH", path)
-                    if (path.join('apps/openssl').exists) {
-                        try {
-                            let platform = Cmd.run(path.join('apps/openssl') + ' version -p')
-                            platform = platform.replace(/^platform: (debug-)*/, '')
-print("PP", platform)
-                        } catch {}
-                    }
-
                     libraries = [ 'ssl', 'crypto' ]
                     libpaths = [ lib.parent ]
                     let ext = lib.extension
