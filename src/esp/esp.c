@@ -290,7 +290,7 @@ PUBLIC int main(int argc, char **argv)
             if (argind >= argc) {
                 usageError();
             } else {
-                app->platform = slower(argv[++argind]);
+                app->platform = sclone(argv[++argind]);
             }
 
         } else if (smatch(argp, "quiet") || smatch(argp, "q")) {
