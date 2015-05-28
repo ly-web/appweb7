@@ -4,16 +4,7 @@
 
 Me.load({
     targets: {
-        'sample-certs': {
-            action: `
-                mkdir('certs')
-                cp(me.dir.bin.join('*.crt'), 'certs')
-                cp(me.dir.bin.join('*.key'), 'certs')
-                cp(me.dir.bin.join('dh.pem'), 'certs')
-            `
-        },
         samples: {
-            depends: [ 'sample-certs' ],
             action: `
                 for each (sample in Path('.').files('*/start.me')) {
                     if (me.platform.os == 'windows' && sample.contains('chroot-server')) {
