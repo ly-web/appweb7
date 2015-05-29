@@ -124,6 +124,10 @@ ME_COM_SSL            = 1
 ME_COM_SSL            = 1
 !ENDIF
 
+!IF "$(ME_COM_SSL)" == ""
+ME_COM_SSL            = 1
+!ENDIF
+
 !IF "$(ME_COM_WINSDK)" == ""
 ME_COM_WINSDK         = 1
 !ENDIF
@@ -173,6 +177,9 @@ TARGETS               = $(TARGETS) build\$(CONFIG)\bin\esp.exe
 !ENDIF
 !IF "$(ME_COM_HTTP)" == "1"
 TARGETS               = $(TARGETS) build\$(CONFIG)\bin\http.exe
+!ENDIF
+!IF "$(ME_COM_SSL)" == "1"
+TARGETS               = $(TARGETS) build\$(CONFIG)\bin
 !ENDIF
 !IF "$(ME_COM_SQLITE)" == "1"
 TARGETS               = $(TARGETS) build\$(CONFIG)\bin\libsql.dll
@@ -252,6 +259,7 @@ clean:
 	if exist "build\$(CONFIG)\bin\http.lib" del /Q "build\$(CONFIG)\bin\http.lib"
 	if exist "build\$(CONFIG)\bin\http.pdb" del /Q "build\$(CONFIG)\bin\http.pdb"
 	if exist "build\$(CONFIG)\bin\http.exp" del /Q "build\$(CONFIG)\bin\http.exp"
+	if exist "build\$(CONFIG)\bin" del /Q "build\$(CONFIG)\bin"
 	if exist "build\$(CONFIG)\bin\libappweb.dll" del /Q "build\$(CONFIG)\bin\libappweb.dll"
 	if exist "build\$(CONFIG)\bin\libappweb.lib" del /Q "build\$(CONFIG)\bin\libappweb.lib"
 	if exist "build\$(CONFIG)\bin\libappweb.pdb" del /Q "build\$(CONFIG)\bin\libappweb.pdb"
@@ -390,7 +398,7 @@ DEPS_11 = $(DEPS_11) src\mpr\mpr.h
 build\$(CONFIG)\obj\mprLib.obj: \
     src\mpr\mprLib.c $(DEPS_11)
 	@echo .. [Compile] build\$(CONFIG)\obj\mprLib.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\mprLib.obj -Fd$(BUILD)\obj\mprLib.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" src\mpr\mprLib.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\mprLib.obj -Fd$(BUILD)\obj\mprLib.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\mpr\mprLib.c $(LOG)
 
 #
 #   libmpr
@@ -402,6 +410,10 @@ DEPS_12 = $(DEPS_12) build\$(CONFIG)\bin\libestssl.lib
 DEPS_12 = $(DEPS_12) build\$(CONFIG)\inc\mpr.h
 DEPS_12 = $(DEPS_12) build\$(CONFIG)\obj\mprLib.obj
 
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_12 = $(LIBS_12) libnanossl.lib
+LIBPATHS_12 = $(LIBPATHS_12) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
 LIBS_12 = $(LIBS_12) libmatrixssl.lib
 LIBPATHS_12 = $(LIBPATHS_12) -libpath:$(ME_COM_MATRIXSSL_PATH)
@@ -448,10 +460,14 @@ LIBPATHS_12 = $(LIBPATHS_12) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
 LIBPATHS_12 = $(LIBPATHS_12) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
 LIBPATHS_12 = $(LIBPATHS_12) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_12 = $(LIBS_12) libssls.lib
+LIBPATHS_12 = $(LIBPATHS_12) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 
 build\$(CONFIG)\bin\libmpr.dll: $(DEPS_12)
 	@echo ..... [Link] build\$(CONFIG)\bin\libmpr.dll
-	"$(LD)" -dll -out:$(BUILD)\bin\libmpr.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS)      "$(BUILD)\obj\mprLib.obj" $(LIBPATHS_12) $(LIBS_12) $(LIBS_12) $(LIBS)  $(LOG)
+	"$(LD)" -dll -out:$(BUILD)\bin\libmpr.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS)       "$(BUILD)\obj\mprLib.obj" $(LIBPATHS_12) $(LIBS_12) $(LIBS_12) $(LIBS) libssls  $(LOG)
 
 #
 #   pcre.h
@@ -518,7 +534,7 @@ DEPS_19 = $(DEPS_19) build\$(CONFIG)\inc\pcre.h
 build\$(CONFIG)\obj\httpLib.obj: \
     src\http\httpLib.c $(DEPS_19)
 	@echo .. [Compile] build\$(CONFIG)\obj\httpLib.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\httpLib.obj -Fd$(BUILD)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" src\http\httpLib.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\httpLib.obj -Fd$(BUILD)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\http\httpLib.c $(LOG)
 
 !IF "$(ME_COM_HTTP)" == "1"
 #
@@ -535,6 +551,10 @@ DEPS_20 = $(DEPS_20) build\$(CONFIG)\obj\httpLib.obj
 LIBS_20 = $(LIBS_20) libpcre.lib
 !ENDIF
 LIBS_20 = $(LIBS_20) libmpr.lib
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_20 = $(LIBS_20) libnanossl.lib
+LIBPATHS_20 = $(LIBPATHS_20) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
 LIBS_20 = $(LIBS_20) libmatrixssl.lib
 LIBPATHS_20 = $(LIBPATHS_20) -libpath:$(ME_COM_MATRIXSSL_PATH)
@@ -581,10 +601,14 @@ LIBPATHS_20 = $(LIBPATHS_20) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
 LIBPATHS_20 = $(LIBPATHS_20) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
 LIBPATHS_20 = $(LIBPATHS_20) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_20 = $(LIBS_20) libssls.lib
+LIBPATHS_20 = $(LIBPATHS_20) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 
 build\$(CONFIG)\bin\libhttp.dll: $(DEPS_20)
 	@echo ..... [Link] build\$(CONFIG)\bin\libhttp.dll
-	"$(LD)" -dll -out:$(BUILD)\bin\libhttp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS)      "$(BUILD)\obj\httpLib.obj" $(LIBPATHS_20) $(LIBS_20) $(LIBS_20) $(LIBS)  $(LOG)
+	"$(LD)" -dll -out:$(BUILD)\bin\libhttp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS)       "$(BUILD)\obj\httpLib.obj" $(LIBPATHS_20) $(LIBS_20) $(LIBS_20) $(LIBS) libssls  $(LOG)
 !ENDIF
 
 #
@@ -616,7 +640,7 @@ DEPS_23 = $(DEPS_23) build\$(CONFIG)\inc\http.h
 build\$(CONFIG)\obj\espLib.obj: \
     src\esp\espLib.c $(DEPS_23)
 	@echo .. [Compile] build\$(CONFIG)\obj\espLib.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\espLib.obj -Fd$(BUILD)\obj\espLib.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" src\esp\espLib.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\espLib.obj -Fd$(BUILD)\obj\espLib.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\esp\espLib.c $(LOG)
 
 !IF "$(ME_COM_ESP)" == "1"
 #
@@ -638,6 +662,10 @@ LIBS_24 = $(LIBS_24) libhttp.lib
 LIBS_24 = $(LIBS_24) libpcre.lib
 !ENDIF
 LIBS_24 = $(LIBS_24) libmpr.lib
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_24 = $(LIBS_24) libnanossl.lib
+LIBPATHS_24 = $(LIBPATHS_24) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
 LIBS_24 = $(LIBS_24) libmatrixssl.lib
 LIBPATHS_24 = $(LIBPATHS_24) -libpath:$(ME_COM_MATRIXSSL_PATH)
@@ -684,10 +712,14 @@ LIBPATHS_24 = $(LIBPATHS_24) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
 LIBPATHS_24 = $(LIBPATHS_24) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
 LIBPATHS_24 = $(LIBPATHS_24) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_24 = $(LIBS_24) libssls.lib
+LIBPATHS_24 = $(LIBPATHS_24) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 
 build\$(CONFIG)\bin\libesp.dll: $(DEPS_24)
 	@echo ..... [Link] build\$(CONFIG)\bin\libesp.dll
-	"$(LD)" -dll -out:$(BUILD)\bin\libesp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS)      "$(BUILD)\obj\espLib.obj" $(LIBPATHS_24) $(LIBS_24) $(LIBS_24) $(LIBS)  $(LOG)
+	"$(LD)" -dll -out:$(BUILD)\bin\libesp.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS)       "$(BUILD)\obj\espLib.obj" $(LIBPATHS_24) $(LIBS_24) $(LIBS_24) $(LIBS) libssls  $(LOG)
 !ENDIF
 
 #
@@ -735,7 +767,7 @@ DEPS_29 = $(DEPS_29) build\$(CONFIG)\inc\pcre.h
 build\$(CONFIG)\obj\config.obj: \
     src\config.c $(DEPS_29)
 	@echo .. [Compile] build\$(CONFIG)\obj\config.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\config.obj -Fd$(BUILD)\obj\config.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" src\config.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\config.obj -Fd$(BUILD)\obj\config.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\config.c $(LOG)
 
 #
 #   convenience.obj
@@ -745,7 +777,7 @@ DEPS_30 = $(DEPS_30) src\appweb.h
 build\$(CONFIG)\obj\convenience.obj: \
     src\convenience.c $(DEPS_30)
 	@echo .. [Compile] build\$(CONFIG)\obj\convenience.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\convenience.obj -Fd$(BUILD)\obj\convenience.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" src\convenience.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\convenience.obj -Fd$(BUILD)\obj\convenience.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\convenience.c $(LOG)
 
 #
 #   romFiles.obj
@@ -755,7 +787,7 @@ DEPS_31 = $(DEPS_31) build\$(CONFIG)\inc\mpr.h
 build\$(CONFIG)\obj\romFiles.obj: \
     src\romFiles.c $(DEPS_31)
 	@echo .. [Compile] build\$(CONFIG)\obj\romFiles.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\romFiles.obj -Fd$(BUILD)\obj\romFiles.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" src\romFiles.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\romFiles.obj -Fd$(BUILD)\obj\romFiles.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\romFiles.c $(LOG)
 
 #
 #   cgiHandler.obj
@@ -765,7 +797,7 @@ DEPS_32 = $(DEPS_32) src\appweb.h
 build\$(CONFIG)\obj\cgiHandler.obj: \
     src\modules\cgiHandler.c $(DEPS_32)
 	@echo .. [Compile] build\$(CONFIG)\obj\cgiHandler.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\cgiHandler.obj -Fd$(BUILD)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" src\modules\cgiHandler.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\cgiHandler.obj -Fd$(BUILD)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\modules\cgiHandler.c $(LOG)
 
 #
 #   espHandler.obj
@@ -776,7 +808,7 @@ DEPS_33 = $(DEPS_33) build\$(CONFIG)\inc\esp.h
 build\$(CONFIG)\obj\espHandler.obj: \
     src\modules\espHandler.c $(DEPS_33)
 	@echo .. [Compile] build\$(CONFIG)\obj\espHandler.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\espHandler.obj -Fd$(BUILD)\obj\espHandler.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" src\modules\espHandler.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\espHandler.obj -Fd$(BUILD)\obj\espHandler.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\modules\espHandler.c $(LOG)
 
 #
 #   libappweb
@@ -809,6 +841,10 @@ LIBS_34 = $(LIBS_34) libhttp.lib
 LIBS_34 = $(LIBS_34) libpcre.lib
 !ENDIF
 LIBS_34 = $(LIBS_34) libmpr.lib
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_34 = $(LIBS_34) libnanossl.lib
+LIBPATHS_34 = $(LIBPATHS_34) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
 LIBS_34 = $(LIBS_34) libmatrixssl.lib
 LIBPATHS_34 = $(LIBPATHS_34) -libpath:$(ME_COM_MATRIXSSL_PATH)
@@ -855,10 +891,14 @@ LIBPATHS_34 = $(LIBPATHS_34) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
 LIBPATHS_34 = $(LIBPATHS_34) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
 LIBPATHS_34 = $(LIBPATHS_34) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_34 = $(LIBS_34) libssls.lib
+LIBPATHS_34 = $(LIBPATHS_34) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 
 build\$(CONFIG)\bin\libappweb.dll: $(DEPS_34)
 	@echo ..... [Link] build\$(CONFIG)\bin\libappweb.dll
-	"$(LD)" -dll -out:$(BUILD)\bin\libappweb.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS)      "$(BUILD)\obj\config.obj" "$(BUILD)\obj\convenience.obj" "$(BUILD)\obj\romFiles.obj" "$(BUILD)\obj\cgiHandler.obj" "$(BUILD)\obj\espHandler.obj" $(LIBPATHS_34) $(LIBS_34) $(LIBS_34) $(LIBS)  $(LOG)
+	"$(LD)" -dll -out:$(BUILD)\bin\libappweb.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS)       "$(BUILD)\obj\config.obj" "$(BUILD)\obj\convenience.obj" "$(BUILD)\obj\romFiles.obj" "$(BUILD)\obj\cgiHandler.obj" "$(BUILD)\obj\espHandler.obj" $(LIBPATHS_34) $(LIBS_34) $(LIBS_34) $(LIBS) libssls  $(LOG)
 
 #
 #   appweb.obj
@@ -868,7 +908,7 @@ DEPS_35 = $(DEPS_35) build\$(CONFIG)\inc\appweb.h
 build\$(CONFIG)\obj\appweb.obj: \
     src\server\appweb.c $(DEPS_35)
 	@echo .. [Compile] build\$(CONFIG)\obj\appweb.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\appweb.obj -Fd$(BUILD)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" src\server\appweb.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\appweb.obj -Fd$(BUILD)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\server\appweb.c $(LOG)
 
 #
 #   appweb
@@ -890,6 +930,10 @@ LIBS_36 = $(LIBS_36) libhttp.lib
 LIBS_36 = $(LIBS_36) libpcre.lib
 !ENDIF
 LIBS_36 = $(LIBS_36) libmpr.lib
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_36 = $(LIBS_36) libnanossl.lib
+LIBPATHS_36 = $(LIBPATHS_36) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
 LIBS_36 = $(LIBS_36) libmatrixssl.lib
 LIBPATHS_36 = $(LIBPATHS_36) -libpath:$(ME_COM_MATRIXSSL_PATH)
@@ -936,10 +980,14 @@ LIBPATHS_36 = $(LIBPATHS_36) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
 LIBPATHS_36 = $(LIBPATHS_36) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
 LIBPATHS_36 = $(LIBPATHS_36) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_36 = $(LIBS_36) libssls.lib
+LIBPATHS_36 = $(LIBPATHS_36) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 
 build\$(CONFIG)\bin\appweb.exe: $(DEPS_36)
 	@echo ..... [Link] build\$(CONFIG)\bin\appweb.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)      "$(BUILD)\obj\appweb.obj" $(LIBPATHS_36) $(LIBS_36) $(LIBS_36) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\appweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)       "$(BUILD)\obj\appweb.obj" $(LIBPATHS_36) $(LIBS_36) $(LIBS_36) $(LIBS) libssls  $(LOG)
 
 #
 #   appwebMonitor.h
@@ -978,7 +1026,7 @@ DEPS_40 = $(DEPS_40) build\$(CONFIG)\inc\mpr.h
 build\$(CONFIG)\obj\appwebMonitor.obj: \
     src\server\windows\appwebMonitor.c $(DEPS_40)
 	@echo .. [Compile] build\$(CONFIG)\obj\appwebMonitor.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\appwebMonitor.obj -Fd$(BUILD)\obj\appwebMonitor.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" src\server\windows\appwebMonitor.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\appwebMonitor.obj -Fd$(BUILD)\obj\appwebMonitor.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\server\windows\appwebMonitor.c $(LOG)
 
 #
 #   appwebMonitor
@@ -1003,6 +1051,10 @@ LIBS_41 = $(LIBS_41) libhttp.lib
 LIBS_41 = $(LIBS_41) libpcre.lib
 !ENDIF
 LIBS_41 = $(LIBS_41) libmpr.lib
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_41 = $(LIBS_41) libnanossl.lib
+LIBPATHS_41 = $(LIBPATHS_41) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
 LIBS_41 = $(LIBS_41) libmatrixssl.lib
 LIBPATHS_41 = $(LIBPATHS_41) -libpath:$(ME_COM_MATRIXSSL_PATH)
@@ -1049,10 +1101,14 @@ LIBPATHS_41 = $(LIBPATHS_41) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
 LIBPATHS_41 = $(LIBPATHS_41) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
 LIBPATHS_41 = $(LIBPATHS_41) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_41 = $(LIBS_41) libssls.lib
+LIBPATHS_41 = $(LIBPATHS_41) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 
 build\$(CONFIG)\bin\appwebMonitor.exe: $(DEPS_41)
 	@echo ..... [Link] build\$(CONFIG)\bin\appwebMonitor.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\appwebMonitor.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS)      "$(BUILD)\obj\appwebMonitor.res" "$(BUILD)\obj\appwebMonitor.obj" shell32.lib ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib  $(LIBPATHS_41) $(LIBS_41) $(LIBS_41) $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\appwebMonitor.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS)       "$(BUILD)\obj\appwebMonitor.res" "$(BUILD)\obj\appwebMonitor.obj" shell32.lib ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib libssls  $(LIBPATHS_41) $(LIBS_41) $(LIBS_41) $(LOG)
 
 #
 #   appwebMonitor.ico
@@ -1072,7 +1128,7 @@ DEPS_43 = $(DEPS_43) build\$(CONFIG)\inc\appweb.h
 build\$(CONFIG)\obj\authpass.obj: \
     src\utils\authpass.c $(DEPS_43)
 	@echo .. [Compile] build\$(CONFIG)\obj\authpass.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\authpass.obj -Fd$(BUILD)\obj\authpass.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" src\utils\authpass.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\authpass.obj -Fd$(BUILD)\obj\authpass.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\utils\authpass.c $(LOG)
 
 #
 #   authpass
@@ -1094,6 +1150,10 @@ LIBS_44 = $(LIBS_44) libhttp.lib
 LIBS_44 = $(LIBS_44) libpcre.lib
 !ENDIF
 LIBS_44 = $(LIBS_44) libmpr.lib
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_44 = $(LIBS_44) libnanossl.lib
+LIBPATHS_44 = $(LIBPATHS_44) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
 LIBS_44 = $(LIBS_44) libmatrixssl.lib
 LIBPATHS_44 = $(LIBPATHS_44) -libpath:$(ME_COM_MATRIXSSL_PATH)
@@ -1140,10 +1200,14 @@ LIBPATHS_44 = $(LIBPATHS_44) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
 LIBPATHS_44 = $(LIBPATHS_44) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
 LIBPATHS_44 = $(LIBPATHS_44) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_44 = $(LIBS_44) libssls.lib
+LIBPATHS_44 = $(LIBPATHS_44) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 
 build\$(CONFIG)\bin\authpass.exe: $(DEPS_44)
 	@echo ..... [Link] build\$(CONFIG)\bin\authpass.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\authpass.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)      "$(BUILD)\obj\authpass.obj" $(LIBPATHS_44) $(LIBS_44) $(LIBS_44) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\authpass.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)       "$(BUILD)\obj\authpass.obj" $(LIBPATHS_44) $(LIBS_44) $(LIBS_44) $(LIBS) libssls  $(LOG)
 
 !IF "$(ME_COM_ESP)" == "1"
 #
@@ -1165,7 +1229,7 @@ DEPS_46 = $(DEPS_46) src\esp\esp.h
 build\$(CONFIG)\obj\esp.obj: \
     src\esp\esp.c $(DEPS_46)
 	@echo .. [Compile] build\$(CONFIG)\obj\esp.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\esp.obj -Fd$(BUILD)\obj\esp.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" src\esp\esp.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\esp.obj -Fd$(BUILD)\obj\esp.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\esp\esp.c $(LOG)
 
 !IF "$(ME_COM_ESP)" == "1"
 #
@@ -1185,6 +1249,10 @@ LIBS_47 = $(LIBS_47) libhttp.lib
 LIBS_47 = $(LIBS_47) libpcre.lib
 !ENDIF
 LIBS_47 = $(LIBS_47) libmpr.lib
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_47 = $(LIBS_47) libnanossl.lib
+LIBPATHS_47 = $(LIBPATHS_47) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
 LIBS_47 = $(LIBS_47) libmatrixssl.lib
 LIBPATHS_47 = $(LIBPATHS_47) -libpath:$(ME_COM_MATRIXSSL_PATH)
@@ -1231,10 +1299,14 @@ LIBPATHS_47 = $(LIBPATHS_47) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
 LIBPATHS_47 = $(LIBPATHS_47) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
 LIBPATHS_47 = $(LIBPATHS_47) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_47 = $(LIBS_47) libssls.lib
+LIBPATHS_47 = $(LIBPATHS_47) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 
 build\$(CONFIG)\bin\esp.exe: $(DEPS_47)
 	@echo ..... [Link] build\$(CONFIG)\bin\esp.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)      "$(BUILD)\obj\esp.obj" $(LIBPATHS_47) $(LIBS_47) $(LIBS_47) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)       "$(BUILD)\obj\esp.obj" $(LIBPATHS_47) $(LIBS_47) $(LIBS_47) $(LIBS) libssls  $(LOG)
 !ENDIF
 
 #
@@ -1245,7 +1317,7 @@ DEPS_48 = $(DEPS_48) src\http\http.h
 build\$(CONFIG)\obj\http.obj: \
     src\http\http.c $(DEPS_48)
 	@echo .. [Compile] build\$(CONFIG)\obj\http.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\http.obj -Fd$(BUILD)\obj\http.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" src\http\http.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\http.obj -Fd$(BUILD)\obj\http.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\http\http.c $(LOG)
 
 !IF "$(ME_COM_HTTP)" == "1"
 #
@@ -1259,6 +1331,10 @@ LIBS_49 = $(LIBS_49) libhttp.lib
 LIBS_49 = $(LIBS_49) libpcre.lib
 !ENDIF
 LIBS_49 = $(LIBS_49) libmpr.lib
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_49 = $(LIBS_49) libnanossl.lib
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
 LIBS_49 = $(LIBS_49) libmatrixssl.lib
 LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)
@@ -1305,18 +1381,52 @@ LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
 LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
 LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_49 = $(LIBS_49) libssls.lib
+LIBPATHS_49 = $(LIBPATHS_49) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 
 build\$(CONFIG)\bin\http.exe: $(DEPS_49)
 	@echo ..... [Link] build\$(CONFIG)\bin\http.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)      "$(BUILD)\obj\http.obj" $(LIBPATHS_49) $(LIBS_49) $(LIBS_49) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)       "$(BUILD)\obj\http.obj" $(LIBPATHS_49) $(LIBS_49) $(LIBS_49) $(LIBS) libssls  $(LOG)
+!ENDIF
+
+!IF "$(ME_COM_SSL)" == "1"
+#
+#   install-certs
+#
+DEPS_50 = $(DEPS_50) src\certs\samples\ca.crt
+DEPS_50 = $(DEPS_50) src\certs\samples\ca.key
+DEPS_50 = $(DEPS_50) src\certs\samples\dh.pem
+DEPS_50 = $(DEPS_50) src\certs\samples\ec.crt
+DEPS_50 = $(DEPS_50) src\certs\samples\ec.key
+DEPS_50 = $(DEPS_50) src\certs\samples\roots.crt
+DEPS_50 = $(DEPS_50) src\certs\samples\self.crt
+DEPS_50 = $(DEPS_50) src\certs\samples\self.key
+DEPS_50 = $(DEPS_50) src\certs\samples\test.crt
+DEPS_50 = $(DEPS_50) src\certs\samples\test.key
+
+build\$(CONFIG)\bin: $(DEPS_50)
+	@echo ..... [Copy] build\$(CONFIG)\bin
+	if not exist "build\$(CONFIG)\bin" md "build\$(CONFIG)\bin"
+	copy /Y /B src\certs\samples\ca.crt+modified build\$(CONFIG)\bin\ca.crt $(LOG)
+	copy /Y /B src\certs\samples\ca.key+modified build\$(CONFIG)\bin\ca.key $(LOG)
+	copy /Y /B src\certs\samples\dh.pem+modified build\$(CONFIG)\bin\dh.pem $(LOG)
+	copy /Y /B src\certs\samples\ec.crt+modified build\$(CONFIG)\bin\ec.crt $(LOG)
+	copy /Y /B src\certs\samples\ec.key+modified build\$(CONFIG)\bin\ec.key $(LOG)
+	copy /Y /B src\certs\samples\roots.crt+modified build\$(CONFIG)\bin\roots.crt $(LOG)
+	copy /Y /B src\certs\samples\self.crt+modified build\$(CONFIG)\bin\self.crt $(LOG)
+	copy /Y /B src\certs\samples\self.key+modified build\$(CONFIG)\bin\self.key $(LOG)
+	copy /Y /B src\certs\samples\test.crt+modified build\$(CONFIG)\bin\test.crt $(LOG)
+	copy /Y /B src\certs\samples\test.key+modified build\$(CONFIG)\bin\test.key $(LOG)
 !ENDIF
 
 #
 #   sqlite3.h
 #
-DEPS_50 = $(DEPS_50) src\sqlite\sqlite3.h
+DEPS_51 = $(DEPS_51) src\sqlite\sqlite3.h
 
-build\$(CONFIG)\inc\sqlite3.h: $(DEPS_50)
+build\$(CONFIG)\inc\sqlite3.h: $(DEPS_51)
 	@echo ..... [Copy] build\$(CONFIG)\inc\sqlite3.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
 	copy /Y /B src\sqlite\sqlite3.h+modified build\$(CONFIG)\inc\sqlite3.h $(LOG)
@@ -1325,16 +1435,16 @@ build\$(CONFIG)\inc\sqlite3.h: $(DEPS_50)
 #   sqlite3.h
 #
 
-src\sqlite\sqlite3.h: $(DEPS_51)
+src\sqlite\sqlite3.h: $(DEPS_52)
 
 #
 #   sqlite3.obj
 #
-DEPS_52 = $(DEPS_52) build\$(CONFIG)\inc\me.h
-DEPS_52 = $(DEPS_52) src\sqlite\sqlite3.h
+DEPS_53 = $(DEPS_53) build\$(CONFIG)\inc\me.h
+DEPS_53 = $(DEPS_53) src\sqlite\sqlite3.h
 
 build\$(CONFIG)\obj\sqlite3.obj: \
-    src\sqlite\sqlite3.c $(DEPS_52)
+    src\sqlite\sqlite3.c $(DEPS_53)
 	@echo .. [Compile] build\$(CONFIG)\obj\sqlite3.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\sqlite3.obj -Fd$(BUILD)\obj\sqlite3.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\sqlite\sqlite3.c $(LOG)
 
@@ -1342,10 +1452,10 @@ build\$(CONFIG)\obj\sqlite3.obj: \
 #
 #   libsql
 #
-DEPS_53 = $(DEPS_53) build\$(CONFIG)\inc\sqlite3.h
-DEPS_53 = $(DEPS_53) build\$(CONFIG)\obj\sqlite3.obj
+DEPS_54 = $(DEPS_54) build\$(CONFIG)\inc\sqlite3.h
+DEPS_54 = $(DEPS_54) build\$(CONFIG)\obj\sqlite3.obj
 
-build\$(CONFIG)\bin\libsql.dll: $(DEPS_53)
+build\$(CONFIG)\bin\libsql.dll: $(DEPS_54)
 	@echo ..... [Link] build\$(CONFIG)\bin\libsql.dll
 	"$(LD)" -dll -out:$(BUILD)\bin\libsql.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\sqlite3.obj" $(LIBS)  $(LOG)
 !ENDIF
@@ -1354,7 +1464,7 @@ build\$(CONFIG)\bin\libsql.dll: $(DEPS_53)
 #   server-cache
 #
 
-src\server\cache: $(DEPS_54)
+src\server\cache: $(DEPS_55)
 	cd src\server
 	if not exist "cache" md "cache"
 	cd ..\..
@@ -1362,79 +1472,87 @@ src\server\cache: $(DEPS_54)
 #
 #   sqlite.obj
 #
-DEPS_55 = $(DEPS_55) build\$(CONFIG)\inc\me.h
-DEPS_55 = $(DEPS_55) src\sqlite\sqlite3.h
+DEPS_56 = $(DEPS_56) build\$(CONFIG)\inc\me.h
+DEPS_56 = $(DEPS_56) src\sqlite\sqlite3.h
 
 build\$(CONFIG)\obj\sqlite.obj: \
-    src\sqlite\sqlite.c $(DEPS_55)
+    src\sqlite\sqlite.c $(DEPS_56)
 	@echo .. [Compile] build\$(CONFIG)\obj\sqlite.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\sqlite.obj -Fd$(BUILD)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\sqlite\sqlite.c $(LOG)
 
 #
 #   watchdog.obj
 #
-DEPS_56 = $(DEPS_56) build\$(CONFIG)\inc\mpr.h
+DEPS_57 = $(DEPS_57) build\$(CONFIG)\inc\mpr.h
 
 build\$(CONFIG)\obj\watchdog.obj: \
-    src\watchdog\watchdog.c $(DEPS_56)
+    src\watchdog\watchdog.c $(DEPS_57)
 	@echo .. [Compile] build\$(CONFIG)\obj\watchdog.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\watchdog.obj -Fd$(BUILD)\obj\watchdog.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" src\watchdog\watchdog.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\watchdog.obj -Fd$(BUILD)\obj\watchdog.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" "-I$(ME_COM_MATRIXSSL_PATH)" "-I$(ME_COM_MATRIXSSL_PATH)\matrixssl" "-I$(ME_COM_NANOSSL_PATH)\src" src\watchdog\watchdog.c $(LOG)
 
 #
 #   watchdog
 #
-DEPS_57 = $(DEPS_57) build\$(CONFIG)\bin\libmpr.dll
-DEPS_57 = $(DEPS_57) build\$(CONFIG)\obj\watchdog.obj
+DEPS_58 = $(DEPS_58) build\$(CONFIG)\bin\libmpr.dll
+DEPS_58 = $(DEPS_58) build\$(CONFIG)\obj\watchdog.obj
 
-LIBS_57 = $(LIBS_57) libmpr.lib
+LIBS_58 = $(LIBS_58) libmpr.lib
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_58 = $(LIBS_58) libnanossl.lib
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_NANOSSL_PATH)/bin
+!ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
-LIBS_57 = $(LIBS_57) libmatrixssl.lib
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
+LIBS_58 = $(LIBS_58) libmatrixssl.lib
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_MATRIXSSL_PATH)
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
 !IF "$(ME_COM_EST)" == "1"
-LIBS_57 = $(LIBS_57) libestssl.lib
+LIBS_58 = $(LIBS_58) libestssl.lib
 !ENDIF
 !IF "$(ME_COM_EST)" == "1"
-LIBS_57 = $(LIBS_57) libest.lib
+LIBS_58 = $(LIBS_58) libest.lib
 !ENDIF
 !IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_57 = $(LIBS_57) libopenssl.lib
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_OPENSSL_PATH)
+LIBS_58 = $(LIBS_58) libopenssl.lib
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 !IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_57 = $(LIBS_57) libeay32.lib
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_OPENSSL_PATH)
+LIBS_58 = $(LIBS_58) libeay32.lib
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 !IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_57 = $(LIBS_57) libssleay32.lib
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_OPENSSL_PATH)
+LIBS_58 = $(LIBS_58) libssleay32.lib
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
-LIBS_57 = $(LIBS_57) libcore_s.lib
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
+LIBS_58 = $(LIBS_58) libcore_s.lib
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_MATRIXSSL_PATH)
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
-LIBS_57 = $(LIBS_57) libcrypt.lib
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
+LIBS_58 = $(LIBS_58) libcrypt.lib
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_MATRIXSSL_PATH)
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
 !ENDIF
 !IF "$(ME_COM_MATRIXSSL)" == "1"
-LIBS_57 = $(LIBS_57) libssl_s.lib
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
-LIBPATHS_57 = $(LIBPATHS_57) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
+LIBS_58 = $(LIBS_58) libssl_s.lib
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_MATRIXSSL_PATH)
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_MATRIXSSL_PATH)/matrixssl
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_MATRIXSSL_PATH)/core
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_MATRIXSSL_PATH)/crypto
+!ENDIF
+!IF "$(ME_COM_NANOSSL)" == "1"
+LIBS_58 = $(LIBS_58) libssls.lib
+LIBPATHS_58 = $(LIBPATHS_58) -libpath:$(ME_COM_NANOSSL_PATH)/bin
 !ENDIF
 
-build\$(CONFIG)\bin\appman.exe: $(DEPS_57)
+build\$(CONFIG)\bin\appman.exe: $(DEPS_58)
 	@echo ..... [Link] build\$(CONFIG)\bin\appman.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS)      "$(BUILD)\obj\watchdog.obj" $(LIBPATHS_57) $(LIBS_57) $(LIBS_57) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS)       "$(BUILD)\obj\watchdog.obj" $(LIBPATHS_58) $(LIBS_58) $(LIBS_58) $(LIBS) libssls  $(LOG)
 

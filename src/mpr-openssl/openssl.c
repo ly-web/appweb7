@@ -1188,7 +1188,6 @@ static cchar *mapCipherNames(cchar *ciphers)
         for (cp = cipherMap; cp->name; cp++) {
             if (smatch(cp->name, cipher)) {
                 mprPutToBuf(buf, "%s ", cp->ossName);
-print("MAP %s %x => %s", cp->name, cp->code, cp->ossName);
                 break;
             }
         }
@@ -1196,8 +1195,6 @@ print("MAP %s %x => %s", cp->name, cp->code, cp->ossName);
             mprPutToBuf(buf, "%s ", cipher);
         }
     }
-print("MAPPED %s", ciphers);
-print("TO     %s", mprBufToString(buf));
     return mprBufToString(buf);
 }
 
