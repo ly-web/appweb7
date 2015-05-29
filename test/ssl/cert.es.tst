@@ -10,7 +10,7 @@ if (!Config.SSL) {
     let bin = Path(App.getenv('TM_BIN'))
 
     for each (let provider in Http.providers) {
-        if (provider == 'matrixssl') {
+        if (provider == 'matrixssl' || provider == 'nanossl') {
             //  MatrixSSL doesn't support certificate state yet
             continue
         }
@@ -53,6 +53,7 @@ if (!Config.SSL) {
         http.verifyIssuer = false
         http.get(endpoint + '/index.html')
         ttrue(http.status == 200) 
+dump(http.info)
         ttrue(http.info.SERVER_S_CN == 'localhost')
         ttrue(http.info.SERVER_I_OU == http.info.SERVER_S_OU)
         ttrue(http.info.SERVER_I_EMAIL == 'dev@example.com')
