@@ -23685,7 +23685,6 @@ static void manageSsl(MprSsl *ssl, int flags)
         mprMark(ssl->caPath);
         mprMark(ssl->ciphers);
         mprMark(ssl->config);
-        mprMark(ssl->dhFile);
         mprMark(ssl->mutex);
         mprMark(ssl->revokeList);
     }
@@ -23842,14 +23841,6 @@ PUBLIC void mprSetSslCiphers(MprSsl *ssl, cchar *ciphers)
 {
     assert(ssl);
     ssl->ciphers = sclone(ciphers);
-    ssl->changed = 1;
-}
-
-
-PUBLIC void mprSetSslDhFile(MprSsl *ssl, cchar *dhFile)
-{
-    assert(ssl);
-    ssl->dhFile = (dhFile && *dhFile) ? sclone(dhFile) : 0;
     ssl->changed = 1;
 }
 

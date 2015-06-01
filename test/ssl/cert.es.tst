@@ -53,7 +53,6 @@ if (!Config.SSL) {
         http.verifyIssuer = false
         http.get(endpoint + '/index.html')
         ttrue(http.status == 200) 
-dump(http.info)
         ttrue(http.info.SERVER_S_CN == 'localhost')
         ttrue(http.info.SERVER_I_OU == http.info.SERVER_S_OU)
         ttrue(http.info.SERVER_I_EMAIL == 'dev@example.com')

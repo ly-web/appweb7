@@ -2501,24 +2501,6 @@ static int sslCertificateFileDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-static int sslCertificateDhFileDirective(MaState *state, cchar *key, cchar *value)
-{
-    char *path;
-    
-    if (!maTokenize(state, value, "%P", &path)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-    checkSsl(state);
-    path = mprJoinPath(state->configDir, httpExpandRouteVars(state->route, path));
-    if (!mprPathExists(path, R_OK)) {
-        mprLog("error ssl", 0, "Cannot locate %s", path);
-        return MPR_ERR_CANT_FIND;
-    }
-    mprSetSslDhFile(state->route->ssl, path);
-    return 0;
-}
-
-
 static int sslCertificateKeyFileDirective(MaState *state, cchar *key, cchar *value)
 {
     char *path;
@@ -3504,7 +3486,6 @@ static int parseInit()
     maAddDirective("SSLCACertificatePath", sslCaCertificatePathDirective);
     maAddDirective("SSLCertificateFile", sslCertificateFileDirective);
     maAddDirective("SSLCertificateKeyFile", sslCertificateKeyFileDirective);
-    maAddDirective("SSLCertificateDhFile", sslCertificateDhFileDirective);
     maAddDirective("SSLCipherSuite", sslCipherSuiteDirective);
     maAddDirective("SSLProtocol", sslProtocolDirective);
     maAddDirective("SSLProvider", sslProviderDirective);
