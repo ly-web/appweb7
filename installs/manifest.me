@@ -87,8 +87,7 @@ Me.load({
                                 '${TOP}/src/est/est.h',
                                 '${TOP}/src/http/http.h',
                                 '${TOP}/src/mpr/mpr.h',
-                                '${TOP}/src/pcre/pcre.h',
-                                '${TOP}/src/sqlite/sqlite3.h',
+                                '${TOP}/src/pcre/pcre.h'
                     ],
                     to:         '${vapp}/inc/',
                     symlink:    '${inc}/appweb/',
@@ -159,12 +158,6 @@ Me.load({
                     from:       'libest${SHOBJ}',
                     to:         '${abin}/',
                     ifdef:      'est',
-                    enable:     "!me.settings.static",
-
-                }, { 
-                    from:       'libsql${SHOBJ}',
-                    to:         '${abin}/',
-                    ifdef:      'sqlite'
                     enable:     "!me.settings.static",
 
                 }, { 
