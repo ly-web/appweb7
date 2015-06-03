@@ -936,8 +936,7 @@ static char *getOssState(MprSocket *sp)
     osp = sp->sslSocket;
     buf = mprCreateBuf(0, 0);
 
-    mprPutToBuf(buf, "PROVIDER=openssl,CIPHER=%s,SESSION=%s,RESUMED=%d,",
-        SSL_get_cipher(osp->handle), sp->session, (int) SSL_session_reused(osp->handle));
+    mprPutToBuf(buf, "PROVIDER=openssl,CIPHER=%s,SESSION=%s,", SSL_get_cipher(osp->handle), sp->session);
 
     if ((cert = SSL_get_peer_certificate(osp->handle)) == 0) {
         mprPutToBuf(buf, "%s=\"none\",", sp->acceptIp ? "CLIENT_CERT" : "SERVER_CERT");
@@ -1129,7 +1128,6 @@ static void setSecured(MprSocket *sp)
     osp = sp->sslSocket;
     sp->cipher = sclone(SSL_get_cipher(osp->handle));
     sp->session = getOssSession(sp);
-    sp->flags |= (SSL_session_reused(osp->handle) ? MPR_SOCKET_RESUMED : 0);
 }
 
 
@@ -1196,7 +1194,7 @@ static char *getOssError(MprSocket *sp)
 
 
 /*
-    Map iana names to OpenSSL names
+    Map iana names to OpenSSL names so users can provide IANA names as well as OpenSSL cipher names
  */
 static cchar *mapCipherNames(cchar *ciphers)
 {

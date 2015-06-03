@@ -6142,12 +6142,12 @@ PUBLIC void httpIO(HttpConn *conn, int eventMask)
         conn->secure = 1;
         if (sp->peerCert) {
             httpTrace(conn, "connection.ssl", "context", "msg:'Connection secured with peer certificate'," \
-                "secure:true,cipher:'%s',peerName:'%s',subject:'%s',issuer:'%s',session:'%s',resumed:%d",
-                sp->cipher, sp->peerName, sp->peerCert, sp->peerCertIssuer, sp->session, mprGetSocketResumed(sp));
+                "secure:true,cipher:'%s',peerName:'%s',subject:'%s',issuer:'%s',session:'%s'",
+                sp->cipher, sp->peerName, sp->peerCert, sp->peerCertIssuer, sp->session);
         } else {
             httpTrace(conn, "connection.ssl", "context",
-                "msg:'Connection secured without peer certificate',secure:true,cipher:'%s',session:'%s',resumed:%d",
-                sp->cipher, sp->session, mprGetSocketResumed(sp));
+                "msg:'Connection secured without peer certificate',secure:true,cipher:'%s',session:'%s'",
+                sp->cipher, sp->session);
         }
         if (mprGetLogLevel() >= 5) {
             mprLog("info http ssl", 5, "SSL State: %s", mprGetSocketState(sp));
@@ -6865,7 +6865,7 @@ PUBLIC int httpDigestParse(HttpConn *conn, cchar **username, cchar **password)
         realm = secret = 0;
         when = 0;
         parseDigestNonce(dp->nonce, &secret, &realm, &when);
-        if (!smatch(secret, secret)) {
+        if (!smatch(conn->http->secret, secret)) {
             httpTrace(conn, "auth.digest.error", "error", "msg:'Access denied, Nonce mismatch'");
             return MPR_ERR_BAD_STATE;
 

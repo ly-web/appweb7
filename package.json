@@ -35,8 +35,7 @@
     "dependencies": {
         "http": "^6",
         "mpr": "^6.0",
-        "mpr-matrixssl": "^0.2",
-        "mpr-nanossl": "^0.1",
+        "mpr-mbedtls": "^0.1",
         "osdep": "^0.8",
         "pcre": "^1.0",
         "ssl": "^0.9",
@@ -47,8 +46,9 @@
         "esp": "^5",
         "est": "^0.6",
         "mpr-est": "^0.1",
-        "mpr-openssl": "^0.1",
-        "sqlite": "^1.0"
+        "mpr-matrixssl": "^0.2",
+        "mpr-nanossl": "^0.1",
+        "mpr-openssl": "^0.1"
     },
     "files": [
         "dist/",
