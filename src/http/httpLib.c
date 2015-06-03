@@ -3616,7 +3616,7 @@ PUBLIC int httpDigestParse(HttpConn *conn, cchar **username, cchar **password)
         realm = secret = 0;
         when = 0;
         parseDigestNonce(dp->nonce, &secret, &realm, &when);
-        if (!smatch(secret, secret)) {
+        if (!smatch(conn->http->secret, secret)) {
             mprTrace(2, "Access denied: Nonce mismatch\n");
             return MPR_ERR_BAD_STATE;
 
