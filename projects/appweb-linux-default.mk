@@ -1607,10 +1607,6 @@ installBinary: $(DEPS_59)
 	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
 	cp $(BUILD)/bin/libest.so $(ME_VAPP_PREFIX)/bin/libest.so ; \
 	fi ; \
-	if [ "$(ME_COM_SQLITE)" = 1 ]; then true ; \
-	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
-	cp $(BUILD)/bin/libsql.so $(ME_VAPP_PREFIX)/bin/libsql.so ; \
-	fi ; \
 	mkdir -p "$(ME_WEB_PREFIX)" ; \
 	mkdir -p "$(ME_WEB_PREFIX)/bench" ; \
 	cp src/server/web/bench/1b.html $(ME_WEB_PREFIX)/bench/1b.html ; \
@@ -1706,10 +1702,6 @@ installBinary: $(DEPS_59)
 	mkdir -p "$(ME_INC_PREFIX)/appweb" ; \
 	rm -f "$(ME_INC_PREFIX)/appweb/pcre.h" ; \
 	ln -s "$(ME_VAPP_PREFIX)/inc/pcre.h" "$(ME_INC_PREFIX)/appweb/pcre.h" ; \
-	cp src/sqlite/sqlite3.h $(ME_VAPP_PREFIX)/inc/sqlite3.h ; \
-	mkdir -p "$(ME_INC_PREFIX)/appweb" ; \
-	rm -f "$(ME_INC_PREFIX)/appweb/sqlite3.h" ; \
-	ln -s "$(ME_VAPP_PREFIX)/inc/sqlite3.h" "$(ME_INC_PREFIX)/appweb/sqlite3.h" ; \
 	if [ "$(ME_COM_ESP)" = 1 ]; then true ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/inc" ; \
 	cp src/esp/esp.h $(ME_VAPP_PREFIX)/inc/esp.h ; \

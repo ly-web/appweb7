@@ -1360,10 +1360,6 @@ installBinary: $(DEPS_58)
 	mkdir -p "$(ME_INC_PREFIX)/appweb" ; \
 	rm -f "$(ME_INC_PREFIX)/appweb/pcre.h" ; \
 	ln -s "$(ME_VAPP_PREFIX)/inc/pcre.h" "$(ME_INC_PREFIX)/appweb/pcre.h" ; \
-	cp src/sqlite/sqlite3.h $(ME_VAPP_PREFIX)/inc/sqlite3.h ; \
-	mkdir -p "$(ME_INC_PREFIX)/appweb" ; \
-	rm -f "$(ME_INC_PREFIX)/appweb/sqlite3.h" ; \
-	ln -s "$(ME_VAPP_PREFIX)/inc/sqlite3.h" "$(ME_INC_PREFIX)/appweb/sqlite3.h" ; \
 	if [ "$(ME_COM_ESP)" = 1 ]; then true ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/inc" ; \
 	cp src/esp/esp.h $(ME_VAPP_PREFIX)/inc/esp.h ; \
