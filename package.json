@@ -44,8 +44,6 @@
     "optionalDependencies": {
         "certs": "^0.1",
         "esp": "^5",
-        "est": "^0.6",
-        "mpr-est": "^0.1",
         "mpr-matrixssl": "^0.2",
         "mpr-nanossl": "^0.1",
         "mpr-openssl": "^0.1"
