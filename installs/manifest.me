@@ -53,24 +53,6 @@ Me.load({
                     to:         '${abin}/',
                     ifdef:      'ssl',
 
-                }, { 
-                    from: [
-                                'libssl*${SHOBJ}*',
-                                'libcrypto*${SHOBJ}*',
-                    ],
-                    to:         '${abin}/',
-                    enable:     "me.platform.os != 'windows' && !makeme.options.gen",
-                    ifdef:      'openssl',
-
-                }, {
-                    from: [
-                                'libeay32${SHOBJ}',
-                                'ssleay32${SHOBJ}',
-                    ],
-                    to:         '${abin}/',
-                    enable:     "me.platform.os == 'windows'",
-                    ifdef:      'openssl',
-
                 }, {
                     from:       '${TOP}/src/server/mime.types',
                     to:         '${etc}/',
@@ -102,7 +84,6 @@ Me.load({
                                 '${TOP}/src/osdep/osdep.h',
                                 '${TOP}/src/appweb.h',
                                 '${TOP}/src/customize.h',
-                                '${TOP}/src/est/est.h',
                                 '${TOP}/src/http/http.h',
                                 '${TOP}/src/mpr/mpr.h',
                                 '${TOP}/src/pcre/pcre.h'
