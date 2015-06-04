@@ -100,7 +100,7 @@ ifeq ($(ME_COM_HTTP),1)
     TARGETS           += $(BUILD)/bin/http
 endif
 ifeq ($(ME_COM_SSL),1)
-    TARGETS           += $(BUILD)/bin
+    TARGETS           += $(BUILD)/.install-certs-modified
 endif
 TARGETS               += src/server/cache
 TARGETS               += $(BUILD)/bin/appman
@@ -156,7 +156,7 @@ clean:
 	rm -f "$(BUILD)/bin/esp-compile.json"
 	rm -f "$(BUILD)/bin/esp"
 	rm -f "$(BUILD)/bin/http"
-	rm -f "$(BUILD)/bin"
+	rm -f "$(BUILD)/.install-certs-modified"
 	rm -f "$(BUILD)/bin/libappweb.dylib"
 	rm -f "$(BUILD)/bin/libesp.dylib"
 	rm -f "$(BUILD)/bin/libhttp.dylib"
@@ -881,7 +881,7 @@ DEPS_42 += src/certs/samples/self.key
 DEPS_42 += src/certs/samples/test.crt
 DEPS_42 += src/certs/samples/test.key
 
-$(BUILD)/bin: $(DEPS_42)
+$(BUILD)/.install-certs-modified: $(DEPS_42)
 	@echo '      [Copy] $(BUILD)/bin'
 	mkdir -p "$(BUILD)/bin"
 	cp src/certs/samples/ca.crt $(BUILD)/bin/ca.crt
@@ -894,6 +894,7 @@ $(BUILD)/bin: $(DEPS_42)
 	cp src/certs/samples/self.key $(BUILD)/bin/self.key
 	cp src/certs/samples/test.crt $(BUILD)/bin/test.crt
 	cp src/certs/samples/test.key $(BUILD)/bin/test.key
+	touch "$(BUILD)/.install-certs-modified"
 endif
 
 #
