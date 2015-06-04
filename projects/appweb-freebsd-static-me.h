@@ -150,9 +150,6 @@
 #ifndef ME_MANIFEST
     #define ME_MANIFEST "installs/manifest.me"
 #endif
-#ifndef ME_MBEDTLS_LOGGING
-    #define ME_MBEDTLS_LOGGING 0
-#endif
 #ifndef ME_MPR_LOGGING
     #define ME_MPR_LOGGING 1
 #endif
