@@ -13,7 +13,7 @@
       </ItemDefinitionGroup>
 
       <PropertyGroup Label="Globals">
-        <ProjectGuid>{7e5ab9ea-9391-4892-b11f-be802be622b2}</ProjectGuid>
+        <ProjectGuid>{ad4e711f-44b6-49ec-8584-51f1e9b5d821}</ProjectGuid>
         <RootNamespace />
         <Keyword>Win32Proj</Keyword>
       </PropertyGroup>
@@ -38,20 +38,24 @@
   </ItemGroup>
     
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ConfigurationType>StaticLibrary</ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ConfigurationType>StaticLibrary</ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ConfigurationType>StaticLibrary</ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ConfigurationType>StaticLibrary</ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
 
       <Import Project="$(VCTargetsPath)Microsoft.Cpp.Default.props" />
@@ -100,7 +104,7 @@
   </PropertyGroup>
   
       <ItemGroup>
-    <ClCompile Include="..\..\src\paks\pcre\pcre.c" />
+    <ClCompile Include="..\..\src\pcre\pcre.c" />
   </ItemGroup>
 
       <ItemGroup>
@@ -114,10 +118,10 @@
       </Link>
 
       <CustomBuildStep>
-        <Command>cd ..\..\src\paks\pcre
+        <Command>cd ..\..\src\pcre
 copy /Y /B pcre.h $(IncDir)
-cd ..\..\..\projects\appweb-windows-static</Command>
-        <Outputs>$(BinDir)\libpcre.dll</Outputs>
+cd ..\..\projects\appweb-windows-static</Command>
+        <Outputs>$(BinDir)\libpcre.lib</Outputs>
       </CustomBuildStep>
   </ItemDefinitionGroup>
 

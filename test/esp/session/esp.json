@@ -1,0 +1,12 @@
+{
+    directories: {
+        controllers: '.'
+    },
+    http: {
+        routes: {
+            pattern: "/{action}$",
+            target: "session/$1",
+            source: "session.c"
+        }
+    }
+}

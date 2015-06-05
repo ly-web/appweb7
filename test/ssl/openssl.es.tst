@@ -7,15 +7,16 @@ if (!Config.SSL) {
 
 } else if (thas('ME_OPENSSL')) {
     let http: Http = new Http
+    let bin = Path(App.getenv('TM_BIN'))
 
     http.retries = 0
-    http.ca = '../crt/ca.crt'
+    http.ca = bin.join('ca.crt')
     ttrue(http.verify == true)
  
     //  Verify the server cert and send a client cert 
     endpoint = tget('TM_OPENSSL') || "https://127.0.0.1:7443"
-    http.key = '../crt/test.key'
-    http.certificate = '../crt/test.crt'
+    http.key = bin.join('test.key')
+    http.certificate = bin.join('test.crt')
     http.get(endpoint + '/index.html')
     ttrue(http.status == 200) 
     ttrue(http.info.CLIENT_S_CN == 'localhost')
@@ -25,5 +26,5 @@ if (!Config.SSL) {
     http.close()
 
 } else {
-    tskip("ssl not enabled")
+    tskip("openssl not enabled")
 }

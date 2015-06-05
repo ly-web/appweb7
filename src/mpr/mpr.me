@@ -1,0 +1,22 @@
+/*
+    mpr.me -- MakeMe for the MPR
+ */
+
+Me.load({
+    blend: [ '?ssl' ],
+
+    targets: {
+        mpr: {
+            configurable: true,
+            depends: [ 'libmpr' ],
+            uses:    [ 'ssl' ],
+        },
+
+        libmpr: {
+            type: 'lib',
+            depends: [ 'osdep', 'ssl' ],
+            sources: [ 'mprLib.c' ],
+            headers: [ '*.h' ],
+        },
+	},
+})

@@ -63,7 +63,6 @@ extern "C" {
     State flags
  */
 #define MA_PARSE_NON_SERVER     0x1     /**< Command file being parsed by a utility program */
-#define MA_NO_MODULES           0x2     /**< Configure server but do not load modules */
 
 /**
     Current configuration parse state
@@ -81,6 +80,7 @@ typedef struct MaState {
     char        *configDir;             /**< Directory containing config file */
     char        *filename;              /**< Config file name */
     char        *endpoints;             /**< Virtual host endpoints */
+    char        *data;                  /**< Config data (managed) */
     int         lineNumber;             /**< Current line number */
     int         enabled;                /**< True if the current block is enabled */
     int         flags;                  /**< Parsing flags */
@@ -122,12 +122,11 @@ PUBLIC void maAddDirective(cchar *directive, MaDirective proc);
     @param documents Default directory for web documents to serve. This overrides the value in the config file.
     @param ip IP address to listen on. This overrides the value specified in the config file.
     @param port Port address to listen on. This overrides the value specified in the config file.
-    @param flags Set to MA_NO_MODULES to suppress loading modules. Otherwise set to zero.
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
     @ingroup MaState
     @stability Evolving
  */
-PUBLIC int maConfigureServer(cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port, int flags);
+PUBLIC int maConfigureServer(cchar *configFile, cchar *home, cchar *documents, cchar *ip, int port);
 
 /**
     Get the argument in a directive
@@ -153,16 +152,23 @@ PUBLIC char *maGetNextArg(char *s, char **tok);
 PUBLIC int maLoadModule(cchar *name, cchar *libname);
 
 /**
+    Load default modules
+    @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
+    @ingroup MaState
+    @stability Prototype
+ */
+PUBLIC int maLoadModules();
+
+/**
     Parse an Appweb configuration file
     @description Parse the configuration file and configure the server. This creates a default host and route
         and then configures the server based on config file directives.
     @param path Configuration file pathname.
-    @param flags Parse control flags. Reserved. Set to zero.
     @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
     @ingroup MaState
     @stability Evolving
  */
-PUBLIC int maParseConfig(cchar *path, int flags);
+PUBLIC int maParseConfig(cchar *path);
 
 /**
     Parse a configuration file
@@ -277,17 +283,8 @@ PUBLIC int maWriteAuthFile(HttpAuth *auth, char *path);
 /*
     Internal
  */
-PUBLIC int maCgiHandlerInit(Http *http, MprModule *mp);
-PUBLIC int maDirHandlerInit(Http *http, MprModule *mp);
-PUBLIC int maEjsHandlerInit(Http *http, MprModule *mp);
-PUBLIC int maEspHandlerInit(Http *http, MprModule *mp);
-PUBLIC int maPhpHandlerInit(Http *http, MprModule *mp);
-PUBLIC int maSslModuleInit(Http *http, MprModule *mp);
-
-/*
-    This is exported from slink.c which is either manually created or generated locally
- */
-PUBLIC void appwebStaticInitialize();
+PUBLIC int httpCgiInit(Http *http, MprModule *mp);
+PUBLIC int httpEspInit(Http *http, MprModule *mp);
 
 #ifdef __cplusplus
 } /* extern C */
@@ -303,7 +300,7 @@ PUBLIC void appwebStaticInitialize();
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+    Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

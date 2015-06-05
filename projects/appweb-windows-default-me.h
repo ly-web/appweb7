@@ -9,11 +9,20 @@
 #ifndef ME_AUTHOR
     #define ME_AUTHOR "Embedthis Software"
 #endif
+#ifndef ME_CERTS_BITS
+    #define ME_CERTS_BITS 2048
+#endif
+#ifndef ME_CERTS_DAYS
+    #define ME_CERTS_DAYS 3650
+#endif
+#ifndef ME_CERTS_GENDH
+    #define ME_CERTS_GENDH 1
+#endif
 #ifndef ME_COMPANY
     #define ME_COMPANY "embedthis"
 #endif
 #ifndef ME_COMPATIBLE
-    #define ME_COMPATIBLE "5.3"
+    #define ME_COMPATIBLE "5.4"
 #endif
 #ifndef ME_COMPILER_HAS_ATOMIC
     #define ME_COMPILER_HAS_ATOMIC 0
@@ -84,11 +93,11 @@
 #ifndef ME_EJS_ZLIB
     #define ME_EJS_ZLIB 1
 #endif
-#ifndef ME_EJS_ONE_MODULE
-    #define ME_EJS_ONE_MODULE 1
-#endif
 #ifndef ME_ESP_LEGACY
     #define ME_ESP_LEGACY 0
+#endif
+#ifndef ME_ESP_MODULE
+    #define ME_ESP_MODULE 0
 #endif
 #ifndef ME_EST_CAMELLIA
     #define ME_EST_CAMELLIA 0
@@ -124,19 +133,10 @@
     #define ME_INTEGRATE 1
 #endif
 #ifndef ME_MANIFEST
-    #define ME_MANIFEST "package/manifest.me"
-#endif
-#ifndef ME_ME
-    #define ME_ME "=>0.8.4"
+    #define ME_MANIFEST "installs/manifest.me"
 #endif
 #ifndef ME_MPR_LOGGING
     #define ME_MPR_LOGGING 1
-#endif
-#ifndef ME_MPR_MANAGER
-    #define ME_MPR_MANAGER "appman"
-#endif
-#ifndef ME_MPR_SSL_RENEGOTIATE
-    #define ME_MPR_SSL_RENEGOTIATE 1
 #endif
 #ifndef ME_NAME
     #define ME_NAME "appweb"
@@ -145,13 +145,10 @@
     #define ME_PLATFORMS "local"
 #endif
 #ifndef ME_PREFIXES
-    #define ME_PREFIXES "package-prefixes"
+    #define ME_PREFIXES "install-prefixes"
 #endif
 #ifndef ME_SERVER_ROOT
     #define ME_SERVER_ROOT "."
-#endif
-#ifndef ME_STATIC
-    #define ME_STATIC 0
 #endif
 #ifndef ME_TITLE
     #define ME_TITLE "Embedthis Appweb"
@@ -160,7 +157,10 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "5.3.0"
+    #define ME_VERSION "5.4.1"
+#endif
+#ifndef ME_WATCHDOG_NAME
+    #define ME_WATCHDOG_NAME "appman"
 #endif
 #ifndef ME_WEB_GROUP
     #define ME_WEB_GROUP "Administrator"
@@ -244,7 +244,7 @@
 
 /* Profile */
 #ifndef ME_CONFIG_CMD
-    #define ME_CONFIG_CMD "me -d -q -platform windows-x86-default -configure . -with est -gen vs"
+    #define ME_CONFIG_CMD "me -d -q -platform windows-x86-default -configure . -without ssl -gen vs"
 #endif
 #ifndef ME_APPWEB_PRODUCT
     #define ME_APPWEB_PRODUCT 1
@@ -261,13 +261,13 @@
     #define ME_MAJOR_VERSION 5
 #endif
 #ifndef ME_MINOR_VERSION
-    #define ME_MINOR_VERSION 3
+    #define ME_MINOR_VERSION 4
 #endif
 #ifndef ME_PATCH_VERSION
-    #define ME_PATCH_VERSION 0
+    #define ME_PATCH_VERSION 1
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 500030000
+    #define ME_VNUM 500040001
 #endif
 
 /* Components */
@@ -286,9 +286,6 @@
 #ifndef ME_COM_ESP
     #define ME_COM_ESP 1
 #endif
-#ifndef ME_COM_EST
-    #define ME_COM_EST 1
-#endif
 #ifndef ME_COM_HTTP
     #define ME_COM_HTTP 1
 #endif
@@ -303,9 +300,6 @@
 #endif
 #ifndef ME_COM_MPR
     #define ME_COM_MPR 1
-#endif
-#ifndef ME_COM_OPENSSL
-    #define ME_COM_OPENSSL 0
 #endif
 #ifndef ME_COM_OSDEP
     #define ME_COM_OSDEP 1
@@ -323,7 +317,7 @@
     #define ME_COM_SQLITE 0
 #endif
 #ifndef ME_COM_SSL
-    #define ME_COM_SSL 1
+    #define ME_COM_SSL 0
 #endif
 #ifndef ME_COM_VXWORKS
     #define ME_COM_VXWORKS 0

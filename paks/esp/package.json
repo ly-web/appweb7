@@ -1,0 +1,58 @@
+{
+    "name": "esp",
+    "description": "Embedthis ESP, the amazingly fast C-Language web framework",
+    "title": "Embedthis ESP",
+    "version": "5.4.1",
+    "keywords": [
+        "esp",
+        "package"
+    ],
+    "homepage": "https://embedthis.com/esp",
+    "author": {
+        "name": "Embedthis Software",
+        "email": "dev@embedthis.com",
+        "url": "https://embedthis.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/embedthis/esp.git"
+    },
+    "bugs": {
+        "url": "http://github.com/embedthis/esp/issues"
+    },
+    "licenses": [
+        {
+            "type": "GPL",
+            "url": "http://www.gnu.org/licenses/gpl-2.0.html"
+        },
+        {
+            "type": "Commercial",
+            "url": "https://embedthis.com/licensing/"
+        }
+    ],
+    "dependencies": {
+        "http": "^6.0",
+        "mpr": "^6.0",
+        "osdep": "^0.8",
+        "pcre": "^1.0"
+    },
+    "optionalDependencies": {
+        "certs": "^0.1",
+        "mpr-openssl": "^0.1",
+        "sqlite": "^1.0",
+        "ssl": "^0.9",
+        "watchdog": "^0.1"
+    },
+    "devDependencies": {
+        "me": ">0.8.0"
+    },
+    "files": [
+        "dist/",
+        "doc/api/"
+    ],
+    "pak": {
+        "import": true,
+        "pak": ">=0.10.0",
+        "origin": "embedthis/esp"
+    }
+}

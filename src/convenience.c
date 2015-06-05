@@ -21,14 +21,9 @@ static int runServer(cchar *configFile, cchar *ip, int port, cchar *home, cchar 
         mprLog("error http", 0, "Cannot create http services");
         return MPR_ERR_CANT_CREATE;
     }
-    if (home) {
-        if (maConfigureServer(0, home, documents, ip, port, 0) < 0) {
-            mprLog("error appweb", 0, "Cannot create the web server");
-            return MPR_ERR_BAD_STATE;
-        }
-    } else if (maParseConfig(configFile, 0) < 0) {
-        mprLog("error appweb", 0, "Cannot parse the config file %s", configFile);
-        return MPR_ERR_CANT_READ;
+    if (maConfigureServer(configFile, home, documents, ip, port) < 0) {
+        mprLog("error appweb", 0, "Cannot create the web server");
+        return MPR_ERR_BAD_STATE;
     }
     if (httpStartEndpoints() < 0) {
         mprLog("error appweb", 0, "Cannot start the web server");
@@ -121,7 +116,7 @@ PUBLIC int maRunWebClient(cchar *method, cchar *uri, cchar *data, char **respons
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+    Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

@@ -120,7 +120,7 @@ static void big_response()
      */
     buf = mprCreateBuf(51000, 0);
     mprAddRoot(buf);
-    count = 1000;    
+    count = 1000;
     for (i = 0; i < count; i++) {
         mprPutToBuf(buf, "%8d:01234567890123456789012345678901234567890\n", i);
         mprYield(0);
@@ -131,7 +131,8 @@ static void big_response()
     httpSetWebSocketData(conn, buf);
     
     /*
-        Note: this will block while writing the entire message. It may be quicker to use HTTP_BUFFER but will use more memory.
+        Note: this will block while writing the entire message. 
+        It may be quicker to use HTTP_BUFFER but will use more memory.
         Not point using HTTP_NON_BLOCK as we need to close after sending the message.
      */
     if ((wrote = httpSendBlock(conn, WS_MSG_TEXT, mprGetBufStart(buf), mprGetBufLength(buf), HTTP_BLOCK)) < 0) {
@@ -238,19 +239,19 @@ static void chat_action()
 }
 
 
-ESP_EXPORT int esp_controller_websockets(HttpRoute *route) {
+ESP_EXPORT int esp_controller_app_websockets(HttpRoute *route) {
     clients = mprCreateList(0, 0);
     mprAddRoot(clients);
-    espDefineAction(route, "basic-construct", dummy_action);
-    espDefineAction(route, "basic-open", dummy_action);
-    espDefineAction(route, "basic-send", dummy_action);
-    espDefineAction(route, "basic-echo", echo_action);
-    espDefineAction(route, "basic-ssl", len_action);
-    espDefineAction(route, "basic-len", len_action);
-    espDefineAction(route, "basic-echo", echo_action);
-    espDefineAction(route, "basic-empty", empty_response);
-    espDefineAction(route, "basic-big", big_response);
-    espDefineAction(route, "basic-frames", frames_response);
-    espDefineAction(route, "basic-chat", chat_action);
+    espDefineAction(route, "basic/construct", dummy_action);
+    espDefineAction(route, "basic/open", dummy_action);
+    espDefineAction(route, "basic/send", dummy_action);
+    espDefineAction(route, "basic/echo", echo_action);
+    espDefineAction(route, "basic/ssl", len_action);
+    espDefineAction(route, "basic/len", len_action);
+    espDefineAction(route, "basic/echo", echo_action);
+    espDefineAction(route, "basic/empty", empty_response);
+    espDefineAction(route, "basic/big", big_response);
+    espDefineAction(route, "basic/frames", frames_response);
+    espDefineAction(route, "basic/chat", chat_action);
     return 0;
 }

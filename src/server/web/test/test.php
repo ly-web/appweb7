@@ -2,6 +2,7 @@
 <head>
 </head>
 <body>
-    <?php echo "Hello PHP World"; ?>
+    <?php date_default_timezone_set("America/Los_angeles"); ?>
+    <?php phpinfo(); ?>
 </body>
 </html>

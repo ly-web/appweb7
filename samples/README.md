@@ -14,6 +14,7 @@ The following samples are available:
 * [cpp-handler](cpp-handler/README.md)              C++ Handler
 * [cpp-module](cpp-module/README.md)                C++ Module
 * [deploy-server](deploy-server/README.md)          Deploy Appweb files for copying to a target.
+* [esp-hosted](esp-hosted/README.md)                Host an ESP application.
 * [login-basic](login-basic/README.md)              Login using Basic or Digest authentication (not recommended).
 * [login-form](login-form/README.md)                Login using Web Forms (recommended).
 * [max-server](max-server/README.md)                Maximum configuration in appweb.conf.
@@ -32,10 +33,21 @@ The following samples are available:
 * [websockets-echo](websockets-echo/README.md)      WebSockets echo server using an ESP controller.
 * [websockets-output](websockets-output/README.md)  Using WebSockets to send a large file.
 
+### SSL Certificates
+
+Some samples require SSL certificates and keys. These can be generated in the Appweb source tree via:
+
+    me generate-certs
+
+Then in the samples directory, run
+
+    me samples-certs
+
+This will copy the generated certificates into the 'certs' directory.
+
 ### Building
 
-To build the samples, see the per-sample README instructions.
-To build all, use:
+To build the samples, see the per-sample README instructions. To build all, use:
 
     me --file samples.me samples
 
@@ -68,5 +80,5 @@ For non-commercial customers, you may ask questions in the form of well describe
 Copyright
 ---
 
-Copyright (c) 2003-2014 Embedthis Software, LLC. All Rights Reserved. Embedthis and Appweb are trademarks of 
+Copyright (c) Embedthis Software. All Rights Reserved. Embedthis and Appweb are trademarks of 
 Embedthis Software, LLC. Other brands and their products are trademarks of their respective holders.

@@ -2,13 +2,13 @@
     "name": "appweb",
     "description": "Embedthis Appweb Embedded Web Server",
     "title": "Embedthis Appweb",
-    "version": "5.3.0",
+    "version": "5.4.1",
     "keywords": [
         "appweb",
         "http",
         "webserver"
     ],
-    "homepage": "http://embedthis.com/products/appweb/embedded-web-server.html",
+    "homepage": "https://embedthis.com/appweb/",
     "author": {
         "name": "Embedthis Software",
         "email": "dev@embedthis.com",
@@ -32,45 +32,25 @@
             "url": "http://embedthis.com/licensing/"
         }
     ],
-    "directories": {
-        "paks": "src/paks"
-    },
-    "pak": "~0.9",
     "dependencies": {
-        "http": "~6",
-        "me-docstyle": "~0.8",
-        "mpr": "~6.0",
-        "osdep": "~0.8",
-        "pcre": "~1.0"
+        "http": "^6",
+        "mpr": "^6.0",
+        "osdep": "^0.8",
+        "pcre": "^1.0",
+        "ssl": "^0.9",
+        "watchdog": "^0.1"
     },
     "optionalDependencies": {
-        "ejs": "~2.5",
-        "esp": "~5",
-        "esp-html-mvc": "~5.3",
-        "esp-mvc": "~5.3",
-        "esp-server": "~5.3",
-        "est": "~0.6",
-        "php": "~0.8",
-        "sqlite": "~1.0",
-        "ssl": "~0.8",
-        "zlib": "~1.0"
+        "certs": "^0.1",
+        "esp": "^5",
+        "mpr-openssl": "^0.1"
     },
-    "import": true,
-    "paks": {
-        "esp": {
-            "noblend": true
-        },
-        "esp-html-mvc": {
-            "noblend": true,
-            "noexport": true
-        },
-        "esp-mvc": {
-            "noblend": true,
-            "noexport": true
-        },
-        "esp-server": {
-            "noblend": true,
-            "noexport": true
-        }
+    "files": [
+        "dist/",
+        "doc/api/"
+    ],
+    "pak": {
+        "import": true,
+        "pak": ">=0.10.0"
     }
 }

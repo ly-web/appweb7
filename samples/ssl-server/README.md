@@ -23,8 +23,6 @@ The server listens on port 4443 for SSL requests. Browse to:
 Code:
 ---
 * [appweb.conf](appweb.conf) - Appweb server configuration file
-* [self.crt](self.crt) - Self-signed test certificate
-* [self.key](self.key) - Test private key
 * [web](web) - Web content to serve
 * [start.me](start.me) - MakeMe build instructions
 

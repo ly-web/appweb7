@@ -7,22 +7,19 @@ if (!Config.SSL) {
 
 } else if (thas('ME_SSL')) {
     let http: Http
+    let bin = Path(App.getenv('TM_BIN'))
 
-    for each (let provider in Http.providers) {
-        if (provider == 'matrixssl') {
-            //  MatrixSSL doesn't support certificate state yet
-            continue
-        }
+    //  NanoSSL does not support verifying client certificates
+    if (!App.getenv('ME_NANOSSL') == 1) {
         http = new Http
-        http.provider = provider;
-        // http.ca = '../crt/ca.crt'
+        // http.ca = bin.join('ca.crt')
         http.verify = false
 
         //  Should fail if no cert is provided
         endpoint = tget('TM_CLIENTCERT') || "https://127.0.0.1:6443"
         let caught
         try {
-            /* Should throw */
+            // Server should deny and handshake should fail
             http.get(endpoint + '/ssl-match/index.html')
             ttrue(http.status == 200) 
         } catch {
@@ -33,8 +30,8 @@ if (!Config.SSL) {
 
         //  Should pass with a cert
         endpoint = tget('TM_CLIENTCERT') || "https://127.0.0.1:6443"
-        http.key = '../crt/test.key'
-        http.certificate = '../crt/test.crt'
+        http.key = bin.join('test.key')
+        http.certificate = bin.join('test.crt')
         http.get(endpoint + '/ssl-match/index.html')
         ttrue(http.status == 200) 
         http.close()

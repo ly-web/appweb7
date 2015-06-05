@@ -13,7 +13,7 @@
       </ItemDefinitionGroup>
 
       <PropertyGroup Label="Globals">
-        <ProjectGuid>{f07c2d7c-361c-4ac5-b1db-37850cdf52b8}</ProjectGuid>
+        <ProjectGuid>{abf4ce1f-b89b-48a0-b5b6-5eebbf7284f4}</ProjectGuid>
         <RootNamespace />
         <Keyword>Win32Proj</Keyword>
       </PropertyGroup>
@@ -38,20 +38,24 @@
   </ItemGroup>
     
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ConfigurationType>StaticLibrary</ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ConfigurationType>StaticLibrary</ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ConfigurationType>StaticLibrary</ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ConfigurationType>StaticLibrary</ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
 
       <Import Project="$(VCTargetsPath)Microsoft.Cpp.Default.props" />
@@ -102,6 +106,9 @@
       <ItemGroup>
     <ClCompile Include="..\..\src\config.c" />
     <ClCompile Include="..\..\src\convenience.c" />
+    <ClCompile Include="..\..\src\romFiles.c" />
+    <ClCompile Include="..\..\src\modules\cgiHandler.c" />
+    <ClCompile Include="..\..\src\modules\espHandler.c" />
   </ItemGroup>
 
       <ItemGroup>
@@ -114,7 +121,7 @@
 
       <ItemDefinitionGroup>
       <Link>
-        <AdditionalDependencies>libhttp.lib;libmpr.lib;libpcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
+        <AdditionalDependencies>libesp.lib;libhttp.lib;libpcre.lib;libmpr.lib;%(AdditionalDependencies)</AdditionalDependencies>
         <AdditionalLibraryDirectories>$(OutDir);build\$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       </Link>
 
@@ -123,20 +130,27 @@
 copy /Y /B appweb.h $(IncDir)
 copy /Y /B customize.h $(IncDir)
 cd ..\projects\appweb-windows-static</Command>
-        <Outputs>$(BinDir)\libappweb.dll</Outputs>
+        <Outputs>$(BinDir)\libappweb.lib</Outputs>
       </CustomBuildStep>
   </ItemDefinitionGroup>
 
     <ItemGroup>
+      <ProjectReference Include="libesp.vcxproj">
+      <Project>6bd51657-83c1-4664-a52e-23e8bdcdb7cd</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      </ProjectReference>
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="libhttp.vcxproj">
-      <Project>6b63497f-c3a2-4d2f-a8b7-3ec2cd3722ef</Project>
+      <Project>60dbc3cb-aeb5-468b-a847-f62167a7914f</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       </ProjectReference>
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="libmpr.vcxproj">
-      <Project>3acd6101-a351-4c3a-81e4-dc8589fea4ef</Project>
+      <Project>2ed02c7a-9d07-4dad-929f-5bd1da80cb12</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       </ProjectReference>
     </ItemGroup>

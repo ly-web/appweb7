@@ -1,0 +1,20 @@
+{
+    "services": {
+        "clean-css": true,
+        "compile-less-css": {
+            "stylesheet": "css/all.css"
+        }
+    },
+    "debug": {
+        "services": {
+            "compile-html": false,
+            "minify-css": false,
+            "minify-js": false
+        }
+    },
+    "release": {
+        "services": {
+            "minify-css": true
+        }
+    }
+}

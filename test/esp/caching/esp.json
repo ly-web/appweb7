@@ -1,0 +1,28 @@
+{
+    directories: {
+        controllers: '.'
+    },
+    http: {
+        routes: {
+            pattern: '/{action}$',
+            target:  'cache/$1',
+            source:  'cache.c',
+            cache: [
+                {
+                    server: '1day',
+                    urls: '/manual',
+                    manual: true
+                }, {
+                    server: '1day',
+                    urls: [ '/small', '/big', '/huge' ],
+                }, {
+                    client: '1hr',
+                    urls: '/client'
+                }
+            ],
+            limits: {
+                cacheItem: 100000
+            }
+        }
+    }
+}

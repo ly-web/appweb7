@@ -42,7 +42,6 @@ static int changeRoot(cchar *jail);
 static int checkEnvironment(cchar *program);
 static int createEndpoints(int argc, char **argv);
 static int findAppwebConf();
-static void loadStaticModules();
 static void manageApp(AppwebApp *app, int flags);
 static void usageError();
 
@@ -199,8 +198,6 @@ MAIN(appweb, int argc, char **argv, char **envp)
     if (findAppwebConf() < 0) {
         exit(7);
     }
-    loadStaticModules();
-
     if (jail && changeRoot(jail) < 0) {
         exit(8);
     }
@@ -258,29 +255,6 @@ static int changeRoot(cchar *jail)
 
 
 /*
-    If doing a static build, must now reference required modules to force the linker to include them.
-    Don't actually call init routines here. They will be called via maConfigureServer.
- */
-static void loadStaticModules()
-{
-#if ME_STATIC
-#if ME_PACK_CGI
-    mprNop(maCgiHandlerInit);
-#endif
-#if ME_PACK_ESP
-    mprNop(maEspHandlerInit);
-#endif
-#if ME_PACK_PHP
-    mprNop(maPhpHandlerInit);
-#endif
-#if ME_SSL
-    mprNop(maSslModuleInit);
-#endif
-#endif /* ME_STATIC */
-}
-
-
-/*
     Create the listening endoints
  */
 static int createEndpoints(int argc, char **argv)
@@ -297,18 +271,18 @@ static int createEndpoints(int argc, char **argv)
         mprLog("info appweb", 2, "Documents %s", app->documents);
     }
     if (argc == 0) {
-        if (maParseConfig(app->configFile, 0) < 0) {
+        if (maParseConfig(app->configFile) < 0) {
             return MPR_ERR_CANT_CREATE;
         }
     } else {
         app->documents = sclone(argv[argind++]);
         if (argind == argc) {
-            if (maConfigureServer(NULL, app->home, app->documents, NULL, ME_HTTP_PORT, 0) < 0) {
+            if (maConfigureServer(NULL, app->home, app->documents, NULL, ME_HTTP_PORT) < 0) {
                 return MPR_ERR_CANT_CREATE;
             }
         } else while (argind < argc) {
             mprParseSocketAddress(argv[argind++], &ip, &port, &secure, 80);
-            if (maConfigureServer(NULL, app->home, app->documents, ip, port, 0) < 0) {
+            if (maConfigureServer(NULL, app->home, app->documents, ip, port) < 0) {
                 return MPR_ERR_CANT_CREATE;
             }
         }
@@ -429,7 +403,7 @@ static int unixSecurityChecks(cchar *program, cchar *home)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+    Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

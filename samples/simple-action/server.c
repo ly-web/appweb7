@@ -69,7 +69,7 @@ int main(int argc, char **argv, char **envp)
     }
     mprStart();
 
-    if (maParseConfig("appweb.conf", 0) < 0) {
+    if (maParseConfig("appweb.conf") < 0) {
         mprError("Cannot parse the config file %s", "appweb.conf");
         return -1;
     }
@@ -88,7 +88,7 @@ int main(int argc, char **argv, char **envp)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2014. All Rights Reserved.
+    Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

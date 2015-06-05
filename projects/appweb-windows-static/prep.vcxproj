@@ -2,7 +2,7 @@
     <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
       <PropertyGroup Label="Globals">
-        <ProjectGuid>{d4c01df0-67d1-4f09-9bf6-c0bb5d82a6f1}</ProjectGuid>
+        <ProjectGuid>{7e538a8e-febf-4185-a4a2-b1a717d97fe4}</ProjectGuid>
         <RootNamespace />
         <Keyword>Win32Proj</Keyword>
       </PropertyGroup>
@@ -29,18 +29,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
         <ConfigurationType></ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
         <ConfigurationType></ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
         <ConfigurationType></ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
         <ConfigurationType></ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
 
       <Import Project="$(VCTargetsPath)Microsoft.Cpp.Default.props" />
@@ -103,13 +107,12 @@ if not exist "$(IncDir)\me.h" copy "..\appweb-windows-static-me.h" "$(IncDir)\me
 copy /Y /B ..\..\src\appweb.h $(IncDir)
 copy /Y /B ..\..\src\server\windows\appwebMonitor.h $(IncDir)
 copy /Y /B ..\..\src\customize.h $(IncDir)
-copy /Y /B ..\..\src\paks\esp\esp.h $(IncDir)
-copy /Y /B ..\..\src\paks\est\est.h $(IncDir)
-copy /Y /B ..\..\src\paks\http\http.h $(IncDir)
+copy /Y /B ..\..\src\esp\esp.h $(IncDir)
+copy /Y /B ..\..\src\http\http.h $(IncDir)
 copy /Y /B ..\..\src\server\windows\monitorResources.h $(IncDir)
-copy /Y /B ..\..\src\paks\mpr\mpr.h $(IncDir)
-copy /Y /B ..\..\src\paks\osdep\osdep.h $(IncDir)
-copy /Y /B ..\..\src\paks\pcre\pcre.h $(IncDir)
+copy /Y /B ..\..\src\mpr\mpr.h $(IncDir)
+copy /Y /B ..\..\src\osdep\osdep.h $(IncDir)
+copy /Y /B ..\..\src\pcre\pcre.h $(IncDir)
 cd .</Command>
         <Outputs>always</Outputs>
       </CustomBuildStep>

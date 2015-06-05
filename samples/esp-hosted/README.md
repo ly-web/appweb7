@@ -1,21 +1,29 @@
-Esp-hosted Sample
+esp-hosted Sample
 ===
 
 This sample shows how to host an ESP application in Appweb.
 
 This sample uses:
 
-* esp-html-mvc server-side MVC application
+* esp-html-skeleton server-side MVC application
+* Pak to install required extensions
+* Expansive to render layouts+pages into the documents directory
 
 Notes:
 * This application was generated via:
 
-    esp --name blog install esp-html-mvc
+    mkdir esp-hosted
+    cd esp-hosted
+    pak init espapp
+    pak install esp-html-skeleton
     esp generate scaffold post title:string body:text
+    expansive render
 
 Requirements
 ---
 * [ESP](https://embedthis.com/esp/download.html)
+* [Pak](https://embedthis.com/pak/download.html)
+* [Expansive](https://embedthis.com/expansive/download.html)
 
 To run:
 ---
@@ -32,9 +40,13 @@ Code:
 * [client/index.esp](client/index.esp) - Home page
 * [controllers/post.c](controllers/post.c) - Controller code
 * [db](db) - Database and migrations
-* [layouts](layouts) - View layout pages
-* [package.json](package.json) - ESP configuration file
+* [documents](documents) - Public client-side documents. 
+* [esp.json](esp.json) - ESP configuration file
+* [expansive.json](eexpansive.json) - Expansive configuration file
+* [layouts](layouts) - ESP layout pages
+* [package.json](package.json) - Package configuration file
 * [paks](paks) - Extension packages
+* [source](source) - Input client-side documents source. 
 
 Documentation:
 ---

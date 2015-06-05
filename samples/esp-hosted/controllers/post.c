@@ -1,5 +1,5 @@
 /*
-    post Controller for esp-html-mvc (esp-html-mvc)
+    post Controller (esp-html-skeleton)
  */
 #include "esp.h"
 
@@ -8,16 +8,16 @@
  */ 
 static void createPost() { 
     if (updateRec(createRec("post", params()))) {
-        flash("inform", "New post Created");
-        renderView("post/post-list");
+        flash("info", "New post Created");
+        renderView("post/list");
     } else {
         flash("error", "Cannot Create Post");
-        renderView("post/post-edit");
+        renderView("post/edit");
     }
 }
 
 /*
-    Prepare a template for editing a resource
+    Prepare an edit template with the resource
  */
 static void editPost() { 
     readRec("post", param("id"));
@@ -28,7 +28,7 @@ static void editPost() {
  */ 
 static void getPost() { 
     readRec("post", param("id"));
-    renderView("post/post-edit");
+    renderView("post/edit");
 }
 
 /*
@@ -36,14 +36,14 @@ static void getPost() {
  */
 static void initPost() { 
     createRec("post", 0);
-    renderView("post/post-edit");
+    renderView("post/edit");
 }
 
 /*
     List the resources in this group
  */ 
 static void listPost() { 
-    renderView("post/post-list");
+    renderView("post/list");
 }
 
 /*
@@ -51,9 +51,9 @@ static void listPost() {
  */
 static void removePost() { 
     if (removeRec("post", param("id"))) {
-        flash("inform", "Post Removed");
+        flash("info", "Post Removed");
     }
-    redirect("list");
+    redirect(".");
 }
 
 /*
@@ -66,17 +66,20 @@ static void updatePost() {
         removePost();
     } else {
         if (updateFields("post", params())) {
-            flash("inform", "Post Updated Successfully");
-            redirect("list");
+            flash("info", "Post Updated Successfully");
+            redirect(".");
         } else {
             flash("error", "Cannot Update Post");
-            renderView("post/post-edit");
+            renderView("post/edit");
         }
     }
 }
 
+/*
+    Redirect to get a properly terminated URL. Essential for relative URL references.
+ */
 static void redirectPost() {
-    redirect(sjoin(getConn()->rx->uri, "/", NULL));
+    redirect(sjoin(getUri(), "/", NULL));
 }
 
 static void common(HttpConn *conn) {
@@ -85,16 +88,16 @@ static void common(HttpConn *conn) {
 /*
     Dynamic module initialization
  */
-ESP_EXPORT int esp_controller_blog_post(HttpRoute *route, MprModule *module) {
+ESP_EXPORT int esp_controller_espapp_post(HttpRoute *route, MprModule *module) {
     espDefineBase(route, common);
-    espDefineAction(route, "post-create", createPost);
-    espDefineAction(route, "post-remove", removePost);
-    espDefineAction(route, "post-edit", editPost);
-    espDefineAction(route, "post-get", getPost);
-    espDefineAction(route, "post-init", initPost);
-    espDefineAction(route, "post-list", listPost);
-    espDefineAction(route, "post-update", updatePost);
-    espDefineAction(route, "post-cmd-", listPost);
+    espDefineAction(route, "post/create", createPost);
+    espDefineAction(route, "post/remove", removePost);
+    espDefineAction(route, "post/edit", editPost);
+    espDefineAction(route, "post/get", getPost);
+    espDefineAction(route, "post/init", initPost);
+    espDefineAction(route, "post/list", listPost);
+    espDefineAction(route, "post/update", updatePost);
+    espDefineAction(route, "post/", listPost);
     espDefineAction(route, "post", redirectPost);
     
 #if SAMPLE_VALIDATIONS

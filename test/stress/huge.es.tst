@@ -51,7 +51,6 @@ if (tdepth() >= 6) {
     ttrue(http.status == 200)
     http.close()
 
-/*
     //  Get first 5 bytes
     http.setHeader("Range", "bytes=0-4")
     http.get(HTTP + "/big.txt")
@@ -87,7 +86,7 @@ if (tdepth() >= 6) {
     ttrue(http.response.contains("567890"))
     ttrue(http.response.contains("MENT"))
     http.close()
-*/
+
 } else {
     tskip("runs at depth 6")
 }

@@ -4,22 +4,37 @@
 
 Me.load({
     targets: {
+        test: {
+            action: `run('testme --depth ' + me.settings.depth)`,
+            platforms: [ 'local' ],
+            depends: [ 'clean-test', 'build', 'cgiProgram', 'prep-cgi', 'test-testScript', 'test-cgiProgram' ],
+            generate: false,
+        },
+
+        cgiProgram: {
+            type:   'exe',
+            sources: [ 'cgiProgram.c' ],
+            ifdef: [ 'cgi' ],
+            action: true,
+            generate: false,
+        },
+
         'prep-cgi': {
-            build: `
+            action: `
                 let path = me.dir.out.join('.cgi-prepared')
                 if (!path.exists) {
                     Cmd.run('testme --clean')
-                    rm(['cgi-bin/cgi*', 'cgi-bin/nph*', 'cgi-bin/testScript', 
-                        'web/caching/cache.cgi', 'web/auth/basic/basic.cgi'])
+                    rm(['cgi-bin/cgi*', 'cgi-bin/nph*', 'cgi-bin/testScript' ])
                     path.write('')
                     Path('web/tmp').makeDir()
                 }
             `,
             generate: false,
         },
+
         'test-testScript': {
             path: 'cgi-bin/testScript',
-            build: `
+            action: `
                 let path = TARGET.path.relative
                 path.write('#!' + me.dir.bin.join('cgiProgram${EXE}' + '\n'))
                 path.setAttributes({permissions: 0755})
@@ -31,39 +46,9 @@ Me.load({
             ifdef: [ 'cgi' ],
         },
 
-        'test-cache.cgi': {
-            path: 'web/caching/cache.cgi',
-            build: `
-                let path = TARGET.path.relative
-                path.write('#!' + Cmd.locate('ejs') + '\n' + 
-                    'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n{number:\" + Date().now() + \"}\n\")')
-                path.setAttributes({permissions: 0755})
-                trace('Create', path)
-            `,
-            depends: [ 'cgiProgram' ],
-            generate: false,
-            platforms: [ 'local' ],
-            ifdef: [ 'cgi' ],
-        },
-
-        'test-basic.cgi': {
-            path: 'web/auth/basic/basic.cgi',
-            build: `
-                let path = TARGET.path.relative
-                path.write('#!' + Cmd.locate('ejs') + '\n' + 
-                    'print(\"HTTP/1.0 200 OK\nContent-Type: text/plain\n\n\" + serialize(App.env, {pretty: true}) + \"\n\")')
-                path.setAttributes({permissions: 0755})
-                trace('Create', path)
-            `,
-            depends: [ 'cgiProgram' ],
-            generate: false,
-            platforms: [ 'local' ],
-            ifdef: [ 'cgi' ],
-        },
-
         'test-cgiProgram': {
             path: 'cgi-bin/cgiProgram${EXE}',
-            build: `
+            action: `
                 let perms = { permissions: 0755 }
                 let cgiProgram = me.dir.bin.join('cgiProgram${EXE}')
                 cp(cgiProgram, Path('cgi-bin/cgiProgram${EXE}'), perms)
@@ -75,12 +60,6 @@ Me.load({
             generate: false,
             platforms: [ 'local' ],
             ifdef: [ 'cgi' ],
-        },
-
-        test: {
-            action: `run('testme --depth ' + me.settings.depth)`,
-            generate: false,
-            platforms: [ 'local' ],
         },
 
         'auth.conf': {
@@ -101,7 +80,7 @@ Me.load({
             type: 'test',
             action: `
                 require embedthis.me
-                let package = Package()
+                let package = Installs()
                 let pname = package.packageName()
                 if (!pname || !pname.exists) {
                     trace('Test', 'testPackage -- SKIPPED (Missing package to install)')
@@ -168,9 +147,12 @@ Me.load({
                 Path('cache/.keep').write()
                 Path('app/cache').makeDir()
                 Path('app/cache/.keep').write()
-                Path('web/caching/cache.cgi').remove()
-                Path('web/auth/basic/basic.cgi').remove()
                 Path('web/cgiProgram.cgi').remove()
+            `
+        },
+        'session-test': {
+            shell: `
+                openssl s_client -reconnect -connect 127.0.0.1:4443 -crlf 2>/dev/null | grep Session-ID:
             `
         }
     }

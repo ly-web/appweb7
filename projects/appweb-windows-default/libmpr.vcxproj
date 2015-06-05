@@ -13,7 +13,7 @@
       </ItemDefinitionGroup>
 
       <PropertyGroup Label="Globals">
-        <ProjectGuid>{3acd6101-a351-4c3a-81e4-dc8589fea4ef}</ProjectGuid>
+        <ProjectGuid>{2ed02c7a-9d07-4dad-929f-5bd1da80cb12}</ProjectGuid>
         <RootNamespace />
         <Keyword>Win32Proj</Keyword>
       </PropertyGroup>
@@ -40,18 +40,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
         <ConfigurationType>DynamicLibrary</ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
         <ConfigurationType>DynamicLibrary</ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
         <ConfigurationType>DynamicLibrary</ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
         <ConfigurationType>DynamicLibrary</ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
 
       <Import Project="$(VCTargetsPath)Microsoft.Cpp.Default.props" />
@@ -100,7 +104,7 @@
   </PropertyGroup>
   
       <ItemGroup>
-    <ClCompile Include="..\..\src\paks\mpr\mprLib.c" />
+    <ClCompile Include="..\..\src\mpr\mprLib.c" />
   </ItemGroup>
 
       <ItemGroup>
@@ -114,9 +118,9 @@
       </Link>
 
       <CustomBuildStep>
-        <Command>cd ..\..\src\paks\mpr
+        <Command>cd ..\..\src\mpr
 copy /Y /B mpr.h $(IncDir)
-cd ..\..\..\projects\appweb-windows-default</Command>
+cd ..\..\projects\appweb-windows-default</Command>
         <Outputs>$(BinDir)\libmpr.dll</Outputs>
       </CustomBuildStep>
   </ItemDefinitionGroup>

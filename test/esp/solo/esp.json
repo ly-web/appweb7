@@ -1,0 +1,12 @@
+{
+    directories: {
+        controllers: '.'
+    },
+    http: {
+        routes: {
+            pattern: "/{action}$",
+            target: "solo/$1",
+            source: "solo.c"
+        }
+    }
+}
