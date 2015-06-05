@@ -289,6 +289,9 @@
 #ifndef ME_COM_ESP
     #define ME_COM_ESP 1
 #endif
+#ifndef ME_COM_EST
+    #define ME_COM_EST 0
+#endif
 #ifndef ME_COM_HTTP
     #define ME_COM_HTTP 1
 #endif
