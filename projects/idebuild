@@ -7,7 +7,7 @@ PRODUCT=appweb
 XCODE=/usr/bin/xcodebuild
 PROFILE=default
 BINARIES="appweb appwebMonitor authpass esp http appman"
-LIBRARIES="libappweb libest libhttp libmpr libpcre"
+LIBRARIES="libappweb libhttp libmpr libpcre"
 
 # Just for VS
 unset TEMP TMP
