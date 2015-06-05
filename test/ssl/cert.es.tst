@@ -9,13 +9,8 @@ if (!Config.SSL) {
     let http: Http
     let bin = Path(App.getenv('TM_BIN'))
 
-    for each (let provider in Http.providers) {
-        if (provider == 'matrixssl' || provider == 'nanossl') {
-            //  MatrixSSL doesn't support certificate state yet
-            continue
-        }
+    if (1 || App.getenv('ME_OPENSSL') == 1) {
         http = new Http
-        http.provider = provider
         http.ca = bin.join('ca.crt')
         http.verify = true
         http.key = null
@@ -46,31 +41,34 @@ if (!Config.SSL) {
         ttrue(!http.info.CLIENT_S_CN)
         http.close()
 
-        //  Test a server self-signed cert. Verify but not the issuer.
-        //  Note in a self-signed cert the subject == issuer
-        let endpoint = tget('TM_SELFCERT') || "https://127.0.0.1:5443"
-        http.verify = true
-        http.verifyIssuer = false
-        http.get(endpoint + '/index.html')
-        ttrue(http.status == 200) 
-        ttrue(http.info.SERVER_S_CN == 'localhost')
-        ttrue(http.info.SERVER_I_OU == http.info.SERVER_S_OU)
-        ttrue(http.info.SERVER_I_EMAIL == 'dev@example.com')
-        ttrue(!http.info.CLIENT_S_CN)
-        http.close()
+        if (!App.getenv('ME_NANOSSL')) {
+            //  NanoSSL does not support multiple configurations
+            //  Test a server self-signed cert. Verify but not the issuer.
+            //  Note in a self-signed cert the subject == issuer
+            let endpoint = tget('TM_SELFCERT') || "https://127.0.0.1:5443"
+            http.verify = true
+            http.verifyIssuer = false
+            http.get(endpoint + '/index.html')
+            ttrue(http.status == 200) 
+            ttrue(http.info.SERVER_S_CN == 'localhost')
+            ttrue(http.info.SERVER_I_OU == http.info.SERVER_S_OU)
+            ttrue(http.info.SERVER_I_EMAIL == 'dev@example.com')
+            ttrue(!http.info.CLIENT_S_CN)
+            http.close()
 
-        //  Test SSL with a client cert 
-        endpoint = tget('TM_CLIENTCERT') || "https://127.0.0.1:6443"
-        http.key = bin.join('test.key')
-        http.certificate = bin.join('test.crt')
-        // http.verify = false
-        http.get(endpoint + '/index.html')
-        ttrue(http.status == 200) 
-        // ttrue(info.PROVIDER == provider)
-        ttrue(http.info.CLIENT_S_CN == 'localhost')
-        ttrue(http.info.SERVER_S_CN == 'localhost')
-        ttrue(http.info.SERVER_I_OU != http.info.SERVER_S_OU)
-        ttrue(http.info.SERVER_I_EMAIL == 'licensing@example.com')
+            //  Test SSL with a client cert 
+            endpoint = tget('TM_CLIENTCERT') || "https://127.0.0.1:6443"
+            http.key = bin.join('test.key')
+            http.certificate = bin.join('test.crt')
+            // http.verify = false
+            http.get(endpoint + '/index.html')
+            ttrue(http.status == 200) 
+            // ttrue(info.PROVIDER == provider)
+            ttrue(http.info.CLIENT_S_CN == 'localhost')
+            ttrue(http.info.SERVER_S_CN == 'localhost')
+            ttrue(http.info.SERVER_I_OU != http.info.SERVER_S_OU)
+            ttrue(http.info.SERVER_I_EMAIL == 'licensing@example.com')
+        }
         http.close()
     }
 

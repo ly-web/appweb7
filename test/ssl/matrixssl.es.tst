@@ -26,5 +26,5 @@ if (!Config.SSL) {
     http.close()
 
 } else {
-    tskip("ssl not enabled")
+    tskip("matrixssl not enabled")
 }

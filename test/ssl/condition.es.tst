@@ -9,16 +9,9 @@ if (!Config.SSL) {
     let http: Http
     let bin = Path(App.getenv('TM_BIN'))
 
-    /*
-        Note: these providers are client-side. i.e. those supported in testme, not in appweb.
-     */
-    for each (let provider in Http.providers) {
-        if (provider == 'matrixssl') {
-            //  MatrixSSL doesn't support certificate state yet
-            continue
-        }
+    //  NanoSSL does not support verifying client certificates
+    if (!App.getenv('ME_NANOSSL') == 1) {
         http = new Http
-        http.provider = provider;
         // http.ca = bin.join('ca.crt')
         http.verify = false
 
