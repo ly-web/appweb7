@@ -3,7 +3,7 @@
 #
 
 NAME                  := appweb
-VERSION               := 4.7.1
+VERSION               := 4.7.2
 PROFILE               ?= static
 ARCH                  ?= $(shell echo $(WIND_HOST_TYPE) | sed 's/-.*$(ME_ROOT_PREFIX)/')
 CPU                   ?= $(subst X86,PENTIUM,$(shell echo $(ARCH) | tr a-z A-Z))
@@ -26,12 +26,12 @@ ME_COM_LIB            ?= 1
 ME_COM_LINK           ?= 1
 ME_COM_MDB            ?= 1
 ME_COM_MPR            ?= 1
-ME_COM_OPENSSL        ?= 1
+ME_COM_OPENSSL        ?= 0
 ME_COM_OSDEP          ?= 1
 ME_COM_PCRE           ?= 1
 ME_COM_PHP            ?= 0
 ME_COM_SQLITE         ?= 0
-ME_COM_SSL            ?= 1
+ME_COM_SSL            ?= 0
 ME_COM_VXWORKS        ?= 1
 ME_COM_WINSDK         ?= 1
 ME_COM_ZLIB           ?= 0
@@ -120,20 +120,8 @@ TARGETS               += $(BUILD)/bin/ca.crt
 ifeq ($(ME_COM_HTTP),1)
     TARGETS           += $(BUILD)/bin/http.out
 endif
-ifeq ($(ME_COM_CGI),1)
-    TARGETS           += $(BUILD)/bin/libmod_cgi.out
-endif
-ifeq ($(ME_COM_EJS),1)
-    TARGETS           += $(BUILD)/bin/libmod_ejs.out
-endif
-ifeq ($(ME_COM_PHP),1)
-    TARGETS           += $(BUILD)/bin/libmod_php.out
-endif
-ifeq ($(ME_COM_SSL),1)
-    TARGETS           += $(BUILD)/bin/libmod_ssl.out
-endif
 ifeq ($(ME_COM_SQLITE),1)
-    TARGETS           += $(BUILD)/bin/libsql.out
+    TARGETS           += $(BUILD)/bin/libsql.a
 endif
 TARGETS               += $(BUILD)/bin/makerom.out
 TARGETS               += $(BUILD)/bin/appman.out
@@ -180,7 +168,8 @@ prep:
 	fi; true
 	@if [ -f "$(BUILD)/.makeflags" ] ; then \
 		if [ "$(MAKEFLAGS)" != "`cat $(BUILD)/.makeflags`" ] ; then \
-			echo "   [Warning] Make flags have changed since the last build: "`cat $(BUILD)/.makeflags`"" ; \
+			echo "   [Warning] Make flags have changed since the last build" ; \
+			echo "   [Warning] Previous build command: "`cat $(BUILD)/.makeflags`"" ; \
 		fi ; \
 	fi
 	@echo "$(MAKEFLAGS)" >$(BUILD)/.makeflags
@@ -199,6 +188,7 @@ clean:
 	rm -f "$(BUILD)/obj/ejsc.o"
 	rm -f "$(BUILD)/obj/esp.o"
 	rm -f "$(BUILD)/obj/espLib.o"
+	rm -f "$(BUILD)/obj/estLib.o"
 	rm -f "$(BUILD)/obj/fileHandler.o"
 	rm -f "$(BUILD)/obj/http.o"
 	rm -f "$(BUILD)/obj/httpLib.o"
@@ -226,20 +216,20 @@ clean:
 	rm -f "$(BUILD)/bin/esp.out"
 	rm -f "$(BUILD)/bin/ca.crt"
 	rm -f "$(BUILD)/bin/http.out"
-	rm -f "$(BUILD)/bin/libappweb.out"
-	rm -f "$(BUILD)/bin/libejs.out"
-	rm -f "$(BUILD)/bin/libhttp.out"
-	rm -f "$(BUILD)/bin/libmod_cgi.out"
-	rm -f "$(BUILD)/bin/libmod_ejs.out"
-	rm -f "$(BUILD)/bin/libmod_esp.out"
-	rm -f "$(BUILD)/bin/libmod_php.out"
-	rm -f "$(BUILD)/bin/libmod_ssl.out"
-	rm -f "$(BUILD)/bin/libmpr.out"
-	rm -f "$(BUILD)/bin/libmprssl.out"
-	rm -f "$(BUILD)/bin/libpcre.out"
-	rm -f "$(BUILD)/bin/libslink.out"
-	rm -f "$(BUILD)/bin/libsql.out"
-	rm -f "$(BUILD)/bin/libzlib.out"
+	rm -f "$(BUILD)/bin/libappweb.a"
+	rm -f "$(BUILD)/bin/libejs.a"
+	rm -f "$(BUILD)/bin/libhttp.a"
+	rm -f "$(BUILD)/bin/libmod_cgi.a"
+	rm -f "$(BUILD)/bin/libmod_ejs.a"
+	rm -f "$(BUILD)/bin/libmod_esp.a"
+	rm -f "$(BUILD)/bin/libmod_php.a"
+	rm -f "$(BUILD)/bin/libmod_ssl.a"
+	rm -f "$(BUILD)/bin/libmpr.a"
+	rm -f "$(BUILD)/bin/libmprssl.a"
+	rm -f "$(BUILD)/bin/libpcre.a"
+	rm -f "$(BUILD)/bin/libslink.a"
+	rm -f "$(BUILD)/bin/libsql.a"
+	rm -f "$(BUILD)/bin/libzlib.a"
 	rm -f "$(BUILD)/bin/makerom.out"
 	rm -f "$(BUILD)/bin/appman.out"
 	rm -f "$(BUILD)/bin/sqlite.out"
@@ -363,8 +353,14 @@ $(BUILD)/inc/esp.h: $(DEPS_11)
 #
 #   est.h
 #
+DEPS_12 += src/est/est.h
+DEPS_12 += $(BUILD)/inc/me.h
+DEPS_12 += $(BUILD)/inc/osdep.h
 
 $(BUILD)/inc/est.h: $(DEPS_12)
+	@echo '      [Copy] $(BUILD)/inc/est.h'
+	mkdir -p "$(BUILD)/inc"
+	cp src/est/est.h $(BUILD)/inc/est.h
 
 #
 #   pcre.h
@@ -416,7 +412,7 @@ DEPS_17 += $(BUILD)/inc/appweb.h
 $(BUILD)/obj/appweb.o: \
     src/server/appweb.c $(DEPS_17)
 	@echo '   [Compile] $(BUILD)/obj/appweb.o'
-	$(CC) -c -o $(BUILD)/obj/appweb.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/server/appweb.c
+	$(CC) -c -o $(BUILD)/obj/appweb.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_OPENSSL_PATH)/include" src/server/appweb.c
 
 #
 #   authpass.o
@@ -561,12 +557,28 @@ $(BUILD)/obj/espLib.o: \
 	$(CC) -c -o $(BUILD)/obj/espLib.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/esp/espLib.c
 
 #
+#   est.h
+#
+
+src/est/est.h: $(DEPS_33)
+
+#
+#   estLib.o
+#
+DEPS_34 += src/est/est.h
+
+$(BUILD)/obj/estLib.o: \
+    src/est/estLib.c $(DEPS_34)
+	@echo '   [Compile] $(BUILD)/obj/estLib.o'
+	$(CC) -c -o $(BUILD)/obj/estLib.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/est/estLib.c
+
+#
 #   fileHandler.o
 #
-DEPS_33 += src/appweb.h
+DEPS_35 += src/appweb.h
 
 $(BUILD)/obj/fileHandler.o: \
-    src/fileHandler.c $(DEPS_33)
+    src/fileHandler.c $(DEPS_35)
 	@echo '   [Compile] $(BUILD)/obj/fileHandler.o'
 	$(CC) -c -o $(BUILD)/obj/fileHandler.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/fileHandler.c
 
@@ -574,35 +586,35 @@ $(BUILD)/obj/fileHandler.o: \
 #   http.h
 #
 
-src/http/http.h: $(DEPS_34)
+src/http/http.h: $(DEPS_36)
 
 #
 #   http.o
 #
-DEPS_35 += src/http/http.h
+DEPS_37 += src/http/http.h
 
 $(BUILD)/obj/http.o: \
-    src/http/http.c $(DEPS_35)
+    src/http/http.c $(DEPS_37)
 	@echo '   [Compile] $(BUILD)/obj/http.o'
-	$(CC) -c -o $(BUILD)/obj/http.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/http/http.c
+	$(CC) -c -o $(BUILD)/obj/http.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_OPENSSL_PATH)/include" src/http/http.c
 
 #
 #   httpLib.o
 #
-DEPS_36 += src/http/http.h
+DEPS_38 += src/http/http.h
 
 $(BUILD)/obj/httpLib.o: \
-    src/http/httpLib.c $(DEPS_36)
+    src/http/httpLib.c $(DEPS_38)
 	@echo '   [Compile] $(BUILD)/obj/httpLib.o'
 	$(CC) -c -o $(BUILD)/obj/httpLib.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/http/httpLib.c
 
 #
 #   log.o
 #
-DEPS_37 += src/appweb.h
+DEPS_39 += src/appweb.h
 
 $(BUILD)/obj/log.o: \
-    src/log.c $(DEPS_37)
+    src/log.c $(DEPS_39)
 	@echo '   [Compile] $(BUILD)/obj/log.o'
 	$(CC) -c -o $(BUILD)/obj/log.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/log.c
 
@@ -610,47 +622,47 @@ $(BUILD)/obj/log.o: \
 #   mpr.h
 #
 
-src/mpr/mpr.h: $(DEPS_38)
+src/mpr/mpr.h: $(DEPS_40)
 
 #
 #   makerom.o
 #
-DEPS_39 += src/mpr/mpr.h
+DEPS_41 += src/mpr/mpr.h
 
 $(BUILD)/obj/makerom.o: \
-    src/mpr/makerom.c $(DEPS_39)
+    src/mpr/makerom.c $(DEPS_41)
 	@echo '   [Compile] $(BUILD)/obj/makerom.o'
 	$(CC) -c -o $(BUILD)/obj/makerom.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/mpr/makerom.c
 
 #
 #   manager.o
 #
-DEPS_40 += src/mpr/mpr.h
+DEPS_42 += src/mpr/mpr.h
 
 $(BUILD)/obj/manager.o: \
-    src/mpr/manager.c $(DEPS_40)
+    src/mpr/manager.c $(DEPS_42)
 	@echo '   [Compile] $(BUILD)/obj/manager.o'
 	$(CC) -c -o $(BUILD)/obj/manager.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/mpr/manager.c
 
 #
 #   mprLib.o
 #
-DEPS_41 += src/mpr/mpr.h
+DEPS_43 += src/mpr/mpr.h
 
 $(BUILD)/obj/mprLib.o: \
-    src/mpr/mprLib.c $(DEPS_41)
+    src/mpr/mprLib.c $(DEPS_43)
 	@echo '   [Compile] $(BUILD)/obj/mprLib.o'
 	$(CC) -c -o $(BUILD)/obj/mprLib.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/mpr/mprLib.c
 
 #
 #   mprSsl.o
 #
-DEPS_42 += $(BUILD)/inc/me.h
-DEPS_42 += src/mpr/mpr.h
-DEPS_42 += $(BUILD)/inc/est.h
+DEPS_44 += $(BUILD)/inc/me.h
+DEPS_44 += src/mpr/mpr.h
+DEPS_44 += $(BUILD)/inc/est.h
 
 $(BUILD)/obj/mprSsl.o: \
-    src/mpr/mprSsl.c $(DEPS_42)
+    src/mpr/mprSsl.c $(DEPS_44)
 	@echo '   [Compile] $(BUILD)/obj/mprSsl.o'
 	$(CC) -c -o $(BUILD)/obj/mprSsl.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_OPENSSL_PATH)/include" src/mpr/mprSsl.c
 
@@ -658,47 +670,47 @@ $(BUILD)/obj/mprSsl.o: \
 #   pcre.h
 #
 
-src/pcre/pcre.h: $(DEPS_43)
+src/pcre/pcre.h: $(DEPS_45)
 
 #
 #   pcre.o
 #
-DEPS_44 += $(BUILD)/inc/me.h
-DEPS_44 += src/pcre/pcre.h
+DEPS_46 += $(BUILD)/inc/me.h
+DEPS_46 += src/pcre/pcre.h
 
 $(BUILD)/obj/pcre.o: \
-    src/pcre/pcre.c $(DEPS_44)
+    src/pcre/pcre.c $(DEPS_46)
 	@echo '   [Compile] $(BUILD)/obj/pcre.o'
 	$(CC) -c -o $(BUILD)/obj/pcre.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/pcre/pcre.c
 
 #
 #   phpHandler.o
 #
-DEPS_45 += $(BUILD)/inc/appweb.h
+DEPS_47 += $(BUILD)/inc/appweb.h
 
 $(BUILD)/obj/phpHandler.o: \
-    src/modules/phpHandler.c $(DEPS_45)
+    src/modules/phpHandler.c $(DEPS_47)
 	@echo '   [Compile] $(BUILD)/obj/phpHandler.o'
-	$(CC) -c -o $(BUILD)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_PHP_PATH)" "-I$(ME_COM_PHP_PATH)/main" "-I$(ME_COM_PHP_PATH)/Zend" "-I$(ME_COM_PHP_PATH)/TSRM" src/modules/phpHandler.c
+	$(CC) -c -o $(BUILD)/obj/phpHandler.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/modules/phpHandler.c
 
 #
 #   server.o
 #
-DEPS_46 += src/appweb.h
+DEPS_48 += src/appweb.h
 
 $(BUILD)/obj/server.o: \
-    src/server.c $(DEPS_46)
+    src/server.c $(DEPS_48)
 	@echo '   [Compile] $(BUILD)/obj/server.o'
 	$(CC) -c -o $(BUILD)/obj/server.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/server.c
 
 #
 #   slink.o
 #
-DEPS_47 += $(BUILD)/inc/mpr.h
-DEPS_47 += $(BUILD)/inc/esp.h
+DEPS_49 += $(BUILD)/inc/mpr.h
+DEPS_49 += $(BUILD)/inc/esp.h
 
 $(BUILD)/obj/slink.o: \
-    src/slink.c $(DEPS_47)
+    src/slink.c $(DEPS_49)
 	@echo '   [Compile] $(BUILD)/obj/slink.o'
 	$(CC) -c -o $(BUILD)/obj/slink.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/slink.c
 
@@ -706,57 +718,57 @@ $(BUILD)/obj/slink.o: \
 #   sqlite3.h
 #
 
-src/sqlite/sqlite3.h: $(DEPS_48)
+src/sqlite/sqlite3.h: $(DEPS_50)
 
 #
 #   sqlite.o
 #
-DEPS_49 += $(BUILD)/inc/me.h
-DEPS_49 += src/sqlite/sqlite3.h
+DEPS_51 += $(BUILD)/inc/me.h
+DEPS_51 += src/sqlite/sqlite3.h
 
 $(BUILD)/obj/sqlite.o: \
-    src/sqlite/sqlite.c $(DEPS_49)
+    src/sqlite/sqlite.c $(DEPS_51)
 	@echo '   [Compile] $(BUILD)/obj/sqlite.o'
 	$(CC) -c -o $(BUILD)/obj/sqlite.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/sqlite/sqlite.c
 
 #
 #   sqlite3.o
 #
-DEPS_50 += $(BUILD)/inc/me.h
-DEPS_50 += src/sqlite/sqlite3.h
+DEPS_52 += $(BUILD)/inc/me.h
+DEPS_52 += src/sqlite/sqlite3.h
 
 $(BUILD)/obj/sqlite3.o: \
-    src/sqlite/sqlite3.c $(DEPS_50)
+    src/sqlite/sqlite3.c $(DEPS_52)
 	@echo '   [Compile] $(BUILD)/obj/sqlite3.o'
 	$(CC) -c -o $(BUILD)/obj/sqlite3.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/sqlite/sqlite3.c
 
 #
 #   sslModule.o
 #
-DEPS_51 += $(BUILD)/inc/appweb.h
+DEPS_53 += $(BUILD)/inc/appweb.h
 
 $(BUILD)/obj/sslModule.o: \
-    src/modules/sslModule.c $(DEPS_51)
+    src/modules/sslModule.c $(DEPS_53)
 	@echo '   [Compile] $(BUILD)/obj/sslModule.o'
 	$(CC) -c -o $(BUILD)/obj/sslModule.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" "-I$(ME_COM_OPENSSL_PATH)/include" src/modules/sslModule.c
 
 #
 #   testAppweb.o
 #
-DEPS_52 += $(BUILD)/inc/testAppweb.h
+DEPS_54 += $(BUILD)/inc/testAppweb.h
 
 $(BUILD)/obj/testAppweb.o: \
-    test/src/testAppweb.c $(DEPS_52)
+    test/src/testAppweb.c $(DEPS_54)
 	@echo '   [Compile] $(BUILD)/obj/testAppweb.o'
 	$(CC) -c -o $(BUILD)/obj/testAppweb.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" test/src/testAppweb.c
 
 #
 #   testHttp.o
 #
-DEPS_53 += $(BUILD)/inc/testAppweb.h
+DEPS_55 += $(BUILD)/inc/testAppweb.h
 
 $(BUILD)/obj/testHttp.o: \
-    test/src/testHttp.c $(DEPS_53)
+    test/src/testHttp.c $(DEPS_55)
 	@echo '   [Compile] $(BUILD)/obj/testHttp.o'
 	$(CC) -c -o $(BUILD)/obj/testHttp.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" test/src/testHttp.c
 
@@ -764,139 +776,177 @@ $(BUILD)/obj/testHttp.o: \
 #   zlib.h
 #
 
-src/zlib/zlib.h: $(DEPS_54)
+src/zlib/zlib.h: $(DEPS_56)
 
 #
 #   zlib.o
 #
-DEPS_55 += $(BUILD)/inc/me.h
-DEPS_55 += src/zlib/zlib.h
+DEPS_57 += $(BUILD)/inc/me.h
+DEPS_57 += src/zlib/zlib.h
 
 $(BUILD)/obj/zlib.o: \
-    src/zlib/zlib.c $(DEPS_55)
+    src/zlib/zlib.c $(DEPS_57)
 	@echo '   [Compile] $(BUILD)/obj/zlib.o'
 	$(CC) -c -o $(BUILD)/obj/zlib.o $(CFLAGS) $(DFLAGS) "-I$(BUILD)/inc" "-I$(WIND_BASE)/target/h" "-I$(WIND_BASE)/target/h/wrn/coreip" src/zlib/zlib.c
 
 #
 #   libmpr
 #
-DEPS_56 += $(BUILD)/inc/mpr.h
-DEPS_56 += $(BUILD)/obj/mprLib.o
+DEPS_58 += $(BUILD)/inc/mpr.h
+DEPS_58 += $(BUILD)/obj/mprLib.o
 
-$(BUILD)/bin/libmpr.out: $(DEPS_56)
-	@echo '      [Link] $(BUILD)/bin/libmpr.out'
-	$(CC) -r -o $(BUILD)/bin/libmpr.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/mprLib.o" $(LIBS) 
+$(BUILD)/bin/libmpr.a: $(DEPS_58)
+	@echo '      [Link] $(BUILD)/bin/libmpr.a'
+	ar -cr $(BUILD)/bin/libmpr.a "$(BUILD)/obj/mprLib.o"
 
 ifeq ($(ME_COM_PCRE),1)
 #
 #   libpcre
 #
-DEPS_57 += $(BUILD)/inc/pcre.h
-DEPS_57 += $(BUILD)/obj/pcre.o
+DEPS_59 += $(BUILD)/inc/pcre.h
+DEPS_59 += $(BUILD)/obj/pcre.o
 
-$(BUILD)/bin/libpcre.out: $(DEPS_57)
-	@echo '      [Link] $(BUILD)/bin/libpcre.out'
-	$(CC) -r -o $(BUILD)/bin/libpcre.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/pcre.o" $(LIBS) 
+$(BUILD)/bin/libpcre.a: $(DEPS_59)
+	@echo '      [Link] $(BUILD)/bin/libpcre.a'
+	ar -cr $(BUILD)/bin/libpcre.a "$(BUILD)/obj/pcre.o"
 endif
 
 ifeq ($(ME_COM_HTTP),1)
 #
 #   libhttp
 #
-DEPS_58 += $(BUILD)/bin/libmpr.out
+DEPS_60 += $(BUILD)/bin/libmpr.a
 ifeq ($(ME_COM_PCRE),1)
-    DEPS_58 += $(BUILD)/bin/libpcre.out
+    DEPS_60 += $(BUILD)/bin/libpcre.a
 endif
-DEPS_58 += $(BUILD)/inc/http.h
-DEPS_58 += $(BUILD)/obj/httpLib.o
+DEPS_60 += $(BUILD)/inc/http.h
+DEPS_60 += $(BUILD)/obj/httpLib.o
 
-$(BUILD)/bin/libhttp.out: $(DEPS_58)
-	@echo '      [Link] $(BUILD)/bin/libhttp.out'
-	$(CC) -r -o $(BUILD)/bin/libhttp.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/httpLib.o" $(LIBS) 
+$(BUILD)/bin/libhttp.a: $(DEPS_60)
+	@echo '      [Link] $(BUILD)/bin/libhttp.a'
+	ar -cr $(BUILD)/bin/libhttp.a "$(BUILD)/obj/httpLib.o"
 endif
 
 #
 #   libappweb
 #
 ifeq ($(ME_COM_HTTP),1)
-    DEPS_59 += $(BUILD)/bin/libhttp.out
+    DEPS_61 += $(BUILD)/bin/libhttp.a
 endif
-DEPS_59 += $(BUILD)/bin/libmpr.out
-DEPS_59 += $(BUILD)/inc/appweb.h
-DEPS_59 += $(BUILD)/inc/customize.h
-DEPS_59 += $(BUILD)/obj/config.o
-DEPS_59 += $(BUILD)/obj/convenience.o
-DEPS_59 += $(BUILD)/obj/dirHandler.o
-DEPS_59 += $(BUILD)/obj/fileHandler.o
-DEPS_59 += $(BUILD)/obj/log.o
-DEPS_59 += $(BUILD)/obj/server.o
+DEPS_61 += $(BUILD)/bin/libmpr.a
+DEPS_61 += $(BUILD)/inc/appweb.h
+DEPS_61 += $(BUILD)/inc/customize.h
+DEPS_61 += $(BUILD)/obj/config.o
+DEPS_61 += $(BUILD)/obj/convenience.o
+DEPS_61 += $(BUILD)/obj/dirHandler.o
+DEPS_61 += $(BUILD)/obj/fileHandler.o
+DEPS_61 += $(BUILD)/obj/log.o
+DEPS_61 += $(BUILD)/obj/server.o
 
-$(BUILD)/bin/libappweb.out: $(DEPS_59)
-	@echo '      [Link] $(BUILD)/bin/libappweb.out'
-	$(CC) -r -o $(BUILD)/bin/libappweb.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/config.o" "$(BUILD)/obj/convenience.o" "$(BUILD)/obj/dirHandler.o" "$(BUILD)/obj/fileHandler.o" "$(BUILD)/obj/log.o" "$(BUILD)/obj/server.o" $(LIBS) 
+$(BUILD)/bin/libappweb.a: $(DEPS_61)
+	@echo '      [Link] $(BUILD)/bin/libappweb.a'
+	ar -cr $(BUILD)/bin/libappweb.a "$(BUILD)/obj/config.o" "$(BUILD)/obj/convenience.o" "$(BUILD)/obj/dirHandler.o" "$(BUILD)/obj/fileHandler.o" "$(BUILD)/obj/log.o" "$(BUILD)/obj/server.o"
 
 #
 #   slink.c
 #
 
-src/slink.c: $(DEPS_60)
+src/slink.c: $(DEPS_62)
 	( \
 	cd src; \
 	[ ! -f slink.c ] && cp slink.empty slink.c ; true ; \
 	)
 
+ifeq ($(ME_COM_ESP),1)
+#
+#   libmod_esp
+#
+DEPS_63 += $(BUILD)/bin/libappweb.a
+DEPS_63 += $(BUILD)/inc/esp.h
+DEPS_63 += $(BUILD)/obj/espLib.o
+ifeq ($(ME_COM_SQLITE),1)
+    DEPS_63 += $(BUILD)/bin/libsql.a
+endif
+
+$(BUILD)/bin/libmod_esp.a: $(DEPS_63)
+	@echo '      [Link] $(BUILD)/bin/libmod_esp.a'
+	ar -cr $(BUILD)/bin/libmod_esp.a "$(BUILD)/obj/espLib.o"
+endif
+
 #
 #   libslink
 #
-DEPS_61 += src/slink.c
-DEPS_61 += $(BUILD)/obj/slink.o
+DEPS_64 += src/slink.c
+ifeq ($(ME_COM_SQLITE),1)
+    DEPS_64 += $(BUILD)/bin/libsql.a
+endif
+ifeq ($(ME_COM_ESP),1)
+    DEPS_64 += $(BUILD)/bin/libmod_esp.a
+endif
+ifeq ($(ME_COM_SQLITE),1)
+    DEPS_64 += $(BUILD)/bin/libsql.a
+endif
+ifeq ($(ME_COM_ESP),1)
+    DEPS_64 += $(BUILD)/bin/libmod_esp.a
+endif
+ifeq ($(ME_COM_SQLITE),1)
+    DEPS_64 += $(BUILD)/bin/libsql.a
+endif
+DEPS_64 += $(BUILD)/obj/slink.o
 
-$(BUILD)/bin/libslink.out: $(DEPS_61)
-	@echo '      [Link] $(BUILD)/bin/libslink.out'
-	$(CC) -r -o $(BUILD)/bin/libslink.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/slink.o" $(LIBS) 
+$(BUILD)/bin/libslink.a: $(DEPS_64)
+	@echo '      [Link] $(BUILD)/bin/libslink.a'
+	ar -cr $(BUILD)/bin/libslink.a "$(BUILD)/obj/slink.o"
+
+ifeq ($(ME_COM_EST),1)
+#
+#   libest
+#
+DEPS_65 += $(BUILD)/inc/osdep.h
+DEPS_65 += $(BUILD)/inc/est.h
+DEPS_65 += $(BUILD)/obj/estLib.o
+
+$(BUILD)/bin/libest.a: $(DEPS_65)
+	@echo '      [Link] $(BUILD)/bin/libest.a'
+	ar -cr $(BUILD)/bin/libest.a "$(BUILD)/obj/estLib.o"
+endif
 
 #
-#   appweb
+#   libmprssl
 #
-DEPS_62 += $(BUILD)/bin/libappweb.out
-DEPS_62 += $(BUILD)/bin/libslink.out
-DEPS_62 += $(BUILD)/obj/appweb.o
+DEPS_66 += $(BUILD)/bin/libmpr.a
+ifeq ($(ME_COM_EST),1)
+    DEPS_66 += $(BUILD)/bin/libest.a
+endif
+DEPS_66 += $(BUILD)/obj/mprSsl.o
 
-$(BUILD)/bin/appweb.out: $(DEPS_62)
-	@echo '      [Link] $(BUILD)/bin/appweb.out'
-	$(CC) -o $(BUILD)/bin/appweb.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/appweb.o" $(LIBS) -Wl,-r 
+$(BUILD)/bin/libmprssl.a: $(DEPS_66)
+	@echo '      [Link] $(BUILD)/bin/libmprssl.a'
+	ar -cr $(BUILD)/bin/libmprssl.a "$(BUILD)/obj/mprSsl.o"
 
+ifeq ($(ME_COM_SSL),1)
 #
-#   authpass
+#   libmod_ssl
 #
-DEPS_63 += $(BUILD)/bin/libappweb.out
-DEPS_63 += $(BUILD)/obj/authpass.o
+DEPS_67 += $(BUILD)/bin/libappweb.a
+DEPS_67 += $(BUILD)/bin/libmprssl.a
+DEPS_67 += $(BUILD)/obj/sslModule.o
 
-$(BUILD)/bin/authpass.out: $(DEPS_63)
-	@echo '      [Link] $(BUILD)/bin/authpass.out'
-	$(CC) -o $(BUILD)/bin/authpass.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/authpass.o" $(LIBS) -Wl,-r 
-
-ifeq ($(ME_COM_CGI),1)
-#
-#   cgiProgram
-#
-DEPS_64 += $(BUILD)/obj/cgiProgram.o
-
-$(BUILD)/bin/cgiProgram.out: $(DEPS_64)
-	@echo '      [Link] $(BUILD)/bin/cgiProgram.out'
-	$(CC) -o $(BUILD)/bin/cgiProgram.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/cgiProgram.o" $(LIBS) -Wl,-r 
+$(BUILD)/bin/libmod_ssl.a: $(DEPS_67)
+	@echo '      [Link] $(BUILD)/bin/libmod_ssl.a'
+	ar -cr $(BUILD)/bin/libmod_ssl.a "$(BUILD)/obj/sslModule.o"
 endif
 
 ifeq ($(ME_COM_ZLIB),1)
 #
 #   libzlib
 #
-DEPS_65 += $(BUILD)/inc/zlib.h
-DEPS_65 += $(BUILD)/obj/zlib.o
+DEPS_68 += $(BUILD)/inc/zlib.h
+DEPS_68 += $(BUILD)/obj/zlib.o
 
-$(BUILD)/bin/libzlib.out: $(DEPS_65)
-	@echo '      [Link] $(BUILD)/bin/libzlib.out'
-	$(CC) -r -o $(BUILD)/bin/libzlib.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/zlib.o" $(LIBS) 
+$(BUILD)/bin/libzlib.a: $(DEPS_68)
+	@echo '      [Link] $(BUILD)/bin/libzlib.a'
+	ar -cr $(BUILD)/bin/libzlib.a "$(BUILD)/obj/zlib.o"
 endif
 
 ifeq ($(ME_COM_EJS),1)
@@ -904,45 +954,242 @@ ifeq ($(ME_COM_EJS),1)
 #   libejs
 #
 ifeq ($(ME_COM_HTTP),1)
-    DEPS_66 += $(BUILD)/bin/libhttp.out
+    DEPS_69 += $(BUILD)/bin/libhttp.a
 endif
 ifeq ($(ME_COM_PCRE),1)
-    DEPS_66 += $(BUILD)/bin/libpcre.out
+    DEPS_69 += $(BUILD)/bin/libpcre.a
 endif
-DEPS_66 += $(BUILD)/bin/libmpr.out
+DEPS_69 += $(BUILD)/bin/libmpr.a
 ifeq ($(ME_COM_ZLIB),1)
-    DEPS_66 += $(BUILD)/bin/libzlib.out
+    DEPS_69 += $(BUILD)/bin/libzlib.a
 endif
-DEPS_66 += $(BUILD)/inc/ejs.h
-DEPS_66 += $(BUILD)/inc/ejs.slots.h
-DEPS_66 += $(BUILD)/inc/ejsByteGoto.h
-DEPS_66 += $(BUILD)/obj/ejsLib.o
+DEPS_69 += $(BUILD)/inc/ejs.h
+DEPS_69 += $(BUILD)/inc/ejs.slots.h
+DEPS_69 += $(BUILD)/inc/ejsByteGoto.h
+DEPS_69 += $(BUILD)/obj/ejsLib.o
+ifeq ($(ME_COM_SQLITE),1)
+    DEPS_69 += $(BUILD)/bin/libsql.a
+endif
 
-$(BUILD)/bin/libejs.out: $(DEPS_66)
-	@echo '      [Link] $(BUILD)/bin/libejs.out'
-	$(CC) -r -o $(BUILD)/bin/libejs.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/ejsLib.o" $(LIBS) 
+$(BUILD)/bin/libejs.a: $(DEPS_69)
+	@echo '      [Link] $(BUILD)/bin/libejs.a'
+	ar -cr $(BUILD)/bin/libejs.a "$(BUILD)/obj/ejsLib.o"
+endif
+
+ifeq ($(ME_COM_EJS),1)
+#
+#   libmod_ejs
+#
+DEPS_70 += $(BUILD)/bin/libappweb.a
+DEPS_70 += $(BUILD)/bin/libejs.a
+ifeq ($(ME_COM_SQLITE),1)
+    DEPS_70 += $(BUILD)/bin/libsql.a
+endif
+DEPS_70 += $(BUILD)/obj/ejsHandler.o
+
+$(BUILD)/bin/libmod_ejs.a: $(DEPS_70)
+	@echo '      [Link] $(BUILD)/bin/libmod_ejs.a'
+	ar -cr $(BUILD)/bin/libmod_ejs.a "$(BUILD)/obj/ejsHandler.o"
+endif
+
+ifeq ($(ME_COM_PHP),1)
+#
+#   libmod_php
+#
+DEPS_71 += $(BUILD)/bin/libappweb.a
+DEPS_71 += $(BUILD)/obj/phpHandler.o
+
+$(BUILD)/bin/libmod_php.a: $(DEPS_71)
+	@echo '      [Link] $(BUILD)/bin/libmod_php.a'
+	ar -cr $(BUILD)/bin/libmod_php.a "$(BUILD)/obj/phpHandler.o"
+endif
+
+ifeq ($(ME_COM_CGI),1)
+#
+#   libmod_cgi
+#
+DEPS_72 += $(BUILD)/bin/libappweb.a
+DEPS_72 += $(BUILD)/obj/cgiHandler.o
+
+$(BUILD)/bin/libmod_cgi.a: $(DEPS_72)
+	@echo '      [Link] $(BUILD)/bin/libmod_cgi.a'
+	ar -cr $(BUILD)/bin/libmod_cgi.a "$(BUILD)/obj/cgiHandler.o"
+endif
+
+#
+#   appweb
+#
+DEPS_73 += $(BUILD)/bin/libappweb.a
+DEPS_73 += $(BUILD)/bin/libslink.a
+ifeq ($(ME_COM_ESP),1)
+    DEPS_73 += $(BUILD)/bin/libmod_esp.a
+endif
+ifeq ($(ME_COM_SQLITE),1)
+    DEPS_73 += $(BUILD)/bin/libsql.a
+endif
+ifeq ($(ME_COM_SSL),1)
+    DEPS_73 += $(BUILD)/bin/libmod_ssl.a
+endif
+ifeq ($(ME_COM_EJS),1)
+    DEPS_73 += $(BUILD)/bin/libmod_ejs.a
+endif
+ifeq ($(ME_COM_PHP),1)
+    DEPS_73 += $(BUILD)/bin/libmod_php.a
+endif
+ifeq ($(ME_COM_CGI),1)
+    DEPS_73 += $(BUILD)/bin/libmod_cgi.a
+endif
+DEPS_73 += $(BUILD)/obj/appweb.o
+
+LIBS_73 += -lmpr
+ifeq ($(ME_COM_PCRE),1)
+    LIBS_73 += -lpcre
+endif
+ifeq ($(ME_COM_HTTP),1)
+    LIBS_73 += -lhttp
+endif
+ifeq ($(ME_COM_PCRE),1)
+    LIBS_73 += -lpcre
+endif
+LIBS_73 += -lmpr
+LIBS_73 += -lappweb
+ifeq ($(ME_COM_HTTP),1)
+    LIBS_73 += -lhttp
+endif
+ifeq ($(ME_COM_ESP),1)
+    LIBS_73 += -lmod_esp
+endif
+LIBS_73 += -lappweb
+LIBS_73 += -lslink
+ifeq ($(ME_COM_ESP),1)
+    LIBS_73 += -lmod_esp
+endif
+ifeq ($(ME_COM_EST),1)
+    LIBS_73 += -lest
+endif
+LIBS_73 += -lmprssl
+ifeq ($(ME_COM_OPENSSL),1)
+ifeq ($(ME_COM_SSL),1)
+    LIBS_73 += -lssl
+    LIBPATHS_73 += -L"$(ME_COM_OPENSSL_PATH)"
+endif
+endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_73 += -lcrypto
+    LIBPATHS_73 += -L"$(ME_COM_OPENSSL_PATH)"
+endif
+ifeq ($(ME_COM_SSL),1)
+    LIBS_73 += -lmod_ssl
+endif
+LIBS_73 += -lmprssl
+ifeq ($(ME_COM_ZLIB),1)
+    LIBS_73 += -lzlib
+endif
+ifeq ($(ME_COM_EJS),1)
+    LIBS_73 += -lejs
+endif
+ifeq ($(ME_COM_ZLIB),1)
+    LIBS_73 += -lzlib
+endif
+ifeq ($(ME_COM_EJS),1)
+    LIBS_73 += -lmod_ejs
+endif
+ifeq ($(ME_COM_EJS),1)
+    LIBS_73 += -lejs
+endif
+ifeq ($(ME_COM_PHP),1)
+    LIBS_73 += -lmod_php
+endif
+ifeq ($(ME_COM_CGI),1)
+    LIBS_73 += -lmod_cgi
+endif
+
+$(BUILD)/bin/appweb.out: $(DEPS_73)
+	@echo '      [Link] $(BUILD)/bin/appweb.out'
+	$(CC) -o $(BUILD)/bin/appweb.out $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/appweb.o" $(LIBPATHS_73) $(LIBS_73) $(LIBS_73) $(LIBS) -Wl,-r 
+
+#
+#   authpass
+#
+DEPS_74 += $(BUILD)/bin/libappweb.a
+DEPS_74 += $(BUILD)/obj/authpass.o
+
+LIBS_74 += -lmpr
+ifeq ($(ME_COM_PCRE),1)
+    LIBS_74 += -lpcre
+endif
+ifeq ($(ME_COM_HTTP),1)
+    LIBS_74 += -lhttp
+endif
+ifeq ($(ME_COM_PCRE),1)
+    LIBS_74 += -lpcre
+endif
+LIBS_74 += -lmpr
+LIBS_74 += -lappweb
+ifeq ($(ME_COM_HTTP),1)
+    LIBS_74 += -lhttp
+endif
+
+$(BUILD)/bin/authpass.out: $(DEPS_74)
+	@echo '      [Link] $(BUILD)/bin/authpass.out'
+	$(CC) -o $(BUILD)/bin/authpass.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/authpass.o" $(LIBPATHS_74) $(LIBS_74) $(LIBS_74) $(LIBS) -Wl,-r 
+
+ifeq ($(ME_COM_CGI),1)
+#
+#   cgiProgram
+#
+DEPS_75 += $(BUILD)/obj/cgiProgram.o
+
+$(BUILD)/bin/cgiProgram.out: $(DEPS_75)
+	@echo '      [Link] $(BUILD)/bin/cgiProgram.out'
+	$(CC) -o $(BUILD)/bin/cgiProgram.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/cgiProgram.o" $(LIBS) -Wl,-r 
 endif
 
 ifeq ($(ME_COM_EJS),1)
 #
 #   ejsc
 #
-DEPS_67 += $(BUILD)/bin/libejs.out
-DEPS_67 += $(BUILD)/obj/ejsc.o
+DEPS_76 += $(BUILD)/bin/libejs.a
+ifeq ($(ME_COM_SQLITE),1)
+    DEPS_76 += $(BUILD)/bin/libsql.a
+endif
+DEPS_76 += $(BUILD)/obj/ejsc.o
 
-$(BUILD)/bin/ejsc.out: $(DEPS_67)
+LIBS_76 += -lmpr
+ifeq ($(ME_COM_PCRE),1)
+    LIBS_76 += -lpcre
+endif
+ifeq ($(ME_COM_HTTP),1)
+    LIBS_76 += -lhttp
+endif
+ifeq ($(ME_COM_PCRE),1)
+    LIBS_76 += -lpcre
+endif
+LIBS_76 += -lmpr
+ifeq ($(ME_COM_ZLIB),1)
+    LIBS_76 += -lzlib
+endif
+LIBS_76 += -lejs
+ifeq ($(ME_COM_ZLIB),1)
+    LIBS_76 += -lzlib
+endif
+ifeq ($(ME_COM_HTTP),1)
+    LIBS_76 += -lhttp
+endif
+
+$(BUILD)/bin/ejsc.out: $(DEPS_76)
 	@echo '      [Link] $(BUILD)/bin/ejsc.out'
-	$(CC) -o $(BUILD)/bin/ejsc.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/ejsc.o" $(LIBS) -Wl,-r 
+	$(CC) -o $(BUILD)/bin/ejsc.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/ejsc.o" $(LIBPATHS_76) $(LIBS_76) $(LIBS_76) $(LIBS) -Wl,-r 
 endif
 
 ifeq ($(ME_COM_EJS),1)
 #
 #   ejs.mod
 #
-DEPS_68 += src/ejs/ejs.es
-DEPS_68 += $(BUILD)/bin/ejsc.out
+DEPS_77 += src/ejs/ejs.es
+DEPS_77 += $(BUILD)/bin/ejsc.out
 
-$(BUILD)/bin/ejs.mod: $(DEPS_68)
+$(BUILD)/bin/ejs.mod: $(DEPS_77)
 	( \
 	cd src/ejs; \
 	../../$(BUILD)/bin/ejsc --out ../../$(BUILD)/bin/ejs.mod --optimize 9 --bind --require null ejs.es ; \
@@ -953,123 +1200,148 @@ ifeq ($(ME_COM_EJS),1)
 #
 #   ejscmd
 #
-DEPS_69 += $(BUILD)/bin/libejs.out
-DEPS_69 += $(BUILD)/obj/ejs.o
+DEPS_78 += $(BUILD)/bin/libejs.a
+ifeq ($(ME_COM_SQLITE),1)
+    DEPS_78 += $(BUILD)/bin/libsql.a
+endif
+DEPS_78 += $(BUILD)/obj/ejs.o
 
-$(BUILD)/bin/ejs.out: $(DEPS_69)
+LIBS_78 += -lmpr
+ifeq ($(ME_COM_PCRE),1)
+    LIBS_78 += -lpcre
+endif
+ifeq ($(ME_COM_HTTP),1)
+    LIBS_78 += -lhttp
+endif
+ifeq ($(ME_COM_PCRE),1)
+    LIBS_78 += -lpcre
+endif
+LIBS_78 += -lmpr
+ifeq ($(ME_COM_ZLIB),1)
+    LIBS_78 += -lzlib
+endif
+LIBS_78 += -lejs
+ifeq ($(ME_COM_ZLIB),1)
+    LIBS_78 += -lzlib
+endif
+ifeq ($(ME_COM_HTTP),1)
+    LIBS_78 += -lhttp
+endif
+
+$(BUILD)/bin/ejs.out: $(DEPS_78)
 	@echo '      [Link] $(BUILD)/bin/ejs.out'
-	$(CC) -o $(BUILD)/bin/ejs.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/ejs.o" $(LIBS) -Wl,-r 
+	$(CC) -o $(BUILD)/bin/ejs.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/ejs.o" $(LIBPATHS_78) $(LIBS_78) $(LIBS_78) $(LIBS) -Wl,-r 
 endif
 
 ifeq ($(ME_COM_ESP),1)
 #
 #   esp-paks
 #
-DEPS_70 += src/esp-html-mvc/client/assets/favicon.ico
-DEPS_70 += src/esp-html-mvc/client/css/all.css
-DEPS_70 += src/esp-html-mvc/client/css/all.less
-DEPS_70 += src/esp-html-mvc/client/index.esp
-DEPS_70 += src/esp-html-mvc/css/app.less
-DEPS_70 += src/esp-html-mvc/css/theme.less
-DEPS_70 += src/esp-html-mvc/generate/appweb.conf
-DEPS_70 += src/esp-html-mvc/generate/controller.c
-DEPS_70 += src/esp-html-mvc/generate/controllerSingleton.c
-DEPS_70 += src/esp-html-mvc/generate/edit.esp
-DEPS_70 += src/esp-html-mvc/generate/list.esp
-DEPS_70 += src/esp-html-mvc/layouts/default.esp
-DEPS_70 += src/esp-html-mvc/package.json
-DEPS_70 += src/esp-legacy-mvc/generate/appweb.conf
-DEPS_70 += src/esp-legacy-mvc/generate/controller.c
-DEPS_70 += src/esp-legacy-mvc/generate/edit.esp
-DEPS_70 += src/esp-legacy-mvc/generate/list.esp
-DEPS_70 += src/esp-legacy-mvc/generate/migration.c
-DEPS_70 += src/esp-legacy-mvc/generate/src/app.c
-DEPS_70 += src/esp-legacy-mvc/layouts/default.esp
-DEPS_70 += src/esp-legacy-mvc/package.json
-DEPS_70 += src/esp-legacy-mvc/static/css/all.css
-DEPS_70 += src/esp-legacy-mvc/static/images/banner.jpg
-DEPS_70 += src/esp-legacy-mvc/static/images/favicon.ico
-DEPS_70 += src/esp-legacy-mvc/static/images/splash.jpg
-DEPS_70 += src/esp-legacy-mvc/static/index.esp
-DEPS_70 += src/esp-legacy-mvc/static/js/jquery.esp.js
-DEPS_70 += src/esp-legacy-mvc/static/js/jquery.js
-DEPS_70 += src/esp-mvc/generate/appweb.conf
-DEPS_70 += src/esp-mvc/generate/controller.c
-DEPS_70 += src/esp-mvc/generate/migration.c
-DEPS_70 += src/esp-mvc/generate/src/app.c
-DEPS_70 += src/esp-mvc/LICENSE.md
-DEPS_70 += src/esp-mvc/package.json
-DEPS_70 += src/esp-mvc/README.md
-DEPS_70 += src/esp-server/generate/appweb.conf
-DEPS_70 += src/esp-server/package.json
+DEPS_79 += src/esp-html-mvc/client/assets/favicon.ico
+DEPS_79 += src/esp-html-mvc/client/css/all.css
+DEPS_79 += src/esp-html-mvc/client/css/all.less
+DEPS_79 += src/esp-html-mvc/client/index.esp
+DEPS_79 += src/esp-html-mvc/css/app.less
+DEPS_79 += src/esp-html-mvc/css/theme.less
+DEPS_79 += src/esp-html-mvc/generate/appweb.conf
+DEPS_79 += src/esp-html-mvc/generate/controller.c
+DEPS_79 += src/esp-html-mvc/generate/controllerSingleton.c
+DEPS_79 += src/esp-html-mvc/generate/edit.esp
+DEPS_79 += src/esp-html-mvc/generate/list.esp
+DEPS_79 += src/esp-html-mvc/layouts/default.esp
+DEPS_79 += src/esp-html-mvc/package.json
+DEPS_79 += src/esp-legacy-mvc/generate/appweb.conf
+DEPS_79 += src/esp-legacy-mvc/generate/controller.c
+DEPS_79 += src/esp-legacy-mvc/generate/edit.esp
+DEPS_79 += src/esp-legacy-mvc/generate/list.esp
+DEPS_79 += src/esp-legacy-mvc/generate/migration.c
+DEPS_79 += src/esp-legacy-mvc/generate/src/app.c
+DEPS_79 += src/esp-legacy-mvc/layouts/default.esp
+DEPS_79 += src/esp-legacy-mvc/package.json
+DEPS_79 += src/esp-legacy-mvc/static/css/all.css
+DEPS_79 += src/esp-legacy-mvc/static/images/banner.jpg
+DEPS_79 += src/esp-legacy-mvc/static/images/favicon.ico
+DEPS_79 += src/esp-legacy-mvc/static/images/splash.jpg
+DEPS_79 += src/esp-legacy-mvc/static/index.esp
+DEPS_79 += src/esp-legacy-mvc/static/js/jquery.esp.js
+DEPS_79 += src/esp-legacy-mvc/static/js/jquery.js
+DEPS_79 += src/esp-mvc/generate/appweb.conf
+DEPS_79 += src/esp-mvc/generate/controller.c
+DEPS_79 += src/esp-mvc/generate/migration.c
+DEPS_79 += src/esp-mvc/generate/src/app.c
+DEPS_79 += src/esp-mvc/LICENSE.md
+DEPS_79 += src/esp-mvc/package.json
+DEPS_79 += src/esp-mvc/README.md
+DEPS_79 += src/esp-server/generate/appweb.conf
+DEPS_79 += src/esp-server/package.json
 
-$(BUILD)/esp: $(DEPS_70)
-	mkdir -p "$(BUILD)/esp/paks/esp-html-mvc/4.7.1" ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-html-mvc/4.7.1/client" ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-html-mvc/4.7.1/client/assets" ; \
-	cp paks/esp-html-mvc/client/assets/favicon.ico $(BUILD)/esp/paks/esp-html-mvc/4.7.1/client/assets/favicon.ico ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-html-mvc/4.7.1/client/css" ; \
-	cp paks/esp-html-mvc/client/css/all.css $(BUILD)/esp/paks/esp-html-mvc/4.7.1/client/css/all.css ; \
-	cp paks/esp-html-mvc/client/css/all.less $(BUILD)/esp/paks/esp-html-mvc/4.7.1/client/css/all.less ; \
-	cp paks/esp-html-mvc/client/index.esp $(BUILD)/esp/paks/esp-html-mvc/4.7.1/client/index.esp ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-html-mvc/4.7.1/css" ; \
-	cp paks/esp-html-mvc/css/app.less $(BUILD)/esp/paks/esp-html-mvc/4.7.1/css/app.less ; \
-	cp paks/esp-html-mvc/css/theme.less $(BUILD)/esp/paks/esp-html-mvc/4.7.1/css/theme.less ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-html-mvc/4.7.1/generate" ; \
-	cp paks/esp-html-mvc/generate/appweb.conf $(BUILD)/esp/paks/esp-html-mvc/4.7.1/generate/appweb.conf ; \
-	cp paks/esp-html-mvc/generate/controller.c $(BUILD)/esp/paks/esp-html-mvc/4.7.1/generate/controller.c ; \
-	cp paks/esp-html-mvc/generate/controllerSingleton.c $(BUILD)/esp/paks/esp-html-mvc/4.7.1/generate/controllerSingleton.c ; \
-	cp paks/esp-html-mvc/generate/edit.esp $(BUILD)/esp/paks/esp-html-mvc/4.7.1/generate/edit.esp ; \
-	cp paks/esp-html-mvc/generate/list.esp $(BUILD)/esp/paks/esp-html-mvc/4.7.1/generate/list.esp ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-html-mvc/4.7.1/layouts" ; \
-	cp paks/esp-html-mvc/layouts/default.esp $(BUILD)/esp/paks/esp-html-mvc/4.7.1/layouts/default.esp ; \
-	cp paks/esp-html-mvc/package.json $(BUILD)/esp/paks/esp-html-mvc/4.7.1/package.json ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-legacy-mvc/4.7.1" ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/generate" ; \
-	cp paks/esp-legacy-mvc/generate/appweb.conf $(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/generate/appweb.conf ; \
-	cp paks/esp-legacy-mvc/generate/controller.c $(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/generate/controller.c ; \
-	cp paks/esp-legacy-mvc/generate/edit.esp $(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/generate/edit.esp ; \
-	cp paks/esp-legacy-mvc/generate/list.esp $(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/generate/list.esp ; \
-	cp paks/esp-legacy-mvc/generate/migration.c $(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/generate/migration.c ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/generate/src" ; \
-	cp paks/esp-legacy-mvc/generate/src/app.c $(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/generate/src/app.c ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/layouts" ; \
-	cp paks/esp-legacy-mvc/layouts/default.esp $(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/layouts/default.esp ; \
-	cp paks/esp-legacy-mvc/package.json $(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/package.json ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/static" ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/static/css" ; \
-	cp paks/esp-legacy-mvc/static/css/all.css $(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/static/css/all.css ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/static/images" ; \
-	cp paks/esp-legacy-mvc/static/images/banner.jpg $(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/static/images/banner.jpg ; \
-	cp paks/esp-legacy-mvc/static/images/favicon.ico $(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/static/images/favicon.ico ; \
-	cp paks/esp-legacy-mvc/static/images/splash.jpg $(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/static/images/splash.jpg ; \
-	cp paks/esp-legacy-mvc/static/index.esp $(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/static/index.esp ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/static/js" ; \
-	cp paks/esp-legacy-mvc/static/js/jquery.esp.js $(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/static/js/jquery.esp.js ; \
-	cp paks/esp-legacy-mvc/static/js/jquery.js $(BUILD)/esp/paks/esp-legacy-mvc/4.7.1/static/js/jquery.js ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-mvc/4.7.1" ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-mvc/4.7.1/generate" ; \
-	cp paks/esp-mvc/generate/appweb.conf $(BUILD)/esp/paks/esp-mvc/4.7.1/generate/appweb.conf ; \
-	cp paks/esp-mvc/generate/controller.c $(BUILD)/esp/paks/esp-mvc/4.7.1/generate/controller.c ; \
-	cp paks/esp-mvc/generate/migration.c $(BUILD)/esp/paks/esp-mvc/4.7.1/generate/migration.c ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-mvc/4.7.1/generate/src" ; \
-	cp paks/esp-mvc/generate/src/app.c $(BUILD)/esp/paks/esp-mvc/4.7.1/generate/src/app.c ; \
-	cp paks/esp-mvc/LICENSE.md $(BUILD)/esp/paks/esp-mvc/4.7.1/LICENSE.md ; \
-	cp paks/esp-mvc/package.json $(BUILD)/esp/paks/esp-mvc/4.7.1/package.json ; \
-	cp paks/esp-mvc/README.md $(BUILD)/esp/paks/esp-mvc/4.7.1/README.md ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-server/4.7.1" ; \
-	mkdir -p "$(BUILD)/esp/paks/esp-server/4.7.1/generate" ; \
-	cp paks/esp-server/generate/appweb.conf $(BUILD)/esp/paks/esp-server/4.7.1/generate/appweb.conf ; \
-	cp paks/esp-server/package.json $(BUILD)/esp/paks/esp-server/4.7.1/package.json
+$(BUILD)/esp: $(DEPS_79)
+	mkdir -p "$(BUILD)/esp/paks/esp-html-mvc/4.7.2" ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-html-mvc/4.7.2/client" ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-html-mvc/4.7.2/client/assets" ; \
+	cp paks/esp-html-mvc/client/assets/favicon.ico $(BUILD)/esp/paks/esp-html-mvc/4.7.2/client/assets/favicon.ico ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-html-mvc/4.7.2/client/css" ; \
+	cp paks/esp-html-mvc/client/css/all.css $(BUILD)/esp/paks/esp-html-mvc/4.7.2/client/css/all.css ; \
+	cp paks/esp-html-mvc/client/css/all.less $(BUILD)/esp/paks/esp-html-mvc/4.7.2/client/css/all.less ; \
+	cp paks/esp-html-mvc/client/index.esp $(BUILD)/esp/paks/esp-html-mvc/4.7.2/client/index.esp ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-html-mvc/4.7.2/css" ; \
+	cp paks/esp-html-mvc/css/app.less $(BUILD)/esp/paks/esp-html-mvc/4.7.2/css/app.less ; \
+	cp paks/esp-html-mvc/css/theme.less $(BUILD)/esp/paks/esp-html-mvc/4.7.2/css/theme.less ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-html-mvc/4.7.2/generate" ; \
+	cp paks/esp-html-mvc/generate/appweb.conf $(BUILD)/esp/paks/esp-html-mvc/4.7.2/generate/appweb.conf ; \
+	cp paks/esp-html-mvc/generate/controller.c $(BUILD)/esp/paks/esp-html-mvc/4.7.2/generate/controller.c ; \
+	cp paks/esp-html-mvc/generate/controllerSingleton.c $(BUILD)/esp/paks/esp-html-mvc/4.7.2/generate/controllerSingleton.c ; \
+	cp paks/esp-html-mvc/generate/edit.esp $(BUILD)/esp/paks/esp-html-mvc/4.7.2/generate/edit.esp ; \
+	cp paks/esp-html-mvc/generate/list.esp $(BUILD)/esp/paks/esp-html-mvc/4.7.2/generate/list.esp ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-html-mvc/4.7.2/layouts" ; \
+	cp paks/esp-html-mvc/layouts/default.esp $(BUILD)/esp/paks/esp-html-mvc/4.7.2/layouts/default.esp ; \
+	cp paks/esp-html-mvc/package.json $(BUILD)/esp/paks/esp-html-mvc/4.7.2/package.json ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-legacy-mvc/4.7.2" ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/generate" ; \
+	cp paks/esp-legacy-mvc/generate/appweb.conf $(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/generate/appweb.conf ; \
+	cp paks/esp-legacy-mvc/generate/controller.c $(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/generate/controller.c ; \
+	cp paks/esp-legacy-mvc/generate/edit.esp $(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/generate/edit.esp ; \
+	cp paks/esp-legacy-mvc/generate/list.esp $(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/generate/list.esp ; \
+	cp paks/esp-legacy-mvc/generate/migration.c $(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/generate/migration.c ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/generate/src" ; \
+	cp paks/esp-legacy-mvc/generate/src/app.c $(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/generate/src/app.c ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/layouts" ; \
+	cp paks/esp-legacy-mvc/layouts/default.esp $(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/layouts/default.esp ; \
+	cp paks/esp-legacy-mvc/package.json $(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/package.json ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/static" ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/static/css" ; \
+	cp paks/esp-legacy-mvc/static/css/all.css $(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/static/css/all.css ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/static/images" ; \
+	cp paks/esp-legacy-mvc/static/images/banner.jpg $(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/static/images/banner.jpg ; \
+	cp paks/esp-legacy-mvc/static/images/favicon.ico $(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/static/images/favicon.ico ; \
+	cp paks/esp-legacy-mvc/static/images/splash.jpg $(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/static/images/splash.jpg ; \
+	cp paks/esp-legacy-mvc/static/index.esp $(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/static/index.esp ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/static/js" ; \
+	cp paks/esp-legacy-mvc/static/js/jquery.esp.js $(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/static/js/jquery.esp.js ; \
+	cp paks/esp-legacy-mvc/static/js/jquery.js $(BUILD)/esp/paks/esp-legacy-mvc/4.7.2/static/js/jquery.js ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-mvc/4.7.2" ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-mvc/4.7.2/generate" ; \
+	cp paks/esp-mvc/generate/appweb.conf $(BUILD)/esp/paks/esp-mvc/4.7.2/generate/appweb.conf ; \
+	cp paks/esp-mvc/generate/controller.c $(BUILD)/esp/paks/esp-mvc/4.7.2/generate/controller.c ; \
+	cp paks/esp-mvc/generate/migration.c $(BUILD)/esp/paks/esp-mvc/4.7.2/generate/migration.c ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-mvc/4.7.2/generate/src" ; \
+	cp paks/esp-mvc/generate/src/app.c $(BUILD)/esp/paks/esp-mvc/4.7.2/generate/src/app.c ; \
+	cp paks/esp-mvc/LICENSE.md $(BUILD)/esp/paks/esp-mvc/4.7.2/LICENSE.md ; \
+	cp paks/esp-mvc/package.json $(BUILD)/esp/paks/esp-mvc/4.7.2/package.json ; \
+	cp paks/esp-mvc/README.md $(BUILD)/esp/paks/esp-mvc/4.7.2/README.md ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-server/4.7.2" ; \
+	mkdir -p "$(BUILD)/esp/paks/esp-server/4.7.2/generate" ; \
+	cp paks/esp-server/generate/appweb.conf $(BUILD)/esp/paks/esp-server/4.7.2/generate/appweb.conf ; \
+	cp paks/esp-server/package.json $(BUILD)/esp/paks/esp-server/4.7.2/package.json
 endif
 
 ifeq ($(ME_COM_ESP),1)
 #
 #   esp.conf
 #
-DEPS_71 += src/esp/esp.conf
+DEPS_80 += src/esp/esp.conf
 
-$(BUILD)/bin/esp.conf: $(DEPS_71)
+$(BUILD)/bin/esp.conf: $(DEPS_80)
 	@echo '      [Copy] $(BUILD)/bin/esp.conf'
 	mkdir -p "$(BUILD)/bin"
 	cp src/esp/esp.conf $(BUILD)/bin/esp.conf
@@ -1077,34 +1349,42 @@ endif
 
 ifeq ($(ME_COM_ESP),1)
 #
-#   libmod_esp
-#
-DEPS_72 += $(BUILD)/bin/libappweb.out
-DEPS_72 += $(BUILD)/inc/esp.h
-DEPS_72 += $(BUILD)/obj/espLib.o
-
-$(BUILD)/bin/libmod_esp.out: $(DEPS_72)
-	@echo '      [Link] $(BUILD)/bin/libmod_esp.out'
-	$(CC) -r -o $(BUILD)/bin/libmod_esp.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/espLib.o" $(LIBS) 
-endif
-
-ifeq ($(ME_COM_ESP),1)
-#
 #   espcmd
 #
-DEPS_73 += $(BUILD)/bin/libmod_esp.out
-DEPS_73 += $(BUILD)/obj/esp.o
+DEPS_81 += $(BUILD)/bin/libmod_esp.a
+ifeq ($(ME_COM_SQLITE),1)
+    DEPS_81 += $(BUILD)/bin/libsql.a
+endif
+DEPS_81 += $(BUILD)/obj/esp.o
 
-$(BUILD)/bin/esp.out: $(DEPS_73)
+LIBS_81 += -lmpr
+ifeq ($(ME_COM_PCRE),1)
+    LIBS_81 += -lpcre
+endif
+ifeq ($(ME_COM_HTTP),1)
+    LIBS_81 += -lhttp
+endif
+ifeq ($(ME_COM_PCRE),1)
+    LIBS_81 += -lpcre
+endif
+LIBS_81 += -lmpr
+LIBS_81 += -lappweb
+ifeq ($(ME_COM_HTTP),1)
+    LIBS_81 += -lhttp
+endif
+LIBS_81 += -lmod_esp
+LIBS_81 += -lappweb
+
+$(BUILD)/bin/esp.out: $(DEPS_81)
 	@echo '      [Link] $(BUILD)/bin/esp.out'
-	$(CC) -o $(BUILD)/bin/esp.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/esp.o" $(LIBS) -Wl,-r 
+	$(CC) -o $(BUILD)/bin/esp.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/esp.o" $(LIBPATHS_81) $(LIBS_81) $(LIBS_81) $(LIBS) -Wl,-r 
 endif
 
 #
 #   genslink
 #
 
-genslink: $(DEPS_74)
+genslink: $(DEPS_82)
 	( \
 	cd src; \
 	esp --static --genlink slink.c compile ; \
@@ -1113,9 +1393,9 @@ genslink: $(DEPS_74)
 #
 #   http-ca-crt
 #
-DEPS_75 += src/http/ca.crt
+DEPS_83 += src/http/ca.crt
 
-$(BUILD)/bin/ca.crt: $(DEPS_75)
+$(BUILD)/bin/ca.crt: $(DEPS_83)
 	@echo '      [Copy] $(BUILD)/bin/ca.crt'
 	mkdir -p "$(BUILD)/bin"
 	cp src/http/ca.crt $(BUILD)/bin/ca.crt
@@ -1124,132 +1404,80 @@ ifeq ($(ME_COM_HTTP),1)
 #
 #   httpcmd
 #
-DEPS_76 += $(BUILD)/bin/libhttp.out
-DEPS_76 += $(BUILD)/obj/http.o
+DEPS_84 += $(BUILD)/bin/libhttp.a
+DEPS_84 += $(BUILD)/bin/libmprssl.a
+DEPS_84 += $(BUILD)/obj/http.o
 
-$(BUILD)/bin/http.out: $(DEPS_76)
-	@echo '      [Link] $(BUILD)/bin/http.out'
-	$(CC) -o $(BUILD)/bin/http.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/http.o" $(LIBS) -Wl,-r 
+LIBS_84 += -lmpr
+ifeq ($(ME_COM_PCRE),1)
+    LIBS_84 += -lpcre
 endif
-
-ifeq ($(ME_COM_CGI),1)
-#
-#   libmod_cgi
-#
-DEPS_77 += $(BUILD)/bin/libappweb.out
-DEPS_77 += $(BUILD)/obj/cgiHandler.o
-
-$(BUILD)/bin/libmod_cgi.out: $(DEPS_77)
-	@echo '      [Link] $(BUILD)/bin/libmod_cgi.out'
-	$(CC) -r -o $(BUILD)/bin/libmod_cgi.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/cgiHandler.o" $(LIBS) 
+LIBS_84 += -lhttp
+ifeq ($(ME_COM_PCRE),1)
+    LIBS_84 += -lpcre
 endif
-
-ifeq ($(ME_COM_EJS),1)
-#
-#   libmod_ejs
-#
-DEPS_78 += $(BUILD)/bin/libappweb.out
-DEPS_78 += $(BUILD)/bin/libejs.out
-DEPS_78 += $(BUILD)/obj/ejsHandler.o
-
-$(BUILD)/bin/libmod_ejs.out: $(DEPS_78)
-	@echo '      [Link] $(BUILD)/bin/libmod_ejs.out'
-	$(CC) -r -o $(BUILD)/bin/libmod_ejs.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/ejsHandler.o" $(LIBS) 
+LIBS_84 += -lmpr
+ifeq ($(ME_COM_EST),1)
+    LIBS_84 += -lest
 endif
-
-ifeq ($(ME_COM_PHP),1)
-#
-#   libmod_php
-#
-DEPS_79 += $(BUILD)/bin/libappweb.out
-DEPS_79 += $(BUILD)/obj/phpHandler.o
-
-LIBS_79 += -lphp5
-LIBPATHS_79 += -L"$(ME_COM_PHP_PATH)/libs"
-
-$(BUILD)/bin/libmod_php.out: $(DEPS_79)
-	@echo '      [Link] $(BUILD)/bin/libmod_php.out'
-	$(CC) -r -o $(BUILD)/bin/libmod_php.out $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/phpHandler.o" $(LIBPATHS_79) $(LIBS_79) $(LIBS_79) $(LIBS) 
-endif
-
-#
-#   libmprssl
-#
-DEPS_80 += $(BUILD)/bin/libmpr.out
-DEPS_80 += $(BUILD)/obj/mprSsl.o
-
+LIBS_84 += -lmprssl
 ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_80 += -lssl
-    LIBPATHS_80 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_80 += -lcrypto
-    LIBPATHS_80 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
-
-$(BUILD)/bin/libmprssl.out: $(DEPS_80)
-	@echo '      [Link] $(BUILD)/bin/libmprssl.out'
-	$(CC) -r -o $(BUILD)/bin/libmprssl.out $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/mprSsl.o" $(LIBPATHS_80) $(LIBS_80) $(LIBS_80) $(LIBS) 
-
 ifeq ($(ME_COM_SSL),1)
-#
-#   libmod_ssl
-#
-DEPS_81 += $(BUILD)/bin/libappweb.out
-DEPS_81 += $(BUILD)/bin/libmprssl.out
-DEPS_81 += $(BUILD)/obj/sslModule.o
-
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_81 += -lssl
-    LIBPATHS_81 += -L"$(ME_COM_OPENSSL_PATH)"
+    LIBS_84 += -lssl
+    LIBPATHS_84 += -L"$(ME_COM_OPENSSL_PATH)"
+endif
 endif
 ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_81 += -lcrypto
-    LIBPATHS_81 += -L"$(ME_COM_OPENSSL_PATH)"
+    LIBS_84 += -lcrypto
+    LIBPATHS_84 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
 
-$(BUILD)/bin/libmod_ssl.out: $(DEPS_81)
-	@echo '      [Link] $(BUILD)/bin/libmod_ssl.out'
-	$(CC) -r -o $(BUILD)/bin/libmod_ssl.out $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/sslModule.o" $(LIBPATHS_81) $(LIBS_81) $(LIBS_81) $(LIBS) 
+$(BUILD)/bin/http.out: $(DEPS_84)
+	@echo '      [Link] $(BUILD)/bin/http.out'
+	$(CC) -o $(BUILD)/bin/http.out $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/http.o" $(LIBPATHS_84) $(LIBS_84) $(LIBS_84) $(LIBS) -Wl,-r 
 endif
 
 ifeq ($(ME_COM_SQLITE),1)
 #
 #   libsql
 #
-DEPS_82 += $(BUILD)/inc/sqlite3.h
-DEPS_82 += $(BUILD)/obj/sqlite3.o
+DEPS_85 += $(BUILD)/inc/sqlite3.h
+DEPS_85 += $(BUILD)/obj/sqlite3.o
 
-$(BUILD)/bin/libsql.out: $(DEPS_82)
-	@echo '      [Link] $(BUILD)/bin/libsql.out'
-	$(CC) -r -o $(BUILD)/bin/libsql.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/sqlite3.o" $(LIBS) 
+$(BUILD)/bin/libsql.a: $(DEPS_85)
+	@echo '      [Link] $(BUILD)/bin/libsql.a'
+	ar -cr $(BUILD)/bin/libsql.a "$(BUILD)/obj/sqlite3.o"
 endif
 
 #
 #   makerom
 #
-DEPS_83 += $(BUILD)/bin/libmpr.out
-DEPS_83 += $(BUILD)/obj/makerom.o
+DEPS_86 += $(BUILD)/bin/libmpr.a
+DEPS_86 += $(BUILD)/obj/makerom.o
 
-$(BUILD)/bin/makerom.out: $(DEPS_83)
+LIBS_86 += -lmpr
+
+$(BUILD)/bin/makerom.out: $(DEPS_86)
 	@echo '      [Link] $(BUILD)/bin/makerom.out'
-	$(CC) -o $(BUILD)/bin/makerom.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/makerom.o" $(LIBS) -Wl,-r 
+	$(CC) -o $(BUILD)/bin/makerom.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/makerom.o" $(LIBPATHS_86) $(LIBS_86) $(LIBS_86) $(LIBS) -Wl,-r 
 
 #
 #   manager
 #
-DEPS_84 += $(BUILD)/bin/libmpr.out
-DEPS_84 += $(BUILD)/obj/manager.o
+DEPS_87 += $(BUILD)/bin/libmpr.a
+DEPS_87 += $(BUILD)/obj/manager.o
 
-$(BUILD)/bin/appman.out: $(DEPS_84)
+LIBS_87 += -lmpr
+
+$(BUILD)/bin/appman.out: $(DEPS_87)
 	@echo '      [Link] $(BUILD)/bin/appman.out'
-	$(CC) -o $(BUILD)/bin/appman.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/manager.o" $(LIBS) -Wl,-r 
+	$(CC) -o $(BUILD)/bin/appman.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/manager.o" $(LIBPATHS_87) $(LIBS_87) $(LIBS_87) $(LIBS) -Wl,-r 
 
 #
 #   server-cache
 #
 
-src/server/cache: $(DEPS_85)
+src/server/cache: $(DEPS_88)
 	( \
 	cd src/server; \
 	mkdir -p cache ; \
@@ -1259,33 +1487,51 @@ ifeq ($(ME_COM_SQLITE),1)
 #
 #   sqliteshell
 #
-DEPS_86 += $(BUILD)/bin/libsql.out
-DEPS_86 += $(BUILD)/obj/sqlite.o
+DEPS_89 += $(BUILD)/bin/libsql.a
+DEPS_89 += $(BUILD)/obj/sqlite.o
 
-$(BUILD)/bin/sqlite.out: $(DEPS_86)
+LIBS_89 += -lsql
+
+$(BUILD)/bin/sqlite.out: $(DEPS_89)
 	@echo '      [Link] $(BUILD)/bin/sqlite.out'
-	$(CC) -o $(BUILD)/bin/sqlite.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/sqlite.o" $(LIBS) -Wl,-r 
+	$(CC) -o $(BUILD)/bin/sqlite.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/sqlite.o" $(LIBPATHS_89) $(LIBS_89) $(LIBS_89) $(LIBS) -Wl,-r 
 endif
 
 #
 #   testAppweb
 #
-DEPS_87 += $(BUILD)/bin/libappweb.out
-DEPS_87 += $(BUILD)/inc/testAppweb.h
-DEPS_87 += $(BUILD)/obj/testAppweb.o
-DEPS_87 += $(BUILD)/obj/testHttp.o
+DEPS_90 += $(BUILD)/bin/libappweb.a
+DEPS_90 += $(BUILD)/inc/testAppweb.h
+DEPS_90 += $(BUILD)/obj/testAppweb.o
+DEPS_90 += $(BUILD)/obj/testHttp.o
 
-$(BUILD)/bin/testAppweb.out: $(DEPS_87)
+LIBS_90 += -lmpr
+ifeq ($(ME_COM_PCRE),1)
+    LIBS_90 += -lpcre
+endif
+ifeq ($(ME_COM_HTTP),1)
+    LIBS_90 += -lhttp
+endif
+ifeq ($(ME_COM_PCRE),1)
+    LIBS_90 += -lpcre
+endif
+LIBS_90 += -lmpr
+LIBS_90 += -lappweb
+ifeq ($(ME_COM_HTTP),1)
+    LIBS_90 += -lhttp
+endif
+
+$(BUILD)/bin/testAppweb.out: $(DEPS_90)
 	@echo '      [Link] $(BUILD)/bin/testAppweb.out'
-	$(CC) -o $(BUILD)/bin/testAppweb.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/testAppweb.o" "$(BUILD)/obj/testHttp.o" $(LIBS) -Wl,-r 
+	$(CC) -o $(BUILD)/bin/testAppweb.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/testAppweb.o" "$(BUILD)/obj/testHttp.o" $(LIBPATHS_90) $(LIBS_90) $(LIBS_90) $(LIBS) -Wl,-r 
 
 ifeq ($(ME_COM_CGI),1)
 #
 #   test-basic.cgi
 #
-DEPS_88 += $(BUILD)/bin/testAppweb.out
+DEPS_91 += $(BUILD)/bin/testAppweb.out
 
-test/web/auth/basic/basic.cgi: $(DEPS_88)
+test/web/auth/basic/basic.cgi: $(DEPS_91)
 	( \
 	cd test; \
 	echo "#!`type -p ejs`" >web/auth/basic/basic.cgi ; \
@@ -1298,9 +1544,9 @@ ifeq ($(ME_COM_CGI),1)
 #
 #   test-cache.cgi
 #
-DEPS_89 += $(BUILD)/bin/testAppweb.out
+DEPS_92 += $(BUILD)/bin/testAppweb.out
 
-test/web/caching/cache.cgi: $(DEPS_89)
+test/web/caching/cache.cgi: $(DEPS_92)
 	( \
 	cd test; \
 	echo "#!`type -p ejs`" >web/caching/cache.cgi ; \
@@ -1313,9 +1559,9 @@ ifeq ($(ME_COM_CGI),1)
 #
 #   test-cgiProgram
 #
-DEPS_90 += $(BUILD)/bin/cgiProgram.out
+DEPS_93 += $(BUILD)/bin/cgiProgram.out
 
-test/cgi-bin/cgiProgram.out: $(DEPS_90)
+test/cgi-bin/cgiProgram.out: $(DEPS_93)
 	( \
 	cd test; \
 	cp ../$(BUILD)/bin/cgiProgram.out cgi-bin/cgiProgram.out ; \
@@ -1330,9 +1576,9 @@ ifeq ($(ME_COM_CGI),1)
 #
 #   test-testScript
 #
-DEPS_91 += $(BUILD)/bin/testAppweb.out
+DEPS_94 += $(BUILD)/bin/testAppweb.out
 
-test/cgi-bin/testScript: $(DEPS_91)
+test/cgi-bin/testScript: $(DEPS_94)
 	( \
 	cd test; \
 	echo '#!../$(BUILD)/bin/cgiProgram.out' >cgi-bin/testScript ; chmod +x cgi-bin/testScript ; \
@@ -1343,42 +1589,43 @@ endif
 #   installBinary
 #
 
-installBinary: $(DEPS_92)
+installBinary: $(DEPS_95)
 
 #
 #   install
 #
-DEPS_93 += installBinary
+DEPS_96 += stop
+DEPS_96 += installBinary
+DEPS_96 += start
 
-install: $(DEPS_93)
+install: $(DEPS_96)
 
 #
 #   installPrep
 #
 
-installPrep: $(DEPS_94)
+installPrep: $(DEPS_97)
 	if [ "`id -u`" != 0 ] ; \
 	then echo "Must run as root. Rerun with "sudo"" ; \
 	exit 255 ; \
 	fi
 
-
 #
 #   run
 #
 
-run: $(DEPS_95)
+run: $(DEPS_98)
 	( \
 	cd src/server; \
 	sudo ../../$(BUILD)/bin/appweb -v ; \
 	)
 
-
 #
 #   uninstall
 #
+DEPS_99 += stop
 
-uninstall: $(DEPS_96)
+uninstall: $(DEPS_99)
 	( \
 	cd installs; \
 	rm -f "$(ME_VAPP_PREFIX)/appweb.conf" ; \
@@ -1392,6 +1639,6 @@ uninstall: $(DEPS_96)
 #   version
 #
 
-version: $(DEPS_97)
-	echo 4.7.1
+version: $(DEPS_100)
+	echo $(VERSION)
 

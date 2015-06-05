@@ -148,7 +148,7 @@
     #define ME_SERVER_ROOT "."
 #endif
 #ifndef ME_STATIC
-    #define ME_STATIC 0
+    #define ME_STATIC 1
 #endif
 #ifndef ME_TITLE
     #define ME_TITLE "Embedthis Appweb"
@@ -157,7 +157,7 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "4.7.1"
+    #define ME_VERSION "4.7.2"
 #endif
 
 /* Prefixes */
@@ -235,7 +235,7 @@
 
 /* Profile */
 #ifndef ME_CONFIG_CMD
-    #define ME_CONFIG_CMD "me -d -q -platform windows-x86-static -static -configure . -with est -gen vs"
+    #define ME_CONFIG_CMD "me -d -q -platform windows-x86-static -static -configure . -without ssl -gen vs"
 #endif
 #ifndef ME_APPWEB_PRODUCT
     #define ME_APPWEB_PRODUCT 1
@@ -255,10 +255,10 @@
     #define ME_MINOR_VERSION 7
 #endif
 #ifndef ME_PATCH_VERSION
-    #define ME_PATCH_VERSION 1
+    #define ME_PATCH_VERSION 2
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 400070001
+    #define ME_VNUM 400070002
 #endif
 
 /* Components */
@@ -278,7 +278,7 @@
     #define ME_COM_ESP 1
 #endif
 #ifndef ME_COM_EST
-    #define ME_COM_EST 1
+    #define ME_COM_EST 0
 #endif
 #ifndef ME_COM_HTTP
     #define ME_COM_HTTP 1
@@ -294,9 +294,6 @@
 #endif
 #ifndef ME_COM_MPR
     #define ME_COM_MPR 1
-#endif
-#ifndef ME_COM_OPENSSL
-    #define ME_COM_OPENSSL 0
 #endif
 #ifndef ME_COM_OSDEP
     #define ME_COM_OSDEP 1
@@ -314,7 +311,7 @@
     #define ME_COM_SQLITE 0
 #endif
 #ifndef ME_COM_SSL
-    #define ME_COM_SSL 1
+    #define ME_COM_SSL 0
 #endif
 #ifndef ME_COM_VXWORKS
     #define ME_COM_VXWORKS 0

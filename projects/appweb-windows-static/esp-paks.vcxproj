@@ -29,18 +29,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
         <ConfigurationType></ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
         <ConfigurationType></ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
         <ConfigurationType></ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
         <ConfigurationType></ConfigurationType>
         <CharacterSet>NotSet</CharacterSet>
+        <PlatformToolset>v120</PlatformToolset>
       </PropertyGroup>
 
       <Import Project="$(VCTargetsPath)Microsoft.Cpp.Default.props" />
@@ -96,63 +100,63 @@
 
       <CustomBuildStep>
         <Command>cd ..\..
-if not exist "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1" md "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1"
-if not exist "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\client" md "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\client"
-if not exist "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\client\assets" md "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\client\assets"
-copy /Y /B paks\esp-html-mvc\client\assets\favicon.ico+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\client\assets\favicon.ico $(LOG)
-if not exist "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\client\css" md "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\client\css"
-copy /Y /B paks\esp-html-mvc\client\css\all.css+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\client\css\all.css $(LOG)
-copy /Y /B paks\esp-html-mvc\client\css\all.less+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\client\css\all.less $(LOG)
-copy /Y /B paks\esp-html-mvc\client\index.esp+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\client\index.esp $(LOG)
-if not exist "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\css" md "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\css"
-copy /Y /B paks\esp-html-mvc\css\app.less+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\css\app.less $(LOG)
-copy /Y /B paks\esp-html-mvc\css\theme.less+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\css\theme.less $(LOG)
-if not exist "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\generate" md "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\generate"
-copy /Y /B paks\esp-html-mvc\generate\appweb.conf+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\generate\appweb.conf $(LOG)
-copy /Y /B paks\esp-html-mvc\generate\controller.c+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\generate\controller.c $(LOG)
-copy /Y /B paks\esp-html-mvc\generate\controllerSingleton.c+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\generate\controllerSingleton.c $(LOG)
-copy /Y /B paks\esp-html-mvc\generate\edit.esp+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\generate\edit.esp $(LOG)
-copy /Y /B paks\esp-html-mvc\generate\list.esp+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\generate\list.esp $(LOG)
-if not exist "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\layouts" md "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\layouts"
-copy /Y /B paks\esp-html-mvc\layouts\default.esp+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\layouts\default.esp $(LOG)
-copy /Y /B paks\esp-html-mvc\package.json+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.1\package.json $(LOG)
-if not exist "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1" md "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1"
-if not exist "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\generate" md "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\generate"
-copy /Y /B paks\esp-legacy-mvc\generate\appweb.conf+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\generate\appweb.conf $(LOG)
-copy /Y /B paks\esp-legacy-mvc\generate\controller.c+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\generate\controller.c $(LOG)
-copy /Y /B paks\esp-legacy-mvc\generate\edit.esp+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\generate\edit.esp $(LOG)
-copy /Y /B paks\esp-legacy-mvc\generate\list.esp+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\generate\list.esp $(LOG)
-copy /Y /B paks\esp-legacy-mvc\generate\migration.c+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\generate\migration.c $(LOG)
-if not exist "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\generate\src" md "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\generate\src"
-copy /Y /B paks\esp-legacy-mvc\generate\src\app.c+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\generate\src\app.c $(LOG)
-if not exist "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\layouts" md "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\layouts"
-copy /Y /B paks\esp-legacy-mvc\layouts\default.esp+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\layouts\default.esp $(LOG)
-copy /Y /B paks\esp-legacy-mvc\package.json+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\package.json $(LOG)
-if not exist "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\static" md "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\static"
-if not exist "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\static\css" md "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\static\css"
-copy /Y /B paks\esp-legacy-mvc\static\css\all.css+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\static\css\all.css $(LOG)
-if not exist "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\static\images" md "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\static\images"
-copy /Y /B paks\esp-legacy-mvc\static\images\banner.jpg+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\static\images\banner.jpg $(LOG)
-copy /Y /B paks\esp-legacy-mvc\static\images\favicon.ico+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\static\images\favicon.ico $(LOG)
-copy /Y /B paks\esp-legacy-mvc\static\images\splash.jpg+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\static\images\splash.jpg $(LOG)
-copy /Y /B paks\esp-legacy-mvc\static\index.esp+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\static\index.esp $(LOG)
-if not exist "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\static\js" md "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\static\js"
-copy /Y /B paks\esp-legacy-mvc\static\js\jquery.esp.js+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\static\js\jquery.esp.js $(LOG)
-copy /Y /B paks\esp-legacy-mvc\static\js\jquery.js+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.1\static\js\jquery.js $(LOG)
-if not exist "build\windows-x86-static\esp\paks\esp-mvc\4.7.1" md "build\windows-x86-static\esp\paks\esp-mvc\4.7.1"
-if not exist "build\windows-x86-static\esp\paks\esp-mvc\4.7.1\generate" md "build\windows-x86-static\esp\paks\esp-mvc\4.7.1\generate"
-copy /Y /B paks\esp-mvc\generate\appweb.conf+modified build\windows-x86-static\esp\paks\esp-mvc\4.7.1\generate\appweb.conf $(LOG)
-copy /Y /B paks\esp-mvc\generate\controller.c+modified build\windows-x86-static\esp\paks\esp-mvc\4.7.1\generate\controller.c $(LOG)
-copy /Y /B paks\esp-mvc\generate\migration.c+modified build\windows-x86-static\esp\paks\esp-mvc\4.7.1\generate\migration.c $(LOG)
-if not exist "build\windows-x86-static\esp\paks\esp-mvc\4.7.1\generate\src" md "build\windows-x86-static\esp\paks\esp-mvc\4.7.1\generate\src"
-copy /Y /B paks\esp-mvc\generate\src\app.c+modified build\windows-x86-static\esp\paks\esp-mvc\4.7.1\generate\src\app.c $(LOG)
-copy /Y /B paks\esp-mvc\LICENSE.md+modified build\windows-x86-static\esp\paks\esp-mvc\4.7.1\LICENSE.md $(LOG)
-copy /Y /B paks\esp-mvc\package.json+modified build\windows-x86-static\esp\paks\esp-mvc\4.7.1\package.json $(LOG)
-copy /Y /B paks\esp-mvc\README.md+modified build\windows-x86-static\esp\paks\esp-mvc\4.7.1\README.md $(LOG)
-if not exist "build\windows-x86-static\esp\paks\esp-server\4.7.1" md "build\windows-x86-static\esp\paks\esp-server\4.7.1"
-if not exist "build\windows-x86-static\esp\paks\esp-server\4.7.1\generate" md "build\windows-x86-static\esp\paks\esp-server\4.7.1\generate"
-copy /Y /B paks\esp-server\generate\appweb.conf+modified build\windows-x86-static\esp\paks\esp-server\4.7.1\generate\appweb.conf $(LOG)
-copy /Y /B paks\esp-server\package.json+modified build\windows-x86-static\esp\paks\esp-server\4.7.1\package.json $(LOG)
+if not exist "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2" md "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2"
+if not exist "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\client" md "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\client"
+if not exist "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\client\assets" md "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\client\assets"
+copy /Y /B paks\esp-html-mvc\client\assets\favicon.ico+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\client\assets\favicon.ico $(LOG)
+if not exist "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\client\css" md "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\client\css"
+copy /Y /B paks\esp-html-mvc\client\css\all.css+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\client\css\all.css $(LOG)
+copy /Y /B paks\esp-html-mvc\client\css\all.less+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\client\css\all.less $(LOG)
+copy /Y /B paks\esp-html-mvc\client\index.esp+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\client\index.esp $(LOG)
+if not exist "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\css" md "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\css"
+copy /Y /B paks\esp-html-mvc\css\app.less+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\css\app.less $(LOG)
+copy /Y /B paks\esp-html-mvc\css\theme.less+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\css\theme.less $(LOG)
+if not exist "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\generate" md "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\generate"
+copy /Y /B paks\esp-html-mvc\generate\appweb.conf+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\generate\appweb.conf $(LOG)
+copy /Y /B paks\esp-html-mvc\generate\controller.c+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\generate\controller.c $(LOG)
+copy /Y /B paks\esp-html-mvc\generate\controllerSingleton.c+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\generate\controllerSingleton.c $(LOG)
+copy /Y /B paks\esp-html-mvc\generate\edit.esp+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\generate\edit.esp $(LOG)
+copy /Y /B paks\esp-html-mvc\generate\list.esp+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\generate\list.esp $(LOG)
+if not exist "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\layouts" md "build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\layouts"
+copy /Y /B paks\esp-html-mvc\layouts\default.esp+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\layouts\default.esp $(LOG)
+copy /Y /B paks\esp-html-mvc\package.json+modified build\windows-x86-static\esp\paks\esp-html-mvc\4.7.2\package.json $(LOG)
+if not exist "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2" md "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2"
+if not exist "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\generate" md "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\generate"
+copy /Y /B paks\esp-legacy-mvc\generate\appweb.conf+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\generate\appweb.conf $(LOG)
+copy /Y /B paks\esp-legacy-mvc\generate\controller.c+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\generate\controller.c $(LOG)
+copy /Y /B paks\esp-legacy-mvc\generate\edit.esp+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\generate\edit.esp $(LOG)
+copy /Y /B paks\esp-legacy-mvc\generate\list.esp+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\generate\list.esp $(LOG)
+copy /Y /B paks\esp-legacy-mvc\generate\migration.c+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\generate\migration.c $(LOG)
+if not exist "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\generate\src" md "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\generate\src"
+copy /Y /B paks\esp-legacy-mvc\generate\src\app.c+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\generate\src\app.c $(LOG)
+if not exist "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\layouts" md "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\layouts"
+copy /Y /B paks\esp-legacy-mvc\layouts\default.esp+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\layouts\default.esp $(LOG)
+copy /Y /B paks\esp-legacy-mvc\package.json+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\package.json $(LOG)
+if not exist "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\static" md "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\static"
+if not exist "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\static\css" md "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\static\css"
+copy /Y /B paks\esp-legacy-mvc\static\css\all.css+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\static\css\all.css $(LOG)
+if not exist "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\static\images" md "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\static\images"
+copy /Y /B paks\esp-legacy-mvc\static\images\banner.jpg+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\static\images\banner.jpg $(LOG)
+copy /Y /B paks\esp-legacy-mvc\static\images\favicon.ico+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\static\images\favicon.ico $(LOG)
+copy /Y /B paks\esp-legacy-mvc\static\images\splash.jpg+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\static\images\splash.jpg $(LOG)
+copy /Y /B paks\esp-legacy-mvc\static\index.esp+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\static\index.esp $(LOG)
+if not exist "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\static\js" md "build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\static\js"
+copy /Y /B paks\esp-legacy-mvc\static\js\jquery.esp.js+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\static\js\jquery.esp.js $(LOG)
+copy /Y /B paks\esp-legacy-mvc\static\js\jquery.js+modified build\windows-x86-static\esp\paks\esp-legacy-mvc\4.7.2\static\js\jquery.js $(LOG)
+if not exist "build\windows-x86-static\esp\paks\esp-mvc\4.7.2" md "build\windows-x86-static\esp\paks\esp-mvc\4.7.2"
+if not exist "build\windows-x86-static\esp\paks\esp-mvc\4.7.2\generate" md "build\windows-x86-static\esp\paks\esp-mvc\4.7.2\generate"
+copy /Y /B paks\esp-mvc\generate\appweb.conf+modified build\windows-x86-static\esp\paks\esp-mvc\4.7.2\generate\appweb.conf $(LOG)
+copy /Y /B paks\esp-mvc\generate\controller.c+modified build\windows-x86-static\esp\paks\esp-mvc\4.7.2\generate\controller.c $(LOG)
+copy /Y /B paks\esp-mvc\generate\migration.c+modified build\windows-x86-static\esp\paks\esp-mvc\4.7.2\generate\migration.c $(LOG)
+if not exist "build\windows-x86-static\esp\paks\esp-mvc\4.7.2\generate\src" md "build\windows-x86-static\esp\paks\esp-mvc\4.7.2\generate\src"
+copy /Y /B paks\esp-mvc\generate\src\app.c+modified build\windows-x86-static\esp\paks\esp-mvc\4.7.2\generate\src\app.c $(LOG)
+copy /Y /B paks\esp-mvc\LICENSE.md+modified build\windows-x86-static\esp\paks\esp-mvc\4.7.2\LICENSE.md $(LOG)
+copy /Y /B paks\esp-mvc\package.json+modified build\windows-x86-static\esp\paks\esp-mvc\4.7.2\package.json $(LOG)
+copy /Y /B paks\esp-mvc\README.md+modified build\windows-x86-static\esp\paks\esp-mvc\4.7.2\README.md $(LOG)
+if not exist "build\windows-x86-static\esp\paks\esp-server\4.7.2" md "build\windows-x86-static\esp\paks\esp-server\4.7.2"
+if not exist "build\windows-x86-static\esp\paks\esp-server\4.7.2\generate" md "build\windows-x86-static\esp\paks\esp-server\4.7.2\generate"
+copy /Y /B paks\esp-server\generate\appweb.conf+modified build\windows-x86-static\esp\paks\esp-server\4.7.2\generate\appweb.conf $(LOG)
+copy /Y /B paks\esp-server\package.json+modified build\windows-x86-static\esp\paks\esp-server\4.7.2\package.json $(LOG)
 cd projects\appweb-windows-static</Command>
         <Outputs>..\..\build\$(Cfg)\esp</Outputs>
       </CustomBuildStep>
