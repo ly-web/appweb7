@@ -22,11 +22,11 @@ static void echo_callback(HttpConn *conn, int event, int arg)
             httpSendBlock(conn, packet->type, httpGetPacketStart(packet), httpGetPacketLength(packet), 0);
         }
     } else if (event == HTTP_EVENT_APP_CLOSE) {
-        mprLog(0, "echo.c: close event. Status status %d, orderly closed %d, reason %s", arg,
+        mprLog("info echo", 0, "close event. Status status %d, orderly closed %d, reason %s", arg,
         httpWebSocketOrderlyClosed(conn), httpGetWebSocketCloseReason(conn));
 
     } else if (event == HTTP_EVENT_ERROR) {
-        mprLog(0, "echo.c: error event");
+        mprLog("info echo", 0, "error event");
     }
 }
 
@@ -50,10 +50,10 @@ static void echo_action() {
 /*
     Initialize the "echo" loadable module
  */
-ESP_EXPORT int esp_controller_echo(HttpRoute *route, MprModule *module) {
+ESP_EXPORT int esp_controller_app_echo(HttpRoute *route, MprModule *module) {
     /*
         Define the "echo" action that will run when the "test/echo" URI is invoked
      */
-    espDefineAction(route, "test-echo", echo_action);
+    espDefineAction(route, "test/echo", echo_action);
     return 0;
 }

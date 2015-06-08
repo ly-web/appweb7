@@ -77,16 +77,14 @@ Me.load({
         },
 
         /*
-            EST SSL stack configuration
+            MbedTLS SSL stack configuration
          */
-        est: {
+        mbedtls: {
             camellia: false,
             des: false,
             genPrime: false,
             padlock: false,
             romTables: false,
-            sslClient: false,
-            testCerts: false,
             xtea: false,
         },
 
@@ -96,11 +94,22 @@ Me.load({
                 The default is to enable logging for both debug and release builds.
              */
             logging: true,
+            threadStack: 0,             /* Use the default system stack size */
+            oslog: false,               /* Write to the O/S log file */
 
             alloc: {
-                // quota: 204800,           /* Amount of memory to allocate before a GC */
-                // cache: 0,                /* Amount of memory to buffer for fast allocations */
-                // check: false,            /* Memory allocation debug and stats (slow) */
+                // quota: 204800,       /* Amount of memory to allocate before a GC */
+                // cache: 0,            /* Amount of memory to buffer for fast allocations */
+                // check: false,        /* Memory allocation debug and stats (slow) */
+            },
+            ssl: {
+                cache: 512,             /* Set the session cache size (items) */
+                compression: false,     /* Enable session compression */
+                curve: 'prime256v1',    /* OpenSSL elliptic curve name */
+                logLevel: 3             /* Starting logging level for SSL messages */
+                renegotiate: true,      /* Enable/Disable SSL renegotiation (defaults to true) */
+                ticket: true,           /* Enable session resumption via ticketing - client side session caching */
+                timeout: '86400',       /* Session and ticketing duration in seconds */
             },
         },
 
@@ -120,31 +129,22 @@ Me.load({
     },
 
     usage: {
-        'ejs.db':          'Enable database support, ejs.db (true|false)',
-        'ejs.mail':        'Enable mail support, ejs.mail (true|false)',
-        'ejs.mapper':      'Enable database mapper support, ejs.mapper (true|false)',
-        'ejs.tar':         'Enable tar support, ejs.tar (true|false)',
-        'ejs.template':    'Enable template support, ejs.template (true|false)',
-        'ejs.web':         'Enable web support, ejs.web (true|false)',
-        'ejs.zlib':        'Enable zlib support, ejs.zlib (true|false)',
+        'mbedtls.camellia':     'Enable the Camellia cipher (true|false)',
+        'mbedtls.des':          'Enable the 3DES cipher (true|false)',
+        'mbedtls.genPrime':     'Enable generation of primes (true|false)',
+        'mbedtls.padlock':      'Enable VIA Padlock acceleration (true|false)',
+        'mbedtls.romTables':    'Enable ROM tables (true|false)',
+        'mbedtls.testCerts':    'Enable generation of test certificates (true|false)',
+        'mbedtls.xtea':         'Enable XTEA (true|false)',
 
-        'est.camellia':    'Enable the Camellia cipher (true|false)',
-        'est.des':         'Enable the 3DES cipher (true|false)',
-        'est.genPrime':    'Enable generation of primes (true|false)',
-        'est.padlock':     'Enable VIA Padlock acceleration (true|false)',
-        'est.romTables':   'Enable ROM tables (true|false)',
-        'est.sslClient':   'Enable SSL/TLS client side (true|false)',                                     
-        'est.testCerts':   'Enable generation of test certificates (true|false)',
-        'est.xtea':        'Enable XTEA (true|false)',
+        'http.pam':             'Enable Unix Pluggable Auth Module (true|false)',
+        'http.webSockets':      'Enable WebSockets (true|false)',                
 
-        'http.pam':        'Enable Unix Pluggable Auth Module (true|false)',
-        'http.webSockets': 'Enable WebSockets (true|false)',                
+        'mpr.logging':          'Enable application logging (true|false)',
+        'mpr.debug':            'Enable debug logging (true|false)',
 
-        'mpr.logging':     'Enable application logging (true|false)',
-        'mpr.debug':       'Enable debug logging (true|false)',
-
-        'configFile':      'Path of the appweb.conf file',
-        'serverRoot':      'Home directory for the server ',
+        'configFile':           'Path of the appweb.conf file',
+        'serverRoot':           'Home directory for the server ',
     },
 
     targets: {
@@ -184,6 +184,10 @@ Me.load({
 
         mine: {
             action: `genProjects('', 'mine', Config.OS + '-' + Config.CPU)`,
+        },
+
+        tls: {
+            action: `genProjects('-with mbedtls', 'mine', Config.OS + '-' + Config.CPU)`,
         }
     }
 })

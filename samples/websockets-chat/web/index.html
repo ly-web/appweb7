@@ -22,7 +22,7 @@
             ws.send(text);
             e.preventDefault();
         });
-        var ws = new WebSocket('ws://localhost:4100/websockets/basic/chat', ['chat']);
+        var ws = new WebSocket('ws://localhost:8080/ws/test/chat', ['chat']);
 
         ws.onopen = function (e) {
             console.log("OPEN");

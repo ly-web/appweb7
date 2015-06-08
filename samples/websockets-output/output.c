@@ -23,7 +23,7 @@ static void output_callback(HttpConn *conn, int event, int arg)
     Output      *output;
     ssize       len, wrote;
     int         flags, type;
-    char        buf[MPR_BUFSIZE];
+    char        buf[ME_MAX_BUFFER];
 
     /*
         Get a writable event when the socket can absorb more data
@@ -64,11 +64,11 @@ static void output_callback(HttpConn *conn, int event, int arg)
         } while (len > 0);
 
     } else if (event == HTTP_EVENT_APP_CLOSE) {
-        mprLog(0, "output.c: close event. Status status %d, orderly closed %d, reason %s", arg,
+        mprLog("info output", 0, "close event. Status status %d, orderly closed %d, reason %s", arg,
         httpWebSocketOrderlyClosed(conn), httpGetWebSocketCloseReason(conn));
 
     } else if (event == HTTP_EVENT_ERROR) {
-        mprLog(0, "output.c: error event");
+        mprLog("info output", 0, "error event");
     }
 }
 
@@ -119,10 +119,10 @@ static void output_action()
 /*
     Initialize the "output" loadable module
  */
-ESP_EXPORT int esp_controller_output(HttpRoute *route, MprModule *module) {
+ESP_EXPORT int esp_controller_app_output(HttpRoute *route, MprModule *module) {
     /*
         Define the "output" action that will run when the "test/output" URI is invoked
      */
-    espDefineAction(route, "test-output", output_action);
+    espDefineAction(route, "test/output", output_action);
     return 0;
 }
