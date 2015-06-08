@@ -86,7 +86,7 @@ static void chat_action()
 /*
     Initialize the "chat" loadable module
  */
-ESP_EXPORT int esp_controller_chat(HttpRoute *route) 
+ESP_EXPORT int esp_controller_app_chat(HttpRoute *route) 
 {
     clients = mprCreateList(0, 0);
     mprAddRoot(clients);
@@ -94,6 +94,6 @@ ESP_EXPORT int esp_controller_chat(HttpRoute *route)
     /*
         Define the "chat" action that will run when the "test/chat" URI is invoked
      */
-    espDefineAction(route, "test-chat", chat_action);
+    espDefineAction(route, "test/chat", chat_action);
     return 0;
 }

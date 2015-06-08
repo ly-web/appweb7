@@ -99,30 +99,6 @@
 #ifndef ME_ESP_MODULE
     #define ME_ESP_MODULE 0
 #endif
-#ifndef ME_EST_CAMELLIA
-    #define ME_EST_CAMELLIA 0
-#endif
-#ifndef ME_EST_DES
-    #define ME_EST_DES 0
-#endif
-#ifndef ME_EST_GEN_PRIME
-    #define ME_EST_GEN_PRIME 0
-#endif
-#ifndef ME_EST_PADLOCK
-    #define ME_EST_PADLOCK 0
-#endif
-#ifndef ME_EST_ROM_TABLES
-    #define ME_EST_ROM_TABLES 0
-#endif
-#ifndef ME_EST_SSL_CLIENT
-    #define ME_EST_SSL_CLIENT 0
-#endif
-#ifndef ME_EST_TEST_CERTS
-    #define ME_EST_TEST_CERTS 0
-#endif
-#ifndef ME_EST_XTEA
-    #define ME_EST_XTEA 0
-#endif
 #ifndef ME_HTTP_PAM
     #define ME_HTTP_PAM 1
 #endif
@@ -135,8 +111,50 @@
 #ifndef ME_MANIFEST
     #define ME_MANIFEST "installs/manifest.me"
 #endif
+#ifndef ME_MBEDTLS_CAMELLIA
+    #define ME_MBEDTLS_CAMELLIA 0
+#endif
+#ifndef ME_MBEDTLS_DES
+    #define ME_MBEDTLS_DES 0
+#endif
+#ifndef ME_MBEDTLS_GEN_PRIME
+    #define ME_MBEDTLS_GEN_PRIME 0
+#endif
+#ifndef ME_MBEDTLS_PADLOCK
+    #define ME_MBEDTLS_PADLOCK 0
+#endif
+#ifndef ME_MBEDTLS_ROM_TABLES
+    #define ME_MBEDTLS_ROM_TABLES 0
+#endif
+#ifndef ME_MBEDTLS_XTEA
+    #define ME_MBEDTLS_XTEA 0
+#endif
 #ifndef ME_MPR_LOGGING
     #define ME_MPR_LOGGING 1
+#endif
+#ifndef ME_MPR_OSLOG
+    #define ME_MPR_OSLOG 0
+#endif
+#ifndef ME_MPR_SSL_CACHE
+    #define ME_MPR_SSL_CACHE 512
+#endif
+#ifndef ME_MPR_SSL_CURVE
+    #define ME_MPR_SSL_CURVE "prime256v1"
+#endif
+#ifndef ME_MPR_SSL_LOG_LEVEL
+    #define ME_MPR_SSL_LOG_LEVEL 3
+#endif
+#ifndef ME_MPR_SSL_RENEGOTIATE
+    #define ME_MPR_SSL_RENEGOTIATE 1
+#endif
+#ifndef ME_MPR_SSL_TICKET
+    #define ME_MPR_SSL_TICKET 1
+#endif
+#ifndef ME_MPR_SSL_TIMEOUT
+    #define ME_MPR_SSL_TIMEOUT 86400
+#endif
+#ifndef ME_MPR_THREAD_STACK
+    #define ME_MPR_THREAD_STACK 0
 #endif
 #ifndef ME_NAME
     #define ME_NAME "appweb"
@@ -157,7 +175,7 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "5.4.1"
+    #define ME_VERSION "5.4.2"
 #endif
 #ifndef ME_WATCHDOG_NAME
     #define ME_WATCHDOG_NAME "appman"
@@ -264,10 +282,10 @@
     #define ME_MINOR_VERSION 4
 #endif
 #ifndef ME_PATCH_VERSION
-    #define ME_PATCH_VERSION 1
+    #define ME_PATCH_VERSION 2
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 500040001
+    #define ME_VNUM 500040002
 #endif
 
 /* Components */
