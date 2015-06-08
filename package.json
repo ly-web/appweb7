@@ -2,7 +2,7 @@
     "name": "appweb",
     "description": "Embedthis Appweb Embedded Web Server",
     "title": "Embedthis Appweb",
-    "version": "5.4.1",
+    "version": "5.4.2",
     "keywords": [
         "appweb",
         "http",
@@ -35,7 +35,6 @@
     "dependencies": {
         "http": "^6",
         "mpr": "^6.0",
-        "mpr-mbedtls": "^0.1",
         "osdep": "^0.8",
         "pcre": "^1.0",
         "ssl": "^0.9",
