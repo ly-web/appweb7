@@ -10,7 +10,7 @@ Me.load({
             discovers: [ 'openssl', 'matrixssl', 'nanossl' ],
             uses:      [ 'est', 'openssl', 'matrixssl', 'mbedtls', 'nanossl' ],
             config: function (target) {
-                if (me.targets['mbedtls']) {
+                if (target.enable && me.targets['mbedtls']) {
                     /* Permits explicit "configure --with mbedtls" without auto-discover */
                     target.discovers += ['mbedtls']
                     target.uses += ['mbedtls']

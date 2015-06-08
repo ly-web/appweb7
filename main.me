@@ -104,12 +104,11 @@ Me.load({
             },
             ssl: {
                 cache: 512,             /* Set the session cache size (items) */
-                compression: false,     /* Enable session compression */
                 curve: 'prime256v1',    /* OpenSSL elliptic curve name */
                 logLevel: 3             /* Starting logging level for SSL messages */
                 renegotiate: true,      /* Enable/Disable SSL renegotiation (defaults to true) */
                 ticket: true,           /* Enable session resumption via ticketing - client side session caching */
-                timeout: '86400',       /* Session and ticketing duration in seconds */
+                timeout: 86400,         /* Session and ticketing duration in seconds */
             },
         },
 

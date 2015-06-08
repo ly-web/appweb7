@@ -153,9 +153,6 @@
 #ifndef ME_MPR_SSL_CACHE
     #define ME_MPR_SSL_CACHE 512
 #endif
-#ifndef ME_MPR_SSL_COMPRESSION
-    #define ME_MPR_SSL_COMPRESSION 0
-#endif
 #ifndef ME_MPR_SSL_CURVE
     #define ME_MPR_SSL_CURVE "prime256v1"
 #endif
@@ -169,7 +166,7 @@
     #define ME_MPR_SSL_TICKET 1
 #endif
 #ifndef ME_MPR_SSL_TIMEOUT
-    #define ME_MPR_SSL_TIMEOUT "86400"
+    #define ME_MPR_SSL_TIMEOUT 86400
 #endif
 #ifndef ME_MPR_THREAD_STACK
     #define ME_MPR_THREAD_STACK 0
