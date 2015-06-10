@@ -43,6 +43,7 @@
     "optionalDependencies": {
         "certs": "^0.1",
         "esp": "^5",
+        "mpr-mbedtls": "^0.1",
         "mpr-openssl": "^0.1"
     },
     "files": [

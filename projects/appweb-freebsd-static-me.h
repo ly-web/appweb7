@@ -126,23 +126,11 @@
 #ifndef ME_MANIFEST
     #define ME_MANIFEST "installs/manifest.me"
 #endif
-#ifndef ME_MBEDTLS_CAMELLIA
-    #define ME_MBEDTLS_CAMELLIA 0
+#ifndef ME_MBEDTLS_COMPACT
+    #define ME_MBEDTLS_COMPACT 1
 #endif
-#ifndef ME_MBEDTLS_DES
-    #define ME_MBEDTLS_DES 0
-#endif
-#ifndef ME_MBEDTLS_GEN_PRIME
-    #define ME_MBEDTLS_GEN_PRIME 0
-#endif
-#ifndef ME_MBEDTLS_PADLOCK
-    #define ME_MBEDTLS_PADLOCK 0
-#endif
-#ifndef ME_MBEDTLS_ROM_TABLES
-    #define ME_MBEDTLS_ROM_TABLES 0
-#endif
-#ifndef ME_MBEDTLS_XTEA
-    #define ME_MBEDTLS_XTEA 0
+#ifndef ME_MBEDTLS_LOGGING
+    #define ME_MBEDTLS_LOGGING 0
 #endif
 #ifndef ME_MPR_LOGGING
     #define ME_MPR_LOGGING 1
@@ -153,11 +141,8 @@
 #ifndef ME_MPR_SSL_CACHE
     #define ME_MPR_SSL_CACHE 512
 #endif
-#ifndef ME_MPR_SSL_CURVE
-    #define ME_MPR_SSL_CURVE "prime256v1"
-#endif
 #ifndef ME_MPR_SSL_LOG_LEVEL
-    #define ME_MPR_SSL_LOG_LEVEL 3
+    #define ME_MPR_SSL_LOG_LEVEL 5
 #endif
 #ifndef ME_MPR_SSL_RENEGOTIATE
     #define ME_MPR_SSL_RENEGOTIATE 1
@@ -327,6 +312,9 @@
 #endif
 #ifndef ME_COM_MATRIXSSL
     #define ME_COM_MATRIXSSL 0
+#endif
+#ifndef ME_COM_MBEDTLS
+    #define ME_COM_MBEDTLS 0
 #endif
 #ifndef ME_COM_MDB
     #define ME_COM_MDB 1

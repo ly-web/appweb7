@@ -76,16 +76,8 @@ Me.load({
             module: false,
         },
 
-        /*
-            MbedTLS SSL stack configuration
-         */
         mbedtls: {
-            camellia: false,
-            des: false,
-            genPrime: false,
-            padlock: false,
-            romTables: false,
-            xtea: false,
+            compact: true,      /* Compact edition - Disable non-essential ciphers and features */
         },
 
         mpr: {
@@ -93,7 +85,7 @@ Me.load({
                 Enable logging via mprLog to the log file
                 The default is to enable logging for both debug and release builds.
              */
-            logging: true,
+            logging: true,              /* Enable application logging */
             threadStack: 0,             /* Use the default system stack size */
             oslog: false,               /* Write to the O/S log file */
 
@@ -104,8 +96,7 @@ Me.load({
             },
             ssl: {
                 cache: 512,             /* Set the session cache size (items) */
-                curve: 'prime256v1',    /* OpenSSL elliptic curve name */
-                logLevel: 3             /* Starting logging level for SSL messages */
+                logLevel: 5,            /* Starting logging level for SSL messages */
                 renegotiate: true,      /* Enable/Disable SSL renegotiation (defaults to true) */
                 ticket: true,           /* Enable session resumption via ticketing - client side session caching */
                 timeout: 86400,         /* Session and ticketing duration in seconds */
@@ -128,17 +119,15 @@ Me.load({
     },
 
     usage: {
+        'configFile':           'Path of the appweb.conf file',
         'http.pam':             'Enable Unix Pluggable Auth Module (true|false)',
         'http.webSockets':      'Enable WebSockets (true|false)',                
-
         'mpr.logging':          'Enable application logging (true|false)',
-        'mpr.debug':            'Enable debug logging (true|false)',
-
-        'configFile':           'Path of the appweb.conf file',
         'serverRoot':           'Home directory for the server ',
     },
 
     targets: {
+        //  TODO - remove when supporting mbedtls
         init: {
             first: true,
             path: 'init',
@@ -170,6 +159,7 @@ Me.load({
             See installs/installs.me for the install targets
          */
         projects: {
+            //  TODO - remove -with openssl when mbedtls is supported
             action: `genProjects('-with openssl')`,
         },
 
@@ -178,6 +168,7 @@ Me.load({
         },
 
         mgen: {
+            //  TODO remove when mbedtls is fully supported
             action: `genProjects('-with mbedtls', 'mine', Config.OS + '-' + Config.CPU)`,
         }
     }
