@@ -114,9 +114,6 @@
 #ifndef ME_MBEDTLS_COMPACT
     #define ME_MBEDTLS_COMPACT 1
 #endif
-#ifndef ME_MBEDTLS_LOGGING
-    #define ME_MBEDTLS_LOGGING 0
-#endif
 #ifndef ME_MPR_LOGGING
     #define ME_MPR_LOGGING 1
 #endif
@@ -163,7 +160,7 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "5.4.2"
+    #define ME_VERSION "5.4.3"
 #endif
 #ifndef ME_WATCHDOG_NAME
     #define ME_WATCHDOG_NAME "appman"
@@ -270,10 +267,10 @@
     #define ME_MINOR_VERSION 4
 #endif
 #ifndef ME_PATCH_VERSION
-    #define ME_PATCH_VERSION 2
+    #define ME_PATCH_VERSION 3
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 500040002
+    #define ME_VNUM 500040003
 #endif
 
 /* Components */
@@ -300,9 +297,6 @@
 #endif
 #ifndef ME_COM_LINK
     #define ME_COM_LINK 1
-#endif
-#ifndef ME_COM_MBEDTLS
-    #define ME_COM_MBEDTLS 0
 #endif
 #ifndef ME_COM_MDB
     #define ME_COM_MDB 1
