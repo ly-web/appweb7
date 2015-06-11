@@ -8,9 +8,13 @@ Me.load({
             depends: ['render-doc'], 
             action: `
                 apidoc('api/appweb.dox', '${TOP}/src/appweb.h', 'APPWEB')
-                let files = Path().files(['api/appweb.html', me.dir.paks.join('*/doc/api/*.html')])
+                apiLayout('api/appweb.html', 'dist/ref/api/appweb.html')
+
+                let base = me.dir.paks.join('*/doc')
+                let files = Path().files(base.join('api/*.html'))
                 for each (src in files) {
-                    apiLayout(src, Path('dist/ref').join(src))
+                    let dest = src.trimComponents(base.components.length)
+                    apiLayout(src, Path('dist/ref').join(dest))
                 }
             `
         },
