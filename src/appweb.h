@@ -293,7 +293,9 @@ PUBLIC int httpEspInit(Http *http, MprModule *mp);
 /*
     Permit overrides
  */
-#include "customize.h"
+#if ME_CUSTOMIZE
+ #include "customize.h"
+#endif
 
 #endif /* _h_APPWEB */
 
