@@ -1,5 +1,5 @@
 /*
-    me.h -- MakeMe Configuration Header for windows-x86-static
+    me.h -- MakeMe Configure Header for windows-x86-static
 
     This header is created by Me during configuration. To change settings, re-run
     configure or define variables in your Makefile to override these default values.
@@ -157,7 +157,7 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "4.7.2"
+    #define ME_VERSION "4.7.3"
 #endif
 
 /* Prefixes */
@@ -255,10 +255,10 @@
     #define ME_MINOR_VERSION 7
 #endif
 #ifndef ME_PATCH_VERSION
-    #define ME_PATCH_VERSION 2
+    #define ME_PATCH_VERSION 3
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 400070002
+    #define ME_VNUM 400070003
 #endif
 
 /* Components */
