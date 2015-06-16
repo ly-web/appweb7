@@ -39,7 +39,7 @@
     "directories": {
         "paks": "src/paks"
     },
-    "optionalDependencies": {
-    },
-    "frozen": true,
+    "pak": {
+        "frozen": true
+    }
 }

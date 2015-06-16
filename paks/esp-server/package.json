@@ -20,5 +20,7 @@
             }
         }
     },
-    "frozen": true
+    "pak": {
+        "frozen": true
+    }
 }

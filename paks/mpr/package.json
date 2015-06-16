@@ -40,5 +40,7 @@
             "url": "http://embedthis.com/licensing/"
         }
     ],
-    "frozen": true,
+    "pak": {
+        "frozen": true
+    }
 }

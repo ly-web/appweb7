@@ -70,5 +70,7 @@
             "noexport": true
         }
     },
-    "frozen": true,
+    "pak": {
+        "frozen": true
+    }
 }

@@ -46,5 +46,7 @@
         "start.me"
     ],
     "import": true,
-    "frozen": true,
+    "pak": {
+        "frozen": true
+    }
 }

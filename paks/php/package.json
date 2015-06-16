@@ -25,5 +25,7 @@
             "url": "https://github.com/embedthis/php/blob/master/LICENSE.md"
         }
     ],
-    "frozen": true,
+    "pak": {
+        "frozen": true
+    }
 }

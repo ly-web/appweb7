@@ -29,5 +29,7 @@
             "url": "https://embedthis.com/licensing/"
         }
     ],
-    "frozen": true,
+    "pak": {
+        "frozen": true
+    }
 }

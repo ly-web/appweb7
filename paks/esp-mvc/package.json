@@ -34,5 +34,7 @@
             "?serverPrefix": "/do"
         }
     },
-    "frozen": true
+    "pak": {
+        "frozen": true
+    }
 }

@@ -43,5 +43,7 @@
     "directories": {
         "paks": "src/paks"
     },
-    "frozen": true,
+    "pak": {
+        "frozen": true
+    }
 }
