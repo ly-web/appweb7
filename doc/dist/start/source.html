@@ -17,7 +17,7 @@
     
 
 </head>
-<body>
+<body class="show-sidebar">
         <div class="sidebar">
         <div class="ui large left vertical inverted labeled menu">
             <div class="item">
@@ -183,7 +183,7 @@
     </div>
     <div class="content">
 
-            <h1>10 Building Appweb from Source</h1>
+            <h1>Building Appweb from Source</h1>
             <p>Appweb releases are available in binary and source code distributions. It is your choice which
             distribution you choose, but the source code distribution has several advantages:</p>
             <ul>
@@ -281,7 +281,7 @@
                 $('.sidebar').css('visibility', 'hidden');
             }
         });
-        $('.sidebar-launch').trigger('click');
+        // $('.sidebar-launch').trigger('click');
         $('.sidebar a.item').click(function(e) {
             sessionStorage.setItem('scroll-top', $('.sidebar').scrollTop());
         });

@@ -17,7 +17,7 @@
     
 
 </head>
-<body>
+<body class="show-sidebar">
         <div class="sidebar">
         <div class="ui large left vertical inverted labeled menu">
             <div class="item">
@@ -1964,7 +1964,7 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
                 $('.sidebar').css('visibility', 'hidden');
             }
         });
-        $('.sidebar-launch').trigger('click');
+        // $('.sidebar-launch').trigger('click');
         $('.sidebar a.item').click(function(e) {
             sessionStorage.setItem('scroll-top', $('.sidebar').scrollTop());
         });
