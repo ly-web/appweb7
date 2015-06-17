@@ -193,10 +193,10 @@
 -->
             <p>The Appweb HTTP web server is the fastest little web server. It is a high-performance yet compact
             embeddable webserver that has a modular, secure core.  It supports an extensive feature set including:
-            HTTP/1.1, TLS/SSL, CGI, PHP, ESP, Ejscript, Virtual Hosts, Digest
+            HTTP/1.1, TLS/SSL, CGI, PHP, ESP, Virtual Hosts, Digest
             Authentication, Apache style configuration, and logging and security sandboxing. Yet Appweb remains very
             small (from 1MB) and exceptionally fast (&gt; 7,000 requests per second).</p>
-            <p>Appweb supports dynamic web application frameworks like ESP, Ejscript and PHP. It also supports older
+            <p>Appweb supports dynamic web application frameworks like ESP, and PHP. It also supports older
             web creation strategies like CGI.</p>
             <p>Appweb is an event-driven, multi-threaded web server and is able to support many
             thousands of requests per second but it does not try to scale out like an enterprise class server for 
@@ -221,7 +221,7 @@
             <h3>Proxied</h3>
             <p>Appweb is an ideal application web server when running behind a reverse proxy. The
             reverse proxy dispatches incoming requests to a set of Appweb instances which can effectively host
-            ESP, Ejscript or PHP applications.</p>
+            ESP, or PHP applications.</p>
             
             <a id="processing"></a>
             <h2>Processing Architecture</h2>
@@ -286,11 +286,13 @@
                     <td>The Embedded Server Pages (ESP) web framework is an advanced, Model,View,Controller "C" 
                         language web framework.</td>
                 </tr>
+<!-- KEEP
                 <tr>
                     <td>Ejscript Handler</td>
                     <td>Ejscript Web Framework Handler. This is a Server-Side JavaScript web application framework.
                     Ideal for dynamic web applications.</td>
                 </tr>
+-->
                 <tr>
                     <td>PHP Handler</td>
                     <td>In-memory handler module for the PHP web environment.</td>
@@ -496,7 +498,7 @@ AddHandler espHandler myDoc
             to find documents to serve. The routing engine may rewrite the request and then reroute. The engine 
             also manages HTTP authorization.</p>
             <p>Depending on the request URI and headers, the appropriate handler will be selected.  There are handlers
-            for ESP, PHP, CGI, Ejscript and static file data.</p>
+            for ESP, PHP, CGI and static file data.</p>
             <h3>Handlers</h3>
             <p>The handler is responsible for receiving the request and creating a response. It generates response
             content based on the HTTP request URI, headers, any associated body data, and potential application session
@@ -540,7 +542,7 @@ AddHandler espHandler myDoc
             
             <a id="frameworks"></a>
             <h2>Web Frameworks</h2>
-            <p>Appweb supports loadable modules for the ESP, Ejscript and PHP web frameworks.</p>
+            <p>Appweb supports loadable modules for the ESP, and PHP web frameworks.</p>
             <h3>Embedded Server Pages  Web Framework</h3>
             <p>The ESP web framework is a high performance, Model/View/Controller web framework. 
             It uses the "C" language embedded in HTML web pages and for Controllers. It provides 
