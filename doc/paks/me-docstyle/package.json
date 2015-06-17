@@ -32,7 +32,7 @@
         "exp-js": "^0.2",
         "exp-less": "^0.2",
         "exp-reload": "^0.2",
-        "jquery": "^1.11",
+        "jquery": "^x.*",
         "semantic-ui": "^1.9"
     },
     "files": [
