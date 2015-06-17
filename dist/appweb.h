@@ -31,19 +31,11 @@ extern "C" {
 #ifndef ME_COM_DIR
     #define ME_COM_DIR 0
 #endif
-#ifndef ME_COM_EJS
-    #if ME_EJS_PRODUCT
-        #define ME_COM_EJS 1
-    #else
-        #define ME_COM_EJS 0
-    #endif
+#ifndef ME_COM_EJSCRIPT
+    #define ME_COM_EJSCRIPT 0
 #endif
 #ifndef ME_COM_ESP
-    #if ME_ESP_PRODUCT
-        #define ME_COM_ESP 1
-    #else
-        #define ME_COM_ESP 0
-    #endif
+    #define ME_COM_ESP 0
 #endif
 #ifndef ME_COM_MDB
     #define ME_COM_MDB 0

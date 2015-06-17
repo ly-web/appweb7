@@ -3099,7 +3099,7 @@ static bool conditionalDefinition(MaState *state, cchar *key)
             result = ME_COM_DIR;
 
         } else if (scaselessmatch(key, "EJS_MODULE")) {
-            result = ME_COM_EJS;
+            result = ME_COM_EJSCRIPT;
 
         } else if (scaselessmatch(key, "ESP_MODULE")) {
             result = ME_COM_ESP;
