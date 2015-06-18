@@ -25378,7 +25378,7 @@ PUBLIC void mprSetThreadPriority(MprThread *tp, int newPriority)
     SetThreadPriority(tp->threadHandle, osPri);
 #elif VXWORKS
     taskPrioritySet(tp->osThread, osPri);
-#elif ME_UNIX_LIKE && DISABLED
+#elif ME_UNIX_LIKE && DISABLED && DEPRECATED
     /*
         Not worth setting thread priorities on linux
      */

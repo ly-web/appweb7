@@ -8,7 +8,7 @@
 #include "osdep.h"
 
 #ifndef ESP_VERSION
-    #define ESP_VERSION "5.4.4"
+    #define ESP_VERSION "6.0.0"
 #endif
 
 /*
@@ -2173,6 +2173,17 @@ PUBLIC HttpRoute *espGetRoute();
     @stability Evolving
  */
 PUBLIC Edi *espGetRouteDatabase(HttpRoute *route);
+
+/**
+    Get a route variable
+    @description Get the value of a request route variable. 
+    @param conn HttpConn connection object
+    @param var Name of the request parameter to retrieve
+    @return String containing the route variable value. Caller should not free.
+    @ingroup EspReq
+    @stability Prototype
+ */
+PUBLIC cchar *espGetRouteVar(HttpConn *conn, cchar *var);
 
 /**
     Get the session state ID.
