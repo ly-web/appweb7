@@ -10019,6 +10019,9 @@ static int dispatchEvents(MprDispatcher *dispatcher)
     MprOsThread         priorOwner;
     int                 count;
 
+    if (mprIsStopped()) {
+        return 0;
+    }
     assert(isRunning(dispatcher));
     es = dispatcher->service;
 
@@ -22050,15 +22053,6 @@ PUBLIC void mprSetSslProvider(MprSocketProvider *provider)
     MprSocketService    *ss;
 
     ss = MPR->socketService;
-
-#if UNUSED
-    if (ss->providers == 0 && (ss->providers = mprCreateHash(0, 0)) == 0) {
-        return;
-    }
-    ss->sslProvider = provider->name = sclone(name);
-    mprAddKey(ss->providers, name, provider);
-    provider->name = sclone(name);
-#endif
     ss->sslProvider =  provider;
 }
 
@@ -25412,7 +25406,7 @@ PUBLIC void mprSetThreadPriority(MprThread *tp, int newPriority)
     SetThreadPriority(tp->threadHandle, osPri);
 #elif VXWORKS
     taskPrioritySet(tp->osThread, osPri);
-#elif ME_UNIX_LIKE && DISABLED
+#elif ME_UNIX_LIKE && DISABLED && DEPRECATED
     /*
         Not worth setting thread priorities on linux
      */

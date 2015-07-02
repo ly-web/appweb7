@@ -8334,18 +8334,6 @@ PUBLIC void mprVerifySslPeer(struct MprSsl *ssl, bool on);
     PUBLIC int mprCreateOpenSslModule();
 #endif
 
-#if UNUSED
-/**
-    @internal
- */
-typedef struct MprCipher {
-    int     code;
-    cchar   *name;
-} MprCipher;
-
-PUBLIC_DATA MprCipher *mprCiphers;
-#endif
-
 /******************************* Worker Threads *******************************/
 /**
     Worker thread callback signature
