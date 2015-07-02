@@ -3954,7 +3954,8 @@ PUBLIC cchar *espUri(HttpConn *conn, cchar *target)
 }
 
 
-PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprTime date, cchar *mime, cchar *message, MprList *files)
+PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprTime date, cchar *mime, 
+    cchar *message, MprList *files)
 {
     MprList         *lines;
     MprCmd          *cmd;
@@ -4015,7 +4016,7 @@ PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprT
     httpTraceContent(conn, "esp.email", "context", body, slen(body), 0);
 
     cmd = mprCreateCmd(conn->dispatcher);
-    if (mprRunCmd(cmd, "sendmail -t", NULL, body, &out, &err, 0, 0) < 0) {
+    if (mprRunCmd(cmd, "sendmail -t", NULL, body, &out, &err, -1, 0) < 0) {
         mprDestroyCmd(cmd);
         return MPR_ERR_CANT_OPEN;
     }
