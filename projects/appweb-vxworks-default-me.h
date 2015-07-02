@@ -172,7 +172,7 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "6.0.0"
+    #define ME_VERSION "6.0.1"
 #endif
 #ifndef ME_WATCHDOG_NAME
     #define ME_WATCHDOG_NAME "appman"
@@ -234,7 +234,7 @@
     #define ME_VAPP_PREFIX "deploy"
 #endif
 #ifndef ME_SRC_PREFIX
-    #define ME_SRC_PREFIX "/usr/src/appweb-6.0.0"
+    #define ME_SRC_PREFIX "/usr/src/appweb-6.0.1"
 #endif
 
 /* Suffixes */
@@ -276,10 +276,10 @@
     #define ME_MINOR_VERSION 0
 #endif
 #ifndef ME_PATCH_VERSION
-    #define ME_PATCH_VERSION 0
+    #define ME_PATCH_VERSION 1
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 600000000
+    #define ME_VNUM 600000001
 #endif
 
 /* Components */
@@ -334,9 +334,6 @@
 #ifndef ME_COM_PHP
     #define ME_COM_PHP 0
 #endif
-#ifndef ME_COM_SQLITE
-    #define ME_COM_SQLITE 0
-#endif
 #ifndef ME_COM_SSL
     #define ME_COM_SSL 1
 #endif
@@ -345,7 +342,4 @@
 #endif
 #ifndef ME_COM_WINSDK
     #define ME_COM_WINSDK 1
-#endif
-#ifndef ME_COM_ZLIB
-    #define ME_COM_ZLIB 0
 #endif
