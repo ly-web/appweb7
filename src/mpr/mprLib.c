@@ -23627,10 +23627,6 @@ static void manageSsl(MprSsl *ssl, int flags)
         mprMark(ssl->config);
         mprMark(ssl->keyFile);
         mprMark(ssl->mutex);
-#if UNUSED
-        mprMark(ssl->provider);
-        mprMark(ssl->providerName);
-#endif
         mprMark(ssl->revoke);
     }
 }
@@ -23761,15 +23757,6 @@ PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, cchar *peerName)
         if (loadProvider() < 0) {
             return MPR_ERR_CANT_INITIALIZE;
         }
-#if UNUSED
-    cchar               *providerName;
-        providerName = (ssl->providerName) ? ssl->providerName : ss->sslProvider;
-        if ((ssl->provider = mprLookupKey(ss->providers, providerName)) == 0) {
-            sp->errorMsg = sfmt("Cannot use SSL, missing SSL provider %s", providerName);
-            return MPR_ERR_CANT_INITIALIZE;
-        }
-        ssl->providerName = providerName;
-#endif
     }
     sp->provider = ss->sslProvider;
 #if KEEP
@@ -23855,16 +23842,6 @@ PUBLIC void mprSetSslProtocols(MprSsl *ssl, int protocols)
     ssl->protocols = protocols;
     ssl->changed = 1;
 }
-
-
-#if UNUSED
-PUBLIC void mprSetSslProvider(MprSsl *ssl, cchar *provider)
-{
-    assert(ssl);
-    ssl->providerName = (provider && *provider) ? sclone(provider) : 0;
-    ssl->changed = 1;
-}
-#endif
 
 
 PUBLIC void mprSetSslRenegotiate(MprSsl *ssl, bool enable)

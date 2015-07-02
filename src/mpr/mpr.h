@@ -7482,10 +7482,6 @@ typedef int (*MprSocketPrebind)(struct MprSocket *sock);
 typedef struct MprSocketService {
     MprSocketProvider *standardProvider;        /**< Socket provider for non-SSL connections */
     MprSocketProvider *sslProvider;             /**< Socket provider for SSL connections */
-#if UNUSED
-    char            *sslProvider;               /**< Default secure provider for SSL connections */
-    MprHash         *providers;                 /**< Secure socket providers */
-#endif
     MprSocketPrebind prebind;                   /**< Prebind callback */
     MprList         *secureSockets;             /**< List of secured (matrixssl) sockets */
     MprMutex        *mutex;                     /**< Multithread locking */
@@ -8096,9 +8092,6 @@ PUBLIC ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count);
  */
 typedef struct MprSsl {
     cchar           *providerName;      /**< SSL provider to use - null if default */
-#if UNUSED
-    struct MprSocketProvider *provider; /**< Cached SSL provider to use */
-#endif
     cchar           *keyFile;           /**< Alternatively, locate the key in a file */
     cchar           *certFile;          /**< Certificate filename */
     cchar           *revoke;            /**< Certificate revocation list */
