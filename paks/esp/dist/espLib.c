@@ -524,7 +524,7 @@ PUBLIC cchar *ediGridAsJson(EdiGrid *grid, int flags)
             rec = grid->records[r];
             for (f = 0; f < rec->nfields; f++) {
                 fp = &rec->fields[f];
-                mprPutToBuf(buf, "\"%s\"", fp->name);
+                mprFormatJsonName(buf, fp->name, MPR_JSON_QUOTES);
                 if (pretty) {
                     mprPutStringToBuf(buf, ": ");
                 } else {
@@ -905,7 +905,7 @@ PUBLIC cchar *ediFormatField(cchar *fmt, EdiField *fp)
 static void formatFieldForJson(MprBuf *buf, EdiField *fp)
 {
     MprTime     when;
-    cchar       *value;
+    cchar       *cp, *value;
 
     value = fp->value;
 
@@ -920,7 +920,20 @@ static void formatFieldForJson(MprBuf *buf, EdiField *fp)
 
     case EDI_TYPE_STRING:
     case EDI_TYPE_TEXT:
-        mprPutToBuf(buf, "\"%s\"", fp->value);
+        mprPutCharToBuf(buf, '"');
+        for (cp = fp->value; *cp; cp++) {
+            if (*cp == '\"' || *cp == '\\') {
+                mprPutCharToBuf(buf, '\\');
+                mprPutCharToBuf(buf, *cp);
+            } else if (*cp == '\r') {
+                mprPutStringToBuf(buf, "\\r");
+            } else if (*cp == '\n') {
+                mprPutStringToBuf(buf, "\\n");
+            } else {
+                mprPutCharToBuf(buf, *cp);
+            }
+        }
+        mprPutCharToBuf(buf, '"');
         return;
 
     case EDI_TYPE_BOOL:
@@ -3268,6 +3281,12 @@ PUBLIC Edi *espGetRouteDatabase(HttpRoute *route)
 }
 
 
+PUBLIC cchar *espGetRouteVar(HttpConn *conn, cchar *var)
+{
+    return httpGetRouteVar(conn->rx->route, var);
+}
+
+
 PUBLIC cchar *espGetSessionID(HttpConn *conn, int create)
 {
     HttpSession *session;
@@ -3935,7 +3954,8 @@ PUBLIC cchar *espUri(HttpConn *conn, cchar *target)
 }
 
 
-PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprTime date, cchar *mime, cchar *message, MprList *files)
+PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprTime date, cchar *mime, 
+    cchar *message, MprList *files)
 {
     MprList         *lines;
     MprCmd          *cmd;
@@ -3996,7 +4016,7 @@ PUBLIC int espEmail(HttpConn *conn, cchar *to, cchar *from, cchar *subject, MprT
     httpTraceContent(conn, "esp.email", "context", body, slen(body), 0);
 
     cmd = mprCreateCmd(conn->dispatcher);
-    if (mprRunCmd(cmd, "sendmail -t", NULL, body, &out, &err, 0, 0) < 0) {
+    if (mprRunCmd(cmd, "sendmail -t", NULL, body, &out, &err, -1, 0) < 0) {
         mprDestroyCmd(cmd);
         return MPR_ERR_CANT_OPEN;
     }
@@ -5345,7 +5365,7 @@ PUBLIC int espOpenDatabase(HttpRoute *route, cchar *spec)
 
 PUBLIC void espSetDefaultDirs(HttpRoute *route)
 {
-    cchar   *controllers, *documents, *path;
+    cchar   *controllers, *documents, *path, *migrations;
 
     documents = mprJoinPath(route->home, "dist");
 #if DEPRECATED || 1
@@ -5381,6 +5401,16 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     if (!mprPathExists(path, X_OK)) {
         controllers = ".";
     }
+
+#if DEPRECATED || 1
+    migrations = "db/migrations";
+    path = mprJoinPath(route->home, migrations);
+    if (!mprPathExists(path, X_OK)) {
+        migrations = "migrations";
+    }
+#else
+    migrations = "migrations";
+#endif
     httpSetDir(route, "CACHE", 0);
     httpSetDir(route, "CONTROLLERS", controllers);
     httpSetDir(route, "CONTENTS", 0);
@@ -5389,6 +5419,7 @@ PUBLIC void espSetDefaultDirs(HttpRoute *route)
     httpSetDir(route, "HOME", route->home);
     httpSetDir(route, "LAYOUTS", 0);
     httpSetDir(route, "LIB", 0);
+    httpSetDir(route, "MIGRATIONS", migrations);
     httpSetDir(route, "PAKS", 0);
     httpSetDir(route, "PARTIALS", 0);
     httpSetDir(route, "SRC", 0);
