@@ -12644,7 +12644,6 @@ static void adoptChildren(MprJson *obj, MprJson *other);
 static void appendItem(MprJson *obj, MprJson *child);
 static void appendProperty(MprJson *obj, MprJson *child);
 static int checkBlockCallback(MprJsonParser *parser, cchar *name, bool leave);
-static void formatValue(MprBuf *buf, MprJson *obj, int flags);
 static int gettok(MprJsonParser *parser);
 static MprJson *jsonParse(MprJsonParser *parser, MprJson *obj);
 static void jsonErrorCallback(MprJsonParser *parser, cchar *msg);
@@ -13124,10 +13123,9 @@ static int gettok(MprJsonParser *parser)
 static char *objToString(MprBuf *buf, MprJson *obj, int indent, int flags)
 {
     MprJson  *child;
-    int     quotes, pretty, index;
+    int     pretty, index;
 
     pretty = flags & MPR_JSON_PRETTY;
-    quotes = flags & MPR_JSON_QUOTES;
 
     if (obj->type & MPR_JSON_ARRAY) {
         mprPutCharToBuf(buf, '[');
@@ -13151,9 +13149,7 @@ static char *objToString(MprBuf *buf, MprJson *obj, int indent, int flags)
         if (pretty) mprPutCharToBuf(buf, '\n');
         for (ITERATE_JSON(obj, child, index)) {
             if (pretty) spaces(buf, indent);
-            if (quotes) mprPutCharToBuf(buf, '"');
-            mprPutStringToBuf(buf, child->name);
-            if (quotes) mprPutCharToBuf(buf, '"');
+            mprFormatJsonName(buf, child->name, flags);
             if (pretty) {
                 mprPutStringToBuf(buf, ": ");
             } else {
@@ -13169,14 +13165,14 @@ static char *objToString(MprBuf *buf, MprJson *obj, int indent, int flags)
         mprPutCharToBuf(buf, '}');
         
     } else {
-        formatValue(buf, obj, flags);
+        mprFormatJsonValue(buf, obj, flags);
     }
     return sclone(mprGetBufStart(buf));
 }
 
 
 /*
-    Serialize into JSON format.
+    Serialize into JSON format
  */
 PUBLIC char *mprJsonToString(MprJson *obj, int flags)
 {
@@ -13212,7 +13208,40 @@ static void setValue(MprJson *obj, cchar *value, int type)
 }
 
 
-static void formatValue(MprBuf *buf, MprJson *obj, int flags)
+PUBLIC void mprFormatJsonName(MprBuf *buf, cchar *name, int flags)
+{
+    cchar   *cp;
+    int     quotes;
+
+    quotes = flags & MPR_JSON_QUOTES;
+    for (cp = name; *cp; cp++) {
+        if (!isalnum((uchar) *cp) && *cp != '_') {
+            quotes++;
+            break;
+        }
+    }
+    if (quotes) {
+        mprPutCharToBuf(buf, '"');
+    }
+    for (cp = name; *cp; cp++) {
+        if (*cp == '\"' || *cp == '\\') {
+            mprPutCharToBuf(buf, '\\');
+            mprPutCharToBuf(buf, *cp);
+        } else if (*cp == '\r') {
+            mprPutStringToBuf(buf, "\\r");
+        } else if (*cp == '\n') {
+            mprPutStringToBuf(buf, "\\n");
+        } else {
+            mprPutCharToBuf(buf, *cp);
+        }
+    }
+    if (quotes) {
+        mprPutCharToBuf(buf, '"');
+    }
+}
+
+
+PUBLIC void mprFormatJsonValue(MprBuf *buf, MprJson *obj, int flags)
 {
     cchar   *cp;
 
@@ -13243,9 +13272,9 @@ static void formatValue(MprBuf *buf, MprJson *obj, int flags)
                 mprPutCharToBuf(buf, '\\');
                 mprPutCharToBuf(buf, *cp);
             } else if (*cp == '\r') {
-                mprPutStringToBuf(buf, "\\\\r");
+                mprPutStringToBuf(buf, "\\r");
             } else if (*cp == '\n') {
-                mprPutStringToBuf(buf, "\\\\n");
+                mprPutStringToBuf(buf, "\\n");
             } else {
                 mprPutCharToBuf(buf, *cp);
             }
@@ -21983,9 +22012,6 @@ static void manageSocketService(MprSocketService *ss, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ss->standardProvider);
-#if UNUSED
-        mprMark(ss->providers);
-#endif
         mprMark(ss->sslProvider);
         mprMark(ss->secureSockets);
         mprMark(ss->mutex);
