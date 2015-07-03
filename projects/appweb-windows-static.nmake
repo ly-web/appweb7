@@ -284,7 +284,7 @@ DEPS_4 = $(DEPS_4) build\$(CONFIG)\inc\mpr.h
 build\$(CONFIG)\obj\openssl.obj: \
     src\mpr-openssl\openssl.c $(DEPS_4)
 	@echo .. [Compile] build\$(CONFIG)\obj\openssl.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\openssl.obj -Fd$(BUILD)\obj\openssl.pdb $(CFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\mpr-openssl\openssl.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\openssl.obj -Fd$(BUILD)\obj\openssl.pdb $(CFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\mpr-openssl\openssl.c $(LOG)
 
 !IF "$(ME_COM_SSL)" == "1"
 !IF "$(ME_COM_OPENSSL)" == "1"
@@ -313,7 +313,7 @@ DEPS_7 = $(DEPS_7) src\mpr\mpr.h
 build\$(CONFIG)\obj\mprLib.obj: \
     src\mpr\mprLib.c $(DEPS_7)
 	@echo .. [Compile] build\$(CONFIG)\obj\mprLib.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\mprLib.obj -Fd$(BUILD)\obj\mprLib.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\mpr\mprLib.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\mprLib.obj -Fd$(BUILD)\obj\mprLib.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\mpr\mprLib.c $(LOG)
 
 #
 #   libmpr
@@ -396,7 +396,7 @@ DEPS_15 = $(DEPS_15) build\$(CONFIG)\inc\pcre.h
 build\$(CONFIG)\obj\httpLib.obj: \
     src\http\httpLib.c $(DEPS_15)
 	@echo .. [Compile] build\$(CONFIG)\obj\httpLib.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\httpLib.obj -Fd$(BUILD)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\http\httpLib.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\httpLib.obj -Fd$(BUILD)\obj\httpLib.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\http\httpLib.c $(LOG)
 
 !IF "$(ME_COM_HTTP)" == "1"
 #
@@ -443,7 +443,7 @@ DEPS_19 = $(DEPS_19) build\$(CONFIG)\inc\http.h
 build\$(CONFIG)\obj\espLib.obj: \
     src\esp\espLib.c $(DEPS_19)
 	@echo .. [Compile] build\$(CONFIG)\obj\espLib.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\espLib.obj -Fd$(BUILD)\obj\espLib.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\esp\espLib.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\espLib.obj -Fd$(BUILD)\obj\espLib.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\esp\espLib.c $(LOG)
 
 !IF "$(ME_COM_ESP)" == "1"
 #
@@ -498,7 +498,7 @@ DEPS_24 = $(DEPS_24) build\$(CONFIG)\inc\pcre.h
 build\$(CONFIG)\obj\config.obj: \
     src\config.c $(DEPS_24)
 	@echo .. [Compile] build\$(CONFIG)\obj\config.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\config.obj -Fd$(BUILD)\obj\config.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\config.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\config.obj -Fd$(BUILD)\obj\config.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\config.c $(LOG)
 
 #
 #   convenience.obj
@@ -508,7 +508,7 @@ DEPS_25 = $(DEPS_25) src\appweb.h
 build\$(CONFIG)\obj\convenience.obj: \
     src\convenience.c $(DEPS_25)
 	@echo .. [Compile] build\$(CONFIG)\obj\convenience.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\convenience.obj -Fd$(BUILD)\obj\convenience.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\convenience.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\convenience.obj -Fd$(BUILD)\obj\convenience.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\convenience.c $(LOG)
 
 #
 #   romFiles.obj
@@ -518,7 +518,7 @@ DEPS_26 = $(DEPS_26) build\$(CONFIG)\inc\mpr.h
 build\$(CONFIG)\obj\romFiles.obj: \
     src\romFiles.c $(DEPS_26)
 	@echo .. [Compile] build\$(CONFIG)\obj\romFiles.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\romFiles.obj -Fd$(BUILD)\obj\romFiles.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\romFiles.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\romFiles.obj -Fd$(BUILD)\obj\romFiles.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\romFiles.c $(LOG)
 
 #
 #   cgiHandler.obj
@@ -528,7 +528,7 @@ DEPS_27 = $(DEPS_27) src\appweb.h
 build\$(CONFIG)\obj\cgiHandler.obj: \
     src\modules\cgiHandler.c $(DEPS_27)
 	@echo .. [Compile] build\$(CONFIG)\obj\cgiHandler.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\cgiHandler.obj -Fd$(BUILD)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\modules\cgiHandler.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\cgiHandler.obj -Fd$(BUILD)\obj\cgiHandler.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\modules\cgiHandler.c $(LOG)
 
 #
 #   espHandler.obj
@@ -539,7 +539,7 @@ DEPS_28 = $(DEPS_28) build\$(CONFIG)\inc\esp.h
 build\$(CONFIG)\obj\espHandler.obj: \
     src\modules\espHandler.c $(DEPS_28)
 	@echo .. [Compile] build\$(CONFIG)\obj\espHandler.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\espHandler.obj -Fd$(BUILD)\obj\espHandler.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\modules\espHandler.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\espHandler.obj -Fd$(BUILD)\obj\espHandler.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\modules\espHandler.c $(LOG)
 
 #
 #   libappweb
@@ -571,7 +571,7 @@ DEPS_30 = $(DEPS_30) build\$(CONFIG)\inc\appweb.h
 build\$(CONFIG)\obj\appweb.obj: \
     src\server\appweb.c $(DEPS_30)
 	@echo .. [Compile] build\$(CONFIG)\obj\appweb.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\appweb.obj -Fd$(BUILD)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\server\appweb.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\appweb.obj -Fd$(BUILD)\obj\appweb.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\server\appweb.c $(LOG)
 
 #
 #   appweb
@@ -662,7 +662,7 @@ DEPS_35 = $(DEPS_35) build\$(CONFIG)\inc\mpr.h
 build\$(CONFIG)\obj\appwebMonitor.obj: \
     src\server\windows\appwebMonitor.c $(DEPS_35)
 	@echo .. [Compile] build\$(CONFIG)\obj\appwebMonitor.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\appwebMonitor.obj -Fd$(BUILD)\obj\appwebMonitor.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\server\windows\appwebMonitor.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\appwebMonitor.obj -Fd$(BUILD)\obj\appwebMonitor.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\server\windows\appwebMonitor.c $(LOG)
 
 #
 #   appwebMonitor
@@ -737,7 +737,7 @@ DEPS_38 = $(DEPS_38) build\$(CONFIG)\inc\appweb.h
 build\$(CONFIG)\obj\authpass.obj: \
     src\utils\authpass.c $(DEPS_38)
 	@echo .. [Compile] build\$(CONFIG)\obj\authpass.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\authpass.obj -Fd$(BUILD)\obj\authpass.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\utils\authpass.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\authpass.obj -Fd$(BUILD)\obj\authpass.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\utils\authpass.c $(LOG)
 
 #
 #   authpass
@@ -811,7 +811,7 @@ DEPS_41 = $(DEPS_41) src\esp\esp.h
 build\$(CONFIG)\obj\esp.obj: \
     src\esp\esp.c $(DEPS_41)
 	@echo .. [Compile] build\$(CONFIG)\obj\esp.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\esp.obj -Fd$(BUILD)\obj\esp.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\esp\esp.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\esp.obj -Fd$(BUILD)\obj\esp.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\esp\esp.c $(LOG)
 
 !IF "$(ME_COM_ESP)" == "1"
 #
@@ -869,7 +869,7 @@ DEPS_43 = $(DEPS_43) src\http\http.h
 build\$(CONFIG)\obj\http.obj: \
     src\http\http.c $(DEPS_43)
 	@echo .. [Compile] build\$(CONFIG)\obj\http.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\http.obj -Fd$(BUILD)\obj\http.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\http\http.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\http.obj -Fd$(BUILD)\obj\http.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\http\http.c $(LOG)
 
 !IF "$(ME_COM_HTTP)" == "1"
 #
@@ -959,7 +959,7 @@ DEPS_47 = $(DEPS_47) build\$(CONFIG)\inc\mpr.h
 build\$(CONFIG)\obj\watchdog.obj: \
     src\watchdog\watchdog.c $(DEPS_47)
 	@echo .. [Compile] build\$(CONFIG)\obj\watchdog.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\watchdog.obj -Fd$(BUILD)\obj\watchdog.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\watchdog\watchdog.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\watchdog.obj -Fd$(BUILD)\obj\watchdog.pdb $(CFLAGS) $(DFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)\include" src\watchdog\watchdog.c $(LOG)
 
 #
 #   watchdog
