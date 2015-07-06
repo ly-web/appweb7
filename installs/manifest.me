@@ -108,8 +108,14 @@ Me.load({
             ],
             esp: [
                 {
-                    from:       'esp${EXE}',
+                    from:       'appweb-esp${EXE}',
                     to:         '${abin}/appesp${EXE}',
+                    symlink:    '${bin}/',
+                    ifdef:      'esp',
+                },
+                {
+                    from:       'appweb-esp${EXE}',
+                    to:         '${abin}/appweb-esp${EXE}',
                     symlink:    '${bin}/',
                     ifdef:      'esp',
                 }, {
