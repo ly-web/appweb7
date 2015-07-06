@@ -42,6 +42,7 @@
     },
     "optionalDependencies": {
         "certs": "~0.1",
+        "ejscript": "~2.6",
         "esp": "~6.0",
         "mpr-mbedtls": "~0.3",
         "mpr-matrixssl": "~0.3",
