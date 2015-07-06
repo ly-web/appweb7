@@ -905,7 +905,7 @@ PUBLIC cchar *ediFormatField(cchar *fmt, EdiField *fp)
 static void formatFieldForJson(MprBuf *buf, EdiField *fp)
 {
     MprTime     when;
-    cchar       *cp, *value;
+    cchar       *value;
 
     value = fp->value;
 
@@ -920,20 +920,7 @@ static void formatFieldForJson(MprBuf *buf, EdiField *fp)
 
     case EDI_TYPE_STRING:
     case EDI_TYPE_TEXT:
-        mprPutCharToBuf(buf, '"');
-        for (cp = fp->value; *cp; cp++) {
-            if (*cp == '\"' || *cp == '\\') {
-                mprPutCharToBuf(buf, '\\');
-                mprPutCharToBuf(buf, *cp);
-            } else if (*cp == '\r') {
-                mprPutStringToBuf(buf, "\\r");
-            } else if (*cp == '\n') {
-                mprPutStringToBuf(buf, "\\n");
-            } else {
-                mprPutCharToBuf(buf, *cp);
-            }
-        }
-        mprPutCharToBuf(buf, '"');
+        mprFormatJsonValue(buf, MPR_JSON_STRING, fp->value, 0);
         return;
 
     case EDI_TYPE_BOOL:
