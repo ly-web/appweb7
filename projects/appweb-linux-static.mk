@@ -82,8 +82,8 @@ ME_SPOOL_PREFIX       ?= $(ME_ROOT_PREFIX)/var/spool/$(NAME)
 ME_CACHE_PREFIX       ?= $(ME_ROOT_PREFIX)/var/spool/$(NAME)/cache
 ME_SRC_PREFIX         ?= $(ME_ROOT_PREFIX)$(NAME)-$(VERSION)
 
-WEB_USER              ?= $(shell egrep 'www-data|_www|nobody' /etc/passwd | sed 's/:.*$$$(ME_ROOT_PREFIX)/' |  tail -1)
-WEB_GROUP             ?= $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group | sed 's/:.*$$$(ME_ROOT_PREFIX)/' |  tail -1)
+WEB_USER              ?= $(shell egrep 'www-data|_www|nobody' /etc/passwd | sed 's^:.*^^' |  tail -1)
+WEB_GROUP             ?= $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group | sed 's^:.*^^' |  tail -1)
 
 TARGETS               += init
 TARGETS               += $(BUILD)/bin/appweb
@@ -92,7 +92,7 @@ ifeq ($(ME_COM_ESP),1)
     TARGETS           += $(BUILD)/bin/esp-compile.json
 endif
 ifeq ($(ME_COM_ESP),1)
-    TARGETS           += $(BUILD)/bin/esp
+    TARGETS           += $(BUILD)/bin/appweb-esp
 endif
 ifeq ($(ME_COM_HTTP),1)
     TARGETS           += $(BUILD)/bin/http
@@ -152,7 +152,7 @@ clean:
 	rm -f "$(BUILD)/bin/appweb"
 	rm -f "$(BUILD)/bin/authpass"
 	rm -f "$(BUILD)/bin/esp-compile.json"
-	rm -f "$(BUILD)/bin/esp"
+	rm -f "$(BUILD)/bin/appweb-esp"
 	rm -f "$(BUILD)/bin/http"
 	rm -f "$(BUILD)/.install-certs-modified"
 	rm -f "$(BUILD)/bin/libappweb.a"
@@ -704,9 +704,9 @@ ifeq ($(ME_COM_HTTP),1)
     LIBS_40 += -lhttp
 endif
 
-$(BUILD)/bin/esp: $(DEPS_40)
-	@echo '      [Link] $(BUILD)/bin/esp'
-	$(CC) -o $(BUILD)/bin/esp $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/esp.o" $(LIBPATHS_40) $(LIBS_40) $(LIBS_40) $(LIBS) $(LIBS) 
+$(BUILD)/bin/appweb-esp: $(DEPS_40)
+	@echo '      [Link] $(BUILD)/bin/appweb-esp'
+	$(CC) -o $(BUILD)/bin/appweb-esp $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/esp.o" $(LIBPATHS_40) $(LIBS_40) $(LIBS_40) $(LIBS) $(LIBS) 
 endif
 
 ifeq ($(ME_COM_HTTP),1)
@@ -841,7 +841,9 @@ installBinary: $(DEPS_46)
 	[ `id -u` = 0 ] && chown $(WEB_USER):$(WEB_GROUP) "$(ME_CACHE_PREFIX)"; true ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
 	cp $(BUILD)/bin/appweb $(ME_VAPP_PREFIX)/bin/appweb ; \
+	chmod 755 "$(ME_VAPP_PREFIX)/bin/appweb" ; \
 	mkdir -p "$(ME_BIN_PREFIX)" ; \
+	chmod 755 "$(ME_BIN_PREFIX)" ; \
 	rm -f "$(ME_BIN_PREFIX)/appweb" ; \
 	ln -s "$(ME_VAPP_PREFIX)/bin/appweb" "$(ME_BIN_PREFIX)/appweb" ; \
 	if [ "$(ME_COM_SSL)" = 1 ]; then true ; \
@@ -896,7 +898,9 @@ installBinary: $(DEPS_46)
 	chmod 755 "$(ME_WEB_PREFIX)/test/test.py" ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
 	cp $(BUILD)/bin/appman $(ME_VAPP_PREFIX)/bin/appman ; \
+	chmod 755 "$(ME_VAPP_PREFIX)/bin/appman" ; \
 	mkdir -p "$(ME_BIN_PREFIX)" ; \
+	chmod 755 "$(ME_BIN_PREFIX)" ; \
 	rm -f "$(ME_BIN_PREFIX)/appman" ; \
 	ln -s "$(ME_VAPP_PREFIX)/bin/appman" "$(ME_BIN_PREFIX)/appman" ; \
 	mkdir -p "$(ME_ROOT_PREFIX)/etc/init.d" ; \
@@ -904,10 +908,21 @@ installBinary: $(DEPS_46)
 	chmod 755 "$(ME_ROOT_PREFIX)/etc/init.d/appweb" ; \
 	if [ "$(ME_COM_ESP)" = 1 ]; then true ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
-	cp $(BUILD)/bin/esp $(ME_VAPP_PREFIX)/bin/appesp ; \
+	cp $(BUILD)/bin/appweb-esp $(ME_VAPP_PREFIX)/bin/appesp ; \
+	chmod 755 "$(ME_VAPP_PREFIX)/bin/appesp" ; \
 	mkdir -p "$(ME_BIN_PREFIX)" ; \
+	chmod 755 "$(ME_BIN_PREFIX)" ; \
 	rm -f "$(ME_BIN_PREFIX)/appesp" ; \
 	ln -s "$(ME_VAPP_PREFIX)/bin/appesp" "$(ME_BIN_PREFIX)/appesp" ; \
+	fi ; \
+	if [ "$(ME_COM_ESP)" = 1 ]; then true ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
+	cp $(BUILD)/bin/appweb-esp $(ME_VAPP_PREFIX)/bin/appweb-esp ; \
+	chmod 755 "$(ME_VAPP_PREFIX)/bin/appweb-esp" ; \
+	mkdir -p "$(ME_BIN_PREFIX)" ; \
+	chmod 755 "$(ME_BIN_PREFIX)" ; \
+	rm -f "$(ME_BIN_PREFIX)/appweb-esp" ; \
+	ln -s "$(ME_VAPP_PREFIX)/bin/appweb-esp" "$(ME_BIN_PREFIX)/appweb-esp" ; \
 	fi ; \
 	if [ "$(ME_COM_ESP)" = 1 ]; then true ; \
 	fi ; \
@@ -917,6 +932,7 @@ installBinary: $(DEPS_46)
 	fi ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
 	cp $(BUILD)/bin/http $(ME_VAPP_PREFIX)/bin/http ; \
+	chmod 755 "$(ME_VAPP_PREFIX)/bin/http" ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/inc" ; \
 	cp $(BUILD)/inc/me.h $(ME_VAPP_PREFIX)/inc/me.h ; \
 	mkdir -p "$(ME_INC_PREFIX)/appweb" ; \

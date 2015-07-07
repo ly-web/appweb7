@@ -108,11 +108,17 @@
 #ifndef ME_EJSCRIPT_ZLIB
     #define ME_EJSCRIPT_ZLIB 1
 #endif
+#ifndef ME_ESP_CMD
+    #define ME_ESP_CMD 1
+#endif
 #ifndef ME_ESP_LEGACY
     #define ME_ESP_LEGACY 0
 #endif
 #ifndef ME_ESP_MODULE
     #define ME_ESP_MODULE 0
+#endif
+#ifndef ME_HTTP_CMD
+    #define ME_HTTP_CMD 1
 #endif
 #ifndef ME_HTTP_PAM
     #define ME_HTTP_PAM 1

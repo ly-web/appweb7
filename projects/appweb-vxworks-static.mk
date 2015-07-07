@@ -90,8 +90,8 @@ ME_APP_PREFIX         ?= $(ME_BASE_PREFIX)
 ME_VAPP_PREFIX        ?= $(ME_APP_PREFIX)
 ME_SRC_PREFIX         ?= $(ME_ROOT_PREFIX)/usr/src/$(NAME)-$(VERSION)
 
-WEB_USER              ?= $(shell egrep 'www-data|_www|nobody' /etc/passwd | sed 's/:.*$$$(ME_ROOT_PREFIX)/' |  tail -1)
-WEB_GROUP             ?= $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group | sed 's/:.*$$$(ME_ROOT_PREFIX)/' |  tail -1)
+WEB_USER              ?= $(shell egrep 'www-data|_www|nobody' /etc/passwd | sed 's^:.*^^' |  tail -1)
+WEB_GROUP             ?= $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group | sed 's^:.*^^' |  tail -1)
 
 TARGETS               += $(BUILD)/bin/appweb.out
 TARGETS               += $(BUILD)/bin/authpass.out
@@ -99,7 +99,7 @@ ifeq ($(ME_COM_ESP),1)
     TARGETS           += $(BUILD)/bin/esp-compile.json
 endif
 ifeq ($(ME_COM_ESP),1)
-    TARGETS           += $(BUILD)/bin/esp.out
+    TARGETS           += $(BUILD)/bin/appweb-esp.out
 endif
 ifeq ($(ME_COM_HTTP),1)
     TARGETS           += $(BUILD)/bin/http.out
@@ -162,7 +162,7 @@ clean:
 	rm -f "$(BUILD)/bin/appweb.out"
 	rm -f "$(BUILD)/bin/authpass.out"
 	rm -f "$(BUILD)/bin/esp-compile.json"
-	rm -f "$(BUILD)/bin/esp.out"
+	rm -f "$(BUILD)/bin/appweb-esp.out"
 	rm -f "$(BUILD)/bin/http.out"
 	rm -f "$(BUILD)/.install-certs-modified"
 	rm -f "$(BUILD)/bin/libappweb.a"
@@ -704,9 +704,9 @@ ifeq ($(ME_COM_HTTP),1)
     LIBS_39 += -lhttp
 endif
 
-$(BUILD)/bin/esp.out: $(DEPS_39)
-	@echo '      [Link] $(BUILD)/bin/esp.out'
-	$(CC) -o $(BUILD)/bin/esp.out $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/esp.o" $(LIBPATHS_39) $(LIBS_39) $(LIBS_39) $(LIBS) -Wl,-r 
+$(BUILD)/bin/appweb-esp.out: $(DEPS_39)
+	@echo '      [Link] $(BUILD)/bin/appweb-esp.out'
+	$(CC) -o $(BUILD)/bin/appweb-esp.out $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/esp.o" $(LIBPATHS_39) $(LIBS_39) $(LIBS_39) $(LIBS) -Wl,-r 
 endif
 
 ifeq ($(ME_COM_HTTP),1)
