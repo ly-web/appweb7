@@ -17,8 +17,8 @@ Me.load({
         `,
         gencustom: `
             if (me.platform.os != 'windows') {
-                genWriteLine(\"WEB_USER    = $(shell egrep 'www-data|_www|nobody' /etc/passwd | sed 's/:.*$$//' |  tail -1)\")
-                genWriteLine(\"WEB_GROUP   = $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group | sed 's/:.*$$//' |  tail -1)\")
+                genWriteLine(\"WEB_USER    = $(shell egrep 'www-data|_www|nobody' /etc/passwd | sed 's^:.*^^' |  tail -1)\")
+                genWriteLine(\"WEB_GROUP   = $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group | sed 's^:.*^^' |  tail -1)\")
             }
         `,
     },
@@ -67,6 +67,7 @@ Me.load({
                     from:       'appweb${EXE}',
                     to:         '${abin}/',
                     symlink:    '${bin}/',
+                    permissions: 0755,
 
                 }, { 
                     from:       '${TOP}/src/est/ca.crt',
@@ -194,6 +195,7 @@ Me.load({
                     to:         '${abin}/appesp${EXE}',
                     symlink:    '${bin}/',
                     ifdef:      'esp',
+                    permissions: 0755,
                 }, {
 
                     //  MOB - but do we need to provide from/to?
@@ -318,12 +320,14 @@ Me.load({
                     from:       'appman${EXE}',
                     to:         '${abin}/',
                     symlink:    '${bin}/',
+                    permissions: 0755,
                 }, { 
                     from: [
                                 'appwebMonitor${EXE}',
                                 'appwebMonitor.ico',
                     ],
                     to:         '${abin}/',
+                    permissions: 0755,
                     enable:     "me.platform.os == 'windows'",
 
                 }, {
@@ -398,6 +402,7 @@ Me.load({
                 {
                     from:       'http${EXE}',
                     to:         '${abin}/',
+                    permissions: 0755,
                 }
             ],
             web: [

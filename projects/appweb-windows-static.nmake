@@ -3,7 +3,7 @@
 #
 
 NAME                  = appweb
-VERSION               = 4.7.3
+VERSION               = 4.7.4
 
 OS                    = windows
 PA                    = $(PROCESSOR_ARCHITECTURE)
@@ -181,7 +181,6 @@ TARGETS               = $(TARGETS) build\$(CONFIG)\bin\http.exe
 !IF "$(ME_COM_SQLITE)" == "1"
 TARGETS               = $(TARGETS) build\$(CONFIG)\bin\libsql.lib
 !ENDIF
-TARGETS               = $(TARGETS) build\$(CONFIG)\bin\makerom.exe
 TARGETS               = $(TARGETS) build\$(CONFIG)\bin\appman.exe
 TARGETS               = $(TARGETS) src\server\cache
 !IF "$(ME_COM_SQLITE)" == "1"
@@ -1331,63 +1330,63 @@ DEPS_74 = $(DEPS_74) src\esp-server\generate\appweb.conf
 DEPS_74 = $(DEPS_74) src\esp-server\package.json
 
 build\$(CONFIG)\esp: $(DEPS_74)
-	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3"
-	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\client" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\client"
-	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\client\assets" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\client\assets"
-	copy /Y /B paks\esp-html-mvc\client\assets\favicon.ico+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\client\assets\favicon.ico $(LOG)
-	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\client\css" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\client\css"
-	copy /Y /B paks\esp-html-mvc\client\css\all.css+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\client\css\all.css $(LOG)
-	copy /Y /B paks\esp-html-mvc\client\css\all.less+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\client\css\all.less $(LOG)
-	copy /Y /B paks\esp-html-mvc\client\index.esp+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\client\index.esp $(LOG)
-	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\css" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\css"
-	copy /Y /B paks\esp-html-mvc\css\app.less+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\css\app.less $(LOG)
-	copy /Y /B paks\esp-html-mvc\css\theme.less+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\css\theme.less $(LOG)
-	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\generate" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\generate"
-	copy /Y /B paks\esp-html-mvc\generate\appweb.conf+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\generate\appweb.conf $(LOG)
-	copy /Y /B paks\esp-html-mvc\generate\controller.c+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\generate\controller.c $(LOG)
-	copy /Y /B paks\esp-html-mvc\generate\controllerSingleton.c+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\generate\controllerSingleton.c $(LOG)
-	copy /Y /B paks\esp-html-mvc\generate\edit.esp+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\generate\edit.esp $(LOG)
-	copy /Y /B paks\esp-html-mvc\generate\list.esp+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\generate\list.esp $(LOG)
-	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\layouts" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\layouts"
-	copy /Y /B paks\esp-html-mvc\layouts\default.esp+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\layouts\default.esp $(LOG)
-	copy /Y /B paks\esp-html-mvc\package.json+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.3\package.json $(LOG)
-	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3"
-	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\generate" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\generate"
-	copy /Y /B paks\esp-legacy-mvc\generate\appweb.conf+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\generate\appweb.conf $(LOG)
-	copy /Y /B paks\esp-legacy-mvc\generate\controller.c+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\generate\controller.c $(LOG)
-	copy /Y /B paks\esp-legacy-mvc\generate\edit.esp+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\generate\edit.esp $(LOG)
-	copy /Y /B paks\esp-legacy-mvc\generate\list.esp+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\generate\list.esp $(LOG)
-	copy /Y /B paks\esp-legacy-mvc\generate\migration.c+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\generate\migration.c $(LOG)
-	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\generate\src" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\generate\src"
-	copy /Y /B paks\esp-legacy-mvc\generate\src\app.c+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\generate\src\app.c $(LOG)
-	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\layouts" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\layouts"
-	copy /Y /B paks\esp-legacy-mvc\layouts\default.esp+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\layouts\default.esp $(LOG)
-	copy /Y /B paks\esp-legacy-mvc\package.json+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\package.json $(LOG)
-	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\static" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\static"
-	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\static\css" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\static\css"
-	copy /Y /B paks\esp-legacy-mvc\static\css\all.css+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\static\css\all.css $(LOG)
-	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\static\images" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\static\images"
-	copy /Y /B paks\esp-legacy-mvc\static\images\banner.jpg+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\static\images\banner.jpg $(LOG)
-	copy /Y /B paks\esp-legacy-mvc\static\images\favicon.ico+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\static\images\favicon.ico $(LOG)
-	copy /Y /B paks\esp-legacy-mvc\static\images\splash.jpg+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\static\images\splash.jpg $(LOG)
-	copy /Y /B paks\esp-legacy-mvc\static\index.esp+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\static\index.esp $(LOG)
-	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\static\js" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\static\js"
-	copy /Y /B paks\esp-legacy-mvc\static\js\jquery.esp.js+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\static\js\jquery.esp.js $(LOG)
-	copy /Y /B paks\esp-legacy-mvc\static\js\jquery.js+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.3\static\js\jquery.js $(LOG)
-	if not exist "build\$(CONFIG)\esp\paks\esp-mvc\4.7.3" md "build\$(CONFIG)\esp\paks\esp-mvc\4.7.3"
-	if not exist "build\$(CONFIG)\esp\paks\esp-mvc\4.7.3\generate" md "build\$(CONFIG)\esp\paks\esp-mvc\4.7.3\generate"
-	copy /Y /B paks\esp-mvc\generate\appweb.conf+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.3\generate\appweb.conf $(LOG)
-	copy /Y /B paks\esp-mvc\generate\controller.c+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.3\generate\controller.c $(LOG)
-	copy /Y /B paks\esp-mvc\generate\migration.c+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.3\generate\migration.c $(LOG)
-	if not exist "build\$(CONFIG)\esp\paks\esp-mvc\4.7.3\generate\src" md "build\$(CONFIG)\esp\paks\esp-mvc\4.7.3\generate\src"
-	copy /Y /B paks\esp-mvc\generate\src\app.c+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.3\generate\src\app.c $(LOG)
-	copy /Y /B paks\esp-mvc\LICENSE.md+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.3\LICENSE.md $(LOG)
-	copy /Y /B paks\esp-mvc\package.json+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.3\package.json $(LOG)
-	copy /Y /B paks\esp-mvc\README.md+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.3\README.md $(LOG)
-	if not exist "build\$(CONFIG)\esp\paks\esp-server\4.7.3" md "build\$(CONFIG)\esp\paks\esp-server\4.7.3"
-	if not exist "build\$(CONFIG)\esp\paks\esp-server\4.7.3\generate" md "build\$(CONFIG)\esp\paks\esp-server\4.7.3\generate"
-	copy /Y /B paks\esp-server\generate\appweb.conf+modified build\$(CONFIG)\esp\paks\esp-server\4.7.3\generate\appweb.conf $(LOG)
-	copy /Y /B paks\esp-server\package.json+modified build\$(CONFIG)\esp\paks\esp-server\4.7.3\package.json $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4"
+	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\client" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\client"
+	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\client\assets" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\client\assets"
+	copy /Y /B paks\esp-html-mvc\client\assets\favicon.ico+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\client\assets\favicon.ico $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\client\css" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\client\css"
+	copy /Y /B paks\esp-html-mvc\client\css\all.css+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\client\css\all.css $(LOG)
+	copy /Y /B paks\esp-html-mvc\client\css\all.less+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\client\css\all.less $(LOG)
+	copy /Y /B paks\esp-html-mvc\client\index.esp+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\client\index.esp $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\css" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\css"
+	copy /Y /B paks\esp-html-mvc\css\app.less+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\css\app.less $(LOG)
+	copy /Y /B paks\esp-html-mvc\css\theme.less+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\css\theme.less $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\generate" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\generate"
+	copy /Y /B paks\esp-html-mvc\generate\appweb.conf+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\generate\appweb.conf $(LOG)
+	copy /Y /B paks\esp-html-mvc\generate\controller.c+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\generate\controller.c $(LOG)
+	copy /Y /B paks\esp-html-mvc\generate\controllerSingleton.c+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\generate\controllerSingleton.c $(LOG)
+	copy /Y /B paks\esp-html-mvc\generate\edit.esp+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\generate\edit.esp $(LOG)
+	copy /Y /B paks\esp-html-mvc\generate\list.esp+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\generate\list.esp $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\layouts" md "build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\layouts"
+	copy /Y /B paks\esp-html-mvc\layouts\default.esp+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\layouts\default.esp $(LOG)
+	copy /Y /B paks\esp-html-mvc\package.json+modified build\$(CONFIG)\esp\paks\esp-html-mvc\4.7.4\package.json $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4"
+	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\generate" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\generate"
+	copy /Y /B paks\esp-legacy-mvc\generate\appweb.conf+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\generate\appweb.conf $(LOG)
+	copy /Y /B paks\esp-legacy-mvc\generate\controller.c+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\generate\controller.c $(LOG)
+	copy /Y /B paks\esp-legacy-mvc\generate\edit.esp+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\generate\edit.esp $(LOG)
+	copy /Y /B paks\esp-legacy-mvc\generate\list.esp+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\generate\list.esp $(LOG)
+	copy /Y /B paks\esp-legacy-mvc\generate\migration.c+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\generate\migration.c $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\generate\src" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\generate\src"
+	copy /Y /B paks\esp-legacy-mvc\generate\src\app.c+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\generate\src\app.c $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\layouts" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\layouts"
+	copy /Y /B paks\esp-legacy-mvc\layouts\default.esp+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\layouts\default.esp $(LOG)
+	copy /Y /B paks\esp-legacy-mvc\package.json+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\package.json $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\static" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\static"
+	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\static\css" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\static\css"
+	copy /Y /B paks\esp-legacy-mvc\static\css\all.css+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\static\css\all.css $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\static\images" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\static\images"
+	copy /Y /B paks\esp-legacy-mvc\static\images\banner.jpg+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\static\images\banner.jpg $(LOG)
+	copy /Y /B paks\esp-legacy-mvc\static\images\favicon.ico+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\static\images\favicon.ico $(LOG)
+	copy /Y /B paks\esp-legacy-mvc\static\images\splash.jpg+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\static\images\splash.jpg $(LOG)
+	copy /Y /B paks\esp-legacy-mvc\static\index.esp+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\static\index.esp $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\static\js" md "build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\static\js"
+	copy /Y /B paks\esp-legacy-mvc\static\js\jquery.esp.js+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\static\js\jquery.esp.js $(LOG)
+	copy /Y /B paks\esp-legacy-mvc\static\js\jquery.js+modified build\$(CONFIG)\esp\paks\esp-legacy-mvc\4.7.4\static\js\jquery.js $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-mvc\4.7.4" md "build\$(CONFIG)\esp\paks\esp-mvc\4.7.4"
+	if not exist "build\$(CONFIG)\esp\paks\esp-mvc\4.7.4\generate" md "build\$(CONFIG)\esp\paks\esp-mvc\4.7.4\generate"
+	copy /Y /B paks\esp-mvc\generate\appweb.conf+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.4\generate\appweb.conf $(LOG)
+	copy /Y /B paks\esp-mvc\generate\controller.c+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.4\generate\controller.c $(LOG)
+	copy /Y /B paks\esp-mvc\generate\migration.c+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.4\generate\migration.c $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-mvc\4.7.4\generate\src" md "build\$(CONFIG)\esp\paks\esp-mvc\4.7.4\generate\src"
+	copy /Y /B paks\esp-mvc\generate\src\app.c+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.4\generate\src\app.c $(LOG)
+	copy /Y /B paks\esp-mvc\LICENSE.md+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.4\LICENSE.md $(LOG)
+	copy /Y /B paks\esp-mvc\package.json+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.4\package.json $(LOG)
+	copy /Y /B paks\esp-mvc\README.md+modified build\$(CONFIG)\esp\paks\esp-mvc\4.7.4\README.md $(LOG)
+	if not exist "build\$(CONFIG)\esp\paks\esp-server\4.7.4" md "build\$(CONFIG)\esp\paks\esp-server\4.7.4"
+	if not exist "build\$(CONFIG)\esp\paks\esp-server\4.7.4\generate" md "build\$(CONFIG)\esp\paks\esp-server\4.7.4\generate"
+	copy /Y /B paks\esp-server\generate\appweb.conf+modified build\$(CONFIG)\esp\paks\esp-server\4.7.4\generate\appweb.conf $(LOG)
+	copy /Y /B paks\esp-server\package.json+modified build\$(CONFIG)\esp\paks\esp-server\4.7.4\package.json $(LOG)
 !ENDIF
 
 !IF "$(ME_COM_ESP)" == "1"
@@ -1540,54 +1539,32 @@ build\$(CONFIG)\bin\libsql.lib: $(DEPS_84)
 !ENDIF
 
 #
-#   makerom.obj
+#   manager.obj
 #
 DEPS_85 = $(DEPS_85) src\mpr\mpr.h
 
-build\$(CONFIG)\obj\makerom.obj: \
-    src\mpr\makerom.c $(DEPS_85)
-	@echo .. [Compile] build\$(CONFIG)\obj\makerom.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\makerom.obj -Fd$(BUILD)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\mpr\makerom.c $(LOG)
-
-#
-#   makerom
-#
-DEPS_86 = $(DEPS_86) build\$(CONFIG)\bin\libmpr.lib
-DEPS_86 = $(DEPS_86) build\$(CONFIG)\obj\makerom.obj
-
-LIBS_86 = $(LIBS_86) libmpr.lib
-
-build\$(CONFIG)\bin\makerom.exe: $(DEPS_86)
-	@echo ..... [Link] build\$(CONFIG)\bin\makerom.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\makerom.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\makerom.obj" $(LIBPATHS_86) $(LIBS_86) $(LIBS_86) $(LIBS)  $(LOG)
-
-#
-#   manager.obj
-#
-DEPS_87 = $(DEPS_87) src\mpr\mpr.h
-
 build\$(CONFIG)\obj\manager.obj: \
-    src\mpr\manager.c $(DEPS_87)
+    src\mpr\manager.c $(DEPS_85)
 	@echo .. [Compile] build\$(CONFIG)\obj\manager.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\manager.obj -Fd$(BUILD)\obj\manager.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\mpr\manager.c $(LOG)
 
 #
 #   manager
 #
-DEPS_88 = $(DEPS_88) build\$(CONFIG)\bin\libmpr.lib
-DEPS_88 = $(DEPS_88) build\$(CONFIG)\obj\manager.obj
+DEPS_86 = $(DEPS_86) build\$(CONFIG)\bin\libmpr.lib
+DEPS_86 = $(DEPS_86) build\$(CONFIG)\obj\manager.obj
 
-LIBS_88 = $(LIBS_88) libmpr.lib
+LIBS_86 = $(LIBS_86) libmpr.lib
 
-build\$(CONFIG)\bin\appman.exe: $(DEPS_88)
+build\$(CONFIG)\bin\appman.exe: $(DEPS_86)
 	@echo ..... [Link] build\$(CONFIG)\bin\appman.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\manager.obj" $(LIBPATHS_88) $(LIBS_88) $(LIBS_88) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\appman.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\manager.obj" $(LIBPATHS_86) $(LIBS_86) $(LIBS_86) $(LIBS)  $(LOG)
 
 #
 #   server-cache
 #
 
-src\server\cache: $(DEPS_89)
+src\server\cache: $(DEPS_87)
 	cd src\server
 	md cache
 	cd ..\..
@@ -1595,11 +1572,11 @@ src\server\cache: $(DEPS_89)
 #
 #   sqlite.obj
 #
-DEPS_90 = $(DEPS_90) build\$(CONFIG)\inc\me.h
-DEPS_90 = $(DEPS_90) src\sqlite\sqlite3.h
+DEPS_88 = $(DEPS_88) build\$(CONFIG)\inc\me.h
+DEPS_88 = $(DEPS_88) src\sqlite\sqlite3.h
 
 build\$(CONFIG)\obj\sqlite.obj: \
-    src\sqlite\sqlite.c $(DEPS_90)
+    src\sqlite\sqlite.c $(DEPS_88)
 	@echo .. [Compile] build\$(CONFIG)\obj\sqlite.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\sqlite.obj -Fd$(BUILD)\obj\sqlite.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\sqlite\sqlite.c $(LOG)
 
@@ -1607,24 +1584,24 @@ build\$(CONFIG)\obj\sqlite.obj: \
 #
 #   sqliteshell
 #
-DEPS_91 = $(DEPS_91) build\$(CONFIG)\bin\libsql.lib
-DEPS_91 = $(DEPS_91) build\$(CONFIG)\obj\sqlite.obj
+DEPS_89 = $(DEPS_89) build\$(CONFIG)\bin\libsql.lib
+DEPS_89 = $(DEPS_89) build\$(CONFIG)\obj\sqlite.obj
 
-LIBS_91 = $(LIBS_91) libsql.lib
+LIBS_89 = $(LIBS_89) libsql.lib
 
-build\$(CONFIG)\bin\sqlite.exe: $(DEPS_91)
+build\$(CONFIG)\bin\sqlite.exe: $(DEPS_89)
 	@echo ..... [Link] build\$(CONFIG)\bin\sqlite.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\sqlite.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\sqlite.obj" $(LIBPATHS_91) $(LIBS_91) $(LIBS_91) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\sqlite.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\sqlite.obj" $(LIBPATHS_89) $(LIBS_89) $(LIBS_89) $(LIBS)  $(LOG)
 !ENDIF
 
 #
 #   testAppweb.h
 #
-DEPS_92 = $(DEPS_92) test\src\testAppweb.h
-DEPS_92 = $(DEPS_92) build\$(CONFIG)\inc\mpr.h
-DEPS_92 = $(DEPS_92) build\$(CONFIG)\inc\http.h
+DEPS_90 = $(DEPS_90) test\src\testAppweb.h
+DEPS_90 = $(DEPS_90) build\$(CONFIG)\inc\mpr.h
+DEPS_90 = $(DEPS_90) build\$(CONFIG)\inc\http.h
 
-build\$(CONFIG)\inc\testAppweb.h: $(DEPS_92)
+build\$(CONFIG)\inc\testAppweb.h: $(DEPS_90)
 	@echo ..... [Copy] build\$(CONFIG)\inc\testAppweb.h
 	if not exist "build\$(CONFIG)\inc" md "build\$(CONFIG)\inc"
 	copy /Y /B test\src\testAppweb.h+modified build\$(CONFIG)\inc\testAppweb.h $(LOG)
@@ -1632,58 +1609,58 @@ build\$(CONFIG)\inc\testAppweb.h: $(DEPS_92)
 #
 #   testAppweb.obj
 #
-DEPS_93 = $(DEPS_93) build\$(CONFIG)\inc\testAppweb.h
+DEPS_91 = $(DEPS_91) build\$(CONFIG)\inc\testAppweb.h
 
 build\$(CONFIG)\obj\testAppweb.obj: \
-    test\src\testAppweb.c $(DEPS_93)
+    test\src\testAppweb.c $(DEPS_91)
 	@echo .. [Compile] build\$(CONFIG)\obj\testAppweb.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\testAppweb.obj -Fd$(BUILD)\obj\testAppweb.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\src\testAppweb.c $(LOG)
 
 #
 #   testHttp.obj
 #
-DEPS_94 = $(DEPS_94) build\$(CONFIG)\inc\testAppweb.h
+DEPS_92 = $(DEPS_92) build\$(CONFIG)\inc\testAppweb.h
 
 build\$(CONFIG)\obj\testHttp.obj: \
-    test\src\testHttp.c $(DEPS_94)
+    test\src\testHttp.c $(DEPS_92)
 	@echo .. [Compile] build\$(CONFIG)\obj\testHttp.obj
 	"$(CC)" -c -Fo$(BUILD)\obj\testHttp.obj -Fd$(BUILD)\obj\testHttp.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\src\testHttp.c $(LOG)
 
 #
 #   testAppweb
 #
-DEPS_95 = $(DEPS_95) build\$(CONFIG)\bin\libappweb.lib
-DEPS_95 = $(DEPS_95) build\$(CONFIG)\inc\testAppweb.h
-DEPS_95 = $(DEPS_95) build\$(CONFIG)\obj\testAppweb.obj
-DEPS_95 = $(DEPS_95) build\$(CONFIG)\obj\testHttp.obj
+DEPS_93 = $(DEPS_93) build\$(CONFIG)\bin\libappweb.lib
+DEPS_93 = $(DEPS_93) build\$(CONFIG)\inc\testAppweb.h
+DEPS_93 = $(DEPS_93) build\$(CONFIG)\obj\testAppweb.obj
+DEPS_93 = $(DEPS_93) build\$(CONFIG)\obj\testHttp.obj
 
-LIBS_95 = $(LIBS_95) libmpr.lib
+LIBS_93 = $(LIBS_93) libmpr.lib
 !IF "$(ME_COM_PCRE)" == "1"
-LIBS_95 = $(LIBS_95) libpcre.lib
+LIBS_93 = $(LIBS_93) libpcre.lib
 !ENDIF
 !IF "$(ME_COM_HTTP)" == "1"
-LIBS_95 = $(LIBS_95) libhttp.lib
+LIBS_93 = $(LIBS_93) libhttp.lib
 !ENDIF
 !IF "$(ME_COM_PCRE)" == "1"
-LIBS_95 = $(LIBS_95) libpcre.lib
+LIBS_93 = $(LIBS_93) libpcre.lib
 !ENDIF
-LIBS_95 = $(LIBS_95) libmpr.lib
-LIBS_95 = $(LIBS_95) libappweb.lib
+LIBS_93 = $(LIBS_93) libmpr.lib
+LIBS_93 = $(LIBS_93) libappweb.lib
 !IF "$(ME_COM_HTTP)" == "1"
-LIBS_95 = $(LIBS_95) libhttp.lib
+LIBS_93 = $(LIBS_93) libhttp.lib
 !ENDIF
 
-build\$(CONFIG)\bin\testAppweb.exe: $(DEPS_95)
+build\$(CONFIG)\bin\testAppweb.exe: $(DEPS_93)
 	@echo ..... [Link] build\$(CONFIG)\bin\testAppweb.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\testAppweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\testAppweb.obj" "$(BUILD)\obj\testHttp.obj" $(LIBPATHS_95) $(LIBS_95) $(LIBS_95) $(LIBS)  $(LOG)
+	"$(LD)" -nologo -out:$(BUILD)\bin\testAppweb.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\testAppweb.obj" "$(BUILD)\obj\testHttp.obj" $(LIBPATHS_93) $(LIBS_93) $(LIBS_93) $(LIBS)  $(LOG)
 
 !IF "$(ME_COM_CGI)" == "1"
 #
 #   test-basic.cgi
 #
-DEPS_96 = $(DEPS_96) build\$(CONFIG)\bin\testAppweb.exe
+DEPS_94 = $(DEPS_94) build\$(CONFIG)\bin\testAppweb.exe
 
-test\web\auth\basic\basic.cgi: $(DEPS_96)
+test\web\auth\basic\basic.cgi: $(DEPS_94)
 #  Omit build script test-basic.cgi
 !ENDIF
 
@@ -1691,9 +1668,9 @@ test\web\auth\basic\basic.cgi: $(DEPS_96)
 #
 #   test-cache.cgi
 #
-DEPS_97 = $(DEPS_97) build\$(CONFIG)\bin\testAppweb.exe
+DEPS_95 = $(DEPS_95) build\$(CONFIG)\bin\testAppweb.exe
 
-test\web\caching\cache.cgi: $(DEPS_97)
+test\web\caching\cache.cgi: $(DEPS_95)
 #  Omit build script test-cache.cgi
 !ENDIF
 
@@ -1701,9 +1678,9 @@ test\web\caching\cache.cgi: $(DEPS_97)
 #
 #   test-cgiProgram
 #
-DEPS_98 = $(DEPS_98) build\$(CONFIG)\bin\cgiProgram.exe
+DEPS_96 = $(DEPS_96) build\$(CONFIG)\bin\cgiProgram.exe
 
-test\cgi-bin\cgiProgram.exe: $(DEPS_98)
+test\cgi-bin\cgiProgram.exe: $(DEPS_96)
 #  Omit build script test-cgiProgram
 !ENDIF
 
@@ -1711,9 +1688,9 @@ test\cgi-bin\cgiProgram.exe: $(DEPS_98)
 #
 #   test-testScript
 #
-DEPS_99 = $(DEPS_99) build\$(CONFIG)\bin\testAppweb.exe
+DEPS_97 = $(DEPS_97) build\$(CONFIG)\bin\testAppweb.exe
 
-test\cgi-bin\testScript: $(DEPS_99)
+test\cgi-bin\testScript: $(DEPS_97)
 #  Omit build script test-testScript
 !ENDIF
 

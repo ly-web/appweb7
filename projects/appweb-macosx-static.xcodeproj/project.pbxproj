@@ -1962,63 +1962,63 @@
     			shellPath = /bin/bash;
     			shellScript = "PATH=$PATH:/usr/local/bin
 cd ..
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3\"
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/client\"
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/client/assets\"
-	cp paks/esp-html-mvc/client/assets/favicon.ico build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/client/assets/favicon.ico
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/client/css\"
-	cp paks/esp-html-mvc/client/css/all.css build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/client/css/all.css
-	cp paks/esp-html-mvc/client/css/all.less build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/client/css/all.less
-	cp paks/esp-html-mvc/client/index.esp build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/client/index.esp
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/css\"
-	cp paks/esp-html-mvc/css/app.less build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/css/app.less
-	cp paks/esp-html-mvc/css/theme.less build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/css/theme.less
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/generate\"
-	cp paks/esp-html-mvc/generate/appweb.conf build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/generate/appweb.conf
-	cp paks/esp-html-mvc/generate/controller.c build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/generate/controller.c
-	cp paks/esp-html-mvc/generate/controllerSingleton.c build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/generate/controllerSingleton.c
-	cp paks/esp-html-mvc/generate/edit.esp build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/generate/edit.esp
-	cp paks/esp-html-mvc/generate/list.esp build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/generate/list.esp
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/layouts\"
-	cp paks/esp-html-mvc/layouts/default.esp build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/layouts/default.esp
-	cp paks/esp-html-mvc/package.json build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.3/package.json
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3\"
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/generate\"
-	cp paks/esp-legacy-mvc/generate/appweb.conf build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/generate/appweb.conf
-	cp paks/esp-legacy-mvc/generate/controller.c build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/generate/controller.c
-	cp paks/esp-legacy-mvc/generate/edit.esp build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/generate/edit.esp
-	cp paks/esp-legacy-mvc/generate/list.esp build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/generate/list.esp
-	cp paks/esp-legacy-mvc/generate/migration.c build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/generate/migration.c
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/generate/src\"
-	cp paks/esp-legacy-mvc/generate/src/app.c build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/generate/src/app.c
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/layouts\"
-	cp paks/esp-legacy-mvc/layouts/default.esp build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/layouts/default.esp
-	cp paks/esp-legacy-mvc/package.json build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/package.json
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/static\"
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/static/css\"
-	cp paks/esp-legacy-mvc/static/css/all.css build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/static/css/all.css
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/static/images\"
-	cp paks/esp-legacy-mvc/static/images/banner.jpg build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/static/images/banner.jpg
-	cp paks/esp-legacy-mvc/static/images/favicon.ico build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/static/images/favicon.ico
-	cp paks/esp-legacy-mvc/static/images/splash.jpg build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/static/images/splash.jpg
-	cp paks/esp-legacy-mvc/static/index.esp build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/static/index.esp
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/static/js\"
-	cp paks/esp-legacy-mvc/static/js/jquery.esp.js build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/static/js/jquery.esp.js
-	cp paks/esp-legacy-mvc/static/js/jquery.js build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.3/static/js/jquery.js
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-mvc/4.7.3\"
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-mvc/4.7.3/generate\"
-	cp paks/esp-mvc/generate/appweb.conf build/macosx-x64-static/esp/paks/esp-mvc/4.7.3/generate/appweb.conf
-	cp paks/esp-mvc/generate/controller.c build/macosx-x64-static/esp/paks/esp-mvc/4.7.3/generate/controller.c
-	cp paks/esp-mvc/generate/migration.c build/macosx-x64-static/esp/paks/esp-mvc/4.7.3/generate/migration.c
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-mvc/4.7.3/generate/src\"
-	cp paks/esp-mvc/generate/src/app.c build/macosx-x64-static/esp/paks/esp-mvc/4.7.3/generate/src/app.c
-	cp paks/esp-mvc/LICENSE.md build/macosx-x64-static/esp/paks/esp-mvc/4.7.3/LICENSE.md
-	cp paks/esp-mvc/package.json build/macosx-x64-static/esp/paks/esp-mvc/4.7.3/package.json
-	cp paks/esp-mvc/README.md build/macosx-x64-static/esp/paks/esp-mvc/4.7.3/README.md
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-server/4.7.3\"
-	mkdir -p \"build/macosx-x64-static/esp/paks/esp-server/4.7.3/generate\"
-	cp paks/esp-server/generate/appweb.conf build/macosx-x64-static/esp/paks/esp-server/4.7.3/generate/appweb.conf
-	cp paks/esp-server/package.json build/macosx-x64-static/esp/paks/esp-server/4.7.3/package.json
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4\"
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/client\"
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/client/assets\"
+	cp paks/esp-html-mvc/client/assets/favicon.ico build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/client/assets/favicon.ico
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/client/css\"
+	cp paks/esp-html-mvc/client/css/all.css build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/client/css/all.css
+	cp paks/esp-html-mvc/client/css/all.less build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/client/css/all.less
+	cp paks/esp-html-mvc/client/index.esp build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/client/index.esp
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/css\"
+	cp paks/esp-html-mvc/css/app.less build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/css/app.less
+	cp paks/esp-html-mvc/css/theme.less build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/css/theme.less
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/generate\"
+	cp paks/esp-html-mvc/generate/appweb.conf build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/generate/appweb.conf
+	cp paks/esp-html-mvc/generate/controller.c build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/generate/controller.c
+	cp paks/esp-html-mvc/generate/controllerSingleton.c build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/generate/controllerSingleton.c
+	cp paks/esp-html-mvc/generate/edit.esp build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/generate/edit.esp
+	cp paks/esp-html-mvc/generate/list.esp build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/generate/list.esp
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/layouts\"
+	cp paks/esp-html-mvc/layouts/default.esp build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/layouts/default.esp
+	cp paks/esp-html-mvc/package.json build/macosx-x64-static/esp/paks/esp-html-mvc/4.7.4/package.json
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4\"
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/generate\"
+	cp paks/esp-legacy-mvc/generate/appweb.conf build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/generate/appweb.conf
+	cp paks/esp-legacy-mvc/generate/controller.c build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/generate/controller.c
+	cp paks/esp-legacy-mvc/generate/edit.esp build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/generate/edit.esp
+	cp paks/esp-legacy-mvc/generate/list.esp build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/generate/list.esp
+	cp paks/esp-legacy-mvc/generate/migration.c build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/generate/migration.c
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/generate/src\"
+	cp paks/esp-legacy-mvc/generate/src/app.c build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/generate/src/app.c
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/layouts\"
+	cp paks/esp-legacy-mvc/layouts/default.esp build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/layouts/default.esp
+	cp paks/esp-legacy-mvc/package.json build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/package.json
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/static\"
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/static/css\"
+	cp paks/esp-legacy-mvc/static/css/all.css build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/static/css/all.css
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/static/images\"
+	cp paks/esp-legacy-mvc/static/images/banner.jpg build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/static/images/banner.jpg
+	cp paks/esp-legacy-mvc/static/images/favicon.ico build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/static/images/favicon.ico
+	cp paks/esp-legacy-mvc/static/images/splash.jpg build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/static/images/splash.jpg
+	cp paks/esp-legacy-mvc/static/index.esp build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/static/index.esp
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/static/js\"
+	cp paks/esp-legacy-mvc/static/js/jquery.esp.js build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/static/js/jquery.esp.js
+	cp paks/esp-legacy-mvc/static/js/jquery.js build/macosx-x64-static/esp/paks/esp-legacy-mvc/4.7.4/static/js/jquery.js
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-mvc/4.7.4\"
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-mvc/4.7.4/generate\"
+	cp paks/esp-mvc/generate/appweb.conf build/macosx-x64-static/esp/paks/esp-mvc/4.7.4/generate/appweb.conf
+	cp paks/esp-mvc/generate/controller.c build/macosx-x64-static/esp/paks/esp-mvc/4.7.4/generate/controller.c
+	cp paks/esp-mvc/generate/migration.c build/macosx-x64-static/esp/paks/esp-mvc/4.7.4/generate/migration.c
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-mvc/4.7.4/generate/src\"
+	cp paks/esp-mvc/generate/src/app.c build/macosx-x64-static/esp/paks/esp-mvc/4.7.4/generate/src/app.c
+	cp paks/esp-mvc/LICENSE.md build/macosx-x64-static/esp/paks/esp-mvc/4.7.4/LICENSE.md
+	cp paks/esp-mvc/package.json build/macosx-x64-static/esp/paks/esp-mvc/4.7.4/package.json
+	cp paks/esp-mvc/README.md build/macosx-x64-static/esp/paks/esp-mvc/4.7.4/README.md
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-server/4.7.4\"
+	mkdir -p \"build/macosx-x64-static/esp/paks/esp-server/4.7.4/generate\"
+	cp paks/esp-server/generate/appweb.conf build/macosx-x64-static/esp/paks/esp-server/4.7.4/generate/appweb.conf
+	cp paks/esp-server/package.json build/macosx-x64-static/esp/paks/esp-server/4.7.4/package.json
 ";
     		};
 		469BA456469BB18A0000000B /* ShellScript for esp.conf */ = {
@@ -2146,10 +2146,10 @@ chmod +x web/caching/cache.cgi";
     			shellPath = /bin/bash;
     			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../test
-cp /Users/mob/dev/appweb-lts/build/macosx-x64-static/bin/cgiProgram cgi-bin/cgiProgram
-cp /Users/mob/dev/appweb-lts/build/macosx-x64-static/bin/cgiProgram cgi-bin/nph-cgiProgram
-cp /Users/mob/dev/appweb-lts/build/macosx-x64-static/bin/cgiProgram 'cgi-bin/cgi Program'
-cp /Users/mob/dev/appweb-lts/build/macosx-x64-static/bin/cgiProgram web/cgiProgram.cgi
+cp /Users/mob/dev/appweb-4/build/macosx-x64-static/bin/cgiProgram cgi-bin/cgiProgram
+cp /Users/mob/dev/appweb-4/build/macosx-x64-static/bin/cgiProgram cgi-bin/nph-cgiProgram
+cp /Users/mob/dev/appweb-4/build/macosx-x64-static/bin/cgiProgram 'cgi-bin/cgi Program'
+cp /Users/mob/dev/appweb-4/build/macosx-x64-static/bin/cgiProgram web/cgiProgram.cgi
 chmod +x cgi-bin/* web/cgiProgram.cgi";
     		};
 		469BA456469BB18A0000002A /* ShellScript for test-testScript */ = {
@@ -2167,7 +2167,7 @@ chmod +x cgi-bin/* web/cgiProgram.cgi";
     			shellPath = /bin/bash;
     			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../test
-echo '#!/Users/mob/dev/appweb-lts/build/macosx-x64-static/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript";
+echo '#!/Users/mob/dev/appweb-4/build/macosx-x64-static/bin/cgiProgram' >cgi-bin/testScript ; chmod +x cgi-bin/testScript";
     		};
 		469BA456469BB18A0000004D /* ShellScript for Prep */ = {
     			isa = PBXShellScriptBuildPhase;
