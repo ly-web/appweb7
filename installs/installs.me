@@ -17,8 +17,8 @@ Me.load({
         `,
         gencustom: `
             if (me.platform.os != 'windows') {
-                genWriteLine(\"WEB_USER              ?= $(shell egrep 'www-data|_www|nobody' /etc/passwd | sed 's/:.*$$//' |  tail -1)\")
-                genWriteLine(\"WEB_GROUP             ?= $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group | sed 's/:.*$$//' |  tail -1)\")
+                genWriteLine(\"WEB_USER              ?= $(shell egrep 'www-data|_www|nobody' /etc/passwd | sed 's^:.*^^' |  tail -1)\")
+                genWriteLine(\"WEB_GROUP             ?= $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group | sed 's^:.*^^' |  tail -1)\")
             }
         `,
     },

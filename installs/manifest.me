@@ -47,6 +47,7 @@ Me.load({
                     from:       'appweb${EXE}',
                     to:         '${abin}/',
                     symlink:    '${bin}/',
+                    permissions: 0755,
 
                 }, { 
                     from:       '${BIN}/roots.crt',
@@ -112,6 +113,7 @@ Me.load({
                     to:         '${abin}/appesp${EXE}',
                     symlink:    '${bin}/',
                     ifdef:      'esp',
+                    permissions: 0755,
                 }, {
 
                     perform: function(ignored, to, options) {
@@ -171,12 +173,14 @@ Me.load({
                     from:       'appman${EXE}',
                     to:         '${abin}/',
                     symlink:    '${bin}/',
+                    permissions: 0755,
                 }, { 
                     from: [
                                 'appwebMonitor${EXE}',
                                 'appwebMonitor.ico',
                     ],
                     to:         '${abin}/',
+                    permissions: 0755,
                     enable:     "me.platform.os == 'windows'",
 
                 }, {
@@ -251,6 +255,7 @@ Me.load({
                 {
                     from:       'http${EXE}',
                     to:         '${abin}/',
+                    permissions: 0755,
                 }
             ],
             web: [

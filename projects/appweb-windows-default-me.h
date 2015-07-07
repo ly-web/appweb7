@@ -99,6 +99,9 @@
 #ifndef ME_ESP_MODULE
     #define ME_ESP_MODULE 0
 #endif
+#ifndef ME_HTTP_CMD
+    #define ME_HTTP_CMD 1
+#endif
 #ifndef ME_HTTP_PAM
     #define ME_HTTP_PAM 1
 #endif
@@ -106,7 +109,7 @@
     #define ME_HTTP_WEB_SOCKETS 1
 #endif
 #ifndef ME_INTEGRATE
-    #define ME_INTEGRATE 1
+    #define ME_INTEGRATE 0
 #endif
 #ifndef ME_MANIFEST
     #define ME_MANIFEST "installs/manifest.me"

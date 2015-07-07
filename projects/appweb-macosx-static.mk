@@ -84,8 +84,8 @@ ME_SPOOL_PREFIX       ?= $(ME_ROOT_PREFIX)/var/spool/$(NAME)
 ME_CACHE_PREFIX       ?= $(ME_ROOT_PREFIX)/var/spool/$(NAME)/cache
 ME_SRC_PREFIX         ?= $(ME_ROOT_PREFIX)$(NAME)-$(VERSION)
 
-WEB_USER              ?= $(shell egrep 'www-data|_www|nobody' /etc/passwd | sed 's/:.*$$$(ME_ROOT_PREFIX)/' |  tail -1)
-WEB_GROUP             ?= $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group | sed 's/:.*$$$(ME_ROOT_PREFIX)/' |  tail -1)
+WEB_USER              ?= $(shell egrep 'www-data|_www|nobody' /etc/passwd | sed 's^:.*^^' |  tail -1)
+WEB_GROUP             ?= $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group | sed 's^:.*^^' |  tail -1)
 
 TARGETS               += $(BUILD)/bin/appweb
 TARGETS               += $(BUILD)/bin/authpass
@@ -261,7 +261,7 @@ DEPS_9 += $(BUILD)/inc/appweb.h
 $(BUILD)/obj/appweb.o: \
     src/server/appweb.c $(DEPS_9)
 	@echo '   [Compile] $(BUILD)/obj/appweb.o'
-	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/appweb.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/server/appweb.c
+	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/appweb.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/server/appweb.c
 
 #
 #   authpass.o
@@ -271,7 +271,7 @@ DEPS_10 += $(BUILD)/inc/appweb.h
 $(BUILD)/obj/authpass.o: \
     src/utils/authpass.c $(DEPS_10)
 	@echo '   [Compile] $(BUILD)/obj/authpass.o'
-	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/authpass.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/utils/authpass.c
+	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/authpass.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/utils/authpass.c
 
 #
 #   appweb.h
@@ -287,7 +287,7 @@ DEPS_12 += src/appweb.h
 $(BUILD)/obj/cgiHandler.o: \
     src/modules/cgiHandler.c $(DEPS_12)
 	@echo '   [Compile] $(BUILD)/obj/cgiHandler.o'
-	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/cgiHandler.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/modules/cgiHandler.c
+	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/cgiHandler.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/modules/cgiHandler.c
 
 #
 #   cgiProgram.o
@@ -307,7 +307,7 @@ DEPS_14 += $(BUILD)/inc/pcre.h
 $(BUILD)/obj/config.o: \
     src/config.c $(DEPS_14)
 	@echo '   [Compile] $(BUILD)/obj/config.o'
-	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/config.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/config.c
+	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/config.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/config.c
 
 #
 #   convenience.o
@@ -317,7 +317,7 @@ DEPS_15 += src/appweb.h
 $(BUILD)/obj/convenience.o: \
     src/convenience.c $(DEPS_15)
 	@echo '   [Compile] $(BUILD)/obj/convenience.o'
-	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/convenience.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/convenience.c
+	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/convenience.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/convenience.c
 
 #
 #   esp.h
@@ -333,7 +333,7 @@ DEPS_17 += src/esp/esp.h
 $(BUILD)/obj/esp.o: \
     src/esp/esp.c $(DEPS_17)
 	@echo '   [Compile] $(BUILD)/obj/esp.o'
-	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/esp.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/esp/esp.c
+	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/esp.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/esp/esp.c
 
 #
 #   espHandler.o
@@ -344,7 +344,7 @@ DEPS_18 += $(BUILD)/inc/esp.h
 $(BUILD)/obj/espHandler.o: \
     src/modules/espHandler.c $(DEPS_18)
 	@echo '   [Compile] $(BUILD)/obj/espHandler.o'
-	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/espHandler.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/modules/espHandler.c
+	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/espHandler.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/modules/espHandler.c
 
 #
 #   espLib.o
@@ -356,7 +356,7 @@ DEPS_19 += $(BUILD)/inc/http.h
 $(BUILD)/obj/espLib.o: \
     src/esp/espLib.c $(DEPS_19)
 	@echo '   [Compile] $(BUILD)/obj/espLib.o'
-	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/espLib.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/esp/espLib.c
+	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/espLib.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/esp/espLib.c
 
 #
 #   http.h
@@ -372,7 +372,7 @@ DEPS_21 += src/http/http.h
 $(BUILD)/obj/http.o: \
     src/http/http.c $(DEPS_21)
 	@echo '   [Compile] $(BUILD)/obj/http.o'
-	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/http.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/http/http.c
+	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/http.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/http/http.c
 
 #
 #   httpLib.o
@@ -383,7 +383,7 @@ DEPS_22 += $(BUILD)/inc/pcre.h
 $(BUILD)/obj/httpLib.o: \
     src/http/httpLib.c $(DEPS_22)
 	@echo '   [Compile] $(BUILD)/obj/httpLib.o'
-	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/httpLib.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/http/httpLib.c
+	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/httpLib.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/http/httpLib.c
 
 #
 #   mpr.h
@@ -399,7 +399,7 @@ DEPS_24 += src/mpr/mpr.h
 $(BUILD)/obj/mprLib.o: \
     src/mpr/mprLib.c $(DEPS_24)
 	@echo '   [Compile] $(BUILD)/obj/mprLib.o'
-	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/mprLib.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/mpr/mprLib.c
+	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/mprLib.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/mpr/mprLib.c
 
 #
 #   openssl.o
@@ -409,7 +409,7 @@ DEPS_25 += $(BUILD)/inc/mpr.h
 $(BUILD)/obj/openssl.o: \
     src/mpr-openssl/openssl.c $(DEPS_25)
 	@echo '   [Compile] $(BUILD)/obj/openssl.o'
-	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/openssl.o -arch $(CC_ARCH) -Wno-deprecated-declarations -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/mpr-openssl/openssl.c
+	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/openssl.o -arch $(CC_ARCH) -Wno-deprecated-declarations -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/mpr-openssl/openssl.c
 
 #
 #   pcre.h
@@ -436,7 +436,7 @@ DEPS_28 += $(BUILD)/inc/mpr.h
 $(BUILD)/obj/romFiles.o: \
     src/romFiles.c $(DEPS_28)
 	@echo '   [Compile] $(BUILD)/obj/romFiles.o'
-	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/romFiles.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/romFiles.c
+	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/romFiles.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/romFiles.c
 
 #
 #   watchdog.o
@@ -446,7 +446,7 @@ DEPS_29 += $(BUILD)/inc/mpr.h
 $(BUILD)/obj/watchdog.o: \
     src/watchdog/watchdog.c $(DEPS_29)
 	@echo '   [Compile] $(BUILD)/obj/watchdog.o'
-	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/watchdog.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH="$(ME_COM_OPENSSL_PATH)" $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/watchdog/watchdog.c
+	$(CC) -c $(DFLAGS) -o $(BUILD)/obj/watchdog.o -arch $(CC_ARCH) $(CFLAGS) -DME_COM_OPENSSL_PATH=$(ME_COM_OPENSSL_PATH) $(IFLAGS) "-I$(ME_COM_OPENSSL_PATH)/include" src/watchdog/watchdog.c
 
 ifeq ($(ME_COM_SSL),1)
 ifeq ($(ME_COM_OPENSSL),1)
@@ -832,7 +832,9 @@ installBinary: $(DEPS_45)
 	[ `id -u` = 0 ] && chown $(WEB_USER):$(WEB_GROUP) "$(ME_CACHE_PREFIX)"; true ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
 	cp $(BUILD)/bin/appweb $(ME_VAPP_PREFIX)/bin/appweb ; \
+	chmod 755 "$(ME_VAPP_PREFIX)/bin/appweb" ; \
 	mkdir -p "$(ME_BIN_PREFIX)" ; \
+	chmod 755 "$(ME_BIN_PREFIX)" ; \
 	rm -f "$(ME_BIN_PREFIX)/appweb" ; \
 	ln -s "$(ME_VAPP_PREFIX)/bin/appweb" "$(ME_BIN_PREFIX)/appweb" ; \
 	if [ "$(ME_COM_SSL)" = 1 ]; then true ; \
@@ -887,7 +889,9 @@ installBinary: $(DEPS_45)
 	chmod 755 "$(ME_WEB_PREFIX)/test/test.py" ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
 	cp $(BUILD)/bin/appman $(ME_VAPP_PREFIX)/bin/appman ; \
+	chmod 755 "$(ME_VAPP_PREFIX)/bin/appman" ; \
 	mkdir -p "$(ME_BIN_PREFIX)" ; \
+	chmod 755 "$(ME_BIN_PREFIX)" ; \
 	rm -f "$(ME_BIN_PREFIX)/appman" ; \
 	ln -s "$(ME_VAPP_PREFIX)/bin/appman" "$(ME_BIN_PREFIX)/appman" ; \
 	mkdir -p "$(ME_ROOT_PREFIX)/Library/LaunchDaemons" ; \
@@ -896,7 +900,9 @@ installBinary: $(DEPS_45)
 	if [ "$(ME_COM_ESP)" = 1 ]; then true ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
 	cp $(BUILD)/bin/esp $(ME_VAPP_PREFIX)/bin/appesp ; \
+	chmod 755 "$(ME_VAPP_PREFIX)/bin/appesp" ; \
 	mkdir -p "$(ME_BIN_PREFIX)" ; \
+	chmod 755 "$(ME_BIN_PREFIX)" ; \
 	rm -f "$(ME_BIN_PREFIX)/appesp" ; \
 	ln -s "$(ME_VAPP_PREFIX)/bin/appesp" "$(ME_BIN_PREFIX)/appesp" ; \
 	fi ; \
@@ -908,6 +914,7 @@ installBinary: $(DEPS_45)
 	fi ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
 	cp $(BUILD)/bin/http $(ME_VAPP_PREFIX)/bin/http ; \
+	chmod 755 "$(ME_VAPP_PREFIX)/bin/http" ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/inc" ; \
 	cp $(BUILD)/inc/me.h $(ME_VAPP_PREFIX)/inc/me.h ; \
 	mkdir -p "$(ME_INC_PREFIX)/appweb" ; \
