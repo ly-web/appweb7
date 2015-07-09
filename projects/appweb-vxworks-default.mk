@@ -170,7 +170,6 @@ clean:
 	rm -f "$(BUILD)/bin/libhttp.out"
 	rm -f "$(BUILD)/bin/libmpr.out"
 	rm -f "$(BUILD)/bin/libpcre.out"
-	rm -f "$(BUILD)/bin/libmpr-openssl.a"
 	rm -f "$(BUILD)/bin/appman.out"
 
 clobber: clean
@@ -496,10 +495,6 @@ ifeq ($(ME_COM_OPENSSL),1)
     LIBS_31 += -lcrypto
     LIBPATHS_31 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_31 += -lmpr-openssl
-    LIBPATHS_31 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
 
 $(BUILD)/bin/libmpr.out: $(DEPS_31)
 	@echo '      [Link] $(BUILD)/bin/libmpr.out'
@@ -542,10 +537,6 @@ ifeq ($(ME_COM_OPENSSL),1)
     LIBS_33 += -lcrypto
     LIBPATHS_33 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_33 += -lmpr-openssl
-    LIBPATHS_33 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
 
 $(BUILD)/bin/libhttp.out: $(DEPS_33)
 	@echo '      [Link] $(BUILD)/bin/libhttp.out'
@@ -574,10 +565,6 @@ endif
 endif
 ifeq ($(ME_COM_OPENSSL),1)
     LIBS_34 += -lcrypto
-    LIBPATHS_34 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_34 += -lmpr-openssl
     LIBPATHS_34 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
 
@@ -618,10 +605,6 @@ ifeq ($(ME_COM_OPENSSL),1)
     LIBS_35 += -lcrypto
     LIBPATHS_35 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_35 += -lmpr-openssl
-    LIBPATHS_35 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
 
 $(BUILD)/bin/libappweb.out: $(DEPS_35)
 	@echo '      [Link] $(BUILD)/bin/libappweb.out'
@@ -647,10 +630,6 @@ ifeq ($(ME_COM_OPENSSL),1)
     LIBS_36 += -lcrypto
     LIBPATHS_36 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_36 += -lmpr-openssl
-    LIBPATHS_36 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
 
 $(BUILD)/bin/appweb.out: $(DEPS_36)
 	@echo '      [Link] $(BUILD)/bin/appweb.out'
@@ -674,10 +653,6 @@ endif
 endif
 ifeq ($(ME_COM_OPENSSL),1)
     LIBS_37 += -lcrypto
-    LIBPATHS_37 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_37 += -lmpr-openssl
     LIBPATHS_37 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
 
@@ -718,10 +693,6 @@ ifeq ($(ME_COM_OPENSSL),1)
     LIBS_39 += -lcrypto
     LIBPATHS_39 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_39 += -lmpr-openssl
-    LIBPATHS_39 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
 
 $(BUILD)/bin/appweb-esp.out: $(DEPS_39)
 	@echo '      [Link] $(BUILD)/bin/appweb-esp.out'
@@ -747,10 +718,6 @@ endif
 endif
 ifeq ($(ME_COM_OPENSSL),1)
     LIBS_40 += -lcrypto
-    LIBPATHS_40 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_40 += -lmpr-openssl
     LIBPATHS_40 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
 
@@ -816,10 +783,6 @@ endif
 endif
 ifeq ($(ME_COM_OPENSSL),1)
     LIBS_43 += -lcrypto
-    LIBPATHS_43 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_43 += -lmpr-openssl
     LIBPATHS_43 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
 
