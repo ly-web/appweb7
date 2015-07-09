@@ -1977,7 +1977,7 @@ fi";
 		9203ED18920408C600000124 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
-    				PRODUCT_NAME = appweb-esp;
+    				PRODUCT_NAME = esp;
     
     				HEADER_SEARCH_PATHS = (
 					"$(ME_COM_OPENSSL_PATH)/include",
@@ -2005,7 +2005,7 @@ fi";
     		9203ED18920408C600000125 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
-    				PRODUCT_NAME = appweb-esp;
+    				PRODUCT_NAME = esp;
     
     				HEADER_SEARCH_PATHS = (
 					"$(ME_COM_OPENSSL_PATH)/include",
