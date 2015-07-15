@@ -5284,14 +5284,6 @@ static void parseSslLogLevel(HttpRoute *route, cchar *key, MprJson *prop)
 }
 
 
-#if UNUSED
-static void parseSslProvider(HttpRoute *route, cchar *key, MprJson *prop)
-{
-    mprSetSslProvider(route->ssl, prop->value);
-}
-#endif
-
-
 static void parseSslRenegotiate(HttpRoute *route, cchar *key, MprJson *prop)
 {
     mprSetSslRenegotiate(route->ssl, (prop->type & MPR_JSON_TRUE) ? 1 : 0);
@@ -5632,9 +5624,6 @@ PUBLIC int httpInitParser()
     httpAddConfig("http.ssl.ciphers", parseSslCiphers);
     httpAddConfig("http.ssl.logLevel", parseSslLogLevel);
     httpAddConfig("http.ssl.key", parseSslKey);
-#if UNUSED
-    httpAddConfig("http.ssl.provider", parseSslProvider);
-#endif
     httpAddConfig("http.ssl.protocols", parseSslProtocols);
     httpAddConfig("http.ssl.renegotiate", parseSslRenegotiate);
     httpAddConfig("http.ssl.ticket", parseSslTicket);
@@ -5669,9 +5658,6 @@ PUBLIC int httpInitParser()
     httpAddConfig("http.server.ssl.certificate", parseSslCertificate);
     httpAddConfig("http.server.ssl.ciphers", parseSslCiphers);
     httpAddConfig("http.server.ssl.key", parseSslKey);
-#if UNUSED
-    httpAddConfig("http.server.ssl.provider", parseSslProvider);
-#endif
     httpAddConfig("http.server.ssl.protocols", parseSslProtocols);
     httpAddConfig("http.server.ssl.verify", httpParseAll);
     httpAddConfig("http.server.ssl.verify.client", parseSslVerifyClient);
@@ -9163,11 +9149,6 @@ static void printRoute(HttpRoute *route, int idx, bool full, int methodsLen, int
     cchar       *methods, *pattern, *target, *index;
     int         nextIndex;
 
-#if UNUSED
-    if (route->flags & HTTP_ROUTE_HIDDEN && !full) {
-        return;
-    }
-#endif
     auth = route->auth;
     methods = httpGetRouteMethods(route);
     methods = methods ? methods : "*";
@@ -14554,8 +14535,6 @@ PUBLIC void httpFinalizeRoute(HttpRoute *route)
     Expect a template with embedded tokens of the form: "/${controller}/${action}/${other}"
     Understands the following aliases:
         ~   For ${PREFIX}
-        |   For ${PREFIX}${SERVER_PREFIX}
-
     The options is a hash of token values.
  */
 PUBLIC char *httpTemplate(HttpConn *conn, cchar *template, MprHash *options)
