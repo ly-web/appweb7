@@ -3676,6 +3676,7 @@ PUBLIC int mprGetListLength(MprList *list);
         this routine, mprGetFirstItem must be called to initialize the traversal of the list.
     @param list List pointer returned from mprCreateList.
     @param lastIndex Pointer to an integer that will hold the last index retrieved.
+    @return Next item in list or null for an empty list or after the last item.
     @ingroup MprList
     @stability Stable.
  */
@@ -3688,6 +3689,7 @@ PUBLIC void *mprGetNextItem(MprList *list, int *lastIndex);
         this routine, mprGetFirstItem must be called to initialize the traversal of the list.
     @param list List pointer returned from mprCreateList.
     @param lastIndex Pointer to an integer that will hold the last index retrieved.
+    @return Next item in list
     @ingroup MprList
     @internal
     @stability Stable
@@ -6568,7 +6570,6 @@ PUBLIC void mprFormatJsonName(MprBuf *buf, cchar *name, int flags);
     Format a string as a JSON string. This handles quotes and backquotes.
     @param buf MprBuf instance to store the output string
     @param value JSON string value to format
-    @param flags Serialization flags. Supported flags include MPR_JSON_STRINGS to emit values as quoted strings.
     @return The supplied hash if successful. Otherwise null is returned.
     @ingroup MprJson
     @stability Prototype
