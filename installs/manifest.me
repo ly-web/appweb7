@@ -114,13 +114,14 @@ Me.load({
                     symlink:    '${bin}/',
                     ifdef:      'esp',
                     permissions: 0755,
-                },
-                {
+
+                }, {
                     from:       'appweb-esp${EXE}',
                     to:         '${abin}/appweb-esp${EXE}',
                     symlink:    '${bin}/',
                     ifdef:      'esp',
                     permissions: 0755,
+
                 }, {
 
                     perform: function(ignored, to, options) {
