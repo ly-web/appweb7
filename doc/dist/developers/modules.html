@@ -253,7 +253,7 @@ int maSimpleModuleInit(Http *http, MprModule *mp)
             sessionStorage.setItem('scroll-top', $('.sidebar').scrollTop());
         });
         $(function() {
-            var url = '..developers/modules.html';
+            var url = '../developers/modules.html';
             var active = $('.sidebar a[href="' + url +'"]');
             active.addClass('active');
             $('.sidebar').scrollTop(sessionStorage.getItem('scroll-top'));
