@@ -686,7 +686,7 @@ PUBLIC cchar *ediRecAsJson(EdiRec *rec, int flags)
     if (rec) {
         for (f = 0; f < rec->nfields; f++) {
             fp = &rec->fields[f];
-            mprPutToBuf(buf, "\"%s\"", fp->name);
+            mprFormatJsonName(buf, fp->name, MPR_JSON_QUOTES);
             if (pretty) {
                 mprPutStringToBuf(buf, ": ");
             } else {
@@ -905,7 +905,7 @@ PUBLIC cchar *ediFormatField(cchar *fmt, EdiField *fp)
 static void formatFieldForJson(MprBuf *buf, EdiField *fp)
 {
     MprTime     when;
-    cchar       *cp, *value;
+    cchar       *value;
 
     value = fp->value;
 
@@ -920,20 +920,7 @@ static void formatFieldForJson(MprBuf *buf, EdiField *fp)
 
     case EDI_TYPE_STRING:
     case EDI_TYPE_TEXT:
-        mprPutCharToBuf(buf, '"');
-        for (cp = fp->value; *cp; cp++) {
-            if (*cp == '\"' || *cp == '\\') {
-                mprPutCharToBuf(buf, '\\');
-                mprPutCharToBuf(buf, *cp);
-            } else if (*cp == '\r') {
-                mprPutStringToBuf(buf, "\\r");
-            } else if (*cp == '\n') {
-                mprPutStringToBuf(buf, "\\n");
-            } else {
-                mprPutCharToBuf(buf, *cp);
-            }
-        }
-        mprPutCharToBuf(buf, '"');
+        mprFormatJsonValue(buf, MPR_JSON_STRING, fp->value, 0);
         return;
 
     case EDI_TYPE_BOOL:
@@ -2412,6 +2399,19 @@ PUBLIC cchar *uri(cchar *target, ...)
     return httpLink(getConn(), uri);
 }
 
+
+PUBLIC cchar *absuri(cchar *target, ...)
+{
+    va_list     args;
+    cchar       *uri;
+
+    va_start(args, target);
+    uri = sfmtv(target, args);
+    va_end(args);
+    return httpLinkAbs(getConn(), uri);
+}
+
+
 #if DEPRECATED || 1
 /*
     <% stylesheets(patterns); %>
@@ -2479,7 +2479,11 @@ PUBLIC void stylesheets(cchar *patterns)
         }
         for (ITERATE_ITEMS(files, path, next)) {
             path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
+#if UNUSED
             uri = httpUriToString(httpGetRelativeUri(rx->parsedUri, httpLinkUri(conn, path, 0), 0), 0);
+#else
+            uri = httpLink(conn, path);
+#endif
             kind = mprGetPathExt(path);
             if (smatch(kind, "css")) {
                 espRender(conn, "<link rel='stylesheet' type='text/css' href='%s' />\n", uri);
@@ -2546,7 +2550,11 @@ PUBLIC void scripts(cchar *patterns)
             path = stemplateJson(path, route->config);
         }
         path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
+#if UNUSED
         uri = httpUriToString(httpGetRelativeUri(rx->parsedUri, httpLinkUri(conn, path, 0), 0), 0);
+#else
+        uri = httpLink(conn, path);
+#endif
         espRender(conn, "<script src='%s' type='text/javascript'></script>\n", uri);
     }
 }
@@ -4663,9 +4671,13 @@ PUBLIC bool espRenderView(HttpConn *conn, cchar *target, int flags)
     if (!eroute->combine && (route->update || !mprLookupKey(eroute->top->views, target))) {
         cchar *errMsg;
         /* WARNING: GC yield */
+        target = sclone(target);
+        mprHold(target);
         if (espLoadModule(route, conn->dispatcher, "view", mprJoinPath(route->documents, target), &errMsg) < 0) {
+            mprRelease(target);
             return 0;
         }
+        mprRelease(target);
     }
 #endif
     if ((viewProc = mprLookupKey(eroute->views, target)) == 0) {
@@ -4685,75 +4697,115 @@ PUBLIC bool espRenderView(HttpConn *conn, cchar *target, int flags)
 }
 
 
+/*
+    Check if the target/filename.ext is registered as a view or exists as a file
+ */
 static cchar *checkView(HttpConn *conn, cchar *target, cchar *filename, cchar *ext)
 {
     MprPath     info;
+    EspRoute    *eroute;
+    cchar       *path;
 
     if (filename) {
         target = mprJoinPath(target, filename);
     }
     if (ext) {
-        target = mprJoinPathExt(target, ext);
+        if (!smatch(mprGetPathExt(target), ext)) {
+            target = sjoin(target, ".", ext, NULL);
+        }
     }
-    if (mprGetPathInfo(mprJoinPath(conn->rx->route->documents, target), &info) == 0 && !info.isDir) {
+    eroute = conn->rx->route->eroute;
+    if (mprLookupKey(eroute->views, target)) {
         return target;
+    }
+    path = mprJoinPath(conn->rx->route->documents, target);
+    if (mprGetPathInfo(path, &info) == 0 && !info.isDir) {
+        return target;
+    }
+    if (conn->rx->route->map && !(conn->tx->flags & HTTP_TX_NO_MAP)) {
+        path = httpMapContent(conn, path);
+        if (mprGetPathInfo(path, &info) == 0 && !info.isDir) {
+            return target;
+        }
     }
     return 0;
 }
 
 
 /*
-    Render a document by mapping a URL target to a document.
-    Target is interpreted as a pathname relative to route->documents.
-    If pathname exists, then serve that.
-    If pathname + .esp exists, serve that.
-    If pathname is a directory with trailing "/" and an index.esp, return the index.esp without a redirect.
-    If pathname is a directory without a trailing "/" but with an index.esp, do an external redirect to "URI/".
-    If pathname does not end with ".esp", then do not serve that.
+    Render a document by mapping a URL target to a document. The target is interpreted relative to route->documents.
+    If target exists, then serve that.
+    If target + extension exists, serve that.
+    If target is a directory and an index.esp, return the index.esp without a redirect.
+    If target is a directory without a trailing "/" but with an index.esp, do an external redirect to "URI/".
+    If target does not end with ".esp", then do not serve that.
  */
 PUBLIC void espRenderDocument(HttpConn *conn, cchar *target)
 {
     HttpUri     *up;
+    MprKey      *kp;
     cchar       *dest;
 
     assert(target);
 
-    if ((dest = checkView(conn, target, 0, 0)) == 0) {
-        if ((dest = checkView(conn, target, 0, ".esp")) == 0) {
-            if ((dest = checkView(conn, target, "index.esp", 0)) == 0) {
-#if DEPRECATED || 1
-                /* Remove in version 6 */
-                dest = checkView(conn, sjoin("app/", target, NULL), 0, ".esp");
+#if UNUSED
+    if ((dest = checkView(conn, target, 0, 0)) != 0) {
+        espRenderView(conn, dest, 0);
+        return;
+    }
 #endif
-            } else {
-                /*
-                    Workaround for target being empty when the URL exactly matches a route prefix (http://embedthis.com/catalog)
-                 */
-                if (!sends(conn->rx->parsedUri->path, "/")) {
-                    up = conn->rx->parsedUri;
-                    httpRedirect(conn, HTTP_CODE_MOVED_PERMANENTLY, httpFormatUri(up->scheme, up->host, 
-                        up->port, sjoin(up->path, "/", NULL), up->reference, up->query, 0));
-                    return;
-                }
-            }
+    for (ITERATE_KEYS(conn->rx->route->extensions, kp)) {
+        if ((dest = checkView(conn, target, 0, kp->key)) != 0) {
+            espRenderView(conn, dest, 0);
+            return;
         }
     }
-    /* 
-        WARNING: espRenderView may yield 
-     */
-    if (sends(dest, ".esp")) {
-        mprHold(dest);
-        espRenderView(conn, dest, 0);
-        mprRelease(dest);
-        
+#if UNUSED
+    if ((extensions = mprGetJsonObj(conn->rx->route->config, "http.pipeline.handlers.espHandler")) != 0) {
+        for (ITERATE_JSON(extensions, ext, index)) {
+            if ((dest = checkView(conn, target, 0, ext->value)) != 0) {
+                espRenderView(conn, dest, 0);
+                return;
+            }
+        }
     } else {
-        /*
-            Last chance, forward to the file handler ... not an ESP request. 
-            This enables static file requests within ESP routes.
-         */
-        httpMapFile(conn);
-        httpSetFileHandler(conn, 0);
+#endif
+    if ((dest = checkView(conn, target, 0, "esp")) != 0) {
+        espRenderView(conn, dest, 0);
+        return;
     }
+    if ((dest = checkView(conn, target, "index", "esp")) != 0) {
+        /*
+            Must do external redirect first if URL does not end with "/"
+         */
+        if (!sends(conn->rx->parsedUri->path, "/")) {
+            up = conn->rx->parsedUri;
+            httpRedirect(conn, HTTP_CODE_MOVED_PERMANENTLY, httpFormatUri(up->scheme, up->host,
+                up->port, sjoin(up->path, "/", NULL), up->reference, up->query, 0));
+            return;
+        }
+        espRenderView(conn, dest, 0);
+        return;
+    }
+/* 
+    Remove in version 6 
+*/
+#if DEPRECATED || 1
+    if ((dest = checkView(conn, sjoin("app/", target, NULL), 0, "esp")) != 0) {
+        espRenderView(conn, dest, 0);
+        return;
+    }
+#endif
+    /*
+        Last chance, forward to the file handler ... not an ESP request. 
+        This enables static file requests within ESP routes.
+     */
+    conn->rx->target = &conn->rx->pathInfo[1];
+    httpMapFile(conn);
+    if (conn->tx->fileInfo.isDir) {
+        httpHandleDirectory(conn);
+    }
+    httpSetFileHandler(conn, 0);
 }
 
 
@@ -6179,7 +6231,10 @@ PUBLIC char *espBuildScript(HttpRoute *route, cchar *page, cchar *path, cchar *c
 
         case ESP_TOK_HOME:
             /* %~ Home URL */
-            mprPutToBuf(body, "  espRenderString(conn, conn->rx->route->prefix);");
+            if (parse.next[0] && parse.next[0] != '/' && parse.next[0] != '\'' && parse.next[0] != '"') {
+                mprLog("esp warn", 0, "Using %%~ without following / in %s\n", path);
+            }
+            mprPutToBuf(body, "  espRenderString(conn, httpGetRouteTop(conn));");
             break;
 
 #if DEPRECATED || 1
@@ -6373,7 +6428,7 @@ static int getEspToken(EspParse *parse)
             if (next > start && (next[-1] == '\\' || next[-1] == '%')) {
                 break;
             }
-#if DEPRECATED || 1
+#if UNUSED
         case '@':
             if (c == '@') {
                 mprLog("esp warn", 0, "Using deprecated \"@\" control directive in esp page: %s", parse->path);
@@ -6387,7 +6442,7 @@ static int getEspToken(EspParse *parse)
                         next -= 3;
                     } else {
                         tid = ESP_TOK_HOME;
-                        if (!addChar(parse, c)) {
+                        if (!addChar(parse, c) || !addChar(parse, t)) {
                             return ESP_TOK_ERR;
                         }
                         next--;
@@ -8034,6 +8089,10 @@ static int mdbSave(Edi *edi)
                     mprWriteFileFmt(out, "null, ");
                 } else if (col->type == EDI_TYPE_STRING || col->type == EDI_TYPE_TEXT) {
                     mprWriteFile(out, "'", 1);
+                    /*
+                        The MPR JSON parser is tolerant of embedded, unquoted control characters. So only need
+                        to worry about embedded single quotes and back quote.
+                     */
                     for (cp = value; *cp; cp++) {
                         if (*cp == '\'' || *cp == '\\') {
                             mprWriteFile(out, "\\", 1);

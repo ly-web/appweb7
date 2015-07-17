@@ -4083,17 +4083,11 @@ PUBLIC bool updateRec(EdiRec *rec);
 */
 PUBLIC bool updateRecFromParams(cchar *table);
 
-/*
-    NOTE: this has inconsistent naming with httpLink() vs uri()
-    But we tolerate this because link() is taken and httpUri() it confusing vs httpCreateUri
- */
 /**
-    Create a URI.
+    Create a URI link.
     @description Create a URI link based on a given target an expanding embedded tokens based on the current request and
         route state. The target URI parameter may contain partial or complete URI information. The missing parts
-    are supplied using the current request and route tables. The resulting URI is a normalized, server-local
-    URI (that begins with "/"). The URI will include a required application route prefix, but will not include scheme, host or
-    port components.
+    are supplied using the current request and route tables. 
     @param target The URI target. The target parameter can be a URI string or JSON style set of options.
         The target will have any embedded "{tokens}" expanded by using token values from the request parameters.
         If the target has an absolute URI path, that path is used directly after tokenization. If the target begins with
@@ -4131,8 +4125,8 @@ PUBLIC bool updateRecFromParams(cchar *table);
             <li>route String Route name to use for the URI template</li>
         </ul>
     @param ... arguments to the formatted target string
-    @return A normalized, server-local Uri string.
-    @ingroup Esp
+    @return A normalized Uri string.
+    @ingroup EspAbbrev
     @stability Evolving
     @remarks Examples:<pre>
     uri("http://example.com/index.html");
@@ -4154,6 +4148,16 @@ PUBLIC bool updateRecFromParams(cchar *table);
 </pre>
  */
 PUBLIC cchar *uri(cchar *target, ...);
+
+/**
+    Create an absolute URI with a scheme and host
+    @param target The URI target. See httpLink for details
+    @param ... arguments to the formatted target string
+    @return A normalized, absolute Uri string containing scheme and host.
+    @ingroup EspAbbrev
+    @stability Evolving
+ */
+PUBLIC cchar *absuri(cchar *target, ...);
 
 #ifdef __cplusplus
 } /* extern C */
