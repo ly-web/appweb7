@@ -8272,9 +8272,6 @@ static void errorRedirect(HttpConn *conn, cchar *uri)
 {
     HttpTx      *tx;
 
-    /*
-        If the response has started or it is an external redirect ... do a redirect
-     */
     tx = conn->tx;
     if (sstarts(uri, "http") || tx->flags & HTTP_TX_HEADERS_CREATED) {
         httpRedirect(conn, HTTP_CODE_MOVED_PERMANENTLY, uri);
@@ -8283,7 +8280,7 @@ static void errorRedirect(HttpConn *conn, cchar *uri)
             No response started and it is an internal redirect, so we can rerun the request.
             Set finalized to "cap" any output. processCompletion() in rx.c will rerun the request using the errorDocument.
          */
-        tx->errorDocument = httpLink(conn, uri);
+        tx->errorDocument = httpLinkAbs(conn, uri);
         tx->finalized = tx->finalizedOutput = tx->finalizedConnector = 1;
     }
 }
