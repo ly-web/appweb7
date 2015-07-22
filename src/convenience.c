@@ -97,7 +97,7 @@ PUBLIC int maRunWebClient(cchar *method, cchar *uri, cchar *data, char **respons
         mprLog("error appweb", 0, "Cannot start the web server runtime");
         return MPR_ERR_CANT_INITIALIZE;
     }
-    if (httpCreate(HTTP_CLIENT_SIDE) < 0) {
+    if (httpCreate(HTTP_CLIENT_SIDE) == 0) {
         mprLog("error appweb", 0, "Cannot create HTTP services");
         return MPR_ERR_CANT_INITIALIZE;
     }

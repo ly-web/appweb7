@@ -2236,7 +2236,7 @@ static int roleDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S ?*", &name, &abilities)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (httpAddRole(state->auth, name, abilities) < 0) {
+    if (httpAddRole(state->auth, name, abilities) == 0) {
         mprLog("error appweb config", 0, "Cannot add role %s", name);
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -3121,6 +3121,7 @@ PUBLIC bool maTokenize(MaState *state, cchar *line, cchar *fmt, ...)
     if (!httpTokenizev(state->route, line, fmt, ap)) {
         mprLog("error appweb config", 0, "Bad \"%s\" directive at line %d in %s, line: %s %s", 
                 state->key, state->lineNumber, state->filename, state->key, line);
+        va_end(ap);
         return 0;
     }
     va_end(ap);
