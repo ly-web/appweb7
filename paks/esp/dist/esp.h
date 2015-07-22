@@ -1778,10 +1778,6 @@ typedef struct EspReq {
     Esp             *esp;                   /**< Convenient esp reference */
     MprHash         *feedback;              /**< Feedback messages */
     MprHash         *lastFeedback;          /**< Feedback messages from the last request */
-#if UNUSED
-    MprHash         *flash;                 /**< New flash messages */
-    MprHash         *lastFlash;             /**< Flash messages from the last request */
-#endif
     HttpNotifier    notifier;               /**< Connection Http state change notification callback */
     void            *data;                  /**< Custom data for request (managed) */
     void            *staticData;            /**< Custom data for request (unmanaged) */

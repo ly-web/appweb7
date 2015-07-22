@@ -1764,7 +1764,7 @@ static int makeDirDirective(MaState *state, cchar *key, cchar *value)
         if (group && *group) {
             if (snumber(group)) {
                 gid = (int) stoi(group);
-            } else if (smatch(owner, "APPWEB")) {
+            } else if (smatch(group, "APPWEB")) {
                 gid = HTTP->gid;
             } else {
                 gid = groupToID(group);
@@ -2249,7 +2249,7 @@ static int roleDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S ?*", &name, &abilities)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (httpAddRole(state->auth, name, abilities) < 0) {
+    if (httpAddRole(state->auth, name, abilities) == 0) {
         mprLog("error appweb config", 0, "Cannot add role %s", name);
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -3134,6 +3134,7 @@ PUBLIC bool maTokenize(MaState *state, cchar *line, cchar *fmt, ...)
     if (!httpTokenizev(state->route, line, fmt, ap)) {
         mprLog("error appweb config", 0, "Bad \"%s\" directive at line %d in %s, line: %s %s", 
                 state->key, state->lineNumber, state->filename, state->key, line);
+        va_end(ap);
         return 0;
     }
     va_end(ap);
@@ -3744,7 +3745,7 @@ PUBLIC int maRunWebClient(cchar *method, cchar *uri, cchar *data, char **respons
         mprLog("error appweb", 0, "Cannot start the web server runtime");
         return MPR_ERR_CANT_INITIALIZE;
     }
-    if (httpCreate(HTTP_CLIENT_SIDE) < 0) {
+    if (httpCreate(HTTP_CLIENT_SIDE) == 0) {
         mprLog("error appweb", 0, "Cannot create HTTP services");
         return MPR_ERR_CANT_INITIALIZE;
     }

@@ -2476,11 +2476,7 @@ PUBLIC void stylesheets(cchar *patterns)
         }
         for (ITERATE_ITEMS(files, path, next)) {
             path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
-#if UNUSED
-            uri = httpUriToString(httpGetRelativeUri(rx->parsedUri, httpLinkUri(conn, path, 0), 0), 0);
-#else
             uri = httpLink(conn, path);
-#endif
             kind = mprGetPathExt(path);
             if (smatch(kind, "css")) {
                 espRender(conn, "<link rel='stylesheet' type='text/css' href='%s' />\n", uri);
@@ -2534,9 +2530,6 @@ PUBLIC void scripts(cchar *patterns)
         }
         return;
     }
-#if FUTURE
-    client => public
-#endif
     if ((files = mprGlobPathFiles(httpGetDir(route, "client"), patterns, MPR_PATH_RELATIVE)) == 0 || 
             mprGetListLength(files) == 0) {
         files = mprCreateList(0, 0);
@@ -2547,11 +2540,7 @@ PUBLIC void scripts(cchar *patterns)
             path = stemplateJson(path, route->config);
         }
         path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
-#if UNUSED
-        uri = httpUriToString(httpGetRelativeUri(rx->parsedUri, httpLinkUri(conn, path, 0), 0), 0);
-#else
         uri = httpLink(conn, path);
-#endif
         espRender(conn, "<script src='%s' type='text/javascript'></script>\n", uri);
     }
 }
@@ -6412,12 +6401,6 @@ static int getEspToken(EspParse *parse)
             if (next > start && (next[-1] == '\\' || next[-1] == '%')) {
                 break;
             }
-#if UNUSED
-        case '@':
-            if (c == '@') {
-                mprLog("esp warn", 0, "Using deprecated \"@\" control directive in esp page: %s", parse->path);
-            }
-#endif
             if ((next == start) || next[-1] != '\\') {
                 t = next[1];
                 if (t == '~') {

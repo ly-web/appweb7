@@ -1040,7 +1040,7 @@ typedef struct MprFreeQueue {
 /**
     Memory allocation error callback. Notifiers are called if a low memory condition exists.
     @param cause Set to the cause of the memory error. Set to #MPR_MEM_WARNING if the allocation will exceed the warnHeap
-        limit. Set to #MPR_MEM_LIMIT if it would exceed the maxHeap memory limit. Set to #MPR_MEM_FAIL if the 
+        limit. Set to #MPR_MEM_LIMIT if it would exceed the maxHeap memory limit. Set to #MPR_MEM_FAIL if the
         allocation failed.
         Set to #MPR_MEM_TOO_BIG if the allocation block size is too large.
         Allocations will be rejected for MPR_MEM_FAIL and MPR_MEM_TOO_BIG, otherwise the allocations will proceed and the
