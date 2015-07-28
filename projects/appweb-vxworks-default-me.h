@@ -108,6 +108,9 @@
 #ifndef ME_EJSCRIPT_ZLIB
     #define ME_EJSCRIPT_ZLIB 1
 #endif
+#ifndef ME_ESP_CMD
+    #define ME_ESP_CMD 1
+#endif
 #ifndef ME_ESP_LEGACY
     #define ME_ESP_LEGACY 0
 #endif
@@ -175,7 +178,7 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "5.4.5"
+    #define ME_VERSION "5.4.6"
 #endif
 #ifndef ME_WATCHDOG_NAME
     #define ME_WATCHDOG_NAME "appman"
@@ -237,7 +240,7 @@
     #define ME_VAPP_PREFIX "deploy"
 #endif
 #ifndef ME_SRC_PREFIX
-    #define ME_SRC_PREFIX "/usr/src/appweb-5.4.5"
+    #define ME_SRC_PREFIX "/usr/src/appweb-5.4.6"
 #endif
 
 /* Suffixes */
@@ -259,7 +262,7 @@
 
 /* Profile */
 #ifndef ME_CONFIG_CMD
-    #define ME_CONFIG_CMD "me -d -q -platform vxworks-x86-default -configure . -with openssl -gen make"
+    #define ME_CONFIG_CMD "me -d -q -platform vxworks-x86-default -configure . -gen make"
 #endif
 #ifndef ME_APPWEB_PRODUCT
     #define ME_APPWEB_PRODUCT 1
@@ -279,10 +282,10 @@
     #define ME_MINOR_VERSION 4
 #endif
 #ifndef ME_PATCH_VERSION
-    #define ME_PATCH_VERSION 5
+    #define ME_PATCH_VERSION 6
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 500040005
+    #define ME_VNUM 500040006
 #endif
 
 /* Components */
@@ -326,7 +329,7 @@
     #define ME_COM_NANOSSL 0
 #endif
 #ifndef ME_COM_OPENSSL
-    #define ME_COM_OPENSSL 1
+    #define ME_COM_OPENSSL 0
 #endif
 #ifndef ME_COM_OSDEP
     #define ME_COM_OSDEP 1

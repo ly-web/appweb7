@@ -3,7 +3,7 @@
 #
 
 NAME                  := appweb
-VERSION               := 5.4.5
+VERSION               := 5.4.6
 PROFILE               ?= static
 ARCH                  ?= $(shell echo $(WIND_HOST_TYPE) | sed 's/-.*$(ME_ROOT_PREFIX)/')
 CPU                   ?= $(subst X86,PENTIUM,$(shell echo $(ARCH) | tr a-z A-Z))
@@ -101,14 +101,12 @@ ifeq ($(ME_COM_ESP),1)
     TARGETS           += $(BUILD)/bin/esp-compile.json
 endif
 ifeq ($(ME_COM_ESP),1)
-    TARGETS           += $(BUILD)/bin/esp.out
+    TARGETS           += $(BUILD)/bin/appweb-esp.out
 endif
 ifeq ($(ME_COM_HTTP),1)
     TARGETS           += $(BUILD)/bin/http.out
 endif
-ifeq ($(ME_COM_SSL),1)
-    TARGETS           += $(BUILD)/.install-certs-modified
-endif
+TARGETS               += $(BUILD)/.install-certs-modified
 TARGETS               += src/server/cache
 TARGETS               += $(BUILD)/bin/appman.out
 
@@ -164,7 +162,7 @@ clean:
 	rm -f "$(BUILD)/bin/appweb.out"
 	rm -f "$(BUILD)/bin/authpass.out"
 	rm -f "$(BUILD)/bin/esp-compile.json"
-	rm -f "$(BUILD)/bin/esp.out"
+	rm -f "$(BUILD)/bin/appweb-esp.out"
 	rm -f "$(BUILD)/bin/http.out"
 	rm -f "$(BUILD)/.install-certs-modified"
 	rm -f "$(BUILD)/bin/libappweb.a"
@@ -172,7 +170,6 @@ clean:
 	rm -f "$(BUILD)/bin/libhttp.a"
 	rm -f "$(BUILD)/bin/libmpr.a"
 	rm -f "$(BUILD)/bin/libpcre.a"
-	rm -f "$(BUILD)/bin/libmpr-openssl.a"
 	rm -f "$(BUILD)/bin/appman.out"
 
 clobber: clean
@@ -574,10 +571,6 @@ ifeq ($(ME_COM_OPENSSL),1)
     LIBPATHS_36 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
 LIBS_36 += -lmpr
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_36 += -lmpr-openssl
-    LIBPATHS_36 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
 ifeq ($(ME_COM_PCRE),1)
     LIBS_36 += -lpcre
 endif
@@ -624,10 +617,6 @@ ifeq ($(ME_COM_OPENSSL),1)
     LIBPATHS_37 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
 LIBS_37 += -lmpr
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_37 += -lmpr-openssl
-    LIBPATHS_37 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
 ifeq ($(ME_COM_PCRE),1)
     LIBS_37 += -lpcre
 endif
@@ -687,10 +676,6 @@ ifeq ($(ME_COM_OPENSSL),1)
     LIBPATHS_39 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
 LIBS_39 += -lmpr
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_39 += -lmpr-openssl
-    LIBPATHS_39 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
 ifeq ($(ME_COM_PCRE),1)
     LIBS_39 += -lpcre
 endif
@@ -706,9 +691,9 @@ ifeq ($(ME_COM_HTTP),1)
     LIBS_39 += -lhttp
 endif
 
-$(BUILD)/bin/esp.out: $(DEPS_39)
-	@echo '      [Link] $(BUILD)/bin/esp.out'
-	$(CC) -o $(BUILD)/bin/esp.out $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/esp.o" $(LIBPATHS_39) $(LIBS_39) $(LIBS_39) $(LIBS) -Wl,-r 
+$(BUILD)/bin/appweb-esp.out: $(DEPS_39)
+	@echo '      [Link] $(BUILD)/bin/appweb-esp.out'
+	$(CC) -o $(BUILD)/bin/appweb-esp.out $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/esp.o" $(LIBPATHS_39) $(LIBS_39) $(LIBS_39) $(LIBS) -Wl,-r 
 endif
 
 ifeq ($(ME_COM_HTTP),1)
@@ -733,10 +718,6 @@ ifeq ($(ME_COM_OPENSSL),1)
     LIBPATHS_40 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
 LIBS_40 += -lmpr
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_40 += -lmpr-openssl
-    LIBPATHS_40 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
 ifeq ($(ME_COM_PCRE),1)
     LIBS_40 += -lpcre
 endif
@@ -751,7 +732,6 @@ $(BUILD)/bin/http.out: $(DEPS_40)
 	$(CC) -o $(BUILD)/bin/http.out $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/http.o" $(LIBPATHS_40) $(LIBS_40) $(LIBS_40) $(LIBS) -Wl,-r 
 endif
 
-ifeq ($(ME_COM_SSL),1)
 #
 #   install-certs
 #
@@ -778,7 +758,6 @@ $(BUILD)/.install-certs-modified: $(DEPS_41)
 	cp src/certs/samples/test.crt $(BUILD)/bin/test.crt
 	cp src/certs/samples/test.key $(BUILD)/bin/test.key
 	touch "$(BUILD)/.install-certs-modified"
-endif
 
 #
 #   server-cache
@@ -811,10 +790,6 @@ ifeq ($(ME_COM_OPENSSL),1)
     LIBPATHS_43 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
 LIBS_43 += -lmpr
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_43 += -lmpr-openssl
-    LIBPATHS_43 += -L"$(ME_COM_OPENSSL_PATH)"
-endif
 
 $(BUILD)/bin/appman.out: $(DEPS_43)
 	@echo '      [Link] $(BUILD)/bin/appman.out'

@@ -3,7 +3,7 @@
 #
 
 NAME                  = appweb
-VERSION               = 5.4.5
+VERSION               = 5.4.6
 
 OS                    = windows
 PA                    = $(PROCESSOR_ARCHITECTURE)
@@ -161,14 +161,12 @@ TARGETS               = $(TARGETS) build\$(CONFIG)\bin\authpass.exe
 TARGETS               = $(TARGETS) build\$(CONFIG)\bin\esp-compile.json
 !ENDIF
 !IF "$(ME_COM_ESP)" == "1"
-TARGETS               = $(TARGETS) build\$(CONFIG)\bin\esp.exe
+TARGETS               = $(TARGETS) build\$(CONFIG)\bin\appweb-esp.exe
 !ENDIF
 !IF "$(ME_COM_HTTP)" == "1"
 TARGETS               = $(TARGETS) build\$(CONFIG)\bin\http.exe
 !ENDIF
-!IF "$(ME_COM_SSL)" == "1"
 TARGETS               = $(TARGETS) build\$(CONFIG)\.install-certs-modified
-!ENDIF
 TARGETS               = $(TARGETS) src\server\cache
 TARGETS               = $(TARGETS) build\$(CONFIG)\bin\appman.exe
 
@@ -233,10 +231,10 @@ clean:
 	if exist "build\$(CONFIG)\bin\authpass.pdb" del /Q "build\$(CONFIG)\bin\authpass.pdb"
 	if exist "build\$(CONFIG)\bin\authpass.exp" del /Q "build\$(CONFIG)\bin\authpass.exp"
 	if exist "build\$(CONFIG)\bin\esp-compile.json" del /Q "build\$(CONFIG)\bin\esp-compile.json"
-	if exist "build\$(CONFIG)\bin\esp.exe" del /Q "build\$(CONFIG)\bin\esp.exe"
-	if exist "build\$(CONFIG)\bin\esp.lib" del /Q "build\$(CONFIG)\bin\esp.lib"
-	if exist "build\$(CONFIG)\bin\esp.pdb" del /Q "build\$(CONFIG)\bin\esp.pdb"
-	if exist "build\$(CONFIG)\bin\esp.exp" del /Q "build\$(CONFIG)\bin\esp.exp"
+	if exist "build\$(CONFIG)\bin\appweb-esp.exe" del /Q "build\$(CONFIG)\bin\appweb-esp.exe"
+	if exist "build\$(CONFIG)\bin\appweb-esp.lib" del /Q "build\$(CONFIG)\bin\appweb-esp.lib"
+	if exist "build\$(CONFIG)\bin\appweb-esp.pdb" del /Q "build\$(CONFIG)\bin\appweb-esp.pdb"
+	if exist "build\$(CONFIG)\bin\appweb-esp.exp" del /Q "build\$(CONFIG)\bin\appweb-esp.exp"
 	if exist "build\$(CONFIG)\bin\http.exe" del /Q "build\$(CONFIG)\bin\http.exe"
 	if exist "build\$(CONFIG)\bin\http.lib" del /Q "build\$(CONFIG)\bin\http.lib"
 	if exist "build\$(CONFIG)\bin\http.pdb" del /Q "build\$(CONFIG)\bin\http.pdb"
@@ -247,7 +245,6 @@ clean:
 	if exist "build\$(CONFIG)\bin\libhttp.lib" del /Q "build\$(CONFIG)\bin\libhttp.lib"
 	if exist "build\$(CONFIG)\bin\libmpr.lib" del /Q "build\$(CONFIG)\bin\libmpr.lib"
 	if exist "build\$(CONFIG)\bin\libpcre.lib" del /Q "build\$(CONFIG)\bin\libpcre.lib"
-	if exist "build\$(CONFIG)\bin\libmpr-openssl.lib" del /Q "build\$(CONFIG)\bin\libmpr-openssl.lib"
 	if exist "build\$(CONFIG)\bin\appman.exe" del /Q "build\$(CONFIG)\bin\appman.exe"
 	if exist "build\$(CONFIG)\bin\appman.lib" del /Q "build\$(CONFIG)\bin\appman.lib"
 	if exist "build\$(CONFIG)\bin\appman.pdb" del /Q "build\$(CONFIG)\bin\appman.pdb"
@@ -602,10 +599,6 @@ LIBS_31 = $(LIBS_31) libssleay32.lib
 LIBPATHS_31 = $(LIBPATHS_31) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 LIBS_31 = $(LIBS_31) libmpr.lib
-!IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_31 = $(LIBS_31) libmpr-openssl.lib
-LIBPATHS_31 = $(LIBPATHS_31) -libpath:$(ME_COM_OPENSSL_PATH)
-!ENDIF
 !IF "$(ME_COM_PCRE)" == "1"
 LIBS_31 = $(LIBS_31) libpcre.lib
 !ENDIF
@@ -696,10 +689,6 @@ LIBS_36 = $(LIBS_36) libssleay32.lib
 LIBPATHS_36 = $(LIBPATHS_36) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 LIBS_36 = $(LIBS_36) libmpr.lib
-!IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_36 = $(LIBS_36) libmpr-openssl.lib
-LIBPATHS_36 = $(LIBPATHS_36) -libpath:$(ME_COM_OPENSSL_PATH)
-!ENDIF
 !IF "$(ME_COM_PCRE)" == "1"
 LIBS_36 = $(LIBS_36) libpcre.lib
 !ENDIF
@@ -768,10 +757,6 @@ LIBS_39 = $(LIBS_39) libssleay32.lib
 LIBPATHS_39 = $(LIBPATHS_39) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 LIBS_39 = $(LIBS_39) libmpr.lib
-!IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_39 = $(LIBS_39) libmpr-openssl.lib
-LIBPATHS_39 = $(LIBPATHS_39) -libpath:$(ME_COM_OPENSSL_PATH)
-!ENDIF
 !IF "$(ME_COM_PCRE)" == "1"
 LIBS_39 = $(LIBS_39) libpcre.lib
 !ENDIF
@@ -843,10 +828,6 @@ LIBS_42 = $(LIBS_42) libssleay32.lib
 LIBPATHS_42 = $(LIBPATHS_42) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 LIBS_42 = $(LIBS_42) libmpr.lib
-!IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_42 = $(LIBS_42) libmpr-openssl.lib
-LIBPATHS_42 = $(LIBPATHS_42) -libpath:$(ME_COM_OPENSSL_PATH)
-!ENDIF
 !IF "$(ME_COM_PCRE)" == "1"
 LIBS_42 = $(LIBS_42) libpcre.lib
 !ENDIF
@@ -862,9 +843,9 @@ LIBS_42 = $(LIBS_42) libesp.lib
 LIBS_42 = $(LIBS_42) libhttp.lib
 !ENDIF
 
-build\$(CONFIG)\bin\esp.exe: $(DEPS_42)
-	@echo ..... [Link] build\$(CONFIG)\bin\esp.exe
-	"$(LD)" -nologo -out:$(BUILD)\bin\esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)  "$(BUILD)\obj\esp.obj" $(LIBPATHS_42) $(LIBS_42) $(LIBS_42) $(LIBS)  $(LOG)
+build\$(CONFIG)\bin\appweb-esp.exe: $(DEPS_42)
+	@echo ..... [Link] build\$(CONFIG)\bin\appweb-esp.exe
+	"$(LD)" -nologo -out:$(BUILD)\bin\appweb-esp.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)  "$(BUILD)\obj\esp.obj" $(LIBPATHS_42) $(LIBS_42) $(LIBS_42) $(LIBS)  $(LOG)
 !ENDIF
 
 #
@@ -901,10 +882,6 @@ LIBS_44 = $(LIBS_44) libssleay32.lib
 LIBPATHS_44 = $(LIBPATHS_44) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 LIBS_44 = $(LIBS_44) libmpr.lib
-!IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_44 = $(LIBS_44) libmpr-openssl.lib
-LIBPATHS_44 = $(LIBPATHS_44) -libpath:$(ME_COM_OPENSSL_PATH)
-!ENDIF
 !IF "$(ME_COM_PCRE)" == "1"
 LIBS_44 = $(LIBS_44) libpcre.lib
 !ENDIF
@@ -919,7 +896,6 @@ build\$(CONFIG)\bin\http.exe: $(DEPS_44)
 	"$(LD)" -nologo -out:$(BUILD)\bin\http.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS)  "$(BUILD)\obj\http.obj" $(LIBPATHS_44) $(LIBS_44) $(LIBS_44) $(LIBS)  $(LOG)
 !ENDIF
 
-!IF "$(ME_COM_SSL)" == "1"
 #
 #   install-certs
 #
@@ -946,7 +922,6 @@ build\$(CONFIG)\.install-certs-modified: $(DEPS_45)
 	copy /Y /B src\certs\samples\test.crt+modified build\$(CONFIG)\bin\test.crt $(LOG)
 	copy /Y /B src\certs\samples\test.key+modified build\$(CONFIG)\bin\test.key $(LOG)
 	copy /Y /B nul+modified build\$(CONFIG)\.install-certs-modified $(LOG)
-!ENDIF
 
 #
 #   server-cache
@@ -990,10 +965,6 @@ LIBS_48 = $(LIBS_48) libssleay32.lib
 LIBPATHS_48 = $(LIBPATHS_48) -libpath:$(ME_COM_OPENSSL_PATH)
 !ENDIF
 LIBS_48 = $(LIBS_48) libmpr.lib
-!IF "$(ME_COM_OPENSSL)" == "1"
-LIBS_48 = $(LIBS_48) libmpr-openssl.lib
-LIBPATHS_48 = $(LIBPATHS_48) -libpath:$(ME_COM_OPENSSL_PATH)
-!ENDIF
 
 build\$(CONFIG)\bin\appman.exe: $(DEPS_48)
 	@echo ..... [Link] build\$(CONFIG)\bin\appman.exe

@@ -3,7 +3,7 @@
 #
 
 NAME                  := appweb
-VERSION               := 5.4.5
+VERSION               := 5.4.6
 PROFILE               ?= default
 ARCH                  ?= $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
 CC_ARCH               ?= $(shell echo $(ARCH) | sed 's/x86/i686/;s/x64/x86_64/')
@@ -93,14 +93,12 @@ ifeq ($(ME_COM_ESP),1)
     TARGETS           += $(BUILD)/bin/esp-compile.json
 endif
 ifeq ($(ME_COM_ESP),1)
-    TARGETS           += $(BUILD)/bin/esp
+    TARGETS           += $(BUILD)/bin/appweb-esp
 endif
 ifeq ($(ME_COM_HTTP),1)
     TARGETS           += $(BUILD)/bin/http
 endif
-ifeq ($(ME_COM_SSL),1)
-    TARGETS           += $(BUILD)/.install-certs-modified
-endif
+TARGETS               += $(BUILD)/.install-certs-modified
 TARGETS               += src/server/cache
 TARGETS               += $(BUILD)/bin/appman
 
@@ -153,7 +151,7 @@ clean:
 	rm -f "$(BUILD)/bin/appweb"
 	rm -f "$(BUILD)/bin/authpass"
 	rm -f "$(BUILD)/bin/esp-compile.json"
-	rm -f "$(BUILD)/bin/esp"
+	rm -f "$(BUILD)/bin/appweb-esp"
 	rm -f "$(BUILD)/bin/http"
 	rm -f "$(BUILD)/.install-certs-modified"
 	rm -f "$(BUILD)/bin/libappweb.so"
@@ -813,9 +811,9 @@ ifeq ($(ME_COM_HTTP),1)
     LIBS_39 += -lhttp
 endif
 
-$(BUILD)/bin/esp: $(DEPS_39)
-	@echo '      [Link] $(BUILD)/bin/esp'
-	$(CC) -o $(BUILD)/bin/esp $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/esp.o" $(LIBPATHS_39) $(LIBS_39) $(LIBS_39) $(LIBS) $(LIBS) 
+$(BUILD)/bin/appweb-esp: $(DEPS_39)
+	@echo '      [Link] $(BUILD)/bin/appweb-esp'
+	$(CC) -o $(BUILD)/bin/appweb-esp $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/esp.o" $(LIBPATHS_39) $(LIBS_39) $(LIBS_39) $(LIBS) $(LIBS) 
 endif
 
 ifeq ($(ME_COM_HTTP),1)
@@ -858,7 +856,6 @@ $(BUILD)/bin/http: $(DEPS_40)
 	$(CC) -o $(BUILD)/bin/http $(LDFLAGS) $(LIBPATHS)  "$(BUILD)/obj/http.o" $(LIBPATHS_40) $(LIBS_40) $(LIBS_40) $(LIBS) $(LIBS) 
 endif
 
-ifeq ($(ME_COM_SSL),1)
 #
 #   install-certs
 #
@@ -885,7 +882,6 @@ $(BUILD)/.install-certs-modified: $(DEPS_41)
 	cp src/certs/samples/test.crt $(BUILD)/bin/test.crt
 	cp src/certs/samples/test.key $(BUILD)/bin/test.key
 	touch "$(BUILD)/.install-certs-modified"
-endif
 
 #
 #   server-cache
@@ -1020,12 +1016,21 @@ installBinary: $(DEPS_45)
 	ln -s "$(ME_VAPP_PREFIX)/bin/appman" "$(ME_BIN_PREFIX)/appman" ; \
 	if [ "$(ME_COM_ESP)" = 1 ]; then true ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
-	cp $(BUILD)/bin/esp $(ME_VAPP_PREFIX)/bin/appesp ; \
+	cp $(BUILD)/bin/appweb-esp $(ME_VAPP_PREFIX)/bin/appesp ; \
 	chmod 755 "$(ME_VAPP_PREFIX)/bin/appesp" ; \
 	mkdir -p "$(ME_BIN_PREFIX)" ; \
 	chmod 755 "$(ME_BIN_PREFIX)" ; \
 	rm -f "$(ME_BIN_PREFIX)/appesp" ; \
 	ln -s "$(ME_VAPP_PREFIX)/bin/appesp" "$(ME_BIN_PREFIX)/appesp" ; \
+	fi ; \
+	if [ "$(ME_COM_ESP)" = 1 ]; then true ; \
+	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
+	cp $(BUILD)/bin/appweb-esp $(ME_VAPP_PREFIX)/bin/appweb-esp ; \
+	chmod 755 "$(ME_VAPP_PREFIX)/bin/appweb-esp" ; \
+	mkdir -p "$(ME_BIN_PREFIX)" ; \
+	chmod 755 "$(ME_BIN_PREFIX)" ; \
+	rm -f "$(ME_BIN_PREFIX)/appweb-esp" ; \
+	ln -s "$(ME_VAPP_PREFIX)/bin/appweb-esp" "$(ME_BIN_PREFIX)/appweb-esp" ; \
 	fi ; \
 	if [ "$(ME_COM_ESP)" = 1 ]; then true ; \
 	fi ; \
