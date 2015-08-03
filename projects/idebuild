@@ -6,7 +6,7 @@
 PRODUCT=appweb
 XCODE=/usr/bin/xcodebuild
 PROFILE=default
-BINARIES="appweb appwebMonitor authpass esp http appman"
+BINARIES="appweb appwebMonitor authpass appweb-esp http appman"
 LIBRARIES="libappweb libhttp libmpr libpcre"
 
 # Just for VS
