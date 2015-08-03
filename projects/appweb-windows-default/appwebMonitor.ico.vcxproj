@@ -95,21 +95,6 @@
         <TargetName>appwebMonitor</TargetName>
     </PropertyGroup>
 
-      <ItemDefinitionGroup>
-      <Link>
-        <AdditionalDependencies>;%(AdditionalDependencies)</AdditionalDependencies>
-        <AdditionalLibraryDirectories>$(OutDir);;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      </Link>
-
-      <CustomBuildStep>
-        <Command>cd ..\..\src\server
-if exist $(BinDir)\appwebMonitor.ico del /Q $(BinDir)\appwebMonitor.ico
-copy /Y windows\appwebMonitor.ico $(BinDir)\appwebMonitor.ico
-cd ..\..\projects\appweb-windows-default</Command>
-        <Outputs>$(BinDir)\appwebMonitor.ico</Outputs>
-      </CustomBuildStep>
-  </ItemDefinitionGroup>
-
   <Import Project="$(VCTargetsPath)Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
