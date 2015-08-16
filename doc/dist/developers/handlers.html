@@ -12,8 +12,8 @@
         rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Julius+Sans+One' rel='stylesheet' type='text/css'>
     <link href="../images/favicon.ico" rel="shortcut icon" />
-    <link href="..semantic-ui/semantic.css" rel="stylesheet" type="text/css" />
-    <link href="..css/all.css" rel="stylesheet" type="text/css" />
+    <link href="../semantic-ui/semantic.css" rel="stylesheet" type="text/css" />
+    <link href="../css/all.css" rel="stylesheet" type="text/css" />
     
 
 </head>
@@ -665,11 +665,11 @@ int maMyModuleInit(Http *http, MprModule *mp)
 
     </div>
     <div class="terms ui basic center aligned segment">
-        <p>&copy; Embedthis Software, 2003-2014. All rights reserved.</p>
+        <p>&copy; Embedthis Software, 2003-2015. All rights reserved.</p>
     </div>
 
-    <script src="..jquery/jquery.min.js"></script>
-    <script src="..semantic-ui/semantic.js"></script>
+    <script src="../jquery/jquery.min.js"></script>
+    <script src="../semantic-ui/semantic.js"></script>
     <script>
         var sl = $('.sidebar-launch');
         $('.sidebar-launch').click(function() {
@@ -682,12 +682,11 @@ int maMyModuleInit(Http *http, MprModule *mp)
                 $('.sidebar').css('visibility', 'hidden');
             }
         });
-        // $('.sidebar-launch').trigger('click');
         $('.sidebar a.item').click(function(e) {
             sessionStorage.setItem('scroll-top', $('.sidebar').scrollTop());
         });
         $(function() {
-            var url = '..developers/handlers.html';
+            var url = '../developers/handlers.html';
             var active = $('.sidebar a[href="' + url +'"]');
             active.addClass('active');
             $('.sidebar').scrollTop(sessionStorage.getItem('scroll-top'));
@@ -695,6 +694,19 @@ int maMyModuleInit(Http *http, MprModule *mp)
     </script> 
 
         
+    <script>
+        (function() {
+            var r = new XMLHttpRequest();
+            r.onreadystatechange = function() {
+                if (r.readyState >= 3 && r.status == 200) {
+                    window.location.reload();
+                }
+            }
+            r.open("GET", "/reload-service", true);
+            r.send();
+        })();
+    </script>
+    
 
 </body>
 </html>
