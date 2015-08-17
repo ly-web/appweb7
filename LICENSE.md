@@ -30,13 +30,6 @@ OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY OF THIS SOFTWARE OR ITS
 FITNESS FOR ANY PARTICULAR PURPOSE.
 
 
-### EST License
-
-The optional EST SSL stack includes code from TropicSSL.
-
-TropicSSL - [BSD License](http://opensource.org/licenses/BSD-2-Clause)
-
-
 ### Perl Regular Expressions License
 
 PCRE - [BSD License](http://opensource.org/licenses/BSD-2-Clause)
