@@ -50,7 +50,7 @@ static void incomingSimple(HttpQueue *q, HttpPacket *packet)
 /*
     Module load initialization. This is called when the module is first loaded.
  */
-int maSimpleHandlerInit(Http *http, MprModule *module)
+int httpSimpleHandlerInit(Http *http, MprModule *module)
 {
     HttpStage   *stage;
 

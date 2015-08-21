@@ -30,7 +30,7 @@ extern "C" {
 /*
     Module load initialization. This is called when the module is first loaded.
  */
-int maSimpleModuleInit(Http *http, MprModule *mp)
+int httpSimpleModuleInit(Http *http, MprModule *mp)
 {
     HttpStage   *stage;
 

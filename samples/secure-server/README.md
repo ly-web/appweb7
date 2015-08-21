@@ -15,7 +15,7 @@ This sample uses a self-signed certificate. In your application, you will need a
 Notes:
 The password database is kept in a flat file called auth.conf. The password was created via:
 
-    authpass --cipher blowfish --password pass5 auth.conf example.com ralph
+    authpass --cipher blowfish --password pass5 --file auth.conf example.com ralph
 
 Requirements
 ---
@@ -24,8 +24,7 @@ Requirements
 
 To build:
 ---
-    me 
-    esp compile
+    appweb-esp compile
 
     # Note that the ESP pages must be pre-compiled as the cc compiler wont be available inside the chroot jail.
 

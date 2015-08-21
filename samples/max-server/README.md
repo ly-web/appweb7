@@ -13,10 +13,6 @@ Requirements
 * [Appweb](https://embedthis.com/appweb/download.html)
 * [MakeMe Build Tool](https://embedthis.com/makeme/download.html)
 
-To build:
----
-    me 
-
 To run:
 ---
     me run

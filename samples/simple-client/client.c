@@ -20,7 +20,7 @@ MAIN(simpleClient, int argc, char **argv, char **envp)
         This will create the Mpr and Http services. Alternatively, if you have existing
         Mpr and Http services, use httpRequest() directly (see the typical-client sample).
      */
-    code = maRunWebClient("GET", "http://www.embedthis.com/index.html", NULL, &response, &err);
+    code = maRunWebClient("GET", "http://embedthis.com/index.html", NULL, &response, &err);
     if (code != 200) {
         mprPrintf("Server error code %d, %s\n", code, err);
         return 255;

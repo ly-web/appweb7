@@ -41,7 +41,7 @@ static void incomingSpy(HttpQueue *q, HttpPacket *packet)
 }
 
 
-MprModule *maSpyFilterInit(Http *http, MprModule *module)
+MprModule *httpSpyFilterInit(Http *http, MprModule *module)
 {
     HttpStage     *filter;
 

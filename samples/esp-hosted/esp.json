@@ -16,5 +16,22 @@
             "store": "app"
         },
         "routes": "esp-restful"
+    },
+    "modes": {
+        "debug": {
+            "esp": {
+                "optimize": false,
+                "combine": false
+            }
+        },
+        "release": {
+            "esp": {
+                "optimize": true,
+                "combine": true
+            },
+            "http": {
+                "compress": true
+            }
+        }
     }
 }

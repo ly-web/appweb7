@@ -18,7 +18,7 @@ To run:
 
 The client retrieves:
  
-     http://www.embedthis.com/index.html
+     http://embedthis.com/index.html
 
 Code:
 ---

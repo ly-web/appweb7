@@ -25,13 +25,17 @@ Requirements
 * [Pak](https://embedthis.com/pak/download.html)
 * [Expansive](https://embedthis.com/expansive/download.html)
 
+To build:
+---
+    appweb-esp -r compile
+
 To run:
 ---
     appweb -v
 
 The server listens on port 4000 for HTTP traffic and 4443 for SSL. Browse to: 
  
-     http://localhost:4000/
+     http://localhost:4000/espapp/
 
 Code:
 ---
