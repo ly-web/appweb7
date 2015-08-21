@@ -13,6 +13,8 @@ Me.load({
                 let os = me.platform.os
                 s.webUser = {macosx: '_www', windows: 'Administrator', linux: 'nobody', freebsd: 'nobody'}[os]
                 s.webGroup = {macosx: '_www', windows: 'Administrator', linux: 'nogroup', freebsd: 'nogroup'}[os]
+                s.webUser ||= ''
+                s.webGroup ||= ''
             }
         `,
         gencustom: `
