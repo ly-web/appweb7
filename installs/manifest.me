@@ -113,6 +113,7 @@ Me.load({
                     to:         '${abin}/appesp${EXE}',
                     symlink:    '${bin}/',
                     ifdef:      'esp',
+                    enable:     "me.platform.arch == Config.CPU",
                     permissions: 0755,
 
                 }, {
@@ -120,6 +121,7 @@ Me.load({
                     to:         '${abin}/appweb-esp${EXE}',
                     symlink:    '${bin}/',
                     ifdef:      'esp',
+                    enable:     "me.platform.arch == Config.CPU",
                     permissions: 0755,
 
                 }, {
