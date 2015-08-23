@@ -187,10 +187,10 @@
     #define ME_WATCHDOG_NAME "appman"
 #endif
 #ifndef ME_WEB_GROUP
-    #define ME_WEB_GROUP "undefined"
+    #define ME_WEB_GROUP ""
 #endif
 #ifndef ME_WEB_USER
-    #define ME_WEB_USER "undefined"
+    #define ME_WEB_USER ""
 #endif
 
 /* Prefixes */
@@ -347,8 +347,5 @@
     #define ME_COM_SSL 1
 #endif
 #ifndef ME_COM_VXWORKS
-    #define ME_COM_VXWORKS 1
-#endif
-#ifndef ME_COM_WINSDK
-    #define ME_COM_WINSDK 1
+    #define ME_COM_VXWORKS 0
 #endif
