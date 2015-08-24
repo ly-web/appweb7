@@ -329,8 +329,9 @@ int main(int argc, char **argv, char **envp)
  */
 static int getArgv(int *pargc, char ***pargv, int originalArgc, char **originalArgv)
 {
-    char    *switches, *next, sbuf[1024];
-    int     i;
+    static char sbuf[1024];
+    char        *switches, *next;
+    int         i;
 
     *pargc = 0;
     if (getQueryString(&queryBuf, &queryLen) < 0) {
@@ -448,6 +449,7 @@ static void printPost(char *buf, size_t len)
     } else if (buf) {
         if (len < (50 * 1000)) {
             printf("<H2>Post Data %d bytes found (data below)</H2>\r\n", (int) len);
+            fflush(stdout);
             if (write(1, buf, (int) len) != len) {}
         } else {
             printf("<H2>Post Data %d bytes found</H2>\r\n", (int) len);
