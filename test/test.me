@@ -157,6 +157,7 @@ Me.load({
                 Path('web/cgiProgram.cgi').remove()
             `
         },
+
         'session-test': {
             shell: `
                 openssl s_client -reconnect -connect 127.0.0.1:4443 -crlf 2>/dev/null | grep Session-ID:
