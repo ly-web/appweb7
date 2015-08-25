@@ -71,48 +71,6 @@ PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documen
 }
 
 
-/*  
-    Run the web client to retrieve a URI
-    This will create the MPR and Http service on demand. As such, it is not the most
-    efficient way to run a web request.
-    @return HTTP status code or negative MPR error code. Returns a malloc string in response.
- */
-PUBLIC int maRunWebClient(cchar *method, cchar *uri, cchar *data, char **response, char **err)
-{
-    Mpr         *mpr;
-    HttpConn    *conn;
-    int         status;
-
-    if (err) {
-        *err = 0;
-    }
-    if (response) {
-        *response = 0;
-    }
-    if ((mpr = mprCreate(0, NULL, 0)) == 0) {
-        mprLog("error appweb", 0, "Cannot create the MPR runtime");
-        return MPR_ERR_CANT_CREATE;
-    }
-    if (mprStart() < 0) {
-        mprLog("error appweb", 0, "Cannot start the web server runtime");
-        return MPR_ERR_CANT_INITIALIZE;
-    }
-    if (httpCreate(HTTP_CLIENT_SIDE) == 0) {
-        mprLog("error appweb", 0, "Cannot create HTTP services");
-        return MPR_ERR_CANT_INITIALIZE;
-    }
-    if ((conn = httpRequest(method, uri, data, err)) == 0) {
-        mprLog("error appweb", 0, "Cannot create connection");
-        return MPR_ERR_CANT_INITIALIZE;
-    }
-    status = httpGetStatus(conn);
-    if (response) {
-        *response = httpReadString(conn);
-    }
-    mprDestroy();
-    return status;
-}
-
 /*
     @copy   default
 

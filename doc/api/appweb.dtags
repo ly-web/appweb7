@@ -83,13 +83,6 @@
     </member>
     <member kind="function">
       <type>int</type>
-      <name>maRunWebClient</name>
-      <anchorfile>group___ma_state.html</anchorfile>
-      <anchor>ga416dbc18b44c58ceea1d0fa1662a7966</anchor>
-      <arglist>(cchar *method, cchar *uri, cchar *data, char **response, char **err)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
       <name>maRunWebServer</name>
       <anchorfile>group___ma_state.html</anchorfile>
       <anchor>ga4994c273e87409b094418dd7bd370ee4</anchor>
