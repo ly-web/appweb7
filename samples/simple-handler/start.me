@@ -3,13 +3,13 @@
  */
 Me.load({
     configure: {
-        requires: ['appweb', 'testme'],
+        requires: [ 'appweb' ],
     },
     targets: {
         libmod_simple: {
             type: 'lib',
             sources: ['simpleHandler.c'],
-            depends: ['appweb', 'testme'],
+            depends: ['appweb'],
         }
         run: {
             run: 'appweb',

@@ -12,9 +12,6 @@ Requirements
 To build:
 ---
     me 
-    esp compile
-
-    # Note that the ESP pages must be pre-compiled as the cc compiler wont be available inside the chroot jail.
 
 To run:
 ---
