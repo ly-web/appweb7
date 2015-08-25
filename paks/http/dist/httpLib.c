@@ -14560,9 +14560,11 @@ PUBLIC void httpFinalizeRoute(HttpRoute *route)
     if (mprGetListLength(route->indexes) == 0) {
         mprAddItem(route->indexes,  sclone("index.html"));
     }
+#if UNUSED
     if (!mprLookupKey(route->extensions, "")) {
         httpAddRouteHandler(route, "fileHandler", "");
     }
+#endif
     httpAddRoute(route->host, route);
 }
 
