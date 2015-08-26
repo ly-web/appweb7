@@ -254,7 +254,6 @@ PUBLIC int mprSslInit(void *unused, MprModule *module)
 #if ME_UNIX_LIKE
     RAND_load_file("/dev/urandom", 256);
 #endif
-
     if ((openProvider = mprAllocObj(MprSocketProvider, manageOpenProvider)) == NULL) {
         return MPR_ERR_MEMORY;
     }
@@ -484,7 +483,7 @@ static OpenConfig *createOpenSslConfig(MprSocket *sp)
     /*
         Define a session reuse context
      */
-    RAND_bytes(resume, sizeof(resume));
+    RAND_pseudo_bytes(resume, sizeof(resume));
     SSL_CTX_set_session_id_context(context, resume, sizeof(resume));
 
     /*
@@ -777,7 +776,7 @@ static ssize readOss(MprSocket *sp, void *buf, ssize len)
             if (error == SSL_ERROR_WANT_READ || error == SSL_ERROR_WANT_CONNECT || error == SSL_ERROR_WANT_ACCEPT) {
                 continue;
             }
-            mprLog("info mpr ssl openssl", 5, "SSL_read %s", getOssError(sp));
+            mprLog("info mpr ssl openssl", 2, "SSL_read %s", getOssError(sp));
         }
         break;
     }

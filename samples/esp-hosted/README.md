@@ -31,11 +31,14 @@ To build:
 
 To run:
 ---
+    me run 
+
+or
     appweb -v
 
-The server listens on port 4000 for HTTP traffic and 4443 for SSL. Browse to: 
+The server listens on port 8080 for HTTP traffic. Browse to: 
  
-     http://localhost:4000/espapp/
+     http://localhost:8080/espapp/
 
 Code:
 ---

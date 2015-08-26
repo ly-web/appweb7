@@ -24,9 +24,12 @@ Requirements
 
 To build:
 ---
-    appweb-esp compile
 
-    # Note that the ESP pages must be pre-compiled as the cc compiler wont be available inside the chroot jail.
+Run:
+
+    me 
+
+This will precompile the ESP pages and a create device node inside the chroot jail for /dev/urandom.
 
 To run:
 ---

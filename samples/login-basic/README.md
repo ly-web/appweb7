@@ -51,9 +51,9 @@ To run:
 ---
     appweb -v
 
-The server listens on port 4000 for HTTP traffic and 4443 for SSL. Browse to: 
+The server listens on port 8080 for HTTP traffic and 4443 for SSL. Browse to: 
  
-     http://localhost:4000/
+     http://localhost:8080/
 
 This will redirect to SSL (you will get a warning due to the self-signed certificate).
 Continue and you will be prompted to login. The test username/password is:
