@@ -19,6 +19,7 @@ static int customConfig(MaState *state, cchar *key, cchar *value)
         Do something with value.
      */
     printf("Key \"%s\" = \"%s\"\n", key, value);
+    fflush(stdout);
     return 0;
 }
 
