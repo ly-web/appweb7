@@ -19,6 +19,7 @@ static int customConfig(MaState *state, cchar *key, cchar *value)
         Do something with value.
      */
     printf("Key \"%s\" = \"%s\"\n", key, value);
+    fflush(stdout);
     return 0;
 }
 
@@ -30,7 +31,7 @@ extern "C" {
 /*
     Module load initialization. This is called when the module is first loaded.
  */
-int maSimpleModuleInit(Http *http, MprModule *mp)
+int httpSimpleModuleInit(Http *http, MprModule *mp)
 {
     HttpStage   *stage;
 

@@ -271,7 +271,7 @@ static int createEndpoints(int argc, char **argv)
         mprLog("info appweb", 2, "Documents %s", app->documents);
     }
     if (argc == 0) {
-        if (maParseConfig(app->configFile) < 0) {
+        if (maConfigureServer(app->configFile, 0, 0, 0, 0) < 0) {
             return MPR_ERR_CANT_CREATE;
         }
     } else {

@@ -53,7 +53,7 @@ extern "C" {
 /*
     Module load initialization. This is called when the module is first loaded. The module name is "Simple".
  */
-int maSimpleHandlerInit(Http *http, MprModule *module)
+int httpSimpleHandlerInit(Http *http, MprModule *module)
 {
     HttpStage   *stage;
 

@@ -20,7 +20,7 @@ To run:
 
 The client retrieves:
  
-     http://www.embedthis.com/index.html
+     http://embedthis.com/index.html
 
 Code:
 ---
@@ -33,7 +33,7 @@ Documentation:
 * [Configuration Directives](https://embedthis.com/appweb/doc/users/configuration.html#directives)
 * [Http Client](https://embedthis.com/appweb/doc/users/client.html)
 * [Http API](https://embedthis.com/appweb/doc/api/http.html)
-* [API Library](https://embedthis.com/appweb/doc/api/native.html)
+* [API Library](https://embedthis.com/appweb/doc/ref/native.html)
 
 See Also:
 ---

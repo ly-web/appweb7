@@ -35,7 +35,7 @@ Documentation:
 * [Appweb Documentation](https://embedthis.com/appweb/doc/index.html)
 * [Creating Handlers](https://embedthis.com/appweb/doc/programmers/handlers.html)
 * [Creating Modules](https://embedthis.com/appweb/doc/programmers/modules.html)
-* [API Library](https://embedthis.com/appweb/doc/api/native.html)
+* [API Library](https://embedthis.com/appweb/doc/ref/native.html)
 
 See Also:
 ---

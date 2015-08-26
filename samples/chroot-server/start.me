@@ -7,16 +7,16 @@ Me.load({
         requires: ['appweb'],
     },
     targets: {
-        server: {
-            type:    'exe',
-            sources: '*.c',
-            depends: [ 'appweb', 'precompile'],
-        },
         /* 
             Pre-compile the esp pages so the compiler is not required inside the jail
          */
         precompile: {
-            run: "esp -q compile",
+            run: `appweb-esp -q compile`,
+        },
+        server: {
+            type:    'exe',
+            sources: '*.c',
+            depends: [ 'appweb', 'precompile'],
         },
         run: {
             depends: ['server'],

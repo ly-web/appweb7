@@ -33,7 +33,7 @@ MAIN(simpleClient, int argc, char **argv, char **envp)
     /* 
         Open a connection to issue the GET. Then finalize the request output - this forces the request out.
      */
-    if ((conn = httpRequest("GET", "http://www.embedthis.com/index.html", NULL, &err)) == 0) {
+    if ((conn = httpRequest("GET", "http://embedthis.com/index.html", NULL, &err)) == 0) {
         mprError("Can't get URL: %s", err);
         exit(2);
     }

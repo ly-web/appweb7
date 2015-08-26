@@ -26,11 +26,11 @@ Notes:
 * This sample keeps the passwords in the auth.conf. So the sample works with Digest authentication which requires
   MD5 encryption, the test password was created via:
 
-    authpass --cipher md5 --password pass1 auth.conf example.com joshua user
+    authpass --cipher md5 --password pass1 --file auth.conf example.com joshua user
 
   However, if using basic authentication, you should use the more secure blowfish encryption via:
 
-    authpass --cipher blowfish --password pass1 auth.conf example.com joshua user
+    authpass --cipher blowfish --password pass1 --file auth.conf example.com joshua user
 
 * The sample is setup to use the "config" auth store which keeps the passwords in the auth.conf file.
     Set this to "system" if you wish to use passwords in the system password database (linux or macosx only).
@@ -51,9 +51,9 @@ To run:
 ---
     appweb -v
 
-The server listens on port 4000 for HTTP traffic and 4443 for SSL. Browse to: 
+The server listens on port 8080 for HTTP traffic and 4443 for SSL. Browse to: 
  
-     http://localhost:4000/
+     http://localhost:8080/
 
 This will redirect to SSL (you will get a warning due to the self-signed certificate).
 Continue and you will be prompted to login. The test username/password is:

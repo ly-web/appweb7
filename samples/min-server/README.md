@@ -12,10 +12,6 @@ Requirements
 * [Appweb](https://embedthis.com/appweb/download.html)
 * [MakeMe Build Tool](https://embedthis.com/makeme/download.html)
 
-To build:
----
-    me 
-
 To run:
 ---
     me run
@@ -30,7 +26,7 @@ Code:
 * [auth.conf](auth.conf) - User/Password/Role authorization file
 * [index.html](index.html) - web page to serve
 * [web](web) - Web content to serve
-* [start.me](start.me) - MakeMe build instructions
+* [start.me](start.me) - MakeMe run instructions
 
 Documentation:
 ---
