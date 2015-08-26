@@ -325,3 +325,6 @@
 #ifndef ME_COM_VXWORKS
     #define ME_COM_VXWORKS 0
 #endif
+#ifndef ME_COM_WATCHDOG
+    #define ME_COM_WATCHDOG 1
+#endif
