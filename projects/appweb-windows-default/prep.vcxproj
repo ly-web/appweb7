@@ -93,10 +93,7 @@
   </PropertyGroup>
 
       <ItemDefinitionGroup>
-      <Link>
-        <AdditionalDependencies>;%(AdditionalDependencies)</AdditionalDependencies>
-        <AdditionalLibraryDirectories>$(OutDir);;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      </Link>
+        
 
       <CustomBuildStep>
         <Command>cd .

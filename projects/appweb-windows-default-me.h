@@ -163,7 +163,7 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "5.4.6"
+    #define ME_VERSION "5.4.7"
 #endif
 #ifndef ME_WATCHDOG_NAME
     #define ME_WATCHDOG_NAME "appman"
@@ -270,10 +270,10 @@
     #define ME_MINOR_VERSION 4
 #endif
 #ifndef ME_PATCH_VERSION
-    #define ME_PATCH_VERSION 6
+    #define ME_PATCH_VERSION 7
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 500040006
+    #define ME_VNUM 500040007
 #endif
 
 /* Components */
@@ -327,9 +327,6 @@
 #endif
 #ifndef ME_COM_VXWORKS
     #define ME_COM_VXWORKS 0
-#endif
-#ifndef ME_COM_WINSDK
-    #define ME_COM_WINSDK 1
 #endif
 #ifndef ME_COM_ZLIB
     #define ME_COM_ZLIB 0

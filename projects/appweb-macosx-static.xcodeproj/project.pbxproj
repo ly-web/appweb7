@@ -627,113 +627,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		713AB3AC713AF76A000000C1 /* Frameworks and Libraries for appweb */ = {
-                isa = PBXFrameworksBuildPhase;
-                buildActionMask = 2147483647;
-                files = (
-    				713AB3AC713AF76A00000044 /* libappweb */,
-				713AB3AC713AF76A00000046 /* libesp */,
-				713AB3AC713AF76A00000048 /* libhttp */,
-				713AB3AC713AF76A0000004A /* libpcre */,
-				713AB3AC713AF76A0000004C /* libmpr */,				
-                );
-                runOnlyForDeploymentPostprocessing = 0;
-            };
-		713AB3AC713AF76A000000C2 /* Frameworks and Libraries for authpass */ = {
-                isa = PBXFrameworksBuildPhase;
-                buildActionMask = 2147483647;
-                files = (
-    				713AB3AC713AF76A0000004E /* libappweb */,
-				713AB3AC713AF76A0000004F /* libesp */,
-				713AB3AC713AF76A00000050 /* libhttp */,
-				713AB3AC713AF76A00000051 /* libpcre */,
-				713AB3AC713AF76A00000052 /* libmpr */,				
-                );
-                runOnlyForDeploymentPostprocessing = 0;
-            };
-		713AB3AC713AF76A000000C3 /* Frameworks and Libraries for espcmd */ = {
-                isa = PBXFrameworksBuildPhase;
-                buildActionMask = 2147483647;
-                files = (
-    				713AB3AC713AF76A00000053 /* libesp */,
-				713AB3AC713AF76A00000054 /* libhttp */,
-				713AB3AC713AF76A00000055 /* libpcre */,
-				713AB3AC713AF76A00000056 /* libmpr */,				
-                );
-                runOnlyForDeploymentPostprocessing = 0;
-            };
-		713AB3AC713AF76A000000C4 /* Frameworks and Libraries for httpcmd */ = {
-                isa = PBXFrameworksBuildPhase;
-                buildActionMask = 2147483647;
-                files = (
-    				713AB3AC713AF76A00000057 /* libhttp */,
-				713AB3AC713AF76A00000058 /* libpcre */,
-				713AB3AC713AF76A00000059 /* libmpr */,				
-                );
-                runOnlyForDeploymentPostprocessing = 0;
-            };
-		713AB3AC713AF76A000000C5 /* Frameworks and Libraries for libappweb */ = {
-                isa = PBXFrameworksBuildPhase;
-                buildActionMask = 2147483647;
-                files = (
-    				713AB3AC713AF76A0000005A /* libesp */,
-				713AB3AC713AF76A0000005B /* libhttp */,
-				713AB3AC713AF76A0000005C /* libpcre */,
-				713AB3AC713AF76A0000005D /* libmpr */,				
-                );
-                runOnlyForDeploymentPostprocessing = 0;
-            };
-		713AB3AC713AF76A000000C6 /* Frameworks and Libraries for libesp */ = {
-                isa = PBXFrameworksBuildPhase;
-                buildActionMask = 2147483647;
-                files = (
-    				713AB3AC713AF76A0000005E /* libhttp */,
-				713AB3AC713AF76A0000005F /* libpcre */,
-				713AB3AC713AF76A00000060 /* libmpr */,				
-                );
-                runOnlyForDeploymentPostprocessing = 0;
-            };
-		713AB3AC713AF76A000000C7 /* Frameworks and Libraries for libhttp */ = {
-                isa = PBXFrameworksBuildPhase;
-                buildActionMask = 2147483647;
-                files = (
-    				713AB3AC713AF76A00000061 /* libpcre */,
-				713AB3AC713AF76A00000062 /* libmpr */,				
-                );
-                runOnlyForDeploymentPostprocessing = 0;
-            };
-		713AB3AC713AF76A000000C8 /* Frameworks and Libraries for libmpr */ = {
-                isa = PBXFrameworksBuildPhase;
-                buildActionMask = 2147483647;
-                files = (
-    				
-                );
-                runOnlyForDeploymentPostprocessing = 0;
-            };
-		713AB3AC713AF76A000000C9 /* Frameworks and Libraries for libpcre */ = {
-                isa = PBXFrameworksBuildPhase;
-                buildActionMask = 2147483647;
-                files = (
-    				
-                );
-                runOnlyForDeploymentPostprocessing = 0;
-            };
-		713AB3AC713AF76A000000CA /* Frameworks and Libraries for openssl */ = {
-                isa = PBXFrameworksBuildPhase;
-                buildActionMask = 2147483647;
-                files = (
-    				
-                );
-                runOnlyForDeploymentPostprocessing = 0;
-            };
-		713AB3AC713AF76A000000CB /* Frameworks and Libraries for watchdog */ = {
-                isa = PBXFrameworksBuildPhase;
-                buildActionMask = 2147483647;
-                files = (
-    				713AB3AC713AF76A00000063 /* libmpr */,				
-                );
-                runOnlyForDeploymentPostprocessing = 0;
-            };
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -1715,16 +1608,32 @@ fi";
     ME_COM_OPENSSL_PATH = "";
 
                     /* Common Settings */
+                    COMBINE_HIDPI_IMAGES = YES;
     				ALWAYS_SEARCH_USER_PATHS = NO;
                     ONLY_ACTIVE_ARCH = YES;
                     CURRENT_PROJECT_VERSION = 5.4;
                     DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
                     DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
+
     				GCC_C_LANGUAGE_STANDARD = gnu99;
     				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
     				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+
+GCC_NO_COMMON_BLOCKS = YES;
+GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+GCC_WARN_UNDECLARED_SELECTOR = YES;
+CLANG_WARN_BOOL_CONVERSION = YES;
+CLANG_WARN_CONSTANT_CONVERSION = YES;
+CLANG_WARN_EMPTY_BODY = YES;
+CLANG_WARN_ENUM_CONVERSION = YES;
+CLANG_WARN_INT_CONVERSION = YES;
+CLANG_WARN_UNREACHABLE_CODE = YES;
+CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+ENABLE_STRICT_OBJC_MSGSEND = YES;
+ENABLE_TESTABILITY = YES;
+
                     LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
-    				MACOSX_DEPLOYMENT_TARGET = 10.7;
+    				MACOSX_DEPLOYMENT_TARGET = 10.10;
     				SDKROOT = macosx;
 
                     OUT_DIR = "../build/macosx-x64-static";
@@ -1785,16 +1694,32 @@ fi";
     ME_COM_OPENSSL_PATH = "";
 
                     /* Common Settings */
+                    COMBINE_HIDPI_IMAGES = YES;
     				ALWAYS_SEARCH_USER_PATHS = NO;
                     ONLY_ACTIVE_ARCH = YES;
                     CURRENT_PROJECT_VERSION = 5.4;
                     DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
                     DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
+
     				GCC_C_LANGUAGE_STANDARD = gnu99;
     				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
     				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+
+GCC_NO_COMMON_BLOCKS = YES;
+GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+GCC_WARN_UNDECLARED_SELECTOR = YES;
+CLANG_WARN_BOOL_CONVERSION = YES;
+CLANG_WARN_CONSTANT_CONVERSION = YES;
+CLANG_WARN_EMPTY_BODY = YES;
+CLANG_WARN_ENUM_CONVERSION = YES;
+CLANG_WARN_INT_CONVERSION = YES;
+CLANG_WARN_UNREACHABLE_CODE = YES;
+CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+ENABLE_STRICT_OBJC_MSGSEND = YES;
+ENABLE_TESTABILITY = YES;
+
                     LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
-    				MACOSX_DEPLOYMENT_TARGET = 10.7;
+    				MACOSX_DEPLOYMENT_TARGET = 10.10;
     				SDKROOT = macosx;
 
                     OUT_DIR = "../build/macosx-x64-static";
@@ -1988,7 +1913,7 @@ fi";
 		713AB3AC713AF76A00000124 /* Debug */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
-    				PRODUCT_NAME = esp;
+    				PRODUCT_NAME = appweb-esp;
     
     				HEADER_SEARCH_PATHS = (
 					"$(ME_COM_OPENSSL_PATH)/include",
@@ -2017,7 +1942,7 @@ fi";
     		713AB3AC713AF76A00000125 /* Release */ = {
     			isa = XCBuildConfiguration;
     			buildSettings = {
-    				PRODUCT_NAME = esp;
+    				PRODUCT_NAME = appweb-esp;
     
     				HEADER_SEARCH_PATHS = (
 					"$(ME_COM_OPENSSL_PATH)/include",
