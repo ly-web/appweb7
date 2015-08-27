@@ -1035,12 +1035,13 @@ typedef struct MprFreeQueue {
 #define MPR_MEM_WARNING             0x1         /**< Memory use exceeds warnHeap level limit */
 #define MPR_MEM_LIMIT               0x2         /**< Memory use exceeds memory limit - invoking policy */
 #define MPR_MEM_FAIL                0x4         /**< Memory allocation failed - immediate exit */
-#define MPR_MEM_TOO_BIG             0x4         /**< Memory allocation request is too big - immediate exit */
+#define MPR_MEM_TOO_BIG             0x8         /**< Memory allocation request is too big - immediate exit */
 
 /**
     Memory allocation error callback. Notifiers are called if a low memory condition exists.
     @param cause Set to the cause of the memory error. Set to #MPR_MEM_WARNING if the allocation will exceed the warnHeap
-        limit. Set to #MPR_MEM_LIMIT if it would exceed the maxHeap memory limit. Set to #MPR_MEM_FAIL if the allocation failed.
+        limit. Set to #MPR_MEM_LIMIT if it would exceed the maxHeap memory limit. Set to #MPR_MEM_FAIL if the
+        allocation failed.
         Set to #MPR_MEM_TOO_BIG if the allocation block size is too large.
         Allocations will be rejected for MPR_MEM_FAIL and MPR_MEM_TOO_BIG, otherwise the allocations will proceed and the
         memory notifier will be invoked.
@@ -9160,7 +9161,7 @@ PUBLIC int mprReapCmd(MprCmd *cmd, MprTicks timeout);
     @param input Command input. Data to write to the command which will be received on the comamnds stdin.
     @param output Reference to a string to receive the stdout from the command.
     @param error Reference to a string to receive the stderr from the command.
-    @param timeout Time in milliseconds to wait for the command to complete and exit.
+    @param timeout Time in milliseconds to wait for the command to complete and exit. Set to -1 to wait forever.
     @return Command exit status, or negative MPR error code.
     @ingroup MprCmd
     @stability Evolving
@@ -10445,9 +10446,9 @@ PUBLIC HWND mprGetHwnd();
     Get the windows application instance
     @return The application instance identifier
     @ingroup Mpr
-    @stability Stable.
+    @stability Evolving.
  */
-PUBLIC long mprGetInst();
+PUBLIC HINSTANCE mprGetInst();
 
 /**
     Set the MPR windows handle
@@ -10510,6 +10511,9 @@ PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value);
 #if VXWORKS
 PUBLIC int mprFindVxSym(SYMTAB_ID sid, char *name, char **pvalue);
 PUBLIC pid_t mprGetPid();
+#ifndef getpid
+    #define getpid mprGetPid
+#endif
 #endif
 
 /*

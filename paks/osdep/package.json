@@ -1,7 +1,7 @@
 {
     "name": "osdep",
     "description": "Embedthis O/S Dependent Layer",
-    "version": "0.8.7",
+    "version": "0.8.8",
     "keywords": [
         "osdep",
         "me"
@@ -32,8 +32,10 @@
         "dist/",
         "doc/api/"
     ],
+    "devDependencies": {
+        "pak": ">=0.11.3"
+    },
     "pak": {
-        "version": ">=0.10.0",
         "origin": "embedthis/osdep"
     }
 }

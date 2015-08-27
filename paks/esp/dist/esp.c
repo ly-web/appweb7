@@ -7,6 +7,7 @@
 /********************************* Includes ***********************************/
 
 #include    "esp.h"
+#include    "mpr-version.h"
 
 #if ME_COM_ESP || ME_ESP_PRODUCT
 /********************************** Locals ************************************/
@@ -45,13 +46,7 @@ typedef struct App {
     MprList     *files;                 /* List of files to process */
     MprHash     *build;                 /* Items to build */
     MprHash     *built;                 /* Items that have been built */
-#if DEPRECATED
-    MprList     *slink;                 /* List of items for static link */
-#endif
     MprHash     *targets;               /* Command line targets */
-#if UNUSED
-    MprHash     *topDeps;               /* Top level dependencies */
-#endif
     EdiGrid     *migrations;            /* Migrations table */
 
     cchar       *command;               /* Compilation or link command */
@@ -99,7 +94,7 @@ static int       nextMigration;         /* Sequence number for next migration */
 #define REQ_TARGETS     0x2             /* Require targets list */
 #define REQ_ROUTES      0x4             /* Require esp routes */
 #define REQ_CONFIG      0x8             /* Require esp.json, otherwise load only if present */
-#define REQ_NO_CONFIG   0x10            /* Never load esp.json */
+#define REQ_LISTEN      0x10            /* Explicit listening address supplied */
 #define REQ_SERVE       0x20            /* Will be running as a server */
 #define REQ_NAME        0x40            /* Set "name" */
 
@@ -145,7 +140,7 @@ static void generateMigration(int argc, char **argv);
 static char *getPassword();
 static void generateScaffold(int argc, char **argv);
 static void generateTable(int argc, char **argv);
-static cchar *getConfigValue(MprJson *config, cchar *key, cchar *defaultValue);
+static cchar *getJson(MprJson *config, cchar *key, cchar *defaultValue);
 static MprList *getRoutes();
 static MprHash *getTargets(int argc, char **argv);
 static cchar *getTemplate(cchar *key, MprHash *tokens);
@@ -227,9 +222,6 @@ static App *createApp(Mpr *mpr)
 #else
     mprLog("", 0, "No database provider defined");
 #endif
-#if UNUSED
-    app->topDeps = mprCreateHash(0, 0);
-#endif
     app->cipher = sclone("blowfish");
     return app;
 }
@@ -283,9 +275,6 @@ static void manageApp(App *app, int flags)
         mprMark(app->table);
         mprMark(app->targets);
         mprMark(app->title);
-#if UNUSED
-        mprMark(app->topDeps);
-#endif
         mprMark(app->traceSpec);
         mprMark(app->version);
     }
@@ -533,14 +522,14 @@ static void parseCommand(int argc, char **argv)
     } else if (smatch(cmd, "serve") || smatch(cmd, "run")) {
         app->require = REQ_SERVE;
         if (argc > 1) {
-            app->require = REQ_NO_CONFIG;
+            app->require = REQ_LISTEN;
         }
 
     } else if (smatch(cmd, "user")) {
         app->require = REQ_CONFIG;
 
     } else if (isdigit((uchar) *cmd)) {
-        app->require = REQ_NO_CONFIG | REQ_SERVE;
+        app->require = REQ_LISTEN | REQ_SERVE;
 
     } else if (cmd && *cmd) {
         fail("Unknown command \"%s\"", cmd);
@@ -608,7 +597,7 @@ static void initialize(int argc, char **argv)
 {
     HttpStage   *stage;
     HttpRoute   *route;
-    cchar       *path;
+    cchar       *criteria, *path;
 
     if (app->error) {
         return;
@@ -639,6 +628,10 @@ static void initialize(int argc, char **argv)
     if (!(app->require & REQ_SERVE)) {
         route->flags |= HTTP_ROUTE_NO_LISTEN;
     }
+    if (app->require & REQ_LISTEN) {
+        route->flags |= HTTP_ROUTE_OWN_LISTEN;
+    }
+
     /*
         Read package.json first so esp.json can override
      */
@@ -647,13 +640,18 @@ static void initialize(int argc, char **argv)
         if ((app->package = readConfig(path)) == 0) {
             return;
         }
-        app->paksDir = getConfigValue(app->package, "directories.paks", app->paksDir);
+        if ((criteria = getJson(app->package, "devDependencies.esp", 0)) != 0) {
+            if (!mprIsVersionAcceptable(ME_VERSION, criteria)) {
+                fail("ESP %s is not acceptable for this application which requires ESP %s", ME_VERSION, criteria);
+            }
+        }
+        app->paksDir = getJson(app->package, "directories.paks", app->paksDir);
     }
 
-    app->description = getConfigValue(app->package, "description", app->description);
-    app->name = getConfigValue(app->package, "name", app->name);
-    app->title = getConfigValue(app->package, "title", app->title);
-    app->version = getConfigValue(app->package, "version", app->version);
+    app->description = getJson(app->package, "description", app->description);
+    app->name = getJson(app->package, "name", app->name);
+    app->title = getJson(app->package, "title", app->title);
+    app->version = getJson(app->package, "version", app->version);
 
     path = mprJoinPath(route->home, "esp.json");
     if (mprPathExists(path, R_OK)) {
@@ -664,10 +662,10 @@ static void initialize(int argc, char **argv)
     /*
         Read name, title, description and version from esp.json - permits execution without package.json
      */
-    app->description = getConfigValue(app->config, "description", app->description);
-    app->name = getConfigValue(app->config, "name", app->name);
-    app->title = getConfigValue(app->config, "title", app->title);
-    app->version = getConfigValue(app->config, "version", app->version);
+    app->description = getJson(app->config, "description", app->description);
+    app->name = getJson(app->config, "name", app->name);
+    app->title = getJson(app->config, "title", app->title);
+    app->version = getJson(app->config, "version", app->version);
 
     if (!app->config) {
         app->config = mprParseJson(sfmt("{ name: '%s', title: '%s', description: '%s', version: '%s', \
@@ -742,7 +740,7 @@ static void initialize(int argc, char **argv)
         httpSetDir(route, "MIGRATIONS", path);
     } else {
         app->migDir = httpGetDir(route, "MIGRATIONS");
-        app->migDir = getConfigValue(app->package, "directories.migrations", app->migDir);
+        app->migDir = getJson(app->package, "directories.migrations", app->migDir);
     }
     mprGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
 }
@@ -785,7 +783,7 @@ static void process(int argc, char **argv)
 
     } else if (smatch(cmd, "mode")) {
         if (argc < 2) {
-            printf("%s\n", getConfigValue(app->package, "pak.mode", "undefined"));
+            printf("%s\n", getJson(app->package, "pak.mode", "undefined"));
         } else {
             setMode(argv[1]);
         }
@@ -887,7 +885,7 @@ static void generate(int argc, char **argv)
 }
 
 
-static cchar *getConfigValue(MprJson *config, cchar *key, cchar *defaultValue)
+static cchar *getJson(MprJson *config, cchar *key, cchar *defaultValue)
 {
     cchar       *value;
 
@@ -916,7 +914,7 @@ static void editValue(int argc, char **argv)
             setConfigValue(app->config, key, value);
             saveConfig(app->config, "esp.json", MPR_JSON_QUOTES);
         } else {
-            value = getConfigValue(app->config, key, 0);
+            value = getJson(app->config, key, 0);
             if (value) {
                 printf("%s\n", value);
             } else {
@@ -1290,6 +1288,10 @@ static void serve(int argc, char **argv)
             return;
         }
         httpAddHostToEndpoints(app->host);
+    }
+    if (mprGetListLength(HTTP->endpoints) == 0) {
+        fail("No configured listening endpoints");
+        return;
     }
     httpSetInfoLevel(1);
     if (httpStartEndpoints() < 0) {
@@ -2058,7 +2060,7 @@ static void compileCombined(HttpRoute *route)
 
 static void generateItem(cchar *item)
 {
-    if (getConfigValue(app->config, sfmt("esp.generate.%s", item), 0) == 0) {
+    if (getJson(app->config, sfmt("esp.generate.%s", item), 0) == 0) {
         fail("No suitable package installed to generate %s", item);
         return;
     }
@@ -2081,7 +2083,7 @@ static void generateController(int argc, char **argv)
         usageError();
         return;
     }
-    if (getConfigValue(app->config, "esp.generate.controller", 0) == 0) {
+    if (getJson(app->config, "esp.generate.controller", 0) == 0) {
         fail("No suitable package installed to generate controllers");
         return;
     }
@@ -2277,7 +2279,7 @@ static void generateScaffold(int argc, char **argv)
         usageError();
         return;
     }
-    if (getConfigValue(app->config, "esp.generate.controller", 0) == 0) {
+    if (getJson(app->config, "esp.generate.controller", 0) == 0) {
         fail("No suitable package installed to generate scaffolds");
         return;
     }
@@ -2456,7 +2458,7 @@ static cchar *getTemplate(cchar *key, MprHash *tokens)
 {
     cchar   *pattern;
 
-    if ((pattern = getConfigValue(app->config, sfmt("esp.generate.%s", key), 0)) != 0) {
+    if ((pattern = getJson(app->config, sfmt("esp.generate.%s", key), 0)) != 0) {
         if (mprPathExists(app->paksDir, X_OK)) {
             return readTemplate(mprJoinPath(app->paksDir, pattern), tokens, NULL);
         }
@@ -2507,7 +2509,7 @@ static void genKey(cchar *key, cchar *path, MprHash *tokens)
     if (app->error) {
         return;
     }
-    if ((pattern = getConfigValue(app->config, sfmt("esp.generate.%s", key), 0)) == 0) {
+    if ((pattern = getJson(app->config, sfmt("esp.generate.%s", key), 0)) == 0) {
         return;
     }
     if (!tokens) {
@@ -2600,11 +2602,7 @@ static void fail(cchar *fmt, ...)
 
     va_start(args, fmt);
     msg = sfmtv(fmt, args);
-#if UNUSED
-    mprLog("error esp", 0, "%s", msg);
-#else
     mprEprintf("%s\n", msg);
-#endif
     va_end(args);
     app->error = 1;
 }
@@ -2617,11 +2615,7 @@ static void fatal(cchar *fmt, ...)
 
     va_start(args, fmt);
     msg = sfmtv(fmt, args);
-#if UNUSED
-    mprLog("error esp", 0, "%s", msg);
-#else
     mprEprintf("%s\n", msg);
-#endif
     va_end(args);
     exit(2);
 }

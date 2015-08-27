@@ -319,6 +319,7 @@ PUBLIC void httpDestroy()
     }
     httpStopConnections(0);
     httpStopEndpoints();
+    httpSetDefaultHost(0);
 
     if (http->timer) {
         mprRemoveEvent(http->timer);
@@ -1655,9 +1656,15 @@ PUBLIC bool httpGetCredentials(HttpConn *conn, cchar **username, cchar **passwor
     *username = *password = NULL;
 
     auth = conn->rx->route->auth;
+    if (!auth || !auth->type) {
+        return 0;
+    }
     if (auth->type) {
         if (conn->authType && !smatch(conn->authType, auth->type->name)) {
-            return 0;
+            if (!(smatch(auth->type->name, "form") && conn->rx->flags & HTTP_POST)) {
+                /* If a posted form authentication, ignore any basic|digest details in request */
+                return 0;
+            }
         }
         if (auth->type->parseAuth && (auth->type->parseAuth)(conn, username, password) < 0) {
             return 0;
@@ -2637,18 +2644,14 @@ PUBLIC void httpAddCache(HttpRoute *route, cchar *methods, cchar *uris, cchar *e
     if (extensions) {
         cache->extensions = mprCreateHash(0, MPR_HASH_STABLE);
         for (item = stok(sclone(extensions), " \t,", &tok); item; item = stok(0, " \t,", &tok)) {
-            if (smatch(item, "*")) {
-                extensions = 0;
-            } else {
+            if (*item && !smatch(item, "*")) {
                 mprAddKey(cache->extensions, item, cache);
             }
         }
     } else if (types) {
         cache->types = mprCreateHash(0, MPR_HASH_STABLE);
         for (item = stok(sclone(types), " \t,", &tok); item; item = stok(0, " \t,", &tok)) {
-            if (smatch(item, "*")) {
-                extensions = 0;
-            } else {
+            if (*item && !smatch(item, "*")) {
                 mprAddKey(cache->types, item, cache);
             }
         }
@@ -3433,7 +3436,10 @@ PUBLIC HttpConn *httpRequest(cchar *method, cchar *uri, cchar *data, char **err)
     if (data) {
         len = slen(data);
         if (httpWriteBlock(conn->writeq, data, len, HTTP_BLOCK) != len) {
+            mprRemoveRoot(conn);
+            httpDestroyConn(conn);
             *err = sclone("Cannot write request body data");
+            return 0;
         }
     }
     httpFinalizeOutput(conn);
@@ -3929,6 +3935,11 @@ static void parseAliases(HttpRoute *route, cchar *key, MprJson *prop)
 }
 
 
+/*
+    Attach this host to an endpoint
+
+    attach: 'ip:port'
+ */
 static void parseAttach(HttpRoute *route, cchar *key, MprJson *prop)
 {
     HttpEndpoint    *endpoint;
@@ -4060,7 +4071,7 @@ static void parseAuthRoles(HttpRoute *route, cchar *key, MprJson *prop)
     int         ji;
 
     for (ITERATE_CONFIG(route, prop, child, ji)) {
-        if (httpAddRole(route->auth, child->name, getList(child)) < 0) {
+        if (httpAddRole(route->auth, child->name, getList(child)) == 0) {
             httpParseError(route, "Cannot add role %s", child->name);
             break;
         }
@@ -4281,6 +4292,9 @@ static void parseErrors(HttpRoute *route, cchar *key, MprJson *prop)
 static void parseFormatsResponse(HttpRoute *route, cchar *key, MprJson *prop)
 {
     route->responseFormat = prop->value;
+    if (smatch(route->responseFormat, "json")) {
+        route->json = 1;
+    }
 }
 
 
@@ -4599,6 +4613,9 @@ static void parseMethods(HttpRoute *route, cchar *key, MprJson *prop)
 }
 
 
+/*
+    Note: this typically comes from package.json. See blendMode
+ */
 static void parseMode(HttpRoute *route, cchar *key, MprJson *prop)
 {
     route->mode = prop->value;
@@ -4963,7 +4980,7 @@ static void parseServerListen(HttpRoute *route, cchar *key, MprJson *prop)
     char            *ip;
     int             ji, port, secure;
 
-    if (route->flags & HTTP_ROUTE_HOSTED) {
+    if (route->flags & (HTTP_ROUTE_HOSTED | HTTP_ROUTE_OWN_LISTEN)) {
         return;
     }
     host = route->host;
@@ -5060,6 +5077,14 @@ static void parseServerLog(HttpRoute *route, cchar *key, MprJson *prop)
 }
 
 
+/*
+    modules: [
+        {
+            name: 'espHandler',
+            path: '/path/to/module'
+        }
+    ]
+ */
 static void parseServerModules(HttpRoute *route, cchar *key, MprJson *prop)
 {
     MprModule   *module;
@@ -5102,13 +5127,16 @@ static void parseServerMonitors(HttpRoute *route, cchar *key, MprJson *prop)
     MprJson     *child;
     MprTicks    period;
     cchar       *counter, *expression, *limit, *relation, *defenses;
-    int         ji;
+    int         ji, enable;
 
     for (ITERATE_CONFIG(route, prop, child, ji)) {
         defenses = mprReadJson(child, "defenses");
         expression = mprReadJson(child, "expression");
         period = httpGetTicks(mprReadJson(child, "period"));
-
+        enable = smatch(mprReadJson(child, "enable"), "true");
+        if (!enable) {
+            continue;
+        }
         if (!httpTokenize(route, expression, "%S %S %S", &counter, &relation, &limit)) {
             httpParseError(route, "Cannot add monitor: %s", prop->name);
             break;
@@ -5544,11 +5572,11 @@ PUBLIC int httpInitParser()
     httpAddConfig("http.auth.users", parseAuthUsers);
     httpAddConfig("http.cache", parseCache);
     httpAddConfig("http.canonical", parseCanonicalName);
-    httpAddConfig("http.conditions", parseConditions);
     httpAddConfig("http.cgi", httpParseAll);
     httpAddConfig("http.cgi.escape", parseCgiEscape);
     httpAddConfig("http.cgi.prefix", parseCgiPrefix);
     httpAddConfig("http.compress", parseCompress);
+    httpAddConfig("http.conditions", parseConditions);
     httpAddConfig("http.database", parseDatabase);
     httpAddConfig("http.deleteUploads", parseDeleteUploads);
     httpAddConfig("http.directories", parseDirectories);
@@ -5623,8 +5651,8 @@ PUBLIC int httpInitParser()
     httpAddConfig("http.ssl.cache", parseSslCache);
     httpAddConfig("http.ssl.certificate", parseSslCertificate);
     httpAddConfig("http.ssl.ciphers", parseSslCiphers);
-    httpAddConfig("http.ssl.logLevel", parseSslLogLevel);
     httpAddConfig("http.ssl.key", parseSslKey);
+    httpAddConfig("http.ssl.logLevel", parseSslLogLevel);
     httpAddConfig("http.ssl.protocols", parseSslProtocols);
     httpAddConfig("http.ssl.renegotiate", parseSslRenegotiate);
     httpAddConfig("http.ssl.ticket", parseSslTicket);
@@ -6126,14 +6154,10 @@ static void readPeerData(HttpConn *conn)
                 conn->error = 1;
                 conn->rx->eof = 1;
             }
-            conn->errorMsg = conn->sock->errorMsg;
+            conn->errorMsg = conn->sock->errorMsg ? conn->sock->errorMsg : sclone("Connection reset");
             conn->keepAliveCount = 0;
             conn->lastRead = 0;
-            if (conn->errorMsg) {
-                httpTrace(conn, "connection.close", "context", "msg:'%s'", conn->errorMsg);
-            } else {
-                httpTrace(conn, "connection.close", "context", NULL);
-            }
+            httpTrace(conn, "connection.close", "context", "msg:'%s'", conn->errorMsg);
         }
     }
 }
@@ -6151,6 +6175,10 @@ PUBLIC void httpIO(HttpConn *conn, int eventMask)
     sp = conn->sock;
     if (conn->destroyed) {
         /* Connection has been destroyed */
+        return;
+    }
+    if (conn->state < HTTP_STATE_PARSED && mprShouldDenyNewRequests()) {
+        httpDestroyConn(conn);
         return;
     }
     assert(conn->tx);
@@ -8272,9 +8300,6 @@ static void errorRedirect(HttpConn *conn, cchar *uri)
 {
     HttpTx      *tx;
 
-    /*
-        If the response has started or it is an external redirect ... do a redirect
-     */
     tx = conn->tx;
     if (sstarts(uri, "http") || tx->flags & HTTP_TX_HEADERS_CREATED) {
         httpRedirect(conn, HTTP_CODE_MOVED_PERMANENTLY, uri);
@@ -8283,7 +8308,7 @@ static void errorRedirect(HttpConn *conn, cchar *uri)
             No response started and it is an internal redirect, so we can rerun the request.
             Set finalized to "cap" any output. processCompletion() in rx.c will rerun the request using the errorDocument.
          */
-        tx->errorDocument = httpLink(conn, uri);
+        tx->errorDocument = httpLinkAbs(conn, uri);
         tx->finalized = tx->finalizedOutput = tx->finalizedConnector = 1;
     }
 }
@@ -8650,8 +8675,7 @@ static void readyFileHandler(HttpQueue *q)
 
 
 /*  
-    Populate a packet with file data. Return the number of bytes read or a negative error code. Will not return with
-    a short read.
+    Populate a packet with file data. Return the number of bytes read or a negative error code. 
  */
 static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize size)
 {
@@ -8665,7 +8689,9 @@ static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize si
     if (packet->content == 0 && (packet->content = mprCreateBuf(size, -1)) == 0) {
         return MPR_ERR_MEMORY;
     }
-    assert(size <= mprGetBufSpace(packet->content));    
+    if (mprGetBufSpace(packet->content) < size) {
+        size = mprGetBufSpace(packet->content);
+    }
     if (pos >= 0) {
         mprSeekFile(tx->file, SEEK_SET, pos);
     }
@@ -8716,7 +8742,7 @@ static int prepPacket(HttpQueue *q, HttpPacket *packet)
         }
         return 0;
     }
-    if ((nbytes = readFileData(q, packet, q->ioPos, size)) != size) {
+    if ((nbytes = readFileData(q, packet, q->ioPos, size)) < 0) {
         return MPR_ERR_CANT_READ;
     }
     q->ioPos += nbytes;
@@ -9205,7 +9231,7 @@ static void printRoute(HttpRoute *route, int idx, bool full, int methodsLen, int
             }
         }
     } else {
-        printf("%-*s %-*s %-*s\n", patternLen, pattern, methodsLen, methods ? methods : "*", targetLen, target);
+        printf("%-*s %-*s %-*s\n", patternLen, pattern, methodsLen, methods, targetLen, target);
     }
 }
 
@@ -9819,6 +9845,7 @@ PUBLIC int64 httpMonitorEvent(HttpConn *conn, int counterIndex, int64 adj)
                 mprSetManager(address, (MprManager) manageAddress);
             }
             if (!address) {
+                unlock(http->addresses);
                 return 0;
             }
             address->ncounters = ncounters;
@@ -12775,6 +12802,7 @@ PUBLIC HttpRoute *httpCreateInheritedRoute(HttpRoute *parent)
     route->http = HTTP;
     route->indexes = parent->indexes;
     route->inputStages = parent->inputStages;
+    route->json = parent->json;
     route->keepSource = parent->keepSource;
     route->languages = parent->languages;
     route->lifespan = parent->lifespan;
@@ -14538,6 +14566,11 @@ PUBLIC void httpFinalizeRoute(HttpRoute *route)
     if (mprGetListLength(route->indexes) == 0) {
         mprAddItem(route->indexes,  sclone("index.html"));
     }
+#if UNUSED
+    if (!mprLookupKey(route->extensions, "")) {
+        httpAddRouteHandler(route, "fileHandler", "");
+    }
+#endif
     httpAddRoute(route->host, route);
 }
 
@@ -19021,6 +19054,7 @@ static void manageTrace(HttpTrace *trace, int flags)
         mprMark(trace->path);
         mprMark(trace->events);
         mprMark(trace->mutex);
+        mprMark(trace->parent);
     }
 }
 
@@ -21894,7 +21928,7 @@ PUBLIC char *httpFormatUri(cchar *scheme, cchar *host, int port, cchar *path, cc
     } else {
         queryDelim = query = "";
     }
-    if (portDelim) {
+    if (*portDelim) {
         uri = sjoin(scheme, hostDelim, host, portDelim, portStr, pathDelim, path, referenceDelim, reference, 
             queryDelim, query, NULL);
     } else {

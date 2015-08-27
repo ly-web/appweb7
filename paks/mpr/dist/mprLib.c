@@ -1192,7 +1192,7 @@ static void markAndSweep()
     static int warnOnce = 0;
 
     if (!pauseThreads()) {
-        if (!pauseGC && warnOnce == 0 && !mprGetDebugMode()) {
+        if (!pauseGC && warnOnce == 0 && !mprGetDebugMode() && !mprIsStopping()) {
             warnOnce++;
             mprLog("error mpr memory", 6, "GC synchronization timed out, some threads did not yield.");
             mprLog("error mpr memory", 6, "This can be caused by a thread doing a long running operation and not first calling mprYield.");
@@ -1603,8 +1603,10 @@ static void relayInside(void *data, struct MprEvent *event)
     OutsideEvent    *op;
 
     op = data;
-    mprResumeGC();
 
+    if (event->flags & MPR_EVENT_BLOCK) {
+        mprResumeGC();
+    }
     /*
         GC is now enabled, but shutdown is paused because this thread means !idle
         However, normal graceful shutdown timeouts apply and this is now just an ordinary event.
@@ -1649,7 +1651,7 @@ PUBLIC int mprCreateEventOutside(MprDispatcher *dispatcher, cchar *name, void *p
         mprNap(0);
         mprAtomicBarrier();
     }
-    if ((op = mprAlloc(sizeof(OutsideEvent))) == 0) {
+    if ((op = mprAllocZeroed(sizeof(OutsideEvent))) == 0) {
         return MPR_ERR_MEMORY;
     }
     op->proc = proc;
@@ -6798,10 +6800,10 @@ static int startProcess(MprCmd *cmd)
     }
     if (cmd->flags & MPR_CMD_OUT) {
         if (cmd->files[MPR_CMD_STDOUT].clientFd > 0) {
-            startInfo.hStdOutput = (HANDLE)_get_osfhandle(cmd->files[MPR_CMD_STDOUT].clientFd);
+            startInfo.hStdOutput = (HANDLE) _get_osfhandle(cmd->files[MPR_CMD_STDOUT].clientFd);
         }
     } else {
-        startInfo.hStdOutput = (HANDLE)_get_osfhandle((int) fileno(stdout));
+        startInfo.hStdOutput = (HANDLE) _get_osfhandle((int) fileno(stdout));
     }
     if (cmd->flags & MPR_CMD_ERR) {
         if (cmd->files[MPR_CMD_STDERR].clientFd > 0) {
@@ -6869,11 +6871,11 @@ static int makeChannel(MprCmd *cmd, int index)
         mprLog("error mpr cmd", 0, "Cannot create stdio pipes %s. Err %d", pipeName, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
-    readFd = (int) (int64) _open_osfhandle((long) readHandle, 0);
+    readFd = _open_osfhandle((intptr_t) readHandle, 0);
 
     att = (index == MPR_CMD_STDIN) ? &serverAtt: &clientAtt;
     writeHandle = CreateFile(wide(pipeName), GENERIC_WRITE, 0, att, OPEN_EXISTING, openMode, 0);
-    writeFd = (int) _open_osfhandle((long) writeHandle, 0);
+    writeFd = _open_osfhandle((intptr_t) writeHandle, 0);
 
     if (readFd < 0 || writeFd < 0) {
         mprLog("error mpr cmd", 0, "Cannot create stdio pipes %s. Err %d", pipeName, mprGetOsError());
@@ -18231,10 +18233,12 @@ static MprList *getDirFiles(cchar *path)
         fileInfo.isDir = 0;
         rc = mprGetPathInfo(fileName, &fileInfo);
         if ((dp = mprAllocObj(MprDirEntry, manageDirEntry)) == 0) {
+            closedir(dir);
             return list;
         }
         dp->name = sclone(dirent->d_name);
         if (dp->name == 0) {
+            closedir(dir);
             return list;
         }
         if (rc == 0 || fileInfo.isLink) {
@@ -19561,10 +19565,12 @@ PUBLIC char *mprSearchPath(cchar *file, int flags, cchar *search, ...)
         while (dir && *dir) {
             path = mprJoinPath(dir, file);
             if ((result = checkPath(path, flags)) != 0) {
+                va_end(args);
                 return mprNormalizePath(result);
             }
             if ((flags & MPR_SEARCH_EXE) && *ME_EXE) {
                 if ((result = checkPath(mprJoinPathExt(path, ME_EXE), flags)) != 0) {
+                    va_end(args);
                     return mprNormalizePath(result);
                 }
             }
@@ -19786,6 +19792,7 @@ PUBLIC int mprGetRandomBytes(char *buf, ssize length, bool block)
         rc = read(fd, &buf[sofar], length);
         if (rc < 0) {
             assert(0);
+            close(fd);
             return MPR_ERR_CANT_READ;
         }
         length -= rc;
@@ -24079,7 +24086,7 @@ PUBLIC char *itosbuf(char *buf, ssize size, int64 value, int radix)
     }
     if (buf < cp) {
         /* Move the null too */
-        memmove(buf, cp, end - cp + 1);
+        memmove(buf, cp, end - cp);
     }
     return buf;
 }
@@ -24109,9 +24116,7 @@ PUBLIC char *scamel(cchar *str)
  */
 PUBLIC int scaselesscmp(cchar *s1, cchar *s2)
 {
-    if (s1 == 0 || s2 == 0) {
-        return -1;
-    } else if (s1 == 0) {
+    if (s1 == 0) {
         return -1;
     } else if (s2 == 0) {
         return 1;
@@ -24149,7 +24154,7 @@ PUBLIC char *sncontains(cchar *str, cchar *pattern, ssize limit)
     if (pattern == 0 || *pattern == '\0') {
         return 0;
     }
-    for (cp = str; *cp && limit > 0; cp++, limit--) {
+    for (cp = str; limit > 0 && *cp; cp++, limit--) {
         s1 = cp;
         s2 = pattern;
         for (lim = limit; *s1 && *s2 && (*s1 == *s2) && lim > 0; lim--) {
@@ -24329,6 +24334,7 @@ PUBLIC char *sjoinv(cchar *buf, va_list args)
         str = va_arg(ap, char*);
     }
     if ((dest = mprAlloc(required)) == 0) {
+        va_end(ap);
         return 0;
     }
     dp = dest;
@@ -24344,6 +24350,7 @@ PUBLIC char *sjoinv(cchar *buf, va_list args)
         str = va_arg(ap, char*);
     }
     *dp = '\0';
+    va_end(ap);
     return dest;
 }
 
@@ -24386,9 +24393,7 @@ PUBLIC int sncaselesscmp(cchar *s1, cchar *s2, ssize n)
 
     assert(0 <= n && n < MAXINT);
 
-    if (s1 == 0 || s2 == 0) {
-        return -1;
-    } else if (s1 == 0) {
+    if (s1 == 0) {
         return -1;
     } else if (s2 == 0) {
         return 1;
@@ -24637,6 +24642,7 @@ PUBLIC char *srejoinv(char *buf, va_list args)
         str = va_arg(ap, char*);
     }
     if ((dest = mprRealloc(buf, required)) == 0) {
+        va_end(ap);
         return 0;
     }
     dp = &dest[len];
@@ -24648,6 +24654,7 @@ PUBLIC char *srejoinv(char *buf, va_list args)
         str = va_arg(ap, char*);
     }
     *dp = '\0';
+    va_end(ap);
     return dest;
 }
 
@@ -29807,9 +29814,9 @@ PUBLIC void mprStopOsService()
 }
 
 
-PUBLIC long mprGetInst()
+PUBLIC HINSTANCE mprGetInst()
 {
-    return (long) MPR->appInstance;
+    return MPR->appInstance;
 }
 
 

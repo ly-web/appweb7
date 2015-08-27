@@ -1035,7 +1035,7 @@ typedef struct MprFreeQueue {
 #define MPR_MEM_WARNING             0x1         /**< Memory use exceeds warnHeap level limit */
 #define MPR_MEM_LIMIT               0x2         /**< Memory use exceeds memory limit - invoking policy */
 #define MPR_MEM_FAIL                0x4         /**< Memory allocation failed - immediate exit */
-#define MPR_MEM_TOO_BIG             0x4         /**< Memory allocation request is too big - immediate exit */
+#define MPR_MEM_TOO_BIG             0x8         /**< Memory allocation request is too big - immediate exit */
 
 /**
     Memory allocation error callback. Notifiers are called if a low memory condition exists.

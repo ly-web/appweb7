@@ -1631,7 +1631,7 @@ PUBLIC char *httpLink(struct HttpConn *conn, cchar *target);
     Create an absolute link that includes scheme and host
     @param conn HttpConn connection object
     @param target 
-    @param target The URI target. See $httpLink for details of the target parameter.
+    @param target The URI target. See #httpLink for details of the target parameter.
     @return A normalized Uri string.
     @ingroup HttpUri
     @stability Prototype
@@ -4449,6 +4449,7 @@ PUBLIC void httpSetStreaming(struct HttpHost *host, cchar *mime, cchar *uri, boo
 #define HTTP_ROUTE_HOSTED               0x10000     /**< Route being hosted (appweb) */
 #define HTTP_ROUTE_NO_LISTEN            0x20000     /**< Not listening on endpoints */
 #define HTTP_ROUTE_PERSIST_COOKIE       0x40000     /**< Persist session cookie to disk */
+#define HTTP_ROUTE_OWN_LISTEN           0x80000     /**< Override listening endpoints */
 
 #if DEPRECATED || 1
 #define HTTP_ROUTE_SET_DEFINED          0x10000     /**< Route set defined */
@@ -4505,13 +4506,14 @@ typedef struct HttpRoute {
 
     cchar           *database;              /**< Name of database for route */
     cchar           *responseFormat;        /**< Client response format */
-    cchar           *clientConfig;         /**< Configuration to send to the client */
+    cchar           *clientConfig;          /**< Configuration to send to the client */
 
     bool            error: 1;               /**< Parse or runtime error */
     bool            keepSource: 1;          /**< Preserve generated source */
     bool            update: 1;              /**< Auto-update modified ESP source */
     bool            debug: 1;               /**< Application running in debug mode */
     bool            ignoreEncodingErrors: 1;/**< Ignore UTF8 encoding errors */
+    bool            json: 1;                /**< Response format is json */
 
     MprList         *caching;               /**< Items to cache */
     MprTicks        lifespan;               /**< Default lifespan for all cache items in route */
@@ -5172,7 +5174,7 @@ PUBLIC cchar *httpGetRouteMethods(HttpRoute *route);
 /**
     Get a URL path to the top of the route from the current request (rx->pathInfo)
     @param conn Current connection object
-    @return A relative URL path to the top of the route.
+    @return A relative URL path to the top of the route. This URL does not contain a trailing "/"
     @ingroup HttpRoute
     @stability Prototype
  */
