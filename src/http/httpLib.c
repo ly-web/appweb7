@@ -4292,6 +4292,9 @@ static void parseErrors(HttpRoute *route, cchar *key, MprJson *prop)
 static void parseFormatsResponse(HttpRoute *route, cchar *key, MprJson *prop)
 {
     route->responseFormat = prop->value;
+    if (smatch(route->responseFormat, "json")) {
+        route->json = 1;
+    }
 }
 
 
@@ -12794,6 +12797,7 @@ PUBLIC HttpRoute *httpCreateInheritedRoute(HttpRoute *parent)
     route->http = HTTP;
     route->indexes = parent->indexes;
     route->inputStages = parent->inputStages;
+    route->json = parent->json;
     route->keepSource = parent->keepSource;
     route->languages = parent->languages;
     route->lifespan = parent->lifespan;
