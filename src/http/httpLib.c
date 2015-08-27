@@ -3436,7 +3436,10 @@ PUBLIC HttpConn *httpRequest(cchar *method, cchar *uri, cchar *data, char **err)
     if (data) {
         len = slen(data);
         if (httpWriteBlock(conn->writeq, data, len, HTTP_BLOCK) != len) {
+            mprRemoveRoot(conn);
+            httpDestroyConn(conn);
             *err = sclone("Cannot write request body data");
+            return 0;
         }
     }
     httpFinalizeOutput(conn);
