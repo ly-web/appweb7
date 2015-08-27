@@ -9834,6 +9834,7 @@ PUBLIC int64 httpMonitorEvent(HttpConn *conn, int counterIndex, int64 adj)
                 mprSetManager(address, (MprManager) manageAddress);
             }
             if (!address) {
+                unlock(http->addresses);
                 return 0;
             }
             address->ncounters = ncounters;
