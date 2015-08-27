@@ -487,7 +487,9 @@
             /**
                 Boolean data type.
              */
-            typedef char bool;
+            #if _MSC_VER <= 1800
+                typedef char bool;
+            #endif
         #endif
     #endif
 #endif
@@ -1042,7 +1044,6 @@ typedef int64 Ticks;
 #endif
 
 #if VXWORKS
-    #define getpid mprGetPid
     #ifndef SHUT_RDWR
         #define SHUT_RDWR 2
     #endif
