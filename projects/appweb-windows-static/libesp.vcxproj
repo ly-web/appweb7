@@ -115,7 +115,7 @@
         
 
       <Link>
-        <AdditionalDependencies>libhttp.lib;libpcre.lib;libmpr.lib;%(AdditionalDependencies)</AdditionalDependencies>
+        <AdditionalDependencies>libmpr-version.lib;libhttp.lib;libpcre.lib;libmpr.lib;%(AdditionalDependencies)</AdditionalDependencies>
         <AdditionalLibraryDirectories>$(OutDir);build\$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       </Link>
 
@@ -130,6 +130,13 @@ cd ..\..\projects\appweb-windows-static</Command>
     <ItemGroup>
       <ProjectReference Include="libhttp.vcxproj">
       <Project>f7ad181f-3b67-440b-a2f7-2a4ceb2d42bf</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      </ProjectReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="libmpr-version.vcxproj">
+      <Project>192009c5-29ac-4c38-8aa3-1a128b1ecbcd</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       </ProjectReference>
     </ItemGroup>

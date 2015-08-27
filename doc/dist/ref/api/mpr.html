@@ -1558,7 +1558,7 @@
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Memory use exceeds memory limit - invoking policy.</td></tr>
 <tr class="apiDef">
-<td>#define</td><td><a href="#mpr_8h_1a4fcb58aae6632033517d940deb1c3f2a" class="nameRef">MPR_MEM_TOO_BIG</a>&nbsp;&nbsp;&nbsp;0x4</td>
+<td>#define</td><td><a href="#mpr_8h_1a4fcb58aae6632033517d940deb1c3f2a" class="nameRef">MPR_MEM_TOO_BIG</a>&nbsp;&nbsp;&nbsp;0x8</td>
 </tr>
 <tr class="apiBrief"><td>&nbsp;</td><td>Memory allocation request is too big - immediate exit.</td></tr>
 <tr class="apiDef">
@@ -5090,7 +5090,7 @@ This waits for and collect the command exit status
     <tr><td class="param">input</td><td>Command input. Data to write to the command which will be received on the comamnds stdin.</td>
     <tr><td class="param">output</td><td>Reference to a string to receive the stdout from the command.</td>
     <tr><td class="param">error</td><td>Reference to a string to receive the stderr from the command.</td>
-    <tr><td class="param">timeout</td><td>Time in milliseconds to wait for the command to complete and exit.</td>
+    <tr><td class="param">timeout</td><td>Time in milliseconds to wait for the command to complete and exit. Set to -1 to wait forever.</td>
     </table></dd></dl>
     <dl><dt>Returns:</dt><dd>Command exit status, or negative MPR error code.</dd></dl>
     <dl><dt><b>API</b> Stability:</dt><dd>Evolving.</dd></dl>
