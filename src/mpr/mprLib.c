@@ -24116,9 +24116,7 @@ PUBLIC char *scamel(cchar *str)
  */
 PUBLIC int scaselesscmp(cchar *s1, cchar *s2)
 {
-    if (s1 == 0 || s2 == 0) {
-        return -1;
-    } else if (s1 == 0) {
+    if (s1 == 0) {
         return -1;
     } else if (s2 == 0) {
         return 1;
