@@ -21918,7 +21918,7 @@ PUBLIC char *httpFormatUri(cchar *scheme, cchar *host, int port, cchar *path, cc
     } else {
         queryDelim = query = "";
     }
-    if (portDelim) {
+    if (*portDelim) {
         uri = sjoin(scheme, hostDelim, host, portDelim, portStr, pathDelim, path, referenceDelim, reference, 
             queryDelim, query, NULL);
     } else {
