@@ -2644,18 +2644,14 @@ PUBLIC void httpAddCache(HttpRoute *route, cchar *methods, cchar *uris, cchar *e
     if (extensions) {
         cache->extensions = mprCreateHash(0, MPR_HASH_STABLE);
         for (item = stok(sclone(extensions), " \t,", &tok); item; item = stok(0, " \t,", &tok)) {
-            if (smatch(item, "*")) {
-                extensions = 0;
-            } else {
+            if (*item && !smatch(item, "*")) {
                 mprAddKey(cache->extensions, item, cache);
             }
         }
     } else if (types) {
         cache->types = mprCreateHash(0, MPR_HASH_STABLE);
         for (item = stok(sclone(types), " \t,", &tok); item; item = stok(0, " \t,", &tok)) {
-            if (smatch(item, "*")) {
-                extensions = 0;
-            } else {
+            if (*item && !smatch(item, "*")) {
                 mprAddKey(cache->types, item, cache);
             }
         }
@@ -5567,11 +5563,11 @@ PUBLIC int httpInitParser()
     httpAddConfig("http.auth.users", parseAuthUsers);
     httpAddConfig("http.cache", parseCache);
     httpAddConfig("http.canonical", parseCanonicalName);
-    httpAddConfig("http.conditions", parseConditions);
     httpAddConfig("http.cgi", httpParseAll);
     httpAddConfig("http.cgi.escape", parseCgiEscape);
     httpAddConfig("http.cgi.prefix", parseCgiPrefix);
     httpAddConfig("http.compress", parseCompress);
+    httpAddConfig("http.conditions", parseConditions);
     httpAddConfig("http.database", parseDatabase);
     httpAddConfig("http.deleteUploads", parseDeleteUploads);
     httpAddConfig("http.directories", parseDirectories);
@@ -5646,8 +5642,8 @@ PUBLIC int httpInitParser()
     httpAddConfig("http.ssl.cache", parseSslCache);
     httpAddConfig("http.ssl.certificate", parseSslCertificate);
     httpAddConfig("http.ssl.ciphers", parseSslCiphers);
-    httpAddConfig("http.ssl.logLevel", parseSslLogLevel);
     httpAddConfig("http.ssl.key", parseSslKey);
+    httpAddConfig("http.ssl.logLevel", parseSslLogLevel);
     httpAddConfig("http.ssl.protocols", parseSslProtocols);
     httpAddConfig("http.ssl.renegotiate", parseSslRenegotiate);
     httpAddConfig("http.ssl.ticket", parseSslTicket);
@@ -9224,7 +9220,7 @@ static void printRoute(HttpRoute *route, int idx, bool full, int methodsLen, int
             }
         }
     } else {
-        printf("%-*s %-*s %-*s\n", patternLen, pattern, methodsLen, methods ? methods : "*", targetLen, target);
+        printf("%-*s %-*s %-*s\n", patternLen, pattern, methodsLen, methods, targetLen, target);
     }
 }
 
