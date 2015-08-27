@@ -4071,7 +4071,7 @@ static void parseAuthRoles(HttpRoute *route, cchar *key, MprJson *prop)
     int         ji;
 
     for (ITERATE_CONFIG(route, prop, child, ji)) {
-        if (httpAddRole(route->auth, child->name, getList(child)) < 0) {
+        if (httpAddRole(route->auth, child->name, getList(child)) == 0) {
             httpParseError(route, "Cannot add role %s", child->name);
             break;
         }
@@ -8734,7 +8734,7 @@ static int prepPacket(HttpQueue *q, HttpPacket *packet)
         }
         return 0;
     }
-    if ((nbytes = readFileData(q, packet, q->ioPos, size)) != size) {
+    if ((nbytes = readFileData(q, packet, q->ioPos, size)) < 0) {
         return MPR_ERR_CANT_READ;
     }
     q->ioPos += nbytes;
