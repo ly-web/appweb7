@@ -5127,13 +5127,16 @@ static void parseServerMonitors(HttpRoute *route, cchar *key, MprJson *prop)
     MprJson     *child;
     MprTicks    period;
     cchar       *counter, *expression, *limit, *relation, *defenses;
-    int         ji;
+    int         ji, enable;
 
     for (ITERATE_CONFIG(route, prop, child, ji)) {
         defenses = mprReadJson(child, "defenses");
         expression = mprReadJson(child, "expression");
         period = httpGetTicks(mprReadJson(child, "period"));
-
+        enable = smatch(mprReadJson(child, "enable"), "true");
+        if (!enable) {
+            continue;
+        }
         if (!httpTokenize(route, expression, "%S %S %S", &counter, &relation, &limit)) {
             httpParseError(route, "Cannot add monitor: %s", prop->name);
             break;
