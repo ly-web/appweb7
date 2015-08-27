@@ -3929,6 +3929,11 @@ static void parseAliases(HttpRoute *route, cchar *key, MprJson *prop)
 }
 
 
+/*
+    Attach this host to an endpoint
+
+    attach: 'ip:port'
+ */
 static void parseAttach(HttpRoute *route, cchar *key, MprJson *prop)
 {
     HttpEndpoint    *endpoint;
@@ -4599,6 +4604,9 @@ static void parseMethods(HttpRoute *route, cchar *key, MprJson *prop)
 }
 
 
+/*
+    Note: this typically comes from package.json. See blendMode
+ */
 static void parseMode(HttpRoute *route, cchar *key, MprJson *prop)
 {
     route->mode = prop->value;
@@ -5060,6 +5068,14 @@ static void parseServerLog(HttpRoute *route, cchar *key, MprJson *prop)
 }
 
 
+/*
+    modules: [
+        {
+            name: 'espHandler',
+            path: '/path/to/module'
+        }
+    ]
+ */
 static void parseServerModules(HttpRoute *route, cchar *key, MprJson *prop)
 {
     MprModule   *module;
@@ -8272,9 +8288,6 @@ static void errorRedirect(HttpConn *conn, cchar *uri)
 {
     HttpTx      *tx;
 
-    /*
-        If the response has started or it is an external redirect ... do a redirect
-     */
     tx = conn->tx;
     if (sstarts(uri, "http") || tx->flags & HTTP_TX_HEADERS_CREATED) {
         httpRedirect(conn, HTTP_CODE_MOVED_PERMANENTLY, uri);
@@ -8650,8 +8663,7 @@ static void readyFileHandler(HttpQueue *q)
 
 
 /*  
-    Populate a packet with file data. Return the number of bytes read or a negative error code. Will not return with
-    a short read.
+    Populate a packet with file data. Return the number of bytes read or a negative error code. 
  */
 static ssize readFileData(HttpQueue *q, HttpPacket *packet, MprOff pos, ssize size)
 {
@@ -14538,6 +14550,11 @@ PUBLIC void httpFinalizeRoute(HttpRoute *route)
     if (mprGetListLength(route->indexes) == 0) {
         mprAddItem(route->indexes,  sclone("index.html"));
     }
+#if UNUSED
+    if (!mprLookupKey(route->extensions, "")) {
+        httpAddRouteHandler(route, "fileHandler", "");
+    }
+#endif
     httpAddRoute(route->host, route);
 }
 

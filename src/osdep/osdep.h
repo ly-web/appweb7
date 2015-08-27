@@ -280,6 +280,8 @@
     #endif
     /* 
         Work-around to allow the windows 7.* SDK to be used with VS 2012 
+        MSC_VER 1800 2013
+        MSC_VER 1900 2015
      */
     #if _MSC_VER >= 1700
         #define SAL_SUPP_H

@@ -1631,7 +1631,7 @@ PUBLIC char *httpLink(struct HttpConn *conn, cchar *target);
     Create an absolute link that includes scheme and host
     @param conn HttpConn connection object
     @param target 
-    @param target The URI target. See $httpLink for details of the target parameter.
+    @param target The URI target. See #httpLink for details of the target parameter.
     @return A normalized Uri string.
     @ingroup HttpUri
     @stability Prototype
@@ -5172,7 +5172,7 @@ PUBLIC cchar *httpGetRouteMethods(HttpRoute *route);
 /**
     Get a URL path to the top of the route from the current request (rx->pathInfo)
     @param conn Current connection object
-    @return A relative URL path to the top of the route.
+    @return A relative URL path to the top of the route. This URL does not contain a trailing "/"
     @ingroup HttpRoute
     @stability Prototype
  */
