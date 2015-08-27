@@ -1663,8 +1663,8 @@ PUBLIC bool httpGetCredentials(HttpConn *conn, cchar **username, cchar **passwor
         if (conn->authType && !smatch(conn->authType, auth->type->name)) {
             if (!(smatch(auth->type->name, "form") && conn->rx->flags & HTTP_POST)) {
                 /* If a posted form authentication, ignore any basic|digest details in request */
-            return 0;
-        }
+                return 0;
+            }
         }
         if (auth->type->parseAuth && (auth->type->parseAuth)(conn, username, password) < 0) {
             return 0;
@@ -4980,7 +4980,7 @@ static void parseServerListen(HttpRoute *route, cchar *key, MprJson *prop)
     char            *ip;
     int             ji, port, secure;
 
-    if (route->flags & HTTP_ROUTE_HOSTED) {
+    if (route->flags & (HTTP_ROUTE_HOSTED | HTTP_ROUTE_OWN_LISTEN)) {
         return;
     }
     host = route->host;
@@ -6157,7 +6157,7 @@ static void readPeerData(HttpConn *conn)
             conn->errorMsg = conn->sock->errorMsg ? conn->sock->errorMsg : sclone("Connection reset");
             conn->keepAliveCount = 0;
             conn->lastRead = 0;
-                httpTrace(conn, "connection.close", "context", "msg:'%s'", conn->errorMsg);
+            httpTrace(conn, "connection.close", "context", "msg:'%s'", conn->errorMsg);
         }
     }
 }
