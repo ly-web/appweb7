@@ -6178,6 +6178,10 @@ PUBLIC void httpIO(HttpConn *conn, int eventMask)
         /* Connection has been destroyed */
         return;
     }
+    if (conn->state < HTTP_STATE_PARSED && mprShouldDenyNewRequests()) {
+        httpDestroyConn(conn);
+        return;
+    }
     assert(conn->tx);
     assert(conn->rx);
 
