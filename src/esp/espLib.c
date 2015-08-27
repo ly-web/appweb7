@@ -1715,6 +1715,7 @@ PUBLIC bool feedback(cchar *kind, cchar *fmt, ...)
     va_start(args, fmt);
     espSetFeedbackv(getConn(), kind, fmt, args);
     va_end(args);
+
     /*
         Return true if there is not an error feedback message
      */
@@ -1728,14 +1729,16 @@ PUBLIC void finalize()
 }
 
 
+#if DEPRECATED || 1
 PUBLIC void flash(cchar *kind, cchar *fmt, ...)
 {
     va_list     args;
 
     va_start(args, fmt);
-    espSetFlashv(getConn(), kind, fmt, args);
+    espSetFeedbackv(getConn(), kind, fmt, args);
     va_end(args);
 }
+#endif
 
 
 PUBLIC void flush()
@@ -1830,12 +1833,6 @@ PUBLIC EspRoute *getEspRoute()
 PUBLIC cchar *getFeedback(cchar *kind)
 {
     return espGetFeedback(getConn(), kind);
-}
-
-
-PUBLIC cchar *getFlash(cchar *kind)
-{
-    return espGetFlash(getConn(), kind);
 }
 
 
@@ -2156,9 +2153,9 @@ PUBLIC ssize renderFile(cchar *path)
 }
 
 
-PUBLIC void renderFlash(cchar *kind)
+PUBLIC void renderFeedback(cchar *kind)
 {
-    espRenderFlash(getConn(), kind);
+    espRenderFeedback(getConn(), kind);
 }
 
 
@@ -2479,11 +2476,7 @@ PUBLIC void stylesheets(cchar *patterns)
         }
         for (ITERATE_ITEMS(files, path, next)) {
             path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
-#if UNUSED
-            uri = httpUriToString(httpGetRelativeUri(rx->parsedUri, httpLinkUri(conn, path, 0), 0), 0);
-#else
             uri = httpLink(conn, path);
-#endif
             kind = mprGetPathExt(path);
             if (smatch(kind, "css")) {
                 espRender(conn, "<link rel='stylesheet' type='text/css' href='%s' />\n", uri);
@@ -2537,9 +2530,6 @@ PUBLIC void scripts(cchar *patterns)
         }
         return;
     }
-#if FUTURE
-    client => public
-#endif
     if ((files = mprGlobPathFiles(httpGetDir(route, "client"), patterns, MPR_PATH_RELATIVE)) == 0 || 
             mprGetListLength(files) == 0) {
         files = mprCreateList(0, 0);
@@ -2550,11 +2540,7 @@ PUBLIC void scripts(cchar *patterns)
             path = stemplateJson(path, route->config);
         }
         path = sjoin("~/", strim(path, ".gz", MPR_TRIM_END), NULL);
-#if UNUSED
-        uri = httpUriToString(httpGetRelativeUri(rx->parsedUri, httpLinkUri(conn, path, 0), 0), 0);
-#else
         uri = httpLink(conn, path);
-#endif
         espRender(conn, "<script src='%s' type='text/javascript'></script>\n", uri);
     }
 }
@@ -2711,9 +2697,9 @@ PUBLIC int getVisualStudioEnv(HttpRoute *route)
      */
     if (smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432")) {
         cpu = "x64";
-        } else {
+    } else {
         cpu = "x86";
-        }
+    }
     httpParsePlatform(HTTP->platform, NULL, &arch, NULL);
     if (smatch(arch, "x64")) {
         arch = smatch(cpu, "x86") ? "x86_amd64" : "amd64";
@@ -3204,26 +3190,6 @@ PUBLIC EspRoute *espGetEspRoute(HttpConn *conn)
 }
 
 
-PUBLIC cchar *espGetFlash(HttpConn *conn, cchar *kind)
-{
-    EspReq      *req;
-    MprKey      *kp;
-    cchar       *msg;
-
-    req = conn->reqData;
-    if (kind == 0 || req->flash == 0 || mprGetHashLength(req->flash) == 0) {
-        return 0;
-    }
-    for (kp = 0; (kp = mprGetNextKey(req->flash, kp)) != 0; ) {
-        msg = kp->data;
-        if (smatch(kind, kp->key) || smatch(kind, "all")) {
-            return msg;
-        }
-    }
-    return 0;
-}
-
-
 PUBLIC cchar *espGetFeedback(HttpConn *conn, cchar *kind)
 {
     EspReq      *req;
@@ -3236,7 +3202,8 @@ PUBLIC cchar *espGetFeedback(HttpConn *conn, cchar *kind)
     }
     for (kp = 0; (kp = mprGetNextKey(req->feedback, kp)) != 0; ) {
         msg = kp->data;
-        if (smatch(kind, kp->key) || smatch(kind, "all")) {
+        //  DEPRECATE "all"
+        if (smatch(kind, kp->key) || smatch(kind, "all") || smatch(kind, "*")) {
             return msg;
         }
     }
@@ -3532,6 +3499,10 @@ PUBLIC ssize espRenderError(HttpConn *conn, int status, cchar *fmt, ...)
     va_start(args, fmt);
 
     rx = conn->rx;
+    if (rx->route->json) {
+        mprLog("warn esp", 0, "Calling espRenderFeedback in JSON app");
+        return 0 ;
+    }
     written = 0;
 
     if (!httpIsFinalized(conn)) {
@@ -3580,56 +3551,30 @@ PUBLIC ssize espRenderFile(HttpConn *conn, cchar *path)
 }
 
 
-PUBLIC void espRenderFlash(HttpConn *conn, cchar *kinds)
+PUBLIC ssize espRenderFeedback(HttpConn *conn, cchar *kinds)
 {
     EspReq      *req;
     MprKey      *kp;
     cchar       *msg;
+    ssize       written;
 
     req = conn->reqData;
-    if (kinds == 0 || req->flash == 0 || mprGetHashLength(req->flash) == 0) {
-        return;
+    if (req->route->json) {
+        mprLog("warn esp", 0, "Calling espRenderFeedback in JSON app");
+        return 0;
     }
-    for (kp = 0; (kp = mprGetNextKey(req->flash, kp)) != 0; ) {
+    if (kinds == 0 || req->feedback == 0 || mprGetHashLength(req->feedback) == 0) {
+        return 0;
+    }
+    written = 0;
+    for (kp = 0; (kp = mprGetNextKey(req->feedback, kp)) != 0; ) {
         msg = kp->data;
-        if (strstr(kinds, kp->key) || strstr(kinds, "all")) {
-            espRender(conn, "<span class='feedback-%s animate'>%s</span>", kp->key, msg);
+        //  DEPRECATE "all"
+        if (strstr(kinds, kp->key) || strstr(kinds, "all") || strstr(kinds, "*")) {
+            written += espRender(conn, "<span class='feedback-%s animate'>%s</span>", kp->key, msg);
         }
     }
-}
-
-
-PUBLIC void espRemoveCookie(HttpConn *conn, cchar *name)
-{
-    httpSetCookie(conn, name, "", "/", NULL, -1, 0);
-}
-
-
-PUBLIC void espSetConn(HttpConn *conn)
-{
-    mprSetThreadData(((Esp*) MPR->espService)->local, conn);
-}
-
-
-static void espNotifier(HttpConn *conn, int event, int arg)
-{
-    EspReq      *req;
-
-    if ((req = conn->reqData) != 0) {
-        espSetConn(conn);
-        (req->notifier)(conn, event, arg);
-    }
-}
-
-
-PUBLIC void espSetNotifier(HttpConn *conn, HttpNotifier notifier)
-{
-    EspReq      *req;
-
-    if ((req = conn->reqData) != 0) {
-        req->notifier = notifier;
-        httpSetConnNotifier(conn, espNotifier);
-    }
+    return written;
 }
 
 
@@ -3688,6 +3633,40 @@ PUBLIC void espRemoveSessionVar(HttpConn *conn, cchar *var)
 }
 
 
+PUBLIC void espRemoveCookie(HttpConn *conn, cchar *name)
+{
+    httpSetCookie(conn, name, "", "/", NULL, -1, 0);
+}
+
+
+PUBLIC void espSetConn(HttpConn *conn)
+{
+    mprSetThreadData(((Esp*) MPR->espService)->local, conn);
+}
+
+
+static void espNotifier(HttpConn *conn, int event, int arg)
+{
+    EspReq      *req;
+
+    if ((req = conn->reqData) != 0) {
+        espSetConn(conn);
+        (req->notifier)(conn, event, arg);
+    }
+}
+
+
+PUBLIC void espSetNotifier(HttpConn *conn, HttpNotifier notifier)
+{
+    EspReq      *req;
+
+    if ((req = conn->reqData) != 0) {
+        req->notifier = notifier;
+        httpSetConnNotifier(conn, espNotifier);
+    }
+}
+
+
 #if DEPRECATED || 1
 PUBLIC int espSaveConfig(HttpRoute *route)
 {
@@ -3704,41 +3683,55 @@ PUBLIC int espSaveConfig(HttpRoute *route)
 
 PUBLIC ssize espSendGrid(HttpConn *conn, EdiGrid *grid, int flags)
 {
-    httpSetContentType(conn, "application/json");
-    if (grid) {
-        return espRender(conn, "{\n  \"data\": %s, \"schema\": %s}\n", ediGridAsJson(grid, flags), 
-            ediGetGridSchemaAsJson(grid));
+    if (conn->rx->route->json) {
+        httpSetContentType(conn, "application/json");
+        if (grid) {
+            return espRender(conn, "{\n  \"data\": %s, \"schema\": %s}\n", ediGridAsJson(grid, flags), 
+                ediGetGridSchemaAsJson(grid));
+        }
+        return espRender(conn, "{}");
     }
-    return espRender(conn, "{}");
+    return 0;
 }
 
 
 PUBLIC ssize espSendRec(HttpConn *conn, EdiRec *rec, int flags)
 {
-    httpSetContentType(conn, "application/json");
-    if (rec) {
-        return espRender(conn, "{\n  \"data\": %s, \"schema\": %s}\n", ediRecAsJson(rec, flags), ediGetRecSchemaAsJson(rec));
+    if (conn->rx->route->json) {
+        httpSetContentType(conn, "application/json");
+        if (rec) {
+            return espRender(conn, "{\n  \"data\": %s, \"schema\": %s}\n", 
+                ediRecAsJson(rec, flags), ediGetRecSchemaAsJson(rec));
+        }
+        return espRender(conn, "{}");
     }
-    return espRender(conn, "{}");
+    return 0;
 }
 
 
-PUBLIC void espSendResult(HttpConn *conn, bool success)
+PUBLIC ssize espSendResult(HttpConn *conn, bool success)
 {
     EspReq      *req;
     EdiRec      *rec;
+    ssize       written;
 
     req = conn->reqData;
-    rec = getRec();
-    if (rec && rec->errors) {
-        espRender(conn, "{\"error\": %d, \"feedback\": %s, \"fieldErrors\": %s}", !success,
-            req->feedback ? mprSerialize(req->feedback, MPR_JSON_QUOTES) : "{}",
-            mprSerialize(rec->errors, MPR_JSON_QUOTES));
+    written = 0;
+    if (req->route->json) {
+        rec = getRec();
+        if (rec && rec->errors) {
+            written = espRender(conn, "{\"error\": %d, \"feedback\": %s, \"fieldErrors\": %s}", !success,
+                req->feedback ? mprSerialize(req->feedback, MPR_JSON_QUOTES) : "{}",
+                mprSerialize(rec->errors, MPR_JSON_QUOTES));
+        } else {
+            written = espRender(conn, "{\"error\": %d, \"feedback\": %s}", !success,
+                req->feedback ? mprSerialize(req->feedback, MPR_JSON_QUOTES) : "{}");
+        }
+        espFinalize(conn);
     } else {
-        espRender(conn, "{\"error\": %d, \"feedback\": %s}", !success,
-            req->feedback ? mprSerialize(req->feedback, MPR_JSON_QUOTES) : "{}");
+        /* Noop */
     }
-    espFinalize(conn);
+    return written;
 }
 
 
@@ -3801,51 +3794,48 @@ PUBLIC void espSetFeedback(HttpConn *conn, cchar *kind, cchar *fmt, ...)
 PUBLIC void espSetFeedbackv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
 {
     EspReq      *req;
-    cchar       *prior, *msg;
+    cchar       *msg;
 
     if ((req = conn->reqData) == 0) {
         return;
     }
-    msg = sfmtv(fmt, args);
-
+    if (!req->route->json) {
+        /*
+            Create a session as early as possible so a Set-Cookie header can be omitted.
+         */
+        httpGetSession(conn, 1);
+    }
     if (req->feedback == 0) {
         req->feedback = mprCreateHash(0, MPR_HASH_STABLE);
     }
-    if ((prior = mprLookupKey(req->feedback, kind)) != 0) {
-        mprAddKey(req->feedback, kind, sjoin(prior, ", ", msg, NULL));
-    } else {
-        mprAddKey(req->feedback, kind, sclone(msg));
-    }
+    msg = sfmtv(fmt, args);
+
+#if UNUSED && KEEP
+    MprKey      *current, *last;
+    if ((current = mprLookupKeyEntry(req->feedback, kind)) != 0) {
+        if ((last = mprLookupKey(req->lastFeedback, current->key)) != 0 && current->data == last->data) {
+            /* Overwrite prior feedback messages */
+            mprAddKey(req->feedback, kind, msg);
+        } else {
+            /* Append to existing feedback messages */
+            mprAddKey(req->feedback, kind, sjoin(current->data, ", ", msg, NULL));
+        }
+    } else
+#endif
+    mprAddKey(req->feedback, kind, msg);
 }
 
 
+#if DEPRECATED || 1
 PUBLIC void espSetFlash(HttpConn *conn, cchar *kind, cchar *fmt, ...)
 {
     va_list     args;
 
     va_start(args, fmt);
-    espSetFlashv(conn, kind, fmt, args);
+    espSetFeedbackv(conn, kind, fmt, args);
     va_end(args);
 }
-
-
-PUBLIC void espSetFlashv(HttpConn *conn, cchar *kind, cchar *fmt, va_list args)
-{
-    EspReq      *req;
-    cchar       *msg;
-
-    req = conn->reqData;
-    msg = sfmtv(fmt, args);
-
-    if (req->flash == 0) {
-        req->flash = mprCreateHash(0, MPR_HASH_STABLE);
-    }
-    mprAddKey(req->flash, kind, sclone(msg));
-    /*
-        Create a session as early as possible so a Set-Cookie header can be omitted.
-     */
-    httpGetSession(conn, 1);
-}
+#endif
 
 
 PUBLIC EdiGrid *espSetGrid(HttpConn *conn, EdiGrid *grid)
@@ -4315,7 +4305,7 @@ static cchar *map(HttpConn *conn, MprHash *options)
     @end
  */
 
-/*
+    /*
     espRequest.c -- ESP Request handler
 
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
@@ -4513,60 +4503,61 @@ static bool espUnloadModule(cchar *module, MprTicks timeout)
 #endif
 
 
-PUBLIC void espClearFlash(HttpConn *conn)
+/*
+    Not used
+ */
+PUBLIC void espClearFeedback(HttpConn *conn)
 {
     EspReq      *req;
 
     req = conn->reqData;
-    req->flash = 0;
+    req->feedback = 0;
 }
 
 
-static void setupFlash(HttpConn *conn)
+static void setupFeedback(HttpConn *conn)
 {
     EspReq      *req;
 
     req = conn->reqData;
-    if (httpGetSession(conn, 0)) {
-        req->flash = httpGetSessionObj(conn, ESP_FLASH_VAR);
-        req->lastFlash = 0;
-        if (req->flash) {
-            httpRemoveSessionVar(conn, ESP_FLASH_VAR);
-            req->lastFlash = mprCloneHash(req->flash);
-        }
-    }
-}
-
-
-static void pruneFlash(HttpConn *conn)
-{
-    EspReq  *req;
-    MprKey  *kp, *lp;
-
-    req = conn->reqData;
-    if (req->flash && req->lastFlash) {
-        for (ITERATE_KEYS(req->flash, kp)) {
-            for (ITERATE_KEYS(req->lastFlash, lp)) {
-                if (smatch(kp->key, lp->key)) {
-                    mprRemoveKey(req->flash, kp->key);
-                }
+    req->lastFeedback = 0;
+    if (req->route->json) {
+        req->feedback = mprCreateHash(0, MPR_HASH_STABLE);
+    } else {
+        if (httpGetSession(conn, 0)) {
+            req->feedback = httpGetSessionObj(conn, ESP_FEEDBACK_VAR);
+            if (req->feedback) {
+                httpRemoveSessionVar(conn, ESP_FEEDBACK_VAR);
+                req->lastFeedback = mprCloneHash(req->feedback);
             }
         }
     }
 }
 
 
-static void finalizeFlash(HttpConn *conn)
+static void finalizeFeedback(HttpConn *conn)
 {
     EspReq  *req;
+    MprKey  *kp, *lp;
 
     req = conn->reqData;
-    if (req->flash && mprGetHashLength(req->flash) > 0) {
-        /*
-            If the session does not exist, this will create one. However, must not have
-            emitted the headers, otherwise cannot inform the client of the session cookie.
-        */
-        httpSetSessionObj(conn, ESP_FLASH_VAR, req->flash);
+    if (req->feedback) {
+        if (req->route->json) {
+            if (req->lastFeedback) {
+                for (ITERATE_KEYS(req->feedback, kp)) {
+                    if ((lp = mprLookupKeyEntry(req->lastFeedback, kp->key)) != 0 && kp->data == lp->data) {
+                        mprRemoveKey(req->feedback, kp->key);
+                    }
+                }
+            }
+            if (mprGetHashLength(req->feedback) > 0) {
+                /*
+                    If the session does not exist, this will create one. However, must not have
+                    emitted the headers, otherwise cannot inform the client of the session cookie.
+                */
+                httpSetSessionObj(conn, ESP_FEEDBACK_VAR, req->feedback);
+            }
+        }
     }
 }
 
@@ -4594,10 +4585,8 @@ static void startEsp(HttpQueue *q)
     if (req) {
         mprSetThreadData(req->esp->local, conn);
         /* WARNING: GC yield */
-        if (!runAction(conn)) {
-            pruneFlash(conn);
-        } else {
-            if (req->autoFinalize) {
+        if (runAction(conn)) {
+            if (!conn->error && req->autoFinalize) {
                 if (!conn->tx->responded) {
                     /* WARNING: GC yield */
                     espRenderDocument(conn, rx->target);
@@ -4606,9 +4595,8 @@ static void startEsp(HttpQueue *q)
                     espFinalize(conn);
                 }
             }
-            pruneFlash(conn);
         }
-        finalizeFlash(conn);
+        finalizeFeedback(conn);
         mprSetThreadData(req->esp->local, NULL);
     }
 }
@@ -4667,7 +4655,7 @@ static int runAction(HttpConn *conn)
     if (route->flags & HTTP_ROUTE_XSRF && !(rx->flags & HTTP_GET)) {
         if (!httpCheckSecurityToken(conn)) {
             httpSetStatus(conn, HTTP_CODE_UNAUTHORIZED);
-            if (smatch(route->responseFormat, "json")) {
+            if (route->json) {
                 httpTrace(conn, "esp.xsrf.error", "error", 0);
                 espRenderString(conn,
                     "{\"retry\": true, \"success\": 0, \"feedback\": {\"error\": \"Security token is stale. Please retry.\"}}");
@@ -4680,7 +4668,7 @@ static int runAction(HttpConn *conn)
     }
     if (action) {
         httpAuthenticate(conn);
-        setupFlash(conn);
+        setupFeedback(conn);
         if (eroute->commonController) {
             (eroute->commonController)(conn);
         }
@@ -4822,7 +4810,7 @@ PUBLIC void espRenderDocument(HttpConn *conn, cchar *target)
         Last chance, forward to the file handler ... not an ESP request. 
         This enables static file requests within ESP routes.
      */
-    httpTrace(conn, "esp.handler", "context", "msg: 'Relay to the fileHandler");
+    httpTrace(conn, "esp.handler", "context", "msg: 'Relay to the fileHandler'");
     conn->rx->target = &conn->rx->pathInfo[1];
     httpMapFile(conn);
     if (conn->tx->fileInfo.isDir) {
@@ -5221,12 +5209,11 @@ static void manageReq(EspReq *req, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(req->commandLine);
-        mprMark(req->flash);
-        mprMark(req->lastFlash);
-        mprMark(req->feedback);
-        mprMark(req->route);
         mprMark(req->data);
         mprMark(req->edi);
+        mprMark(req->feedback);
+        mprMark(req->lastFeedback);
+        mprMark(req->route);
     }
 }
 
@@ -5618,11 +5605,13 @@ static cchar *getCompilerPath(cchar *os, cchar *arch);
 static cchar *getLibs(cchar *os);
 static cchar *getMappedArch(cchar *arch);
 static cchar *getObjExt(cchar *os);
-static cchar *getVisualStudio();
-static cchar *getWinSDK(HttpRoute *route);
-static cchar *getWinVer(HttpRoute *route);
 static cchar *getVxCPU(cchar *arch);
 static bool matchToken(cchar **str, cchar *token);
+
+#if ME_WIN_LIKE
+static cchar *getWinSDK(HttpRoute *route);
+static cchar *getWinVer(HttpRoute *route);
+#endif
 
 /************************************* Code ***********************************/
 /*
@@ -5727,17 +5716,17 @@ PUBLIC char *espExpandCommand(HttpRoute *route, cchar *command, cchar *source, c
                 }
                 mprPutStringToBuf(buf, tmp ? tmp : ".");
 
+#if ME_WIN_LIKE
             } else if (matchToken(&cp, "${VS}")) {
-                mprPutStringToBuf(buf, getVisualStudio());
+                mprPutStringToBuf(buf, espGetVisualStudio());
+            } else if (matchToken(&cp, "${WINSDK}")) {
+                mprPutStringToBuf(buf, getWinSDK(route));
+            } else if (matchToken(&cp, "${WINVER}")) {
+                mprPutStringToBuf(buf, getWinVer(route));
+#endif
 
             } else if (matchToken(&cp, "${VXCPU}")) {
                 mprPutStringToBuf(buf, getVxCPU(arch));
-
-            } else if (matchToken(&cp, "${WINSDK}")) {
-                mprPutStringToBuf(buf, getWinSDK(route));
-
-            } else if (matchToken(&cp, "${WINVER}")) {
-                mprPutStringToBuf(buf, getWinVer(route));
 
             /*
                 These vars can be also be configured from environment variables.
@@ -6451,12 +6440,6 @@ static int getEspToken(EspParse *parse)
             if (next > start && (next[-1] == '\\' || next[-1] == '%')) {
                 break;
             }
-#if UNUSED
-        case '@':
-            if (c == '@') {
-                mprLog("esp warn", 0, "Using deprecated \"@\" control directive in esp page: %s", parse->path);
-            }
-#endif
             if ((next == start) || next[-1] != '\\') {
                 t = next[1];
                 if (t == '~') {
@@ -6750,9 +6733,9 @@ static int reverseSortVersions(char **s1, char **s2)
 #endif
 
 
+#if ME_WIN_LIKE
 static cchar *getWinSDK(HttpRoute *route)
 {
-#if WINDOWS
     EspRoute *eroute;
 
     /*
@@ -6814,9 +6797,6 @@ static cchar *getWinSDK(HttpRoute *route)
     mprLog("info esp", 5, "Using Windows SDK at %s", path);
     eroute->winsdk = strim(path, "\\", MPR_TRIM_END);
     return eroute->winsdk;
-#else
-    return "";
-#endif
 }
 
 
@@ -6833,28 +6813,7 @@ static cchar *getWinVer(HttpRoute *route)
     }
     return winver;
 }
-
-
-static cchar *getVisualStudio()
-{
-#if WINDOWS
-    cchar   *path;
-    int     v;
-    /* VS 2013 == 12.0 */
-    for (v = 16; v >= 8; v--) {
-        if ((path = mprReadRegistry(ESP_VSKEY, sfmt("%d.0", v))) != 0) {
-            path = strim(path, "\\", MPR_TRIM_END);
-            break;
-        }
-    }
-    if (!path) {
-        path = "${VS}";
-    }
-    return path;
-#else
-    return "";
 #endif
-}
 
 
 static cchar *getArPath(cchar *os, cchar *arch)
@@ -6864,7 +6823,7 @@ static cchar *getArPath(cchar *os, cchar *arch)
         Get the real system architecture (32 or 64 bit)
      */
     Http *http = MPR->httpService;
-    cchar *path = getVisualStudio();
+    cchar *path = espGetVisualStudio();
     if (scontains(http->platform, "-x64-")) {
         int is64BitSystem = smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432");
         if (is64BitSystem) {
@@ -6890,7 +6849,7 @@ static cchar *getCompilerPath(cchar *os, cchar *arch)
         Get the real system architecture (32 or 64 bit)
      */
     Http *http = MPR->httpService;
-    cchar *path = getVisualStudio();
+    cchar *path = espGetVisualStudio();
     if (scontains(http->platform, "-x64-")) {
         int is64BitSystem = smatch(getenv("PROCESSOR_ARCHITECTURE"), "AMD64") || getenv("PROCESSOR_ARCHITEW6432");
         if (is64BitSystem) {
