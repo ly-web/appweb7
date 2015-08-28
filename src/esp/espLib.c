@@ -1428,7 +1428,7 @@ static int lookupGridField(EdiGrid *grid, cchar *name)
     return MPR_ERR_CANT_FIND;
 }
 
-
+//  FUTURE - document
 PUBLIC EdiGrid *ediSortGrid(EdiGrid *grid, cchar *sortColumn, int sortOrder)
 {
     GridSort    gs;
@@ -2335,6 +2335,12 @@ PUBLIC void setTimeout(void *proc, MprTicks timeout, void *data)
 PUBLIC void showRequest()
 {
     espShowRequest(getConn());
+}
+
+
+PUBLIC EdiGrid *sortGrid(EdiGrid *grid, cchar *sortColumn, int sortOrder)
+{
+    return ediSortGrid(grid, sortColumn, sortOrder);
 }
 
 
