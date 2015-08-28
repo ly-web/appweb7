@@ -8945,8 +8945,7 @@ PUBLIC int httpHandleDirectory(HttpConn *conn)
         if (path) {
             pathInfo = sjoin(rx->scriptName, rx->pathInfo, index, NULL);
             httpSetUri(conn, httpFormatUri(req->scheme, req->host, req->port, pathInfo, req->reference, req->query, 0));
-            tx->filename = path;
-            tx->ext = httpGetExt(conn);
+            tx->filename = httpMapContent(conn, path);
             mprGetPathInfo(tx->filename, &tx->fileInfo);
             return HTTP_ROUTE_REROUTE;
         }
@@ -13306,7 +13305,7 @@ PUBLIC cchar *httpMapContent(HttpConn *conn, cchar *filename)
     HttpTx      *tx;
     MprKey      *kp;
     MprList     *extensions;
-    MprPath     *info;
+    MprPath     info;
     bool        acceptGzip, zipped;
     cchar       *ext, *path;
     int         next;
@@ -13314,7 +13313,6 @@ PUBLIC cchar *httpMapContent(HttpConn *conn, cchar *filename)
     tx = conn->tx;
     rx = conn->rx;
     route = rx->route;
-    info = &tx->fileInfo;
 
     if (route->map && !(tx->flags & HTTP_TX_NO_MAP)) {
         if ((kp = mprLookupKeyEntry(route->map, tx->ext)) == 0) {
@@ -13333,12 +13331,13 @@ PUBLIC cchar *httpMapContent(HttpConn *conn, cchar *filename)
                 } else {
                     path = sjoin(filename, ext, NULL);
                 }
-                if (mprGetPathInfo(path, info) == 0) {
+                if (mprGetPathInfo(path, &info) == 0) {
                     httpTrace(conn, "request.map", "context", "originalFilename:'%s',filename:'%s'", filename, path);
                     filename = path;
                     if (zipped) {
                         httpSetHeader(conn, "Content-Encoding", "gzip");
                     }
+                    tx->fileInfo = info;
                     break;
                 }
             }
@@ -13571,10 +13570,7 @@ PUBLIC void httpAddRouteMapping(HttpRoute *route, cchar *extensions, cchar *mapp
         route->map = mprCreateHash(ME_MAX_ROUTE_MAP_HASH, MPR_HASH_STABLE);
     }
     for (ext = stok(sclone(extensions), ", \t", &etok); ext; ext = stok(NULL, ", \t", &etok)) {
-        if (*ext == '.') {
-            ext++;
-        }
-        if (*ext == '"') {
+        if (*ext == '.' || *ext == '"' || *ext == '*') {
             ext++;
         }
         len = slen(ext);
