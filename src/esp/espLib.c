@@ -3073,7 +3073,7 @@ PUBLIC void espDefineBase(HttpRoute *route, EspProc baseProc)
     int         next;
 
     for (ITERATE_ITEMS(route->host->routes, rp, next)) {
-        if ((eroute = route->eroute) != 0) {
+        if ((eroute = rp->eroute) != 0) {
             if (smatch(httpGetDir(rp, "CONTROLLERS"), httpGetDir(route, "CONTROLLERS"))) {
                 eroute->commonController = baseProc;
             }
@@ -4685,12 +4685,12 @@ static int runAction(HttpConn *conn)
             return 0;
         }
     }
+    httpAuthenticate(conn);
+    if (eroute->commonController) {
+        (eroute->commonController)(conn);
+    }
     if (action) {
-        httpAuthenticate(conn);
         setupFeedback(conn);
-        if (eroute->commonController) {
-            (eroute->commonController)(conn);
-        }
         if (!httpIsFinalized(conn)) {
             (action)(conn);
         }
