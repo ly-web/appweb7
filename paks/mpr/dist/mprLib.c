@@ -461,7 +461,7 @@ static int initQueues()
 
 
 /*
-    Memory allocator. This routine races with the sweeper.
+    Lock free memory allocator. This routine races with the sweeper.
  */
 static MprMem *allocMem(size_t required)
 {
@@ -1204,12 +1204,13 @@ static void markAndSweep()
         This will set heap->activity which will cause the sweep phase to be aborted
      */
     INC(collections);
+#if ME_MPR_ALLOC_STATS
     heap->priorFree = heap->stats.bytesFree;
-
+#endif
     /*
         Mark all roots. If anyone allocates memory, it will set heap->activity and the sweep phase will be aborted.
-        Toggle the in-use mark for each collection. If sweep is aborted, some free blocks may take two makr phases
-        to be collected. (not a big deal).
+        Toggle the in-use heap->mark for each collection. If sweep is aborted, some free blocks may be left unmarked which
+        will be interpreted as a mark in the next GC. So it may take two mark phases to be collected (not a big deal).
      */
     heap->activity = 0;
     heap->mark = !heap->mark;
@@ -1231,7 +1232,6 @@ static void markAndSweep()
 #endif
     /*
         Sweep unused memory with user threads resumed if there has not been any memory activity during the mark phase.
-        Events created by outside threads may occur during the marking phase. So must not act on the results of the marking.
      */
     mprAtomicBarrier();
     if (!heap->activity) {
@@ -1614,10 +1614,8 @@ static void relayInside(void *data, struct MprEvent *event)
     op = data;
 
     /*
-        Resume GC. Shutdown is paused because this thread means !idle.
+        Resume GC. We know that MPR shutdown is paused because this thread implies !IsIdle.
         However, normal graceful shutdown timeouts apply and this is now just an ordinary event.
-        So there are races with a graceful shutdown(MPR->exitTimeout). It is the users responsibility 
-        to ensure outside events do not violate the shutdown timeout limit.
      */
     mprResumeGC();
     (op->proc)(op->data);
@@ -1631,7 +1629,7 @@ static void relayInside(void *data, struct MprEvent *event)
     This routine creates an event and is safe to call from outside MPR in a foreign thread. Notes:
     1. Safe to use at any point before, before or during a GC or shutdown 
     2. If using MPR_EVENT_BLOCK, will not shutdown until the event callback completes. The API will return after the
-        users callback returns.
+        users callback returns. The non-blocking alternative is much faster.
     3. In the non-blocking case, the event may run before or after the function returns.
     4. The function always returns a valid status indicating whether the event could be scheduled.
 
@@ -1674,7 +1672,7 @@ PUBLIC int mprCreateEventOutside(MprDispatcher *dispatcher, cchar *name, void *p
     } else {
         mprCreateEvent(dispatcher, name, 0, proc, data, flags);
         mprResumeGC();
-        /* Shutdown could happen before the event runs */ 
+        /* Shutdown could happen before the event actually runs */ 
     }
     return 0;
 }
