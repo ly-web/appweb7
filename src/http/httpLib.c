@@ -18545,13 +18545,15 @@ PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create)
 {
     Http        *http;
     HttpRx      *rx;
+    HttpRoute   *route;
     MprTicks    lifespan;
-    cchar       *cookie, *data, *id;
+    cchar       *cookie, *data, *id, *url;
     static int  seqno = 0;
     int         flags, thisSeqno, activeSessions;
 
     assert(conn);
     rx = conn->rx;
+    route = rx->route;
     http = conn->http;
     assert(rx);
 
@@ -18578,13 +18580,14 @@ PUBLIC HttpSession *httpGetSession(HttpConn *conn, int create)
             unlock(http);
 
             rx->session = allocSessionObj(conn, id, NULL);
-            flags = (rx->route->flags & HTTP_ROUTE_VISIBLE_SESSION) ? 0 : HTTP_COOKIE_HTTP;
-            cookie = rx->route->cookie ? rx->route->cookie : HTTP_SESSION_COOKIE;
-            lifespan = (rx->route->flags & HTTP_ROUTE_PERSIST_COOKIE) ? rx->session->lifespan : 0;
-            httpSetCookie(conn, cookie, rx->session->id, "/", NULL, lifespan, flags);
+            flags = (route->flags & HTTP_ROUTE_VISIBLE_SESSION) ? 0 : HTTP_COOKIE_HTTP;
+            cookie = route->cookie ? route->cookie : HTTP_SESSION_COOKIE;
+            lifespan = (route->flags & HTTP_ROUTE_PERSIST_COOKIE) ? rx->session->lifespan : 0;
+            url = (route->prefix && *route->prefix) ? route->prefix : "/";
+            httpSetCookie(conn, cookie, rx->session->id, url, NULL, lifespan, flags);
             httpTrace(conn, "request.session.create", "context", "cookie:'%s',session:'%s'", cookie, rx->session->id);
 
-            if ((rx->route->flags & HTTP_ROUTE_XSRF) && rx->securityToken) {
+            if ((route->flags & HTTP_ROUTE_XSRF) && rx->securityToken) {
                 httpSetSessionVar(conn, ME_XSRF_COOKIE, rx->securityToken);
             }
         }
@@ -18797,10 +18800,13 @@ PUBLIC cchar *httpGetSecurityToken(HttpConn *conn, bool recreate)
  */
 PUBLIC int httpAddSecurityToken(HttpConn *conn, bool recreate) 
 {
-    cchar   *securityToken;
+    HttpRoute   *route;
+    cchar       *securityToken, *url;
 
+    route = conn->rx->route;
     securityToken = httpGetSecurityToken(conn, recreate);
-    httpSetCookie(conn, ME_XSRF_COOKIE, securityToken, "/", NULL,  0, 0);
+    url = (route->prefix && *route->prefix) ? route->prefix : "/";
+    httpSetCookie(conn, ME_XSRF_COOKIE, securityToken, url, NULL,  0, 0);
     httpSetHeaderString(conn, ME_XSRF_HEADER, securityToken);
     return 0;
 }
