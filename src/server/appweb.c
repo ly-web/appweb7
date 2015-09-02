@@ -85,7 +85,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
     logSpec = 0;
     traceSpec = 0;
 
-    if ((mpr = mprCreate(argc, argv, MPR_USER_EVENTS_THREAD)) == NULL) {
+    if ((mpr = mprCreate(argc, argv, 0)) == NULL) {
         exit(1);
     }
     if ((app = mprAllocObj(AppwebApp, manageApp)) == NULL) {
@@ -240,7 +240,15 @@ MAIN(appweb, int argc, char **argv, char **envp)
             httpLogRoutes(host, app->show > 1);
         }
     }
-    mprServiceEvents(-1, 0);
+    /*
+        Events thread will service requests. We block here.
+     */
+    mprYield(MPR_YIELD_STICKY);
+    while (!mprIsStopping()) {
+        mprSuspendThread(-1);
+    }
+    mprResetYield();
+
     mprLog("info appweb", 1, "Stopping Appweb ...");
     mprDestroy();
     return mprGetExitStatus();
