@@ -2656,21 +2656,6 @@ PUBLIC void httpAddCache(HttpRoute *route, cchar *methods, cchar *uris, cchar *e
             }
         }
     } else if (flags & HTTP_CACHE_STATIC) {
-#if UNUSED
-        cache->types = mprCreateHash(0, MPR_HASH_STABLE);
-        mprAddKey(cache->types, "text/css", cache);
-        mprAddKey(cache->types, "image/gif", cache);
-        mprAddKey(cache->types, "image/x-icon", cache);
-        mprAddKey(cache->types, "image/jpg", cache);
-        mprAddKey(cache->types, "application/javascript", cache);
-        mprAddKey(cache->types, "text/html", cache);
-        mprAddKey(cache->types, "image/png", cache);
-        mprAddKey(cache->types, "application/pdf", cache);
-        mprAddKey(cache->types, "application/x-font-ttf", cache);
-        mprAddKey(cache->types, "text/plain", cache);
-        mprAddKey(cache->types, "application/xml", cache);
-        mprAddKey(cache->types, "application/woff-woff", cache);
-#else
         cache->extensions = mprCreateHash(0, MPR_HASH_STABLE);
         mprAddKey(cache->extensions, "css", cache);
         mprAddKey(cache->extensions, "gif", cache);
@@ -2684,7 +2669,6 @@ PUBLIC void httpAddCache(HttpRoute *route, cchar *methods, cchar *uris, cchar *e
         mprAddKey(cache->extensions, "txt", cache);
         mprAddKey(cache->extensions, "xml", cache);
         mprAddKey(cache->extensions, "woff", cache);
-#endif
     }
     if (methods) {
         cache->methods = mprCreateHash(0, MPR_HASH_CASELESS | MPR_HASH_STABLE);
@@ -13538,18 +13522,7 @@ PUBLIC int httpAddRouteHandler(HttpRoute *route, cchar *name, cchar *extensions)
                 } else if (*word == '\"' && word[1] == '\"') {
                     word = "";
                 }
-#if UNUSED
-                prior = mprLookupKey(route->extensions, word);
-                if (prior && prior != handler && *word) {
-                    mprLog("warn http route", 0, "Route \"%s\" has multiple handlers defined for extension \"%s\". "
-                            "Handlers: \"%s\", \"%s\".", route->pattern, word, handler->name, 
-                            ((HttpStage*) mprLookupKey(route->extensions, word))->name);
-                } else {
-                    mprAddKey(route->extensions, word, handler);
-                }
-#else
                 mprAddKey(route->extensions, word, handler);
-#endif
                 word = stok(NULL, " \t\r\n", &tok);
             }
         }
@@ -14578,11 +14551,6 @@ PUBLIC void httpFinalizeRoute(HttpRoute *route)
     if (mprGetListLength(route->indexes) == 0) {
         mprAddItem(route->indexes,  sclone("index.html"));
     }
-#if UNUSED
-    if (!mprLookupKey(route->extensions, "")) {
-        httpAddRouteHandler(route, "fileHandler", "");
-    }
-#endif
     httpAddRoute(route->host, route);
 }
 
@@ -20178,14 +20146,6 @@ PUBLIC void httpOmitBody(HttpConn *conn)
 }
 
 
-#if UNUSED
-static bool localEndpoint(cchar *host)
-{
-    return smatch(host, "localhost") || smatch(host, "127.0.0.1") || smatch(host, "::1");
-}
-#endif
-
-
 /*
     Redirect the user to another URI. The targetUri may or may not have a scheme or hostname.
  */
@@ -20194,11 +20154,6 @@ PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
     HttpTx          *tx;
     HttpRx          *rx;
     HttpUri         *base, *canonical;
-#if UNUSED
-    HttpUri         *target;
-    HttpEndpoint    *endpoint;
-    char            *dir, *cp;
-#endif
     cchar           *msg;
 
     assert(targetUri);
@@ -20231,41 +20186,6 @@ PUBLIC void httpRedirect(HttpConn *conn, int status, cchar *targetUri)
     targetUri = httpUriToString(httpResolveUri(conn, base, httpLinkUri(conn, targetUri, 0)), 0);
 
     if (300 <= status && status <= 399) {
-#if UNUSED
-        if (targetUri == 0) {
-            targetUri = "/";
-        }
-        target = httpCreateUri(targetUri, 0);
-        base = rx->parsedUri;
-        /*
-            Support URIs without a host:  https:///path. This is used to redirect onto the same host but with a
-            different scheme. So find a suitable local endpoint to supply the port for the scheme.
-        */
-        if (!target->port && (target->scheme && !smatch(target->scheme, base->scheme))) {
-            if (!target->host || smatch(base->host, target->host) || 
-                (localEndpoint(base->host) && localEndpoint(target->host))) {
-                endpoint = smatch(target->scheme, "https") ? conn->host->secureEndpoint : conn->host->defaultEndpoint;
-                if (endpoint) {
-                    target->port = endpoint->port;
-                } else if (smatch(target->scheme, "https")) {
-                    mprLog("error", 0, "Missing secure endpoint to use with https redirection");
-                }
-            }
-        }
-        if (target->path && target->path[0] != '/') {
-            /*
-                Relative file redirection to a file in the same directory as the previous request.
-             */
-            dir = sclone(rx->pathInfo);
-            if ((cp = strrchr(dir, '/')) != 0) {
-                /* Remove basename */
-                *cp = '\0';
-            }
-            target->path = sjoin(dir, "/", target->path, NULL);
-        }
-        target = httpCompleteUri(target, base);
-        targetUri = httpUriToString(target, 0);
-#endif
         httpSetHeader(conn, "Location", "%s", targetUri);
         httpFormatResponse(conn,
             "<!DOCTYPE html>\r\n"
@@ -22225,10 +22145,6 @@ PUBLIC HttpUri *httpResolveUri(HttpConn *conn, HttpUri *base, HttpUri *other)
          */
         if (other->port) {
             current->port = other->port;
-#if UNUSED
-        } else if (current->port) {
-            current->port = 0;
-#endif
         } else {
             host = conn ? conn->host : httpGetDefaultHost();
             endpoint = smatch(current->scheme, "https") ? host->secureEndpoint : host->defaultEndpoint;
