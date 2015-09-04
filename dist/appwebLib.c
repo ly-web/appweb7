@@ -229,7 +229,6 @@ static int parseFileInner(MaState *state, cchar *path)
                 state->key, state->lineNumber, state->filename);
             return MPR_ERR_BAD_SYNTAX;
         }
-        mprYield(0);
         state = state->top->current;
     }
     /* EOF */
