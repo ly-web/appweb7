@@ -305,7 +305,7 @@ DEPS_6 = $(DEPS_6) src\mbedtls\mbedtls.h
 build\$(CONFIG)\obj\mbedtls.obj: \
     src\mbedtls\mbedtls.c $(DEPS_6)
 	@echo .. [Compile] build\$(CONFIG)\obj\mbedtls.obj
-	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\mbedtls.obj -Fd$(BUILD)\obj\mbedtls.pdb -nologo -GR- -Zi -Od -MDd -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\mbedtls\mbedtls.c $(LOG)
+	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\mbedtls.obj -Fd$(BUILD)\obj\mbedtls.pdb -nologo -GR- -Zi -Od -MDd -DMBEDTLS_USER_CONFIG_FILE="embedtls.h" $(IFLAGS) src\mbedtls\mbedtls.c $(LOG)
 
 !IF "$(ME_COM_MBEDTLS)" == "1"
 #
@@ -341,7 +341,7 @@ DEPS_9 = $(DEPS_9) build\$(CONFIG)\inc\mpr.h
 build\$(CONFIG)\obj\mpr-mbedtls.obj: \
     src\mpr-mbedtls\mpr-mbedtls.c $(DEPS_9)
 	@echo .. [Compile] build\$(CONFIG)\obj\mpr-mbedtls.obj
-	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\mpr-mbedtls.obj -Fd$(BUILD)\obj\mpr-mbedtls.pdb -nologo -GR- -Zi -Od -MDd -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\mpr-mbedtls\mpr-mbedtls.c $(LOG)
+	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\mpr-mbedtls.obj -Fd$(BUILD)\obj\mpr-mbedtls.pdb -nologo -GR- -Zi -Od -MDd -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE="embedtls.h" $(IFLAGS) src\mpr-mbedtls\mpr-mbedtls.c $(LOG)
 
 !IF "$(ME_COM_MBEDTLS)" == "1"
 #
@@ -390,7 +390,7 @@ DEPS_14 = $(DEPS_14) src\mpr\mpr.h
 build\$(CONFIG)\obj\mprLib.obj: \
     src\mpr\mprLib.c $(DEPS_14)
 	@echo .. [Compile] build\$(CONFIG)\obj\mprLib.obj
-	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\mprLib.obj -Fd$(BUILD)\obj\mprLib.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\mpr\mprLib.c $(LOG)
+	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\mprLib.obj -Fd$(BUILD)\obj\mprLib.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE="embedtls.h" $(IFLAGS) src\mpr\mprLib.c $(LOG)
 
 #
 #   libmpr
@@ -477,7 +477,7 @@ DEPS_22 = $(DEPS_22) build\$(CONFIG)\inc\pcre.h
 build\$(CONFIG)\obj\httpLib.obj: \
     src\http\httpLib.c $(DEPS_22)
 	@echo .. [Compile] build\$(CONFIG)\obj\httpLib.obj
-	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\httpLib.obj -Fd$(BUILD)\obj\httpLib.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\http\httpLib.c $(LOG)
+	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\httpLib.obj -Fd$(BUILD)\obj\httpLib.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE="embedtls.h" $(IFLAGS) src\http\httpLib.c $(LOG)
 
 !IF "$(ME_COM_HTTP)" == "1"
 #
@@ -521,7 +521,7 @@ DEPS_26 = $(DEPS_26) build\$(CONFIG)\inc\pcre.h
 build\$(CONFIG)\obj\mpr-version.obj: \
     src\mpr-version\mpr-version.c $(DEPS_26)
 	@echo .. [Compile] build\$(CONFIG)\obj\mpr-version.obj
-	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\mpr-version.obj -Fd$(BUILD)\obj\mpr-version.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\mpr-version\mpr-version.c $(LOG)
+	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\mpr-version.obj -Fd$(BUILD)\obj\mpr-version.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE="embedtls.h" $(IFLAGS) src\mpr-version\mpr-version.c $(LOG)
 
 #
 #   libmpr-version
@@ -566,7 +566,7 @@ DEPS_30 = $(DEPS_30) build\$(CONFIG)\inc\http.h
 build\$(CONFIG)\obj\espLib.obj: \
     src\esp\espLib.c $(DEPS_30)
 	@echo .. [Compile] build\$(CONFIG)\obj\espLib.obj
-	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\espLib.obj -Fd$(BUILD)\obj\espLib.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\esp\espLib.c $(LOG)
+	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\espLib.obj -Fd$(BUILD)\obj\espLib.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE="embedtls.h" $(IFLAGS) src\esp\espLib.c $(LOG)
 
 !IF "$(ME_COM_ESP)" == "1"
 #
@@ -622,7 +622,7 @@ DEPS_35 = $(DEPS_35) build\$(CONFIG)\inc\pcre.h
 build\$(CONFIG)\obj\config.obj: \
     src\config.c $(DEPS_35)
 	@echo .. [Compile] build\$(CONFIG)\obj\config.obj
-	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\config.obj -Fd$(BUILD)\obj\config.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\config.c $(LOG)
+	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\config.obj -Fd$(BUILD)\obj\config.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE="embedtls.h" $(IFLAGS) src\config.c $(LOG)
 
 #
 #   convenience.obj
@@ -632,7 +632,7 @@ DEPS_36 = $(DEPS_36) src\appweb.h
 build\$(CONFIG)\obj\convenience.obj: \
     src\convenience.c $(DEPS_36)
 	@echo .. [Compile] build\$(CONFIG)\obj\convenience.obj
-	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\convenience.obj -Fd$(BUILD)\obj\convenience.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\convenience.c $(LOG)
+	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\convenience.obj -Fd$(BUILD)\obj\convenience.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE="embedtls.h" $(IFLAGS) src\convenience.c $(LOG)
 
 #
 #   romFiles.obj
@@ -642,7 +642,7 @@ DEPS_37 = $(DEPS_37) build\$(CONFIG)\inc\mpr.h
 build\$(CONFIG)\obj\romFiles.obj: \
     src\romFiles.c $(DEPS_37)
 	@echo .. [Compile] build\$(CONFIG)\obj\romFiles.obj
-	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\romFiles.obj -Fd$(BUILD)\obj\romFiles.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\romFiles.c $(LOG)
+	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\romFiles.obj -Fd$(BUILD)\obj\romFiles.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE="embedtls.h" $(IFLAGS) src\romFiles.c $(LOG)
 
 #
 #   cgiHandler.obj
@@ -652,7 +652,7 @@ DEPS_38 = $(DEPS_38) src\appweb.h
 build\$(CONFIG)\obj\cgiHandler.obj: \
     src\modules\cgiHandler.c $(DEPS_38)
 	@echo .. [Compile] build\$(CONFIG)\obj\cgiHandler.obj
-	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\cgiHandler.obj -Fd$(BUILD)\obj\cgiHandler.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\modules\cgiHandler.c $(LOG)
+	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\cgiHandler.obj -Fd$(BUILD)\obj\cgiHandler.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE="embedtls.h" $(IFLAGS) src\modules\cgiHandler.c $(LOG)
 
 #
 #   espHandler.obj
@@ -663,7 +663,7 @@ DEPS_39 = $(DEPS_39) build\$(CONFIG)\inc\esp.h
 build\$(CONFIG)\obj\espHandler.obj: \
     src\modules\espHandler.c $(DEPS_39)
 	@echo .. [Compile] build\$(CONFIG)\obj\espHandler.obj
-	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\espHandler.obj -Fd$(BUILD)\obj\espHandler.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\modules\espHandler.c $(LOG)
+	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\espHandler.obj -Fd$(BUILD)\obj\espHandler.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE="embedtls.h" $(IFLAGS) src\modules\espHandler.c $(LOG)
 
 #
 #   libappweb
@@ -695,7 +695,7 @@ DEPS_41 = $(DEPS_41) build\$(CONFIG)\inc\appweb.h
 build\$(CONFIG)\obj\appweb.obj: \
     src\server\appweb.c $(DEPS_41)
 	@echo .. [Compile] build\$(CONFIG)\obj\appweb.obj
-	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\appweb.obj -Fd$(BUILD)\obj\appweb.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\server\appweb.c $(LOG)
+	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\appweb.obj -Fd$(BUILD)\obj\appweb.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE="embedtls.h" $(IFLAGS) src\server\appweb.c $(LOG)
 
 #
 #   appweb
@@ -783,7 +783,7 @@ DEPS_46 = $(DEPS_46) build\$(CONFIG)\inc\mpr.h
 build\$(CONFIG)\obj\appwebMonitor.obj: \
     src\server\windows\appwebMonitor.c $(DEPS_46)
 	@echo .. [Compile] build\$(CONFIG)\obj\appwebMonitor.obj
-	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\appwebMonitor.obj -Fd$(BUILD)\obj\appwebMonitor.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\server\windows\appwebMonitor.c $(LOG)
+	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\appwebMonitor.obj -Fd$(BUILD)\obj\appwebMonitor.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE="embedtls.h" $(IFLAGS) src\server\windows\appwebMonitor.c $(LOG)
 
 #
 #   appwebMonitor
@@ -855,7 +855,7 @@ DEPS_49 = $(DEPS_49) build\$(CONFIG)\inc\appweb.h
 build\$(CONFIG)\obj\authpass.obj: \
     src\utils\authpass.c $(DEPS_49)
 	@echo .. [Compile] build\$(CONFIG)\obj\authpass.obj
-	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\authpass.obj -Fd$(BUILD)\obj\authpass.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\utils\authpass.c $(LOG)
+	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\authpass.obj -Fd$(BUILD)\obj\authpass.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE="embedtls.h" $(IFLAGS) src\utils\authpass.c $(LOG)
 
 #
 #   authpass
@@ -927,7 +927,7 @@ DEPS_52 = $(DEPS_52) build\$(CONFIG)\inc\mpr-version.h
 build\$(CONFIG)\obj\esp.obj: \
     src\esp\esp.c $(DEPS_52)
 	@echo .. [Compile] build\$(CONFIG)\obj\esp.obj
-	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\esp.obj -Fd$(BUILD)\obj\esp.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\esp\esp.c $(LOG)
+	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\esp.obj -Fd$(BUILD)\obj\esp.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE="embedtls.h" $(IFLAGS) src\esp\esp.c $(LOG)
 
 !IF "$(ME_COM_ESP)" == "1"
 #
@@ -982,7 +982,7 @@ DEPS_54 = $(DEPS_54) src\http\http.h
 build\$(CONFIG)\obj\http.obj: \
     src\http\http.c $(DEPS_54)
 	@echo .. [Compile] build\$(CONFIG)\obj\http.obj
-	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\http.obj -Fd$(BUILD)\obj\http.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\http\http.c $(LOG)
+	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\http.obj -Fd$(BUILD)\obj\http.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE="embedtls.h" $(IFLAGS) src\http\http.c $(LOG)
 
 !IF "$(ME_COM_HTTP)" == "1"
 #
@@ -1065,7 +1065,7 @@ DEPS_58 = $(DEPS_58) build\$(CONFIG)\inc\mpr.h
 build\$(CONFIG)\obj\watchdog.obj: \
     src\watchdog\watchdog.c $(DEPS_58)
 	@echo .. [Compile] build\$(CONFIG)\obj\watchdog.obj
-	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\watchdog.obj -Fd$(BUILD)\obj\watchdog.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\watchdog\watchdog.c $(LOG)
+	"$(CC)" -c $(DFLAGS) -Fo$(BUILD)\obj\watchdog.obj -Fd$(BUILD)\obj\watchdog.pdb $(CFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE="embedtls.h" $(IFLAGS) src\watchdog\watchdog.c $(LOG)
 
 !IF "$(ME_COM_WATCHDOG)" == "1"
 #
