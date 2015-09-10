@@ -223,17 +223,11 @@ static int parseFileInner(MaState *state, cchar *path)
             return MPR_ERR_BAD_SYNTAX;
         }
         state->key = key;
-        /*
-            Allow directives to run commands and yield without worring about holding references.
-         */
-        mprPauseGC();
         if ((*directive)(state, key, value) < 0) {
-            mprResumeGC();
             mprLog("error appweb config", 0, "Error with directive \"%s\". At line %d in %s", 
                 state->key, state->lineNumber, state->filename);
             return MPR_ERR_BAD_SYNTAX;
         }
-        mprResumeGC();
         mprYield(0);
         state = state->top->current;
     }
