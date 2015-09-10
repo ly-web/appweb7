@@ -1,6 +1,8 @@
 Embedthis Appweb
 ===
 
+[![Build Status](https://travis-ci.org/embedthis/appweb.png)](https://travis-ci.org/embedthis/appweb)
+
 The fast, little web server for embedded applications. 
 
 Branches
