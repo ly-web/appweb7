@@ -33,8 +33,8 @@
         }
     ],
     "dependencies": {
-        "http": "~6.1",
-        "mpr": "~6.1",
+        "http": "~6.2",
+        "mpr": "~6.2",
         "osdep": "~0.8",
         "pcre": "~1.0",
         "ssl": "~0.9",
@@ -45,7 +45,7 @@
         "appweb-php": "~0.1",
         "certs": "~0.1",
         "ejscript": "~2.6",
-        "esp": "~6.0",
+        "esp": "~6.1",
         "mpr-matrixssl": "~0.3",
         "mpr-mbedtls": "~0.4",
         "mpr-nanossl": "~0.3",

@@ -9,7 +9,9 @@
 
 #include "osdep.h"
 
-#define MBEDTLS_DEPRECATED_WARNING
+#if ME_UNIX_LIKE
+    #define MBEDTLS_DEPRECATED_WARNING
+#endif
 #define MBEDTLS_DEPRECATED_REMOVED
 #define MBEDTLS_REMOVE_ARC4_CIPHERSUITES
 #undef MBEDTLS_SELF_TEST
@@ -40,9 +42,6 @@
 #endif
 #if ME_CPU_ARCH == ME_CPU_X86 || ME_CPU_ARCH == ME_CPU_X64
     #define MBEDTLS_HAVE_SSE2
-#endif
-#if VXWORKS
-    #undef MBEDTLS_HAVE_TIME
 #endif
 
 /*
