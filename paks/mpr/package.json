@@ -30,6 +30,8 @@
         }
     ],
     "dependencies": {
+        "mbedtls": "~2.1",
+        "mpr-mbedtls": "~0.4",
         "osdep": "~0.8",
         "ssl": "~0.9"
     },
