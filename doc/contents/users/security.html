@@ -335,8 +335,9 @@ Accept-Ranges: bytes
                <li>TLS level compression</li>
             </ul>
             <p>By default, Appweb does not use TLS with TLS compression and is thus not vulnerable to this exploit. 
-            The OpenSSL SSL_COMP_add_compression_method will enable TLS compression, so it is important not to use this
-            OpenSSL API.</p>
+            If you are using OpenSSL, the OpenSSL SSL_COMP_add_compression_method will enable TLS compression, so it 
+            is important not to use this OpenSSL API.</p>
+
             <h3>Breach Exploit</h3>
             <p>The <a href="http://breachattack.com">Breach</a> exploit is a variant of the Crime exploit. It attacks and
             discovers private server information, such as CSRF tokens, by observing the compression of HTTP responses over

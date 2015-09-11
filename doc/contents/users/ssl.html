@@ -81,9 +81,9 @@ openssl req -new -key server.key -out server.csr
             provider for their needs.</p>
             <p>Appweb provides two SSL implementations:</p>
             <ul>
+                <li>MbedTLS -- designed for embedded use. This is the default SSL stack and is pre-integrated with Appweb. 
+                    It is configured and enabled by default.</li>
                 <li>OpenSSL -- designed for enterprise use. See <a href=
                     "http://www.openssl.org">http://www.openssl.org</a>.</li>
-                <li>MatrixSSL -- available as a package from the 
-                    <a href="https://embedthis.com/catalog/">Pak Catalog</a>.</li>
             </ul>
-            <p>The binary installation will use the OpenSSL provider by default.</p>
+            <p>The binary installation will use the MbedTLS provider by default.</p>
