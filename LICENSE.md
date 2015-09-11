@@ -14,20 +14,9 @@ Third Party Licenses
 
 The Software contains third party software under the agreements that follow.
 
-### Dtoa License
+### MbedTLS License
 
-The Dtoa module is used in Ejscript.
-
-Permission to use, copy, modify, and distribute this software for any purpose 
-without fee is hereby granted, provided that this entire notice is included 
-in all copies of any software which is or includes a copy or modification of 
-this software and in all copies of the supporting documentation for such 
-software.
-
-THIS SOFTWARE IS BEING PROVIDED "AS IS", WITHOUT ANY EXPRESS OR IMPLIED 
-WARRANTY. IN PARTICULAR, NEITHER THE AUTHOR NOR LUCENT MAKES ANY REPRESENTATION
-OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY OF THIS SOFTWARE OR ITS 
-FITNESS FOR ANY PARTICULAR PURPOSE.
+MbedTLS - [Apache](http://www.apache.org/licenses/LICENSE-2.0)
 
 
 ### Perl Regular Expressions License
@@ -53,11 +42,6 @@ documentation and/or software.
 ### SQLite License
 
 SQLite - [Public Domain](http://www.sqlite.org/copyright.html)
-
-
-### Zlib License
-
-ZLIB - [MIT Style License](http://www.zlib.net/zlib_license.html)
 
 
 Trademarks and Copyrights
