@@ -6709,9 +6709,9 @@ static cchar *getDebug(EspRoute *eroute)
             sends(http->platform, "-mine") || sends(http->platform, "-vsdebug");
     }
     if (scontains(http->platform, "windows-")) {
-        return (symbols) ? "-DME_DEBUG -Zi -Od" : "-Os";
+        return (symbols) ? "-Zi -Od" : "-Os";
     }
-    return (symbols) ? "-DME_DEBUG -g" : "-O2";
+    return (symbols) ? "-g" : "-O2";
 }
 
 
