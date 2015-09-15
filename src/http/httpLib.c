@@ -8943,8 +8943,12 @@ PUBLIC int httpHandleDirectory(HttpConn *conn)
             path = 0;
         }
         if (path) {
-            pathInfo = sjoin(rx->scriptName, rx->pathInfo, index, NULL);
-            httpSetUri(conn, httpFormatUri(req->scheme, req->host, req->port, pathInfo, req->reference, req->query, 0));
+            pathInfo = sjoin(req->path, index, NULL);
+            if (httpSetUri(conn, httpFormatUri(req->scheme, req->host, req->port, pathInfo, req->reference, 
+                    req->query, 0)) < 0) {
+                mprLog("error http", 0, "Cannot handle directory \"%s\"", pathInfo);
+                return HTTP_ROUTE_REJECT;
+            }
             tx->filename = httpMapContent(conn, path);
             mprGetPathInfo(tx->filename, &tx->fileInfo);
             return HTTP_ROUTE_REROUTE;
