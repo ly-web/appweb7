@@ -6,7 +6,7 @@ Me.load({
     targets: {
         appweb: {
             type: 'exe',
-            depends: [ 'libappweb' ],
+            depends: [ 'libappweb', 'ssl' ],
             sources: [ 'appweb.c' ],
         },
 
