@@ -543,6 +543,7 @@ will match any of the URIs:
             are created for route pattern tokens. This provides an
             easy mechanism for extracting useful information from the request URI and passing it to the web page or
             controller for processing.</p>
+
             <a id="step-target"></a>
             <h3>Target Execution</h3>
             <p>Route targets have responsibility to generate the actual response to the client.
@@ -550,19 +551,22 @@ will match any of the URIs:
             If a route has an explicit handler defined via <em>SetHandler</em> then that handler will be used.
             If a set of handlers have been defined via <em>AddHandler</em> directives, then the handler defined with 
             the corresponding URI extension will be selected.</p>
-            The target has four possible rules: <em>close</em>, <em>redirect</em>, <em>run</em> and
+
+            <p>The target has four possible rules: <em>close</em>, <em>redirect</em>, <em>run</em> and
             <em>write</em>.  Of these, all except for the <em>close</em> rule take parameters that are 
-            expanded using the matching sub-expressions and/or route tokens derived when matching the route pattern.
+            expanded using the matching sub-expressions and/or route tokens derived when matching the route pattern.</p>
             <p>Target rule parameters can use <em>"${token}"</em> to be replaced with the value of the token.
             Target rule parameters can also use <em>"$N"</em> to be replaced with the Nth matching sub-expression, 
             <em>"$&amp;"</em> to be replaced with the entire
             matched pattern, <em>"$`"</em> to be replaced with the portion that precedes the matched pattern and 
-            <em>"$'"</em> to be replaced with the portion that follows the matched pattern. 
-            <p>For example:</p>
+            <em>"$'"</em> to be replaced with the portion that follows the matched pattern.  For example:</p>
 <pre class="ui code segment">
 Target write 200 "Running controller ${controller} action ${action}\n\n"
 </pre>
-            <p>This will write the message back to the client with a HTML status code of 200 .</p>
+            <p>This will write the message back to the client with a HTML status code of 200. 
+            See the <a href="http://l:5000/ref/api/http.html#group___http_route_1ga7a2248e73a4b634e923c4e4faab2e4e7">
+                httpSetRouteTarget</a> API for full details regarding possible tokens.</p>
+
             <p>Note: to be more secure, the <em>write</em> rule will escape embedded HTML sequences. If you need to emit
             HTML, use the <em>-r</em> switch for raw write output.</p>
             <h3>Prefix Removal</h3>

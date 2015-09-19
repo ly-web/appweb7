@@ -647,6 +647,10 @@ Defense reboot REMEDY=restart
                             The <i>add</i> option will add the header if it is not already present. The <i>append</i> option will
                             add or append to an existing header of the same name. The <i>remove</i> option will remove the header if
                             it exists. The <i>set</i> option will set the header overwriting any prior value.</p>
+                            <p>Header values may contain tokens of the form ${token} which will be expanded when the 
+                            client HTTP requests are processed.  See the 
+                            <a href="http://l:5000/ref/api/http.html#group___http_route_1ga7a2248e73a4b634e923c4e4faab2e4e7">
+                            httpSetRouteTarget</a> API for full details regarding possible tokens.</p>
                         </td>
                     </tr>
                 </tbody>
