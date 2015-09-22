@@ -2534,24 +2534,6 @@ static int sslCipherSuiteDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-#if UNUSED
-/*
-    SSLProvider [provider]
- */
-static int sslProviderDirective(MaState *state, cchar *key, cchar *value)
-{
-    char    *provider;
-
-    if (!maTokenize(state, value, "?S", &provider)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-    checkSsl(state);
-    mprSetSslProvider(state->route->ssl, provider);
-    return 0;
-}
-#endif
-
-
 /*
     SSLEngine on
     DEPRECATE in 6.0
@@ -2565,9 +2547,6 @@ static int sslEngineDirective(MaState *state, cchar *key, cchar *value)
     }
     if (on) {
         checkSsl(state);
-#if UNUSED
-        mprSetSslProvider(state->route->ssl, provider);
-#endif
         if (!state->host->secureEndpoint) {
             if (httpSecureEndpointByName(state->host->name, state->route->ssl) < 0) {
                 mprLog("error ssl", 0, "No HttpEndpoint at %s to secure. Must use inside a VirtualHost block", 
@@ -3500,9 +3479,6 @@ static int parseInit()
     maAddDirective("SSLCertificateKeyFile", sslCertificateKeyFileDirective);
     maAddDirective("SSLCipherSuite", sslCipherSuiteDirective);
     maAddDirective("SSLProtocol", sslProtocolDirective);
-#if UNUSED
-    maAddDirective("SSLProvider", sslProviderDirective);
-#endif
     maAddDirective("SSLVerifyClient", sslVerifyClientDirective);
     maAddDirective("SSLVerifyIssuer", sslVerifyIssuerDirective);
     maAddDirective("SSLVerifyDepth", sslVerifyDepthDirective);
