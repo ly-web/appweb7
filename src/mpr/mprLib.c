@@ -474,6 +474,9 @@ static MprMem *allocMem(size_t required)
     size_t          *bitmap, localMap;
     int             baseBindex, bindex, qindex, baseQindex, retryIndex;
 
+    if (!heap) {
+        return 0;
+    }
     ATOMIC_INC(requests);
 
     if ((qindex = sizetoq(required)) >= 0) {
