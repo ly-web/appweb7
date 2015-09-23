@@ -1744,7 +1744,7 @@ static int makeDirDirective(MaState *state, cchar *key, cchar *value)
         if (group && *group) {
             if (snumber(group)) {
                 gid = (int) stoi(group);
-            } else if (smatch(owner, "APPWEB")) {
+            } else if (smatch(group, "APPWEB")) {
                 gid = HTTP->gid;
             } else {
                 gid = groupToID(group);
