@@ -97,10 +97,10 @@ WEB_GROUP             ?= $(shell egrep 'www-data|_www|nobody|nogroup' /etc/group
 TARGETS               += $(BUILD)/bin/appweb.out
 TARGETS               += $(BUILD)/bin/authpass.out
 ifeq ($(ME_COM_ESP),1)
-    TARGETS           += $(BUILD)/bin/esp-compile.json
+    TARGETS           += $(BUILD)/bin/appweb-esp.out
 endif
 ifeq ($(ME_COM_ESP),1)
-    TARGETS           += $(BUILD)/bin/appweb-esp.out
+    TARGETS           += $(BUILD)/.extras-modified
 endif
 ifeq ($(ME_COM_HTTP),1)
     TARGETS           += $(BUILD)/bin/http.out
@@ -163,8 +163,8 @@ clean:
 	rm -f "$(BUILD)/obj/watchdog.o"
 	rm -f "$(BUILD)/bin/appweb.out"
 	rm -f "$(BUILD)/bin/authpass.out"
-	rm -f "$(BUILD)/bin/esp-compile.json"
 	rm -f "$(BUILD)/bin/appweb-esp.out"
+	rm -f "$(BUILD)/.extras-modified"
 	rm -f "$(BUILD)/bin/http.out"
 	rm -f "$(BUILD)/.install-certs-modified"
 	rm -f "$(BUILD)/bin/libappweb.out"
@@ -695,26 +695,29 @@ $(BUILD)/bin/authpass.out: $(DEPS_48)
 
 ifeq ($(ME_COM_ESP),1)
 #
-#   esp-compile.json
+#   espcmd
 #
-DEPS_49 += src/esp/esp-compile.json
+DEPS_49 += $(BUILD)/bin/libesp.out
+DEPS_49 += $(BUILD)/obj/esp.o
 
-$(BUILD)/bin/esp-compile.json: $(DEPS_49)
-	@echo '      [Copy] $(BUILD)/bin/esp-compile.json'
-	mkdir -p "$(BUILD)/bin"
-	cp src/esp/esp-compile.json $(BUILD)/bin/esp-compile.json
+$(BUILD)/bin/appweb-esp.out: $(DEPS_49)
+	@echo '      [Link] $(BUILD)/bin/appweb-esp.out'
+	$(CC) -o $(BUILD)/bin/appweb-esp.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/esp.o" $(LIBS) -lmpr-version -lmpr-mbedtls -lmbedtls -Wl,-r 
 endif
 
 ifeq ($(ME_COM_ESP),1)
 #
-#   espcmd
+#   extras
 #
-DEPS_50 += $(BUILD)/bin/libesp.out
-DEPS_50 += $(BUILD)/obj/esp.o
+DEPS_50 += src/esp/esp-compile.json
+DEPS_50 += src/esp/vcvars.bat
 
-$(BUILD)/bin/appweb-esp.out: $(DEPS_50)
-	@echo '      [Link] $(BUILD)/bin/appweb-esp.out'
-	$(CC) -o $(BUILD)/bin/appweb-esp.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/esp.o" $(LIBS) -lmpr-version -lmpr-mbedtls -lmbedtls -Wl,-r 
+$(BUILD)/.extras-modified: $(DEPS_50)
+	@echo '      [Copy] $(BUILD)/bin'
+	mkdir -p "$(BUILD)/bin"
+	cp src/esp/esp-compile.json $(BUILD)/bin/esp-compile.json
+	cp src/esp/vcvars.bat $(BUILD)/bin/vcvars.bat
+	touch "$(BUILD)/.extras-modified"
 endif
 
 ifeq ($(ME_COM_HTTP),1)

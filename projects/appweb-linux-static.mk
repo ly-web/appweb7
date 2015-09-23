@@ -92,10 +92,10 @@ TARGETS               += init
 TARGETS               += $(BUILD)/bin/appweb
 TARGETS               += $(BUILD)/bin/authpass
 ifeq ($(ME_COM_ESP),1)
-    TARGETS           += $(BUILD)/bin/esp-compile.json
+    TARGETS           += $(BUILD)/bin/appweb-esp
 endif
 ifeq ($(ME_COM_ESP),1)
-    TARGETS           += $(BUILD)/bin/appweb-esp
+    TARGETS           += $(BUILD)/.extras-modified
 endif
 ifeq ($(ME_COM_HTTP),1)
     TARGETS           += $(BUILD)/bin/http
@@ -155,8 +155,8 @@ clean:
 	rm -f "$(BUILD)/obj/watchdog.o"
 	rm -f "$(BUILD)/bin/appweb"
 	rm -f "$(BUILD)/bin/authpass"
-	rm -f "$(BUILD)/bin/esp-compile.json"
 	rm -f "$(BUILD)/bin/appweb-esp"
+	rm -f "$(BUILD)/.extras-modified"
 	rm -f "$(BUILD)/bin/http"
 	rm -f "$(BUILD)/.install-certs-modified"
 	rm -f "$(BUILD)/bin/libappweb.a"
@@ -775,59 +775,62 @@ $(BUILD)/bin/authpass: $(DEPS_49)
 
 ifeq ($(ME_COM_ESP),1)
 #
-#   esp-compile.json
+#   espcmd
 #
-DEPS_50 += src/esp/esp-compile.json
+DEPS_50 += $(BUILD)/bin/libesp.a
+DEPS_50 += $(BUILD)/obj/esp.o
 
-$(BUILD)/bin/esp-compile.json: $(DEPS_50)
-	@echo '      [Copy] $(BUILD)/bin/esp-compile.json'
-	mkdir -p "$(BUILD)/bin"
-	cp src/esp/esp-compile.json $(BUILD)/bin/esp-compile.json
+ifeq ($(ME_COM_MBEDTLS),1)
+    LIBS_50 += -lmbedtls
+endif
+ifeq ($(ME_COM_MBEDTLS),1)
+    LIBS_50 += -lmpr-mbedtls
+endif
+ifeq ($(ME_COM_MBEDTLS),1)
+    LIBS_50 += -lmbedtls
+endif
+ifeq ($(ME_COM_OPENSSL),1)
+    LIBS_50 += -lmpr-openssl
+endif
+LIBS_50 += -lmpr
+ifeq ($(ME_COM_MBEDTLS),1)
+    LIBS_50 += -lmpr-mbedtls
+endif
+ifeq ($(ME_COM_PCRE),1)
+    LIBS_50 += -lpcre
+endif
+ifeq ($(ME_COM_HTTP),1)
+    LIBS_50 += -lhttp
+endif
+ifeq ($(ME_COM_PCRE),1)
+    LIBS_50 += -lpcre
+endif
+LIBS_50 += -lmpr
+LIBS_50 += -lmpr-version
+LIBS_50 += -lesp
+LIBS_50 += -lmpr-version
+ifeq ($(ME_COM_HTTP),1)
+    LIBS_50 += -lhttp
+endif
+
+$(BUILD)/bin/appweb-esp: $(DEPS_50)
+	@echo '      [Link] $(BUILD)/bin/appweb-esp'
+	$(CC) -o $(BUILD)/bin/appweb-esp $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/esp.o" $(LIBPATHS_50) $(LIBS_50) $(LIBS_50) $(LIBS) $(LIBS) 
 endif
 
 ifeq ($(ME_COM_ESP),1)
 #
-#   espcmd
+#   extras
 #
-DEPS_51 += $(BUILD)/bin/libesp.a
-DEPS_51 += $(BUILD)/obj/esp.o
+DEPS_51 += src/esp/esp-compile.json
+DEPS_51 += src/esp/vcvars.bat
 
-ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_51 += -lmbedtls
-endif
-ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_51 += -lmpr-mbedtls
-endif
-ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_51 += -lmbedtls
-endif
-ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_51 += -lmpr-openssl
-endif
-LIBS_51 += -lmpr
-ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_51 += -lmpr-mbedtls
-endif
-ifeq ($(ME_COM_PCRE),1)
-    LIBS_51 += -lpcre
-endif
-ifeq ($(ME_COM_HTTP),1)
-    LIBS_51 += -lhttp
-endif
-ifeq ($(ME_COM_PCRE),1)
-    LIBS_51 += -lpcre
-endif
-LIBS_51 += -lmpr
-LIBS_51 += -lmpr-version
-LIBS_51 += -lesp
-LIBS_51 += -lmpr-version
-ifeq ($(ME_COM_HTTP),1)
-    LIBS_51 += -lhttp
-endif
-
-$(BUILD)/bin/appweb-esp: $(DEPS_51)
-	@echo '      [Link] $(BUILD)/bin/appweb-esp'
-	$(CC) -o $(BUILD)/bin/appweb-esp $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/esp.o" $(LIBPATHS_51) $(LIBS_51) $(LIBS_51) $(LIBS) $(LIBS) 
+$(BUILD)/.extras-modified: $(DEPS_51)
+	@echo '      [Copy] $(BUILD)/bin'
+	mkdir -p "$(BUILD)/bin"
+	cp src/esp/esp-compile.json $(BUILD)/bin/esp-compile.json
+	cp src/esp/vcvars.bat $(BUILD)/bin/vcvars.bat
+	touch "$(BUILD)/.extras-modified"
 endif
 
 ifeq ($(ME_COM_HTTP),1)
