@@ -2229,7 +2229,7 @@ static int roleDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S ?*", &name, &abilities)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (httpAddRole(state->auth, name, abilities) < 0) {
+    if (httpAddRole(state->auth, name, abilities) == 0) {
         mprLog("error appweb config", 0, "Cannot add role %s", name);
         return MPR_ERR_BAD_SYNTAX;
     }
