@@ -21,7 +21,7 @@ See https://embedthis.com/appweb/doc/index.html
 
 ### Building
     You can build with make or with MakeMe. MakeMe is quicker and more flexible.
-    To install MakeMe, download MakeMe from https://embedthis.com/makeme/download.html
+    To install MakeMe, download MakeMe from https://embedthis.com/makeme/
 
 ### To build with make:
 
