@@ -228,7 +228,6 @@ static int parseFileInner(MaState *state, cchar *path)
                 state->key, state->lineNumber, state->filename);
             return MPR_ERR_BAD_SYNTAX;
         }
-        mprYield(0);
         state = state->top->current;
     }
     /* EOF */
@@ -1758,7 +1757,7 @@ static int makeDirDirective(MaState *state, cchar *key, cchar *value)
         if (group && *group) {
             if (snumber(group)) {
                 gid = (int) stoi(group);
-            } else if (smatch(owner, "APPWEB")) {
+            } else if (smatch(group, "APPWEB")) {
                 gid = HTTP->gid;
             } else {
                 gid = groupToID(group);
@@ -2243,7 +2242,7 @@ static int roleDirective(MaState *state, cchar *key, cchar *value)
     if (!maTokenize(state, value, "%S ?*", &name, &abilities)) {
         return MPR_ERR_BAD_SYNTAX;
     }
-    if (httpAddRole(state->auth, name, abilities) < 0) {
+    if (httpAddRole(state->auth, name, abilities) == 0) {
         mprLog("error appweb config", 0, "Cannot add role %s", name);
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -2534,24 +2533,6 @@ static int sslCipherSuiteDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-#if UNUSED
-/*
-    SSLProvider [provider]
- */
-static int sslProviderDirective(MaState *state, cchar *key, cchar *value)
-{
-    char    *provider;
-
-    if (!maTokenize(state, value, "?S", &provider)) {
-        return MPR_ERR_BAD_SYNTAX;
-    }
-    checkSsl(state);
-    mprSetSslProvider(state->route->ssl, provider);
-    return 0;
-}
-#endif
-
-
 /*
     SSLEngine on
     DEPRECATE in 6.0
@@ -2565,9 +2546,6 @@ static int sslEngineDirective(MaState *state, cchar *key, cchar *value)
     }
     if (on) {
         checkSsl(state);
-#if UNUSED
-        mprSetSslProvider(state->route->ssl, provider);
-#endif
         if (!state->host->secureEndpoint) {
             if (httpSecureEndpointByName(state->host->name, state->route->ssl) < 0) {
                 mprLog("error ssl", 0, "No HttpEndpoint at %s to secure. Must use inside a VirtualHost block", 
@@ -3128,6 +3106,7 @@ PUBLIC bool maTokenize(MaState *state, cchar *line, cchar *fmt, ...)
     if (!httpTokenizev(state->route, line, fmt, ap)) {
         mprLog("error appweb config", 0, "Bad \"%s\" directive at line %d in %s, line: %s %s", 
                 state->key, state->lineNumber, state->filename, state->key, line);
+        va_end(ap);
         return 0;
     }
     va_end(ap);
@@ -3499,9 +3478,6 @@ static int parseInit()
     maAddDirective("SSLCertificateKeyFile", sslCertificateKeyFileDirective);
     maAddDirective("SSLCipherSuite", sslCipherSuiteDirective);
     maAddDirective("SSLProtocol", sslProtocolDirective);
-#if UNUSED
-    maAddDirective("SSLProvider", sslProviderDirective);
-#endif
     maAddDirective("SSLVerifyClient", sslVerifyClientDirective);
     maAddDirective("SSLVerifyIssuer", sslVerifyIssuerDirective);
     maAddDirective("SSLVerifyDepth", sslVerifyDepthDirective);
