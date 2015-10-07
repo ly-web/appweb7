@@ -533,18 +533,16 @@ static bool parseCgiHeaders(Cgi *cgi, HttpPacket *packet)
                 value[len - 1] = '\0';
                 len--;
             }
-            key = slower(key);
-
-            if (strcmp(key, "location") == 0) {
+            if (scaselesscmp(key, "location") == 0) {
                 cgi->location = value;
 
-            } else if (strcmp(key, "status") == 0) {
+            } else if (scaselesscmp(key, "status") == 0) {
                 httpSetStatus(conn, atoi(value));
 
-            } else if (strcmp(key, "content-type") == 0) {
+            } else if (scaselesscmp(key, "content-type") == 0) {
                 httpSetHeaderString(conn, "Content-Type", value);
 
-            } else if (strcmp(key, "content-length") == 0) {
+            } else if (scaselesscmp(key, "content-length") == 0) {
                 httpSetContentLength(conn, (MprOff) stoi(value));
                 httpSetChunkSize(conn, 0);
 
