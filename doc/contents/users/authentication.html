@@ -1,7 +1,7 @@
 {
     title:  'User Authentication',
     crumbs: [
-        { "User's Guide": 'index.html' },
+        { "User's Guide": '../users/' },
     ],
 }
             <h1>User Authentication</h1>
@@ -95,7 +95,7 @@
             empty string "" to omit. For example:</p>
             <pre class="ui code segment">
 &lt;Route ^/&gt;
-    <b>AuthType form example.com /public/login.html /login /logout /index.html /public/login.html</b>
+    <b>AuthType form example.com /public/login.html /login /logout / /public/login.html</b>
 &lt;/Route&gt;
 
 &lt;Route ^/public/&gt;
@@ -222,7 +222,7 @@
 
             <p>The alternative is to secure just the login page, and login/logout services.
             This can be easily achieved by using <em>https:///</em> prefix on the AuthType URLs. For example:</p>
-            <pre class="ui code segment">AuthType form example.com https:///public/login.html https:///login /logout http:///index.html</pre>
+            <pre class="ui code segment">AuthType form example.com https:///public/login.html https:///login /logout http:///</pre>
             <p>This will create the required routes and automatically switch to SSL for the login.html page and when sending
                 credentials to /login. It will automatically switch back to HTTP once logged in.</p>
 
