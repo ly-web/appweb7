@@ -2,10 +2,10 @@
     "name": "appweb-doc",
     "title": "Appweb Documentation",
     "dependencies": {
-        "exp-css": "~0.2",
-        "exp-js": "~0.2",
-        "exp-less": "~0.2",
         "me-docstyle": "~0.9"
+    },
+    "devDependencies": {
+        "expansive": ">=0.6.0"
     },
     "directories": {
         "export": "contents/lib"
