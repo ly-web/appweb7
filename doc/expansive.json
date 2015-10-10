@@ -5,6 +5,11 @@
     control: {
         listen: '127.0.0.1:4000'
     },
+    debug: {
+        services: {
+            html: false
+        }
+    },
     release: {
         services: {
             reload: {
