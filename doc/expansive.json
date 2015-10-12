@@ -1,19 +1,36 @@
 {
-    meta: {
-        site:  'https://embedthis.com/appweb/doc',
+    "meta": {
+        "site": "https://embedthis.com/appweb/doc"
     },
-    control: {
-        listen: '127.0.0.1:4000'
+    "control": {
+        "listen": "127.0.0.1:4000"
     },
-    debug: {
-        services: {
-            html: false
+    "debug": {
+        "services": {
+            "compress": false,
+            "html": false,
+            "js": {
+                "minify": false,
+                "usemin": true,
+                "usemap": true
+            }
         }
     },
-    release: {
-        services: {
-            reload: {
-                enable: true
+    "release": {
+        "services": {
+            "reload": {
+                "enable": true
+            },
+            "compress": true,
+            "css": {
+                "minify": true,
+                "usemin": true,
+                "usemap": false
+            },
+            "js": {
+                "minify": true,
+                "usemin": true,
+                "usemap": false
             }
         }
     }
