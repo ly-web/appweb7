@@ -1,3 +1,8 @@
+/*
+    expansive.es - Configuration for exp-js
+
+    Transform by minifying.
+ */
 Expansive.load({
     transforms: [ {
         name:     'js',
@@ -7,23 +12,39 @@ Expansive.load({
             'min.map',
             'min.js.map'
         },
-        //  MOB - rename inline: filename
-        aggregate:  null,
         compress:   true,
         dotmin:     true,
-        minify:     false,
+        extract:    false,
+        files:      [ 'lib/**.js*', '!lib**.map' ],
         force:      false,
         mangle:     true,
+        minify:     false,
         usemap:     true,
         usemin:     true,
 
         script: `
-            let service = expansive.services['js']
+            let service = expansive.services.js
+            //  DEPRECATE
+            for each (svc in [ 'render-js', 'minify-js' ]) {
+                let sp
+                if ((sp = expansive.services[svc]) != null) {
+                    for each (name in [ 'compress', 'dotmin', 'minify', 'mangle', 'usemap', 'usemin' ]) {
+                        if (sp[name]) {
+                            service[name] = sp[name] | service[name]
+                            trace('Warn', 'Legacy configuration for ' + svc + '.' + name + 
+                                          ' in expansive.json. Migrate to js.' + name + '.')
+                        }
+                    }
+                }
+            }
             if (service.minify) {
                 service.usemin ||= true
             }
             if (service.usemap) {
                 service.usemin ||= true
+            }
+            if (!service.extract) {
+                expansive.services['extract-js'].enable = false
             }
 
             function resolve(path: Path, service): Path? {
@@ -55,7 +76,7 @@ Expansive.load({
                      */                           
                     if ((service.minify && service.force) ||
                         !(minified.exists && service.usemin && (!service.usemap ||
-                            (vfile.replaceExt('min.map').exists || vfile.replaceExt('js.map').exists)))) {
+                            (vfile.replaceExt('min.map').exists || vfile.replaceExt('min.js.map').exists)))) {
                         if (service.minify && service.dotmin) {
                             return path.trimExt().joinExt('min.js', true)
                         }
@@ -73,7 +94,6 @@ Expansive.load({
         script: `
             let directories = expansive.directories
             let service = expansive.services.js
-            let collections = expansive.control.collections
 
             let cmd = Cmd.locate('uglifyjs')
             if (!cmd) {
@@ -112,20 +132,23 @@ Expansive.load({
 
     }, {
         name:  'render-js',
+        /*
+            Default to only scripts from packages under contents/lib
+            Required scripts may vary on a page by page basis.
+         */
         mappings: {
             'js',
             'min.js'
         },
         script: `
-            let service = expansive.services['render-js']
-            let collections = expansive.control.collections
-            if (!collections.scripts) {
-                /*
-                    Default to stylesheets from packages under contents/lib
-                 */
-                collections.scripts = [ expansive.getSourcePath(expansive.directories.lib).join('**.js*') ]
+            let service = expansive.services.js
+            if (service.files) {
+                if (!(service.files is Array)) {
+                    service.files = [ service.files ]
+                }
+                expansive.control.collections.scripts += service.files
             }
-            service.hash = {}
+            expansive.services['render-js'].hash = {}
 
             function pre(meta, service) {
                 if (expansive.modified.everything) {
@@ -167,9 +190,10 @@ Expansive.load({
             }
 
             /*
-                Render Scripts is based on 'collections.scripts' which defaults to '**.js'
+                Render Scripts is based on 'collections.scripts' which defaults to 'lib/**.js' and is modified
+                via expansive.json and addItems.
              */
-            public function renderScripts() {
+            public function renderScripts(filter = null, extras = []) {
                 let collections = expansive.collections
                 if (!collections.scripts) {
                     return
@@ -188,7 +212,24 @@ Expansive.load({
                     service.hash[collections.scripts] = buildScriptList(files).unique()
                 }
                 for each (script in service.hash[collections.scripts]) {
-                    write('<script src="' + meta.top.join(script) + '"></script>\n    ')
+                    if (filter && !Path(script).glob(filter)) {
+                        continue
+                    }
+                    let uri = meta.top.join(script).trimStart('./')
+                    write('<script src="' + uri + '"></script>\n    ')
+                }
+                if (extras && extras is String) {
+                    extras = [extras]
+                }
+                if (expansive.services['extract-js'].states) {
+                    let extracted = expansive.services['extract-js'].states[meta.destPath]
+                    if (extracted && extracted.href) {
+                        extras.push(expansive.services.js.resolve(extracted.href, expansive.services.js))
+                    }
+                }
+                for each (script in extras) {
+                    let uri = meta.top.join(script).trimStart('./')
+                    write('<script src="' + uri + '"></script>\n    ')
                 }
             }
         `
@@ -196,19 +237,18 @@ Expansive.load({
     }, {
         name:       'extract-js',
         mappings:   'html',
-        //MOB
-        enable: false, 
 
         script: `
             let service = expansive.services['extract-js']
             service.nextId = 0
+            service.states = {}
 
             /*
-                Local function to handle inline scripts
+                Local function to extract inline script elements
              */
-            function handleScripts(contents, meta, state): String {
+            function handleScriptElements(contents, meta, state): String {
                 let service = expansive.services['extract-js']
-                let re = /<script[^>]*>(.*)<\\/script>/mg
+                let re = /<script[^>]*>(.*)<\\/script>/smg
                 let start = 0, end = 0
                 let output = ''
                 let matches
@@ -229,9 +269,9 @@ Expansive.load({
             }
 
             /*
-                Local function to handle onclick attributes 
+                Local function to extract onclick attributes 
             */
-            function handleClicks(contents, meta, state): String {
+            function handleScriptAttributes(contents, meta, state): String {
                 let result = ''
                 let re = /<([\\w_\\-:.]+)([^>]*>)/g
                 let start = 0, end = 0
@@ -243,7 +283,7 @@ Expansive.load({
                     /* Emit prior contents */
                     result += contents.slice(start, end)
 
-                    let clickre = /(.*) +(onclick=)(["'])(.*)(\\3)(.*)/m
+                    let clickre = /(.*) +(onclick=)(["'])(.*?)(\\3)(.*)/m
                     if ((cmatches = clickre.exec(elt)) != null) {
                         elt = cmatches[1] + cmatches[6]
                         let id
@@ -251,7 +291,8 @@ Expansive.load({
                             id = ematches[1]
                         } else {
                             let service = expansive.services['extract-js']
-                            id = 'exp-' + md5(++service.nextId)
+                            // id = 'exp-' + md5(++service.nextId).slice(0, 8)
+                            id = 'exp-' + ++service.nextId
                             elt = cmatches[1] + ' id="' + id + '"' + cmatches[6]
                         }
                         state.onclick ||= {}
@@ -264,36 +305,28 @@ Expansive.load({
             }
 
             function transform(contents, meta, service) {
+                if (!expansive.services.js.extract) {
+                    return contents
+                }
                 let state = {}
-                contents = handleScripts(contents, meta, state)
-                contents = handleClicks(contents, meta, state)
-                let options = blend(service.clone(), meta['extract-js'])
-
+                contents = handleScriptElements(contents, meta, state)
+                contents = handleScriptAttributes(contents, meta, state)
                 if (state.scripts || state.onclick) {
-                    let collection = expansive.collections.scripts ||= []
-                    if (options.aggregate) {
-                        if (!collection.contains(options.aggregate)) {
-                            collection.push(options.aggregate)
-                        }
-                        file = options.aggregate
+                    let ss = service.states[meta.destPath] ||= {}
+                    if (expansive.services.js.extract === true) {
+                        ss.href = meta.destPath.replaceExt('js')
                     } else {
-                        let document = meta.dest.replaceExt('js')
-                        if (!collection.contains(document)) {
-                            collection.push(document)
-                        }
-                        file = meta.dest
+                        ss.href = expansive.services.js.extract
                     }
-                    service.states ||= {}
-                    let ss = service.states[file] ||= {}
                     if (state.scripts) {
                         ss.scripts ||= []
                         ss.scripts += state.scripts
-                        trace('Extract', 'Scripts from ' + meta.document)
+                        vtrace('Extract', 'Scripts from ' + meta.document)
                     }
                     if (state.onclick) {
                         ss.onclick ||= {}
                         blend(ss.onclick, state.onclick)
-                        trace('Extract', 'Onclick from ' + meta.document)
+                        vtrace('Extract', 'Onclick from ' + meta.document)
                     }
                 }
                 return contents
@@ -303,9 +336,13 @@ Expansive.load({
                 Post process and create external script files for inline scripts
              */
             function post(topMeta, service) {
+                let perdoc = (expansive.services.js.extract === true)
+                let scripts = '/*\n    Inline scripts for \n */\n'
+
                 for (let [file, state] in service.states) {
-                    let document = Path(file).replaceExt('js')
-                    let scripts = '/*\n    Inline scripts for ' + file + '\n */\n'
+                    if (perdoc) {
+                        scripts = '/*\n    Inline scripts for ' + file + '\n */\n'
+                    }
                     if (state.scripts) {
                         scripts += state.scripts.unique().join(';\n\n') + ';\n\n'
                     }
@@ -313,10 +350,20 @@ Expansive.load({
                         scripts += 'document.getElementById("' + id + '").addEventListener("click", function() { ' +
                             code + '});\n\n'
                     }
-                    let meta = blend(topMeta.clone(), { document: document, layout: null })
+                    if (perdoc) {
+                        let destPath = Path(file).replaceExt('js')
+                        let dest = directories.dist.join(destPath)
+                        let meta = blend(topMeta.clone(), { document: destPath, layout: null })
+                        scripts = renderContents(scripts, meta)
+                        writeDest(scripts, meta)
+                    }
+                }
+                if (!perdoc) {
+                    let destPath = expansive.services.js.extract
+                    let dest = directories.dist.join(destPath)
+                    let meta = blend(topMeta.clone(), { document: destPath, layout: null })
                     scripts = renderContents(scripts, meta)
                     writeDest(scripts, meta)
-                    delete service.states
                 }
             }
         `
