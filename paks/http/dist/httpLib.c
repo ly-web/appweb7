@@ -3349,6 +3349,9 @@ PUBLIC ssize httpReadBlock(HttpConn *conn, char *buf, ssize size, MprTicks timeo
     if (nbytes < size) {
         buf[nbytes] = '\0';
     }
+    if (nbytes == 0 && httpRequestExpired(conn, -1)) {
+        return MPR_ERR_TIMEOUT;
+    }
     return nbytes;
 }
 
