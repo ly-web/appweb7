@@ -5503,6 +5503,12 @@ PUBLIC uint64 httpGetNumber(cchar *value)
         number = stoi(value) * 60 * 60;
     } else if (sends(value, "day") || sends(value, "days")) {
         number = stoi(value) * 60 * 60 * 24;
+    } else if (sends(value, "week") || sends(value, "weeks")) {
+        number = stoi(value) * 60 * 60 * 24 * 7;
+    } else if (sends(value, "month") || sends(value, "months")) {
+        number = stoi(value) * 60 * 60 * 24 * 30;
+    } else if (sends(value, "year") || sends(value, "years")) {
+        number = stoi(value) * 60 * 60 * 24 * 365;
     } else if (sends(value, "kb") || sends(value, "k")) {
         number = stoi(value) * 1024;
     } else if (sends(value, "mb") || sends(value, "m")) {
