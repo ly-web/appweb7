@@ -5908,9 +5908,12 @@ static void connTimeout(HttpConn *conn, MprEvent *mprEvent)
             msg = sfmt("%s exceeded parse headers timeout of %lld sec", prefix, limits->requestParseTimeout  / 1000);
             event = "timeout.parse";
 
+#if UNUSED
+        /* Too noisy */
         } else if (conn->timeout == HTTP_INACTIVITY_TIMEOUT) {
             msg = sfmt("%s exceeded inactivity timeout of %lld sec", prefix, limits->inactivityTimeout / 1000);
             event = "timeout.inactivity";
+#endif
 
         } else if (conn->timeout == HTTP_REQUEST_TIMEOUT) {
             msg = sfmt("%s exceeded timeout %lld sec", prefix, limits->requestTimeout / 1000);
@@ -6150,7 +6153,6 @@ static void readPeerData(HttpConn *conn)
             conn->errorMsg = conn->sock->errorMsg ? conn->sock->errorMsg : sclone("Connection reset");
             conn->keepAliveCount = 0;
             conn->lastRead = 0;
-            httpTrace(conn, "connection.close", "context", "msg:'%s'", conn->errorMsg);
         }
     }
 }
@@ -6219,6 +6221,10 @@ PUBLIC void httpIO(HttpConn *conn, int eventMask)
         When a request completes, prepForNext will reset the state to HTTP_STATE_BEGIN
      */
     if (conn->state < HTTP_STATE_PARSED && conn->endpoint && (mprIsSocketEof(conn->sock) || (conn->keepAliveCount <= 0))) {
+        if (!conn->errorMsg) {
+            conn->errorMsg = conn->sock->errorMsg ? conn->sock->errorMsg : sclone("Server close");
+        }
+        httpTrace(conn, "connection.close", "context", "msg:'%s'", conn->errorMsg);
         httpDestroyConn(conn);
     } else if (!mprIsSocketEof(conn->sock) && conn->async && !conn->delay) {
         httpEnableConnEvents(conn);
