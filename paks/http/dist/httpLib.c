@@ -6400,6 +6400,9 @@ PUBLIC void httpSetupWaitHandler(HttpConn *conn, int eventMask)
             mprSetSocketDispatcher(sp, conn->dispatcher);
             mprEnableSocketEvents(sp, eventMask);
         }
+        if (sp->flags & (MPR_SOCKET_BUFFERED_READ | MPR_SOCKET_BUFFERED_WRITE)) {
+            mprRecallWaitHandler(sp->handler);
+        }
     } else if (sp->handler) {
         mprWaitOn(sp->handler, eventMask);
     }
