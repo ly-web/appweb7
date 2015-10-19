@@ -17228,7 +17228,7 @@ static void createErrorRequest(HttpConn *conn)
 
     rx = conn->rx;
     tx = conn->tx;
-    if (!rx->headerPacket) {
+    if (!rx->headerPacket || conn->errorDoc) {
         return;
     }
     httpTrace(conn, "request.errordoc", "context", "location:'%s',status:%d", tx->errorDocument, tx->status);
@@ -17288,6 +17288,8 @@ static void createErrorRequest(HttpConn *conn)
     mprPutStringToBuf(packet->content, headers);
     conn->input = packet;
     conn->state = HTTP_STATE_CONNECTED;
+    conn->errorDoc = 1;
+    conn->keepAliveCount = 0;
 }
 
 

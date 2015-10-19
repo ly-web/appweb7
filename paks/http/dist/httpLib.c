@@ -5908,6 +5908,8 @@ static void connTimeout(HttpConn *conn, MprEvent *mprEvent)
             msg = sfmt("%s exceeded parse headers timeout of %lld sec", prefix, limits->requestParseTimeout  / 1000);
             event = "timeout.parse";
 
+#if UNUSED
+        /* Too noisy */
         } else if (conn->timeout == HTTP_INACTIVITY_TIMEOUT) {
             msg = sfmt("%s exceeded inactivity timeout of %lld sec", prefix, limits->inactivityTimeout / 1000);
             event = "timeout.inactivity";
@@ -17226,7 +17228,7 @@ static void createErrorRequest(HttpConn *conn)
 
     rx = conn->rx;
     tx = conn->tx;
-    if (!rx->headerPacket) {
+    if (!rx->headerPacket || conn->errorDoc) {
         return;
     }
     httpTrace(conn, "request.errordoc", "context", "location:'%s',status:%d", tx->errorDocument, tx->status);
@@ -17286,6 +17288,8 @@ static void createErrorRequest(HttpConn *conn)
     mprPutStringToBuf(packet->content, headers);
     conn->input = packet;
     conn->state = HTTP_STATE_CONNECTED;
+    conn->errorDoc = 1;
+    conn->keepAliveCount = 0;
 }
 
 
