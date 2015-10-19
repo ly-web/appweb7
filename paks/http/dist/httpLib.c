@@ -4921,20 +4921,6 @@ static void parseRoutes(HttpRoute *route, cchar *key, MprJson *prop)
 }
 
 
-#if UNUSED
-static void parseRoutesPrint(HttpRoute *route, cchar *key, MprJson *prop)
-{
-    httpLogRoutes(route->host, 0);
-}
-
-
-static void parseRoutesReset(HttpRoute *route, cchar *key, MprJson *prop)
-{
-    httpResetRoutes(route->host);
-}
-#endif
-
-
 static void parseScheme(HttpRoute *route, cchar *key, MprJson *prop)
 {
     if (sstarts(prop->value, "https")) {
@@ -5631,10 +5617,6 @@ PUBLIC int httpInitParser()
     httpAddConfig("http.redirect", parseRedirect);
     httpAddConfig("http.renameUploads", parseRenameUploads);
     httpAddConfig("http.routes", parseRoutes);
-#if UNUSED
-    httpAddConfig("http.routes.print", parseRoutesPrint);
-    httpAddConfig("http.routes.reset", parseRoutesReset);
-#endif
     httpAddConfig("http.resources", parseResources);
     httpAddConfig("http.scheme", parseScheme);
     httpAddConfig("http.server", httpParseAll);
@@ -12746,9 +12728,11 @@ PUBLIC HttpRoute *httpCreateRoute(HttpHost *host)
     httpAddRouteFilter(route, http->rangeFilter->name, NULL, HTTP_STAGE_TX);
     httpAddRouteFilter(route, http->chunkFilter->name, NULL, HTTP_STAGE_RX | HTTP_STAGE_TX);
 
-#if KEEP
-    httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "Content-Security-Policy", "default-src 'self'");
-#endif
+    /*
+        Standard headers for all routes. These should not break typical content
+        Users then vary via header directives
+     */
+    httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "Vary", "Accept-Encoding");
     httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-XSS-Protection", "1; mode=block");
     httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-Frame-Options", "SAMEORIGIN");
     httpAddRouteResponseHeader(route, HTTP_ROUTE_ADD_HEADER, "X-Content-Type-Options", "nosniff");
