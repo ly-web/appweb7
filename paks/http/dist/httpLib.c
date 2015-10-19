@@ -21992,7 +21992,7 @@ PUBLIC HttpUri *httpJoinUriPath(HttpUri *result, HttpUri *base, HttpUri *other)
     char    *sep;
 
     if (other->path) {
-        if (other->path[0] == '/') {
+        if (other->path[0] == '/' || !base->path) {
             result->path = sclone(other->path);
         } else {
             sep = ((base->path[0] == '\0' || base->path[slen(base->path) - 1] == '/') || 
