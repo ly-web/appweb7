@@ -113,7 +113,7 @@ static int openConfig(MaState *state, cchar *path)
     state->filename = sclone(path);
     state->configDir = mprGetAbsPath(mprGetPathDir(state->filename));
     mprLog("info http", 3, "Parse \"%s\"", mprGetAbsPath(state->filename));
-    if ((state->file = mprOpenFile(mprGetRelPath(path, NULL), O_RDONLY | O_TEXT, 0444)) == 0) {
+    if ((state->file = mprOpenFile(path, O_RDONLY | O_TEXT, 0444)) == 0) {
         mprLog("error http", 0, "Cannot open %s for config directives", path);
         return MPR_ERR_CANT_OPEN;
     }

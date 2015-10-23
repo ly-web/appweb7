@@ -2591,6 +2591,7 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
     mpr->exitStrategy = 0;
     mpr->emptyString = sclone("");
     mpr->oneString = sclone("1");
+    mpr->rootString = sclone("/");
     mpr->idleCallback = mprServicesAreIdle;
     mpr->mimeTypes = mprCreateMimeTypes(NULL);
     mpr->terminators = mprCreateList(0, MPR_LIST_STATIC_VALUES);
@@ -2694,6 +2695,7 @@ static void manageMpr(Mpr *mpr, int flags)
         mprMark(mpr->spin);
         mprMark(mpr->cond);
         mprMark(mpr->stopCond);
+        mprMark(mpr->rootString);
         mprMark(mpr->emptyString);
         mprMark(mpr->oneString);
     }
@@ -17667,7 +17669,7 @@ PUBLIC char *mprGetAbsPath(cchar *path)
         path = ".";
     }
     fs = mprLookupFileSystem(path);
-#if ME_ROM
+#if ME_ROM && UNUSED
     result =  mprNormalizePath(path);
     mprMapSeparators(result, defaultSep(fs));
     return result;
@@ -17760,8 +17762,9 @@ PUBLIC char *mprGetAppPath()
     if (MPR->appPath) {
         return sclone(MPR->appPath);
     }
-
-#if MACOSX
+#if ME_ROM
+    MPR->appPath = mprGetCurrentPath();
+#elif MACOSX
 {
     MprPath info;
     char    path[ME_MAX_PATH], pbuf[ME_MAX_PATH];
@@ -17837,7 +17840,7 @@ PUBLIC char *mprGetAppPath()
         MPR->appPath = mprGetCurrentPath();
     }
 #endif
-    return sclone(MPR->appPath);
+    return MPR->appPath;
 }
 
 
@@ -17846,6 +17849,12 @@ PUBLIC char *mprGetAppPath()
  */
 PUBLIC char *mprGetCurrentPath()
 {
+#if ME_ROM
+    /* 
+        Current directory is always root
+     */
+    return MPR->rootString;
+#else
     char    dir[ME_MAX_PATH];
 
     if (getcwd(dir, sizeof(dir)) == 0) {
@@ -17876,6 +17885,7 @@ PUBLIC char *mprGetCurrentPath()
 }
 #endif
     return sclone(dir);
+#endif
 }
 
 
@@ -18687,7 +18697,7 @@ PUBLIC char *mprGetPortablePath(cchar *path)
 PUBLIC char *mprGetRelPath(cchar *destArg, cchar *originArg)
 {
     MprFileSystem   *fs;
-    char            originBuf[ME_MAX_FNAME], *dp, *result, *dest, *lastdp, *origin, *op, *lastop;
+    char            *dp, *result, *dest, *lastdp, *origin, *op, *lastop;
     int             originSegments, i, commonSegments, sep;
 
     fs = mprLookupFileSystem(destArg);
@@ -18707,11 +18717,7 @@ PUBLIC char *mprGetRelPath(cchar *destArg, cchar *originArg)
             Get the working directory. Ensure it is null terminated and leave room to append a trailing separators
             On cygwin, this will be a cygwin style path (starts with "/" and no drive specifier).
          */
-        if (getcwd(originBuf, sizeof(originBuf)) == 0) {
-            strcpy(originBuf, ".");
-        }
-        originBuf[sizeof(originBuf) - 2] = '\0';
-        origin = originBuf;
+        origin = mprGetCurrentPath();
     } else {
         origin = mprGetAbsPath(originArg);
     }
@@ -21072,6 +21078,7 @@ static MprRomInode *lookup(MprRomFileSystem *rfs, cchar *path)
             break;
         }
     }
+#if UNUSED
     /*
         Skip over the leading "/"
      */
@@ -21079,6 +21086,13 @@ static MprRomInode *lookup(MprRomFileSystem *rfs, cchar *path)
         path++;
     }
     return (MprRomInode*) mprLookupKey(rfs->fileIndex, path);
+#else
+    if (path[0] == '/') {
+        return (MprRomInode*) mprLookupKey(rfs->fileIndex, path);
+    } else {
+        return (MprRomInode*) mprLookupKey(rfs->fileIndex, mprJoinPath(mprGetCurrentPath(), path));
+    }
+#endif
 }
 
 
