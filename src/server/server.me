@@ -39,17 +39,15 @@ Me.load({
         },
 
         rom: {
-            action: "
+            action: `
                 let files = [ '.' ]
                 files += Path('web').files('**')
-                files += Path('junk/static').files('**')
-                files += Path('junk/db').files('*.mdb')
                 files.push('appweb.conf')
-                files.push('mob.conf')
-                files.push('auth.conf')
-                files.push('esp.conf')
-                Path('romFiles.c').write(Cmd.run(['makerom', '--prefix', '/'] + files))
-            ",
+                files.push('install.conf')
+                let path = Path('${SRC}/romFiles.c')
+                trace('Create', path)
+                path.write(Cmd.run(['makerom', '--prefix', '/'] + files))
+            `,
         },
     },
 })

@@ -334,8 +334,7 @@ static int createEndpoints(int argc, char **argv)
  */
 static int findConfigFile()
 {
-    cchar   *extensions[] = { "json", "conf", 0 };
-    cchar   *base, **ext, *name, *path;
+    cchar   *name;
 
     if (app->configFile) {
         return 0;
@@ -348,32 +347,36 @@ static int findConfigFile()
 #if ME_ROM
     app->configFile = name;
 #else
-    for (ext = extensions; *ext; ext++) {
-        base = mprReplacePathExt(name, *ext);
-        path = base;
-        if (mprPathExists(path, R_OK)) {
-            app->configFile = path;
-            break;
+    {
+        cchar   *base, **ext, *path;
+        cchar   *extensions[] = { "json", "conf", 0 };
+        for (ext = extensions; *ext; ext++) {
+            base = mprReplacePathExt(name, *ext);
+            path = base;
+            if (mprPathExists(path, R_OK)) {
+                app->configFile = path;
+                break;
+            }
+            path = mprJoinPath(app->home, base);
+            if (mprPathExists(path, R_OK)) {
+                app->configFile = path;
+                break;
+            }
+            path = mprJoinPath(mprGetPathParent(mprGetAppDir()), base);
+            if (mprPathExists(path, R_OK)) {
+                app->configFile = path;
+                break;
+            }
+            path = mprJoinPath(mprGetPathParent(mprGetAppDir()), base);
+            if (mprPathExists(path, R_OK)) {
+                app->configFile = path;
+                break;
+            }
         }
-        path = mprJoinPath(app->home, base);
-        if (mprPathExists(path, R_OK)) {
-            app->configFile = path;
-            break;
+        if (!app->configFile) {
+            mprError("Cannot find config file %s", name);
+            return MPR_ERR_CANT_OPEN;
         }
-        path = mprJoinPath(mprGetPathParent(mprGetAppDir()), base);
-        if (mprPathExists(path, R_OK)) {
-            app->configFile = path;
-            break;
-        }
-        path = mprJoinPath(mprGetPathParent(mprGetAppDir()), base);
-        if (mprPathExists(path, R_OK)) {
-            app->configFile = path;
-            break;
-        }
-    }
-    if (!app->configFile) {
-        mprError("Cannot find config file %s", name);
-        return MPR_ERR_CANT_OPEN;
     }
 #endif
     return 0;

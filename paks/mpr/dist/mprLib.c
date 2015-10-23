@@ -17666,6 +17666,7 @@ PUBLIC char *mprGetAbsPath(cchar *path)
     if (path == 0 || *path == '\0') {
         path = ".";
     }
+    fs = mprLookupFileSystem(path);
 #if ME_ROM
     result =  mprNormalizePath(path);
     mprMapSeparators(result, defaultSep(fs));
@@ -17694,7 +17695,6 @@ PUBLIC char *mprGetAbsPath(cchar *path)
         }
     }
 #endif
-    fs = mprLookupFileSystem(path);
     if (isFullPath(fs, path)) {
         /* Already absolute. On windows, must contain a drive specifier */
         result = mprNormalizePath(path);

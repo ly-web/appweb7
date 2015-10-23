@@ -153,6 +153,9 @@
 #ifndef ME_PREFIXES
     #define ME_PREFIXES "install-prefixes"
 #endif
+#ifndef ME_ROM
+    #define ME_ROM 0
+#endif
 #ifndef ME_SERVER_ROOT
     #define ME_SERVER_ROOT "."
 #endif

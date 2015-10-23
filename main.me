@@ -105,6 +105,11 @@ Me.load({
             },
         },
 
+        /*
+            Build without a file system (from ROM)
+         */
+        rom: false,
+
         watchdog: {
             name: 'appman',
         },
@@ -172,5 +177,8 @@ Me.load({
             //  TODO remove when mbedtls is fully supported
             action: `genProjects('-with mbedtls', 'mine', Config.OS + '-' + Config.CPU)`,
         }
+    },
+    usage: {
+        'rom':          'Build without a file system (true|false)',
     }
 })
