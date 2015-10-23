@@ -1105,6 +1105,7 @@ installBinary: $(DEPS_56)
 	cp src/server/web/screen.css $(ME_WEB_PREFIX)/screen.css ; \
 	mkdir -p "$(ME_WEB_PREFIX)/test" ; \
 	cp src/server/web/test/bench.html $(ME_WEB_PREFIX)/test/bench.html ; \
+	cp src/server/web/test/index.html $(ME_WEB_PREFIX)/test/index.html ; \
 	cp src/server/web/test/test.cgi $(ME_WEB_PREFIX)/test/test.cgi ; \
 	cp src/server/web/test/test.ejs $(ME_WEB_PREFIX)/test/test.ejs ; \
 	cp src/server/web/test/test.esp $(ME_WEB_PREFIX)/test/test.esp ; \
