@@ -2,7 +2,7 @@
     "name": "appweb",
     "description": "Embedthis Appweb Embedded Web Server",
     "title": "Embedthis Appweb",
-    "version": "6.1.1",
+    "version": "6.1.2",
     "keywords": [
         "appweb",
         "http",
@@ -47,7 +47,7 @@
         "ejscript": "~2.7",
         "esp": "~6.1",
         "mpr-matrixssl": "~0.3",
-        "mpr-mbedtls": "~0.4",
+        "mpr-mbedtls": "~0.5",
         "mpr-openssl": "~0.4"
     },
     "devDependencies": {
