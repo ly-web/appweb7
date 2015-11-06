@@ -35,6 +35,7 @@ typedef struct AppwebApp {
     cchar       *configFile;
     char        *pathVar;
     int         show;
+    int         showDocuments;
     int         workers;
 } AppwebApp;
 
@@ -169,6 +170,19 @@ MAIN(appweb, int argc, char **argv, char **envp)
 
         } else if (smatch(argp, "--show") || smatch(argp, "-s")) {
             app->show++;
+
+#if DEPRECATE || 1
+        /*
+            Remove when appweb.conf is removed
+         */
+        } else if (smatch(argp, "--show-documents")) {
+            app->showDocuments++;
+            if (maParseConfig("install.conf") < 0) {
+                return MPR_ERR_CANT_INITIALIZE;
+            }
+            mprPrintf("%s\n", httpGetDefaultRoute(0)->documents);
+            exit(0);
+#endif
 
         } else if (smatch(argp, "--trace") || smatch(argp, "-t")) {
             if (argind >= argc) {
