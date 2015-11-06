@@ -1279,7 +1279,7 @@ static void serve(int argc, char **argv)
                 fail("Cannot create endpoint for 127.0.0.1:%d", 4000);
                 return;
             }
-            httpAddHostToEndpoints(app->host);
+            httpAddHostToEndpoint(endpoint, app->host);
         }
     } else for (i = 0; i < argc; i++) {
         address = argv[i++];
@@ -1288,7 +1288,7 @@ static void serve(int argc, char **argv)
             fail("Cannot create endpoint for %s:%d", ip, port);
             return;
         }
-        httpAddHostToEndpoints(app->host);
+        httpAddHostToEndpoint(endpoint, app->host);
     }
     if (mprGetListLength(HTTP->endpoints) == 0) {
         fail("No configured listening endpoints");
@@ -1901,8 +1901,6 @@ static void compileItems(HttpRoute *route)
     int         found, next;
 
     found = 0;
-    vtrace("Info", "Compile items for route \"%s\"", route->pattern);
-
     if ((dir = httpGetDir(route, "CONTROLLERS")) != 0 && !smatch(dir, ".")) {
         app->files = mprGetPathFiles(dir, MPR_PATH_DESCEND);
         for (next = 0; (dp = mprGetNextItem(app->files, &next)) != 0 && !app->error; ) {
