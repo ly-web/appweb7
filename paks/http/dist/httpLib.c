@@ -8012,15 +8012,7 @@ static void acceptConn(HttpEndpoint *endpoint)
 
 PUBLIC HttpHost *httpMatchHost(HttpConn *conn, cchar *hostname)
 {
-    assert(conn);
-
-    if (!conn->host && (conn->host = httpLookupHostOnEndpoint(conn->endpoint, hostname)) == 0) {
-#if UNUSED
-        mprLog("error http", 0, "No host to serve request. Searching for %s", hostname);
-#endif
-        return 0;
-    }
-    return conn->host;
+    return httpLookupHostOnEndpoint(conn->endpoint, hostname);
 }
 
 
@@ -8035,7 +8027,6 @@ PUBLIC MprSsl *httpMatchSsl(MprSocket *sp, cchar *hostname)
     if ((host = httpMatchHost(conn, hostname)) == 0) {
         return 0;
     }
-    conn->host = host;
     return host->defaultRoute->ssl;
 }
 
