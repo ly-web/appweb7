@@ -22,6 +22,16 @@
 
 #include    "appweb.h"
 
+#if ME_STATIC && ME_COM_ESP
+/*
+    Generate cache/server.c via: appweb-esp --combine compile.
+    This compiles ESP pages into a single source file that can be included here.
+    Below, we invoke the ESP initializers via: esp_app_server_combine().
+    Note: appweb-esp must be separately built in a separate appweb build configured without --static --rom.
+ */
+#include    "cache/server.c"
+#endif
+
 /********************************** Locals ************************************/
 /*
     Global application object. Provides the top level roots of all data objects for the GC.
@@ -254,6 +264,13 @@ MAIN(appweb, int argc, char **argv, char **envp)
             httpLogRoutes(host, app->show > 1);
         }
     }
+#if ME_STATIC && ME_COM_ESP
+    /* 
+        Invoke ESP initializers here
+     */
+    esp_app_server_combine(httpGetDefaultRoute(NULL), NULL);
+#endif
+
     /*
         Events thread will service requests. We block here.
      */
