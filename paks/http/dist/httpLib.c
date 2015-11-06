@@ -3808,7 +3808,10 @@ PUBLIC int httpLoadConfig(HttpRoute *route, cchar *path)
         }
         route->mode = mode;
         if ((route->debug = smatch(route->mode, "debug")) != 0) {
+#if UNUSED
+            /* Some customers may ship with debug */
             route->flags |= HTTP_ROUTE_SHOW_ERRORS;
+#endif
             route->keepSource = 1;
         }
     }
