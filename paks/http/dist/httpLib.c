@@ -16317,10 +16317,9 @@ static bool parseIncoming(HttpConn *conn)
         if (schr(rx->hostHeader, ':')) {
             mprParseSocketAddress(rx->hostHeader, &hostname, NULL, NULL, 0);
         }
-        if (!httpMatchHost(conn, hostname)) {
+        if ((conn->host = httpMatchHost(conn, hostname)) == 0) {
             conn->host = mprGetFirstItem(conn->endpoint->hosts);
             httpError(conn, HTTP_CODE_NOT_FOUND, "No listening endpoint for request for %s", rx->hostHeader);
-            return 0;
         }
         parseUri(conn);
 
