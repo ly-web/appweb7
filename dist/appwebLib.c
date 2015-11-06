@@ -156,7 +156,9 @@ PUBLIC int maParseConfig(cchar *path)
         return rc;
     }
     httpFinalizeRoute(route);
+#if UNUSED
     httpAddHostToEndpoints(route->host);
+#endif
 
     if (mprHasMemError()) {
         mprLog("error appweb memory", 0, "Memory allocation error when initializing");
@@ -1509,7 +1511,8 @@ static int limitUploadDirective(MaState *state, cchar *key, cchar *value)
  */
 static int listenDirective(MaState *state, cchar *key, cchar *value)
 {
-    HttpEndpoint    *endpoint;
+    HttpEndpoint    *endpoint, *dual;
+    HttpHost        *host;
     char            *ip, *address;
     int             port;
 
@@ -1524,16 +1527,20 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
         mprLog("error appweb config", 0, "Bad or missing port %d in Listen directive", port);
         return -1;
     }
+    host = state->host;
     endpoint = httpCreateEndpoint(ip, port, NULL);
-    if (!state->host->defaultEndpoint) {
-        httpSetHostDefaultEndpoint(state->host, endpoint);
+    if (!host->defaultEndpoint) {
+        httpSetHostDefaultEndpoint(host, endpoint);
     }
+    httpAddHostToEndpoint(endpoint, host);
+    
     /*
         Single stack networks cannot support IPv4 and IPv6 with one socket. So create a specific IPv6 endpoint.
         This is currently used by VxWorks and Windows versions prior to Vista (i.e. XP)
      */
     if (!schr(address, ':') && mprHasIPv6() && !mprHasDualNetworkStack()) {
-        httpCreateEndpoint("::", port, NULL);
+        dual = httpCreateEndpoint("::", port, NULL);
+        httpAddHostToEndpoint(dual, host);
     }
     return 0;
 }
@@ -1549,7 +1556,8 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
 static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
 {
 #if ME_COM_SSL
-    HttpEndpoint    *endpoint;
+    HttpEndpoint    *endpoint, *dual;
+    HttpHost        *host;
     char            *address, *ip;
     int             port;
 
@@ -1572,17 +1580,21 @@ static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
             state->route->ssl = mprCreateSsl(1);
         }
     }
-    httpSecureEndpoint(endpoint, state->route->ssl);
-    if (!state->host->secureEndpoint) {
-        httpSetHostSecureEndpoint(state->host, endpoint);
+    host = state->host;
+    httpAddHostToEndpoint(endpoint, host);
+    if (!host->secureEndpoint) {
+        httpSetHostSecureEndpoint(host, endpoint);
     }
+    httpSecureEndpoint(endpoint, state->route->ssl);
+    
     /*
         Single stack networks cannot support IPv4 and IPv6 with one socket. So create a specific IPv6 endpoint.
         This is currently used by VxWorks and Windows versions prior to Vista (i.e. XP)
      */
     if (!schr(address, ':') && mprHasIPv6() && !mprHasDualNetworkStack()) {
-        endpoint = httpCreateEndpoint("::", port, NULL);
-        httpSecureEndpoint(endpoint, state->route->ssl);
+        dual = httpCreateEndpoint("::", port, NULL);
+        httpAddHostToEndpoint(dual, host);
+        httpSecureEndpoint(dual, state->route->ssl);
     }
     return 0;
 #else
@@ -2332,7 +2344,7 @@ static int sessionCookieDirective(MaState *state, cchar *key, cchar *value)
         if (!ovalue || *ovalue == '\0') continue;
 
         if (smatch(option, "visible")) {
-            httpSetRouteSessionVisibility(state->route, scaselessmatch(ovalue, "visible"));
+            httpSetRouteSessionVisibility(state->route, scaselessmatch(ovalue, "true"));
 
         } else if (smatch(option, "name")) {
             httpSetRouteCookie(state->route, ovalue);
@@ -2926,6 +2938,9 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
                 add the virtual host to the specified endpoints.
              */
             state->endpoints = sclone(value);
+        } else {
+            mprLog("error appweb config", 0, "Missing virtual host endpoints");
+            return MPR_ERR_BAD_SYNTAX;
         }
     }
     return 0;
@@ -2955,8 +2970,10 @@ static int closeVirtualHostDirective(MaState *state, cchar *key, cchar *value)
                     httpAddHostToEndpoint(endpoint, state->host);
                 }
             }
+#if UNUSED
         } else {
             httpAddHostToEndpoints(state->host);
+#endif
         }
     }
     closeDirective(state, key, value);
