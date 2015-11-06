@@ -26,5 +26,5 @@ for (i in 2200) {
 // print('size', serialize(form).length)
 http.form(HTTP + "/test.esp", form)
 ttrue(http.status == 413)
-ttrue(http.response.contains("is too big"))
+ttrue(http.response.contains("Request Entity Too Large"))
 http.close()
