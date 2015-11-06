@@ -9,15 +9,16 @@ if (!Config.SSL) {
     let http: Http
     let bin = Path(App.getenv('TM_BIN'))
 
-    if (1 || App.getenv('ME_OPENSSL') == 1) {
+    if (1 || App.getenv('ME_MBEDTLS') == 1) {
         http = new Http
+        let endpoint = tget('TM_HTTPS') || "https://localhost:4443"
+        endpoint = endpoint.replace('127.0.0.1', 'localhost')
         http.ca = bin.join('ca.crt')
         http.verify = true
         http.key = null
         http.certificate = null
 
         //  Verify the server (without a client cert)
-        let endpoint = tget('TM_HTTPS') || "https://127.0.0.1:4443"
         ttrue(http.verify == true)
         ttrue(http.verifyIssuer == true)
         http.get(endpoint + '/index.html')
@@ -31,7 +32,8 @@ if (!Config.SSL) {
         http.close()
 
         //  Without verifying the server
-        let endpoint = tget('TM_HTTPS') || "https://127.0.0.1:4443"
+        let endpoint = tget('TM_HTTPS') || "https://localhost:4443"
+        endpoint = endpoint.replace('127.0.0.1', 'localhost')
         http.verify = false
         ttrue(http.verify == false)
         ttrue(http.verifyIssuer == false)
@@ -49,7 +51,8 @@ if (!Config.SSL) {
             //  NanoSSL does not support multiple configurations
             //  Test a server self-signed cert. Verify but not the issuer.
             //  Note in a self-signed cert the subject == issuer
-            let endpoint = tget('TM_SELFCERT') || "https://127.0.0.1:5443"
+            let endpoint = tget('TM_SELFCERT') || "https://localhost:5443"
+            endpoint = endpoint.replace('127.0.0.1', 'localhost')
             http.verify = true
             http.verifyIssuer = false
             http.get(endpoint + '/index.html')
@@ -63,7 +66,8 @@ if (!Config.SSL) {
             http.close()
 
             //  Test SSL with a client cert 
-            endpoint = tget('TM_CLIENTCERT') || "https://127.0.0.1:6443"
+            endpoint = tget('TM_CLIENTCERT') || "https://localhost:6443"
+            endpoint = endpoint.replace('127.0.0.1', 'localhost')
             http.key = bin.join('test.key')
             http.certificate = bin.join('test.crt')
             // http.verify = false

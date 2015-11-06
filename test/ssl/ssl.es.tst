@@ -21,6 +21,7 @@ if (!Config.SSL) {
  
     //  Verify the server cert and send a client cert 
     endpoint = tget('TM_TESTCERT') || "https://127.0.0.1:7443"
+    endpoint = endpoint.replace('127.0.0.1', 'localhost')
     http.key = bin.join('test.key')
     http.certificate = bin.join('test.crt')
     http.get(endpoint + '/index.html')
