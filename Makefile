@@ -69,26 +69,15 @@ help:
 	@echo 'The default configuration can be modified by setting make variables' >&2
 	@echo 'Set to 0 to disable and 1 to enable:' >&2
 	@echo '' >&2
-	@echo '  ME_EJS_DB         # Enable database support, ejs.db' >&2
-	@echo '  ME_EJS_MAIL       # Enable mail support, ejs.mail' >&2
-	@echo '  ME_EJS_MAPPER     # Enable database mapper support, ejs.mapper'
-	@echo '  ME_EJS_TAR        # Enable tar support, ejs.tar' >&2
-	@echo '  ME_EJS_TEMPLATE   # Enable template support, ejs.template' >&2
-	@echo '  ME_EJS_WEB        # Enable web support, ejs.web' >&2
-	@echo '  ME_EJS_ZLIB       # Enable zlib support, ejs.zlib' >&2
 	@echo '  ME_ESP_MDB        # Enable ESP MDB database support' >&2
 	@echo '  ME_ESP_SDB        # Enable ESP SQLite database support' >&2
 	@echo '  ME_MPR_LOGGING    # Enable application logging' >&2
 	@echo '  ME_MPR_TRACING    # Enable debug tracing' >&2
 	@echo '  ME_COM_CGI        # Enable the CGI handler' >&2
 	@echo '  ME_COM_DIR        # Enable the directory listing handler' >&2
-	@echo '  ME_COM_EJSCRIPT   # Enable the Ejscript handler' >&2
 	@echo '  ME_COM_ESP        # Enable the ESP web framework' >&2
-	@echo '  ME_COM_EST        # Enable the EST SSL stack' >&2
-	@echo '  ME_COM_NANOSSL    # Enable the Mocana NanoSSL stack' >&2
-	@echo '  ME_COM_MATRIXSSL  # Enable the MatrixSSL SSL stack' >&2
+	@echo '  ME_COM_MBEDTLS    # Enable the mbed TLS stack' >&2
 	@echo '  ME_COM_OPENSSL    # Enable the OpenSSL SSL stack' >&2
-	@echo '  ME_COM_PHP        # Enable the PHP framework' >&2
 	@echo '  ME_COM_SQLITE     # Enable the SQLite database' >&2
 	@echo '  ME_ROM            # Build for ROM without a file system' >&2
 	@echo '  ME_STACK_SIZE     # Define the VxWorks stack size' >&2
