@@ -143,7 +143,6 @@ PUBLIC int maParseConfig(cchar *path)
         return rc;
     }
     httpFinalizeRoute(route);
-    httpAddHostToEndpoints(route->host);
 
     if (mprHasMemError()) {
         mprLog("error appweb memory", 0, "Memory allocation error when initializing");
@@ -2941,8 +2940,6 @@ static int closeVirtualHostDirective(MaState *state, cchar *key, cchar *value)
                     httpAddHostToEndpoint(endpoint, state->host);
                 }
             }
-        } else {
-            httpAddHostToEndpoints(state->host);
         }
     }
     closeDirective(state, key, value);
