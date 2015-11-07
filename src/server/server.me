@@ -44,6 +44,7 @@ Me.load({
                 files += Path('web').files('**')
                 files.push('appweb.conf')
                 files.push('install.conf')
+                files += Path('certs').files('**')
                 let path = Path('${SRC}/romFiles.c')
                 trace('Create', path)
                 path.write(Cmd.run(['makerom', '--prefix', '/'] + files))
