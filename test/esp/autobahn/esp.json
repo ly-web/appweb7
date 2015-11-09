@@ -1,5 +1,11 @@
 {
+    esp: {
+        app: true
+    },
     http: {
+        pipeline: {
+            handlers: 'espHandler'
+        },
         routes: {
             pattern: '/{controller}/{action}$',
             target:  '$1/$2',

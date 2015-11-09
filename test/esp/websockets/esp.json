@@ -2,6 +2,9 @@
     directories: {
         controllers: '.'
     },
+    esp: {
+        app: true
+    },
     http: {
         limits: {
             webSockets:         '25',
@@ -10,6 +13,9 @@
             webSocketsFrame:    '4K',
             rxBody:             'unlimited',
             txBody:             'unlimited',
+        },
+        pipeline: {
+            handlers: 'espHandler'
         },
         timeouts: {
             request:    'never',

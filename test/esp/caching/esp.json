@@ -2,7 +2,13 @@
     directories: {
         controllers: '.'
     },
+    esp: {
+        app: true
+    },
     http: {
+        pipeline: {
+            handlers: 'espHandler'
+        },
         routes: {
             pattern: '/{action}$',
             target:  'cache/$1',

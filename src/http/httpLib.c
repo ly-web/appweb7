@@ -3771,6 +3771,9 @@ PUBLIC int httpLoadConfig(HttpRoute *route, cchar *path)
     MprJson     *config, *obj, *modeObj;
     cchar       *data, *errorMsg, *mode;
 
+    if (!path) {
+        return 0;
+    }
     /*
         Order of processing matters. First load the file and then blend included files into the same json obj.
         Then blend the mode directives and then assign/blend into the route config.
