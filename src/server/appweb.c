@@ -3,10 +3,10 @@
 
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
 
-    usage: appweb [options] 
+    usage: appweb [options]
     or:    appweb [options] [documents] [[ip][:port] ...]
             --chroot dir            # Change root to dir (unix only)
-            --config configFile     # Use given config file instead 
+            --config configFile     # Use given config file instead
             --debugger              # Disable timeouts to make debugging easier
             --home path             # Set the home working directory
             --log logFile:level     # Log to file file at verbosity level
@@ -265,7 +265,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
         }
     }
 #if ME_STATIC && ME_COM_ESP
-    /* 
+    /*
         Invoke ESP initializers here
      */
     esp_app_server_combine(httpGetDefaultRoute(NULL), NULL);
@@ -550,7 +550,7 @@ static int unixSecurityChecks(cchar *program, cchar *home)
 #if ME_WIN_LIKE
 /*
     Write the port so the monitor can manage
- */ 
+ */
 static int writePort()
 {
     HttpEndpoint    *endpoint;
@@ -619,7 +619,7 @@ double  __dummy_appweb_floating_point_resolution(double a, double b, int64 c, in
     Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the Embedthis Open Source license or you may acquire a 
+    You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
