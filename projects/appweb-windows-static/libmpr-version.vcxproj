@@ -116,7 +116,7 @@
         
 
       <Link>
-        <AdditionalDependencies>libpcre.lib;libmpr.lib;%(AdditionalDependencies)</AdditionalDependencies>
+        <AdditionalDependencies>;%(AdditionalDependencies)</AdditionalDependencies>
         <AdditionalLibraryDirectories>$(OutDir);build\$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       </Link>
 
@@ -127,20 +127,6 @@ cd ..\..\projects\appweb-windows-static</Command>
         <Outputs>$(BinDir)\libmpr-version.lib</Outputs>
       </CustomBuildStep>
   </ItemDefinitionGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="libmpr.vcxproj">
-      <Project>2ed02c7a-9d07-4dad-929f-5bd1da80cb12</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      </ProjectReference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="libpcre.vcxproj">
-      <Project>ad4e711f-44b6-49ec-8584-51f1e9b5d821</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      </ProjectReference>
-    </ItemGroup>
 
   <Import Project="$(VCTargetsPath)Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

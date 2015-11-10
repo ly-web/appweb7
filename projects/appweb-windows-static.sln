@@ -40,12 +40,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmpr-version", "appweb-wi
 		{7E538A8E-FEBF-4185-A4A2-B1A717D97FE4} = {7E538A8E-FEBF-4185-A4A2-B1A717D97FE4}
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
-		{2ED02C7A-9D07-4DAD-929F-5BD1DA80CB12} = {2ED02C7A-9D07-4DAD-929F-5BD1DA80CB12}
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{AD4E711F-44B6-49EC-8584-51F1E9B5D821} = {AD4E711F-44B6-49EC-8584-51F1E9B5D821}
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
 		{AFB9A588-5BA8-4163-B7D4-10976760455A} = {AFB9A588-5BA8-4163-B7D4-10976760455A}
 	EndProjectSection
 EndProject

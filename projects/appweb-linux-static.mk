@@ -503,7 +503,7 @@ DEPS_34 += $(BUILD)/inc/pcre.h
 $(BUILD)/obj/mpr-version.o: \
     src/mpr-version/mpr-version.c $(DEPS_34)
 	@echo '   [Compile] $(BUILD)/obj/mpr-version.o'
-	$(CC) -c -o $(BUILD)/obj/mpr-version.o $(LDFLAGS) $(DFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src/mpr-version/mpr-version.c
+	$(CC) -c -o $(BUILD)/obj/mpr-version.o $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/mpr-version/mpr-version.c
 
 #
 #   mpr.h
@@ -646,10 +646,6 @@ endif
 #
 #   libmpr-version
 #
-DEPS_47 += $(BUILD)/bin/libmpr.a
-ifeq ($(ME_COM_PCRE),1)
-    DEPS_47 += $(BUILD)/bin/libpcre.a
-endif
 DEPS_47 += $(BUILD)/inc/mpr-version.h
 DEPS_47 += $(BUILD)/obj/mpr-version.o
 

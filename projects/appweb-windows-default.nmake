@@ -582,15 +582,11 @@ DEPS_26 = $(DEPS_26) build\$(CONFIG)\inc\pcre.h
 build\$(CONFIG)\obj\mpr-version.obj: \
     src\mpr-version\mpr-version.c $(DEPS_26)
 	@echo .. [Compile] build\$(CONFIG)\obj\mpr-version.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\mpr-version.obj -Fd$(BUILD)\obj\mpr-version.pdb $(CFLAGS) $(DFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\mpr-version\mpr-version.c $(LOG)
+	"$(CC)" -c -Fo$(BUILD)\obj\mpr-version.obj -Fd$(BUILD)\obj\mpr-version.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\mpr-version\mpr-version.c $(LOG)
 
 #
 #   libmpr-version
 #
-DEPS_27 = $(DEPS_27) build\$(CONFIG)\bin\libmpr.dll
-!IF "$(ME_COM_PCRE)" == "1"
-DEPS_27 = $(DEPS_27) build\$(CONFIG)\bin\libpcre.dll
-!ENDIF
 DEPS_27 = $(DEPS_27) build\$(CONFIG)\inc\mpr-version.h
 DEPS_27 = $(DEPS_27) build\$(CONFIG)\obj\mpr-version.obj
 
