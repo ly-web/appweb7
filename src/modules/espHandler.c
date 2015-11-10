@@ -39,7 +39,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
         }
         route = httpCreateInheritedRoute(state->route);
         route->flags |= HTTP_ROUTE_HOSTED;
-        if (espLoadApp(route, prefix, path) < 0) {
+        if (espInit(route, prefix, path) < 0) {
             return MPR_ERR_CANT_CREATE;
         }
         httpFinalizeRoute(route);
@@ -49,7 +49,7 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
             prefix = mprGetPathBase(mprGetPathDir(mprGetAbsPath(path)));
             route = httpCreateInheritedRoute(state->route);
             route->flags |= HTTP_ROUTE_HOSTED;
-            if (espLoadApp(route, prefix, path) < 0) {
+            if (espInit(route, prefix, path) < 0) {
                 return MPR_ERR_CANT_CREATE;
             }
             httpFinalizeRoute(route);
