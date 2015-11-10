@@ -2,7 +2,7 @@
     "name": "appweb",
     "description": "Embedthis Appweb Embedded Web Server",
     "title": "Embedthis Appweb",
-    "version": "5.5.1",
+    "version": "5.6.0",
     "keywords": [
         "appweb",
         "http",
@@ -44,7 +44,7 @@
         "appweb-ejscript": "~0.2",
         "appweb-php": "~0.1",
         "certs": "~0.1",
-        "esp": "~6.1",
+        "esp": "~6.2",
         "mpr-matrixssl": "~0.3",
         "mpr-mbedtls": "~0.5",
         "mpr-nanossl": "~0.3",

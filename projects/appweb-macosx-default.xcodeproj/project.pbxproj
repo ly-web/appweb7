@@ -921,12 +921,39 @@
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
+		F937F1B4F938232E00000108 /* Frameworks and Libraries for libmbedtls */ = {
+                isa = PBXFrameworksBuildPhase;
+                buildActionMask = 2147483647;
+                files = (
+    				
+                );
+                runOnlyForDeploymentPostprocessing = 0;
+            };
 		F937F1B4F938232E00000109 /* Frameworks and Libraries for libmpr */ = {
                 isa = PBXFrameworksBuildPhase;
                 buildActionMask = 2147483647;
                 files = (
     				F937F1B4F938232E0000007F /* libmpr-mbedtls */,
 				F937F1B4F938232E00000080 /* libmbedtls */,				
+                );
+                runOnlyForDeploymentPostprocessing = 0;
+            };
+		F937F1B4F938232E0000010A /* Frameworks and Libraries for libmpr-mbedtls */ = {
+                isa = PBXFrameworksBuildPhase;
+                buildActionMask = 2147483647;
+                files = (
+    				F937F1B4F938232E00000081 /* libmbedtls */,				
+                );
+                runOnlyForDeploymentPostprocessing = 0;
+            };
+		F937F1B4F938232E0000010B /* Frameworks and Libraries for libmpr-version */ = {
+                isa = PBXFrameworksBuildPhase;
+                buildActionMask = 2147483647;
+                files = (
+    				F937F1B4F938232E00000082 /* libpcre */,
+				F937F1B4F938232E00000083 /* libmpr */,
+				F937F1B4F938232E00000084 /* libmpr-mbedtls */,
+				F937F1B4F938232E00000085 /* libmbedtls */,				
                 );
                 runOnlyForDeploymentPostprocessing = 0;
             };
@@ -2167,7 +2194,7 @@ fi";
                     COMBINE_HIDPI_IMAGES = YES;
     				ALWAYS_SEARCH_USER_PATHS = NO;
                     ONLY_ACTIVE_ARCH = YES;
-                    CURRENT_PROJECT_VERSION = 5.5;
+                    CURRENT_PROJECT_VERSION = 5.6;
                     DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
                     DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
 
@@ -2252,7 +2279,7 @@ ENABLE_TESTABILITY = YES;
                     COMBINE_HIDPI_IMAGES = YES;
     				ALWAYS_SEARCH_USER_PATHS = NO;
                     ONLY_ACTIVE_ARCH = YES;
-                    CURRENT_PROJECT_VERSION = 5.5;
+                    CURRENT_PROJECT_VERSION = 5.6;
                     DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
                     DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
 
