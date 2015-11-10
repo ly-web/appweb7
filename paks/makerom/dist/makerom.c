@@ -19,13 +19,12 @@ static int  binToC(MprList *files, char *romName, char *prefix);
 
 int main(int argc, char **argv)
 {
-    Mpr         *mpr;
     MprList     *files;
     FILE        *fp;
     char        *argp, *prefix, *romName, *fileList, *path, fbuf[ME_MAX_FNAME];
     int         nextArg, err;
 
-    mpr = mprCreate(argc, argv, 0);
+    mprCreate(argc, argv, 0);
 
     err = 0;
     prefix = "";
