@@ -1,0 +1,9 @@
+{
+    esp: {
+        app: false,
+    },
+    http: {
+        compile: true,
+        update: true
+    }
+}
