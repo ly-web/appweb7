@@ -227,8 +227,13 @@
     ...
 &lt;/VirtualHost&gt;
 </pre>
-            <p>In this example www.acme.com and www.coyote.com share the IP address 206.148.97.56. 
-            You may specify port numbers with the IP addresses if you require a port other than port 80.</p>
+            <p>In this example www.acme.com and www.coyote.com will listen on all endpoints.</p>
+
+            <p>The <em>ServerName</em> directive supports wild cards and regular expressions. In this manner, a single
+            virtual host block may serve multiple domains. For example</p> 
+            <code>ServerName *.example.com    # matches anything.example.com
+ServerName www.example.*    # matches any domain containing www.example.
+ServerName /example.com|acme.com|coyote.com/</code>
             <a id="ipBasedVirtualHosts"></a>
             <h2>IP-based Virtual Hosts</h2>
             <p>IP-based virtual hosts allow multiple virtual hosts to be supported on a single server. Each IP-based
