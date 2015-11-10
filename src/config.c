@@ -2912,7 +2912,9 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
             Other routes are not inherited due to the reset routes below
          */
         state->route = httpCreateInheritedRoute(httpGetHostDefaultRoute(state->host));
+#if UNUSED
         state->route->ssl = 0;
+#endif
         state->auth = state->route->auth;
         state->host = httpCloneHost(state->host);
         httpSetRouteHost(state->route, state->host);
