@@ -44,6 +44,9 @@ PUBLIC int maLoadModules()
 }
 
 
+/*
+    Configure handlers when an appweb.config is not being used
+ */
 PUBLIC int configureHandlers(HttpRoute *route)
 {
 #if ME_COM_CGI
@@ -143,9 +146,6 @@ PUBLIC int maParseConfig(cchar *path)
         return rc;
     }
     httpFinalizeRoute(route);
-#if UNUSED
-    httpAddHostToEndpoints(route->host);
-#endif
 
     if (mprHasMemError()) {
         mprLog("error appweb memory", 0, "Memory allocation error when initializing");
@@ -185,7 +185,7 @@ static int parseFileInner(MaState *state, cchar *path)
 {
     MaDirective *directive;
     char        *tok, *key, *line, *value;
-    
+
     assert(state);
     assert(path && *path);
 
@@ -207,14 +207,14 @@ static int parseFileInner(MaState *state, cchar *path)
             }
         }
         if ((directive = mprLookupKey(directives, key)) == 0) {
-            mprLog("error appweb config", 0, "Unknown directive \"%s\". At line %d in %s", 
+            mprLog("error appweb config", 0, "Unknown directive \"%s\". At line %d in %s",
                 key, state->lineNumber, state->filename);
             return MPR_ERR_BAD_SYNTAX;
         }
         state->key = key;
 
         if ((*directive)(state, key, value) < 0) {
-            mprLog("error appweb config", 0, "Error with directive \"%s\". At line %d in %s", 
+            mprLog("error appweb config", 0, "Error with directive \"%s\". At line %d in %s",
                 state->key, state->lineNumber, state->filename);
             return MPR_ERR_BAD_SYNTAX;
         }
@@ -235,9 +235,9 @@ static int parseFileInner(MaState *state, cchar *path)
 #if !ME_ROM
 /*
     TraceLog path|-
-        [size=bytes] 
-        [level=0-5] 
-        [backup=count] 
+        [size=bytes]
+        [level=0-5]
+        [backup=count]
         [anew]
         [format="format"]
         [type="common|detail"]
@@ -555,7 +555,7 @@ static int authTypeDirective(MaState *state, cchar *key, cchar *value)
             mprLog("warn appweb config", 0, "Must define an AuthRealm before defining the AuthType");
         }
         if (details) {
-            if (!maTokenize(state, details, "%S ?S ?S ?S ?S", &loginPage, &loginService, &logoutService, 
+            if (!maTokenize(state, details, "%S ?S ?S ?S ?S", &loginPage, &loginService, &logoutService,
                     &loggedInPage, &loggedOutPage)) {
                 return MPR_ERR_BAD_SYNTAX;
             }
@@ -718,7 +718,7 @@ static int chrootDirective(MaState *state, cchar *key, cchar *value)
     MprKey  *kp;
     cchar   *oldConfigDir;
     char    *home;
-    
+
     home = httpMakePath(state->route, state->configDir, value);
     if (chdir(home) < 0) {
         mprLog("error appweb config", 0, "Cannot change working directory to %s", home);
@@ -879,11 +879,11 @@ static int crossOriginDirective(MaState *state, cchar *key, cchar *value)
         Defense fix REMEDY=cmd CMD="${MESSAGE} | sendmail admin@example.com"
         Defense notify REMEDY=email TO=info@example.com
         Defense firewall REMEDY=cmd CMD="iptables -A INPUT -s ${IP} -j DROP"
-        Defense reboot REMEDY=restart 
+        Defense reboot REMEDY=restart
  */
 static int defenseDirective(MaState *state, cchar *key, cchar *value)
 {
-    cchar   *name, *args; 
+    cchar   *name, *args;
 
     if (!maTokenize(state, value, "%S ?*", &name, &args)) {
         return MPR_ERR_BAD_SYNTAX;
@@ -989,9 +989,9 @@ static int errorDocumentDirective(MaState *state, cchar *key, cchar *value)
 
 /*
     ErrorLog path
-        [size=bytes] 
-        [level=0-5] 
-        [backup=count] 
+        [size=bytes]
+        [level=0-5]
+        [backup=count]
         [anew]
         [stamp=period]
  */
@@ -1193,7 +1193,7 @@ static int includeDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    IndexOrder ascending|descending name|date|size 
+    IndexOrder ascending|descending name|date|size
  */
 static int indexOrderDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1217,8 +1217,8 @@ static int indexOrderDirective(MaState *state, cchar *key, cchar *value)
 }
 
 
-/*  
-    IndexOptions FancyIndexing|FoldersFirst ... (set of options) 
+/*
+    IndexOptions FancyIndexing|FoldersFirst ... (set of options)
  */
 static int indexOptionsDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -1382,7 +1382,7 @@ static int limitProcessesDirective(MaState *state, cchar *key, cchar *value)
  */
 static int limitRequestsDirective(MaState *state, cchar *key, cchar *value)
 {
-    mprLog("error appweb config", 0, 
+    mprLog("error appweb config", 0,
         "The LimitRequests directive is deprecated. Use LimitConnections or LimitRequestsPerClient instead.");
     return 0;
 }
@@ -1520,7 +1520,7 @@ static int listenDirective(MaState *state, cchar *key, cchar *value)
         httpSetHostDefaultEndpoint(host, endpoint);
     }
     httpAddHostToEndpoint(endpoint, host);
-    
+
     /*
         Single stack networks cannot support IPv4 and IPv6 with one socket. So create a specific IPv6 endpoint.
         This is currently used by VxWorks and Windows versions prior to Vista (i.e. XP)
@@ -1573,7 +1573,7 @@ static int listenSecureDirective(MaState *state, cchar *key, cchar *value)
         httpSetHostSecureEndpoint(host, endpoint);
     }
     httpSecureEndpoint(endpoint, state->route->ssl);
-    
+
     /*
         Single stack networks cannot support IPv4 and IPv6 with one socket. So create a specific IPv6 endpoint.
         This is currently used by VxWorks and Windows versions prior to Vista (i.e. XP)
@@ -1735,7 +1735,7 @@ static int makeDirDirective(MaState *state, cchar *key, cchar *value)
     MprPath info;
     char    *auth, *dirs, *path, *perms, *tok;
     cchar   *dir, *group, *owner;
-    int     gid, mode, uid; 
+    int     gid, mode, uid;
 
     if (!maTokenize(state, value, "%S ?*", &auth, &dirs)) {
         return MPR_ERR_BAD_SYNTAX;
@@ -1830,7 +1830,7 @@ static int memoryPolicyDirective(MaState *state, cchar *key, cchar *value)
         /* Appman will restart */
         flags = MPR_ALLOC_POLICY_EXIT;
 #endif
-        
+
     } else if (scmp(policy, "continue") == 0) {
         flags = MPR_ALLOC_POLICY_PRUNE;
 
@@ -1924,7 +1924,7 @@ static int nameVirtualHostDirective(MaState *state, cchar *key, cchar *value)
 
 
 /*
-    Options Indexes 
+    Options Indexes
  */
 static int optionsDirective(MaState *state, cchar *key, cchar *value)
 {
@@ -2435,7 +2435,7 @@ static int sourceDirective(MaState *state, cchar *key, cchar *value)
 static void checkSsl(MaState *state)
 {
     HttpRoute   *route, *parent;
-    
+
     route = state->route;
     parent = route->parent;
 
@@ -2456,7 +2456,7 @@ static void checkSsl(MaState *state)
 static int sslCaCertificatePathDirective(MaState *state, cchar *key, cchar *value)
 {
     char *path;
-    
+
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -2474,7 +2474,7 @@ static int sslCaCertificatePathDirective(MaState *state, cchar *key, cchar *valu
 static int sslCaCertificateFileDirective(MaState *state, cchar *key, cchar *value)
 {
     char *path;
-    
+
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -2492,7 +2492,7 @@ static int sslCaCertificateFileDirective(MaState *state, cchar *key, cchar *valu
 static int sslCertificateFileDirective(MaState *state, cchar *key, cchar *value)
 {
     char *path;
-    
+
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -2510,7 +2510,7 @@ static int sslCertificateFileDirective(MaState *state, cchar *key, cchar *value)
 static int sslCertificateKeyFileDirective(MaState *state, cchar *key, cchar *value)
 {
     char *path;
-    
+
     if (!maTokenize(state, value, "%P", &path)) {
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -2548,7 +2548,7 @@ static int sslEngineDirective(MaState *state, cchar *key, cchar *value)
         checkSsl(state);
         if (!state->host->secureEndpoint) {
             if (httpSecureEndpointByName(state->host->name, state->route->ssl) < 0) {
-                mprLog("error ssl", 0, "No HttpEndpoint at %s to secure. Must use inside a VirtualHost block", 
+                mprLog("error ssl", 0, "No HttpEndpoint at %s to secure. Must use inside a VirtualHost block",
                     state->host->name);
                 return MPR_ERR_BAD_STATE;
             }
@@ -2697,7 +2697,7 @@ static int streamInputDirective(MaState *state, cchar *key, cchar *value)
     Target close [immediate]
     Target redirect status URI
     Target run ${DOCUMENT_ROOT}/${request:uri}
-    Target run ${controller}-${name} 
+    Target run ${controller}-${name}
     Target write [-r] status "Hello World\r\n"
  */
 static int targetDirective(MaState *state, cchar *key, cchar *value)
@@ -2751,7 +2751,7 @@ static int traceDirective(MaState *state, cchar *key, cchar *value)
 
     route = state->route;
     route->trace = httpCreateTrace(route->trace);
-    
+
     for (option = stok(sclone(value), " \t", &tok); option; option = stok(0, " \t", &tok)) {
         option = ssplit(option, " =\t,", &ovalue);
         ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
@@ -2786,7 +2786,7 @@ static int traceMethodDirective(MaState *state, cchar *key, cchar *value)
 #endif
 
 
-/*  
+/*
     TypesConfig path
  */
 static int typesConfigDirective(MaState *state, cchar *key, cchar *value)
@@ -2912,9 +2912,6 @@ static int virtualHostDirective(MaState *state, cchar *key, cchar *value)
             Other routes are not inherited due to the reset routes below
          */
         state->route = httpCreateInheritedRoute(httpGetHostDefaultRoute(state->host));
-#if UNUSED
-        state->route->ssl = 0;
-#endif
         state->auth = state->route->auth;
         state->host = httpCloneHost(state->host);
         httpSetRouteHost(state->route, state->host);
@@ -2945,7 +2942,7 @@ static int closeVirtualHostDirective(MaState *state, cchar *key, cchar *value)
     char            *address, *ip, *addresses, *tok;
     int             port;
 
-    if (state->enabled) { 
+    if (state->enabled) {
         if (state->endpoints && *state->endpoints) {
             for (addresses = sclone(state->endpoints); (address = stok(addresses, " \t,", &tok)) != 0 ; addresses = tok) {
                 if (mprParseSocketAddress(address, &ip, &port, NULL, -1) < 0) {
@@ -2959,10 +2956,6 @@ static int closeVirtualHostDirective(MaState *state, cchar *key, cchar *value)
                     httpAddHostToEndpoint(endpoint, state->host);
                 }
             }
-#if UNUSED
-        } else {
-            httpAddHostToEndpoints(state->host);
-#endif
         }
     }
     closeDirective(state, key, value);
@@ -3095,7 +3088,7 @@ static bool conditionalDefinition(MaState *state, cchar *key)
 
 
 /*
-    Tokenizes a line using %formats. Mandatory tokens can be specified with %. Optional tokens are specified with ?. 
+    Tokenizes a line using %formats. Mandatory tokens can be specified with %. Optional tokens are specified with ?.
     Supported tokens:
         %B - Boolean. Parses: on/off, true/false, yes/no.
         %N - Number. Parses numbers in base 10.
@@ -3111,7 +3104,7 @@ PUBLIC bool maTokenize(MaState *state, cchar *line, cchar *fmt, ...)
 
     va_start(ap, fmt);
     if (!httpTokenizev(state->route, line, fmt, ap)) {
-        mprLog("error appweb config", 0, "Bad \"%s\" directive at line %d in %s, line: %s %s", 
+        mprLog("error appweb config", 0, "Bad \"%s\" directive at line %d in %s, line: %s %s",
                 state->key, state->lineNumber, state->filename, state->key, line);
         va_end(ap);
         return 0;
@@ -3124,7 +3117,7 @@ PUBLIC bool maTokenize(MaState *state, cchar *line, cchar *fmt, ...)
 static int addCondition(MaState *state, cchar *name, cchar *details, int flags)
 {
     if (httpAddRouteCondition(state->route, name, details, flags) < 0) {
-        mprLog("error appweb config", 0, "Bad \"%s\" directive at line %d in %s, line: %s %s", 
+        mprLog("error appweb config", 0, "Bad \"%s\" directive at line %d in %s, line: %s %s",
             state->key, state->lineNumber, state->filename, state->key, details);
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -3135,7 +3128,7 @@ static int addCondition(MaState *state, cchar *name, cchar *details, int flags)
 static int addUpdate(MaState *state, cchar *name, cchar *details, int flags)
 {
     if (httpAddRouteUpdate(state->route, name, details, flags) < 0) {
-        mprLog("error appweb config", 0, "Bad \"%s\" directive at line %d in %s, line: %s %s %s", 
+        mprLog("error appweb config", 0, "Bad \"%s\" directive at line %d in %s, line: %s %s %s",
                 state->key, state->lineNumber, state->filename, state->key, name, details);
         return MPR_ERR_BAD_SYNTAX;
     }
@@ -3249,13 +3242,13 @@ static char *getDirective(char *line, char **valuep)
 {
     char    *key, *value;
     ssize   len;
-    
+
     assert(line);
     assert(valuep);
 
     *valuep = 0;
     /*
-        Use stok instead of ssplit to skip leading white space 
+        Use stok instead of ssplit to skip leading white space
      */
     if ((key = stok(line, " \t", &value)) == 0) {
         return 0;
@@ -3308,7 +3301,7 @@ PUBLIC char *maGetNextArg(char *s, char **tok)
         etok = NULL;
     } else {
         *etok++ = '\0';
-        for (; isspace((uchar) *etok); etok++) {}  
+        for (; isspace((uchar) *etok); etok++) {}
     }
     *tok = etok;
     return s;
@@ -3507,7 +3500,7 @@ static int parseInit()
     maAddDirective("WebSocketsProtocol", webSocketsProtocolDirective);
     maAddDirective("WebSocketsPing", webSocketsPingDirective);
 
-    
+
     /*
         Fixes
      */
@@ -3603,7 +3596,7 @@ PUBLIC int maLoadModule(cchar *name, cchar *libname)
     Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the Embedthis Open Source license or you may acquire a 
+    You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
