@@ -2,7 +2,13 @@
     directories: {
         controllers: '.'
     },
+    esp: {
+        app: true
+    },
     http: {
+        pipeline: {
+            handlers: 'espHandler'
+        },
         limits: {
             webSockets:         '25',
             webSocketsMessage:  '10MB',
