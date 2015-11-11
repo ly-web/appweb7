@@ -138,9 +138,9 @@ PUBLIC int maParseConfig(cchar *path)
         rc = httpLoadConfig(route, path);
     } else {
         state = createState();
-        mprAddRoot(state);
+        mprSetThreadYield(NULL, 0);
         rc = maParseFile(state, path);
-        mprRemoveRoot(state);
+        mprSetThreadYield(NULL, 1);
     }
     if (rc < 0) {
         return rc;
@@ -164,16 +164,13 @@ PUBLIC int maParseFile(MaState *state, cchar *path)
     if (!state) {
         lineNumber = 0;
         topState = state = createState();
-        mprAddRoot(state);
     } else {
         topState = 0;
         lineNumber = state->lineNumber;
         state = maPushState(state);
     }
     rc = parseFileInner(state, path);
-    if (topState) {
-        mprRemoveRoot(state);
-    } else {
+    if (!topState) {
         state = maPopState(state);
         state->lineNumber = lineNumber;
     }
@@ -1182,14 +1179,11 @@ static int includeDirective(MaState *state, cchar *key, cchar *value)
         path = stemplate(path, state->route->vars);
         pattern = mprGetPathBase(value);
         includes = mprGlobPathFiles(path, pattern, 0);
-        mprAddRoot(includes);
         for (ITERATE_ITEMS(includes, include, next)) {
             if (maParseFile(state, include) < 0) {
-                mprRemoveRoot(includes);
                 return MPR_ERR_CANT_OPEN;
             }
         }
-        mprRemoveRoot(includes);
     }
     return 0;
 }
