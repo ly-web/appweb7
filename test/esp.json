@@ -1,9 +1,9 @@
 {
     esp: {
         app: false,
-    },
-    http: {
+        combine: false,
         compile: true,
+        optimize: false,
         update: true
     }
 }
