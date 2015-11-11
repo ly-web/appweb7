@@ -1079,7 +1079,7 @@ PUBLIC void mprResetYield()
         mprLog("error mpr memory", 0, "Yield called from an unknown thread");
         return;
     }
-    assert(tp->stickyYield);
+    assert(tp->stickyYield || tp->noyield);
     if (tp->stickyYield) {
         /*
             Marking could have started again while sticky yielded. So must yield here regardless.

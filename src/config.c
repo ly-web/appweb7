@@ -129,6 +129,7 @@ PUBLIC int maParseConfig(cchar *path)
 {
     HttpRoute   *route;
     MaState     *state;
+    bool        yielding;
     int         rc;
 
     mprLog("info appweb", 2, "Using config file %s", mprGetRelPath(path, 0));
@@ -138,9 +139,9 @@ PUBLIC int maParseConfig(cchar *path)
         rc = httpLoadConfig(route, path);
     } else {
         state = createState();
-        mprSetThreadYield(NULL, 0);
+        yielding = mprSetThreadYield(NULL, 0);
         rc = maParseFile(state, path);
-        mprSetThreadYield(NULL, 1);
+        mprSetThreadYield(NULL, yielding);
     }
     if (rc < 0) {
         return rc;
