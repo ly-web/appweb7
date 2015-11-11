@@ -1182,11 +1182,14 @@ static int includeDirective(MaState *state, cchar *key, cchar *value)
         path = stemplate(path, state->route->vars);
         pattern = mprGetPathBase(value);
         includes = mprGlobPathFiles(path, pattern, 0);
+        mprAddRoot(includes);
         for (ITERATE_ITEMS(includes, include, next)) {
             if (maParseFile(state, include) < 0) {
+                mprRemoveRoot(includes);
                 return MPR_ERR_CANT_OPEN;
             }
         }
+        mprRemoveRoot(includes);
     }
     return 0;
 }
