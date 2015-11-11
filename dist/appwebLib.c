@@ -128,7 +128,7 @@ static int openConfig(MaState *state, cchar *path)
 
     state->filename = sclone(path);
     state->configDir = mprGetAbsPath(mprGetPathDir(state->filename));
-    mprLog("info http", 3, "Parse \"%s\"", mprGetAbsPath(state->filename));
+    mprLog("info http", 3, "Parse %s", mprGetAbsPath(state->filename));
     if ((state->file = mprOpenFile(path, O_RDONLY | O_TEXT, 0444)) == 0) {
         mprLog("error http", 0, "Cannot open %s for config directives", path);
         return MPR_ERR_CANT_OPEN;
@@ -4658,11 +4658,14 @@ PUBLIC int httpCgiInit(Http *http, MprModule *module)
  */
 static int espAppDirective(MaState *state, cchar *key, cchar *value)
 {
-    HttpRoute   *route;
+    HttpRoute   *route, *saveRoute;
     MprList     *files;
     cchar       *path, *prefix;
     char        *option, *ovalue, *tok;
-    int         next;
+    int         next, rc;
+
+    rc = 0;
+    saveRoute = state->route;
 
     if (scontains(value, "=")) {
         path = prefix = 0;
@@ -4674,16 +4677,20 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
             } else if (smatch(option, "config")) {
                 path = ovalue;
             } else {
+                path = 0;
+                rc = MPR_ERR_BAD_ARGS;
                 mprLog("error appweb", 0, "Using deprecated EspApp arguments. Please consult documentation");
-                return MPR_ERR_BAD_SYNTAX;
             }
         }
-        route = httpCreateInheritedRoute(state->route);
-        route->flags |= HTTP_ROUTE_HOSTED;
-        if (espInit(route, prefix, path) < 0) {
-            return MPR_ERR_CANT_CREATE;
+        if (path) {
+            state->route = route = httpCreateInheritedRoute(state->route);
+            route->flags |= HTTP_ROUTE_HOSTED;
+            if (espInit(route, prefix, path) < 0) {
+                rc = MPR_ERR_CANT_CREATE;
+            } else {
+                httpFinalizeRoute(route);
+            }
         }
-        httpFinalizeRoute(route);
     } else {
         files = mprGlobPathFiles(".", value, 0);
         for (ITERATE_ITEMS(files, path, next)) {
@@ -4691,15 +4698,18 @@ static int espAppDirective(MaState *state, cchar *key, cchar *value)
             route = httpCreateInheritedRoute(state->route);
             route->flags |= HTTP_ROUTE_HOSTED;
             if (espInit(route, prefix, path) < 0) {
-                return MPR_ERR_CANT_CREATE;
+                rc = MPR_ERR_CANT_CREATE;
+                break;
             }
             httpFinalizeRoute(route);
         }
     }
-    return 0;
+    state->route = saveRoute;
+    return rc;
 }
 
 
+#if UNUSED
 /*
     EspUpdate on|off
  */
@@ -4713,6 +4723,7 @@ static int espUpdateDirective(MaState *state, cchar *key, cchar *value)
     httpSetRouteUpdate(state->route, on);
     return 0;
 }
+#endif
 
 
 /*
@@ -4724,7 +4735,9 @@ PUBLIC int httpEspInit(Http *http, MprModule *module)
         return MPR_ERR_CANT_CREATE;
     }
     maAddDirective("EspApp", espAppDirective);
+#if UNUSED
     maAddDirective("EspUpdate", espUpdateDirective);
+#endif
     return 0;
 }
 #endif /* ME_COM_ESP */
