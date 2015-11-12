@@ -112,7 +112,7 @@ PUBLIC int main(int argc, char *argv[])
     route = httpGetDefaultRoute(NULL);
     auth = route->auth;
 
-    if (authFile && mprPathExists(authFile, W_OK)) {
+    if (authFile && mprPathExists(authFile, R_OK)) {
         if (maParseConfig(authFile) < 0) {
             exit(4);
         }
@@ -208,7 +208,7 @@ static char *getpass(char *prompt)
  
 static void printUsage(cchar *programName)
 {
-    mprEprintf("usage: %s [--cipher cipher] [--file path] [--password password] authFile realm user roles...\n"
+    mprEprintf("usage: %s [--cipher cipher] [--file path] [--password password] realm user roles...\n"
         "Options:\n"
         "    --cipher md5|blowfish Select the encryption cipher. Defaults to md5\n"
         "    --file filename       Modify the password file\n"
