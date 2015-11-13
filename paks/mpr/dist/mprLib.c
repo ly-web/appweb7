@@ -6231,9 +6231,10 @@ static void reapCmd(MprCmd *cmd, bool finalizing)
                 cmd->status = WTERMSIG(status);
             }
             cmd->pid = 0;
-            assert(cmd->signal);
-            mprRemoveSignalHandler(cmd->signal);
-            cmd->signal = 0;
+            if (cmd->signal) {
+                mprRemoveSignalHandler(cmd->signal);
+                cmd->signal = 0;
+            }
         }
     } else {
         mprDebug("mpr cmd", 5, "Still running pid %d, thread %s", cmd->pid, mprGetCurrentThreadName());
@@ -19283,6 +19284,9 @@ PUBLIC char *mprReadPathContents(cchar *path, ssize *lenp)
     ssize       len;
     char        *buf;
 
+    if (!path) {
+        return 0;
+    }
     if ((file = mprOpenFile(path, O_RDONLY | O_BINARY, 0)) == 0) {
         return 0;
     }
