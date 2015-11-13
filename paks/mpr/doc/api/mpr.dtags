@@ -1306,6 +1306,13 @@
     </member>
     <member kind="define">
       <type>#define</type>
+      <name>MPR_SOCKET_CERT_ERROR</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a1aad0e4c1e753954ccca3039d13b7b5a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
       <name>MPR_SOCKET_CLOSED</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>a9899fbaf22958ef4d2fbb5bce6cbb898</anchor>
@@ -5295,6 +5302,13 @@
       <arglist>(MprThread *thread, int priority)</arglist>
     </member>
     <member kind="function">
+      <type>bool</type>
+      <name>mprSetThreadYield</name>
+      <anchorfile>group___mpr_thread.html</anchorfile>
+      <anchor>ga57f5e86ffcf2cabdb1c778131ac84b7e</anchor>
+      <arglist>(MprThread *tp, bool on)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>mprSetWorkerStackSize</name>
       <anchorfile>group___mpr_worker.html</anchorfile>
@@ -9103,6 +9117,13 @@
       <anchorfile>group___mpr_thread.html</anchorfile>
       <anchor>ga60bd7071428f6043d834c48ee8914560</anchor>
       <arglist>(MprThread *thread, int priority)</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>mprSetThreadYield</name>
+      <anchorfile>group___mpr_thread.html</anchorfile>
+      <anchor>ga57f5e86ffcf2cabdb1c778131ac84b7e</anchor>
+      <arglist>(MprThread *tp, bool on)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
