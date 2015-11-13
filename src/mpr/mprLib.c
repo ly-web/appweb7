@@ -1017,6 +1017,9 @@ PUBLIC void mprYield(int flags)
     assert(!tp->yielded);
     assert(!tp->stickyYield);
 
+    if (tp->noyield) {
+        return;
+    }
     if (flags & MPR_YIELD_STICKY) {
         tp->stickyYield = 1;
         tp->yielded = 1;
@@ -1076,7 +1079,7 @@ PUBLIC void mprResetYield()
         mprLog("error mpr memory", 0, "Yield called from an unknown thread");
         return;
     }
-    assert(tp->stickyYield);
+    assert(tp->stickyYield || tp->noyield);
     if (tp->stickyYield) {
         /*
             Marking could have started again while sticky yielded. So must yield here regardless.
@@ -1106,7 +1109,7 @@ static int pauseThreads()
     MprThreadService    *ts;
     MprThread           *tp;
     MprTicks            start;
-    int                 i, allYielded, timeout;
+    int                 i, allYielded, timeout, noyield;
 
     /*
         Short timeout wait for all threads to yield. Typically set to 1/10 sec
@@ -1122,10 +1125,14 @@ static int pauseThreads()
     do {
         lock(ts->threads);
         allYielded = 1;
+        noyield = 0;
         for (i = 0; i < ts->threads->length; i++) {
             tp = (MprThread*) mprGetItem(ts->threads, i);
             if (!tp->yielded) {
                 allYielded = 0;
+                if (tp->noyield) {
+                    noyield = 1;
+                }
                 break;
             }
         }
@@ -1135,7 +1142,7 @@ static int pauseThreads()
             break;
         }
         unlock(ts->threads);
-        if (mprGetState() >= MPR_DESTROYING) {
+        if (noyield || mprGetState() >= MPR_DESTROYING) {
             /* Do not wait for paused threads if shutting down */
             break;
         }
@@ -1210,14 +1217,15 @@ static void sweeperThread(void *unused, MprThread *tp)
  */
 static void markAndSweep()
 {
-    static int warnOnce = 0;
-
     if (!pauseThreads()) {
+#if KEEP
+        static int warnOnce = 0;
         if (warnOnce == 0 && !mprGetDebugMode() && !mprIsStopping()) {
             warnOnce = 1;
             mprLog("error mpr memory", 6, "GC synchronization timed out, some threads did not yield.");
             mprLog("error mpr memory", 6, "If debugging, run the process with -D to enable debug mode.");
         }
+#endif
         resumeThreads(YIELDED_THREADS | WAITING_THREADS);
         return;
     }
@@ -6223,9 +6231,10 @@ static void reapCmd(MprCmd *cmd, bool finalizing)
                 cmd->status = WTERMSIG(status);
             }
             cmd->pid = 0;
-            assert(cmd->signal);
-            mprRemoveSignalHandler(cmd->signal);
-            cmd->signal = 0;
+            if (cmd->signal) {
+                mprRemoveSignalHandler(cmd->signal);
+                cmd->signal = 0;
+            }
         }
     } else {
         mprDebug("mpr cmd", 5, "Still running pid %d, thread %s", cmd->pid, mprGetCurrentThreadName());
@@ -19275,6 +19284,9 @@ PUBLIC char *mprReadPathContents(cchar *path, ssize *lenp)
     ssize       len;
     char        *buf;
 
+    if (!path) {
+        return 0;
+    }
     if ((file = mprOpenFile(path, O_RDONLY | O_BINARY, 0)) == 0) {
         return 0;
     }
@@ -26120,6 +26132,18 @@ PUBLIC ssize mprGetBusyWorkerCount()
     return count;
 }
 
+
+PUBLIC bool mprSetThreadYield(MprThread *tp, bool on)
+{
+    bool    prior;
+
+    if (!tp) {
+        tp = mprGetCurrentThread();
+    }
+    prior = !tp->noyield;
+    tp->noyield = !on;
+    return prior;
+}
 
 /*
     @copy   default
