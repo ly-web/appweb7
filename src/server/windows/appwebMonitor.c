@@ -472,7 +472,7 @@ static int getAppwebPort()
     char    *path, portBuf[32];
     int     fd;
 
-    path = mprJoinPath(mprGetAppDir(), "../.port.log");
+    path = ".port.log";
     if ((fd = open(path, O_RDONLY, 0666)) < 0) {
         mprError("appweb monitor", "Could not read port file %s", path);
         return -1;

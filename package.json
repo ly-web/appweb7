@@ -34,6 +34,7 @@
     ],
     "dependencies": {
         "http": "~6.2",
+        "makerom": "~0.2",
         "mpr": "~6.2",
         "osdep": "~0.8",
         "pcre": "~1.0",

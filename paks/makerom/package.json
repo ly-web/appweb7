@@ -1,22 +1,23 @@
 {
-    "name": "osdep",
-    "description": "Embedthis O/S Dependent Layer",
-    "version": "0.8.9",
+    "name": "makerom",
+    "description": "Embedthis Makerom",
+    "title": "Embedthis Makerom",
+    "version": "0.2.0",
     "keywords": [
-        "osdep",
-        "me"
+        "makerom",
+        "mpr"
     ],
     "author": {
         "name": "Embedthis Software",
         "email": "dev@embedthis.com",
         "url": "https://embedthis.com"
     },
+    "bugs": {
+        "url": "http://github.com/embedthis/makerom/issues"
+    },
     "repository": {
         "type": "git",
-        "url": "https://github.com/embedthis/osdep.git"
-    },
-    "bugs": {
-        "url": "http://github.com/embedthis/osdep/issues"
+        "url": "git://github.com/embedthis/makerom.git"
     },
     "licenses": [
         {
@@ -28,14 +29,19 @@
             "url": "https://embedthis.com/licensing/"
         }
     ],
+    "dependencies": {
+        "mpr": "~6"
+    },
+    "devDependencies": {
+        "makeme": ">=0.10.0",
+        "pak": ">=0.12.0"
+    },
     "files": [
         "dist/",
-        "doc/api/"
+        "doc/"
     ],
-    "devDependencies": {
-        "pak": ">=0.11.3"
-    },
     "pak": {
-        "origin": "embedthis/osdep"
+        "import": true,
+        "origin": "embedthis/makerom"
     }
 }

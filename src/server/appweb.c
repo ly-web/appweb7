@@ -22,6 +22,16 @@
 
 #include    "appweb.h"
 
+#if ME_STATIC && ME_COM_ESP
+/*
+    Generate cache/server.c via: appweb-esp --combine compile.
+    This compiles ESP pages into a single source file that can be included here.
+    Below, we invoke the ESP initializers via: esp_app_server_combine().
+    Note: appweb-esp must be separately built in a separate appweb build configured without --static --rom.
+ */
+#include    "cache/server.c"
+#endif
+
 /********************************** Locals ************************************/
 /*
     Global application object. Provides the top level roots of all data objects for the GC.
@@ -93,10 +103,11 @@ MAIN(appweb, int argc, char **argv, char **envp)
     }
     mprAddRoot(app);
     mprAddStandardSignals();
+
 #if ME_ROM
-    extern MprRomInode romFiles[];
-    mprSetRomFileSystem(romFiles);
+    mprAddFileSystem((MprFileSystem*) mprCreateRomFileSystem(ME_MPR_ROM_MOUNT, mprGetRomFiles()));
 #endif
+
     if (httpCreate(HTTP_CLIENT_SIDE | HTTP_SERVER_SIDE) == 0) {
         exit(3);
     }
@@ -146,6 +157,7 @@ MAIN(appweb, int argc, char **argv, char **envp)
                 mprLog("error appweb", 0, "Cannot change directory to %s", app->home);
                 exit(4);
             }
+            app->home = sclone(".");
             httpSetRouteHome(httpGetDefaultRoute(0), app->home);
 
         } else if (smatch(argp, "--log") || smatch(argp, "-l")) {
@@ -240,6 +252,13 @@ MAIN(appweb, int argc, char **argv, char **envp)
             httpLogRoutes(host, app->show > 1);
         }
     }
+#if ME_STATIC && ME_COM_ESP
+    /*
+        Invoke ESP initializers here
+     */
+    esp_app_server_combine(httpGetDefaultRoute(NULL), NULL);
+#endif
+
     /*
         Events thread will service requests. We block here.
      */
@@ -334,8 +353,7 @@ static int createEndpoints(int argc, char **argv)
  */
 static int findConfigFile()
 {
-    cchar   *extensions[] = { "json", "conf", 0 };
-    cchar   *base, **ext, *name, *path;
+    cchar   *name;
 
     if (app->configFile) {
         return 0;
@@ -348,6 +366,9 @@ static int findConfigFile()
 #if ME_ROM
     app->configFile = name;
 #else
+{
+    cchar   *extensions[] = { "json", "conf", 0 };
+    cchar   *base, **ext, *path;
     for (ext = extensions; *ext; ext++) {
         base = mprReplacePathExt(name, *ext);
         path = base;
@@ -375,6 +396,7 @@ static int findConfigFile()
         mprError("Cannot find config file %s", name);
         return MPR_ERR_CANT_OPEN;
     }
+}
 #endif
     return 0;
 }
@@ -414,8 +436,7 @@ static void usageError(Mpr *mpr)
 static int checkEnvironment(cchar *program)
 {
 #if ME_UNIX_LIKE
-    char   *home;
-    home = mprGetCurrentPath();
+    cchar *home = mprGetCurrentPath();
     if (unixSecurityChecks(program, home) < 0) {
         return -1;
     }
@@ -527,8 +548,7 @@ static int writePort()
         mprLog("error appweb", 0, "No configured endpoints");
         return MPR_ERR_CANT_ACCESS;
     }
-    //  FUTURE - should really go to a ME_LOG_DIR (then fix uninstall.sh)
-    path = mprJoinPath(mprGetAppDir(), "../.port.log");
+    path = ".port.log";
     if ((fd = open(path, O_CREAT | O_WRONLY | O_TRUNC, 0666)) < 0) {
         mprLog("error appweb", 0, "Could not create port file %s", path);
         return MPR_ERR_CANT_CREATE;

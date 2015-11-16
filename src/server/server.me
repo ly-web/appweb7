@@ -37,19 +37,18 @@ Me.load({
             run: '${BIN}/appweb --log stdout:2',
             generate: '${BIN}/appweb --log stdout:2',
         },
-
         rom: {
-            action: "
-                let files = [ '.' ]
+            action: `
+                /* Expect "configure --rom --static", then compile esp files with "esp -combine" */
+                let files = [ '.', 'web' ]
                 files += Path('web').files('**')
-                files += Path('junk/static').files('**')
-                files += Path('junk/db').files('*.mdb')
-                files.push('appweb.conf')
-                files.push('mob.conf')
-                files.push('auth.conf')
-                files.push('esp.conf')
-                Path('romFiles.c').write(Cmd.run(['makerom', '--prefix', '/'] + files))
-            ",
+                files.push('rom.conf')
+                files += Path('certs').files('**')
+                let path = Path('${SRC}/rom.c')
+                trace('Create', path)
+                strace('Run', (['makerom', '--mount', me.settings.mpr.romMount] + files).join(' '))
+                path.write(Cmd.run(['makerom', '--mount', me.settings.mpr.romMount] + files))
+            `,
         },
     },
 })
