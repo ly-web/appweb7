@@ -726,6 +726,7 @@ build\$(CONFIG)\obj\convenience.obj: \
 #
 #   rom.obj
 #
+DEPS_37 = $(DEPS_37) build\$(CONFIG)\inc\mpr.h
 
 build\$(CONFIG)\obj\rom.obj: \
     src\rom.c $(DEPS_37)

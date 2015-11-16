@@ -530,6 +530,7 @@ $(BUILD)/obj/pcre.o: \
 #
 #   rom.o
 #
+DEPS_38 += $(BUILD)/inc/mpr.h
 
 $(BUILD)/obj/rom.o: \
     src/rom.c $(DEPS_38)
