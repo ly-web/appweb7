@@ -218,7 +218,7 @@ clean:
 	if exist "build\$(CONFIG)\obj\mpr-version.obj" del /Q "build\$(CONFIG)\obj\mpr-version.obj"
 	if exist "build\$(CONFIG)\obj\mprLib.obj" del /Q "build\$(CONFIG)\obj\mprLib.obj"
 	if exist "build\$(CONFIG)\obj\pcre.obj" del /Q "build\$(CONFIG)\obj\pcre.obj"
-	if exist "build\$(CONFIG)\obj\romFiles.obj" del /Q "build\$(CONFIG)\obj\romFiles.obj"
+	if exist "build\$(CONFIG)\obj\rom.obj" del /Q "build\$(CONFIG)\obj\rom.obj"
 	if exist "build\$(CONFIG)\obj\watchdog.obj" del /Q "build\$(CONFIG)\obj\watchdog.obj"
 	if exist "build\$(CONFIG)\bin\appweb.exe" del /Q "build\$(CONFIG)\bin\appweb.exe"
 	if exist "build\$(CONFIG)\bin\appweb.lib" del /Q "build\$(CONFIG)\bin\appweb.lib"
@@ -724,14 +724,13 @@ build\$(CONFIG)\obj\convenience.obj: \
 	"$(CC)" -c -Fo$(BUILD)\obj\convenience.obj -Fd$(BUILD)\obj\convenience.pdb $(CFLAGS) $(DFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\convenience.c $(LOG)
 
 #
-#   romFiles.obj
+#   rom.obj
 #
-DEPS_37 = $(DEPS_37) build\$(CONFIG)\inc\mpr.h
 
-build\$(CONFIG)\obj\romFiles.obj: \
-    src\romFiles.c $(DEPS_37)
-	@echo .. [Compile] build\$(CONFIG)\obj\romFiles.obj
-	"$(CC)" -c -Fo$(BUILD)\obj\romFiles.obj -Fd$(BUILD)\obj\romFiles.pdb $(CFLAGS) $(DFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\romFiles.c $(LOG)
+build\$(CONFIG)\obj\rom.obj: \
+    src\rom.c $(DEPS_37)
+	@echo .. [Compile] build\$(CONFIG)\obj\rom.obj
+	"$(CC)" -c -Fo$(BUILD)\obj\rom.obj -Fd$(BUILD)\obj\rom.pdb $(CFLAGS) $(DFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src\rom.c $(LOG)
 
 #
 #   cgiHandler.obj
@@ -768,7 +767,7 @@ DEPS_40 = $(DEPS_40) build\$(CONFIG)\inc\appweb.h
 DEPS_40 = $(DEPS_40) build\$(CONFIG)\inc\customize.h
 DEPS_40 = $(DEPS_40) build\$(CONFIG)\obj\config.obj
 DEPS_40 = $(DEPS_40) build\$(CONFIG)\obj\convenience.obj
-DEPS_40 = $(DEPS_40) build\$(CONFIG)\obj\romFiles.obj
+DEPS_40 = $(DEPS_40) build\$(CONFIG)\obj\rom.obj
 DEPS_40 = $(DEPS_40) build\$(CONFIG)\obj\cgiHandler.obj
 DEPS_40 = $(DEPS_40) build\$(CONFIG)\obj\espHandler.obj
 
@@ -812,7 +811,7 @@ LIBS_40 = $(LIBS_40) libesp.lib
 
 build\$(CONFIG)\bin\libappweb.dll: $(DEPS_40)
 	@echo ..... [Link] build\$(CONFIG)\bin\libappweb.dll
-	"$(LD)" -dll -out:$(BUILD)\bin\libappweb.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\config.obj" "$(BUILD)\obj\convenience.obj" "$(BUILD)\obj\romFiles.obj" "$(BUILD)\obj\cgiHandler.obj" "$(BUILD)\obj\espHandler.obj" $(LIBPATHS_40) $(LIBS_40) $(LIBS_40) $(LIBS)  $(LOG)
+	"$(LD)" -dll -out:$(BUILD)\bin\libappweb.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) "$(BUILD)\obj\config.obj" "$(BUILD)\obj\convenience.obj" "$(BUILD)\obj\rom.obj" "$(BUILD)\obj\cgiHandler.obj" "$(BUILD)\obj\espHandler.obj" $(LIBPATHS_40) $(LIBS_40) $(LIBS_40) $(LIBS)  $(LOG)
 
 #
 #   server.c

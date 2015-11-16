@@ -8,8 +8,13 @@ Me.load({
             depends: ['render-doc'], 
             action: `
                 apidoc('api/appweb.dox', '${TOP}/src/appweb.h', 'APPWEB')
+                /* 
+                    Patch generated doxygen API into the prepared template under dist/ref/api 
+                 */
                 apiLayout('api/appweb.html', 'dist/ref/api/appweb.html')
-
+                /*
+                    For packages, use the doxygen HTML directly from paks
+                 */
                 let base = me.dir.paks.join('*/doc')
                 let files = Path().files(base.join('api/*.html'))
                 for each (src in files) {

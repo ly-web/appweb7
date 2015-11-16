@@ -161,7 +161,7 @@ clean:
 	rm -f "$(BUILD)/obj/mpr-version.o"
 	rm -f "$(BUILD)/obj/mprLib.o"
 	rm -f "$(BUILD)/obj/pcre.o"
-	rm -f "$(BUILD)/obj/romFiles.o"
+	rm -f "$(BUILD)/obj/rom.o"
 	rm -f "$(BUILD)/obj/watchdog.o"
 	rm -f "$(BUILD)/bin/appweb.out"
 	rm -f "$(BUILD)/bin/authpass.out"
@@ -537,14 +537,13 @@ $(BUILD)/obj/pcre.o: \
 	$(CC) -c -o $(BUILD)/obj/pcre.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/pcre/pcre.c
 
 #
-#   romFiles.o
+#   rom.o
 #
-DEPS_38 += $(BUILD)/inc/mpr.h
 
-$(BUILD)/obj/romFiles.o: \
-    src/romFiles.c $(DEPS_38)
-	@echo '   [Compile] $(BUILD)/obj/romFiles.o'
-	$(CC) -c -o $(BUILD)/obj/romFiles.o $(CFLAGS) $(DFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src/romFiles.c
+$(BUILD)/obj/rom.o: \
+    src/rom.c $(DEPS_38)
+	@echo '   [Compile] $(BUILD)/obj/rom.o'
+	$(CC) -c -o $(BUILD)/obj/rom.o $(CFLAGS) $(DFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src/rom.c
 
 #
 #   watchdog.o
@@ -681,13 +680,13 @@ DEPS_48 += $(BUILD)/inc/appweb.h
 DEPS_48 += $(BUILD)/inc/customize.h
 DEPS_48 += $(BUILD)/obj/config.o
 DEPS_48 += $(BUILD)/obj/convenience.o
-DEPS_48 += $(BUILD)/obj/romFiles.o
+DEPS_48 += $(BUILD)/obj/rom.o
 DEPS_48 += $(BUILD)/obj/cgiHandler.o
 DEPS_48 += $(BUILD)/obj/espHandler.o
 
 $(BUILD)/bin/libappweb.a: $(DEPS_48)
 	@echo '      [Link] $(BUILD)/bin/libappweb.a'
-	arundefined -cr $(BUILD)/bin/libappweb.a "$(BUILD)/obj/config.o" "$(BUILD)/obj/convenience.o" "$(BUILD)/obj/romFiles.o" "$(BUILD)/obj/cgiHandler.o" "$(BUILD)/obj/espHandler.o"
+	arundefined -cr $(BUILD)/bin/libappweb.a "$(BUILD)/obj/config.o" "$(BUILD)/obj/convenience.o" "$(BUILD)/obj/rom.o" "$(BUILD)/obj/cgiHandler.o" "$(BUILD)/obj/espHandler.o"
 
 #
 #   appweb

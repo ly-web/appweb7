@@ -120,11 +120,17 @@
 #ifndef ME_MBEDTLS_COMPACT
     #define ME_MBEDTLS_COMPACT 1
 #endif
+#ifndef ME_MPR_DISK
+    #define ME_MPR_DISK 1
+#endif
 #ifndef ME_MPR_LOGGING
     #define ME_MPR_LOGGING 1
 #endif
 #ifndef ME_MPR_OSLOG
     #define ME_MPR_OSLOG 0
+#endif
+#ifndef ME_MPR_ROM_MOUNT
+    #define ME_MPR_ROM_MOUNT "/rom"
 #endif
 #ifndef ME_MPR_SSL_CACHE
     #define ME_MPR_SSL_CACHE 512

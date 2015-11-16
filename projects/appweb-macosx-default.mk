@@ -152,7 +152,7 @@ clean:
 	rm -f "$(BUILD)/obj/mpr-version.o"
 	rm -f "$(BUILD)/obj/mprLib.o"
 	rm -f "$(BUILD)/obj/pcre.o"
-	rm -f "$(BUILD)/obj/romFiles.o"
+	rm -f "$(BUILD)/obj/rom.o"
 	rm -f "$(BUILD)/obj/watchdog.o"
 	rm -f "$(BUILD)/bin/appweb"
 	rm -f "$(BUILD)/bin/authpass"
@@ -528,14 +528,13 @@ $(BUILD)/obj/pcre.o: \
 	$(CC) -c -o $(BUILD)/obj/pcre.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) $(IFLAGS) src/pcre/pcre.c
 
 #
-#   romFiles.o
+#   rom.o
 #
-DEPS_38 += $(BUILD)/inc/mpr.h
 
-$(BUILD)/obj/romFiles.o: \
-    src/romFiles.c $(DEPS_38)
-	@echo '   [Compile] $(BUILD)/obj/romFiles.o'
-	$(CC) -c -o $(BUILD)/obj/romFiles.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src/romFiles.c
+$(BUILD)/obj/rom.o: \
+    src/rom.c $(DEPS_38)
+	@echo '   [Compile] $(BUILD)/obj/rom.o'
+	$(CC) -c -o $(BUILD)/obj/rom.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) -D_FILE_OFFSET_BITS=64 -DMBEDTLS_USER_CONFIG_FILE=\"embedtls.h\" $(IFLAGS) src/rom.c
 
 #
 #   watchdog.o
@@ -744,7 +743,7 @@ DEPS_48 += $(BUILD)/inc/appweb.h
 DEPS_48 += $(BUILD)/inc/customize.h
 DEPS_48 += $(BUILD)/obj/config.o
 DEPS_48 += $(BUILD)/obj/convenience.o
-DEPS_48 += $(BUILD)/obj/romFiles.o
+DEPS_48 += $(BUILD)/obj/rom.o
 DEPS_48 += $(BUILD)/obj/cgiHandler.o
 DEPS_48 += $(BUILD)/obj/espHandler.o
 
@@ -788,7 +787,7 @@ endif
 
 $(BUILD)/bin/libappweb.dylib: $(DEPS_48)
 	@echo '      [Link] $(BUILD)/bin/libappweb.dylib'
-	$(CC) -dynamiclib -o $(BUILD)/bin/libappweb.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 6.2 -current_version 6.2 "$(BUILD)/obj/config.o" "$(BUILD)/obj/convenience.o" "$(BUILD)/obj/romFiles.o" "$(BUILD)/obj/cgiHandler.o" "$(BUILD)/obj/espHandler.o" $(LIBPATHS_48) $(LIBS_48) $(LIBS_48) $(LIBS) -lpam 
+	$(CC) -dynamiclib -o $(BUILD)/bin/libappweb.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libappweb.dylib -compatibility_version 6.2 -current_version 6.2 "$(BUILD)/obj/config.o" "$(BUILD)/obj/convenience.o" "$(BUILD)/obj/rom.o" "$(BUILD)/obj/cgiHandler.o" "$(BUILD)/obj/espHandler.o" $(LIBPATHS_48) $(LIBS_48) $(LIBS_48) $(LIBS) -lpam 
 
 #
 #   appweb
@@ -1260,7 +1259,11 @@ installBinary: $(DEPS_59)
 	cp doc/dist/man/http.1 $(ME_VAPP_PREFIX)/doc/man1/http.1 ; \
 	mkdir -p "$(ME_MAN_PREFIX)/man1" ; \
 	rm -f "$(ME_MAN_PREFIX)/man1/http.1" ; \
-	ln -s "$(ME_VAPP_PREFIX)/doc/man1/http.1" "$(ME_MAN_PREFIX)/man1/http.1"
+	ln -s "$(ME_VAPP_PREFIX)/doc/man1/http.1" "$(ME_MAN_PREFIX)/man1/http.1" ; \
+	cp doc/dist/man/makerom.1 $(ME_VAPP_PREFIX)/doc/man1/makerom.1 ; \
+	mkdir -p "$(ME_MAN_PREFIX)/man1" ; \
+	rm -f "$(ME_MAN_PREFIX)/man1/makerom.1" ; \
+	ln -s "$(ME_VAPP_PREFIX)/doc/man1/makerom.1" "$(ME_MAN_PREFIX)/man1/makerom.1"
 
 #
 #   start
