@@ -108,7 +108,7 @@ PUBLIC int maConfigureServer(cchar *configFile, cchar *home, cchar *documents, c
         return MPR_ERR_CANT_INITIALIZE;
     }
     if (configFile) {
-        if (maParseConfig(mprGetAbsPath(configFile)) < 0) {
+        if (maParseConfig(configFile) < 0) {
             return MPR_ERR_CANT_INITIALIZE;
         }
     } else {
@@ -3721,7 +3721,7 @@ PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documen
 
 
 
-/********* Start of file ../../../src/romFiles.c ************/
+/********* Start of file ../../../src/rom.c ************/
 
 
 /*
@@ -3732,10 +3732,12 @@ PUBLIC int maRunSimpleWebServer(cchar *ip, int port, cchar *home, cchar *documen
 #if ME_ROM
 
 PUBLIC MprRomInode romFiles[] = {
-    { "", 0, 0, 0 },
     { 0, 0, 0, 0 },
 };
 
+PUBLIC MprRomInode *mprGetRomFiles() {
+    return romFiles;
+}
 #else
 PUBLIC int romDummy;
 #endif /* ME_ROM */

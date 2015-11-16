@@ -54,13 +54,6 @@ Me.load({
             gendh: true
         },
 
-        http: {
-            /* Use PAM (Plugable Authentication Module) to store passwords */
-            cmd: true,
-            pam: true,
-            webSockets: true,
-        },
-
         ejscript: {
             db: true,                                                                                     
             mail: true,                                                                                   
@@ -78,6 +71,13 @@ Me.load({
             module: false,
         },
 
+        http: {
+            /* Use PAM (Plugable Authentication Module) to store passwords */
+            cmd: true,
+            pam: true,
+            webSockets: true,
+        },
+
         mbedtls: {
             compact: true,      /* Compact edition - Disable non-essential ciphers and features */
         },
@@ -88,6 +88,8 @@ Me.load({
                 The default is to enable logging for both debug and release builds.
              */
             logging: true,              /* Enable application logging */
+            disk: true,                 /* Build with disk FS support */
+            romMount: "/rom",           /* Virtual mount point for a rom file system */
             threadStack: 0,             /* Use the default system stack size */
             oslog: false,               /* Write to the O/S log file */
 

@@ -40,14 +40,15 @@ Me.load({
 
         rom: {
             action: `
+                /* Expect "configure --rom --static", then compile esp files with "esp -combine" */
                 let files = [ '.', 'web' ]
                 files += Path('web').files('**')
-                files.push('appweb.conf')
-                files.push('install.conf')
+                files.push('rom.conf')
                 files += Path('certs').files('**')
-                let path = Path('${SRC}/romFiles.c')
+                let path = Path('${SRC}/rom.c')
                 trace('Create', path)
-                path.write(Cmd.run(['makerom', '--prefix', '/'] + files))
+                strace('Run', (['makerom', '--mount', me.settings.mpr.romMount] + files).join(' '))
+                path.write(Cmd.run(['makerom', '--mount', me.settings.mpr.romMount] + files))
             `,
         },
     },

@@ -95,7 +95,7 @@ PUBLIC int maConfigureServer(cchar *configFile, cchar *home, cchar *documents, c
         return MPR_ERR_CANT_INITIALIZE;
     }
     if (configFile) {
-        if (maParseConfig(mprGetAbsPath(configFile)) < 0) {
+        if (maParseConfig(configFile) < 0) {
             return MPR_ERR_CANT_INITIALIZE;
         }
     } else {

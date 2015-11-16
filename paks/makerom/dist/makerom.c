@@ -1,7 +1,7 @@
 /**
     makerom.c - Compile source files into C code suitable for embedding in ROM.
   
-    Usage: makerom --prefix prefix --name romName files ... >rom.c
+    Usage: makerom --mount mount --strip string --name romName files ... >rom.c
   
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
  */
@@ -12,8 +12,10 @@
 
 /**************************** Forward Declarations ****************************/
 
+#define MOUNT_POINT "/rom"
+
 static void printUsage();
-static int  binToC(MprList *files, char *romName, char *prefix);
+static int binToC(MprList *files, cchar *romName, cchar *mount, cchar *strip);
 
 /*********************************** Code *************************************/
 
@@ -21,14 +23,16 @@ int main(int argc, char **argv)
 {
     MprList     *files;
     FILE        *fp;
-    char        *argp, *prefix, *romName, *fileList, *path, fbuf[ME_MAX_FNAME];
+    char        *argp, *mount, *romName, *strip, *fileList, *path, fbuf[ME_MAX_FNAME];
     int         nextArg, err;
 
     mprCreate(argc, argv, 0);
 
     err = 0;
-    prefix = "";
+    mount = "";
+    strip = "";
     romName = "romFiles";
+    mount = MOUNT_POINT;
     files = mprCreateList(-1, 0);
     fileList = 0;
 
@@ -49,11 +53,18 @@ int main(int argc, char **argv)
             } else {
                 romName = argv[++nextArg];
             }
-        } else if (smatch(argp, "--prefix")) {
+        } else if (smatch(argp, "--mount")) {
             if (nextArg >= argc) {
                 err++;
             } else {
-                prefix = argv[++nextArg];
+                mount = argv[++nextArg];
+            }
+
+        } else if (smatch(argp, "--prefix") || smatch(argp, "--strip")) {
+            if (nextArg >= argc) {
+                err++;
+            } else {
+                strip = argv[++nextArg];
             }
 
         } else {
@@ -79,7 +90,7 @@ int main(int argc, char **argv)
         printUsage();
         return MPR_ERR;
     }
-    if (binToC(files, romName, prefix) < 0) {
+    if (binToC(files, romName, mount, strip) < 0) {
         return MPR_ERR;
     }
     return 0;
@@ -92,14 +103,15 @@ static void printUsage()
     mprEprintf("  Makerom options:\n");
     mprEprintf("  --files fileList      # List of files\n");
     mprEprintf("  --name structName     # Name of top level C struct\n");
-    mprEprintf("  --prefix prefix       # File prefix to remove\n");
+    mprEprintf("  --mount mount         # Mount point for the ROM file system\n");
+    mprEprintf("  --strip string        # Filename prefix to strip\n");
 }
 
 
 /* 
     Encode the files as C code
  */
-static int binToC(MprList *files, char *romName, char *prefix)
+static int binToC(MprList *files, cchar *romName, cchar *mount, cchar *strip)
 {
     struct stat     sbuf;
     char            buf[512];
@@ -144,13 +156,18 @@ static int binToC(MprList *files, char *romName, char *prefix)
         Now output the page index
      */ 
     mprPrintf("PUBLIC MprRomInode %s[] = {\n", romName);
+    strip = mprGetNativePath(strip);
+    mount = mprGetNativePath(mount);
 
     for (next = 0; (filename = mprGetNextItem(files, &next)) != 0; ) {
-        name = sncmp(filename, prefix, slen(prefix)) == 0 ? &filename[slen(prefix)] : filename;
-        name = mprGetRelPath(name, 0);
-        name = sjoin("/", name, NULL);
+        name = mprGetRelPath(filename, 0);
         name = mprNormalizePath(name);
-        mprMapSeparators(name, '/');
+        name = mprGetNativePath(name);
+        name = sncmp(name, strip, slen(strip)) == 0 ? &name[slen(strip)] : name;
+        name = mprJoinPath(mount, name);
+#if ME_WIN_LIKE
+        name = sreplace(name, "\\", "\\\\");
+#endif
         if (stat(filename, &sbuf) == 0 && sbuf.st_mode & S_IFDIR) {
             mprPrintf("    { \"%s\", 0, 0, 0 },\n", name);
             continue;
@@ -159,6 +176,7 @@ static int binToC(MprList *files, char *romName, char *prefix)
     }
     mprPrintf("    { 0, 0, 0, 0 },\n");
     mprPrintf("};\n");
+    mprPrintf("\nPUBLIC MprRomInode *mprGetRomFiles() {\n    return %s;\n}\n", romName);
     mprPrintf("#else\n");
     mprPrintf("PUBLIC int romDummy;\n");
     mprPrintf("#endif /* ME_ROM */\n");
