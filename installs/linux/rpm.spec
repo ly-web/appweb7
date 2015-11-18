@@ -6,7 +6,7 @@ Name: ${settings.name}
 Version: ${settings.version}
 License: Dual GPL/commercial
 Group: Applications/Internet
-URL: http://appwebserver.org
+URL: http://embedthis.com/appweb/
 Distribution: Embedthis
 Vendor: Embedthis Software
 BuildRoot: ${prefixes.rpm}/BUILDROOT/${settings.name}-${settings.version}.${platform.mappedCpu}

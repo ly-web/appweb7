@@ -73,6 +73,7 @@ or
 
 Resources
 ---
-  - [Appweb web site](http://appwebserver.org/)
+  - [Appweb web site](http://embedthis.com/appweb/)
   - [Appweb GitHub repository](http://github.com/embedthis/appweb)
   - [Embedthis web site](https://embedthis.com/)
+
