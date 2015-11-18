@@ -8511,7 +8511,7 @@ static int openFileHandler(HttpQueue *q)
         }
         if (!tx->etag) {
             /* Set the etag for caching in the client */
-            tx->etag = sfmt("\"%llx-%llx-%llx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
+            tx->etag = itos(info->inode + info->size + info->mtime);
         }
         if (info->mtime) {
             dateCache = conn->http->dateCache;
@@ -8768,7 +8768,7 @@ static void incomingFile(HttpQueue *q, HttpPacket *packet)
         if (!tx->etag) {
             /* Set the etag for caching in the client */
             mprGetPathInfo(tx->filename, &tx->fileInfo);
-            tx->etag = sfmt("\"%llx-%llx-%llx\"", tx->fileInfo.inode, tx->fileInfo.size, tx->fileInfo.mtime);
+            tx->etag = itos(tx->fileInfo.inode + tx->fileInfo.size + tx->fileInfo.mtime);
         }
         return;
     }
@@ -20491,7 +20491,7 @@ PUBLIC bool httpSetFilename(HttpConn *conn, cchar *filename, int flags)
     }
     mprGetPathInfo(filename, info);
     if (info->valid) {
-        tx->etag = sfmt("\"%llx-%llx-%llx\"", (int64) info->inode, (int64) info->size, (int64) info->mtime);
+        tx->etag = itos(info->inode + info->size + info->mtime);
     }
     tx->filename = sclone(filename);
 
