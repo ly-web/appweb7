@@ -962,13 +962,29 @@ PUBLIC bool httpConfigure(HttpConfigureProc proc, void *data, MprTicks timeout)
 PUBLIC int httpApplyUserGroup()
 {
 #if ME_UNIX_LIKE
-    Http    *http;
+    Http        *http;
+    HttpHost    *host;
+    HttpRoute   *route;
+    cchar       *path;
+    int         nextHost, nextRoute;
 
     http = HTTP;
     if (http->userChanged || http->groupChanged) {
         if (!smatch(MPR->logPath, "stdout") && !smatch(MPR->logPath, "stderr")) {
             if (chown(MPR->logPath, http->uid, http->gid) < 0) {
                 mprLog("critical http", 0, "Cannot change ownership on %s", MPR->logPath);
+            }
+        }
+        for (ITERATE_ITEMS(HTTP->hosts, host, nextHost)) {
+            for (ITERATE_ITEMS(host->routes, route, nextRoute)) {
+                if (route->trace) {
+                    path = route->trace->path;
+                    if (!smatch(path, "stdout") && !smatch(path, "stderr")) {
+                        if (chown(path, http->uid, http->gid) < 0) {
+                            mprLog("critical http", 0, "Cannot change ownership on %s", path);
+                        }
+                    }
+                }
             }
         }
     }
