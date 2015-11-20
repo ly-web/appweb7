@@ -31,13 +31,13 @@ BUILD                 = build\$(CONFIG)
 LBIN                  = $(BUILD)\bin
 
 !IF "$(ME_COM_CGI)" == ""
-ME_COM_CGI            = 1
+ME_COM_CGI            = 0
 !ENDIF
 !IF "$(ME_COM_COMPILER)" == ""
 ME_COM_COMPILER       = 1
 !ENDIF
 !IF "$(ME_COM_DIR)" == ""
-ME_COM_DIR            = 1
+ME_COM_DIR            = 0
 !ENDIF
 !IF "$(ME_COM_EJS)" == ""
 ME_COM_EJS            = 0

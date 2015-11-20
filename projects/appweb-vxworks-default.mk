@@ -15,9 +15,9 @@ BUILD                 ?= build/$(CONFIG)
 LBIN                  ?= $(BUILD)/bin
 PATH                  := $(LBIN):$(PATH)
 
-ME_COM_CGI            ?= 1
+ME_COM_CGI            ?= 0
 ME_COM_COMPILER       ?= 1
-ME_COM_DIR            ?= 1
+ME_COM_DIR            ?= 0
 ME_COM_EJS            ?= 0
 ME_COM_ESP            ?= 1
 ME_COM_HTTP           ?= 1

@@ -302,13 +302,13 @@
 
 /* Components */
 #ifndef ME_COM_CGI
-    #define ME_COM_CGI 1
+    #define ME_COM_CGI 0
 #endif
 #ifndef ME_COM_CC
     #define ME_COM_CC 1
 #endif
 #ifndef ME_COM_DIR
-    #define ME_COM_DIR 1
+    #define ME_COM_DIR 0
 #endif
 #ifndef ME_COM_EJS
     #define ME_COM_EJS 0
