@@ -8859,7 +8859,6 @@ PUBLIC char *mprGetPassword(cchar *prompt)
 
 
 
-#if ME_MPR_DISK
 /*********************************** Defines **********************************/
 
 #if WINDOWS
@@ -9006,45 +9005,6 @@ static MprFile *disk_openFile(MprFileSystem *fs, cchar *path, int omode, int per
 #endif
     }
     return file;
-}
-
-
-static ssize disk_readFile(MprFile *file, void *buf, ssize size)
-{
-    assert(file);
-    assert(buf);
-
-    return read(file->fd, buf, (uint) size);
-}
-
-
-static ssize disk_writeFile(MprFile *file, cvoid *buf, ssize count)
-{
-    assert(file);
-    assert(buf);
-
-#if VXWORKS
-    return write(file->fd, (void*) buf, count);
-#else
-    return write(file->fd, buf, (uint) count);
-#endif
-}
-
-
-static MprOff disk_seekFile(MprFile *file, int seekType, MprOff distance)
-{
-    assert(file);
-
-    if (file == 0) {
-        return MPR_ERR_BAD_HANDLE;
-    }
-#if ME_WIN_LIKE
-    return (MprOff) _lseeki64(file->fd, (int64) distance, seekType);
-#elif ME_COMPILER_HAS_OFF64
-    return (MprOff) lseek64(file->fd, (off64_t) distance, seekType);
-#else
-    return (MprOff) lseek(file->fd, (off_t) distance, seekType);
-#endif
 }
 
 
@@ -9389,6 +9349,35 @@ static char *disk_getPathLink(MprDiskFileSystem *fs, cchar *path)
 }
 
 
+/*
+    These functions are supported regardles
+ */
+static ssize disk_readFile(MprFile *file, void *buf, ssize size)
+{
+    assert(file);
+    assert(buf);
+
+    return read(file->fd, buf, (uint) size);
+}
+
+
+static MprOff disk_seekFile(MprFile *file, int seekType, MprOff distance)
+{
+    assert(file);
+
+    if (file == 0) {
+        return MPR_ERR_BAD_HANDLE;
+    }
+#if ME_WIN_LIKE
+    return (MprOff) _lseeki64(file->fd, (int64) distance, seekType);
+#elif ME_COMPILER_HAS_OFF64
+    return (MprOff) lseek64(file->fd, (off64_t) distance, seekType);
+#else
+    return (MprOff) lseek(file->fd, (off_t) distance, seekType);
+#endif
+}
+
+
 static int disk_truncateFile(MprDiskFileSystem *fs, cchar *path, MprOff size)
 {
     if (!mprPathExists(path, F_OK)) {
@@ -9442,14 +9431,24 @@ static void manageDiskFileSystem(MprDiskFileSystem *dfs, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(dfs->separators);
         mprMark(dfs->newline);
-#if UNUSED
-        mprMark(dfs->root);
-#endif
 #if ME_WIN_LIKE || CYGWIN
         mprMark(dfs->cygdrive);
         mprMark(dfs->cygwin);
 #endif
     }
+}
+
+
+static ssize disk_writeFile(MprFile *file, cvoid *buf, ssize count)
+{
+    assert(file);
+    assert(buf);
+
+#if VXWORKS
+    return write(file->fd, (void*) buf, count);
+#else
+    return write(file->fd, buf, (uint) count);
+#endif
 }
 
 
@@ -9479,8 +9478,6 @@ PUBLIC MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path)
     dfs->writeFile = disk_writeFile;
     return dfs;
 }
-
-#endif /* ME_MPR_DISK */
 
 
 #if KEEP
@@ -21043,13 +21040,13 @@ static int rom_deletePath(MprRomFileSystem *fileSystem, cchar *path)
 
 static int rom_makeDir(MprRomFileSystem *fileSystem, cchar *path, int perms, int owner, int group)
 {
-    return MPR_ERR_CANT_WRITE;
+    return MPR_ERR_CANT_CREATE;
 }
 
 
 static int rom_makeLink(MprRomFileSystem *fileSystem, cchar *path, cchar *target, int hard)
 {
-    return MPR_ERR_CANT_WRITE;
+    return MPR_ERR_CANT_CREATE;
 }
 
 
