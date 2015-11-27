@@ -3502,10 +3502,7 @@ static int parseInit()
         Fixes
      */
     maAddDirective("FixDotNetDigestAuth", fixDotNetDigestAuth);
-
-#if !ME_ROM
     maAddDirective("TraceLog", traceLogDirective);
-#endif
 
 #if DEPRECATED
     /* Use TraceLog */
