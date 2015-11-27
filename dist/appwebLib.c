@@ -145,7 +145,6 @@ PUBLIC int maParseConfig(cchar *path)
     bool        yielding;
     int         rc;
 
-    mprLog("info appweb", 2, "Using config file %s", mprGetRelPath(path, 0));
     route = httpGetDefaultRoute(0);
 
     if (smatch(mprGetPathExt(path), "json")) {
