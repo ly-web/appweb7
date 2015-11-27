@@ -1,7 +1,7 @@
 /**
     makerom.c - Compile source files into C code suitable for embedding in ROM.
   
-    Usage: makerom --mount mount --strip string --name romName files ... >rom.c
+    Usage: makerom --mount mount --strip string files ... >rom.c
   
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
  */
@@ -15,7 +15,7 @@
 #define MOUNT_POINT "/rom"
 
 static void printUsage();
-static int binToC(MprList *files, cchar *romName, cchar *mount, cchar *strip);
+static int binToC(MprList *files, cchar *mount, cchar *strip);
 
 /*********************************** Code *************************************/
 
@@ -23,7 +23,7 @@ int main(int argc, char **argv)
 {
     MprList     *files;
     FILE        *fp;
-    char        *argp, *mount, *romName, *strip, *fileList, *path, fbuf[ME_MAX_FNAME];
+    char        *argp, *mount, *strip, *fileList, *path, fbuf[ME_MAX_FNAME];
     int         nextArg, err;
 
     mprCreate(argc, argv, 0);
@@ -31,7 +31,6 @@ int main(int argc, char **argv)
     err = 0;
     mount = "";
     strip = "";
-    romName = "romFiles";
     mount = MOUNT_POINT;
     files = mprCreateList(-1, 0);
     fileList = 0;
@@ -46,12 +45,6 @@ int main(int argc, char **argv)
                 err++;
             } else {
                 fileList = argv[++nextArg];
-            }
-        } else if (smatch(argp, "--name")) {
-            if (nextArg >= argc) {
-                err++;
-            } else {
-                romName = argv[++nextArg];
             }
         } else if (smatch(argp, "--mount")) {
             if (nextArg >= argc) {
@@ -90,7 +83,7 @@ int main(int argc, char **argv)
         printUsage();
         return MPR_ERR;
     }
-    if (binToC(files, romName, mount, strip) < 0) {
+    if (binToC(files, mount, strip) < 0) {
         return MPR_ERR;
     }
     return 0;
@@ -111,7 +104,7 @@ static void printUsage()
 /* 
     Encode the files as C code
  */
-static int binToC(MprList *files, cchar *romName, cchar *mount, cchar *strip)
+static int binToC(MprList *files, cchar *mount, cchar *strip)
 {
     struct stat     sbuf;
     char            buf[512];
@@ -119,7 +112,7 @@ static int binToC(MprList *files, cchar *romName, cchar *mount, cchar *strip)
     ssize           len;
     int             fd, next, i, j;
 
-    mprPrintf("/*\n    %s -- Compiled Files\n */\n", romName);
+    mprPrintf("/*\n    Compiled Files\n */\n");
 
     mprPrintf("#include \"mpr.h\"\n\n");
     mprPrintf("#if ME_ROM\n");
@@ -155,7 +148,7 @@ static int binToC(MprList *files, cchar *romName, cchar *mount, cchar *strip)
     /*
         Now output the page index
      */ 
-    mprPrintf("PUBLIC MprRomInode %s[] = {\n", romName);
+    mprPrintf("PUBLIC MprRomInode romFiles[] = {\n");
     strip = mprGetNativePath(strip);
     mount = mprGetNativePath(mount);
 
@@ -176,7 +169,7 @@ static int binToC(MprList *files, cchar *romName, cchar *mount, cchar *strip)
     }
     mprPrintf("    { 0, 0, 0, 0 },\n");
     mprPrintf("};\n");
-    mprPrintf("\nPUBLIC MprRomInode *mprGetRomFiles() {\n    return %s;\n}\n", romName);
+    mprPrintf("\nPUBLIC MprRomInode *mprGetRomFiles() {\n    return romFiles;\n}\n");
     mprPrintf("#else\n");
     mprPrintf("PUBLIC int romDummy;\n");
     mprPrintf("#endif /* ME_ROM */\n");
