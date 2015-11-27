@@ -228,7 +228,6 @@ static int parseFileInner(MaState *state, cchar *path)
 }
 
 
-#if !ME_ROM
 /*
     TraceLog path|-
         [size=bytes] 
@@ -307,7 +306,6 @@ static int traceLogDirective(MaState *state, cchar *key, cchar *value)
     httpSetTraceLevel(level);
     return 0;
 }
-#endif
 
 
 /*
@@ -3489,10 +3487,7 @@ static int parseInit()
         Fixes
      */
     maAddDirective("FixDotNetDigestAuth", fixDotNetDigestAuth);
-
-#if !ME_ROM
     maAddDirective("TraceLog", traceLogDirective);
-#endif
 
 #if DEPRECATED
     /* Use TraceLog */
