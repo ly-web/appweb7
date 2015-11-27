@@ -229,7 +229,6 @@ static int parseFileInner(MaState *state, cchar *path)
 }
 
 
-#if !ME_ROM
 /*
     TraceLog path|-
         [size=bytes]
@@ -308,7 +307,6 @@ static int traceLogDirective(MaState *state, cchar *key, cchar *value)
     httpSetTraceLevel(level);
     return 0;
 }
-#endif
 
 
 /*
