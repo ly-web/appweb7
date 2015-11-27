@@ -13,3 +13,5 @@ test/future.json
 test/test.dat
 samples/certs
 test/tmp/test.dat
+src/server/certs
+.port.log
