@@ -561,7 +561,7 @@ static int writePort()
         mprLog("error appweb", 0, "No configured endpoints");
         return MPR_ERR_CANT_ACCESS;
     }
-    path = ".port.log";
+    path = mprJoinPath(mprGetAppDir(), ".port.log");
     if ((fd = open(path, O_CREAT | O_WRONLY | O_TRUNC, 0666)) < 0) {
         mprLog("error appweb", 0, "Could not create port file %s", path);
         return MPR_ERR_CANT_CREATE;

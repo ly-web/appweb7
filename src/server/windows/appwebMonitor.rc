@@ -43,12 +43,11 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Appweb Documentation ...",    MA_MENU_DOC
         MENUITEM SEPARATOR
-        // MENUITEM "Manage Appweb ...",           MA_MENU_MANAGE
         MENUITEM "Start Appweb",                MA_MENU_START
         MENUITEM "Stop Appweb",                 MA_MENU_STOP
         MENUITEM SEPARATOR
         MENUITEM "About Appweb ...",            MA_MENU_ABOUT
-        MENUITEM "Exit Appweb Monitor",          MA_MENU_EXIT
+        MENUITEM "Exit Appweb Monitor",         MA_MENU_EXIT
     END
 END
 
