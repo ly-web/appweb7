@@ -69,6 +69,10 @@ Me.load({
                     enable:     "!Path('${TOP}/src/server/appweb.local').exists"
 
                 }, {
+                    from:       '${TOP}/src/server/esp.json', 
+                    to:         '${etc}/esp.json',
+
+                }, {
                     from:       '${TOP}/src/server/sample.conf', 
                     to:         '${etc}/sample.conf',
 
