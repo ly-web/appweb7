@@ -109,7 +109,7 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
             err++;
         }
         if (err) {
-            mprError("appweb monitor", "Bad command line: %s\n"
+            mprLog("error", 0, "Bad command line: %s\n"
                 "  Usage: %s [options]\n"
                 "  Switches:\n"
                 "    --manage             # Launch browser to manage",
@@ -123,7 +123,7 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
         return 0;
     }
     if (findInstance()) {
-        mprError("appweb monitor", "Application %s is already active.", mprGetAppTitle());
+        mprLog("error", 0, "Application %s is already active.", mprGetAppTitle());
         return MPR_ERR_BUSY;
     }
     app->hwnd = mprSetWindowsThread(0);
@@ -141,7 +141,7 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
 
     } else {
         if (openMonitorIcon() < 0) {
-            mprError("appweb monitor", "Cannot open %s tray", mprGetAppName());
+            mprLog("error", 0, "Cannot open %s tray", mprGetAppName());
         } else {
             mprServiceEvents(-1, 0);
             closeMonitorIcon();
@@ -227,11 +227,6 @@ static long msgProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
             runBrowser("http://embedthis.com/appweb/doc/index.html");
             break;
 
-#if UNUSED
-        case MA_MENU_MANAGE:
-            runBrowser("/index.html");
-            break;
-#endif
         case MA_MENU_START:
             tp = mprCreateThread("startService", startService, 0, 0);
             mprStartThread(tp);
@@ -280,7 +275,7 @@ static int openMonitorIcon()
     if (app->monitorMenu == NULL) {
         app->monitorMenu = LoadMenu(app->appInst, "monitorMenu");
         if (! app->monitorMenu) {
-            mprError("appweb monitor", "Can't locate monitorMenu");
+            mprLog("error", 0, "Can't locate monitorMenu");
             return MPR_ERR_CANT_OPEN;
         }
     }
@@ -293,7 +288,7 @@ static int openMonitorIcon()
     }
     iconHandle = (HICON) LoadImage(app->appInst, APPWEB_ICON, IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE);
     if (iconHandle == 0) {
-        mprError("appweb monitor", "Cannot load icon %s", APPWEB_ICON);
+        mprLog("error", 0, "Cannot load icon %s", APPWEB_ICON);
         return MPR_ERR_CANT_INITIALIZE;
     }
     data.uID = APPWEB_MONITOR_ID;
@@ -384,7 +379,7 @@ static int monitorEvent(HWND hwnd, WPARAM wp, LPARAM lp)
     }
 
     /*
-        Launch the Appweb Monitor Manager on a double click
+        Launch browser on a double click to the local home page
      */
     if (msg == WM_LBUTTONDBLCLK) {
         runBrowser("/index.html");
@@ -458,7 +453,7 @@ static void shutdownAppweb()
         }
 
     } else {
-        mprError("appweb monitor", "Cannot find %s to kill", MPR->name);
+        mprLog("error", 0, "Cannot find %s to kill", MPR->name);
         return;
     }
 }
@@ -474,11 +469,11 @@ static int getAppwebPort()
 
     path = ".port.log";
     if ((fd = open(path, O_RDONLY, 0666)) < 0) {
-        mprError("appweb monitor", "Could not read port file %s", path);
+        mprLog("error", 0, "Could not read port file %s", path);
         return -1;
     }
     if (read(fd, portBuf, sizeof(portBuf)) < 0) {
-        mprError("appweb monitor", "Read from port file %s failed", path);
+        mprLog("error", 0, "Read from port file %s failed", path);
         close(fd);
         return 80;
     }
@@ -501,12 +496,12 @@ static int runBrowser(char *page)
 
     port = getAppwebPort();
     if (port < 0) {
-        mprError("appweb monitor", "Cannot get Appweb listening port");
+        mprLog("error", 0, "Cannot get Appweb listening port");
         return -1;
     }
     path = getBrowserPath(ME_MAX_BUFFER);
     if (path == 0) {
-        mprError("appweb monitor", "Cannot get browser startup command");
+        mprLog("error", 0, "Cannot get browser startup command");
         return -1;
     }
     pathArg = strstr(path, "\"%1\"");
@@ -526,7 +521,7 @@ static int runBrowser(char *page)
     startInfo.cb = sizeof(startInfo);
 
     if (! CreateProcess(0, cmdBuf, 0, 0, FALSE, 0, 0, 0, &startInfo, &procInfo)) {
-        mprError("appweb monitor", "Cannot create process: %s, %d", cmdBuf, mprGetOsError());
+        mprLog("error", 0, "Cannot create process: %s, %d", cmdBuf, mprGetOsError());
         return -1;
     }
     CloseHandle(procInfo.hProcess);
@@ -570,18 +565,18 @@ static int startService()
 
     mgr = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (! mgr) {
-        mprError("appweb monitor", "Cannot open service manager");
+        mprLog("error", 0, "Cannot open service manager");
         return MPR_ERR_CANT_ACCESS;
     }
     svc = OpenService(mgr, app->serviceName, SERVICE_ALL_ACCESS);
     if (! svc) {
-        mprError("appweb monitor", "Cannot open service");
+        mprLog("error", 0, "Cannot open service");
         CloseServiceHandle(mgr);
         return MPR_ERR_CANT_OPEN;
     }
     rc = StartService(svc, 0, NULL);
     if (rc == 0) {
-        mprError("appweb monitor", "Cannot start %s service: %d", app->serviceName, GetLastError());
+        mprLog("error", 0, "Cannot start %s service: %d", app->serviceName, GetLastError());
         return MPR_ERR_CANT_INITIALIZE;
     }
     CloseServiceHandle(svc);
@@ -601,18 +596,18 @@ static int stopService()
 
     mgr = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (! mgr) {
-        mprError("appweb monitor", "Cannot open service manager");
+        mprLog("error", 0, "Cannot open service manager");
         return MPR_ERR_CANT_ACCESS;
     }
     svc = OpenService(mgr, app->serviceName, SERVICE_ALL_ACCESS);
     if (! svc) {
-        mprError("appweb monitor", "Cannot open service");
+        mprLog("error", 0, "Cannot open service");
         CloseServiceHandle(mgr);
         return MPR_ERR_CANT_OPEN;
     }
     rc = ControlService(svc, SERVICE_CONTROL_STOP, &status);
     if (rc == 0) {
-        mprError("appweb monitor", "Cannot stop %s service: %d", app->serviceName, GetLastError());
+        mprLog("error", 0, "Cannot stop %s service: %d", app->serviceName, GetLastError());
         return MPR_ERR_CANT_INITIALIZE;
     }
     CloseServiceHandle(svc);
@@ -640,7 +635,7 @@ static uint queryService()
 
     mgr = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (! mgr) {
-        mprError("appweb monitor", "Cannot open service manager");
+        mprLog("error", 0, "Cannot open service manager");
         return MPR_ERR_CANT_ACCESS;
     }
     svc = OpenService(mgr, app->serviceName, SERVICE_ALL_ACCESS);
@@ -651,7 +646,7 @@ static uint queryService()
     }
     rc = QueryServiceStatus(svc, &status);
     if (rc == 0) {
-        mprError("appweb monitor", "Cannot start %s service: %d", app->serviceName, GetLastError());
+        mprLog("error", 0, "Cannot start %s service: %d", app->serviceName, GetLastError());
         return 0;
     }
     CloseServiceHandle(svc);
