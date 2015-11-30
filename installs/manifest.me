@@ -146,7 +146,7 @@ Me.load({
                     ifdef:      'esp',
 
                 }, {
-                    from:       'esp-compile.json',
+                    from:       [ 'esp-compile.json', 'vcvars.bat' ]
                     to:         '${abin}/',
                     ifdef:      'esp',
                 }
