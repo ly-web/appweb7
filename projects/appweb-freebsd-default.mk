@@ -228,11 +228,17 @@ $(BUILD)/inc/appweb.h: $(DEPS_5)
 	cp src/appweb.h $(BUILD)/inc/appweb.h
 
 #
+#   server.c
+#
+
+$(BUILD)/inc/cache/server.c: $(DEPS_6)
+
+#
 #   customize.h
 #
-DEPS_6 += src/customize.h
+DEPS_7 += src/customize.h
 
-$(BUILD)/inc/customize.h: $(DEPS_6)
+$(BUILD)/inc/customize.h: $(DEPS_7)
 	@echo '      [Copy] $(BUILD)/inc/customize.h'
 	mkdir -p "$(BUILD)/inc"
 	cp src/customize.h $(BUILD)/inc/customize.h
@@ -240,9 +246,9 @@ $(BUILD)/inc/customize.h: $(DEPS_6)
 #
 #   embedtls.h
 #
-DEPS_7 += src/mbedtls/embedtls.h
+DEPS_8 += src/mbedtls/embedtls.h
 
-$(BUILD)/inc/embedtls.h: $(DEPS_7)
+$(BUILD)/inc/embedtls.h: $(DEPS_8)
 	@echo '      [Copy] $(BUILD)/inc/embedtls.h'
 	mkdir -p "$(BUILD)/inc"
 	cp src/mbedtls/embedtls.h $(BUILD)/inc/embedtls.h
@@ -250,12 +256,12 @@ $(BUILD)/inc/embedtls.h: $(DEPS_7)
 #
 #   esp.h
 #
-DEPS_8 += src/esp/esp.h
-DEPS_8 += $(BUILD)/inc/me.h
-DEPS_8 += $(BUILD)/inc/osdep.h
-DEPS_8 += $(BUILD)/inc/http.h
+DEPS_9 += src/esp/esp.h
+DEPS_9 += $(BUILD)/inc/me.h
+DEPS_9 += $(BUILD)/inc/osdep.h
+DEPS_9 += $(BUILD)/inc/http.h
 
-$(BUILD)/inc/esp.h: $(DEPS_8)
+$(BUILD)/inc/esp.h: $(DEPS_9)
 	@echo '      [Copy] $(BUILD)/inc/esp.h'
 	mkdir -p "$(BUILD)/inc"
 	cp src/esp/esp.h $(BUILD)/inc/esp.h
@@ -263,9 +269,9 @@ $(BUILD)/inc/esp.h: $(DEPS_8)
 #
 #   mbedtls.h
 #
-DEPS_9 += src/mbedtls/mbedtls.h
+DEPS_10 += src/mbedtls/mbedtls.h
 
-$(BUILD)/inc/mbedtls.h: $(DEPS_9)
+$(BUILD)/inc/mbedtls.h: $(DEPS_10)
 	@echo '      [Copy] $(BUILD)/inc/mbedtls.h'
 	mkdir -p "$(BUILD)/inc"
 	cp src/mbedtls/mbedtls.h $(BUILD)/inc/mbedtls.h
@@ -273,10 +279,10 @@ $(BUILD)/inc/mbedtls.h: $(DEPS_9)
 #
 #   mpr-version.h
 #
-DEPS_10 += src/mpr-version/mpr-version.h
-DEPS_10 += $(BUILD)/inc/mpr.h
+DEPS_11 += src/mpr-version/mpr-version.h
+DEPS_11 += $(BUILD)/inc/mpr.h
 
-$(BUILD)/inc/mpr-version.h: $(DEPS_10)
+$(BUILD)/inc/mpr-version.h: $(DEPS_11)
 	@echo '      [Copy] $(BUILD)/inc/mpr-version.h'
 	mkdir -p "$(BUILD)/inc"
 	cp src/mpr-version/mpr-version.h $(BUILD)/inc/mpr-version.h
@@ -284,24 +290,18 @@ $(BUILD)/inc/mpr-version.h: $(DEPS_10)
 #
 #   pcre.h
 #
-DEPS_11 += src/pcre/pcre.h
+DEPS_12 += src/pcre/pcre.h
 
-$(BUILD)/inc/pcre.h: $(DEPS_11)
+$(BUILD)/inc/pcre.h: $(DEPS_12)
 	@echo '      [Copy] $(BUILD)/inc/pcre.h'
 	mkdir -p "$(BUILD)/inc"
 	cp src/pcre/pcre.h $(BUILD)/inc/pcre.h
 
 #
-#   server.c
-#
-
-src/server/cache/server.c: $(DEPS_12)
-
-#
 #   appweb.o
 #
 DEPS_13 += $(BUILD)/inc/appweb.h
-DEPS_13 += src/server/cache/server.c
+DEPS_13 += $(BUILD)/inc/cache/server.c
 
 $(BUILD)/obj/appweb.o: \
     src/server/appweb.c $(DEPS_13)
@@ -1115,6 +1115,8 @@ installBinary: $(DEPS_59)
 	mkdir -p "$(ME_ETC_PREFIX)" ; \
 	cp src/server/appweb.conf $(ME_ETC_PREFIX)/appweb.conf ; \
 	mkdir -p "$(ME_ETC_PREFIX)" ; \
+	cp src/server/esp.json $(ME_ETC_PREFIX)/esp.json ; \
+	mkdir -p "$(ME_ETC_PREFIX)" ; \
 	cp src/server/sample.conf $(ME_ETC_PREFIX)/sample.conf ; \
 	echo -e 'set LOG_DIR "$(ME_LOG_PREFIX)"\nset CACHE_DIR "$(ME_CACHE_PREFIX)"\nDocuments "$(ME_WEB_PREFIX)\nListen 80\n<if SSL_MODULE>\nListenSecure 443\n</if>\n' >$(ME_ETC_PREFIX)/install.conf ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
@@ -1150,10 +1152,8 @@ installBinary: $(DEPS_59)
 	cp src/server/web/test/bench.html $(ME_WEB_PREFIX)/test/bench.html ; \
 	cp src/server/web/test/index.html $(ME_WEB_PREFIX)/test/index.html ; \
 	cp src/server/web/test/test.cgi $(ME_WEB_PREFIX)/test/test.cgi ; \
-	cp src/server/web/test/test.ejs $(ME_WEB_PREFIX)/test/test.ejs ; \
 	cp src/server/web/test/test.esp $(ME_WEB_PREFIX)/test/test.esp ; \
 	cp src/server/web/test/test.html $(ME_WEB_PREFIX)/test/test.html ; \
-	cp src/server/web/test/test.php $(ME_WEB_PREFIX)/test/test.php ; \
 	cp src/server/web/test/test.pl $(ME_WEB_PREFIX)/test/test.pl ; \
 	cp src/server/web/test/test.py $(ME_WEB_PREFIX)/test/test.py ; \
 	mkdir -p "$(ME_WEB_PREFIX)/test" ; \
@@ -1175,6 +1175,7 @@ installBinary: $(DEPS_59)
 	if [ "$(ME_COM_ESP)" = 1 ]; then true ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
 	cp $(BUILD)/bin/esp-compile.json $(ME_VAPP_PREFIX)/bin/esp-compile.json ; \
+	cp $(BUILD)/bin/vcvars.bat $(ME_VAPP_PREFIX)/bin/vcvars.bat ; \
 	fi ; \
 	mkdir -p "$(ME_VAPP_PREFIX)/bin" ; \
 	cp $(BUILD)/bin/http $(ME_VAPP_PREFIX)/bin/http ; \
@@ -1302,6 +1303,8 @@ uninstall: $(DEPS_64)
 	rmdir -p "$(ME_CACHE_PREFIX)" 2>/dev/null ; true ; \
 	rm -f "$(ME_APP_PREFIX)/latest" ; \
 	rmdir -p "$(ME_APP_PREFIX)" 2>/dev/null ; true ; \
+	rm -f "$(ME_CACHE_PREFIX)/view_b8bb86122be9644be601d05bf47d48b8.dylib" ; \
+	rm -f "$(ME_CACHE_PREFIX)/view_b8bb86122be9644be601d05bf47d48b8.o" ; \
 	rm -f "$(ME_ETC_PREFIX)/appweb.conf" ; \
 	rm -f "$(ME_ETC_PREFIX)/esp.conf" ; \
 	rm -f "$(ME_ETC_PREFIX)/mine.types" ; \
