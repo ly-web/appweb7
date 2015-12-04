@@ -135,20 +135,6 @@ Me.load({
     },
 
     targets: {
-        //  TODO - remove when supporting mbedtls
-        init: {
-            first: true,
-            path: 'init',
-            'generate-make': `
-                if [ ! -d /usr/include/openssl ] ; then echo
-                    echo Install libssl-dev to get /usr/include/openssl
-                    exit 255
-                fi
-            `,
-            action: ' ',
-            enable: "me.platform.os == 'linux'",
-        },
-
         cgi: {
             configurable: true,
             description: 'Common Gateway Interface Module',
@@ -172,13 +158,9 @@ Me.load({
 
         mine: {
             action: `genProjects('', 'mine', Config.OS + '-' + Config.CPU)`,
-        },
-
-        mgen: {
-            //  TODO remove when mbedtls is fully supported
-            action: `genProjects('-with mbedtls', 'mine', Config.OS + '-' + Config.CPU)`,
         }
     },
+
     usage: {
         'rom':          'Build without a file system (true|false)',
     }
