@@ -69,7 +69,6 @@ static void usageError();
     static int  unixSecurityChecks(cchar *program, cchar *home);
 #elif ME_WIN_LIKE
     static int writePort();
-    static long msgProc(HWND hwnd, uint msg, uint wp, long lp);
 #endif
 
 /*
