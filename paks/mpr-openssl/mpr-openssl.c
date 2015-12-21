@@ -806,10 +806,7 @@ static ssize readOss(MprSocket *sp, void *buf, ssize len)
             }
         }
         setSecured(sp);
-        if (SSL_pending(osp->handle) > 0) {
-            sp->flags |= MPR_SOCKET_BUFFERED_READ;
-            mprRecallWaitHandlerByFd(sp->fd);
-        }
+        mprHiddenSocketData(sp, SSL_pending(osp->handle), MPR_READABLE);
     }
     return rc;
 }

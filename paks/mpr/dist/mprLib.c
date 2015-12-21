@@ -13030,7 +13030,9 @@ static MprJson *jsonParse(MprJsonParser *parser, MprJson *obj)
 static void eatRestOfComment(MprJsonParser *parser)
 {
     cchar   *cp;
+    int     startLine;
 
+    startLine = parser->lineNumber;
     cp = parser->input;
     if (*cp == '/') {
         for (cp++; *cp && *cp != '\n'; cp++) {}
@@ -13042,7 +13044,11 @@ static void eatRestOfComment(MprJsonParser *parser)
                 parser->lineNumber++;
             }
         }
-        cp += 2;
+        if (*cp) {
+            cp += 2;
+        } else {
+            mprSetJsonError(parser, "Cannot find end of comment started on line %d", startLine);
+        }
     }
     parser->input = cp;
 }
