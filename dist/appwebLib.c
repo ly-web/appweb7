@@ -254,7 +254,8 @@ static int parseFileInner(MaState *state, cchar *path)
 static int traceLogDirective(MaState *state, cchar *key, cchar *value)
 {
     HttpRoute   *route;
-    char        *format, *option, *ovalue, *tok, *path, *formatter;
+    cchar       *path;
+    char        *format, *option, *ovalue, *tok, *formatter;
     ssize       size;
     int         flags, backup, level;
 
@@ -273,7 +274,10 @@ static int traceLogDirective(MaState *state, cchar *key, cchar *value)
     }
     for (option = maGetNextArg(sclone(value), &tok); option; option = maGetNextArg(tok, &tok)) {
         if (!path) {
-            path = sclone(option);
+            if ((path = httpGetRouteVar(state->route, "LOG_DIR")) == 0) {
+                path = ".";
+            }
+            path = mprJoinPath(path, httpExpandRouteVars(state->route, option));
         } else {
             option = ssplit(option, " =\t,", &ovalue);
             ovalue = strim(ovalue, "\"'", MPR_TRIM_BOTH);
