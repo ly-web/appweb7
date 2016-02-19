@@ -4231,8 +4231,8 @@ typedef struct MprHash {
     @description Add a symbol to the hash which may clash with an existing entry. Duplicate symbols can be added to
         the hash, but only one may be retrieved via #mprLookupKey. To recover duplicate entries walk the hash using
         #mprGetNextKey.
-    @param table Symbol table returned via mprCreateSymbolTable.
-    @param key String key of the symbole entry to delete.
+    @param table Symbol table returned via mprCreateHash.
+    @param key String key of the symbol entry to delete.
     @param ptr Arbitrary pointer to associate with the key in the table.
     @return Integer count of the number of entries.
     @ingroup MprHash
@@ -4244,8 +4244,8 @@ PUBLIC MprKey *mprAddDuplicateKey(MprHash *table, cvoid *key, cvoid *ptr);
     Add a symbol value into the hash table
     @description Associate an arbitrary value with a string symbol key and insert into the symbol table.
         This will replace existing key values. Use mprAddDuplicateKey to allow duplicates.
-    @param table Symbol table returned via mprCreateSymbolTable.
-    @param key String key of the symbole entry to delete.
+    @param table Symbol table returned via mprCreateHash.
+    @param key String key of the symbol entry to delete.
     @param ptr Arbitrary pointer to associate with the key in the table.
     @return Added MprKey reference.
     @ingroup MprHash
@@ -4256,8 +4256,8 @@ PUBLIC MprKey *mprAddKey(MprHash *table, cvoid *key, cvoid *ptr);
 /**
     Add a symbol value into the hash table and set the key type.
     @description Associate an arbitrary value with a string symbol key and insert into the symbol table.
-    @param table Symbol table returned via mprCreateSymbolTable.
-    @param key String key of the symbole entry to delete.
+    @param table Symbol table returned via mprCreateHash.
+    @param key String key of the symbol entry to delete.
     @param ptr Arbitrary pointer to associate with the key in the table.
     @param type Type of value.
     @return Added MprKey reference.
@@ -4269,8 +4269,8 @@ PUBLIC MprKey *mprAddKeyWithType(MprHash *table, cvoid *key, cvoid *ptr, int typ
 /**
     Add a key with a formatting value into the hash table
     @description Associate a formatted value with a key and insert into the symbol table.
-    @param table Symbol table returned via mprCreateSymbolTable.
-    @param key String key of the symbole entry to delete.
+    @param table Symbol table returned via mprCreateHash.
+    @param key String key of the symbol entry to delete.
     @param fmt Format string. See #mprPrintf.
     @return Integer count of the number of entries.
     @ingroup MprHash
@@ -4281,7 +4281,7 @@ PUBLIC MprKey *mprAddKeyFmt(MprHash *table, cvoid *key, cchar *fmt, ...) PRINTF_
 /**
     Copy a hash table
     @description Create a new hash table and copy all the entries from an existing table.
-    @param table Symbol table returned via mprCreateSymbolTable.
+    @param table Symbol table returned via mprCreateHash.
     @return A new hash table initialized with the contents of the original hash table.
     @ingroup MprHash
     @stability Stable.
@@ -4317,7 +4317,7 @@ PUBLIC MprHash *mprCreateHashFromWords(cchar *str);
 /**
     Return the first symbol in a symbol entry
     @description Prepares for walking the contents of a symbol table by returning the first entry in the symbol table.
-    @param table Symbol table returned via mprCreateSymbolTable.
+    @param table Symbol table returned via mprCreateHash.
     @return Pointer to the first entry in the symbol table.
     @ingroup MprHash
     @stability Stable.
@@ -4330,7 +4330,7 @@ PUBLIC MprKey *mprGetFirstKey(MprHash *table);
         the next entry in the symbol table. A previous call to mprGetFirstSymbol
         or mprGetNextSymbol is required to supply the value of the \a last
         argument.
-    @param table Symbol table returned via mprCreateSymbolTable.
+    @param table Symbol table returned via mprCreateHash.
     @param last Symbol table entry returned via mprGetFirstSymbol or mprGetNextSymbol.
     @return Pointer to the first entry in the symbol table.
     @ingroup MprHash
@@ -4341,7 +4341,7 @@ PUBLIC MprKey *mprGetNextKey(MprHash *table, MprKey *last);
 /**
     Return the count of symbols in a symbol entry
     @description Returns the number of symbols currently existing in a symbol table.
-    @param table Symbol table returned via mprCreateSymbolTable.
+    @param table Symbol table returned via mprCreateHash.
     @return Integer count of the number of entries.
     @ingroup MprHash
     @stability Stable.
@@ -4351,8 +4351,8 @@ PUBLIC int mprGetHashLength(MprHash *table);
 /**
     Lookup a symbol in the hash table.
     @description Lookup a symbol key and return the value associated with that key.
-    @param table Symbol table returned via mprCreateSymbolTable.
-    @param key String key of the symbole entry to delete.
+    @param table Symbol table returned via mprCreateHash.
+    @param key String key of the symbol entry to delete.
     @return Value associated with the key when the entry was inserted via mprInsertSymbol.
     @ingroup MprHash
     @stability Stable.
@@ -4362,8 +4362,8 @@ PUBLIC void *mprLookupKey(MprHash *table, cvoid *key);
 /**
     Lookup a symbol in the hash table and return the hash entry
     @description Lookup a symbol key and return the hash table descriptor associated with that key.
-    @param table Symbol table returned via mprCreateSymbolTable.
-    @param key String key of the symbole entry to delete.
+    @param table Symbol table returned via mprCreateHash.
+    @param key String key of the symbol entry to delete.
     @return MprKey for the entry
     @ingroup MprHash
     @stability Stable.
@@ -4373,8 +4373,8 @@ PUBLIC MprKey *mprLookupKeyEntry(MprHash *table, cvoid *key);
 /**
     Remove a symbol entry from the hash table.
     @description Removes a symbol entry from the symbol table. The entry is looked up via the supplied \a key.
-    @param table Symbol table returned via mprCreateSymbolTable.
-    @param key String key of the symbole entry to delete.
+    @param table Symbol table returned via mprCreateHash.
+    @param key String key of the symbol entry to delete.
     @return Returns zero if successful, otherwise a negative MPR error code is returned.
     @ingroup MprHash
     @stability Stable.
@@ -5076,15 +5076,14 @@ PUBLIC char *mprGetPathExt(cchar *path);
 PUBLIC MprList *mprGetPathFiles(cchar *dir, int flags);
 
 /**
-    Create a list of files in a directory or subdirectories that match the given wildcard patterns.
+    Create a list of files in a directory or subdirectories that match the given wildcard pattern.
         This call returns a list of filenames.
-    @description Get the list of files in a directory and return a list. The patterns list may contain
-    multiple patterns separated by a comma. The supported wildcard patterns are: "?" Matches any single character,
-    "*" matches zero or more characters of the file or directory, "**"/ matches zero or more directories,
-    "**" matches zero or more files or directories,and a trailing "/" matches directories only.
+    @description Get the list of files in a directory and return a list. The pattern list may contain
+    wild cards: "?" Matches any single character, "*" matches zero or more characters of the file or directory, 
+    "**"/ matches zero or more directories, "**" matches zero or more files or directories.
     An exclusion pattern may be specified to apply to subsequent patterns by appending with "!".
     @param path Directory to list.
-    @param patterns Wild card patterns to match.
+    @param patterns Wild card pattern to match.
     @param flags Set to MPR_PATH_HIDDEN to include hidden files that start with ".". Set to MPR_PATH_DEPTH_FIRST to do a
         depth-first traversal, i.e. traverse subdirectories before considering adding the directory to the list.
         Set MPR_PATH_RELATIVE to return files relative to the given path. Set MPR_PATH_NO_DIRS to omit directories.

@@ -1,5 +1,5 @@
 /**
-    osdep.h -- Embedthis O/S abstraction for products using MakeMe. 
+    osdep.h -- O/S abstraction for products using MakeMe. 
  */
 
 #ifndef _h_OSDEP
@@ -426,6 +426,12 @@
     #include    <sys/prctl.h>
     #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22)
         #include    <sys/eventfd.h>
+    #endif
+    #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,13)
+        #define HAS_INOTIFY 1
+        #include    <sys/inotify.h>
+    #else
+        #define HAS_INOTIFY 0
     #endif
     #if !__UCLIBC__
         #include    <sys/sendfile.h>
@@ -942,8 +948,14 @@ typedef int64 Ticks;
 #ifndef ME_MAX_PATH
     #define ME_MAX_PATH         1024        /**< Reasonable filename size */
 #endif
+#if DEPRECATE || 1
+/* This is not a maximum, but a default size */
 #ifndef ME_MAX_BUFFER
     #define ME_MAX_BUFFER       4096        /**< Reasonable size for buffers */
+#endif
+#endif
+#ifndef ME_BUFSIZE
+    #define ME_BUFSIZE          4096        /**< Reasonable size for buffers */
 #endif
 #ifndef ME_MAX_ARGC
     #define ME_MAX_ARGC         32          /**< Maximum number of command line args if using MAIN()*/
