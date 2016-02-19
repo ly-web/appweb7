@@ -2,22 +2,23 @@
 <html lang="en">
 <head>
     <title>SSL Overview</title>
-    
+    <!-- Copyright Embedthis Software. All Rights Reserved. -->
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-    <meta name="description" content="SSL Overview">
-    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700' rel='stylesheet' type='text/css'>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="description" content="SSL Overview" />
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
+        rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Julius+Sans+One' rel='stylesheet' type='text/css'>
     
-    <link href="../images/favicon.ico" rel="shortcut icon">
-    <link href="../lib/semantic-ui/semantic.min.css" rel="stylesheet" type="text/css">
-    <link href="../css/all.min.css" rel="stylesheet" type="text/css">
-    <link href="../css/api.min.css" rel="stylesheet" type="text/css">
+    <link href="../images/favicon.ico" rel="shortcut icon" />
+    <link href="../lib/semantic-ui/semantic.min.css" rel="stylesheet" type="text/css" />
+    <link href="../css/all.min.css" rel="stylesheet" type="text/css" />
+    <link href="../css/api.min.css" rel="stylesheet" type="text/css" />
     
 
-
+</head>
 <body class="show-sidebar">
         <div class="sidebar">
         <div class="ui large left vertical inverted labeled menu">
@@ -275,26 +276,26 @@
             <table title="cert">
                 <tbody>
                     <tr>
-                        <td class="pivot">Subject
-                        <td>Distinguished Name, Public Key
-                    
+                        <td class="pivot">Subject</td>
+                        <td>Distinguished Name, Public Key</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Issuer
-                        <td>Distinguished Name, Signature
-                    
+                        <td class="pivot">Issuer</td>
+                        <td>Distinguished Name, Signature</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Period of Validity
-                        <td>Not Before Date, Not After Date
-                    
+                        <td class="pivot">Period of Validity</td>
+                        <td>Not Before Date, Not After Date</td>
+                    </tr>
                     <tr>
-                        <td class="pivot class">Administrative Information
-                        <td>Version, Serial Number
-                    
+                        <td class="pivot class">Administrative Information</td>
+                        <td>Version, Serial Number</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Extended Information
-                        <td>Basic Constraints, Netscape Flags, etc.
-                    
-                
+                        <td class="pivot">Extended Information</td>
+                        <td>Basic Constraints, Netscape Flags, etc.</td>
+                    </tr>
+                </tbody>
             </table>
             <p>A distinguished name is used to provide an identity in a specific context &mdash; for instance, an
             individual might have a personal certificate as well as one for their identity as an employee.
@@ -304,50 +305,50 @@
             <table title="info">
                 <thead>
                     <tr>
-                        <th>DN Field
-                        <th>Abbrev.
-                        <th>Description
-                        <th>Example
-                    
-                
+                        <th>DN Field</th>
+                        <th>Abbrev.</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
                 <tbody>
                     <tr>
-                        <td>Common Name
-                        <td>CN
-                        <td>Name being certified
-                        <td>CN=Joe Average
-                    
+                        <td>Common Name</td>
+                        <td>CN</td>
+                        <td>Name being certified</td>
+                        <td>CN=Joe Average</td>
+                    </tr>
                     <tr>
-                        <td>Organization or Company
-                        <td>O
-                        <td>Name is associated with this organization
-                        <td>O=Snake Oil, Ltd.
-                    
+                        <td>Organization or Company</td>
+                        <td>O</td>
+                        <td>Name is associated with this organization</td>
+                        <td>O=Snake Oil, Ltd.</td>
+                    </tr>
                     <tr>
-                        <td>Organizational Unit
-                        <td>OU
-                        <td>Name is associated with this organization unit, such as a department
-                        <td>OU=Research Institute
-                    
+                        <td>Organizational Unit</td>
+                        <td>OU</td>
+                        <td>Name is associated with this organization unit, such as a department</td>
+                        <td>OU=Research Institute</td>
+                    </tr>
                     <tr>
-                        <td>City/Locality
-                        <td>L
-                        <td>Name is located in this City
-                        <td>L=Snake City
-                    
+                        <td>City/Locality</td>
+                        <td>L</td>
+                        <td>Name is located in this City</td>
+                        <td>L=Snake City</td>
+                    </tr>
                     <tr>
-                        <td>State/Province
-                        <td>ST
-                        <td>Name is located in this State/Province
-                        <td>ST=Desert
-                    
+                        <td>State/Province</td>
+                        <td>ST</td>
+                        <td>Name is located in this State/Province</td>
+                        <td>ST=Desert</td>
+                    </tr>
                     <tr>
-                        <td>Country
-                        <td>C
-                        <td>Name is located in this Country (ISO code)
-                        <td>C=XZ
-                    
-                
+                        <td>Country</td>
+                        <td>C</td>
+                        <td>Name is located in this Country (ISO code)</td>
+                        <td>C=XZ</td>
+                    </tr>
+                </tbody>
             </table>
             <p>A Certificate Authority may define a policy specifying which distinguished field names are optional, and
             which are required. It may also place requirements upon the field contents, as may users of certificates.
@@ -401,7 +402,8 @@ dUHzICxBVC1lnHyYGjDuAMhe396lYAn8bCld1/L4NMGBCQ==
             root authority reduces the risk in trusting this key &mdash; it would be obvious if someone else publicized
             a key claiming to be the authority. Browsers are preconfigured to trust well-known certificate
             authorities.</p>
-            <p>A number of companies, such as <a href="http://www.thawte.com/">Thawte</a> and <a href=http://www.verisign.com/>VeriSign</a> have established themselves as Certificate Authorities. These
+            <p>A number of companies, such as <a href="http://www.thawte.com/">Thawte</a> and <a href=
+            "http://www.verisign.com/">VeriSign</a> have established themselves as Certificate Authorities. These
             companies provide the following services:</p>
             <ul>
                 <li>Verifying certificate requests</li>
@@ -434,41 +436,41 @@ dUHzICxBVC1lnHyYGjDuAMhe396lYAn8bCld1/L4NMGBCQ==
         <table title="protocols">
             <thead>
                 <tr>
-                    <th>Version
-                    <th>Source
-                    <th>Description
-                
-            
+                    <th>Version</th>
+                    <th>Source</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
             <tbody>
                 <tr>
-                    <td>SSL v2.0
-                    <td>Expired
-                    <td>First SSL protocol for which implementations exists
-                
+                    <td>SSL v2.0</td>
+                    <td>Expired</td>
+                    <td>First SSL protocol for which implementations exists</td>
+                </tr>
                 <tr>
-                    <td>SSL v3.0
-                    <td>Expired
+                    <td>SSL v3.0</td>
+                    <td>Expired</td>
                     <td>Revisions to prevent specific security attacks, add non-RSA ciphers,
-                    and support for certificate chains
-                
+                    and support for certificate chains</td>
+                </tr>
                 <tr>
-                    <td>TLS v1.0
-                    <td>Internet Standard
+                    <td>TLS v1.0</td>
+                    <td>Internet Standard</td>
                     <td>TLSv1.0 is a revision of SSL 3.0 to update the MAC layer to HMAC,
                     add block padding for block ciphers, message order standardization
-                    and more alert messages.
-                
+                    and more alert messages.</td>
+                </tr>
                 <tr>
-                    <td>TLS v1.1
-                    <td>Internet Standard
-                    <td>TLSv1.1 adds protection against Cipher block chaining attacks.
-                
+                    <td>TLS v1.1</td>
+                    <td>Internet Standard</td>
+                    <td>TLSv1.1 adds protection against Cipher block chaining attacks.</td>
+                </tr>
                 <tr>
-                    <td>TLS v1.2
-                    <td>Internet Standard
-                    <td>TLSv1.2 deprecates using MD5 as a hash and deprecates SSLv2.
-                
-            
+                    <td>TLS v1.2</td>
+                    <td>Internet Standard</td>
+                    <td>TLSv1.2 deprecates using MD5 as a hash and deprecates SSLv2.</td>
+                </tr>
+            </tbody>
         </table>
         <p>There are a number of versions of the SSL protocol, as shown in <a href="#table4">Table 4</a>. As noted
         there, one of the benefits in SSL 3.0 is that it adds support of certificate chain loading. This feature allows
@@ -591,5 +593,5 @@ dUHzICxBVC1lnHyYGjDuAMhe396lYAn8bCld1/L4NMGBCQ==
 
         
 
-
-
+</body>
+</html>

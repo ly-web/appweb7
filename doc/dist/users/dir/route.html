@@ -2,22 +2,23 @@
 <html lang="en">
 <head>
     <title>Routing</title>
-    
+    <!-- Copyright Embedthis Software. All Rights Reserved. -->
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-    <meta name="description" content="Routing">
-    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700' rel='stylesheet' type='text/css'>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="description" content="Routing" />
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
+        rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Julius+Sans+One' rel='stylesheet' type='text/css'>
     
-    <link href="../../images/favicon.ico" rel="shortcut icon">
-    <link href="../../lib/semantic-ui/semantic.min.css" rel="stylesheet" type="text/css">
-    <link href="../../css/all.min.css" rel="stylesheet" type="text/css">
-    <link href="../../css/api.min.css" rel="stylesheet" type="text/css">
+    <link href="../../images/favicon.ico" rel="shortcut icon" />
+    <link href="../../lib/semantic-ui/semantic.min.css" rel="stylesheet" type="text/css" />
+    <link href="../../css/all.min.css" rel="stylesheet" type="text/css" />
+    <link href="../../css/api.min.css" rel="stylesheet" type="text/css" />
     
 
-
+</head>
 <body class="show-sidebar">
         <div class="sidebar">
         <div class="ui large left vertical inverted labeled menu">
@@ -194,23 +195,23 @@
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Add a handler for processing content with specific file extensions
-                    
+                        <td class="pivot">Description</td>
+                        <td>Add a handler for processing content with specific file extensions</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>AddHandler handlerName extension [extension] ...
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>AddHandler handlerName extension [extension] ...</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, Virtual host, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, Virtual host, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>AddHandler ejsHandler ejs asp
-                    
+                        <td class="pivot">Example</td>
+                        <td>AddHandler ejsHandler ejs asp</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The AddHandler directive ensures that the Appweb handler specified by handlerName, will
                             be run whenever a document with the given extension is requested. Multiple extensions may
@@ -222,9 +223,9 @@
                             handler mapping, use <em>Reset pipeline</em> and then re-add the required handlers.</p>
                             <p>NOTE: Unlike Apache, the extensions are case sensitive on systems that have case
                             sensitive file systems. Also, the period must be part of the extension.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             <a id="addInputFilter"></a>
@@ -232,25 +233,25 @@
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Add the specified filter to the input processing pipeline
-                    
+                        <td class="pivot">Description</td>
+                        <td>Add the specified filter to the input processing pipeline</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>AddInputFilter filterName
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>AddInputFilter filterName</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>&lt;Route /secret/&gt;<br>
-                        &nbsp; &nbsp; AddInputFilter decryptFilter<br>
-                        &lt;/Route&gt;
-                    
+                        <td class="pivot">Example</td>
+                        <td>&lt;Route /secret/&gt;<br />
+                        &nbsp; &nbsp; AddInputFilter decryptFilter<br />
+                        &lt;/Route&gt;</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The AddInputFilter directive adds a filter to the input processing pipeline. Incoming
                             request data is passed through the input pipeline and may be processed by each filter in
@@ -258,9 +259,9 @@
                             <p>Filters stack and thus have an order. The first filter added will receive the data last
                             and the last filter defined for a given URI will be the first filter to receive the
                             data.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             <a id="addOutputFilter"></a>
@@ -268,59 +269,59 @@
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Add the specified filter to the output processing pipeline
-                    
+                        <td class="pivot">Description</td>
+                        <td>Add the specified filter to the output processing pipeline</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>AddOutputFilter filterName
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>AddOutputFilter filterName</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>&lt;Route /capture/&gt;<br>
-                        &nbsp; &nbsp; AddOutputFilter compressFilter<br>
-                        &lt;/Route&gt;
-                    
+                        <td class="pivot">Example</td>
+                        <td>&lt;Route /capture/&gt;<br />
+                        &nbsp; &nbsp; AddOutputFilter compressFilter<br />
+                        &lt;/Route&gt;</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The AddOutputFilter directive adds a filter to the output processing pipeline. Output
                             response data is passed through the output pipeline before being sent to the client.</p>
                             <p>Filters stack and thus have an order. The first filter added will receive the output
                             data first and the last filter defined for a given URI will be the last filter to receive
                             the data before it is passed to the network connector for transmitting to the client.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <a id="addLanguageDir"></a>
             <h2>AddLanguageDir</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Add the specified language and language document directory to the route
-                    
+                        <td class="pivot">Description</td>
+                        <td>Add the specified language and language document directory to the route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>AddLanguageDir iso-lang-tag path
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>AddLanguageDir iso-lang-tag path</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>&lt;Route /public/&gt;<br>
-                        &nbsp; &nbsp; AddLanguageDir en english-docs<br>
-                        &lt;/Route&gt;
-                    
+                        <td class="pivot">Example</td>
+                        <td>&lt;Route /public/&gt;<br />
+                        &nbsp; &nbsp; AddLanguageDir en english-docs<br />
+                        &lt;/Route&gt;</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The AddLanguageDir directive defines a language with an associated directory of language
                                 specific content. When
@@ -329,34 +330,34 @@
                             constructed using the language content path. </p>
                             <p>If the client requested language is not defined, the language specified via the 
                             <a href="#defaultLanguage">DefaultLanguage</a> directive or "english" will be used.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <a id="addLanguageSuffix"></a>
             <h2>AddLanguageSuffix</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Add the specified language
-                    
+                        <td class="pivot">Description</td>
+                        <td>Add the specified language</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>AddLanguageSuffix iso-lang-tag suffix [position]
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>AddLanguageSuffix iso-lang-tag suffix [position]</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>&lt;Route /public/&gt;<br>
-                        &nbsp; &nbsp; AddLanguageSuffix en en before<br>
-                        &lt;/Route&gt;
-                    
+                        <td class="pivot">Example</td>
+                        <td>&lt;Route /public/&gt;<br />
+                        &nbsp; &nbsp; AddLanguageSuffix en en before<br />
+                        &lt;/Route&gt;</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The AddLanguageSuffix directive defines a supported language with an associated 
                             filename suffix.  When a client request is received, the appropriate language will 
@@ -366,32 +367,32 @@
                             extension via the "position" argument.</p>
                             <p>If the client requested language is not defined, the language specified via the 
                             <a href="#defaultLanguage">DefaultLanguage</a> directive or "english" will be used.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <a id="alias"></a>
             <h2>Alias</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Map URIs and leading URI portions to file system locations.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Map URIs and leading URI portions to file system locations.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>Alias urlPortion destinationPath
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>Alias urlPortion destinationPath</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, Virtual host
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, Virtual host</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>Alias /manual /ftp/manualDirectory
-                    
+                        <td class="pivot">Example</td>
+                        <td>Alias /manual /ftp/manualDirectory</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The Alias directive is a short-cut to create a Route that maps a URI prefix to a 
                             Document Root. It allows URIs to refer to documents that are stored outside the
@@ -408,40 +409,40 @@
     Prefix /manual
 &lt;/Route&gt;
 </pre>
-                        </p>
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <a id="cache"></a>
             <h2>Cache</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Control content caching
-                    
+                        <td class="pivot">Description</td>
+                        <td>Control content caching</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>Cache lifespan<br>
-                            Cache [client=secs] [methods="set"] [extensions="set"] <br>
-                                &nbsp; &nbsp; &rarr; &nbsp; &nbsp; [types="set"] [URI ..]<br>
-                            Cache [server=secs] [manual] [methods="set"] [ext="set"] <br>
-                                &nbsp; &nbsp; &rarr; &nbsp; &nbsp; [types="set"] [URI ..]<br>
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>Cache lifespan<br/>
+                            Cache [client=secs] [methods="set"] [extensions="set"] <br/>
+                                &nbsp; &nbsp; &rarr; &nbsp; &nbsp; [types="set"] [URI ..]<br/>
+                            Cache [server=secs] [manual] [methods="set"] [ext="set"] <br/>
+                                &nbsp; &nbsp; &rarr; &nbsp; &nbsp; [types="set"] [URI ..]<br/>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>Cache client=86400 ext="gif,jpeg,jpg,png,pdf,ico,js"<br>
-                            Cache server=86400 methods="GET,POST" /status.esp<br>
-                            Cache client=1800 server=86400 methods="GET,POST" /status.esp<br>
-                            Cache server manual /inventory.esp<br>
-                            Cache 86400
-                    
+                        <td class="pivot">Example</td>
+                        <td>Cache client=86400 ext="gif,jpeg,jpg,png,pdf,ico,js"<br/>
+                            Cache server=86400 methods="GET,POST" /status.esp<br/>
+                            Cache client=1800 server=86400 methods="GET,POST" /status.esp<br/>
+                            Cache server manual /inventory.esp<br/>
+                            Cache 86400</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>This directive controls client and server-side caching for response content. Each Cache
                             directive selects a set of requests to be cached for the current route. The selected
@@ -473,7 +474,7 @@
                                 separately cached. Any URIs specified in the directive should not contain any request
                                 parameters.</li>
                                 <li>Only &mdash; Only the exact URIs specified in the directive will be cached. The URIs
-                                specified must contain request parameters in a sorted www-urlencoded format. <br> 
+                                specified must contain request parameters in a sorted www-urlencoded format. <br/> 
                                 E.g.: /example.esp?hobby=sailing&amp;name=john.</li>
                                 <li>Manual &mdash; In manual-mode the response will still be automatically cached.  However,
                                 it will not be automatically written to the client.  The request handler must call the
@@ -481,7 +482,7 @@
                                 response content. </li>
                             </ul>
                             <h3>Server-Side Caching</h3>
-                            </p><p>When a request is generated, the response is automatically cached and also sent to the 
+                            <p>When a request is generated, the response is automatically cached and also sent to the 
                             client. The response is sent with an HTTP ETag header and a last-modified timestamp. Together
                             these uniquely identify the response data. Subsequent client requests will submit these header
                             values so that they can then be validated by the server. If the server-side cached content has
@@ -499,43 +500,79 @@
                             which using "reload" in the browser is an adequate solution to force a refresh. Use 
                             server-side manual caching in situations where you need explicit control of when the page
                             is updated. Otherwise, use standard server-side caching.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
-            
+            <!--
+            <a id="clientCacheByType"></a>
+            <h2>ClientCacheByType</h2>
+            <table class="directive" title="details">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Control client-side caching by document mime type</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>ClientCacheByType lifespan mime-types ...</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>ClientCacheByType 86400 image/gif text/css</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The CacheByType directive enables the generation of "Cache-Control" and "Expires" HTTP 
+                            headers for matching documents. The Cache-Control and Expires HTTP headers instruct
+                            clients to cache response content for a specified duration. If the document is subsequently
+                            required by the client before the response content has expired, the document will be served
+                            from the client cache without contacting the server. </p>
+                            <p>The ClientCacheByType directive specifies a lifespan to be used for any document 
+                            that matches one of the set of given mime-types for the document. An empty mime-type "" may be 
+                            given to match all documents regardless of type.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            -->
             <a id="condition"></a>
             <h2>Condition</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Define a pre-condition that must be true for the route to be selected.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Define a pre-condition that must be true for the route to be selected.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>Condition [!] rule details ...<br>
-                            Condition [!] missing<br>
-                            Condition [!] directory string<br>
-                            Condition [!] exists string<br>
-                            Condition [!] match string regular-expression-pattern<br>
-                        
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>Condition [!] rule details ...<br/>
+                            Condition [!] missing<br/>
+                            Condition [!] directory string<br/>
+                            Condition [!] exists string<br/>
+                            Condition [!] match string regular-expression-pattern<br/>
+                        </td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>Condition missing<br>
-                            Condition directory ${request:filename}<br>
-                            Condition ! exists ${request:filename}<br>
+                        <td class="pivot">Example</td>
+                        <td>Condition missing<br />
+                            Condition directory ${request:filename}<br />
+                            Condition ! exists ${request:filename}<br />
                             Condition match ${header:User-Agent} (Chrome|Safari) 
-                        
-                    
+                        </td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The Condition directive supports four rule varieties: </p>
                             <ul>
@@ -547,9 +584,9 @@
                             <p>The rule result can be negated by prefixing with "<em>!</em>".</p>
                             <p>For information about embedded {tokens}, see <a href="../routing.html#tokens">Tokens</a>
                             in the <a href="../routing.html">Routing Guide</a>.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             <a id="crossOrigin"></a>
@@ -557,26 +594,26 @@
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Directive to control cross-origin resource sharing.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Directive to control cross-origin resource sharing.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>CrossOrigin origin=[client|all|*|NAME] <br>
-                            &nbsp; &nbsp; &nbsp;[credentials=[yes|no]] [headers=HDR,...] [age=NN]
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>CrossOrigin origin=[client|all|*|NAME] <br/>
+                            &nbsp; &nbsp; &nbsp;[credentials=[yes|no]] [headers=HDR,...] [age=NN]</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>CrossOrigin origin=*<br>
+                        <td class="pivot">Example</td>
+                        <td>CrossOrigin origin=*<br />
                             CrossOrigin origin=http://www.google.com credentials=yes age=3000
-                        
-                    
+                        </td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The CrossOrigin directive configures exceptions to permit cross-origin sharing. 
                             
@@ -586,9 +623,9 @@
                             configures Appweb to appropriately respond to the client's pre-flight sharing test requests.</p>
                             <p>See <a href="http://www.html5rocks.com/en/tutorials/cors/">Using CORS</a> for examples of
                             how to create a CORS client request.</p> 
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             <a id="defense"></a>
@@ -596,32 +633,32 @@
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Define a defensive policy to respond to attacks.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Define a defensive policy to respond to attacks.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>Defense [tokens=value]
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>Defense [tokens=value]</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Examples
-                        <td>Defense deny REMEDY=ban STATUS=406 PERIOD=10mins<br>
-Defense block REMEDY=ban PERIOD=30mins<br>
-Defense report REMEDY=http URI=http://example.com/report<br>
-Defense alarm REMEDY=cmd CMD="afplay klaxon.mp3"<br>
-Defense slow REMEDY=delay PERIOD=10mins DELAY=1sec<br>
-Defense fix REMEDY=cmd CMD="${MESSAGE} | sendmail admin@example.com"<br>
-Defense notify REMEDY=email TO=info@example.com<br>
-Defense firewall REMEDY=cmd CMD="iptables -A INPUT -s ${IP} -j DROP"<br>
+                        <td class="pivot">Examples</td>
+                        <td>Defense deny REMEDY=ban STATUS=406 PERIOD=10mins<br/>
+Defense block REMEDY=ban PERIOD=30mins<br/>
+Defense report REMEDY=http URI=http://example.com/report<br/>
+Defense alarm REMEDY=cmd CMD="afplay klaxon.mp3"<br/>
+Defense slow REMEDY=delay PERIOD=10mins DELAY=1sec<br/>
+Defense fix REMEDY=cmd CMD="${MESSAGE} | sendmail admin@example.com"<br/>
+Defense notify REMEDY=email TO=info@example.com<br/>
+Defense firewall REMEDY=cmd CMD="iptables -A INPUT -s ${IP} -j DROP"<br/>
 Defense reboot REMEDY=restart 
-                        
-                    
+                        </td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The Defense directive defines a policy to invoke when the server is under attack.
                             Defenses invoke remedies which are predefined actions. Supported remedies are:
@@ -634,7 +671,7 @@ Defense reboot REMEDY=restart
                                 <li>log &mdash; Log information about the defense</li>
                                 <li>restart &mdash; Restart the server</li>
                             </ul>
-                            </p><p>Remedies can be passed arguments in the form of "key=value" pairs. These key
+                            <p>Remedies can be passed arguments in the form of "key=value" pairs. These key
                             values are available for any defines, but some are only utilized for specific
                             remedies. 
                             <h4>Cmd Arguments</h4>
@@ -642,7 +679,7 @@ Defense reboot REMEDY=restart
                                 <li>CMD &mdash; The command to run</li>
                                 <li>MESSAGE &mdash; Descriptive message about the event</li>
                             </ul>
-                            </p><p>CMD strings may include a single pipe symbol "|" to provide input to a commands
+                            <p>CMD strings may include a single pipe symbol "|" to provide input to a commands
                             standard input. The string to the left of the pipe symbol is sent to the command.</p> 
                             <h4>Ban Arguments</h4>
                             <ul>
@@ -673,39 +710,39 @@ Defense reboot REMEDY=restart
                                 <li>STATUS &mdash; HTTP status to return to the attacking client. If not defined,
                                     the client is silently disconnected. </li>
                             </ul>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>            
             <a id="defaultLanguage"></a>
             <h2>DefaultLanguage</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Set the default language to select for content.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Set the default language to select for content.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>DefaultLanguage language
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>DefaultLanguage language</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>DefaultLanguage en
-                    
+                        <td class="pivot">Example</td>
+                        <td>DefaultLanguage en</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The DefaultLanguage directive defines the default language to use when the
                                 the client Accept-Language HTTP header is either absent or requests a non-supported
                                 language.</p> 
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             <a id="documentRoot"></a>
@@ -713,30 +750,30 @@ Defense reboot REMEDY=restart
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Top level directory containing the documents to be published for context.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Top level directory containing the documents to be published for context.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>DocumentRoot directoryPath
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>DocumentRoot directoryPath</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, Virtual host, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, Virtual host, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>DocumentRoot /var/www
-                    
+                        <td class="pivot">Example</td>
+                        <td>DocumentRoot /var/www</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The DocumentRoot directive defines the directory containing the documents that will be
                             served. Each route can have a different document root. The directoryPath should not have 
                             a trailing slash.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             <a id="errorDocument"></a>
@@ -744,60 +781,60 @@ Defense reboot REMEDY=restart
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Define an error document to be served when a HTTP error occurs
-                    
+                        <td class="pivot">Description</td>
+                        <td>Define an error document to be served when a HTTP error occurs</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>ErrorDocument code URI
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>ErrorDocument code URI</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, Virtual host, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, Virtual host, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>ErrorDocument 404 /notFound.html
-                    
+                        <td class="pivot">Example</td>
+                        <td>ErrorDocument 404 /notFound.html</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>This directive configures a specific web page to be served whenever a given HTTP error
                             code is encountered.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <a id="header"></a>
             <h2>Header</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Define a request HTTP header value must match a value for the route to be selected.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Define a request HTTP header value must match a value for the route to be selected.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>Header [add|append|remove|set] field value
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>Header [add|append|remove|set] field value</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>Header set X-Frame-Options deny
-                    
+                        <td class="pivot">Example</td>
+                        <td>Header set X-Frame-Options deny</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The Header directive manages the response headers. Headers can be added, appended, removed or set.
                             The <i>add</i> option will add the header if it is not already present. The <i>append</i> option will
                             add or append to an existing header of the same name. The <i>remove</i> option will remove the header if
                             it exists. The <i>set</i> option will set the header overwriting any prior value.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             <a id="ignoreEncodingErrors"></a>
@@ -805,28 +842,28 @@ Defense reboot REMEDY=restart
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Ignore UTF-8 encoding errors
-                    
+                        <td class="pivot">Description</td>
+                        <td>Ignore UTF-8 encoding errors</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>IgnoreEncodingErrors on|off
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>IgnoreEncodingErrors on|off</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default Server, Virtual Host, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>IgnoreEncodingErrors on
-                    
+                        <td class="pivot">Example</td>
+                        <td>IgnoreEncodingErrors on</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>This directive controls whether UTF-8 encoding errors will be ignored for WebSockets communications. The default is off.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             <a id="inactivityTimeout"></a>
@@ -834,24 +871,24 @@ Defense reboot REMEDY=restart
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Control the timeout period for TCP/IP connections
-                    
+                        <td class="pivot">Description</td>
+                        <td>Control the timeout period for TCP/IP connections</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>InactivityTimeout time
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>InactivityTimeout time</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default Server, Virtual Host
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Examples
-                        <td>InactivityTimeout 2mins<br>
-                        InactivityTimeout never
-                    
+                        <td class="pivot">Examples</td>
+                        <td>InactivityTimeout 2mins<br/>
+                        InactivityTimeout never</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>This directive defines the maximum time that requests and connections can be inactive
                             before Appweb will forcibly terminate the request and close the connection.
@@ -863,35 +900,35 @@ Defense reboot REMEDY=restart
                             Keep-Alive is supported by Appweb with both HTTP/1.0 and HTTP/1.1 protocols. With
                             HTTP/1.1, Keep-Alive is the default. With HTTP/1.0, clients may optionally request
                             Keep-Alive via the <b>Keep-Alive</b> HTTP request header.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <a id="map"></a>
             <h2>Map</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Control mapping of requests by extension.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Control mapping of requests by extension.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>Map compressed<br>
+                        <td class="pivot">Synopsis</td>
+                        <td>Map compressed<br/>
                         Map "ext,ext,..." "newext, newext, newext"
-                        
-                    
+                        </td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>Map compressed<br>
-                        Map "js,css,less" min.${1}.gz, min.${1}, ${1}.gz
-                    
+                        <td class="pivot">Example</td>
+                        <td>Map compressed<br/>
+                        Map "js,css,less" min.${1}.gz, min.${1}, ${1}.gz</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The Map directive controls the mapping of requests by extension to alternative resources. Most
                             frequently, this is used to transparently serve compressed content instead of uncompressed content.</p>
@@ -900,36 +937,36 @@ Defense reboot REMEDY=restart
                             documents with the new extensions and optionally remove the originals.</p>
                             <p>The new extension pattern may reference the original filename as <i>${1}</i>.</p>
                             <p>The short form <i>"Map compressed"</i> directive configures Appweb to serve compressed content 
-                            for Html, Text, XML, Javascript, CSS or Less documents. It is equivalent to:<br>
-                            <br>
-                            Map "js,css,less" "min.${1}.gz, min.${1}, ${1}.gz"<br>
+                            for Html, Text, XML, Javascript, CSS or Less documents. It is equivalent to:<br />
+                            <br />
+                            Map "js,css,less" "min.${1}.gz, min.${1}, ${1}.gz"<br/>
                             Map "html,txt,xml", "${1}.gz"</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <a id="methods"></a>
             <h2>Methods</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Define the valid HTTP Methods for the route
-                    
+                        <td class="pivot">Description</td>
+                        <td>Define the valid HTTP Methods for the route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>Methods [add|remove|set] MethodSet
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>Methods [add|remove|set] MethodSet</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>Methods set GET POST
-                    
+                        <td class="pivot">Example</td>
+                        <td>Methods set GET POST</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The Methods directive controls the valid HTTP methods for the route. The method set is inherited from
                             the parent routes. The "add" command may be used to add methods to the current method set. The "remove"
@@ -937,33 +974,33 @@ Defense reboot REMEDY=restart
                             <p>The standard HTTP methods are: <em>DELETE, GET, OPTIONS, POST, PUT and TRACE</em>. The 
                             MethodSet argument can also be set to "<em>ALL</em>" or "<em>*</em>" to indicate any
                             possible HTTP method. </p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <a id="monitor"></a>
             <h2>Monitor</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Monitor server resources for attacks
-                    
+                        <td class="pivot">Description</td>
+                        <td>Monitor server resources for attacks</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>Monitor Expression Period Defenses ...
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>Monitor Expression Period Defenses ...</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Examples
-                        <td>Monitor "NotFoundErrors &gt; 190" 5sec deny log email<br>
-Monitor "RequestsPerClient &gt; 200" 5sec deny
-                    
+                        <td class="pivot">Examples</td>
+                        <td>Monitor "NotFoundErrors &gt; 190" 5sec deny log email<br/>
+Monitor "RequestsPerClient &gt; 200" 5sec deny</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The Monitor directive instructs the server to monitor specified server resources
                             for unusual behavior that may represent an attack on the server.</p>
@@ -993,12 +1030,12 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
                                 <li>Memory &mdash; The current Appweb memory size.</li>
                             </ul>
                             <h3>Monitor Periods</h3>
-                            </p><p>The monitor is invoked at the period specified. If the Counter is a per-client counter, it is evaluated for each active client.</p>
+                            <p>The monitor is invoked at the period specified. If the Counter is a per-client counter, it is evaluated for each active client.</p>
                             <h3>Defenses</h3>
                             <p>One or more defenses may be specified to be invoked if the monitor condition is true. Defenses are defined via the <a href="#defense">Defense</a> directive.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             <a id="name"></a>
@@ -1006,30 +1043,30 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Define a name for the route
-                    
+                        <td class="pivot">Description</td>
+                        <td>Define a name for the route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>Name string
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>Name string</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>Name web-service-login
-                    
+                        <td class="pivot">Example</td>
+                        <td>Name web-service-login</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The Name directive defines a name for the route that will be used by the LogRoutes
                             directive when displaying the route table in the error log. If no route name is defined,
                             the route pattern is used instead.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             <a id="param"></a>
@@ -1037,33 +1074,33 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Add a request param test that must match for the route to be selected.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Add a request param test that must match for the route to be selected.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>Param [!] field pattern
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>Param [!] field pattern</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>Param name "John Smith"
-                    
+                        <td class="pivot">Example</td>
+                        <td>Param name "John Smith"</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The Param directive tests if the specified request param value matches the
                             required value. Request <a href="../routing.html#params">params</a> are sourced from 
                             the request URI query and posted form data.</p>
-                            <p>The rule result can be negated by prefixing with "<em>!</em>".</p>
+                            <P>The rule result can be negated by prefixing with "<em>!</em>".</p>
                             <p>For information about embedded {tokens}, see <a href="../routing.html#tokens">Tokens</a>
                             in the <a href="../routing.html">Routing Guide</a>.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             <a id="prefix"></a>
@@ -1071,32 +1108,32 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Define a URI prefix for the route.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Define a URI prefix for the route.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>Prefix URI-Prefix
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>Prefix URI-Prefix</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>Prefix /info
-                    
+                        <td class="pivot">Example</td>
+                        <td>Prefix /info</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The Prefix directive defines a URI-prefix that will be stripped from the request URI
                             Request.pathInfo if the route is selected to handle the request. Once stripped, the 
                             Request.scriptName will be set to the prefix. This is useful for an application to be 
                             able to be installed with various URI application prefixes without having to modify 
                             the application.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             
@@ -1105,64 +1142,96 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Preserve WebSocket frame boundaries
-                    
+                        <td class="pivot">Description</td>
+                        <td>Preserve WebSocket frame boundaries</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>PreserveFrames on|off
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>PreserveFrames on|off</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default Server, Virtual Host, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>PreserveFrames on
-                    
+                        <td class="pivot">Example</td>
+                        <td>PreserveFrames on</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>This directive controls whether to preserve WebSocket frames. If enabled, frames will not be
                                 aggregated or split. i.e. frame boundaries will be preserved to the user callback.
                                 Note: using HTTP_MORE to httpSendBlock achieves the same effect on a per-API call basis.
                                 The default is off.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
-            
+            <!-- DEPRECATED 4.4. Use SetMethods instead
+            <a id="putMethod"></a>
+            <h2>PutMethod</h2>
+            <table class="directive" title="details">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Control use of the HTTP PUT method inside a route block.</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>PutMethod [on|off]</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>PutMethod on</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The HTTP PUT method is used for sending content to the server. It can be destructive
+                            and so the PUT method is disabled by default. It must be explicitly enabled for a location
+                            block before use.
+                            <p>NOTE: PutMethod is a proprietary Appweb directive.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            -->
             
             <a id="redirect"></a>
             <h2>Redirect</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Redirect requests to a new target.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Redirect requests to a new target.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>Redirect [status] oldURI [newURI]
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>Redirect [status] oldURI [newURI]</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>Redirect temp /pressRelease.html /fixedPressRelease.html<br>
-                        Redirect permanent /acme.html http://www.coyote.com/acme.html<br>
-                        Redirect 410 /membersOnly<br>
-                        Redirect secure
-                    
+                        <td class="pivot">Example</td>
+                        <td>Redirect temp /pressRelease.html /fixedPressRelease.html<br />
+                        Redirect permanent /acme.html http://www.coyote.com/acme.html<br />
+                        Redirect 410 /membersOnly<br/>
+                        Redirect secure</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The Redirect directive is a short-cut to create a Route that maps requests from a URI 
                             to a new URI. 
-                            </p><p>The status argument may be either a numeric HTTP code or it may be one of the following
+                            <p>The status argument may be either a numeric HTTP code or it may be one of the following
                             symbolic codes:</p>
                             <ul>
                                 <li>permanent &mdash; redirection. HTTP code 301.</li>
@@ -1173,40 +1242,40 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
                             </ul>
                             <p>The new URI may be local to the system, in which case it will begin with a "/" character. Or it may be on another system, in which case it will begin with "http://". In both cases, the user will receive a HTTP redirection response informing them of the new location of the document. The new URI may be omitted for non-3XX status arguments, in which case, a default response page will be generated by Appweb.</p>
                             <p>The <i>Redirect secure</i> directive redirects all HTTP traffic over a configured HTTPS transport. This performs an immediate redirect of a current request.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <a id="requestHeader"></a>
             <h2>RequestHeader</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Define a request HTTP header value must match a value for the route to be selected.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Define a request HTTP header value must match a value for the route to be selected.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>RequestHeader [!] field pattern
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>RequestHeader [!] field pattern</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>RequestHeader User-Agent (Chrome|Safari)
-                    
+                        <td class="pivot">Example</td>
+                        <td>RequestHeader User-Agent (Chrome|Safari)</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The RequestHeader directive tests if the specified request HTTP header value matches the
                             required value. The rule result can be negated by prefixing with "<em>!</em>".</p>
                             <p>For information about embedded {tokens}, see <a href="../routing.html#tokens">Tokens</a>
                             in the <a href="../routing.html">Routing Guide</a>.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             <a id="requestParseTimeout"></a>
@@ -1214,128 +1283,128 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Defines the maximum time to parse the request or response HTTP headers
-                    
+                        <td class="pivot">Description</td>
+                        <td>Defines the maximum time to parse the request or response HTTP headers</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>RequestParseTimeout time
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>RequestParseTimeout time</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default Server, Virtual Host
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>RequestParseTimeout 20secs
-                    
+                        <td class="pivot">Example</td>
+                        <td>RequestParseTimeout 20secs</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>This directive defines the maximum time to parse the HTTP headers for a request or a 
                                 response. If the maximum is exceeded, Appweb will forcibly terminate the request and close
                                 the connection.</p>
-                        
-                    
+                        </td>
+                    </tr>
                     <tr>
-                        <td class="security">Security
+                        <td class="security">Security</td>
                         <td>
                             <p>This directive is useful to mitigate some denial of service attacks such as the 
                             <a href="http://en.wikipedia.org/wiki/Slowloris">slowloris</a>. It should be configured
                             to a low value typically less than 10 seconds.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <a id="requestTimeout"></a>
             <h2>RequestTimeout</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Defines the maximum request duration
-                    
+                        <td class="pivot">Description</td>
+                        <td>Defines the maximum request duration</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>RequestTimeout time
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>RequestTimeout time</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default Server, Virtual Host
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Examples
-                        <td>RequestTimeout 10mins<br>
-                        RequestTimeout never
-                    
+                        <td class="pivot">Examples</td>
+                        <td>RequestTimeout 10mins<br/>
+                        RequestTimeout never</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>This directive defines the maximum duration for a request. If the maximum is exceeded,
                             Appweb will forcibly terminate the request and close the connection.</p>
                             <p>Some web user interfaces with monitoring applets open HTTP connections and keep them
                             open to stream response data back to the applet. To prevent Appweb from closing the
                             connection, you may need to increase the timeout value for the Route managing the request.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <a id="reroute"></a>
             <h2>Reroute</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Open a previously defined route to add or modify directives
-                    
+                        <td class="pivot">Description</td>
+                        <td>Open a previously defined route to add or modify directives</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>&lt;Reroute URI-Pattern&gt;<br>
-                        ...<br>
-                        &lt;/Route&gt;
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>&lt;Reroute URI-Pattern&gt;<br />
+                        ...<br />
+                        &lt;/Route&gt;</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>&lt;Route /admin/debug&gt;<br>
-                        &nbsp; &nbsp; AddHandler myDebugHandler<br>
-                        &lt;/Route&gt;
-                    
+                        <td class="pivot">Example</td>
+                        <td>&lt;Route /admin/debug&gt;<br />
+                        &nbsp; &nbsp; AddHandler myDebugHandler<br />
+                        &lt;/Route&gt;</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The Reroute directive opens a previously defined route by its matching URI pattern.
                             Inside the Reroute block, you can add or override any prior configuration for the route.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <a id="reset"></a>
             <h2>Reset [routes|pipeline]</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Reset the input and output processing pipeline.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Reset the input and output processing pipeline.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>Reset pipeline<br>
-                        Reset routes
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>Reset pipeline<br/>
+                        Reset routes</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default Server, Virtual host, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual host, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>Reset routes
-                    
+                        <td class="pivot">Example</td>
+                        <td>Reset routes</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The <em>Reset routes</em> directive erases the configured and inherited route definition. 
                             This is useful to start with a clean slate for route configuration. The <em>Reset pipeline</em>
@@ -1345,9 +1414,9 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
                             <p><em>Reset pipeline</em> is most often used inside VirtualHost blocks when you want to 
                             limit the pipeline to a small set of handlers and filters for that Virtual Host.</p>
                             <p>NOTE: <em>Reset</em> is a proprietary Appweb directive.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             <a id="route"></a>
@@ -1355,59 +1424,59 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Define a block of directives to apply to a matching URI pattern
-                    
+                        <td class="pivot">Description</td>
+                        <td>Define a block of directives to apply to a matching URI pattern</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>&lt;Route URI-Pattern&gt;<br>
-                        ...<br>
-                        &lt;/Route&gt;
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>&lt;Route URI-Pattern&gt;<br />
+                        ...<br />
+                        &lt;/Route&gt;</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>&lt;Route /admin/debug&gt;<br>
-                        &nbsp; &nbsp; AddHandler myDebugHandler<br>
-                        &lt;/Route&gt;
-                    
+                        <td class="pivot">Example</td>
+                        <td>&lt;Route /admin/debug&gt;<br />
+                        &nbsp; &nbsp; AddHandler myDebugHandler<br />
+                        &lt;/Route&gt;</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The Route directive defines a block of directives that apply to URIs 
                             that match specified URI pattern. Routes may be nested where inner routes inherit the
                             outer routes configuration at that point in the configuration file. If a Route directive
                             specifies a URI pattern that has been previously defined, the prior route is re-opened and
                             modified. i.e. A new route is not created.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <a id="scriptAlias"></a>
             <h2>ScriptAlias</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Map a URI to a destination and enable CGI script processing for that location.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Map a URI to a destination and enable CGI script processing for that location.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>ScriptAlias urlPath destinationPath
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>ScriptAlias urlPath destinationPath</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, Virtual Host, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, Virtual Host, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>ScriptAlias /cgi-bin/ /var/myHost/cgi-bin
-                    
+                        <td class="pivot">Example</td>
+                        <td>ScriptAlias /cgi-bin/ /var/myHost/cgi-bin</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The ScriptAlias directive is a short-cut to create a Route that maps matching URIs to
                             a directory containing CGI scripts.
@@ -1419,13 +1488,13 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
    SetHandler cgiHandler
 &lt;/Route&gt;
 </pre>
-                        
-                    
+                        </td>
+                    </tr>
                     <tr>
-                        <td class="security">Security
-                        <td>Make sure you locate your CGI script directories outside the DocumentRoot.
-                    
-                
+                        <td class="security">Security</td>
+                        <td>Make sure you locate your CGI script directories outside the DocumentRoot.</td>
+                    </tr>
+                </tbody>
             </table>
             
             <a id="sessionCookie"></a>
@@ -1433,25 +1502,25 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Sets the Session cookie options.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Sets the Session cookie options.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>SessionCookie name=NAME visible=[true|false] persist=[true|false]<br>
+                        <td class="pivot">Synopsis</td>
+                        <td>SessionCookie name=NAME visible=[true|false] persist=[true|false]<br/>
                         SessionCookie enable
-                        SessionCookie disable
-                    
+                        SessionCookie disable</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default Server, Virtual Host, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>SessionCookie name=myapp visible=true persist=false
-                    
+                        <td class="pivot">Example</td>
+                        <td>SessionCookie name=myapp visible=true persist=false</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>This directive controls the Session cookie. It can disable generation of a session cookie via
                             <em>Session disable</em>. If enabled, it can define a unique prefix to use for the 
@@ -1464,68 +1533,68 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
                             <p>The <em>persist</em> option defines if the cookie is persisted to disk in the browser.
                             If false, the browser discards the cookie when the browser exits. Otherwise the cookie is
                             retained until the session timeout limit expires.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <a id="sessionTimeout"></a>
             <h2>SessionTimeout</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Defines the maximum session state duration
-                    
+                        <td class="pivot">Description</td>
+                        <td>Defines the maximum session state duration</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>SessionTimeout time
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>SessionTimeout time</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default Server, Virtual Host, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default Server, Virtual Host, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>SessionTimeout 30mins
-                    
+                        <td class="pivot">Example</td>
+                        <td>SessionTimeout 30mins</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>This directive defines the maximum duration for session state data. When this
                             time period expires, Appweb will prune inactive session state data from its session
                             cache.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <a id="setConnector"></a>
             <h2>SetConnector</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Set the connector to transmit the response to the client
-                    
+                        <td class="pivot">Description</td>
+                        <td>Set the connector to transmit the response to the client</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>SetConnector connectorName
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>SetConnector connectorName</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, Virtual host, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, Virtual host, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>SetConnector netConnector
-                    
+                        <td class="pivot">Example</td>
+                        <td>SetConnector netConnector</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The SetConnector directive defines the network connector that will transmit a response
                             to the client. The connector represents the last stage in the output request pipeline.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             <a id="setHandler"></a>
@@ -1533,121 +1602,121 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Set the handler to processing requests
-                    
+                        <td class="pivot">Description</td>
+                        <td>Set the handler to processing requests</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>SetHandler handlerName
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>SetHandler handlerName</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, Virtual host, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, Virtual host, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>SetHandler handlerName
-                    
+                        <td class="pivot">Example</td>
+                        <td>SetHandler handlerName</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The SetHandler directive defines the request handler that will service a request
                             matching the enclosing block.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <a id="showErrors"></a>
             <h2>ShowErrors</h2>
             <table class="directive" title="directive">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Control whether to display server-side errors to the client.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Control whether to display server-side errors to the client.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>ShowErrors on|off
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>ShowErrors on|off</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, Virtual host, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, Virtual host, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
+                        <td class="pivot">Example</td>
                         <td>
 <pre>ShowErrors on</pre>
-                    
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The ShowErrors directive controls whether errors are sent to the client 
                             and displayed in the browser. If ShowErrors is off, then errors will be sent to the
                             Appweb log file. If ShowErrors is on, then the errors will also be sent back to the
                             client. This is useful in development mode to quickly diagnose errors.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <a id="source"></a>
             <h2>Source</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Define source code for the handler to use when servicing the request.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Define source code for the handler to use when servicing the request.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>Source path
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>Source path</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>Source blog.c
-                    
+                        <td class="pivot">Example</td>
+                        <td>Source blog.c</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>Some load scripts or source when servicing a request. This directive configures
                             the file path to a source script or code file to be used by the handler when servicing the
                             request. For example: ESP uses this to specify the name of the controller to load 
                             when invoking an action.
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             <a id="stealth"></a>
             <h2>Stealth</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Control stealth mode.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Control stealth mode.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>Stealth [on|off]
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>Stealth [on|off]</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>Stealth on
-                    
+                        <td class="pivot">Example</td>
+                        <td>Stealth on</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>When Stealth mode is enabled, Appweb will emit less information about its configuration.
                             Specifically, appweb will not emit a "Server" HTTP response header. While this does not
                             provide security, it may increase the workload of those attempting to hack the server, and
                             this may make the target less attractive.
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             <a id="target"></a>
@@ -1655,33 +1724,33 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Define the route target rule that describes how the request should be handled.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Define the route target rule that describes how the request should be handled.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>Target rule details ...<br>
-                            Target close<br>
-                            Target redirect status URI<br>
-                            Target run document<br>
-                            Target write [-r] status message<br>
-                        
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>Target rule details ...<br/>
+                            Target close<br/>
+                            Target redirect status URI<br/>
+                            Target run document<br/>
+                            Target write [-r] status message<br/>
+                        </td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>Target close<br>
-                            Target redirect 302 /updated/$&<br>
-                            Target run<br>
-                            Target run ${request:filename}.gz<br>
-                            Target write 200 "Hello World\r\n"<br>
-                        
-                    
+                        <td class="pivot">Example</td>
+                        <td>Target close<br />
+                            Target redirect 302 /updated/$&<br />
+                            Target run<br />
+                            Target run ${request:filename}.gz<br />
+                            Target write 200 "Hello World\r\n"<br/>
+                        </td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The Target directive support four rules: </p>
                             <ul>
@@ -1700,39 +1769,74 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
                             <p>Arguments for the <em>redirect</em> and <em>run</em> rules may contain embedded tokens. 
                             For information about embedded {tokens}, see <a href="../routing.html#tokens">Tokens</a>
                             in the <a href="../routing.html">Routing Guide</a>.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
-            
+            <!-- DEPRECATED 4.4. Use SetMethods instead
+            <a id="traceMethod"></a>
+            <h2>TraceMethod</h2>
+            <table class="directive" title="details">
+                <tbody>
+                    <tr>
+                        <td class="pivot">Description</td>
+                        <td>Control the Trace HTTP method</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Synopsis</td>
+                        <td>TraceMethod on|off</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Context</td>
+                        <td>Default server, Virtual host, Route</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Example</td>
+                        <td>TraceMethod on</td>
+                    </tr>
+                    <tr>
+                        <td class="pivot">Notes</td>
+                        <td>
+                            <p>The TraceMethod directive controls whether the TRACE HTTP method is enabled or not.
+                            Starting with version 2.2.2, the Trace method is disabled by default as it can represent a
+                            security risk. Use "TraceMethod on" to enable the trace method.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="security">Security</td>
+                        <td>It is considered by some to be a security risk to enable the Trace method.</td>
+                    </tr>
+                </tbody>
+            </table>
+            -->
             
             <a id="update"></a>
             <h2>Update</h2>
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Define an update rule to modify the request when the route is selected.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Define an update rule to modify the request when the route is selected.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>Update param var value ...<br>
+                        <td class="pivot">Synopsis</td>
+                        <td>Update param var value ...<br/>
                             Update cmd commandLine...
-                        
-                    
+                        </td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td> Update param client ${request:clientAddress}<br>
+                        <td class="pivot">Example</td>
+                        <td> Update param client ${request:clientAddress}<br/>
                             Update cmd sh -c 'echo Demo Downloaded | mail -s"Download from ${request:clientAddress}"'
-                        
-                    
+                        </td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The Update directive support two rules: </p>
                             <ul>
@@ -1742,9 +1846,9 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
                             <p>Update arguments can contain embedded tokens.
                             For information about embedded {tokens}, see <a href="../routing.html#tokens">Tokens</a>
                             in the <a href="../routing.html">Routing Guide</a>.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             <a id="uploadAutoDelete"></a>
@@ -1752,31 +1856,31 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Set the directory to store uploaded files.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Set the directory to store uploaded files.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>UploadAutoDelete [on|off]
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>UploadAutoDelete [on|off]</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>UploadAutoDelete off
-                    
+                        <td class="pivot">Example</td>
+                        <td>UploadAutoDelete off</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>Once an uploaded file is fully received and processed by the handler, Appweb will
                             either delete or preserve the temporary file depending on the UploadAutoDelete setting.
                             If set to <em>on</em>, the uploaded file will be deleted when the handler completes the
                             request. If set to <em>off</em> the temporary file will be preserved in the Upload directory.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             
@@ -1785,32 +1889,32 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Set the directory to store uploaded files.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Set the directory to store uploaded files.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>UploadDir path
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>UploadDir path</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>UploadDir /tmp
-                    
+                        <td class="pivot">Example</td>
+                        <td>UploadDir /tmp</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The UploadDir directive defines the directory used to store the
                                 temporary files holding uploaded files. These files are temporarily used while the
                                 file is being uploaded. Once fully received, the handler responsible for responding
                                 to the request must copy, move or process the uploaded file. The uploadedHandler
                                 will delete the temporary (subject to the value of UploadAutoDelete).</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
                        
             <a id="webSocketsPing"></a>
@@ -1818,29 +1922,29 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
             <table class="directive" title="details">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Define the period for a Web Sockets Ping message.
-                    
+                        <td class="pivot">Description</td>
+                        <td>Define the period for a Web Sockets Ping message.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>WebSocketsPing time
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>WebSocketsPing time</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default server, VirtualHost, Route
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default server, VirtualHost, Route</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>WebSocketsPing 30secs
-                    
+                        <td class="pivot">Example</td>
+                        <td>WebSocketsPing 30secs</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The WebSocketsPing directive defines the time period for a regular, keep-alive
                                 ping message to be sent to the peer so that the connection is not closed.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table> 
 
     </div>
@@ -1855,5 +1959,5 @@ Monitor "RequestsPerClient &gt; 200" 5sec deny
 
         
 
-
-
+</body>
+</html>

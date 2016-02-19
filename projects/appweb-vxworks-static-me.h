@@ -135,11 +135,17 @@
 #ifndef ME_MBEDTLS_COMPACT
     #define ME_MBEDTLS_COMPACT 1
 #endif
+#ifndef ME_MPR_DISK
+    #define ME_MPR_DISK 1
+#endif
 #ifndef ME_MPR_LOGGING
     #define ME_MPR_LOGGING 1
 #endif
 #ifndef ME_MPR_OSLOG
     #define ME_MPR_OSLOG 0
+#endif
+#ifndef ME_MPR_ROM_MOUNT
+    #define ME_MPR_ROM_MOUNT "/rom"
 #endif
 #ifndef ME_MPR_SSL_CACHE
     #define ME_MPR_SSL_CACHE 512
@@ -168,6 +174,9 @@
 #ifndef ME_PREFIXES
     #define ME_PREFIXES "install-prefixes"
 #endif
+#ifndef ME_ROM
+    #define ME_ROM 0
+#endif
 #ifndef ME_SERVER_ROOT
     #define ME_SERVER_ROOT "."
 #endif
@@ -181,7 +190,7 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "5.6.0"
+    #define ME_VERSION "5.6.2"
 #endif
 #ifndef ME_WATCHDOG_NAME
     #define ME_WATCHDOG_NAME "appman"
@@ -243,7 +252,7 @@
     #define ME_VAPP_PREFIX "deploy"
 #endif
 #ifndef ME_SRC_PREFIX
-    #define ME_SRC_PREFIX "/usr/src/appweb-5.6.0"
+    #define ME_SRC_PREFIX "/usr/src/appweb-5.6.2"
 #endif
 
 /* Suffixes */
@@ -285,21 +294,21 @@
     #define ME_MINOR_VERSION 6
 #endif
 #ifndef ME_PATCH_VERSION
-    #define ME_PATCH_VERSION 0
+    #define ME_PATCH_VERSION 2
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 500060000
+    #define ME_VNUM 500060002
 #endif
 
 /* Components */
 #ifndef ME_COM_CGI
-    #define ME_COM_CGI 1
+    #define ME_COM_CGI 0
 #endif
 #ifndef ME_COM_CC
     #define ME_COM_CC 1
 #endif
 #ifndef ME_COM_DIR
-    #define ME_COM_DIR 1
+    #define ME_COM_DIR 0
 #endif
 #ifndef ME_COM_EJS
     #define ME_COM_EJS 0
