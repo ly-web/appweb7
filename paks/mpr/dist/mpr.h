@@ -1994,6 +1994,7 @@ PUBLIC ssize slen(cchar *str);
     Convert a string to lower case.
     @description Convert a string to its lower case equivalent.
     @param str String to convert.
+    @return An allocated string.
     @ingroup MprString
     @stability Stable
  */
@@ -2341,7 +2342,7 @@ PUBLIC char *strim(cchar *str, cchar *set, int where);
     Convert a string to upper case.
     @description Convert a string to its upper case equivalent.
     @param str String to convert.
-    @return Returns a pointer to the converted string. Will always equal str.
+    @return Returns a pointer to an allocated string.
     @ingroup MprString
     @stability Stable
  */
@@ -3177,7 +3178,7 @@ PUBLIC char *mprFormatLocalTime(cchar *fmt, MprTime time);
 
 /**
     Convert a time value to universal time and format as a string.
-    @description Format a time string. This uses strftime if available and so the supported formats vary from 
+    @description Format a time string. This uses strftime if available and so the supported formats vary from
         platform to platform. Strftime should supports some of these these formats described below.
     @param fmt Time format string
             \n
@@ -3436,7 +3437,7 @@ PUBLIC MprTime mprMakeUniversalTime(struct tm *tm);
 
 /*
     Parse a string into a time value
-    @description Try to intelligently parse a date. 
+    @description Try to intelligently parse a date.
     This is a tolerant parser. It is not validating and will do its best to parse any possible date string.
     Supports the following date/time formats:
     \n\n
@@ -4044,7 +4045,7 @@ PUBLIC MprLogHandler mprGetLogHandler();
         messages. This is useful for utility programs.
         If tags are null, the message is output raw, without any any prefixes.
     @param level Logging level for this message. The level is 0-5 with five being the most verbose.
-    @param fmt Printf style format string. Variable number of arguments to
+    @param fmt Printf style format string. Variable number of arguments to print
     @param ... Variable number of arguments for printf data
     @remarks mprLog is highly useful as a debugging aid.
     @ingroup MprLog
@@ -4111,7 +4112,7 @@ PUBLIC MprLogHandler mprSetLogHandler(MprLogHandler handler);
     @param flags Set to MPR_LOG_CONFIG to show the configuration in the log file. Set to MPR_LOG_CMDLINE if a command line
         override has been used to initiate logging. Set MPR_LOG_DETAILED to use the detailed message format.
         Set MPR_LOG_ANEW to truncate existing log files after backup.
-    @return Zero if successful, otherwise a negative Mpr error code. See the Appweb log for diagnostics.
+    @return Zero if successful, otherwise a negative Mpr error code. See the log for diagnostics.
     @ingroup MprLog
     @stability Stable
 */
@@ -5937,10 +5938,10 @@ PUBLIC MprDispatcher *mprGetDispatcher();
     Application event code that is running off a dispatcher should never call mprServiceEvents recursively. Rather, the
     event code should call #mprWaitForEvent if it needs to wait while servicing events on its own dispatcher.
     @param delay Time in milliseconds to wait. Set to zero for no wait. Set to -1 to wait forever.
-    @param flags If set to MPR_SERVICE_NO_BLOCK, this call will service all due events without blocking. Otherwise set 
+    @param flags If set to MPR_SERVICE_NO_BLOCK, this call will service all due events without blocking. Otherwise set
         to zero.
     @returns The number of events serviced. Returns MPR_ERR_BUSY is another thread is servicing events.
-        Returns when the MPR is stopping or if the timeout expires or if MPR_SERVICE_NO_BLOCK is specified and there are 
+        Returns when the MPR is stopping or if the timeout expires or if MPR_SERVICE_NO_BLOCK is specified and there are
         no more events to service.
     @ingroup MprDispatcher
     @stability Stable
@@ -7072,7 +7073,6 @@ PUBLIC void mprSetThreadPriority(MprThread *thread, int priority);
 
 /**
     Set whether a thread can yield for GC
-    @description 
     @param tp Thread object returned by #mprCreateThread. Set to NULL for the current thread.
     @param on Set to true to enable yielding
     @ingroup MprThread

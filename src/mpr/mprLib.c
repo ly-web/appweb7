@@ -10873,13 +10873,11 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
         mprLog("error mpr event", 0, "Epoll returned %d, errno %d", rc, errno);
 
     } else if (rc > 0) {
-        if (rc > 0) {
-            if ((events[0].events & (EPOLLIN | EPOLLERR | EPOLLHUP)) && (mask & MPR_READABLE)) {
-                result |= MPR_READABLE;
-            }
-            if ((events[0].events & (EPOLLOUT | EPOLLHUP)) && (mask & MPR_WRITABLE)) {
-                result |= MPR_WRITABLE;
-            }
+        if ((events[0].events & (EPOLLIN | EPOLLERR | EPOLLHUP)) && (mask & MPR_READABLE)) {
+            result |= MPR_READABLE;
+        }
+        if ((events[0].events & (EPOLLOUT | EPOLLHUP)) && (mask & MPR_WRITABLE)) {
+            result |= MPR_WRITABLE;
         }
     }
     return result;
@@ -18326,7 +18324,7 @@ static cchar *getNextPattern(cchar *pattern, cchar **nextPat, bool *dwild)
     relativeTo  - Relative files are relative to this directory.
     path        - Directory to search. Will be a physical directory path.
     pattern     - Search pattern with optional wildcards.
-    exclude     - Exclusion pattern (not currently implemented as there is no API to pass in an exluded pattern).
+    exclude     - Exclusion pattern
 
     As this routine recurses, 'relativeTo' does not change, but path and pattern will.
  */
