@@ -37,7 +37,11 @@ Me.load({
 
         sets: {
             core: [
-                {   
+                {
+                    mkdir:      [ '${man}/man1' ],
+                    permissions: 0755,
+
+                }, {
                     mkdir:      [ '${log}', '${cache}' ],
                     user:       '${settings.webUser}',
                     group:      '${settings.webGroup}',
