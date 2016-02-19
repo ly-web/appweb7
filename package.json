@@ -2,7 +2,7 @@
     "name": "appweb",
     "description": "Embedthis Appweb Embedded Web Server",
     "title": "Embedthis Appweb",
-    "version": "5.6.1",
+    "version": "5.6.2",
     "keywords": [
         "appweb",
         "http",
@@ -36,7 +36,7 @@
         "http": "~6.2",
         "makerom": "~0.3",
         "mpr": "~6.2",
-        "osdep": "~0.8",
+        "osdep": "~0.9",
         "pcre": "~1.0",
         "ssl": "~0.9",
         "watchdog": "~0.1"
