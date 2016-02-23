@@ -1,4 +1,4 @@
 
-if (App.getenv("NOIPV6")) {
+if (App.getenv("TRAVIS") == 'true') {
     tskip("IPV6 skipped")
 }
