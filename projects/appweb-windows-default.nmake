@@ -818,13 +818,13 @@ build\$(CONFIG)\bin\libappweb.dll: $(DEPS_40)
 #   server.c
 #
 
-build\$(CONFIG)\inc\cache\server.c: $(DEPS_41)
+src\server\cache\server.c: $(DEPS_41)
 
 #
 #   appweb.obj
 #
 DEPS_42 = $(DEPS_42) build\$(CONFIG)\inc\appweb.h
-DEPS_42 = $(DEPS_42) build\$(CONFIG)\inc\cache\server.c
+DEPS_42 = $(DEPS_42) src\server\cache\server.c
 
 build\$(CONFIG)\obj\appweb.obj: \
     src\server\appweb.c $(DEPS_42)

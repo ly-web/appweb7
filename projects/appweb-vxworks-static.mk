@@ -237,17 +237,11 @@ $(BUILD)/inc/appweb.h: $(DEPS_5)
 	cp src/appweb.h $(BUILD)/inc/appweb.h
 
 #
-#   server.c
-#
-
-$(BUILD)/inc/cache/server.c: $(DEPS_6)
-
-#
 #   customize.h
 #
-DEPS_7 += src/customize.h
+DEPS_6 += src/customize.h
 
-$(BUILD)/inc/customize.h: $(DEPS_7)
+$(BUILD)/inc/customize.h: $(DEPS_6)
 	@echo '      [Copy] $(BUILD)/inc/customize.h'
 	mkdir -p "$(BUILD)/inc"
 	cp src/customize.h $(BUILD)/inc/customize.h
@@ -255,9 +249,9 @@ $(BUILD)/inc/customize.h: $(DEPS_7)
 #
 #   embedtls.h
 #
-DEPS_8 += src/mbedtls/embedtls.h
+DEPS_7 += src/mbedtls/embedtls.h
 
-$(BUILD)/inc/embedtls.h: $(DEPS_8)
+$(BUILD)/inc/embedtls.h: $(DEPS_7)
 	@echo '      [Copy] $(BUILD)/inc/embedtls.h'
 	mkdir -p "$(BUILD)/inc"
 	cp src/mbedtls/embedtls.h $(BUILD)/inc/embedtls.h
@@ -265,12 +259,12 @@ $(BUILD)/inc/embedtls.h: $(DEPS_8)
 #
 #   esp.h
 #
-DEPS_9 += src/esp/esp.h
-DEPS_9 += $(BUILD)/inc/me.h
-DEPS_9 += $(BUILD)/inc/osdep.h
-DEPS_9 += $(BUILD)/inc/http.h
+DEPS_8 += src/esp/esp.h
+DEPS_8 += $(BUILD)/inc/me.h
+DEPS_8 += $(BUILD)/inc/osdep.h
+DEPS_8 += $(BUILD)/inc/http.h
 
-$(BUILD)/inc/esp.h: $(DEPS_9)
+$(BUILD)/inc/esp.h: $(DEPS_8)
 	@echo '      [Copy] $(BUILD)/inc/esp.h'
 	mkdir -p "$(BUILD)/inc"
 	cp src/esp/esp.h $(BUILD)/inc/esp.h
@@ -278,9 +272,9 @@ $(BUILD)/inc/esp.h: $(DEPS_9)
 #
 #   mbedtls.h
 #
-DEPS_10 += src/mbedtls/mbedtls.h
+DEPS_9 += src/mbedtls/mbedtls.h
 
-$(BUILD)/inc/mbedtls.h: $(DEPS_10)
+$(BUILD)/inc/mbedtls.h: $(DEPS_9)
 	@echo '      [Copy] $(BUILD)/inc/mbedtls.h'
 	mkdir -p "$(BUILD)/inc"
 	cp src/mbedtls/mbedtls.h $(BUILD)/inc/mbedtls.h
@@ -288,10 +282,10 @@ $(BUILD)/inc/mbedtls.h: $(DEPS_10)
 #
 #   mpr-version.h
 #
-DEPS_11 += src/mpr-version/mpr-version.h
-DEPS_11 += $(BUILD)/inc/mpr.h
+DEPS_10 += src/mpr-version/mpr-version.h
+DEPS_10 += $(BUILD)/inc/mpr.h
 
-$(BUILD)/inc/mpr-version.h: $(DEPS_11)
+$(BUILD)/inc/mpr-version.h: $(DEPS_10)
 	@echo '      [Copy] $(BUILD)/inc/mpr-version.h'
 	mkdir -p "$(BUILD)/inc"
 	cp src/mpr-version/mpr-version.h $(BUILD)/inc/mpr-version.h
@@ -299,18 +293,24 @@ $(BUILD)/inc/mpr-version.h: $(DEPS_11)
 #
 #   pcre.h
 #
-DEPS_12 += src/pcre/pcre.h
+DEPS_11 += src/pcre/pcre.h
 
-$(BUILD)/inc/pcre.h: $(DEPS_12)
+$(BUILD)/inc/pcre.h: $(DEPS_11)
 	@echo '      [Copy] $(BUILD)/inc/pcre.h'
 	mkdir -p "$(BUILD)/inc"
 	cp src/pcre/pcre.h $(BUILD)/inc/pcre.h
 
 #
+#   server.c
+#
+
+src/server/cache/server.c: $(DEPS_12)
+
+#
 #   appweb.o
 #
 DEPS_13 += $(BUILD)/inc/appweb.h
-DEPS_13 += $(BUILD)/inc/cache/server.c
+DEPS_13 += src/server/cache/server.c
 
 $(BUILD)/obj/appweb.o: \
     src/server/appweb.c $(DEPS_13)
@@ -885,19 +885,29 @@ $(BUILD)/bin/http.out: $(DEPS_53)
 endif
 
 #
+#   installPrep
+#
+
+installPrep: $(DEPS_54)
+	if [ "`id -u`" != 0 ] ; \
+	then echo "Must run as root. Rerun with sudo." ; \
+	exit 255 ; \
+	fi
+
+#
 #   install-certs
 #
-DEPS_54 += src/certs/samples/ca.crt
-DEPS_54 += src/certs/samples/ca.key
-DEPS_54 += src/certs/samples/ec.crt
-DEPS_54 += src/certs/samples/ec.key
-DEPS_54 += src/certs/samples/roots.crt
-DEPS_54 += src/certs/samples/self.crt
-DEPS_54 += src/certs/samples/self.key
-DEPS_54 += src/certs/samples/test.crt
-DEPS_54 += src/certs/samples/test.key
+DEPS_55 += src/certs/samples/ca.crt
+DEPS_55 += src/certs/samples/ca.key
+DEPS_55 += src/certs/samples/ec.crt
+DEPS_55 += src/certs/samples/ec.key
+DEPS_55 += src/certs/samples/roots.crt
+DEPS_55 += src/certs/samples/self.crt
+DEPS_55 += src/certs/samples/self.key
+DEPS_55 += src/certs/samples/test.crt
+DEPS_55 += src/certs/samples/test.key
 
-$(BUILD)/.install-certs-modified: $(DEPS_54)
+$(BUILD)/.install-certs-modified: $(DEPS_55)
 	@echo '      [Copy] $(BUILD)/bin'
 	mkdir -p "$(BUILD)/bin"
 	cp src/certs/samples/ca.crt $(BUILD)/bin/ca.crt
@@ -914,35 +924,35 @@ $(BUILD)/.install-certs-modified: $(DEPS_54)
 #
 #   makerom
 #
-DEPS_55 += $(BUILD)/bin/libmpr.a
-DEPS_55 += $(BUILD)/obj/makerom.o
+DEPS_56 += $(BUILD)/bin/libmpr.a
+DEPS_56 += $(BUILD)/obj/makerom.o
 
 ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_55 += -lmbedtls
+    LIBS_56 += -lmbedtls
 endif
 ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_55 += -lmpr-mbedtls
+    LIBS_56 += -lmpr-mbedtls
 endif
 ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_55 += -lmbedtls
+    LIBS_56 += -lmbedtls
 endif
 ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_55 += -lmpr-openssl
+    LIBS_56 += -lmpr-openssl
 endif
-LIBS_55 += -lmpr
+LIBS_56 += -lmpr
 ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_55 += -lmpr-mbedtls
+    LIBS_56 += -lmpr-mbedtls
 endif
 
-$(BUILD)/bin/makerom.out: $(DEPS_55)
+$(BUILD)/bin/makerom.out: $(DEPS_56)
 	@echo '      [Link] $(BUILD)/bin/makerom.out'
-	$(CC) -o $(BUILD)/bin/makerom.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/makerom.o" $(LIBPATHS_55) $(LIBS_55) $(LIBS_55) $(LIBS) -Wl,-r 
+	$(CC) -o $(BUILD)/bin/makerom.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/makerom.o" $(LIBPATHS_56) $(LIBS_56) $(LIBS_56) $(LIBS) -Wl,-r 
 
 #
 #   server-cache
 #
 
-src/server/cache: $(DEPS_56)
+src/server/cache: $(DEPS_57)
 	( \
 	cd src/server; \
 	mkdir -p "cache" ; \
@@ -952,59 +962,52 @@ ifeq ($(ME_COM_WATCHDOG),1)
 #
 #   watchdog
 #
-DEPS_57 += $(BUILD)/bin/libmpr.a
-DEPS_57 += $(BUILD)/obj/watchdog.o
+DEPS_58 += $(BUILD)/bin/libmpr.a
+DEPS_58 += $(BUILD)/obj/watchdog.o
 
 ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_57 += -lmbedtls
+    LIBS_58 += -lmbedtls
 endif
 ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_57 += -lmpr-mbedtls
+    LIBS_58 += -lmpr-mbedtls
 endif
 ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_57 += -lmbedtls
+    LIBS_58 += -lmbedtls
 endif
 ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_57 += -lmpr-openssl
+    LIBS_58 += -lmpr-openssl
 endif
-LIBS_57 += -lmpr
+LIBS_58 += -lmpr
 ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_57 += -lmpr-mbedtls
+    LIBS_58 += -lmpr-mbedtls
 endif
 
-$(BUILD)/bin/appman.out: $(DEPS_57)
+$(BUILD)/bin/appman.out: $(DEPS_58)
 	@echo '      [Link] $(BUILD)/bin/appman.out'
-	$(CC) -o $(BUILD)/bin/appman.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/watchdog.o" $(LIBPATHS_57) $(LIBS_57) $(LIBS_57) $(LIBS) -Wl,-r 
+	$(CC) -o $(BUILD)/bin/appman.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/watchdog.o" $(LIBPATHS_58) $(LIBS_58) $(LIBS_58) $(LIBS) -Wl,-r 
 endif
 
 #
 #   installBinary
 #
 
-installBinary: $(DEPS_58)
+installBinary: $(DEPS_59)
 
 #
 #   install
 #
-DEPS_59 += stop
-DEPS_59 += installBinary
-DEPS_59 += start
+DEPS_60 += installPrep
+DEPS_60 += compile
+DEPS_60 += stop
+DEPS_60 += installBinary
+DEPS_60 += start
 
-install: $(DEPS_59)
-
-#
-#   installPrep
-#
-
-installPrep: $(DEPS_60)
-	if [ "`id -u`" != 0 ] ; \
-	then echo "Must run as root. Rerun with "sudo"" ; \
-	exit 255 ; \
-	fi
+install: $(DEPS_60)
 
 #
 #   run
 #
+DEPS_61 += compile
 
 run: $(DEPS_61)
 	( \
@@ -1028,9 +1031,15 @@ uninstall: $(DEPS_62)
 	)
 
 #
+#   uninstallBinary
+#
+
+uninstallBinary: $(DEPS_63)
+
+#
 #   version
 #
 
-version: $(DEPS_63)
+version: $(DEPS_64)
 	echo $(VERSION)
 
