@@ -14,4 +14,4 @@ install:
 script:
     - ./configure
     - me -s
-    - me -s -v test
+    - NOIPV6=1 me -s -v test
