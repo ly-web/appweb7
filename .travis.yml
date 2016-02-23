@@ -14,4 +14,4 @@ install:
 script:
     - ./configure
     - me -s
-    - me test
+    - me -s -v test
