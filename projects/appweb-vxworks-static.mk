@@ -969,19 +969,29 @@ $(BUILD)/bin/http.out: $(DEPS_56)
 endif
 
 #
+#   installPrep
+#
+
+installPrep: $(DEPS_57)
+	if [ "`id -u`" != 0 ] ; \
+	then echo "Must run as root. Rerun with sudo." ; \
+	exit 255 ; \
+	fi
+
+#
 #   install-certs
 #
-DEPS_57 += src/certs/samples/ca.crt
-DEPS_57 += src/certs/samples/ca.key
-DEPS_57 += src/certs/samples/ec.crt
-DEPS_57 += src/certs/samples/ec.key
-DEPS_57 += src/certs/samples/roots.crt
-DEPS_57 += src/certs/samples/self.crt
-DEPS_57 += src/certs/samples/self.key
-DEPS_57 += src/certs/samples/test.crt
-DEPS_57 += src/certs/samples/test.key
+DEPS_58 += src/certs/samples/ca.crt
+DEPS_58 += src/certs/samples/ca.key
+DEPS_58 += src/certs/samples/ec.crt
+DEPS_58 += src/certs/samples/ec.key
+DEPS_58 += src/certs/samples/roots.crt
+DEPS_58 += src/certs/samples/self.crt
+DEPS_58 += src/certs/samples/self.key
+DEPS_58 += src/certs/samples/test.crt
+DEPS_58 += src/certs/samples/test.key
 
-$(BUILD)/.install-certs-modified: $(DEPS_57)
+$(BUILD)/.install-certs-modified: $(DEPS_58)
 	@echo '      [Copy] $(BUILD)/bin'
 	mkdir -p "$(BUILD)/bin"
 	cp src/certs/samples/ca.crt $(BUILD)/bin/ca.crt
@@ -998,45 +1008,45 @@ $(BUILD)/.install-certs-modified: $(DEPS_57)
 #
 #   makerom
 #
-DEPS_58 += $(BUILD)/bin/libmpr.a
-DEPS_58 += $(BUILD)/obj/makerom.o
+DEPS_59 += $(BUILD)/bin/libmpr.a
+DEPS_59 += $(BUILD)/obj/makerom.o
 
 ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_58 += -lmbedtls
+    LIBS_59 += -lmbedtls
 endif
 ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_58 += -lmpr-mbedtls
+    LIBS_59 += -lmpr-mbedtls
 endif
 ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_58 += -lmbedtls
+    LIBS_59 += -lmbedtls
 endif
 ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_58 += -lmpr-openssl
+    LIBS_59 += -lmpr-openssl
 endif
 ifeq ($(ME_COM_OPENSSL),1)
 ifeq ($(ME_COM_SSL),1)
-    LIBS_58 += -lssl
-    LIBPATHS_58 += -L"$(ME_COM_OPENSSL_PATH)"
+    LIBS_59 += -lssl
+    LIBPATHS_59 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
 endif
 ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_58 += -lcrypto
-    LIBPATHS_58 += -L"$(ME_COM_OPENSSL_PATH)"
+    LIBS_59 += -lcrypto
+    LIBPATHS_59 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
-LIBS_58 += -lmpr
+LIBS_59 += -lmpr
 ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_58 += -lmpr-mbedtls
+    LIBS_59 += -lmpr-mbedtls
 endif
 
-$(BUILD)/bin/makerom.out: $(DEPS_58)
+$(BUILD)/bin/makerom.out: $(DEPS_59)
 	@echo '      [Link] $(BUILD)/bin/makerom.out'
-	$(CC) -o $(BUILD)/bin/makerom.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/makerom.o" $(LIBPATHS_58) $(LIBS_58) $(LIBS_58) $(LIBS) -Wl,-r 
+	$(CC) -o $(BUILD)/bin/makerom.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/makerom.o" $(LIBPATHS_59) $(LIBS_59) $(LIBS_59) $(LIBS) -Wl,-r 
 
 #
 #   server-cache
 #
 
-src/server/cache: $(DEPS_59)
+src/server/cache: $(DEPS_60)
 	( \
 	cd src/server; \
 	mkdir -p "cache" ; \
@@ -1046,69 +1056,62 @@ ifeq ($(ME_COM_WATCHDOG),1)
 #
 #   watchdog
 #
-DEPS_60 += $(BUILD)/bin/libmpr.a
-DEPS_60 += $(BUILD)/obj/watchdog.o
+DEPS_61 += $(BUILD)/bin/libmpr.a
+DEPS_61 += $(BUILD)/obj/watchdog.o
 
 ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_60 += -lmbedtls
+    LIBS_61 += -lmbedtls
 endif
 ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_60 += -lmpr-mbedtls
+    LIBS_61 += -lmpr-mbedtls
 endif
 ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_60 += -lmbedtls
+    LIBS_61 += -lmbedtls
 endif
 ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_60 += -lmpr-openssl
+    LIBS_61 += -lmpr-openssl
 endif
 ifeq ($(ME_COM_OPENSSL),1)
 ifeq ($(ME_COM_SSL),1)
-    LIBS_60 += -lssl
-    LIBPATHS_60 += -L"$(ME_COM_OPENSSL_PATH)"
+    LIBS_61 += -lssl
+    LIBPATHS_61 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
 endif
 ifeq ($(ME_COM_OPENSSL),1)
-    LIBS_60 += -lcrypto
-    LIBPATHS_60 += -L"$(ME_COM_OPENSSL_PATH)"
+    LIBS_61 += -lcrypto
+    LIBPATHS_61 += -L"$(ME_COM_OPENSSL_PATH)"
 endif
-LIBS_60 += -lmpr
+LIBS_61 += -lmpr
 ifeq ($(ME_COM_MBEDTLS),1)
-    LIBS_60 += -lmpr-mbedtls
+    LIBS_61 += -lmpr-mbedtls
 endif
 
-$(BUILD)/bin/appman.out: $(DEPS_60)
+$(BUILD)/bin/appman.out: $(DEPS_61)
 	@echo '      [Link] $(BUILD)/bin/appman.out'
-	$(CC) -o $(BUILD)/bin/appman.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/watchdog.o" $(LIBPATHS_60) $(LIBS_60) $(LIBS_60) $(LIBS) -Wl,-r 
+	$(CC) -o $(BUILD)/bin/appman.out $(LDFLAGS) $(LIBPATHS) "$(BUILD)/obj/watchdog.o" $(LIBPATHS_61) $(LIBS_61) $(LIBS_61) $(LIBS) -Wl,-r 
 endif
 
 #
 #   installBinary
 #
 
-installBinary: $(DEPS_61)
+installBinary: $(DEPS_62)
 
 #
 #   install
 #
-DEPS_62 += stop
-DEPS_62 += installBinary
-DEPS_62 += start
+DEPS_63 += installPrep
+DEPS_63 += compile
+DEPS_63 += stop
+DEPS_63 += installBinary
+DEPS_63 += start
 
-install: $(DEPS_62)
-
-#
-#   installPrep
-#
-
-installPrep: $(DEPS_63)
-	if [ "`id -u`" != 0 ] ; \
-	then echo "Must run as root. Rerun with "sudo"" ; \
-	exit 255 ; \
-	fi
+install: $(DEPS_63)
 
 #
 #   run
 #
+DEPS_64 += compile
 
 run: $(DEPS_64)
 	( \
