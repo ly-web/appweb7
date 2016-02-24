@@ -13,6 +13,4 @@ install:
 script:
     - ./configure
     - me -s
-    - echo ENV
-    - env
-    - NOIPV6=1 me -s -v test
+    - me -s -v test
