@@ -2,22 +2,23 @@
 <html lang="en">
 <head>
     <title>Virtual Hosts</title>
-    
+    <!-- Copyright Embedthis Software. All Rights Reserved. -->
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-    <meta name="description" content="Virtual Hosts">
-    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700' rel='stylesheet' type='text/css'>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="description" content="Virtual Hosts" />
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
+        rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Julius+Sans+One' rel='stylesheet' type='text/css'>
     
-    <link href="../../images/favicon.ico" rel="shortcut icon">
-    <link href="../../lib/semantic-ui/semantic.min.css" rel="stylesheet" type="text/css">
-    <link href="../../css/all.min.css" rel="stylesheet" type="text/css">
-    <link href="../../css/api.min.css" rel="stylesheet" type="text/css">
+    <link href="../../images/favicon.ico" rel="shortcut icon" />
+    <link href="../../lib/semantic-ui/semantic.min.css" rel="stylesheet" type="text/css" />
+    <link href="../../css/all.min.css" rel="stylesheet" type="text/css" />
+    <link href="../../css/api.min.css" rel="stylesheet" type="text/css" />
     
 
-
+</head>
 <body class="show-sidebar">
         <div class="sidebar">
         <div class="ui large left vertical inverted labeled menu">
@@ -196,26 +197,26 @@
             <table class="directive" title="directive">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
-                        <td>Nominates an IP address as using name based virtual hosting
-                    
+                        <td class="pivot">Description</td>
+                        <td>Nominates an IP address as using name based virtual hosting</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>NameVirtualHost IPaddr[:port]
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>NameVirtualHost IPaddr[:port]</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default Server
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default Server</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
-                        <td>NameVirtualHost 206.148.97.56<br>
-                        &lt;VirtualHost 206.148.97.56&gt;<br>
-                        ...<br>
-                        &lt;/VirtualHost&gt;
-                    
+                        <td class="pivot">Example</td>
+                        <td>NameVirtualHost 206.148.97.56<br />
+                        &lt;VirtualHost 206.148.97.56&gt;<br />
+                        ...<br />
+                        &lt;/VirtualHost&gt;</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The NameVirtualHost directive specifies that an IP address will be used for name based
                             virtual hosting. Appweb provides two virtual hosting mechanisms:</p>
@@ -260,17 +261,17 @@ NameVirtualHost 206.148.97.56
 &lt;/VirtualHost&gt;
 </pre>
                             <p>You can use both IP based and name based hosting on one server.</p>
-                        
-                    
+                        </td>
+                    </tr>
                     <tr>
-                        <td class="security">Security
+                        <td class="security">Security</td>
                         <td>
                             <p>You should only ever use an IP address for the argument to the directive. Using a host
                             name will cause a DNS lookup which makes the availability of your web server dependent on
                             the DNS server.</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
             
             <a id="virtualHost"></a>
@@ -278,22 +279,22 @@ NameVirtualHost 206.148.97.56
             <table class="directive" title="directive">
                 <tbody>
                     <tr>
-                        <td class="pivot">Description
+                        <td class="pivot">Description</td>
                         <td>Create a new directive block that applies to a specific IP address. The VirtualHost block
-                            inherits the existing configuration at the point of the opening VirtualHost directive.
-                    
+                            inherits the existing configuration at the point of the opening VirtualHost directive.</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Synopsis
-                        <td>&lt;VirtualHost [IPaddress][:port] [, [IPaddress][:port]]...&gt;<br>
-                        ...<br>
-                        &lt;/VirtualHost&gt;
-                    
+                        <td class="pivot">Synopsis</td>
+                        <td>&lt;VirtualHost [IPaddress][:port] [, [IPaddress][:port]]...&gt;<br />
+                        ...<br />
+                        &lt;/VirtualHost&gt;</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Context
-                        <td>Default Server
-                    
+                        <td class="pivot">Context</td>
+                        <td>Default Server</td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Example
+                        <td class="pivot">Example</td>
                         <td>
                             <pre>
 &lt;VirtualHost *:80 *:8080&gt;
@@ -302,10 +303,10 @@ NameVirtualHost 206.148.97.56
     ....
 &lt;/VirtualHost&gt;
 </pre>
-                        
-                    
+                        </td>
+                    </tr>
                     <tr>
-                        <td class="pivot">Notes
+                        <td class="pivot">Notes</td>
                         <td>
                             <p>The VirutalHost directive defines a block of directives that will apply to the nominated
                             IP addresses. The IP addresses specify the set of IP addresses for this VirtualHost. 
@@ -324,9 +325,9 @@ NameVirtualHost 206.148.97.56
                             If the ServerName ends with "*" it will match any domain that contains the name. You can also
                             set the ServerName to a regular expression such that it will match multiple domains. Regular
                             expressions begin and end with a "/".</p>
-                        
-                    
-                
+                        </td>
+                    </tr>
+                </tbody>
             </table>
 
     </div>
@@ -341,5 +342,5 @@ NameVirtualHost 206.148.97.56
 
         
 
-
-
+</body>
+</html>
