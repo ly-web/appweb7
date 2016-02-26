@@ -175,6 +175,16 @@ Me.load({
                     to:         '${abin}/',
                     enable:     "me.platform.os == 'windows' && !me.settings.static",
                 },
+                {
+                    from:       'libsql${SHOBJ}'
+                    to:         '${abin}/',
+                    enable:     "me.targets.sqlite.enable && !me.settings.static",
+
+                }, {
+                    from:       'libsql${SHLIB}',
+                    to:         '${abin}/',
+                    enable:     "me.targets.sqlite.enable && me.platform.os == 'windows' && !me.settings.static",
+                },
             ],
             service: [
                 {
