@@ -37,23 +37,34 @@ Run Appweb with trace on to capture headers like this:
 
 appweb -4
 ````
-appweb: 4: New connection from 127.0.0.1:56340 to 127.0.0.1:8080
+08:51:15 1-0-1-1 connection.accept.new peer='127.0.0.1' endpoint='127.0.0.1:4100'
 
-<<< Request
-GET /cgi-bin/cgitest?user=john&item=book HTTP/1.1
+08:51:15 1-0-1-1 rx.first.server method='GET' uri='/cgi-bin/cgiProgram?user=john&item=book' protocol='HTTP/1.1'
+
+08:51:15 1-0-1-1 rx.headers.server
+----
+GET /cgi-bin/cgiProgram?user=john&item=book HTTP/1.1
 Accept: */*
-Date: Wed, 03 Dec 2014 16:57:43 GMT
-Host: 127.0.0.1:8080
+Date: Wed, 03 Dec 2014 16:51:15 GMT
+Host: 127.0.0.1:4100
 Connection: close
 User-Agent: Embedthis-http
 Accept-Ranges: bytes
+----
 
->>> Response
+08:51:15 1-0-1-1 request.pipeline route='/cgi-bin/' handler='cgiHandler' target='run' endpoint='127.0.0.1:4100' host='127.0.0.1:4100' referrer='' filename='/Users/guest/appweb/test/cgi-bin/cgiProgram'
+
+08:51:15 1-0-1-1 tx.headers.server
+----
 HTTP/1.1 200 OK
-Date: Wed Dec  3 16:57:43 2014
-Transfer-Encoding: chunked
+X-Frame-Options: SAMEORIGIN
+Content-Type: text/html
+X-Content-Type-Options: nosniff
+Date: Wed, 03 Dec 2014 16:51:15 GMT
+ETag: "24820e7-50dc-547e6c44"
+X-XSS-Protection: 1; mode=block
 Connection: close
-Pragma: no-cache
-Cache-Control: no-cache
-Content-Type:  text/html
+Transfer-Encoding: chunked
+Accept-Ranges: bytes
+````
 ````
