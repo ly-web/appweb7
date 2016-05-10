@@ -49,7 +49,7 @@
         "mpr-matrixssl": "~0.3",
         "mpr-mbedtls": "~0.5",
         "mpr-nanossl": "~0.3",
-        "mpr-openssl": "~0.4"
+        "mpr-openssl": "~0.5"
     },
     "devDependencies": {
         "makeme": ">=0.9.0",
