@@ -60,7 +60,7 @@ don't change existing definitions of PCRE_EXP_DECL and PCRECPP_EXP_DECL. */
     #define _VSB_CONFIG_FILE "vsbConfig.h"
 #endif
 
-#if 1
+#if ALL_IN_ONE || 1
     /*
      *  When building all-in-one, we must use internal definitions
      */
