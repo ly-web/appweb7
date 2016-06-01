@@ -27855,7 +27855,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
 #if ME_CPU_ARCH == MPR_CPU_IX86 || ME_CPU_ARCH == MPR_CPU_IX64 || ME_CPU_ARCH == MPR_CPU_SH
     entry = sjoin("_", entry, NULL);
 #endif
-    if (!mp->entry || mprFindFxSym(sysSymTbl, entry, (char**) (void*) &fn) == -1) {
+    if (!mp->entry || mprFindVxSym(sysSymTbl, entry, (char**) (void*) &fn) == -1) {
         if ((at = mprSearchForModule(mp->path)) == 0) {
             mprLog("error mpr", 0, "Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
                 mprGetModuleSearchPath());
