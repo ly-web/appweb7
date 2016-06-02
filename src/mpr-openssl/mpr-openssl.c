@@ -22,6 +22,13 @@
 /* Clashes with WinCrypt.h */
 #undef OCSP_RESPONSE
 
+#ifndef  ME_MPR_SSL_HANDSHAKES
+    #define ME_MPR_SSL_HANDSHAKES 0     /* Defaults to infinite */
+#endif
+#ifndef  ME_MPR_SSL_RENEGOTIATE
+    #define ME_MPR_SSL_RENEGOTIATE 1
+#endif
+
  /*
     Indent includes to bypass MakeMe dependencies
   */
@@ -167,6 +174,7 @@ typedef struct OpenConfig {
     DH              *dhKey;
     int             clearFlags;
     int             setFlags;
+    int             maxHandshakes;
 } OpenConfig;
 
 typedef struct OpenSocket {
@@ -175,6 +183,7 @@ typedef struct OpenSocket {
     char            *requiredPeerName;
     SSL             *handle;
     BIO             *bio;
+    int             handshakes;
 } OpenSocket;
 
 typedef struct RandBuf {
@@ -203,21 +212,6 @@ typedef struct CRYPTO_dynlock_value DynLock;
     #define ME_MPR_SSL_CURVE "prime256v1"
 #endif
 
-#define DH_KEY_P \
-    "FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1" \
-    "29024E088A67CC74020BBEA63B139B22514A08798E3404DD" \
-    "EF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245" \
-    "E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7ED" \
-    "EE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3D" \
-    "C2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F" \
-    "83655D23DCA3AD961C62F356208552BB9ED529077096966D" \
-    "670C354E4ABC9804F1746C08CA18217C32905E462E36CE3B" \
-    "E39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9" \
-    "DE2BCBF6955817183995497CEA956AE515D2261898FA0510" \
-    "15728E5A8AACAA68FFFFFFFFFFFFFFFF"
-
-#define DH_KEY_G "02"
-
 /***************************** Forward Declarations ***************************/
 
 static void     closeOss(MprSocket *sp, bool gracefully);
@@ -230,6 +224,7 @@ static DH       *getDhKey();
 static char     *getOssSession(MprSocket *sp);
 static char     *getOssState(MprSocket *sp);
 static char     *getOssError(MprSocket *sp);
+static void     infoCallback(const SSL *ssl, int where, int rc);
 static void     manageOpenConfig(OpenConfig *cfg, int flags);
 static void     manageOpenProvider(MprSocketProvider *provider, int flags);
 static void     manageOpenSocket(OpenSocket *ssp, int flags);
@@ -539,6 +534,10 @@ static int configOss(MprSsl *ssl, int flags, char **errorMsg)
     #endif
 #endif
 
+#if defined(ME_MPR_SSL_HANDSHAKES)
+    cfg->maxHandshakes = ME_MPR_SSL_HANDSHAKES;
+#endif
+
 #if defined(SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS)
     /*
         Disables a countermeasure against a SSL 3.0/TLS 1.0 protocol vulnerability affecting CBC ciphers.
@@ -731,17 +730,23 @@ static int upgradeOss(MprSocket *sp, MprSsl *ssl, cchar *requiredPeerName)
         setSecured(sp);
         mprSetSocketBlockingMode(sp, 0);
     }
-#if defined(ME_MPR_SSL_RENEGOTIATE) && !ME_MPR_SSL_RENEGOTIATE
-    /*
-        Disable renegotiation after the initial handshake if renegotiate is explicitly set to false (CVE-2009-3555).
-        Note: this really is a bogus CVE as disabling renegotiation is not required nor does it enhance security if
-        used with up-to-date (patched) SSL stacks.
-     */
-    if (osp->handle->s3) {
-        osp->handle->s3->flags |= SSL3_FLAGS_NO_RENEGOTIATE_CIPHERS;
+    if (ME_MPR_SSL_HANDSHAKES) {
+        SSL_CTX_set_info_callback(cfg->ctx, infoCallback);
     }
-#endif
     return 0;
+}
+
+
+static void infoCallback(const SSL *ssl, int where, int rc)
+{
+    OpenSocket  *osp;
+
+    if (where & SSL_CB_HANDSHAKE_START) {
+        if ((osp = (OpenSocket*) SSL_get_app_data(ssl)) == 0) {
+            return;
+        }
+        osp->handshakes++;
+    }
 }
 
 
@@ -780,6 +785,12 @@ static ssize readOss(MprSocket *sp, void *buf, ssize len)
             mprLog("info mpr ssl openssl", 5, "SSL_read %s", getOssError(sp));
         }
         break;
+    }
+    if (osp->cfg->maxHandshakes && osp->handshakes > osp->cfg->maxHandshakes) {
+        mprLog("error mpr ssl openssl", 4, "TLS renegotiation attack");
+        rc = -1;
+        sp->flags |= MPR_SOCKET_EOF;
+        return MPR_ERR_BAD_STATE;
     }
     if (rc <= 0) {
         error = SSL_get_error(osp->handle, rc);
@@ -839,6 +850,11 @@ static ssize writeOss(MprSocket *sp, cvoid *buf, ssize len)
                 break;
             }
             return MPR_ERR_CANT_WRITE;
+        } else if (osp->cfg->maxHandshakes && osp->handshakes > osp->cfg->maxHandshakes) {
+            mprLog("error mpr ssl openssl", 4, "TLS renegotiation attack");
+            rc = -1;
+            sp->flags |= MPR_SOCKET_EOF;
+            return MPR_ERR_BAD_STATE;
         }
         totalWritten += rc;
         buf = (void*) ((char*) buf + rc);
@@ -1417,21 +1433,10 @@ static DH *dhcallback(SSL *handle, int isExport, int keyLength)
 #endif /* ME_COM_OPENSSL */
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */

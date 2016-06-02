@@ -2,22 +2,23 @@
 <html lang="en">
 <head>
     <title>CGI</title>
-    
+    <!-- Copyright Embedthis Software. All Rights Reserved. -->
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-    <meta name="description" content="CGI">
-    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700' rel='stylesheet' type='text/css'>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="description" content="CGI" />
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
+        rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Julius+Sans+One' rel='stylesheet' type='text/css'>
     
-    <link href="../images/favicon.ico" rel="shortcut icon">
-    <link href="../lib/semantic-ui/semantic.min.css" rel="stylesheet" type="text/css">
-    <link href="../css/all.min.css" rel="stylesheet" type="text/css">
-    <link href="../css/api.min.css" rel="stylesheet" type="text/css">
+    <link href="../images/favicon.ico" rel="shortcut icon" />
+    <link href="../lib/semantic-ui/semantic.min.css" rel="stylesheet" type="text/css" />
+    <link href="../css/all.min.css" rel="stylesheet" type="text/css" />
+    <link href="../css/api.min.css" rel="stylesheet" type="text/css" />
     
 
-
+</head>
 <body class="show-sidebar">
         <div class="sidebar">
         <div class="ui large left vertical inverted labeled menu">
@@ -192,7 +193,8 @@
             results to the clients's browser. Plain HTML documents are typically static, while a CGI program allows the
             response data to be dynamically created.</p>
             <p>However, since CGI was first developed, several better means of creating dynamic web pages have been
-            created that are faster and more efficient. Read more about such replacements in <a href=frameworks.html>Web Frameworks</a>.</p>
+            created that are faster and more efficient. Read more about such replacements in <a href=
+            "frameworks.html">Web Frameworks</a>.</p>
             <p>Embedthis Appweb supports CGI so that existing CGI applications can be fully supported. Appweb has a
             high-performance and fully featured CGI Handler that alleviates many of the pains with configuring CGI
             setup.</p><a id="configuringCgi"></a>
@@ -209,7 +211,8 @@
             the web content. Consequently, invoking CGI programs by extension should only be used in combination with a
             URI prefix that allows the CGI directory to be specified.</p>
             <h3>Invoking by URI Prefix</h3>
-            <p>Appweb nominates a directory as a CGI directory via the <a href=dir/server.html#scriptAlias>ScriptAlias</a> configuration file directive. For example:</p>
+            <p>Appweb nominates a directory as a CGI directory via the <a href=
+            "dir/server.html#scriptAlias">ScriptAlias</a> configuration file directive. For example:</p>
 <pre class="ui code segment">
 ScriptAlias /cgi-bin/ $ROUTE_HOME/cgi-bin/ 
 </pre>
@@ -221,13 +224,14 @@ ScriptAlias /cgi-bin/ $ROUTE_HOME/cgi-bin/
     Target run $1
 &lt;/Route&gt;
 </pre>
-            </p><p>When a URI is requested by a browser that includes the "<em>/cgi-bin/</em>" prefix, the 
+            <p>When a URI is requested by a browser that includes the "<em>/cgi-bin/</em>" prefix, the 
             script name immediately after "/cgi-bin/" will be run. For example:</p>
 <pre class="ui code segment">
 http://www.embedthis.com/cgi-bin/testCgi
 </pre>
             <h3>Invoking by URI Extension</h3>
-            <p>To configure Appweb to run CGI programs based on the URI extension use the <a href=dir/route.html#addHandler>AddHandler</a> configuration file directive. For example:</p>
+            <p>To configure Appweb to run CGI programs based on the URI extension use the <a href=
+            "dir/route.html#addHandler">AddHandler</a> configuration file directive. For example:</p>
             <pre class="ui code segment">
 AddHandler cgiHandler .myExt
 </pre>
@@ -264,21 +268,21 @@ Action application/x-perl /usr/bin/perl
             <table class="ui table" title="args">
                 <thead>
                     <tr>
-                        <th>Arg
-                        <th>Contents
-                    
-                
+                        <th>Arg</th>
+                        <th>Contents</th>
+                    </tr>
+                </thead>
                 <tbody>
                     <tr>
-                        <td>argv[0]
-                        <td>Program name immediately after the CGI URI prefix (E.g. after /cgi-bin/)
-                    
+                        <td>argv[0]</td>
+                        <td>Program name immediately after the CGI URI prefix (E.g. after /cgi-bin/)</td>
+                    </tr>
                     <tr>
-                        <td>argv[1..N]
+                        <td>argv[1..N]</td>
                         <td>Each arg is set to portions of the QUERY_STRING. The query is split at "+" characters after
-                        unescaping the query.
-                    
-                
+                        unescaping the query.</td>
+                    </tr>
+                </tbody>
             </table>
             <h4>Programs Invoked Indirectly with Bang Directive</h4>
             <p>If the CGI program/script specified in the URI contains a "#!/pathToProgram" directive on the first
@@ -287,77 +291,77 @@ Action application/x-perl /usr/bin/perl
             <table class="ui table" title="args">
                 <thead>
                     <tr>
-                        <th>Arg
-                        <th>Contents
-                    
-                
+                        <th>Arg</th>
+                        <th>Contents</th>
+                    </tr>
+                </thead>
                 <tbody>
                     <tr>
-                        <td>argv[0]
-                        <td>Program name defined in the first line of the CGI script after the "#!" characters.
-                    
+                        <td>argv[0]</td>
+                        <td>Program name defined in the first line of the CGI script after the "#!" characters.</td>
+                    </tr>
                     <tr>
-                        <td>argv[1]
-                        <td>The name of the CGI script originally specified in the URI.
-                    
+                        <td>argv[1]</td>
+                        <td>The name of the CGI script originally specified in the URI.</td>
+                    </tr>
                     <tr>
-                        <td>argv[2..N]
+                        <td>argv[2..N]</td>
                         <td>Each arg is set to portions of the QUERY_STRING. The query is split at "+" characters after
-                        unescaping the query.
-                    
-                
+                        unescaping the query.</td>
+                    </tr>
+                </tbody>
             </table>
             <h4>Programs Specified via an ActionProgram Directive</h4>
             <table class="ui table" title="args">
                 <thead>
                     <tr>
-                        <th>Arg
-                        <th>Contents
-                    
-                
+                        <th>Arg</th>
+                        <th>Contents</th>
+                    </tr>
+                </thead>
                 <tbody>
                     <tr>
-                        <td>argv[0]
+                        <td>argv[0]</td>
                         <td>Program name specified in the ActionProgram directive in the Appweb configuration
-                        file.
-                    
+                        file.</td>
+                    </tr>
                     <tr>
-                        <td>argv[1]
-                        <td>The name of the CGI script originally specified in the URI.
-                    
+                        <td>argv[1]</td>
+                        <td>The name of the CGI script originally specified in the URI.</td>
+                    </tr>
                     <tr>
-                        <td>argv[2..N]
+                        <td>argv[2..N]</td>
                         <td>Each arg is set to portions of the QUERY_STRING. The query is split at "+" characters after
-                        unescaping the query.
-                    
-                
+                        unescaping the query.</td>
+                    </tr>
+                </tbody>
             </table>
             <h4>Windows Batch Commands</h4>
             <table class="ui table" title="args">
                 <thead>
                     <tr>
-                        <th>Arg
-                        <th>Contents
-                    
-                
+                        <th>Arg</th>
+                        <th>Contents</th>
+                    </tr>
+                </thead>
                 <tbody>
                     <tr>
-                        <td>argv[0]
-                        <td>Set to "cmd.exe"
-                    
+                        <td>argv[0]</td>
+                        <td>Set to "cmd.exe"</td>
+                    </tr>
                     <tr>
-                        <td>argv[1]
-                        <td>/Q
-                    
+                        <td>argv[1]</td>
+                        <td>/Q</td>
+                    </tr>
                     <tr>
-                        <td>argv[2]
-                        <td>/C
-                    
+                        <td>argv[2]</td>
+                        <td>/C</td>
+                    </tr>
                     <tr>
-                        <td>argv[3]
-                        <td>Command
-                    
-                
+                        <td>argv[3]</td>
+                        <td>Command</td>
+                    </tr>
+                </tbody>
             </table>
             <p>The "Command" is a quoted string set to the name of the CGI script originally specified in the URI
             followed by the Query String, split at "+" characters. The entire Command string is escaped so that
@@ -368,112 +372,112 @@ Action application/x-perl /usr/bin/perl
             <table class="ui table" title="args">
                 <thead>
                     <tr>
-                        <th>Variable
-                        <th>Description
-                    
-                
+                        <th>Variable</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
                 <tbody>
                     <tr>
-                        <td>AUTH_TYPE
-                        <td>Set to the value of the HTTP AUTHORIZATION header. Usually "basic" or "digest".
-                    
+                        <td>AUTH_TYPE</td>
+                        <td>Set to the value of the HTTP AUTHORIZATION header. Usually "basic" or "digest".</td>
+                    </tr>
                     <tr>
-                        <td>CONTENT_LENGTH
-                        <td>Set to the length of any associated posted content.
-                    
+                        <td>CONTENT_LENGTH</td>
+                        <td>Set to the length of any associated posted content.</td>
+                    </tr>
                     <tr>
-                        <td>DOCUMENT_ROOT
+                        <td>DOCUMENT_ROOT</td>
                         <td>Set to the path location of web documents. Defined by the Documents directive in the
-                        Appweb configuration file.
-                    
+                        Appweb configuration file.</td>
+                    </tr>
                     <tr>
-                        <td>GATEWAY_INTERFACE
-                        <td>Set to "CGI/1.1"
-                    
+                        <td>GATEWAY_INTERFACE</td>
+                        <td>Set to "CGI/1.1"</td>
+                    </tr>
                     <tr>
-                        <td>HTTP_ACCEPT
+                        <td>HTTP_ACCEPT</td>
                         <td>Set to the value of the HTTP ACCEPT header. This specifies what formats are acceptable
-                        and/or preferable for the client.
-                    
+                        and/or preferable for the client.</td>
+                    </tr>
                     <tr>
-                        <td>HTTP_CONNECTION
+                        <td>HTTP_CONNECTION</td>
                         <td>Set to the value of the HTTP CONNECTION header. This specifies how the connection should be
-                        reused when the request completes. (Keep-alive)
-                    
+                        reused when the request completes. (Keep-alive)</td>
+                    </tr>
                     <tr>
-                        <td>HTTP_HOST
+                        <td>HTTP_HOST</td>
                         <td>Set to the value of the HTTP HOST header. This specifies the name of the server to process
                         the request. When using Named virtual hosting, requests to different servers (hosts) may be
                         processed by a single HTTP server on a single IP address. The HTTP_HOST field permits the
-                        server to determine which virtual host should process the request.
-                    
+                        server to determine which virtual host should process the request.</td>
+                    </tr>
                     <tr>
-                        <td>HTTP_USER_AGENT
-                        <td>Set to the value of the HTTP USER_AGENT header.
-                    
+                        <td>HTTP_USER_AGENT</td>
+                        <td>Set to the value of the HTTP USER_AGENT header.</td>
+                    </tr>
                     <tr>
-                        <td>PATH_INFO
-                        <td>The PATH_INFO variable is set to the URI portion (if any) after the SCRIPT_NAME.
-                    
+                        <td>PATH_INFO</td>
+                        <td>The PATH_INFO variable is set to the URI portion (if any) after the SCRIPT_NAME.</td>
+                    </tr>
                     <tr>
-                        <td>PATH_TRANSLATED
-                        <td>The physical on-disk path name corresponding to PATH_INFO.
-                    
+                        <td>PATH_TRANSLATED</td>
+                        <td>The physical on-disk path name corresponding to PATH_INFO.</td>
+                    </tr>
                     <tr>
-                        <td>QUERY_STRING
+                        <td>QUERY_STRING</td>
                         <td>The QUERY_STRING variable is set to the URI string portion that follows the first "?" in
                         the URI. The QUERY_STRING is URI encoded in the standard URI format by changing spaces to "+",
                         and encoding all URI special characters with <code>%xx</code> hexadecimal encoding. Most major
-                        scripting languages provide routines to assist in decoding the QUERY_STRING.
-                    
+                        scripting languages provide routines to assist in decoding the QUERY_STRING.</td>
+                    </tr>
                     <tr>
-                        <td>REMOTE_ADDR
-                        <td>Set to the IP address of the requesting client.
-                    
+                        <td>REMOTE_ADDR</td>
+                        <td>Set to the IP address of the requesting client.</td>
+                    </tr>
                     <tr>
-                        <td>REMOTE_HOST
-                        <td>Set to the IP address of the requesting client (same as REMOTE_ADDR).
-                    
+                        <td>REMOTE_HOST</td>
+                        <td>Set to the IP address of the requesting client (same as REMOTE_ADDR).</td>
+                    </tr>
                     <tr>
-                        <td>REMOTE_USER
-                        <td>Set to the name of the authenticated user.
-                    
+                        <td>REMOTE_USER</td>
+                        <td>Set to the name of the authenticated user.</td>
+                    </tr>
                     <tr>
-                        <td>REMOTE_METHOD
+                        <td>REMOTE_METHOD</td>
                         <td>Set to the HTTP method used by the request. Valid values are: "GET", "HEAD", "OPTIONS",
-                        "POST", or "TRACE". "PUT" and "DELETE" are not supported.
-                    
+                        "POST", or "TRACE". "PUT" and "DELETE" are not supported.</td>
+                    </tr>
                     <tr>
-                        <td>REQUEST_URI
+                        <td>REQUEST_URI</td>
                         <td>The complete request URI after the host name portion. It always begins with a leading
-                        "/".
-                    
+                        "/".</td>
+                    </tr>
                     <tr>
-                        <td>SCRIPT_NAME
+                        <td>SCRIPT_NAME</td>
                         <td>The name of the CGI script or program to run. If an ActionProgram is specifying the name of
-                        a CGI interpreter, then SCRIPT_NAME is set to the name of the script to interpret.
-                    
+                        a CGI interpreter, then SCRIPT_NAME is set to the name of the script to interpret.</td>
+                    </tr>
                     <tr>
-                        <td>SERVER_ADDR
-                        <td>The IP address of the server or virtual host responding to the request.
-                    
+                        <td>SERVER_ADDR</td>
+                        <td>The IP address of the server or virtual host responding to the request.</td>
+                    </tr>
                     <tr>
-                        <td>SERVER_NAME
-                        <td>The name of the default server or virtual host serving the request.
-                    
+                        <td>SERVER_NAME</td>
+                        <td>The name of the default server or virtual host serving the request.</td>
+                    </tr>
                     <tr>
-                        <td>SERVER_PORT
-                        <td>The HTTP port of the server or virtual host serving the request.
-                    
+                        <td>SERVER_PORT</td>
+                        <td>The HTTP port of the server or virtual host serving the request.</td>
+                    </tr>
                     <tr>
-                        <td>SERVER_PROTOCOL
-                        <td>Set to "HTTP/1.0" or "HTTP/1.1" depending on the protocol used by the client.
-                    
+                        <td>SERVER_PROTOCOL</td>
+                        <td>Set to "HTTP/1.0" or "HTTP/1.1" depending on the protocol used by the client.</td>
+                    </tr>
                     <tr>
-                        <td>SERVER_SOFTWARE
-                        <td>Set to "Embedthis Appweb/VERSION"
-                    
-                
+                        <td>SERVER_SOFTWARE</td>
+                        <td>Set to "Embedthis Appweb/VERSION"</td>
+                    </tr>
+                </tbody>
             </table>
             <h4>Example</h4>
             <p>Consider the following URI which will run the Perl interpreter to execute the "pricelists.pl"
@@ -485,44 +489,44 @@ http://hostname/cgi-bin/myScript/products/pricelists.pl?id=23&amp;payment=credit
             <table class="ui table" title="evn">
                 <thead>
                     <tr>
-                        <th>Variable
-                        <th>Value
-                    
-                
+                        <th>Variable</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
                 <tbody>
                     <tr>
-                        <td>PATH_INFO
-                        <td>/products/pricelists
-                    
+                        <td>PATH_INFO</td>
+                        <td>/products/pricelists</td>
+                    </tr>
                     <tr>
-                        <td>PATH_TRANSLATED
-                        <td>/var/appweb/web/products/pricelists # where /var/appweb/web is the Documents directory
-                    
+                        <td>PATH_TRANSLATED</td>
+                        <td>/var/appweb/web/products/pricelists # where /var/appweb/web is the Documents directory</td>
+                    </tr>
                     <tr>
-                        <td>QUERY_STRING
-                        <td>id=23&amp;payment=credit+Card
-                    
+                        <td>QUERY_STRING</td>
+                        <td>id=23&amp;payment=credit+Card</td>
+                    </tr>
                     <tr>
-                        <td>REQUEST_URI
-                        <td>/cgi-bin/myScript/products/pricelists?id=23&amp;payment=credit+Card
-                    
+                        <td>REQUEST_URI</td>
+                        <td>/cgi-bin/myScript/products/pricelists?id=23&amp;payment=credit+Card</td>
+                    </tr>
                     <tr>
-                        <td>SCRIPT_NAME
-                        <td>myScript
-                    
+                        <td>SCRIPT_NAME</td>
+                        <td>myScript</td>
+                    </tr>
                     <tr>
-                        <td>ARGV[0]
-                        <td>/usr/bin/perl
-                    
+                        <td>ARGV[0]</td>
+                        <td>/usr/bin/perl</td>
+                    </tr>
                     <tr>
-                        <td>ARGV[1]
-                        <td>pricelists.pl
-                    
+                        <td>ARGV[1]</td>
+                        <td>pricelists.pl</td>
+                    </tr>
                     <tr>
-                        <td>ARGV[2]
-                        <td>id=23&amp;payment=creditCard
-                    
-                
+                        <td>ARGV[2]</td>
+                        <td>id=23&amp;payment=creditCard</td>
+                    </tr>
+                </tbody>
             </table>
             <p>This URI below demonstrates some rather cryptic encoding of URIs. The important thing to remember is
             that command line arguments are delimited by "+". The hex encoding %20, is the encoding for the space
@@ -535,44 +539,44 @@ http://hostname/cgi-bin/cgiProgram/extra/Path?var1=a+a&amp;var2=b%20b&amp;var3=c
             <table class="ui table" title="env">
                 <thead>
                     <tr>
-                        <th>Variable
-                        <th>Value
-                    
-                
+                        <th>Variable</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
                 <tbody>
                     <tr>
-                        <td>PATH_INFO
-                        <td>/extra/Path
-                    
+                        <td>PATH_INFO</td>
+                        <td>/extra/Path</td>
+                    </tr>
                     <tr>
-                        <td>PATH_TRANSLATED
-                        <td>/var/appweb/web/extra/Path
-                    
+                        <td>PATH_TRANSLATED</td>
+                        <td>/var/appweb/web/extra/Path</td>
+                    </tr>
                     <tr>
-                        <td>QUERY_STRING
-                        <td>var1=a+a&amp;var2=b%20b&amp;var3=c
-                    
+                        <td>QUERY_STRING</td>
+                        <td>var1=a+a&amp;var2=b%20b&amp;var3=c</td>
+                    </tr>
                     <tr>
-                        <td>REQUEST_URI
-                        <td>/cgi-bin/cgiProgram/extra/Path?var1=a+a&amp;var2=b%20b&amp;var3=c
-                    
+                        <td>REQUEST_URI</td>
+                        <td>/cgi-bin/cgiProgram/extra/Path?var1=a+a&amp;var2=b%20b&amp;var3=c</td>
+                    </tr>
                     <tr>
-                        <td>SCRIPT_NAME
-                        <td>cgiProgram
-                    
+                        <td>SCRIPT_NAME</td>
+                        <td>cgiProgram</td>
+                    </tr>
                     <tr>
-                        <td>ARGV[0]
-                        <td>cgiProgram
-                    
+                        <td>ARGV[0]</td>
+                        <td>cgiProgram</td>
+                    </tr>
                     <tr>
-                        <td>ARGV[1]
-                        <td>var1=a
-                    
+                        <td>ARGV[1]</td>
+                        <td>var1=a</td>
+                    </tr>
                     <tr>
-                        <td>ARGV[2]
-                        <td>a&amp;var2=b b&amp;var3=c
-                    
-                
+                        <td>ARGV[2]</td>
+                        <td>a&amp;var2=b b&amp;var3=c</td>
+                    </tr>
+                </tbody>
             </table>
             <h3>URI Encoding</h3>
             <p>When a URI is sent via HTTP, certain special characters must be escaped so the URI can be processed
@@ -589,29 +593,29 @@ http://hostname/cgi-bin/cgiProgram/extra/Path?var1=a+a&amp;var2=b%20b&amp;var3=c
             <table class="ui table" title="headers">
                 <thead>
                     <tr>
-                        <th>Header
-                        <th>Description
-                    
-                
+                        <th>Header</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
                 <tbody>
                     <tr>
-                        <td class="nowrap">Content-type
+                        <td class="nowrap">Content-type</td>
                         <td>Nominate the content Mime Type. Typically "text/html". See the mime.types for a list of
-                        possible mime types.
-                    
+                        possible mime types.</td>
+                    </tr>
                     <tr>
-                        <td>Status
-                        <td>Set to a HTTP response code. Success is 200. Server error is 500.
-                    
+                        <td>Status</td>
+                        <td>Set to a HTTP response code. Success is 200. Server error is 500.</td>
+                    </tr>
                     <tr>
-                        <td>Location
-                        <td>Set to the URI of a new document to which to redirect the client's browser.
-                    
+                        <td>Location</td>
+                        <td>Set to the URI of a new document to which to redirect the client's browser.</td>
+                    </tr>
                     <tr>
-                        <td>ANY
-                        <td>Pass any other header back to the client.
-                    
-                
+                        <td>ANY</td>
+                        <td>Pass any other header back to the client.</td>
+                    </tr>
+                </tbody>
             </table>
             <p>For example:</p>
             <pre class="ui code segment">
@@ -634,8 +638,10 @@ Status: 500
             <h2>Other Resources</h2>
             <p>The following URIs may be helpful in further reading about CGI:</p>
             <ul>
-                <li>For an introduction to CGI: <a href=http://en.wikipedia.org/wiki/Common_Gateway_Interface>http://en.wikipedia.org/wiki/Common_Gateway_Interface</a></li>
-                <li>For the actual CGI specification: <a href=http://tools.ietf.org/html/draft-robinson-www-interface-00>http://tools.ietf.org/html/draft-robinson-www-interface-00</a></li>
+                <li>For an introduction to CGI: <a href=
+                "http://en.wikipedia.org/wiki/Common_Gateway_Interface">http://en.wikipedia.org/wiki/Common_Gateway_Interface</a></li>
+                <li>For the actual CGI specification: <a href=
+                "http://tools.ietf.org/html/draft-robinson-www-interface-00">http://tools.ietf.org/html/draft-robinson-www-interface-00</a></li>
                 <li>Other CGI resources: <a href="http://www.cgi-resources.com">http://www.cgi-resources.com</a></li>
             </ul>
 
@@ -651,5 +657,5 @@ Status: 500
 
         
 
-
-
+</body>
+</html>

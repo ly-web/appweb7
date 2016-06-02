@@ -24,6 +24,9 @@
 #ifndef ME_COMPATIBLE
     #define ME_COMPATIBLE "6.2"
 #endif
+#ifndef ME_COMPILER_FORTIFY
+    #define ME_COMPILER_FORTIFY 1
+#endif
 #ifndef ME_COMPILER_HAS_ATOMIC
     #define ME_COMPILER_HAS_ATOMIC 0
 #endif
@@ -147,11 +150,11 @@
 #ifndef ME_MPR_SSL_CACHE
     #define ME_MPR_SSL_CACHE 512
 #endif
+#ifndef ME_MPR_SSL_HANDSHAKES
+    #define ME_MPR_SSL_HANDSHAKES 1
+#endif
 #ifndef ME_MPR_SSL_LOG_LEVEL
     #define ME_MPR_SSL_LOG_LEVEL 5
-#endif
-#ifndef ME_MPR_SSL_RENEGOTIATE
-    #define ME_MPR_SSL_RENEGOTIATE 1
 #endif
 #ifndef ME_MPR_SSL_TICKET
     #define ME_MPR_SSL_TICKET 1
@@ -187,7 +190,7 @@
     #define ME_TUNE "size"
 #endif
 #ifndef ME_VERSION
-    #define ME_VERSION "6.2.1"
+    #define ME_VERSION "6.2.2"
 #endif
 #ifndef ME_WATCHDOG_NAME
     #define ME_WATCHDOG_NAME "appman"
@@ -249,7 +252,7 @@
     #define ME_VAPP_PREFIX "deploy"
 #endif
 #ifndef ME_SRC_PREFIX
-    #define ME_SRC_PREFIX "/usr/src/appweb-6.2.1"
+    #define ME_SRC_PREFIX "/usr/src/appweb-6.2.2"
 #endif
 
 /* Suffixes */
@@ -291,10 +294,10 @@
     #define ME_MINOR_VERSION 2
 #endif
 #ifndef ME_PATCH_VERSION
-    #define ME_PATCH_VERSION 1
+    #define ME_PATCH_VERSION 2
 #endif
 #ifndef ME_VNUM
-    #define ME_VNUM 600020001
+    #define ME_VNUM 600020002
 #endif
 
 /* Components */

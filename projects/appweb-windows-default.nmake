@@ -3,7 +3,7 @@
 #
 
 NAME                  = appweb
-VERSION               = 6.2.1
+VERSION               = 6.2.2
 
 OS                    = windows
 PA                    = $(PROCESSOR_ARCHITECTURE)
@@ -818,13 +818,13 @@ build\$(CONFIG)\bin\libappweb.dll: $(DEPS_40)
 #   server.c
 #
 
-build\$(CONFIG)\inc\cache\server.c: $(DEPS_41)
+src\server\cache\server.c: $(DEPS_41)
 
 #
 #   appweb.obj
 #
 DEPS_42 = $(DEPS_42) build\$(CONFIG)\inc\appweb.h
-DEPS_42 = $(DEPS_42) build\$(CONFIG)\inc\cache\server.c
+DEPS_42 = $(DEPS_42) src\server\cache\server.c
 
 build\$(CONFIG)\obj\appweb.obj: \
     src\server\appweb.c $(DEPS_42)

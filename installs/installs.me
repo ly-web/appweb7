@@ -44,7 +44,7 @@ Me.load({
 
         install: {
             home: '${TOP}',
-            depends: [ 'all', 'stop', 'installBinary', 'start' ],
+            depends: [ 'installPrep', 'compile', 'stop', 'installBinary', 'start' ],
             action: ` 
                 trace('Info', me.settings.title + ' installed at ' + me.prefixes.vapp)
                 trace('Info', 'Configuration directory ' + me.prefixes.etc)

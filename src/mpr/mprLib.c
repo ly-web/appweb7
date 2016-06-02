@@ -2526,23 +2526,12 @@ static void monitorStack()
 #endif
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -3530,23 +3519,12 @@ PUBLIC void *mprGetKey(cchar *key)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -3896,23 +3874,12 @@ void asyncDummy() {}
 #endif /* MPR_EVENT_ASYNC */
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -3963,10 +3930,10 @@ PUBLIC void mprAtomicBarrier()
     #elif ME_COMPILER_HAS_SYNC
         __sync_synchronize();
 
-    #elif __GNUC__ && (ME_CPU_ARCH == ME_CPU_X86 || ME_CPU_ARCH == ME_CPU_X64)
+    #elif __GNUC__ && (ME_CPU_ARCH == ME_CPU_X86 || ME_CPU_ARCH == ME_CPU_X64) && !VXWORKS
         asm volatile ("mfence" : : : "memory");
 
-    #elif __GNUC__ && (ME_CPU_ARCH == ME_CPU_PPC)
+    #elif __GNUC__ && (ME_CPU_ARCH == ME_CPU_PPC) && !VXWORKS
         asm volatile ("sync" : : : "memory");
 
     #elif __GNUC__ && (ME_CPU_ARCH == ME_CPU_ARM) && KEEP
@@ -4002,14 +3969,14 @@ PUBLIC int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
     #elif ME_COMPILER_HAS_SYNC_CAS
         return __sync_bool_compare_and_swap(addr, expected, (void*) value);
 
-    #elif __GNUC__ && (ME_CPU_ARCH == ME_CPU_X86)
+    #elif __GNUC__ && (ME_CPU_ARCH == ME_CPU_X86) && !VXWORKS
         void *prev;
         asm volatile ("lock; cmpxchgl %2, %1"
             : "=a" (prev), "=m" (*addr)
             : "r" (value), "m" (*addr), "0" (expected));
         return expected == prev;
 
-    #elif __GNUC__ && (ME_CPU_ARCH == ME_CPU_X64)
+    #elif __GNUC__ && (ME_CPU_ARCH == ME_CPU_X64) && !VXWORKS
         void *prev;
         asm volatile ("lock; cmpxchgq %q2, %1"
             : "=a" (prev), "=m" (*addr)
@@ -4053,7 +4020,7 @@ PUBLIC void mprAtomicAdd(volatile int *ptr, int value)
     #elif VXWORKS && _VX_ATOMIC_INIT
         vxAtomicAdd(ptr, value);
 
-    #elif __GNUC__ && (ME_CPU_ARCH == ME_CPU_X86 || ME_CPU_ARCH == ME_CPU_X64)
+    #elif __GNUC__ && (ME_CPU_ARCH == ME_CPU_X86 || ME_CPU_ARCH == ME_CPU_X64) && !VXWORKS
         asm volatile("lock; addl %1,%0"
              : "+m" (*ptr)
              : "ir" (value));
@@ -4084,13 +4051,13 @@ PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int64 value)
     #elif ME_COMPILER_HAS_SYNC64 && (ME_64 || ME_CPU_ARCH == ME_CPU_X86 || ME_CPU_ARCH == ME_CPU_X64)
         __sync_add_and_fetch(ptr, value);
 
-    #elif __GNUC__ && (ME_CPU_ARCH == ME_CPU_X86)
+    #elif __GNUC__ && (ME_CPU_ARCH == ME_CPU_X86) && !VXWORKS
         asm volatile ("lock; xaddl %0,%1"
             : "=r" (value), "=m" (*ptr)
             : "0" (value), "m" (*ptr)
             : "memory", "cc");
 
-    #elif __GNUC__ && (ME_CPU_ARCH == ME_CPU_X64)
+    #elif __GNUC__ && (ME_CPU_ARCH == ME_CPU_X64) && !VXWORKS
         asm volatile("lock; addq %1,%0"
              : "=m" (*ptr)
              : "er" (value), "m" (*ptr));
@@ -4145,23 +4112,12 @@ PUBLIC void mprAtomicListInsert(void **head, void **link, void *item)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -4798,23 +4754,12 @@ PUBLIC ssize mprPutStringToWideBuf(MprBuf *bp, cchar *str)
 #endif /* ME_CHAR_LEN > 1 */
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -5378,23 +5323,12 @@ PUBLIC void mprGetCacheStats(MprCache *cache, int *numKeys, ssize *mem)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -6243,13 +6177,14 @@ PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout)
  */
 static void reapCmd(MprCmd *cmd, bool finalizing)
 {
-    int     status, rc;
-
-    status = 0;
     if (cmd->pid == 0) {
         return;
     }
 #if ME_UNIX_LIKE
+{
+    int     status, rc;
+
+    status = 0;
     if ((rc = waitpid(cmd->pid, &status, WNOHANG | __WALL)) < 0) {
         mprLog("error mpr cmd", 0, "Waitpid failed for pid %d, errno %d", cmd->pid, errno);
 
@@ -6270,6 +6205,7 @@ static void reapCmd(MprCmd *cmd, bool finalizing)
     } else {
         mprDebug("mpr cmd", 5, "Still running pid %d, thread %s", cmd->pid, mprGetCurrentThreadName());
     }
+}
 #endif
 #if VXWORKS
     /*
@@ -6277,16 +6213,20 @@ static void reapCmd(MprCmd *cmd, bool finalizing)
      */
     if (!cmd->stopped) {
         if (semTake(cmd->exitCond, MPR_TIMEOUT_STOP_TASK) != OK) {
-            mprLog("error mpr cmd", 0, "Child %s did not exit, errno %d", cmd->program);
+            mprLog("error mpr cmd", 0, "Child %s did not exit, errno %d", cmd->program, errno);
             return;
         }
     }
     semDelete(cmd->exitCond);
     cmd->exitCond = 0;
     cmd->pid = 0;
-    rc = 0;
 #endif
 #if ME_WIN_LIKE
+{
+    int     status, rc;
+
+    status = 0;
+
     if (GetExitCodeProcess(cmd->process, (ulong*) &status) == 0) {
         mprLog("error mpr cmd", 0, "GetExitProcess error");
         return;
@@ -6301,6 +6241,7 @@ static void reapCmd(MprCmd *cmd, bool finalizing)
         cmd->thread = 0;
         cmd->pid = 0;
     }
+}
 #endif
     if (cmd->pid == 0) {
         if (cmd->eofCount >= cmd->requiredEof) {
@@ -7165,23 +7106,12 @@ static void closeFiles(MprCmd *cmd)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -7488,23 +7418,12 @@ PUBLIC void mprSignalMultiCond(MprCond *cp)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -8823,23 +8742,12 @@ PUBLIC char *mprGetPassword(cchar *prompt)
 }
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -9502,23 +9410,12 @@ static int cygOpen(MprFileSystem *fs, cchar *path, int omode, int perms)
 #endif
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -10349,23 +10246,12 @@ PUBLIC bool mprDispatcherHasEvents(MprDispatcher *dispatcher)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
-    You may use the Embedthis Open Source license or you may acquire a 
+    You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -10684,25 +10570,64 @@ PUBLIC char *mprEscapeSQL(cchar *cmd)
     return result;
 }
 
+#if KEEP
+static void charGen() 
+{
+    uchar    flags;
+    uint     c;
+
+    mprCreate(argc, argv, 0);
+
+    mprPrintf("static uchar charMatch[256] = {\n\t0x00,");
+
+    for (c = 1; c < 256; ++c) {
+        flags = 0;
+        if (c % 16 == 0)
+            mprPrintf("\n\t");
+#if ME_WIN_LIKE
+        if (strchr("&;`'\"|*?~<>^()[]{}$\\\n\r%", c)) {
+            flags |= MPR_ENCODE_SHELL;
+        }
+#else
+        if (strchr("&;`\'\"|*?~<>^()[]{}$\\\n", c)) {
+            flags |= MPR_ENCODE_SHELL;
+        }
+#endif
+
+        if (isalnum((uchar) c) || strchr("-_.~", c)) {
+            /* Acceptable */
+        } else if (strchr("#;,/?:@&=+$", c)) {
+            /* Reserved characters */
+            flags |= MPR_ENCODE_URI_COMPONENT | MPR_ENCODE_JS_URI_COMPONENT;
+        } else if (strchr("!'()*", c)) {
+            flags |= MPR_ENCODE_URI | MPR_ENCODE_URI_COMPONENT;
+        } else if (strchr("[]", c)) {
+            flags |= MPR_ENCODE_JS_URI | MPR_ENCODE_URI_COMPONENT | MPR_ENCODE_JS_URI_COMPONENT;
+        } else {
+            /* Matches " ", {, }, |, ^, \, ~, ` */
+            flags |= MPR_ENCODE_URI | MPR_ENCODE_URI_COMPONENT | MPR_ENCODE_JS_URI | MPR_ENCODE_JS_URI_COMPONENT;
+        }
+        if (strchr("<>&\"'", c) != 0) {
+            flags |= MPR_ENCODE_HTML;
+        }
+        if (strchr("\n\r\\\'\"\032", c) != 0) {
+            flags |= MPR_ENCODE_SQL;
+        }
+        mprPrintf("0x%02x%c", flags, (c < 255) ? ',' : ' ');
+    }
+    mprPrintf("\n};\n");
+}
+#endif
+
+
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -10873,13 +10798,11 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
         mprLog("error mpr event", 0, "Epoll returned %d, errno %d", rc, errno);
 
     } else if (rc > 0) {
-        if (rc > 0) {
-            if ((events[0].events & (EPOLLIN | EPOLLERR | EPOLLHUP)) && (mask & MPR_READABLE)) {
-                result |= MPR_READABLE;
-            }
-            if ((events[0].events & (EPOLLOUT | EPOLLHUP)) && (mask & MPR_WRITABLE)) {
-                result |= MPR_WRITABLE;
-            }
+        if ((events[0].events & (EPOLLIN | EPOLLERR | EPOLLHUP)) && (mask & MPR_READABLE)) {
+            result |= MPR_READABLE;
+        }
+        if ((events[0].events & (EPOLLOUT | EPOLLHUP)) && (mask & MPR_WRITABLE)) {
+            result |= MPR_WRITABLE;
         }
     }
     return result;
@@ -11002,23 +10925,12 @@ void epollDummy() {}
 #endif /* MPR_EVENT_EPOLL */
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -11338,23 +11250,12 @@ PUBLIC void mprDequeueEvent(MprEvent *event)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -11976,23 +11877,12 @@ PUBLIC int mprGetFileFd(MprFile *file)
 }
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -12159,23 +12049,12 @@ PUBLIC void mprSetPathNewline(cchar *path, cchar *newline)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -12691,23 +12570,12 @@ PUBLIC char *mprHashKeysToString(MprHash *hash, cchar *join)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -13144,6 +13012,21 @@ static int gettok(MprJsonParser *parser)
                 c = *parser->input;
                 if (c == '*' || c == '/') {
                     eatRestOfComment(parser);
+                } else if (parser->state == MPR_JSON_STATE_NAME || parser->state == MPR_JSON_STATE_VALUE) {
+                    for (cp = parser->input; *cp; cp++) {
+                        if (*cp == '\\' && cp[1] == '/') {
+                            mprPutCharToBuf(parser->buf, '/');
+                        } else if (*cp == '/') {
+                            parser->tokid = JTOK_REGEXP;
+                            parser->input = cp + 1;
+                            break;
+                        } else {
+                            mprPutCharToBuf(parser->buf, *cp);
+                        }
+                    }
+                    if (*cp != '/') {
+                        mprSetJsonError(parser, "Missing closing slash for regular expression");
+                    }
                 } else {
                     mprSetJsonError(parser, "Unexpected input");
                 }
@@ -13155,6 +13038,7 @@ static int gettok(MprJsonParser *parser)
 
             case '"':
             case '\'':
+            case '`':
                 /*
                     Quoted strings: names or values
                     This parser is tolerant of embedded, unquoted control characters
@@ -13169,6 +13053,8 @@ static int gettok(MprJsonParser *parser)
                                 mprPutCharToBuf(parser->buf, '\'');
                             } else if (*cp == '"') {
                                 mprPutCharToBuf(parser->buf, '"');
+                            } else if (*cp == '`') {
+                                mprPutCharToBuf(parser->buf, '`');
                             } else if (*cp == '/') {
                                 mprPutCharToBuf(parser->buf, '/');
                             } else if (*cp == '"') {
@@ -13256,8 +13142,10 @@ static int gettok(MprJsonParser *parser)
                         parser->tokid = JTOK_UNDEFINED;
                     } else if (sfnumber(value)) {
                         parser->tokid = JTOK_NUMBER;
+#if UNUSED
                     } else if (*value == '/' && value[slen(value) - 1] == '/' && parser->tolerant) {
                         parser->tokid = JTOK_REGEXP;
+#endif
                     } else {
                         parser->tokid = JTOK_STRING;
                     }
@@ -13443,7 +13331,7 @@ PUBLIC void mprFormatJsonValue(MprBuf *buf, int type, cchar *value, int flags)
         if (value == 0) {
             mprPutStringToBuf(buf, "null");
         } else if (type & MPR_JSON_REGEXP) {
-            mprPutToBuf(buf, "\"/%s/\"", value);
+            mprPutToBuf(buf, "/%s/", value);
         } else {
             mprPutStringToBuf(buf, value);
         }
@@ -13458,6 +13346,8 @@ PUBLIC void mprFormatJsonValue(MprBuf *buf, int type, cchar *value, int flags)
         mprPutStringToBuf(buf, value);
         break;
     case MPR_JSON_REGEXP:
+        mprPutToBuf(buf, "/%s/", value);
+        break;
     case MPR_JSON_STRING:
     default:
         mprFormatJsonString(buf, value);
@@ -13828,7 +13718,7 @@ static char *splitExpression(char *property, int *operator, char **value)
         *vp++ = '\0';
         i = sspn(vp, seps);
         vp += i;
-        if (*vp == '\'' || *vp == '"') {
+        if (*vp == '\'' || *vp == '"' || *vp == '`') {
             for (end = &vp[1]; *end; end++) {
                 if (*end == '\\' && end[1]) {
                     end++;
@@ -14507,23 +14397,12 @@ PUBLIC int mprWriteJsonObj(MprJson *obj, cchar *key, MprJson *value)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -14813,23 +14692,12 @@ void kqueueDummy() {}
 #endif /* MPR_EVENT_KQUEUE */
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -15644,23 +15512,12 @@ PUBLIC char *mprListToString(MprList *list, cchar *join)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -15990,23 +15847,12 @@ PUBLIC void mprSpinUnlock(MprSpin *lock)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -16399,7 +16245,7 @@ PUBLIC int mprGetError()
 /*
     Set the mapped (portable, Posix) error code
  */
-PUBLIC void mprSetError(error)
+PUBLIC void mprSetError(int error)
 {
 #if !ME_WIN_LIKE
     mprSetOsError(error);
@@ -16570,23 +16416,12 @@ PUBLIC int _cmp(char *s1, char *s2)
 #endif
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -16820,23 +16655,12 @@ PUBLIC cchar *mprLookupMime(MprHash *table, cchar *ext)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
-    You may use the Embedthis Open Source license or you may acquire a 
+    You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -17263,23 +17087,12 @@ PUBLIC void dummyWide() {}
 #endif /* ME_CHAR_LEN > 1 */
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -17615,23 +17428,12 @@ PUBLIC char *mprSearchForModule(cchar *filename)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -18326,7 +18128,7 @@ static cchar *getNextPattern(cchar *pattern, cchar **nextPat, bool *dwild)
     relativeTo  - Relative files are relative to this directory.
     path        - Directory to search. Will be a physical directory path.
     pattern     - Search pattern with optional wildcards.
-    exclude     - Exclusion pattern (not currently implemented as there is no API to pass in an exluded pattern).
+    exclude     - Exclusion pattern
 
     As this routine recurses, 'relativeTo' does not change, but path and pattern will.
  */
@@ -19690,23 +19492,12 @@ PUBLIC ssize mprWritePathContents(cchar *path, cchar *buf, ssize len, int mode)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -19934,23 +19725,12 @@ PUBLIC void mprSetFilesLimit(int limit)
 #endif /* ME_UNIX_LIKE */
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -20905,23 +20685,12 @@ PUBLIC ssize print(cchar *fmt, ...)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -21253,23 +21022,12 @@ void romDummy() {}
 #endif /* ME_ROM */
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -21592,23 +21350,12 @@ void selectDummy() {}
 #endif /* MPR_EVENT_SELECT */
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -21981,23 +21728,12 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
 #endif /* ME_UNIX_LIKE */
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -23965,23 +23701,12 @@ PUBLIC void mprVerifySslDepth(MprSsl *ssl, int depth)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -25130,23 +24855,12 @@ PUBLIC void serase(char *str)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -26210,23 +25924,12 @@ PUBLIC bool mprSetThreadYield(MprThread *tp, bool on)
 }
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -26924,10 +26627,11 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
 {
     MprTime     timeForZoneCalc, secs;
     struct tm   t;
-    char        *zoneName;
     int         year, offset, dst;
+#if ME_UNIX_LIKE && !CYGWIN
+    char        *zoneName = 0;
+#endif
 
-    zoneName = 0;
     offset = dst = 0;
 
     if (local) {
@@ -28051,23 +27755,12 @@ PUBLIC int gettimeofday(struct timeval *tv, struct timezone *tz)
 #endif /* ME_WIN_LIKE || VXWORKS */
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -28120,7 +27813,7 @@ PUBLIC int mprGetRandomBytes(char *buf, int length, bool block)
     int     i;
 
     for (i = 0; i < length; i++) {
-        buf[i] = (char) (mprGetTime() >> i);
+        buf[i] = (char) (rand() & 0xff);
     }
     return 0;
 }
@@ -28170,10 +27863,10 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
 #if ME_CPU_ARCH == MPR_CPU_IX86 || ME_CPU_ARCH == MPR_CPU_IX64 || ME_CPU_ARCH == MPR_CPU_SH
     entry = sjoin("_", entry, NULL);
 #endif
-    if (!mp->entry || mprFindFxSym(sysSymTbl, entry, (char**) (void*) &fn) == -1) {
+    if (!mp->entry || mprFindVxSym(sysSymTbl, entry, (char**) (void*) &fn) == -1) {
         if ((at = mprSearchForModule(mp->path)) == 0) {
-            mprLog("error mpr", 0, "Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
-                mprGetModuleSearchPath());
+            mprLog("error mpr", 0, "Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path,
+                 mprGetCurrentPath(), mprGetModuleSearchPath());
             return MPR_ERR_CANT_ACCESS;
         }
         mp->path = at;
@@ -28307,23 +28000,12 @@ void vxworksDummy() {}
 #endif /* VXWORKS */
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -28633,23 +28315,12 @@ PUBLIC void mprDoWaitRecall(MprWaitService *ws)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -29757,23 +29428,12 @@ PUBLIC char *awtom(wchar *src, ssize *len)
 #endif /* ME_CHAR_LEN > 1 */
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -30181,23 +29841,12 @@ void winDummy() {}
 #endif /* ME_WIN_LIKE || CYGWIN */
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 
 
@@ -30863,22 +30512,11 @@ PUBLIC int mprXmlGetLineNumber(MprXml *xp)
 
 
 /*
-    @copy   default
-
     Copyright (c) Embedthis Software. All Rights Reserved.
-
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.
-
-    Local variables:
-    tab-width: 4
-    c-basic-offset: 4
-    End:
-    vim: sw=4 ts=4 expandtab
-
-    @end
  */
 

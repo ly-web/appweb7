@@ -2,22 +2,23 @@
 <html lang="en">
 <head>
     <title>Response Caching</title>
-    
+    <!-- Copyright Embedthis Software. All Rights Reserved. -->
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-    <meta name="description" content="Response Caching">
-    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700' rel='stylesheet' type='text/css'>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="description" content="Response Caching" />
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
+        rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Julius+Sans+One' rel='stylesheet' type='text/css'>
     
-    <link href="../images/favicon.ico" rel="shortcut icon">
-    <link href="../lib/semantic-ui/semantic.min.css" rel="stylesheet" type="text/css">
-    <link href="../css/all.min.css" rel="stylesheet" type="text/css">
-    <link href="../css/api.min.css" rel="stylesheet" type="text/css">
+    <link href="../images/favicon.ico" rel="shortcut icon" />
+    <link href="../lib/semantic-ui/semantic.min.css" rel="stylesheet" type="text/css" />
+    <link href="../css/all.min.css" rel="stylesheet" type="text/css" />
+    <link href="../css/api.min.css" rel="stylesheet" type="text/css" />
     
 
-
+</head>
 <body class="show-sidebar">
         <div class="sidebar">
         <div class="ui large left vertical inverted labeled menu">
@@ -214,7 +215,7 @@
             <a id="options"></a>
             <h2>Caching Options</h2>
             <p>When responding to a client request, there are four alternative ways to utilize Appweb caching:</p>
-            <img src="../images/caching/caching-steps.jpg" alt="steps" class="centered">
+            <img src="../images/caching/caching-steps.jpg" alt="steps" class="centered"/>
 
             <h3>Options</h3>
             <ol>
@@ -246,7 +247,7 @@
             <p>If the client cache either does not contain a response, or the client cache has a stale response, the
             server must transmit the full response data back to the client. In this case, the cost of generating
             the response is eliminated, but the full response data must be sent over the network to the client. </p>
-            <p>This kind of caching is best for dynamic web pages that are viewed more often than the data on which they
+            <P>This kind of caching is best for dynamic web pages that are viewed more often than the data on which they
             depend is updated.</p>
             <a id="server"></a>
             <h2>Caching on the Server</h2>
@@ -319,7 +320,7 @@ Cache server manual /dashboard.esp
             <p>The <em>Cache server all /user/login.esp</em> directive will cache all requests that have the given URI
             regardless of any additional query, POST data or route parameters. i.e. this means the request
             "/users/login.esp?fast" will use the same cached response as "/users/login.esp".
-            </p><p>The <em>Cache server only /user/login.esp?first=1</em> directive will cache "only" this exact request.
+            <p>The <em>Cache server only /user/login.esp?first=1</em> directive will cache "only" this exact request.
             When matching a request with this cache record, the request parameters (query, POST data and route
             parameters) will be added to the request URI to form a sorted www-urlencoded URI. This means that different
             request parameters will not be cached and only the exact form specified will be cached.</p>
@@ -349,11 +350,11 @@ Cache server manual /dashboard.esp
                 <li>How often is this resource updated?</li>
                 <li>How often is this resource viewed?</li> 
             </ul>
-            </p><p>If it is acceptable to display a stale resource, then select a client-side lifespan that is set toward the
+            <p>If it is acceptable to display a stale resource, then select a client-side lifespan that is set toward the
             maximum acceptable staleness. If a resource is present on every page, such as a logo or banner, it is very
             beneficial to use client-side caching, even if the lifespan is set to as little as 60 seconds.
             <h3>LimitMemory</h3>
-            </p><p>Server-side caching consumes memory for every request that is cached. As memory is a limited resource,
+            <p>Server-side caching consumes memory for every request that is cached. As memory is a limited resource,
             you may wish to limit the memory that Appweb may consume via the
             
             <a href="dir/sandbox.html#limitMemory">LimitMemory</a> configuration file directive. This will put an upper
@@ -391,5 +392,5 @@ Cache server manual /dashboard.esp
 
         
 
-
-
+</body>
+</html>

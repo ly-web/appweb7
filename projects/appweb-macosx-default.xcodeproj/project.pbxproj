@@ -2304,6 +2304,7 @@ ENABLE_TESTABILITY = YES;
 					"$(inherited)"
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					"_FORTIFY_SOURCE=2",
 					"ME_DEBUG=1",
 					"$(inherited)"
 				);
@@ -2390,6 +2391,7 @@ ENABLE_TESTABILITY = YES;
 					"$(inherited)"
 				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
+					"_FORTIFY_SOURCE=2",
 					"ME_DEBUG=0",
 					"$(inherited)"
 				);

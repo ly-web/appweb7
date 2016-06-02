@@ -10,7 +10,6 @@ Branches
 The repository has three branches:
 
 * master - Most recent release of the software.
-* lts - Most recent LTS release of the software.
 * dev - Current ongoing development.
  
 Licensing
