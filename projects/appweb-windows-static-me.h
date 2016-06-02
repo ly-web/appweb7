@@ -24,6 +24,9 @@
 #ifndef ME_COMPATIBLE
     #define ME_COMPATIBLE "6.2"
 #endif
+#ifndef ME_COMPILER_FORTIFY
+    #define ME_COMPILER_FORTIFY 1
+#endif
 #ifndef ME_COMPILER_HAS_ATOMIC
     #define ME_COMPILER_HAS_ATOMIC 0
 #endif
@@ -132,11 +135,11 @@
 #ifndef ME_MPR_SSL_CACHE
     #define ME_MPR_SSL_CACHE 512
 #endif
+#ifndef ME_MPR_SSL_HANDSHAKES
+    #define ME_MPR_SSL_HANDSHAKES 1
+#endif
 #ifndef ME_MPR_SSL_LOG_LEVEL
     #define ME_MPR_SSL_LOG_LEVEL 5
-#endif
-#ifndef ME_MPR_SSL_RENEGOTIATE
-    #define ME_MPR_SSL_RENEGOTIATE 1
 #endif
 #ifndef ME_MPR_SSL_TICKET
     #define ME_MPR_SSL_TICKET 1
