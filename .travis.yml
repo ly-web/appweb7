@@ -30,6 +30,5 @@ addons:
     notification_email: dev@embedthis.com
     build_command_prepend: "./configure; make clean"
     build_command: "type me ; make -j 1"
-    branch_pattern: dev
     on:
       tags: true
