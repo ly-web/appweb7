@@ -2279,9 +2279,7 @@ static ME_INLINE int findLastBit(size_t word)
  */
 static ME_INLINE bool acquire(MprFreeQueue *freeq)
 {
-#if MACOSX
-    return OSSpinLockTry(&freeq->lock.cs);
-#elif ME_UNIX_LIKE && ME_COMPILER_HAS_SPINLOCK
+#if ME_UNIX_LIKE && ME_COMPILER_HAS_SPINLOCK
     return pthread_spin_trylock(&freeq->lock.cs) == 0;
 #elif ME_UNIX_LIKE
     return pthread_mutex_trylock(&freeq->lock.cs) == 0;
@@ -2297,9 +2295,7 @@ static ME_INLINE bool acquire(MprFreeQueue *freeq)
 
 static ME_INLINE void release(MprFreeQueue *freeq)
 {
-#if MACOSX
-    OSSpinLockUnlock(&freeq->lock.cs);
-#elif ME_UNIX_LIKE && ME_COMPILER_HAS_SPINLOCK
+#if ME_UNIX_LIKE && ME_COMPILER_HAS_SPINLOCK
     pthread_spin_unlock(&freeq->lock.cs);
 #elif ME_UNIX_LIKE
     pthread_mutex_unlock(&freeq->lock.cs);
@@ -2457,7 +2453,7 @@ PUBLIC int mprIsValid(cvoid *ptr)
     This stops busy waiting which can be a problem on VxWorks if higher priority threads outside the MPR
     can starve the MPR of cpu while contenting for memory via mprCreateEvent.
  */
-static void dontBusyWait() 
+static void dontBusyWait()
 {
 #if ME_UNIX_LIKE || VXWORKS
     struct timespec nap;
@@ -3915,10 +3911,7 @@ PUBLIC void mprAtomicOpen()
  */
 PUBLIC void mprAtomicBarrier()
 {
-    #if MACOSX
-        OSMemoryBarrier();
-
-    #elif defined(VX_MEM_BARRIER_RW)
+    #if defined(VX_MEM_BARRIER_RW)
         VX_MEM_BARRIER_RW();
 
     #elif ME_WIN_LIKE
@@ -3952,10 +3945,7 @@ PUBLIC void mprAtomicBarrier()
  */
 PUBLIC int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
 {
-    #if MACOSX
-        return OSAtomicCompareAndSwapPtrBarrier(expected, (void*) value, (void*) addr);
-
-    #elif VXWORKS && _VX_ATOMIC_INIT && !ME_64
+    #if VXWORKS && _VX_ATOMIC_INIT && !ME_64
         /* vxCas operates with integer values */
         return vxCas((atomic_t*) addr, (atomicVal_t) expected, (atomicVal_t) value);
 
@@ -4004,10 +3994,7 @@ PUBLIC int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
  */
 PUBLIC void mprAtomicAdd(volatile int *ptr, int value)
 {
-    #if MACOSX
-        OSAtomicAdd32(value, ptr);
-
-    #elif ME_WIN_LIKE
+    #if ME_WIN_LIKE
         InterlockedExchangeAdd(ptr, value);
 
     #elif ME_COMPILER_HAS_ATOMIC
@@ -4038,10 +4025,7 @@ PUBLIC void mprAtomicAdd(volatile int *ptr, int value)
  */
 PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int64 value)
 {
-    #if MACOSX
-        OSAtomicAdd64(value, ptr);
-
-    #elif ME_WIN_LIKE && ME_64
+    #if ME_WIN_LIKE && ME_64
         InterlockedExchangeAdd64(ptr, value);
 
     #elif ME_COMPILER_HAS_ATOMIC64 && (ME_64 || ME_CPU_ARCH == ME_CPU_X86 || ME_CPU_ARCH == ME_CPU_X64)
@@ -4074,12 +4058,7 @@ PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int64 value)
 #if KEEP
 PUBLIC void *mprAtomicExchange(void *volatile *addr, cvoid *value)
 {
-    #if MACOSX
-        void *old = *(void**) addr;
-        OSAtomicCompareAndSwapPtrBarrier(old, (void*) value, addr);
-        return old;
-
-    #elif ME_WIN_LIKE
+    #if ME_WIN_LIKE
         return (void*) InterlockedExchange((volatile LONG*) addr, (LONG) value);
 
     #elif ME_COMPILER_HAS_ATOMIC
@@ -5260,6 +5239,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
                         mprDebug("debug mpr cache", 3, "Cache too big, execess keys %zd, mem %zd, prune key %s",
                             excessKeys, (cache->maxMem - cache->usedMem), kp->key);
                         removeItem(cache, item);
+                        excessKeys--;
                     }
                 }
                 factor *= 4;
@@ -15655,9 +15635,6 @@ PUBLIC MprSpin *mprInitSpinLock(MprSpin *lock)
 #if USE_MPR_LOCK
     mprInitLock(&lock->cs);
 
-#elif MACOSX
-    lock->cs = OS_SPINLOCK_INIT;
-
 #elif ME_UNIX_LIKE && ME_COMPILER_HAS_SPINLOCK
     pthread_spin_init(&lock->cs, 0);
 
@@ -15698,8 +15675,6 @@ PUBLIC bool mprTrySpinLock(MprSpin *lock)
 
 #if USE_MPR_LOCK
     mprTryLock(&lock->cs);
-#elif MACOSX
-    rc = !OSSpinLockTry(&lock->cs);
 #elif ME_UNIX_LIKE && ME_COMPILER_HAS_SPINLOCK
     rc = pthread_spin_trylock(&lock->cs) != 0;
 #elif ME_UNIX_LIKE
@@ -15802,8 +15777,6 @@ PUBLIC void mprSpinLock(MprSpin *lock)
 
 #if USE_MPR_LOCK
     mprTryLock(&lock->cs);
-#elif MACOSX
-    OSSpinLockLock(&lock->cs);
 #elif ME_UNIX_LIKE && ME_COMPILER_HAS_SPINLOCK
     pthread_spin_lock(&lock->cs);
 #elif ME_UNIX_LIKE
@@ -15832,8 +15805,6 @@ PUBLIC void mprSpinUnlock(MprSpin *lock)
 
 #if USE_MPR_LOCK
     mprUnlock(&lock->cs);
-#elif MACOSX
-    OSSpinLockUnlock(&lock->cs);
 #elif ME_UNIX_LIKE && ME_COMPILER_HAS_SPINLOCK
     pthread_spin_unlock(&lock->cs);
 #elif ME_UNIX_LIKE
@@ -17934,6 +17905,7 @@ PUBLIC cchar *mprGetPathBaseRef(cchar *path)
     char            *cp;
 
     if (path == 0) {
+        //  TODO - should not clone
         return sclone("");
     }
     fs = mprLookupFileSystem(path);
