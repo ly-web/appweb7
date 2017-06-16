@@ -7,7 +7,7 @@
                 <div class="menu">
                     <a class="header item" href="@~/">Home</a>
                     <a class="item" href="@~/users/features.html">Appweb Features</a>
-                    <a class="item" href="https://embedthis.com/appweb/download.html">Download</a> 
+                    <a class="item" href="https://embedthis.com/appweb/download.html">Download</a>
                     <a class="item" href="@~/licensing/">Licensing</a>
                 </div>
             </div>
@@ -55,7 +55,7 @@
                     <a class="item" href="@~/developers/action.html">Using the Action Handler</a>
                     <a class="item" href="@~/developers/stages.html">Creating Pipeline Stages</a>
                     <a class="item" href="@~/developers/rom.html">Serving Pages from ROM</a>
-                    <a class="item" href="@~/developers/migrating.html">Migrating to Appweb 5</a>
+                    <a class="item" href="@~/developers/migrating.html">Upgrading Earlier Releases</a>
                 </div>
             </div>
             <div class="item">
@@ -100,7 +100,7 @@
             <div class="item">
                 <div class="menu">
                     <a class="header item" href="@~/developers/project.html">Project Resources</a>
-                    <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
+                    <a class="item" href="https://embedthis.com/blog/categories/Appweb">Appweb News</a>
                     <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
                     <a class="item" href="https://github.com/embedthis/appweb">Source Code Repository</a>
                     <a class="item" href="https://github.com/embedthis/appweb/issues/389">Appweb Security Alerts</a>
@@ -122,4 +122,3 @@
     </div>
 
 <@ partial('sidebar-scripts') @>
-

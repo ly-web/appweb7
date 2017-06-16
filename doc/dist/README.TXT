@@ -47,7 +47,7 @@ The Appweb binary installation is published in two formats:
     * Native Apple MAC OS X PKG format
     * Native Windows installer format
 
-For other platforms, you will need to download the source code distribution and build then install. The product documentation describes how to build from source. 
+For other platforms, you will need to download the source code distribution and build then install. The product documentation describes how to build from source.
 
 
 Development Environment Platform Support
@@ -76,7 +76,7 @@ Windows Release Details
 
 To install the Windows Installer image:
 
-   1. Login with administrator privileges. This is necessary as the binary 
+   1. Login with administrator privileges. This is necessary as the binary
       installation needs to install a Windows Service.
 
    2. Use WinZip or equivalent software to extract the installation image. This
@@ -94,7 +94,7 @@ This is the procedure to remove Appweb on all systems except Windows.
       sudo /usr/lib/appweb/latest/bin/uninstall
 
 If you installed the Appweb Windows Installer image, follow these steps to remove Appweb. If you installed the Tar
-self-install image, you will need to remove Appweb using the procedure described above. 
+self-install image, you will need to remove Appweb using the procedure described above.
 
    1. Login with administrator privileges
 
@@ -126,7 +126,7 @@ or get the command help via:
 
     appweb --help
 
-Appweb is configured by default to listen on port 80. To test that it is serving pages, point your browser at http://localhost/. 
+Appweb is configured by default to listen on port 80. To test that it is serving pages, point your browser at http://localhost/.
 
 
 Building from the Source Code
@@ -146,6 +146,6 @@ Embedthis is a trademark of Embedthis Software LLC. Embedthis, Appweb and Ejscri
 Embedthis Software, LLC.
 4616 25th Ave NE, #733
 Seattle, WA 98105.
-+1 (425) 329-3490
++1 (408) 905-7017
 embedthis.com
 info@embedthis.com
