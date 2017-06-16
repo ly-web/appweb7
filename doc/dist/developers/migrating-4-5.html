@@ -20,7 +20,7 @@
 
 </head>
 <body class="show-sidebar">
-        <div class="sidebar">
+    <div class="sidebar">
         <div class="ui large left vertical inverted labeled menu">
             <div class="item">
                 <a href="../" class="logo">Appweb Docs</a>
@@ -29,7 +29,7 @@
                 <div class="menu">
                     <a class="header item" href="../">Home</a>
                     <a class="item" href="../users/features.html">Appweb Features</a>
-                    <a class="item" href="https://embedthis.com/appweb/download.html">Download</a> 
+                    <a class="item" href="https://embedthis.com/appweb/download.html">Download</a>
                     <a class="item" href="../licensing/">Licensing</a>
                 </div>
             </div>
@@ -77,7 +77,7 @@
                     <a class="item" href="../developers/action.html">Using the Action Handler</a>
                     <a class="item" href="../developers/stages.html">Creating Pipeline Stages</a>
                     <a class="item" href="../developers/rom.html">Serving Pages from ROM</a>
-                    <a class="item" href="../developers/migrating.html">Migrating to Appweb 5</a>
+                    <a class="item" href="../developers/migrating.html">Upgrading Earlier Releases</a>
                 </div>
             </div>
             <div class="item">
@@ -122,7 +122,7 @@
             <div class="item">
                 <div class="menu">
                     <a class="header item" href="../developers/project.html">Project Resources</a>
-                    <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
+                    <a class="item" href="https://embedthis.com/blog/categories/Appweb">Appweb News</a>
                     <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
                     <a class="item" href="https://github.com/embedthis/appweb">Source Code Repository</a>
                     <a class="item" href="https://github.com/embedthis/appweb/issues/389">Appweb Security Alerts</a>
@@ -137,7 +137,7 @@
                     <span class="header item">Links</span>
                     <a class="item" href="https://embedthis.com/">Embedthis Web Site</a>
                     <a class="item" href="https://embedthis.com/blog/">Embedthis Blog</a>
-                    <a class="item" href="http://twitter.com/mobstream">Twitter</a>
+                    <a class="item" href="http://twitter.com/embedthat">Twitter</a>
                 </div>
             </div>
         </div>
@@ -146,22 +146,19 @@
 
 
 
-
     <div class="ui inverted masthead">
-         
         <div class="ui fixed inverted menu">
             <div class="ui sidebar-launch button">
                 <i class="icon list layout"></i>
             </div>
             <div class="right menu">
-                  
-                    <a class="item" href="https://embedthis.com/">Embedthis</a>
+                <a class="item" href="https://embedthis.com/">Embedthis</a>
                     <a class="item" href="https://embedthis.com/appweb/">Appweb Site</a>
                     <span class="desktop-only">
-                        <a class="item" href="http://goo.gl/dGRDl4">Appweb News</a>
+                        <a class="item" href="https://embedthis.com/blog/categories/Appweb">Appweb News</a>
                         <a class="item" href="https://github.com/embedthis/appweb">Repository</a>
                         <a class="item" href="https://embedthis.com/blog/">Blog</a>
-                        <a class="item" href="https://twitter.com/mobstream">Twitter</a>
+                        <a class="item" href="https://twitter.com/embedthat">Twitter</a>
                     </span>
 
             </div>
@@ -186,19 +183,20 @@
     </div>
     <div class="content">
 
-            <h1>Migrating to Appweb 5</h1>
-            <p>Appweb 4 and 5 are substantially compatible. Code written for Appweb 4 should migrate to Appweb 5 with 
-            a few changes. Appweb 5 uses newer versions of the MakeMe (formerly Bit) and Pak tools. 
-            This necessitates some changes to the build files.</p>
+            <h1>Migrating to Appweb Latest</h1>
+            <p>This document provides some guidance when upgrading to the latest Appweb release.</p>
 
-            <p>If you are migrating from Appweb 2 or 3, you should regard Appweb 5.X as a next generation web 
-            server. You can migrate code from Appweb 2 or 3 to Appweb 5, however, you should anticipate 
-            significant refactoring work in the transition.</p>
+            <h2>Appweb 1-3</h2>
+            <p>If you are migrating from Appweb 1, 2 or 3, you should regard the latest Appweb as a next generation web server. You can migrate code from Appweb 1, 2 or 3 to Appweb latest, however, you should anticipate significant refactoring work in the transition.</p>
+
+            <h2>Appweb 4-7</h2>
+            <p>Appweb 4 to latest are substantially compatible. Code written for Appweb 4 should migrate to Appweb latest with a few changes. Appweb 5 uses newer versions of the MakeMe and Pak tools.
+            This necessitates some changes to the build files.</p>
 
             <a id="changes"></a>
             <h2>Changes in Appweb 5</h2>
-            <p>Appweb 5 APIs are substantially compatible with Appweb 4, though previously deprecated APIs have been 
-                removed.</p>
+            <p>Appweb latest APIs are substantially compatible with Appweb 4-6, though previously deprecated APIs have been removed.</p>
+
             <h3>New Capabilities</h3>
             <ul>
                 <li>ESP is now a stand-alone product and can be run separately</li>
@@ -206,17 +204,14 @@
                 <li>Appweb and ESP are now more modular and heavily use the Pak tool to install and manage
                     extension components from the <a href="https://embedthis.com/catalog/">Online Pak Catalog</a>.
             </ul>
-            <p>Appweb 4.6+ and Appweb 5 use the MakeMe build system.
-                New configure options and cross compiling capabilities have been added. See more details below
-                in  <a href="#makeme">MakeMe Changes</a>.</p>
+
+            <p>Appweb 4.6+ use the MakeMe build system. New configure options and cross compiling capabilities have been added. See more details below in <a href="#makeme">MakeMe Changes</a>.</p>
 
             <h2>Changes in Appweb 4</h2>
-            <p>Appweb 4 provides equivalent or greater functionality to that in Appweb 3. 
-            While Appweb 4 may have a different interface or API, the capabilities of Appweb 3 have been continued 
-            in Appweb 4, and in many cases, the features have been enhanced.</p>
+            <p>Appweb 4 provides equivalent or greater functionality to that in Appweb 3. While Appweb 4 may have a different interface or API, the capabilities of Appweb 3 have been continued in Appweb 4, and in many cases, the features have been enhanced.</p>
+
             <h3>New Capabilities</h3>
-            <p>The following new capabilities have been added to Appweb 4 (and have no equivalent in Appweb 3).
-            These additions should not require adjustment for applications developed under Appweb 3.</p>
+            <p>The following new capabilities have been added to Appweb 4 (and have no equivalent in Appweb 3). These additions should not require adjustment for applications developed under Appweb 3.</p>
             <ul>
                 <li>Multi-Language support</li>
                 <li>Embedded Server Pages (ESP) web framework</li>
@@ -243,55 +238,40 @@
             <h3>MakeMe Changes</h3>
             <p>When migrating from an Appweb version that used Bit for building, please not the following changes:</p>
             <ul>
-            <li>All MakeMe files have a "<em>.me</em>" extension instead of "<em>.bit</em>".</li>
-            <li>The generated header is now named "<em>me.h</em>" instead of "<em>bit.h</em>".</li>
-            <li>The <em>me.h</em> header definitions use a <em>ME_</em> prefix instead of "<em>BIT_</em>".</li>
-            <li>The OS header is now named <em>osdep.h</em> instead of "<em>bitos.h</em>".</li>
+                <li>All MakeMe files have a "<em>.me</em>" extension instead of "<em>.bit</em>".</li>
+                <li>The generated header is now named "<em>me.h</em>" instead of "<em>bit.h</em>".</li>
+                <li>The <em>me.h</em> header definitions use a <em>ME_</em> prefix instead of "<em>BIT_</em>".</li>
+                <li>The OS header is now named <em>osdep.h</em> instead of "<em>bitos.h</em>".</li>
             </ul>
             <h3>Removed Capabilities</h3>
             <ul>
-                <li>The EGI handler has been removed and deprecated in favor of the ESP handler which has equivalent and
-                    extended functionality.</li>
+                <li>The EGI handler has been removed and deprecated in favor of the ESP handler which has equivalent and extended functionality.</li>
             </ul>
+
             <h3>Changed APIs</h3>
-            <p>Many of the internal APIs in Appweb 4 have been changed. This is due to the utilization of a common Http
-            library between Appweb and ESP.  Appweb 3 APIs have been renamed/converted on a function by function
-            basis to equivalent APIs in Appweb 4. The APIs have very similar names to the previous counterpart.</p>
+            <p>Many of the internal APIs in Appweb 4 have been changed. This is due to the utilization of a common Http library between Appweb and ESP.  Appweb 3 APIs have been renamed/converted on a function by function basis to equivalent APIs in Appweb 4. The APIs have very similar names to the previous counterpart.</p>
+
             <h3>Memory Allocator</h3>
-            <p>Appweb 4 includes a high performance memory allocator and generational garbage collector. The allocator 
-            is a fast and immediate coalescing allocator. It is optimized for frequent allocations of small blocks and 
-            uses a background collector to free unused memory.</p>
-            <p>The garbage collector is somewhat unusual in a C program. However, garbage collection 
-            is especially well suited to long running applications like a web server since it virtually eliminates
-            memory leaks. Unlike traditional memory allocation where <em>free</em> must be called, Appweb 4 uses the
-            opposite approach: memory that must be retained needs to be actively managed to prevent garbage 
-            collection. This means that a <em>managed reference</em> must be held for all active memory.
-            See <a href="../ref/memory.html">Memory Allocation</a> for more details.</p>
+            <p>Appweb 4 includes a high performance memory allocator and generational garbage collector. The allocator is a fast and immediate coalescing allocator. It is optimized for frequent allocations of small blocks and uses a background collector to free unused memory.</p>
+
+            <p>The garbage collector is somewhat unusual in a C program. However, garbage collection is especially well suited to long running applications like a web server since it virtually eliminates memory leaks. Unlike traditional memory allocation where <em>free</em> must be called, Appweb 4 uses the opposite approach: memory that must be retained needs to be actively managed to prevent garbage collection. This means that a <em>managed reference</em> must be held for all active memory. See <a href="../ref/memory.html">Memory Allocation</a> for more details.</p>
 
             <a id="config"></a>
             <h2>Migrating Appweb Configuration Files</h2>
-            <p>The Appweb 4 configuration file is substantially the same as the Appweb 3. 'Include' directives can now
-            contain wild cards and there are several new directives supporting Routing, Multi-language support and the
-            Embedded Server Pages web framework. The big change is that Route directives replace the Directory and Location
-            directives. </p>
+            <p>The Appweb 4 configuration file is substantially the same as the Appweb 3. 'Include' directives can now contain wild cards and there are several new directives supporting Routing, Multi-language support and the Embedded Server Pages web framework. The big change is that Route directives replace the Directory and Location directives. </p>
+
             <h3>Routes vs Directory/Location Directives</h3>
-            <p>Appweb 4 uses a more flexible Route directive instead of the Appweb 2/3 Directory and Location directives.
-            The Route directive has more flexibility and allows powerful regular expression URI parsing and routing. In
-            nearly all cases, Location and Directory directives should easily migrate to Route directives.
-            <p>See <a href="../users/configuration.html">Configuring Appweb</a> and <a href=
+            <p>Appweb 4 uses a more flexible Route directive instead of the Appweb 2/3 Directory and Location directives. The Route directive has more flexibility and allows powerful regular expression URI parsing and routing. In nearly all cases, Location and Directory directives should easily migrate to Route directives. <p>See <a href="../users/configuration.html">Configuring Appweb</a> and <a href=
             "../users/configuration.html#directives">Configuration Directives</a> for more details.</p>
+
             <a id="modules"></a>
             <h2>Migrating Modules and Handlers</h2>
-            <p>Appweb 4 modules use modified API signatures to initialize with Appweb.
-            In Appweb 4, the MPR module is pre-created and passed into the module.
-            See the <a href="modules.html">Creating Modules</a> document for more details. </p>
-            <p>In many cases, the new Embedded Server Pages (ESP) web framework provides a simpler and more flexible
-            way to add functionality to Appweb compared with custom handlers and modules. ESP allows the easy binding
-            of "C" language functions to request URIs via powerful Controllers and the Appweb routing engine.</p>
-            
+            <p>Appweb 4 modules use modified API signatures to initialize with Appweb. In Appweb 4, the MPR module is pre-created and passed into the module. See the <a href="modules.html">Creating Modules</a> document for more details. </p>
+
+            <p>In many cases, the new Embedded Server Pages (ESP) web framework provides a simpler and more flexible way to add functionality to Appweb compared with custom handlers and modules. ESP allows the easy binding of "C" language functions to request URIs via powerful Controllers and the Appweb routing engine.</p>
+
             <h2>Embedded Server Pages</h2>
-            <p>ESP is the single biggest change in Appweb 4. ESP is a powerful Model/View/Controller web framework
-            that offers:
+            <p>ESP is the single biggest change in Appweb 4. ESP is a powerful Model/View/Controller web framework that offers:</p>
             <ul>
                 <li>Transparent compilation of ESP programs and web pages</li>
                 <li>Embedded C code directly in web pages</li>
@@ -306,12 +286,11 @@
 
             <a id="cgi"></a>
             <h2>Migrating CGI Programs</h2>
-            <p>CGI programs should migrate unchanged. The CGI handler in Appweb 4 offers much higher performance by
-            using pipes for I/O instead of files.</p>
+            <p>CGI programs should migrate unchanged. The CGI handler in Appweb 4 offers much higher performance by using pipes for I/O instead of files.</p>
 
     </div>
     <div class="terms ui basic center aligned segment">
-        <p>&copy; Embedthis Software, 2003-2015. All rights reserved.</p>
+        <p>&copy; Embedthis Software. All rights reserved.</p>
     </div>
 
     <script src="../lib/jquery/jquery.min.js"></script>
@@ -319,7 +298,7 @@
     <script src="../scripts/sidebar.min.js"></script>
      
 
-        
+    
 
 </body>
 </html>
