@@ -12,7 +12,7 @@
     "author": {
         "name": "Embedthis Software",
         "email": "dev@embedthis.com",
-        "url": "http://embedthis.com"
+        "url": "https://embedthis.com"
     },
     "repository": {
         "type": "git",
@@ -29,13 +29,13 @@
         },
         {
             "type": "Commercial",
-            "url": "http://embedthis.com/licensing/"
+            "url": "https://embedthis.com/licensing/"
         }
     ],
     "dependencies": {
-        "http": "~6.2",
+        "http": "~7",
         "makerom": "~0.3",
-        "mpr": "~6.2",
+        "mpr": "~7",
         "osdep": "~0.9",
         "pcre": "~1.0",
         "ssl": "~0.9",

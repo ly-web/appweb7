@@ -1188,7 +1188,7 @@ DEPS_63 += compile
 run: $(DEPS_63)
 	( \
 	cd src/server; \
-	../../$(BUILD)/bin/appweb --log stdout:2 ; \
+	appweb --log stdout:2 ; \
 	)
 
 #

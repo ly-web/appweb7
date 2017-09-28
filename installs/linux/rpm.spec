@@ -6,7 +6,7 @@ Name: ${settings.name}
 Version: ${settings.version}
 License: Dual GPL/commercial
 Group: Applications/Internet
-URL: http://embedthis.com/appweb/
+URL: https://embedthis.com/
 Distribution: Embedthis
 Vendor: Embedthis Software
 BuildRoot: ${prefixes.rpm}/BUILDROOT/${settings.name}-${settings.version}.${platform.mappedCpu}
@@ -32,7 +32,7 @@ Embedthis Appweb is the fast, little web server.
 
 %post
 set -x
-if [ -x /usr/bin/chcon ] ; then 
+if [ -x /usr/bin/chcon ] ; then
 	sestatus | grep enabled >/dev/null 2>&1
 	if [ $? = 0 ] ; then
 		for f in ${prefixes.vapp}/bin/*.so ; do

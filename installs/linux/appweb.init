@@ -51,7 +51,7 @@ start() {
     local RETVAL=0
     echo -n "Starting ${APPWEB_NAME}: "
     if type daemon >/dev/null 2>&1 ; then
-        eval daemon --pidfile=${PIDFILE} ${MANAGER_CMD} ${MANAGER_SWITCHES} 
+        eval daemon --pidfile=${PIDFILE} ${MANAGER_CMD} ${MANAGER_SWITCHES}
         RETVAL=$?
         [ ${RETVAL} = 0 ] && touch $LOCKFILE
     elif type start-stop-daemon >/dev/null 2>&1 ; then
@@ -73,7 +73,7 @@ stop() {
         echo -n "Stopping ${APPWEB_NAME}: "
         if [ -f /etc/SuSE-release ] ; then
             start-stop-daemon --stop --pidfile ${PIDFILE} --quiet --oknodo --exec "${MANAGER_CMD}"
-        else 
+        else
             start-stop-daemon --stop --retry=2 --pidfile ${PIDFILE} --quiet --oknodo --exec "${MANAGER_CMD}"
         fi
         RETVAL=$?
@@ -126,20 +126,20 @@ exit $?
 ################################################################################
 #
 #   Copyright (c) Embedthis Software. All Rights Reserved.
-#   The latest version of this code is available at http://embedthis.com
+#   The latest version of this code is available at https://embedthis.com
 #
-#   This software is open source; you can redistribute it and/or modify it 
-#   under the terms of the GNU General Public License as published by the 
-#   Free Software Foundation; either version 2 of the License, or (at your 
+#   This software is open source; you can redistribute it and/or modify it
+#   under the terms of the GNU General Public License as published by the
+#   Free Software Foundation; either version 2 of the License, or (at your
 #   option) any later version.
 #
-#   This program is distributed WITHOUT ANY WARRANTY; without even the 
-#   implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+#   This program is distributed WITHOUT ANY WARRANTY; without even the
+#   implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #   See the GNU General Public License for more details at:
-#   http://embedthis.com/downloads/gplLicense.html
-#   
-#   This General Public License does NOT permit incorporating this software 
-#   into proprietary programs. If you are unable to comply with the GPL, a 
+#   https://embedthis.com/downloads/gplLicense.html
+#
+#   This General Public License does NOT permit incorporating this software
+#   into proprietary programs. If you are unable to comply with the GPL, a
 #   commercial license for this software and support services are available
-#   from Embedthis Software at http://embedthis.com
+#   from Embedthis Software at https://embedthis.com
 #

@@ -1012,7 +1012,7 @@ DEPS_61 += compile
 run: $(DEPS_61)
 	( \
 	cd src/server; \
-	../../$(BUILD)/bin/appweb --log stdout:2 ; \
+	appweb --log stdout:2 ; \
 	)
 
 #
