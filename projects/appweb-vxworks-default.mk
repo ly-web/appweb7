@@ -3,7 +3,7 @@
 #
 
 NAME                  := appweb
-VERSION               := 6.2.4
+VERSION               := 7.0.1
 PROFILE               ?= default
 ARCH                  ?= $(shell echo $(WIND_HOST_TYPE) | sed 's/-.*$(ME_ROOT_PREFIX)/')
 CPU                   ?= $(subst X86,PENTIUM,$(shell echo $(ARCH) | tr a-z A-Z))
@@ -842,7 +842,7 @@ DEPS_61 += compile
 run: $(DEPS_61)
 	( \
 	cd src/server; \
-	../../$(BUILD)/bin/appweb --log stdout:2 ; \
+	appweb --log stdout:2 ; \
 	)
 
 #

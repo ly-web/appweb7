@@ -111,7 +111,7 @@ begin
     if CurStep = ssPostInstall then
     begin
       if IsTaskSelected('addpath') then begin
-        bin := ExpandConstant('{app}\bin');      
+        bin := ExpandConstant('{app}\bin');
         AddPath('Path', bin);
       end;
     end;
@@ -123,11 +123,11 @@ var
 	bin:			String;
 begin
 	if CurUninstallStep = usUninstall then begin
-	    bin := ExpandConstant('{app}\bin');			
+	    bin := ExpandConstant('{app}\bin');
 		AddPath('Path', bin);
 	end;
 	if CurUninstallStep = usDone then begin
-	    app := ExpandConstant('{app}');			
+	    app := ExpandConstant('{app}');
         RemoveDir(app);
     end;
 end;
@@ -222,7 +222,7 @@ Filename: "{app}/bin/appman.exe"; Parameters: "start"; WorkingDir: "{app}"; Stat
 
 Filename: "{app}/bin/${settings.name}Monitor.exe"; Parameters: ""; WorkingDir: "{app}/bin"; StatusMsg: "Starting the Appweb Monitor"; Flags: waituntilidle;
 
-Filename: "http://embedthis.com/appweb/doc/index.html"; Description: "View the Documentation"; Flags: skipifsilent waituntilidle shellexec postinstall;
+Filename: "https://embedthis.com/appweb/doc/index.html"; Description: "View the Documentation"; Flags: skipifsilent waituntilidle shellexec postinstall;
 
 [UninstallRun]
 Filename: "{app}/bin/${settings.name}Monitor.exe"; Parameters: "--stop"; WorkingDir: "{app}"; StatusMsg: "Stopping the Appweb Monitor"; Flags: waituntilterminated;

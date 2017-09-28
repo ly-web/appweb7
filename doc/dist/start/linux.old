@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Installing on Mac</title>
+    <title>Installing on Linux</title>
     <!-- Copyright Embedthis Software. All Rights Reserved. -->
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <meta name="description" content="Installing on Mac" />
+    <meta name="description" content="Installing on Linux" />
     <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Open+Sans:300italic,400,300,700'
         rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Julius+Sans+One' rel='stylesheet' type='text/css'>
@@ -29,7 +29,7 @@
                 <div class="menu">
                     <a class="header item" href="../">Home</a>
                     <a class="item" href="../users/features.html">Appweb Features</a>
-                    <a class="item" href="https://embedthis.com/appweb/download.html">Download</a> 
+                    <a class="item" href="https://embedthis.com/appweb/download.html">Download</a>
                     <a class="item" href="../licensing/">Licensing</a>
                 </div>
             </div>
@@ -77,7 +77,7 @@
                     <a class="item" href="../developers/action.html">Using the Action Handler</a>
                     <a class="item" href="../developers/stages.html">Creating Pipeline Stages</a>
                     <a class="item" href="../developers/rom.html">Serving Pages from ROM</a>
-                    <a class="item" href="../developers/migrating.html">Migrating to Appweb 5</a>
+                    <a class="item" href="../developers/migrating.html">Upgrading Earlier Releases</a>
                 </div>
             </div>
             <div class="item">
@@ -122,7 +122,7 @@
             <div class="item">
                 <div class="menu">
                     <a class="header item" href="../developers/project.html">Project Resources</a>
-                    <a class="item" href="http://goo.gl/dGRDl4">Official Appweb News</a>
+                    <a class="item" href="https://embedthis.com/blog/categories/Appweb">Appweb News</a>
                     <a class="item" href="https://embedthis.com/appweb/">Appweb Web Site</a>
                     <a class="item" href="https://github.com/embedthis/appweb">Source Code Repository</a>
                     <a class="item" href="https://github.com/embedthis/appweb/issues/389">Appweb Security Alerts</a>
@@ -137,12 +137,11 @@
                     <span class="header item">Links</span>
                     <a class="item" href="https://embedthis.com/">Embedthis Web Site</a>
                     <a class="item" href="https://embedthis.com/blog/">Embedthis Blog</a>
-                    <a class="item" href="http://twitter.com/mobstream">Twitter</a>
+                    <a class="item" href="http://twitter.com/embedthat">Twitter</a>
                 </div>
             </div>
         </div>
     </div>
-
 
 
 
@@ -156,10 +155,10 @@
                 <a class="item" href="https://embedthis.com/">Embedthis</a>
                     <a class="item" href="https://embedthis.com/appweb/">Appweb Site</a>
                     <span class="desktop-only">
-                        <a class="item" href="http://goo.gl/dGRDl4">Appweb News</a>
+                        <a class="item" href="https://embedthis.com/blog/categories/Appweb">Appweb News</a>
                         <a class="item" href="https://github.com/embedthis/appweb">Repository</a>
                         <a class="item" href="https://embedthis.com/blog/">Blog</a>
-                        <a class="item" href="https://twitter.com/mobstream">Twitter</a>
+                        <a class="item" href="https://twitter.com/embedthat">Twitter</a>
                     </span>
 
             </div>
@@ -180,7 +179,7 @@
             
             
             <div class="divider">/</div>
-            <a class="active section" href="mac.html">Installing on Mac</a>
+            <a class="active section" href="linux.old">Installing on Linux</a>
             
         </div>
         
@@ -189,38 +188,77 @@
     </div>
     <div class="content">
 
-            <h1>Installing on MAC OS X</h1>
-            <p>The Embedthis Appweb install distribution for Mac OS X is published as a an installable pkg file.</p>
-            
-            <a id="pkg"></a>
-            <h2>Installing the PKG Image</h2>
+            <h1>Installing on Linux</h1>
+            <p>Running Appweb on Linux is supported by building from source code. </p>
+            <p>Please see instructions at <a href="source.html">Building from Source</a>.</p>
+
+<!-- KEEP
+            <p>The Appweb install distribution for LINUX is published in three formats:</p>
+            <ul>
+                <li>Native RPM format for RPM based systems such as Fedora</li>
+                <li>Native Debian format for Debian based systems such as Ubuntu</li>
+                <li>Tar format for custom/self installs</li>
+            </ul>
+            <p>It is recommended that you use either the native formats (if your system supports it) as these will
+            register the software installation with the system's software manager. The self-install format consists of
+            tar archives that you can manually extract for maximum control over the placement of the product files.</p>
+            <p>All formats contain a binary distribution, documentation and development headers and libraries in the
+            one package. During installation you will have the option of installing the full distribution or just
+            portions.</p><a id="native"></a>
+            <h2>Installing the RPM or Debian Images</h2>
             <ol>
-                <li>Double click on the PKG image.</li>
-            </ol>
-            
-            <a id="removing"></a>
+                <li>Uncompress and extract the image:
+                    <pre>
+tar xvfz appweb-VERSION-DIST-LINUX-CPU.FMT.tgz
+</pre>
+                    <p>Where VERSION is the current version (e.g. 1.2.3-1), and DIST is the name of the Linux
+                    distribution (e.g. fedora), and FMT is either <b>rpm</b> or <b>deb</b>.</p>
+                </li>
+                <li>Then start the installation with administrator privilege:
+                    <pre>
+sudo ./install
+</pre>
+                </li>
+            </ol><a id="self"></a>
+            <h2>Installing the Self-Install Image</h2>
+            <ol>
+                <li>Uncompress and extract the image:
+                    <pre>
+tar xvfz appweb-VERSION-DIST-LINUX-CPU.tgz
+</pre>
+                </li>
+                <li>Then start the installation with administrator privilege:
+                    <pre>
+sudo ./install
+</pre>
+                </li>
+            </ol><a id="removing"></a>
             <h2>Removing Appweb</h2>
             <ol>
-                <li>Run a terminal and change directory to the installation directory for Appweb. </li>
-                <li>Run the remove script in the install directory for Appweb by typing:</li>
-            </ol>
-            <pre class="ui code segment">
+                <li>Change directory to the installation directory for Appweb. This is usually
+                <b>/usr/lib/appweb</b></li>
+                <li>Run the uninstall script in the install directory for appweb:
+                    <pre>
 sudo ./uninstall
 </pre>
+                </li>
+            </ol>
+-->
             
             <a id="running"></a>
             <h2>Running Appweb</h2>
-            <p>Appweb will start when the installation procedure completes.
-            Thereafter, Appweb will automatically start when the system is rebooted.</p>
-            <p>If you wish to manually stop Appweb type:</p>
+            <p>Appweb will start when the Appweb installation procedure completes and on some systems, will launch your
+            browser directed at the Appweb local home page.Thereafter, Appweb will automatically start if the system is
+            rebooted.</p>
+            <p>If you wish to manually stop Appweb, type:</p>
             <pre class="ui code segment">
-sudo appman stop
+appman start
 </pre>
             <p>To restart Appweb:</p>
             <pre class="ui code segment">
-sudo appman start
+appman stop
 </pre>
-            <p>Alternatively, you can run appweb manually (if not already running):</p>
+            <p>Alternatively, you can run appweb manually:</p>
             <pre class="ui code segment">
 cd /etc/appweb
 appweb
@@ -228,7 +266,7 @@ appweb
             <p>Appweb is configured by default to listen on port 80. To test that it is serving pages, point your
             browser at http://localhost. To tailor the Embedthis Appweb configuration, including the default port,
             you may wish to edit the appweb.conf configuration file.</p>
-            <p>To get all the options for Appweb read the man page via:</p>
+            <p>To get all the options for Appweb, read the man page via:</p>
             <pre class="ui code segment">
 man appweb
 </pre>or get the command help via:
@@ -238,7 +276,7 @@ appweb --help
 
     </div>
     <div class="terms ui basic center aligned segment">
-        <p>&copy; Embedthis Software, 2003-2015. All rights reserved.</p>
+        <p>&copy; Embedthis Software. All rights reserved.</p>
     </div>
 
     <script src="../lib/jquery/jquery.min.js"></script>

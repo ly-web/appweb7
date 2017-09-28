@@ -7,7 +7,7 @@
             <h1>Security Considerations</h1>
             <p>Securing applications that are accessible to the Internet is not a trivial task. This page outlines some
             of the issues, and offers best-practices and tips to help you secure your application using Embedthis Appweb.</p>
-            
+
             <h2>Contents</h2>
             <ul>
                 <li><a href="#updates">Updating Appweb</a></li>
@@ -22,16 +22,16 @@
                 <li><a href="#threats">Common Security Threats</a></li>
                 <li><a href="#frameworks">Frameworks</a></li>
             </ul>
-            
+
             <a id="updates"></a>
             <h2>Updates</h2>
             <p>Even the best application or HTTP server can experience some security vulnerabilities that are
             discovered after being deployed in the field. It is highly recommended that you stay up to date with the
             latest version of Appweb.</p>
-            <p><a href="http://www.embedthis.com/">Embedthis</a> provides security protection 
+            <p><a href="https://embedthis.com/">Embedthis</a> provides security protection
             as part of the Appweb commercial license that will proactively notify you of any security flaws
             and will expedite fixes or workarounds to minimize any vulnerabilities.</p>
-            
+
             <a id="sandBoxing"></a>
             <h2>Sandboxing</h2>
             <p>Sandboxing is the term applied to running Appweb in a confined environment. When embedding a HTTP server,
@@ -43,7 +43,7 @@
             ensure that your application will not be compromised by malicious requests. You should customize the
             sandbox limits to use minimum values and thus provide the most protection.</p>
             <h3>Security Limit Directives</h3>
-            <p>The Appweb security limits can be used to effectively block some denial of service attacks. 
+            <p>The Appweb security limits can be used to effectively block some denial of service attacks.
             Limits should be set as low as possible while still permitting all valid requests and workloads.</p>
             <p>Setting the LimitRequestsPerClient to a low value can restrict the ability of a malicious client to monopolize
             the server. One attack method for denial of service attacks is to initiate requests, but not conclude the
@@ -75,7 +75,7 @@
                     </tr>
                     <tr>
                         <td class="pivot">RequestParseTimeout</td>
-                        <td>Maximum duration to parse the request headers. This should be set very short. 
+                        <td>Maximum duration to parse the request headers. This should be set very short.
                             Typically a browser will send all the request headers in one network packet. Recommended
                             value is 5 secs.</td>
                     </tr>
@@ -154,7 +154,7 @@
                     <tr>
                         <td class="pivot">LimitWorkers</td>
                         <td>Maximum number of worker threads to service requests. A single worker may service many requests
-                            as Appweb will typically not block when serving a request. Workers are assigned to service network 
+                            as Appweb will typically not block when serving a request. Workers are assigned to service network
                             events and are then returned to a worker pool to service the next event.</td>
                     </tr>
                 </tbody>
@@ -186,7 +186,7 @@
             </ul>
             <a id="directoryPermissions"></a>
             <h2>Directory and File Permissions</h2>
-            <p>When Appweb is installed, it is configured for maximum security. This section explains the policy 
+            <p>When Appweb is installed, it is configured for maximum security. This section explains the policy
             should you need to move or modify files and directories.</p>
             <p>To enhance security you need to consider the directory and file permissions for three classes of
             content:</p>
@@ -217,9 +217,9 @@ chmod 755  . lib logs
 </pre>
             <a id="chroot"></a>
             <h2>Chroot Jail</h2>
-            <p>One of the best forms of isolation for the server is to run inside a 
+            <p>One of the best forms of isolation for the server is to run inside a
             <a href="http://en.wikipedia.org/wiki/Chroot">chroot</a> jail. A chroot jail is when an application changes
-            its root directory to be isolated from the real file system root directory. Any access then to files outside the jail is protected and impossible. Appweb supports chroot jails via the 
+            its root directory to be isolated from the real file system root directory. Any access then to files outside the jail is protected and impossible. Appweb supports chroot jails via the
             <a href="dir/server.html#chroot">chroot</a> directive and via the appweb --chroot command line option.</p>
             <p>See also the <a href="https://github.com/embedthis/appweb/tree/dev/samples/chroot-server"
                 >Chroot Sample</a> for a working example.</p>
@@ -227,7 +227,7 @@ chmod 755  . lib logs
             <h2>Securing SSL</h2>
             <p>If you configure a SSL virtual server, remember to define a separate Documents directory if you want to only serve private content to SSL users. Otherwise those pages will also be visible via the default server.</p>
             <h3>Cipher Selection</h3>
-            <p>It is important to select a sufficiently long key length and strong cipher to protect SSL communications. It is recommended to use the AES cipher and avoid the older RC4 cipher suite. See the section below regarding 
+            <p>It is important to select a sufficiently long key length and strong cipher to protect SSL communications. It is recommended to use the AES cipher and avoid the older RC4 cipher suite. See the section below regarding
             <a href="#threats">Common Security Threats</a> for threats against the RC4 ciphers. </p>
             <h3>SSL Forms</h3>
             <p>A common practice is to use HTTP for regular communications and to post login forms using SSL. However, this approach is flawed. The web form itself must be served using SSL as well as the URL receiving the login information. This prevents attackers injecting code into the form and hijacking login credentials.</p>
@@ -240,7 +240,7 @@ chmod 755  . lib logs
             <h2>Authentication</h2>
             <p>It is important to adequately secure all passwords stored at the server. Simply hashing the passwords with MD5 is now insufficient as MD5 and other "fast" hashing techniques can be quickly compromised by dedicated password cracking and hashing tools.</p>
             <p>Appweb includes the blowfish cipher as an alternative that is more secure than MD5. The <a href="http://en.wikipedia.org/wiki/Blowfish_(cipher)">Blowfish</a> cipher is especially well suited for password hashing partly. Partly because it is slow, it does not easily succumb to brute-force cracking. </p>
-            <p>If you wish to use the Digest authentication scheme, unfortunately you cannot use blowfish as the browser uses MD5 to encrypt the password before transmitting over the wire. This and other shortcomings of Digest authentication should encourage you to select other schemes. A better alternative is Basic authentication over SSL using blowfish to encrypt the passwords. Alternatively, use web form authentication with blowfish for password storage.</p> 
+            <p>If you wish to use the Digest authentication scheme, unfortunately you cannot use blowfish as the browser uses MD5 to encrypt the password before transmitting over the wire. This and other shortcomings of Digest authentication should encourage you to select other schemes. A better alternative is Basic authentication over SSL using blowfish to encrypt the passwords. Alternatively, use web form authentication with blowfish for password storage.</p>
             <p>If using a web page for users to submit their credentials, it is strongly recommended that you use SSL for both the web form page and for the request validating the user credentials.</p>
             <a id="logFiles"></a>
             <h2>Log Files</h2>
@@ -278,11 +278,11 @@ Accept-Ranges: bytes
             a little harder to know what kind of web server is responding to their requests &mdash; they may move onto
             another target.</p>
             <h3>Session Hijacking</h3>
-            <p>Cookies are used to identify authenticated user sessions. As such, they are a prized piece of information 
+            <p>Cookies are used to identify authenticated user sessions. As such, they are a prized piece of information
             by attackers. The HTTP Set-Cookie response header has an option to prevent client side scripts from ascertaining
             the session cookie value. This can greatly reduce the risk of session hijacking via cross-site scripting.</p>
             <pre class="ui code segment">SessionCookie invisible</pre>
-            <p>This directive Appweb to append the "httpOnly" value to the Set-Cookie response so the cookie will only be 
+            <p>This directive Appweb to append the "httpOnly" value to the Set-Cookie response so the cookie will only be
             accessible to HTTP requests.</p>
             <pre class="ui code segment">Set-Cookie: key=value; httpOnly</pre>
             <a name="mixed"></a>
@@ -312,12 +312,12 @@ Accept-Ranges: bytes
             <h3>Cross Site Sharing</h3>
             <p>Cross origin sharing is often required when using XMLHttp (Ajax) requests to communicate with another server.
             <a href="http://en.wikipedia.org/wiki/Cross-origin_resource_sharing">Cross Origin Resource Sharing (CORS)</a> is
-            a mechanism that allows scripts to make XMLHttp requests to another domain different from that which served the 
+            a mechanism that allows scripts to make XMLHttp requests to another domain different from that which served the
             web page. This relaxes the same-origin policy of the browser, but in a controlled manner.</p>
             <p>The Appweb <a href="dir/route.html#crossOrigin">CrossOrigin</a> directive defines:</p>
             <pre class="ui code segment">CrossOrigin origin=http://www.google.com credentials=yes age=3000</pre>
             <h3>Hidden Frames</h3>
-            <p>Hidden frames may be inserted by attackers to provide a launch-pad for running malicious scripts. Denying 
+            <p>Hidden frames may be inserted by attackers to provide a launch-pad for running malicious scripts. Denying
             the ability to run frames can close of this attack vector.</p>
             <p>The following Appweb directive will prevent frames or iframes from running in the web page.</p>
             <pre class="ui code segment">Header set X-Frame-Options deny</pre>
@@ -334,8 +334,8 @@ Accept-Ranges: bytes
                <li>Encrypted communications SSL/TLS</li>
                <li>TLS level compression</li>
             </ul>
-            <p>By default, Appweb does not use TLS with TLS compression and is thus not vulnerable to this exploit. 
-            If you are using OpenSSL, the OpenSSL SSL_COMP_add_compression_method will enable TLS compression, so it 
+            <p>By default, Appweb does not use TLS with TLS compression and is thus not vulnerable to this exploit.
+            If you are using OpenSSL, the OpenSSL SSL_COMP_add_compression_method will enable TLS compression, so it
             is important not to use this OpenSSL API.</p>
 
             <h3>Breach Exploit</h3>
@@ -384,12 +384,12 @@ Accept-Ranges: bytes
             </ul>
             <a name="cve"></a>
             <h2>Documented Vulnerabilities</h2>
-            <p>Appweb documents discovered security errors in its GitHub issue database 
+            <p>Appweb documents discovered security errors in its GitHub issue database
             at </p>
             <pre class="ui code segment"><a href="https://github.com/embedthis/appweb/issues?state=open"
             >https://github.com/embedthis/appweb/issues?state=open</a></pre>
-            <p>Specific issue reports are created for all confirmed or erroneous 
-            security reports that receive a CVE classification. You can search for specific 
+            <p>Specific issue reports are created for all confirmed or erroneous
+            security reports that receive a CVE classification. You can search for specific
             CVE numbers or see all via:</p>
             <pre class="ui code segment"><a
 href="https://github.com/embedthis/appweb/search?q=CVE-&amp;type=Issues">https://github.com/embedthis/appweb/search?q=CVE-&amp;type=Issues</a></pre>
@@ -399,8 +399,6 @@ href="https://github.com/embedthis/appweb/search?q=CVE-&amp;type=Issues">https:/
             <ul>
                 <li><a href="http://www.isg.rhul.ac.uk/tls/TLStiming.pdf"
                     >http://www.isg.rhul.ac.uk/tls/TLStiming.pdf</a></li>
-                <li><a href="http://blog.cryptographyengineering.com/search?q=bram+cohen"
-                    >http://blog.cryptographyengineering.com/search?q=bram+cohen</a></li>
                 <li><a href="http://html5sec.org/">http://html5sec.org/</a></li>
                 <li><a href="https://www.owasp.org/index.php/XSS_Filter_Evasion_Cheat_Sheet"
                     >https://www.owasp.org/index.php/XSS_Filter_Evasion_Cheat_Sheet</a></li>
@@ -427,9 +425,9 @@ href="https://github.com/embedthis/appweb/search?q=CVE-&amp;type=Issues">https:/
             exploits.</p>
             <a name="securedefaults"></a>
             <h2>Appweb Secure By Default</h2>
-            <p>Appweb is designed to be secure by default. This means that the default configuration enables 
+            <p>Appweb is designed to be secure by default. This means that the default configuration enables
             security best-practices to limit cross-site-scripting vulnerabilities. It also implies a fairly
-            restrictive security sandbox. This default configuration may be a little too restrictive for your application. 
+            restrictive security sandbox. This default configuration may be a little too restrictive for your application.
             In that case, you can easily remove or override these defaults by the relevant Appweb directives.</p>
             <p>Appweb uses the following built-in configuration for the default route.</p>
             <pre class="ui code segment">

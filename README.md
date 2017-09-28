@@ -3,7 +3,7 @@ Embedthis Appweb
 
 [![Build Status](https://travis-ci.org/embedthis/appweb.png)](https://travis-ci.org/embedthis/appweb)
 
-The fast, little web server for embedded applications. 
+The fast, little web server for embedded applications.
 
 Branches
 ---
@@ -11,7 +11,7 @@ The repository has three branches:
 
 * master - Most recent release of the software.
 * dev - Current ongoing development.
- 
+
 Licensing
 ---
 See [LICENSE.md](LICENSE.md) for details.
@@ -54,7 +54,7 @@ or
 
     sudo make install
 
-or 
+or
 
     sudo me install
 
@@ -62,7 +62,7 @@ or
 
     sudo make uninstall
 
-or 
+or
 
     sudo me uninstall
 
@@ -72,7 +72,6 @@ or
 
 Resources
 ---
-  - [Appweb web site](http://embedthis.com/appweb/)
+  - [Appweb web site](https://embedthis.com/)
   - [Appweb GitHub repository](http://github.com/embedthis/appweb)
   - [Embedthis web site](https://embedthis.com/)
-

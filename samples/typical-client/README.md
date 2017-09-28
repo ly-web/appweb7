@@ -12,15 +12,15 @@ Requirements
 
 To build:
 ---
-    me 
+    me
 
 To run:
 ---
     me run
 
 The client retrieves:
- 
-     http://embedthis.com/index.html
+
+     https://embedthis.com/index.html
 
 Code:
 ---

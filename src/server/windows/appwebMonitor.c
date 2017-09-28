@@ -1,6 +1,6 @@
 /**
     appwebMonitor.c  -- Windows Appweb Monitor program
-  
+
     The Appweb Monitor is a windows monitor program that interacts with the Appweb angel program.
 
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
@@ -135,7 +135,7 @@ APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2)
     }
     if (manage) {
         /*
-            Launch the browser 
+            Launch the browser
          */
         runBrowser("/index.html");
 
@@ -193,7 +193,7 @@ static void stopMonitor()
 
 /*
     Windows message processing loop
- */ 
+ */
 BOOL CALLBACK dialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
     switch(Message) {
@@ -214,7 +214,7 @@ static long msgProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
     case WM_QUIT:
         mprShutdown(0, -1, 0);
         break;
-    
+
     case APPWEB_MONITOR_MESSAGE:
         return monitorEvent(hwnd, wp, lp);
 
@@ -224,7 +224,7 @@ static long msgProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
             break;
 
         case MA_MENU_DOC:
-            runBrowser("http://embedthis.com/appweb/doc/index.html");
+            runBrowser("https://embedthis.com/appweb/doc/index.html");
             break;
 
         case MA_MENU_START:
@@ -262,7 +262,7 @@ static long msgProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 
 
 /*
-    Can be called multiple times 
+    Can be called multiple times
  */
 static int openMonitorIcon()
 {
@@ -342,7 +342,7 @@ static int monitorEvent(HWND hwnd, WPARAM wp, LPARAM lp)
     int             state;
 
     msg = lp;
-	
+
     /*
         Show the menu on single right click
      */
@@ -531,7 +531,7 @@ static int runBrowser(char *page)
 
 /*
     Return the path to run the user's default browser. Caller must free the return string.
- */ 
+ */
 static char *getBrowserPath(int size)
 {
     char    cmd[ME_MAX_BUFFER];
@@ -557,7 +557,7 @@ static char *getBrowserPath(int size)
 
 /*
     Start the window's service
- */ 
+ */
 static int startService()
 {
     SC_HANDLE   svc, mgr;
@@ -586,8 +586,8 @@ static int startService()
 
 
 /*
-    Stop the service in the current process. 
- */ 
+    Stop the service in the current process.
+ */
 static int stopService()
 {
     SC_HANDLE       svc, mgr;
@@ -618,7 +618,7 @@ static int stopService()
 
 /*
     Query the service. Return the service state:
-  
+
         SERVICE_CONTINUE_PENDING
         SERVICE_PAUSE_PENDING
         SERVICE_PAUSED
@@ -626,7 +626,7 @@ static int stopService()
         SERVICE_START_PENDING
         SERVICE_STOP_PENDING
         SERVICE_STOPPED
- */ 
+ */
 static uint queryService()
 {
     SC_HANDLE       svc, mgr;
@@ -662,7 +662,7 @@ static uint queryService()
     Copyright (c) Embedthis Software. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the Embedthis Open Source license or you may acquire a 
+    You may use the Embedthis Open Source license or you may acquire a
     commercial license from Embedthis Software. You agree to be fully bound
     by the terms of either license. Consult the LICENSE.md distributed with
     this software for full details and other copyrights.

@@ -32,7 +32,7 @@
             <p>Appweb nominates a directory as a CGI directory via the <a href=
             "dir/server.html#scriptAlias">ScriptAlias</a> configuration file directive. For example:</p>
 <pre class="ui code segment">
-ScriptAlias /cgi-bin/ $ROUTE_HOME/cgi-bin/ 
+ScriptAlias /cgi-bin/ $ROUTE_HOME/cgi-bin/
 </pre>
             <p>The ScriptAlias directive above is short hand for:
 <pre class="ui code segment">
@@ -42,10 +42,10 @@ ScriptAlias /cgi-bin/ $ROUTE_HOME/cgi-bin/
     Target run $1
 &lt;/Route&gt;
 </pre>
-            <p>When a URI is requested by a browser that includes the "<em>/cgi-bin/</em>" prefix, the 
+            <p>When a URI is requested by a browser that includes the "<em>/cgi-bin/</em>" prefix, the
             script name immediately after "/cgi-bin/" will be run. For example:</p>
 <pre class="ui code segment">
-http://www.embedthis.com/cgi-bin/testCgi
+https://embedthis.com/cgi-bin/testCgi
 </pre>
             <h3>Invoking by URI Extension</h3>
             <p>To configure Appweb to run CGI programs based on the URI extension use the <a href=
